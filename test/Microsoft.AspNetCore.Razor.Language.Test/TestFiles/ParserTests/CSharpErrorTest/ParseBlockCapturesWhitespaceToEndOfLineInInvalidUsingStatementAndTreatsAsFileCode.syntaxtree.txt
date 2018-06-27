@@ -1,0 +1,5 @@
+Statement block - Gen<None> - 17 - (0:0,0)
+    Code span - Gen<Stmt> - [using          LF] - SpanEditHandler;Accepts:Any - (0:0,0) - Symbols:3
+        CSharpSymbolType.Keyword;[using];
+        CSharpSymbolType.WhiteSpace;[          ];
+        CSharpSymbolType.NewLine;[LF];

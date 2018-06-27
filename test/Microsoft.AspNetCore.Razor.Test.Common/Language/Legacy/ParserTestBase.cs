@@ -16,6 +16,7 @@ using System.Threading;
 using System.Text;
 using Xunit;
 using Xunit.Sdk;
+using System.Text.RegularExpressions;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
@@ -112,7 +113,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 File.WriteAllText(baselineFullPath, SyntaxTreeNodeSerializer.Serialize(root));
 
                 var baselineDiagnosticsFullPath = Path.Combine(TestProjectRoot, baselineDiagnosticsFileName);
-                var lines = diagnostics.Select(RazorDiagnosticSerializer.Serialize).ToArray();
+                var lines = diagnostics.Select(SerializeDiagnostic).ToArray();
                 if (lines.Any())
                 {
                     File.WriteAllLines(baselineDiagnosticsFullPath, lines);
@@ -141,8 +142,21 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 baselineDiagnostics = diagnosticsFile.ReadAllText();
             }
 
-            var actualDiagnostics = string.Concat(diagnostics.Select(d => RazorDiagnosticSerializer.Serialize(d) + "\r\n"));
+            var actualDiagnostics = string.Concat(diagnostics.Select(d => SerializeDiagnostic(d) + "\r\n"));
             Assert.Equal(baselineDiagnostics, actualDiagnostics);
+        }
+
+        private static string SerializeDiagnostic(RazorDiagnostic diagnostic)
+        {
+            var content = RazorDiagnosticSerializer.Serialize(diagnostic);
+            var normalized = NormalizeNewLines(content);
+
+            return normalized;
+        }
+
+        private static string NormalizeNewLines(string content)
+        {
+            return Regex.Replace(content, "(?<!\r)\n", "\r\n", RegexOptions.None, TimeSpan.FromSeconds(10));
         }
 
         internal RazorSyntaxTree ParseBlock(string document, bool designTime)

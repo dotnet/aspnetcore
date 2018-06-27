@@ -1,0 +1,17 @@
+Expression block - Gen<Expr> - 46 - (0:0,0)
+    MetaCode span - Gen<None> - [(] - SpanEditHandler;Accepts:None - (0:0,0) - Symbols:1
+        CSharpSymbolType.LeftParenthesis;[(];
+    Code span - Gen<Expr> - [Request["description"] ?? @photo.Description] - SpanEditHandler;Accepts:Any - (1:0,1) - Symbols:11
+        CSharpSymbolType.Identifier;[Request];
+        CSharpSymbolType.LeftBracket;[[];
+        CSharpSymbolType.StringLiteral;["description"];
+        CSharpSymbolType.RightBracket;[]];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.NullCoalesce;[??];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.Transition;[@];
+        CSharpSymbolType.Identifier;[photo];
+        CSharpSymbolType.Dot;[.];
+        CSharpSymbolType.Identifier;[Description];
+    MetaCode span - Gen<None> - [)] - SpanEditHandler;Accepts:None - (45:0,45) - Symbols:1
+        CSharpSymbolType.RightParenthesis;[)];

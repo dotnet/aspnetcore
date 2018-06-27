@@ -9,105 +9,52 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
     public class CSharpErrorTest : CsHtmlCodeParserTestBase
     {
+        public CSharpErrorTest()
+        {
+            UseBaselineTests = true;
+        }
+
         [Fact]
         public void ParseBlockHandlesQuotesAfterTransition()
         {
-            ParseBlockTest("@\"",
-                           new ExpressionBlock(
-                               Factory.CodeTransition(),
-                               Factory.EmptyCSharp()
-                                   .AsImplicitExpression(KeywordSet)
-                                   .Accepts(AcceptedCharactersInternal.NonWhiteSpace)
-                               ),
-                           RazorDiagnosticFactory.CreateParsing_UnexpectedCharacterAtStartOfCodeBlock(
-                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1),
-                                "\""));
+            ParseBlockTest("@\"");
         }
 
         [Fact]
         public void ParseBlockWithHelperDirectiveProducesError()
         {
-            ParseBlockTest("@helper fooHelper { }",
-                new ExpressionBlock(
-                    Factory.CodeTransition(),
-                    Factory.Code("helper")
-                        .AsImplicitExpression(KeywordSet)
-                        .Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
-                RazorDiagnosticFactory.CreateParsing_HelperDirectiveNotAvailable(
-                    new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 6)));
+            ParseBlockTest("@helper fooHelper { }");
         }
 
         [Fact]
         public void ParseBlockWithNestedCodeBlockProducesError()
         {
-            ParseBlockTest("@if { @{} }",
-                new StatementBlock(
-                    Factory.CodeTransition(),
-                    Factory.Code("if { ")
-                        .AsStatement()
-                        .Accepts(AcceptedCharactersInternal.Any),
-                    new StatementBlock(
-                        Factory.CodeTransition(),
-                        Factory.MetaCode("{").Accepts(AcceptedCharactersInternal.None),
-                        Factory.EmptyCSharp()
-                            .AsStatement()
-                            .AutoCompleteWith(autoCompleteString: null),
-                        Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)),
-                    Factory.Code(" }")
-                        .AsStatement()
-                        .Accepts(AcceptedCharactersInternal.Any)),
-                RazorDiagnosticFactory.CreateParsing_UnexpectedNestedCodeBlock(
-                    new SourceSpan(new SourceLocation(7, 0, 7), contentLength: 1)));
+            ParseBlockTest("@if { @{} }");
         }
 
         [Fact]
         public void ParseBlockCapturesWhitespaceToEndOfLineInInvalidUsingStatementAndTreatsAsFileCode()
         {
             ParseBlockTest("using          " + Environment.NewLine
-                         + Environment.NewLine,
-                           new StatementBlock(
-                               Factory.Code("using          " + Environment.NewLine).AsStatement()
-                               ));
+                         + Environment.NewLine);
         }
 
         [Fact]
         public void ParseBlockMethodOutputsOpenCurlyAsCodeSpanIfEofFoundAfterOpenCurlyBrace()
         {
-            ParseBlockTest("{",
-                           new StatementBlock(
-                               Factory.MetaCode("{").Accepts(AcceptedCharactersInternal.None),
-                               Factory.EmptyCSharp()
-                                   .AsStatement()
-                                   .With(new AutoCompleteEditHandler(CSharpLanguageCharacteristics.Instance.TokenizeString) { AutoCompleteString = "}" })
-                               ),
-                           RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
-                                new SourceSpan(SourceLocation.Zero, contentLength: 1), Resources.BlockName_Code, "}", "{"));
+            ParseBlockTest("{");
         }
 
         [Fact]
         public void ParseBlockMethodOutputsZeroLengthCodeSpanIfStatementBlockEmpty()
         {
-            ParseBlockTest("{}",
-                           new StatementBlock(
-                               Factory.MetaCode("{").Accepts(AcceptedCharactersInternal.None),
-                               Factory.EmptyCSharp()
-                                   .AsStatement()
-                                   .AutoCompleteWith(autoCompleteString: null),
-                               Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)
-                               ));
+            ParseBlockTest("{}");
         }
 
         [Fact]
         public void ParseBlockMethodProducesErrorIfNewlineFollowsTransition()
         {
-            ParseBlockTest("@" + Environment.NewLine,
-                           new ExpressionBlock(
-                               Factory.CodeTransition(),
-                               Factory.EmptyCSharp()
-                                   .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                                   .Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
-                           RazorDiagnosticFactory.CreateParsing_UnexpectedWhiteSpaceAtStartOfCodeBlock(
-                                new SourceSpan(new SourceLocation(1, 0, 1), Environment.NewLine.Length)));
+            ParseBlockTest("@" + Environment.NewLine);
         }
 
         [Fact]
@@ -115,72 +62,27 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             ParseBlockTest("{" + Environment.NewLine
                          + "    @   {}" + Environment.NewLine
-                         + "}",
-                           new StatementBlock(
-                               Factory.MetaCode("{").Accepts(AcceptedCharactersInternal.None),
-                               Factory.Code(Environment.NewLine + "    ")
-                                   .AsStatement()
-                                   .AutoCompleteWith(autoCompleteString: null),
-                               new ExpressionBlock(
-                                   Factory.CodeTransition(),
-                                   Factory.EmptyCSharp()
-                                       .AsImplicitExpression(CSharpCodeParser.DefaultKeywords, acceptTrailingDot: true)
-                                       .Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
-                               Factory.Code("   {}" + Environment.NewLine).AsStatement(),
-                               Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)
-                               ),
-                           RazorDiagnosticFactory.CreateParsing_UnexpectedWhiteSpaceAtStartOfCodeBlock(
-                                new SourceSpan(new SourceLocation(6 + Environment.NewLine.Length, 1, 5), contentLength: 3)));
+                         + "}");
         }
 
         [Fact]
         public void ParseBlockMethodProducesErrorIfEOFAfterTransitionInEmbeddedExpression()
         {
             ParseBlockTest("{" + Environment.NewLine
-                         + "    @",
-                           new StatementBlock(
-                               Factory.MetaCode("{").Accepts(AcceptedCharactersInternal.None),
-                               Factory.Code(Environment.NewLine + "    ")
-                                   .AsStatement()
-                                   .AutoCompleteWith("}"),
-                               new ExpressionBlock(
-                                   Factory.CodeTransition(),
-                                   Factory.EmptyCSharp()
-                                       .AsImplicitExpression(CSharpCodeParser.DefaultKeywords, acceptTrailingDot: true)
-                                       .Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
-                               Factory.EmptyCSharp().AsStatement()
-                               ),
-                           RazorDiagnosticFactory.CreateParsing_UnexpectedEndOfFileAtStartOfCodeBlock(
-                               new SourceSpan(new SourceLocation(6 + Environment.NewLine.Length, 1, 5), contentLength: 1)),
-                           RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
-                               new SourceSpan(SourceLocation.Zero, contentLength: 1), Resources.BlockName_Code, "}", "{"));
+                         + "    @");
         }
 
         [Fact]
         public void ParseBlockMethodParsesNothingIfFirstCharacterIsNotIdentifierStartOrParenOrBrace()
         {
-            ParseBlockTest("@!!!",
-                           new ExpressionBlock(
-                               Factory.CodeTransition(),
-                               Factory.EmptyCSharp()
-                                   .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                                   .Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
-                           RazorDiagnosticFactory.CreateParsing_UnexpectedCharacterAtStartOfCodeBlock(
-                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1),
-                                "!"));
+            ParseBlockTest("@!!!");
         }
 
         [Fact]
         public void ParseBlockShouldReportErrorAndTerminateAtEOFIfIfParenInExplicitExpressionUnclosed()
         {
             ParseBlockTest("(foo bar" + Environment.NewLine
-                         + "baz",
-                           new ExpressionBlock(
-                               Factory.MetaCode("(").Accepts(AcceptedCharactersInternal.None),
-                               Factory.Code($"foo bar{Environment.NewLine}baz").AsExpression()
-                               ),
-                           RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
-                            new SourceSpan(SourceLocation.Zero, contentLength: 1), Resources.BlockName_ExplicitExpression, ")", "("));
+                         + "baz");
         }
 
         [Fact]
@@ -189,26 +91,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             ParseBlockTest("(foo bar" + Environment.NewLine
                          + "<html>" + Environment.NewLine
                          + "baz" + Environment.NewLine
-                         + "</html",
-                           new ExpressionBlock(
-                               Factory.MetaCode("(").Accepts(AcceptedCharactersInternal.None),
-                               Factory.Code($"foo bar{Environment.NewLine}").AsExpression()
-                               ),
-                           RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
-                            new SourceSpan(SourceLocation.Zero, contentLength: 1), Resources.BlockName_ExplicitExpression, ")", "("));
+                         + "</html");
         }
 
         [Fact]
         public void ParseBlockCorrectlyHandlesInCorrectTransitionsIfImplicitExpressionParensUnclosed()
         {
             ParseBlockTest("Href(" + Environment.NewLine
-                         + "<h1>@Html.Foo(Bar);</h1>" + Environment.NewLine,
-                           new ExpressionBlock(
-                               Factory.Code("Href(" + Environment.NewLine)
-                                   .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                               ),
-                           RazorDiagnosticFactory.CreateParsing_ExpectedCloseBracketBeforeEOF(
-                                new SourceSpan(new SourceLocation(4, 0, 4), contentLength: 1), "(", ")"));
+                         + "<h1>@Html.Foo(Bar);</h1>" + Environment.NewLine);
         }
 
         [Fact]
@@ -217,13 +107,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             ParseBlockTest("Foo(Bar(Baz)" + Environment.NewLine
                             + "Biz" + Environment.NewLine
-                            + "Boz",
-                            new ExpressionBlock(
-                                Factory.Code($"Foo(Bar(Baz){Environment.NewLine}Biz{Environment.NewLine}Boz")
-                                    .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                                ),
-                            RazorDiagnosticFactory.CreateParsing_ExpectedCloseBracketBeforeEOF(
-                                new SourceSpan(new SourceLocation(3, 0, 3), contentLength: 1), "(", ")"));
+                            + "Boz");
         }
 
         [Fact]
@@ -234,13 +118,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             + "Biz" + Environment.NewLine
                             + "<html>" + Environment.NewLine
                             + "Boz" + Environment.NewLine
-                            + "</html>",
-                            new ExpressionBlock(
-                                Factory.Code($"Foo(Bar(Baz){Environment.NewLine}Biz{Environment.NewLine}")
-                                    .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                                ),
-                           RazorDiagnosticFactory.CreateParsing_ExpectedCloseBracketBeforeEOF(
-                                new SourceSpan(new SourceLocation(3, 0, 3), contentLength: 1), "(", ")"));
+                            + "</html>");
         }
 
         [Fact]
@@ -249,13 +127,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             ParseBlockTest("Foo[Bar[Baz]" + Environment.NewLine
                          + "Biz" + Environment.NewLine
-                         + "Boz",
-                           new ExpressionBlock(
-                               Factory.Code($"Foo[Bar[Baz]{Environment.NewLine}Biz{Environment.NewLine}Boz")
-                                   .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                               ),
-                           RazorDiagnosticFactory.CreateParsing_ExpectedCloseBracketBeforeEOF(
-                                new SourceSpan(new SourceLocation(3, 0, 3), contentLength: 1), "[", "]"));
+                         + "Boz");
         }
 
         [Fact]
@@ -266,47 +138,22 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                          + "Biz" + Environment.NewLine
                          + "<b>" + Environment.NewLine
                          + "Boz" + Environment.NewLine
-                         + "</b>",
-                           new ExpressionBlock(
-                               Factory.Code($"Foo[Bar[Baz]{Environment.NewLine}Biz{Environment.NewLine}")
-                                   .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                               ),
-                           RazorDiagnosticFactory.CreateParsing_ExpectedCloseBracketBeforeEOF(
-                                new SourceSpan(new SourceLocation(3, 0, 3), contentLength: 1), "[", "]"));
+                         + "</b>");
         }
 
         // Simple EOF handling errors:
         [Fact]
         public void ParseBlockReportsErrorIfExplicitCodeBlockUnterminatedAtEOF()
         {
-            ParseBlockTest("{ var foo = bar; if(foo != null) { bar(); } ",
-                           new StatementBlock(
-                               Factory.MetaCode("{").Accepts(AcceptedCharactersInternal.None),
-                               Factory.Code(" var foo = bar; if(foo != null) { bar(); } ")
-                                   .AsStatement()
-                                   .AutoCompleteWith("}")),
-                           RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
-                               new SourceSpan(SourceLocation.Zero, contentLength: 1), Resources.BlockName_Code, "}", "{"));
+            ParseBlockTest("{ var foo = bar; if(foo != null) { bar(); } ");
         }
 
         [Fact]
         public void ParseBlockReportsErrorIfClassBlockUnterminatedAtEOF()
         {
-            // Arrange
-            var chunkGenerator = new DirectiveChunkGenerator(FunctionsDirective.Directive);
-            chunkGenerator.Diagnostics.Add(
-                RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
-                    new SourceSpan(new SourceLocation(10, 0, 10), contentLength: 1), "functions", "}", "{"));
-
-            // Act & Assert
             ParseBlockTest(
                 "functions { var foo = bar; if(foo != null) { bar(); } ",
-                new[] { FunctionsDirective.Directive },
-                new DirectiveBlock(chunkGenerator,
-                    Factory.MetaCode("functions").Accepts(AcceptedCharactersInternal.None),
-                    Factory.Span(SpanKindInternal.Markup, " ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharactersInternal.AllWhiteSpace),
-                    Factory.MetaCode("{").AutoCompleteWith("}", atEndOfSpan: true).Accepts(AcceptedCharactersInternal.None),
-                    Factory.Code(" var foo = bar; if(foo != null) { bar(); } ").AsCodeBlock()));
+                new[] { FunctionsDirective.Directive });
         }
 
         [Fact]
@@ -318,67 +165,37 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         [Fact]
         public void ParseBlockReportsErrorIfElseBlockUnterminatedAtEOF()
         {
-            ParseBlockTest("if(foo) { baz(); } else { var foo = bar; if(foo != null) { bar(); } ",
-                           new StatementBlock(
-                               Factory.Code("if(foo) { baz(); } else { var foo = bar; if(foo != null) { bar(); } ").AsStatement()
-                               ),
-                           RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
-                               new SourceSpan(new SourceLocation(19, 0, 19), contentLength: 1), "else", "}", "{"));
+            ParseBlockTest("if(foo) { baz(); } else { var foo = bar; if(foo != null) { bar(); } ");
         }
 
         [Fact]
         public void ParseBlockReportsErrorIfElseIfBlockUnterminatedAtEOF()
         {
-            ParseBlockTest("if(foo) { baz(); } else if { var foo = bar; if(foo != null) { bar(); } ",
-                           new StatementBlock(
-                               Factory.Code("if(foo) { baz(); } else if { var foo = bar; if(foo != null) { bar(); } ").AsStatement()
-                               ),
-                           RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
-                               new SourceSpan(new SourceLocation(19, 0, 19), contentLength: 1), "else if", "}", "{"));
+            ParseBlockTest("if(foo) { baz(); } else if { var foo = bar; if(foo != null) { bar(); } ");
         }
 
         [Fact]
         public void ParseBlockReportsErrorIfDoBlockUnterminatedAtEOF()
         {
-            ParseBlockTest("do { var foo = bar; if(foo != null) { bar(); } ",
-                           new StatementBlock(
-                               Factory.Code("do { var foo = bar; if(foo != null) { bar(); } ").AsStatement()
-                               ),
-                           RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
-                               new SourceSpan(SourceLocation.Zero, contentLength: 1), "do", "}", "{"));
+            ParseBlockTest("do { var foo = bar; if(foo != null) { bar(); } ");
         }
 
         [Fact]
         public void ParseBlockReportsErrorIfTryBlockUnterminatedAtEOF()
         {
-            ParseBlockTest("try { var foo = bar; if(foo != null) { bar(); } ",
-                           new StatementBlock(
-                               Factory.Code("try { var foo = bar; if(foo != null) { bar(); } ").AsStatement()
-                               ),
-                           RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
-                               new SourceSpan(SourceLocation.Zero, contentLength: 1), "try", "}", "{"));
+            ParseBlockTest("try { var foo = bar; if(foo != null) { bar(); } ");
         }
 
         [Fact]
         public void ParseBlockReportsErrorIfCatchBlockUnterminatedAtEOF()
         {
-            ParseBlockTest("try { baz(); } catch(Foo) { var foo = bar; if(foo != null) { bar(); } ",
-                           new StatementBlock(
-                               Factory.Code("try { baz(); } catch(Foo) { var foo = bar; if(foo != null) { bar(); } ").AsStatement()
-                               ),
-                           RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
-                               new SourceSpan(new SourceLocation(15, 0, 15), contentLength: 1), "catch", "}", "{"));
+            ParseBlockTest("try { baz(); } catch(Foo) { var foo = bar; if(foo != null) { bar(); } ");
         }
 
         [Fact]
         public void ParseBlockReportsErrorIfFinallyBlockUnterminatedAtEOF()
         {
-            ParseBlockTest("try { baz(); } finally { var foo = bar; if(foo != null) { bar(); } ",
-                           new StatementBlock(
-                               Factory.Code("try { baz(); } finally { var foo = bar; if(foo != null) { bar(); } ").AsStatement()
-                               ),
-                           RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
-                               new SourceSpan(new SourceLocation(15, 0, 15), contentLength: 1), "finally", "}", "{"));
+            ParseBlockTest("try { baz(); } finally { var foo = bar; if(foo != null) { bar(); } ");
         }
 
         [Fact]
@@ -420,131 +237,54 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         [Fact]
         public void ParseBlockRequiresControlFlowStatementsToHaveBraces()
         {
-            var expectedMessage = Resources.FormatParseError_SingleLine_ControlFlowStatements_Not_Allowed("{", "<");
-            ParseBlockTest("if(foo) <p>Bar</p> else if(bar) <p>Baz</p> else <p>Boz</p>",
-                           new StatementBlock(
-                               Factory.Code("if(foo) ").AsStatement(),
-                               new MarkupBlock(
-                                    BlockFactory.MarkupTagBlock("<p>", AcceptedCharactersInternal.None),
-                                    Factory.Markup("Bar"),
-                                    BlockFactory.MarkupTagBlock("</p>", AcceptedCharactersInternal.None),
-                                    Factory.Markup(" ").Accepts(AcceptedCharactersInternal.None)),
-                               Factory.Code("else if(bar) ").AsStatement(),
-                               new MarkupBlock(
-                                    BlockFactory.MarkupTagBlock("<p>", AcceptedCharactersInternal.None),
-                                    Factory.Markup("Baz"),
-                                    BlockFactory.MarkupTagBlock("</p>", AcceptedCharactersInternal.None),
-                                    Factory.Markup(" ").Accepts(AcceptedCharactersInternal.None)),
-                               Factory.Code("else ").AsStatement(),
-                               new MarkupBlock(
-                                    BlockFactory.MarkupTagBlock("<p>", AcceptedCharactersInternal.None),
-                                    Factory.Markup("Boz"),
-                                    BlockFactory.MarkupTagBlock("</p>", AcceptedCharactersInternal.None)),
-                               Factory.EmptyCSharp().AsStatement()
-                               ),
-                           RazorDiagnosticFactory.CreateParsing_SingleLineControlFlowStatementsNotAllowed(
-                               new SourceSpan(new SourceLocation(8, 0, 8), contentLength: 1), "{", "<"),
-                           RazorDiagnosticFactory.CreateParsing_SingleLineControlFlowStatementsNotAllowed(
-                               new SourceSpan(new SourceLocation(32, 0, 32), contentLength: 1), "{", "<"),
-                           RazorDiagnosticFactory.CreateParsing_SingleLineControlFlowStatementsNotAllowed(
-                               new SourceSpan(new SourceLocation(48, 0, 48), contentLength: 1), "{", "<"));
+            ParseBlockTest("if(foo) <p>Bar</p> else if(bar) <p>Baz</p> else <p>Boz</p>");
         }
 
         [Fact]
         public void ParseBlockIncludesUnexpectedCharacterInSingleStatementControlFlowStatementError()
         {
-            ParseBlockTest("if(foo)) { var bar = foo; }",
-                           new StatementBlock(
-                               Factory.Code("if(foo)) { var bar = foo; }").AsStatement()
-                               ),
-                           RazorDiagnosticFactory.CreateParsing_SingleLineControlFlowStatementsNotAllowed(
-                               new SourceSpan(new SourceLocation(7, 0, 7), contentLength: 1), "{", ")"));
+            ParseBlockTest("if(foo)) { var bar = foo; }");
         }
 
         [Fact]
         public void ParseBlockOutputsErrorIfAtSignFollowedByLessThanSignAtStatementStart()
         {
-            ParseBlockTest("if(foo) { @<p>Bar</p> }",
-                           new StatementBlock(
-                               Factory.Code("if(foo) {").AsStatement(),
-                               new MarkupBlock(
-                                   Factory.Markup(" "),
-                                   Factory.MarkupTransition(),
-                                   BlockFactory.MarkupTagBlock("<p>", AcceptedCharactersInternal.None),
-                                    Factory.Markup("Bar"),
-                                    BlockFactory.MarkupTagBlock("</p>", AcceptedCharactersInternal.None),
-                                    Factory.Markup(" ").Accepts(AcceptedCharactersInternal.None)),
-                               Factory.Code("}").AsStatement()
-                               ),
-                           RazorDiagnosticFactory.CreateParsing_AtInCodeMustBeFollowedByColonParenOrIdentifierStart(
-                               new SourceSpan(new SourceLocation(10, 0, 10), contentLength: 1)));
+            ParseBlockTest("if(foo) { @<p>Bar</p> }");
         }
 
         [Fact]
         public void ParseBlockTerminatesIfBlockAtEOLWhenRecoveringFromMissingCloseParen()
         {
             ParseBlockTest("if(foo bar" + Environment.NewLine
-                         + "baz",
-                           new StatementBlock(
-                               Factory.Code("if(foo bar" + Environment.NewLine).AsStatement()
-                               ),
-                           RazorDiagnosticFactory.CreateParsing_ExpectedCloseBracketBeforeEOF(
-                                new SourceSpan(new SourceLocation(2, 0, 2), contentLength: 1), "(", ")"));
+                         + "baz");
         }
 
         [Fact]
         public void ParseBlockTerminatesForeachBlockAtEOLWhenRecoveringFromMissingCloseParen()
         {
             ParseBlockTest("foreach(foo bar" + Environment.NewLine
-                         + "baz",
-                           new StatementBlock(
-                               Factory.Code("foreach(foo bar" + Environment.NewLine).AsStatement()
-                               ),
-                           RazorDiagnosticFactory.CreateParsing_ExpectedCloseBracketBeforeEOF(
-                                new SourceSpan(new SourceLocation(7, 0, 7), contentLength: 1), "(", ")"));
+                         + "baz");
         }
 
         [Fact]
         public void ParseBlockTerminatesWhileClauseInDoStatementAtEOLWhenRecoveringFromMissingCloseParen()
         {
             ParseBlockTest("do { } while(foo bar" + Environment.NewLine
-                         + "baz",
-                           new StatementBlock(
-                               Factory.Code("do { } while(foo bar" + Environment.NewLine).AsStatement()
-                               ),
-                           RazorDiagnosticFactory.CreateParsing_ExpectedCloseBracketBeforeEOF(
-                                new SourceSpan(new SourceLocation(12, 0, 12), contentLength: 1), "(", ")"));
+                         + "baz");
         }
 
         [Fact]
         public void ParseBlockTerminatesUsingBlockAtEOLWhenRecoveringFromMissingCloseParen()
         {
             ParseBlockTest("using(foo bar" + Environment.NewLine
-                         + "baz",
-                           new StatementBlock(
-                               Factory.Code("using(foo bar" + Environment.NewLine).AsStatement()
-                               ),
-                           RazorDiagnosticFactory.CreateParsing_ExpectedCloseBracketBeforeEOF(
-                                new SourceSpan(new SourceLocation(5, 0, 5), contentLength: 1), "(", ")"));
+                         + "baz");
         }
 
         [Fact]
         public void ParseBlockResumesIfStatementAfterOpenParen()
         {
             ParseBlockTest("if(" + Environment.NewLine
-                         + "else { <p>Foo</p> }",
-                           new StatementBlock(
-                               Factory.Code($"if({Environment.NewLine}else {{").AsStatement(),
-                               new MarkupBlock(
-                                   Factory.Markup(" "),
-                                    BlockFactory.MarkupTagBlock("<p>", AcceptedCharactersInternal.None),
-                                    Factory.Markup("Foo"),
-                                    BlockFactory.MarkupTagBlock("</p>", AcceptedCharactersInternal.None),
-                                    Factory.Markup(" ").Accepts(AcceptedCharactersInternal.None)),
-                               Factory.Code("}").AsStatement().Accepts(AcceptedCharactersInternal.None)
-                               ),
-                           RazorDiagnosticFactory.CreateParsing_ExpectedCloseBracketBeforeEOF(
-                               new SourceSpan(new SourceLocation(2, 0, 2), contentLength: 1), "(", ")"));
+                         + "else { <p>Foo</p> }");
         }
 
         [Fact]
@@ -553,20 +293,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             SingleSpanBlockTest("if(foo) {" + Environment.NewLine
                               + "    var p = \"foo bar baz" + Environment.NewLine
                               + ";" + Environment.NewLine
-                              + "}",
-                                BlockKindInternal.Statement, SpanKindInternal.Code,
-                                RazorDiagnosticFactory.CreateParsing_UnterminatedStringLiteral(
-                                    new SourceSpan(new SourceLocation(21 + Environment.NewLine.Length, 1, 12), contentLength: 1)));
+                              + "}");
         }
 
         [Fact]
         public void ParseBlockTerminatesNormalStringAtEndOfFile()
         {
-            SingleSpanBlockTest("if(foo) { var foo = \"blah blah blah blah blah", BlockKindInternal.Statement, SpanKindInternal.Code,
-                                RazorDiagnosticFactory.CreateParsing_UnterminatedStringLiteral(
-                                    new SourceSpan(new SourceLocation(20, 0, 20), contentLength: 1)),
-                                RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
-                                    new SourceSpan(SourceLocation.Zero, contentLength: 1), "if", "}", "{"));
+            SingleSpanBlockTest("if(foo) { var foo = \"blah blah blah blah blah");
         }
 
         [Fact]
@@ -576,12 +309,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                               + "blah; " + Environment.NewLine
                               + "<p>Foo</p>" + Environment.NewLine
                               + "blah " + Environment.NewLine
-                              + "blah",
-                                BlockKindInternal.Statement, SpanKindInternal.Code,
-                                RazorDiagnosticFactory.CreateParsing_UnterminatedStringLiteral(
-                                    new SourceSpan(new SourceLocation(20, 0, 20), contentLength: 1)),
-                                RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
-                                    new SourceSpan(SourceLocation.Zero, contentLength: 1), "if", "}", "{"));
+                              + "blah");
         }
 
         [Fact]
@@ -590,65 +318,25 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             ParseBlockTest("if(foo) {" + Environment.NewLine
                          + "    var foo = \"foo bar baz" + Environment.NewLine
                          + "    <p>Foo is @foo</p>" + Environment.NewLine
-                         + "}",
-                           new StatementBlock(
-                               Factory.Code($"if(foo) {{{Environment.NewLine}    var foo = \"foo bar baz{Environment.NewLine}    ").AsStatement(),
-                               new MarkupBlock(
-                                   BlockFactory.MarkupTagBlock("<p>", AcceptedCharactersInternal.None),
-                                   Factory.Markup("Foo is "),
-                                   new ExpressionBlock(
-                                       Factory.CodeTransition(),
-                                       Factory.Code("foo")
-                                           .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                                           .Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
-                                   BlockFactory.MarkupTagBlock("</p>", AcceptedCharactersInternal.None),
-                                   Factory.Markup(Environment.NewLine).Accepts(AcceptedCharactersInternal.None)),
-                               Factory.Code("}").AsStatement()
-                               ),
-                           RazorDiagnosticFactory.CreateParsing_UnterminatedStringLiteral(
-                               new SourceSpan(new SourceLocation(23 + Environment.NewLine.Length, 1, 14), contentLength: 1)));
+                         + "}");
         }
 
         [Fact]
         public void ParseBlockCorrectlyParsesAtSignInDelimitedBlock()
         {
-            ParseBlockTest("(Request[\"description\"] ?? @photo.Description)",
-                           new ExpressionBlock(
-                               Factory.MetaCode("(").Accepts(AcceptedCharactersInternal.None),
-                               Factory.Code("Request[\"description\"] ?? @photo.Description").AsExpression(),
-                               Factory.MetaCode(")").Accepts(AcceptedCharactersInternal.None)
-                               ));
+            ParseBlockTest("(Request[\"description\"] ?? @photo.Description)");
         }
 
         [Fact]
         public void ParseBlockCorrectlyRecoversFromMissingCloseParenInExpressionWithinCode()
         {
-            ParseBlockTest(@"{string.Format(<html></html>}",
-                new StatementBlock(
-                    Factory.MetaCode("{").Accepts(AcceptedCharactersInternal.None),
-                    Factory.Code("string.Format(")
-                        .AsStatement()
-                        .AutoCompleteWith(autoCompleteString: null),
-                    new MarkupBlock(
-                        BlockFactory.MarkupTagBlock("<html>", AcceptedCharactersInternal.None),
-                        BlockFactory.MarkupTagBlock("</html>", AcceptedCharactersInternal.None)),
-                    Factory.EmptyCSharp().AsStatement(),
-                    Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)),
-                expectedErrors: new[]
-                {
-                    RazorDiagnosticFactory.CreateParsing_ExpectedCloseBracketBeforeEOF(
-                        new SourceSpan(new SourceLocation(14, 0, 14), contentLength: 1), "(", ")"),
-                });
+            ParseBlockTest(@"{string.Format(<html></html>}");
         }
 
         private void RunUnterminatedSimpleKeywordBlock(string keyword)
         {
             SingleSpanBlockTest(
-                keyword + " (foo) { var foo = bar; if(foo != null) { bar(); } ",
-                BlockKindInternal.Statement,
-                SpanKindInternal.Code,
-                RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
-                    new SourceSpan(SourceLocation.Zero, contentLength: 1), keyword, "}", "{"));
+                keyword + " (foo) { var foo = bar; if(foo != null) { bar(); } ");
         }
     }
 }

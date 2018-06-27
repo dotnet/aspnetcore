@@ -1,0 +1,16 @@
+Statement block - Gen<None> - 60 - (0:0,0)
+    Code span - Gen<Stmt> - [if(foo) { var foo = @"blah LFblah; LF<p>Foo</p>LFblah LFblah] - SpanEditHandler;Accepts:Any - (0:0,0) - Symbols:14
+        CSharpSymbolType.Keyword;[if];
+        CSharpSymbolType.LeftParenthesis;[(];
+        CSharpSymbolType.Identifier;[foo];
+        CSharpSymbolType.RightParenthesis;[)];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.LeftBrace;[{];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.Identifier;[var];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.Identifier;[foo];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.Assign;[=];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.StringLiteral;[@"blah LFblah; LF<p>Foo</p>LFblah LFblah];RZ1000(20:0,20 [1] )

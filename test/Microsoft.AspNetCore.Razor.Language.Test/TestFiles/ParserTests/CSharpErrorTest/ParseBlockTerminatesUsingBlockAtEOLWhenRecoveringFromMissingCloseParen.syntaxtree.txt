@@ -1,0 +1,8 @@
+Statement block - Gen<None> - 15 - (0:0,0)
+    Code span - Gen<Stmt> - [using(foo barLF] - SpanEditHandler;Accepts:Any - (0:0,0) - Symbols:6
+        CSharpSymbolType.Keyword;[using];
+        CSharpSymbolType.LeftParenthesis;[(];
+        CSharpSymbolType.Identifier;[foo];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.Identifier;[bar];
+        CSharpSymbolType.NewLine;[LF];
