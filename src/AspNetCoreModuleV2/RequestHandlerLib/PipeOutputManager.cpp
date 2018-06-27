@@ -5,6 +5,9 @@
 #include "exceptions.h"
 #include "SRWExclusiveLock.h"
 
+#define LOG_IF_DUPFAIL(err) do { if (err == -1) { LOG_IF_FAILED(HRESULT_FROM_WIN32(_doserrno)); } } while (0, 0);
+#define LOG_IF_ERRNO(err) do { if (err != 0) { LOG_IF_FAILED(HRESULT_FROM_WIN32(_doserrno)); } } while (0, 0);
+
 PipeOutputManager::PipeOutputManager() :
     m_dwStdErrReadTotal(0),
     m_hErrReadPipe(INVALID_HANDLE_VALUE),
@@ -41,6 +44,32 @@ PipeOutputManager::StopOutputRedirection()
     fflush(stdout);
     fflush(stderr);
 
+    // Restore the original stdout and stderr handles of the process,
+    // as the application has either finished startup or has exited.
+
+    // If stdout/stderr were not set, we need to set it to NUL:
+    // such that other calls to Console.WriteLine don't use an invalid handle
+    FILE *stream;
+
+    if (m_fdPreviousStdOut >= 0)
+    {
+        _dup2(m_fdPreviousStdOut, _fileno(stdout));
+        LOG_IF_DUPFAIL(_dup2(m_fdPreviousStdOut, _fileno(stdout)));
+    }
+    else
+    {
+        LOG_IF_ERRNO(freopen_s(&stream, "NUL:", "w", stdout));
+    }
+
+    if (m_fdPreviousStdErr >= 0)
+    {
+        LOG_IF_DUPFAIL(_dup2(m_fdPreviousStdErr, _fileno(stderr)));
+    }
+    else
+    {
+        LOG_IF_ERRNO(freopen_s(&stream, "NUL:", "w", stderr));
+    }
+
     if (m_hErrWritePipe != INVALID_HANDLE_VALUE)
     {
         CloseHandle(m_hErrWritePipe);
@@ -75,24 +104,10 @@ PipeOutputManager::StopOutputRedirection()
         m_hErrReadPipe = INVALID_HANDLE_VALUE;
     }
 
-    // Restore the original stdout and stderr handles of the process,
-    // as the application has either finished startup or has exited.
-    if (m_fdPreviousStdOut != -1)
-    {
-        _dup2(m_fdPreviousStdOut, _fileno(stdout));
-        LOG_INFOF("Restoring original stdout of stdout: %d", m_fdPreviousStdOut);
-    }
-
-    if (m_fdPreviousStdErr != -1)
-    {
-        _dup2(m_fdPreviousStdErr, _fileno(stderr));
-        LOG_INFOF("Restoring original stdout of stderr: %d", m_fdPreviousStdErr);
-    }
-
     if (GetStdOutContent(&straStdOutput))
     {
         printf(straStdOutput.QueryStr());
-        // Need to flush contents.
+        // Need to flush contents for the new stdout and stderr
         _flushall();
     }
 }
@@ -104,7 +119,10 @@ HRESULT PipeOutputManager::Start()
     HANDLE                  hStdErrWritePipe;
 
     m_fdPreviousStdOut = _dup(_fileno(stdout));
+    LOG_IF_DUPFAIL(m_fdPreviousStdOut);
+
     m_fdPreviousStdErr = _dup(_fileno(stderr));
+    LOG_IF_DUPFAIL(m_fdPreviousStdErr);
 
     RETURN_LAST_ERROR_IF(!CreatePipe(&hStdErrReadPipe, &hStdErrWritePipe, &saAttr, 0 /*nSize*/));
 
