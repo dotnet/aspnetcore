@@ -41,14 +41,16 @@
     <MSBuild Projects="$(MSBuildProjectFullPath)"
              Targets="GetArtifactInfo"
              Properties="$(DesignTimeBuildProps);RepositoryRoot=%(Repository.RootPath);Configuration=$(Configuration);BuildNumber=$(BuildNumber);DesignTimeBuild=true"
-             ContinueOnError="WarnAndContinue">
+             ContinueOnError="WarnAndContinue"
+             Condition="'%(Repository.Identity)' != ''">
       <Output TaskParameter="TargetOutputs" ItemName="ArtifactInfo" />
     </MSBuild>
 
     <MSBuild Projects="$(MSBuildProjectFullPath)"
              Targets="ResolveSolutions"
              Properties="RepositoryRoot=%(Repository.RootPath);Configuration=$(Configuration);BuildNumber=$(BuildNumber)"
-             ContinueOnError="WarnAndContinue">
+             ContinueOnError="WarnAndContinue"
+             Condition="'%(Repository.Identity)' != ''">
       <Output TaskParameter="TargetOutputs" ItemName="Solution" Condition="'%(Repository.Build)' == 'true'" />
       <Output TaskParameter="TargetOutputs" ItemName="_NoBuildSolution" Condition="'%(Repository.Build)' != 'true'" />
     </MSBuild>
@@ -257,7 +259,7 @@
   </Target>
 
   <Target Name="VerifyAllReposHaveNuGetPackageVerifier" DependsOnTargets="_PrepareRepositories">
-    <Error Condition="!Exists('%(Repository.RootPath)NuGetPackageVerifier.json')"
+    <Error Condition="'%(Repository.Identity)' != '' AND !Exists('%(Repository.RootPath)NuGetPackageVerifier.json')"
            Text="Repository %(Repository.Identity) is missing NuGetPackageVerifier.json. Expected file to exist in %(Repository.RootPath)NuGetPackageVerifier.json" />
   </Target>
 

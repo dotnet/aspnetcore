@@ -15,13 +15,16 @@ namespace NuspecBaselineGenerator
 
         [Required]
         [DirectoryExists]
-        [Argument(0)]
+        [Argument(0, Description = "Path(s) to directories containing .nupkg files from previous releases.")]
         public string[] Directories { get; }
 
         [Required]
-        [Option]
+        [Option(Description = "The path to the artifacts.props file")]
         [FileExists]
         public string Artifacts { get; }
+
+        [Option(Description = "Show verbose output")]
+        public bool Verbose { get; }
 
         private void OnExecute()
         {
@@ -35,9 +38,12 @@ namespace NuspecBaselineGenerator
                     {
                         var identity = reader.GetIdentity();
                         versions.Add((identity.Id, identity.Version.ToNormalizedString()));
+                        LogVerbose($"Found package {identity.Id}/{identity.Version} ({nupkg})");
                     }
                 }
             }
+
+            LogVerbose($"Found {versions.Count} package(s)");
 
             void WriteAttribute(XElement element, string attr)
             {
@@ -67,6 +73,15 @@ namespace NuspecBaselineGenerator
                 }
                 Console.WriteLine(" />");
             }
+        }
+
+        private void LogVerbose(string message)
+        {
+            if (!Verbose)
+            {
+                return;
+            }
+            Console.WriteLine(message);
         }
     }
 }
