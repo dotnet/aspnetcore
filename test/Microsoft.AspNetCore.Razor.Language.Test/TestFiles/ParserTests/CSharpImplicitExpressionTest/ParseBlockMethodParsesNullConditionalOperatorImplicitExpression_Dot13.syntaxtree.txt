@@ -1,0 +1,14 @@
+Expression block - Gen<Expr> - 22 - (0:0,0)
+    Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Symbols:1
+        CSharpSymbolType.Transition;[@];
+    Code span - Gen<Expr> - [val?.more(false)?.abc] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K14 - (1:0,1) - Symbols:10
+        CSharpSymbolType.Identifier;[val];
+        CSharpSymbolType.QuestionMark;[?];
+        CSharpSymbolType.Dot;[.];
+        CSharpSymbolType.Identifier;[more];
+        CSharpSymbolType.LeftParenthesis;[(];
+        CSharpSymbolType.Keyword;[false];
+        CSharpSymbolType.RightParenthesis;[)];
+        CSharpSymbolType.QuestionMark;[?];
+        CSharpSymbolType.Dot;[.];
+        CSharpSymbolType.Identifier;[abc];

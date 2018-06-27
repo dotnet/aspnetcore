@@ -1,0 +1,25 @@
+Expression block - Gen<Expr> - 34 - (0:0,0)
+    Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Symbols:1
+        CSharpSymbolType.Transition;[@];
+    Code span - Gen<Expr> - [foo.bar[4 * (8 + 7)]["fo\"o"].baz] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K14 - (1:0,1) - Symbols:21
+        CSharpSymbolType.Identifier;[foo];
+        CSharpSymbolType.Dot;[.];
+        CSharpSymbolType.Identifier;[bar];
+        CSharpSymbolType.LeftBracket;[[];
+        CSharpSymbolType.IntegerLiteral;[4];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.Star;[*];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.LeftParenthesis;[(];
+        CSharpSymbolType.IntegerLiteral;[8];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.Plus;[+];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.IntegerLiteral;[7];
+        CSharpSymbolType.RightParenthesis;[)];
+        CSharpSymbolType.RightBracket;[]];
+        CSharpSymbolType.LeftBracket;[[];
+        CSharpSymbolType.StringLiteral;["fo\"o"];
+        CSharpSymbolType.RightBracket;[]];
+        CSharpSymbolType.Dot;[.];
+        CSharpSymbolType.Identifier;[baz];

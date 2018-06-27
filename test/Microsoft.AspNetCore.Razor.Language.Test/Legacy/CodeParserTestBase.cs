@@ -66,14 +66,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         internal void ImplicitExpressionTest(string input, string expected, AcceptedCharactersInternal acceptedCharacters, params RazorDiagnostic[] errors)
         {
-            var factory = CreateSpanFactory();
-            ParseBlockTest(SyntaxConstants.TransitionString + input,
-                           new ExpressionBlock(
-                               factory.CodeTransition(),
-                               factory.Code(expected)
-                                   .AsImplicitExpression(KeywordSet)
-                                   .Accepts(acceptedCharacters)),
-                           errors);
+            ParseBlockTest(SyntaxConstants.TransitionString + input);
         }
     }
 }

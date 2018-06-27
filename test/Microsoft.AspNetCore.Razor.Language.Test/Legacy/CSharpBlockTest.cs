@@ -101,8 +101,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         [Fact]
         public void ParseBlockTerminatesParenBalancingAtEOF()
         {
-            ImplicitExpressionTest(
-                "Html.En(code()", "Html.En(code()");
+            ImplicitExpressionTest("Html.En(code()");
         }
 
         [Fact]
