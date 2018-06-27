@@ -1,0 +1,23 @@
+Directive block - Gen<None> - 79 - (0:0,0)
+    Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Symbols:1
+        CSharpSymbolType.Transition;[@];
+    Code span - Gen<Import: StringDictionary = System.Collections.Generic.Dictionary<string, string>;> - [using StringDictionary = System.Collections.Generic.Dictionary<string, string>] - SpanEditHandler;Accepts:AnyExceptNewline - (1:0,1) - Symbols:19
+        CSharpSymbolType.Keyword;[using];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.Identifier;[StringDictionary];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.Assign;[=];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.Identifier;[System];
+        CSharpSymbolType.Dot;[.];
+        CSharpSymbolType.Identifier;[Collections];
+        CSharpSymbolType.Dot;[.];
+        CSharpSymbolType.Identifier;[Generic];
+        CSharpSymbolType.Dot;[.];
+        CSharpSymbolType.Identifier;[Dictionary];
+        CSharpSymbolType.LessThan;[<];
+        CSharpSymbolType.Keyword;[string];
+        CSharpSymbolType.Comma;[,];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.Keyword;[string];
+        CSharpSymbolType.GreaterThan;[>];

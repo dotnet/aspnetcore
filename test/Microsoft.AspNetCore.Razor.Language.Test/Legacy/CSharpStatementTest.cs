@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
@@ -17,416 +16,213 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
     public class CSharpStatementTest : CsHtmlCodeParserTestBase
     {
+        public CSharpStatementTest()
+        {
+            UseBaselineTests = true;
+        }
+
         [Fact]
         public void ForStatement()
         {
-            ParseBlockTest("@for(int i = 0; i++; i < length) { foo(); }",
-                           new StatementBlock(
-                               Factory.CodeTransition(),
-                               Factory.Code("for(int i = 0; i++; i < length) { foo(); }")
-                                   .AsStatement()
-                                   .Accepts(AcceptedCharactersInternal.None)
-                               ));
+            ParseBlockTest("@for(int i = 0; i++; i < length) { foo(); }");
         }
 
         [Fact]
         public void ForEachStatement()
         {
-            ParseBlockTest("@foreach(var foo in bar) { foo(); }",
-                           new StatementBlock(
-                               Factory.CodeTransition(),
-                               Factory.Code("foreach(var foo in bar) { foo(); }")
-                                   .AsStatement()
-                                   .Accepts(AcceptedCharactersInternal.None)
-                               ));
+            ParseBlockTest("@foreach(var foo in bar) { foo(); }");
         }
 
         [Fact]
         public void WhileStatement()
         {
-            ParseBlockTest("@while(true) { foo(); }",
-                           new StatementBlock(
-                               Factory.CodeTransition(),
-                               Factory.Code("while(true) { foo(); }")
-                                   .AsStatement()
-                                   .Accepts(AcceptedCharactersInternal.None)
-                               ));
+            ParseBlockTest("@while(true) { foo(); }");
         }
 
         [Fact]
         public void SwitchStatement()
         {
-            ParseBlockTest("@switch(foo) { foo(); }",
-                           new StatementBlock(
-                               Factory.CodeTransition(),
-                               Factory.Code("switch(foo) { foo(); }")
-                                   .AsStatement()
-                                   .Accepts(AcceptedCharactersInternal.None)
-                               ));
+            ParseBlockTest("@switch(foo) { foo(); }");
         }
 
         [Fact]
         public void LockStatement()
         {
-            ParseBlockTest("@lock(baz) { foo(); }",
-                           new StatementBlock(
-                               Factory.CodeTransition(),
-                               Factory.Code("lock(baz) { foo(); }")
-                                   .AsStatement()
-                                   .Accepts(AcceptedCharactersInternal.None)
-                               ));
+            ParseBlockTest("@lock(baz) { foo(); }");
         }
 
         [Fact]
         public void IfStatement()
         {
-            ParseBlockTest("@if(true) { foo(); }",
-                           new StatementBlock(
-                               Factory.CodeTransition(),
-                               Factory.Code("if(true) { foo(); }")
-                                   .AsStatement()
-                               ));
+            ParseBlockTest("@if(true) { foo(); }");
         }
 
         [Fact]
         public void ElseIfClause()
         {
-            ParseBlockTest("@if(true) { foo(); } else if(false) { foo(); } else if(!false) { foo(); }",
-                           new StatementBlock(
-                               Factory.CodeTransition(),
-                               Factory.Code("if(true) { foo(); } else if(false) { foo(); } else if(!false) { foo(); }")
-                                   .AsStatement()
-                               ));
+            ParseBlockTest("@if(true) { foo(); } else if(false) { foo(); } else if(!false) { foo(); }");
         }
 
         [Fact]
         public void ElseClause()
         {
-            ParseBlockTest("@if(true) { foo(); } else { foo(); }",
-                           new StatementBlock(
-                               Factory.CodeTransition(),
-                               Factory.Code("if(true) { foo(); } else { foo(); }")
-                                   .AsStatement()
-                                   .Accepts(AcceptedCharactersInternal.None)
-                               ));
+            ParseBlockTest("@if(true) { foo(); } else { foo(); }");
         }
 
         [Fact]
         public void TryStatement()
         {
-            ParseBlockTest("@try { foo(); }",
-                           new StatementBlock(
-                               Factory.CodeTransition(),
-                               Factory.Code("try { foo(); }")
-                                   .AsStatement()
-                               ));
+            ParseBlockTest("@try { foo(); }");
         }
 
         [Fact]
         public void CatchClause()
         {
-            ParseBlockTest("@try { foo(); } catch(IOException ioex) { handleIO(); } catch(Exception ex) { handleOther(); }",
-                           new StatementBlock(
-                               Factory.CodeTransition(),
-                               Factory.Code("try { foo(); } catch(IOException ioex) { handleIO(); } catch(Exception ex) { handleOther(); }")
-                                   .AsStatement()
-                               ));
+            ParseBlockTest("@try { foo(); } catch(IOException ioex) { handleIO(); } catch(Exception ex) { handleOther(); }");
         }
 
-        public static TheoryData ExceptionFilterData
+        [Fact]
+        public void ExceptionFilter_TryCatchWhenComplete_SingleLine()
         {
-            get
-            {
-                var factory = new SpanFactory();
-
-                // document, expectedStatement
-                return new TheoryData<string, StatementBlock>
-                {
-                    {
-                        "@try { someMethod(); } catch(Exception) when (true) { handleIO(); }",
-                        new StatementBlock(
-                            factory.CodeTransition(),
-                            factory
-                                .Code("try { someMethod(); } catch(Exception) when (true) { handleIO(); }")
-                                .AsStatement())
-                    },
-                    {
-                        "@try { A(); } catch(Exception) when (true) { B(); } finally { C(); }",
-                        new StatementBlock(
-                            factory.CodeTransition(),
-                            factory
-                                .Code("try { A(); } catch(Exception) when (true) { B(); } finally { C(); }")
-                                .AsStatement()
-                                .Accepts(AcceptedCharactersInternal.None))
-                    },
-                    {
-                        "@try { A(); } catch(Exception) when (true) { B(); } catch(IOException) when (false) { C(); }",
-                        new StatementBlock(
-                            factory.CodeTransition(),
-                            factory
-                                .Code("try { A(); } catch(Exception) when (true) { B(); } catch(IOException) " +
-                                    "when (false) { C(); }")
-                                .AsStatement())
-                    },
-                    {
-                        string.Format("@try{0}{{{0}   A();{0}}}{0}catch(Exception) when (true)", Environment.NewLine) +
-                        string.Format("{0}{{{0}    B();{0}}}{0}catch(IOException) when (false)", Environment.NewLine) +
-                        string.Format("{0}{{{0}    C();{0}}}", Environment.NewLine),
-                        new StatementBlock(
-                            factory.CodeTransition(),
-                            factory
-                                .Code(
-                                    string.Format("try{0}{{{0}   A();{0}}}{0}catch(Exception) ", Environment.NewLine) +
-                                    string.Format("when (true){0}{{{0}    B();{0}}}{0}", Environment.NewLine) +
-                                    string.Format("catch(IOException) when (false){0}{{{0}    ", Environment.NewLine) +
-                                    string.Format("C();{0}}}", Environment.NewLine))
-                                .AsStatement())
-                    },
-
-                    // Wrapped in @{ block.
-                    {
-                        "@{try { someMethod(); } catch(Exception) when (true) { handleIO(); }}",
-                        new StatementBlock(
-                            factory.CodeTransition(),
-                            factory.MetaCode("{").Accepts(AcceptedCharactersInternal.None),
-                            factory
-                                .Code("try { someMethod(); } catch(Exception) when (true) { handleIO(); }")
-                                .AsStatement()
-                                .AutoCompleteWith(autoCompleteString: null),
-                            factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None))
-                    },
-
-                    // Partial exception filter data
-                    {
-                        "@try { someMethod(); } catch(Exception) when",
-                        new StatementBlock(
-                            factory.CodeTransition(),
-                            factory
-                                .Code("try { someMethod(); } catch(Exception) when")
-                                .AsStatement())
-                    },
-                    {
-                        "@try { someMethod(); } when",
-                        new StatementBlock(
-                            factory.CodeTransition(),
-                            factory
-                                .Code("try { someMethod(); }")
-                                .AsStatement())
-                    },
-                    {
-                        "@try { someMethod(); } catch(Exception) when { anotherMethod(); }",
-                        new StatementBlock(
-                            factory.CodeTransition(),
-                            factory
-                                .Code("try { someMethod(); } catch(Exception) when { anotherMethod(); }")
-                                .AsStatement())
-                    },
-                    {
-                        "@try { someMethod(); } catch(Exception) when (true)",
-                        new StatementBlock(
-                            factory.CodeTransition(),
-                            factory
-                                .Code("try { someMethod(); } catch(Exception) when (true)")
-                                .AsStatement())
-                    },
-                };
-            }
+            ParseBlockTest("@try { someMethod(); } catch(Exception) when (true) { handleIO(); }");
         }
 
-        [Theory]
-        [MemberData(nameof(ExceptionFilterData))]
-        public void ExceptionFilters(string document, object expectedStatement)
+        [Fact]
+        public void ExceptionFilter_TryCatchWhenFinallyComplete_SingleLine()
         {
-            FixupSpans = true;
-
-            // Act & Assert
-            ParseBlockTest(document, (StatementBlock)expectedStatement);
+            ParseBlockTest("@try { A(); } catch(Exception) when (true) { B(); } finally { C(); }");
         }
 
-        public static TheoryData ExceptionFilterErrorData
+        [Fact]
+        public void ExceptionFilter_TryCatchWhenCatchWhenComplete_SingleLine()
         {
-            get
-            {
-                var factory = new SpanFactory();
-
-                // document, expectedStatement, expectedErrors
-                return new TheoryData<string, StatementBlock, RazorDiagnostic[]>
-                {
-                    {
-                        "@try { someMethod(); } catch(Exception) when (",
-                        new StatementBlock(
-                            factory.CodeTransition(),
-                            factory
-                                .Code("try { someMethod(); } catch(Exception) when (")
-                                .AsStatement()),
-                        new[]
-                        {
-                            RazorDiagnosticFactory.CreateParsing_ExpectedCloseBracketBeforeEOF(
-                                new SourceSpan(new SourceLocation(45, 0, 45), contentLength: 1), "(", ")"),
-                        }
-                    },
-                    {
-                        "@try { someMethod(); } catch(Exception) when (someMethod(",
-                        new StatementBlock(
-                            factory.CodeTransition(),
-                            factory
-                                .Code("try { someMethod(); } catch(Exception) when (someMethod(")
-                                .AsStatement()),
-                        new[]
-                        {
-                            RazorDiagnosticFactory.CreateParsing_ExpectedCloseBracketBeforeEOF(
-                                new SourceSpan(new SourceLocation(45, 0, 45), contentLength: 1), "(", ")"),
-                        }
-                    },
-                    {
-                        "@try { someMethod(); } catch(Exception) when (true) {",
-                        new StatementBlock(
-                            factory.CodeTransition(),
-                            factory
-                                .Code("try { someMethod(); } catch(Exception) when (true) {")
-                                .AsStatement()),
-                        new[]
-                        {
-                            RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
-                                new SourceSpan(new SourceLocation(23, 0, 23), contentLength: 1), "catch", "}", "{"),
-                        }
-                    },
-                };
-            }
+            ParseBlockTest("@try { A(); } catch(Exception) when (true) { B(); } catch(IOException) when (false) { C(); }");
         }
 
-        [Theory]
-        [MemberData(nameof(ExceptionFilterErrorData))]
-        public void ExceptionFilterErrors(
-            string document,
-            object expectedStatement,
-            object expectedErrors)
+        [Fact]
+        public void ExceptionFilter_MultiLine()
         {
-            FixupSpans = true;
+            ParseBlockTest(
+@"@try
+{
+A();
+}
+catch(Exception) when (true)
+{
+B();
+}
+catch(IOException) when (false)
+{
+C();
+}");
+        }
 
-            // Act & Assert
-            ParseBlockTest(document, (StatementBlock)expectedStatement, (RazorDiagnostic[])expectedErrors);
+        [Fact]
+        public void ExceptionFilter_NestedTryCatchWhen()
+        {
+            ParseBlockTest("@{try { someMethod(); } catch(Exception) when (true) { handleIO(); }}");
+        }
+
+        [Fact]
+        public void ExceptionFilter_IncompleteTryCatchWhen()
+        {
+            ParseBlockTest("@try { someMethod(); } catch(Exception) when");
+        }
+
+        [Fact]
+        public void ExceptionFilter_IncompleteTryWhen()
+        {
+            ParseBlockTest("@try { someMethod(); } when");
+        }
+
+        [Fact]
+        public void ExceptionFilter_IncompleteTryCatchNoBodyWhen()
+        {
+            ParseBlockTest("@try { someMethod(); } catch(Exception) when { anotherMethod(); }");
+        }
+
+        [Fact]
+        public void ExceptionFilter_IncompleteTryCatchWhenNoBodies()
+        {
+            ParseBlockTest("@try { someMethod(); } catch(Exception) when (true)");
+        }
+
+        [Fact]
+        public void ExceptionFilterError_TryCatchWhen_InCompleteCondition()
+        {
+            ParseBlockTest("@try { someMethod(); } catch(Exception) when (");
+        }
+
+        [Fact]
+        public void ExceptionFilterError_TryCatchWhen_InCompleteBody()
+        {
+            ParseBlockTest("@try { someMethod(); } catch(Exception) when (true) {");
         }
 
         [Fact]
         public void FinallyClause()
         {
-            ParseBlockTest("@try { foo(); } finally { Dispose(); }",
-                           new StatementBlock(
-                               Factory.CodeTransition(),
-                               Factory.Code("try { foo(); } finally { Dispose(); }")
-                                   .AsStatement()
-                                   .Accepts(AcceptedCharactersInternal.None)
-                               ));
+            ParseBlockTest("@try { foo(); } finally { Dispose(); }");
         }
 
-        public static TheoryData StaticUsingData
+        [Fact]
+        public void StaticUsing_NoUsing()
         {
-            get
-            {
-                var factory = new SpanFactory();
-                Func<string, string, DirectiveBlock> createUsing = (code, import) =>
-                    new DirectiveBlock(
-                        factory.CodeTransition(),
-                        factory.Code(code)
-                            .AsNamespaceImport(import)
-                            .Accepts(AcceptedCharactersInternal.AnyExceptNewline));
-
-                // document, expectedResult
-                return new TheoryData<string, DirectiveBlock>
-                {
-                    { "@using static", createUsing("using static", " static") },
-                    { "@using static    ", createUsing("using static    ", " static    ") },
-                    { "@using         static    ", createUsing("using         static    ", "         static    ") },
-                    { "@using static System", createUsing("using static System", " static System") },
-                    {
-                        "@using static         System",
-                        createUsing("using static         System", " static         System")
-                    },
-                    {
-                        "@using static System.Console",
-                        createUsing("using static System.Console", " static System.Console")
-                    },
-                    {
-                        "@using static global::System.Console",
-                        createUsing("using static global::System.Console", " static global::System.Console")
-                    },
-                    {
-                        "@using   static   global::System.Console  ",
-                        createUsing("using   static   global::System.Console", "   static   global::System.Console")
-                    },
-                };
-            }
+            ParseBlockTest("@using static");
         }
 
-        [Theory]
-        [MemberData(nameof(StaticUsingData))]
-        public void StaticUsingImport(string document, object expectedResult)
+        [Fact]
+        public void StaticUsing_SingleIdentifier()
         {
-            FixupSpans = true;
+            ParseBlockTest("@using static System");
+        }
 
-            // Act & Assert
-            ParseBlockTest(document, (DirectiveBlock)expectedResult);
+        [Fact]
+        public void StaticUsing_MultipleIdentifiers()
+        {
+            ParseBlockTest("@using static System.Console");
+        }
+
+        [Fact]
+        public void StaticUsing_GlobalPrefix()
+        {
+            ParseBlockTest("@using static global::System.Console");
+        }
+
+        [Fact]
+        public void StaticUsing_Complete_Spaced()
+        {
+            ParseBlockTest("@using   static   global::System.Console  ");
         }
 
         [Fact]
         public void UsingStatement()
         {
-            ParseBlockTest("@using(var foo = new Foo()) { foo.Bar(); }",
-                           new StatementBlock(
-                               Factory.CodeTransition(),
-                               Factory.Code("using(var foo = new Foo()) { foo.Bar(); }")
-                                   .AsStatement()
-                                   .Accepts(AcceptedCharactersInternal.None)
-                               ));
+            ParseBlockTest("@using(var foo = new Foo()) { foo.Bar(); }");
         }
 
         [Fact]
         public void UsingTypeAlias()
         {
-            ParseBlockTest("@using StringDictionary = System.Collections.Generic.Dictionary<string, string>",
-                           new DirectiveBlock(
-                               Factory.CodeTransition(),
-                               Factory.Code("using StringDictionary = System.Collections.Generic.Dictionary<string, string>")
-                                   .AsNamespaceImport(" StringDictionary = System.Collections.Generic.Dictionary<string, string>")
-                                   .Accepts(AcceptedCharactersInternal.AnyExceptNewline)
-                               ));
+            ParseBlockTest("@using StringDictionary = System.Collections.Generic.Dictionary<string, string>");
         }
 
         [Fact]
         public void UsingNamespaceImport()
         {
-            ParseBlockTest("@using System.Text.Encoding.ASCIIEncoding",
-                           new DirectiveBlock(
-                               Factory.CodeTransition(),
-                               Factory.Code("using System.Text.Encoding.ASCIIEncoding")
-                                   .AsNamespaceImport(" System.Text.Encoding.ASCIIEncoding")
-                                   .Accepts(AcceptedCharactersInternal.AnyExceptNewline)
-                               ));
+            ParseBlockTest("@using System.Text.Encoding.ASCIIEncoding");
         }
 
         [Fact]
         public void DoStatement()
         {
-            ParseBlockTest("@do { foo(); } while(true);",
-                           new StatementBlock(
-                               Factory.CodeTransition(),
-                               Factory.Code("do { foo(); } while(true);")
-                                   .AsStatement()
-                                   .Accepts(AcceptedCharactersInternal.None)
-                               ));
+            ParseBlockTest("@do { foo(); } while(true);");
         }
 
         [Fact]
         public void NonBlockKeywordTreatedAsImplicitExpression()
         {
-            ParseBlockTest("@is foo",
-                           new ExpressionBlock(new ExpressionChunkGenerator(),
-                                               Factory.CodeTransition(),
-                                               Factory.Code("is")
-                                                   .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                                                   .Accepts(AcceptedCharactersInternal.NonWhiteSpace)
-                               ));
+            ParseBlockTest("@is foo");
         }
     }
 }

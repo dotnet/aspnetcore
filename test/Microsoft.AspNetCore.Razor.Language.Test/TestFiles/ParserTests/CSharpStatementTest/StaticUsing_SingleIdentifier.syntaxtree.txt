@@ -1,0 +1,9 @@
+Directive block - Gen<None> - 20 - (0:0,0)
+    Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Symbols:1
+        CSharpSymbolType.Transition;[@];
+    Code span - Gen<Import: static System;> - [using static System] - SpanEditHandler;Accepts:AnyExceptNewline - (1:0,1) - Symbols:5
+        CSharpSymbolType.Keyword;[using];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.Keyword;[static];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.Identifier;[System];
