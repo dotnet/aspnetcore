@@ -1,0 +1,26 @@
+Statement block - Gen<None> - 56 - (0:0,0)
+    MetaCode span - Gen<None> - [{] - SpanEditHandler;Accepts:None - (0:0,0) - Symbols:1
+        CSharpSymbolType.LeftBrace;[{];
+    Code span - Gen<Stmt> - [LF    List<dynamic> photos = gallery.Photo.ToList();LF] - AutoCompleteEditHandler;Accepts:Any,AutoComplete:[<null>];AtEOL - (1:0,1) - Symbols:20
+        CSharpSymbolType.NewLine;[LF];
+        CSharpSymbolType.WhiteSpace;[    ];
+        CSharpSymbolType.Identifier;[List];
+        CSharpSymbolType.LessThan;[<];
+        CSharpSymbolType.Identifier;[dynamic];
+        CSharpSymbolType.GreaterThan;[>];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.Identifier;[photos];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.Assign;[=];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.Identifier;[gallery];
+        CSharpSymbolType.Dot;[.];
+        CSharpSymbolType.Identifier;[Photo];
+        CSharpSymbolType.Dot;[.];
+        CSharpSymbolType.Identifier;[ToList];
+        CSharpSymbolType.LeftParenthesis;[(];
+        CSharpSymbolType.RightParenthesis;[)];
+        CSharpSymbolType.Semicolon;[;];
+        CSharpSymbolType.NewLine;[LF];
+    MetaCode span - Gen<None> - [}] - SpanEditHandler;Accepts:None - (55:2,0) - Symbols:1
+        CSharpSymbolType.RightBrace;[}];

@@ -1,0 +1,27 @@
+Statement block - Gen<None> - 39 - (0:0,0)
+    MetaCode span - Gen<None> - [{] - SpanEditHandler;Accepts:None - (0:0,0) - Symbols:1
+        CSharpSymbolType.LeftBrace;[{];
+    Code span - Gen<Stmt> - [ using Foo = Bar.Baz; var foo = bar; ] - AutoCompleteEditHandler;Accepts:Any,AutoComplete:[<null>];AtEOL - (1:0,1) - Symbols:21
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.Keyword;[using];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.Identifier;[Foo];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.Assign;[=];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.Identifier;[Bar];
+        CSharpSymbolType.Dot;[.];
+        CSharpSymbolType.Identifier;[Baz];
+        CSharpSymbolType.Semicolon;[;];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.Identifier;[var];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.Identifier;[foo];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.Assign;[=];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.Identifier;[bar];
+        CSharpSymbolType.Semicolon;[;];
+        CSharpSymbolType.WhiteSpace;[ ];
+    MetaCode span - Gen<None> - [}] - SpanEditHandler;Accepts:None - (38:0,38) - Symbols:1
+        CSharpSymbolType.RightBrace;[}];

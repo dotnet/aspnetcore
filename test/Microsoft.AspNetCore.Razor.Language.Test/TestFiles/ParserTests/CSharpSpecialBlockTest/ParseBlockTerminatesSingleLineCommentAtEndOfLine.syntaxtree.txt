@@ -1,0 +1,38 @@
+Statement block - Gen<None> - 48 - (0:0,0)
+    Code span - Gen<Stmt> - [if(!false) {LF    // FooLF] - SpanEditHandler;Accepts:Any - (0:0,0) - Symbols:11
+        CSharpSymbolType.Keyword;[if];
+        CSharpSymbolType.LeftParenthesis;[(];
+        CSharpSymbolType.Not;[!];
+        CSharpSymbolType.Keyword;[false];
+        CSharpSymbolType.RightParenthesis;[)];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.LeftBrace;[{];
+        CSharpSymbolType.NewLine;[LF];
+        CSharpSymbolType.WhiteSpace;[    ];
+        CSharpSymbolType.Comment;[// Foo];
+        CSharpSymbolType.NewLine;[LF];
+    Markup block - Gen<None> - 21 - (26:2,0)
+        Markup span - Gen<Markup> - [	] - SpanEditHandler;Accepts:Any - (26:2,0) - Symbols:1
+            HtmlSymbolType.WhiteSpace;[	];
+        Tag block - Gen<None> - 3 - (27:2,1)
+            Markup span - Gen<Markup> - [<p>] - SpanEditHandler;Accepts:None - (27:2,1) - Symbols:3
+                HtmlSymbolType.OpenAngle;[<];
+                HtmlSymbolType.Text;[p];
+                HtmlSymbolType.CloseAngle;[>];
+        Markup span - Gen<Markup> - [A real tag!] - SpanEditHandler;Accepts:Any - (30:2,4) - Symbols:6
+            HtmlSymbolType.Text;[A];
+            HtmlSymbolType.WhiteSpace;[ ];
+            HtmlSymbolType.Text;[real];
+            HtmlSymbolType.WhiteSpace;[ ];
+            HtmlSymbolType.Text;[tag];
+            HtmlSymbolType.Bang;[!];
+        Tag block - Gen<None> - 4 - (41:2,15)
+            Markup span - Gen<Markup> - [</p>] - SpanEditHandler;Accepts:None - (41:2,15) - Symbols:4
+                HtmlSymbolType.OpenAngle;[<];
+                HtmlSymbolType.ForwardSlash;[/];
+                HtmlSymbolType.Text;[p];
+                HtmlSymbolType.CloseAngle;[>];
+        Markup span - Gen<Markup> - [LF] - SpanEditHandler;Accepts:None - (45:2,19) - Symbols:1
+            HtmlSymbolType.NewLine;[LF];
+    Code span - Gen<Stmt> - [}] - SpanEditHandler;Accepts:Any - (47:3,0) - Symbols:1
+        CSharpSymbolType.RightBrace;[}];
