@@ -1,0 +1,62 @@
+Expression block - Gen<Expr> - 55 - (0:0,0)
+    Code span - Gen<Expr> - [Html.Repeat(10, ] - ImplicitExpressionEditHandler;Accepts:Any;ImplicitExpression[RTD];K14 - (0:0,0) - Symbols:7
+        CSharpSymbolType.Identifier;[Html];
+        CSharpSymbolType.Dot;[.];
+        CSharpSymbolType.Identifier;[Repeat];
+        CSharpSymbolType.LeftParenthesis;[(];
+        CSharpSymbolType.IntegerLiteral;[10];
+        CSharpSymbolType.Comma;[,];
+        CSharpSymbolType.WhiteSpace;[ ];
+    Template block - Gen<Template> - 18 - (16:0,16)
+        Markup block - Gen<None> - 18 - (16:0,16)
+            Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (16:0,16) - Symbols:1
+                HtmlSymbolType.Transition;[@];
+            Tag block - Gen<None> - 3 - (17:0,17)
+                Markup span - Gen<Markup> - [<p>] - SpanEditHandler;Accepts:None - (17:0,17) - Symbols:3
+                    HtmlSymbolType.OpenAngle;[<];
+                    HtmlSymbolType.Text;[p];
+                    HtmlSymbolType.CloseAngle;[>];
+            Markup span - Gen<Markup> - [Foo #] - SpanEditHandler;Accepts:Any - (20:0,20) - Symbols:3
+                HtmlSymbolType.Text;[Foo];
+                HtmlSymbolType.WhiteSpace;[ ];
+                HtmlSymbolType.Text;[#];
+            Expression block - Gen<Expr> - 5 - (25:0,25)
+                Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (25:0,25) - Symbols:1
+                    CSharpSymbolType.Transition;[@];
+                Code span - Gen<Expr> - [item] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K14 - (26:0,26) - Symbols:1
+                    CSharpSymbolType.Identifier;[item];
+            Tag block - Gen<None> - 4 - (30:0,30)
+                Markup span - Gen<Markup> - [</p>] - SpanEditHandler;Accepts:None - (30:0,30) - Symbols:4
+                    HtmlSymbolType.OpenAngle;[<];
+                    HtmlSymbolType.ForwardSlash;[/];
+                    HtmlSymbolType.Text;[p];
+                    HtmlSymbolType.CloseAngle;[>];
+    Code span - Gen<Expr> - [, ] - ImplicitExpressionEditHandler;Accepts:Any;ImplicitExpression[RTD];K14 - (34:0,34) - Symbols:2
+        CSharpSymbolType.Comma;[,];
+        CSharpSymbolType.WhiteSpace;[ ];
+    Template block - Gen<Template> - 18 - (36:0,36)
+        Markup block - Gen<None> - 18 - (36:0,36)
+            Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (36:0,36) - Symbols:1
+                HtmlSymbolType.Transition;[@];
+            Tag block - Gen<None> - 3 - (37:0,37)
+                Markup span - Gen<Markup> - [<p>] - SpanEditHandler;Accepts:None - (37:0,37) - Symbols:3
+                    HtmlSymbolType.OpenAngle;[<];
+                    HtmlSymbolType.Text;[p];
+                    HtmlSymbolType.CloseAngle;[>];
+            Markup span - Gen<Markup> - [Foo #] - SpanEditHandler;Accepts:Any - (40:0,40) - Symbols:3
+                HtmlSymbolType.Text;[Foo];
+                HtmlSymbolType.WhiteSpace;[ ];
+                HtmlSymbolType.Text;[#];
+            Expression block - Gen<Expr> - 5 - (45:0,45)
+                Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (45:0,45) - Symbols:1
+                    CSharpSymbolType.Transition;[@];
+                Code span - Gen<Expr> - [item] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K14 - (46:0,46) - Symbols:1
+                    CSharpSymbolType.Identifier;[item];
+            Tag block - Gen<None> - 4 - (50:0,50)
+                Markup span - Gen<Markup> - [</p>] - SpanEditHandler;Accepts:None - (50:0,50) - Symbols:4
+                    HtmlSymbolType.OpenAngle;[<];
+                    HtmlSymbolType.ForwardSlash;[/];
+                    HtmlSymbolType.Text;[p];
+                    HtmlSymbolType.CloseAngle;[>];
+    Code span - Gen<Expr> - [)] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K14 - (54:0,54) - Symbols:1
+        CSharpSymbolType.RightParenthesis;[)];

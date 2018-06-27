@@ -1,0 +1,19 @@
+Statement block - Gen<None> - 11 - (0:0,0)
+    MetaCode span - Gen<None> - [{] - SpanEditHandler;Accepts:None - (0:0,0) - Symbols:1
+        CSharpSymbolType.LeftBrace;[{];
+    Code span - Gen<Stmt> - [i] - AutoCompleteEditHandler;Accepts:Any,AutoComplete:[<null>];AtEOL - (1:0,1) - Symbols:1
+        CSharpSymbolType.Identifier;[i];
+    Template block - Gen<Template> - 8 - (2:0,2)
+        Markup block - Gen<None> - 8 - (2:0,2)
+            Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (2:0,2) - Symbols:1
+                HtmlSymbolType.Transition;[@];
+            MetaCode span - Gen<None> - [:] - SpanEditHandler;Accepts:Any - (3:0,3) - Symbols:1
+                HtmlSymbolType.Colon;[:];
+            Markup span - Gen<Markup> - [ barLF] - SpanEditHandler;Accepts:None - (4:0,4) - Symbols:3
+                HtmlSymbolType.WhiteSpace;[ ];
+                HtmlSymbolType.Text;[bar];
+                HtmlSymbolType.NewLine;[LF];
+    Code span - Gen<Stmt> - [] - SpanEditHandler;Accepts:Any - (10:1,0) - Symbols:1
+        CSharpSymbolType.Unknown;[];
+    MetaCode span - Gen<None> - [}] - SpanEditHandler;Accepts:None - (10:1,0) - Symbols:1
+        CSharpSymbolType.RightBrace;[}];
