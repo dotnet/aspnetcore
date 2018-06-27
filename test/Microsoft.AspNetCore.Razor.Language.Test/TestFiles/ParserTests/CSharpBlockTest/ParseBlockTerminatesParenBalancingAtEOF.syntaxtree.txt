@@ -1,0 +1,11 @@
+Expression block - Gen<Expr> - 15 - (0:0,0)
+    Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Symbols:1
+        CSharpSymbolType.Transition;[@];
+    Code span - Gen<Expr> - [Html.En(code()] - ImplicitExpressionEditHandler;Accepts:Any;ImplicitExpression[RTD];K14 - (1:0,1) - Symbols:7
+        CSharpSymbolType.Identifier;[Html];
+        CSharpSymbolType.Dot;[.];
+        CSharpSymbolType.Identifier;[En];
+        CSharpSymbolType.LeftParenthesis;[(];
+        CSharpSymbolType.Identifier;[code];
+        CSharpSymbolType.LeftParenthesis;[(];
+        CSharpSymbolType.RightParenthesis;[)];

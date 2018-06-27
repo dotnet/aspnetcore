@@ -1,0 +1,20 @@
+Statement block - Gen<None> - 25 - (0:0,0)
+    Code span - Gen<Stmt> - [if(foo) { ] - SpanEditHandler;Accepts:Any - (0:0,0) - Symbols:7
+        CSharpSymbolType.Keyword;[if];
+        CSharpSymbolType.LeftParenthesis;[(];
+        CSharpSymbolType.Identifier;[foo];
+        CSharpSymbolType.RightParenthesis;[)];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.LeftBrace;[{];
+        CSharpSymbolType.WhiteSpace;[ ];
+    Code span - Gen<None> - [@] - SpanEditHandler;Accepts:Any - (10:0,10) - Symbols:1
+        CSharpSymbolType.Transition;[@];
+    Code span - Gen<Stmt> - [@class.Foo() }] - SpanEditHandler;Accepts:Any - (11:0,11) - Symbols:8
+        CSharpSymbolType.Transition;[@];
+        CSharpSymbolType.Keyword;[class];
+        CSharpSymbolType.Dot;[.];
+        CSharpSymbolType.Identifier;[Foo];
+        CSharpSymbolType.LeftParenthesis;[(];
+        CSharpSymbolType.RightParenthesis;[)];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.RightBrace;[}];

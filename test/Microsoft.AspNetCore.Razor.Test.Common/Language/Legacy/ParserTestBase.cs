@@ -365,6 +365,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
         }
 
+        internal virtual void SingleSpanBlockTest(string document)
+        {
+            SingleSpanBlockTest(document, default, default);
+        }
+
         internal virtual void SingleSpanBlockTest(string document, BlockKindInternal blockKind, SpanKindInternal spanType, AcceptedCharactersInternal acceptedCharacters = AcceptedCharactersInternal.Any)
         {
             SingleSpanBlockTest(document, blockKind, spanType, acceptedCharacters, expectedError: null);
@@ -393,6 +398,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         internal virtual void SingleSpanBlockTest(string document, string spanContent, BlockKindInternal blockKind, SpanKindInternal spanType, AcceptedCharactersInternal acceptedCharacters, params RazorDiagnostic[] expectedErrors)
         {
             var result = ParseBlock(document, designTime: false);
+
+            if (UseBaselineTests && !IsTheory)
+            {
+                AssertSyntaxTreeNodeMatchesBaseline(result);
+                return;
+            }
 
             var builder = new BlockBuilder();
             builder.Type = blockKind;

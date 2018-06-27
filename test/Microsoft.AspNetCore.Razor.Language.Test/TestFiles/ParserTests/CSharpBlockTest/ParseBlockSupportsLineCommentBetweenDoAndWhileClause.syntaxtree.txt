@@ -1,0 +1,26 @@
+Statement block - Gen<None> - 51 - (0:0,0)
+    Code span - Gen<Stmt> - [do { var foo = bar; }LF// FooLF// BarLFwhile(true);] - SpanEditHandler;Accepts:None - (0:0,0) - Symbols:24
+        CSharpSymbolType.Keyword;[do];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.LeftBrace;[{];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.Identifier;[var];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.Identifier;[foo];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.Assign;[=];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.Identifier;[bar];
+        CSharpSymbolType.Semicolon;[;];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.RightBrace;[}];
+        CSharpSymbolType.NewLine;[LF];
+        CSharpSymbolType.Comment;[// Foo];
+        CSharpSymbolType.NewLine;[LF];
+        CSharpSymbolType.Comment;[// Bar];
+        CSharpSymbolType.NewLine;[LF];
+        CSharpSymbolType.Keyword;[while];
+        CSharpSymbolType.LeftParenthesis;[(];
+        CSharpSymbolType.Keyword;[true];
+        CSharpSymbolType.RightParenthesis;[)];
+        CSharpSymbolType.Semicolon;[;];

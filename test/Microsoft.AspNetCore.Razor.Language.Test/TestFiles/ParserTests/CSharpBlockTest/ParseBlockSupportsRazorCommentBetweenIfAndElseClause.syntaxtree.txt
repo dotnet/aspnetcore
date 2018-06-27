@@ -1,0 +1,52 @@
+Statement block - Gen<None> - 54 - (0:0,0)
+    Code span - Gen<Stmt> - [if(foo) { bar(); } ] - SpanEditHandler;Accepts:Any - (0:0,0) - Symbols:14
+        CSharpSymbolType.Keyword;[if];
+        CSharpSymbolType.LeftParenthesis;[(];
+        CSharpSymbolType.Identifier;[foo];
+        CSharpSymbolType.RightParenthesis;[)];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.LeftBrace;[{];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.Identifier;[bar];
+        CSharpSymbolType.LeftParenthesis;[(];
+        CSharpSymbolType.RightParenthesis;[)];
+        CSharpSymbolType.Semicolon;[;];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.RightBrace;[}];
+        CSharpSymbolType.WhiteSpace;[ ];
+    Comment block - Gen<RazorComment> - 9 - (19:0,19)
+        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (19:0,19) - Symbols:1
+            CSharpSymbolType.RazorCommentTransition;[@];
+        MetaCode span - Gen<None> - [*] - SpanEditHandler;Accepts:None - (20:0,20) - Symbols:1
+            CSharpSymbolType.RazorCommentStar;[*];
+        Comment span - Gen<None> - [ Foo ] - SpanEditHandler;Accepts:Any - (21:0,21) - Symbols:1
+            CSharpSymbolType.RazorComment;[ Foo ];
+        MetaCode span - Gen<None> - [*] - SpanEditHandler;Accepts:None - (26:0,26) - Symbols:1
+            CSharpSymbolType.RazorCommentStar;[*];
+        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (27:0,27) - Symbols:1
+            CSharpSymbolType.RazorCommentTransition;[@];
+    Code span - Gen<Stmt> - [ ] - SpanEditHandler;Accepts:Any - (28:0,28) - Symbols:1
+        CSharpSymbolType.WhiteSpace;[ ];
+    Comment block - Gen<RazorComment> - 9 - (29:0,29)
+        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (29:0,29) - Symbols:1
+            CSharpSymbolType.RazorCommentTransition;[@];
+        MetaCode span - Gen<None> - [*] - SpanEditHandler;Accepts:None - (30:0,30) - Symbols:1
+            CSharpSymbolType.RazorCommentStar;[*];
+        Comment span - Gen<None> - [ Bar ] - SpanEditHandler;Accepts:Any - (31:0,31) - Symbols:1
+            CSharpSymbolType.RazorComment;[ Bar ];
+        MetaCode span - Gen<None> - [*] - SpanEditHandler;Accepts:None - (36:0,36) - Symbols:1
+            CSharpSymbolType.RazorCommentStar;[*];
+        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (37:0,37) - Symbols:1
+            CSharpSymbolType.RazorCommentTransition;[@];
+    Code span - Gen<Stmt> - [ else { baz(); }] - SpanEditHandler;Accepts:None - (38:0,38) - Symbols:11
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.Keyword;[else];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.LeftBrace;[{];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.Identifier;[baz];
+        CSharpSymbolType.LeftParenthesis;[(];
+        CSharpSymbolType.RightParenthesis;[)];
+        CSharpSymbolType.Semicolon;[;];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.RightBrace;[}];

@@ -1,0 +1,5 @@
+Directive block - Gen<None> - 9 - (0:0,0)
+    Code span - Gen<Import: Foo;> - [using Foo] - SpanEditHandler;Accepts:AnyExceptNewline - (0:0,0) - Symbols:3
+        CSharpSymbolType.Keyword;[using];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.Identifier;[Foo];

@@ -8,43 +8,21 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
     public class CSharpBlockTest : CsHtmlCodeParserTestBase
     {
+        public CSharpBlockTest()
+        {
+            UseBaselineTests = true;
+        }
+
         [Fact]
         public void ParseBlock_NestedCodeBlockWithCSharpAt()
         {
-            ParseBlockTest("{ if (true) { var val = @x; if (val != 3) { } } }",
-                new StatementBlock(
-                    Factory.MetaCode("{").Accepts(AcceptedCharactersInternal.None),
-                    Factory
-                        .Code(" if (true) { var val = @x; if (val != 3) { } } ")
-                        .AsStatement()
-                        .Accepts(AcceptedCharactersInternal.Any)
-                        .AutoCompleteWith(autoCompleteString: null, atEndOfSpan: false),
-                    Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)));
+            ParseBlockTest("{ if (true) { var val = @x; if (val != 3) { } } }");
         }
 
         [Fact]
         public void ParseBlock_NestedCodeBlockWithMarkupSetsDotAsMarkup()
         {
-            ParseBlockTest("if (true) { @if(false) { <div>@something.</div> } }",
-                new StatementBlock(
-                    Factory.Code("if (true) { ").AsStatement(),
-                    new StatementBlock(
-                        Factory.CodeTransition(),
-                        Factory.Code("if(false) {").AsStatement(),
-                        new MarkupBlock(
-                            Factory.Markup(" "),
-                            BlockFactory.MarkupTagBlock("<div>", AcceptedCharactersInternal.None),
-                            Factory.EmptyHtml(),
-                            new ExpressionBlock(
-                                Factory.CodeTransition(),
-                                Factory.Code("something")
-                                    .AsImplicitExpression(CSharpCodeParser.DefaultKeywords, acceptTrailingDot: false)
-                                    .Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
-                            Factory.Markup("."),
-                            BlockFactory.MarkupTagBlock("</div>", AcceptedCharactersInternal.None),
-                            Factory.Markup(" ").Accepts(AcceptedCharactersInternal.None)),
-                        Factory.Code("}").AsStatement()),
-                    Factory.Code(" }").AsStatement()));
+            ParseBlockTest("if (true) { @if(false) { <div>@something.</div> } }");
         }
 
         [Fact]
@@ -53,20 +31,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             SingleSpanBlockTest(@"if(foo) {
     // bar } "" baz '
     zoop();
-}", BlockKindInternal.Statement, SpanKindInternal.Code);
+}");
         }
 
         [Fact]
         public void NestedCodeBlockWithAtDoesntCauseError()
         {
-            ParseBlockTest("if (true) { @if(false) { } }",
-                           new StatementBlock(
-                               Factory.Code("if (true) { ").AsStatement(),
-                               new StatementBlock(
-                                   Factory.CodeTransition(),
-                                   Factory.Code("if(false) { }").AsStatement()
-                                   ),
-                               Factory.Code(" }").AsStatement()));
+            ParseBlockTest("if (true) { @if(false) { } }");
         }
 
         [Fact]
@@ -76,125 +47,97 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 @"if(foo) {
     /* bar } "" */ ' baz } '
     zoop();
-}", BlockKindInternal.Statement, SpanKindInternal.Code);
+}");
         }
 
         [Fact]
         public void ParseBlockSkipsParenthesisedExpressionAndThenBalancesBracesIfFirstIdentifierIsForKeyword()
         {
             SingleSpanBlockTest(
-                "for(int i = 0; i < 10; new Foo { Bar = \"baz\" }) { Debug.WriteLine(@\"foo } bar\"); }",
-                BlockKindInternal.Statement,
-                SpanKindInternal.Code,
-                acceptedCharacters: AcceptedCharactersInternal.None);
+                "for(int i = 0; i < 10; new Foo { Bar = \"baz\" }) { Debug.WriteLine(@\"foo } bar\"); }");
         }
 
         [Fact]
         public void ParseBlockSkipsParenthesisedExpressionAndThenBalancesBracesIfFirstIdentifierIsForeachKeyword()
         {
             SingleSpanBlockTest(
-                "foreach(int i = 0; i < 10; new Foo { Bar = \"baz\" }) { Debug.WriteLine(@\"foo } bar\"); }",
-                BlockKindInternal.Statement,
-                SpanKindInternal.Code,
-                acceptedCharacters: AcceptedCharactersInternal.None);
+                "foreach(int i = 0; i < 10; new Foo { Bar = \"baz\" }) { Debug.WriteLine(@\"foo } bar\"); }");
         }
 
         [Fact]
         public void ParseBlockSkipsParenthesisedExpressionAndThenBalancesBracesIfFirstIdentifierIsWhileKeyword()
         {
             SingleSpanBlockTest(
-                "while(int i = 0; i < 10; new Foo { Bar = \"baz\" }) { Debug.WriteLine(@\"foo } bar\"); }",
-                BlockKindInternal.Statement,
-                SpanKindInternal.Code,
-                acceptedCharacters: AcceptedCharactersInternal.None);
+                "while(int i = 0; i < 10; new Foo { Bar = \"baz\" }) { Debug.WriteLine(@\"foo } bar\"); }");
         }
 
         [Fact]
         public void ParseBlockSkipsParenthesisedExpressionAndThenBalancesBracesIfFirstIdentifierIsUsingKeywordFollowedByParen()
         {
             SingleSpanBlockTest(
-                "using(int i = 0; i < 10; new Foo { Bar = \"baz\" }) { Debug.WriteLine(@\"foo } bar\"); }",
-                BlockKindInternal.Statement,
-                SpanKindInternal.Code, acceptedCharacters: AcceptedCharactersInternal.None);
+                "using(int i = 0; i < 10; new Foo { Bar = \"baz\" }) { Debug.WriteLine(@\"foo } bar\"); }");
         }
 
         [Fact]
         public void ParseBlockSupportsUsingsNestedWithinOtherBlocks()
         {
             SingleSpanBlockTest(
-                "if(foo) { using(int i = 0; i < 10; new Foo { Bar = \"baz\" }) { Debug.WriteLine(@\"foo } bar\"); } }",
-                BlockKindInternal.Statement,
-                SpanKindInternal.Code);
+                "if(foo) { using(int i = 0; i < 10; new Foo { Bar = \"baz\" }) { Debug.WriteLine(@\"foo } bar\"); } }");
         }
 
         [Fact]
         public void ParseBlockSkipsParenthesisedExpressionAndThenBalancesBracesIfFirstIdentifierIsIfKeywordWithNoElseBranches()
         {
             SingleSpanBlockTest(
-                "if(int i = 0; i < 10; new Foo { Bar = \"baz\" }) { Debug.WriteLine(@\"foo } bar\"); }",
-                BlockKindInternal.Statement,
-                SpanKindInternal.Code);
+                "if(int i = 0; i < 10; new Foo { Bar = \"baz\" }) { Debug.WriteLine(@\"foo } bar\"); }");
         }
 
         [Fact]
         public void ParseBlockAllowsEmptyBlockStatement()
         {
-            SingleSpanBlockTest("if(false) { }", BlockKindInternal.Statement, SpanKindInternal.Code);
+            SingleSpanBlockTest("if(false) { }");
         }
 
         [Fact]
         public void ParseBlockTerminatesParenBalancingAtEOF()
         {
             ImplicitExpressionTest(
-                "Html.En(code()", "Html.En(code()",
-                AcceptedCharactersInternal.Any,
-                RazorDiagnosticFactory.CreateParsing_ExpectedCloseBracketBeforeEOF(
-                    new SourceSpan(new SourceLocation(8, 0, 8), contentLength: 1), "(", ")"));
+                "Html.En(code()", "Html.En(code()");
         }
 
         [Fact]
         public void ParseBlockSupportsBlockCommentBetweenIfAndElseClause()
         {
             SingleSpanBlockTest(
-                "if(foo) { bar(); } /* Foo */ /* Bar */ else { baz(); }",
-                BlockKindInternal.Statement,
-                SpanKindInternal.Code,
-                acceptedCharacters: AcceptedCharactersInternal.None);
+                "if(foo) { bar(); } /* Foo */ /* Bar */ else { baz(); }");
         }
 
         [Fact]
         public void ParseBlockSupportsRazorCommentBetweenIfAndElseClause()
         {
             RunRazorCommentBetweenClausesTest(
-                "if(foo) { bar(); } ", " else { baz(); }",
-                acceptedCharacters: AcceptedCharactersInternal.None);
+                "if(foo) { bar(); } ", " else { baz(); }");
         }
 
         [Fact]
         public void ParseBlockSupportsBlockCommentBetweenElseIfAndElseClause()
         {
             SingleSpanBlockTest(
-                "if(foo) { bar(); } else if(bar) { baz(); } /* Foo */ /* Bar */ else { biz(); }",
-                BlockKindInternal.Statement,
-                SpanKindInternal.Code,
-                acceptedCharacters: AcceptedCharactersInternal.None);
+                "if(foo) { bar(); } else if(bar) { baz(); } /* Foo */ /* Bar */ else { biz(); }");
         }
 
         [Fact]
         public void ParseBlockSupportsRazorCommentBetweenElseIfAndElseClause()
         {
             RunRazorCommentBetweenClausesTest(
-                "if(foo) { bar(); } else if(bar) { baz(); } ", " else { baz(); }",
-                acceptedCharacters: AcceptedCharactersInternal.None);
+                "if(foo) { bar(); } else if(bar) { baz(); } ", " else { baz(); }");
         }
 
         [Fact]
         public void ParseBlockSupportsBlockCommentBetweenIfAndElseIfClause()
         {
             SingleSpanBlockTest(
-                "if(foo) { bar(); } /* Foo */ /* Bar */ else if(bar) { baz(); }",
-                BlockKindInternal.Statement,
-                SpanKindInternal.Code);
+                "if(foo) { bar(); } /* Foo */ /* Bar */ else if(bar) { baz(); }");
         }
 
         [Fact]
@@ -209,7 +152,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             SingleSpanBlockTest(@"if(foo) { bar(); }
 // Foo
 // Bar
-else { baz(); }", BlockKindInternal.Statement, SpanKindInternal.Code, acceptedCharacters: AcceptedCharactersInternal.None);
+else { baz(); }");
         }
 
         [Fact]
@@ -218,7 +161,7 @@ else { baz(); }", BlockKindInternal.Statement, SpanKindInternal.Code, acceptedCh
             SingleSpanBlockTest(@"if(foo) { bar(); } else if(bar) { baz(); }
 // Foo
 // Bar
-else { biz(); }", BlockKindInternal.Statement, SpanKindInternal.Code, acceptedCharacters: AcceptedCharactersInternal.None);
+else { biz(); }");
         }
 
         [Fact]
@@ -227,7 +170,7 @@ else { biz(); }", BlockKindInternal.Statement, SpanKindInternal.Code, acceptedCh
             SingleSpanBlockTest(@"if(foo) { bar(); }
 // Foo
 // Bar
-else if(bar) { baz(); }", BlockKindInternal.Statement, SpanKindInternal.Code);
+else if(bar) { baz(); }");
         }
 
         [Fact]
@@ -241,7 +184,7 @@ else if(bar) { baz(); }", BlockKindInternal.Statement, SpanKindInternal.Code);
 }";
             const string document = ifStatement + elseIfBranch;
 
-            SingleSpanBlockTest(document, BlockKindInternal.Statement, SpanKindInternal.Code);
+            SingleSpanBlockTest(document);
         }
 
         [Fact]
@@ -254,7 +197,7 @@ else if(bar) { baz(); }", BlockKindInternal.Statement, SpanKindInternal.Code);
     Debug.WriteLine(@""bar } baz"");
 }";
             const string document = ifStatement + elseIfBranch + elseIfBranch + elseIfBranch + elseIfBranch;
-            SingleSpanBlockTest(document, BlockKindInternal.Statement, SpanKindInternal.Code);
+            SingleSpanBlockTest(document);
         }
 
         [Fact]
@@ -269,7 +212,7 @@ else if(bar) { baz(); }", BlockKindInternal.Statement, SpanKindInternal.Code);
             const string elseBranch = @" else { Debug.WriteLine(@""bar } baz""); }";
             const string document = ifStatement + elseIfBranch + elseIfBranch + elseBranch;
 
-            SingleSpanBlockTest(document, BlockKindInternal.Statement, SpanKindInternal.Code, acceptedCharacters: AcceptedCharactersInternal.None);
+            SingleSpanBlockTest(document);
         }
 
         [Fact]
@@ -283,11 +226,8 @@ else if(bar) { baz(); }", BlockKindInternal.Statement, SpanKindInternal.Code);
 }";
             const string elseBranch = @" else { Debug.WriteLine(@""bar } baz""); }";
             const string document = ifStatement + elseIfBranch + elseBranch + elseIfBranch;
-            const string expected = ifStatement + elseIfBranch + elseBranch;
 
-            ParseBlockTest(
-                document,
-                new StatementBlock(Factory.Code(expected).AsStatement().Accepts(AcceptedCharactersInternal.None)));
+            ParseBlockTest(document);
         }
 
         [Fact]
@@ -297,7 +237,7 @@ else if(bar) { baz(); }", BlockKindInternal.Statement, SpanKindInternal.Code);
     Debug.WriteLine(@""foo } bar"");
 }";
 
-            SingleSpanBlockTest(document, BlockKindInternal.Statement, SpanKindInternal.Code);
+            SingleSpanBlockTest(document);
         }
 
         [Fact]
@@ -311,55 +251,46 @@ else if(bar) { baz(); }", BlockKindInternal.Statement, SpanKindInternal.Code);
             const string elseIfBranch = @" else if { foo(); }";
             const string document = ifBranch + elseIfBranch;
 
-            SingleSpanBlockTest(document, BlockKindInternal.Statement, SpanKindInternal.Code);
+            SingleSpanBlockTest(document);
         }
 
         [Fact]
         public void ParseBlockCorrectlyParsesDoWhileBlock()
         {
             SingleSpanBlockTest(
-                "do { var foo = bar; } while(foo != bar);",
-                BlockKindInternal.Statement,
-                SpanKindInternal.Code,
-                acceptedCharacters: AcceptedCharactersInternal.None);
+                "do { var foo = bar; } while(foo != bar);");
         }
 
         [Fact]
         public void ParseBlockCorrectlyParsesDoWhileBlockMissingSemicolon()
         {
-            SingleSpanBlockTest("do { var foo = bar; } while(foo != bar)", BlockKindInternal.Statement, SpanKindInternal.Code);
+            SingleSpanBlockTest("do { var foo = bar; } while(foo != bar)");
         }
 
         [Fact]
         public void ParseBlockCorrectlyParsesDoWhileBlockMissingWhileCondition()
         {
-            SingleSpanBlockTest("do { var foo = bar; } while", BlockKindInternal.Statement, SpanKindInternal.Code);
+            SingleSpanBlockTest("do { var foo = bar; } while");
         }
 
         [Fact]
         public void ParseBlockCorrectlyParsesDoWhileBlockMissingWhileConditionWithSemicolon()
         {
             SingleSpanBlockTest(
-                "do { var foo = bar; } while;",
-                BlockKindInternal.Statement,
-                SpanKindInternal.Code,
-                acceptedCharacters: AcceptedCharactersInternal.None);
+                "do { var foo = bar; } while;");
         }
 
         [Fact]
         public void ParseBlockCorrectlyParsesDoWhileBlockMissingWhileClauseEntirely()
         {
-            SingleSpanBlockTest("do { var foo = bar; } narf;", "do { var foo = bar; }", BlockKindInternal.Statement, SpanKindInternal.Code);
+            SingleSpanBlockTest("do { var foo = bar; } narf;");
         }
 
         [Fact]
         public void ParseBlockSupportsBlockCommentBetweenDoAndWhileClause()
         {
             SingleSpanBlockTest(
-                "do { var foo = bar; } /* Foo */ /* Bar */ while(true);",
-                BlockKindInternal.Statement,
-                SpanKindInternal.Code,
-                acceptedCharacters: AcceptedCharactersInternal.None);
+                "do { var foo = bar; } /* Foo */ /* Bar */ while(true);");
         }
 
         [Fact]
@@ -368,33 +299,20 @@ else if(bar) { baz(); }", BlockKindInternal.Statement, SpanKindInternal.Code);
             SingleSpanBlockTest(@"do { var foo = bar; }
 // Foo
 // Bar
-while(true);", BlockKindInternal.Statement, SpanKindInternal.Code, acceptedCharacters: AcceptedCharactersInternal.None);
+while(true);");
         }
 
         [Fact]
         public void ParseBlockSupportsRazorCommentBetweenDoAndWhileClause()
         {
             RunRazorCommentBetweenClausesTest(
-                "do { var foo = bar; } ", " while(true);",
-                acceptedCharacters: AcceptedCharactersInternal.None);
+                "do { var foo = bar; } ", " while(true);");
         }
 
         [Fact]
         public void ParseBlockCorrectlyParsesMarkupInDoWhileBlock()
         {
-            ParseBlockTest("@do { var foo = bar; <p>Foo</p> foo++; } while (foo<bar>);",
-                           new StatementBlock(
-                               Factory.CodeTransition(),
-                               Factory.Code("do { var foo = bar;").AsStatement(),
-                               new MarkupBlock(
-                                    Factory.Markup(" "),
-                                    BlockFactory.MarkupTagBlock("<p>", AcceptedCharactersInternal.None),
-                                    Factory.Markup("Foo"),
-                                    BlockFactory.MarkupTagBlock("</p>", AcceptedCharactersInternal.None),
-                                    Factory.Markup(" ").Accepts(AcceptedCharactersInternal.None)
-                                   ),
-                               Factory.Code("foo++; } while (foo<bar>);").AsStatement().Accepts(AcceptedCharactersInternal.None)
-                               ));
+            ParseBlockTest("@do { var foo = bar; <p>Foo</p> foo++; } while (foo<bar>);");
         }
 
         [Fact]
@@ -411,158 +329,113 @@ while(true);", BlockKindInternal.Statement, SpanKindInternal.Code, acceptedChara
         return;
     default:
         return;
-}", BlockKindInternal.Statement, SpanKindInternal.Code, acceptedCharacters: AcceptedCharactersInternal.None);
+}");
         }
 
         [Fact]
         public void ParseBlockSkipsParenthesisedExpressionAndThenBalancesBracesIfFirstIdentifierIsLockKeyword()
         {
             SingleSpanBlockTest(
-                "lock(foo) { Debug.WriteLine(@\"foo } bar\"); }",
-                BlockKindInternal.Statement,
-                SpanKindInternal.Code,
-                acceptedCharacters: AcceptedCharactersInternal.None);
+                "lock(foo) { Debug.WriteLine(@\"foo } bar\"); }");
         }
 
         [Fact]
         public void ParseBlockHasErrorsIfNamespaceImportMissingSemicolon()
         {
-            NamespaceImportTest(
-                "using Foo.Bar.Baz",
-                " Foo.Bar.Baz",
-                acceptedCharacters: AcceptedCharactersInternal.NonWhiteSpace | AcceptedCharactersInternal.WhiteSpace,
-                location: new SourceLocation(17, 0, 17));
+            ParseBlockTest(
+                "using Foo.Bar.Baz");
         }
 
         [Fact]
         public void ParseBlockHasErrorsIfNamespaceAliasMissingSemicolon()
         {
-            NamespaceImportTest(
-                "using Foo.Bar.Baz = FooBarBaz",
-                " Foo.Bar.Baz = FooBarBaz",
-                acceptedCharacters: AcceptedCharactersInternal.NonWhiteSpace | AcceptedCharactersInternal.WhiteSpace,
-                location: new SourceLocation(29, 0, 29));
+            ParseBlockTest(
+                "using Foo.Bar.Baz = FooBarBaz");
         }
 
         [Fact]
         public void ParseBlockParsesNamespaceImportWithSemicolonForUsingKeywordIfIsInValidFormat()
         {
-            NamespaceImportTest(
-                "using Foo.Bar.Baz;",
-                " Foo.Bar.Baz",
-                AcceptedCharactersInternal.NonWhiteSpace | AcceptedCharactersInternal.WhiteSpace);
+            ParseBlockTest(
+                "using Foo.Bar.Baz;");
         }
 
         [Fact]
         public void ParseBlockDoesntCaptureWhitespaceAfterUsing()
         {
-            ParseBlockTest("using Foo   ",
-                           new DirectiveBlock(
-                               Factory.Code("using Foo")
-                                   .AsNamespaceImport(" Foo")
-                                   .Accepts(AcceptedCharactersInternal.NonWhiteSpace | AcceptedCharactersInternal.WhiteSpace)));
+            ParseBlockTest("using Foo   ");
         }
 
         [Fact]
         public void ParseBlockCapturesNewlineAfterUsing()
         {
-            ParseBlockTest($"using Foo{Environment.NewLine}",
-                           new DirectiveBlock(
-                               Factory.Code($"using Foo{Environment.NewLine}")
-                                   .AsNamespaceImport(" Foo")
-                                   .Accepts(AcceptedCharactersInternal.NonWhiteSpace | AcceptedCharactersInternal.WhiteSpace)));
+            ParseBlockTest($"using Foo{Environment.NewLine}");
         }
 
         [Fact]
         public void ParseBlockParsesNamespaceAliasWithSemicolonForUsingKeywordIfIsInValidFormat()
         {
-            NamespaceImportTest(
-                "using FooBarBaz = FooBarBaz;",
-                " FooBarBaz = FooBarBaz",
-                AcceptedCharactersInternal.NonWhiteSpace | AcceptedCharactersInternal.WhiteSpace);
+            ParseBlockTest(
+                "using FooBarBaz = FooBarBaz;");
         }
 
         [Fact]
         public void ParseBlockTerminatesUsingKeywordAtEOFAndOutputsFileCodeBlock()
         {
-            SingleSpanBlockTest("using                    ", BlockKindInternal.Statement, SpanKindInternal.Code);
+            SingleSpanBlockTest("using                    ");
         }
 
         [Fact]
         public void ParseBlockTerminatesSingleLineCommentAtEndOfFile()
         {
             const string document = "foreach(var f in Foo) { // foo bar baz";
-            SingleSpanBlockTest(
-                document,
-                document,
-                BlockKindInternal.Statement,
-                SpanKindInternal.Code,
-                RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
-                    new SourceSpan(SourceLocation.Zero, contentLength: 1), "foreach", "}", "{"));
+            SingleSpanBlockTest(document);
         }
 
         [Fact]
         public void ParseBlockTerminatesBlockCommentAtEndOfFile()
         {
             const string document = "foreach(var f in Foo) { /* foo bar baz";
-            SingleSpanBlockTest(
-                document,
-                document,
-                BlockKindInternal.Statement,
-                SpanKindInternal.Code,
-                RazorDiagnosticFactory.CreateParsing_BlockCommentNotTerminated(
-                    new SourceSpan(new SourceLocation(24, 0, 24), contentLength: 1)),
-                RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
-                    new SourceSpan(SourceLocation.Zero, contentLength: 1), "foreach", "}", "{"));
+            SingleSpanBlockTest(document);
         }
 
         [Fact]
         public void ParseBlockTerminatesSingleSlashAtEndOfFile()
         {
             const string document = "foreach(var f in Foo) { / foo bar baz";
-            SingleSpanBlockTest(
-                document,
-                document,
-                BlockKindInternal.Statement,
-                SpanKindInternal.Code,
-                RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
-                    new SourceSpan(SourceLocation.Zero, contentLength: 1), "foreach", "}", "{"));
+            SingleSpanBlockTest(document);
         }
 
         [Fact]
         public void ParseBlockSupportsBlockCommentBetweenTryAndFinallyClause()
         {
-            SingleSpanBlockTest("try { bar(); } /* Foo */ /* Bar */ finally { baz(); }", BlockKindInternal.Statement, SpanKindInternal.Code, acceptedCharacters: AcceptedCharactersInternal.None);
+            SingleSpanBlockTest("try { bar(); } /* Foo */ /* Bar */ finally { baz(); }");
         }
 
         [Fact]
         public void ParseBlockSupportsRazorCommentBetweenTryAndFinallyClause()
         {
-            RunRazorCommentBetweenClausesTest("try { bar(); } ", " finally { biz(); }", acceptedCharacters: AcceptedCharactersInternal.None);
+            RunRazorCommentBetweenClausesTest("try { bar(); } ", " finally { biz(); }");
         }
 
         [Fact]
         public void ParseBlockSupportsBlockCommentBetweenCatchAndFinallyClause()
         {
             SingleSpanBlockTest(
-                "try { bar(); } catch(bar) { baz(); } /* Foo */ /* Bar */ finally { biz(); }",
-                BlockKindInternal.Statement,
-                SpanKindInternal.Code,
-                acceptedCharacters: AcceptedCharactersInternal.None);
+                "try { bar(); } catch(bar) { baz(); } /* Foo */ /* Bar */ finally { biz(); }");
         }
 
         [Fact]
         public void ParseBlockSupportsRazorCommentBetweenCatchAndFinallyClause()
         {
             RunRazorCommentBetweenClausesTest(
-                "try { bar(); } catch(bar) { baz(); } ", " finally { biz(); }",
-                acceptedCharacters: AcceptedCharactersInternal.None);
+                "try { bar(); } catch(bar) { baz(); } ", " finally { biz(); }");
         }
 
         [Fact]
         public void ParseBlockSupportsBlockCommentBetweenTryAndCatchClause()
         {
-            SingleSpanBlockTest("try { bar(); } /* Foo */ /* Bar */ catch(bar) { baz(); }", BlockKindInternal.Statement, SpanKindInternal.Code);
+            SingleSpanBlockTest("try { bar(); } /* Foo */ /* Bar */ catch(bar) { baz(); }");
         }
 
         [Fact]
@@ -577,7 +450,7 @@ while(true);", BlockKindInternal.Statement, SpanKindInternal.Code, acceptedChara
             SingleSpanBlockTest(@"try { bar(); }
 // Foo
 // Bar
-finally { baz(); }", BlockKindInternal.Statement, SpanKindInternal.Code, acceptedCharacters: AcceptedCharactersInternal.None);
+finally { baz(); }");
         }
 
         [Fact]
@@ -586,7 +459,7 @@ finally { baz(); }", BlockKindInternal.Statement, SpanKindInternal.Code, accepte
             SingleSpanBlockTest(@"try { bar(); } catch(bar) { baz(); }
 // Foo
 // Bar
-finally { biz(); }", BlockKindInternal.Statement, SpanKindInternal.Code, acceptedCharacters: AcceptedCharactersInternal.None);
+finally { biz(); }");
         }
 
         [Fact]
@@ -595,13 +468,13 @@ finally { biz(); }", BlockKindInternal.Statement, SpanKindInternal.Code, accepte
             SingleSpanBlockTest(@"try { bar(); }
 // Foo
 // Bar
-catch(bar) { baz(); }", BlockKindInternal.Statement, SpanKindInternal.Code);
+catch(bar) { baz(); }");
         }
 
         [Fact]
         public void ParseBlockSupportsTryStatementWithNoAdditionalClauses()
         {
-            SingleSpanBlockTest("try { var foo = new { } }", BlockKindInternal.Statement, SpanKindInternal.Code);
+            SingleSpanBlockTest("try { var foo = new { } }");
         }
 
         [Fact]
@@ -610,20 +483,13 @@ catch(bar) { baz(); }", BlockKindInternal.Statement, SpanKindInternal.Code);
             RunSimpleWrappedMarkupTest(
                 prefix: "try {",
                 markup: " <p>Foo</p> ",
-                suffix: "}",
-                expectedStart: new SourceLocation(5, 0, 5),
-                expectedMarkup: new MarkupBlock(
-                    Factory.Markup(" "),
-                    BlockFactory.MarkupTagBlock("<p>", AcceptedCharactersInternal.None),
-                    Factory.Markup("Foo"),
-                    BlockFactory.MarkupTagBlock("</p>", AcceptedCharactersInternal.None),
-                    Factory.Markup(" ").Accepts(AcceptedCharactersInternal.None)));
+                suffix: "}");
         }
 
         [Fact]
         public void ParseBlockSupportsTryStatementWithOneCatchClause()
         {
-            SingleSpanBlockTest("try { var foo = new { } } catch(Foo Bar Baz) { var foo = new { } }", BlockKindInternal.Statement, SpanKindInternal.Code);
+            SingleSpanBlockTest("try { var foo = new { } } catch(Foo Bar Baz) { var foo = new { } }");
         }
 
         [Fact]
@@ -632,14 +498,7 @@ catch(bar) { baz(); }", BlockKindInternal.Statement, SpanKindInternal.Code);
             RunSimpleWrappedMarkupTest(
                 prefix: "try { var foo = new { } } catch(Foo Bar Baz) {",
                 markup: " <p>Foo</p> ",
-                suffix: "}",
-                expectedStart: new SourceLocation(46, 0, 46),
-                expectedMarkup: new MarkupBlock(
-                    Factory.Markup(" "),
-                    BlockFactory.MarkupTagBlock("<p>", AcceptedCharactersInternal.None),
-                    Factory.Markup("Foo"),
-                    BlockFactory.MarkupTagBlock("</p>", AcceptedCharactersInternal.None),
-                    Factory.Markup(" ").Accepts(AcceptedCharactersInternal.None)));
+                suffix: "}");
         }
 
         [Fact]
@@ -647,15 +506,13 @@ catch(bar) { baz(); }", BlockKindInternal.Statement, SpanKindInternal.Code);
         {
             SingleSpanBlockTest(
                 "try { var foo = new { } } catch(Foo Bar Baz) { var foo = new { } } catch(Foo Bar Baz) " +
-                "{ var foo = new { } } catch(Foo Bar Baz) { var foo = new { } }",
-                BlockKindInternal.Statement,
-                SpanKindInternal.Code);
+                "{ var foo = new { } } catch(Foo Bar Baz) { var foo = new { } }");
         }
 
         [Fact]
         public void ParseBlockSupportsExceptionLessCatchClauses()
         {
-            SingleSpanBlockTest("try { var foo = new { } } catch { var foo = new { } }", BlockKindInternal.Statement, SpanKindInternal.Code);
+            SingleSpanBlockTest("try { var foo = new { } } catch { var foo = new { } }");
         }
 
         [Fact]
@@ -665,20 +522,13 @@ catch(bar) { baz(); }", BlockKindInternal.Statement, SpanKindInternal.Code);
                 prefix: "try { var foo = new { } } catch(Foo Bar Baz) { var foo = new { } } catch(Foo Bar Baz) " +
                 "{ var foo = new { } } catch(Foo Bar Baz) {",
                 markup: " <p>Foo</p> ",
-                suffix: "}",
-                expectedStart: new SourceLocation(128, 0, 128),
-                expectedMarkup: new MarkupBlock(
-                    Factory.Markup(" "),
-                    BlockFactory.MarkupTagBlock("<p>", AcceptedCharactersInternal.None),
-                    Factory.Markup("Foo"),
-                    BlockFactory.MarkupTagBlock("</p>", AcceptedCharactersInternal.None),
-                    Factory.Markup(" ").Accepts(AcceptedCharactersInternal.None)));
+                suffix: "}");
         }
 
         [Fact]
         public void ParseBlockSupportsTryStatementWithFinallyClause()
         {
-            SingleSpanBlockTest("try { var foo = new { } } finally { var foo = new { } }", BlockKindInternal.Statement, SpanKindInternal.Code, acceptedCharacters: AcceptedCharactersInternal.None);
+            SingleSpanBlockTest("try { var foo = new { } } finally { var foo = new { } }");
         }
 
         [Fact]
@@ -687,113 +537,63 @@ catch(bar) { baz(); }", BlockKindInternal.Statement, SpanKindInternal.Code);
             RunSimpleWrappedMarkupTest(
                 prefix: "try { var foo = new { } } finally {",
                 markup: " <p>Foo</p> ",
-                suffix: "}",
-                expectedStart: new SourceLocation(35, 0, 35),
-                expectedMarkup: new MarkupBlock(
-                    Factory.Markup(" "),
-                    BlockFactory.MarkupTagBlock("<p>", AcceptedCharactersInternal.None),
-                    Factory.Markup("Foo"),
-                    BlockFactory.MarkupTagBlock("</p>", AcceptedCharactersInternal.None),
-                    Factory.Markup(" ").Accepts(AcceptedCharactersInternal.None)),
-                acceptedCharacters: AcceptedCharactersInternal.None);
+                suffix: "}");
         }
 
         [Fact]
         public void ParseBlockStopsParsingCatchClausesAfterFinallyBlock()
         {
-            var expectedContent = "try { var foo = new { } } finally { var foo = new { } }";
-            SingleSpanBlockTest(expectedContent + " catch(Foo Bar Baz) { }", expectedContent, BlockKindInternal.Statement, SpanKindInternal.Code, acceptedCharacters: AcceptedCharactersInternal.None);
+            var content = "try { var foo = new { } } finally { var foo = new { } }";
+            SingleSpanBlockTest(content + " catch(Foo Bar Baz) { }");
         }
 
         [Fact]
         public void ParseBlockDoesNotAllowMultipleFinallyBlocks()
         {
-            var expectedContent = "try { var foo = new { } } finally { var foo = new { } }";
-            SingleSpanBlockTest(expectedContent + " finally { }", expectedContent, BlockKindInternal.Statement, SpanKindInternal.Code, acceptedCharacters: AcceptedCharactersInternal.None);
+            var content = "try { var foo = new { } } finally { var foo = new { } }";
+            SingleSpanBlockTest(content + " finally { }");
         }
 
         [Fact]
         public void ParseBlockAcceptsTrailingDotIntoImplicitExpressionWhenEmbeddedInCode()
         {
             // Arrange
-            ParseBlockTest(@"if(foo) { @foo. }",
-                           new StatementBlock(
-                               Factory.Code("if(foo) { ").AsStatement(),
-                               new ExpressionBlock(
-                                   Factory.CodeTransition(),
-                                   Factory.Code("foo.")
-                                       .AsImplicitExpression(CSharpCodeParser.DefaultKeywords, acceptTrailingDot: true)
-                                       .Accepts(AcceptedCharactersInternal.NonWhiteSpace)
-                                   ),
-                               Factory.Code(" }").AsStatement()
-                               ));
+            ParseBlockTest(@"if(foo) { @foo. }");
         }
 
         [Fact]
         public void ParseBlockParsesExpressionOnSwitchCharacterFollowedByOpenParen()
         {
             // Arrange
-            ParseBlockTest(@"if(foo) { @(foo + bar) }",
-                           new StatementBlock(
-                               Factory.Code("if(foo) { ").AsStatement(),
-                               new ExpressionBlock(
-                                   Factory.CodeTransition(),
-                                   Factory.MetaCode("(").Accepts(AcceptedCharactersInternal.None),
-                                   Factory.Code("foo + bar").AsExpression(),
-                                   Factory.MetaCode(")").Accepts(AcceptedCharactersInternal.None)
-                                   ),
-                               Factory.Code(" }").AsStatement()
-                               ));
+            ParseBlockTest(@"if(foo) { @(foo + bar) }");
         }
 
         [Fact]
         public void ParseBlockParsesExpressionOnSwitchCharacterFollowedByIdentifierStart()
         {
             // Arrange
-            ParseBlockTest(@"if(foo) { @foo[4].bar() }",
-                           new StatementBlock(
-                               Factory.Code("if(foo) { ").AsStatement(),
-                               new ExpressionBlock(
-                                   Factory.CodeTransition(),
-                                   Factory.Code("foo[4].bar()")
-                                       .AsImplicitExpression(CSharpCodeParser.DefaultKeywords, acceptTrailingDot: true)
-                                       .Accepts(AcceptedCharactersInternal.NonWhiteSpace)
-                                   ),
-                               Factory.Code(" }").AsStatement()
-                               ));
+            ParseBlockTest(@"if(foo) { @foo[4].bar() }");
         }
 
         [Fact]
         public void ParseBlockTreatsDoubleAtSignAsEscapeSequenceIfAtStatementStart()
         {
             // Arrange
-            ParseBlockTest(@"if(foo) { @@class.Foo() }",
-                           new StatementBlock(
-                               Factory.Code("if(foo) { ").AsStatement(),
-                               Factory.Code("@").Hidden(),
-                               Factory.Code("@class.Foo() }").AsStatement()
-                               ));
+            ParseBlockTest(@"if(foo) { @@class.Foo() }");
         }
 
         [Fact]
         public void ParseBlockTreatsAtSignsAfterFirstPairAsPartOfCSharpStatement()
         {
             // Arrange
-            ParseBlockTest(@"if(foo) { @@@@class.Foo() }",
-                           new StatementBlock(
-                               Factory.Code("if(foo) { ").AsStatement(),
-                               Factory.Code("@").Hidden(),
-                               Factory.Code("@@@class.Foo() }").AsStatement()
-                               ));
+            ParseBlockTest(@"if(foo) { @@@@class.Foo() }");
         }
 
         [Fact]
         public void ParseBlockDoesNotParseMarkupStatementOrExpressionOnSwitchCharacterNotFollowedByOpenAngleOrColon()
         {
             // Arrange
-            ParseBlockTest("if(foo) { @\"Foo\".ToString(); }",
-                           new StatementBlock(
-                               Factory.Code("if(foo) { @\"Foo\".ToString(); }").AsStatement()));
+            ParseBlockTest("if(foo) { @\"Foo\".ToString(); }");
         }
 
         [Fact]
@@ -809,448 +609,78 @@ catch(bar) { baz(); }", BlockKindInternal.Statement, SpanKindInternal.Code);
                          + "                    }" + Environment.NewLine
                          + "                </ul>" + Environment.NewLine
                          + "            </div>" + Environment.NewLine
-                         + "        }",
-                new StatementBlock(
-                    Factory.Code("foreach(var c in db.Categories) {" + Environment.NewLine).AsStatement(),
-                    new MarkupBlock(
-                        Factory.Markup("            "),
-                        BlockFactory.MarkupTagBlock("<div>", AcceptedCharactersInternal.None),
-                        Factory.Markup(Environment.NewLine + "                "),
-                        BlockFactory.MarkupTagBlock("<h1>", AcceptedCharactersInternal.None),
-                        Factory.EmptyHtml(),
-                        new ExpressionBlock(
-                            Factory.CodeTransition(),
-                            Factory.Code("c.Name")
-                                   .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                                   .Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
-                        BlockFactory.MarkupTagBlock("</h1>", AcceptedCharactersInternal.None),
-                        Factory.Markup(Environment.NewLine + "                "),
-                        BlockFactory.MarkupTagBlock("<ul>", AcceptedCharactersInternal.None),
-                        Factory.Markup(Environment.NewLine),
-                        new StatementBlock(
-                            Factory.Code(@"                    ").AsStatement(),
-                            Factory.CodeTransition(),
-                            Factory.Code("foreach(var p in c.Products) {" + Environment.NewLine).AsStatement(),
-                            new MarkupBlock(
-                                Factory.Markup("                        "),
-                                BlockFactory.MarkupTagBlock("<li>", AcceptedCharactersInternal.None),
-                                new MarkupTagBlock(
-                                    Factory.Markup("<a"),
-                                    new MarkupBlock(
-                                        new AttributeBlockChunkGenerator(
-                                            "href",
-                                            new LocationTagged<string>(" href=\"", 183 + Environment.NewLine.Length * 5, 5, 30),
-                                            new LocationTagged<string>("\"", 246 + Environment.NewLine.Length * 5, 5, 93)),
-                                        Factory.Markup(" href=\"").With(SpanChunkGenerator.Null),
-                                        new MarkupBlock(
-                                            new DynamicAttributeBlockChunkGenerator(
-                                                new LocationTagged<string>(string.Empty, 190 + Environment.NewLine.Length * 5, 5, 37), 190 + Environment.NewLine.Length * 5, 5, 37),
-                                            new ExpressionBlock(
-                                                Factory.CodeTransition(),
-                                                Factory.Code("Html.ActionUrl(\"Products\", \"Detail\", new { id = p.Id })")
-                                                       .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                                                       .Accepts(AcceptedCharactersInternal.NonWhiteSpace))),
-                                        Factory.Markup("\"").With(SpanChunkGenerator.Null)),
-                                    Factory.Markup(">").Accepts(AcceptedCharactersInternal.None)),
-                                Factory.EmptyHtml(),
-                                new ExpressionBlock(
-                                    Factory.CodeTransition(),
-                                    Factory.Code("p.Name")
-                                           .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                                           .Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
-                                BlockFactory.MarkupTagBlock("</a>", AcceptedCharactersInternal.None),
-                                BlockFactory.MarkupTagBlock("</li>", AcceptedCharactersInternal.None),
-                                Factory.Markup(Environment.NewLine).Accepts(AcceptedCharactersInternal.None)),
-                            Factory.Code("                    }" + Environment.NewLine).AsStatement().Accepts(AcceptedCharactersInternal.None)),
-                        Factory.Markup("                "),
-                        BlockFactory.MarkupTagBlock("</ul>", AcceptedCharactersInternal.None),
-                        Factory.Markup(Environment.NewLine + "            "),
-                        BlockFactory.MarkupTagBlock("</div>", AcceptedCharactersInternal.None),
-                        Factory.Markup(Environment.NewLine).Accepts(AcceptedCharactersInternal.None)),
-                    Factory.Code("        }").AsStatement().Accepts(AcceptedCharactersInternal.None)));
+                         + "        }");
         }
 
-        public static TheoryData BlockWithEscapedTransitionData
+        [Fact]
+        public void ParseBlock_WithDoubleTransitionInAttributeValue_DoesNotThrow()
         {
-            get
-            {
-                var factory = new SpanFactory();
-                var datetimeBlock = new ExpressionBlock(
-                    factory.CodeTransition(),
-                    factory.Code("DateTime.Now")
-                        .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                        .Accepts(AcceptedCharactersInternal.NonWhiteSpace));
-
-                return new TheoryData<string, Block>
-                {
-                    {
-                        // Double transition in attribute value
-                        "{<span foo='@@' />}",
-                        CreateStatementBlock(
-                            new MarkupBlock(
-                                new MarkupTagBlock(
-                                    factory.Markup("<span"),
-                                    new MarkupBlock(
-                                        new AttributeBlockChunkGenerator("foo", new LocationTagged<string>(" foo='", 6, 0, 6), new LocationTagged<string>("'", 14, 0, 14)),
-                                        factory.Markup(" foo='").With(SpanChunkGenerator.Null),
-                                        new MarkupBlock(
-                                            factory.Markup("@").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 12, 0, 12), new LocationTagged<string>("@", 12, 0, 12))).Accepts(AcceptedCharactersInternal.None),
-                                            factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharactersInternal.None)),
-                                        factory.Markup("'").With(SpanChunkGenerator.Null)),
-                                    factory.Markup(" />").Accepts(AcceptedCharactersInternal.None))))
-                    },
-                    {
-                        // Double transition at the end of attribute value
-                        "{<span foo='abc@@' />}",
-                        CreateStatementBlock(
-                            new MarkupBlock(
-                                new MarkupTagBlock(
-                                    factory.Markup("<span"),
-                                    new MarkupBlock(
-                                        new AttributeBlockChunkGenerator("foo", new LocationTagged<string>(" foo='", 6, 0, 6), new LocationTagged<string>("'", 17, 0, 17)),
-                                        factory.Markup(" foo='").With(SpanChunkGenerator.Null),
-                                        factory.Markup("abc").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 12, 0, 12), new LocationTagged<string>("abc", 12, 0, 12))),
-                                        new MarkupBlock(
-                                            factory.Markup("@").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 15, 0, 15), new LocationTagged<string>("@", 15, 0, 15))).Accepts(AcceptedCharactersInternal.None),
-                                            factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharactersInternal.None)),
-                                        factory.Markup("'").With(SpanChunkGenerator.Null)),
-                                factory.Markup(" />").Accepts(AcceptedCharactersInternal.None))))
-                    },
-                    {
-                        // Double transition at the beginning attribute value
-                        "{<span foo='@@def' />}",
-                        CreateStatementBlock(
-                            new MarkupBlock(
-                                new MarkupTagBlock(
-                                    factory.Markup("<span"),
-                                    new MarkupBlock(
-                                        new AttributeBlockChunkGenerator("foo", new LocationTagged<string>(" foo='", 6, 0, 6), new LocationTagged<string>("'", 17, 0, 17)),
-                                        factory.Markup(" foo='").With(SpanChunkGenerator.Null),
-                                        new MarkupBlock(
-                                            factory.Markup("@").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 12, 0, 12), new LocationTagged<string>("@", 12, 0, 12))).Accepts(AcceptedCharactersInternal.None),
-                                            factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharactersInternal.None)),
-                                        factory.Markup("def").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 14, 0, 14), new LocationTagged<string>("def", 14, 0, 14))),
-                                        factory.Markup("'").With(SpanChunkGenerator.Null)),
-                                factory.Markup(" />").Accepts(AcceptedCharactersInternal.None))))
-                    },
-                    {
-                        // Double transition in between attribute value
-                        "{<span foo='abc @@ def' />}",
-                        CreateStatementBlock(
-                            new MarkupBlock(
-                                new MarkupTagBlock(
-                                    factory.Markup("<span"),
-                                    new MarkupBlock(
-                                        new AttributeBlockChunkGenerator("foo", new LocationTagged<string>(" foo='", 6, 0, 6), new LocationTagged<string>("'", 22, 0, 22)),
-                                        factory.Markup(" foo='").With(SpanChunkGenerator.Null),
-                                        factory.Markup("abc").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 12, 0, 12), new LocationTagged<string>("abc", 12, 0, 12))),
-                                        new MarkupBlock(
-                                            factory.Markup(" @").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(" ", 15, 0, 15), new LocationTagged<string>("@", 16, 0, 16))).Accepts(AcceptedCharactersInternal.None),
-                                            factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharactersInternal.None)),
-                                        factory.Markup(" def").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(" ", 18, 0, 18), new LocationTagged<string>("def", 19, 0, 19))),
-                                        factory.Markup("'").With(SpanChunkGenerator.Null)),
-                                factory.Markup(" />").Accepts(AcceptedCharactersInternal.None))))
-                    },
-                    {
-                        // Double transition with expression block
-                        "{<span foo='@@@DateTime.Now' />}",
-                        CreateStatementBlock(
-                            new MarkupBlock(
-                                new MarkupTagBlock(
-                                    factory.Markup("<span"),
-                                    new MarkupBlock(
-                                        new AttributeBlockChunkGenerator("foo", new LocationTagged<string>(" foo='", 6, 0, 6), new LocationTagged<string>("'", 27, 0, 27)),
-                                        factory.Markup(" foo='").With(SpanChunkGenerator.Null),
-                                        new MarkupBlock(
-                                            factory.Markup("@").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 12, 0, 12), new LocationTagged<string>("@", 12, 0, 12))).Accepts(AcceptedCharactersInternal.None),
-                                            factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharactersInternal.None)),
-                                        new MarkupBlock(
-                                            new DynamicAttributeBlockChunkGenerator(new LocationTagged<string>(string.Empty, 14, 0, 14), 14, 0, 14),
-                                            factory.EmptyHtml().With(SpanChunkGenerator.Null),
-                                            datetimeBlock),
-                                        factory.Markup("'").With(SpanChunkGenerator.Null)),
-                                factory.Markup(" />").Accepts(AcceptedCharactersInternal.None))))
-                    },
-                    {
-                        "{<span foo='@DateTime.Now @@' />}",
-                        CreateStatementBlock(
-                            new MarkupBlock(
-                                new MarkupTagBlock(
-                                    factory.Markup("<span"),
-                                    new MarkupBlock(
-                                        new AttributeBlockChunkGenerator("foo", new LocationTagged<string>(" foo='", 6, 0, 6), new LocationTagged<string>("'", 28, 0, 28)),
-                                        factory.Markup(" foo='").With(SpanChunkGenerator.Null),
-                                        new MarkupBlock(
-                                            new DynamicAttributeBlockChunkGenerator(new LocationTagged<string>(string.Empty, 12, 0, 12), 12, 0, 12),
-                                            datetimeBlock),
-                                        new MarkupBlock(
-                                            factory.Markup(" @").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(" ", 25, 0, 25), new LocationTagged<string>("@", 26, 0, 26))).Accepts(AcceptedCharactersInternal.None),
-                                            factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharactersInternal.None)),
-                                        factory.Markup("'").With(SpanChunkGenerator.Null)),
-                                factory.Markup(" />").Accepts(AcceptedCharactersInternal.None))))
-                    },
-                    {
-                        "{<span foo='@DateTime.Now@@' />}",
-                        CreateStatementBlock(
-                            new MarkupBlock(
-                                new MarkupTagBlock(
-                                    factory.Markup("<span"),
-                                    new MarkupBlock(
-                                        new AttributeBlockChunkGenerator("foo", new LocationTagged<string>(" foo='", 6, 0, 6), new LocationTagged<string>("'", 27, 0, 27)),
-                                        factory.Markup(" foo='").With(SpanChunkGenerator.Null),
-                                        new MarkupBlock(
-                                            new DynamicAttributeBlockChunkGenerator(new LocationTagged<string>(string.Empty, 12, 0, 12), 12, 0, 12),
-                                            datetimeBlock),
-                                        new MarkupBlock(
-                                            factory.Markup("@").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 25, 0, 25), new LocationTagged<string>("@", 25, 0, 25))).Accepts(AcceptedCharactersInternal.None),
-                                            factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharactersInternal.None)),
-                                        factory.Markup("'").With(SpanChunkGenerator.Null)),
-                                factory.Markup(" />").Accepts(AcceptedCharactersInternal.None))))
-                    },
-                    {
-                        "{<span foo='@(2+3)@@@DateTime.Now' />}",
-                        CreateStatementBlock(
-                            new MarkupBlock(
-                                new MarkupTagBlock(
-                                    factory.Markup("<span"),
-                                    new MarkupBlock(
-                                        new AttributeBlockChunkGenerator("foo", new LocationTagged<string>(" foo='", 6, 0, 6), new LocationTagged<string>("'", 33, 0, 33)),
-                                        factory.Markup(" foo='").With(SpanChunkGenerator.Null),
-                                        new MarkupBlock(
-                                            new DynamicAttributeBlockChunkGenerator(new LocationTagged<string>(string.Empty, 12, 0, 12), 12, 0, 12),
-                                            new ExpressionBlock(
-                                                factory.CodeTransition(),
-                                                factory.MetaCode("(").With(SpanChunkGenerator.Null).Accepts(AcceptedCharactersInternal.None),
-                                                factory.Code("2+3").AsExpression(),
-                                                factory.MetaCode(")").With(SpanChunkGenerator.Null).Accepts(AcceptedCharactersInternal.None))),
-                                        new MarkupBlock(
-                                            factory.Markup("@").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 18, 0, 18), new LocationTagged<string>("@", 18, 0, 18))).Accepts(AcceptedCharactersInternal.None),
-                                            factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharactersInternal.None)),
-                                        new MarkupBlock(
-                                            new DynamicAttributeBlockChunkGenerator(new LocationTagged<string>(string.Empty, 20, 0, 20), 20, 0, 20),
-                                            factory.EmptyHtml().With(SpanChunkGenerator.Null),
-                                            datetimeBlock),
-                                        factory.Markup("'").With(SpanChunkGenerator.Null)),
-                                factory.Markup(" />").Accepts(AcceptedCharactersInternal.None))))
-                    },
-                    {
-                        "{<span foo='@@@(2+3)' />}",
-                        CreateStatementBlock(
-                            new MarkupBlock(
-                                new MarkupTagBlock(
-                                    factory.Markup("<span"),
-                                    new MarkupBlock(
-                                        new AttributeBlockChunkGenerator("foo", new LocationTagged<string>(" foo='", 6, 0, 6), new LocationTagged<string>("'", 20, 0, 20)),
-                                        factory.Markup(" foo='").With(SpanChunkGenerator.Null),
-                                        new MarkupBlock(
-                                            factory.Markup("@").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 12, 0, 12), new LocationTagged<string>("@", 12, 0, 12))).Accepts(AcceptedCharactersInternal.None),
-                                            factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharactersInternal.None)),
-                                        new MarkupBlock(
-                                            new DynamicAttributeBlockChunkGenerator(new LocationTagged<string>(string.Empty, 14, 0, 14), 14, 0, 14),
-                                            factory.EmptyHtml().With(SpanChunkGenerator.Null),
-                                            new ExpressionBlock(
-                                                factory.CodeTransition(),
-                                                factory.MetaCode("(").With(SpanChunkGenerator.Null).Accepts(AcceptedCharactersInternal.None),
-                                                factory.Code("2+3").AsExpression(),
-                                                factory.MetaCode(")").With(SpanChunkGenerator.Null).Accepts(AcceptedCharactersInternal.None))),
-                                        factory.Markup("'").With(SpanChunkGenerator.Null)),
-                                factory.Markup(" />").Accepts(AcceptedCharactersInternal.None))))
-                    },
-                    {
-                        // Double transition with email in attribute value
-                        "{<span foo='abc@def.com @@' />}",
-                        CreateStatementBlock(
-                            new MarkupBlock(
-                                new MarkupTagBlock(
-                                    factory.Markup("<span"),
-                                    new MarkupBlock(
-                                        new AttributeBlockChunkGenerator("foo", new LocationTagged<string>(" foo='", 6, 0, 6), new LocationTagged<string>("'", 26, 0, 26)),
-                                        factory.Markup(" foo='").With(SpanChunkGenerator.Null),
-                                        factory.Markup("abc@def.com").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 12, 0, 12), new LocationTagged<string>("abc@def.com", 12, 0, 12))),
-                                        new MarkupBlock(
-                                            factory.Markup(" @").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(" ", 23, 0, 23), new LocationTagged<string>("@", 24, 0, 24))).Accepts(AcceptedCharactersInternal.None),
-                                            factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharactersInternal.None)),
-                                        factory.Markup("'").With(SpanChunkGenerator.Null)),
-                                factory.Markup(" />").Accepts(AcceptedCharactersInternal.None))))
-                    },
-                    {
-                        "{<span foo='abc@@def.com @@' />}",
-                        CreateStatementBlock(
-                            new MarkupBlock(
-                                new MarkupTagBlock(
-                                    factory.Markup("<span"),
-                                    new MarkupBlock(
-                                        new AttributeBlockChunkGenerator("foo", new LocationTagged<string>(" foo='", 6, 0, 6), new LocationTagged<string>("'", 27, 0, 27)),
-                                        factory.Markup(" foo='").With(SpanChunkGenerator.Null),
-                                        factory.Markup("abc").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 12, 0, 12), new LocationTagged<string>("abc", 12, 0, 12))),
-                                        new MarkupBlock(
-                                            factory.Markup("@").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 15, 0, 15), new LocationTagged<string>("@", 15, 0, 15))).Accepts(AcceptedCharactersInternal.None),
-                                            factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharactersInternal.None)),
-                                        factory.Markup("def.com").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 17, 0, 17), new LocationTagged<string>("def.com", 17, 0, 17))),
-                                        new MarkupBlock(
-                                            factory.Markup(" @").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(" ", 24, 0, 24), new LocationTagged<string>("@", 25, 0, 25))).Accepts(AcceptedCharactersInternal.None),
-                                            factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharactersInternal.None)),
-                                        factory.Markup("'").With(SpanChunkGenerator.Null)),
-                                factory.Markup(" />").Accepts(AcceptedCharactersInternal.None))))
-                    },
-                    {
-                        // Double transition in complex regex in attribute value
-                        @"{<span foo=""/^[a-z0-9!#$%&'*+\/=?^_`{|}~.-]+@@[a-z0-9]([a-z0-9-]*[a-z0-9])?\.([a-z0-9]([a-z0-9-]*[a-z0-9])?)*$/i"" />}",
-                        CreateStatementBlock(
-                            new MarkupBlock(
-                                new MarkupTagBlock(
-                                    factory.Markup("<span"),
-                                    new MarkupBlock(
-                                        new AttributeBlockChunkGenerator("foo", new LocationTagged<string>(" foo=\"", 6, 0, 6), new LocationTagged<string>("\"", 112, 0, 112)),
-                                        factory.Markup(" foo=\"").With(SpanChunkGenerator.Null),
-                                        factory.Markup(@"/^[a-z0-9!#$%&'*+\/=?^_`{|}~.-]+").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 12, 0, 12), new LocationTagged<string>(@"/^[a-z0-9!#$%&'*+\/=?^_`{|}~.-]+", 12, 0, 12))),
-                                        new MarkupBlock(
-                                            factory.Markup("@").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 44, 0, 44), new LocationTagged<string>("@", 44, 0, 44))).Accepts(AcceptedCharactersInternal.None),
-                                            factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharactersInternal.None)),
-                                        factory.Markup(@"[a-z0-9]([a-z0-9-]*[a-z0-9])?\.([a-z0-9]([a-z0-9-]*[a-z0-9])?)*$/i").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 46, 0, 46), new LocationTagged<string>(@"[a-z0-9]([a-z0-9-]*[a-z0-9])?\.([a-z0-9]([a-z0-9-]*[a-z0-9])?)*$/i", 46, 0, 46))),
-                                        factory.Markup("\"").With(SpanChunkGenerator.Null)),
-                                factory.Markup(" />").Accepts(AcceptedCharactersInternal.None))))
-                    },
-                };
-            }
+            var input = "{<span foo='@@' />}";
+            ParseBlockTest(input);
         }
 
-        [Theory]
-        [MemberData(nameof(BlockWithEscapedTransitionData))]
-        public void ParseBlock_WithDoubleTransition_DoesNotThrow(string input, object expected)
+        [Fact]
+        public void ParseBlock_WithDoubleTransitionAtEndOfAttributeValue_DoesNotThrow()
         {
-            FixupSpans = true;
+            var input = "{<span foo='abc@@' />}";
+            ParseBlockTest(input);
+        }
 
-            // Act & Assert
-            ParseBlockTest(input, (Block)expected);
+        [Fact]
+        public void ParseBlock_WithDoubleTransitionAtBeginningOfAttributeValue_DoesNotThrow()
+        {
+            var input = "{<span foo='@@def' />}";
+            ParseBlockTest(input);
+        }
+
+        [Fact]
+        public void ParseBlock_WithDoubleTransitionBetweenAttributeValue_DoesNotThrow()
+        {
+            var input = "{<span foo='abc @@ def' />}";
+            ParseBlockTest(input);
+        }
+
+        [Fact]
+        public void ParseBlock_WithDoubleTransitionWithExpressionBlock_DoesNotThrow()
+        {
+            var input = "{<span foo='@@@(2+3)' bar='@(2+3)@@@DateTime.Now' baz='@DateTime.Now@@' bat='@DateTime.Now @@' zoo='@@@DateTime.Now' />}";
+            ParseBlockTest(input);
+        }
+
+        [Fact]
+        public void ParseBlock_WithDoubleTransitionInEmail_DoesNotThrow()
+        {
+            var input = "{<span foo='abc@def.com abc@@def.com @@' />}";
+            ParseBlockTest(input);
+        }
+
+        [Fact]
+        public void ParseBlock_WithDoubleTransitionInRegex_DoesNotThrow()
+        {
+            var input = @"{<span foo=""/^[a-z0-9!#$%&'*+\/=?^_`{|}~.-]+@@[a-z0-9]([a-z0-9-]*[a-z0-9])?\.([a-z0-9]([a-z0-9-]*[a-z0-9])?)*$/i"" />}";
+            ParseBlockTest(input);
         }
 
         [Fact]
         public void ParseBlock_WithDoubleTransition_EndOfFile_Throws()
         {
-            // Arrange
-            var expected = new StatementBlock(
-                Factory.MetaCode("{").Accepts(AcceptedCharactersInternal.None),
-                new MarkupBlock(
-                    new MarkupTagBlock(
-                        Factory.Markup("<span"),
-                        new MarkupBlock(
-                        new AttributeBlockChunkGenerator("foo", new LocationTagged<string>(" foo='", 6, 0, 6), new LocationTagged<string>(string.Empty, 14, 0, 14)),
-                        Factory.Markup(" foo='").With(SpanChunkGenerator.Null),
-                        new MarkupBlock(
-                            Factory.Markup("@").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 12, 0, 12), new LocationTagged<string>("@", 12, 0, 12))).Accepts(AcceptedCharactersInternal.None),
-                            Factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharactersInternal.None)))),
-                Factory.EmptyHtml()));
-            var expectedErrors = new RazorDiagnostic[]
-            {
-                RazorDiagnosticFactory.CreateParsing_UnfinishedTag(
-                    new SourceSpan(new SourceLocation(2, 0, 2), contentLength: 4), "span"),
-                RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
-                    new SourceSpan(SourceLocation.Zero, contentLength: 1), Resources.BlockName_Code, "}", "{"),
-            };
-
-            // Act & Assert
-            ParseBlockTest("{<span foo='@@", expected, expectedErrors);
+            ParseBlockTest("{<span foo='@@");
         }
 
         [Fact]
         public void ParseBlock_WithUnexpectedTransitionsInAttributeValue_Throws()
         {
-            // Arrange
-            var expected = new StatementBlock(
-                Factory.MetaCode("{").Accepts(AcceptedCharactersInternal.None),
-                new MarkupBlock(
-                    new MarkupTagBlock(
-                        Factory.Markup("<span"),
-                        new MarkupBlock(
-                        new AttributeBlockChunkGenerator("foo", new LocationTagged<string>(" foo='", 6, 0, 6), new LocationTagged<string>("'", 15, 0, 15)),
-                        Factory.Markup(" foo='").With(SpanChunkGenerator.Null),
-                        new MarkupBlock(
-                            new DynamicAttributeBlockChunkGenerator(new LocationTagged<string>(string.Empty, 12, 0, 12), 12, 0, 12),
-                            new ExpressionBlock(
-                                Factory.CodeTransition(),
-                                Factory.EmptyCSharp().AsImplicitExpression(CSharpCodeParser.DefaultKeywords).Accepts(AcceptedCharactersInternal.NonWhiteSpace))),
-                        new MarkupBlock(
-                            new DynamicAttributeBlockChunkGenerator(new LocationTagged<string>(" ", 13, 0, 13), 13, 0, 13),
-                            Factory.Markup(" ").With(SpanChunkGenerator.Null),
-                            new ExpressionBlock(
-                                Factory.CodeTransition(),
-                                Factory.EmptyCSharp().AsImplicitExpression(CSharpCodeParser.DefaultKeywords).Accepts(AcceptedCharactersInternal.NonWhiteSpace))),
-                        Factory.Markup("'").With(SpanChunkGenerator.Null)),
-                    Factory.Markup(" />").Accepts(AcceptedCharactersInternal.None))),
-                Factory.EmptyCSharp().AsStatement(),
-                Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None));
-            var expectedErrors = new RazorDiagnostic[]
-            {
-                RazorDiagnosticFactory.CreateParsing_UnexpectedWhiteSpaceAtStartOfCodeBlock(
-                    new SourceSpan(new SourceLocation(13, 0, 13), contentLength: 1)),
-                RazorDiagnosticFactory.CreateParsing_UnexpectedCharacterAtStartOfCodeBlock(
-                    new SourceSpan(new SourceLocation(15, 0, 15), contentLength: 5),
-                    "' />}"),
-            };
-
-            // Act & Assert
-            ParseBlockTest("{<span foo='@ @' />}", expected, expectedErrors);
+            ParseBlockTest("{<span foo='@ @' />}");
         }
 
         private void RunRazorCommentBetweenClausesTest(string preComment, string postComment, AcceptedCharactersInternal acceptedCharacters = AcceptedCharactersInternal.Any)
         {
-            ParseBlockTest(preComment + "@* Foo *@ @* Bar *@" + postComment,
-                           new StatementBlock(
-                               Factory.Code(preComment).AsStatement(),
-                               new CommentBlock(
-                                   Factory.CodeTransition(CSharpSymbolType.RazorCommentTransition),
-                                   Factory.MetaCode("*", CSharpSymbolType.RazorCommentStar).Accepts(AcceptedCharactersInternal.None),
-                                   Factory.Comment(" Foo ", CSharpSymbolType.RazorComment),
-                                   Factory.MetaCode("*", CSharpSymbolType.RazorCommentStar).Accepts(AcceptedCharactersInternal.None),
-                                   Factory.CodeTransition(CSharpSymbolType.RazorCommentTransition)
-                                   ),
-                               Factory.Code(" ").AsStatement(),
-                               new CommentBlock(
-                                   Factory.CodeTransition(CSharpSymbolType.RazorCommentTransition),
-                                   Factory.MetaCode("*", CSharpSymbolType.RazorCommentStar).Accepts(AcceptedCharactersInternal.None),
-                                   Factory.Comment(" Bar ", CSharpSymbolType.RazorComment),
-                                   Factory.MetaCode("*", CSharpSymbolType.RazorCommentStar).Accepts(AcceptedCharactersInternal.None),
-                                   Factory.CodeTransition(CSharpSymbolType.RazorCommentTransition)
-                                   ),
-                               Factory.Code(postComment).AsStatement().Accepts(acceptedCharacters)));
+            ParseBlockTest(preComment + "@* Foo *@ @* Bar *@" + postComment);
         }
 
-        private void RunSimpleWrappedMarkupTest(string prefix, string markup, string suffix, MarkupBlock expectedMarkup, SourceLocation expectedStart, AcceptedCharactersInternal acceptedCharacters = AcceptedCharactersInternal.Any)
+        private void RunSimpleWrappedMarkupTest(string prefix, string markup, string suffix)
         {
-            var expected = new StatementBlock(
-                    Factory.Code(prefix).AsStatement(),
-                    expectedMarkup,
-                    Factory.Code(suffix).AsStatement().Accepts(acceptedCharacters));
-
-            // Since we're building the 'expected' input out of order we need to do some trickery
-            // to get the locations right.
-            SpancestryCorrector.Correct(expected);
-            expected.FindFirstDescendentSpan().ChangeStart(SourceLocation.Zero);
-
-            // We make the caller pass a start location so we can verify that nothing has gone awry.
-            Assert.Equal(expectedStart, expectedMarkup.Start);
-
-            ParseBlockTest(prefix + markup + suffix, expected);
-        }
-
-        private void NamespaceImportTest(string content, string expectedNS, AcceptedCharactersInternal acceptedCharacters = AcceptedCharactersInternal.None, SourceLocation? location = null)
-        {
-            ParseBlockTest(content,
-                           new DirectiveBlock(
-                               Factory.Code(content)
-                                   .AsNamespaceImport(expectedNS)
-                                   .Accepts(acceptedCharacters)));
-        }
-
-        private static StatementBlock CreateStatementBlock(MarkupBlock block)
-        {
-            var factory = new SpanFactory();
-            return new StatementBlock(
-                factory.MetaCode("{").Accepts(AcceptedCharactersInternal.None),
-                block,
-                factory.EmptyCSharp().AsStatement(),
-                factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None));
+            ParseBlockTest(prefix + markup + suffix);
         }
     }
 }

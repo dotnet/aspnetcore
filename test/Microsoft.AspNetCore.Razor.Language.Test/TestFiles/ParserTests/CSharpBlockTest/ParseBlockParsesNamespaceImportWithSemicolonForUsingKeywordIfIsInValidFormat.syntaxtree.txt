@@ -1,0 +1,10 @@
+Directive block - Gen<None> - 18 - (0:0,0)
+    Code span - Gen<Import: Foo.Bar.Baz;> - [using Foo.Bar.Baz;] - SpanEditHandler;Accepts:AnyExceptNewline - (0:0,0) - Symbols:8
+        CSharpSymbolType.Keyword;[using];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.Identifier;[Foo];
+        CSharpSymbolType.Dot;[.];
+        CSharpSymbolType.Identifier;[Bar];
+        CSharpSymbolType.Dot;[.];
+        CSharpSymbolType.Identifier;[Baz];
+        CSharpSymbolType.Semicolon;[;];
