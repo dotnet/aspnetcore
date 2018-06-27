@@ -25,43 +25,36 @@ HINSTANCE           g_hWinHttpModule;
 HINSTANCE           g_hAspNetCoreModule;
 HANDLE              g_hEventLog = NULL;
 
-VOID
+HRESULT
 InitializeGlobalConfiguration(
     IHttpServer * pServer
 )
 {
-    BOOL fLocked = FALSE;
-
     if (!g_fGlobalInitialize)
     {
-        AcquireSRWLockExclusive(&g_srwLockRH);
-        fLocked = TRUE;
+        SRWExclusiveLock lock(g_srwLockRH);
 
-        if (g_fGlobalInitialize)
+        if (!g_fGlobalInitialize)
         {
-            // Done by another thread
-            goto Finished;
-        }
+            g_pHttpServer = pServer;
+            RETURN_IF_FAILED(ALLOC_CACHE_HANDLER::StaticInitialize());
+            RETURN_IF_FAILED(IN_PROCESS_HANDLER::StaticInitialize());
 
-        g_pHttpServer = pServer;
-        if (pServer->IsCommandLineLaunch())
-        {
-            g_hEventLog = RegisterEventSource(NULL, ASPNETCORE_IISEXPRESS_EVENT_PROVIDER);
-        }
-        else
-        {
-            g_hEventLog = RegisterEventSource(NULL, ASPNETCORE_EVENT_PROVIDER);
-        }
+            if (pServer->IsCommandLineLaunch())
+            {
+                g_hEventLog = RegisterEventSource(NULL, ASPNETCORE_IISEXPRESS_EVENT_PROVIDER);
+            }
+            else
+            {
+                g_hEventLog = RegisterEventSource(NULL, ASPNETCORE_EVENT_PROVIDER);
+            }
 
-        DebugInitialize();
-
-        g_fGlobalInitialize = TRUE;
+            DebugInitialize();
+            g_fGlobalInitialize = TRUE;
+        }
     }
-Finished:
-    if (fLocked)
-    {
-        ReleaseSRWLockExclusive(&g_srwLockRH);
-    }
+
+    return S_OK;
 }
 
 BOOL APIENTRY DllMain(HMODULE hModule,
@@ -93,11 +86,12 @@ CreateApplication(
     _Out_ IAPPLICATION      **ppApplication
 )
 {
-    InitializeGlobalConfiguration(pServer);
+    REQUESTHANDLER_CONFIG  *pConfig = NULL;
 
     try
     {
-        REQUESTHANDLER_CONFIG  *pConfig = NULL;
+        // Initialze some global variables here
+        RETURN_IF_FAILED(InitializeGlobalConfiguration(pServer));
         RETURN_IF_FAILED(REQUESTHANDLER_CONFIG::CreateRequestHandlerConfig(pServer, pHttpApplication, &pConfig));
 
         auto config = std::unique_ptr<REQUESTHANDLER_CONFIG>(pConfig);

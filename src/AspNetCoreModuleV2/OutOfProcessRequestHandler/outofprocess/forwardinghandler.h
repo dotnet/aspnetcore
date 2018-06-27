@@ -72,6 +72,10 @@ public:
         bool    fClientInitiated
     );
 
+    static void * operator new(size_t size);
+
+    static void operator delete(void * pMemory);
+
 private:
 
     VOID

@@ -725,7 +725,7 @@ HRESULT
     }
 
     hr = sm_pAlloc->Initialize(sizeof(FORWARDING_HANDLER),
-        64); // nThreshold
+                               64); // nThreshold
     if (FAILED(hr))
     {
         goto Finished;
@@ -812,6 +812,27 @@ FORWARDING_HANDLER::StaticTerminate()
     {
         delete sm_pAlloc;
         sm_pAlloc = NULL;
+    }
+}
+
+// static
+void * FORWARDING_HANDLER::operator new(size_t)
+{
+    DBG_ASSERT(sm_pAlloc != NULL);
+    if (sm_pAlloc == NULL)
+    {
+        return NULL;
+    }
+    return sm_pAlloc->Alloc();
+}
+
+// static
+void FORWARDING_HANDLER::operator delete(void * pMemory)
+{
+    DBG_ASSERT(sm_pAlloc != NULL);
+    if (sm_pAlloc != NULL)
+    {
+        sm_pAlloc->Free(pMemory);
     }
 }
 

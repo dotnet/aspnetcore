@@ -92,18 +92,18 @@ ASPNET_CORE_PROXY_MODULE::OnExecuteRequestHandler(
 
         hr = pApplicationManager->GetOrCreateApplicationInfo(
             g_pHttpServer,
-        pHttpContext,
+            pHttpContext,
             &m_pApplicationInfo);
         if (FAILED(hr))
         {
             goto Finished;
         }
 
-    if (!m_pApplicationInfo->QueryAllowStart())
-    {
-        // Application cannot be started due to wrong hosting mode
-        // the error should already been logged to window event log for the first request
-        hr = E_APPLICATION_ACTIVATION_EXEC_FAILURE;
+        if (!m_pApplicationInfo->IsValid())
+        {
+            // Application cannot be started due to wrong hosting mode
+            // the error should already been logged to window event log for the first request
+            hr = E_APPLICATION_ACTIVATION_EXEC_FAILURE;
             goto Finished;
         }
 

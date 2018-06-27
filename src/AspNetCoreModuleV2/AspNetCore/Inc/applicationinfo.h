@@ -36,7 +36,8 @@ public:
         m_pServer(NULL),
         m_cRefs(1),
         m_fAppOfflineFound(FALSE),
-        m_fAllowStart(FALSE),
+        m_fValid(FALSE),
+        m_fDoneAppCreation(FALSE),
         m_pAppOfflineHtm(NULL),
         m_pFileWatcherEntry(NULL),
         m_pConfiguration(NULL),
@@ -76,7 +77,8 @@ public:
         }
     }
 
-    APP_OFFLINE_HTM* QueryAppOfflineHtm()
+    APP_OFFLINE_HTM*
+    QueryAppOfflineHtm()
     {
         return m_pAppOfflineHtm;
     }
@@ -87,16 +89,16 @@ public:
         return m_fAppOfflineFound;
     }
 
-    BOOL QueryAllowStart()
+    BOOL
+    IsValid()
     {
-        return m_fAllowStart;
+        return m_fValid;
     }
 
     VOID
-    UpdateAllowStartStatus(BOOL fAllowed)
+    MarkValid()
     {
-        // no lock, as no expectation for concurrent accesses
-        m_fAllowStart = fAllowed;
+        m_fValid = TRUE;
     }
 
     VOID
@@ -149,7 +151,8 @@ private:
     mutable LONG            m_cRefs;
     STRU                    m_struInfoKey;
     BOOL                    m_fAppOfflineFound;
-    BOOL                    m_fAllowStart; // Flag indicates whether there is (configuration) error blocking application from starting
+    BOOL                    m_fValid;
+    BOOL                    m_fDoneAppCreation;
     APP_OFFLINE_HTM        *m_pAppOfflineHtm;
     FILE_WATCHER_ENTRY     *m_pFileWatcherEntry;
     ASPNETCORE_SHIM_CONFIG *m_pConfiguration;

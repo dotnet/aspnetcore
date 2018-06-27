@@ -601,17 +601,20 @@ IN_PROCESS_APPLICATION::LogErrorsOnMainExit(
     // This will be a common place for errors as it means the hostfxr_main returned
     // or there was an exception.
     //
-    STRA struStdErrOutput;
-    if (m_pLoggerProvider->GetStdOutContent(&struStdErrOutput))
+    STRA straStdErrOutput;
+    STRU struStdMsg;
+    if (m_pLoggerProvider->GetStdOutContent(&straStdErrOutput))
     {
-        UTILITY::LogEventF(g_hEventLog,
-            EVENTLOG_ERROR_TYPE,
-            ASPNETCORE_EVENT_INPROCESS_THREAD_EXIT,
-            ASPNETCORE_EVENT_INPROCESS_THREAD_EXIT_STDOUT_MSG,
-            m_pConfig->QueryApplicationPath()->QueryStr(),
-            m_pConfig->QueryApplicationPhysicalPath()->QueryStr(),
-            hr,
-            struStdErrOutput.QueryStr());
+        if (SUCCEEDED(struStdMsg.CopyA(straStdErrOutput.QueryStr()))) {
+            UTILITY::LogEventF(g_hEventLog,
+                EVENTLOG_ERROR_TYPE,
+                ASPNETCORE_EVENT_INPROCESS_THREAD_EXIT,
+                ASPNETCORE_EVENT_INPROCESS_THREAD_EXIT_STDOUT_MSG,
+                m_pConfig->QueryApplicationPath()->QueryStr(),
+                m_pConfig->QueryApplicationPhysicalPath()->QueryStr(),
+                hr,
+                struStdMsg.QueryStr());
+        }
     }
     else
     {

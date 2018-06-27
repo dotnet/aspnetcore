@@ -69,11 +69,20 @@ public:
         REQUEST_NOTIFICATION_STATUS requestNotificationStatus
     );
 
+    static void * operator new(size_t size);
+
+    static void operator delete(void * pMemory);
+
+    static
+    HRESULT
+    StaticInitialize(VOID);
+
+
 private:
     PVOID m_pManagedHttpContext;
     BOOL m_fManagedRequestComplete;
     REQUEST_NOTIFICATION_STATUS m_requestNotificationStatus;
-
     IHttpContext*               m_pW3Context;
     IN_PROCESS_APPLICATION*     m_pApplication;
+    static ALLOC_CACHE_HANDLER *   sm_pAlloc;
 };

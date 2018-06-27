@@ -100,8 +100,6 @@ HRESULT
 
     UNREFERENCED_PARAMETER(dwServerVersion);
 
-    //LoadGlobalConfiguration();
-
     InitializeSRWLock(&g_srwLock);
 
     g_pModuleId = pModuleInfo->GetId();
@@ -169,43 +167,28 @@ HRESULT
     //
     pFactory = new ASPNET_CORE_PROXY_MODULE_FACTORY;
 
-    hr = pModuleInfo->SetRequestNotifications(
+    FINISHED_IF_FAILED(pModuleInfo->SetRequestNotifications(
                                   pFactory,
                                   RQ_EXECUTE_REQUEST_HANDLER,
-                                  0);
-    if (FAILED(hr))
-    {
-        goto Finished;
-    }
+                                  0));
 
     pFactory = NULL;
     pApplicationManager = APPLICATION_MANAGER::GetInstance();
 
-    hr = pApplicationManager->Initialize();
-    if(FAILED(hr))
-     {
-        goto Finished;
-    }
+    FINISHED_IF_FAILED(pApplicationManager->Initialize());
+
     pGlobalModule = NULL;
 
     pGlobalModule = new ASPNET_CORE_GLOBAL_MODULE(pApplicationManager);
 
-    hr = pModuleInfo->SetGlobalNotifications(
-                              pGlobalModule,
-                              GL_CONFIGURATION_CHANGE | // Configuration change trigers IIS application stop
-                              GL_STOP_LISTENING);   // worker process stop or recycle
+    FINISHED_IF_FAILED(pModuleInfo->SetGlobalNotifications(
+                                     pGlobalModule,
+                                     GL_CONFIGURATION_CHANGE | // Configuration change trigers IIS application stop
+                                     GL_STOP_LISTENING));   // worker process stop or recycle
 
-    if (FAILED(hr))
-    {
-        goto Finished;
-    }
     pGlobalModule = NULL;
 
-    hr = ALLOC_CACHE_HANDLER::StaticInitialize();
-    if (FAILED(hr))
-    {
-        goto Finished;
-    }
+    FINISHED_IF_FAILED(ALLOC_CACHE_HANDLER::StaticInitialize());
 
 Finished:
     if (pGlobalModule != NULL)

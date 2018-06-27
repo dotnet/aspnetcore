@@ -172,6 +172,7 @@ APPLICATION_INFO::EnsureApplicationCreated(
     IHttpContext *pHttpContext
 )
 {
+    HRESULT             hr = S_OK;
     IAPPLICATION       *pApplication = NULL;
     STRU                struExeLocation;
     STRU                struHostFxrDllLocation;
@@ -182,12 +183,25 @@ APPLICATION_INFO::EnsureApplicationCreated(
         return S_OK;
     }
 
-    if (m_pApplication == NULL)
+    // one optimization for failure scenario is to reduce the lock scope
+    SRWExclusiveLock lock(m_srwLock);
+
+    if (m_fDoneAppCreation)
     {
-        SRWExclusiveLock lock(m_srwLock);
+        // application is NULL and CreateApplication failed previously
+        FINISHED(E_APPLICATION_ACTIVATION_EXEC_FAILURE);
+    }
+    else
+    {
         if (m_pApplication != NULL)
         {
-            return S_OK;
+            // another thread created the applicaiton
+            FINISHED(S_OK);
+        }
+        else if (m_fDoneAppCreation)
+        {
+            // previous CreateApplication failed
+            FINISHED(E_APPLICATION_ACTIVATION_EXEC_FAILURE);
         }
 
         //
@@ -195,26 +209,40 @@ APPLICATION_INFO::EnsureApplicationCreated(
         //
         if (!m_fAppOfflineFound)
         {
-
             // Move the request handler check inside of the lock
             // such that only one request finds and loads it.
             // FindRequestHandlerAssembly obtains a global lock, but after releasing the lock,
             // there is a period where we could call
 
-            RETURN_IF_FAILED(FindRequestHandlerAssembly(struExeLocation));
+            m_fDoneAppCreation = TRUE;
+            FINISHED_IF_FAILED(FindRequestHandlerAssembly(struExeLocation));
 
             if (m_pfnAspNetCoreCreateApplication == NULL)
             {
-                RETURN_IF_FAILED(HRESULT_FROM_WIN32(ERROR_INVALID_FUNCTION));
+                FINISHED(HRESULT_FROM_WIN32(ERROR_INVALID_FUNCTION));
             }
 
-            RETURN_IF_FAILED(m_pfnAspNetCoreCreateApplication(m_pServer, pHttpContext->GetApplication(), &pApplication));
+            FINISHED_IF_FAILED(m_pfnAspNetCoreCreateApplication(m_pServer, pHttpContext->GetApplication(), &pApplication));
             pApplication->SetParameter(L"InProcessExeLocation", struExeLocation.QueryStr());
+
             m_pApplication = pApplication;
         }
     }
 
-    return S_OK;
+Finished:
+
+    if (FAILED(hr))
+    {
+        // Log the failure and update application info to not try again
+        UTILITY::LogEventF(g_hEventLog,
+            EVENTLOG_ERROR_TYPE,
+            ASPNETCORE_EVENT_ADD_APPLICATION_ERROR,
+            ASPNETCORE_EVENT_ADD_APPLICATION_ERROR_MSG,
+            pHttpContext->GetApplication()->GetApplicationId(),
+            hr);
+    }
+
+    return hr;
 }
 
 HRESULT
@@ -226,7 +254,7 @@ APPLICATION_INFO::FindRequestHandlerAssembly(STRU& location)
 
     if (g_fAspnetcoreRHLoadedError)
     {
-        FINISHED_IF_FAILED(E_APPLICATION_ACTIVATION_EXEC_FAILURE);
+        FINISHED(E_APPLICATION_ACTIVATION_EXEC_FAILURE);
     }
     else if (!g_fAspnetcoreRHAssemblyLoaded)
     {
@@ -234,7 +262,7 @@ APPLICATION_INFO::FindRequestHandlerAssembly(STRU& location)
 
         if (g_fAspnetcoreRHLoadedError)
         {
-            FINISHED_IF_FAILED(E_APPLICATION_ACTIVATION_EXEC_FAILURE);
+            FINISHED(E_APPLICATION_ACTIVATION_EXEC_FAILURE);
         }
         if (g_fAspnetcoreRHAssemblyLoaded)
         {
@@ -438,7 +466,7 @@ APPLICATION_INFO::FindNativeAssemblyFromHostfxr(
         }
     }
 
-    FINISHED_IF_FAILED(hr = struNativeSearchPaths.SyncWithBuffer());
+    FINISHED_IF_FAILED(struNativeSearchPaths.SyncWithBuffer());
 
     fFound = FALSE;
 
@@ -526,7 +554,6 @@ APPLICATION_INFO::RecycleApplication()
                 // In process application failed to start for whatever reason, need to recycle the work process
                 m_pServer->RecycleProcess(L"AspNetCore InProcess Recycle Process on Demand");
             }
-
         }
 
         if (hThread == NULL)

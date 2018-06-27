@@ -7,6 +7,7 @@
 #include "utility.h"
 #include "resources.h"
 #include "SRWExclusiveLock.h"
+#include "exceptions.h"
 
 // The application manager is a singleton across ANCM.
 APPLICATION_MANAGER* APPLICATION_MANAGER::sm_pApplicationManager = NULL;
@@ -47,8 +48,7 @@ APPLICATION_MANAGER::GetOrCreateApplicationInfo(
         SRWSharedLock lock(m_srwLock);
         if (g_fInShutdown)
         {
-            hr = HRESULT_FROM_WIN32(ERROR_SERVER_SHUTDOWN_IN_PROGRESS);
-            goto Finished;
+            FINISHED(HRESULT_FROM_WIN32(ERROR_SERVER_SHUTDOWN_IN_PROGRESS));
         }
         m_pApplicationInfoHash->FindKey(pszApplicationId, ppApplicationInfo);
     }
@@ -56,52 +56,36 @@ APPLICATION_MANAGER::GetOrCreateApplicationInfo(
     if (*ppApplicationInfo == NULL)
     {
         pApplicationInfo = new APPLICATION_INFO();
-        if (pApplicationInfo == NULL)
-        {
-            hr = E_OUTOFMEMORY;
-            goto Finished;
-        }
 
-        hr = pApplicationInfo->Initialize(pServer, pHttpContext->GetApplication(), m_pFileWatcher);
-        if (FAILED(hr))
-        {
-            goto Finished;
-        }
+        FINISHED_IF_FAILED(pApplicationInfo->Initialize(pServer, pHttpContext->GetApplication(), m_pFileWatcher));
 
         SRWExclusiveLock lock(m_srwLock);
 
         if (g_fInShutdown)
         {
             // Already in shuting down. No need to create the application
-            hr = HRESULT_FROM_WIN32(ERROR_SERVER_SHUTDOWN_IN_PROGRESS);
-            goto Finished;
+            FINISHED(HRESULT_FROM_WIN32(ERROR_SERVER_SHUTDOWN_IN_PROGRESS));
         }
         m_pApplicationInfoHash->FindKey(pszApplicationId, ppApplicationInfo);
 
         if (*ppApplicationInfo != NULL)
         {
             // someone else created the application
-            goto Finished;
-        }
-
-        hr = m_pApplicationInfoHash->InsertRecord(pApplicationInfo);
-        if (FAILED(hr))
-        {
-            goto Finished;
+            FINISHED(S_OK);
         }
 
         hostingModel = pApplicationInfo->QueryConfig()->QueryHostingModel();
 
-        if (m_pApplicationInfoHash->Count() == 1)
+        if (m_pApplicationInfoHash->Count() == 0)
         {
             m_hostingModel = hostingModel;
-            pApplicationInfo->UpdateAllowStartStatus(TRUE);
+            pApplicationInfo->MarkValid();
         }
         else
         {
             if (hostingModel == HOSTING_OUT_PROCESS &&  hostingModel == m_hostingModel)
             {
-                pApplicationInfo->UpdateAllowStartStatus(TRUE);
+                pApplicationInfo->MarkValid();
             }
             else
             {
@@ -115,6 +99,9 @@ APPLICATION_MANAGER::GetOrCreateApplicationInfo(
                 }
             }
         }
+
+        FINISHED_IF_FAILED(m_pApplicationInfoHash->InsertRecord(pApplicationInfo));
+
 
         *ppApplicationInfo = pApplicationInfo;
         pApplicationInfo->StartMonitoringAppOffline();
@@ -212,8 +199,7 @@ APPLICATION_MANAGER::RecycleApplicationFromManager(
     DWORD                   dwPreviousCounter = 0;
     APPLICATION_INFO_HASH*  table = NULL;
     CONFIG_CHANGE_CONTEXT   context;
-    BOOL                    fKeepTable = FALSE;
-
+ 
     if (g_fInShutdown)
     {
         // We are already shutting down, ignore this event as a global configuration change event
@@ -251,25 +237,9 @@ APPLICATION_MANAGER::RecycleApplicationFromManager(
         // Removed the applications which are impacted by the configurtion change
         m_pApplicationInfoHash->DeleteIf(FindConfigChangedApplication, (PVOID)&context);
 
-        if (dwPreviousCounter != m_pApplicationInfoHash->Count())
+        if (m_pApplicationInfoHash->Count() == 0 && m_hostingModel == HOSTING_OUT_PROCESS)
         {
-            if (m_hostingModel == HOSTING_IN_PROCESS)
-            {
-                // When we are inprocess, we need to keep the application the
-                // application manager that is being deleted. This is because we will always need to recycle the worker
-                // process and any requests that hit this worker process must be rejected (while out of process can
-                // start a new dotnet process). We will immediately call Recycle after this call.
-                DBG_ASSERT(m_pApplicationInfoHash->Count() == 0);
-                delete m_pApplicationInfoHash;
-
-                // We don't want to delete the table as m_pApplicationInfoHash = table
-                fKeepTable = TRUE;
-                m_pApplicationInfoHash = table;
-            }
-        }
-
-        if (m_pApplicationInfoHash->Count() == 0)
-        {
+            // reuse current process
             m_hostingModel = HOSTING_UNKNOWN;
         }
     }
@@ -310,7 +280,7 @@ APPLICATION_MANAGER::RecycleApplicationFromManager(
     }
 
 Finished:
-    if (table != NULL && !fKeepTable)
+    if (table != NULL)
     {
         table->Clear();
         delete table;

@@ -214,6 +214,12 @@ EnsureOutOfProcessInitializtion()
             goto Finished;
         }
 
+        hr = ALLOC_CACHE_HANDLER::StaticInitialize();
+        if (FAILED(hr))
+        {
+            goto Finished;
+        }
+
         hr = FORWARDING_HANDLER::StaticInitialize(g_fEnableReferenceCountTracing);
         if (FAILED(hr))
         {
