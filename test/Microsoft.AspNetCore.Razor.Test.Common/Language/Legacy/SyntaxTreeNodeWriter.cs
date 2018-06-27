@@ -35,11 +35,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             
             if (block is TagHelperBlock tagHelperBlock)
             {
+                // Write tag name
                 WriteSeparator();
                 Write(tagHelperBlock.TagName);
-                WriteSeparator();
-                Write(tagHelperBlock.TagMode);
 
+                // Write descriptors
                 foreach (var descriptor in tagHelperBlock.Binding.Descriptors)
                 {
                     WriteSeparator();
@@ -48,6 +48,36 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     var typeName = descriptor.Name.Substring(descriptor.Name.LastIndexOf('.') + 1);
                     Write(typeName);
                 }
+
+                // Write tag mode, start tag and end tag
+                Depth++;
+                WriteNewLine();
+                WriteIndent();
+                Write(tagHelperBlock.TagMode);
+                WriteSeparator();
+                Write(GetNodeContent(tagHelperBlock.SourceStartTag));
+                if (tagHelperBlock.SourceEndTag != null)
+                {
+                    Write(" ... ");
+                    Write(GetNodeContent(tagHelperBlock.SourceEndTag));
+                }
+
+                // Write attributes
+                foreach (var attribute in tagHelperBlock.Attributes)
+                {
+                    WriteNewLine();
+                    WriteIndent();
+                    Write(attribute.Name);
+                    WriteSeparator();
+                    Write(attribute.AttributeStructure);
+
+                    Depth++;
+                    WriteNewLine();
+                    // Recursively render attribute value
+                    VisitNode(attribute.Value);
+                    Depth--;
+                }
+                Depth--;
             }
         }
 
@@ -225,6 +255,42 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
 
             _writer.Write(value);
+        }
+
+        private string GetNodeContent(SyntaxTreeNode node)
+        {
+            if (node is Span span)
+            {
+                return span.Content;
+            }
+            else if (node is Block block)
+            {
+                var content = string.Empty;
+                foreach (var child in block.Children)
+                {
+                    content += GetNodeContent(child);
+                }
+
+                return content;
+            }
+
+            return string.Empty;
+        }
+
+        private void VisitNode(SyntaxTreeNode node)
+        {
+            Visit(node);
+
+            if (node is Block block)
+            {
+                Depth++;
+                foreach (var child in block.Children)
+                {
+                    WriteNewLine();
+                    VisitNode(child);
+                }
+                Depth--;
+            }
         }
     }
 }
