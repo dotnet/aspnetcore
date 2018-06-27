@@ -1,0 +1,31 @@
+Markup block - Gen<None> - 25 - (0:0,0)
+    Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (0:0,0) - Symbols:1
+        HtmlSymbolType.Unknown;[];
+    Directive block - Gen<Directive:{section;RazorBlock;Unrestricted} [RZ1015(9:0,9 [1] )]> - 9 - (0:0,0)
+        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Symbols:1
+            CSharpSymbolType.Transition;[@];
+        MetaCode span - Gen<None> - [section] - SpanEditHandler;Accepts:None - (1:0,1) - Symbols:1
+            CSharpSymbolType.Identifier;[section];
+        Code span - Gen<None> - [ ] - SpanEditHandler;Accepts:WhiteSpace - (8:0,8) - Symbols:1
+            CSharpSymbolType.WhiteSpace;[ ];
+    Markup span - Gen<Markup> - [9 { ] - SpanEditHandler;Accepts:Any - (9:0,9) - Symbols:4
+        HtmlSymbolType.Text;[9];
+        HtmlSymbolType.WhiteSpace;[ ];
+        HtmlSymbolType.Text;[{];
+        HtmlSymbolType.WhiteSpace;[ ];
+    Tag block - Gen<None> - 3 - (13:0,13)
+        Markup span - Gen<Markup> - [<p>] - SpanEditHandler;Accepts:Any - (13:0,13) - Symbols:3
+            HtmlSymbolType.OpenAngle;[<];
+            HtmlSymbolType.Text;[p];
+            HtmlSymbolType.CloseAngle;[>];
+    Markup span - Gen<Markup> - [Foo] - SpanEditHandler;Accepts:Any - (16:0,16) - Symbols:1
+        HtmlSymbolType.Text;[Foo];
+    Tag block - Gen<None> - 4 - (19:0,19)
+        Markup span - Gen<Markup> - [</p>] - SpanEditHandler;Accepts:Any - (19:0,19) - Symbols:4
+            HtmlSymbolType.OpenAngle;[<];
+            HtmlSymbolType.ForwardSlash;[/];
+            HtmlSymbolType.Text;[p];
+            HtmlSymbolType.CloseAngle;[>];
+    Markup span - Gen<Markup> - [ }] - SpanEditHandler;Accepts:Any - (23:0,23) - Symbols:2
+        HtmlSymbolType.WhiteSpace;[ ];
+        HtmlSymbolType.Text;[}];

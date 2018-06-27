@@ -1,0 +1,58 @@
+Markup block - Gen<None> - 76 - (0:0,0)
+    Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (0:0,0) - Symbols:1
+        HtmlSymbolType.Unknown;[];
+    Directive block - Gen<Directive:{section;RazorBlock;Unrestricted}> - 76 - (0:0,0)
+        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Symbols:1
+            CSharpSymbolType.Transition;[@];
+        MetaCode span - Gen<None> - [section] - SpanEditHandler;Accepts:None - (1:0,1) - Symbols:1
+            CSharpSymbolType.Identifier;[section];
+        Code span - Gen<None> - [ ] - SpanEditHandler;Accepts:WhiteSpace - (8:0,8) - Symbols:1
+            CSharpSymbolType.WhiteSpace;[ ];
+        Code span - Gen<DirectiveToken {SectionName;Member;Opt:False}> - [foo] - DirectiveTokenEditHandler;Accepts:NonWhiteSpace - (9:0,9) - Symbols:1
+            CSharpSymbolType.Identifier;[foo];
+        Markup span - Gen<None> - [ ] - SpanEditHandler;Accepts:AllWhiteSpace - (12:0,12) - Symbols:1
+            CSharpSymbolType.WhiteSpace;[ ];
+        MetaCode span - Gen<None> - [{] - AutoCompleteEditHandler;Accepts:None,AutoComplete:[<null>];AtEnd - (13:0,13) - Symbols:1
+            CSharpSymbolType.LeftBrace;[{];
+        Markup block - Gen<None> - 61 - (14:0,14)
+            Markup span - Gen<Markup> - [ I really want to render a close brace, so here I go: ] - SpanEditHandler;Accepts:Any - (14:0,14) - Symbols:25
+                HtmlSymbolType.WhiteSpace;[ ];
+                HtmlSymbolType.Text;[I];
+                HtmlSymbolType.WhiteSpace;[ ];
+                HtmlSymbolType.Text;[really];
+                HtmlSymbolType.WhiteSpace;[ ];
+                HtmlSymbolType.Text;[want];
+                HtmlSymbolType.WhiteSpace;[ ];
+                HtmlSymbolType.Text;[to];
+                HtmlSymbolType.WhiteSpace;[ ];
+                HtmlSymbolType.Text;[render];
+                HtmlSymbolType.WhiteSpace;[ ];
+                HtmlSymbolType.Text;[a];
+                HtmlSymbolType.WhiteSpace;[ ];
+                HtmlSymbolType.Text;[close];
+                HtmlSymbolType.WhiteSpace;[ ];
+                HtmlSymbolType.Text;[brace,];
+                HtmlSymbolType.WhiteSpace;[ ];
+                HtmlSymbolType.Text;[so];
+                HtmlSymbolType.WhiteSpace;[ ];
+                HtmlSymbolType.Text;[here];
+                HtmlSymbolType.WhiteSpace;[ ];
+                HtmlSymbolType.Text;[I];
+                HtmlSymbolType.WhiteSpace;[ ];
+                HtmlSymbolType.Text;[go:];
+                HtmlSymbolType.WhiteSpace;[ ];
+            Expression block - Gen<Expr> - 6 - (68:0,68)
+                Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (68:0,68) - Symbols:1
+                    CSharpSymbolType.Transition;[@];
+                MetaCode span - Gen<None> - [(] - SpanEditHandler;Accepts:None - (69:0,69) - Symbols:1
+                    CSharpSymbolType.LeftParenthesis;[(];
+                Code span - Gen<Expr> - ["}"] - SpanEditHandler;Accepts:Any - (70:0,70) - Symbols:1
+                    CSharpSymbolType.StringLiteral;["}"];
+                MetaCode span - Gen<None> - [)] - SpanEditHandler;Accepts:None - (73:0,73) - Symbols:1
+                    CSharpSymbolType.RightParenthesis;[)];
+            Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:Any - (74:0,74) - Symbols:1
+                HtmlSymbolType.WhiteSpace;[ ];
+        MetaCode span - Gen<None> - [}] - SpanEditHandler;Accepts:None - (75:0,75) - Symbols:1
+            CSharpSymbolType.RightBrace;[}];
+    Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (76:0,76) - Symbols:1
+        HtmlSymbolType.Unknown;[];

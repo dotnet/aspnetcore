@@ -1,0 +1,58 @@
+Markup block - Gen<None> - 44 - (0:0,0)
+    Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (0:0,0) - Symbols:1
+        HtmlSymbolType.Unknown;[];
+    Directive block - Gen<Directive:{section;RazorBlock;Unrestricted}> - 44 - (0:0,0)
+        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Symbols:1
+            CSharpSymbolType.Transition;[@];
+        MetaCode span - Gen<None> - [section] - SpanEditHandler;Accepts:None - (1:0,1) - Symbols:1
+            CSharpSymbolType.Identifier;[section];
+        Code span - Gen<None> - [ ] - SpanEditHandler;Accepts:WhiteSpace - (8:0,8) - Symbols:1
+            CSharpSymbolType.WhiteSpace;[ ];
+        Code span - Gen<DirectiveToken {SectionName;Member;Opt:False}> - [foo] - DirectiveTokenEditHandler;Accepts:NonWhiteSpace - (9:0,9) - Symbols:1
+            CSharpSymbolType.Identifier;[foo];
+        Markup span - Gen<None> - [ ] - SpanEditHandler;Accepts:AllWhiteSpace - (12:0,12) - Symbols:1
+            CSharpSymbolType.WhiteSpace;[ ];
+        MetaCode span - Gen<None> - [{] - AutoCompleteEditHandler;Accepts:None,AutoComplete:[<null>];AtEnd - (13:0,13) - Symbols:1
+            CSharpSymbolType.LeftBrace;[{];
+        Markup block - Gen<None> - 29 - (14:0,14)
+            Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:Any - (14:0,14) - Symbols:1
+                HtmlSymbolType.WhiteSpace;[ ];
+            Directive block - Gen<Directive:{section;RazorBlock;Unrestricted} [RZ2005(16:0,16 [7] ), RZ2002(15:0,15 [8] )]> - 27 - (15:0,15)
+                Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (15:0,15) - Symbols:1
+                    CSharpSymbolType.Transition;[@];
+                MetaCode span - Gen<None> - [section] - SpanEditHandler;Accepts:None - (16:0,16) - Symbols:1
+                    CSharpSymbolType.Identifier;[section];
+                Code span - Gen<None> - [ ] - SpanEditHandler;Accepts:WhiteSpace - (23:0,23) - Symbols:1
+                    CSharpSymbolType.WhiteSpace;[ ];
+                Code span - Gen<DirectiveToken {SectionName;Member;Opt:False}> - [bar] - DirectiveTokenEditHandler;Accepts:NonWhiteSpace - (24:0,24) - Symbols:1
+                    CSharpSymbolType.Identifier;[bar];
+                Markup span - Gen<None> - [ ] - SpanEditHandler;Accepts:AllWhiteSpace - (27:0,27) - Symbols:1
+                    CSharpSymbolType.WhiteSpace;[ ];
+                MetaCode span - Gen<None> - [{] - AutoCompleteEditHandler;Accepts:None,AutoComplete:[<null>];AtEnd - (28:0,28) - Symbols:1
+                    CSharpSymbolType.LeftBrace;[{];
+                Markup block - Gen<None> - 12 - (29:0,29)
+                    Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:Any - (29:0,29) - Symbols:1
+                        HtmlSymbolType.WhiteSpace;[ ];
+                    Tag block - Gen<None> - 3 - (30:0,30)
+                        Markup span - Gen<Markup> - [<p>] - SpanEditHandler;Accepts:Any - (30:0,30) - Symbols:3
+                            HtmlSymbolType.OpenAngle;[<];
+                            HtmlSymbolType.Text;[p];
+                            HtmlSymbolType.CloseAngle;[>];
+                    Markup span - Gen<Markup> - [Foo] - SpanEditHandler;Accepts:Any - (33:0,33) - Symbols:1
+                        HtmlSymbolType.Text;[Foo];
+                    Tag block - Gen<None> - 4 - (36:0,36)
+                        Markup span - Gen<Markup> - [</p>] - SpanEditHandler;Accepts:Any - (36:0,36) - Symbols:4
+                            HtmlSymbolType.OpenAngle;[<];
+                            HtmlSymbolType.ForwardSlash;[/];
+                            HtmlSymbolType.Text;[p];
+                            HtmlSymbolType.CloseAngle;[>];
+                    Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:Any - (40:0,40) - Symbols:1
+                        HtmlSymbolType.WhiteSpace;[ ];
+                MetaCode span - Gen<None> - [}] - SpanEditHandler;Accepts:None - (41:0,41) - Symbols:1
+                    CSharpSymbolType.RightBrace;[}];
+            Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:Any - (42:0,42) - Symbols:1
+                HtmlSymbolType.WhiteSpace;[ ];
+        MetaCode span - Gen<None> - [}] - SpanEditHandler;Accepts:None - (43:0,43) - Symbols:1
+            CSharpSymbolType.RightBrace;[}];
+    Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (44:0,44) - Symbols:1
+        HtmlSymbolType.Unknown;[];

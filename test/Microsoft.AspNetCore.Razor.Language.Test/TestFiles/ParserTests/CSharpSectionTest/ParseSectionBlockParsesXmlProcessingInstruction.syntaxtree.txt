@@ -1,0 +1,32 @@
+Markup block - Gen<None> - 28 - (0:0,0)
+    Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (0:0,0) - Symbols:1
+        HtmlSymbolType.Unknown;[];
+    Directive block - Gen<Directive:{section;RazorBlock;Unrestricted}> - 28 - (0:0,0)
+        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Symbols:1
+            CSharpSymbolType.Transition;[@];
+        MetaCode span - Gen<None> - [section] - SpanEditHandler;Accepts:None - (1:0,1) - Symbols:1
+            CSharpSymbolType.Identifier;[section];
+        Code span - Gen<None> - [ ] - SpanEditHandler;Accepts:WhiteSpace - (8:0,8) - Symbols:1
+            CSharpSymbolType.WhiteSpace;[ ];
+        Code span - Gen<DirectiveToken {SectionName;Member;Opt:False}> - [s] - DirectiveTokenEditHandler;Accepts:NonWhiteSpace - (9:0,9) - Symbols:1
+            CSharpSymbolType.Identifier;[s];
+        Markup span - Gen<None> - [ ] - SpanEditHandler;Accepts:AllWhiteSpace - (10:0,10) - Symbols:1
+            CSharpSymbolType.WhiteSpace;[ ];
+        MetaCode span - Gen<None> - [{] - AutoCompleteEditHandler;Accepts:None,AutoComplete:[<null>];AtEnd - (11:0,11) - Symbols:1
+            CSharpSymbolType.LeftBrace;[{];
+        Markup block - Gen<None> - 15 - (12:0,12)
+            Markup span - Gen<Markup> - [ <? xml bleh ?>] - SpanEditHandler;Accepts:Any - (12:0,12) - Symbols:10
+                HtmlSymbolType.WhiteSpace;[ ];
+                HtmlSymbolType.OpenAngle;[<];
+                HtmlSymbolType.QuestionMark;[?];
+                HtmlSymbolType.WhiteSpace;[ ];
+                HtmlSymbolType.Text;[xml];
+                HtmlSymbolType.WhiteSpace;[ ];
+                HtmlSymbolType.Text;[bleh];
+                HtmlSymbolType.WhiteSpace;[ ];
+                HtmlSymbolType.QuestionMark;[?];
+                HtmlSymbolType.CloseAngle;[>];
+        MetaCode span - Gen<None> - [}] - SpanEditHandler;Accepts:None - (27:0,27) - Symbols:1
+            CSharpSymbolType.RightBrace;[}];
+    Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (28:0,28) - Symbols:1
+        HtmlSymbolType.Unknown;[];

@@ -1,0 +1,36 @@
+Markup block - Gen<None> - 33 - (0:0,0)
+    Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (0:0,0) - Symbols:1
+        HtmlSymbolType.Unknown;[];
+    Directive block - Gen<Directive:{section;RazorBlock;Unrestricted}> - 33 - (0:0,0)
+        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Symbols:1
+            CSharpSymbolType.Transition;[@];
+        MetaCode span - Gen<None> - [section] - SpanEditHandler;Accepts:None - (1:0,1) - Symbols:1
+            CSharpSymbolType.Identifier;[section];
+        Code span - Gen<None> - [ ] - SpanEditHandler;Accepts:WhiteSpace - (8:0,8) - Symbols:1
+            CSharpSymbolType.WhiteSpace;[ ];
+        Code span - Gen<DirectiveToken {SectionName;Member;Opt:False}> - [Foo] - DirectiveTokenEditHandler;Accepts:NonWhiteSpace - (9:0,9) - Symbols:1
+            CSharpSymbolType.Identifier;[Foo];
+        Markup span - Gen<None> - [ ] - SpanEditHandler;Accepts:AllWhiteSpace - (12:0,12) - Symbols:1
+            CSharpSymbolType.WhiteSpace;[ ];
+        MetaCode span - Gen<None> - [{] - AutoCompleteEditHandler;Accepts:None,AutoComplete:[<null>];AtEnd - (13:0,13) - Symbols:1
+            CSharpSymbolType.LeftBrace;[{];
+        Markup block - Gen<None> - 18 - (14:0,14)
+            Markup span - Gen<Markup> - [LF] - SpanEditHandler;Accepts:Any - (14:0,14) - Symbols:1
+                HtmlSymbolType.NewLine;[LF];
+            Statement block - Gen<None> - 16 - (16:1,0)
+                Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (16:1,0) - Symbols:1
+                    CSharpSymbolType.Transition;[@];
+                Code span - Gen<Stmt> - [if(true) {LF}LF] - SpanEditHandler;Accepts:Any - (17:1,1) - Symbols:9
+                    CSharpSymbolType.Keyword;[if];
+                    CSharpSymbolType.LeftParenthesis;[(];
+                    CSharpSymbolType.Keyword;[true];
+                    CSharpSymbolType.RightParenthesis;[)];
+                    CSharpSymbolType.WhiteSpace;[ ];
+                    CSharpSymbolType.LeftBrace;[{];
+                    CSharpSymbolType.NewLine;[LF];
+                    CSharpSymbolType.RightBrace;[}];
+                    CSharpSymbolType.NewLine;[LF];
+        MetaCode span - Gen<None> - [}] - SpanEditHandler;Accepts:None - (32:3,0) - Symbols:1
+            CSharpSymbolType.RightBrace;[}];
+    Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (33:3,1) - Symbols:1
+        HtmlSymbolType.Unknown;[];

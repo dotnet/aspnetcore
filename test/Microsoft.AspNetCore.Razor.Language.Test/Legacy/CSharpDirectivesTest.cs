@@ -923,6 +923,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
             if (UseBaselineTests && !IsTheory)
             {
+                SyntaxTreeVerifier.Verify(result);
                 AssertSyntaxTreeNodeMatchesBaseline(result);
                 return;
             }
