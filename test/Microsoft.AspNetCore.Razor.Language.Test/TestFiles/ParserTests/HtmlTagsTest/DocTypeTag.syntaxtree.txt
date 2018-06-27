@@ -1,0 +1,10 @@
+Markup block - Gen<None> - 16 - (0:0,0)
+    Markup span - Gen<Markup> - [<!DOCTYPE html>] - SpanEditHandler;Accepts:None - (0:0,0) - Symbols:6
+        HtmlSymbolType.OpenAngle;[<];
+        HtmlSymbolType.Bang;[!];
+        HtmlSymbolType.Text;[DOCTYPE];
+        HtmlSymbolType.WhiteSpace;[ ];
+        HtmlSymbolType.Text;[html];
+        HtmlSymbolType.CloseAngle;[>];
+    Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:None - (15:0,15) - Symbols:1
+        HtmlSymbolType.WhiteSpace;[ ];

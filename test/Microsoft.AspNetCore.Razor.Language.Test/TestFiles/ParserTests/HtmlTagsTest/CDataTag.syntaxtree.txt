@@ -1,0 +1,13 @@
+Markup block - Gen<None> - 16 - (0:0,0)
+    Markup span - Gen<Markup> - [<![CDATA[Foo]]>] - SpanEditHandler;Accepts:None - (0:0,0) - Symbols:9
+        HtmlSymbolType.OpenAngle;[<];
+        HtmlSymbolType.Bang;[!];
+        HtmlSymbolType.LeftBracket;[[];
+        HtmlSymbolType.Text;[CDATA];
+        HtmlSymbolType.LeftBracket;[[];
+        HtmlSymbolType.Text;[Foo];
+        HtmlSymbolType.RightBracket;[]];
+        HtmlSymbolType.RightBracket;[]];
+        HtmlSymbolType.CloseAngle;[>];
+    Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:None - (15:0,15) - Symbols:1
+        HtmlSymbolType.WhiteSpace;[ ];

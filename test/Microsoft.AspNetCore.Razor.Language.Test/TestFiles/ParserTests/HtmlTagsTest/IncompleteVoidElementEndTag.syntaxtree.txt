@@ -1,0 +1,279 @@
+Markup block - Gen<None> - 344 - (0:0,0)
+    Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (0:0,0) - Symbols:1
+        HtmlSymbolType.Unknown;[];
+    Statement block - Gen<None> - 344 - (0:0,0)
+        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Symbols:1
+            CSharpSymbolType.Transition;[@];
+        MetaCode span - Gen<None> - [{] - SpanEditHandler;Accepts:None - (1:0,1) - Symbols:1
+            CSharpSymbolType.LeftBrace;[{];
+        Code span - Gen<Stmt> - [LF] - AutoCompleteEditHandler;Accepts:Any,AutoComplete:[}];AtEOL - (2:0,2) - Symbols:1
+            CSharpSymbolType.NewLine;[LF];
+        Markup block - Gen<None> - 21 - (4:1,0)
+            Tag block - Gen<None> - 6 - (4:1,0)
+                Markup span - Gen<Markup> - [<area>] - SpanEditHandler;Accepts:None - (4:1,0) - Symbols:3
+                    HtmlSymbolType.OpenAngle;[<];
+                    HtmlSymbolType.Text;[area];
+                    HtmlSymbolType.CloseAngle;[>];
+            Tag block - Gen<None> - 15 - (10:1,6)
+                Markup span - Gen<Markup> - [</areaLF}LF@{LF] - SpanEditHandler;Accepts:Any - (10:1,6) - Symbols:9
+                    HtmlSymbolType.OpenAngle;[<];
+                    HtmlSymbolType.ForwardSlash;[/];
+                    HtmlSymbolType.Text;[area];
+                    HtmlSymbolType.NewLine;[LF];
+                    HtmlSymbolType.Text;[}];
+                    HtmlSymbolType.NewLine;[LF];
+                    HtmlSymbolType.Transition;[@];
+                    HtmlSymbolType.Text;[{];
+                    HtmlSymbolType.NewLine;[LF];
+        Markup block - Gen<None> - 21 - (25:4,0)
+            Tag block - Gen<None> - 6 - (25:4,0)
+                Markup span - Gen<Markup> - [<base>] - SpanEditHandler;Accepts:None - (25:4,0) - Symbols:3
+                    HtmlSymbolType.OpenAngle;[<];
+                    HtmlSymbolType.Text;[base];
+                    HtmlSymbolType.CloseAngle;[>];
+            Tag block - Gen<None> - 15 - (31:4,6)
+                Markup span - Gen<Markup> - [</baseLF}LF@{LF] - SpanEditHandler;Accepts:Any - (31:4,6) - Symbols:9
+                    HtmlSymbolType.OpenAngle;[<];
+                    HtmlSymbolType.ForwardSlash;[/];
+                    HtmlSymbolType.Text;[base];
+                    HtmlSymbolType.NewLine;[LF];
+                    HtmlSymbolType.Text;[}];
+                    HtmlSymbolType.NewLine;[LF];
+                    HtmlSymbolType.Transition;[@];
+                    HtmlSymbolType.Text;[{];
+                    HtmlSymbolType.NewLine;[LF];
+        Markup block - Gen<None> - 17 - (46:7,0)
+            Tag block - Gen<None> - 4 - (46:7,0)
+                Markup span - Gen<Markup> - [<br>] - SpanEditHandler;Accepts:None - (46:7,0) - Symbols:3
+                    HtmlSymbolType.OpenAngle;[<];
+                    HtmlSymbolType.Text;[br];
+                    HtmlSymbolType.CloseAngle;[>];
+            Tag block - Gen<None> - 13 - (50:7,4)
+                Markup span - Gen<Markup> - [</brLF}LF@{LF] - SpanEditHandler;Accepts:Any - (50:7,4) - Symbols:9
+                    HtmlSymbolType.OpenAngle;[<];
+                    HtmlSymbolType.ForwardSlash;[/];
+                    HtmlSymbolType.Text;[br];
+                    HtmlSymbolType.NewLine;[LF];
+                    HtmlSymbolType.Text;[}];
+                    HtmlSymbolType.NewLine;[LF];
+                    HtmlSymbolType.Transition;[@];
+                    HtmlSymbolType.Text;[{];
+                    HtmlSymbolType.NewLine;[LF];
+        Markup block - Gen<None> - 19 - (63:10,0)
+            Tag block - Gen<None> - 5 - (63:10,0)
+                Markup span - Gen<Markup> - [<col>] - SpanEditHandler;Accepts:None - (63:10,0) - Symbols:3
+                    HtmlSymbolType.OpenAngle;[<];
+                    HtmlSymbolType.Text;[col];
+                    HtmlSymbolType.CloseAngle;[>];
+            Tag block - Gen<None> - 14 - (68:10,5)
+                Markup span - Gen<Markup> - [</colLF}LF@{LF] - SpanEditHandler;Accepts:Any - (68:10,5) - Symbols:9
+                    HtmlSymbolType.OpenAngle;[<];
+                    HtmlSymbolType.ForwardSlash;[/];
+                    HtmlSymbolType.Text;[col];
+                    HtmlSymbolType.NewLine;[LF];
+                    HtmlSymbolType.Text;[}];
+                    HtmlSymbolType.NewLine;[LF];
+                    HtmlSymbolType.Transition;[@];
+                    HtmlSymbolType.Text;[{];
+                    HtmlSymbolType.NewLine;[LF];
+        Markup block - Gen<None> - 27 - (82:13,0)
+            Tag block - Gen<None> - 9 - (82:13,0)
+                Markup span - Gen<Markup> - [<command>] - SpanEditHandler;Accepts:None - (82:13,0) - Symbols:3
+                    HtmlSymbolType.OpenAngle;[<];
+                    HtmlSymbolType.Text;[command];
+                    HtmlSymbolType.CloseAngle;[>];
+            Tag block - Gen<None> - 18 - (91:13,9)
+                Markup span - Gen<Markup> - [</commandLF}LF@{LF] - SpanEditHandler;Accepts:Any - (91:13,9) - Symbols:9
+                    HtmlSymbolType.OpenAngle;[<];
+                    HtmlSymbolType.ForwardSlash;[/];
+                    HtmlSymbolType.Text;[command];
+                    HtmlSymbolType.NewLine;[LF];
+                    HtmlSymbolType.Text;[}];
+                    HtmlSymbolType.NewLine;[LF];
+                    HtmlSymbolType.Transition;[@];
+                    HtmlSymbolType.Text;[{];
+                    HtmlSymbolType.NewLine;[LF];
+        Markup block - Gen<None> - 23 - (109:16,0)
+            Tag block - Gen<None> - 7 - (109:16,0)
+                Markup span - Gen<Markup> - [<embed>] - SpanEditHandler;Accepts:None - (109:16,0) - Symbols:3
+                    HtmlSymbolType.OpenAngle;[<];
+                    HtmlSymbolType.Text;[embed];
+                    HtmlSymbolType.CloseAngle;[>];
+            Tag block - Gen<None> - 16 - (116:16,7)
+                Markup span - Gen<Markup> - [</embedLF}LF@{LF] - SpanEditHandler;Accepts:Any - (116:16,7) - Symbols:9
+                    HtmlSymbolType.OpenAngle;[<];
+                    HtmlSymbolType.ForwardSlash;[/];
+                    HtmlSymbolType.Text;[embed];
+                    HtmlSymbolType.NewLine;[LF];
+                    HtmlSymbolType.Text;[}];
+                    HtmlSymbolType.NewLine;[LF];
+                    HtmlSymbolType.Transition;[@];
+                    HtmlSymbolType.Text;[{];
+                    HtmlSymbolType.NewLine;[LF];
+        Markup block - Gen<None> - 17 - (132:19,0)
+            Tag block - Gen<None> - 4 - (132:19,0)
+                Markup span - Gen<Markup> - [<hr>] - SpanEditHandler;Accepts:None - (132:19,0) - Symbols:3
+                    HtmlSymbolType.OpenAngle;[<];
+                    HtmlSymbolType.Text;[hr];
+                    HtmlSymbolType.CloseAngle;[>];
+            Tag block - Gen<None> - 13 - (136:19,4)
+                Markup span - Gen<Markup> - [</hrLF}LF@{LF] - SpanEditHandler;Accepts:Any - (136:19,4) - Symbols:9
+                    HtmlSymbolType.OpenAngle;[<];
+                    HtmlSymbolType.ForwardSlash;[/];
+                    HtmlSymbolType.Text;[hr];
+                    HtmlSymbolType.NewLine;[LF];
+                    HtmlSymbolType.Text;[}];
+                    HtmlSymbolType.NewLine;[LF];
+                    HtmlSymbolType.Transition;[@];
+                    HtmlSymbolType.Text;[{];
+                    HtmlSymbolType.NewLine;[LF];
+        Markup block - Gen<None> - 19 - (149:22,0)
+            Tag block - Gen<None> - 5 - (149:22,0)
+                Markup span - Gen<Markup> - [<img>] - SpanEditHandler;Accepts:None - (149:22,0) - Symbols:3
+                    HtmlSymbolType.OpenAngle;[<];
+                    HtmlSymbolType.Text;[img];
+                    HtmlSymbolType.CloseAngle;[>];
+            Tag block - Gen<None> - 14 - (154:22,5)
+                Markup span - Gen<Markup> - [</imgLF}LF@{LF] - SpanEditHandler;Accepts:Any - (154:22,5) - Symbols:9
+                    HtmlSymbolType.OpenAngle;[<];
+                    HtmlSymbolType.ForwardSlash;[/];
+                    HtmlSymbolType.Text;[img];
+                    HtmlSymbolType.NewLine;[LF];
+                    HtmlSymbolType.Text;[}];
+                    HtmlSymbolType.NewLine;[LF];
+                    HtmlSymbolType.Transition;[@];
+                    HtmlSymbolType.Text;[{];
+                    HtmlSymbolType.NewLine;[LF];
+        Markup block - Gen<None> - 23 - (168:25,0)
+            Tag block - Gen<None> - 7 - (168:25,0)
+                Markup span - Gen<Markup> - [<input>] - SpanEditHandler;Accepts:None - (168:25,0) - Symbols:3
+                    HtmlSymbolType.OpenAngle;[<];
+                    HtmlSymbolType.Text;[input];
+                    HtmlSymbolType.CloseAngle;[>];
+            Tag block - Gen<None> - 16 - (175:25,7)
+                Markup span - Gen<Markup> - [</inputLF}LF@{LF] - SpanEditHandler;Accepts:Any - (175:25,7) - Symbols:9
+                    HtmlSymbolType.OpenAngle;[<];
+                    HtmlSymbolType.ForwardSlash;[/];
+                    HtmlSymbolType.Text;[input];
+                    HtmlSymbolType.NewLine;[LF];
+                    HtmlSymbolType.Text;[}];
+                    HtmlSymbolType.NewLine;[LF];
+                    HtmlSymbolType.Transition;[@];
+                    HtmlSymbolType.Text;[{];
+                    HtmlSymbolType.NewLine;[LF];
+        Markup block - Gen<None> - 25 - (191:28,0)
+            Tag block - Gen<None> - 8 - (191:28,0)
+                Markup span - Gen<Markup> - [<keygen>] - SpanEditHandler;Accepts:None - (191:28,0) - Symbols:3
+                    HtmlSymbolType.OpenAngle;[<];
+                    HtmlSymbolType.Text;[keygen];
+                    HtmlSymbolType.CloseAngle;[>];
+            Tag block - Gen<None> - 17 - (199:28,8)
+                Markup span - Gen<Markup> - [</keygenLF}LF@{LF] - SpanEditHandler;Accepts:Any - (199:28,8) - Symbols:9
+                    HtmlSymbolType.OpenAngle;[<];
+                    HtmlSymbolType.ForwardSlash;[/];
+                    HtmlSymbolType.Text;[keygen];
+                    HtmlSymbolType.NewLine;[LF];
+                    HtmlSymbolType.Text;[}];
+                    HtmlSymbolType.NewLine;[LF];
+                    HtmlSymbolType.Transition;[@];
+                    HtmlSymbolType.Text;[{];
+                    HtmlSymbolType.NewLine;[LF];
+        Markup block - Gen<None> - 21 - (216:31,0)
+            Tag block - Gen<None> - 6 - (216:31,0)
+                Markup span - Gen<Markup> - [<link>] - SpanEditHandler;Accepts:None - (216:31,0) - Symbols:3
+                    HtmlSymbolType.OpenAngle;[<];
+                    HtmlSymbolType.Text;[link];
+                    HtmlSymbolType.CloseAngle;[>];
+            Tag block - Gen<None> - 15 - (222:31,6)
+                Markup span - Gen<Markup> - [</linkLF}LF@{LF] - SpanEditHandler;Accepts:Any - (222:31,6) - Symbols:9
+                    HtmlSymbolType.OpenAngle;[<];
+                    HtmlSymbolType.ForwardSlash;[/];
+                    HtmlSymbolType.Text;[link];
+                    HtmlSymbolType.NewLine;[LF];
+                    HtmlSymbolType.Text;[}];
+                    HtmlSymbolType.NewLine;[LF];
+                    HtmlSymbolType.Transition;[@];
+                    HtmlSymbolType.Text;[{];
+                    HtmlSymbolType.NewLine;[LF];
+        Markup block - Gen<None> - 21 - (237:34,0)
+            Tag block - Gen<None> - 6 - (237:34,0)
+                Markup span - Gen<Markup> - [<meta>] - SpanEditHandler;Accepts:None - (237:34,0) - Symbols:3
+                    HtmlSymbolType.OpenAngle;[<];
+                    HtmlSymbolType.Text;[meta];
+                    HtmlSymbolType.CloseAngle;[>];
+            Tag block - Gen<None> - 15 - (243:34,6)
+                Markup span - Gen<Markup> - [</metaLF}LF@{LF] - SpanEditHandler;Accepts:Any - (243:34,6) - Symbols:9
+                    HtmlSymbolType.OpenAngle;[<];
+                    HtmlSymbolType.ForwardSlash;[/];
+                    HtmlSymbolType.Text;[meta];
+                    HtmlSymbolType.NewLine;[LF];
+                    HtmlSymbolType.Text;[}];
+                    HtmlSymbolType.NewLine;[LF];
+                    HtmlSymbolType.Transition;[@];
+                    HtmlSymbolType.Text;[{];
+                    HtmlSymbolType.NewLine;[LF];
+        Markup block - Gen<None> - 23 - (258:37,0)
+            Tag block - Gen<None> - 7 - (258:37,0)
+                Markup span - Gen<Markup> - [<param>] - SpanEditHandler;Accepts:None - (258:37,0) - Symbols:3
+                    HtmlSymbolType.OpenAngle;[<];
+                    HtmlSymbolType.Text;[param];
+                    HtmlSymbolType.CloseAngle;[>];
+            Tag block - Gen<None> - 16 - (265:37,7)
+                Markup span - Gen<Markup> - [</paramLF}LF@{LF] - SpanEditHandler;Accepts:Any - (265:37,7) - Symbols:9
+                    HtmlSymbolType.OpenAngle;[<];
+                    HtmlSymbolType.ForwardSlash;[/];
+                    HtmlSymbolType.Text;[param];
+                    HtmlSymbolType.NewLine;[LF];
+                    HtmlSymbolType.Text;[}];
+                    HtmlSymbolType.NewLine;[LF];
+                    HtmlSymbolType.Transition;[@];
+                    HtmlSymbolType.Text;[{];
+                    HtmlSymbolType.NewLine;[LF];
+        Markup block - Gen<None> - 25 - (281:40,0)
+            Tag block - Gen<None> - 8 - (281:40,0)
+                Markup span - Gen<Markup> - [<source>] - SpanEditHandler;Accepts:None - (281:40,0) - Symbols:3
+                    HtmlSymbolType.OpenAngle;[<];
+                    HtmlSymbolType.Text;[source];
+                    HtmlSymbolType.CloseAngle;[>];
+            Tag block - Gen<None> - 17 - (289:40,8)
+                Markup span - Gen<Markup> - [</sourceLF}LF@{LF] - SpanEditHandler;Accepts:Any - (289:40,8) - Symbols:9
+                    HtmlSymbolType.OpenAngle;[<];
+                    HtmlSymbolType.ForwardSlash;[/];
+                    HtmlSymbolType.Text;[source];
+                    HtmlSymbolType.NewLine;[LF];
+                    HtmlSymbolType.Text;[}];
+                    HtmlSymbolType.NewLine;[LF];
+                    HtmlSymbolType.Transition;[@];
+                    HtmlSymbolType.Text;[{];
+                    HtmlSymbolType.NewLine;[LF];
+        Markup block - Gen<None> - 23 - (306:43,0)
+            Tag block - Gen<None> - 7 - (306:43,0)
+                Markup span - Gen<Markup> - [<track>] - SpanEditHandler;Accepts:None - (306:43,0) - Symbols:3
+                    HtmlSymbolType.OpenAngle;[<];
+                    HtmlSymbolType.Text;[track];
+                    HtmlSymbolType.CloseAngle;[>];
+            Tag block - Gen<None> - 16 - (313:43,7)
+                Markup span - Gen<Markup> - [</trackLF}LF@{LF] - SpanEditHandler;Accepts:Any - (313:43,7) - Symbols:9
+                    HtmlSymbolType.OpenAngle;[<];
+                    HtmlSymbolType.ForwardSlash;[/];
+                    HtmlSymbolType.Text;[track];
+                    HtmlSymbolType.NewLine;[LF];
+                    HtmlSymbolType.Text;[}];
+                    HtmlSymbolType.NewLine;[LF];
+                    HtmlSymbolType.Transition;[@];
+                    HtmlSymbolType.Text;[{];
+                    HtmlSymbolType.NewLine;[LF];
+        Markup block - Gen<None> - 15 - (329:46,0)
+            Tag block - Gen<None> - 5 - (329:46,0)
+                Markup span - Gen<Markup> - [<wbr>] - SpanEditHandler;Accepts:None - (329:46,0) - Symbols:3
+                    HtmlSymbolType.OpenAngle;[<];
+                    HtmlSymbolType.Text;[wbr];
+                    HtmlSymbolType.CloseAngle;[>];
+            Tag block - Gen<None> - 10 - (334:46,5)
+                Markup span - Gen<Markup> - [</wbrLF}LF] - SpanEditHandler;Accepts:Any - (334:46,5) - Symbols:6
+                    HtmlSymbolType.OpenAngle;[<];
+                    HtmlSymbolType.ForwardSlash;[/];
+                    HtmlSymbolType.Text;[wbr];
+                    HtmlSymbolType.NewLine;[LF];
+                    HtmlSymbolType.Text;[}];
+                    HtmlSymbolType.NewLine;[LF];

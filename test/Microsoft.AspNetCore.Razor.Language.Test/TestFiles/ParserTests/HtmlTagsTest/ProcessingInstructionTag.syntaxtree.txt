@@ -1,0 +1,16 @@
+Markup block - Gen<None> - 23 - (0:0,0)
+    Markup span - Gen<Markup> - [<?xml version="1.0" ?>] - SpanEditHandler;Accepts:None - (0:0,0) - Symbols:12
+        HtmlSymbolType.OpenAngle;[<];
+        HtmlSymbolType.QuestionMark;[?];
+        HtmlSymbolType.Text;[xml];
+        HtmlSymbolType.WhiteSpace;[ ];
+        HtmlSymbolType.Text;[version];
+        HtmlSymbolType.Equals;[=];
+        HtmlSymbolType.DoubleQuote;["];
+        HtmlSymbolType.Text;[1.0];
+        HtmlSymbolType.DoubleQuote;["];
+        HtmlSymbolType.WhiteSpace;[ ];
+        HtmlSymbolType.QuestionMark;[?];
+        HtmlSymbolType.CloseAngle;[>];
+    Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:None - (22:0,22) - Symbols:1
+        HtmlSymbolType.WhiteSpace;[ ];

@@ -1,46 +1,42 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Collections.Generic;
+using System.Text;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
     public class HtmlTagsTest : CsHtmlMarkupParserTestBase
     {
-        public static IEnumerable<object[]> VoidElementNames
+        private static readonly string[] VoidElementNames = new[]
         {
-            get
-            {
-                yield return new[] { "area" };
-                yield return new[] { "base" };
-                yield return new[] { "br" };
-                yield return new[] { "col" };
-                yield return new[] { "command" };
-                yield return new[] { "embed" };
-                yield return new[] { "hr" };
-                yield return new[] { "img" };
-                yield return new[] { "input" };
-                yield return new[] { "keygen" };
-                yield return new[] { "link" };
-                yield return new[] { "meta" };
-                yield return new[] { "param" };
-                yield return new[] { "source" };
-                yield return new[] { "track" };
-                yield return new[] { "wbr" };
-            }
+            "area",
+            "base",
+            "br",
+            "col",
+            "command",
+            "embed",
+            "hr",
+            "img",
+            "input",
+            "keygen",
+            "link",
+            "meta",
+            "param",
+            "source",
+            "track",
+            "wbr",
+        };
+
+        public HtmlTagsTest()
+        {
+            UseBaselineTests = true;
         }
 
         [Fact]
         public void EmptyTagNestsLikeNormalTag()
         {
-            ParseBlockTest("<p></> Bar",
-                new MarkupBlock(
-                    BlockFactory.MarkupTagBlock("<p>", AcceptedCharactersInternal.None),
-                    BlockFactory.MarkupTagBlock("</>", AcceptedCharactersInternal.None),
-                    Factory.Markup(" ").Accepts(AcceptedCharactersInternal.None)),
-                RazorDiagnosticFactory.CreateParsing_MissingEndTag(
-                    new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), "p"));
+            ParseBlockTest("<p></> Bar");
         }
 
         [Fact]
@@ -48,159 +44,137 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             // This can happen in situations where a user is in VS' HTML editor and they're modifying
             // the contents of an HTML tag.
-            ParseBlockTest("<></> Bar",
-                new MarkupBlock(
-                    BlockFactory.MarkupTagBlock("<>", AcceptedCharactersInternal.None),
-                    BlockFactory.MarkupTagBlock("</>", AcceptedCharactersInternal.None),
-                    Factory.Markup(" ").Accepts(AcceptedCharactersInternal.None)));
+            ParseBlockTest("<></> Bar");
         }
 
         [Fact]
         public void CommentTag()
         {
-            ParseBlockTest("<!--Foo--> Bar",
-                new MarkupBlock(
-                    BlockFactory.HtmlCommentBlock("Foo"),
-                    Factory.Markup(" ").Accepts(AcceptedCharactersInternal.None)));
+            ParseBlockTest("<!--Foo--> Bar");
         }
 
         [Fact]
         public void DocTypeTag()
         {
-            ParseBlockTest("<!DOCTYPE html> foo",
-                new MarkupBlock(
-                    Factory.Markup("<!DOCTYPE html>").Accepts(AcceptedCharactersInternal.None),
-                    Factory.Markup(" ").Accepts(AcceptedCharactersInternal.None)));
+            ParseBlockTest("<!DOCTYPE html> foo");
         }
 
         [Fact]
         public void ProcessingInstructionTag()
         {
-            ParseBlockTest("<?xml version=\"1.0\" ?> foo",
-                new MarkupBlock(
-                    Factory.Markup("<?xml version=\"1.0\" ?>").Accepts(AcceptedCharactersInternal.None),
-                    Factory.Markup(" ").Accepts(AcceptedCharactersInternal.None)));
+            ParseBlockTest("<?xml version=\"1.0\" ?> foo");
         }
 
         [Fact]
         public void ElementTags()
         {
-            ParseBlockTest("<p>Foo</p> Bar",
-                new MarkupBlock(
-                    BlockFactory.MarkupTagBlock("<p>", AcceptedCharactersInternal.None),
-                    Factory.Markup("Foo"),
-                    BlockFactory.MarkupTagBlock("</p>", AcceptedCharactersInternal.None),
-                    Factory.Markup(" ").Accepts(AcceptedCharactersInternal.None)));
+            ParseBlockTest("<p>Foo</p> Bar");
         }
 
         [Fact]
         public void TextTags()
         {
-            ParseBlockTest("<text>Foo</text>}",
-                new MarkupBlock(
-                    new MarkupTagBlock(
-                        Factory.MarkupTransition("<text>")),
-                    Factory.Markup("Foo").Accepts(AcceptedCharactersInternal.None),
-                    new MarkupTagBlock(
-                        Factory.MarkupTransition("</text>"))));
+            ParseBlockTest("<text>Foo</text>}");
         }
 
         [Fact]
         public void CDataTag()
         {
-            ParseBlockTest("<![CDATA[Foo]]> Bar",
-                new MarkupBlock(
-                    Factory.Markup("<![CDATA[Foo]]>").Accepts(AcceptedCharactersInternal.None),
-                    Factory.Markup(" ").Accepts(AcceptedCharactersInternal.None)));
+            ParseBlockTest("<![CDATA[Foo]]> Bar");
         }
 
         [Fact]
         public void ScriptTag()
         {
-            ParseDocumentTest("<script>foo < bar && quantity.toString() !== orderQty.val()</script>",
-                new MarkupBlock(
-                    BlockFactory.MarkupTagBlock("<script>"),
-                    Factory.Markup("foo < bar && quantity.toString() !== orderQty.val()"),
-                    BlockFactory.MarkupTagBlock("</script>")));
+            ParseDocumentTest("<script>foo < bar && quantity.toString() !== orderQty.val()</script>");
         }
 
         [Fact]
         public void ScriptTag_WithNestedMalformedTag()
         {
-            ParseDocumentTest("<script>var four = 4; /* </ */</script>",
-                new MarkupBlock(
-                    BlockFactory.MarkupTagBlock("<script>"),
-                    Factory.Markup("var four = 4; /* </ */"),
-                    BlockFactory.MarkupTagBlock("</script>")));
+            ParseDocumentTest("<script>var four = 4; /* </ */</script>");
         }
 
         [Fact]
         public void ScriptTag_WithNestedEndTag()
         {
-            ParseDocumentTest("<script></p></script>",
-                new MarkupBlock(
-                    BlockFactory.MarkupTagBlock("<script>"),
-                    Factory.Markup("</p>"),
-                    BlockFactory.MarkupTagBlock("</script>")));
+            ParseDocumentTest("<script></p></script>");
         }
 
         [Fact]
         public void ScriptTag_WithNestedBeginTag()
         {
-            ParseDocumentTest("<script><p></script>",
-                new MarkupBlock(
-                    BlockFactory.MarkupTagBlock("<script>"),
-                    Factory.Markup("<p>"),
-                    BlockFactory.MarkupTagBlock("</script>")));
+            ParseDocumentTest("<script><p></script>");
         }
 
         [Fact]
         public void ScriptTag_WithNestedTag()
         {
-            ParseDocumentTest("<script><p></p></script>",
-                new MarkupBlock(
-                    BlockFactory.MarkupTagBlock("<script>"),
-                    Factory.Markup("<p></p>"),
-                    BlockFactory.MarkupTagBlock("</script>")));
+            ParseDocumentTest("<script><p></p></script>");
         }
 
-        [Theory]
-        [MemberData(nameof(VoidElementNames))]
-        public void VoidElementFollowedByContent(string tagName)
+        [Fact]
+        public void VoidElementFollowedByContent()
         {
-            ParseBlockTest("<" + tagName + ">foo",
-                new MarkupBlock(
-                    BlockFactory.MarkupTagBlock("<" + tagName + ">", AcceptedCharactersInternal.None)));
+            // Arrange
+            var content = new StringBuilder();
+            foreach (var tagName in VoidElementNames)
+            {
+                content.AppendLine("@{");
+                content.AppendLine("<" + tagName + ">var x = true;");
+                content.AppendLine("}");
+            }
+
+            // Act & Assert
+            ParseDocumentTest(content.ToString());
         }
 
-        [Theory]
-        [MemberData(nameof(VoidElementNames))]
-        public void VoidElementFollowedByOtherTag(string tagName)
+        [Fact]
+        public void VoidElementFollowedByOtherTag()
         {
-            ParseBlockTest("<" + tagName + "><other>foo",
-                new MarkupBlock(
-                    BlockFactory.MarkupTagBlock("<" + tagName + ">", AcceptedCharactersInternal.None)));
+            // Arrange
+            var content = new StringBuilder();
+            foreach (var tagName in VoidElementNames)
+            {
+                content.AppendLine(@"{");
+                content.AppendLine("<" + tagName + "><other> var x = true;");
+                content.AppendLine("}");
+            }
+
+            // Act & Assert
+            ParseDocumentTest(content.ToString());
         }
 
-        [Theory]
-        [MemberData(nameof(VoidElementNames))]
-        public void VoidElementFollowedByCloseTag(string tagName)
+        [Fact]
+        public void VoidElementFollowedByCloseTag()
         {
-            ParseBlockTest("<" + tagName + "> </" + tagName + ">foo",
-                new MarkupBlock(
-                    BlockFactory.MarkupTagBlock("<" + tagName + ">", AcceptedCharactersInternal.None),
-                    Factory.Markup(" "),
-                    BlockFactory.MarkupTagBlock("</" + tagName + ">", AcceptedCharactersInternal.None)));
+            // Arrange
+            var content = new StringBuilder();
+            foreach (var tagName in VoidElementNames)
+            {
+                content.AppendLine("@{");
+                content.AppendLine("<" + tagName + "> </" + tagName + ">var x = true;");
+                content.AppendLine("}");
+            }
+
+            // Act & Assert
+            ParseDocumentTest(content.ToString());
         }
 
-        [Theory]
-        [MemberData(nameof(VoidElementNames))]
-        public void IncompleteVoidElementEndTag(string tagName)
+        [Fact]
+        public void IncompleteVoidElementEndTag()
         {
-            ParseBlockTest("<" + tagName + "></" + tagName,
-                new MarkupBlock(
-                    BlockFactory.MarkupTagBlock("<" + tagName + ">", AcceptedCharactersInternal.None),
-                    BlockFactory.MarkupTagBlock("</" + tagName)));
+            // Arrange
+            var content = new StringBuilder();
+            foreach (var tagName in VoidElementNames)
+            {
+                content.AppendLine("@{");
+                content.AppendLine("<" + tagName + "></" + tagName);
+                content.AppendLine("}");
+            }
+
+            // Act & Assert
+            ParseDocumentTest(content.ToString());
         }
     }
 }
