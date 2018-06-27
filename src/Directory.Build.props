@@ -1,6 +1,7 @@
 <Project>
-  <Import Project="..\version.props" />
-  <Import Project="..\build\common.props" />
-  <Import Project="..\build\external-dependencies.props" />
-  <Import Project="..\build\sources.props" />
+  <Import Project="..\Directory.Build.props" />
+
+  <ItemGroup>
+    <PackageReference Include="Internal.AspNetCore.Sdk" Version="$(InternalAspNetCoreSdkPackageVersion)" PrivateAssets="All" />
+  </ItemGroup>
 </Project>

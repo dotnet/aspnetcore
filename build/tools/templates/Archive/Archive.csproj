@@ -1,12 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="$(DotNetRestoreSourcePropsPath)" Condition="'$(DotNetRestoreSourcePropsPath)' != ''"/>
-
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <EnableApiCheck>false</EnableApiCheck>
-    <DotnetCliToolTargetFramework>netcoreapp2.1</DotnetCliToolTargetFramework>
-    <RestoreSources>$(RestoreSources);$(DotNetRestoreSources);</RestoreSources>
     <DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>
     <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
   </PropertyGroup>
