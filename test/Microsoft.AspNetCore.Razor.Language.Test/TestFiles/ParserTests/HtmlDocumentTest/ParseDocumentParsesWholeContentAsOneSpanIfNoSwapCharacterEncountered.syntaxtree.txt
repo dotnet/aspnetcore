@@ -1,0 +1,5 @@
+Markup block - Gen<None> - 7 - (0:0,0)
+    Markup span - Gen<Markup> - [foo baz] - SpanEditHandler;Accepts:Any - (0:0,0) - Symbols:3
+        HtmlSymbolType.Text;[foo];
+        HtmlSymbolType.WhiteSpace;[ ];
+        HtmlSymbolType.Text;[baz];

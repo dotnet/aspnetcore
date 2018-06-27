@@ -1,0 +1,42 @@
+Markup block - Gen<None> - 39 - (0:0,0)
+    Tag block - Gen<None> - 6 - (0:0,0)
+        Markup span - Gen<Markup> - [<div >] - SpanEditHandler;Accepts:Any - (0:0,0) - Symbols:4
+            HtmlSymbolType.OpenAngle;[<];
+            HtmlSymbolType.Text;[div];
+            HtmlSymbolType.WhiteSpace;[ ];
+            HtmlSymbolType.CloseAngle;[>];
+    Tag block - Gen<None> - 17 - (6:0,6)
+        Markup span - Gen<Markup> - [<p] - SpanEditHandler;Accepts:Any - (6:0,6) - Symbols:2
+            HtmlSymbolType.OpenAngle;[<];
+            HtmlSymbolType.Text;[p];
+        Markup block - Gen<Attr:class, class = '@(8:0,8),'@(21:0,21)> - 14 - (8:0,8)
+            Markup span - Gen<None> - [ class = '] - SpanEditHandler;Accepts:Any - (8:0,8) - Symbols:6
+                HtmlSymbolType.WhiteSpace;[ ];
+                HtmlSymbolType.Text;[class];
+                HtmlSymbolType.WhiteSpace;[ ];
+                HtmlSymbolType.Equals;[=];
+                HtmlSymbolType.WhiteSpace;[ ];
+                HtmlSymbolType.SingleQuote;['];
+            Markup span - Gen<LitAttr:@(18:0,18)> - [bar] - SpanEditHandler;Accepts:Any - (18:0,18) - Symbols:1
+                HtmlSymbolType.Text;[bar];
+            Markup span - Gen<None> - ['] - SpanEditHandler;Accepts:Any - (21:0,21) - Symbols:1
+                HtmlSymbolType.SingleQuote;['];
+        Markup span - Gen<Markup> - [>] - SpanEditHandler;Accepts:Any - (22:0,22) - Symbols:1
+            HtmlSymbolType.CloseAngle;[>];
+    Markup span - Gen<Markup> - [ Foo ] - SpanEditHandler;Accepts:Any - (23:0,23) - Symbols:3
+        HtmlSymbolType.WhiteSpace;[ ];
+        HtmlSymbolType.Text;[Foo];
+        HtmlSymbolType.WhiteSpace;[ ];
+    Tag block - Gen<None> - 4 - (28:0,28)
+        Markup span - Gen<Markup> - [</p>] - SpanEditHandler;Accepts:Any - (28:0,28) - Symbols:4
+            HtmlSymbolType.OpenAngle;[<];
+            HtmlSymbolType.ForwardSlash;[/];
+            HtmlSymbolType.Text;[p];
+            HtmlSymbolType.CloseAngle;[>];
+    Tag block - Gen<None> - 7 - (32:0,32)
+        Markup span - Gen<Markup> - [</div >] - SpanEditHandler;Accepts:Any - (32:0,32) - Symbols:5
+            HtmlSymbolType.OpenAngle;[<];
+            HtmlSymbolType.ForwardSlash;[/];
+            HtmlSymbolType.Text;[div];
+            HtmlSymbolType.WhiteSpace;[ ];
+            HtmlSymbolType.CloseAngle;[>];

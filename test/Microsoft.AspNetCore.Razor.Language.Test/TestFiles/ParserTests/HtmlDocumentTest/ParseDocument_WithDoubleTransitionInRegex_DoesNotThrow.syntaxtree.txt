@@ -1,0 +1,72 @@
+Markup block - Gen<None> - 117 - (0:0,0)
+    Markup span - Gen<Markup> - [{] - SpanEditHandler;Accepts:Any - (0:0,0) - Symbols:1
+        HtmlSymbolType.Text;[{];
+    Tag block - Gen<None> - 115 - (1:0,1)
+        Markup span - Gen<Markup> - [<span] - SpanEditHandler;Accepts:Any - (1:0,1) - Symbols:2
+            HtmlSymbolType.OpenAngle;[<];
+            HtmlSymbolType.Text;[span];
+        Markup block - Gen<Attr:foo, foo="@(6:0,6),"@(112:0,112)> - 107 - (6:0,6)
+            Markup span - Gen<None> - [ foo="] - SpanEditHandler;Accepts:Any - (6:0,6) - Symbols:4
+                HtmlSymbolType.WhiteSpace;[ ];
+                HtmlSymbolType.Text;[foo];
+                HtmlSymbolType.Equals;[=];
+                HtmlSymbolType.DoubleQuote;["];
+            Markup span - Gen<LitAttr:@(12:0,12)> - [/^[a-z0-9!#$%&'*+\/=?^_`{|}~.-]+] - SpanEditHandler;Accepts:Any - (12:0,12) - Symbols:14
+                HtmlSymbolType.ForwardSlash;[/];
+                HtmlSymbolType.Text;[^];
+                HtmlSymbolType.LeftBracket;[[];
+                HtmlSymbolType.Text;[a-z0-9];
+                HtmlSymbolType.Bang;[!];
+                HtmlSymbolType.Text;[#$%&];
+                HtmlSymbolType.SingleQuote;['];
+                HtmlSymbolType.Text;[*+\];
+                HtmlSymbolType.ForwardSlash;[/];
+                HtmlSymbolType.Equals;[=];
+                HtmlSymbolType.QuestionMark;[?];
+                HtmlSymbolType.Text;[^_`{|}~.-];
+                HtmlSymbolType.RightBracket;[]];
+                HtmlSymbolType.Text;[+];
+            Markup block - Gen<None> - 2 - (44:0,44)
+                Markup span - Gen<LitAttr:@(44:0,44)> - [@] - SpanEditHandler;Accepts:None - (44:0,44) - Symbols:1
+                    HtmlSymbolType.Transition;[@];
+                Markup span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (45:0,45) - Symbols:1
+                    HtmlSymbolType.Transition;[@];
+            Markup span - Gen<LitAttr:@(46:0,46)> - [[a-z0-9]([a-z0-9-]*[a-z0-9])?\.([a-z0-9]([a-z0-9-]*[a-z0-9])?)*$/i] - SpanEditHandler;Accepts:Any - (46:0,46) - Symbols:30
+                HtmlSymbolType.LeftBracket;[[];
+                HtmlSymbolType.Text;[a-z0-9];
+                HtmlSymbolType.RightBracket;[]];
+                HtmlSymbolType.Text;[(];
+                HtmlSymbolType.LeftBracket;[[];
+                HtmlSymbolType.Text;[a-z0-9-];
+                HtmlSymbolType.RightBracket;[]];
+                HtmlSymbolType.Text;[*];
+                HtmlSymbolType.LeftBracket;[[];
+                HtmlSymbolType.Text;[a-z0-9];
+                HtmlSymbolType.RightBracket;[]];
+                HtmlSymbolType.Text;[)];
+                HtmlSymbolType.QuestionMark;[?];
+                HtmlSymbolType.Text;[\.(];
+                HtmlSymbolType.LeftBracket;[[];
+                HtmlSymbolType.Text;[a-z0-9];
+                HtmlSymbolType.RightBracket;[]];
+                HtmlSymbolType.Text;[(];
+                HtmlSymbolType.LeftBracket;[[];
+                HtmlSymbolType.Text;[a-z0-9-];
+                HtmlSymbolType.RightBracket;[]];
+                HtmlSymbolType.Text;[*];
+                HtmlSymbolType.LeftBracket;[[];
+                HtmlSymbolType.Text;[a-z0-9];
+                HtmlSymbolType.RightBracket;[]];
+                HtmlSymbolType.Text;[)];
+                HtmlSymbolType.QuestionMark;[?];
+                HtmlSymbolType.Text;[)*$];
+                HtmlSymbolType.ForwardSlash;[/];
+                HtmlSymbolType.Text;[i];
+            Markup span - Gen<None> - ["] - SpanEditHandler;Accepts:Any - (112:0,112) - Symbols:1
+                HtmlSymbolType.DoubleQuote;["];
+        Markup span - Gen<Markup> - [ />] - SpanEditHandler;Accepts:Any - (113:0,113) - Symbols:3
+            HtmlSymbolType.WhiteSpace;[ ];
+            HtmlSymbolType.ForwardSlash;[/];
+            HtmlSymbolType.CloseAngle;[>];
+    Markup span - Gen<Markup> - [}] - SpanEditHandler;Accepts:Any - (116:0,116) - Symbols:1
+        HtmlSymbolType.Text;[}];
