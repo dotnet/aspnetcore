@@ -1,0 +1,74 @@
+Statement block - Gen<None> - 161 - (0:0,0)
+    Code span - Gen<Stmt> - [if(foo) {LF    var foo = "After this statement there are 10 spaces";          LF] - SpanEditHandler;Accepts:Any - (0:0,0) - Symbols:18
+        CSharpSymbolType.Keyword;[if];
+        CSharpSymbolType.LeftParenthesis;[(];
+        CSharpSymbolType.Identifier;[foo];
+        CSharpSymbolType.RightParenthesis;[)];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.LeftBrace;[{];
+        CSharpSymbolType.NewLine;[LF];
+        CSharpSymbolType.WhiteSpace;[    ];
+        CSharpSymbolType.Identifier;[var];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.Identifier;[foo];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.Assign;[=];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.StringLiteral;["After this statement there are 10 spaces"];
+        CSharpSymbolType.Semicolon;[;];
+        CSharpSymbolType.WhiteSpace;[          ];
+        CSharpSymbolType.NewLine;[LF];
+    Markup block - Gen<None> - 46 - (80:2,0)
+        Markup span - Gen<Markup> - [    ] - SpanEditHandler;Accepts:Any - (80:2,0) - Symbols:1
+            HtmlSymbolType.WhiteSpace;[    ];
+        Tag block - Gen<None> - 3 - (84:2,4)
+            Markup span - Gen<Markup> - [<p>] - SpanEditHandler;Accepts:None - (84:2,4) - Symbols:3
+                HtmlSymbolType.OpenAngle;[<];
+                HtmlSymbolType.Text;[p];
+                HtmlSymbolType.CloseAngle;[>];
+        Markup span - Gen<Markup> - [LF        FooLF] - SpanEditHandler;Accepts:Any - (87:2,7) - Symbols:4
+            HtmlSymbolType.NewLine;[LF];
+            HtmlSymbolType.WhiteSpace;[        ];
+            HtmlSymbolType.Text;[Foo];
+            HtmlSymbolType.NewLine;[LF];
+        Expression block - Gen<Expr> - 12 - (102:4,0)
+            Code span - Gen<Stmt> - [        ] - SpanEditHandler;Accepts:Any - (102:4,0) - Symbols:1
+                CSharpSymbolType.WhiteSpace;[        ];
+            Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (110:4,8) - Symbols:1
+                CSharpSymbolType.Transition;[@];
+            Code span - Gen<Expr> - [bar] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K14 - (111:4,9) - Symbols:1
+                CSharpSymbolType.Identifier;[bar];
+        Markup span - Gen<Markup> - [LF    ] - SpanEditHandler;Accepts:Any - (114:4,12) - Symbols:2
+            HtmlSymbolType.NewLine;[LF];
+            HtmlSymbolType.WhiteSpace;[    ];
+        Tag block - Gen<None> - 4 - (120:5,4)
+            Markup span - Gen<Markup> - [</p>] - SpanEditHandler;Accepts:None - (120:5,4) - Symbols:4
+                HtmlSymbolType.OpenAngle;[<];
+                HtmlSymbolType.ForwardSlash;[/];
+                HtmlSymbolType.Text;[p];
+                HtmlSymbolType.CloseAngle;[>];
+        Markup span - Gen<Markup> - [LF] - SpanEditHandler;Accepts:None - (124:5,8) - Symbols:1
+            HtmlSymbolType.NewLine;[LF];
+    Markup block - Gen<None> - 14 - (126:6,0)
+        Markup span - Gen<Markup> - [    ] - SpanEditHandler;Accepts:Any - (126:6,0) - Symbols:1
+            HtmlSymbolType.WhiteSpace;[    ];
+        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (130:6,4) - Symbols:1
+            HtmlSymbolType.Transition;[@];
+        MetaCode span - Gen<None> - [:] - SpanEditHandler;Accepts:Any - (131:6,5) - Symbols:1
+            HtmlSymbolType.Colon;[:];
+        Markup span - Gen<Markup> - [Hello!LF] - SpanEditHandler;Accepts:None - (132:6,6) - Symbols:3
+            HtmlSymbolType.Text;[Hello];
+            HtmlSymbolType.Bang;[!];
+            HtmlSymbolType.NewLine;[LF];
+    Code span - Gen<Stmt> - [    var biz = boz;LF}] - SpanEditHandler;Accepts:Any - (140:7,0) - Symbols:11
+        CSharpSymbolType.WhiteSpace;[    ];
+        CSharpSymbolType.Identifier;[var];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.Identifier;[biz];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.Assign;[=];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.Identifier;[boz];
+        CSharpSymbolType.Semicolon;[;];
+        CSharpSymbolType.NewLine;[LF];
+        CSharpSymbolType.RightBrace;[}];

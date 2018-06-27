@@ -1,0 +1,3 @@
+Directive block - Gen<None> - 9 - (0:0,0)
+    MetaCode span - Gen<None> - [namespace] - SpanEditHandler;Accepts:None - (0:0,0) - Symbols:1
+        CSharpSymbolType.Keyword;[namespace];

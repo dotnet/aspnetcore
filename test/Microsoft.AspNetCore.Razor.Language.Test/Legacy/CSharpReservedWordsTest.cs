@@ -11,35 +11,17 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             UseBaselineTests = true;
         }
-
-        [Theory]
-        [InlineData("namespace")]
-        [InlineData("class")]
-        public void ReservedWords(string word)
+        
+        [Fact]
+        public void ReservedWord()
         {
-            ParseBlockTest(word,
-                           new DirectiveBlock(
-                               Factory.MetaCode(word).Accepts(AcceptedCharactersInternal.None)
-                               ),
-                           RazorDiagnosticFactory.CreateParsing_ReservedWord(
-                               new SourceSpan(SourceLocation.Zero, word.Length), word));
+            ParseBlockTest("namespace");
         }
 
-        [Theory]
-        [InlineData("Namespace")]
-        [InlineData("Class")]
-        [InlineData("NAMESPACE")]
-        [InlineData("CLASS")]
-        [InlineData("nameSpace")]
-        [InlineData("NameSpace")]
-        private void ReservedWordsAreCaseSensitive(string word)
+        [Fact]
+        private void ReservedWordIsCaseSensitive()
         {
-            ParseBlockTest(word,
-                           new ExpressionBlock(
-                               Factory.Code(word)
-                                   .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                                   .Accepts(AcceptedCharactersInternal.NonWhiteSpace)
-                               ));
+            ParseBlockTest("NameSpace");
         }
     }
 }

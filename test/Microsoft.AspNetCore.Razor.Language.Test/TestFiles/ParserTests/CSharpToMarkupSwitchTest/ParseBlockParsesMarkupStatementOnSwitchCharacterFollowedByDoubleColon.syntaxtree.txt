@@ -1,0 +1,20 @@
+Statement block - Gen<None> - 24 - (0:0,0)
+    Code span - Gen<Stmt> - [if(foo) {] - SpanEditHandler;Accepts:Any - (0:0,0) - Symbols:6
+        CSharpSymbolType.Keyword;[if];
+        CSharpSymbolType.LeftParenthesis;[(];
+        CSharpSymbolType.Identifier;[foo];
+        CSharpSymbolType.RightParenthesis;[)];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.LeftBrace;[{];
+    Markup block - Gen<None> - 14 - (9:0,9)
+        Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:Any - (9:0,9) - Symbols:1
+            HtmlSymbolType.WhiteSpace;[ ];
+        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (10:0,10) - Symbols:1
+            HtmlSymbolType.Transition;[@];
+        MetaCode span - Gen<None> - [:] - SpanEditHandler;Accepts:Any - (11:0,11) - Symbols:1
+            HtmlSymbolType.Colon;[:];
+        Markup span - Gen<Markup> - [:SometextLF] - SpanEditHandler;Accepts:None - (12:0,12) - Symbols:2
+            HtmlSymbolType.Text;[:Sometext];
+            HtmlSymbolType.NewLine;[LF];
+    Code span - Gen<Stmt> - [}] - SpanEditHandler;Accepts:Any - (23:1,0) - Symbols:1
+        CSharpSymbolType.RightBrace;[}];

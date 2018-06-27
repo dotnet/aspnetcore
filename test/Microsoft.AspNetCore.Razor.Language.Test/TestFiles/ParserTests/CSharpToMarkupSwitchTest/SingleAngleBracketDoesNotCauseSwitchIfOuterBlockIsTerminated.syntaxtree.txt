@@ -1,0 +1,10 @@
+Statement block - Gen<None> - 9 - (0:0,0)
+    MetaCode span - Gen<None> - [{] - SpanEditHandler;Accepts:None - (0:0,0) - Symbols:1
+        CSharpSymbolType.LeftBrace;[{];
+    Code span - Gen<Stmt> - [ List< ] - AutoCompleteEditHandler;Accepts:Any,AutoComplete:[<null>];AtEOL - (1:0,1) - Symbols:4
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.Identifier;[List];
+        CSharpSymbolType.LessThan;[<];
+        CSharpSymbolType.WhiteSpace;[ ];
+    MetaCode span - Gen<None> - [}] - SpanEditHandler;Accepts:None - (8:0,8) - Symbols:1
+        CSharpSymbolType.RightBrace;[}];

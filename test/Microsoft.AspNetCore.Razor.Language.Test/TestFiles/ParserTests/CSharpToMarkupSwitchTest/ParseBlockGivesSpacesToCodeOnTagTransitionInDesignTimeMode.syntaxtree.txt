@@ -1,0 +1,25 @@
+Statement block - Gen<None> - 24 - (0:0,0)
+    MetaCode span - Gen<None> - [{] - SpanEditHandler;Accepts:None - (0:0,0) - Symbols:1
+        CSharpSymbolType.LeftBrace;[{];
+    Code span - Gen<Stmt> - [LF    ] - AutoCompleteEditHandler;Accepts:Any,AutoComplete:[<null>];AtEOL - (1:0,1) - Symbols:2
+        CSharpSymbolType.NewLine;[LF];
+        CSharpSymbolType.WhiteSpace;[    ];
+    Markup block - Gen<None> - 10 - (7:1,4)
+        Tag block - Gen<None> - 3 - (7:1,4)
+            Markup span - Gen<Markup> - [<p>] - SpanEditHandler;Accepts:None - (7:1,4) - Symbols:3
+                HtmlSymbolType.OpenAngle;[<];
+                HtmlSymbolType.Text;[p];
+                HtmlSymbolType.CloseAngle;[>];
+        Markup span - Gen<Markup> - [Foo] - SpanEditHandler;Accepts:Any - (10:1,7) - Symbols:1
+            HtmlSymbolType.Text;[Foo];
+        Tag block - Gen<None> - 4 - (13:1,10)
+            Markup span - Gen<Markup> - [</p>] - SpanEditHandler;Accepts:None - (13:1,10) - Symbols:4
+                HtmlSymbolType.OpenAngle;[<];
+                HtmlSymbolType.ForwardSlash;[/];
+                HtmlSymbolType.Text;[p];
+                HtmlSymbolType.CloseAngle;[>];
+    Code span - Gen<Stmt> - [    LF] - SpanEditHandler;Accepts:Any - (17:1,14) - Symbols:2
+        CSharpSymbolType.WhiteSpace;[    ];
+        CSharpSymbolType.NewLine;[LF];
+    MetaCode span - Gen<None> - [}] - SpanEditHandler;Accepts:None - (23:2,0) - Symbols:1
+        CSharpSymbolType.RightBrace;[}];

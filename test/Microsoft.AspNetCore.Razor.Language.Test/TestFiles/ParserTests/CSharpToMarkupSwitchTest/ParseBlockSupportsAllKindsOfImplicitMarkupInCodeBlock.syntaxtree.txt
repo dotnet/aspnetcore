@@ -1,0 +1,122 @@
+Statement block - Gen<None> - 206 - (0:0,0)
+    MetaCode span - Gen<None> - [{] - SpanEditHandler;Accepts:None - (0:0,0) - Symbols:1
+        CSharpSymbolType.LeftBrace;[{];
+    Code span - Gen<Stmt> - [LF    if(true) {LF] - AutoCompleteEditHandler;Accepts:Any,AutoComplete:[<null>];AtEOL - (1:0,1) - Symbols:9
+        CSharpSymbolType.NewLine;[LF];
+        CSharpSymbolType.WhiteSpace;[    ];
+        CSharpSymbolType.Keyword;[if];
+        CSharpSymbolType.LeftParenthesis;[(];
+        CSharpSymbolType.Keyword;[true];
+        CSharpSymbolType.RightParenthesis;[)];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.LeftBrace;[{];
+        CSharpSymbolType.NewLine;[LF];
+    Markup block - Gen<None> - 30 - (19:2,0)
+        Markup span - Gen<Markup> - [        ] - SpanEditHandler;Accepts:Any - (19:2,0) - Symbols:1
+            HtmlSymbolType.WhiteSpace;[        ];
+        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (27:2,8) - Symbols:1
+            HtmlSymbolType.Transition;[@];
+        MetaCode span - Gen<None> - [:] - SpanEditHandler;Accepts:Any - (28:2,9) - Symbols:1
+            HtmlSymbolType.Colon;[:];
+        Markup span - Gen<Markup> - [Single Line MarkupLF] - SpanEditHandler;Accepts:None - (29:2,10) - Symbols:6
+            HtmlSymbolType.Text;[Single];
+            HtmlSymbolType.WhiteSpace;[ ];
+            HtmlSymbolType.Text;[Line];
+            HtmlSymbolType.WhiteSpace;[ ];
+            HtmlSymbolType.Text;[Markup];
+            HtmlSymbolType.NewLine;[LF];
+    Code span - Gen<Stmt> - [    }LF    foreach (var p in Enumerable.Range(1, 10)) {LF        ] - SpanEditHandler;Accepts:Any - (49:3,0) - Symbols:27
+        CSharpSymbolType.WhiteSpace;[    ];
+        CSharpSymbolType.RightBrace;[}];
+        CSharpSymbolType.NewLine;[LF];
+        CSharpSymbolType.WhiteSpace;[    ];
+        CSharpSymbolType.Keyword;[foreach];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.LeftParenthesis;[(];
+        CSharpSymbolType.Identifier;[var];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.Identifier;[p];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.Keyword;[in];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.Identifier;[Enumerable];
+        CSharpSymbolType.Dot;[.];
+        CSharpSymbolType.Identifier;[Range];
+        CSharpSymbolType.LeftParenthesis;[(];
+        CSharpSymbolType.IntegerLiteral;[1];
+        CSharpSymbolType.Comma;[,];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.IntegerLiteral;[10];
+        CSharpSymbolType.RightParenthesis;[)];
+        CSharpSymbolType.RightParenthesis;[)];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.LeftBrace;[{];
+        CSharpSymbolType.NewLine;[LF];
+        CSharpSymbolType.WhiteSpace;[        ];
+    Markup block - Gen<None> - 29 - (114:5,8)
+        Tag block - Gen<None> - 6 - (114:5,8)
+            Transition span - Gen<None> - [<text>] - SpanEditHandler;Accepts:None - (114:5,8) - Symbols:3
+                HtmlSymbolType.OpenAngle;[<];
+                HtmlSymbolType.Text;[text];
+                HtmlSymbolType.CloseAngle;[>];
+        Markup span - Gen<Markup> - [The number is ] - SpanEditHandler;Accepts:None - (120:5,14) - Symbols:6
+            HtmlSymbolType.Text;[The];
+            HtmlSymbolType.WhiteSpace;[ ];
+            HtmlSymbolType.Text;[number];
+            HtmlSymbolType.WhiteSpace;[ ];
+            HtmlSymbolType.Text;[is];
+            HtmlSymbolType.WhiteSpace;[ ];
+        Expression block - Gen<Expr> - 2 - (134:5,28)
+            Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (134:5,28) - Symbols:1
+                CSharpSymbolType.Transition;[@];
+            Code span - Gen<Expr> - [p] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K14 - (135:5,29) - Symbols:1
+                CSharpSymbolType.Identifier;[p];
+        Tag block - Gen<None> - 7 - (136:5,30)
+            Transition span - Gen<None> - [</text>] - SpanEditHandler;Accepts:None - (136:5,30) - Symbols:4
+                HtmlSymbolType.OpenAngle;[<];
+                HtmlSymbolType.ForwardSlash;[/];
+                HtmlSymbolType.Text;[text];
+                HtmlSymbolType.CloseAngle;[>];
+    Code span - Gen<Stmt> - [LF    }LF    if(!false) {LF] - SpanEditHandler;Accepts:Any - (143:5,37) - Symbols:13
+        CSharpSymbolType.NewLine;[LF];
+        CSharpSymbolType.WhiteSpace;[    ];
+        CSharpSymbolType.RightBrace;[}];
+        CSharpSymbolType.NewLine;[LF];
+        CSharpSymbolType.WhiteSpace;[    ];
+        CSharpSymbolType.Keyword;[if];
+        CSharpSymbolType.LeftParenthesis;[(];
+        CSharpSymbolType.Not;[!];
+        CSharpSymbolType.Keyword;[false];
+        CSharpSymbolType.RightParenthesis;[)];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.LeftBrace;[{];
+        CSharpSymbolType.NewLine;[LF];
+    Markup block - Gen<None> - 28 - (170:8,0)
+        Markup span - Gen<Markup> - [        ] - SpanEditHandler;Accepts:Any - (170:8,0) - Symbols:1
+            HtmlSymbolType.WhiteSpace;[        ];
+        Tag block - Gen<None> - 3 - (178:8,8)
+            Markup span - Gen<Markup> - [<p>] - SpanEditHandler;Accepts:None - (178:8,8) - Symbols:3
+                HtmlSymbolType.OpenAngle;[<];
+                HtmlSymbolType.Text;[p];
+                HtmlSymbolType.CloseAngle;[>];
+        Markup span - Gen<Markup> - [A real tag!] - SpanEditHandler;Accepts:Any - (181:8,11) - Symbols:6
+            HtmlSymbolType.Text;[A];
+            HtmlSymbolType.WhiteSpace;[ ];
+            HtmlSymbolType.Text;[real];
+            HtmlSymbolType.WhiteSpace;[ ];
+            HtmlSymbolType.Text;[tag];
+            HtmlSymbolType.Bang;[!];
+        Tag block - Gen<None> - 4 - (192:8,22)
+            Markup span - Gen<Markup> - [</p>] - SpanEditHandler;Accepts:None - (192:8,22) - Symbols:4
+                HtmlSymbolType.OpenAngle;[<];
+                HtmlSymbolType.ForwardSlash;[/];
+                HtmlSymbolType.Text;[p];
+                HtmlSymbolType.CloseAngle;[>];
+        Markup span - Gen<Markup> - [LF] - SpanEditHandler;Accepts:None - (196:8,26) - Symbols:1
+            HtmlSymbolType.NewLine;[LF];
+    Code span - Gen<Stmt> - [    }LF] - SpanEditHandler;Accepts:Any - (198:9,0) - Symbols:3
+        CSharpSymbolType.WhiteSpace;[    ];
+        CSharpSymbolType.RightBrace;[}];
+        CSharpSymbolType.NewLine;[LF];
+    MetaCode span - Gen<None> - [}] - SpanEditHandler;Accepts:None - (205:10,0) - Symbols:1
+        CSharpSymbolType.RightBrace;[}];

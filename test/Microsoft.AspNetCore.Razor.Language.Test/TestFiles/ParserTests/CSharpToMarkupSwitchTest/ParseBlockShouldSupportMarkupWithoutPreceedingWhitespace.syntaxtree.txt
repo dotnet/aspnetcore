@@ -1,0 +1,59 @@
+Statement block - Gen<None> - 67 - (0:0,0)
+    Code span - Gen<Stmt> - [foreach(var file in files){LFLFLF] - SpanEditHandler;Accepts:Any - (0:0,0) - Symbols:14
+        CSharpSymbolType.Keyword;[foreach];
+        CSharpSymbolType.LeftParenthesis;[(];
+        CSharpSymbolType.Identifier;[var];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.Identifier;[file];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.Keyword;[in];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.Identifier;[files];
+        CSharpSymbolType.RightParenthesis;[)];
+        CSharpSymbolType.LeftBrace;[{];
+        CSharpSymbolType.NewLine;[LF];
+        CSharpSymbolType.NewLine;[LF];
+        CSharpSymbolType.NewLine;[LF];
+    Markup block - Gen<None> - 7 - (33:3,0)
+        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (33:3,0) - Symbols:1
+            HtmlSymbolType.Transition;[@];
+        MetaCode span - Gen<None> - [:] - SpanEditHandler;Accepts:Any - (34:3,1) - Symbols:1
+            HtmlSymbolType.Colon;[:];
+        Markup span - Gen<Markup> - [BazLF] - SpanEditHandler;Accepts:None - (35:3,2) - Symbols:2
+            HtmlSymbolType.Text;[Baz];
+            HtmlSymbolType.NewLine;[LF];
+    Markup block - Gen<None> - 7 - (40:4,0)
+        Tag block - Gen<None> - 5 - (40:4,0)
+            Markup span - Gen<Markup> - [<br/>] - SpanEditHandler;Accepts:None - (40:4,0) - Symbols:4
+                HtmlSymbolType.OpenAngle;[<];
+                HtmlSymbolType.Text;[br];
+                HtmlSymbolType.ForwardSlash;[/];
+                HtmlSymbolType.CloseAngle;[>];
+        Markup span - Gen<Markup> - [LF] - SpanEditHandler;Accepts:None - (45:4,5) - Symbols:1
+            HtmlSymbolType.NewLine;[LF];
+    Markup block - Gen<None> - 12 - (47:5,0)
+        Tag block - Gen<None> - 3 - (47:5,0)
+            Markup span - Gen<Markup> - [<a>] - SpanEditHandler;Accepts:None - (47:5,0) - Symbols:3
+                HtmlSymbolType.OpenAngle;[<];
+                HtmlSymbolType.Text;[a];
+                HtmlSymbolType.CloseAngle;[>];
+        Markup span - Gen<Markup> - [Foo] - SpanEditHandler;Accepts:Any - (50:5,3) - Symbols:1
+            HtmlSymbolType.Text;[Foo];
+        Tag block - Gen<None> - 4 - (53:5,6)
+            Markup span - Gen<Markup> - [</a>] - SpanEditHandler;Accepts:None - (53:5,6) - Symbols:4
+                HtmlSymbolType.OpenAngle;[<];
+                HtmlSymbolType.ForwardSlash;[/];
+                HtmlSymbolType.Text;[a];
+                HtmlSymbolType.CloseAngle;[>];
+        Markup span - Gen<Markup> - [LF] - SpanEditHandler;Accepts:None - (57:5,10) - Symbols:1
+            HtmlSymbolType.NewLine;[LF];
+    Markup block - Gen<None> - 7 - (59:6,0)
+        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (59:6,0) - Symbols:1
+            HtmlSymbolType.Transition;[@];
+        MetaCode span - Gen<None> - [:] - SpanEditHandler;Accepts:Any - (60:6,1) - Symbols:1
+            HtmlSymbolType.Colon;[:];
+        Markup span - Gen<Markup> - [BarLF] - SpanEditHandler;Accepts:None - (61:6,2) - Symbols:2
+            HtmlSymbolType.Text;[Bar];
+            HtmlSymbolType.NewLine;[LF];
+    Code span - Gen<Stmt> - [}] - SpanEditHandler;Accepts:None - (66:7,0) - Symbols:1
+        CSharpSymbolType.RightBrace;[}];

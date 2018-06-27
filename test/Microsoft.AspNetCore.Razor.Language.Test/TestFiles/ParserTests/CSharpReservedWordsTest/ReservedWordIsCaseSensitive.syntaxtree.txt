@@ -1,0 +1,3 @@
+Expression block - Gen<Expr> - 9 - (0:0,0)
+    Code span - Gen<Expr> - [NameSpace] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K14 - (0:0,0) - Symbols:1
+        CSharpSymbolType.Identifier;[NameSpace];
