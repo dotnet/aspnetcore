@@ -162,16 +162,24 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return Regex.Replace(content, "(?<!\r)\n", "\r\n", RegexOptions.None, TimeSpan.FromSeconds(10));
         }
 
-        internal virtual void BaselineTest(RazorSyntaxTree syntaxTree)
+        internal virtual void BaselineTest(RazorSyntaxTree syntaxTree, bool verifySyntaxTree = true)
         {
-            SyntaxTreeVerifier.Verify(syntaxTree);
+            if (verifySyntaxTree)
+            {
+                SyntaxTreeVerifier.Verify(syntaxTree);
+            }
+
             AssertSyntaxTreeNodeMatchesBaseline(syntaxTree);
         }
 
-        internal virtual void BaselineTest(Block root)
+        internal virtual void BaselineTest(Block root, bool verifySyntaxTree = true, params RazorDiagnostic[] diagnostics)
         {
-            SyntaxTreeVerifier.Verify(root);
-            AssertSyntaxTreeNodeMatchesBaseline(root);
+            if (verifySyntaxTree)
+            {
+                SyntaxTreeVerifier.Verify(root);
+            }
+
+            AssertSyntaxTreeNodeMatchesBaseline(root, diagnostics);
         }
 
         internal RazorSyntaxTree ParseBlock(string document, bool designTime)
