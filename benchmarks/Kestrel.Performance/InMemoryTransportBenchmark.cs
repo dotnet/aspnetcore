@@ -205,10 +205,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
                     }
                 }
             }
-
-            protected override void AbortCore(ConnectionAbortedException abortReason)
-            {
-            }
         }
 
         // Copied from https://github.com/aspnet/benchmarks/blob/dev/src/Benchmarks/Middleware/PlaintextMiddleware.cs

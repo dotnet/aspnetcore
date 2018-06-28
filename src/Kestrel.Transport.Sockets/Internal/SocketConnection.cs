@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             }
         }
 
-        protected override void AbortCore(ConnectionAbortedException abortReason)
+        public override void Abort(ConnectionAbortedException abortReason)
         {
             _abortReason = abortReason;
             Output.CancelPendingRead();

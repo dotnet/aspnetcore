@@ -2459,7 +2459,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     await context.Response.Body.WriteAsync(scratchBuffer, 0, scratchBuffer.Length);
                     await Task.Delay(10);
                 }
-           
+
                 appCompletedTcs.SetResult(null);
             }, new TestServiceContext(LoggerFactory), listenOptions))
             {

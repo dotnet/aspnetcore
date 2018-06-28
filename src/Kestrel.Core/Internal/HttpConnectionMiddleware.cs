@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                     (_, state) => ((HttpConnection)state).OnInputOrOutputCompleted(),
                     connection);
 
-                await AsTask(lifetimeFeature.ConnectionClosed);
+                await CancellationTokenAsTask(lifetimeFeature.ConnectionClosed);
 
                 connection.OnConnectionClosed();
 
@@ -99,8 +99,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             }
         }
 
-        private Task AsTask(CancellationToken token)
+        private static Task CancellationTokenAsTask(CancellationToken token)
         {
+            if (token.IsCancellationRequested)
+            {
+                return Task.CompletedTask;
+            }
+
+            // Transports already dispatch prior to tripping ConnectionClosed
+            // since application code can register to this token.
             var tcs = new TaskCompletionSource<object>();
             token.Register(() => tcs.SetResult(null));
             return tcs.Task;

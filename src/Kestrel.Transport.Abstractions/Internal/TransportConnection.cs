@@ -55,14 +55,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
 
         public CancellationToken ConnectionClosed { get; set; }
 
-        // DO NOT remove this override to ConnectionContext.Abort(). Doing so would cause
-        // any TransportConnection that does not override Abort() or calls base.Abort()
+        // DO NOT remove this override to ConnectionContext.Abort. Doing so would cause
+        // any TransportConnection that does not override Abort or calls base.Abort
         // to stack overflow when IConnectionLifetimeFeature.Abort() is called.
+        // That said, all derived types should override this method should override
+        // this implementation of Abort because canceling pending output reads is not
+        // sufficient to abort the connection if there is backpressure.
         public override void Abort(ConnectionAbortedException abortReason)
         {
-            AbortCore(abortReason);
+            Output.CancelPendingRead();
         }
-
-        protected abstract void AbortCore(ConnectionAbortedException abortReason);
     }
 }

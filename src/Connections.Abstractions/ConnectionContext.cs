@@ -25,5 +25,7 @@ namespace Microsoft.AspNetCore.Connections
             // ConnectioContext.Abort()
             Features.Get<IConnectionLifetimeFeature>()?.Abort();
         }
+
+        public virtual void Abort() => Abort(new ConnectionAbortedException("The connection was aborted by the application."));
     }
 }
