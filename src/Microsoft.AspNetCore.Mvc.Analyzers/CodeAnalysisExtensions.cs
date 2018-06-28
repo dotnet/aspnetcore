@@ -11,28 +11,21 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
     internal static class CodeAnalysisExtensions
     {
         public static bool HasAttribute(this ITypeSymbol typeSymbol, ITypeSymbol attribute, bool inherit)
-        {
-            Debug.Assert(typeSymbol != null);
-            Debug.Assert(attribute != null);
-
-            if (!inherit)
-            {
-                return HasAttribute(typeSymbol, attribute);
-            }
-
-            foreach (var type in typeSymbol.GetTypeHierarchy())
-            {
-                if (type.HasAttribute(attribute))
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
+            => GetAttributes(typeSymbol, attribute, inherit).Any();
 
         public static bool HasAttribute(this IMethodSymbol methodSymbol, ITypeSymbol attribute, bool inherit)
             => GetAttributes(methodSymbol, attribute, inherit).Any();
+
+        public static IEnumerable<AttributeData> GetAttributes(this ISymbol symbol, ITypeSymbol attribute)
+        {
+            foreach (var declaredAttribute in symbol.GetAttributes())
+            {
+                if (attribute.IsAssignableFrom(declaredAttribute.AttributeClass))
+                {
+                    yield return declaredAttribute;
+                }
+            }
+        }
 
         public static IEnumerable<AttributeData> GetAttributes(this IMethodSymbol methodSymbol, ITypeSymbol attribute, bool inherit)
         {
@@ -52,6 +45,25 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
                 }
 
                 methodSymbol = methodSymbol.IsOverride ? methodSymbol.OverriddenMethod : null;
+            }
+        }
+
+        public static IEnumerable<AttributeData> GetAttributes(this ITypeSymbol typeSymbol, ITypeSymbol attribute, bool inherit)
+        {
+            Debug.Assert(typeSymbol != null);
+            Debug.Assert(attribute != null);
+
+            foreach (var type in GetTypeHierarchy(typeSymbol))
+            {
+                foreach (var attributeData in GetAttributes(type, attribute))
+                {
+                    yield return attributeData;
+                }
+
+                if (!inherit)
+                {
+                    break;
+                }
             }
         }
 
@@ -78,10 +90,15 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
             return false;
         }
 
-        public static bool IsAssignableFrom(this ITypeSymbol source, INamedTypeSymbol target)
+        public static bool IsAssignableFrom(this ITypeSymbol source, ITypeSymbol target)
         {
             Debug.Assert(source != null);
             Debug.Assert(target != null);
+
+            if (source == target)
+            {
+                return true;
+            }
 
             if (source.TypeKind == TypeKind.Interface)
             {
@@ -118,17 +135,6 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
             }
 
             return false;
-        }
-
-        private static IEnumerable<AttributeData> GetAttributes(this ISymbol symbol, ITypeSymbol attribute)
-        {
-            foreach (var declaredAttribute in symbol.GetAttributes())
-            {
-                if (attribute.IsAssignableFrom(declaredAttribute.AttributeClass))
-                {
-                    yield return declaredAttribute;
-                }
-            }
         }
 
         private static IEnumerable<ITypeSymbol> GetTypeHierarchy(this ITypeSymbol typeSymbol)

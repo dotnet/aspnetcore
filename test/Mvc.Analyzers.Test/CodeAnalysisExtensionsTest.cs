@@ -68,6 +68,24 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
         }
 
         [Fact]
+        public async Task GetAttributesSymbolOverload_OnMethodSymbol()
+        {
+            // Arrange
+            var compilation = await GetCompilation("GetAttributes_WithMethodOverridding");
+            var attribute = compilation.GetTypeByMetadataName(typeof(ProducesResponseTypeAttribute).FullName);
+            var testClass = compilation.GetTypeByMetadataName($"{Namespace}.{nameof(GetAttributes_WithInheritFalse_ReturnsAllAttributesOnCurrentActionClass)}");
+            var method = (IMethodSymbol)testClass.GetMembers(nameof(GetAttributes_WithInheritFalse_ReturnsAllAttributesOnCurrentActionClass.Method)).First();
+
+            // Act
+            var attributes = CodeAnalysisExtensions.GetAttributes(symbol: method, attribute: attribute);
+
+            // Assert
+            Assert.Collection(
+                attributes,
+                attributeData => Assert.Equal(400, attributeData.ConstructorArguments[0].Value));
+        }
+
+        [Fact]
         public async Task GetAttributes_WithInheritTrue_ReturnsAllAttributesOnCurrentActionAndOverridingMethod()
         {
             // Arrange
@@ -121,6 +139,120 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
             Assert.Collection(
                 attributes,
                 attributeData => Assert.Equal(401, attributeData.ConstructorArguments[0].Value));
+        }
+
+        [Fact]
+        public async Task GetAttributes_OnTypeWithoutAttributes()
+        {
+            // Arrange
+            var compilation = await GetCompilation();
+            var attribute = compilation.GetTypeByMetadataName(typeof(ApiConventionTypeAttribute).FullName);
+            var testClass = compilation.GetTypeByMetadataName(typeof(GetAttributes_OnTypeWithoutAttributesType).FullName);
+
+            // Act
+            var attributes = CodeAnalysisExtensions.GetAttributes(testClass, attribute, inherit: true);
+
+            // Assert
+            Assert.Empty(attributes);
+        }
+
+        [Fact]
+        public async Task GetAttributes_OnTypeWithAttributes()
+        {
+            // Arrange
+            var compilation = await GetCompilation();
+            var attribute = compilation.GetTypeByMetadataName(typeof(ApiConventionTypeAttribute).FullName);
+            var testClass = compilation.GetTypeByMetadataName(typeof(GetAttributes_OnTypeWithAttributes).FullName);
+
+            // Act
+            var attributes = CodeAnalysisExtensions.GetAttributes(testClass, attribute, inherit: true);
+
+            // Assert
+            Assert.Collection(
+                attributes,
+                attributeData =>
+                {
+                    Assert.Same(attribute, attributeData.AttributeClass);
+                    Assert.Equal(attributeData.ConstructorArguments[0].Value, compilation.GetSpecialType(SpecialType.System_Object));
+                },
+                attributeData =>
+                {
+                    Assert.Same(attribute, attributeData.AttributeClass);
+                    Assert.Equal(attributeData.ConstructorArguments[0].Value, compilation.GetSpecialType(SpecialType.System_String));
+                });
+        }
+
+        [Fact]
+        public async Task GetAttributes_BaseTypeWithAttributes()
+        {
+            // Arrange
+            var compilation = await GetCompilation();
+            var attribute = compilation.GetTypeByMetadataName(typeof(ApiConventionTypeAttribute).FullName);
+            var testClass = compilation.GetTypeByMetadataName(typeof(GetAttributes_BaseTypeWithAttributesDerived).FullName);
+
+            // Act
+            var attributes = CodeAnalysisExtensions.GetAttributes(testClass, attribute, inherit: true);
+
+            // Assert
+            Assert.Collection(
+                attributes,
+                attributeData =>
+                {
+                    Assert.Same(attribute, attributeData.AttributeClass);
+                    Assert.Equal(attributeData.ConstructorArguments[0].Value, compilation.GetSpecialType(SpecialType.System_Int32));
+                },
+                attributeData =>
+                {
+                    Assert.Same(attribute, attributeData.AttributeClass);
+                    Assert.Equal(attributeData.ConstructorArguments[0].Value, compilation.GetSpecialType(SpecialType.System_Object));
+                },
+                attributeData =>
+                {
+                    Assert.Same(attribute, attributeData.AttributeClass);
+                    Assert.Equal(attributeData.ConstructorArguments[0].Value, compilation.GetSpecialType(SpecialType.System_String));
+                });
+        }
+
+        [Fact]
+        public async Task GetAttributes_OnDerivedTypeWithInheritFalse()
+        {
+            // Arrange
+            var compilation = await GetCompilation(nameof(GetAttributes_BaseTypeWithAttributes));
+            var attribute = compilation.GetTypeByMetadataName(typeof(ApiConventionTypeAttribute).FullName);
+            var testClass = compilation.GetTypeByMetadataName(typeof(GetAttributes_BaseTypeWithAttributesDerived).FullName);
+
+            // Act
+            var attributes = CodeAnalysisExtensions.GetAttributes(testClass, attribute, inherit: false);
+
+            // Assert
+            Assert.Collection(
+                attributes,
+                attributeData =>
+                {
+                    Assert.Same(attribute, attributeData.AttributeClass);
+                    Assert.Equal(attributeData.ConstructorArguments[0].Value, compilation.GetSpecialType(SpecialType.System_Int32));
+                });
+        }
+
+        [Fact]
+        public async Task GetAttributesSymbolOverload_OnTypeSymbol()
+        {
+            // Arrange
+            var compilation = await GetCompilation(nameof(GetAttributes_BaseTypeWithAttributes));
+            var attribute = compilation.GetTypeByMetadataName(typeof(ApiConventionTypeAttribute).FullName);
+            var testClass = compilation.GetTypeByMetadataName(typeof(GetAttributes_BaseTypeWithAttributesDerived).FullName);
+
+            // Act
+            var attributes = CodeAnalysisExtensions.GetAttributes(symbol: testClass, attribute: attribute);
+
+            // Assert
+            Assert.Collection(
+                attributes,
+                attributeData =>
+                {
+                    Assert.Same(attribute, attributeData.AttributeClass);
+                    Assert.Equal(attributeData.ConstructorArguments[0].Value, compilation.GetSpecialType(SpecialType.System_Int32));
+                });
         }
 
         [Fact]
@@ -323,6 +455,21 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
             // Assert
             Assert.True(isAssignableFrom);
             Assert.False(isAssignableFromDerived); // Inverse shouldn't be true
+        }
+
+        [Fact]
+        public async Task IsAssignable_ReturnsTrue_IfSourceAndDestinationAreTheSameInterface()
+        {
+            // Arrange
+            var compilation = await GetCompilation(nameof(IsAssignable_ReturnsTrueIfTypeImplementsInterface));
+            var source = compilation.GetTypeByMetadataName(typeof(IsAssignable_ReturnsTrueIfTypeImplementsInterface).FullName);
+            var target = compilation.GetTypeByMetadataName(typeof(IsAssignable_ReturnsTrueIfTypeImplementsInterface).FullName);
+
+            // Act
+            var isAssignableFrom = CodeAnalysisExtensions.IsAssignableFrom(source, target);
+
+            // Assert
+            Assert.True(isAssignableFrom);
         }
 
         [Fact]

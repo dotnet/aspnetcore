@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>$(StandardTestTfms)</TargetFrameworks>
     <PreserveCompilationContext>true</PreserveCompilationContext>
+    <RootNamespace>Microsoft.AspNetCore.Mvc.Analyzers</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
