@@ -57,6 +57,10 @@
       </FileExclusions>
 
       <!-- Paths using wildcards must use $(PoliCheckPath) as the base for MSBuild to be happy -->
+      <SrcExclusions Include="
+        $(PoliCheckPath)**\package-lock.json">
+        <Justification>package-lock.json files are generated content that we can't control.</Justification>
+      </SrcExclusions>
       <FileExclusions Include="
         $(PoliCheckPath)**\System.Text.Encoding.CodePages.dll;
         $(PoliCheckPath)**\System.Text.Encodings.Web.dll;">
