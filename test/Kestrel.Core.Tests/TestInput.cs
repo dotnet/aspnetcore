@@ -6,6 +6,7 @@ using System.Buffers;
 using System.IO.Pipelines;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
@@ -35,6 +36,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Http1ConnectionContext = new Http1ConnectionContext
             {
                 ServiceContext = new TestServiceContext(),
+                ConnectionContext = Mock.Of<ConnectionContext>(),
                 ConnectionFeatures = connectionFeatures,
                 Application = Application,
                 Transport = Transport,

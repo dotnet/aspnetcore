@@ -151,22 +151,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             try
             {
                 DispatchPipe.Accept(acceptSocket);
+                HandleConnectionAsync(acceptSocket);
+            }
+            catch (UvException ex) when (LibuvConstants.IsConnectionReset(ex.StatusCode))
+            {
+                Log.ConnectionReset("(null)");
+                acceptSocket.Dispose();
             }
             catch (UvException ex)
             {
                 Log.LogError(0, ex, "DispatchPipe.Accept");
-                acceptSocket.Dispose();
-                return;
-            }
-
-            try
-            {
-                var connection = new LibuvConnection(this, acceptSocket);
-                _ = connection.Start();
-            }
-            catch (UvException ex)
-            {
-                Log.LogError(0, ex, "ListenerSecondary.OnConnection");
                 acceptSocket.Dispose();
             }
         }

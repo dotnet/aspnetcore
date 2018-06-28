@@ -155,16 +155,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                             acceptSocket.NoDelay = _endPointInformation.NoDelay;
 
                             var connection = new SocketConnection(acceptSocket, _memoryPool, _schedulers[schedulerIndex], _trace);
-                            _ = connection.StartAsync(_dispatcher);
+                            HandleConnectionAsync(connection);
                         }
-                        catch (SocketException ex) when (ex.SocketErrorCode == SocketError.ConnectionReset)
+                        catch (SocketException) when (!_unbinding)
                         {
-                            // REVIEW: Should there be a separate log message for a connection reset this early?
                             _trace.ConnectionReset(connectionId: "(null)");
-                        }
-                        catch (SocketException ex) when (!_unbinding)
-                        {
-                            _trace.ConnectionError(connectionId: "(null)", ex);
                         }
                     }
                 }
@@ -177,13 +172,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                 }
                 else
                 {
-                    _trace.LogCritical(ex, $"Unexpected exeption in {nameof(SocketTransport)}.{nameof(RunAcceptLoopAsync)}.");
+                    _trace.LogCritical(ex, $"Unexpected exception in {nameof(SocketTransport)}.{nameof(RunAcceptLoopAsync)}.");
                     _listenException = ex;
 
                     // Request shutdown so we can rethrow this exception
                     // in Stop which should be observable.
                     _appLifetime.StopApplication();
                 }
+            }
+        }
+
+        private void HandleConnectionAsync(SocketConnection connection)
+        {
+            try
+            {
+                _dispatcher.OnConnection(connection);
+                _ = connection.StartAsync();
+            }
+            catch (Exception ex)
+            {
+                _trace.LogCritical(ex, $"Unexpected exception in {nameof(SocketTransport)}.{nameof(HandleConnectionAsync)}.");
             }
         }
 

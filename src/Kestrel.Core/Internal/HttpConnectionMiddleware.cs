@@ -1,11 +1,14 @@
-﻿using System.Collections.Generic;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System.Collections.Generic;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Hosting.Server;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
+using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 
@@ -30,7 +33,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             _connectionAdapters = adapters;
         }
 
-        public Task OnConnectionAsync(ConnectionContext connectionContext)
+        public async Task OnConnectionAsync(ConnectionContext connectionContext)
         {
             // We need the transport feature so that we can cancel the output reader that the transport is using
             // This is a bit of a hack but it preserves the existing semantics
@@ -54,6 +57,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             };
 
             var connectionFeature = connectionContext.Features.Get<IHttpConnectionFeature>();
+            var lifetimeFeature = connectionContext.Features.Get<IConnectionLifetimeFeature>();
 
             if (connectionFeature != null)
             {
@@ -72,19 +76,33 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
             var processingTask = connection.StartRequestProcessing(_application);
 
-            connectionContext.Transport.Input.OnWriterCompleted((error, state) =>
-            {
-                ((HttpConnection)state).Abort(error);
-            },
-            connection);
+            connectionContext.Transport.Input.OnWriterCompleted(
+                (_, state) => ((HttpConnection)state).OnInputOrOutputCompleted(),
+                connection);
 
-            connectionContext.Transport.Output.OnReaderCompleted((error, state) =>
-            {
-                ((HttpConnection)state).OnConnectionClosed(error);
-            },
-            connection);
+            connectionContext.Transport.Output.OnReaderCompleted(
+                (_, state) => ((HttpConnection)state).OnInputOrOutputCompleted(),
+                connection);
 
-            return processingTask;
+            await CancellationTokenAsTask(lifetimeFeature.ConnectionClosed);
+
+            connection.OnConnectionClosed();
+
+            await processingTask;
+        }
+
+        private static Task CancellationTokenAsTask(CancellationToken token)
+        {
+            if (token.IsCancellationRequested)
+            {
+                return Task.CompletedTask;
+            }
+
+            // Transports already dispatch prior to tripping ConnectionClosed
+            // since application code can register to this token.
+            var tcs = new TaskCompletionSource<object>();
+            token.Register(() => tcs.SetResult(null));
+            return tcs.Task;
         }
     }
 }

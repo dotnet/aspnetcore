@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Connections
 
         public CancellationToken ConnectionClosed { get; set; }
 
-        public virtual void Abort()
+        public override void Abort(ConnectionAbortedException abortReason)
         {
             ThreadPool.QueueUserWorkItem(cts => ((CancellationTokenSource)cts).Cancel(), _connectionClosedTokenSource);
         }

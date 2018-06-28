@@ -47,8 +47,6 @@ namespace Microsoft.AspNetCore.Testing
             _reader = new StreamReader(_stream, Encoding.ASCII);
         }
 
-        public Socket Socket => _socket;
-
         public Stream Stream => _stream;
 
         public StreamReader Reader => _reader;
@@ -213,6 +211,12 @@ namespace Microsoft.AspNetCore.Testing
         public void Shutdown(SocketShutdown how)
         {
             _socket.Shutdown(how);
+        }
+
+        public void Reset()
+        {
+            _socket.LingerState = new LingerOption(true, 0);
+            _socket.Dispose();
         }
 
         public Task WaitForConnectionClose()

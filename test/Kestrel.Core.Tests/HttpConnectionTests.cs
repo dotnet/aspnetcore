@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
@@ -38,6 +39,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _httpConnectionContext = new HttpConnectionContext
             {
                 ConnectionId = "0123456789",
+                ConnectionContext = Mock.Of<ConnectionContext>(),
                 ConnectionAdapters = new List<IConnectionAdapter>(),
                 ConnectionFeatures = connectionFeatures,
                 MemoryPool = _memoryPool,

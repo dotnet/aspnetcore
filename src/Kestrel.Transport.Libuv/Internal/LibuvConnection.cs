@@ -5,6 +5,7 @@ using System;
 using System.Buffers;
 using System.IO;
 using System.IO.Pipelines;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
@@ -14,7 +15,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 {
-    public partial class LibuvConnection : LibuvConnectionContext
+    public partial class LibuvConnection : TransportConnection
     {
         private static readonly int MinAllocBufferSize = KestrelMemoryPool.MinimumSegmentSize / 2;
 
@@ -27,32 +28,31 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         private readonly UvStreamHandle _socket;
         private readonly CancellationTokenSource _connectionClosedTokenSource = new CancellationTokenSource();
 
+        private volatile ConnectionAbortedException _abortReason;
+
         private MemoryHandle _bufferHandle;
 
-        public LibuvConnection(ListenerContext context, UvStreamHandle socket) : base(context)
+        public LibuvConnection(UvStreamHandle socket, ILibuvTrace log, LibuvThread thread, IPEndPoint remoteEndPoint, IPEndPoint localEndPoint)
         {
             _socket = socket;
 
-            if (_socket is UvTcpHandle tcpHandle)
-            {
-                var remoteEndPoint = tcpHandle.GetPeerIPEndPoint();
-                var localEndPoint = tcpHandle.GetSockIPEndPoint();
+            RemoteAddress = remoteEndPoint?.Address;
+            RemotePort = remoteEndPoint?.Port ?? 0;
 
-                RemoteAddress = remoteEndPoint.Address;
-                RemotePort = remoteEndPoint.Port;
+            LocalAddress = localEndPoint?.Address;
+            LocalPort = localEndPoint?.Port ?? 0;
 
-                LocalAddress = localEndPoint.Address;
-                LocalPort = localEndPoint.Port;
-
-                ConnectionClosed = _connectionClosedTokenSource.Token;
-            }
+            ConnectionClosed = _connectionClosedTokenSource.Token;
+            Log = log;
+            Thread = thread;
         }
 
         public LibuvOutputConsumer OutputConsumer { get; set; }
-
-        private ILibuvTrace Log => ListenerContext.TransportContext.Log;
-        private IConnectionDispatcher ConnectionDispatcher => ListenerContext.TransportContext.ConnectionDispatcher;
-        private LibuvThread Thread => ListenerContext.Thread;
+        private ILibuvTrace Log { get; }
+        private LibuvThread Thread { get; }
+        public override MemoryPool<byte> MemoryPool => Thread.MemoryPool;
+        public override PipeScheduler InputWriterScheduler => Thread;
+        public override PipeScheduler OutputReaderScheduler => Thread;
 
         public override long TotalBytesWritten => OutputConsumer?.TotalBytesWritten ?? 0;
 
@@ -60,13 +60,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         {
             try
             {
-                ConnectionDispatcher.OnConnection(this);
-
                 OutputConsumer = new LibuvOutputConsumer(Output, Thread, _socket, ConnectionId, Log);
 
                 StartReading();
 
-                Exception error = null;
+                Exception inputError = null;
+                Exception outputError = null;
 
                 try
                 {
@@ -77,13 +76,27 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                 }
                 catch (UvException ex)
                 {
-                    error = new IOException(ex.Message, ex);
+                    // The connection reset/error has already been logged by LibuvOutputConsumer
+                    if (ex.StatusCode == LibuvConstants.ECANCELED)
+                    {
+                        // Connection was aborted.
+                    }
+                    else if (LibuvConstants.IsConnectionReset(ex.StatusCode))
+                    {
+                        // Don't cause writes to throw for connection resets.
+                        inputError = new ConnectionResetException(ex.Message, ex);
+                    }
+                    else
+                    {
+                        inputError = ex;
+                        outputError = ex;
+                    }
                 }
                 finally
                 {
                     // Now, complete the input so that no more reads can happen
-                    Input.Complete(error ?? new ConnectionAbortedException());
-                    Output.Complete(error);
+                    Input.Complete(inputError ?? _abortReason ?? new ConnectionAbortedException());
+                    Output.Complete(outputError);
 
                     // Make sure it isn't possible for a paused read to resume reading after calling uv_close
                     // on the stream handle
@@ -103,8 +116,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             }
         }
 
-        public override void Abort()
+        public override void Abort(ConnectionAbortedException abortReason)
         {
+            _abortReason = abortReason;
+            Output.CancelPendingRead();
+            
             // This cancels any pending I/O.
             Thread.Post(s => s.Dispose(), _socket);
         }
@@ -156,7 +172,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                 // Given a negative status, it's possible that OnAlloc wasn't called.
                 _socket.ReadStop();
 
-                IOException error = null;
+                Exception error = null;
 
                 if (status == LibuvConstants.EOF)
                 {
@@ -165,18 +181,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                 else
                 {
                     handle.Libuv.Check(status, out var uvError);
-
-                    // Log connection resets at a lower (Debug) level.
-                    if (LibuvConstants.IsConnectionReset(status))
-                    {
-                        Log.ConnectionReset(ConnectionId);
-                        error = new ConnectionResetException(uvError.Message, uvError);
-                    }
-                    else
-                    {
-                        Log.ConnectionError(ConnectionId, uvError);
-                        error = new IOException(uvError.Message, uvError);
-                    }
+                    error = LogAndWrapReadError(uvError);
                 }
 
                 // Complete after aborting the connection
@@ -209,10 +214,27 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             {
                 // ReadStart() can throw a UvException in some cases (e.g. socket is no longer connected).
                 // This should be treated the same as OnRead() seeing a negative status.
-                Log.ConnectionReadFin(ConnectionId);
-                var error = new IOException(ex.Message, ex);
+                Input.Complete(LogAndWrapReadError(ex));
+            }
+        }
 
-                Input.Complete(error);
+        private Exception LogAndWrapReadError(UvException uvError)
+        {
+            if (uvError.StatusCode == LibuvConstants.ECANCELED)
+            {
+                // The operation was canceled by the server not the client. No need for additional logs.
+                return new ConnectionAbortedException(uvError.Message, uvError);
+            }
+            else if (LibuvConstants.IsConnectionReset(uvError.StatusCode))
+            {
+                // Log connection resets at a lower (Debug) level.
+                Log.ConnectionReset(ConnectionId);
+                return new ConnectionResetException(uvError.Message, uvError);
+            }
+            else
+            {
+                Log.ConnectionError(ConnectionId, uvError);
+                return new IOException(uvError.Message, uvError);
             }
         }
 
@@ -221,7 +243,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             try
             {
                 _connectionClosedTokenSource.Cancel();
-                _connectionClosedTokenSource.Dispose();
             }
             catch (Exception ex)
             {

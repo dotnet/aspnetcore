@@ -31,6 +31,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
         private readonly object _shutdownLock = new object();
         private volatile bool _aborted;
+        private volatile ConnectionAbortedException _abortReason;
         private long _totalBytesWritten;
 
         internal SocketConnection(Socket socket, MemoryPool<byte> memoryPool, PipeScheduler scheduler, ISocketsTrace trace)
@@ -69,12 +70,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
         public override PipeScheduler OutputReaderScheduler => _scheduler;
         public override long TotalBytesWritten => Interlocked.Read(ref _totalBytesWritten);
 
-        public async Task StartAsync(IConnectionDispatcher connectionDispatcher)
+        public async Task StartAsync()
         {
             try
             {
-                connectionDispatcher.OnConnection(this);
-
                 // Spawn send and receive logic
                 var receiveTask = DoReceive();
                 var sendTask = DoSend();
@@ -93,8 +92,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             }
         }
 
-        public override void Abort()
+        public override void Abort(ConnectionAbortedException abortReason)
         {
+            _abortReason = abortReason;
+            Output.CancelPendingRead();
+
             // Try to gracefully close the socket to match libuv behavior.
             Shutdown();
         }
@@ -107,20 +109,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             {
                 await ProcessReceives();
             }
-            catch (SocketException ex) when (ex.SocketErrorCode == SocketError.ConnectionReset)
+            catch (SocketException ex) when (IsConnectionResetError(ex.SocketErrorCode))
             {
-                error = new ConnectionResetException(ex.Message, ex);
-                _trace.ConnectionReset(ConnectionId);
+                // A connection reset can be reported as SocketError.ConnectionAborted on Windows
+                if (!_aborted)
+                {
+                    error = new ConnectionResetException(ex.Message, ex);
+                    _trace.ConnectionReset(ConnectionId);
+                }
             }
-            catch (SocketException ex) when (ex.SocketErrorCode == SocketError.OperationAborted ||
-                                             ex.SocketErrorCode == SocketError.ConnectionAborted ||
-                                             ex.SocketErrorCode == SocketError.Interrupted ||
-                                             ex.SocketErrorCode == SocketError.InvalidArgument)
+            catch (SocketException ex) when (IsConnectionAbortError(ex.SocketErrorCode))
             {
                 if (!_aborted)
                 {
                     // Calling Dispose after ReceiveAsync can cause an "InvalidArgument" error on *nix.
-                    error = new ConnectionAbortedException();
                     _trace.ConnectionError(ConnectionId, error);
                 }
             }
@@ -128,7 +130,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             {
                 if (!_aborted)
                 {
-                    error = new ConnectionAbortedException();
                     _trace.ConnectionError(ConnectionId, error);
                 }
             }
@@ -146,7 +147,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             {
                 if (_aborted)
                 {
-                    error = error ?? new ConnectionAbortedException();
+                    error = error ?? _abortReason ?? new ConnectionAbortedException();
                 }
 
                 Input.Complete(error);
@@ -199,7 +200,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             {
                 await ProcessSends();
             }
-            catch (SocketException ex) when (ex.SocketErrorCode == SocketError.OperationAborted)
+            catch (SocketException ex) when (IsConnectionResetError(ex.SocketErrorCode))
+            {
+                // A connection reset can be reported as SocketError.ConnectionAborted on Windows
+                error = null;
+                _trace.ConnectionReset(ConnectionId);
+            }
+            catch (SocketException ex) when (IsConnectionAbortError(ex.SocketErrorCode))
             {
                 error = null;
             }
@@ -210,10 +217,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             catch (IOException ex)
             {
                 error = ex;
+                _trace.ConnectionError(ConnectionId, error);
             }
             catch (Exception ex)
             {
                 error = new IOException(ex.Message, ex);
+                _trace.ConnectionError(ConnectionId, error);
             }
             finally
             {
@@ -228,8 +237,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
         {
             while (true)
             {
-                // Wait for data to write from the pipe producer
                 var result = await Output.ReadAsync();
+
                 var buffer = result.Buffer;
 
                 if (result.IsCanceled)
@@ -289,12 +298,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             try
             {
                 _connectionClosedTokenSource.Cancel();
-                _connectionClosedTokenSource.Dispose();
             }
             catch (Exception ex)
             {
                 _trace.LogError(0, ex, $"Unexpected exception in {nameof(SocketConnection)}.{nameof(CancelConnectionClosedToken)}.");
             }
+        }
+
+        private static bool IsConnectionResetError(SocketError errorCode)
+        {
+            return errorCode == SocketError.ConnectionReset ||
+                   errorCode == SocketError.ConnectionAborted ||
+                   errorCode == SocketError.Shutdown;
+        }
+
+        private static bool IsConnectionAbortError(SocketError errorCode)
+        {
+            return errorCode == SocketError.OperationAborted ||
+                   errorCode == SocketError.Interrupted ||
+                   errorCode == SocketError.InvalidArgument;
         }
     }
 }

@@ -41,17 +41,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
             while (true)
             {
-                ReadResult result;
-
-                try
-                {
-                    result = await _pipe.ReadAsync();
-                }
-                catch
-                {
-                    // Handled in LibuvConnection.Abort()
-                    return;
-                }
+                var result = await _pipe.ReadAsync();
 
                 var buffer = result.Buffer;
                 var consumed = buffer.End;
@@ -120,7 +110,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             else
             {
                 // Log connection resets at a lower (Debug) level.
-                if (LibuvConstants.IsConnectionReset(status))
+                if (status == LibuvConstants.ECANCELED)
+                {
+                    // Connection was aborted.
+                }
+                else if (LibuvConstants.IsConnectionReset(status))
                 {
                     _log.ConnectionReset(_connectionId);
                 }

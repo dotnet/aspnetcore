@@ -53,8 +53,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         {
             using (BeginConnectionScope(connectionContext))
             {
-                Log.ConnectionStart(connectionContext.ConnectionId);
-
                 try
                 {
                     await _connectionDelegate(connectionContext);
@@ -63,8 +61,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 {
                     Log.LogCritical(0, ex, $"{nameof(ConnectionDispatcher)}.{nameof(Execute)}() {connectionContext.ConnectionId}");
                 }
-
-                Log.ConnectionStop(connectionContext.ConnectionId);
             }
         }
 

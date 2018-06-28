@@ -5,6 +5,7 @@ using System;
 using System.Buffers;
 using System.IO.Pipelines;
 using System.Threading;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
@@ -61,39 +62,38 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void AbortsTransportEvenAfterDispose()
         {
-            var mockLifetimeFeature = new Mock<IConnectionLifetimeFeature>();
+            var mockConnectionContext = new Mock<ConnectionContext>();
 
-            var outputProducer = CreateOutputProducer(lifetimeFeature: mockLifetimeFeature.Object);
+            var outputProducer = CreateOutputProducer(connectionContext: mockConnectionContext.Object);
 
             outputProducer.Dispose();
 
-            mockLifetimeFeature.Verify(f => f.Abort(), Times.Never());
+            mockConnectionContext.Verify(f => f.Abort(It.IsAny<ConnectionAbortedException>()), Times.Never());
 
             outputProducer.Abort(null);
 
-            mockLifetimeFeature.Verify(f => f.Abort(), Times.Once());
+            mockConnectionContext.Verify(f => f.Abort(null), Times.Once());
 
             outputProducer.Abort(null);
 
-            mockLifetimeFeature.Verify(f => f.Abort(), Times.Once());
+            mockConnectionContext.Verify(f => f.Abort(null), Times.Once());
         }
 
         private Http1OutputProducer CreateOutputProducer(
             PipeOptions pipeOptions = null,
-            IConnectionLifetimeFeature lifetimeFeature = null)
+            ConnectionContext connectionContext = null)
         {
             pipeOptions = pipeOptions ?? new PipeOptions();
-            lifetimeFeature = lifetimeFeature ?? Mock.Of<IConnectionLifetimeFeature>();
+            connectionContext = connectionContext ?? Mock.Of<ConnectionContext>();
 
             var pipe = new Pipe(pipeOptions);
             var serviceContext = new TestServiceContext();
             var socketOutput = new Http1OutputProducer(
-                pipe.Reader,
                 pipe.Writer,
                 "0",
+                connectionContext,
                 serviceContext.Log,
                 Mock.Of<ITimeoutControl>(),
-                lifetimeFeature,
                 Mock.Of<IBytesWrittenFeature>());
 
             return socketOutput;

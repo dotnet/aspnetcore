@@ -1,12 +1,13 @@
-﻿using System;
-using System.Buffers;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.Collections.Generic;
-using System.IO.Pipelines;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.AspNetCore.Testing;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
@@ -20,7 +21,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var tcs = new TaskCompletionSource<object>();
             var dispatcher = new ConnectionDispatcher(serviceContext, _ => tcs.Task);
 
-            var connection = new TransportConnection();
+            var connection = Mock.Of<TransportConnection>();
 
             dispatcher.OnConnection(connection);
 

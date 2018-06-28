@@ -4,9 +4,6 @@
 using System;
 using System.Buffers;
 using System.IO.Pipelines;
-using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests.TestHelpers

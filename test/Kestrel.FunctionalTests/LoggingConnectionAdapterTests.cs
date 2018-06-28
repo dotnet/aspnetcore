@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 await host.StartAsync();
 
                 var response = await HttpClientSlim.GetStringAsync($"https://localhost:{host.GetPort()}/", validateCertificate: false)
-                                                   .TimeoutAfter(TimeSpan.FromSeconds(10));
+                                                   .DefaultTimeout();
 
                 Assert.Equal("Hello World!", response);
             }

@@ -142,5 +142,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 RequestBodyPipe.Writer.Complete(ex);
             }
         }
+
+        // TODO: The HTTP/2 tests expect the request and response streams to be aborted with
+        // non-ConnectionAbortedExceptions. The abortReasons can include things like
+        // Http2ConnectionErrorException which don't derive from IOException or
+        // OperationCanceledException. This is probably not a good idea.
+        public void Http2Abort(Exception abortReason)
+        {
+            _streams?.Abort(abortReason);
+
+            OnInputOrOutputCompleted();
+        }
     }
 }

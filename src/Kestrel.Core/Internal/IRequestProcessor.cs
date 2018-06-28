@@ -3,6 +3,7 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting.Server;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
@@ -11,6 +12,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
     {
         Task ProcessRequestsAsync<TContext>(IHttpApplication<TContext> application);
         void StopProcessingNextRequest();
-        void Abort(Exception ex);
+        void OnInputOrOutputCompleted();
+        void Abort(ConnectionAbortedException ex);
     }
 }

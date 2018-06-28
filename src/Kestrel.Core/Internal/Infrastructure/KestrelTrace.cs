@@ -65,12 +65,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         private static readonly Action<ILogger, string, string, double, Exception> _requestBodyMinimumDataRateNotSatisfied =
             LoggerMessage.Define<string, string, double>(LogLevel.Information, new EventId(27, nameof(RequestBodyMininumDataRateNotSatisfied)), @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": the request timed out because it was not sent by the client at a minimum of {Rate} bytes/second.");
 
-        private static readonly Action<ILogger, string, string, Exception> _requestBodyNotEntirelyRead =
-            LoggerMessage.Define<string, string>(LogLevel.Information, new EventId(32, nameof(RequestBodyNotEntirelyRead)), @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": the application completed without reading the entire request body.");
-
-        private static readonly Action<ILogger, string, string, Exception> _requestBodyDrainTimedOut =
-            LoggerMessage.Define<string, string>(LogLevel.Information, new EventId(33, nameof(RequestBodyDrainTimedOut)), @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": automatic draining of the request body timed out after taking over 5 seconds.");
-
         private static readonly Action<ILogger, string, string, Exception> _responseMinimumDataRateNotSatisfied =
             LoggerMessage.Define<string, string>(LogLevel.Information, new EventId(28, nameof(ResponseMininumDataRateNotSatisfied)), @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": the connection was closed because the response was not read by the client at the specified minimum data rate.");
 
@@ -82,6 +76,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         private static readonly Action<ILogger, string, int, Exception> _hpackDecodingError =
             LoggerMessage.Define<string, int>(LogLevel.Information, new EventId(31, nameof(HPackDecodingError)), @"Connection id ""{ConnectionId}"": HPACK decoding error while decoding headers for stream ID {StreamId}.");
+
+        private static readonly Action<ILogger, string, string, Exception> _requestBodyNotEntirelyRead =
+            LoggerMessage.Define<string, string>(LogLevel.Information, new EventId(32, nameof(RequestBodyNotEntirelyRead)), @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": the application completed without reading the entire request body.");
+
+        private static readonly Action<ILogger, string, string, Exception> _requestBodyDrainTimedOut =
+            LoggerMessage.Define<string, string>(LogLevel.Information, new EventId(33, nameof(RequestBodyDrainTimedOut)), @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": automatic draining of the request body timed out after taking over 5 seconds.");
+
+        private static readonly Action<ILogger, string, string, Exception> _applicationAbortedConnection =
+            LoggerMessage.Define<string, string>(LogLevel.Information, new EventId(34, nameof(RequestBodyDrainTimedOut)), @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": the application aborted the connection.");
 
         protected readonly ILogger _logger;
 
@@ -193,6 +196,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         public virtual void ResponseMininumDataRateNotSatisfied(string connectionId, string traceIdentifier)
         {
             _responseMinimumDataRateNotSatisfied(_logger, connectionId, traceIdentifier, null);
+        }
+
+        public virtual void ApplicationAbortedConnection(string connectionId, string traceIdentifier)
+        {
+            _applicationAbortedConnection(_logger, connectionId, traceIdentifier, null);
         }
 
         public virtual void Http2ConnectionError(string connectionId, Http2ConnectionErrorException ex)

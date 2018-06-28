@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             try
             {
                 pipe.Init(Thread.Loop, Thread.QueueCloseHandle, false);
-                
+
                 if (!useFileHandle)
                 {
                     pipe.Bind(EndPointInformation.SocketPath);
@@ -172,6 +172,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                 listenSocket.Accept(acceptSocket);
                 DispatchConnection(acceptSocket);
             }
+            catch (UvException ex) when (LibuvConstants.IsConnectionReset(ex.StatusCode))
+            {
+                Log.ConnectionReset("(null)");
+                acceptSocket?.Dispose();
+            }
             catch (UvException ex)
             {
                 Log.LogError(0, ex, "Listener.OnConnection");
@@ -181,8 +186,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
         protected virtual void DispatchConnection(UvStreamHandle socket)
         {
-            var connection = new LibuvConnection(this, socket);
-            _ = connection.Start();
+            HandleConnectionAsync(socket);
         }
 
         public virtual async Task DisposeAsync()

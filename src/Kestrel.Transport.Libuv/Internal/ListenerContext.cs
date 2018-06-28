@@ -2,8 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Net;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 {
@@ -35,6 +38,38 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                     return AcceptHandle();
                 default:
                     throw new InvalidOperationException();
+            }
+        }
+
+        protected void HandleConnectionAsync(UvStreamHandle socket)
+        {
+            try
+            {
+                IPEndPoint remoteEndPoint = null;
+                IPEndPoint localEndPoint = null;
+
+                if (socket is UvTcpHandle tcpHandle)
+                {
+                    try
+                    {
+                        remoteEndPoint = tcpHandle.GetPeerIPEndPoint();
+                        localEndPoint = tcpHandle.GetSockIPEndPoint();
+                    }
+                    catch (UvException ex) when (LibuvConstants.IsConnectionReset(ex.StatusCode))
+                    {
+                        TransportContext.Log.ConnectionReset("(null)");
+                        socket.Dispose();
+                        return;
+                    }
+                }
+
+                var connection = new LibuvConnection(socket, TransportContext.Log, Thread, remoteEndPoint, localEndPoint);
+                TransportContext.ConnectionDispatcher.OnConnection(connection);
+                _ = connection.Start();
+            }
+            catch (Exception ex)
+            {
+                TransportContext.Log.LogCritical(ex, $"Unexpected exception in {nameof(ListenerContext)}.{nameof(HandleConnectionAsync)}.");
             }
         }
 

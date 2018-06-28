@@ -263,7 +263,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             unbind.Release();
             stop.Release();
 
-            await Task.WhenAll(new[] { stopTask1, stopTask2, stopTask3 }).TimeoutAfter(TestConstants.DefaultTimeout);
+            await Task.WhenAll(new[] { stopTask1, stopTask2, stopTask3 }).DefaultTimeout();
 
             mockTransport.Verify(transport => transport.UnbindAsync(), Times.Once);
             mockTransport.Verify(transport => transport.StopAsync(), Times.Once);

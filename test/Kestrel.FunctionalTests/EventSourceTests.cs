@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         "Host:",
                         "",
                         "")
-                        .TimeoutAfter(TestConstants.DefaultTimeout);
+                        .DefaultTimeout();
                     await connection.Receive("HTTP/1.1 200");
                 }
             }

@@ -8,6 +8,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
@@ -22,9 +23,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private static readonly ReadOnlyMemory<byte> _endChunkedResponseBytes = new ReadOnlyMemory<byte>(Encoding.ASCII.GetBytes("0\r\n\r\n"));
 
         private readonly string _connectionId;
+        private readonly ConnectionContext _connectionContext;
         private readonly ITimeoutControl _timeoutControl;
         private readonly IKestrelTrace _log;
-        private readonly IConnectionLifetimeFeature _lifetimeFeature;
         private readonly IBytesWrittenFeature _transportBytesWrittenFeature;
 
         // This locks access to to all of the below fields
@@ -36,7 +37,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private long _totalBytesCommitted;
 
         private readonly PipeWriter _pipeWriter;
-        private readonly PipeReader _outputPipeReader;
 
         // https://github.com/dotnet/corefxlab/issues/1334
         // Pipelines don't support multiple awaiters on flush
@@ -48,21 +48,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private ValueTask<FlushResult> _flushTask;
 
         public Http1OutputProducer(
-            PipeReader outputPipeReader,
             PipeWriter pipeWriter,
             string connectionId,
+            ConnectionContext connectionContext,
             IKestrelTrace log,
             ITimeoutControl timeoutControl,
-            IConnectionLifetimeFeature lifetimeFeature,
             IBytesWrittenFeature transportBytesWrittenFeature)
         {
-            _outputPipeReader = outputPipeReader;
             _pipeWriter = pipeWriter;
             _connectionId = connectionId;
+            _connectionContext = connectionContext;
             _timeoutControl = timeoutControl;
             _log = log;
             _flushCompleted = OnFlushCompleted;
-            _lifetimeFeature = lifetimeFeature;
             _transportBytesWrittenFeature = transportBytesWrittenFeature;
         }
 
@@ -169,7 +167,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        public void Abort(Exception error)
+        public void Abort(ConnectionAbortedException error)
         {
             // Abort can be called after Dispose if there's a flush timeout.
             // It's important to still call _lifetimeFeature.Abort() in this case.
@@ -181,17 +179,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     return;
                 }
 
+                _aborted = true;
+                _connectionContext.Abort(error);
+
                 if (!_completed)
                 {
                     _log.ConnectionDisconnect(_connectionId);
                     _completed = true;
-
-                    _outputPipeReader.CancelPendingRead();
-                    _pipeWriter.Complete(error);
+                    _pipeWriter.Complete();
                 }
-
-                _aborted = true;
-                _lifetimeFeature.Abort();
             }
         }
 

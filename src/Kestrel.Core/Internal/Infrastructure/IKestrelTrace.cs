@@ -52,6 +52,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
         void ResponseMininumDataRateNotSatisfied(string connectionId, string traceIdentifier);
 
+        void ApplicationAbortedConnection(string connectionId, string traceIdentifier);
+
         void Http2ConnectionError(string connectionId, Http2ConnectionErrorException ex);
 
         void Http2StreamError(string connectionId, Http2StreamErrorException ex);

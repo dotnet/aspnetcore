@@ -312,8 +312,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     // Wait until connection is established
                     Assert.True(await connectionStarted.WaitAsync(TestConstants.DefaultTimeout));
 
-                    // Force a reset
-                    connection.Socket.LingerState = new LingerOption(true, 0);
+                    connection.Reset();
                 }
 
                 // If the reset is correctly logged as Debug, the wait below should complete shortly.
@@ -381,8 +380,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         "",
                         "");
 
+                    connection.Reset();
                     // Force a reset
-                    connection.Socket.LingerState = new LingerOption(true, 0);
                 }
 
                 // If the reset is correctly logged as Debug, the wait below should complete shortly.
@@ -450,8 +449,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     // Wait until connection is established
                     Assert.True(await requestStarted.WaitAsync(TestConstants.DefaultTimeout), "request should have started");
 
-                    // Force a reset
-                    connection.Socket.LingerState = new LingerOption(true, 0);
+                    connection.Reset();
                 }
 
                 // If the reset is correctly logged as Debug, the wait below should complete shortly.
@@ -528,7 +526,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                     var token = context.RequestAborted;
                     token.Register(() => requestAborted.Release(2));
-                    await requestAborted.WaitAsync().TimeoutAfter(TestConstants.DefaultTimeout);
+                    await requestAborted.WaitAsync().DefaultTimeout();
                 }));
 
             using (var host = builder.Build())
@@ -541,7 +539,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     socket.Send(Encoding.ASCII.GetBytes("GET / HTTP/1.1\r\nHost:\r\n\r\n"));
                     await appStarted.WaitAsync();
                     socket.Shutdown(SocketShutdown.Send);
-                    await requestAborted.WaitAsync().TimeoutAfter(TestConstants.DefaultTimeout);
+                    await requestAborted.WaitAsync().DefaultTimeout();
                 }
             }
         }
@@ -599,11 +597,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         "",
                         "");
 
-                    await appStartedTcs.Task.TimeoutAfter(TestConstants.DefaultTimeout);
+                    await appStartedTcs.Task.DefaultTimeout();
 
-                    connection.Socket.Shutdown(SocketShutdown.Send);
+                    connection.Shutdown(SocketShutdown.Send);
 
-                    await connectionClosedTcs.Task.TimeoutAfter(TestConstants.DefaultTimeout);
+                    await connectionClosedTcs.Task.DefaultTimeout();
                 }
             }
         }
@@ -632,7 +630,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         "",
                         "");
 
-                    await connectionClosedTcs.Task.TimeoutAfter(TestConstants.DefaultTimeout);
+                    await connectionClosedTcs.Task.DefaultTimeout();
 
                     await connection.ReceiveEnd($"HTTP/1.1 200 OK",
                         "Connection: close",
@@ -669,7 +667,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         "",
                         "");
 
-                    await connectionClosedTcs.Task.TimeoutAfter(TestConstants.DefaultTimeout);
+                    await connectionClosedTcs.Task.DefaultTimeout();
                     await connection.ReceiveForcedEnd();
                 }
             }
@@ -728,9 +726,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         "",
                         "4",
                         "Done")
-                        .TimeoutAfter(TestConstants.DefaultTimeout);
+                        .DefaultTimeout();
 
-                    await Task.WhenAll(pathTcs.Task, rawTargetTcs.Task, queryTcs.Task).TimeoutAfter(TestConstants.DefaultTimeout);
+                    await Task.WhenAll(pathTcs.Task, rawTargetTcs.Task, queryTcs.Task).DefaultTimeout();
                     Assert.Equal(new PathString(expectedPath), pathTcs.Task.Result);
                     Assert.Equal(requestUrl, rawTargetTcs.Task.Result);
                     if (queryValue == null)
@@ -756,7 +754,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }, new TestServiceContext(LoggerFactory)))
             {
                 var requestId = await HttpClientSlim.GetStringAsync($"http://{server.EndPoint}")
-                    .TimeoutAfter(TestConstants.DefaultTimeout);
+                    .DefaultTimeout();
                 Assert.Equal(knownId, requestId);
             }
         }
@@ -797,7 +795,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                            $"Date: {server.Context.DateHeaderValue}",
                            $"Content-Length: {identifierLength}",
                            "",
-                           "").TimeoutAfter(TestConstants.DefaultTimeout);
+                           "").DefaultTimeout();
 
                         var read = await connection.Reader.ReadAsync(buffer, 0, identifierLength);
                         Assert.Equal(identifierLength, read);
@@ -1058,7 +1056,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             using (var server = new TestServer(async httpContext =>
             {
                 // This will hang if 0 content length is not assumed by the server
-                Assert.Equal(0, await httpContext.Request.Body.ReadAsync(new byte[1], 0, 1).TimeoutAfter(TestConstants.DefaultTimeout));
+                Assert.Equal(0, await httpContext.Request.Body.ReadAsync(new byte[1], 0, 1).DefaultTimeout());
             }, testContext, listenOptions))
             {
                 using (var connection = server.CreateConnection())
@@ -1133,6 +1131,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [MemberData(nameof(ConnectionAdapterData))]
         public async Task RequestsCanBeAbortedMidRead(ListenOptions listenOptions)
         {
+            const int applicationAbortedConnectionId = 34;
+
             var testContext = new TestServiceContext(LoggerFactory);
 
             var readTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -1207,6 +1207,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             // The cancellation token for only the last request should be triggered.
             var abortedRequestId = await registrationTcs.Task;
             Assert.Equal(2, abortedRequestId);
+
+            Assert.Single(TestSink.Writes.Where(w => w.LoggerName == "Microsoft.AspNetCore.Server.Kestrel" &&
+                                                     w.EventId == applicationAbortedConnectionId));
         }
 
         [Theory]
@@ -1291,12 +1294,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     var ignore = connection.Stream.WriteAsync(scratchBuffer, 0, scratchBuffer.Length);
 
                     // Wait until the read callback is no longer hooked up so that the connection disconnect isn't observed.
-                    await readCallbackUnwired.Task.TimeoutAfter(TestConstants.DefaultTimeout);
+                    await readCallbackUnwired.Task.DefaultTimeout();
                 }
 
                 clientClosedConnection.SetResult(null);
 
-                await appFuncCompleted.Task.TimeoutAfter(TestConstants.DefaultTimeout);
+                await appFuncCompleted.Task.DefaultTimeout();
             }
 
             mockKestrelTrace.Verify(t => t.ConnectionStop(It.IsAny<string>()), Times.Once());
@@ -1306,7 +1309,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [MemberData(nameof(ConnectionAdapterData))]
         public async Task AppCanHandleClientAbortingConnectionMidRequest(ListenOptions listenOptions)
         {
-            var readTcs = new TaskCompletionSource<Exception>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var readTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var appStartedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             var mockKestrelTrace = new Mock<KestrelTrace>(Logger) { CallBase = true };
             var testContext = new TestServiceContext()
@@ -1318,6 +1322,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             using (var server = new TestServer(async context =>
             {
+                appStartedTcs.SetResult(null);
+
                 try
                 {
                     await context.Request.Body.CopyToAsync(Stream.Null);;
@@ -1341,10 +1347,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         "",
                         "");
 
+                    await appStartedTcs.Task.DefaultTimeout();
+
                     await connection.Stream.WriteAsync(scratchBuffer, 0, scratchBuffer.Length);
+
+                    connection.Reset();
                 }
 
-                await Assert.ThrowsAnyAsync<IOException>(() => readTcs.Task).TimeoutAfter(TestConstants.DefaultTimeout);
+                await Assert.ThrowsAnyAsync<IOException>(() => readTcs.Task).DefaultTimeout();
             }
 
             mockKestrelTrace.Verify(t => t.ConnectionStop(It.IsAny<string>()), Times.Once());
@@ -1418,7 +1428,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 var read = 0;
                 while (read < message.Length)
                 {
-                    read += await duplexStream.ReadAsync(buffer, read, buffer.Length - read).TimeoutAfter(TestConstants.DefaultTimeout);
+                    read += await duplexStream.ReadAsync(buffer, read, buffer.Length - read).DefaultTimeout();
                 }
 
                 await duplexStream.WriteAsync(buffer, 0, read);
