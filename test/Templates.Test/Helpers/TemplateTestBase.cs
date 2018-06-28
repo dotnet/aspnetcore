@@ -55,6 +55,7 @@ $@"<Project>
 $@"<Project>
     <Import Project=""{templatesTestsPropsFilePath}"" />
 </Project>";
+
             File.WriteAllText(Path.Combine(TemplateOutputDir, "Directory.Build.targets"), directoryBuildTargetsContent);
         }
 

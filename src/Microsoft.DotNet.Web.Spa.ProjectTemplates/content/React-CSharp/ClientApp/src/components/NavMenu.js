@@ -1,41 +1,46 @@
 ﻿import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
-import { Glyphicon, Nav, Navbar, NavItem } from 'react-bootstrap';
-import { LinkContainer } from 'react-router-bootstrap';
+import { Collapse, Nav, Navbar, NavbarBrand, NavbarToggler, NavItem, NavLink } from 'reactstrap';
 import './NavMenu.css';
 
 export class NavMenu extends Component {
   displayName = NavMenu.name
 
+  constructor(props) {
+    super(props);
+
+    this.toggleNavbar = this.toggleNavbar.bind(this);
+    this.state = {
+      collapsed: false
+    };
+  }
+
+  toggleNavbar() {
+    this.setState({
+      collapsed: !this.state.collapsed
+    });
+  }
+
   render() {
     return (
-      <Navbar inverse fixedTop fluid collapseOnSelect>
-        <Navbar.Header>
-          <Navbar.Brand>
-            <Link to={'/'}>Company.WebApplication1</Link>
-          </Navbar.Brand>
-          <Navbar.Toggle />
-        </Navbar.Header>
-        <Navbar.Collapse>
-          <Nav>
-            <LinkContainer to={'/'} exact>
+      <div>
+        <Navbar color="faded" light>
+          <NavbarBrand href="/" className="mr-auto">Company.WebApplication1</NavbarBrand>
+          <NavbarToggler onClick={this.toggleNavbar} className="mr-2" />
+          <Collapse isOpen={!this.state.collapsed} navbar>
+            <Nav navbar>
               <NavItem>
-                <Glyphicon glyph='home' /> Home
+                <NavLink href="/">Home</NavLink>
               </NavItem>
-            </LinkContainer>
-            <LinkContainer to={'/counter'}>
               <NavItem>
-                <Glyphicon glyph='education' /> Counter
+                <NavLink href="/counter">Counter</NavLink>
               </NavItem>
-            </LinkContainer>
-            <LinkContainer to={'/fetch-data'}>
               <NavItem>
-                <Glyphicon glyph='th-list' /> Fetch data
+                <NavLink href="/fetch-data">Fetch data</NavLink>
               </NavItem>
-            </LinkContainer>
-          </Nav>
-        </Navbar.Collapse>
-      </Navbar>
+            </Nav>
+          </Collapse>
+        </Navbar>
+      </div >
     );
   }
 }

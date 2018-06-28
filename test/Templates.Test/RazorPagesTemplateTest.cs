@@ -57,8 +57,7 @@ namespace Templates.Test
                 using (var aspNetProcess = StartAspNetProcess(targetFrameworkOverride, publish))
                 {
                     aspNetProcess.AssertOk("/");
-                    aspNetProcess.AssertOk("/About");
-                    aspNetProcess.AssertOk("/Contact");
+                    aspNetProcess.AssertOk("/Privacy");
                 }
             }
         }
@@ -108,8 +107,7 @@ namespace Templates.Test
                 using (var aspNetProcess = StartAspNetProcess(targetFrameworkOverride, publish))
                 {
                     aspNetProcess.AssertOk("/");
-                    aspNetProcess.AssertOk("/About");
-                    aspNetProcess.AssertOk("/Contact");
+                    aspNetProcess.AssertOk("/Privacy");
                 }
             }
         }

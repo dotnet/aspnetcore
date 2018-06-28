@@ -2,11 +2,13 @@ trigger:
 - master
 - release/*
 
+# See https://github.com/aspnet/BuildTools
 resources:
   repositories:
   - repository: buildtools
-    type: git
-    name: aspnet-BuildTools
+    type: github
+    endpoint: DotNet-Bot GitHub Connection
+    name: aspnet/BuildTools
     ref: refs/heads/release/2.2
 
 phases:
@@ -19,65 +21,27 @@ phases:
       inputs:
         versionSpec: 8.x
 
-- phase: Mac
-  queue: Hosted macOS Preview
-  variables:
-    DOTNET_HOME: $(Agent.WorkFolder)/.dotnet
-  steps:
-  - task: NodeTool@0
-    displayName: Use Node 8.x
-    inputs:
-      versionSpec: 8.x
-  - script: ./run.sh install-tools; $(Agent.WorkFolder)/.dotnet/dotnet dev-certs https
-    displayName: install certs
-    env:
-      DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
-      DOTNET_CLI_TELEMETRY_OPTOUT: 1
-  - script: |
-      brew cask install google-chrome
-      export TEST_CHROME_BINARY=`which google-chrome-stable`
-    displayName: Install headless chrome
-  - script: ./build.sh -ci
-    displayName: Run ./build.sh
-
-# Don't run linux tests for now, they fail
-# - phase: Linux
-#   queue: Hosted Linux Preview
-#   variables:
-#     DOTNET_HOME: $(Agent.WorkFolder)/.dotnet
-#   steps:
-#   - task: NodeTool@0
-#     displayName: Use Node 8.x
-#     inputs:
-#       versionSpec: 8.x
-#   - script: ./run.sh install-tools; $(Agent.WorkFolder)/.dotnet/dotnet dev-certs https
-#     displayName: install certs
-#     env:
-#       DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
-#   - script: |
-#       sudo apt-get update
-#       sudo apt-get install -y unzip openjdk-8-jre-headless xvfb libxi6 libgconf-2-4
-
-#       sudo curl -sS -o - Https://dll-ssl.google.com/linux/linux_signing_key.pub | apt-key add
-#       sudo echo "deb http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list
-#       sudo apt-get -y update
-#       sudo apt-get -y --allow-unauthenticated install google-chrome-stable
-#     displayName: Install headless chrome
-#   - script: npm install -g selenium-standalone
-#     displayName: Install selenium
-#   - script: selenium-standalone install
-#     displayName: Install selenium drivers
-#   - script: |
-#       exit_code=0
-
-#       selenium-standalone start &
-
-#       cleanup() {
-#         kill $!
-#         exit $exit_code
-#       }
-
-#       trap cleanup EXIT
-#       ./build.sh -ci
-#       exit_code=$?
-#     displayName: Start selenium standalone and run ./build.sh
+- template: .vsts-pipelines/templates/phases/default-build.yml@buildtools
+  parameters:
+    agentOs: macOS
+    beforeBuild:
+    - task: NodeTool@0
+      displayName: Use Node 8.x
+      inputs:
+        versionSpec: 8.x
+    - script: ./run.sh install-tools; $(Agent.WorkFolder)/.dotnet/dotnet dev-certs https
+      displayName: install certs
+      env:
+        DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+        DOTNET_CLI_TELEMETRY_OPTOUT: 1
+  
+- template: .vsts-pipelines/templates/phases/default-build.yml@buildtools
+  parameters:
+    agentOs: Linux
+    beforeBuild:
+    - task: NodeTool@0
+      displayName: Use Node 8.x
+      inputs:
+        versionSpec: 8.x
+    - script: ./run.sh install-tools; $(Agent.WorkFolder)/.dotnet/dotnet dev-certs https
+      displayName: install certs
