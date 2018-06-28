@@ -34,6 +34,7 @@ namespace Benchmarks
                         template: "/plaintext",
                         defaults: new RouteValueDictionary(),
                         requiredValues: new RouteValueDictionary(),
+                        nonInlineMatchProcessorReferences: null,
                         order: 0,
                         metadata: EndpointMetadataCollection.Empty,
                         displayName: "Plaintext"),

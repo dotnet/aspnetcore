@@ -8,7 +8,9 @@ using Microsoft.AspNetCore.Routing.EndpointFinders;
 using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.AspNetCore.Routing.Matchers;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.ObjectPool;
+using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
@@ -788,6 +790,7 @@ namespace Microsoft.AspNetCore.Routing
                 template,
                 defaults,
                 new RouteValueDictionary(),
+                new List<MatchProcessorReference>(),
                 0,
                 EndpointMetadataCollection.Empty,
                 null);
@@ -796,8 +799,12 @@ namespace Microsoft.AspNetCore.Routing
         private ILinkGenerator CreateLinkGenerator()
         {
             return new DefaultLinkGenerator(
+                new DefaultMatchProcessorFactory(
+                    Options.Create(new RouteOptions()),
+                    NullLogger<DefaultMatchProcessorFactory>.Instance,
+                    Mock.Of<IServiceProvider>()),
                 new DefaultObjectPool<UriBuildingContext>(new UriBuilderContextPooledObjectPolicy()),
-                Mock.Of<ILogger<DefaultLinkGenerator>>());
+                NullLogger<DefaultLinkGenerator>.Instance);
         }
     }
 }

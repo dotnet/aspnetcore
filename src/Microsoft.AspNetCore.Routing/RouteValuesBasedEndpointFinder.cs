@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Routing.EndpointFinders;
 using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.AspNetCore.Routing.Matchers;
@@ -17,19 +16,16 @@ namespace Microsoft.AspNetCore.Routing
     internal class RouteValuesBasedEndpointFinder : IEndpointFinder<RouteValuesBasedEndpointFinderContext>
     {
         private readonly CompositeEndpointDataSource _endpointDataSource;
-        private readonly IInlineConstraintResolver _inlineConstraintResolver;
         private readonly ObjectPool<UriBuildingContext> _objectPool;
         private LinkGenerationDecisionTree _allMatchesLinkGenerationTree;
         private IDictionary<string, LinkGenerationDecisionTree> _namedMatches;
 
         public RouteValuesBasedEndpointFinder(
             CompositeEndpointDataSource endpointDataSource,
-            ObjectPool<UriBuildingContext> objectPool,
-            IInlineConstraintResolver inlineConstraintResolver)
+            ObjectPool<UriBuildingContext> objectPool)
         {
             _endpointDataSource = endpointDataSource;
             _objectPool = objectPool;
-            _inlineConstraintResolver = inlineConstraintResolver;
 
             BuildOutboundMatches();
         }
@@ -110,28 +106,6 @@ namespace Microsoft.AspNetCore.Routing
                 Data = endpoint,
                 RouteName = routeNameMetadata?.Name,
             };
-
-            // TODO: review. These route constriants should be constructed when the endpoint
-            // is built. This way they can be checked for validity on app startup too
-            var constraintBuilder = new RouteConstraintBuilder(
-                _inlineConstraintResolver,
-                endpoint.ParsedTemplate.TemplateText);
-            foreach (var parameter in endpoint.ParsedTemplate.Parameters)
-            {
-                if (parameter.InlineConstraints != null)
-                {
-                    if (parameter.IsOptional)
-                    {
-                        constraintBuilder.SetOptional(parameter.Name);
-                    }
-
-                    foreach (var constraint in parameter.InlineConstraints)
-                    {
-                        constraintBuilder.AddResolvedConstraint(parameter.Name, constraint.Constraint);
-                    }
-                }
-            }
-            entry.Constraints = constraintBuilder.Build();
             entry.Defaults = endpoint.Defaults;
             return entry;
         }
@@ -145,22 +119,6 @@ namespace Microsoft.AspNetCore.Routing
                 result.Add(namedOutboundMatch.Key, new LinkGenerationDecisionTree(namedOutboundMatch.Value.ToArray()));
             }
             return result;
-        }
-
-        // Used only to hook up link generation, and it doesn't need to do anything.
-        private class NullRouter : IRouter
-        {
-            public static readonly NullRouter Instance = new NullRouter();
-
-            public VirtualPathData GetVirtualPath(VirtualPathContext context)
-            {
-                return null;
-            }
-
-            public Task RouteAsync(RouteContext context)
-            {
-                throw new NotImplementedException();
-            }
         }
     }
 }
