@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 
@@ -56,7 +57,9 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
         }
 
-        [Fact]
+        // Tests are conditional to avoid occasional CI failures on Windows 8 and Windows 2012 under full framework.
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.CLR, SkipReason = "See aspnet/Identity#1630")]
         public async Task Token_WithKnownUser_ReturnsOkAndToken()
         {
             // Arrange & Act
@@ -81,7 +84,8 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
         }
 
-        [Theory]
+        [ConditionalTheory]
+        [FrameworkSkipCondition(RuntimeFrameworks.CLR, SkipReason = "See aspnet/Identity#1630")]
         [InlineData("reader@example.com")]
         [InlineData("writer@example.com")]
         public async Task FindByStatus_WithToken_ReturnsOkAndPet(string username)
@@ -108,7 +112,8 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.NotEmpty(json);
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.CLR, SkipReason = "See aspnet/Identity#1630")]
         public async Task FindById_WithInvalidPetId_ReturnsNotFound()
         {
             // Arrange & Act 1
@@ -128,7 +133,8 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.CLR, SkipReason = "See aspnet/Identity#1630")]
         public async Task FindById_WithValidPetId_ReturnsOkAndPet()
         {
             // Arrange & Act 1
@@ -153,7 +159,8 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.NotEmpty(json);
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.CLR, SkipReason = "See aspnet/Identity#1630")]
         public async Task AddPet_WithInsufficientClaims_ReturnsForbidden()
         {
             // Arrange & Act 1
@@ -185,7 +192,8 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.CLR, SkipReason = "See aspnet/Identity#1630")]
         public async Task AddPet_WithValidClaims_ReturnsCreated()
         {
             // Arrange & Act 1
