@@ -7,8 +7,13 @@
 #include "dbgutil.h"
 #include "stringu.h"
 #include "stringa.h"
+#include "dbgutil.h"
+#include "Environment.h"
+#include "SRWExclusiveLock.h"
 
 inline HANDLE g_hStandardOutput;
+inline HANDLE g_logFile;
+inline SRWLOCK g_logFileLock;
 
 VOID
 DebugInitialize()
@@ -46,21 +51,55 @@ DebugInitialize()
     const size_t environmentVariableValueSize = 2;
     std::wstring environmentVariableValue(environmentVariableValueSize, '\0');
 
-    if (GetEnvironmentVariable(L"ASPNETCORE_MODULE_DEBUG", environmentVariableValue.data(), environmentVariableValueSize) == environmentVariableValueSize - 1)
+    try
     {
-        try
-        {
-            const auto value = std::stoi(environmentVariableValue);
+        const auto value = std::stoi(Environment::ExpandEnvironmentVariables(L"%ASPNETCORE_MODULE_DEBUG%"));
 
-            if (value >= 1) DEBUG_FLAGS_VAR |= ASPNETCORE_DEBUG_FLAG_ERROR;
-            if (value >= 2) DEBUG_FLAGS_VAR |= ASPNETCORE_DEBUG_FLAG_WARNING;
-            if (value >= 3) DEBUG_FLAGS_VAR |= ASPNETCORE_DEBUG_FLAG_INFO;
-            if (value >= 4) DEBUG_FLAGS_VAR |= ASPNETCORE_DEBUG_FLAG_CONSOLE;
-        }
-        catch (...)
+        if (value >= 1) DEBUG_FLAGS_VAR |= ASPNETCORE_DEBUG_FLAG_ERROR;
+        if (value >= 2) DEBUG_FLAGS_VAR |= ASPNETCORE_DEBUG_FLAG_WARNING;
+        if (value >= 3) DEBUG_FLAGS_VAR |= ASPNETCORE_DEBUG_FLAG_INFO;
+        if (value >= 4) DEBUG_FLAGS_VAR |= ASPNETCORE_DEBUG_FLAG_CONSOLE;
+    }
+    catch (...)
+    {
+        // ignore
+    }
+
+    try
+    {
+        const auto debugOutputFile = Environment::ExpandEnvironmentVariables(L"%ASPNETCORE_MODULE_DEBUG_FILE%");
+
+        if (!debugOutputFile.empty())
         {
-            // ignore
+            g_logFile = CreateFileW(debugOutputFile.c_str(),
+                FILE_GENERIC_WRITE,
+                FILE_SHARE_READ | FILE_SHARE_WRITE,
+                nullptr,
+                OPEN_ALWAYS,
+                FILE_ATTRIBUTE_NORMAL,
+                nullptr
+            );
+
+            if (g_logFile != INVALID_HANDLE_VALUE)
+            {
+                InitializeSRWLock(&g_logFileLock);
+                DEBUG_FLAGS_VAR |= ASPNETCORE_DEBUG_FLAG_FILE;
+            }
         }
+
+    }
+    catch (...)
+    {
+        // ignore
+    }
+}
+
+VOID
+DebugStop()
+{
+    if (IsEnabled(ASPNETCORE_DEBUG_FLAG_FILE))
+    {
+        CloseHandle(g_logFile);
     }
 }
 
@@ -93,11 +132,19 @@ DebugPrint(
         }
 
         OutputDebugStringA( strOutput.QueryStr() );
+        DWORD nBytesWritten = 0;
 
         if (IsEnabled(ASPNETCORE_DEBUG_FLAG_CONSOLE))
         {
-            DWORD nBytesWritten = 0;
-            WriteFile(g_hStandardOutput, strOutput.QueryStr(), strOutput.QueryCB(), &nBytesWritten, NULL);
+            WriteFile(g_hStandardOutput, strOutput.QueryStr(), strOutput.QueryCB(), &nBytesWritten, nullptr);
+        }
+
+        if (IsEnabled(ASPNETCORE_DEBUG_FLAG_FILE))
+        {
+            SRWExclusiveLock lock(g_logFileLock);
+
+            SetFilePointer(g_logFile, 0, nullptr, FILE_END);
+            WriteFile(g_logFile, strOutput.QueryStr(), strOutput.QueryCB(), &nBytesWritten, nullptr);
         }
     }
 }

@@ -72,6 +72,7 @@ BOOL APIENTRY DllMain(HMODULE hModule,
         break;
     case DLL_PROCESS_DETACH:
         g_fProcessDetach = TRUE;
+        DebugStop();
     default:
         break;
     }

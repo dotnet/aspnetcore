@@ -93,8 +93,5 @@ public:
     GetAbsolutePathToDotnet(
         _In_ const std::experimental::filesystem::path & requestedPath
     );
-
-    static
-    std::wstring ExpandEnvironmentVariables(const std::wstring & str);
 };
 

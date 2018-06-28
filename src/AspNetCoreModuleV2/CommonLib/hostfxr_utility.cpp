@@ -11,6 +11,7 @@
 #include "debugutil.h"
 #include "exceptions.h"
 #include "HandleWrapper.h"
+#include "Environment.h"
 
 namespace fs = std::experimental::filesystem;
 
@@ -124,8 +125,8 @@ HOSTFXR_UTILITY::GetHostFxrParameters(
         pcwzApplicationPhysicalPath);
 
     const fs::path applicationPhysicalPath = pcwzApplicationPhysicalPath;
-    fs::path processPath = ExpandEnvironmentVariables(pcwzProcessPath);
-    std::wstring arguments = ExpandEnvironmentVariables(pcwzArguments);
+    fs::path processPath = Environment::ExpandEnvironmentVariables(pcwzProcessPath);
+    std::wstring arguments = Environment::ExpandEnvironmentVariables(pcwzArguments);
 
     if (processPath.is_relative())
     {
@@ -595,7 +596,7 @@ HOSTFXR_UTILITY::InvokeWhereToFindDotnet()
 std::optional<fs::path>
 HOSTFXR_UTILITY::GetAbsolutePathToDotnetFromProgramFiles()
 {
-    const auto programFilesDotnet = fs::path(ExpandEnvironmentVariables(L"%ProgramFiles%")) / "dotnet" / "dotnet.exe";
+    const auto programFilesDotnet = fs::path(Environment::ExpandEnvironmentVariables(L"%ProgramFiles%")) / "dotnet" / "dotnet.exe";
     return is_regular_file(programFilesDotnet) ? std::make_optional(programFilesDotnet) : std::nullopt;
 }
 
@@ -639,30 +640,4 @@ HOSTFXR_UTILITY::FindDotNetFolders(
     } while (FindNextFileW(handle, &data));
 
     FindClose(handle);
-}
-
-std::wstring
-HOSTFXR_UTILITY::ExpandEnvironmentVariables(const std::wstring & str)
-{
-    DWORD requestedSize = ExpandEnvironmentStringsW(str.c_str(), nullptr, 0);
-    if (requestedSize == 0)
-    {
-        throw std::system_error(GetLastError(), std::system_category(), "ExpandEnvironmentVariables");
-    }
-
-    std::wstring expandedStr;
-    do
-    {
-        expandedStr.resize(requestedSize);
-        requestedSize = ExpandEnvironmentStringsW(str.c_str(), &expandedStr[0], requestedSize);
-        if (requestedSize == 0)
-        {
-            throw std::system_error(GetLastError(), std::system_category(), "ExpandEnvironmentVariables");
-        }
-    } while (expandedStr.size() != requestedSize);
-
-    // trim null character as ExpandEnvironmentStringsW returns size including null character
-    expandedStr.resize(requestedSize - 1);
-
-    return expandedStr;
 }

@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -20,7 +21,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         {
             var deploymentParameters = Helpers.GetBaseDeploymentParameters();
             deploymentParameters.PublishApplicationBeforeDeployment = true;
-            deploymentParameters.PreservePublishedApplicationForDebugging = true; // workaround for keeping 
+            deploymentParameters.PreservePublishedApplicationForDebugging = true; // workaround for keeping
 
             var deploymentResult = await DeployAsync(deploymentParameters);
 
@@ -64,5 +65,30 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                     retryDelayMilliseconds: 100);
             }
         }
+
+        [Fact]
+        public async Task StartupMessagesAreLoggedIntoDebugLogFile()
+        {
+            var tempFile = Path.GetTempFileName();
+            try
+            {
+                var deploymentParameters = Helpers.GetBaseDeploymentParameters();
+                deploymentParameters.EnvironmentVariables["ASPNETCORE_MODULE_DEBUG_FILE"] = tempFile;
+
+                var deploymentResult = await DeployAsync(deploymentParameters);
+                var response = await deploymentResult.RetryingHttpClient.GetAsync("/");
+
+                StopServer();
+
+                var logContents = File.ReadAllText(tempFile);
+                Assert.Contains("[aspnetcore.dll]", logContents);
+                Assert.Contains("[aspnetcorev2_inprocess.dll]", logContents);
+            }
+            finally
+            {
+                File.Delete(tempFile);
+            }
+        }
+
     }
 }
