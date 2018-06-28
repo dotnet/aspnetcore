@@ -2,6 +2,11 @@
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
 #include "stdafx.h"
+#include "LoggingHelpers.h"
+#include "IOutputManager.h"
+#include "FileOutputManager.h"
+#include "PipeOutputManager.h"
+#include "NullOutputManager.h"
 
 HRESULT
 LoggingHelpers::CreateLoggingProvider(

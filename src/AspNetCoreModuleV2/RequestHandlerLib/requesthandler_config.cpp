@@ -4,6 +4,7 @@
 #include "stdafx.h"
 #include "requesthandler_config.h"
 #include "debugutil.h"
+#include "environmentvariablehash.h"
 
 REQUESTHANDLER_CONFIG::~REQUESTHANDLER_CONFIG()
 {

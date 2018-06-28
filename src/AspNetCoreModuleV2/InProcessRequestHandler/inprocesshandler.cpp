@@ -4,6 +4,7 @@
 #include "inprocesshandler.h"
 #include "inprocessapplication.h"
 #include "aspnetcore_event.h"
+#include "IOutputManager.h"
 
 ALLOC_CACHE_HANDLER * IN_PROCESS_HANDLER::sm_pAlloc = NULL;
 

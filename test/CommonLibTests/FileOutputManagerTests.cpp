@@ -3,6 +3,7 @@
 
 #include "stdafx.h"
 #include "gtest/internal/gtest-port.h"
+#include "FileOutputManager.h"
 
 class FileManagerWrapper
 {

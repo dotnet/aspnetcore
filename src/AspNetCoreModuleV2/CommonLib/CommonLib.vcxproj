@@ -216,6 +216,7 @@
     <ClCompile Include="debugutil.cpp" />
     <ClCompile Include="fx_ver.cxx" />
     <ClCompile Include="GlobalVersionUtility.cpp" />
+    <ClCompile Include="HandleWrapper.cpp" />
     <ClCompile Include="hostfxr_utility.cpp" />
     <ClCompile Include="hostfxroptions.cpp" />
     <ClCompile Include="SRWExclusiveLock.cpp" />

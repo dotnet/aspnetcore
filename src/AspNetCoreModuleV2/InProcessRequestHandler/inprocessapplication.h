@@ -7,7 +7,7 @@
 #include "InProcessApplicationBase.h"
 #include "inprocesshandler.h"
 #include "requesthandler_config.h"
-
+#include "IOutputManager.h"
 
 typedef REQUEST_NOTIFICATION_STATUS(WINAPI * PFN_REQUEST_HANDLER) (IN_PROCESS_HANDLER* pInProcessHandler, void* pvRequestHandlerContext);
 typedef BOOL(WINAPI * PFN_SHUTDOWN_HANDLER) (void* pvShutdownHandlerContext);

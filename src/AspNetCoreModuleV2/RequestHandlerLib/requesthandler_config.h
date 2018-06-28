@@ -42,6 +42,7 @@
 //#define HEX_TO_ASCII(c) ((CHAR)(((c) < 10) ? ((c) + '0') : ((c) + 'a' - 10)))
 
 #include "stdafx.h"
+#include "environmentvariablehash.h"
 
 enum APP_HOSTING_MODEL
 {

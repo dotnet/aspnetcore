@@ -2,12 +2,16 @@
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
 #include "stdafx.h"
+#include "FileOutputManager.h"
 #include "sttimer.h"
 #include "utility.h"
 #include "exceptions.h"
 #include "debugutil.h"
 
-FileOutputManager::FileOutputManager()
+FileOutputManager::FileOutputManager() :
+    m_hLogFileHandle(INVALID_HANDLE_VALUE),
+    m_fdPreviousStdOut(0),
+    m_fdPreviousStdErr(0)
 {
 }
 
@@ -19,8 +23,6 @@ FileOutputManager::~FileOutputManager()
     if (m_hLogFileHandle != INVALID_HANDLE_VALUE)
     {
         m_Timer.CancelTimer();
-        CloseHandle(m_hLogFileHandle);
-        m_hLogFileHandle = INVALID_HANDLE_VALUE;
     }
 
     // delete empty log file
@@ -122,6 +124,7 @@ FileOutputManager::Start()
     RETURN_IF_FAILED(UTILITY::EnsureDirectoryPathExist(struPath.QueryStr()));
 
     GetSystemTime(&systemTime);
+
     RETURN_IF_FAILED(
         m_struLogFilePath.SafeSnwprintf(L"%s_%d%02d%02d%02d%02d%02d_%d.log",
         struPath.QueryStr(),

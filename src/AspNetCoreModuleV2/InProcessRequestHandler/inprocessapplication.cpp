@@ -11,6 +11,7 @@
 #include "EventLog.h"
 #include "SRWExclusiveLock.h"
 #include "exceptions.h"
+#include "LoggingHelpers.h"
 
 IN_PROCESS_APPLICATION*  IN_PROCESS_APPLICATION::s_Application = NULL;
 

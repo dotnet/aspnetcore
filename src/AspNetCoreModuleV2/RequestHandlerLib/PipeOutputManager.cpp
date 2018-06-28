@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
 #include "stdafx.h"
+#include "PipeOutputManager.h"
 #include "exceptions.h"
 #include "SRWExclusiveLock.h"
 

@@ -58,5 +58,3 @@
 #include "gtest/gtest.h"
 #include "fakeclasses.h"
 
-\
-

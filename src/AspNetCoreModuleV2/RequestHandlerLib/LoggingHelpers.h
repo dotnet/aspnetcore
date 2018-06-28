@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include "IOutputManager.h"
+
 class LoggingHelpers
 {
 public:

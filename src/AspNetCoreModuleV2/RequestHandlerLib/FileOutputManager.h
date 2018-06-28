@@ -4,6 +4,8 @@
 #pragma once
 
 #include "sttimer.h"
+#include "IOutputManager.h"
+#include "HandleWrapper.h"
 
 class FileOutputManager : public IOutputManager
 {
@@ -20,7 +22,7 @@ public:
     virtual void NotifyStartupComplete() override;
 
 private:
-    HANDLE m_hLogFileHandle;
+    HandleWrapper<InvalidHandleTraits> m_hLogFileHandle;
     STTIMER m_Timer;
     STRU m_wsStdOutLogFileName;
     STRU m_wsApplicationPath;

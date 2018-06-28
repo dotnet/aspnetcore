@@ -16,6 +16,7 @@
 
 #include "Shlwapi.h"
 #include <io.h>
+
 #include "hashtable.h"
 #include "stringu.h"
 #include "stringa.h"
@@ -23,10 +24,5 @@
 #include "dbgutil.h"
 #include "ahutil.h"
 #include "hashfn.h"
-#include "environmentvariablehash.h"
-#include "IOutputManager.h"
-#include "FileOutputManager.h"
-#include "PipeOutputManager.h"
-#include "NullOutputManager.h"
-#include "LoggingHelpers.h"
+
 

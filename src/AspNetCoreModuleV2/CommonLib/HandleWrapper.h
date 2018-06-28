@@ -12,9 +12,6 @@ struct InvalidHandleTraits
     static void Close(HANDLE handle) { CloseHandle(handle); }
 };
 
-// Workaround for VC++ bug https://developercommunity.visualstudio.com/content/problem/33928/constexpr-failing-on-nullptr-v141-compiler-regress.html
-const HANDLE InvalidHandleTraits::DefaultHandle = INVALID_HANDLE_VALUE;
-
 struct NullHandleTraits
 {
     using HandleType = HANDLE;
