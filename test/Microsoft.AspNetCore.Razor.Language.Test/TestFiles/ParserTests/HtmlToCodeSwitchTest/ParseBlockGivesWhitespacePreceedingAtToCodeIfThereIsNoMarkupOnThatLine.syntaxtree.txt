@@ -1,0 +1,67 @@
+Markup block - Gen<None> - 95 - (0:0,0)
+    Markup span - Gen<Markup> - [   ] - SpanEditHandler;Accepts:Any - (0:0,0) - Symbols:1
+        HtmlSymbolType.WhiteSpace;[   ];
+    Tag block - Gen<None> - 4 - (3:0,3)
+        Markup span - Gen<Markup> - [<ul>] - SpanEditHandler;Accepts:None - (3:0,3) - Symbols:3
+            HtmlSymbolType.OpenAngle;[<];
+            HtmlSymbolType.Text;[ul];
+            HtmlSymbolType.CloseAngle;[>];
+    Markup span - Gen<Markup> - [LF] - SpanEditHandler;Accepts:Any - (7:0,7) - Symbols:1
+        HtmlSymbolType.NewLine;[LF];
+    Statement block - Gen<None> - 77 - (9:1,0)
+        Code span - Gen<Stmt> - [    ] - SpanEditHandler;Accepts:Any - (9:1,0) - Symbols:1
+            CSharpSymbolType.WhiteSpace;[    ];
+        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (13:1,4) - Symbols:1
+            CSharpSymbolType.Transition;[@];
+        Code span - Gen<Stmt> - [foreach(var p in Products) {LF] - SpanEditHandler;Accepts:Any - (14:1,5) - Symbols:13
+            CSharpSymbolType.Keyword;[foreach];
+            CSharpSymbolType.LeftParenthesis;[(];
+            CSharpSymbolType.Identifier;[var];
+            CSharpSymbolType.WhiteSpace;[ ];
+            CSharpSymbolType.Identifier;[p];
+            CSharpSymbolType.WhiteSpace;[ ];
+            CSharpSymbolType.Keyword;[in];
+            CSharpSymbolType.WhiteSpace;[ ];
+            CSharpSymbolType.Identifier;[Products];
+            CSharpSymbolType.RightParenthesis;[)];
+            CSharpSymbolType.WhiteSpace;[ ];
+            CSharpSymbolType.LeftBrace;[{];
+            CSharpSymbolType.NewLine;[LF];
+        Markup block - Gen<None> - 35 - (44:2,0)
+            Markup span - Gen<Markup> - [        ] - SpanEditHandler;Accepts:Any - (44:2,0) - Symbols:1
+                HtmlSymbolType.WhiteSpace;[        ];
+            Tag block - Gen<None> - 4 - (52:2,8)
+                Markup span - Gen<Markup> - [<li>] - SpanEditHandler;Accepts:None - (52:2,8) - Symbols:3
+                    HtmlSymbolType.OpenAngle;[<];
+                    HtmlSymbolType.Text;[li];
+                    HtmlSymbolType.CloseAngle;[>];
+            Markup span - Gen<Markup> - [Product: ] - SpanEditHandler;Accepts:Any - (56:2,12) - Symbols:2
+                HtmlSymbolType.Text;[Product:];
+                HtmlSymbolType.WhiteSpace;[ ];
+            Expression block - Gen<Expr> - 7 - (65:2,21)
+                Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (65:2,21) - Symbols:1
+                    CSharpSymbolType.Transition;[@];
+                Code span - Gen<Expr> - [p.Name] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K14 - (66:2,22) - Symbols:3
+                    CSharpSymbolType.Identifier;[p];
+                    CSharpSymbolType.Dot;[.];
+                    CSharpSymbolType.Identifier;[Name];
+            Tag block - Gen<None> - 5 - (72:2,28)
+                Markup span - Gen<Markup> - [</li>] - SpanEditHandler;Accepts:None - (72:2,28) - Symbols:4
+                    HtmlSymbolType.OpenAngle;[<];
+                    HtmlSymbolType.ForwardSlash;[/];
+                    HtmlSymbolType.Text;[li];
+                    HtmlSymbolType.CloseAngle;[>];
+            Markup span - Gen<Markup> - [LF] - SpanEditHandler;Accepts:None - (77:2,33) - Symbols:1
+                HtmlSymbolType.NewLine;[LF];
+        Code span - Gen<Stmt> - [    }LF] - SpanEditHandler;Accepts:None - (79:3,0) - Symbols:3
+            CSharpSymbolType.WhiteSpace;[    ];
+            CSharpSymbolType.RightBrace;[}];
+            CSharpSymbolType.NewLine;[LF];
+    Markup span - Gen<Markup> - [    ] - SpanEditHandler;Accepts:Any - (86:4,0) - Symbols:1
+        HtmlSymbolType.WhiteSpace;[    ];
+    Tag block - Gen<None> - 5 - (90:4,4)
+        Markup span - Gen<Markup> - [</ul>] - SpanEditHandler;Accepts:None - (90:4,4) - Symbols:4
+            HtmlSymbolType.OpenAngle;[<];
+            HtmlSymbolType.ForwardSlash;[/];
+            HtmlSymbolType.Text;[ul];
+            HtmlSymbolType.CloseAngle;[>];

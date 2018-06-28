@@ -1,0 +1,27 @@
+Markup block - Gen<None> - 50 - (0:0,0)
+    Tag block - Gen<None> - 38 - (0:0,0)
+        Markup span - Gen<Markup> - [<a] - SpanEditHandler;Accepts:Any - (0:0,0) - Symbols:2
+            HtmlSymbolType.OpenAngle;[<];
+            HtmlSymbolType.Text;[a];
+        Markup block - Gen<Attr:href, href="@(2:0,2),"@(36:0,36)> - 35 - (2:0,2)
+            Markup span - Gen<None> - [ href="] - SpanEditHandler;Accepts:Any - (2:0,2) - Symbols:4
+                HtmlSymbolType.WhiteSpace;[ ];
+                HtmlSymbolType.Text;[href];
+                HtmlSymbolType.Equals;[=];
+                HtmlSymbolType.DoubleQuote;["];
+            Markup span - Gen<LitAttr:@(9:0,9)> - [mailto:anurse@microsoft.com] - SpanEditHandler;Accepts:Any - (9:0,9) - Symbols:1
+                HtmlSymbolType.Text;[mailto:anurse@microsoft.com];
+            Markup span - Gen<None> - ["] - SpanEditHandler;Accepts:Any - (36:0,36) - Symbols:1
+                HtmlSymbolType.DoubleQuote;["];
+        Markup span - Gen<Markup> - [>] - SpanEditHandler;Accepts:None - (37:0,37) - Symbols:1
+            HtmlSymbolType.CloseAngle;[>];
+    Markup span - Gen<Markup> - [Email me] - SpanEditHandler;Accepts:Any - (38:0,38) - Symbols:3
+        HtmlSymbolType.Text;[Email];
+        HtmlSymbolType.WhiteSpace;[ ];
+        HtmlSymbolType.Text;[me];
+    Tag block - Gen<None> - 4 - (46:0,46)
+        Markup span - Gen<Markup> - [</a>] - SpanEditHandler;Accepts:None - (46:0,46) - Symbols:4
+            HtmlSymbolType.OpenAngle;[<];
+            HtmlSymbolType.ForwardSlash;[/];
+            HtmlSymbolType.Text;[a];
+            HtmlSymbolType.CloseAngle;[>];

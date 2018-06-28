@@ -1,0 +1,20 @@
+Markup block - Gen<None> - 20 - (0:0,0)
+    Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Symbols:1
+        HtmlSymbolType.Transition;[@];
+    MetaCode span - Gen<None> - [:] - SpanEditHandler;Accepts:Any - (1:0,1) - Symbols:1
+        HtmlSymbolType.Colon;[:];
+    Markup span - Gen<Markup> - [<li>Foo ] - SpanEditHandler;Accepts:Any - (2:0,2) - Symbols:5
+        HtmlSymbolType.OpenAngle;[<];
+        HtmlSymbolType.Text;[li];
+        HtmlSymbolType.CloseAngle;[>];
+        HtmlSymbolType.Text;[Foo];
+        HtmlSymbolType.WhiteSpace;[ ];
+    Expression block - Gen<Expr> - 4 - (10:0,10)
+        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (10:0,10) - Symbols:1
+            CSharpSymbolType.Transition;[@];
+        Code span - Gen<Expr> - [Bar] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K14 - (11:0,11) - Symbols:1
+            CSharpSymbolType.Identifier;[Bar];
+    Markup span - Gen<Markup> - [ BazLF] - SpanEditHandler;Accepts:None - (14:0,14) - Symbols:3
+        HtmlSymbolType.WhiteSpace;[ ];
+        HtmlSymbolType.Text;[Baz];
+        HtmlSymbolType.NewLine;[LF];

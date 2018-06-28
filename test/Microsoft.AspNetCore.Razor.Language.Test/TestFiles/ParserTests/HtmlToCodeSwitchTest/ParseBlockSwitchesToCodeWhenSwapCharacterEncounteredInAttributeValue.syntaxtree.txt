@@ -1,0 +1,23 @@
+Markup block - Gen<None> - 18 - (0:0,0)
+    Tag block - Gen<None> - 18 - (0:0,0)
+        Markup span - Gen<Markup> - [<foo] - SpanEditHandler;Accepts:Any - (0:0,0) - Symbols:2
+            HtmlSymbolType.OpenAngle;[<];
+            HtmlSymbolType.Text;[foo];
+        Markup block - Gen<Attr:bar, bar="@(4:0,4),"@(14:0,14)> - 11 - (4:0,4)
+            Markup span - Gen<None> - [ bar="] - SpanEditHandler;Accepts:Any - (4:0,4) - Symbols:4
+                HtmlSymbolType.WhiteSpace;[ ];
+                HtmlSymbolType.Text;[bar];
+                HtmlSymbolType.Equals;[=];
+                HtmlSymbolType.DoubleQuote;["];
+            Markup block - Gen<DynAttr:@(10:0,10)> - 4 - (10:0,10)
+                Expression block - Gen<Expr> - 4 - (10:0,10)
+                    Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (10:0,10) - Symbols:1
+                        CSharpSymbolType.Transition;[@];
+                    Code span - Gen<Expr> - [baz] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K14 - (11:0,11) - Symbols:1
+                        CSharpSymbolType.Identifier;[baz];
+            Markup span - Gen<None> - ["] - SpanEditHandler;Accepts:Any - (14:0,14) - Symbols:1
+                HtmlSymbolType.DoubleQuote;["];
+        Markup span - Gen<Markup> - [ />] - SpanEditHandler;Accepts:None - (15:0,15) - Symbols:3
+            HtmlSymbolType.WhiteSpace;[ ];
+            HtmlSymbolType.ForwardSlash;[/];
+            HtmlSymbolType.CloseAngle;[>];

@@ -1,0 +1,29 @@
+Markup block - Gen<None> - 31 - (0:0,0)
+    Tag block - Gen<None> - 5 - (0:0,0)
+        Markup span - Gen<Markup> - [<foo>] - SpanEditHandler;Accepts:None - (0:0,0) - Symbols:3
+            HtmlSymbolType.OpenAngle;[<];
+            HtmlSymbolType.Text;[foo];
+            HtmlSymbolType.CloseAngle;[>];
+    Markup span - Gen<Markup> - [<?xml foo ] - SpanEditHandler;Accepts:Any - (5:0,5) - Symbols:6
+        HtmlSymbolType.OpenAngle;[<];
+        HtmlSymbolType.QuestionMark;[?];
+        HtmlSymbolType.Text;[xml];
+        HtmlSymbolType.WhiteSpace;[ ];
+        HtmlSymbolType.Text;[foo];
+        HtmlSymbolType.WhiteSpace;[ ];
+    Expression block - Gen<Expr> - 4 - (15:0,15)
+        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (15:0,15) - Symbols:1
+            CSharpSymbolType.Transition;[@];
+        Code span - Gen<Expr> - [bar] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K14 - (16:0,16) - Symbols:1
+            CSharpSymbolType.Identifier;[bar];
+    Markup span - Gen<Markup> - [ baz?>] - SpanEditHandler;Accepts:None - (19:0,19) - Symbols:4
+        HtmlSymbolType.WhiteSpace;[ ];
+        HtmlSymbolType.Text;[baz];
+        HtmlSymbolType.QuestionMark;[?];
+        HtmlSymbolType.CloseAngle;[>];
+    Tag block - Gen<None> - 6 - (25:0,25)
+        Markup span - Gen<Markup> - [</foo>] - SpanEditHandler;Accepts:None - (25:0,25) - Symbols:4
+            HtmlSymbolType.OpenAngle;[<];
+            HtmlSymbolType.ForwardSlash;[/];
+            HtmlSymbolType.Text;[foo];
+            HtmlSymbolType.CloseAngle;[>];
