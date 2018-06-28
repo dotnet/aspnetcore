@@ -1,5 +1,5 @@
 trigger:
-- dev
+- master
 - release/*
 
 # See https://github.com/aspnet/BuildTools
@@ -9,7 +9,7 @@ resources:
     type: github
     endpoint: DotNet-Bot GitHub Connection
     name: aspnet/BuildTools
-    ref: refs/heads/dev
-    
+    ref: refs/heads/release/2.2
+
 phases:
 - template: .vsts-pipelines/templates/project-ci.yml@buildtools
