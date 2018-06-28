@@ -7,7 +7,7 @@
     "PresetHeaders": "Json",
     "ReadyStateText": "Application started.",
     "Source": {
-      "BranchOrCommit": "dev",
+      "BranchOrCommit": "release/2.2",
       "Project": "benchmarkapps/BasicApi/BasicApi.csproj",
       "Repository": "https://github.com/aspnet/mvc.git"
     }
@@ -19,20 +19,20 @@
   },
   "BasicApi.GetUsingQueryString": {
     "ClientProperties": {
-      "Scripts": "https://raw.githubusercontent.com/aspnet/Mvc/dev/benchmarkapps/BasicApi/getWithToken.lua"
+      "Scripts": "https://raw.githubusercontent.com/aspnet/Mvc/release/2.2/benchmarkapps/BasicApi/getWithToken.lua"
     },
     "Path": "/pet/findByStatus",
     "Query": "?status=available"
   },
   "BasicApi.GetUsingRouteValue": {
     "ClientProperties": {
-      "Scripts": "https://raw.githubusercontent.com/aspnet/Mvc/dev/benchmarkapps/BasicApi/getWithToken.lua"
+      "Scripts": "https://raw.githubusercontent.com/aspnet/Mvc/release/2.2/benchmarkapps/BasicApi/getWithToken.lua"
     },
     "Path": "/pet/-1"
   },
   "BasicApi.GetUsingRouteValueWithoutAuthorization": {
     "ClientProperties": {
-      "Scripts": "https://raw.githubusercontent.com/aspnet/Mvc/dev/benchmarkapps/BasicApi/getWithToken.lua"
+      "Scripts": "https://raw.githubusercontent.com/aspnet/Mvc/release/2.2/benchmarkapps/BasicApi/getWithToken.lua"
     },
     "Path": "/pet/anonymous/-1"
   },
@@ -41,7 +41,7 @@
   },
   "BasicApi.Post": {
     "ClientProperties": {
-      "Scripts": "https://raw.githubusercontent.com/aspnet/Mvc/dev/benchmarkapps/BasicApi/postJsonWithToken.lua"
+      "Scripts": "https://raw.githubusercontent.com/aspnet/Mvc/release/2.2/benchmarkapps/BasicApi/postJsonWithToken.lua"
     },
     "Path": "/pet"
   }
