@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -51,15 +52,30 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
 
         [ConditionalTheory]
-        [InlineData(200, "custom", "custom")]
-        [InlineData(500, "", "Internal Server Error")]
-        [InlineData(999, "", "")]
-        public async Task CustomErrorCodeWorks(int code, string reason, string expectedReason)
+        [InlineData(200, "custom", "custom", null)]
+        [InlineData(200, "custom", "custom", "Custom body")]
+        [InlineData(200, "custom", "custom", "")]
+
+
+        [InlineData(500, "", "Internal Server Error", null)]
+        [InlineData(500, "", "Internal Server Error", "Custom body")]
+        [InlineData(500, "", "Internal Server Error", "")]
+
+        [InlineData(400, "custom", "custom", null)]
+        [InlineData(400, "", "Bad Request", "Custom body")]
+        [InlineData(400, "", "Bad Request", "")]
+
+        [InlineData(999, "", "", null)]
+        [InlineData(999, "", "", "Custom body")]
+        [InlineData(999, "", "", "")]
+        public async Task CustomErrorCodeWorks(int code, string reason, string expectedReason, string body)
         {
-            var response = await _fixture.Client.GetAsync($"SetCustomErorCode?code={code}&reason={reason}");
+            var response = await _fixture.Client.GetAsync($"SetCustomErorCode?code={code}&reason={reason}&writeBody={body != null}&body={body}");
             Assert.Equal((HttpStatusCode)code, response.StatusCode);
             Assert.Equal(expectedReason, response.ReasonPhrase);
-            Assert.Equal("Body", await response.Content.ReadAsStringAsync());
+
+            // ReadAsStringAsync returns empty string for empty results
+            Assert.Equal(body ?? string.Empty, await response.Content.ReadAsStringAsync());
         }
     }
 }

@@ -214,7 +214,10 @@ namespace IISTestSite
                     var feature = ctx.Features.Get<IHttpResponseFeature>();
                     feature.ReasonPhrase = ctx.Request.Query["reason"];
                     feature.StatusCode = int.Parse(ctx.Request.Query["code"]);
-                    await ctx.Response.WriteAsync("Body");
+                    if (ctx.Request.Query["writeBody"] == "True")
+                    {
+                        await ctx.Response.WriteAsync(ctx.Request.Query["body"]);
+                    }
                 });
         }
 
@@ -735,6 +738,5 @@ namespace IISTestSite
                 ctx.RequestServices.GetService<IApplicationLifetime>().StopApplication();
             });
         }
-
     }
 }

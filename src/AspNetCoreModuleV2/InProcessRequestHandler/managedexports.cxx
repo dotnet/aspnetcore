@@ -94,7 +94,8 @@ http_set_response_status_code(
     _In_ PCSTR pszReason
 )
 {
-    return pInProcessHandler->QueryHttpContext()->GetResponse()->SetStatus(statusCode, pszReason);
+    return pInProcessHandler->QueryHttpContext()->GetResponse()->SetStatus(statusCode, pszReason, 0, 0, nullptr,
+        true); // fTrySkipCustomErrors
 }
 
 EXTERN_C __MIDL_DECLSPEC_DLLEXPORT
