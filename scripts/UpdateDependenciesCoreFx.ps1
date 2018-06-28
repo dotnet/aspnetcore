@@ -6,7 +6,6 @@ param(
     [string]$GithubUsername,
     [string]$GithubToken
 )
-# This script only works against dev/master at the moment because only master prod-con builds allow you to access their results before the entire chain is finished.
 
 $ErrorActionPreference = 'Stop'
 Import-Module -Scope Local -Force "$PSScriptRoot/common.psm1"
@@ -108,7 +107,7 @@ Write-Host "Loading deps from $depsPath"
 [xml] $dependencies = LoadXml $depsPath
 
 if (-not $NoCommit) {
-    $baseBranch = "dev"
+    $baseBranch = "release/2.2"
     Invoke-Block { & git fetch origin }
 
     $currentBranch = Invoke-Block { & git rev-parse --abbrev-ref HEAD }

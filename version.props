@@ -31,8 +31,7 @@
     <ExperimentalPackageVersion Condition=" '$(IsFinalBuild)' == 'true' AND '$(ExperimentalVersionSuffix)' != 'rtm' ">$(ExperimentalVersionPrefix)-$(ExperimentalVersionSuffix)-final</ExperimentalPackageVersion>
     <ExperimentalVersionSuffix Condition=" '$(ExperimentalVersionSuffix)' != '' AND '$(BuildNumber)' != '' ">$(ExperimentalVersionSuffix)-$(BuildNumber)</ExperimentalVersionSuffix>
 
-    <!-- Even though we build from 'dev', this is set to 'master' to align with the dotnet-CLI channel name for their 'dev' branch. -->
-    <SharedFxCliBlobChannel>master</SharedFxCliBlobChannel>
+    <SharedFxCliBlobChannel>release/2.2</SharedFxCliBlobChannel>
   </PropertyGroup>
 
 </Project>
