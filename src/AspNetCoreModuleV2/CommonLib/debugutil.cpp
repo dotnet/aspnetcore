@@ -53,7 +53,7 @@ DebugInitialize()
 
     try
     {
-        const auto value = std::stoi(Environment::ExpandEnvironmentVariables(L"%ASPNETCORE_MODULE_DEBUG%"));
+        const auto value = std::stoi(Environment::GetEnvironmentVariableValue(L"ASPNETCORE_MODULE_DEBUG").value_or(L"0"));
 
         if (value >= 1) DEBUG_FLAGS_VAR |= ASPNETCORE_DEBUG_FLAG_ERROR;
         if (value >= 2) DEBUG_FLAGS_VAR |= ASPNETCORE_DEBUG_FLAG_WARNING;
@@ -67,11 +67,11 @@ DebugInitialize()
 
     try
     {
-        auto debugOutputFile = Environment::ExpandEnvironmentVariables(L"%ASPNETCORE_MODULE_DEBUG_FILE%");
+        const auto debugOutputFile = Environment::GetEnvironmentVariableValue(L"ASPNETCORE_MODULE_DEBUG_FILE");
 
-        if (!debugOutputFile.empty())
+        if (debugOutputFile.has_value())
         {
-            g_logFile = CreateFileW(debugOutputFile.c_str(),
+            g_logFile = CreateFileW(debugOutputFile.value().c_str(),
                 (GENERIC_READ | GENERIC_WRITE),
                 (FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE),
                 nullptr,

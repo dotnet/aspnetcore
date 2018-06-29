@@ -4,6 +4,7 @@
 #pragma once
 
 #include <string>
+#include <optional>
 
 class Environment
 {
@@ -13,5 +14,7 @@ public:
 
     static
     std::wstring ExpandEnvironmentVariables(const std::wstring & str);
+    static
+    std::optional<std::wstring> GetEnvironmentVariableValue(const std::wstring & str);
 };
 
