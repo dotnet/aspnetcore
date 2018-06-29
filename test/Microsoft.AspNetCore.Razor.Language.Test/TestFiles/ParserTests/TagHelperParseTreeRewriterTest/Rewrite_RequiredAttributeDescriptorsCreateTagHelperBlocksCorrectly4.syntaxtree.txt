@@ -1,0 +1,12 @@
+Markup block - Gen<None> - 11 - (0:0,0)
+    Tag block - Gen<None> - 5 - (0:0,0)
+        Markup span - Gen<Markup> - [<div>] - SpanEditHandler;Accepts:Any - (0:0,0) - Symbols:3
+            HtmlSymbolType.OpenAngle;[<];
+            HtmlSymbolType.Text;[div];
+            HtmlSymbolType.CloseAngle;[>];
+    Tag block - Gen<None> - 6 - (5:0,5)
+        Markup span - Gen<Markup> - [</div>] - SpanEditHandler;Accepts:Any - (5:0,5) - Symbols:4
+            HtmlSymbolType.OpenAngle;[<];
+            HtmlSymbolType.ForwardSlash;[/];
+            HtmlSymbolType.Text;[div];
+            HtmlSymbolType.CloseAngle;[>];

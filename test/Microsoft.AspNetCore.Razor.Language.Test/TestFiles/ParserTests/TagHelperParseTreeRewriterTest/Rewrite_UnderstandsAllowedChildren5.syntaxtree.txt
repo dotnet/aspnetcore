@@ -1,0 +1,10 @@
+Markup block - Gen<None> - 13 - (0:0,0)
+    Tag block - Gen<TagHelper> - 13 - (0:0,0) - p - PTagHelper
+        StartTagAndEndTag - <p> ... </p>
+        Tag block - Gen<None> - 6 - (3:0,3)
+            Markup span - Gen<Markup> - [<hr />] - SpanEditHandler;Accepts:Any - (3:0,3) - Symbols:5
+                HtmlSymbolType.OpenAngle;[<];
+                HtmlSymbolType.Text;[hr];
+                HtmlSymbolType.WhiteSpace;[ ];
+                HtmlSymbolType.ForwardSlash;[/];
+                HtmlSymbolType.CloseAngle;[>];

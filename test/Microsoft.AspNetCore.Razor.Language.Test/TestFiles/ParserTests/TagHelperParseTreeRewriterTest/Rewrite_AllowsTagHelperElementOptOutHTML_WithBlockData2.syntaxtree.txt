@@ -1,0 +1,10 @@
+Markup block - Gen<None> - 5 - (0:0,0)
+    Tag block - Gen<None> - 5 - (0:0,0)
+        Markup span - Gen<Markup> - [</] - SpanEditHandler;Accepts:Any - (0:0,0) - Symbols:2
+            HtmlSymbolType.OpenAngle;[<];
+            HtmlSymbolType.ForwardSlash;[/];
+        MetaCode span - Gen<None> - [!] - SpanEditHandler;Accepts:None - (2:0,2) - Symbols:1
+            HtmlSymbolType.Bang;[!];
+        Markup span - Gen<Markup> - [p>] - SpanEditHandler;Accepts:Any - (3:0,3) - Symbols:2
+            HtmlSymbolType.Text;[p];
+            HtmlSymbolType.CloseAngle;[>];
