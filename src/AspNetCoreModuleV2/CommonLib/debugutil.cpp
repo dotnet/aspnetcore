@@ -67,19 +67,18 @@ DebugInitialize()
 
     try
     {
-        const auto debugOutputFile = Environment::ExpandEnvironmentVariables(L"%ASPNETCORE_MODULE_DEBUG_FILE%");
+        auto debugOutputFile = Environment::ExpandEnvironmentVariables(L"%ASPNETCORE_MODULE_DEBUG_FILE%");
 
         if (!debugOutputFile.empty())
         {
             g_logFile = CreateFileW(debugOutputFile.c_str(),
-                FILE_GENERIC_WRITE,
-                FILE_SHARE_READ | FILE_SHARE_WRITE,
+                (GENERIC_READ | GENERIC_WRITE),
+                (FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE),
                 nullptr,
                 OPEN_ALWAYS,
                 FILE_ATTRIBUTE_NORMAL,
                 nullptr
             );
-
             if (g_logFile != INVALID_HANDLE_VALUE)
             {
                 InitializeSRWLock(&g_logFileLock);
@@ -145,6 +144,7 @@ DebugPrint(
 
             SetFilePointer(g_logFile, 0, nullptr, FILE_END);
             WriteFile(g_logFile, strOutput.QueryStr(), strOutput.QueryCB(), &nBytesWritten, nullptr);
+            FlushFileBuffers(g_logFile);
         }
     }
 }

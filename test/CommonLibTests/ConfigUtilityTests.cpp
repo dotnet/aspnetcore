@@ -89,4 +89,18 @@ namespace ConfigUtilityTests
         EXPECT_EQ(hr, S_OK);
         EXPECT_STREQ(handlerVersion.QueryStr(), L"value2");
     }
+
+    TEST(ConfigUtilityTestSingle, IgnoresFailedGetElement)
+    {
+        STRU handlerVersion;
+
+        auto element = std::make_unique<NiceMock<MockElement>>();
+        ON_CALL(*element, GetElementByName(_, _))
+            .WillByDefault(DoAll(testing::SetArgPointee<1>(nullptr), testing::Return(HRESULT_FROM_WIN32( ERROR_INVALID_INDEX ))));
+
+        HRESULT hr = ConfigUtility::FindHandlerVersion(element.get(), &handlerVersion);
+
+        EXPECT_EQ(hr, S_OK);
+        EXPECT_STREQ(handlerVersion.QueryStr(), L"");
+    }
 }
