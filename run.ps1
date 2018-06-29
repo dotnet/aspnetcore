@@ -64,8 +64,8 @@ in the file are overridden by command line parameters.
 Example config file:
 ```json
 {
-  "$schema": "https://raw.githubusercontent.com/aspnet/BuildTools/dev/tools/korebuild.schema.json",
-  "channel": "dev",
+  "$schema": "https://raw.githubusercontent.com/aspnet/BuildTools/master/tools/korebuild.schema.json",
+  "channel": "master",
   "toolsSource": "https://aspnetcore.blob.core.windows.net/buildtools"
 }
 ```
