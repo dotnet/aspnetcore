@@ -1,4 +1,4 @@
-SET version=2.2.0-preview1
+SET version=3.0.0-alpha1
 echo Make sure to have ran build.cmd once to ensure artifacts have been created.
 echo Generating version=%version%, edit updateMigrations.cmd to update the version.
 

@@ -33,9 +33,7 @@
     <MicrosoftEntityFrameworkCoreToolsPackageVersion>2.2.0-preview1-34530</MicrosoftEntityFrameworkCoreToolsPackageVersion>
     <MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>2.2.0-preview1-34530</MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>
     <MicrosoftExtensionsProcessSourcesPackageVersion>2.2.0-preview1-34530</MicrosoftExtensionsProcessSourcesPackageVersion>
-    <MicrosoftNETCoreApp20PackageVersion>2.0.0</MicrosoftNETCoreApp20PackageVersion>
-    <MicrosoftNETCoreApp21PackageVersion>2.1.0</MicrosoftNETCoreApp21PackageVersion>
-    <MicrosoftNETCoreApp22PackageVersion>2.2.0-preview1-26618-02</MicrosoftNETCoreApp22PackageVersion>
+    <MicrosoftNETCoreApp30PackageVersion>2.2.0-preview1-26618-02</MicrosoftNETCoreApp30PackageVersion>
     <MicrosoftNETSdkRazorPackageVersion>2.2.0-preview1-34530</MicrosoftNETSdkRazorPackageVersion>
     <MicrosoftNETTestSdkPackageVersion>15.6.1</MicrosoftNETTestSdkPackageVersion>
     <MicrosoftVisualStudioWebBrowserLinkPackageVersion>2.2.0-preview1-34530</MicrosoftVisualStudioWebBrowserLinkPackageVersion>
