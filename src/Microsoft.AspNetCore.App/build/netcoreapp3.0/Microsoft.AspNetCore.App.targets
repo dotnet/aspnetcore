@@ -12,7 +12,7 @@
 
   <Target Name="EnsureTFMCompatibility" BeforeTargets="_CheckForInvalidConfigurationAndPlatform">
     <Error
-      Text="This version of Microsoft.AspNetCore.App is only compatible with the netcoreapp2.2 target framework. Please target netcoreapp2.2 or choose a version of Microsoft.AspNetCore.App compatible with $(TargetFramework)."
-      Condition="'$(TargetFramework)' != 'netcoreapp2.2'"/>
+      Text="This version of Microsoft.AspNetCore.App is only compatible with the netcoreapp3.0 target framework. Please target netcoreapp3.0 or choose a version of Microsoft.AspNetCore.App compatible with $(TargetFramework)."
+      Condition="'$(TargetFramework)' != 'netcoreapp3.0'"/>
   </Target>
 </Project>

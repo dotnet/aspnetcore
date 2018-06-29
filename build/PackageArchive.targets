@@ -46,7 +46,7 @@
     <MSBuild
       Projects="$(_WorkRoot)Archive.csproj"
       Targets="Restore"
-      Properties="RestorePackagesPath=$(FallbackStagingDir);RuntimeFrameworkVersion=$(MicrosoftNETCoreApp22PackageVersion);DotNetRestoreSourcePropsPath=$(GeneratedFallbackRestoreSourcesPropsPath);DotNetBuildOffline=true;AspNetUniverseBuildOffline=true" />
+      Properties="RestorePackagesPath=$(FallbackStagingDir);RuntimeFrameworkVersion=$(MicrosoftNETCoreApp30PackageVersion);DotNetRestoreSourcePropsPath=$(GeneratedFallbackRestoreSourcesPropsPath);DotNetBuildOffline=true;AspNetUniverseBuildOffline=true" />
 
     <!-- Create the archive -->
     <RepoTasks.CreateLzma OutputPath="$(FallbackOutputPath)" Sources="$(FallbackStagingDir)" />

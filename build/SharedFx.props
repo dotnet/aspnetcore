@@ -23,7 +23,7 @@
     <LibExtension Condition="$([MSBuild]::IsOSPlatform('Windows'))">.dll</LibExtension>
     <LibExtension Condition="$([MSBuild]::IsOSPlatform('OSX'))">.dylib</LibExtension>
     <ExeExtension Condition="$([MSBuild]::IsOSPlatform('Windows'))">.exe</ExeExtension>
-    <SharedFrameworkTargetFramework>netcoreapp2.2</SharedFrameworkTargetFramework>
+    <SharedFrameworkTargetFramework>netcoreapp3.0</SharedFrameworkTargetFramework>
 
     <!-- installers -->
     <SharedFxInstallerName>aspnetcore-runtime</SharedFxInstallerName>

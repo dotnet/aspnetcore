@@ -75,9 +75,11 @@
     <ExternalDependency Include="Microsoft.NETCore.App" Version="$(MicrosoftNETCoreApp20PackageVersion)" VariableName="MicrosoftNETCoreApp20PackageVersion" />
     <ExternalDependency Include="Microsoft.NETCore.App" Version="$(MicrosoftNETCoreApp21PackageVersion)" VariableName="MicrosoftNETCoreApp21PackageVersion" />
     <ExternalDependency Include="Microsoft.NETCore.App" Version="$(MicrosoftNETCoreApp22PackageVersion)" VariableName="MicrosoftNETCoreApp22PackageVersion" />
+    <ExternalDependency Include="Microsoft.NETCore.App" Version="$(MicrosoftNETCoreApp30PackageVersion)" VariableName="MicrosoftNETCoreApp30PackageVersion" />
 
     <!-- Microsoft.NetCore.DotNetAppHost for global tools-->
     <ExternalDependency Include="Microsoft.NETCore.DotNetAppHost" Version="$(MicrosoftNETCoreDotNetAppHost21PackageVersion)" VariableName="MicrosoftNETCoreDotNetAppHost21PackageVersion" />
+    <ExternalDependency Include="Microsoft.NETCore.DotNetAppHost" Version="$(MicrosoftNETCoreDotNetAppHost22PackageVersion)" VariableName="MicrosoftNETCoreDotNetAppHost22PackageVersion" />
     <ExternalDependency Include="Microsoft.NETCore.DotNetAppHost" Version="$(MicrosoftNETCoreDotNetAppHostPackageVersion)" />
 
     <ExternalDependency Include="Microsoft.NETCore.Windows.ApiSets" Version="$(MicrosoftNETCoreWindowsApiSetsPackageVersion)" />

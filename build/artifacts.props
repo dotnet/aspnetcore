@@ -205,7 +205,7 @@
     <PackageArtifact Include="Microsoft.Data.Sqlite.Core" Category="ship" AllMetapackage="true" />
     <PackageArtifact Include="Microsoft.DotNet.Web.Client.ItemTemplates" Category="shipoob" />
     <PackageArtifact Include="Microsoft.DotNet.Web.ItemTemplates" Category="shipoob" />
-    <PackageArtifact Include="Microsoft.DotNet.Web.ProjectTemplates.2.2" Category="shipoob" />
+    <PackageArtifact Include="Microsoft.DotNet.Web.ProjectTemplates.3.0" Category="shipoob" />
     <PackageArtifact Include="Microsoft.DotNet.Web.Spa.ProjectTemplates" Category="shipoob" />
     <PackageArtifact Include="Microsoft.EntityFrameworkCore" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.EntityFrameworkCore.Analyzers" Category="ship" Analyzer="true" AppMetapackage="true" AllMetapackage="true" />
