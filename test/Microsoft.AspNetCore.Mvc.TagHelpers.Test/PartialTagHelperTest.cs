@@ -569,7 +569,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         }
 
         [Fact]
-        public async Task ProcessAsync_Throws_IfGetViewAndFindReturnNotFoundResults()
+        public async Task ProcessAsync_Throws_If_NotOptional_And_GetViewAndFindReturnNotFoundResults()
         {
             // Arrange
             var bufferScope = new TestViewBufferScope();
@@ -596,6 +596,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 Name = partialName,
                 ViewContext = viewContext,
                 ViewData = viewData,
+                Optional = false
             };
             var tagHelperContext = GetTagHelperContext();
             var output = GetTagHelperOutput();
@@ -604,6 +605,47 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(
                 () => tagHelper.ProcessAsync(tagHelperContext, output));
             Assert.Equal(expected, exception.Message);
+        }
+        
+        [Fact]
+        public async Task ProcessAsync_IfOptional_And_ViewIsNotFound_WillNotRenderAnything()
+        {
+            // Arrange
+            var expected = string.Empty;
+            var bufferScope = new TestViewBufferScope();
+            var partialName = "_ThisViewDoesNotExists";
+            var model = new object();
+            var viewContext = GetViewContext();
+
+            var view = new Mock<IView>();
+            view.Setup(v => v.RenderAsync(It.IsAny<ViewContext>()))
+                .Callback((ViewContext v) =>
+                {
+                    v.Writer.Write(expected);
+                })
+                .Returns(Task.CompletedTask);
+
+            var viewEngine = new Mock<ICompositeViewEngine>();
+            viewEngine.Setup(v => v.GetView(It.IsAny<string>(), partialName, false))
+                .Returns(ViewEngineResult.NotFound(partialName, searchedLocations: Array.Empty<string>()));
+            viewEngine.Setup(v => v.FindView(viewContext, partialName, false))
+                .Returns(ViewEngineResult.NotFound(partialName, searchedLocations: Array.Empty<string>()));
+
+            var tagHelper = new PartialTagHelper(viewEngine.Object, bufferScope)
+            {
+                Name = partialName,
+                ViewContext = viewContext,
+                Optional = true
+            };
+            var tagHelperContext = GetTagHelperContext();
+            var output = GetTagHelperOutput();
+
+            // Act
+            await tagHelper.ProcessAsync(tagHelperContext, output);
+
+            // Assert
+            var content = HtmlContentUtilities.HtmlContentToString(output.Content, new HtmlTestEncoder());
+            Assert.Empty(content);
         }
 
         private static ViewContext GetViewContext()
