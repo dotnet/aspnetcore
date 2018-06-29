@@ -8,12 +8,8 @@
     <LangVersion>7.3</LangVersion>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(Framework)' != 'netcoreapp2.0'">
-    <PackageReference Include="Microsoft.AspNetCore.App" Version="2.1.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Blazor.Server" Version="$(TemplateBlazorPackageVersion)" />
-  </ItemGroup>
-  <ItemGroup Condition="'$(Framework)' == 'netcoreapp2.0'">
-    <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.0" />
+  <ItemGroup Condition="'$(Framework)' == 'netcoreapp2.1'">
+    <PackageReference Include="Microsoft.AspNetCore.App" Version="$(AspNetCorePackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Blazor.Server" Version="$(TemplateBlazorPackageVersion)" />
   </ItemGroup>
 

@@ -14,7 +14,7 @@
     <file src="_._" target="lib/netstandard1.0/" />
     <file src="build\**" target="build" />
     <file src="targets\**" target="targets" />
-    <file src="$publishdir$\netcoreapp2.0\**\*" target="tools/" />
+    <file src="$publishdir$\netcoreapp2.1\**\*" target="tools/" />
     <file src="..\mono\dist\optimized\**\*" target="tools\mono"  />
     <file src="..\mono\tools\binaries\illink\**\*.*" target="tools\illink" />
     <file src="..\Microsoft.AspNetCore.Blazor.Browser.JS\dist\blazor.js" target="tools\blazor\blazor.js" />

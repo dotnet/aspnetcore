@@ -32,10 +32,6 @@
       "datatype": "choice",
       "choices": [
         {
-          "choice": "netcoreapp2.0",
-          "description": "Target netcoreapp2.0"
-        },
-        {
           "choice": "netcoreapp2.1",
           "description": "Target netcoreapp2.1"
         }

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -305,10 +305,21 @@ namespace Microsoft.AspNetCore.Blazor.Test.Routing
                 return this;
             }
 
-            public RouteTable Build() => new RouteTable(_routeTemplates
-                .Select(rt => new RouteEntry(TemplateParser.ParseTemplate(rt.Item1), rt.Item2))
-                .OrderBy(id => id, RouteTable.RoutePrecedence)
-                .ToArray());
+            public RouteTable Build()
+            {
+                try
+                {
+                    return new RouteTable(_routeTemplates
+                        .Select(rt => new RouteEntry(TemplateParser.ParseTemplate(rt.Item1), rt.Item2))
+                        .OrderBy(id => id, RouteTable.RoutePrecedence)
+                        .ToArray());
+                }
+                catch (InvalidOperationException ex) when (ex.InnerException is InvalidOperationException)
+                {
+                    // ToArray() will wrap our exception in its own.
+                    throw ex.InnerException;
+                }
+            }
         }
     }
 }
