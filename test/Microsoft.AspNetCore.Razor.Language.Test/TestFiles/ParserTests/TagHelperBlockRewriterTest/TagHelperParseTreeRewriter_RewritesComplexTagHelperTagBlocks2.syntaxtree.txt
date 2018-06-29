@@ -1,0 +1,44 @@
+Markup block - Gen<None> - 65 - (0:0,0)
+    Tag block - Gen<TagHelper> - 65 - (0:0,0) - p - ptaghelper
+        StartTagAndEndTag - <p> ... </p>
+        Statement block - Gen<None> - 58 - (3:0,3)
+            Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (3:0,3) - Symbols:1
+                CSharpSymbolType.Transition;[@];
+            Code span - Gen<Stmt> - [do { var foo = bar;] - SpanEditHandler;Accepts:Any - (4:0,4) - Symbols:12
+                CSharpSymbolType.Keyword;[do];
+                CSharpSymbolType.WhiteSpace;[ ];
+                CSharpSymbolType.LeftBrace;[{];
+                CSharpSymbolType.WhiteSpace;[ ];
+                CSharpSymbolType.Identifier;[var];
+                CSharpSymbolType.WhiteSpace;[ ];
+                CSharpSymbolType.Identifier;[foo];
+                CSharpSymbolType.WhiteSpace;[ ];
+                CSharpSymbolType.Assign;[=];
+                CSharpSymbolType.WhiteSpace;[ ];
+                CSharpSymbolType.Identifier;[bar];
+                CSharpSymbolType.Semicolon;[;];
+            Markup block - Gen<None> - 12 - (23:0,23)
+                Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:Any - (23:0,23) - Symbols:1
+                    HtmlSymbolType.WhiteSpace;[ ];
+                Tag block - Gen<TagHelper> - 10 - (24:0,24) - p - ptaghelper
+                    StartTagAndEndTag - <p> ... </p>
+                    Markup span - Gen<Markup> - [Foo] - SpanEditHandler;Accepts:Any - (27:0,27) - Symbols:1
+                        HtmlSymbolType.Text;[Foo];
+                Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:None - (34:0,34) - Symbols:1
+                    HtmlSymbolType.WhiteSpace;[ ];
+            Code span - Gen<Stmt> - [foo++; } while (foo<bar>);] - SpanEditHandler;Accepts:None - (35:0,35) - Symbols:15
+                CSharpSymbolType.Identifier;[foo];
+                CSharpSymbolType.Increment;[++];
+                CSharpSymbolType.Semicolon;[;];
+                CSharpSymbolType.WhiteSpace;[ ];
+                CSharpSymbolType.RightBrace;[}];
+                CSharpSymbolType.WhiteSpace;[ ];
+                CSharpSymbolType.Keyword;[while];
+                CSharpSymbolType.WhiteSpace;[ ];
+                CSharpSymbolType.LeftParenthesis;[(];
+                CSharpSymbolType.Identifier;[foo];
+                CSharpSymbolType.LessThan;[<];
+                CSharpSymbolType.Identifier;[bar];
+                CSharpSymbolType.GreaterThan;[>];
+                CSharpSymbolType.RightParenthesis;[)];
+                CSharpSymbolType.Semicolon;[;];

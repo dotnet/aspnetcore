@@ -1,0 +1,4 @@
+Markup block - Gen<None> - 23 - (0:0,0)
+    Tag block - Gen<TagHelper> - 23 - (0:0,0) - input - InputTagHelper3
+        SelfClosing - <input string-prefix-/>
+        string-prefix- - Minimized

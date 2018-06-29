@@ -1,0 +1,35 @@
+Markup block - Gen<None> - 55 - (0:0,0)
+    Tag block - Gen<TagHelper> - 29 - (0:0,0) - p - ptaghelper
+        StartTagAndEndTag - <p> ... </p>
+        Markup span - Gen<Markup> - [Hel] - SpanEditHandler;Accepts:Any - (3:0,3) - Symbols:1
+            HtmlSymbolType.Text;[Hel];
+        Tag block - Gen<None> - 8 - (6:0,6)
+            Markup span - Gen<Markup> - [<strong>] - SpanEditHandler;Accepts:Any - (6:0,6) - Symbols:3
+                HtmlSymbolType.OpenAngle;[<];
+                HtmlSymbolType.Text;[strong];
+                HtmlSymbolType.CloseAngle;[>];
+        Markup span - Gen<Markup> - [lo] - SpanEditHandler;Accepts:Any - (14:0,14) - Symbols:1
+            HtmlSymbolType.Text;[lo];
+        Tag block - Gen<None> - 9 - (16:0,16)
+            Markup span - Gen<Markup> - [</strong>] - SpanEditHandler;Accepts:Any - (16:0,16) - Symbols:4
+                HtmlSymbolType.OpenAngle;[<];
+                HtmlSymbolType.ForwardSlash;[/];
+                HtmlSymbolType.Text;[strong];
+                HtmlSymbolType.CloseAngle;[>];
+    Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:Any - (29:0,29) - Symbols:1
+        HtmlSymbolType.WhiteSpace;[ ];
+    Tag block - Gen<TagHelper> - 25 - (30:0,30) - p - ptaghelper
+        StartTagAndEndTag - <p> ... </p>
+        Tag block - Gen<None> - 6 - (33:0,33)
+            Markup span - Gen<Markup> - [<span>] - SpanEditHandler;Accepts:Any - (33:0,33) - Symbols:3
+                HtmlSymbolType.OpenAngle;[<];
+                HtmlSymbolType.Text;[span];
+                HtmlSymbolType.CloseAngle;[>];
+        Markup span - Gen<Markup> - [World] - SpanEditHandler;Accepts:Any - (39:0,39) - Symbols:1
+            HtmlSymbolType.Text;[World];
+        Tag block - Gen<None> - 7 - (44:0,44)
+            Markup span - Gen<Markup> - [</span>] - SpanEditHandler;Accepts:Any - (44:0,44) - Symbols:4
+                HtmlSymbolType.OpenAngle;[<];
+                HtmlSymbolType.ForwardSlash;[/];
+                HtmlSymbolType.Text;[span];
+                HtmlSymbolType.CloseAngle;[>];

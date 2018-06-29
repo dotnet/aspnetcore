@@ -1,0 +1,23 @@
+Markup block - Gen<None> - 60 - (0:0,0)
+    Tag block - Gen<TagHelper> - 60 - (0:0,0) - input - inputtaghelper
+        SelfClosing - <input data-required='@DateTime.Now middle @DateTime.Now' />
+        data-required - SingleQuotes
+            Markup block - Gen<None> - 34 - (22:0,22)
+                Expression block - Gen<Expr> - 13 - (22:0,22)
+                    Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (22:0,22) - Symbols:1
+                        CSharpSymbolType.Transition;[@];
+                    Code span - Gen<Expr> - [DateTime.Now] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K14 - (23:0,23) - Symbols:3
+                        CSharpSymbolType.Identifier;[DateTime];
+                        CSharpSymbolType.Dot;[.];
+                        CSharpSymbolType.Identifier;[Now];
+                Markup span - Gen<Markup> - [ middle ] - SpanEditHandler;Accepts:Any - (35:0,35) - Symbols:3
+                    HtmlSymbolType.WhiteSpace;[ ];
+                    HtmlSymbolType.Text;[middle];
+                    HtmlSymbolType.WhiteSpace;[ ];
+                Expression block - Gen<Expr> - 13 - (43:0,43)
+                    Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (43:0,43) - Symbols:1
+                        CSharpSymbolType.Transition;[@];
+                    Code span - Gen<Expr> - [DateTime.Now] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K14 - (44:0,44) - Symbols:3
+                        CSharpSymbolType.Identifier;[DateTime];
+                        CSharpSymbolType.Dot;[.];
+                        CSharpSymbolType.Identifier;[Now];

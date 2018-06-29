@@ -1,0 +1,38 @@
+Markup block - Gen<None> - 34 - (0:0,0)
+    Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (0:0,0) - Symbols:1
+        HtmlSymbolType.Unknown;[];
+    Statement block - Gen<None> - 34 - (0:0,0)
+        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Symbols:1
+            CSharpSymbolType.Transition;[@];
+        MetaCode span - Gen<None> - [{] - SpanEditHandler;Accepts:None - (1:0,1) - Symbols:1
+            CSharpSymbolType.LeftBrace;[{];
+        Markup block - Gen<None> - 31 - (2:0,2)
+            Tag block - Gen<None> - 7 - (2:0,2)
+                Markup span - Gen<Markup> - [<] - SpanEditHandler;Accepts:Any - (2:0,2) - Symbols:1
+                    HtmlSymbolType.OpenAngle;[<];
+                MetaCode span - Gen<None> - [!] - SpanEditHandler;Accepts:None - (3:0,3) - Symbols:1
+                    HtmlSymbolType.Bang;[!];
+                Markup span - Gen<Markup> - [text>] - SpanEditHandler;Accepts:None - (4:0,4) - Symbols:2
+                    HtmlSymbolType.Text;[text];
+                    HtmlSymbolType.CloseAngle;[>];
+            Markup span - Gen<Markup> - [words and spaces] - SpanEditHandler;Accepts:Any - (9:0,9) - Symbols:5
+                HtmlSymbolType.Text;[words];
+                HtmlSymbolType.WhiteSpace;[ ];
+                HtmlSymbolType.Text;[and];
+                HtmlSymbolType.WhiteSpace;[ ];
+                HtmlSymbolType.Text;[spaces];
+            Tag block - Gen<None> - 8 - (25:0,25)
+                Markup span - Gen<Markup> - [</] - SpanEditHandler;Accepts:Any - (25:0,25) - Symbols:2
+                    HtmlSymbolType.OpenAngle;[<];
+                    HtmlSymbolType.ForwardSlash;[/];
+                MetaCode span - Gen<None> - [!] - SpanEditHandler;Accepts:None - (27:0,27) - Symbols:1
+                    HtmlSymbolType.Bang;[!];
+                Markup span - Gen<Markup> - [text>] - SpanEditHandler;Accepts:None - (28:0,28) - Symbols:2
+                    HtmlSymbolType.Text;[text];
+                    HtmlSymbolType.CloseAngle;[>];
+        Code span - Gen<Stmt> - [] - SpanEditHandler;Accepts:Any - (33:0,33) - Symbols:1
+            CSharpSymbolType.Unknown;[];
+        MetaCode span - Gen<None> - [}] - SpanEditHandler;Accepts:None - (33:0,33) - Symbols:1
+            CSharpSymbolType.RightBrace;[}];
+    Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (34:0,34) - Symbols:1
+        HtmlSymbolType.Unknown;[];

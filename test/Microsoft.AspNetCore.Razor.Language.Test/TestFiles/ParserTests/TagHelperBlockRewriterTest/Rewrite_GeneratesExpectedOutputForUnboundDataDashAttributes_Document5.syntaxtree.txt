@@ -1,0 +1,18 @@
+Markup block - Gen<None> - 53 - (0:0,0)
+    Tag block - Gen<TagHelper> - 53 - (0:0,0) - input - inputtaghelper
+        SelfClosing - <input data-required='prefix @DateTime.Now suffix' />
+        data-required - SingleQuotes
+            Markup block - Gen<None> - 27 - (22:0,22)
+                Markup span - Gen<Markup> - [prefix ] - SpanEditHandler;Accepts:Any - (22:0,22) - Symbols:2
+                    HtmlSymbolType.Text;[prefix];
+                    HtmlSymbolType.WhiteSpace;[ ];
+                Expression block - Gen<Expr> - 13 - (29:0,29)
+                    Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (29:0,29) - Symbols:1
+                        CSharpSymbolType.Transition;[@];
+                    Code span - Gen<Expr> - [DateTime.Now] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K14 - (30:0,30) - Symbols:3
+                        CSharpSymbolType.Identifier;[DateTime];
+                        CSharpSymbolType.Dot;[.];
+                        CSharpSymbolType.Identifier;[Now];
+                Markup span - Gen<Markup> - [ suffix] - SpanEditHandler;Accepts:Any - (42:0,42) - Symbols:2
+                    HtmlSymbolType.WhiteSpace;[ ];
+                    HtmlSymbolType.Text;[suffix];

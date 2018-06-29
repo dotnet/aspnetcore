@@ -1,0 +1,18 @@
+Markup block - Gen<None> - 30 - (0:0,0)
+    Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (0:0,0) - Symbols:1
+        HtmlSymbolType.Unknown;[];
+    Statement block - Gen<None> - 30 - (0:0,0)
+        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Symbols:1
+            CSharpSymbolType.Transition;[@];
+        MetaCode span - Gen<None> - [{] - SpanEditHandler;Accepts:None - (1:0,1) - Symbols:1
+            CSharpSymbolType.LeftBrace;[{];
+        Markup block - Gen<None> - 27 - (2:0,2)
+            Tag block - Gen<TagHelper> - 27 - (2:0,2) - input - InputTagHelper3
+                SelfClosing - <input string-dictionary />
+                string-dictionary - Minimized
+        Code span - Gen<Stmt> - [] - SpanEditHandler;Accepts:Any - (29:0,29) - Symbols:1
+            CSharpSymbolType.Unknown;[];
+        MetaCode span - Gen<None> - [}] - SpanEditHandler;Accepts:None - (29:0,29) - Symbols:1
+            CSharpSymbolType.RightBrace;[}];
+    Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (30:0,30) - Symbols:1
+        HtmlSymbolType.Unknown;[];

@@ -1,0 +1,53 @@
+Markup block - Gen<None> - 41 - (0:0,0)
+    Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (0:0,0) - Symbols:1
+        HtmlSymbolType.Unknown;[];
+    Statement block - Gen<None> - 41 - (0:0,0)
+        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Symbols:1
+            CSharpSymbolType.Transition;[@];
+        MetaCode span - Gen<None> - [{] - SpanEditHandler;Accepts:None - (1:0,1) - Symbols:1
+            CSharpSymbolType.LeftBrace;[{];
+        Markup block - Gen<None> - 38 - (2:0,2)
+            Tag block - Gen<None> - 33 - (2:0,2)
+                Markup span - Gen<Markup> - [<] - SpanEditHandler;Accepts:Any - (2:0,2) - Symbols:1
+                    HtmlSymbolType.OpenAngle;[<];
+                MetaCode span - Gen<None> - [!] - SpanEditHandler;Accepts:None - (3:0,3) - Symbols:1
+                    HtmlSymbolType.Bang;[!];
+                Markup span - Gen<Markup> - [p] - SpanEditHandler;Accepts:Any - (4:0,4) - Symbols:1
+                    HtmlSymbolType.Text;[p];
+                Markup block - Gen<Attr:class, class='@(5:0,5),'@(22:0,22)> - 18 - (5:0,5)
+                    Markup span - Gen<None> - [ class='] - SpanEditHandler;Accepts:Any - (5:0,5) - Symbols:4
+                        HtmlSymbolType.WhiteSpace;[ ];
+                        HtmlSymbolType.Text;[class];
+                        HtmlSymbolType.Equals;[=];
+                        HtmlSymbolType.SingleQuote;['];
+                    Markup span - Gen<LitAttr:@(13:0,13)> - [btn1] - SpanEditHandler;Accepts:Any - (13:0,13) - Symbols:1
+                        HtmlSymbolType.Text;[btn1];
+                    Markup span - Gen<LitAttr: @(17:0,17)> - [ btn2] - SpanEditHandler;Accepts:Any - (17:0,17) - Symbols:2
+                        HtmlSymbolType.WhiteSpace;[ ];
+                        HtmlSymbolType.Text;[btn2];
+                    Markup span - Gen<None> - ['] - SpanEditHandler;Accepts:Any - (22:0,22) - Symbols:1
+                        HtmlSymbolType.SingleQuote;['];
+                Markup block - Gen<Attr:class2, class2=@(23:0,23),@(34:0,34)> - 11 - (23:0,23)
+                    Markup span - Gen<None> - [ class2=] - SpanEditHandler;Accepts:Any - (23:0,23) - Symbols:3
+                        HtmlSymbolType.WhiteSpace;[ ];
+                        HtmlSymbolType.Text;[class2];
+                        HtmlSymbolType.Equals;[=];
+                    Markup span - Gen<LitAttr:@(31:0,31)> - [btn] - SpanEditHandler;Accepts:Any - (31:0,31) - Symbols:1
+                        HtmlSymbolType.Text;[btn];
+                Markup span - Gen<Markup> - [>] - SpanEditHandler;Accepts:None - (34:0,34) - Symbols:1
+                    HtmlSymbolType.CloseAngle;[>];
+            Tag block - Gen<None> - 5 - (35:0,35)
+                Markup span - Gen<Markup> - [</] - SpanEditHandler;Accepts:Any - (35:0,35) - Symbols:2
+                    HtmlSymbolType.OpenAngle;[<];
+                    HtmlSymbolType.ForwardSlash;[/];
+                MetaCode span - Gen<None> - [!] - SpanEditHandler;Accepts:None - (37:0,37) - Symbols:1
+                    HtmlSymbolType.Bang;[!];
+                Markup span - Gen<Markup> - [p>] - SpanEditHandler;Accepts:None - (38:0,38) - Symbols:2
+                    HtmlSymbolType.Text;[p];
+                    HtmlSymbolType.CloseAngle;[>];
+        Code span - Gen<Stmt> - [] - SpanEditHandler;Accepts:Any - (40:0,40) - Symbols:1
+            CSharpSymbolType.Unknown;[];
+        MetaCode span - Gen<None> - [}] - SpanEditHandler;Accepts:None - (40:0,40) - Symbols:1
+            CSharpSymbolType.RightBrace;[}];
+    Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (41:0,41) - Symbols:1
+        HtmlSymbolType.Unknown;[];

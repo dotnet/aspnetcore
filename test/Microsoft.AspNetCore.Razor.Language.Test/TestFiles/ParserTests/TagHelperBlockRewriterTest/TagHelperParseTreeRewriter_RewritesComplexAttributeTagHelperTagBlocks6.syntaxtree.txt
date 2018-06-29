@@ -1,0 +1,113 @@
+Markup block - Gen<None> - 171 - (0:0,0)
+    Tag block - Gen<TagHelper> - 85 - (0:0,0) - p - ptaghelper
+        StartTagAndEndTag - <p class="@do { var foo = bar; <text>Foo</text> foo++; } while (foo<bar>);"> ... </p>
+        class - DoubleQuotes
+            Markup block - Gen<None> - 64 - (10:0,10)
+                Markup block - Gen<DynAttr:@(10:0,10)> - 64 - (10:0,10)
+                    Statement block - Gen<None> - 64 - (10:0,10)
+                        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (10:0,10) - Symbols:1
+                            CSharpSymbolType.Transition;[@];
+                        Code span - Gen<Stmt> - [do { var foo = bar; ] - SpanEditHandler;Accepts:Any - (11:0,11) - Symbols:13
+                            CSharpSymbolType.Keyword;[do];
+                            CSharpSymbolType.WhiteSpace;[ ];
+                            CSharpSymbolType.LeftBrace;[{];
+                            CSharpSymbolType.WhiteSpace;[ ];
+                            CSharpSymbolType.Identifier;[var];
+                            CSharpSymbolType.WhiteSpace;[ ];
+                            CSharpSymbolType.Identifier;[foo];
+                            CSharpSymbolType.WhiteSpace;[ ];
+                            CSharpSymbolType.Assign;[=];
+                            CSharpSymbolType.WhiteSpace;[ ];
+                            CSharpSymbolType.Identifier;[bar];
+                            CSharpSymbolType.Semicolon;[;];
+                            CSharpSymbolType.WhiteSpace;[ ];
+                        Markup block - Gen<None> - 16 - (31:0,31)
+                            Tag block - Gen<None> - 6 - (31:0,31)
+                                Transition span - Gen<None> - [<text>] - SpanEditHandler;Accepts:None - (31:0,31) - Symbols:3
+                                    HtmlSymbolType.OpenAngle;[<];
+                                    HtmlSymbolType.Text;[text];
+                                    HtmlSymbolType.CloseAngle;[>];
+                            Markup span - Gen<Markup> - [Foo] - SpanEditHandler;Accepts:None - (37:0,37) - Symbols:1
+                                HtmlSymbolType.Text;[Foo];
+                            Tag block - Gen<None> - 7 - (40:0,40)
+                                Transition span - Gen<None> - [</text>] - SpanEditHandler;Accepts:None - (40:0,40) - Symbols:4
+                                    HtmlSymbolType.OpenAngle;[<];
+                                    HtmlSymbolType.ForwardSlash;[/];
+                                    HtmlSymbolType.Text;[text];
+                                    HtmlSymbolType.CloseAngle;[>];
+                        Code span - Gen<Stmt> - [ foo++; } while (foo<bar>);] - SpanEditHandler;Accepts:None - (47:0,47) - Symbols:16
+                            CSharpSymbolType.WhiteSpace;[ ];
+                            CSharpSymbolType.Identifier;[foo];
+                            CSharpSymbolType.Increment;[++];
+                            CSharpSymbolType.Semicolon;[;];
+                            CSharpSymbolType.WhiteSpace;[ ];
+                            CSharpSymbolType.RightBrace;[}];
+                            CSharpSymbolType.WhiteSpace;[ ];
+                            CSharpSymbolType.Keyword;[while];
+                            CSharpSymbolType.WhiteSpace;[ ];
+                            CSharpSymbolType.LeftParenthesis;[(];
+                            CSharpSymbolType.Identifier;[foo];
+                            CSharpSymbolType.LessThan;[<];
+                            CSharpSymbolType.Identifier;[bar];
+                            CSharpSymbolType.GreaterThan;[>];
+                            CSharpSymbolType.RightParenthesis;[)];
+                            CSharpSymbolType.Semicolon;[;];
+        Markup span - Gen<Markup> - [Hello] - SpanEditHandler;Accepts:Any - (76:0,76) - Symbols:1
+            HtmlSymbolType.Text;[Hello];
+    Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:Any - (85:0,85) - Symbols:1
+        HtmlSymbolType.WhiteSpace;[ ];
+    Tag block - Gen<TagHelper> - 85 - (86:0,86) - p - ptaghelper
+        StartTagAndEndTag - <p style='@do { var foo = bar; <text>Foo</text> foo++; } while (foo<bar>);'> ... </p>
+        style - SingleQuotes
+            Markup block - Gen<None> - 64 - (96:0,96)
+                Markup block - Gen<DynAttr:@(96:0,96)> - 64 - (96:0,96)
+                    Statement block - Gen<None> - 64 - (96:0,96)
+                        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (96:0,96) - Symbols:1
+                            CSharpSymbolType.Transition;[@];
+                        Code span - Gen<Stmt> - [do { var foo = bar; ] - SpanEditHandler;Accepts:Any - (97:0,97) - Symbols:13
+                            CSharpSymbolType.Keyword;[do];
+                            CSharpSymbolType.WhiteSpace;[ ];
+                            CSharpSymbolType.LeftBrace;[{];
+                            CSharpSymbolType.WhiteSpace;[ ];
+                            CSharpSymbolType.Identifier;[var];
+                            CSharpSymbolType.WhiteSpace;[ ];
+                            CSharpSymbolType.Identifier;[foo];
+                            CSharpSymbolType.WhiteSpace;[ ];
+                            CSharpSymbolType.Assign;[=];
+                            CSharpSymbolType.WhiteSpace;[ ];
+                            CSharpSymbolType.Identifier;[bar];
+                            CSharpSymbolType.Semicolon;[;];
+                            CSharpSymbolType.WhiteSpace;[ ];
+                        Markup block - Gen<None> - 16 - (117:0,117)
+                            Tag block - Gen<None> - 6 - (117:0,117)
+                                Transition span - Gen<None> - [<text>] - SpanEditHandler;Accepts:None - (117:0,117) - Symbols:3
+                                    HtmlSymbolType.OpenAngle;[<];
+                                    HtmlSymbolType.Text;[text];
+                                    HtmlSymbolType.CloseAngle;[>];
+                            Markup span - Gen<Markup> - [Foo] - SpanEditHandler;Accepts:None - (123:0,123) - Symbols:1
+                                HtmlSymbolType.Text;[Foo];
+                            Tag block - Gen<None> - 7 - (126:0,126)
+                                Transition span - Gen<None> - [</text>] - SpanEditHandler;Accepts:None - (126:0,126) - Symbols:4
+                                    HtmlSymbolType.OpenAngle;[<];
+                                    HtmlSymbolType.ForwardSlash;[/];
+                                    HtmlSymbolType.Text;[text];
+                                    HtmlSymbolType.CloseAngle;[>];
+                        Code span - Gen<Stmt> - [ foo++; } while (foo<bar>);] - SpanEditHandler;Accepts:None - (133:0,133) - Symbols:16
+                            CSharpSymbolType.WhiteSpace;[ ];
+                            CSharpSymbolType.Identifier;[foo];
+                            CSharpSymbolType.Increment;[++];
+                            CSharpSymbolType.Semicolon;[;];
+                            CSharpSymbolType.WhiteSpace;[ ];
+                            CSharpSymbolType.RightBrace;[}];
+                            CSharpSymbolType.WhiteSpace;[ ];
+                            CSharpSymbolType.Keyword;[while];
+                            CSharpSymbolType.WhiteSpace;[ ];
+                            CSharpSymbolType.LeftParenthesis;[(];
+                            CSharpSymbolType.Identifier;[foo];
+                            CSharpSymbolType.LessThan;[<];
+                            CSharpSymbolType.Identifier;[bar];
+                            CSharpSymbolType.GreaterThan;[>];
+                            CSharpSymbolType.RightParenthesis;[)];
+                            CSharpSymbolType.Semicolon;[;];
+        Markup span - Gen<Markup> - [World] - SpanEditHandler;Accepts:Any - (162:0,162) - Symbols:1
+            HtmlSymbolType.Text;[World];

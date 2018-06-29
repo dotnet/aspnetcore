@@ -1,0 +1,25 @@
+Markup block - Gen<None> - 53 - (0:0,0)
+    Tag block - Gen<TagHelper> - 53 - (0:0,0) - p - PTagHelper
+        StartTagAndEndTag - <p> ... </p>
+        Markup span - Gen<Markup> - [LF    ] - SpanEditHandler;Accepts:Any - (3:0,3) - Symbols:2
+            HtmlSymbolType.NewLine;[LF];
+            HtmlSymbolType.WhiteSpace;[    ];
+        Tag block - Gen<None> - 8 - (9:1,4)
+            Markup span - Gen<Markup> - [<strong>] - SpanEditHandler;Accepts:Any - (9:1,4) - Symbols:3
+                HtmlSymbolType.OpenAngle;[<];
+                HtmlSymbolType.Text;[strong];
+                HtmlSymbolType.CloseAngle;[>];
+        Markup span - Gen<Markup> - [LF        HelloLF    ] - SpanEditHandler;Accepts:Any - (17:1,12) - Symbols:5
+            HtmlSymbolType.NewLine;[LF];
+            HtmlSymbolType.WhiteSpace;[        ];
+            HtmlSymbolType.Text;[Hello];
+            HtmlSymbolType.NewLine;[LF];
+            HtmlSymbolType.WhiteSpace;[    ];
+        Tag block - Gen<None> - 9 - (38:3,4)
+            Markup span - Gen<Markup> - [</strong>] - SpanEditHandler;Accepts:Any - (38:3,4) - Symbols:4
+                HtmlSymbolType.OpenAngle;[<];
+                HtmlSymbolType.ForwardSlash;[/];
+                HtmlSymbolType.Text;[strong];
+                HtmlSymbolType.CloseAngle;[>];
+        Markup span - Gen<Markup> - [LF] - SpanEditHandler;Accepts:Any - (47:3,13) - Symbols:1
+            HtmlSymbolType.NewLine;[LF];

@@ -71,11 +71,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     WriteSeparator();
                     Write(attribute.AttributeStructure);
 
-                    Depth++;
-                    WriteNewLine();
-                    // Recursively render attribute value
-                    VisitNode(attribute.Value);
-                    Depth--;
+                    if (attribute.Value != null)
+                    {
+                        Depth++;
+                        WriteNewLine();
+                        // Recursively render attribute value
+                        VisitNode(attribute.Value);
+                        Depth--;
+                    }
                 }
                 Depth--;
             }
