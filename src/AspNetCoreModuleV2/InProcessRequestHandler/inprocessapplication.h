@@ -18,7 +18,9 @@ class IN_PROCESS_APPLICATION : public InProcessApplicationBase
 public:
     IN_PROCESS_APPLICATION(
         IHttpServer* pHttpServer,
-        std::unique_ptr<REQUESTHANDLER_CONFIG> pConfig);
+        std::unique_ptr<REQUESTHANDLER_CONFIG> pConfig,
+        APPLICATION_PARAMETER *pParameters,
+        DWORD                  nParameters);
 
     ~IN_PROCESS_APPLICATION();
 
@@ -41,19 +43,6 @@ public:
         _In_  IHttpContext       *pHttpContext,
         _Out_ IREQUEST_HANDLER   **pRequestHandler)
     override;
-
-    VOID
-    SetParameter(
-        _In_ LPCWSTR           pzName,
-        _In_ LPCWSTR           pzValue)
-    override
-    {
-        const auto exeLocationParameterName = L"InProcessExeLocation";
-        if (_wcsicmp(pzName, exeLocationParameterName) == 0)
-        {
-            m_struExeLocation.Copy(pzValue);
-        }
-    }
 
     // Executes the .NET Core process
     HRESULT
@@ -162,7 +151,7 @@ private:
     IOutputManager*                 m_pLoggerProvider;
     std::unique_ptr<REQUESTHANDLER_CONFIG>          m_pConfig;
 
-
+    static const LPCSTR             s_exeLocationParameterName;
 
     static
     VOID

@@ -272,9 +272,13 @@ __stdcall
 CreateApplication(
     _In_  IHttpServer        *pServer,
     _In_  IHttpApplication   *pHttpApplication,
+    _In_  APPLICATION_PARAMETER *pParameters,
+    _In_  DWORD                  nParameters,
     _Out_ IAPPLICATION      **ppApplication
 )
 {
+    UNREFERENCED_PARAMETER(pParameters);
+    UNREFERENCED_PARAMETER(nParameters);
     HRESULT      hr = S_OK;
     IAPPLICATION *pApplication = NULL;
     REQUESTHANDLER_CONFIG *pConfig = NULL;

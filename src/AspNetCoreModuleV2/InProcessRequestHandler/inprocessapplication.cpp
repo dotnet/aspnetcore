@@ -13,18 +13,22 @@
 #include "exceptions.h"
 #include "LoggingHelpers.h"
 
+const LPCSTR IN_PROCESS_APPLICATION::s_exeLocationParameterName = "InProcessExeLocation";
+
 IN_PROCESS_APPLICATION*  IN_PROCESS_APPLICATION::s_Application = NULL;
 
 IN_PROCESS_APPLICATION::IN_PROCESS_APPLICATION(
     IHttpServer *pHttpServer,
-    std::unique_ptr<REQUESTHANDLER_CONFIG> pConfig) :
+    std::unique_ptr<REQUESTHANDLER_CONFIG> pConfig,
+    APPLICATION_PARAMETER *pParameters,
+    DWORD                  nParameters) :
+    InProcessApplicationBase(pHttpServer),
     m_pHttpServer(pHttpServer),
     m_ProcessExitCode(0),
     m_fBlockCallbacksIntoManaged(FALSE),
-    m_fInitialized(FALSE),
     m_fShutdownCalledFromNative(FALSE),
     m_fShutdownCalledFromManaged(FALSE),
-    InProcessApplicationBase(pHttpServer),
+    m_fInitialized(FALSE),
     m_pConfig(std::move(pConfig))
 {
     // is it guaranteed that we have already checked app offline at this point?
@@ -32,6 +36,13 @@ IN_PROCESS_APPLICATION::IN_PROCESS_APPLICATION(
     DBG_ASSERT(pHttpServer != NULL);
     DBG_ASSERT(pConfig != NULL);
 
+    for (DWORD i = 0; i < nParameters; i++)
+    {
+        if (_stricmp(pParameters[i].pzName, s_exeLocationParameterName) == 0)
+        {
+            m_struExeLocation.Copy(reinterpret_cast<PCWSTR>(pParameters[i].pValue));
+        }
+    }
 
     m_status = APPLICATION_STATUS::STARTING;
 }

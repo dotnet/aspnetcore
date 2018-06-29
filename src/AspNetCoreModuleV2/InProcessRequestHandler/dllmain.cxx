@@ -82,9 +82,11 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 HRESULT
 __stdcall
 CreateApplication(
-    _In_  IHttpServer        *pServer,
-    _In_  IHttpApplication   *pHttpApplication,
-    _Out_ IAPPLICATION      **ppApplication
+    _In_  IHttpServer           *pServer,
+    _In_  IHttpApplication      *pHttpApplication,
+    _In_  APPLICATION_PARAMETER *pParameters,
+    _In_  DWORD                  nParameters,
+    _Out_ IAPPLICATION          **ppApplication
 )
 {
     REQUESTHANDLER_CONFIG  *pConfig = NULL;
@@ -97,11 +99,11 @@ CreateApplication(
 
         auto config = std::unique_ptr<REQUESTHANDLER_CONFIG>(pConfig);
 
-        BOOL disableStartupPage = pConfig->QueryDisableStartUpErrorPage();
+        const bool disableStartupPage = pConfig->QueryDisableStartUpErrorPage();
 
-        auto pApplication = std::make_unique<IN_PROCESS_APPLICATION>(pServer, std::move(config));
-        
-        if (FAILED(pApplication->LoadManagedApplication()))
+        auto pApplication = std::make_unique<IN_PROCESS_APPLICATION>(pServer, std::move(config), pParameters, nParameters);
+
+        if (FAILED_LOG(pApplication->LoadManagedApplication()))
         {
             // Set the currently running application to a fake application that returns startup exceptions.
             *ppApplication = new StartupExceptionApplication(pServer, disableStartupPage);

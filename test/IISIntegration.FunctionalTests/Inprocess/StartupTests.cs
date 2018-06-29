@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using IISIntegration.FunctionalTests.Utilities;
@@ -77,6 +78,9 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             await AssertStarts(
                 deploymentResult => Helpers.ModifyAspNetCoreSectionInWebConfig(deploymentResult, "processPath", path),
                 deploymentParameters => deploymentParameters.EnvironmentVariables["PATH"] = Path.GetDirectoryName(_dotnetLocation));
+
+            // Verify that in this scenario where.exe was invoked only once by shim and request handler uses cached value
+            Assert.Equal(1, TestSink.Writes.Count(w => w.Message.Contains("Invoking where.exe to find dotnet.exe")));
         }
 
         private async Task AssertStarts(Action<IISDeploymentResult> postDeploy, Action<DeploymentParameters> preDeploy = null)
