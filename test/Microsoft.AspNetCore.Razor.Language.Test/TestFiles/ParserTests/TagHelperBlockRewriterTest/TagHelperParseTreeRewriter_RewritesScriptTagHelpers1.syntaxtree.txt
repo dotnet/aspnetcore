@@ -1,0 +1,11 @@
+Markup block - Gen<None> - 31 - (0:0,0)
+    Tag block - Gen<TagHelper> - 31 - (0:0,0) - script - scripttaghelper
+        StartTagAndEndTag - <script> ... </script>
+        Markup span - Gen<Markup> - [<script></foo>] - SpanEditHandler;Accepts:Any - (8:0,8) - Symbols:7
+            HtmlSymbolType.OpenAngle;[<];
+            HtmlSymbolType.Text;[script];
+            HtmlSymbolType.CloseAngle;[>];
+            HtmlSymbolType.OpenAngle;[<];
+            HtmlSymbolType.ForwardSlash;[/];
+            HtmlSymbolType.Text;[foo];
+            HtmlSymbolType.CloseAngle;[>];
