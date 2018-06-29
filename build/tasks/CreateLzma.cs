@@ -25,8 +25,9 @@ namespace RepoTasks
                 {
                     if (Directory.Exists(source))
                     {
-                        Log.LogMessage(MessageImportance.High, $"Adding directory: {source}");
-                        archive.AddDirectory(source, progress);
+                        var trimmedSource = source.TrimEnd(new char[] { '\\', '/' });
+                        Log.LogMessage(MessageImportance.High, $"Adding directory: {trimmedSource}");
+                        archive.AddDirectory(trimmedSource, progress);
                     }
                     else
                     {
