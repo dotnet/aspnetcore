@@ -13,6 +13,7 @@
       <SiteExtensionOutputDirectory>$(RepositoryRoot)artifacts\build</SiteExtensionOutputDirectory>
       <TestProjectDirectory>$(RepositoryRoot)\test\Microsoft.AspNetCore.AzureAppServices.FunctionalTests\</TestProjectDirectory>
       <SiteExtensionFeed Condition="$(SiteExtensionFeed) == ''">https://dotnet.myget.org/F/aspnetcore-dev/</SiteExtensionFeed>
+      <SiteExtensionNETCoreAppPackageVersion>$(MicrosoftNETCoreApp22PackageVersion)</SiteExtensionNETCoreAppPackageVersion>
   </PropertyGroup>
 
   <Target Name="_AddTestRuntimes">
@@ -35,7 +36,7 @@
   <Target Name="_AddSiteExtensionRuntime">
     <ItemGroup>
       <DotNetCoreRuntime
-        Include="$(MicrosoftNETCoreApp21PackageVersion)"
+        Include="$(SiteExtensionNETCoreAppPackageVersion)"
         InstallDir="$(SiteExtensionWorkingDirectory)"
         Arch="$(SiteExtensionArch)"
         Feed="$(DotNetAssetRootUrl)"
@@ -53,7 +54,7 @@
 
       <_CleanupFiles
         Include="$([System.IO.Directory]::GetDirectories('$(SiteExtensionWorkingDirectory)shared\Microsoft.NETCore.App\'))"
-        Exclude="$(SiteExtensionWorkingDirectory)shared\Microsoft.NETCore.App\$(MicrosoftNETCoreApp21PackageVersion)" />
+        Exclude="$(SiteExtensionWorkingDirectory)shared\Microsoft.NETCore.App\$(SiteExtensionNETCoreAppPackageVersion)" />
 
       <_CleanupFiles
         Condition="Exists('$(SiteExtensionWorkingDirectory)shared\Microsoft.AspNetCore.App\')"
@@ -66,7 +67,7 @@
 
       <_CleanupFiles
         Include="$([System.IO.Directory]::GetDirectories('$(SiteExtensionWorkingDirectory)host\fxr'))"
-        Exclude="$(SiteExtensionWorkingDirectory)host\fxr\$(MicrosoftNETCoreApp21PackageVersion)" />
+        Exclude="$(SiteExtensionWorkingDirectory)host\fxr\$(SiteExtensionNETCoreAppPackageVersion)" />
 
       <BundledTemplate Include="Microsoft.DotNet.Web.ItemTemplates" Version="$(PackageVersion)" />
       <BundledTemplate Include="Microsoft.DotNet.Web.ProjectTemplates.2.1" Version="$(PackageVersion)" />
@@ -91,8 +92,11 @@
   </Target>
 
   <Target Name="BuildSiteExtension" DependsOnTargets="_CleanSiteExtension;PrepareSiteExtensionSdks">
+    <ItemGroup>
+      <LZMAFiles Include="$(SiteExtensionWorkingDirectory)**\sdk\$(_SdkVersion)\nuGetPackagesArchive.lzma" />
+    </ItemGroup>
     <!-- Strip LZMA from sdk -->
-    <Delete Files="$(SiteExtensionWorkingDirectory)\sdk\$(_SdkVersion)\nuGetPackagesArchive.lzma" />
+    <Delete Files="%(LZMAFiles.Identity)" />
     <MSBuild Projects="%(SiteExtensions.Identity)"
       Targets="Restore"
       Properties="BuildNumber=$(BuildNumber)" />
