@@ -1895,6 +1895,52 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         }
 
         [Fact]
+        public void PartialView_WithName()
+        {
+            // Arrange
+            var viewData = new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary());
+            var pageModel = new TestPageModel
+            {
+                PageContext = new PageContext
+                {
+                    ViewData = viewData
+                }
+            };
+
+            // Act
+            var result = pageModel.Partial("LoginStatus");
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal("LoginStatus", result.ViewName);
+            Assert.Same(viewData, result.ViewData);
+        }
+
+        [Fact]
+        public void PartialView_WithNameAndModel()
+        {
+            // Arrange
+            var viewData = new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary());
+            var pageModel = new TestPageModel
+            {
+                PageContext = new PageContext
+                {
+                    ViewData = viewData
+                }
+            };
+            var model = new { Username = "Admin" };
+
+            // Act
+            var result = pageModel.Partial("LoginStatus", model);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal("LoginStatus", result.ViewName);
+            Assert.Equal(model, result.Model);
+            Assert.Same(viewData, result.ViewData);
+        }
+
+        [Fact]
         public void ViewComponent_WithName()
         {
             // Arrange

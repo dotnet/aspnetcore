@@ -566,7 +566,7 @@ Products: Music Systems, Televisions (3)";
             var document = await Client.GetHtmlDocumentAsync(url);
 
             // Assert
-            var banner = QuerySelector(document, ".banner");
+            var banner = document.RequiredQuerySelector(".banner");
             Assert.Equal("Some status message", banner.TextContent);
         }
 
@@ -581,19 +581,8 @@ Products: Music Systems, Televisions (3)";
             var document = await Client.GetHtmlDocumentAsync(url);
 
             // Assert
-            var banner = QuerySelector(document, ".banner");
+            var banner = document.RequiredQuerySelector(".banner");
             Assert.Empty(banner.TextContent);
-        }
-
-        private static IElement QuerySelector(IHtmlDocument document, string selector)
-        {
-            var element = document.QuerySelector(selector);
-            if (element == null)
-            {
-                throw new ArgumentException($"Document does not contain element that matches the selector {selector}: " + Environment.NewLine + document.DocumentElement.OuterHtml);
-            }
-
-            return element;
         }
 
         private static HttpRequestMessage RequestWithLocale(string url, string locale)

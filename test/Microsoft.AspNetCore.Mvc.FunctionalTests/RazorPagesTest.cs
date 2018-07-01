@@ -11,7 +11,6 @@ using System.Net.Http.Headers;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Testing;
 using Newtonsoft.Json.Linq;
@@ -142,6 +141,26 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var content = await response.Content.ReadAsStringAsync();
             Assert.Equal("CustomActionResult", content);
+        }
+
+        [Fact]
+        public async Task Page_Handler_ReturnPartialWithoutModel()
+        {
+            // Act
+            var document = await Client.GetHtmlDocumentAsync("RenderPartialWithoutModel");
+
+            var element = document.RequiredQuerySelector("#content");
+            Assert.Equal("Welcome, Guest", element.TextContent);
+        }
+
+        [Fact]
+        public async Task Page_Handler_ReturnPartialWithModel()
+        {
+            // Act
+            var document = await Client.GetHtmlDocumentAsync("RenderPartialWithModel");
+
+            var element = document.RequiredQuerySelector("#content");
+            Assert.Equal("Welcome, Admin", element.TextContent);
         }
 
         [Fact]
