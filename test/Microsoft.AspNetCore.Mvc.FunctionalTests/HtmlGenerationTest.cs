@@ -585,6 +585,34 @@ Products: Music Systems, Televisions (3)";
             Assert.Empty(banner.TextContent);
         }
 
+        [Fact]
+        public async Task PartialTagHelper_AllowsUsingFallback()
+        {
+            // Arrange
+            var url = "/Customer/PartialWithFallback";
+
+            // Act
+            var document = await Client.GetHtmlDocumentAsync(url);
+
+            // Assert
+            var content = document.RequiredQuerySelector("#content");
+            Assert.Equal("Hello from fallback", content.TextContent);
+        }
+
+        [Fact]
+        public async Task PartialTagHelper_AllowsUsingOptional()
+        {
+            // Arrange
+            var url = "/Customer/PartialWithOptional";
+
+            // Act
+            var document = await Client.GetHtmlDocumentAsync(url);
+
+            // Assert
+            var content = document.RequiredQuerySelector("#content");
+            Assert.Empty(content.TextContent);
+        }
+
         private static HttpRequestMessage RequestWithLocale(string url, string locale)
         {
             var request = new HttpRequestMessage(HttpMethod.Get, url);
