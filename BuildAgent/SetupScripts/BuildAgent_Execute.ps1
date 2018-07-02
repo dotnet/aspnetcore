@@ -1,12 +1,12 @@
 <#
 .SYNOPSIS
-    Installs or updates Visual Studio on build agents
+    Runs an artibrary script block on all Windows CI agents
 .PARAMETER Account
     User name to use to remote into agents
 .PARAMETER Credential
     Login
 .PARAMETER Agents
-    A list of computer names to install VS onto. If not specified, the list is pulled from agentlist.psm1
+    A list of computer names to invoke the command on. If not specified, the list is pulled from agentlist.psm1
 .PARAMETER ExcludeAgents
     A list of computer names to skip.
 .PARAMETER ScriptBlock
@@ -31,7 +31,7 @@ Set-StrictMode -Version 1
 Import-Module -Scope Local -Force $PSScriptRoot/agentlist.psm1
 
 if (-not $Agents) {
-    $Agents = Get-Agents | ? { ($_.OS -eq 'windows') -and ($_.Category -ne 'Codesign') } | % { $_.Name }
+    $Agents = Get-Agents | ? { $_.OS -eq 'windows' } | % { $_.Name }
 }
 
 if (-not $Credential) {

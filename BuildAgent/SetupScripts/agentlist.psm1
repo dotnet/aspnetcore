@@ -18,12 +18,12 @@ function Get-Agents {
         },
         # codesign
         @{
-            Name     = 'aspnet-sign-01'
+            Name     = 'asp-sign-01'
             OS       = 'Windows'
             Category = 'Codesign'
         },
         @{
-            Name     = 'aspnet-sign-02'
+            Name     = 'asp-sign-02'
             OS       = 'Windows'
             Category = 'Codesign'
         },
