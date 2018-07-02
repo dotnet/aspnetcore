@@ -256,7 +256,7 @@ module.exports = function(result, physicalPath, maxWidth, maxHeight) {
 }
 ```
 
-There's a working image resizing example following this approach [here](https://github.com/aspnet/JavaScriptServices/tree/dev/samples/misc/NodeServicesExamples) - see the [C# code](https://github.com/aspnet/JavaScriptServices/blob/dev/samples/misc/NodeServicesExamples/Controllers/ResizeImage.cs) and the [JavaScript code](https://github.com/aspnet/JavaScriptServices/blob/dev/samples/misc/NodeServicesExamples/Node/resizeImage.js).
+There's a working image resizing example following this approach [here](../../samples/misc/NodeServicesExamples) - see the [C# code](../../samples/misc/NodeServicesExamples/Controllers/ResizeImage.cs) and the [JavaScript code](../../samples/misc/NodeServicesExamples/Node/resizeImage.js).
 
 **Parameters**
 

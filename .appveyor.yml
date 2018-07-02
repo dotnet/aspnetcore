@@ -4,7 +4,7 @@ install:
 - ps: Install-Product node 6.9.2 x64
 branches:
   only:
-  - dev
+  - master
   - /^release\/.*$/
   - /^(.*\/)?ci-.*$/
 build_script:

@@ -19,6 +19,6 @@ script:
 - ./build.sh
 branches:
   only:
-  - dev
+  - master
   - /^release\/.*$/
   - /^(.*\/)?ci-.*$/
