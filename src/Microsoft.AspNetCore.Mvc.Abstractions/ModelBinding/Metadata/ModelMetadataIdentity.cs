@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         /// <param name="parameter">The <see cref="ParameterInfo" />.</param>
         /// <param name="modelType">The model type.</param>
         /// <returns>A <see cref="ModelMetadataIdentity"/>.</returns>
-        public static ModelMetadataIdentity ForParameter(ParameterInfo parameter, Type modelType)
+        private static ModelMetadataIdentity ForParameter(ParameterInfo parameter, Type modelType)
         {
             if (parameter == null)
             {

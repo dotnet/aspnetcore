@@ -4,16 +4,16 @@
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 
-namespace Microsoft.AspNetCore.Mvc.Infrastructure
+namespace Microsoft.AspNetCore.Mvc.Internal
 {
     /// <summary>
-    /// A <see cref="ParameterDescriptor"/> for bound properties.
+    /// A <see cref="ParameterDescriptor"/> for action parameters.
     /// </summary>
-    public interface IPropertyInfoParameterDescriptor
+    public interface IParameterInfoParameterDescriptor
     {
         /// <summary>
-        /// Gets the <see cref="System.Reflection.PropertyInfo"/>.
+        /// Gets the <see cref="System.Reflection.ParameterInfo"/>.
         /// </summary>
-        PropertyInfo PropertyInfo { get; }
+        ParameterInfo ParameterInfo { get; }
     }
 }

@@ -3,7 +3,7 @@
 
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc.Abstractions;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.Controllers
 {

@@ -344,7 +344,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             if (!modelBindingResult.IsModelSet ||
                 modelBindingResult.Model == null ||
-                !(_modelMetadataProvider is ModelMetadataProvider modelMetadataProvider))
+                !(_modelMetadataProvider is IModelMetadataProvider2 modelMetadataProvider))
             {
                 return;
             }

@@ -14,11 +14,26 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
     /// <summary>
     /// A default implementation of <see cref="IModelMetadataProvider"/> based on reflection.
     /// </summary>
-    public class DefaultModelMetadataProvider : ModelMetadataProvider
+    public class DefaultModelMetadataProvider : ModelMetadataProvider, IModelMetadataProvider2
     {
+        private static readonly Func<ParameterInfo, Type, ModelMetadataIdentity> _modelMetadataIdentityForParameter;
+
         private readonly TypeCache _typeCache = new TypeCache();
         private readonly Func<ModelMetadataIdentity, ModelMetadataCacheEntry> _cacheEntryFactory;
         private readonly ModelMetadataCacheEntry _metadataCacheEntryForObjectType;
+
+        static DefaultModelMetadataProvider()
+        {
+            var forParameterMethod = typeof(ModelMetadataIdentity).GetMethod(
+                nameof(ModelMetadataIdentity.ForParameter),
+                BindingFlags.Static | BindingFlags.NonPublic,
+                binder: null,
+                types: new[] { typeof(ParameterInfo), typeof(Type) },
+                modifiers: null);
+
+            _modelMetadataIdentityForParameter = (Func<ParameterInfo, Type, ModelMetadataIdentity>)
+                forParameterMethod.CreateDelegate(typeof(Func<ParameterInfo, Type, ModelMetadataIdentity>));
+        }
 
         /// <summary>
         /// Creates a new <see cref="DefaultModelMetadataProvider"/>.
@@ -103,7 +118,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             => GetMetadataForParameter(parameter, parameter?.ParameterType);
 
         /// <inheritdoc />
-        public override ModelMetadata GetMetadataForParameter(ParameterInfo parameter, Type modelType)
+        ModelMetadata IModelMetadataProvider2.GetMetadataForParameter(ParameterInfo parameter, Type modelType)
+            => GetMetadataForParameter(parameter, modelType);
+
+        internal ModelMetadata GetMetadataForParameter(ParameterInfo parameter, Type modelType)
         {
             if (parameter == null)
             {
@@ -133,8 +151,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             return cacheEntry.Metadata;
         }
 
+
         /// <inheritdoc />
-        public override ModelMetadata GetMetadataForProperty(PropertyInfo propertyInfo, Type modelType)
+        ModelMetadata IModelMetadataProvider2.GetMetadataForProperty(PropertyInfo parameter, Type modelType)
+            => GetMetadataForProperty(parameter, modelType);
+
+        internal ModelMetadata GetMetadataForProperty(PropertyInfo propertyInfo, Type modelType)
         {
             if (propertyInfo == null)
             {
@@ -183,7 +205,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         private ModelMetadataCacheEntry GetCacheEntry(ParameterInfo parameter, Type modelType)
         {
             return _typeCache.GetOrAdd(
-                ModelMetadataIdentity.ForParameter(parameter, modelType),
+                _modelMetadataIdentityForParameter(parameter, modelType),
                 _cacheEntryFactory);
         }
 
