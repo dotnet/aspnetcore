@@ -26,8 +26,17 @@ The base url where build tools can be downloaded. Overrides the value from the c
 .PARAMETER Update
 Updates KoreBuild to the latest version even if a lock file is present.
 
+.PARAMETER Reinstall
+Re-installs KoreBuild
+
 .PARAMETER ConfigFile
 The path to the configuration file that stores values. Defaults to korebuild.json.
+
+.PARAMETER ToolsSourceSuffix
+The Suffix to append to the end of the ToolsSource. Useful for query strings in blob stores.
+
+.PARAMETER CI
+Sets up CI specific settings and variables.
 
 .PARAMETER Arguments
 Arguments to be passed to the command
@@ -43,15 +52,15 @@ in the file are overridden by command line parameters.
 Example config file:
 ```json
 {
-  "$schema": "https://raw.githubusercontent.com/aspnet/BuildTools/dev/tools/korebuild.schema.json",
-  "channel": "dev",
+  "$schema": "https://raw.githubusercontent.com/aspnet/BuildTools/master/tools/korebuild.schema.json",
+  "channel": "master",
   "toolsSource": "https://aspnetcore.blob.core.windows.net/buildtools"
 }
 ```
 #>
 [CmdletBinding(PositionalBinding = $false)]
 param(
-    [Parameter(Mandatory=$true, Position = 0)]
+    [Parameter(Mandatory = $true, Position = 0)]
     [string]$Command,
     [string]$Path = $PSScriptRoot,
     [Alias('c')]
@@ -62,7 +71,10 @@ param(
     [string]$ToolsSource,
     [Alias('u')]
     [switch]$Update,
-    [string]$ConfigFile,
+    [switch]$Reinstall,
+    [string]$ToolsSourceSuffix,
+    [string]$ConfigFile = $null,
+    [switch]$CI,
     [Parameter(ValueFromRemainingArguments = $true)]
     [string[]]$Arguments
 )
@@ -79,7 +91,7 @@ function Get-KoreBuild {
     $lockFile = Join-Path $Path 'korebuild-lock.txt'
 
     if (!(Test-Path $lockFile) -or $Update) {
-        Get-RemoteFile "$ToolsSource/korebuild/channels/$Channel/latest.txt" $lockFile
+        Get-RemoteFile "$ToolsSource/korebuild/channels/$Channel/latest.txt" $lockFile $ToolsSourceSuffix
     }
 
     $version = Get-Content $lockFile | Where-Object { $_ -like 'version:*' } | Select-Object -first 1
@@ -89,6 +101,10 @@ function Get-KoreBuild {
     $version = $version.TrimStart('version:').Trim()
     $korebuildPath = Join-Paths $DotNetHome ('buildtools', 'korebuild', $version)
 
+    if ($Reinstall -and (Test-Path $korebuildPath)) {
+        Remove-Item -Force -Recurse $korebuildPath
+    }
+
     if (!(Test-Path $korebuildPath)) {
         Write-Host -ForegroundColor Magenta "Downloading KoreBuild $version"
         New-Item -ItemType Directory -Path $korebuildPath | Out-Null
@@ -96,10 +112,10 @@ function Get-KoreBuild {
 
         try {
             $tmpfile = Join-Path ([IO.Path]::GetTempPath()) "KoreBuild-$([guid]::NewGuid()).zip"
-            Get-RemoteFile $remotePath $tmpfile
-            if (Get-Command -Name 'Expand-Archive' -ErrorAction Ignore) {
+            Get-RemoteFile $remotePath $tmpfile $ToolsSourceSuffix
+            if (Get-Command -Name 'Microsoft.PowerShell.Archive\Expand-Archive' -ErrorAction Ignore) {
                 # Use built-in commands where possible as they are cross-plat compatible
-                Expand-Archive -Path $tmpfile -DestinationPath $korebuildPath
+                Microsoft.PowerShell.Archive\Expand-Archive -Path $tmpfile -DestinationPath $korebuildPath
             }
             else {
                 # Fallback to old approach for old installations of PowerShell
@@ -124,7 +140,7 @@ function Join-Paths([string]$path, [string[]]$childPaths) {
     return $path
 }
 
-function Get-RemoteFile([string]$RemotePath, [string]$LocalPath) {
+function Get-RemoteFile([string]$RemotePath, [string]$LocalPath, [string]$RemoteSuffix) {
     if ($RemotePath -notlike 'http*') {
         Copy-Item $RemotePath $LocalPath
         return
@@ -134,7 +150,7 @@ function Get-RemoteFile([string]$RemotePath, [string]$LocalPath) {
     while ($retries -gt 0) {
         $retries -= 1
         try {
-            Invoke-WebRequest -UseBasicParsing -Uri $RemotePath -OutFile $LocalPath
+            Invoke-WebRequest -UseBasicParsing -Uri $($RemotePath + $RemoteSuffix) -OutFile $LocalPath
             return
         }
         catch {
@@ -161,9 +177,11 @@ if (Test-Path $ConfigFile) {
             if (!($Channel) -and (Get-Member -Name 'channel' -InputObject $config)) { [string] $Channel = $config.channel }
             if (!($ToolsSource) -and (Get-Member -Name 'toolsSource' -InputObject $config)) { [string] $ToolsSource = $config.toolsSource}
         }
-    } catch {
-        Write-Warning "$ConfigFile could not be read. Its settings will be ignored."
-        Write-Warning $Error[0]
+    }
+    catch {
+        Write-Host -ForegroundColor Red $Error[0]
+        Write-Error "$ConfigFile contains invalid JSON."
+        exit 1
     }
 }
 
@@ -174,7 +192,7 @@ if (!$DotNetHome) {
         else { Join-Path $PSScriptRoot '.dotnet'}
 }
 
-if (!$Channel) { $Channel = 'dev' }
+if (!$Channel) { $Channel = 'master' }
 if (!$ToolsSource) { $ToolsSource = 'https://aspnetcore.blob.core.windows.net/buildtools' }
 
 # Execute
@@ -183,7 +201,7 @@ $korebuildPath = Get-KoreBuild
 Import-Module -Force -Scope Local (Join-Path $korebuildPath 'KoreBuild.psd1')
 
 try {
-    Set-KoreBuildSettings -ToolsSource $ToolsSource -DotNetHome $DotNetHome -RepoPath $Path -ConfigFile $ConfigFile
+    Set-KoreBuildSettings -ToolsSource $ToolsSource -DotNetHome $DotNetHome -RepoPath $Path -ConfigFile $ConfigFile -CI:$CI
     Invoke-KoreBuildCommand $Command @Arguments
 }
 finally {
