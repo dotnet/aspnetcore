@@ -2,7 +2,7 @@
   <Import Project="dependencies.props" />
 
   <ItemGroup>
-    <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp22PackageVersion)" />
+    <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp30PackageVersion)" />
   </ItemGroup>
 
   <PropertyGroup>
