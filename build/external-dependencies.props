@@ -102,6 +102,7 @@
     <ExternalDependency Include="Microsoft.VisualStudio.Shell.Interop.9.0" Version="$(MicrosoftVisualStudioShellInterop90PackageVersion)" />
     <ExternalDependency Include="Microsoft.VisualStudio.Text.UI" Version="$(MicrosoftVisualStudioTextUIPackageVersion)" />
     <ExternalDependency Include="Microsoft.Web.Xdt" Version="$(MicrosoftWebXdtPackageVersion)" />
+    <ExternalDependency Include="Microsoft.Web.Administration" Version="$(MicrosoftWebAdministrationPackageVersion)" />
     <ExternalDependency Include="Microsoft.Win32.Registry" Version="$(MicrosoftWin32RegistryPackageVersion)" />
     <ExternalDependency Include="Mono.Addins" Version="$(MonoAddinsPackageVersion)" />
     <ExternalDependency Include="MonoDevelop.Sdk" Version="$(MonoDevelopSdkPackageVersion)" />
