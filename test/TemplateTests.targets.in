@@ -39,13 +39,13 @@ Copyright (c) .NET Foundation. All rights reserved.
 
       <PropertyGroup>
         <!-- These properties will allow the latest patch versions to be set in the CLI (via BundledVersions.props) or overridden by tests -->
-        <DefaultPatchVersionForAspNetCoreAll2_1 Condition="'$(DefaultPatchVersionForAspNetCoreAll2_1)' == ''">2.1.1</DefaultPatchVersionForAspNetCoreAll2_1>
-        <DefaultPatchVersionForAspNetCoreApp2_1 Condition="'$(DefaultPatchVersionForAspNetCoreApp2_1)' == ''">2.1.1</DefaultPatchVersionForAspNetCoreApp2_1>
+        <DefaultPatchVersionForAspNetCoreAll3_0 Condition="'$(DefaultPatchVersionForAspNetCoreAll3_0)' == ''">3.0.0</DefaultPatchVersionForAspNetCoreAll3_0>
+        <DefaultPatchVersionForAspNetCoreApp3_0 Condition="'$(DefaultPatchVersionForAspNetCoreApp3_0)' == ''">3.0.0</DefaultPatchVersionForAspNetCoreApp3_0>
       </PropertyGroup>
 
       <!-- Default patch version of .All Framework -->
       <PropertyGroup Condition="'$(DefaultAspNetCoreAllPatchVersion)' == ''">
-        <DefaultAspNetCoreAllPatchVersion Condition="'$(_TargetFrameworkVersionWithoutV)' == '2.1'">$(DefaultPatchVersionForAspNetCoreAll2_1)</DefaultAspNetCoreAllPatchVersion>
+        <DefaultAspNetCoreAllPatchVersion Condition="'$(_TargetFrameworkVersionWithoutV)' == '2.1'">$(DefaultPatchVersionForAspNetCoreAll3_0)</DefaultAspNetCoreAllPatchVersion>
 
         <!-- If targeting the same pre-release that is bundled with the .NET Core SDK, use the bundled package version
             provided by Microsoft.NETCoreSdk.BundledVersions.props -->
@@ -56,7 +56,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
       <!-- Default patch version of .App Framework -->
       <PropertyGroup Condition="'$(DefaultAspNetCoreAppPatchVersion)' == ''">
-        <DefaultAspNetCoreAppPatchVersion Condition="'$(_TargetFrameworkVersionWithoutV)' == '2.1'">$(DefaultPatchVersionForAspNetCoreApp2_1)</DefaultAspNetCoreAppPatchVersion>
+        <DefaultAspNetCoreAppPatchVersion Condition="'$(_TargetFrameworkVersionWithoutV)' == '2.1'">$(DefaultPatchVersionForAspNetCoreApp3_0)</DefaultAspNetCoreAppPatchVersion>
         <DefaultAspNetCoreAppPatchVersion Condition="'$(_TargetFrameworkVersionWithoutV)' == '2.2'">$(DefaultPatchVersionForAspNetCoreApp2_2)</DefaultAspNetCoreAppPatchVersion>
         <DefaultAspNetCoreAppPatchVersion Condition="'$(_TargetFrameworkVersionWithoutV)' == '3.0'">$(DefaultPatchVersionForAspNetCoreApp3_0)</DefaultAspNetCoreAppPatchVersion>
 
@@ -70,7 +70,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <!-- Latest patch version of .All Framework -->
       <PropertyGroup Condition="'$(LatestAspNetCoreAllPatchVersion)' == ''">
         <!-- Placeholder for setting latest patch version using the bundled version from CLI for previous TFMs, this will not apply until 2.2 -->
-        <!-- <LatestAspNetCoreAllPatchVersion Condition="'$(_TargetFrameworkVersionWithoutV)' == '2.1'">$(LatestPatchVersionForAspNetCoreAll2_1)</LatestAspNetCoreAllPatchVersion> -->
+        <!-- <LatestAspNetCoreAllPatchVersion Condition="'$(_TargetFrameworkVersionWithoutV)' == '2.1'">$(LatestPatchVersionForAspNetCoreAll3_0)</LatestAspNetCoreAllPatchVersion> -->
 
         <!-- If targeting the same release that is bundled with the .NET Core SDK, use the bundled package version
             provided by Microsoft.NETCoreSdk.BundledVersions.props -->
@@ -82,7 +82,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <!-- Latest patch version of .App Framework -->
       <PropertyGroup Condition="'$(LatestAspNetCoreAppPatchVersion)' == ''">
         <!-- Placeholder for setting latest patch version using the bundled version from CLI for previous TFMs, this will not apply until 2.2 -->
-        <!-- <LatestAspNetCoreAppPatchVersion Condition="'$(_TargetFrameworkVersionWithoutV)' == '2.1'">$(LatestPatchVersionForAspNetCoreApp2_1)</LatestAspNetCoreAppPatchVersion> -->
+        <!-- <LatestAspNetCoreAppPatchVersion Condition="'$(_TargetFrameworkVersionWithoutV)' == '2.1'">$(LatestPatchVersionForAspNetCoreApp3_0)</LatestAspNetCoreAppPatchVersion> -->
         <!-- <LatestAspNetCoreAppPatchVersion Condition="'$(_TargetFrameworkVersionWithoutV)' == '2.2'">$(LatestPatchVersionForAspNetCoreApp2_2)</LatestAspNetCoreAppPatchVersion> -->
         <!-- <LatestAspNetCoreAppPatchVersion Condition="'$(_TargetFrameworkVersionWithoutV)' == '3.0'">$(LatestPatchVersionForAspNetCoreApp3_0)</LatestAspNetCoreAppPatchVersion> -->
 

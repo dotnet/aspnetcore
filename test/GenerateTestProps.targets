@@ -6,13 +6,13 @@
       <PropsProperties>$(PropsProperties);MicrosoftNETSdkRazorPackageVersion=$(MicrosoftNETSdkRazorPackageVersion)</PropsProperties>
 
       <!-- This logic would be in the CLI -->
-      <DefaultPatchVersionForAspNetCoreAll2_1>2.1.1</DefaultPatchVersionForAspNetCoreAll2_1>
-      <DefaultPatchVersionForAspNetCoreAll2_1 Condition="$(MicrosoftAspNetCoreAllPackageVersion.StartsWith('$(DefaultPatchVersionForAspNetCoreAll2_1)'))">$(MicrosoftAspNetCoreAllPackageVersion)</DefaultPatchVersionForAspNetCoreAll2_1>
-      <DefaultPatchVersionForAspNetCoreApp2_1>$(DefaultPatchVersionForAspNetCoreAll2_1)</DefaultPatchVersionForAspNetCoreApp2_1>
-      <DefaultPatchVersionForAspNetCoreApp2_1 Condition="$(MicrosoftAspNetCoreAppPackageVersion.StartsWith('$(DefaultPatchVersionForAspNetCoreApp2_1)'))">$(MicrosoftAspNetCoreAppPackageVersion)</DefaultPatchVersionForAspNetCoreApp2_1>
+      <DefaultPatchVersionForAspNetCoreAll3_0>3.0.0</DefaultPatchVersionForAspNetCoreAll3_0>
+      <DefaultPatchVersionForAspNetCoreAll3_0 Condition="$(MicrosoftAspNetCoreAllPackageVersion.StartsWith('$(DefaultPatchVersionForAspNetCoreAll3_0)'))">$(MicrosoftAspNetCoreAllPackageVersion)</DefaultPatchVersionForAspNetCoreAll3_0>
+      <DefaultPatchVersionForAspNetCoreApp3_0>$(DefaultPatchVersionForAspNetCoreAll3_0)</DefaultPatchVersionForAspNetCoreApp3_0>
+      <DefaultPatchVersionForAspNetCoreApp3_0 Condition="$(MicrosoftAspNetCoreAppPackageVersion.StartsWith('$(DefaultPatchVersionForAspNetCoreApp3_0)'))">$(MicrosoftAspNetCoreAppPackageVersion)</DefaultPatchVersionForAspNetCoreApp3_0>
 
-      <PropsProperties>$(PropsProperties);DefaultPatchVersionForAspNetCoreAll2_1=$(DefaultPatchVersionForAspNetCoreAll2_1)</PropsProperties>
-      <PropsProperties>$(PropsProperties);DefaultPatchVersionForAspNetCoreApp2_1=$(DefaultPatchVersionForAspNetCoreApp2_1)</PropsProperties>
+      <PropsProperties>$(PropsProperties);DefaultPatchVersionForAspNetCoreAll3_0=$(DefaultPatchVersionForAspNetCoreAll3_0)</PropsProperties>
+      <PropsProperties>$(PropsProperties);DefaultPatchVersionForAspNetCoreApp3_0=$(DefaultPatchVersionForAspNetCoreApp3_0)</PropsProperties>
 
       <!-- These properties would normally be bundled in the CLI -->
 
@@ -23,7 +23,7 @@
 
       <!-- Overriding this property to fix tests until 2.1.0 is released or we have updated the tfm to netcoreapp2.2 https://github.com/aspnet/templating/issues/488 -->
       <!-- <TargetsProperties>$(TargetsProperties);BundledAspNetCoreAppTargetFrameworkVersion=$(MicrosoftAspNetCoreAppPackageVersion.Split('.')[0]).$(MicrosoftAspNetCoreAppPackageVersion.Split('.')[1])</TargetsProperties> -->
-      <TargetsProperties>BundledAspNetCoreAppTargetFrameworkVersion=3.0</TargetsProperties>
+      <TargetsProperties>$(TargetsProperties);BundledAspNetCoreAppTargetFrameworkVersion=3.0</TargetsProperties>
       <TargetsProperties>$(TargetsProperties);BundledAspNetCoreAppPackageVersion=$(MicrosoftAspNetCoreAppPackageVersion)</TargetsProperties>
     </PropertyGroup>
 
