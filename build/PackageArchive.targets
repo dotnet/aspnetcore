@@ -73,6 +73,12 @@
       Targets="Restore"
       Properties="RestorePackagesPath=$(FallbackStagingDir);RuntimeFrameworkVersion=$(LZMAMicrosoftNETCoreApp20PackageVersion);DotNetRestoreSourcePropsPath=$(GeneratedFallbackRestoreSourcesPropsPath);DotNetBuildOffline=true;AspNetUniverseBuildOffline=true" />
 
+    <!-- Restore the netstandard2.0 project -->
+    <MSBuild
+      Projects="$(MSBuildThisFileDirectory)tools\templates\Archive\Archive.Library.csproj"
+      Targets="Restore"
+      Properties="RestorePackagesPath=$(FallbackStagingDir);NETStandardLibraryPackageVersion=$(NETStandardLibrary20PackageVersion);DotNetRestoreSourcePropsPath=$(GeneratedFallbackRestoreSourcesPropsPath);DotNetBuildOffline=true;AspNetUniverseBuildOffline=true" />
+
     <!-- Create the archive -->
     <Exec Command="$(ArchiverPath) -a $(FallbackOutputPath) $(FallbackStagingDir)" />
   </Target>
