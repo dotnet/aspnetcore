@@ -10,7 +10,7 @@ cache:
 - vendor\VCForPython27.msi
 branches:
   only:
-  - dev
+  - master
   - /^release\/.*$/
   - /^(.*\/)?ci-.*$/
 install:
