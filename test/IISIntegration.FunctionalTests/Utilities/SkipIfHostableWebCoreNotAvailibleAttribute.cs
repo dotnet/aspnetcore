@@ -5,7 +5,7 @@ using System;
 using System.IO;
 using Microsoft.AspNetCore.Testing.xunit;
 
-namespace IISIntegration.FunctionalTests.Utilities
+namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 {
     [AttributeUsage(AttributeTargets.Assembly | AttributeTargets.Class | AttributeTargets.Method)]
     public sealed class SkipIfHostableWebCoreNotAvailibleAttribute : Attribute, ITestCondition

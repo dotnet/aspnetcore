@@ -15,7 +15,7 @@ using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace IISIntegration.FunctionalTests.Utilities
+namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 {
     public class TestServer: IDisposable, IStartup
     {

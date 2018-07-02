@@ -21,10 +21,18 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
         {
             if (!parameters.EnvironmentVariables.ContainsKey(DebugEnvironmentVariable))
             {
-                // enable debug output
                 parameters.EnvironmentVariables[DebugEnvironmentVariable] = "4";
             }
-            _deployer = ApplicationDeployerFactory.Create(parameters, LoggerFactory);
+
+            // Currently hosting throws if the Servertype = IIS.
+            if (parameters.ServerType == ServerType.IIS)
+            {
+                _deployer = new IISDeployer(parameters, LoggerFactory);
+            }
+            else
+            {
+                _deployer = ApplicationDeployerFactory.Create(parameters, LoggerFactory);
+            }
 
             var result = await _deployer.DeployAsync();
 

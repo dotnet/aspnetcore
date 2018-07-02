@@ -8,6 +8,7 @@ branches:
 install:
   - ps: .\tools\update_schema.ps1
   - git submodule update --init --recursive
+  - net start w3svc
 build_script:
   - ps: .\run.ps1 default-build
 clone_depth: 1

@@ -334,7 +334,7 @@ HOSTFXR_UTILITY::GetAbsolutePathToDotnet(
      const fs::path & requestedPath
 )
 {
-    WLOG_INFOF(L"Resolving absolute path do dotnet.exe from %s", requestedPath.c_str());
+    WLOG_INFOF(L"Resolving absolute path to dotnet.exe from %s", requestedPath.c_str());
 
     //
     // If we are given an absolute path to dotnet.exe, we are done
@@ -368,7 +368,7 @@ HOSTFXR_UTILITY::GetAbsolutePathToDotnet(
     const auto dotnetViaWhere = InvokeWhereToFindDotnet();
     if (dotnetViaWhere.has_value())
     {
-        WLOG_INFOF(L"Found dotnet.exe wia where.exe invocation at %s", dotnetViaWhere.value().c_str());
+        WLOG_INFOF(L"Found dotnet.exe via where.exe invocation at %s", dotnetViaWhere.value().c_str());
 
         return dotnetViaWhere;
     }
@@ -394,7 +394,7 @@ HOSTFXR_UTILITY::GetAbsolutePathToHostFxr(
     std::vector<std::wstring> versionFolders;
     const auto hostFxrBase = dotnetPath.parent_path() / "host" / "fxr";
 
-    WLOG_INFOF(L"Resolving absolute path do hostfxr.dll from %s", dotnetPath.c_str());
+    WLOG_INFOF(L"Resolving absolute path to hostfxr.dll from %s", dotnetPath.c_str());
 
     if (!is_directory(hostFxrBase))
     {
