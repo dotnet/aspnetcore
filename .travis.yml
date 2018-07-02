@@ -14,7 +14,6 @@ branches:
   only:
     - master
     - /^release\/.*/
-    - dev
     - /^(.*\/)?ci-.*$/
 script:
   - ./build.sh -t:CheckUniverse

@@ -206,7 +206,7 @@ if (!$DotNetHome) {
         else { Join-Path $PSScriptRoot '.dotnet'}
 }
 
-if (!$Channel) { $Channel = 'dev' }
+if (!$Channel) { $Channel = 'master' }
 if (!$ToolsSource) { $ToolsSource = 'https://aspnetcore.blob.core.windows.net/buildtools' }
 
 if ($PackageVersionPropsUrl) {
