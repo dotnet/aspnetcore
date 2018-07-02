@@ -1,4 +1,4 @@
 {
-  "$schema": "https://raw.githubusercontent.com/aspnet/BuildTools/dev/tools/korebuild.schema.json",
-  "channel": "dev"
+  "$schema": "https://raw.githubusercontent.com/aspnet/BuildTools/master/tools/korebuild.schema.json",
+  "channel": "master"
 }
