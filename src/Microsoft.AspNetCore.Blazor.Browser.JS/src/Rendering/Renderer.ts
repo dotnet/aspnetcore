@@ -50,7 +50,7 @@ export function renderBatch(browserRendererId: number, batch: RenderBatch) {
   }
 
   const disposedEventHandlerIdsRange = batch.disposedEventHandlerIds();
-  const disposedEventHandlerIdsValues = arrayRangeReader.values(disposedComponentIdsRange);
+  const disposedEventHandlerIdsValues = arrayRangeReader.values(disposedEventHandlerIdsRange);
   const disposedEventHandlerIdsLength = arrayRangeReader.count(disposedEventHandlerIdsRange);
   for (let i = 0; i < disposedEventHandlerIdsLength; i++) {
     const eventHandlerId = batch.disposedEventHandlerIdsEntry(disposedEventHandlerIdsValues, i);

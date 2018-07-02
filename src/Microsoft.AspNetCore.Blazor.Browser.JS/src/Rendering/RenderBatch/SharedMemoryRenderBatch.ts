@@ -25,10 +25,12 @@ export class SharedMemoryRenderBatch implements RenderBatch {
     return arrayValuesEntry(values, index, frameReader.structLength);
   }
   disposedComponentIdsEntry(values: ArrayValues<number>, index: number) {
-    return arrayValuesEntry(values, index, /* int length */ 4);
+    const pointer = arrayValuesEntry(values, index, /* int length */ 4);
+    return platform.readInt32Field(pointer as any as Pointer);
   }
   disposedEventHandlerIdsEntry(values: ArrayValues<number>, index: number) {
-    return arrayValuesEntry(values, index, /* int length */ 4);
+    const pointer = arrayValuesEntry(values, index, /* int length */ 4);
+    return platform.readInt32Field(pointer as any as Pointer);
   }
 
   arrayRangeReader = arrayRangeReader;
