@@ -5,18 +5,18 @@ import java.net.URISyntaxException;
 import java.util.HashMap;
 
 public class HubConnection {
-    private String _url;
-    private Transport _transport;
+    private String url;
+    private Transport transport;
     private OnReceiveCallBack callback;
     private HashMap<String, Action> handlers = new HashMap<>();
     private HubProtocol protocol;
 
     public Boolean connected = false;
 
-    public HubConnection(String url) {
-        _url = url;
-        protocol = new JsonHubProtocol();
-        callback = (payload) -> {
+    public HubConnection(String url, Transport transport){
+        this.url = url;
+        this.protocol = new JsonHubProtocol();
+        this.callback = (payload) -> {
 
             InvocationMessage[] messages = protocol.parseMessages(payload);
 
@@ -29,28 +29,36 @@ public class HubConnection {
             }
         };
 
-        try {
-            _transport = new WebSocketTransport(_url);
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
+        if (transport == null){
+            try {
+                this.transport = new WebSocketTransport(this.url);
+            } catch (URISyntaxException e) {
+                e.printStackTrace();
+            }
+        } else {
+            this.transport = transport;
         }
     }
 
+    public HubConnection(String url) {
+        this(url, null);
+    }
+
     public void start() throws InterruptedException {
-        _transport.setOnReceive(this.callback);
-        _transport.start();
+        transport.setOnReceive(this.callback);
+        transport.start();
         connected = true;
     }
 
     public void stop(){
-        _transport.stop();
+        transport.stop();
         connected = false;
     }
 
     public void send(String method, Object... args) {
         InvocationMessage invocationMessage = new InvocationMessage(method, args);
         String message = protocol.writeMessage(invocationMessage);
-        _transport.send(message);
+        transport.send(message);
     }
 
     public void On(String target, Action callback) {
