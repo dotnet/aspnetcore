@@ -1,6 +1,6 @@
 import { System_Object, System_String, System_Array, MethodHandle, Pointer } from '../Platform/Platform';
 import { platform } from '../Environment';
-import { renderBatch as renderBatchStruct, arrayRange, arraySegment, renderTreeDiffStructLength, renderTreeDiff, RenderBatchPointer, RenderTreeDiffPointer } from './RenderBatch';
+import { RenderBatch } from './RenderBatch/RenderBatch';
 import { BrowserRenderer } from './BrowserRenderer';
 
 type BrowserRendererRegistry = { [browserRendererId: number]: BrowserRenderer };
@@ -20,45 +20,40 @@ export function attachRootComponentToElement(browserRendererId: number, elementS
   browserRenderer.attachRootComponentToElement(componentId, element);
 }
 
-export function renderBatch(browserRendererId: number, batch: RenderBatchPointer) {
+export function renderBatch(browserRendererId: number, batch: RenderBatch) {
   const browserRenderer = browserRenderers[browserRendererId];
   if (!browserRenderer) {
     throw new Error(`There is no browser renderer with ID ${browserRendererId}.`);
   }
-  
-  const updatedComponents = renderBatchStruct.updatedComponents(batch);
-  const updatedComponentsLength = arrayRange.count(updatedComponents);
-  const updatedComponentsArray = arrayRange.array(updatedComponents);
-  const referenceFramesStruct = renderBatchStruct.referenceFrames(batch);
-  const referenceFrames = arrayRange.array(referenceFramesStruct);
+
+  const arrayRangeReader = batch.arrayRangeReader;
+  const updatedComponentsRange = batch.updatedComponents();
+  const updatedComponentsValues = arrayRangeReader.values(updatedComponentsRange);
+  const updatedComponentsLength = arrayRangeReader.count(updatedComponentsRange);
+  const referenceFrames = batch.referenceFrames();
+  const referenceFramesValues = arrayRangeReader.values(referenceFrames);
+  const diffReader = batch.diffReader;
 
   for (let i = 0; i < updatedComponentsLength; i++) {
-    const diff = platform.getArrayEntryPtr(updatedComponentsArray, i, renderTreeDiffStructLength);
-    const componentId = renderTreeDiff.componentId(diff);
-
-    const editsArraySegment = renderTreeDiff.edits(diff);
-    const edits = arraySegment.array(editsArraySegment);
-    const editsOffset = arraySegment.offset(editsArraySegment);
-    const editsLength = arraySegment.count(editsArraySegment);
-
-    browserRenderer.updateComponent(componentId, edits, editsOffset, editsLength, referenceFrames);
+    const diff = batch.updatedComponentsEntry(updatedComponentsValues, i);
+    const componentId = diffReader.componentId(diff);
+    const edits = diffReader.edits(diff);
+    browserRenderer.updateComponent(batch, componentId, edits, referenceFramesValues);
   }
 
-  const disposedComponentIds = renderBatchStruct.disposedComponentIds(batch);
-  const disposedComponentIdsLength = arrayRange.count(disposedComponentIds);
-  const disposedComponentIdsArray = arrayRange.array(disposedComponentIds);
+  const disposedComponentIdsRange = batch.disposedComponentIds();
+  const disposedComponentIdsValues = arrayRangeReader.values(disposedComponentIdsRange);
+  const disposedComponentIdsLength = arrayRangeReader.count(disposedComponentIdsRange);
   for (let i = 0; i < disposedComponentIdsLength; i++) {
-    const componentIdPtr = platform.getArrayEntryPtr(disposedComponentIdsArray, i, 4);
-    const componentId = platform.readInt32Field(componentIdPtr);
+    const componentId = batch.disposedComponentIdsEntry(disposedComponentIdsValues, i);
     browserRenderer.disposeComponent(componentId);
   }
 
-  const disposedEventHandlerIds = renderBatchStruct.disposedEventHandlerIds(batch);
-  const disposedEventHandlerIdsLength = arrayRange.count(disposedEventHandlerIds);
-  const disposedEventHandlerIdsArray = arrayRange.array(disposedEventHandlerIds);
+  const disposedEventHandlerIdsRange = batch.disposedEventHandlerIds();
+  const disposedEventHandlerIdsValues = arrayRangeReader.values(disposedComponentIdsRange);
+  const disposedEventHandlerIdsLength = arrayRangeReader.count(disposedEventHandlerIdsRange);
   for (let i = 0; i < disposedEventHandlerIdsLength; i++) {
-    const eventHandlerIdPtr = platform.getArrayEntryPtr(disposedEventHandlerIdsArray, i, 4);
-    const eventHandlerId = platform.readInt32Field(eventHandlerIdPtr);
+    const eventHandlerId = batch.disposedEventHandlerIdsEntry(disposedEventHandlerIdsValues, i);
     browserRenderer.disposeEventHandler(eventHandlerId);
   }
 }
