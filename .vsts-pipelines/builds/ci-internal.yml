@@ -1,5 +1,5 @@
 trigger:
-- dev
+- master
 - release/*
 
 resources:
@@ -7,7 +7,7 @@ resources:
   - repository: buildtools
     type: git
     name: aspnet-BuildTools
-    ref: refs/heads/dev
+    ref: refs/heads/master
 
 phases:
 - template: .vsts-pipelines/templates/project-ci.yml@buildtools
