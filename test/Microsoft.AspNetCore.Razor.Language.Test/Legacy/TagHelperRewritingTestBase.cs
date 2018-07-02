@@ -83,14 +83,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 .OrderBy(error => error.Span.AbsoluteIndex)
                 .ToList();
 
-            if (UseBaselineTests && !IsTheory)
-            {
-                BaselineTest(actualTree, verifySyntaxTree: false, actualErrors.ToArray());
-                return;
-            }
-
-            EvaluateRazorErrors(actualErrors, expectedErrors.ToList());
-            EvaluateParseTree(actualTree, expectedOutput);
+            BaselineTest(actualTree, verifySyntaxTree: false, actualErrors.ToArray());
         }
     }
 }

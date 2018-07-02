@@ -11,11 +11,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
     public class CSharpDirectivesTest : CsHtmlCodeParserTestBase
     {
-        public CSharpDirectivesTest()
-        {
-            UseBaselineTests = true;
-        }
-
         [Fact]
         public void DirectiveDescriptor_FileScopedMultipleOccurring_CanHaveDuplicates()
         {
@@ -921,13 +916,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             var result = ParseCodeBlock(RazorLanguageVersion.Latest, document, descriptors, designTime: false);
 
-            if (UseBaselineTests && !IsTheory)
-            {
-                BaselineTest(result);
-                return;
-            }
-
-            EvaluateResults(result, expected, expectedErrors);
+            BaselineTest(result);
         }
     }
 }

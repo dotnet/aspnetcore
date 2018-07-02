@@ -28,11 +28,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             "wbr",
         };
 
-        public HtmlTagsTest()
-        {
-            UseBaselineTests = true;
-        }
-
         [Fact]
         public void EmptyTagNestsLikeNormalTag()
         {

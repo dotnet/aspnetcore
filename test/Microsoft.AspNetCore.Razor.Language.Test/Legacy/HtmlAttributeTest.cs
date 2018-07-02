@@ -9,11 +9,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
     public class HtmlAttributeTest : CsHtmlMarkupParserTestBase
     {
-        public HtmlAttributeTest()
-        {
-            UseBaselineTests = true;
-        }
-
         [Fact]
         public void SymbolBoundAttributes_BeforeEqualWhitespace1()
         {

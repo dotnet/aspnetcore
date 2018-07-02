@@ -7,11 +7,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
     public class HtmlErrorTest : CsHtmlMarkupParserTestBase
     {
-        public HtmlErrorTest()
-        {
-            UseBaselineTests = true;
-        }
-
         [Fact]
         public void ParseBlockAllowsInvalidTagNamesAsLongAsParserCanIdentifyEndTag()
         {

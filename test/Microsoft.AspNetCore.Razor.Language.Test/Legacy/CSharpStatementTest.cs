@@ -16,11 +16,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
     public class CSharpStatementTest : CsHtmlCodeParserTestBase
     {
-        public CSharpStatementTest()
-        {
-            UseBaselineTests = true;
-        }
-
         [Fact]
         public void ForStatement()
         {

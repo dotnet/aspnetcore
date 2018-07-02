@@ -7,11 +7,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
     public class CSharpReservedWordsTest : CsHtmlCodeParserTestBase
     {
-        public CSharpReservedWordsTest()
-        {
-            UseBaselineTests = true;
-        }
-        
         [Fact]
         public void ReservedWord()
         {

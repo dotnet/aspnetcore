@@ -28,8 +28,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         private static readonly AsyncLocal<bool> _isTheory = new AsyncLocal<bool>();
 #endif
 
-        internal static Block IgnoreOutput = new IgnoreOutputBlock();
-
         internal ParserTestBase()
         {
             Factory = CreateSpanFactory();
@@ -54,8 +52,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 #endif
 
         protected string TestProjectRoot { get; }
-
-        protected bool UseBaselineTests { get; set; }
 
         // Used by the test framework to set the 'base' name for test files.
         public static string FileName
@@ -104,6 +100,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             if (FileName == null)
             {
                 var message = $"{nameof(AssertSyntaxTreeNodeMatchesBaseline)} should only be called from a parser test ({nameof(FileName)} is null).";
+                throw new InvalidOperationException(message);
+            }
+
+            if (IsTheory)
+            {
+                var message = $"{nameof(AssertSyntaxTreeNodeMatchesBaseline)} should not be called from a [Theory] test.";
                 throw new InvalidOperationException(message);
             }
 
@@ -218,7 +220,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             directives = directives ?? Array.Empty<DirectiveDescriptor>();
 
-            var source = TestRazorSourceDocument.Create(document, filePath: null, normalizeNewLines: UseBaselineTests);
+            var source = TestRazorSourceDocument.Create(document, filePath: null, normalizeNewLines: true);
 
             var options = CreateParserOptions(version, directives, designTime);
             var context = new ParserContext(source, options);
@@ -249,7 +251,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             directives = directives ?? Array.Empty<DirectiveDescriptor>();
 
-            var source = TestRazorSourceDocument.Create(document, filePath: null, normalizeNewLines: UseBaselineTests);
+            var source = TestRazorSourceDocument.Create(document, filePath: null, normalizeNewLines: true);
             var options = CreateParserOptions(version, directives, designTime);
             var context = new ParserContext(source, options);
 
@@ -280,7 +282,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             directives = directives ?? Array.Empty<DirectiveDescriptor>();
 
-            var source = TestRazorSourceDocument.Create(document, filePath: null, normalizeNewLines: UseBaselineTests);
+            var source = TestRazorSourceDocument.Create(document, filePath: null, normalizeNewLines: true);
             var options = CreateParserOptions(version, directives, designTime);
             var context = new ParserContext(source, options);
 
@@ -384,27 +386,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             var result = ParseBlock(version, document, directives, designTime);
 
-            if (UseBaselineTests && !IsTheory)
-            {
-                BaselineTest(result);
-                return;
-            }
-
-            if (FixupSpans)
-            {
-                SpancestryCorrector.Correct(expected);
-
-                var span = expected.FindFirstDescendentSpan();
-                span.ChangeStart(SourceLocation.Zero);
-            }
-
-            SyntaxTreeVerifier.Verify(result);
-            SyntaxTreeVerifier.Verify(expected);
-
-            if (!ReferenceEquals(expected, IgnoreOutput))
-            {
-                EvaluateResults(result, expected, expectedErrors);
-            }
+            BaselineTest(result);
         }
 
         internal virtual void SingleSpanBlockTest(string document)
@@ -441,31 +423,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             var result = ParseBlock(document, designTime: false);
 
-            if (UseBaselineTests && !IsTheory)
-            {
-                BaselineTest(result);
-                return;
-            }
-
-            var builder = new BlockBuilder();
-            builder.Type = blockKind;
-            var expected = ConfigureAndAddSpanToBlock(builder, Factory.Span(spanType, spanContent, spanType == SpanKindInternal.Markup).Accepts(acceptedCharacters));
-
-            if (FixupSpans)
-            {
-                SpancestryCorrector.Correct(expected);
-
-                var span = expected.FindFirstDescendentSpan();
-                span.ChangeStart(SourceLocation.Zero);
-            }
-
-            SyntaxTreeVerifier.Verify(result);
-            SyntaxTreeVerifier.Verify(expected);
-
-            if (!ReferenceEquals(expected, IgnoreOutput))
-            {
-                EvaluateResults(result, expected, expectedErrors);
-            }
+            BaselineTest(result);
         }
 
         internal virtual void ParseDocumentTest(string document)
@@ -512,49 +470,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             var result = ParseDocument(document, directives, designTime);
 
-            if (UseBaselineTests && !IsTheory)
-            {
-                BaselineTest(result);
-                return;
-            }
-
-            if (FixupSpans)
-            {
-                SpancestryCorrector.Correct(expected);
-
-                var span = expected.FindFirstDescendentSpan();
-                span.ChangeStart(SourceLocation.Zero);
-            }
-
-            SyntaxTreeVerifier.Verify(result);
-            SyntaxTreeVerifier.Verify(expected);
-
-            if (!ReferenceEquals(expected, IgnoreOutput))
-            {
-                EvaluateResults(result, expected, expectedErrors);
-            }
-        }
-
-        [Conditional("PARSER_TRACE")]
-        private void WriteNode(int indent, SyntaxTreeNode node)
-        {
-            var content = node.ToString().Replace("\r", "\\r")
-                .Replace("\n", "\\n")
-                .Replace("{", "{{")
-                .Replace("}", "}}");
-            if (indent > 0)
-            {
-                content = new String('.', indent * 2) + content;
-            }
-            WriteTraceLine(content);
-            var block = node as Block;
-            if (block != null)
-            {
-                foreach (SyntaxTreeNode child in block.Children)
-                {
-                    WriteNode(indent + 1, child);
-                }
-            }
+            BaselineTest(result);
         }
 
         internal static void EvaluateResults(RazorSyntaxTree result, Block expectedRoot)
@@ -591,35 +507,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 {
                     Assert.True(false, Environment.NewLine + collector.Message);
                 }
-            }
-        }
-
-        private static void EvaluateTagHelperAttribute(
-            ErrorCollector collector,
-            TagHelperAttributeNode actual,
-            TagHelperAttributeNode expected)
-        {
-            if (actual.Name != expected.Name)
-            {
-                collector.AddError("{0} - FAILED :: Attribute names do not match", expected.Name);
-            }
-            else
-            {
-                collector.AddMessage("{0} - PASSED :: Attribute names match", expected.Name);
-            }
-
-            if (actual.AttributeStructure != expected.AttributeStructure)
-            {
-                collector.AddError("{0} - FAILED :: Attribute value styles do not match", expected.AttributeStructure.ToString());
-            }
-            else
-            {
-                collector.AddMessage("{0} - PASSED :: Attribute value style match", expected.AttributeStructure);
-            }
-
-            if (actual.AttributeStructure != AttributeStructure.Minimized)
-            {
-                EvaluateSyntaxTreeNode(collector, actual.Value, expected.Value);
             }
         }
 
@@ -741,6 +628,35 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
         }
 
+        private static void EvaluateTagHelperAttribute(
+            ErrorCollector collector,
+            TagHelperAttributeNode actual,
+            TagHelperAttributeNode expected)
+        {
+            if (actual.Name != expected.Name)
+            {
+                collector.AddError("{0} - FAILED :: Attribute names do not match", expected.Name);
+            }
+            else
+            {
+                collector.AddMessage("{0} - PASSED :: Attribute names match", expected.Name);
+            }
+
+            if (actual.AttributeStructure != expected.AttributeStructure)
+            {
+                collector.AddError("{0} - FAILED :: Attribute value styles do not match", expected.AttributeStructure.ToString());
+            }
+            else
+            {
+                collector.AddMessage("{0} - PASSED :: Attribute value style match", expected.AttributeStructure);
+            }
+
+            if (actual.AttributeStructure != AttributeStructure.Minimized)
+            {
+                EvaluateSyntaxTreeNode(collector, actual.Value, expected.Value);
+            }
+        }
+
         private static void AddPassedMessage(ErrorCollector collector, SyntaxTreeNode expected)
         {
             collector.AddMessage("{0} - PASSED", expected);
@@ -801,35 +717,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             Trace.WriteLine(string.Format(format, args));
         }
 
-        internal virtual Block CreateSimpleBlockAndSpan(string spanContent, BlockKindInternal blockKind, SpanKindInternal spanType, AcceptedCharactersInternal acceptedCharacters = AcceptedCharactersInternal.Any)
-        {
-            var span = Factory.Span(spanType, spanContent, spanType == SpanKindInternal.Markup).Accepts(acceptedCharacters);
-            var b = new BlockBuilder()
-            {
-                Type = blockKind
-            };
-            return ConfigureAndAddSpanToBlock(b, span);
-        }
-
-        internal virtual Block ConfigureAndAddSpanToBlock(BlockBuilder block, SpanConstructor span)
-        {
-            switch (block.Type)
-            {
-                case BlockKindInternal.Markup:
-                    span.With(new MarkupChunkGenerator());
-                    break;
-                case BlockKindInternal.Statement:
-                    span.With(new StatementChunkGenerator());
-                    break;
-                case BlockKindInternal.Expression:
-                    block.ChunkGenerator = new ExpressionChunkGenerator();
-                    span.With(new ExpressionChunkGenerator());
-                    break;
-            }
-            block.Children.Add(span);
-            return block.Build();
-        }
-
         private static RazorParserOptions CreateParserOptions(
             RazorLanguageVersion version, 
             IEnumerable<DirectiveDescriptor> directives, 
@@ -841,46 +728,5 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 parseLeadingDirectives: false,
                 version: version);
         }
-
-        private class IgnoreOutputBlock : Block
-        {
-            public IgnoreOutputBlock() : base(BlockKindInternal.Template, new SyntaxTreeNode[0], null) { }
-        }
-
-        // Corrects the parents and previous/next information for spans
-        internal class SpancestryCorrector : ParserVisitor
-        {
-            private SpancestryCorrector()
-            {
-            }
-
-            protected Block CurrentBlock { get; set; }
-
-            protected Span LastSpan { get; set; }
-
-            public static void Correct(Block block)
-            {
-                new SpancestryCorrector().VisitBlock(block);
-            }
-
-            public override void VisitBlock(Block block)
-            {
-                CurrentBlock = block;
-                base.VisitBlock(block);
-            }
-
-            public override void VisitSpan(Span span)
-            {
-                span.Parent = CurrentBlock;
-
-                span.Previous = LastSpan;
-                if (LastSpan != null)
-                {
-                    LastSpan.Next = span;
-                }
-
-                LastSpan = span;
-            }
-        } 
     }
 }

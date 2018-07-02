@@ -9,11 +9,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
     public class CSharpErrorTest : CsHtmlCodeParserTestBase
     {
-        public CSharpErrorTest()
-        {
-            UseBaselineTests = true;
-        }
-
         [Fact]
         public void ParseBlockHandlesQuotesAfterTransition()
         {
