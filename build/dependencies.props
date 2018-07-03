@@ -3,32 +3,32 @@
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
   <PropertyGroup Label="Package Versions">
-    <InternalAspNetCoreSdkPackageVersion>2.2.0-preview1-17090</InternalAspNetCoreSdkPackageVersion>
-    <MicrosoftAspNetCoreHostingAbstractionsPackageVersion>2.2.0-preview1-34530</MicrosoftAspNetCoreHostingAbstractionsPackageVersion>
-    <MicrosoftAspNetCoreHttpAbstractionsPackageVersion>2.2.0-preview1-34530</MicrosoftAspNetCoreHttpAbstractionsPackageVersion>
-    <MicrosoftAspNetCoreHttpExtensionsPackageVersion>2.2.0-preview1-34530</MicrosoftAspNetCoreHttpExtensionsPackageVersion>
-    <MicrosoftAspNetCoreServerIISIntegrationPackageVersion>2.2.0-preview1-34530</MicrosoftAspNetCoreServerIISIntegrationPackageVersion>
-    <MicrosoftAspNetCoreServerKestrelPackageVersion>2.2.0-preview1-34530</MicrosoftAspNetCoreServerKestrelPackageVersion>
-    <MicrosoftAspNetCoreStaticFilesPackageVersion>2.2.0-preview1-34530</MicrosoftAspNetCoreStaticFilesPackageVersion>
-    <MicrosoftAspNetCoreTestHostPackageVersion>2.2.0-preview1-34530</MicrosoftAspNetCoreTestHostPackageVersion>
-    <MicrosoftAspNetCoreTestingPackageVersion>2.2.0-preview1-34530</MicrosoftAspNetCoreTestingPackageVersion>
-    <MicrosoftAspNetCoreWebUtilitiesPackageVersion>2.2.0-preview1-34530</MicrosoftAspNetCoreWebUtilitiesPackageVersion>
-    <MicrosoftEntityFrameworkCoreInMemoryPackageVersion>2.2.0-preview1-34530</MicrosoftEntityFrameworkCoreInMemoryPackageVersion>
-    <MicrosoftEntityFrameworkCoreRelationalPackageVersion>2.2.0-preview1-34530</MicrosoftEntityFrameworkCoreRelationalPackageVersion>
-    <MicrosoftEntityFrameworkCoreSqlServerPackageVersion>2.2.0-preview1-34530</MicrosoftEntityFrameworkCoreSqlServerPackageVersion>
-    <MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>2.2.0-preview1-34530</MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>
-    <MicrosoftExtensionsDependencyInjectionPackageVersion>2.2.0-preview1-34530</MicrosoftExtensionsDependencyInjectionPackageVersion>
-    <MicrosoftExtensionsDiagnosticAdapterPackageVersion>2.2.0-preview1-34530</MicrosoftExtensionsDiagnosticAdapterPackageVersion>
-    <MicrosoftExtensionsFileProvidersEmbeddedPackageVersion>2.2.0-preview1-34530</MicrosoftExtensionsFileProvidersEmbeddedPackageVersion>
-    <MicrosoftExtensionsFileProvidersPhysicalPackageVersion>2.2.0-preview1-34530</MicrosoftExtensionsFileProvidersPhysicalPackageVersion>
-    <MicrosoftExtensionsLoggingAbstractionsPackageVersion>2.2.0-preview1-34530</MicrosoftExtensionsLoggingAbstractionsPackageVersion>
-    <MicrosoftExtensionsLoggingConsolePackageVersion>2.2.0-preview1-34530</MicrosoftExtensionsLoggingConsolePackageVersion>
-    <MicrosoftExtensionsLoggingPackageVersion>2.2.0-preview1-34530</MicrosoftExtensionsLoggingPackageVersion>
-    <MicrosoftExtensionsLoggingTestingPackageVersion>2.2.0-preview1-34530</MicrosoftExtensionsLoggingTestingPackageVersion>
-    <MicrosoftExtensionsOptionsPackageVersion>2.2.0-preview1-34530</MicrosoftExtensionsOptionsPackageVersion>
-    <MicrosoftExtensionsRazorViewsSourcesPackageVersion>2.2.0-preview1-34530</MicrosoftExtensionsRazorViewsSourcesPackageVersion>
-    <MicrosoftExtensionsStackTraceSourcesPackageVersion>2.2.0-preview1-34530</MicrosoftExtensionsStackTraceSourcesPackageVersion>
-    <MicrosoftExtensionsTypeNameHelperSourcesPackageVersion>2.2.0-preview1-34530</MicrosoftExtensionsTypeNameHelperSourcesPackageVersion>
+    <InternalAspNetCoreSdkPackageVersion>3.0.0-alpha1-10000</InternalAspNetCoreSdkPackageVersion>
+    <MicrosoftAspNetCoreHostingAbstractionsPackageVersion>3.0.0-alpha1-10016</MicrosoftAspNetCoreHostingAbstractionsPackageVersion>
+    <MicrosoftAspNetCoreHttpAbstractionsPackageVersion>3.0.0-alpha1-10016</MicrosoftAspNetCoreHttpAbstractionsPackageVersion>
+    <MicrosoftAspNetCoreHttpExtensionsPackageVersion>3.0.0-alpha1-10016</MicrosoftAspNetCoreHttpExtensionsPackageVersion>
+    <MicrosoftAspNetCoreServerIISIntegrationPackageVersion>3.0.0-alpha1-10016</MicrosoftAspNetCoreServerIISIntegrationPackageVersion>
+    <MicrosoftAspNetCoreServerKestrelPackageVersion>3.0.0-alpha1-10016</MicrosoftAspNetCoreServerKestrelPackageVersion>
+    <MicrosoftAspNetCoreStaticFilesPackageVersion>3.0.0-alpha1-10016</MicrosoftAspNetCoreStaticFilesPackageVersion>
+    <MicrosoftAspNetCoreTestHostPackageVersion>3.0.0-alpha1-10016</MicrosoftAspNetCoreTestHostPackageVersion>
+    <MicrosoftAspNetCoreTestingPackageVersion>3.0.0-alpha1-10016</MicrosoftAspNetCoreTestingPackageVersion>
+    <MicrosoftAspNetCoreWebUtilitiesPackageVersion>3.0.0-alpha1-10016</MicrosoftAspNetCoreWebUtilitiesPackageVersion>
+    <MicrosoftEntityFrameworkCoreInMemoryPackageVersion>3.0.0-alpha1-10016</MicrosoftEntityFrameworkCoreInMemoryPackageVersion>
+    <MicrosoftEntityFrameworkCoreRelationalPackageVersion>3.0.0-alpha1-10016</MicrosoftEntityFrameworkCoreRelationalPackageVersion>
+    <MicrosoftEntityFrameworkCoreSqlServerPackageVersion>3.0.0-alpha1-10016</MicrosoftEntityFrameworkCoreSqlServerPackageVersion>
+    <MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>3.0.0-alpha1-10016</MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>
+    <MicrosoftExtensionsDependencyInjectionPackageVersion>3.0.0-alpha1-10016</MicrosoftExtensionsDependencyInjectionPackageVersion>
+    <MicrosoftExtensionsDiagnosticAdapterPackageVersion>3.0.0-alpha1-10016</MicrosoftExtensionsDiagnosticAdapterPackageVersion>
+    <MicrosoftExtensionsFileProvidersEmbeddedPackageVersion>3.0.0-alpha1-10016</MicrosoftExtensionsFileProvidersEmbeddedPackageVersion>
+    <MicrosoftExtensionsFileProvidersPhysicalPackageVersion>3.0.0-alpha1-10016</MicrosoftExtensionsFileProvidersPhysicalPackageVersion>
+    <MicrosoftExtensionsLoggingAbstractionsPackageVersion>3.0.0-alpha1-10016</MicrosoftExtensionsLoggingAbstractionsPackageVersion>
+    <MicrosoftExtensionsLoggingConsolePackageVersion>3.0.0-alpha1-10016</MicrosoftExtensionsLoggingConsolePackageVersion>
+    <MicrosoftExtensionsLoggingPackageVersion>3.0.0-alpha1-10016</MicrosoftExtensionsLoggingPackageVersion>
+    <MicrosoftExtensionsLoggingTestingPackageVersion>3.0.0-alpha1-10016</MicrosoftExtensionsLoggingTestingPackageVersion>
+    <MicrosoftExtensionsOptionsPackageVersion>3.0.0-alpha1-10016</MicrosoftExtensionsOptionsPackageVersion>
+    <MicrosoftExtensionsRazorViewsSourcesPackageVersion>3.0.0-alpha1-10016</MicrosoftExtensionsRazorViewsSourcesPackageVersion>
+    <MicrosoftExtensionsStackTraceSourcesPackageVersion>3.0.0-alpha1-10016</MicrosoftExtensionsStackTraceSourcesPackageVersion>
+    <MicrosoftExtensionsTypeNameHelperSourcesPackageVersion>3.0.0-alpha1-10016</MicrosoftExtensionsTypeNameHelperSourcesPackageVersion>
     <MicrosoftNETCoreApp20PackageVersion>2.0.0</MicrosoftNETCoreApp20PackageVersion>
     <MicrosoftNETCoreApp21PackageVersion>2.1.0</MicrosoftNETCoreApp21PackageVersion>
     <MicrosoftNETCoreApp22PackageVersion>2.2.0-preview1-26618-02</MicrosoftNETCoreApp22PackageVersion>
