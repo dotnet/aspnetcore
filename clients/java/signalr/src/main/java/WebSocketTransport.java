@@ -36,7 +36,7 @@ public class WebSocketTransport implements Transport {
     }
 
     @Override
-    public void onReceive(String message) {
+    public void onReceive(String message) throws Exception {
         this.onReceiveCallBack.invoke(message);
     }
 
@@ -54,7 +54,11 @@ public class WebSocketTransport implements Transport {
 
              @Override
              public void onMessage(String message) {
-                 onReceive(message);
+                 try {
+                     onReceive(message);
+                 } catch (Exception e) {
+                     e.printStackTrace();
+                 }
              }
 
              @Override
