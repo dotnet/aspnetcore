@@ -33,20 +33,18 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 deploymentParameters => deploymentParameters.EnvironmentVariables["DotnetPath"] = _dotnetLocation);
         }
 
-        [ConditionalFact]
-        public async Task InvalidProcessPath_ExpectServerError()
+        [ConditionalTheory]
+        [InlineData("bogus")]
+        [InlineData("c:\\random files\\dotnet.exe")]
+        [InlineData(".\\dotnet.exe")]
+        public async Task InvalidProcessPath_ExpectServerError(string path)
         {
-            var dotnetLocation = "bogus";
-
             var deploymentParameters = GetBaseDeploymentParameters();
-            // Point to dotnet installed in user profile.
-            deploymentParameters.EnvironmentVariables["DotnetPath"] = Environment.ExpandEnvironmentVariables(dotnetLocation); // Path to dotnet.
 
             var deploymentResult = await DeployAsync(deploymentParameters);
 
-            Helpers.ModifyAspNetCoreSectionInWebConfig(deploymentResult, "processPath", "%DotnetPath%");
+            Helpers.ModifyAspNetCoreSectionInWebConfig(deploymentResult, "processPath", path);
 
-            // Request to base address and check if various parts of the body are rendered & measure the cold startup time.
             var response = await deploymentResult.RetryingHttpClient.GetAsync("HelloWorld");
 
             Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
