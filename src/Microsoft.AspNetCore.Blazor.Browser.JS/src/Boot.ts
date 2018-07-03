@@ -1,6 +1,6 @@
 import '../../Microsoft.JSInterop/JavaScriptRuntime/src/Microsoft.JSInterop';
 import { platform } from './Environment';
-import { getAssemblyNameFromUrl } from './Platform/DotNet';
+import { getAssemblyNameFromUrl } from './Platform/Url';
 import './GlobalExports';
 
 async function boot() {

@@ -1,6 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -45,7 +46,14 @@ namespace Microsoft.AspNetCore.Blazor.Build
             assemblyResolutionContext.ResolveAssemblies();
 
             var paths = assemblyResolutionContext.Results.Select(r => r.Path);
-            return paths;
+            return paths.Concat(FindPdbs(paths));
+        }
+
+        private static IEnumerable<string> FindPdbs(IEnumerable<string> dllPaths)
+        {
+            return dllPaths
+                .Select(path => Path.ChangeExtension(path, "pdb"))
+                .Where(path => File.Exists(path));
         }
 
         public class AssemblyResolutionContext

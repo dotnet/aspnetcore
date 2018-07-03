@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Http;
@@ -23,12 +23,12 @@ namespace Microsoft.AspNetCore.Builder
         /// Configures the middleware pipeline to work with Blazor.
         /// </summary>
         /// <typeparam name="TProgram">Any type from the client app project. This is used to identify the client app assembly.</typeparam>
-        /// <param name="applicationBuilder"></param>
+        /// <param name="app"></param>
         public static void UseBlazor<TProgram>(
-            this IApplicationBuilder applicationBuilder)
+            this IApplicationBuilder app)
         {
             var clientAssemblyInServerBinDir = typeof(TProgram).Assembly;
-            applicationBuilder.UseBlazor(new BlazorOptions
+            app.UseBlazor(new BlazorOptions
             {
                 ClientAssemblyPath = clientAssemblyInServerBinDir.Location,
             });
@@ -37,21 +37,21 @@ namespace Microsoft.AspNetCore.Builder
         /// <summary>
         /// Configures the middleware pipeline to work with Blazor.
         /// </summary>
-        /// <param name="applicationBuilder"></param>
+        /// <param name="app"></param>
         /// <param name="options"></param>
         public static void UseBlazor(
-            this IApplicationBuilder applicationBuilder,
+            this IApplicationBuilder app,
             BlazorOptions options)
         {
             // TODO: Make the .blazor.config file contents sane
             // Currently the items in it are bizarre and don't relate to their purpose,
             // hence all the path manipulation here. We shouldn't be hardcoding 'dist' here either.
-            var env = (IHostingEnvironment)applicationBuilder.ApplicationServices.GetService(typeof(IHostingEnvironment));
+            var env = (IHostingEnvironment)app.ApplicationServices.GetService(typeof(IHostingEnvironment));
             var config = BlazorConfig.Read(options.ClientAssemblyPath);
             var distDirStaticFiles = new StaticFileOptions
             {
                 FileProvider = new PhysicalFileProvider(config.DistPath),
-                ContentTypeProvider = CreateContentTypeProvider(),
+                ContentTypeProvider = CreateContentTypeProvider(config.EnableDebugging),
                 OnPrepareResponse = SetCacheHeaders
             };
 
@@ -59,16 +59,16 @@ namespace Microsoft.AspNetCore.Builder
             {
                 if (env.ApplicationName.Equals(DevServerApplicationName, StringComparison.OrdinalIgnoreCase))
                 {
-                    applicationBuilder.UseDevServerAutoRebuild(config);
+                    app.UseDevServerAutoRebuild(config);
                 }
                 else
                 {
-                    applicationBuilder.UseHostedAutoRebuild(config, env.ContentRootPath);
+                    app.UseHostedAutoRebuild(config, env.ContentRootPath);
                 }
             }
 
             // First, match the request against files in the client app dist directory
-            applicationBuilder.UseStaticFiles(distDirStaticFiles);
+            app.UseStaticFiles(distDirStaticFiles);
 
             // Next, match the request against static files in wwwroot
             if (!string.IsNullOrEmpty(config.WebRootPath))
@@ -77,16 +77,22 @@ namespace Microsoft.AspNetCore.Builder
                 // (and don't require them to be copied into dist).
                 // TODO: When publishing is implemented, have config.WebRootPath set
                 // to null so that it only serves files that were copied to dist
-                applicationBuilder.UseStaticFiles(new StaticFileOptions
+                app.UseStaticFiles(new StaticFileOptions
                 {
                     FileProvider = new PhysicalFileProvider(config.WebRootPath),
                     OnPrepareResponse = SetCacheHeaders
                 });
             }
 
+            // Accept debugger connections
+            if (config.EnableDebugging)
+            {
+                app.UseMonoDebugProxy();
+            }
+
             // Finally, use SPA fallback routing (serve default page for anything else,
             // excluding /_framework/*)
-            applicationBuilder.MapWhen(IsNotFrameworkDir, childAppBuilder =>
+            app.MapWhen(IsNotFrameworkDir, childAppBuilder =>
             {
                 childAppBuilder.UseSpa(spa =>
                 {
@@ -116,12 +122,18 @@ namespace Microsoft.AspNetCore.Builder
         private static bool IsNotFrameworkDir(HttpContext context)
             => !context.Request.Path.StartsWithSegments("/_framework");
 
-        private static IContentTypeProvider CreateContentTypeProvider()
+        private static IContentTypeProvider CreateContentTypeProvider(bool enableDebugging)
         {
             var result = new FileExtensionContentTypeProvider();
             result.Mappings.Add(".dll", MediaTypeNames.Application.Octet);
             result.Mappings.Add(".mem", MediaTypeNames.Application.Octet);
             result.Mappings.Add(".wasm", WasmMediaTypeNames.Application.Wasm);
+
+            if (enableDebugging)
+            {
+                result.Mappings.Add(".pdb", MediaTypeNames.Application.Octet);
+            }
+
             return result;
         }
     }

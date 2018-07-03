@@ -263,9 +263,9 @@ namespace WsProxy {
 			Send (this.ide, o, token);
 		}
 
-		public async Task Run (HttpContext context)
+		public async Task Run (HttpContext context, Uri browserUri)
 		{
-			var browserUri = GetBrowserUri (context.Request.Path.ToString ());
+			//var browserUri = GetBrowserUri (context.Request.Path.ToString ());
 			Debug ("wsproxy start");
 			using (this.ide = await context.WebSockets.AcceptWebSocketAsync ()) {
 				Debug ("ide connected");

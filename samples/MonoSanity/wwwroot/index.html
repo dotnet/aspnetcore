@@ -68,7 +68,7 @@
   <script type="blazor-boot"></script>
   <script src="loader.js"></script>
   <script>
-    initMono(['/_framework/_bin/MonoSanityClient.dll'], function () {
+    initMono(['_framework/_bin/MonoSanityClient.dll', '_framework/_bin/MonoSanityClient.pdb'], function () {
       var buttons = document.getElementsByTagName('button');
       for (var i = 0; i < buttons.length; i++) {
         buttons[i].disabled = false;

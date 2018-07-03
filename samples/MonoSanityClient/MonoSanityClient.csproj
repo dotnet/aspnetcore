@@ -1,9 +1,12 @@
-<Project Sdk="Microsoft.NET.Sdk.Razor" TreatAsLocalProperty="BlazorLinkOnBuild">
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor" TreatAsLocalProperty="BlazorLinkOnBuild">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <IsPackable>false</IsPackable>
     <BlazorLinkOnBuild>false</BlazorLinkOnBuild>
+
+    <!-- loader.js is hard-coded to assume it can load .pdbs regardless of Debug/Release configuration -->
+    <BlazorEnableDebugging>true</BlazorEnableDebugging>
   </PropertyGroup>
 
   <!-- Local alternative to <PackageReference Include="Microsoft.AspNetCore.Blazor.Build" /> -->

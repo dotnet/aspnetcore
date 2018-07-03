@@ -272,6 +272,7 @@
       <_BlazorCommonInput Include="@(IntermediateAssembly)" />
       <_BlazorCommonInput Include="@(_BlazorDependencyInput)" />
       <_BlazorCommonInput Include="$(_BlazorShouldLinkApplicationAssemblies)" />
+      <_BlazorCommonInput Include="$(BlazorEnableDebugging)" />
       <_BlazorLinkingOption Condition="'$(_BlazorShouldLinkApplicationAssemblies)' == ''" Include="false" />
       <_BlazorLinkingOption Condition="'$(_BlazorShouldLinkApplicationAssemblies)' != ''" Include="true" />
     </ItemGroup>
@@ -340,10 +341,14 @@
     </ReadLinesFromFile>
 
     <ItemGroup>
-      <BlazorItemOutput Include="@(_OptimizedFiles)">
+      <BlazorItemOutput Include="@(_OptimizedFiles->WithMetadataValue('Extension','.dll'))">
         <TargetOutputPath>$(BlazorRuntimeBinOutputPath)%(FileName)%(Extension)</TargetOutputPath>
         <Type>Assembly</Type>
         <PrimaryOutput Condition="'%(FileName)' == @(IntermediateAssembly->'%(FileName)')">true</PrimaryOutput>
+      </BlazorItemOutput>
+      <BlazorItemOutput Include="@(_OptimizedFiles->WithMetadataValue('Extension','.pdb'))">
+        <TargetOutputPath>$(BlazorRuntimeBinOutputPath)%(FileName)%(Extension)</TargetOutputPath>
+        <Type>Pdb</Type>
       </BlazorItemOutput>
       <FileWrites Include="@(BlazorItemOutput->WithMetadataValue('Type','Assembly')->'%(TargetOutputPath)')" />
     </ItemGroup>
@@ -443,6 +448,7 @@
     <!-- Collect the contents of /obj/<<configuration>>/<<targetframework>>/blazor/blazor/linker/ -->
     <ItemGroup>
       <_BlazorLinkerOutput Include="$(BlazorIntermediateLinkerOutputPath)*.dll" />
+      <_BlazorLinkerOutput Include="$(BlazorIntermediateLinkerOutputPath)*.pdb" />
     </ItemGroup>
 
     <!--
@@ -497,14 +503,17 @@
     -->
 
     <ItemGroup>
-      <BlazorItemOutput Include="@(_IntermediateResolvedRuntimeDependencies)">
+      <BlazorItemOutput Include="@(_IntermediateResolvedRuntimeDependencies->WithMetadataValue('Extension','.dll'))">
         <TargetOutputPath>$(BlazorRuntimeBinOutputPath)%(FileName)%(Extension)</TargetOutputPath>
         <Type>Assembly</Type>
         <PrimaryOutput Condition="'%(FileName)' == @(IntermediateAssembly->'%(FileName)')">true</PrimaryOutput>
       </BlazorItemOutput>
+      <BlazorItemOutput Include="@(_IntermediateResolvedRuntimeDependencies->WithMetadataValue('Extension','.pdb'))">
+        <TargetOutputPath>$(BlazorRuntimeBinOutputPath)%(FileName)%(Extension)</TargetOutputPath>
+        <Type>Pdb</Type>
+      </BlazorItemOutput>
       <FileWrites Include="@(BlazorItemOutput->WithMetadataValue('Type','Assembly')->'%(TargetOutputPath)')" />
     </ItemGroup>
-
   </Target>
 
   <Target
@@ -583,8 +592,11 @@
   <Target Name="_ResolveBlazorIndexHtmlInputs">
     <ItemGroup>
       <BlazorIndexHtmlInput Include="$(BlazorIndexHtml)" />
+      <BlazorIndexHtmlInput Include="$(Configuration)" />
       <BlazorIndexHtmlInput Include="@(BlazorItemOutput->WithMetadataValue('Type','Assembly')->'%(FullPath)')" />
+      <BlazorIndexHtmlInput Include="@(BlazorItemOutput->WithMetadataValue('Type','Pdb')->'%(FullPath)')" />
       <BlazorIndexHtmlInput Include="@(_BlazorLinkingOption)" />
+      <BlazorIndexHtmlInput Include="$(BlazorEnableDebugging)" />
     </ItemGroup>
 
     <WriteLinesToFile
@@ -607,6 +619,7 @@
     <ItemGroup>
       <_UnlinkedAppReferencesPaths Include="@(_BlazorDependencyInput)" />
       <_AppReferences Include="@(BlazorItemOutput->WithMetadataValue('Type','Assembly')->WithMetadataValue('PrimaryOutput','')->'%(FileName)%(Extension)')" />
+      <_AppReferences Include="@(BlazorItemOutput->WithMetadataValue('Type','Pdb')->'%(FileName)%(Extension)')" Condition="'$(BlazorEnableDebugging)' == 'true'" />
     </ItemGroup>
     <PropertyGroup>
       <_LinkerEnabledFlag Condition="'$(_BlazorShouldLinkApplicationAssemblies)' != ''">--linker-enabled</_LinkerEnabledFlag>

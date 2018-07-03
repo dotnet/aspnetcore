@@ -44,11 +44,12 @@ namespace WsProxy
 			}
 		}
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+        /*
 		public void Configure (IApplicationBuilder app, IHostingEnvironment env)
 		{
 			//loggerFactory.AddConsole();
 			//loggerFactory.AddDebug();
-			//app.UseDeveloperExceptionPage ();
+			app.UseDeveloperExceptionPage ();
 
 			app.UseWebSockets (); app.UseRouter (router => {
 				router.MapGet ("devtools/page/{pageId}", async context => {
@@ -66,5 +67,6 @@ namespace WsProxy
 				});
 			});
 		}
+        */
 	}
 }

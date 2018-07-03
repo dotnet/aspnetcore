@@ -30,8 +30,9 @@
         preloadAssemblies(loadAssemblyUrls);
       }],
       postRun: [function () {
-        var load_runtime = Module.cwrap('mono_wasm_load_runtime', null, ['string']);
-        load_runtime('appBinDir');
+        var load_runtime = Module.cwrap('mono_wasm_load_runtime', null, ['string', 'number']);
+        load_runtime('appBinDir', 1);
+        MONO.mono_wasm_runtime_is_ready = true;
         onReadyCallback();
       }]
     };
@@ -85,11 +86,20 @@
       .concat(loadBclAssemblies.map(function (name) { return '_framework/_bin/' + name + '.dll'; }));
 
     Module.FS_createPath('/', 'appBinDir', true, true);
+
+    MONO.loaded_files = []; // Used by debugger
     allAssemblyUrls.forEach(function (url) {
-      FS.createPreloadedFile('appBinDir', getAssemblyNameFromUrl(url) + '.dll', url, true, false, null, function onError(err) {
-        throw err;
-      });
+      FS.createPreloadedFile('appBinDir', getFileNameFromUrl(url), url, true, false,
+        /* success */ function() { MONO.loaded_files.push(toAbsoluteUrl(url)); },
+        /* failure */ function onError(err) { throw err; }
+      );
     });
+  }
+
+  var anchorTagForAbsoluteUrlConversions = document.createElement('a');
+  function toAbsoluteUrl(possiblyRelativeUrl) {
+    anchorTagForAbsoluteUrlConversions.href = possiblyRelativeUrl;
+    return anchorTagForAbsoluteUrlConversions.href;
   }
 
   function asyncLoad(url, onload, onerror) {
@@ -161,11 +171,11 @@
     document.body.appendChild(scriptElem);
   }
 
-  function getAssemblyNameFromUrl(url) {
+  function getFileNameFromUrl(url) {
     var lastSegment = url.substring(url.lastIndexOf('/') + 1);
     var queryStringStartPos = lastSegment.indexOf('?');
     var filename = queryStringStartPos < 0 ? lastSegment : lastSegment.substring(0, queryStringStartPos);
-    return filename.replace(/\.dll$/, '');
+    return filename;
   }
 
 })();

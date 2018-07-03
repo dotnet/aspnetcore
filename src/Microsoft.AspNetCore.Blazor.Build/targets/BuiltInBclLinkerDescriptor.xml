@@ -8,20 +8,6 @@
     <!-- Preserve all methods on WasmRuntime, because these are called by JS-side code
     to implement timers. Fixes https://github.com/aspnet/Blazor/issues/239 -->
     <type fullname="System.Threading.WasmRuntime" />
-
-      <!-- Mono redirects certain string constructor calls to CreateString internally, so preserve them -->
-      <type fullname="System.String">
-          <method signature="System.String CreateString(System.Char,System.Int32)" />
-          <method signature="System.String CreateString(System.Char[])" />
-          <method signature="System.String CreateString(System.Char[],System.Int32,System.Int32)" />
-          <method signature="System.String CreateString(System.Char*)" />
-          <method signature="System.String CreateString(System.Char*,System.Int32,System.Int32)" />
-          <method signature="System.String CreateString(System.Byte*)" />
-          <method signature="System.String CreateString(System.Byte*,System.Int32,System.Int32)" />
-          <method signature="System.String CreateString(System.Byte*,System.Int32,System.Int32,System.Text.Encoding)" />
-          <method signature="System.String CreateString(System.SByte*)" />
-          <method signature="System.String CreateString(System.SByte*,System.Int32,System.Int32,System.Text.Encoding)" />
-      </type>
   </assembly>
 
 </linker>

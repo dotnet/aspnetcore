@@ -1,5 +1,6 @@
 import { MethodHandle, System_Object, System_String, System_Array, Pointer, Platform } from '../Platform';
-import { getAssemblyNameFromUrl } from '../DotNet';
+import { getAssemblyNameFromUrl, getFileNameFromUrl } from '../Url';
+import { attachDebuggerHotkey, hasDebuggingEnabled } from './MonoDebugger';
 
 const assemblyHandleCache: { [assemblyName: string]: number } = {};
 const typeHandleCache: { [fullyQualifiedTypeName: string]: number } = {};
@@ -11,14 +12,16 @@ let find_method: (typeHandle: number, methodName: string, unknownArg: number) =>
 let invoke_method: (method: MethodHandle, target: System_Object, argsArrayPtr: number, exceptionFlagIntPtr: number) => System_Object;
 let mono_string_get_utf8: (managedString: System_String) => Mono.Utf8Ptr;
 let mono_string: (jsString: string) => System_String;
+const appBinDirName = 'appBinDir';
 
 export const monoPlatform: Platform = {
   start: function start(loadAssemblyUrls: string[]) {
     return new Promise<void>((resolve, reject) => {
+      attachDebuggerHotkey(loadAssemblyUrls);
+
       // mono.js assumes the existence of this
       window['Browser'] = {
-        init: () => { },
-        asyncLoad: asyncLoad
+        init: () => { }
       };
       // Emscripten works by expecting the module config to be a global
       window['Module'] = createEmscriptenModuleInstance(loadAssemblyUrls, resolve, reject);
@@ -192,8 +195,9 @@ function createEmscriptenModuleInstance(loadAssemblyUrls: string[], onReady: () 
   const module = {} as typeof Module;
   const wasmBinaryFile = '_framework/wasm/mono.wasm';
   const asmjsCodeFile = '_framework/asmjs/mono.asm.js';
+  const suppressMessages = ['DEBUGGING ENABLED'];
 
-  module.print = line => console.log(`WASM: ${line}`);
+  module.print = line => (suppressMessages.indexOf(line) < 0 && console.log(`WASM: ${line}`));
   module.printErr = line => console.error(`WASM: ${line}`);
   module.preRun = [];
   module.postRun = [];
@@ -216,14 +220,39 @@ function createEmscriptenModuleInstance(loadAssemblyUrls: string[], onReady: () 
     mono_string_get_utf8 = Module.cwrap('mono_wasm_string_get_utf8', 'number', ['number']);
     mono_string = Module.cwrap('mono_wasm_string_from_js', 'number', ['string']);
 
-    Module.FS_createPath('/', 'appBinDir', true, true);
-    loadAssemblyUrls.forEach(url =>
-      FS.createPreloadedFile('appBinDir', `${getAssemblyNameFromUrl(url)}.dll`, url, true, false, undefined, onError));
+    Module.FS_createPath('/', appBinDirName, true, true);
+    MONO.loaded_files = [];
+
+    loadAssemblyUrls.forEach(url => {
+      const filename = getFileNameFromUrl(url);
+      const runDependencyId = `blazor:${filename}`;
+      addRunDependency(runDependencyId);
+      asyncLoad(url).then(
+        data => {
+          Module.FS_createDataFile(appBinDirName, filename, data, true, false, false);
+          MONO.loaded_files.push(toAbsoluteUrl(url));
+          removeRunDependency(runDependencyId);
+        },
+        errorInfo => {
+          // If it's a 404 on a .pdb, we don't want to block the app from starting up.
+          // We'll just skip that file and continue (though the 404 is logged in the console).
+          // This happens if you build a Debug build but then run in Production environment.
+          const isPdb404 = errorInfo instanceof XMLHttpRequest
+            && errorInfo.status === 404
+            && filename.match(/\.pdb$/);
+          if (!isPdb404) {
+            onError(errorInfo);
+          }
+          removeRunDependency(runDependencyId);
+        }
+      );
+    });
   });
 
   module.postRun.push(() => {
-    const load_runtime = Module.cwrap('mono_wasm_load_runtime', null, ['string']);
-    load_runtime('appBinDir');
+    const load_runtime = Module.cwrap('mono_wasm_load_runtime', null, ['string', 'number']);
+    load_runtime(appBinDirName, hasDebuggingEnabled() ? 1 : 0);
+    MONO.mono_wasm_runtime_is_ready = true;
     attachInteropInvoker();
     onReady();
   });
@@ -231,20 +260,28 @@ function createEmscriptenModuleInstance(loadAssemblyUrls: string[], onReady: () 
   return module;
 }
 
-function asyncLoad(url, onload, onerror) {
-  var xhr = new XMLHttpRequest;
-  xhr.open('GET', url, /* async: */ true);
-  xhr.responseType = 'arraybuffer';
-  xhr.onload = function xhr_onload() {
-    if (xhr.status == 200 || xhr.status == 0 && xhr.response) {
-      var asm = new Uint8Array(xhr.response);
-      onload(asm);
-    } else {
-      onerror(xhr);
-    }
-  };
-  xhr.onerror = onerror;
-  xhr.send(null);
+const anchorTagForAbsoluteUrlConversions = document.createElement('a');
+function toAbsoluteUrl(possiblyRelativeUrl: string) {
+  anchorTagForAbsoluteUrlConversions.href = possiblyRelativeUrl;
+  return anchorTagForAbsoluteUrlConversions.href;
+}
+
+function asyncLoad(url) {
+  return new Promise((resolve, reject) => {
+    var xhr = new XMLHttpRequest;
+    xhr.open('GET', url, /* async: */ true);
+    xhr.responseType = 'arraybuffer';
+    xhr.onload = function xhr_onload() {
+      if (xhr.status == 200 || xhr.status == 0 && xhr.response) {
+        var asm = new Uint8Array(xhr.response);
+        resolve(asm);
+      } else {
+        reject(xhr);
+      }
+    };
+    xhr.onerror = reject;
+    xhr.send(null);
+  });
 }
 
 function getArrayDataPointer<T>(array: System_Array<T>): number {
