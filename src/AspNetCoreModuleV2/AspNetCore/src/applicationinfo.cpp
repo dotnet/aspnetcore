@@ -153,7 +153,7 @@ APPLICATION_INFO::UpdateAppOfflineFileHandle()
             STACK_STRU(strEventMsg, 256);
             if (SUCCEEDED(strEventMsg.SafeSnwprintf(
                 ASPNETCORE_EVENT_RECYCLE_APPOFFLINE_MSG,
-                m_pConfiguration->QueryApplicationPath()->QueryStr())))
+                m_pConfiguration->QueryApplicationPhysicalPath()->QueryStr())))
             {
                 UTILITY::LogEvent(g_hEventLog,
                     EVENTLOG_INFORMATION_TYPE,

@@ -8,8 +8,8 @@
 #define IDS_INVALID_PROPERTY        1000
 #define IDS_SERVER_ERROR            1001
 
-#define ASPNETCORE_EVENT_PROVIDER L"IIS AspNetCore Module"
-#define ASPNETCORE_IISEXPRESS_EVENT_PROVIDER L"IIS Express AspNetCore Module"
+#define ASPNETCORE_EVENT_PROVIDER L"IIS AspNetCore Module V2"
+#define ASPNETCORE_IISEXPRESS_EVENT_PROVIDER L"IIS Express AspNetCore Module V2"
 
 #define ASPNETCORE_EVENT_MSG_BUFFER_SIZE 256
 #define ASPNETCORE_EVENT_PROCESS_START_SUCCESS_MSG           L"Application '%s' started process '%d' successfully and process '%d' is listening on port '%d'."
