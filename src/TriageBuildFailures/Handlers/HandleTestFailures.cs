@@ -140,7 +140,7 @@ namespace TriageBuildFailures.Handlers
             return matrix[sourceLen, targetLen];
         }
 
-        private static bool LevenstienClose(string source, string target)
+        private static bool LevenshteinClose(string source, string target)
         {
             if (source == null && target == null)
             {
@@ -170,7 +170,7 @@ namespace TriageBuildFailures.Handlers
             }
             else
             {
-                var insideTicks = issue.Body.StartsWith("```") ? parts[0] : parts[1];
+                var insideTicks = issue.Body.StartsWith("```", StringComparison.OrdinalIgnoreCase) ? parts[0] : parts[1];
                 insideTicks = insideTicks.Trim();
                 return ErrorParsing.GetExceptionMessage(insideTicks);
             }
@@ -189,9 +189,9 @@ namespace TriageBuildFailures.Handlers
                 // An issue is "applicable" if any of these are true:
                 // 1. The issue has the test name in the subject.
                 // 2. The issue exception message is the same as or close to the test exception message.
-                if (issue.Title.Contains(shortTestName, StringComparison.InvariantCultureIgnoreCase)
+                if (issue.Title.Contains(shortTestName, StringComparison.OrdinalIgnoreCase)
                     || (issueException != null && issueException.Equals(testException))
-                    || LevenstienClose(issueException, testException))
+                    || LevenshteinClose(issueException, testException))
                 {
                     yield return issue;
                 }

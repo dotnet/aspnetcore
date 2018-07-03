@@ -5,10 +5,10 @@ namespace TriageBuildFailures.Email
 {
     public class EmailConfig
     {
-        public string QuiteEmail { get; set; }
-        public string EngineringAlias { get; set; }
+        public string QuietEmail { get; set; }
+        public string EngineeringAlias { get; set; }
         public string BuildBuddyEmail { get; set; }
         public string FromEmail { get; set; }
-        public SMTPConfig SMTPConfig { get; set; }
+        public SmtpConfig SmtpConfig { get; set; }
     }
 }

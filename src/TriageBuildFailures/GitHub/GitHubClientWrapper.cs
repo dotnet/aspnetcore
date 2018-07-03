@@ -90,9 +90,9 @@ namespace TriageBuildFailures.GitHub
             var issues = await GetIssues(owner, repo);
 
             return issues.Where(i =>
-            i.Title.StartsWith("Flaky", StringComparison.InvariantCultureIgnoreCase)
-            || i.Title.StartsWith("flakey", StringComparison.InvariantCultureIgnoreCase)
-            || i.Labels.Any(l => l.Name.Contains("Flaky", StringComparison.InvariantCultureIgnoreCase)));
+            i.Title.StartsWith("Flaky", StringComparison.OrdinalIgnoreCase)
+            || i.Title.StartsWith("flakey", StringComparison.OrdinalIgnoreCase)
+            || i.Labels.Any(l => l.Name.Contains("Flaky", StringComparison.OrdinalIgnoreCase)));
         }
 
         private static bool IssuesOnHomeRepo(string repo)
@@ -120,7 +120,7 @@ namespace TriageBuildFailures.GitHub
         {
             if(body.Length > 64000 )
             {
-                throw new ArgumentOutOfRangeException("Body must be less than 64000 characters long.");
+                throw new ArgumentOutOfRangeException("Body must be less than or equal to 64000 characters long.");
             }
 
             var newIssue = new NewIssue(subject)

@@ -50,7 +50,7 @@ namespace TriageBuildFailures.TeamCity
 
                 foreach (var line in lines)
                 {
-                    if (line.StartsWith("======= Failed test run"))
+                    if (line.StartsWith("======= Failed test run", StringComparison.OrdinalIgnoreCase))
                     {
                         if(firstEqualLineSeen)
                         {

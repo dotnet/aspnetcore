@@ -18,9 +18,9 @@ namespace TriageBuildFailures.Email
 
         public EmailClient(EmailConfig config, IReporter reporter)
         {
-            _smtpClient = new SmtpClient(config.SMTPConfig.Host, config.SMTPConfig.Port);
+            _smtpClient = new SmtpClient(config.SmtpConfig.Host, config.SmtpConfig.Port);
             _smtpClient.UseDefaultCredentials = false;
-            _smtpClient.Credentials = new NetworkCredential(config.SMTPConfig.Login, config.SMTPConfig.Password);
+            _smtpClient.Credentials = new NetworkCredential(config.SmtpConfig.Login, config.SmtpConfig.Password);
             _smtpClient.EnableSsl = true;
             _reporter = reporter;
             Config = config;
@@ -28,9 +28,9 @@ namespace TriageBuildFailures.Email
 
         public async Task SendEmail(string to, string subject, string body)
         {
-            if (Constants.BeQuite)
+            if (Constants.BeQuiet)
             {
-                to = Config.QuiteEmail;
+                to = Config.QuietEmail;
             }
 
             using (var mailMessage = new MailMessage(Config.FromEmail, to, subject, body))

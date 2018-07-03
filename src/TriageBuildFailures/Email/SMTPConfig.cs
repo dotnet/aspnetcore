@@ -3,7 +3,7 @@
 
 namespace TriageBuildFailures.Email
 {
-    public class SMTPConfig
+    public class SmtpConfig
     {
         public string Host { get; set; }
         public int Port { get; set; }

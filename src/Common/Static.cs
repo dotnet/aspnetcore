@@ -14,7 +14,7 @@ namespace Common
         /// <summary>
         /// This property keeps the various providers from making changes to their data sources when testing things out.
         /// </summary>
-        public static bool BeQuite = true;
+        public static bool BeQuiet = true;
     }
 
     public static class TestToRepoMapper
@@ -28,17 +28,17 @@ namespace Common
         /// <remarks>We don't have a good way to know what repo a test came out of, so we have this hidious method which attempts to figure it out based on the namespace of the test.</remarks>
         public static string FindRepo(string testName, IReporter reporter)
         {
-            if (Constants.BeQuite)
+            if (Constants.BeQuiet)
             {
                 return "TriageTest";
             }
             else
             {
-                if (testName.StartsWith(Constants.VSTestPrefix))
+                if (testName.StartsWith(Constants.VSTestPrefix, StringComparison.OrdinalIgnoreCase))
                 {
                     var name = testName.Replace(Constants.VSTestPrefix, string.Empty);
 
-                    if (name.StartsWith("Microsoft.AspNetCore.Server"))
+                    if (name.StartsWith("Microsoft.AspNetCore.Server", StringComparison.OrdinalIgnoreCase))
                     {
                         var parts = name.Split('.');
                         switch (parts[3])
@@ -51,7 +51,7 @@ namespace Common
                                 return parts[3];
                         }
                     }
-                    else if (name.StartsWith("Microsoft.AspNetCore."))
+                    else if (name.StartsWith("Microsoft.AspNetCore.", StringComparison.OrdinalIgnoreCase))
                     {
                         var parts = name.Split('.');
 
@@ -61,35 +61,35 @@ namespace Common
                                 return parts[2];
                         }
                     }
-                    else if (name.StartsWith("AuthSamples"))
+                    else if (name.StartsWith("AuthSamples", StringComparison.OrdinalIgnoreCase))
                     {
                         return name.Split('.')[0];
                     }
-                    else if (name.StartsWith("ServerComparison"))
+                    else if (name.StartsWith("ServerComparison", StringComparison.OrdinalIgnoreCase))
                     {
                         return "ServerTests";
                     }
-                    else if (name.StartsWith("E2ETests"))
+                    else if (name.StartsWith("E2ETests", StringComparison.OrdinalIgnoreCase))
                     {
                         return "MusicStore";
                     }
-                    else if (name.StartsWith("Microsoft.DotNet.Watcher"))
+                    else if (name.StartsWith("Microsoft.DotNet.Watcher", StringComparison.OrdinalIgnoreCase))
                     {
                         return "DotNetTools";
                     }
-                    else if (name.StartsWith("Microsoft.EntityFrameworkCore"))
+                    else if (name.StartsWith("Microsoft.EntityFrameworkCore", StringComparison.OrdinalIgnoreCase))
                     {
                         return "EntityFrameworkCore";
                     }
-                    else if (name.StartsWith("FunctionalTests"))
+                    else if (name.StartsWith("FunctionalTests", StringComparison.OrdinalIgnoreCase))
                     {
                         return "MvcPrecompilation";
                     }
-                    else if (name.StartsWith("Templates"))
+                    else if (name.StartsWith("Templates", StringComparison.OrdinalIgnoreCase))
                     {
                         return "Templating";
                     }
-                    else if (name.StartsWith("MvcBenchmarks"))
+                    else if (name.StartsWith("MvcBenchmarks", StringComparison.OrdinalIgnoreCase))
                     {
                         return "Performance";
                     }
@@ -103,7 +103,7 @@ namespace Common
 
         public static string FindOwner(string name, IReporter reporter)
         {
-            if(Constants.BeQuite)
+            if(Constants.BeQuiet)
             {
                 return "ryanbrandenburg";
             }
@@ -125,7 +125,7 @@ namespace Common
         {
             if(String.IsNullOrEmpty(fullErrorMsg))
             {
-                throw new NotImplementedException();
+                throw new ArgumentNullException(nameof(fullErrorMsg));
             }
 
             // Don't include the stacktrace, it's likely to be different between runs.
@@ -133,7 +133,7 @@ namespace Common
 
             if (parts.Length <= 0)
             {
-                throw new NotImplementedException();
+                throw new ArgumentException("The stacktrace was not included in the exception message.");
             }
             var exceptionMessage = parts[0];
             exceptionMessage = exceptionMessage.Trim();
