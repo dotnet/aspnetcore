@@ -14,7 +14,7 @@
   </PropertyGroup>
 
   <ItemGroup Condition="'$(TargetFrameworkOverride)' == ''">
-    <PackageReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="Microsoft.AspNetCore.App" Version="${MicrosoftAspNetCoreAppPackageVersion}" />
     <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="${MicrosoftAspNetCoreSpaServicesExtensionsPackageVersion}" />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFrameworkOverride)' != ''">
