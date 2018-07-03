@@ -13,7 +13,7 @@ PipeOutputManager::PipeOutputManager() :
     m_dwStdErrReadTotal(0),
     m_hErrReadPipe(INVALID_HANDLE_VALUE),
     m_hErrWritePipe(INVALID_HANDLE_VALUE),
-    m_hErrThread(INVALID_HANDLE_VALUE),
+    m_hErrThread(NULL),
     m_fDisposed(FALSE)
 {
     InitializeSRWLock(&m_srwLock);
@@ -54,7 +54,6 @@ PipeOutputManager::StopOutputRedirection()
 
     if (m_fdPreviousStdOut >= 0)
     {
-        _dup2(m_fdPreviousStdOut, _fileno(stdout));
         LOG_IF_DUPFAIL(_dup2(m_fdPreviousStdOut, _fileno(stdout)));
     }
     else
@@ -79,7 +78,6 @@ PipeOutputManager::StopOutputRedirection()
 
     // GetExitCodeThread returns 0 on failure; thread status code is invalid.
     if (m_hErrThread != NULL &&
-        m_hErrThread != INVALID_HANDLE_VALUE &&
         !LOG_LAST_ERROR_IF(GetExitCodeThread(m_hErrThread, &dwThreadStatus) == 0) &&
         dwThreadStatus == STILL_ACTIVE)
     {
@@ -96,8 +94,12 @@ PipeOutputManager::StopOutputRedirection()
         }
     }
 
-    CloseHandle(m_hErrThread);
-    m_hErrThread = NULL;
+    if (m_hErrThread != NULL)
+    {
+        CloseHandle(m_hErrThread);
+        m_hErrThread = NULL;
+    }
+
 
     if (m_hErrReadPipe != INVALID_HANDLE_VALUE)
     {
