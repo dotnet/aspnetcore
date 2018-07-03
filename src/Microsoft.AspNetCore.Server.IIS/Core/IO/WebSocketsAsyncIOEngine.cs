@@ -10,6 +10,8 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
 {
     internal partial class WebSocketsAsyncIOEngine: IAsyncIOEngine
     {
+        private readonly object _contextLock;
+
         private readonly IntPtr _handler;
 
         private bool _isInitialized;
@@ -22,55 +24,65 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
 
         private AsyncInitializeOperation _cachedAsyncInitializeOperation;
 
-        public WebSocketsAsyncIOEngine(IntPtr handler)
+        public WebSocketsAsyncIOEngine(object contextLock, IntPtr handler)
         {
+            _contextLock = contextLock;
             _handler = handler;
         }
 
         public ValueTask<int> ReadAsync(Memory<byte> memory)
         {
-            ThrowIfNotInitialized();
+            lock (_contextLock)
+            {
+                ThrowIfNotInitialized();
 
-            var read = GetReadOperation();
-            read.Initialize(_handler, memory);
-            read.Invoke();
-            return new ValueTask<int>(read, 0);
+                var read = GetReadOperation();
+                read.Initialize(_handler, memory);
+                read.Invoke();
+                return new ValueTask<int>(read, 0);   
+            }
         }
 
         public ValueTask<int> WriteAsync(ReadOnlySequence<byte> data)
         {
-            ThrowIfNotInitialized();
+            lock (_contextLock)
+            {
+                ThrowIfNotInitialized();
 
-            var write = GetWriteOperation();
-            write.Initialize(_handler, data);
-            write.Invoke();
-            return new ValueTask<int>(write, 0);
+                var write = GetWriteOperation();
+                write.Initialize(_handler, data);
+                write.Invoke();
+                return new ValueTask<int>(write, 0);
+            }
         }
 
         public ValueTask FlushAsync()
         {
-            if (_isInitialized)
+            lock (_contextLock)
             {
-                return new ValueTask(Task.CompletedTask);
+                if (_isInitialized)
+                {
+                    return new ValueTask(Task.CompletedTask);
+                }
+
+                NativeMethods.HttpEnableWebsockets(_handler);
+
+                var init = GetInitializeOperation();
+                init.Initialize(_handler);
+
+                var continuation = init.Invoke();
+
+                if (continuation != null)
+                {
+                    _isInitialized = true;
+                }
+                else
+                {
+                    _initializationFlush = init;
+                }
+
+                return new ValueTask(init, 0);
             }
-
-            NativeMethods.HttpEnableWebsockets(_handler);
-
-            var init = GetInitializeOperation();
-            init.Initialize(_handler);
-
-            var continuation = init.Invoke();
-
-            if (continuation != null)
-            {
-                _isInitialized = true;
-            }
-            else
-            {
-                _initializationFlush = init;
-            }
-
-            return new ValueTask(init, 0);
         }
 
         public void NotifyCompletion(int hr, int bytes)
@@ -100,7 +112,10 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
 
         public void Dispose()
         {
-            NativeMethods.HttpTryCancelIO(_handler);
+            lock (_contextLock)
+            {
+                NativeMethods.HttpTryCancelIO(_handler);
+            }
         }
 
         private WebSocketReadOperation GetReadOperation() =>

@@ -70,9 +70,6 @@ namespace Microsoft.AspNetCore.Server.IIS
         [DllImport(AspNetCoreModuleDll)]
         private static extern int http_stop_incoming_requests(IntPtr pInProcessApplication);
 
-        [DllImport(AspNetCoreModuleDll)]
-        private static extern unsafe HttpApiTypes.HTTP_RESPONSE_V2* http_get_raw_response(IntPtr pInProcessHandler);
-
         [DllImport(AspNetCoreModuleDll, CharSet = CharSet.Ansi)]
         private static extern int http_set_response_status_code(IntPtr pInProcessHandler, ushort statusCode, string pszReason);
 
@@ -138,10 +135,6 @@ namespace Microsoft.AspNetCore.Server.IIS
             Validate(http_set_completion_status(pInProcessHandler, rquestNotificationStatus));
         }
 
-        public static void HttpIndicateCompletion(IntPtr pInProcessHandler, REQUEST_NOTIFICATION_STATUS notificationStatus)
-        {
-            http_indicate_completion(pInProcessHandler, notificationStatus);
-        }
         public static void HttpRegisterCallbacks(IntPtr pInProcessApplication, PFN_REQUEST_HANDLER requestCallback, PFN_SHUTDOWN_HANDLER shutdownCallback, PFN_ASYNC_COMPLETION asyncCallback, IntPtr pvRequestContext, IntPtr pvShutdownContext)
         {
             Validate(register_callbacks(pInProcessApplication, requestCallback, shutdownCallback, asyncCallback, pvRequestContext, pvShutdownContext));
@@ -156,6 +149,7 @@ namespace Microsoft.AspNetCore.Server.IIS
         {
             return http_flush_response_bytes(pInProcessHandler, out fCompletionExpected);
         }
+
         public static unsafe HttpApiTypes.HTTP_REQUEST_V2* HttpGetRawRequest(IntPtr pInProcessHandler)
         {
             return http_get_raw_request(pInProcessHandler);
@@ -169,11 +163,6 @@ namespace Microsoft.AspNetCore.Server.IIS
         public static void HttpStopIncomingRequests(IntPtr pInProcessApplication)
         {
             Validate(http_stop_incoming_requests(pInProcessApplication));
-        }
-
-        public static unsafe HttpApiTypes.HTTP_RESPONSE_V2* HttpGetRawResponse(IntPtr pInProcessHandler)
-        {
-            return http_get_raw_response(pInProcessHandler);
         }
 
         public static void HttpSetResponseStatusCode(IntPtr pInProcessHandler, ushort statusCode, string pszReason)
