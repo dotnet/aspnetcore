@@ -198,19 +198,27 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
             var pool = _serverManager.ApplicationPools.Add(AppPoolName);
             pool.ProcessModel.IdentityType = ProcessModelIdentityType.LocalSystem;
             pool.ManagedRuntimeVersion = string.Empty;
-            var envCollection = pool.GetCollection("environmentVariables");
 
-            AddEnvironmentVariables(contentRoot, envCollection);
+            AddEnvironmentVariables(contentRoot, pool);
 
             _logger.LogInformation($"Configured AppPool {AppPoolName}");
             return pool;
         }
 
-        private void AddEnvironmentVariables(string contentRoot, ConfigurationElementCollection envCollection)
+        private void AddEnvironmentVariables(string contentRoot, ApplicationPool pool)
         {
-            foreach (var tuple in _deploymentParameters.EnvironmentVariables)
+            try
             {
-                AddEnvironmentVariableToAppPool(envCollection, tuple.Key, tuple.Value);
+                var envCollection = pool.GetCollection("environmentVariables");
+
+                foreach (var tuple in _deploymentParameters.EnvironmentVariables)
+                {
+                    AddEnvironmentVariableToAppPool(envCollection, tuple.Key, tuple.Value);
+                }
+            }
+            catch (COMException comException)
+            {
+                _logger.LogInformation($"Could not add environment variables to worker process: {comException.Message}");
             }
         }
 
