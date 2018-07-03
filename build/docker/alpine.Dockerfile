@@ -25,14 +25,3 @@ ENV LANG en_US.UTF-8
 
 # Skip package initilization
 ENV DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
-
-# Workarounds https://github.com/dotnet/cli/issues/8738
-ENV DOTNET_INSTALL_SKIP_PREREQS=1
-ENV KOREBUILD_SKIP_RUNTIME_INSTALL=1
-
-COPY global.json /tmp/global.json
-RUN DOTNET_SDK_VERSION="$(jq -r '.sdk.version' /tmp/global.json)" \
-    && echo "Installing SDK ${DOTNET_SDK_VERSION}" \
-    && wget -q --tries 10 -O /tmp/dotnet.tar.gz https://dotnetcli.blob.core.windows.net/dotnet/Sdk/$DOTNET_SDK_VERSION/dotnet-sdk-$DOTNET_SDK_VERSION-linux-musl-x64.tar.gz \
-    && mkdir -p "$HOME/.dotnet" \
-    && tar xzf /tmp/dotnet.tar.gz -C "$HOME/.dotnet"

@@ -43,7 +43,7 @@
 
   <ItemGroup>
     <!-- Explicitly require the 2.0.x and 2.1.0-* version of shared runtime used by universe -->
-    <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp20PackageVersion)" />
+    <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp20PackageVersion)" Condition="'$(SharedFXRid)' != 'linux-musl-x64'" />
 
     <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp21PackageVersion)"
       Feed="$(DotNetAssetRootUrl)"

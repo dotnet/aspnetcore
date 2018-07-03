@@ -530,7 +530,7 @@
 
   <Target Name="BuildSharedFx" DependsOnTargets="GeneratePropsFiles;ResolveSharedFxFiles;CrossGenAssemblies;CrossGenSymbols;PackSharedFx;TestSharedFx"/>
 
-  <Target Name="TestSharedFx" DependsOnTargets="DefineSharedFxPrerequisites;ResolveCommitHash">
+  <Target Name="TestSharedFx" DependsOnTargets="GeneratePropsFiles;DefineSharedFxPrerequisites;ResolveCommitHash;InstallDotNet">
     <PropertyGroup>
       <UnitTestFxProject>$(RepositoryRoot)\test\SharedFx.UnitTests\SharedFx.UnitTests.csproj</UnitTestFxProject>
       <UnitTestFxTestProps>
