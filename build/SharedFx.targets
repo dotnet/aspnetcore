@@ -540,9 +540,24 @@
         RepositoryCommit=$(RepositoryCommit);
         SharedFxRuntimeIdentifier=$(SharedFXRid)
       </UnitTestFxTestProps>
+      <TrxFile>$(LogOutputDir)SharedFx.UnitTests-$(BuildNumber).trx</TrxFile>
     </PropertyGroup>
     <MSBuild Projects="$(UnitTestFxProject)" Targets="Restore" Properties="_Dummy=restore;$(UnitTestFxTestProps)" />
-    <MSBuild Projects="$(UnitTestFxProject)" Targets="VSTest" Properties="$(UnitTestFxTestProps)" />
+    <MSBuild Projects="$(UnitTestFxProject)" Targets="Build" Properties="$(UnitTestFxTestProps)">
+      <Output TaskParameter="TargetOutputs" ItemName="SharedFxTestAssembly" />
+    </MSBuild>
+    <RunDotNet Arguments="vstest;
+      --Framework:%(TargetFrameworkIdentifier),Version=v%(TargetFrameworkVersion);
+      --Logger:$([MSBuild]::Escape('trx;LogFileName=$(TrxFile)'));
+      %(SharedFxTestAssembly.Identity);
+      --;RunConfiguration.NoAutoReporters=true" IgnoreExitCode="true">
+      <Output TaskParameter="ExitCode" PropertyName="VsTestExitCode" />
+    </RunDotNet>
+
+    <Message Text="##teamcity[importData type='vstest' path='$(TrxFile)']"
+      Importance="High"
+      Condition="'$(TEAMCITY_VERSION)' != '' AND Exists($(TrxFile))" />
+    <Error Text="SharedFx.UnitTests failed with exit code '$(VsTestExitCode)'." Condition=" $(VsTestExitCode) != 0 " />
   </Target>
 
 </Project>
