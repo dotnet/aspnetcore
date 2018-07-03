@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-import com.google.gson.Gson;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 
@@ -9,25 +8,43 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 public class WebSocketTransport implements Transport {
-    private WebSocketClient _webSocket;
+    private WebSocketClient webSocketClient;
     private OnReceiveCallBack onReceiveCallBack;
-    private URI _url;
+    private URI url;
+
+    private static final String HTTP = "http";
+    private static final String HTTPS = "https";
+    private static final String WS = "ws";
+    private static final String WSS = "wss";
 
     public WebSocketTransport(String url) throws URISyntaxException {
-        // To Do: Format the  incoming URL for a websocket connection.
-        _url = new URI(url);
-        _webSocket = createWebSocket();
+        this.url = formatUrl(url);
+    }
+
+    public URI getUrl(){
+        return url;
+    }
+
+    private URI formatUrl(String url) throws URISyntaxException {
+        if(url.startsWith(HTTPS)){
+            url = WSS + url.substring(HTTPS.length());
+        }
+        else if(url.startsWith(HTTP)){
+            url = WS + url.substring(HTTP.length());
+        }
+        return new URI(url);
     }
 
     @Override
     public void start() throws InterruptedException {
-        _webSocket.connectBlocking();
-        _webSocket.send((new DefaultJsonProtocolHandShakeMessage()).createHandshakeMessage());
+        webSocketClient = createWebSocket();
+        webSocketClient.connectBlocking();
+        webSocketClient.send((new DefaultJsonProtocolHandShakeMessage()).createHandshakeMessage());
     }
 
     @Override
     public void send(String message) {
-        _webSocket.send(message);
+        webSocketClient.send(message);
     }
 
     @Override
@@ -42,14 +59,14 @@ public class WebSocketTransport implements Transport {
 
     @Override
     public void stop() {
-        _webSocket.closeConnection(0, "HubConnection Stopped");
+        webSocketClient.closeConnection(0, "HubConnection Stopped");
     }
 
     private WebSocketClient createWebSocket() {
-        return new WebSocketClient(_url) {
+        return new WebSocketClient(url) {
              @Override
              public void onOpen(ServerHandshake handshakedata) {
-                 System.out.println("Connected to " + _url);
+                 System.out.println("Connected to " + url);
              }
 
              @Override
