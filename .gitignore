@@ -37,3 +37,4 @@ node_modules
 .vscode
 global.json
 .idea/
+*.binlog

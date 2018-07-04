@@ -21,7 +21,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFrameworkOverride)' == ''">
-    <PackageReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="Microsoft.AspNetCore.App" Version="${MicrosoftAspNetCoreAppPackageVersion}" />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFrameworkOverride)' != ''">
     <PackageReference Include="Microsoft.AspNetCore" Version="${MicrosoftAspNetCorePackageVersion}" />
