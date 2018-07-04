@@ -1,4 +1,4 @@
-﻿<Project>
+<Project>
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
@@ -6,7 +6,6 @@
     <AngleSharpPackageVersion>0.9.9</AngleSharpPackageVersion>
     <DotNetEfPackageVersion>3.0.0-alpha1-10016</DotNetEfPackageVersion>
     <InternalAspNetCoreSdkPackageVersion>3.0.0-alpha1-10000</InternalAspNetCoreSdkPackageVersion>
-    <MicrosoftAspNetCoreAllPackageVersion>3.0.0-alpha1-10016</MicrosoftAspNetCoreAllPackageVersion>
     <MicrosoftAspNetCoreAppPackageVersion>3.0.0-alpha1-10016</MicrosoftAspNetCoreAppPackageVersion>
     <MicrosoftAspNetCoreAuthenticationAzureADB2CUIPackageVersion>3.0.0-alpha1-10016</MicrosoftAspNetCoreAuthenticationAzureADB2CUIPackageVersion>
     <MicrosoftAspNetCoreAuthenticationAzureADUIPackageVersion>3.0.0-alpha1-10016</MicrosoftAspNetCoreAuthenticationAzureADUIPackageVersion>
@@ -44,7 +43,7 @@
     <SeleniumWebDriverMicrosoftDriverPackageVersion>17.17134.0</SeleniumWebDriverMicrosoftDriverPackageVersion>
     <SeleniumWebDriverPackageVersion>3.12.1</SeleniumWebDriverPackageVersion>
     <SystemSecurityPermissionsPackageVersion>4.6.0-preview1-26617-01</SystemSecurityPermissionsPackageVersion>
-    <XunitAnalyzersPackageVersion>0.8.0</XunitAnalyzersPackageVersion>
+    <XunitAnalyzersPackageVersion>0.9.0</XunitAnalyzersPackageVersion>
     <XunitPackageVersion>2.3.1</XunitPackageVersion>
     <XunitRunnerVisualStudioPackageVersion>2.4.0-beta.1.build3945</XunitRunnerVisualStudioPackageVersion>
   </PropertyGroup>

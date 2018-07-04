@@ -4,36 +4,11 @@
       <PropsProperties>RestoreSources=$([MSBuild]::Escape($(RestoreSources)))</PropsProperties>
       <PropsProperties>$(PropsProperties);RuntimeFrameworkVersion=$(RuntimeFrameworkVersion)</PropsProperties>
       <PropsProperties>$(PropsProperties);MicrosoftNETSdkRazorPackageVersion=$(MicrosoftNETSdkRazorPackageVersion)</PropsProperties>
-
-      <!-- This logic would be in the CLI -->
-      <DefaultPatchVersionForAspNetCoreAll3_0>3.0.0</DefaultPatchVersionForAspNetCoreAll3_0>
-      <DefaultPatchVersionForAspNetCoreAll3_0 Condition="$(MicrosoftAspNetCoreAllPackageVersion.StartsWith('$(DefaultPatchVersionForAspNetCoreAll3_0)'))">$(MicrosoftAspNetCoreAllPackageVersion)</DefaultPatchVersionForAspNetCoreAll3_0>
-      <DefaultPatchVersionForAspNetCoreApp3_0>$(DefaultPatchVersionForAspNetCoreAll3_0)</DefaultPatchVersionForAspNetCoreApp3_0>
-      <DefaultPatchVersionForAspNetCoreApp3_0 Condition="$(MicrosoftAspNetCoreAppPackageVersion.StartsWith('$(DefaultPatchVersionForAspNetCoreApp3_0)'))">$(MicrosoftAspNetCoreAppPackageVersion)</DefaultPatchVersionForAspNetCoreApp3_0>
-
-      <PropsProperties>$(PropsProperties);DefaultPatchVersionForAspNetCoreAll3_0=$(DefaultPatchVersionForAspNetCoreAll3_0)</PropsProperties>
-      <PropsProperties>$(PropsProperties);DefaultPatchVersionForAspNetCoreApp3_0=$(DefaultPatchVersionForAspNetCoreApp3_0)</PropsProperties>
-
-      <!-- These properties would normally be bundled in the CLI -->
-
-      <!-- Overriding this property to fix tests until 2.1.0 is released or we have updated the tfm to netcoreapp2.2 https://github.com/aspnet/templating/issues/488 -->
-      <!-- <TargetsProperties>BundledAspNetCoreAllTargetFrameworkVersion=$(MicrosoftAspNetCoreAllPackageVersion.Split('.')[0]).$(MicrosoftAspNetCoreAllPackageVersion.Split('.')[1])</TargetsProperties> -->
-      <TargetsProperties>BundledAspNetCoreAllTargetFrameworkVersion=3.0</TargetsProperties>
-      <TargetsProperties>$(TargetsProperties);BundledAspNetCoreAllPackageVersion=$(MicrosoftAspNetCoreAllPackageVersion)</TargetsProperties>
-
-      <!-- Overriding this property to fix tests until 2.1.0 is released or we have updated the tfm to netcoreapp2.2 https://github.com/aspnet/templating/issues/488 -->
-      <!-- <TargetsProperties>$(TargetsProperties);BundledAspNetCoreAppTargetFrameworkVersion=$(MicrosoftAspNetCoreAppPackageVersion.Split('.')[0]).$(MicrosoftAspNetCoreAppPackageVersion.Split('.')[1])</TargetsProperties> -->
-      <TargetsProperties>$(TargetsProperties);BundledAspNetCoreAppTargetFrameworkVersion=3.0</TargetsProperties>
-      <TargetsProperties>$(TargetsProperties);BundledAspNetCoreAppPackageVersion=$(MicrosoftAspNetCoreAppPackageVersion)</TargetsProperties>
     </PropertyGroup>
 
     <Sdk_GenerateFileFromTemplate
       TemplateFile="$(MSBuildThisFileDirectory)TemplateTests.props.in"
       Properties="$(PropsProperties)"
       OutputPath="$(OutputPath)TemplateTests.props" />
-    <Sdk_GenerateFileFromTemplate
-      TemplateFile="$(MSBuildThisFileDirectory)TemplateTests.targets.in"
-      Properties="$(TargetsProperties)"
-      OutputPath="$(OutputPath)TemplateTests.targets" />
   </Target>
 </Project>

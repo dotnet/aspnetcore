@@ -13,7 +13,7 @@
   <!-- Set this last to ensure the properties get the final versions which may be overridden by CI. -->
   <PropertyGroup>
     <GeneratedContentProperties>
-      MicrosoftAspNetCoreAllPackageVersion=$(MicrosoftAspNetCoreAllPackageVersion);
+      MicrosoftAspNetCoreAppPackageVersion=$(MicrosoftAspNetCoreAppPackageVersion);
       MicrosoftAspNetCorePackageVersion=$(MicrosoftAspNetCorePackageVersion);
       MicrosoftAspNetCoreHttpsPolicyPackageVersion=$(MicrosoftAspNetCoreHttpsPolicyPackageVersion);
       MicrosoftAspNetCoreMvcPackageVersion=$(MicrosoftAspNetCoreMvcPackageVersion);
