@@ -530,9 +530,17 @@
 
   <Target Name="BuildSharedFx" DependsOnTargets="GeneratePropsFiles;ResolveSharedFxFiles;CrossGenAssemblies;CrossGenSymbols;PackSharedFx;TestSharedFx"/>
 
+
   <Target Name="TestSharedFx" DependsOnTargets="GeneratePropsFiles;DefineSharedFxPrerequisites;ResolveCommitHash;InstallDotNet">
     <PropertyGroup>
       <UnitTestFxProject>$(RepositoryRoot)\test\SharedFx.UnitTests\SharedFx.UnitTests.csproj</UnitTestFxProject>
+
+      <!-- The file path to the log file, from within the container -->
+      <UnitTestFxTrxLogFile>$(LogOutputDir)SharedFx-UnitTests-$(Version).trx</UnitTestFxTrxLogFile>
+      <!-- The trx file path from the perspective of the TeamCity agent -->
+      <UnitTestFxTrxPhysicalFilePath>$(UnitTestFxTrxLogFile)</UnitTestFxTrxPhysicalFilePath>
+      <UnitTestFxTrxPhysicalFilePath Condition="'$(HostMachineRepositoryRoot)' != ''">$(HostMachineRepositoryRoot)/artifacts/logs/SharedFx-UnitTests.trx</UnitTestFxTrxPhysicalFilePath>
+
       <UnitTestFxTestProps>
         DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcesPropsPath);
         DotNetPackageVersionPropsPath=$(GeneratedPackageVersionPropsPath);
@@ -540,7 +548,6 @@
         RepositoryCommit=$(RepositoryCommit);
         SharedFxRuntimeIdentifier=$(SharedFXRid)
       </UnitTestFxTestProps>
-      <TrxFile>$(LogOutputDir)SharedFx.UnitTests-$(BuildNumber).trx</TrxFile>
     </PropertyGroup>
     <MSBuild Projects="$(UnitTestFxProject)" Targets="Restore" Properties="_Dummy=restore;$(UnitTestFxTestProps)" />
     <MSBuild Projects="$(UnitTestFxProject)" Targets="Build" Properties="$(UnitTestFxTestProps)">
@@ -548,15 +555,15 @@
     </MSBuild>
     <RunDotNet Arguments="vstest;
       --Framework:%(TargetFrameworkIdentifier),Version=v%(TargetFrameworkVersion);
-      --Logger:$([MSBuild]::Escape('trx;LogFileName=$(TrxFile)'));
+      --Logger:$([MSBuild]::Escape('trx;LogFileName=$(UnitTestFxTrxLogFile)'));
       %(SharedFxTestAssembly.Identity);
       --;RunConfiguration.NoAutoReporters=true" IgnoreExitCode="true">
       <Output TaskParameter="ExitCode" PropertyName="VsTestExitCode" />
     </RunDotNet>
 
-    <Message Text="##teamcity[importData type='vstest' path='$(TrxFile)']"
+    <Message Text="##teamcity[importData type='vstest' path='$(UnitTestFxTrxPhysicalFilePath)']"
       Importance="High"
-      Condition="'$(TEAMCITY_VERSION)' != '' AND Exists($(TrxFile))" />
+      Condition="'$(TEAMCITY_VERSION)' != '' AND Exists('$(UnitTestFxTrxLogFile)')" />
     <Error Text="SharedFx.UnitTests failed with exit code '$(VsTestExitCode)'." Condition=" $(VsTestExitCode) != 0 " />
   </Target>
 
