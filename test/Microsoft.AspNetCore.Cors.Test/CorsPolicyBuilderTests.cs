@@ -129,6 +129,17 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         }
 
         [Fact]
+        public void WithOrigins_NormalizesOrigins()
+        {
+            // Arrange
+            var builder = new CorsPolicyBuilder("http://www.EXAMPLE.com", "HTTPS://example2.com");
+
+            // Assert
+            var corsPolicy = builder.Build();
+            Assert.Equal(new List<string>() { "http://www.example.com", "https://example2.com" }, corsPolicy.Origins);
+        }
+
+        [Fact]
         public void AllowAnyOrigin_AllowsAny()
         {
             // Arrange
