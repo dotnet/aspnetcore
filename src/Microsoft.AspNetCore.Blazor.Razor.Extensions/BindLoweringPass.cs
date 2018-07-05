@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -478,19 +478,30 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             {
                 // This case can be hit for a 'string' attribute. We want to turn it into
                 // an expression.
-                var content = "\"" + ((IntermediateToken)htmlContentNode.Children.Single()).Content + "\"";
+                var content = "\"" + string.Join(string.Empty, htmlContentNode.Children.OfType<IntermediateToken>().Select(t => t.Content)) + "\"";
                 return new IntermediateToken() { Kind = TokenKind.CSharp, Content = content };
             }
             else if (node.Children[0] is CSharpExpressionIntermediateNode cSharpNode)
             {
                 // This case can be hit when the attribute has an explicit @ inside, which
                 // 'escapes' any special sugar we provide for codegen.
-                return ((IntermediateToken)cSharpNode.Children.Single());
+                return GetToken(cSharpNode);
             }
             else
             {
                 // This is the common case for 'mixed' content
-                return ((IntermediateToken)node.Children.Single());
+                return GetToken(node);
+            }
+
+            // In error cases we won't have a single token, but we still want to generate the code.
+            IntermediateToken GetToken(IntermediateNode parent)
+            {
+                return
+                    parent.Children.Count == 1 ? (IntermediateToken)parent.Children[0] : new IntermediateToken()
+                    {
+                        Kind = TokenKind.CSharp,
+                        Content = string.Join(string.Empty, parent.Children.OfType<IntermediateToken>().Select(t => t.Content)),
+                    };
             }
         }
     }

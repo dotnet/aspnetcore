@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -33,20 +33,28 @@ namespace Test
         [Parameter] Action<int> ValueChanged { get; set; }
         [Parameter] string AnotherValue { get; set; }
     }
+
+    public class ModelState
+    {
+        public Action<string> Bind(Func<string, string> func) => throw null;
+    }
 }
 "));
             var text = @"
 @addTagHelper *, TestAssembly
 <div>
   <MyComponent bind-Value=""myValue"" AnotherValue=""hi""/>
-  <input type=""text"" bind=""@value"" />
+  <input type=""text"" bind=""@this.ModelState.Bind(x => x)"" />
   <button ref=""_button"" onsubmit=""@FormSubmitted"">Click me</button>
 </div>
 <MyComponent 
     IntProperty=""123""
     BoolProperty=""true""
     StringProperty=""My string""
-    ObjectProperty=""new SomeType()""/>";
+    ObjectProperty=""new SomeType()""/>
+@functions {
+    Test.ModelState ModelState { get; set; }
+}";
 
             for (var i = 0; i <= text.Length; i++)
             {
@@ -65,6 +73,22 @@ Exception:
 ");
                 }
             }
+        }
+
+        [Fact] // Regression test for #1068 
+        public void Regression_1068()
+        {
+            // Arrange
+
+            // Act
+            var generated = CompileToCSharp(@"
+<input type=""text"" bind="" />
+@functions {
+    Test.ModelState ModelState { get; set; }
+}
+");
+
+            // Assert
         }
     }
 }
