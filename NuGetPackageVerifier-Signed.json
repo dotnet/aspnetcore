@@ -149,20 +149,20 @@
             "dotnet-sql-cache": {
                 "Exclusions": {
                     "ASSEMBLY_COMMIT_HASH": {
-                        "tools/netcoreapp2.2/any/runtimes/unix/lib/netcoreapp2.1/System.Data.SqlClient.dll": "Assembly is built by another project but bundled in our nupkg.",
-                        "tools/netcoreapp2.2/any/runtimes/win/lib/netcoreapp2.0/System.Text.Encoding.CodePages.dll": "Assembly is built by another project but bundled in our nupkg.",
-                        "tools/netcoreapp2.2/any/runtimes/win/lib/netcoreapp2.1/System.Data.SqlClient.dll": "Assembly is built by another project but bundled in our nupkg.",
-                        "tools/netcoreapp2.2/any/System.Data.SqlClient.dll": "Assembly is built by another project but bundled in our nupkg.",
-                        "tools/netcoreapp2.2/any/System.Runtime.CompilerServices.Unsafe.dll": "Assembly is built by another project but bundled in our nupkg.",
-                        "tools/netcoreapp2.2/any/System.Text.Encoding.CodePages.dll": "Assembly is built by another project but bundled in our nupkg."
+                        "tools/netcoreapp3.0/any/runtimes/unix/lib/netcoreapp2.1/System.Data.SqlClient.dll": "Assembly is built by another project but bundled in our nupkg.",
+                        "tools/netcoreapp3.0/any/runtimes/win/lib/netcoreapp2.0/System.Text.Encoding.CodePages.dll": "Assembly is built by another project but bundled in our nupkg.",
+                        "tools/netcoreapp3.0/any/runtimes/win/lib/netcoreapp2.1/System.Data.SqlClient.dll": "Assembly is built by another project but bundled in our nupkg.",
+                        "tools/netcoreapp3.0/any/System.Data.SqlClient.dll": "Assembly is built by another project but bundled in our nupkg.",
+                        "tools/netcoreapp3.0/any/System.Runtime.CompilerServices.Unsafe.dll": "Assembly is built by another project but bundled in our nupkg.",
+                        "tools/netcoreapp3.0/any/System.Text.Encoding.CodePages.dll": "Assembly is built by another project but bundled in our nupkg."
                     }
                 }
             },
             "dotnet-user-secrets": {
                 "Exclusions": {
                     "ASSEMBLY_COMMIT_HASH": {
-                        "tools/netcoreapp2.2/any/Newtonsoft.Json.dll": "Assembly is built by another project but bundled in our nupkg.",
-                        "tools/netcoreapp2.2/any/System.Runtime.CompilerServices.Unsafe.dll": "Assembly is built by another project but bundled in our nupkg."
+                        "tools/netcoreapp3.0/any/Newtonsoft.Json.dll": "Assembly is built by another project but bundled in our nupkg.",
+                        "tools/netcoreapp3.0/any/System.Runtime.CompilerServices.Unsafe.dll": "Assembly is built by another project but bundled in our nupkg."
                     }
                 }
             },
