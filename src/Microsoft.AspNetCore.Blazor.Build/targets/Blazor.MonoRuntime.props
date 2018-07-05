@@ -10,6 +10,7 @@
   </PropertyGroup>
 
   <PropertyGroup Label="Blazor build outputs">
+    <MonoLinkerI18NAssemblies>none</MonoLinkerI18NAssemblies> <!-- See Mono linker docs - allows comma-separated values from: none,all,cjk,mideast,other,rare,west -->
     <AdditionalMonoLinkerOptions>-c link -u link -t --verbose </AdditionalMonoLinkerOptions>
     <BaseBlazorDistPath>dist/</BaseBlazorDistPath>
     <BaseBlazorPackageContentOutputPath>$(BaseBlazorDistPath)_content/</BaseBlazorPackageContentOutputPath>

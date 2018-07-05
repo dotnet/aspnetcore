@@ -431,7 +431,7 @@
     </ItemGroup>
 
     <PropertyGroup>
-      <_BlazorLinkerAdditionalOptions>$(AdditionalMonoLinkerOptions)</_BlazorLinkerAdditionalOptions>
+      <_BlazorLinkerAdditionalOptions>-l $(MonoLinkerI18NAssemblies) $(AdditionalMonoLinkerOptions)</_BlazorLinkerAdditionalOptions>
     </PropertyGroup>
 
     <!-- Clear the contents of /obj/<<configuration>>/<<targetframework>>/blazor/blazor/linker -->
