@@ -7,15 +7,15 @@
       is not otherwise referenced. They avoid unnecessary changes to the Universe build graph or to product
       dependencies. Do not use these properties elsewhere.
     -->
-  
+
     <AngleSharpPackageVersion>0.9.9</AngleSharpPackageVersion>
     <BenchmarkDotNetPackageVersion>0.10.13</BenchmarkDotNetPackageVersion>
-    <BenchmarksOnlyMicrosoftEntityFrameworkCoreDesignPackageVersion>2.1.0</BenchmarksOnlyMicrosoftEntityFrameworkCoreDesignPackageVersion>
-    <BenchmarksOnlyMicrosoftEntityFrameworkCoreSqlitePackageVersion>2.1.0</BenchmarksOnlyMicrosoftEntityFrameworkCoreSqlitePackageVersion>
-    <BenchmarksOnlyMicrosoftEntityFrameworkCoreSqlServerPackageVersion>2.1.0</BenchmarksOnlyMicrosoftEntityFrameworkCoreSqlServerPackageVersion>
-    <BenchmarksOnlyMySqlConnectorPackageVersion>0.42.1</BenchmarksOnlyMySqlConnectorPackageVersion>
-    <BenchmarksOnlyNpgsqlEntityFrameworkCorePostgreSQLPackageVersion>2.1.0</BenchmarksOnlyNpgsqlEntityFrameworkCorePostgreSQLPackageVersion>
-    <BenchmarksOnlyPomeloEntityFrameworkCoreMySqlPackageVersion>2.1.0-rc1-final</BenchmarksOnlyPomeloEntityFrameworkCoreMySqlPackageVersion>
+    <BenchmarksOnlyMicrosoftEntityFrameworkCoreDesignPackageVersion>2.1.1</BenchmarksOnlyMicrosoftEntityFrameworkCoreDesignPackageVersion>
+    <BenchmarksOnlyMicrosoftEntityFrameworkCoreSqlitePackageVersion>2.1.1</BenchmarksOnlyMicrosoftEntityFrameworkCoreSqlitePackageVersion>
+    <BenchmarksOnlyMicrosoftEntityFrameworkCoreSqlServerPackageVersion>2.1.1</BenchmarksOnlyMicrosoftEntityFrameworkCoreSqlServerPackageVersion>
+    <BenchmarksOnlyMySqlConnectorPackageVersion>0.43.0</BenchmarksOnlyMySqlConnectorPackageVersion>
+    <BenchmarksOnlyNpgsqlEntityFrameworkCorePostgreSQLPackageVersion>2.1.1.1</BenchmarksOnlyNpgsqlEntityFrameworkCorePostgreSQLPackageVersion>
+    <BenchmarksOnlyPomeloEntityFrameworkCoreMySqlPackageVersion>2.1.1</BenchmarksOnlyPomeloEntityFrameworkCoreMySqlPackageVersion>
     <InternalAspNetCoreAnalyzersPackageVersion>2.2.0-preview1-34823</InternalAspNetCoreAnalyzersPackageVersion>
     <InternalAspNetCoreSdkPackageVersion>2.2.0-preview1-17102</InternalAspNetCoreSdkPackageVersion>
     <MicrosoftAspNetCoreAllPackageVersion>2.2.0-preview1-34823</MicrosoftAspNetCoreAllPackageVersion>

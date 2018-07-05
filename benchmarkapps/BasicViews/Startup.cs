@@ -49,7 +49,7 @@ namespace BasicViews
                 case "MYSQL":
                     services
                         .AddEntityFrameworkMySql()
-                        .AddDbContext<BasicViewsContext>(options => options.UseMySql(connectionString));
+                        .AddDbContextPool<BasicViewsContext>(options => options.UseMySql(connectionString));
                     break;
 #endif
 

@@ -7,6 +7,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -45,11 +46,13 @@ namespace BasicApi.Controllers
         }
 
         [HttpGet("/token")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public IActionResult GetToken(string username)
         {
             if (username == null || !_identities.TryGetValue(username, out var identity))
             {
-                return new StatusCodeResult(403);
+                return new StatusCodeResult(StatusCodes.Status403Forbidden);
             }
 
             var handler = _options.SecurityTokenValidators.OfType<JwtSecurityTokenHandler>().First();
