@@ -29,12 +29,16 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
 
         private static readonly string ProtocolName = "messagepack";
         private static readonly int ProtocolVersion = 1;
-
+        private static readonly int ProtocolMinorVersion = 0;
+        
         /// <inheritdoc />
         public string Name => ProtocolName;
 
         /// <inheritdoc />
         public int Version => ProtocolVersion;
+
+        /// <inheritdoc />
+        public int MinorVersion => ProtocolMinorVersion;
 
         /// <inheritdoc />
         public TransferFormat TransferFormat => TransferFormat.Binary;

@@ -25,6 +25,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         public string Name => _innerProtocol.Name;
         public int Version => _version;
         public TransferFormat TransferFormat => _innerProtocol.TransferFormat;
+        public int MinorVersion => 0; // not used in this test class, just for interface conformance
 
         public bool TryParseMessage(ref ReadOnlySequence<byte> input, IInvocationBinder binder, out HubMessage message)
         {
