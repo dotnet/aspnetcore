@@ -24,7 +24,7 @@
     </AssemblyAttribute>
     <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
       <_Parameter1>MicrosoftNETCoreAppPackageVersion</_Parameter1>
-      <_Parameter2>$(MicrosoftNETCoreAppPackageVersion)</_Parameter2>
+      <_Parameter2>$(RuntimeFrameworkVersion)</_Parameter2>
     </AssemblyAttribute>
   </ItemGroup>
 
