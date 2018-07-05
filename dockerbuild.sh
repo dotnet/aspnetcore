@@ -90,13 +90,6 @@ fi
 dockerfile="$DIR/build/docker/$image.Dockerfile"
 tagname="universe-build-$image"
 
-# Workaround for https://github.com/dotnet/cli/issues/8738 and https://github.com/Microsoft/msbuild/issues/3066
-# Run noop target because we need to generate the global.json file so we can install the matching
-# .NET Core SDK inside the Docker container.
-"$DIR/build.sh" /t:Noop
-cp "$DIR/global.json" "$(dirname "$dockerfile")"
-#endworkaround
-
 docker build "$(dirname "$dockerfile")" \
     --build-arg "USER=$(whoami)" \
     --build-arg "USER_ID=$(id -u)" \
