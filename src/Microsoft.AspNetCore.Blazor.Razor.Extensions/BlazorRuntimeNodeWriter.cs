@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -379,7 +379,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 }
                 else
                 {
-                    if (node.BoundAttribute != null)
+                    if (node.BoundAttribute != null && !node.BoundAttribute.IsWeaklyTyped())
                     {
                         context.CodeWriter.Write(BlazorApi.RuntimeHelpers.TypeCheck);
                         context.CodeWriter.Write("<");
@@ -393,7 +393,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                         context.CodeWriter.Write(tokens[i].Content);
                     }
 
-                    if (node.BoundAttribute != null)
+                    if (node.BoundAttribute != null && !node.BoundAttribute.IsWeaklyTyped())
                     {
                         context.CodeWriter.Write(")");
                     }

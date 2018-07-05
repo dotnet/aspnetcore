@@ -166,6 +166,40 @@ namespace Test
             CompileToAssembly(generated);
         }
 
+        // Regression test for #954 - we need to allow arbitrary event handler
+        // attributes with weak typing.
+        [Fact]
+        public void ChildComponent_WithWeaklyTypeEventHandler()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using System;
+using Microsoft.AspNetCore.Blazor;
+using Microsoft.AspNetCore.Blazor.Components;
+
+namespace Test
+{
+    public class DynamicElement : BlazorComponent
+    {
+    }
+}
+"));
+
+            // Act
+            var generated = CompileToCSharp(@"
+@addTagHelper *, TestAssembly
+<DynamicElement onclick=""@OnClick"" />
+
+@functions {
+    private Action<UIMouseEventArgs> OnClick { get; set; }
+}");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
         [Fact]
         public void ChildComponent_WithExplicitEventHandler()
         {
@@ -759,8 +793,6 @@ Welcome to your new app.
         [Fact] // https://github.com/aspnet/Blazor/issues/773
         public void Regression_773()
         {
-            GenerateBaselines = true;
-
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Blazor.Components;

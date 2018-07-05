@@ -1,6 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis.CSharp;
@@ -96,6 +97,11 @@ namespace Test
             Assert.Null(attribute.IndexerTypeName);
             Assert.False(attribute.IsIndexerBooleanProperty);
             Assert.False(attribute.IsIndexerStringProperty);
+
+            Assert.Collection(
+                attribute.Metadata.OrderBy(kvp => kvp.Key),
+                kvp => Assert.Equal(kvp, new KeyValuePair<string, string>(BlazorMetadata.Component.WeaklyTypedKey, bool.TrueString)),
+                kvp => Assert.Equal(kvp, new KeyValuePair<string, string>("Common.PropertyName", "onclick")));
 
             Assert.Equal(
                 "Sets the 'onclick' attribute to the provided string or delegate value. " +

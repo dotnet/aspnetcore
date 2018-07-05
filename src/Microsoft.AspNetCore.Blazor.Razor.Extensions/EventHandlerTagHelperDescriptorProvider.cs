@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -142,6 +142,10 @@ namespace Microsoft.AspNetCore.Blazor.Razor
 
                     // Use a string here so that we get HTML context by default.
                     a.TypeName = typeof(string).FullName;
+
+                    // But make this weakly typed (don't type check) - delegates have their own type-checking
+                    // logic that we don't want to interfere with.
+                    a.Metadata.Add(BlazorMetadata.Component.WeaklyTypedKey, bool.TrueString);
 
                     // WTE has a bug 15.7p1 where a Tag Helper without a display-name that looks like
                     // a C# property will crash trying to create the toolips.

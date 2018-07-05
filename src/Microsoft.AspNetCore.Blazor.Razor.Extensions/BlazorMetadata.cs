@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 namespace Microsoft.AspNetCore.Blazor.Razor
@@ -29,6 +29,8 @@ namespace Microsoft.AspNetCore.Blazor.Razor
         public static class Component
         {
             public static readonly string DelegateSignatureKey = "Blazor.DelegateSignature";
+
+            public static readonly string WeaklyTypedKey = "Blazor.IsWeaklyTyped";
 
             public static readonly string RuntimeName = "Blazor.IComponent";
 
