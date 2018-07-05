@@ -169,7 +169,7 @@
             "dotnet-ef": {
                 "Exclusions": {
                     "ASSEMBLY_COMMIT_HASH": {
-                        "tools/netcoreapp2.2/any/Newtonsoft.Json.dll": "External"
+                        "tools/netcoreapp3.0/any/Newtonsoft.Json.dll": "External"
                     }
                 }
             }
