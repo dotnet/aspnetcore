@@ -205,6 +205,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                     return null;
                 }
 
+                // Synchronize access to native methods that might run in parallel with IO loops
                 lock (_contextLock)
                 {
                     return NativeMethods.HttpTryGetServerVariable(_pInProcessHandler, variableName, out var value) ? value : null;

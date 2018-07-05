@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
 
         public AsyncIOEngine(object contextSync, IntPtr handler)
         {
-            this._contextSync = contextSync;
+            _contextSync = contextSync;
             _handler = handler;
         }
 
