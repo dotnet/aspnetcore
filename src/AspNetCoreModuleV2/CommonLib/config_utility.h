@@ -28,7 +28,12 @@ public:
         STRU strHandlerName;
         STRU strHandlerValue;
 
-        RETURN_IF_FAILED(GetElementChildByName(pElement, CS_ASPNETCORE_HANDLER_SETTINGS,&pHandlerSettings));
+        // backwards complatibility with systems not having schema for handlerSettings
+        if (FAILED_LOG(GetElementChildByName(pElement, CS_ASPNETCORE_HANDLER_SETTINGS, &pHandlerSettings)))
+        {
+            return S_OK;
+        }
+
         RETURN_IF_FAILED(pHandlerSettings->get_Collection(&pHandlerSettingsCollection));
 
         RETURN_IF_FAILED(hr = FindFirstElement(pHandlerSettingsCollection, &index, &pHandlerVar));

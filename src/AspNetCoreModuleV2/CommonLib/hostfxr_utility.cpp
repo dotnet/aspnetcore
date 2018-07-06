@@ -128,11 +128,6 @@ HOSTFXR_UTILITY::GetHostFxrParameters(
     fs::path processPath = Environment::ExpandEnvironmentVariables(pcwzProcessPath);
     std::wstring arguments = Environment::ExpandEnvironmentVariables(pcwzArguments);
 
-    if (processPath.is_relative())
-    {
-        processPath = applicationPhysicalPath / processPath;
-    }
-
     // Check if the absolute path is to dotnet or not.
     if (IsDotnetExecutable(processPath))
     {
@@ -143,7 +138,7 @@ HOSTFXR_UTILITY::GetHostFxrParameters(
         // Get the absolute path to dotnet. If the path is already an absolute path, it will return that path
         //
         // Make sure to append the dotnet.exe path correctly here (pass in regular path)?
-        auto fullProcessPath = GetAbsolutePathToDotnet(processPath);
+        auto fullProcessPath = GetAbsolutePathToDotnet(applicationPhysicalPath, processPath);
         if (!fullProcessPath.has_value())
         {
             return E_FAIL;
@@ -171,6 +166,11 @@ HOSTFXR_UTILITY::GetHostFxrParameters(
     else
     {
         WLOG_INFOF(L"Process path %s is not dotnet, treating application as standalone", processPath.c_str());
+
+        if (processPath.is_relative())
+        {
+            processPath = applicationPhysicalPath / processPath;
+        }
 
         //
         // The processPath is a path to the application executable
@@ -331,10 +331,17 @@ Finished:
 
 std::optional<fs::path>
 HOSTFXR_UTILITY::GetAbsolutePathToDotnet(
+     const fs::path & applicationPath,
      const fs::path & requestedPath
 )
 {
-    WLOG_INFOF(L"Resolving absolute path do dotnet.exe from %s", requestedPath.c_str());
+    WLOG_INFOF(L"Resolving absolute path to dotnet.exe from %s", requestedPath.c_str());
+
+    auto processPath = requestedPath;
+    if (processPath.is_relative())
+    {
+        processPath = applicationPath / processPath;
+    }
 
     //
     // If we are given an absolute path to dotnet.exe, we are done
@@ -360,7 +367,7 @@ HOSTFXR_UTILITY::GetAbsolutePathToDotnet(
     // If we encounter any failures, try getting dotnet.exe from the
     // backup location.
     // Only do it if no path is specified
-    if (!requestedPath.has_parent_path())
+    if (requestedPath.has_parent_path())
     {
         return std::nullopt;
     }
@@ -368,7 +375,7 @@ HOSTFXR_UTILITY::GetAbsolutePathToDotnet(
     const auto dotnetViaWhere = InvokeWhereToFindDotnet();
     if (dotnetViaWhere.has_value())
     {
-        WLOG_INFOF(L"Found dotnet.exe wia where.exe invocation at %s", dotnetViaWhere.value().c_str());
+        WLOG_INFOF(L"Found dotnet.exe via where.exe invocation at %s", dotnetViaWhere.value().c_str());
 
         return dotnetViaWhere;
     }
@@ -394,7 +401,7 @@ HOSTFXR_UTILITY::GetAbsolutePathToHostFxr(
     std::vector<std::wstring> versionFolders;
     const auto hostFxrBase = dotnetPath.parent_path() / "host" / "fxr";
 
-    WLOG_INFOF(L"Resolving absolute path do hostfxr.dll from %s", dotnetPath.c_str());
+    WLOG_INFOF(L"Resolving absolute path to hostfxr.dll from %s", dotnetPath.c_str());
 
     if (!is_directory(hostFxrBase))
     {

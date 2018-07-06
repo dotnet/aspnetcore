@@ -40,16 +40,6 @@ public:
         }
     }
 
-    VOID
-    SetParameter(
-        _In_ LPCWSTR           pzName,
-        _In_ LPCWSTR           pzValue)
-    override
-    {
-        UNREFERENCED_PARAMETER(pzName);
-        UNREFERENCED_PARAMETER(pzValue);
-    }
-
 protected:
     volatile APPLICATION_STATUS     m_status = APPLICATION_STATUS::UNKNOWN;
 

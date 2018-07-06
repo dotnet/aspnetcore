@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using IISIntegration.FunctionalTests.Utilities;
@@ -32,20 +33,18 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 deploymentParameters => deploymentParameters.EnvironmentVariables["DotnetPath"] = _dotnetLocation);
         }
 
-        [ConditionalFact]
-        public async Task InvalidProcessPath_ExpectServerError()
+        [ConditionalTheory]
+        [InlineData("bogus")]
+        [InlineData("c:\\random files\\dotnet.exe")]
+        [InlineData(".\\dotnet.exe")]
+        public async Task InvalidProcessPath_ExpectServerError(string path)
         {
-            var dotnetLocation = "bogus";
-
             var deploymentParameters = GetBaseDeploymentParameters();
-            // Point to dotnet installed in user profile.
-            deploymentParameters.EnvironmentVariables["DotnetPath"] = Environment.ExpandEnvironmentVariables(dotnetLocation); // Path to dotnet.
 
             var deploymentResult = await DeployAsync(deploymentParameters);
 
-            Helpers.ModifyAspNetCoreSectionInWebConfig(deploymentResult, "processPath", "%DotnetPath%");
+            Helpers.ModifyAspNetCoreSectionInWebConfig(deploymentResult, "processPath", path);
 
-            // Request to base address and check if various parts of the body are rendered & measure the cold startup time.
             var response = await deploymentResult.RetryingHttpClient.GetAsync("HelloWorld");
 
             Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
@@ -77,6 +76,9 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             await AssertStarts(
                 deploymentResult => Helpers.ModifyAspNetCoreSectionInWebConfig(deploymentResult, "processPath", path),
                 deploymentParameters => deploymentParameters.EnvironmentVariables["PATH"] = Path.GetDirectoryName(_dotnetLocation));
+
+            // Verify that in this scenario where.exe was invoked only once by shim and request handler uses cached value
+            Assert.Equal(1, TestSink.Writes.Count(w => w.Message.Contains("Invoking where.exe to find dotnet.exe")));
         }
 
         private async Task AssertStarts(Action<IISDeploymentResult> postDeploy, Action<DeploymentParameters> preDeploy = null)

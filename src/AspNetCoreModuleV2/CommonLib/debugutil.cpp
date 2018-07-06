@@ -53,7 +53,7 @@ DebugInitialize()
 
     try
     {
-        const auto value = std::stoi(Environment::ExpandEnvironmentVariables(L"%ASPNETCORE_MODULE_DEBUG%"));
+        const auto value = std::stoi(Environment::GetEnvironmentVariableValue(L"ASPNETCORE_MODULE_DEBUG").value_or(L"0"));
 
         if (value >= 1) DEBUG_FLAGS_VAR |= ASPNETCORE_DEBUG_FLAG_ERROR;
         if (value >= 2) DEBUG_FLAGS_VAR |= ASPNETCORE_DEBUG_FLAG_WARNING;
@@ -67,19 +67,18 @@ DebugInitialize()
 
     try
     {
-        const auto debugOutputFile = Environment::ExpandEnvironmentVariables(L"%ASPNETCORE_MODULE_DEBUG_FILE%");
+        const auto debugOutputFile = Environment::GetEnvironmentVariableValue(L"ASPNETCORE_MODULE_DEBUG_FILE");
 
-        if (!debugOutputFile.empty())
+        if (debugOutputFile.has_value())
         {
-            g_logFile = CreateFileW(debugOutputFile.c_str(),
-                FILE_GENERIC_WRITE,
-                FILE_SHARE_READ | FILE_SHARE_WRITE,
+            g_logFile = CreateFileW(debugOutputFile.value().c_str(),
+                (GENERIC_READ | GENERIC_WRITE),
+                (FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE),
                 nullptr,
                 OPEN_ALWAYS,
                 FILE_ATTRIBUTE_NORMAL,
                 nullptr
             );
-
             if (g_logFile != INVALID_HANDLE_VALUE)
             {
                 InitializeSRWLock(&g_logFileLock);
@@ -145,6 +144,7 @@ DebugPrint(
 
             SetFilePointer(g_logFile, 0, nullptr, FILE_END);
             WriteFile(g_logFile, strOutput.QueryStr(), strOutput.QueryCB(), &nBytesWritten, nullptr);
+            FlushFileBuffers(g_logFile);
         }
     }
 }

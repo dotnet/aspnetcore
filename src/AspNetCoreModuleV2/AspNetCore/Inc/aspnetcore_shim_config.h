@@ -39,12 +39,6 @@ public:
     }
 
     STRU*
-    QueryApplicationPath()
-    {
-        return &m_struApplication;
-    }
-
-    STRU*
     QueryConfigPath()
     {
         return &m_struConfigPath;
@@ -83,7 +77,6 @@ private:
 
     STRU                   m_struArguments;
     STRU                   m_struProcessPath;
-    STRU                   m_struApplication;
     STRU                   m_struApplicationPhysicalPath;
     STRU                   m_struConfigPath;
     APP_HOSTING_MODEL      m_hostingModel;

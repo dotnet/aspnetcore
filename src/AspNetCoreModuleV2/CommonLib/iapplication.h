@@ -14,6 +14,12 @@ enum APPLICATION_STATUS
     FAIL
 };
 
+struct APPLICATION_PARAMETER
+{
+    LPCSTR       pzName;
+    PVOID        pValue;
+};
+
 class IAPPLICATION
 {
 public:
@@ -46,10 +52,4 @@ public:
     CreateHandler(
         _In_  IHttpContext       *pHttpContext,
         _Out_ IREQUEST_HANDLER  **pRequestHandler) = 0;
-
-    virtual
-    VOID
-    SetParameter(
-        _In_ LPCWSTR           pzName,
-        _In_ LPCWSTR           pzValue) = 0;
 };

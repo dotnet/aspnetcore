@@ -91,6 +91,7 @@ public:
     static
     std::optional<std::experimental::filesystem::path>
     GetAbsolutePathToDotnet(
+        _In_ const std::experimental::filesystem::path & applicationPath,
         _In_ const std::experimental::filesystem::path & requestedPath
     );
 };

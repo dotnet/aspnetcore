@@ -3,6 +3,7 @@
 
 #include "applicationinfo.h"
 
+#include <array>
 #include "proxymodule.h"
 #include "hostfxr_utility.h"
 #include "utility.h"
@@ -152,7 +153,7 @@ APPLICATION_INFO::UpdateAppOfflineFileHandle()
             STACK_STRU(strEventMsg, 256);
             if (SUCCEEDED(strEventMsg.SafeSnwprintf(
                 ASPNETCORE_EVENT_RECYCLE_APPOFFLINE_MSG,
-                m_pConfiguration->QueryApplicationPath()->QueryStr())))
+                m_pConfiguration->QueryApplicationPhysicalPath()->QueryStr())))
             {
                 UTILITY::LogEvent(g_hEventLog,
                     EVENTLOG_INFORMATION_TYPE,
@@ -222,8 +223,16 @@ APPLICATION_INFO::EnsureApplicationCreated(
                 FINISHED(HRESULT_FROM_WIN32(ERROR_INVALID_FUNCTION));
             }
 
-            FINISHED_IF_FAILED(m_pfnAspNetCoreCreateApplication(m_pServer, pHttpContext->GetApplication(), &pApplication));
-            pApplication->SetParameter(L"InProcessExeLocation", struExeLocation.QueryStr());
+            std::array<APPLICATION_PARAMETER, 1> parameters {
+                {"InProcessExeLocation", struExeLocation.QueryStr()}
+            };
+
+            FINISHED_IF_FAILED(m_pfnAspNetCoreCreateApplication(
+                m_pServer,
+                pHttpContext->GetApplication(),
+                parameters.data(),
+                static_cast<DWORD>(parameters.size()),
+                &pApplication));
 
             m_pApplication = pApplication;
         }

@@ -6,9 +6,9 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
-using IISIntegration.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.IIS.Performance

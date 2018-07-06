@@ -572,13 +572,7 @@ UTILITY::LogEvent(
         );
     }
 
-    STACK_STRA(converted, 256);
-    if (converted.CopyW(pstrMsg))
-    {
-        DebugPrintf(
-            dwEventInfoType == EVENTLOG_ERROR_TYPE ? ASPNETCORE_DEBUG_FLAG_ERROR : ASPNETCORE_DEBUG_FLAG_INFO,
-            "Event Log: %s", converted.QueryStr());
-    }
+    WDebugPrintf(dwEventInfoType == EVENTLOG_ERROR_TYPE ? ASPNETCORE_DEBUG_FLAG_ERROR : ASPNETCORE_DEBUG_FLAG_INFO, L"Event Log: %s", pstrMsg);
 }
 
 VOID
