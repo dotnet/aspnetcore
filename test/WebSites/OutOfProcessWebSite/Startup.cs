@@ -98,6 +98,7 @@ namespace TestSites
             }
             catch(UnauthorizedAccessException)
             {
+                // TODO calling delete on the file will succeed when running with IIS
                 return context.Response.WriteAsync("Hello World");
             }
 

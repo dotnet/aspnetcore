@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Performance
                 RuntimeFlavor.CoreClr,
                 RuntimeArchitecture.x64)
             {
-                ServerConfigTemplateContent = File.ReadAllText("Http.config"),
+                ServerConfigTemplateContent = File.ReadAllText("IISExpress.config"),
                 SiteName = "HttpTestSite",
                 TargetFramework = "netcoreapp2.1",
                 ApplicationType = ApplicationType.Portable,
