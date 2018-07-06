@@ -738,5 +738,21 @@ namespace IISTestSite
                 ctx.RequestServices.GetService<IApplicationLifetime>().StopApplication();
             });
         }
+
+        private async Task GetServerVariableStress(HttpContext context)
+        {
+            // This test simulates the scenario where native Flush call is being
+            // executed on background thread while request thread calls GetServerVariable
+            // concurrent native calls may cause native object corruption
+
+            await context.Response.WriteAsync("Response Begin");
+            for (int i = 0; i < 1000; i++)
+            {
+                await context.Response.WriteAsync(context.GetIISServerVariable("REMOTE_PORT"));
+                await context.Response.Body.FlushAsync();
+            }
+            await context.Response.WriteAsync("Response End");
+        }
+
     }
 }

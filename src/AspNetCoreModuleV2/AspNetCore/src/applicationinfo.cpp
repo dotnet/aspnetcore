@@ -187,12 +187,6 @@ APPLICATION_INFO::EnsureApplicationCreated(
     // one optimization for failure scenario is to reduce the lock scope
     SRWExclusiveLock lock(m_srwLock);
 
-    if (m_fDoneAppCreation)
-    {
-        // application is NULL and CreateApplication failed previously
-        FINISHED(E_APPLICATION_ACTIVATION_EXEC_FAILURE);
-    }
-    else
     {
         if (m_pApplication != NULL)
         {
