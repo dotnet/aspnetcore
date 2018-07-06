@@ -19,7 +19,8 @@
 
     <MSBuild Projects="@(ArchiveProjects)"
       Targets="Restore"
-      BuildInParallel="true"
+      BuildInParallel="false"
+      StopOnFirstFailure="true"
       Properties="$(ArchiveBuildProps);_Dummy=restore" />
 
     <MSBuild Projects="@(ArchiveProjects)"
