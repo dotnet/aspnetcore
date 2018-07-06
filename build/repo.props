@@ -13,6 +13,7 @@
     <SubmoduleRoot>$(RepositoryRoot)modules\</SubmoduleRoot>
 
     <DependencyPackageDir>$(RepositoryRoot).deps\build\</DependencyPackageDir>
+    <SignedDependencyPackageDir>$(RepositoryRoot).deps\Signed\Packages\</SignedDependencyPackageDir>
   </PropertyGroup>
 
   <ItemGroup>

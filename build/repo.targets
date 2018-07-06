@@ -102,6 +102,7 @@
       <_LineupPackages Include="%(ArtifactInfo.PackageId)" Version="%(ArtifactInfo.Version)" Condition=" '%(ArtifactInfo.ArtifactType)' == 'NuGetPackage' " />
 
       <_RestoreSources Include="$(DependencyPackageDir)" Condition="'$(DependencyPackageDir)' != '' AND Exists('$(DependencyPackageDir)')" />
+      <_RestoreSources Include="$(SignedDependencyPackageDir)" Condition="'$(SignedDependencyPackageDir)' != '' AND Exists('$(SignedDependencyPackageDir)')" />
       <_RestoreSources Include="$(BuildDir)" />
       <_RestoreSources Include="$(RestoreSources)" />
     </ItemGroup>
