@@ -10,11 +10,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
     public class TagHelperParseTreeRewriterTest : TagHelperRewritingTestBase
     {
-        public TagHelperParseTreeRewriterTest()
-        {
-            UseBaselineTests = true;
-        }
-
         public static TheoryData GetAttributeNameValuePairsData
         {
             get

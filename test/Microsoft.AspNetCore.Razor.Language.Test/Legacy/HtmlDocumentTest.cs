@@ -12,11 +12,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
     {
         private static readonly TestFile Nested1000 = TestFile.Create("TestFiles/nested-1000.html", typeof(HtmlDocumentTest));
 
-        public HtmlDocumentTest()
-        {
-            UseBaselineTests = true;
-        }
-
         [Fact]
         public void ParseDocument_NestedCodeBlockWithMarkupSetsDotAsMarkup()
         {

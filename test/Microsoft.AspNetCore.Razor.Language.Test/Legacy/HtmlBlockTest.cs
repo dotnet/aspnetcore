@@ -8,11 +8,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
     public class HtmlBlockTest : CsHtmlMarkupParserTestBase
     {
-        public HtmlBlockTest()
-        {
-            UseBaselineTests = true;
-        }
-
         [Fact]
         public void ParseBlockHandlesUnbalancedTripleDashHTMLComments()
         {

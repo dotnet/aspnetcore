@@ -8,11 +8,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
     public class WhiteSpaceRewriterTest : CsHtmlMarkupParserTestBase
     {
-        public WhiteSpaceRewriterTest()
-        {
-            UseBaselineTests = true;
-        }
-
         [Fact]
         public void Rewrite_Moves_Whitespace_Preceeding_ExpressionBlock_To_Parent_Block()
         {

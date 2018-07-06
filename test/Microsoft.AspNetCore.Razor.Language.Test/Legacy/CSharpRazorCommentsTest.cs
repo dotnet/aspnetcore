@@ -8,11 +8,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
     public class CSharpRazorCommentsTest : CsHtmlMarkupParserTestBase
     {
-        public CSharpRazorCommentsTest()
-        {
-            UseBaselineTests = true;
-        }
-
         [Fact]
         public void UnterminatedRazorComment()
         {

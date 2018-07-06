@@ -7,11 +7,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
     public class CSharpNestedStatementsTest : CsHtmlCodeParserTestBase
     {
-        public CSharpNestedStatementsTest()
-        {
-            UseBaselineTests = true;
-        }
-
         [Fact]
         public void NestedSimpleStatement()
         {

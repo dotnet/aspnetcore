@@ -8,11 +8,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
     public class CSharpBlockTest : CsHtmlCodeParserTestBase
     {
-        public CSharpBlockTest()
-        {
-            UseBaselineTests = true;
-        }
-
         [Fact]
         public void ParseBlock_NestedCodeBlockWithCSharpAt()
         {

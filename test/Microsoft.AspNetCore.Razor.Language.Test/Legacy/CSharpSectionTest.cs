@@ -9,11 +9,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
     public class CSharpSectionTest : CsHtmlMarkupParserTestBase
     {
-        public CSharpSectionTest()
-        {
-            UseBaselineTests = true;
-        }
-
         [Fact]
         public void ParseSectionBlockCapturesNewlineImmediatelyFollowing()
         {

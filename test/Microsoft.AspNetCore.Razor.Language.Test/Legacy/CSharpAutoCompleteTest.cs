@@ -10,11 +10,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
     public class CSharpAutoCompleteTest : CsHtmlCodeParserTestBase
     {
-        public CSharpAutoCompleteTest()
-        {
-            UseBaselineTests = true;
-        }
-
         [Fact]
         public void FunctionsDirectiveAutoCompleteAtEOF()
         {

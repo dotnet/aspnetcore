@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 Write(tagHelperBlock.TagName);
 
                 // Write descriptors
-                foreach (var descriptor in tagHelperBlock.Binding.Descriptors)
+                foreach (var descriptor in tagHelperBlock.Binding?.Descriptors ?? Array.Empty<TagHelperDescriptor>())
                 {
                     WriteSeparator();
 

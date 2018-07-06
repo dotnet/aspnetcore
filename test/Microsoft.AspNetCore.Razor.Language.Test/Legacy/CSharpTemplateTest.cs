@@ -8,12 +8,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
     public class CSharpTemplateTest : CsHtmlCodeParserTestBase
     {
-        public CSharpTemplateTest()
-        {
-            UseBaselineTests = true;
-        }
-
-
         [Fact]
         public void ParseBlockHandlesSingleLineTemplate()
         {
