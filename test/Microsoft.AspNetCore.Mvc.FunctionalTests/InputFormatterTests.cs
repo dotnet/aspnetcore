@@ -3,11 +3,12 @@
 
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
+using FormatterWebSite.Models;
 using Microsoft.AspNetCore.Testing.xunit;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
@@ -216,6 +217,101 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             // Assert
             Assert.Equal(HttpStatusCode.UnsupportedMediaType, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task BindingWorksForPolymorphicTypes()
+        {
+            // Act
+            var response = await Client.GetAsync("PolymorphicBinding/ModelBound?DerivedProperty=Test");
+
+            // Assert
+            await response.AssertStatusCodeAsync(HttpStatusCode.OK);
+            var result = JsonConvert.DeserializeObject<DerivedModel>(await response.Content.ReadAsStringAsync());
+            Assert.Equal("Test", result.DerivedProperty);
+        }
+
+        [Fact]
+        public async Task ValidationUsesModelMetadataFromActualModelType_ForModelBoundParameters()
+        {
+            // Act
+            var response = await Client.GetAsync("PolymorphicBinding/ModelBound");
+
+            // Assert
+            await response.AssertStatusCodeAsync(HttpStatusCode.BadRequest);
+            var result = JObject.Parse(await response.Content.ReadAsStringAsync());
+            Assert.Collection(
+                result.Properties(),
+                p =>
+                {
+                    Assert.Equal("DerivedProperty", p.Name);
+                    var value = Assert.IsType<JArray>(p.Value);
+                    Assert.Equal("The DerivedProperty field is required.", value.First);
+                });
+        }
+
+        [Fact]
+        public async Task InputFormatterWorksForPolymorphicTypes()
+        {
+            // Act
+            var input = "Test";
+            var response = await Client.PostAsJsonAsync("PolymorphicBinding/InputFormatted", input);
+
+            // Assert
+            await response.AssertStatusCodeAsync(HttpStatusCode.OK);
+            var result = JsonConvert.DeserializeObject<DerivedModel>(await response.Content.ReadAsStringAsync());
+            Assert.Equal(input, result.DerivedProperty);
+        }
+
+        [Fact]
+        public async Task ValidationUsesModelMetadataFromActualModelType_ForInputFormattedParameters()
+        {
+            // Act
+            var response = await Client.PostAsJsonAsync("PolymorphicBinding/InputFormatted", string.Empty);
+
+            // Assert
+            await response.AssertStatusCodeAsync(HttpStatusCode.BadRequest);
+            var result = JObject.Parse(await response.Content.ReadAsStringAsync());
+            Assert.Collection(
+                result.Properties(),
+                p =>
+                {
+                    Assert.Equal("DerivedProperty", p.Name);
+                    var value = Assert.IsType<JArray>(p.Value);
+                    Assert.Equal("The DerivedProperty field is required.", value.First);
+                });
+        }
+
+        [Fact]
+        public async Task InputFormatterWorksForPolymorphicProperties()
+        {
+            // Act
+            var input = "Test";
+            var response = await Client.PostAsJsonAsync("PolymorhpicPropertyBinding/Action", input);
+
+            // Assert
+            await response.AssertStatusCodeAsync(HttpStatusCode.OK);
+            var result = JsonConvert.DeserializeObject<DerivedModel>(await response.Content.ReadAsStringAsync());
+            Assert.Equal(input, result.DerivedProperty);
+        }
+
+        [Fact]
+        public async Task ValidationUsesModelMetadataFromActualModelType_ForInputFormattedProperties()
+        {
+            // Act
+            var response = await Client.PostAsJsonAsync("PolymorhpicPropertyBinding/Action", string.Empty);
+
+            // Assert
+            await response.AssertStatusCodeAsync(HttpStatusCode.BadRequest);
+            var result = JObject.Parse(await response.Content.ReadAsStringAsync());
+            Assert.Collection(
+                result.Properties(),
+                p =>
+                {
+                    Assert.Equal("DerivedProperty", p.Name);
+                    var value = Assert.IsType<JArray>(p.Value);
+                    Assert.Equal("The DerivedProperty field is required.", value.First);
+                });
         }
     }
 }

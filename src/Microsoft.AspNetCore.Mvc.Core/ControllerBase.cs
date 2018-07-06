@@ -1705,6 +1705,14 @@ namespace Microsoft.AspNetCore.Mvc
             => new UnauthorizedResult();
 
         /// <summary>
+        /// Creates an <see cref="UnauthorizedObjectResult"/> that produces a <see cref="StatusCodes.Status401Unauthorized"/> response.
+        /// </summary>
+        /// <returns>The created <see cref="UnauthorizedObjectResult"/> for the response.</returns>
+        [NonAction]
+        public virtual UnauthorizedObjectResult Unauthorized(object value)
+            => new UnauthorizedObjectResult(value);
+
+        /// <summary>
         /// Creates an <see cref="NotFoundResult"/> that produces a <see cref="StatusCodes.Status404NotFound"/> response.
         /// </summary>
         /// <returns>The created <see cref="NotFoundResult"/> for the response.</returns>

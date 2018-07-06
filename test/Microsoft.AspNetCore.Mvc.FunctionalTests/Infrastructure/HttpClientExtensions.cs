@@ -7,7 +7,6 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using AngleSharp.Dom.Html;
 using AngleSharp.Parser.Html;
-using Xunit;
 using Xunit.Sdk;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
@@ -32,7 +31,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
         public static async Task<HttpResponseMessage> AssertStatusCodeAsync(this HttpResponseMessage response, HttpStatusCode expectedStatusCode)
         {
-            if (response.StatusCode == HttpStatusCode.OK)
+            if (response.StatusCode == expectedStatusCode)
             {
                 return response;
             }
