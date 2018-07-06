@@ -28,7 +28,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         private const int PauseWriterThreshold = 65536;
         private const int ResumeWriterTheshold = PauseWriterThreshold / 2;
 
-
         protected readonly IntPtr _pInProcessHandler;
 
         private readonly IISServerOptions _options;
@@ -38,8 +37,8 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
         private int _statusCode;
         private string _reasonPhrase;
-        private readonly object _onStartingSync = new object();
-        private readonly object _onCompletedSync = new object();
+        // Used to synchronize callback registration and native method calls
+        private readonly object _contextLock = new object();
 
         protected Stack<KeyValuePair<Func<object, Task>, object>> _onStarting;
         protected Stack<KeyValuePair<Func<object, Task>, object>> _onCompleted;
@@ -241,7 +240,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             // If at this point request was not upgraded just start a normal IO engine
             if (AsyncIO == null)
             {
-                AsyncIO = new AsyncIOEngine(_pInProcessHandler);
+                AsyncIO = new AsyncIOEngine(_contextLock, _pInProcessHandler);
             }
         }
 
@@ -341,7 +340,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
         public void OnStarting(Func<object, Task> callback, object state)
         {
-            lock (_onStartingSync)
+            lock (_contextLock)
             {
                 if (HasResponseStarted)
                 {
@@ -358,7 +357,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
         public void OnCompleted(Func<object, Task> callback, object state)
         {
-            lock (_onCompletedSync)
+            lock (_contextLock)
             {
                 if (_onCompleted == null)
                 {
@@ -371,7 +370,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         protected async Task FireOnStarting()
         {
             Stack<KeyValuePair<Func<object, Task>, object>> onStarting = null;
-            lock (_onStartingSync)
+            lock (_contextLock)
             {
                 onStarting = _onStarting;
                 _onStarting = null;
@@ -395,7 +394,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         protected async Task FireOnCompleted()
         {
             Stack<KeyValuePair<Func<object, Task>, object>> onCompleted = null;
-            lock (_onCompletedSync)
+            lock (_contextLock)
             {
                 onCompleted = _onCompleted;
                 _onCompleted = null;
@@ -436,11 +435,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         {
             NativeMethods.HttpSetCompletionStatus(_pInProcessHandler, requestNotificationStatus);
             NativeMethods.HttpPostCompletion(_pInProcessHandler, 0);
-        }
-
-        public void IndicateCompletion(NativeMethods.REQUEST_NOTIFICATION_STATUS notificationStatus)
-        {
-            NativeMethods.HttpIndicateCompletion(_pInProcessHandler, notificationStatus);
         }
 
         internal void OnAsyncCompletion(int hr, int bytes)

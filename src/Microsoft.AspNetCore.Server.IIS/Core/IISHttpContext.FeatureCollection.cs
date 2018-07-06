@@ -182,7 +182,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
         bool IHttpResponseFeature.HasStarted => HasResponseStarted;
 
-        bool IHttpUpgradeFeature.IsUpgradableRequest => _server.IsWebSocketAvailable(_pInProcessHandler);
+        bool IHttpUpgradeFeature.IsUpgradableRequest => true;
 
         bool IFeatureCollection.IsReadOnly => false;
 
@@ -205,7 +205,11 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                     return null;
                 }
 
-                return NativeMethods.HttpTryGetServerVariable(_pInProcessHandler, variableName, out var value) ? value : null;
+                // Synchronize access to native methods that might run in parallel with IO loops
+                lock (_contextLock)
+                {
+                    return NativeMethods.HttpTryGetServerVariable(_pInProcessHandler, variableName, out var value) ? value : null;
+                }
             }
         }
 
@@ -265,7 +269,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             _hasRequestReadingStarted = false;
 
             // Upgrade async will cause the stream processing to go into duplex mode
-            AsyncIO = new WebSocketsAsyncIOEngine(_pInProcessHandler);
+            AsyncIO = new WebSocketsAsyncIOEngine(_contextLock, _pInProcessHandler);
 
             await InitializeResponse(flushHeaders: true);
 
