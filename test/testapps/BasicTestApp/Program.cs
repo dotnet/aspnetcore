@@ -22,6 +22,7 @@ namespace BasicTestApp
             JSRuntime.Current.InvokeAsync<object>("testReady");
         }
 
+        [JSInvokable(nameof(MountTestComponent))]
         public static void MountTestComponent(string componentTypeName)
         {
             var componentType = Type.GetType(componentTypeName);

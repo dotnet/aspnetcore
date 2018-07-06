@@ -52,19 +52,12 @@ function performInternalNavigation(absoluteInternalHref: string) {
   handleInternalNavigation();
 }
 
-function handleInternalNavigation() {
-  if (!notifyLocationChangedMethod) {
-    notifyLocationChangedMethod = platform.findMethod(
-      'Microsoft.AspNetCore.Blazor.Browser',
-      'Microsoft.AspNetCore.Blazor.Browser.Services',
-      'BrowserUriHelper',
-      'NotifyLocationChanged'
-    );
-  }
-
-  platform.callMethod(notifyLocationChangedMethod, null, [
-    platform.toDotNetString(location.href)
-  ]);
+async function handleInternalNavigation() {
+  await DotNet.invokeMethodAsync(
+    'Microsoft.AspNetCore.Blazor.Browser',
+    'NotifyLocationChanged',
+    location.href
+  );
 }
 
 let testAnchor: HTMLAnchorElement;

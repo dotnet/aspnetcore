@@ -1,9 +1,20 @@
 import '../../Microsoft.JSInterop/JavaScriptRuntime/src/Microsoft.JSInterop';
-import { platform } from './Environment';
-import { getAssemblyNameFromUrl } from './Platform/Url';
 import './GlobalExports';
+import * as Environment from './Environment';
+import { monoPlatform } from './Platform/Mono/MonoPlatform';
+import { getAssemblyNameFromUrl } from './Platform/Url';
+import { renderBatch } from './Rendering/Renderer';
+import { RenderBatch } from './Rendering/RenderBatch/RenderBatch';
+import { SharedMemoryRenderBatch } from './Rendering/RenderBatch/SharedMemoryRenderBatch';
+import { Pointer } from './Platform/Platform';
 
 async function boot() {
+  // Configure environment for execution under Mono WebAssembly with shared-memory rendering
+  const platform = Environment.setPlatform(monoPlatform);
+  window['Blazor']._internal.renderBatch = (browserRendererId: number, batchAddress: Pointer) => {
+    renderBatch(browserRendererId, new SharedMemoryRenderBatch(batchAddress));
+  };
+
   // Read startup config from the <script> element that's importing this file
   const allScriptElems = document.getElementsByTagName('script');
   const thisScriptElem = (document.currentScript || allScriptElems[allScriptElems.length - 1]) as HTMLScriptElement;

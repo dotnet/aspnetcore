@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
   <metadata>
     <id>Microsoft.AspNetCore.Blazor.Build</id>
@@ -17,6 +17,6 @@
     <file src="$publishdir$\netcoreapp2.1\**\*" target="tools/" />
     <file src="..\mono\dist\optimized\**\*" target="tools\mono"  />
     <file src="..\mono\tools\binaries\illink\**\*.*" target="tools\illink" />
-    <file src="..\Microsoft.AspNetCore.Blazor.Browser.JS\dist\blazor.js" target="tools\blazor\blazor.js" />
+    <file src="..\Microsoft.AspNetCore.Blazor.Browser.JS\dist\blazor.*.js" target="tools\blazor" />
   </files>
 </package>

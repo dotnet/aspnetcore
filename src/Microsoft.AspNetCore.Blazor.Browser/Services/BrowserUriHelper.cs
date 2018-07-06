@@ -137,7 +137,11 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Services
             }
         }
 
-        private static void NotifyLocationChanged(string newAbsoluteUri)
+        /// <summary>
+        /// For framework use only.
+        /// </summary>
+        [JSInvokable(nameof(NotifyLocationChanged))]
+        public static void NotifyLocationChanged(string newAbsoluteUri)
         {
             _cachedAbsoluteUri = newAbsoluteUri;
             _onLocationChanged?.Invoke(null, newAbsoluteUri);

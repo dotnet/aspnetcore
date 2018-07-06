@@ -320,13 +320,7 @@ function countDescendantFrames(batch: RenderBatch, frame: RenderTreeFrame): numb
   }
 }
 
-function raiseEvent(event: Event, browserRendererId: number, componentId: number, eventHandlerId: number, eventArgs: EventForDotNet<UIEventArgs>) {
-  if (!raiseEventMethod) {
-    raiseEventMethod = platform.findMethod(
-      'Microsoft.AspNetCore.Blazor.Browser', 'Microsoft.AspNetCore.Blazor.Browser.Rendering', 'BrowserRendererEventDispatcher', 'DispatchEvent'
-    );
-  }
-
+async function raiseEvent(event: Event, browserRendererId: number, componentId: number, eventHandlerId: number, eventArgs: EventForDotNet<UIEventArgs>) {
   const eventDescriptor = {
     browserRendererId,
     componentId,
@@ -334,8 +328,9 @@ function raiseEvent(event: Event, browserRendererId: number, componentId: number
     eventArgsType: eventArgs.type
   };
 
-  platform.callMethod(raiseEventMethod, null, [
-    platform.toDotNetString(JSON.stringify(eventDescriptor)),
-    platform.toDotNetString(JSON.stringify(eventArgs.data))
-  ]);
+  await DotNet.invokeMethodAsync(
+    'Microsoft.AspNetCore.Blazor.Browser',
+    'DispatchEvent',
+    eventDescriptor,
+    JSON.stringify(eventArgs.data));
 }

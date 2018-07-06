@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using AngleSharp.Parser.Html;
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             var linkElems = parsedHtml.Body.QuerySelectorAll("link");
             var scriptElem = scriptElems[0];
             Assert.False(scriptElem.HasChildNodes);
-            Assert.Equal("_framework/blazor.js", scriptElem.GetAttribute("src"));
+            Assert.Equal("_framework/blazor.webassembly.js", scriptElem.GetAttribute("src"));
             Assert.Equal("MyApp.Entrypoint.dll", scriptElem.GetAttribute("main"));
             Assert.Equal("MyNamespace.MyType::MyMethod", scriptElem.GetAttribute("entrypoint"));
             Assert.Equal("System.Abc.dll,MyApp.ClassLib.dll", scriptElem.GetAttribute("references"));

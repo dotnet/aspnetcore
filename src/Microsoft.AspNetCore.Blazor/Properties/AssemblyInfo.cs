@@ -1,6 +1,7 @@
-﻿using System.Runtime.CompilerServices;
+using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("Microsoft.AspNetCore.Blazor.Test")]
 [assembly: InternalsVisibleTo("Microsoft.AspNetCore.Blazor.Browser.Test")]
 [assembly: InternalsVisibleTo("Microsoft.AspNetCore.Blazor.Build.Test")]
 [assembly: InternalsVisibleTo("Microsoft.AspNetCore.Blazor.Performance")]
+[assembly: InternalsVisibleTo("Microsoft.AspNetCore.Blazor.Server.Test")]

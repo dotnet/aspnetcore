@@ -6,7 +6,7 @@
     <MonoBaseClassLibraryFacadesPath>$(BlazorMonoRuntimeBasePath)tools/mono/bcl/Facades/</MonoBaseClassLibraryFacadesPath>
     <MonoAsmjsRuntimePath>$(BlazorMonoRuntimeBasePath)tools/mono/asmjs/</MonoAsmjsRuntimePath>
     <MonoWasmRuntimePath>$(BlazorMonoRuntimeBasePath)tools/mono/wasm/</MonoWasmRuntimePath>
-    <BlazorJsPath>$(BlazorMonoRuntimeBasePath)tools/blazor/blazor.js</BlazorJsPath>
+    <BlazorJsPath>$(BlazorMonoRuntimeBasePath)tools/blazor/blazor.*.js</BlazorJsPath>
   </PropertyGroup>
 
   <PropertyGroup Label="Blazor build outputs">

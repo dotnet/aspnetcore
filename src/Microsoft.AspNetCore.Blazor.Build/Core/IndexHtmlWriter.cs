@@ -219,7 +219,7 @@ namespace Microsoft.AspNetCore.Blazor.Build
 
             var attributesDict = attributes.ToDictionary(x => x.Key, x => x.Value);
             attributesDict.Remove("type");
-            attributesDict["src"] = "_framework/blazor.js";
+            attributesDict["src"] = "_framework/blazor.webassembly.js";
             attributesDict["main"] = assemblyNameWithExtension;
             attributesDict["entrypoint"] = assemblyEntryPoint;
             attributesDict["references"] = referencesAttribute;

@@ -16,7 +16,7 @@
     <MonoBaseClassLibraryFacadesPath>$(BlazorMonoRuntimeBasePath)dist/optimized/bcl/Facades/</MonoBaseClassLibraryFacadesPath>
     <MonoAsmjsRuntimePath>$(BlazorMonoRuntimeBasePath)dist/optimized/asmjs/</MonoAsmjsRuntimePath>
     <MonoWasmRuntimePath>$(BlazorMonoRuntimeBasePath)dist/optimized/wasm/</MonoWasmRuntimePath>
-    <BlazorJsPath>$(MSBuildThisFileDirectory)../Microsoft.AspNetCore.Blazor.Browser.JS/dist/blazor.js</BlazorJsPath>
+    <BlazorJsPath>$(MSBuildThisFileDirectory)../Microsoft.AspNetCore.Blazor.Browser.JS/dist/blazor.*.js</BlazorJsPath>
   </PropertyGroup>
 
   <Import Project="$(MSBuildThisFileDirectory)targets/All.props" />

@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Blazor.Server.Circuits;
 using Xunit;
 
-namespace Microsoft.AspnetCore.Blazor.Server
+namespace Microsoft.AspNetCore.Blazor.Server
 {
     public class CircuitSynchronizationContextTest
     {
