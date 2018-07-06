@@ -3,10 +3,10 @@
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
-    internal class TokenizerView<TTokenizer, TSymbol, TSymbolType>
-        where TSymbolType : struct
-        where TTokenizer : Tokenizer<TSymbol, TSymbolType>
-        where TSymbol : SymbolBase<TSymbolType>
+    internal class TokenizerView<TTokenizer, TToken, TTokenType>
+        where TTokenType : struct
+        where TTokenizer : Tokenizer<TToken, TTokenType>
+        where TToken : TokenBase<TTokenType>
     {
         public TokenizerView(TTokenizer tokenizer)
         {
@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         public TTokenizer Tokenizer { get; private set; }
         public bool EndOfFile { get; private set; }
-        public TSymbol Current { get; private set; }
+        public TToken Current { get; private set; }
 
         public ITextDocument Source
         {
@@ -24,14 +24,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         public bool Next()
         {
-            Current = Tokenizer.NextSymbol();
+            Current = Tokenizer.NextToken();
             EndOfFile = (Current == null);
             return !EndOfFile;
         }
 
-        public void PutBack(TSymbol symbol)
+        public void PutBack(TToken token)
         {
-            Source.Position -= symbol.Content.Length;
+            Source.Position -= token.Content.Length;
             Current = null;
             EndOfFile = Source.Position >= Source.Length;
             Tokenizer.Reset();

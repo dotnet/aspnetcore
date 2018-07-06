@@ -2,8 +2,8 @@ Markup block - Gen<None> - 25 - (0:0,0)
     Tag block - Gen<TagHelper> - 25 - (0:0,0) - th:p - PTagHelper
         StartTagAndEndTag - <th:p> ... </th:p>
         Tag block - Gen<None> - 12 - (6:0,6)
-            Markup span - Gen<Markup> - [</th:strong>] - SpanEditHandler;Accepts:Any - (6:0,6) - Symbols:4
-                HtmlSymbolType.OpenAngle;[<];
-                HtmlSymbolType.ForwardSlash;[/];
-                HtmlSymbolType.Text;[th:strong];
-                HtmlSymbolType.CloseAngle;[>];
+            Markup span - Gen<Markup> - [</th:strong>] - SpanEditHandler;Accepts:Any - (6:0,6) - Tokens:4
+                HtmlTokenType.OpenAngle;[<];
+                HtmlTokenType.ForwardSlash;[/];
+                HtmlTokenType.Text;[th:strong];
+                HtmlTokenType.CloseAngle;[>];

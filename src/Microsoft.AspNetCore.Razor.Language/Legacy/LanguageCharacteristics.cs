@@ -6,104 +6,104 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
-    internal abstract class LanguageCharacteristics<TTokenizer, TSymbol, TSymbolType>
-        where TSymbolType : struct
-        where TTokenizer : Tokenizer<TSymbol, TSymbolType>
-        where TSymbol : SymbolBase<TSymbolType>
+    internal abstract class LanguageCharacteristics<TTokenizer, TToken, TTokenType>
+        where TTokenType : struct
+        where TTokenizer : Tokenizer<TToken, TTokenType>
+        where TToken : TokenBase<TTokenType>
     {
-        public abstract string GetSample(TSymbolType type);
+        public abstract string GetSample(TTokenType type);
         public abstract TTokenizer CreateTokenizer(ITextDocument source);
-        public abstract TSymbolType FlipBracket(TSymbolType bracket);
-        public abstract TSymbol CreateMarkerSymbol();
+        public abstract TTokenType FlipBracket(TTokenType bracket);
+        public abstract TToken CreateMarkerToken();
 
-        public virtual IEnumerable<TSymbol> TokenizeString(string content)
+        public virtual IEnumerable<TToken> TokenizeString(string content)
         {
             return TokenizeString(SourceLocation.Zero, content);
         }
 
-        public virtual IEnumerable<TSymbol> TokenizeString(SourceLocation start, string input)
+        public virtual IEnumerable<TToken> TokenizeString(SourceLocation start, string input)
         {
             using (var reader = new SeekableTextReader(input, start.FilePath))
             {
                 var tok = CreateTokenizer(reader);
-                TSymbol sym;
-                while ((sym = tok.NextSymbol()) != null)
+                TToken token;
+                while ((token = tok.NextToken()) != null)
                 {
-                    yield return sym;
+                    yield return token;
                 }
             }
         }
 
-        public virtual bool IsWhiteSpace(TSymbol symbol)
+        public virtual bool IsWhiteSpace(TToken token)
         {
-            return IsKnownSymbolType(symbol, KnownSymbolType.WhiteSpace);
+            return IsKnownTokenType(token, KnownTokenType.WhiteSpace);
         }
 
-        public virtual bool IsNewLine(TSymbol symbol)
+        public virtual bool IsNewLine(TToken token)
         {
-            return IsKnownSymbolType(symbol, KnownSymbolType.NewLine);
+            return IsKnownTokenType(token, KnownTokenType.NewLine);
         }
 
-        public virtual bool IsIdentifier(TSymbol symbol)
+        public virtual bool IsIdentifier(TToken token)
         {
-            return IsKnownSymbolType(symbol, KnownSymbolType.Identifier);
+            return IsKnownTokenType(token, KnownTokenType.Identifier);
         }
 
-        public virtual bool IsKeyword(TSymbol symbol)
+        public virtual bool IsKeyword(TToken token)
         {
-            return IsKnownSymbolType(symbol, KnownSymbolType.Keyword);
+            return IsKnownTokenType(token, KnownTokenType.Keyword);
         }
 
-        public virtual bool IsTransition(TSymbol symbol)
+        public virtual bool IsTransition(TToken token)
         {
-            return IsKnownSymbolType(symbol, KnownSymbolType.Transition);
+            return IsKnownTokenType(token, KnownTokenType.Transition);
         }
 
-        public virtual bool IsCommentStart(TSymbol symbol)
+        public virtual bool IsCommentStart(TToken token)
         {
-            return IsKnownSymbolType(symbol, KnownSymbolType.CommentStart);
+            return IsKnownTokenType(token, KnownTokenType.CommentStart);
         }
 
-        public virtual bool IsCommentStar(TSymbol symbol)
+        public virtual bool IsCommentStar(TToken token)
         {
-            return IsKnownSymbolType(symbol, KnownSymbolType.CommentStar);
+            return IsKnownTokenType(token, KnownTokenType.CommentStar);
         }
 
-        public virtual bool IsCommentBody(TSymbol symbol)
+        public virtual bool IsCommentBody(TToken token)
         {
-            return IsKnownSymbolType(symbol, KnownSymbolType.CommentBody);
+            return IsKnownTokenType(token, KnownTokenType.CommentBody);
         }
 
-        public virtual bool IsUnknown(TSymbol symbol)
+        public virtual bool IsUnknown(TToken token)
         {
-            return IsKnownSymbolType(symbol, KnownSymbolType.Unknown);
+            return IsKnownTokenType(token, KnownTokenType.Unknown);
         }
 
-        public virtual bool IsKnownSymbolType(TSymbol symbol, KnownSymbolType type)
+        public virtual bool IsKnownTokenType(TToken token, KnownTokenType type)
         {
-            return symbol != null && Equals(symbol.Type, GetKnownSymbolType(type));
+            return token != null && Equals(token.Type, GetKnownTokenType(type));
         }
 
-        public virtual Tuple<TSymbol, TSymbol> SplitSymbol(TSymbol symbol, int splitAt, TSymbolType leftType)
+        public virtual Tuple<TToken, TToken> SplitToken(TToken token, int splitAt, TTokenType leftType)
         {
-            var left = CreateSymbol(symbol.Content.Substring(0, splitAt), leftType, RazorDiagnostic.EmptyArray);
+            var left = CreateToken(token.Content.Substring(0, splitAt), leftType, RazorDiagnostic.EmptyArray);
 
-            TSymbol right = null;
-            if (splitAt < symbol.Content.Length)
+            TToken right = null;
+            if (splitAt < token.Content.Length)
             {
-                right = CreateSymbol(symbol.Content.Substring(splitAt), symbol.Type, symbol.Errors);
+                right = CreateToken(token.Content.Substring(splitAt), token.Type, token.Errors);
             }
 
             return Tuple.Create(left, right);
         }
 
-        public abstract TSymbolType GetKnownSymbolType(KnownSymbolType type);
+        public abstract TTokenType GetKnownTokenType(KnownTokenType type);
 
-        public virtual bool KnowsSymbolType(KnownSymbolType type)
+        public virtual bool KnowsTokenType(KnownTokenType type)
         {
-            return type == KnownSymbolType.Unknown || !Equals(GetKnownSymbolType(type), GetKnownSymbolType(KnownSymbolType.Unknown));
+            return type == KnownTokenType.Unknown || !Equals(GetKnownTokenType(type), GetKnownTokenType(KnownTokenType.Unknown));
         }
 
-        protected abstract TSymbol CreateSymbol(string content, TSymbolType type, IReadOnlyList<RazorDiagnostic> errors);
+        protected abstract TToken CreateToken(string content, TTokenType type, IReadOnlyList<RazorDiagnostic> errors);
     }
 }

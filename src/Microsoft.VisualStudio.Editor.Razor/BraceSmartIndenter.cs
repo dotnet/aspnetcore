@@ -278,9 +278,9 @@ namespace Microsoft.VisualStudio.Editor.Razor
         {
             // We only support whitespace based content. Any non-whitespace content is an unkonwn to us
             // in regards to indentation.
-            for (var i = 0; i < owner.Symbols.Count; i++)
+            for (var i = 0; i < owner.Tokens.Count; i++)
             {
-                if (!string.IsNullOrWhiteSpace(owner.Symbols[i].Content))
+                if (!string.IsNullOrWhiteSpace(owner.Tokens[i].Content))
                 {
                     return true;
                 }

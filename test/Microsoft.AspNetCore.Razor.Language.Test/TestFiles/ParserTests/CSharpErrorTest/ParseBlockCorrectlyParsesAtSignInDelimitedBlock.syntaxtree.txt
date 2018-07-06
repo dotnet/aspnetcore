@@ -1,17 +1,17 @@
 Expression block - Gen<Expr> - 46 - (0:0,0)
-    MetaCode span - Gen<None> - [(] - SpanEditHandler;Accepts:None - (0:0,0) - Symbols:1
-        CSharpSymbolType.LeftParenthesis;[(];
-    Code span - Gen<Expr> - [Request["description"] ?? @photo.Description] - SpanEditHandler;Accepts:Any - (1:0,1) - Symbols:11
-        CSharpSymbolType.Identifier;[Request];
-        CSharpSymbolType.LeftBracket;[[];
-        CSharpSymbolType.StringLiteral;["description"];
-        CSharpSymbolType.RightBracket;[]];
-        CSharpSymbolType.WhiteSpace;[ ];
-        CSharpSymbolType.NullCoalesce;[??];
-        CSharpSymbolType.WhiteSpace;[ ];
-        CSharpSymbolType.Transition;[@];
-        CSharpSymbolType.Identifier;[photo];
-        CSharpSymbolType.Dot;[.];
-        CSharpSymbolType.Identifier;[Description];
-    MetaCode span - Gen<None> - [)] - SpanEditHandler;Accepts:None - (45:0,45) - Symbols:1
-        CSharpSymbolType.RightParenthesis;[)];
+    MetaCode span - Gen<None> - [(] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
+        CSharpTokenType.LeftParenthesis;[(];
+    Code span - Gen<Expr> - [Request["description"] ?? @photo.Description] - SpanEditHandler;Accepts:Any - (1:0,1) - Tokens:11
+        CSharpTokenType.Identifier;[Request];
+        CSharpTokenType.LeftBracket;[[];
+        CSharpTokenType.StringLiteral;["description"];
+        CSharpTokenType.RightBracket;[]];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.NullCoalesce;[??];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.Transition;[@];
+        CSharpTokenType.Identifier;[photo];
+        CSharpTokenType.Dot;[.];
+        CSharpTokenType.Identifier;[Description];
+    MetaCode span - Gen<None> - [)] - SpanEditHandler;Accepts:None - (45:0,45) - Tokens:1
+        CSharpTokenType.RightParenthesis;[)];

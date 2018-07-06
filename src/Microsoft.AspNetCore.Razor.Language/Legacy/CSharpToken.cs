@@ -6,11 +6,11 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
-    internal class CSharpSymbol : SymbolBase<CSharpSymbolType>
+    internal class CSharpToken : TokenBase<CSharpTokenType>
     {
-        public CSharpSymbol(
+        public CSharpToken(
             string content,
-            CSharpSymbolType type)
+            CSharpTokenType type)
             : base(content, type, RazorDiagnostic.EmptyArray)
         {
             if (content == null)
@@ -19,9 +19,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
         }
 
-        public CSharpSymbol(
+        public CSharpToken(
             string content,
-            CSharpSymbolType type,
+            CSharpTokenType type,
             IReadOnlyList<RazorDiagnostic> errors)
             : base(content, type, errors)
         {
@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         public override bool Equals(object obj)
         {
-            var other = obj as CSharpSymbol;
+            var other = obj as CSharpToken;
             return base.Equals(other) &&
                 other.Keyword == Keyword;
         }

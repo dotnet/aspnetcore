@@ -1,133 +1,133 @@
 Markup block - Gen<None> - 165 - (0:0,0)
     Tag block - Gen<None> - 5 - (0:0,0)
-        Markup span - Gen<Markup> - [<div>] - SpanEditHandler;Accepts:Any - (0:0,0) - Symbols:3
-            HtmlSymbolType.OpenAngle;[<];
-            HtmlSymbolType.Text;[div];
-            HtmlSymbolType.CloseAngle;[>];
+        Markup span - Gen<Markup> - [<div>] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:3
+            HtmlTokenType.OpenAngle;[<];
+            HtmlTokenType.Text;[div];
+            HtmlTokenType.CloseAngle;[>];
     HtmlComment block - Gen<None> - 22 - (5:0,5)
-        Markup span - Gen<Markup> - [<!--] - SpanEditHandler;Accepts:None - (5:0,5) - Symbols:3
-            HtmlSymbolType.OpenAngle;[<];
-            HtmlSymbolType.Bang;[!];
-            HtmlSymbolType.DoubleHyphen;[--];
-        Markup span - Gen<Markup> - [- Hello World -] - SpanEditHandler;Accepts:WhiteSpace - (9:0,9) - Symbols:7
-            HtmlSymbolType.Text;[-];
-            HtmlSymbolType.WhiteSpace;[ ];
-            HtmlSymbolType.Text;[Hello];
-            HtmlSymbolType.WhiteSpace;[ ];
-            HtmlSymbolType.Text;[World];
-            HtmlSymbolType.WhiteSpace;[ ];
-            HtmlSymbolType.Text;[-];
-        Markup span - Gen<Markup> - [-->] - SpanEditHandler;Accepts:None - (24:0,24) - Symbols:2
-            HtmlSymbolType.DoubleHyphen;[--];
-            HtmlSymbolType.CloseAngle;[>];
+        Markup span - Gen<Markup> - [<!--] - SpanEditHandler;Accepts:None - (5:0,5) - Tokens:3
+            HtmlTokenType.OpenAngle;[<];
+            HtmlTokenType.Bang;[!];
+            HtmlTokenType.DoubleHyphen;[--];
+        Markup span - Gen<Markup> - [- Hello World -] - SpanEditHandler;Accepts:WhiteSpace - (9:0,9) - Tokens:7
+            HtmlTokenType.Text;[-];
+            HtmlTokenType.WhiteSpace;[ ];
+            HtmlTokenType.Text;[Hello];
+            HtmlTokenType.WhiteSpace;[ ];
+            HtmlTokenType.Text;[World];
+            HtmlTokenType.WhiteSpace;[ ];
+            HtmlTokenType.Text;[-];
+        Markup span - Gen<Markup> - [-->] - SpanEditHandler;Accepts:None - (24:0,24) - Tokens:2
+            HtmlTokenType.DoubleHyphen;[--];
+            HtmlTokenType.CloseAngle;[>];
     Tag block - Gen<None> - 6 - (27:0,27)
-        Markup span - Gen<Markup> - [</div>] - SpanEditHandler;Accepts:Any - (27:0,27) - Symbols:4
-            HtmlSymbolType.OpenAngle;[<];
-            HtmlSymbolType.ForwardSlash;[/];
-            HtmlSymbolType.Text;[div];
-            HtmlSymbolType.CloseAngle;[>];
-    Markup span - Gen<Markup> - [LF] - SpanEditHandler;Accepts:Any - (33:0,33) - Symbols:1
-        HtmlSymbolType.NewLine;[LF];
+        Markup span - Gen<Markup> - [</div>] - SpanEditHandler;Accepts:Any - (27:0,27) - Tokens:4
+            HtmlTokenType.OpenAngle;[<];
+            HtmlTokenType.ForwardSlash;[/];
+            HtmlTokenType.Text;[div];
+            HtmlTokenType.CloseAngle;[>];
+    Markup span - Gen<Markup> - [LF] - SpanEditHandler;Accepts:Any - (33:0,33) - Tokens:1
+        HtmlTokenType.NewLine;[LF];
     Tag block - Gen<None> - 5 - (35:1,0)
-        Markup span - Gen<Markup> - [<div>] - SpanEditHandler;Accepts:Any - (35:1,0) - Symbols:3
-            HtmlSymbolType.OpenAngle;[<];
-            HtmlSymbolType.Text;[div];
-            HtmlSymbolType.CloseAngle;[>];
+        Markup span - Gen<Markup> - [<div>] - SpanEditHandler;Accepts:Any - (35:1,0) - Tokens:3
+            HtmlTokenType.OpenAngle;[<];
+            HtmlTokenType.Text;[div];
+            HtmlTokenType.CloseAngle;[>];
     HtmlComment block - Gen<None> - 24 - (40:1,5)
-        Markup span - Gen<Markup> - [<!--] - SpanEditHandler;Accepts:None - (40:1,5) - Symbols:3
-            HtmlSymbolType.OpenAngle;[<];
-            HtmlSymbolType.Bang;[!];
-            HtmlSymbolType.DoubleHyphen;[--];
-        Markup span - Gen<Markup> - [-- Hello World --] - SpanEditHandler;Accepts:WhiteSpace - (44:1,9) - Symbols:7
-            HtmlSymbolType.DoubleHyphen;[--];
-            HtmlSymbolType.WhiteSpace;[ ];
-            HtmlSymbolType.Text;[Hello];
-            HtmlSymbolType.WhiteSpace;[ ];
-            HtmlSymbolType.Text;[World];
-            HtmlSymbolType.WhiteSpace;[ ];
-            HtmlSymbolType.DoubleHyphen;[--];
-        Markup span - Gen<Markup> - [-->] - SpanEditHandler;Accepts:None - (61:1,26) - Symbols:2
-            HtmlSymbolType.DoubleHyphen;[--];
-            HtmlSymbolType.CloseAngle;[>];
+        Markup span - Gen<Markup> - [<!--] - SpanEditHandler;Accepts:None - (40:1,5) - Tokens:3
+            HtmlTokenType.OpenAngle;[<];
+            HtmlTokenType.Bang;[!];
+            HtmlTokenType.DoubleHyphen;[--];
+        Markup span - Gen<Markup> - [-- Hello World --] - SpanEditHandler;Accepts:WhiteSpace - (44:1,9) - Tokens:7
+            HtmlTokenType.DoubleHyphen;[--];
+            HtmlTokenType.WhiteSpace;[ ];
+            HtmlTokenType.Text;[Hello];
+            HtmlTokenType.WhiteSpace;[ ];
+            HtmlTokenType.Text;[World];
+            HtmlTokenType.WhiteSpace;[ ];
+            HtmlTokenType.DoubleHyphen;[--];
+        Markup span - Gen<Markup> - [-->] - SpanEditHandler;Accepts:None - (61:1,26) - Tokens:2
+            HtmlTokenType.DoubleHyphen;[--];
+            HtmlTokenType.CloseAngle;[>];
     Tag block - Gen<None> - 6 - (64:1,29)
-        Markup span - Gen<Markup> - [</div>] - SpanEditHandler;Accepts:Any - (64:1,29) - Symbols:4
-            HtmlSymbolType.OpenAngle;[<];
-            HtmlSymbolType.ForwardSlash;[/];
-            HtmlSymbolType.Text;[div];
-            HtmlSymbolType.CloseAngle;[>];
-    Markup span - Gen<Markup> - [LF] - SpanEditHandler;Accepts:Any - (70:1,35) - Symbols:1
-        HtmlSymbolType.NewLine;[LF];
+        Markup span - Gen<Markup> - [</div>] - SpanEditHandler;Accepts:Any - (64:1,29) - Tokens:4
+            HtmlTokenType.OpenAngle;[<];
+            HtmlTokenType.ForwardSlash;[/];
+            HtmlTokenType.Text;[div];
+            HtmlTokenType.CloseAngle;[>];
+    Markup span - Gen<Markup> - [LF] - SpanEditHandler;Accepts:Any - (70:1,35) - Tokens:1
+        HtmlTokenType.NewLine;[LF];
     Tag block - Gen<None> - 5 - (72:2,0)
-        Markup span - Gen<Markup> - [<div>] - SpanEditHandler;Accepts:Any - (72:2,0) - Symbols:3
-            HtmlSymbolType.OpenAngle;[<];
-            HtmlSymbolType.Text;[div];
-            HtmlSymbolType.CloseAngle;[>];
+        Markup span - Gen<Markup> - [<div>] - SpanEditHandler;Accepts:Any - (72:2,0) - Tokens:3
+            HtmlTokenType.OpenAngle;[<];
+            HtmlTokenType.Text;[div];
+            HtmlTokenType.CloseAngle;[>];
     HtmlComment block - Gen<None> - 26 - (77:2,5)
-        Markup span - Gen<Markup> - [<!--] - SpanEditHandler;Accepts:None - (77:2,5) - Symbols:3
-            HtmlSymbolType.OpenAngle;[<];
-            HtmlSymbolType.Bang;[!];
-            HtmlSymbolType.DoubleHyphen;[--];
-        Markup span - Gen<Markup> - [--- Hello World ---] - SpanEditHandler;Accepts:WhiteSpace - (81:2,9) - Symbols:9
-            HtmlSymbolType.DoubleHyphen;[--];
-            HtmlSymbolType.Text;[-];
-            HtmlSymbolType.WhiteSpace;[ ];
-            HtmlSymbolType.Text;[Hello];
-            HtmlSymbolType.WhiteSpace;[ ];
-            HtmlSymbolType.Text;[World];
-            HtmlSymbolType.WhiteSpace;[ ];
-            HtmlSymbolType.DoubleHyphen;[--];
-            HtmlSymbolType.Text;[-];
-        Markup span - Gen<Markup> - [-->] - SpanEditHandler;Accepts:None - (100:2,28) - Symbols:2
-            HtmlSymbolType.DoubleHyphen;[--];
-            HtmlSymbolType.CloseAngle;[>];
+        Markup span - Gen<Markup> - [<!--] - SpanEditHandler;Accepts:None - (77:2,5) - Tokens:3
+            HtmlTokenType.OpenAngle;[<];
+            HtmlTokenType.Bang;[!];
+            HtmlTokenType.DoubleHyphen;[--];
+        Markup span - Gen<Markup> - [--- Hello World ---] - SpanEditHandler;Accepts:WhiteSpace - (81:2,9) - Tokens:9
+            HtmlTokenType.DoubleHyphen;[--];
+            HtmlTokenType.Text;[-];
+            HtmlTokenType.WhiteSpace;[ ];
+            HtmlTokenType.Text;[Hello];
+            HtmlTokenType.WhiteSpace;[ ];
+            HtmlTokenType.Text;[World];
+            HtmlTokenType.WhiteSpace;[ ];
+            HtmlTokenType.DoubleHyphen;[--];
+            HtmlTokenType.Text;[-];
+        Markup span - Gen<Markup> - [-->] - SpanEditHandler;Accepts:None - (100:2,28) - Tokens:2
+            HtmlTokenType.DoubleHyphen;[--];
+            HtmlTokenType.CloseAngle;[>];
     Tag block - Gen<None> - 6 - (103:2,31)
-        Markup span - Gen<Markup> - [</div>] - SpanEditHandler;Accepts:Any - (103:2,31) - Symbols:4
-            HtmlSymbolType.OpenAngle;[<];
-            HtmlSymbolType.ForwardSlash;[/];
-            HtmlSymbolType.Text;[div];
-            HtmlSymbolType.CloseAngle;[>];
-    Markup span - Gen<Markup> - [LF] - SpanEditHandler;Accepts:Any - (109:2,37) - Symbols:1
-        HtmlSymbolType.NewLine;[LF];
+        Markup span - Gen<Markup> - [</div>] - SpanEditHandler;Accepts:Any - (103:2,31) - Tokens:4
+            HtmlTokenType.OpenAngle;[<];
+            HtmlTokenType.ForwardSlash;[/];
+            HtmlTokenType.Text;[div];
+            HtmlTokenType.CloseAngle;[>];
+    Markup span - Gen<Markup> - [LF] - SpanEditHandler;Accepts:Any - (109:2,37) - Tokens:1
+        HtmlTokenType.NewLine;[LF];
     Tag block - Gen<None> - 5 - (111:3,0)
-        Markup span - Gen<Markup> - [<div>] - SpanEditHandler;Accepts:Any - (111:3,0) - Symbols:3
-            HtmlSymbolType.OpenAngle;[<];
-            HtmlSymbolType.Text;[div];
-            HtmlSymbolType.CloseAngle;[>];
+        Markup span - Gen<Markup> - [<div>] - SpanEditHandler;Accepts:Any - (111:3,0) - Tokens:3
+            HtmlTokenType.OpenAngle;[<];
+            HtmlTokenType.Text;[div];
+            HtmlTokenType.CloseAngle;[>];
     HtmlComment block - Gen<None> - 41 - (116:3,5)
-        Markup span - Gen<Markup> - [<!--] - SpanEditHandler;Accepts:None - (116:3,5) - Symbols:3
-            HtmlSymbolType.OpenAngle;[<];
-            HtmlSymbolType.Bang;[!];
-            HtmlSymbolType.DoubleHyphen;[--];
-        Markup span - Gen<Markup> - [--- Hello < --- > World </div> ---] - SpanEditHandler;Accepts:WhiteSpace - (120:3,9) - Symbols:21
-            HtmlSymbolType.DoubleHyphen;[--];
-            HtmlSymbolType.Text;[-];
-            HtmlSymbolType.WhiteSpace;[ ];
-            HtmlSymbolType.Text;[Hello];
-            HtmlSymbolType.WhiteSpace;[ ];
-            HtmlSymbolType.OpenAngle;[<];
-            HtmlSymbolType.WhiteSpace;[ ];
-            HtmlSymbolType.DoubleHyphen;[--];
-            HtmlSymbolType.Text;[-];
-            HtmlSymbolType.WhiteSpace;[ ];
-            HtmlSymbolType.CloseAngle;[>];
-            HtmlSymbolType.WhiteSpace;[ ];
-            HtmlSymbolType.Text;[World];
-            HtmlSymbolType.WhiteSpace;[ ];
-            HtmlSymbolType.OpenAngle;[<];
-            HtmlSymbolType.ForwardSlash;[/];
-            HtmlSymbolType.Text;[div];
-            HtmlSymbolType.CloseAngle;[>];
-            HtmlSymbolType.WhiteSpace;[ ];
-            HtmlSymbolType.DoubleHyphen;[--];
-            HtmlSymbolType.Text;[-];
-        Markup span - Gen<Markup> - [-->] - SpanEditHandler;Accepts:None - (154:3,43) - Symbols:2
-            HtmlSymbolType.DoubleHyphen;[--];
-            HtmlSymbolType.CloseAngle;[>];
+        Markup span - Gen<Markup> - [<!--] - SpanEditHandler;Accepts:None - (116:3,5) - Tokens:3
+            HtmlTokenType.OpenAngle;[<];
+            HtmlTokenType.Bang;[!];
+            HtmlTokenType.DoubleHyphen;[--];
+        Markup span - Gen<Markup> - [--- Hello < --- > World </div> ---] - SpanEditHandler;Accepts:WhiteSpace - (120:3,9) - Tokens:21
+            HtmlTokenType.DoubleHyphen;[--];
+            HtmlTokenType.Text;[-];
+            HtmlTokenType.WhiteSpace;[ ];
+            HtmlTokenType.Text;[Hello];
+            HtmlTokenType.WhiteSpace;[ ];
+            HtmlTokenType.OpenAngle;[<];
+            HtmlTokenType.WhiteSpace;[ ];
+            HtmlTokenType.DoubleHyphen;[--];
+            HtmlTokenType.Text;[-];
+            HtmlTokenType.WhiteSpace;[ ];
+            HtmlTokenType.CloseAngle;[>];
+            HtmlTokenType.WhiteSpace;[ ];
+            HtmlTokenType.Text;[World];
+            HtmlTokenType.WhiteSpace;[ ];
+            HtmlTokenType.OpenAngle;[<];
+            HtmlTokenType.ForwardSlash;[/];
+            HtmlTokenType.Text;[div];
+            HtmlTokenType.CloseAngle;[>];
+            HtmlTokenType.WhiteSpace;[ ];
+            HtmlTokenType.DoubleHyphen;[--];
+            HtmlTokenType.Text;[-];
+        Markup span - Gen<Markup> - [-->] - SpanEditHandler;Accepts:None - (154:3,43) - Tokens:2
+            HtmlTokenType.DoubleHyphen;[--];
+            HtmlTokenType.CloseAngle;[>];
     Tag block - Gen<None> - 6 - (157:3,46)
-        Markup span - Gen<Markup> - [</div>] - SpanEditHandler;Accepts:Any - (157:3,46) - Symbols:4
-            HtmlSymbolType.OpenAngle;[<];
-            HtmlSymbolType.ForwardSlash;[/];
-            HtmlSymbolType.Text;[div];
-            HtmlSymbolType.CloseAngle;[>];
-    Markup span - Gen<Markup> - [LF] - SpanEditHandler;Accepts:Any - (163:3,52) - Symbols:1
-        HtmlSymbolType.NewLine;[LF];
+        Markup span - Gen<Markup> - [</div>] - SpanEditHandler;Accepts:Any - (157:3,46) - Tokens:4
+            HtmlTokenType.OpenAngle;[<];
+            HtmlTokenType.ForwardSlash;[/];
+            HtmlTokenType.Text;[div];
+            HtmlTokenType.CloseAngle;[>];
+    Markup span - Gen<Markup> - [LF] - SpanEditHandler;Accepts:Any - (163:3,52) - Tokens:1
+        HtmlTokenType.NewLine;[LF];

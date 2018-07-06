@@ -6,9 +6,9 @@ using System.Globalization;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
-    internal class RawTextSymbol : ISymbol
+    internal class RawTextToken : IToken
     {
-        public RawTextSymbol(SourceLocation start, string content)
+        public RawTextToken(SourceLocation start, string content)
         {
             Start = start;
             Content = content;
@@ -20,13 +20,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         public override bool Equals(object obj)
         {
-            var other = obj as RawTextSymbol;
+            var other = obj as RawTextToken;
             return other != null && Equals(Start, other.Start) && Equals(Content, other.Content);
         }
 
-        internal bool EquivalentTo(ISymbol sym)
+        internal bool EquivalentTo(IToken token)
         {
-            return Equals(Start, sym.Start) && Equals(Content, sym.Content);
+            return Equals(Start, token.Start) && Equals(Content, token.Content);
         }
 
         public override int GetHashCode()

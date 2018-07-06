@@ -6,11 +6,11 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
-    internal class HtmlSymbol : SymbolBase<HtmlSymbolType>
+    internal class HtmlToken : TokenBase<HtmlTokenType>
     {
-        internal static readonly HtmlSymbol Hyphen = new HtmlSymbol("-", HtmlSymbolType.Text);
+        internal static readonly HtmlToken Hyphen = new HtmlToken("-", HtmlTokenType.Text);
 
-        public HtmlSymbol(string content, HtmlSymbolType type)
+        public HtmlToken(string content, HtmlTokenType type)
             : base(content, type, RazorDiagnostic.EmptyArray)
         {
             if (content == null)
@@ -19,9 +19,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
         }
 
-        public HtmlSymbol(
+        public HtmlToken(
             string content,
-            HtmlSymbolType type,
+            HtmlTokenType type,
             IReadOnlyList<RazorDiagnostic> errors)
             : base(content, type, errors)
         {

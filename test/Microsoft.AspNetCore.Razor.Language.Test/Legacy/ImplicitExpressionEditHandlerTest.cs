@@ -159,7 +159,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void TryUpdateBalanceCount_SingleLeftParenthesis_CountsCorrectly()
         {
             // Arrange
-            var token = new CSharpSymbol("(", CSharpSymbolType.LeftParenthesis);
+            var token = new CSharpToken("(", CSharpTokenType.LeftParenthesis);
             var count = 0;
 
             // Act
@@ -174,7 +174,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void TryUpdateBalanceCount_SingleRightParenthesis_CountsCorrectly()
         {
             // Arrange
-            var token = new CSharpSymbol(")", CSharpSymbolType.RightParenthesis);
+            var token = new CSharpToken(")", CSharpTokenType.RightParenthesis);
             var count = 2;
 
             // Act
@@ -189,7 +189,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void TryUpdateBalanceCount_IncompleteStringLiteral_CountsCorrectly()
         {
             // Arrange
-            var token = new CSharpSymbol("\"((", CSharpSymbolType.StringLiteral);
+            var token = new CSharpToken("\"((", CSharpTokenType.StringLiteral);
             var count = 2;
 
             // Act
@@ -204,7 +204,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void TryUpdateBalanceCount_IncompleteCharacterLiteral_CountsCorrectly()
         {
             // Arrange
-            var token = new CSharpSymbol("'((", CSharpSymbolType.CharacterLiteral);
+            var token = new CSharpToken("'((", CSharpTokenType.CharacterLiteral);
             var count = 2;
 
             // Act
@@ -219,7 +219,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void TryUpdateBalanceCount_CompleteStringLiteral_CountsCorrectly()
         {
             // Arrange
-            var token = new CSharpSymbol("\"((\"", CSharpSymbolType.StringLiteral);
+            var token = new CSharpToken("\"((\"", CSharpTokenType.StringLiteral);
             var count = 2;
 
             // Act
@@ -234,7 +234,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void TryUpdateBalanceCount_CompleteCharacterLiteral_CountsCorrectly()
         {
             // Arrange
-            var token = new CSharpSymbol("'('", CSharpSymbolType.CharacterLiteral);
+            var token = new CSharpToken("'('", CSharpTokenType.CharacterLiteral);
             var count = 2;
 
             // Act
@@ -249,7 +249,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void TryUpdateBalanceCount_InvalidParenthesis_ReturnsFalse()
         {
             // Arrange
-            var token = new CSharpSymbol(")", CSharpSymbolType.RightParenthesis);
+            var token = new CSharpToken(")", CSharpTokenType.RightParenthesis);
             var count = 0;
 
             // Act
@@ -264,7 +264,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void TryUpdateBalanceCount_InvalidParenthesisStringLiteral_ReturnsFalse()
         {
             // Arrange
-            var token = new CSharpSymbol("\")", CSharpSymbolType.StringLiteral);
+            var token = new CSharpToken("\")", CSharpTokenType.StringLiteral);
             var count = 0;
 
             // Act
@@ -279,7 +279,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void TryUpdateBalanceCount_InvalidParenthesisCharacterLiteral_ReturnsFalse()
         {
             // Arrange
-            var token = new CSharpSymbol("')", CSharpSymbolType.CharacterLiteral);
+            var token = new CSharpToken("')", CSharpTokenType.CharacterLiteral);
             var count = 0;
 
             // Act
@@ -453,10 +453,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return span;
         }
 
-        private static IReadOnlyList<CSharpSymbol> GetTokens(SourceLocation start, string content)
+        private static IReadOnlyList<CSharpToken> GetTokens(SourceLocation start, string content)
         {
             var parent = GetSpan(start, content);
-            var tokens = parent.Symbols.Cast<CSharpSymbol>().ToArray();
+            var tokens = parent.Tokens.Cast<CSharpToken>().ToArray();
             return tokens;
         }
     }

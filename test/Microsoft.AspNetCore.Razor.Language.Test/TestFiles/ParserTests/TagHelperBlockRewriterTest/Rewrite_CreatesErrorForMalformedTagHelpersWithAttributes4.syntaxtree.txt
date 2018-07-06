@@ -3,9 +3,9 @@ Markup block - Gen<None> - 23 - (0:0,0)
         StartTagAndEndTag - <p bar='false  <strong'
         bar - SingleQuotes
             Markup block - Gen<None> - 14 - (8:0,8)
-                Markup span - Gen<Markup> - [false] - SpanEditHandler;Accepts:Any - (8:0,8) - Symbols:1
-                    HtmlSymbolType.Text;[false];
-                Markup span - Gen<Markup> - [  <strong] - SpanEditHandler;Accepts:Any - (13:0,13) - Symbols:3
-                    HtmlSymbolType.WhiteSpace;[  ];
-                    HtmlSymbolType.OpenAngle;[<];
-                    HtmlSymbolType.Text;[strong];
+                Markup span - Gen<Markup> - [false] - SpanEditHandler;Accepts:Any - (8:0,8) - Tokens:1
+                    HtmlTokenType.Text;[false];
+                Markup span - Gen<Markup> - [  <strong] - SpanEditHandler;Accepts:Any - (13:0,13) - Tokens:3
+                    HtmlTokenType.WhiteSpace;[  ];
+                    HtmlTokenType.OpenAngle;[<];
+                    HtmlTokenType.Text;[strong];

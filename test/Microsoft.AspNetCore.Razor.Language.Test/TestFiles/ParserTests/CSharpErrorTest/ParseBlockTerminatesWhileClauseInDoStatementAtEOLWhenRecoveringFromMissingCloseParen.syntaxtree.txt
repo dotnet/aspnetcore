@@ -1,14 +1,14 @@
 Statement block - Gen<None> - 22 - (0:0,0)
-    Code span - Gen<Stmt> - [do { } while(foo barLF] - SpanEditHandler;Accepts:Any - (0:0,0) - Symbols:12
-        CSharpSymbolType.Keyword;[do];
-        CSharpSymbolType.WhiteSpace;[ ];
-        CSharpSymbolType.LeftBrace;[{];
-        CSharpSymbolType.WhiteSpace;[ ];
-        CSharpSymbolType.RightBrace;[}];
-        CSharpSymbolType.WhiteSpace;[ ];
-        CSharpSymbolType.Keyword;[while];
-        CSharpSymbolType.LeftParenthesis;[(];
-        CSharpSymbolType.Identifier;[foo];
-        CSharpSymbolType.WhiteSpace;[ ];
-        CSharpSymbolType.Identifier;[bar];
-        CSharpSymbolType.NewLine;[LF];
+    Code span - Gen<Stmt> - [do { } while(foo barLF] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:12
+        CSharpTokenType.Keyword;[do];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.LeftBrace;[{];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.RightBrace;[}];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.Keyword;[while];
+        CSharpTokenType.LeftParenthesis;[(];
+        CSharpTokenType.Identifier;[foo];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.Identifier;[bar];
+        CSharpTokenType.NewLine;[LF];
