@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Testing;
@@ -15,11 +16,10 @@ namespace Microsoft.AspNetCore.Mvc
         public void Constructor_ThrowsIfConventionMethodIsAnnotatedWithProducesAttribute()
         {
             // Arrange
-            var expected = $"Method {typeof(ConventionWithProducesAttribute).FullName + ".Get"} is decorated with the following attributes that are not allowed on an API convention method:" +
-                Environment.NewLine +
-                typeof(ProducesAttribute).FullName +
-                Environment.NewLine +
-                $"The following attributes are allowed on API convention methods: {nameof(ProducesResponseTypeAttribute)}, {nameof(ApiConventionNameMatchAttribute)}";
+            var methodName = typeof(ConventionWithProducesAttribute).FullName + '.' + nameof(ConventionWithProducesAttribute.Get);
+            var attribute = typeof(ProducesAttribute);
+
+            var expected = GetErrorMessage(methodName, attribute);
 
             // Act & Assert
             ExceptionAssert.ThrowsArgument(
@@ -38,11 +38,9 @@ namespace Microsoft.AspNetCore.Mvc
         public void Constructor_ThrowsIfConventionMethodHasRouteAttribute()
         {
             // Arrange
-            var expected = $"Method {typeof(ConventionWithRouteAttribute).FullName + ".Get"} is decorated with the following attributes that are not allowed on an API convention method:" +
-                Environment.NewLine +
-                typeof(HttpGetAttribute).FullName +
-                Environment.NewLine +
-                $"The following attributes are allowed on API convention methods: {nameof(ProducesResponseTypeAttribute)}, {nameof(ApiConventionNameMatchAttribute)}";
+            var methodName = typeof(ConventionWithRouteAttribute).FullName + '.' + nameof(ConventionWithRouteAttribute.Get);
+            var attribute = typeof(HttpGetAttribute);
+            var expected = GetErrorMessage(methodName, attribute);
 
             // Act & Assert
             ExceptionAssert.ThrowsArgument(
@@ -61,11 +59,9 @@ namespace Microsoft.AspNetCore.Mvc
         public void Constructor_ThrowsIfMultipleUnsupportedAttributesArePresentOnConvention()
         {
             // Arrange
-            var expected = $"Method {typeof(ConventionWitUnsupportedAttributes).FullName + ".Get"} is decorated with the following attributes that are not allowed on an API convention method:" +
-                Environment.NewLine +
-                string.Join(Environment.NewLine, typeof(ProducesAttribute).FullName, typeof(ServiceFilterAttribute).FullName, typeof(AuthorizeAttribute).FullName) +
-                Environment.NewLine +
-                $"The following attributes are allowed on API convention methods: {nameof(ProducesResponseTypeAttribute)}, {nameof(ApiConventionNameMatchAttribute)}";
+            var methodName = typeof(ConventionWitUnsupportedAttributes).FullName + '.' + nameof(ConventionWitUnsupportedAttributes.Get);
+            var attributes = new[] { typeof(ProducesAttribute), typeof(ServiceFilterAttribute), typeof(AuthorizeAttribute) };
+            var expected = GetErrorMessage(methodName, attributes);
 
             // Act & Assert
             ExceptionAssert.ThrowsArgument(
@@ -81,6 +77,15 @@ namespace Microsoft.AspNetCore.Mvc
             [ServiceFilter(typeof(object))]
             [Authorize]
             public static void Get() { }
+        }
+
+        private static string GetErrorMessage(string methodName, params Type[] attributes)
+        {
+            return $"Method {methodName} is decorated with the following attributes that are not allowed on an API convention method:" +
+                Environment.NewLine +
+                string.Join(Environment.NewLine, attributes.Select(a => a.FullName)) +
+                Environment.NewLine +
+                $"The following attributes are allowed on API convention methods: {nameof(ProducesResponseTypeAttribute)}, {nameof(ProducesDefaultResponseTypeAttribute)}, {nameof(ApiConventionNameMatchAttribute)}";
         }
     }
 }

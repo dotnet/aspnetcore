@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             _mvcOptions = mvcOptions;
         }
 
-        public IList<ApiResponseType> GetApiResponseTypes(ControllerActionDescriptor action)
+        public ICollection<ApiResponseType> GetApiResponseTypes(ControllerActionDescriptor action)
         {
             // We only provide response info if we can figure out a type that is a user-data type.
             // Void /Task object/IActionResult will result in no data.
@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             var runtimeReturnType = GetRuntimeReturnType(declaredReturnType);
 
             var responseMetadataAttributes = GetResponseMetadataAttributes(action);
-            if (responseMetadataAttributes.Count == 0 && 
+            if (responseMetadataAttributes.Count == 0 &&
                 action.Properties.TryGetValue(typeof(ApiConventionResult), out var result))
             {
                 // Action does not have any conventions. Use conventions on it if present.
@@ -67,14 +67,11 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 .ToArray();
         }
 
-        private IList<ApiResponseType> GetApiResponseTypes(
+        private ICollection<ApiResponseType> GetApiResponseTypes(
            IReadOnlyList<IApiResponseMetadataProvider> responseMetadataAttributes,
            Type type)
         {
-            var results = new List<ApiResponseType>();
-
-            // Build list of all possible return types (and status codes) for an action.
-            var objectTypes = new Dictionary<int, Type>();
+            var results = new Dictionary<int, ApiResponseType>();
 
             // Get the content type that the action explicitly set to support.
             // Walk through all 'filter' attributes in order, and allow each one to see or override
@@ -86,7 +83,17 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 {
                     metadataAttribute.SetContentTypes(contentTypes);
 
-                    if (metadataAttribute.Type == typeof(void) &&
+                    ApiResponseType apiResponseType;
+
+                    if (metadataAttribute is IApiDefaultResponseMetadataProvider)
+                    {
+                        apiResponseType = new ApiResponseType
+                        {
+                            IsDefaultResponse = true,
+                            Type = metadataAttribute.Type,
+                        };
+                    }
+                    else if (metadataAttribute.Type == typeof(void) &&
                         type != null &&
                         (metadataAttribute.StatusCode == StatusCodes.Status200OK || metadataAttribute.StatusCode == StatusCodes.Status201Created))
                     {
@@ -94,20 +101,38 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                         // In this event, use the action's return type for 200 or 201 status codes. This lets you decorate an action with a
                         // [ProducesResponseType(201)] instead of [ProducesResponseType(201, typeof(Person)] when typeof(Person) can be inferred
                         // from the return type.
-                        objectTypes[metadataAttribute.StatusCode] = type;
+                        apiResponseType = new ApiResponseType
+                        {
+                            StatusCode = metadataAttribute.StatusCode,
+                            Type = type,
+                        };
                     }
                     else if (metadataAttribute.Type != null)
                     {
-                        objectTypes[metadataAttribute.StatusCode] = metadataAttribute.Type;
+                        apiResponseType = new ApiResponseType
+                        {
+                            StatusCode = metadataAttribute.StatusCode,
+                            Type = metadataAttribute.Type,
+                        };
                     }
+                    else
+                    {
+                        continue;
+                    }
+
+                    results[apiResponseType.StatusCode] = apiResponseType;
                 }
             }
 
 
             // Set the default status only when no status has already been set explicitly
-            if (objectTypes.Count == 0 && type != null)
+            if (results.Count == 0 && type != null)
             {
-                objectTypes[StatusCodes.Status200OK] = type;
+                results[StatusCodes.Status200OK] = new ApiResponseType
+                {
+                    StatusCode = StatusCodes.Status200OK,
+                    Type = type,
+                };
             }
 
             if (contentTypes.Count == 0)
@@ -117,25 +142,15 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 
             var responseTypeMetadataProviders = _mvcOptions.OutputFormatters.OfType<IApiResponseTypeMetadataProvider>();
 
-            foreach (var objectType in objectTypes)
+            foreach (var apiResponse in results.Values)
             {
-                if (objectType.Value == null || objectType.Value == typeof(void))
+                var responseType = apiResponse.Type;
+                if (responseType == null || responseType == typeof(void))
                 {
-                    results.Add(new ApiResponseType()
-                    {
-                        StatusCode = objectType.Key,
-                        Type = objectType.Value
-                    });
-
                     continue;
                 }
 
-                var apiResponseType = new ApiResponseType()
-                {
-                    Type = objectType.Value,
-                    StatusCode = objectType.Key,
-                    ModelMetadata = _modelMetadataProvider.GetMetadataForType(objectType.Value)
-                };
+                apiResponse.ModelMetadata = _modelMetadataProvider.GetMetadataForType(responseType);
 
                 foreach (var contentType in contentTypes)
                 {
@@ -143,7 +158,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                     {
                         var formatterSupportedContentTypes = responseTypeMetadataProvider.GetSupportedContentTypes(
                             contentType,
-                            objectType.Value);
+                            responseType);
 
                         if (formatterSupportedContentTypes == null)
                         {
@@ -152,7 +167,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 
                         foreach (var formatterSupportedContentType in formatterSupportedContentTypes)
                         {
-                            apiResponseType.ApiResponseFormats.Add(new ApiResponseFormat()
+                            apiResponse.ApiResponseFormats.Add(new ApiResponseFormat
                             {
                                 Formatter = (IOutputFormatter)responseTypeMetadataProvider,
                                 MediaType = formatterSupportedContentType,
@@ -160,11 +175,9 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                         }
                     }
                 }
-
-                results.Add(apiResponseType);
             }
 
-            return results;
+            return results.Values;
         }
 
         private Type GetDeclaredReturnType(ControllerActionDescriptor action)

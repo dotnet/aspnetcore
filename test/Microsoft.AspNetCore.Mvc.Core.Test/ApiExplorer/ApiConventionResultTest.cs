@@ -111,6 +111,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             Assert.True(result);
             Assert.Collection(
                 conventionResult.ResponseMetadataProviders.OrderBy(o => o.StatusCode),
+                r => Assert.IsAssignableFrom<IApiDefaultResponseMetadataProvider>(r),
                 r => Assert.Equal(200, r.StatusCode),
                 r => Assert.Equal(404, r.StatusCode));
         }
@@ -130,6 +131,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             Assert.True(result);
             Assert.Collection(
                 conventionResult.ResponseMetadataProviders.OrderBy(o => o.StatusCode),
+                r => Assert.IsAssignableFrom<IApiDefaultResponseMetadataProvider>(r),
                 r => Assert.Equal(201, r.StatusCode),
                 r => Assert.Equal(400, r.StatusCode));
         }
@@ -152,6 +154,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             Assert.True(result);
             Assert.Collection(
                 conventionResult.ResponseMetadataProviders.OrderBy(o => o.StatusCode),
+                r => Assert.IsAssignableFrom<IApiDefaultResponseMetadataProvider>(r),
                 r => Assert.Equal(204, r.StatusCode),
                 r => Assert.Equal(400, r.StatusCode),
                 r => Assert.Equal(404, r.StatusCode));
@@ -175,6 +178,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             Assert.True(result);
             Assert.Collection(
                 conventionResult.ResponseMetadataProviders.OrderBy(o => o.StatusCode),
+                r => Assert.IsAssignableFrom<IApiDefaultResponseMetadataProvider>(r),
                 r => Assert.Equal(200, r.StatusCode),
                 r => Assert.Equal(400, r.StatusCode),
                 r => Assert.Equal(404, r.StatusCode));
