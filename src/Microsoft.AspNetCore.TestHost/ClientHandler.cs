@@ -72,10 +72,20 @@ namespace Microsoft.AspNetCore.TestHost
                 req.Method = request.Method.ToString();
 
                 req.Scheme = request.RequestUri.Scheme;
-                req.Host = HostString.FromUriComponent(request.RequestUri);
-                if (request.RequestUri.IsDefaultPort)
+
+                foreach (var header in request.Headers)
                 {
-                    req.Host = new HostString(req.Host.Host);
+                    req.Headers.Append(header.Key, header.Value.ToArray());
+                }
+
+                if (req.Host == null || !req.Host.HasValue)
+                {
+                    // If Host wasn't explicitly set as a header, let's infer it from the Uri
+                    req.Host = HostString.FromUriComponent(request.RequestUri);
+                    if (request.RequestUri.IsDefaultPort)
+                    {
+                        req.Host = new HostString(req.Host.Host);
+                    }
                 }
 
                 req.Path = PathString.FromUriComponent(request.RequestUri);
@@ -87,10 +97,6 @@ namespace Microsoft.AspNetCore.TestHost
                 }
                 req.QueryString = QueryString.FromUriComponent(request.RequestUri);
 
-                foreach (var header in request.Headers)
-                {
-                    req.Headers.Append(header.Key, header.Value.ToArray());
-                }
                 if (requestContent != null)
                 {
                     foreach (var header in requestContent.Headers)

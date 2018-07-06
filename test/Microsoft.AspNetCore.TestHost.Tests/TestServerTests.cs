@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DiagnosticAdapter;
 using Microsoft.Extensions.Logging;
+using Microsoft.Net.Http.Headers;
 using Xunit;
 
 namespace Microsoft.AspNetCore.TestHost
@@ -574,6 +575,29 @@ namespace Microsoft.AspNetCore.TestHost
             Assert.Null(listener.EndRequest?.HttpContext);
             Assert.NotNull(listener.UnhandledException?.HttpContext);
             Assert.NotNull(listener.UnhandledException?.Exception);
+        }
+
+        [Theory]
+        [InlineData("http://localhost:12345")]
+        [InlineData("http://localhost:12345/")]
+        [InlineData("http://localhost:12345/hellohellohello")]
+        [InlineData("/isthereanybodyinthere?")]
+        public async Task ManuallySetHostWinsOverInferredHostFromRequestUri(string uri)
+        {
+            RequestDelegate appDelegate = ctx =>
+                ctx.Response.WriteAsync(ctx.Request.Headers[HeaderNames.Host]);
+
+            var builder = new WebHostBuilder().Configure(app => app.Run(appDelegate));
+            var server = new TestServer(builder);
+            var client = server.CreateClient();
+
+            var request = new HttpRequestMessage(HttpMethod.Get, uri);
+            request.Headers.Host = "otherhost:5678";
+
+            var response = await client.SendAsync(request);
+            var responseBody = await response.Content.ReadAsStringAsync();
+
+            Assert.Equal("otherhost:5678", responseBody);
         }
 
         public class TestDiagnosticListener
