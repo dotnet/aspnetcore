@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "webpack --mode development",
+    "build:debug": "webpack --mode development",
+    "build:production": "webpack --mode production",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "devDependencies": {
