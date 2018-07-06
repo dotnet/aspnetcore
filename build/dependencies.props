@@ -92,10 +92,10 @@
     <MicrosoftIdentityModelProtocolsOpenIdConnectPackageVersion>5.2.0</MicrosoftIdentityModelProtocolsOpenIdConnectPackageVersion>
     <MicrosoftIdentityModelProtocolsWsFederationPackageVersion>5.2.0</MicrosoftIdentityModelProtocolsWsFederationPackageVersion>
     <MicrosoftInternalAspNetCoreH2SpecAllPackageVersion>2.1.1</MicrosoftInternalAspNetCoreH2SpecAllPackageVersion>
-    <MicrosoftNETCoreApp10PackageVersion>1.0.5</MicrosoftNETCoreApp10PackageVersion>
-    <MicrosoftNETCoreApp11PackageVersion>1.1.2</MicrosoftNETCoreApp11PackageVersion>
-    <MicrosoftNETCoreApp20PackageVersion>2.0.0</MicrosoftNETCoreApp20PackageVersion>
-    <MicrosoftNETCoreApp21PackageVersion>2.1.0</MicrosoftNETCoreApp21PackageVersion>
+    <MicrosoftNETCoreApp10PackageVersion>1.0.11</MicrosoftNETCoreApp10PackageVersion>
+    <MicrosoftNETCoreApp11PackageVersion>1.1.8</MicrosoftNETCoreApp11PackageVersion>
+    <MicrosoftNETCoreApp20PackageVersion>2.0.7</MicrosoftNETCoreApp20PackageVersion>
+    <MicrosoftNETCoreApp21PackageVersion>2.1.1</MicrosoftNETCoreApp21PackageVersion>
     <MicrosoftNETCoreDotNetAppHost21PackageVersion>$(MicrosoftNETCoreApp21PackageVersion)</MicrosoftNETCoreDotNetAppHost21PackageVersion>
     <MicrosoftNETCoreWindowsApiSetsPackageVersion>1.0.1</MicrosoftNETCoreWindowsApiSetsPackageVersion>
     <MicrosoftNETTestSdkPackageVersion>15.6.1</MicrosoftNETTestSdkPackageVersion>

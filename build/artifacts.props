@@ -8,8 +8,6 @@
       <AllMetapackage>false</AllMetapackage>
       <!-- When true, this dependency will be included in the Microsoft.AspNetCore.Analyzers metapackage. -->
       <Analyzer>false</Analyzer>
-      <!-- When true, this dependency will be included in the LZMA. -->
-      <LZMA>false</LZMA>
       <!--
       Other known package types:
         Dependency = for packages that are installed via PackageReference
@@ -29,8 +27,8 @@
     <PackageArtifact Include="Internal.AspNetCore.Analyzers" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNet.Identity.AspNetCoreCompat" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
-    <PackageArtifact Include="Microsoft.AspNetCore.App" Category="ship" LZMA="true" />
-    <PackageArtifact Include="Microsoft.AspNetCore.All" Category="ship" LZMA="true" />
+    <PackageArtifact Include="Microsoft.AspNetCore.App" Category="ship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.All" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Analyzers" Category="shipoob" />
     <PackageArtifact Include="Microsoft.AspNetCore.Analyzer.Testing" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Antiforgery" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
@@ -39,8 +37,8 @@
     <PackageArtifact Include="Microsoft.AspNetCore.AspNetCoreModuleV2" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Authentication" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.Authentication.Abstractions" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
-    <PackageArtifact Include="Microsoft.AspNetCore.Authentication.AzureAD.UI" Category="ship" LZMA="true" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Authentication.AzureADB2C.UI" Category="ship" LZMA="true" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Authentication.AzureAD.UI" Category="ship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Authentication.AzureADB2C.UI" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Authentication.Cookies" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.Authentication.Core" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.Authentication.Facebook" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
@@ -281,14 +279,14 @@
     <PackageArtifact Include="Microsoft.VisualStudio.LanguageServices.Razor" Category="shipoob" />
     <PackageArtifact Include="Microsoft.VisualStudio.Mac.LanguageServices.Razor" Category="shipoob" />
     <PackageArtifact Include="Microsoft.VisualStudio.Web.BrowserLink" Category="ship" AllMetapackage="true"/>
-    <PackageArtifact Include="Microsoft.VisualStudio.Web.CodeGeneration" Category="ship" LZMA="true" />
-    <PackageArtifact Include="Microsoft.VisualStudio.Web.CodeGeneration.Contracts" Category="ship" LZMA="true" />
-    <PackageArtifact Include="Microsoft.VisualStudio.Web.CodeGeneration.Core" Category="ship" LZMA="true" />
-    <PackageArtifact Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Category="ship" LZMA="true" />
-    <PackageArtifact Include="Microsoft.VisualStudio.Web.CodeGeneration.EntityFrameworkCore" Category="ship" LZMA="true" />
-    <PackageArtifact Include="Microsoft.VisualStudio.Web.CodeGeneration.Templating" Category="ship" LZMA="true" />
-    <PackageArtifact Include="Microsoft.VisualStudio.Web.CodeGeneration.Utils" Category="ship" LZMA="true" />
-    <PackageArtifact Include="Microsoft.VisualStudio.Web.CodeGenerators.Mvc" Category="ship" LZMA="true" />
+    <PackageArtifact Include="Microsoft.VisualStudio.Web.CodeGeneration" Category="ship" />
+    <PackageArtifact Include="Microsoft.VisualStudio.Web.CodeGeneration.Contracts" Category="ship" />
+    <PackageArtifact Include="Microsoft.VisualStudio.Web.CodeGeneration.Core" Category="ship" />
+    <PackageArtifact Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Category="ship" />
+    <PackageArtifact Include="Microsoft.VisualStudio.Web.CodeGeneration.EntityFrameworkCore" Category="ship" />
+    <PackageArtifact Include="Microsoft.VisualStudio.Web.CodeGeneration.Templating" Category="ship" />
+    <PackageArtifact Include="Microsoft.VisualStudio.Web.CodeGeneration.Utils" Category="ship" />
+    <PackageArtifact Include="Microsoft.VisualStudio.Web.CodeGenerators.Mvc" Category="ship" />
     <PackageArtifact Include="Microsoft.Web.Xdt.Extensions" Category="shipoob" />
     <PackageArtifact Include="RazorPageGenerator" Category="noship" />
 

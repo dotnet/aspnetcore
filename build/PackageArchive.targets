@@ -1,125 +1,31 @@
 <Project>
-  <PropertyGroup>
-    <_TemplatesDirectory>$(MSBuildThisFileDirectory)tools\templates\</_TemplatesDirectory>
-    <_WorkRoot>$(RepositoryRoot).w\</_WorkRoot>
-    <PreviousArchivePropsFile>$(MSBuildThisFileDirectory)PreviousArchiveManifest.props</PreviousArchivePropsFile>
-    <MetapackageRestoreSource>$(RepositoryRoot).deps\Signed\Packages\</MetapackageRestoreSource>
-    <LzmaOutputPackageName>nuGetPackagesArchive-$(PackageVersion)</LzmaOutputPackageName>
-    <FallbackStagingDir>$(_WorkRoot)obj\$(LzmaOutputPackageName)\</FallbackStagingDir>
-    <FallbackOutputDir>$(ArtifactsDir)lzma\</FallbackOutputDir>
-    <FallbackOutputPath>$(FallbackOutputDir)$(LzmaOutputPackageName).lzma</FallbackOutputPath>
-    <FallbackAntaresZipOutputPath>$(FallbackOutputDir)$(LzmaOutputPackageName)-antares.zip</FallbackAntaresZipOutputPath>
-    <GeneratedFallbackRestoreSourcesPropsPath>$(_WorkRoot)restoresources.$(LzmaOutputPackageName).props</GeneratedFallbackRestoreSourcesPropsPath>
-  </PropertyGroup>
-
-  <Import Project="$(PreviousArchivePropsFile)" Condition="Exists($(PreviousArchivePropsFile))" />
-
-  <Target Name="BuildFallbackArchive" DependsOnTargets="ResolveRepoInfo">
-    <!-- Clear the directories -->
-    <RemoveDir Directories="$(_WorkRoot)" />
-
-    <!-- Copy the archive template -->
-    <Copy SourceFiles="$(_TemplatesDirectory)Archive\Archive.csproj" DestinationFiles="$(_WorkRoot)Archive.csproj" />
-
-    <!-- Copy the archive template -->
-    <RepoTasks.AddArchiveReferences
-      ReferencePackagePath="$(_WorkRoot)Archive.csproj"
-      BuildArtifacts="@(ArtifactInfo)"
-      PackageArtifacts="@(PackageArtifact)"
-      ExternalDependencies="@(ExternalDependency)"
-      MetapackageVersion="$(PackageVersion)" />
+  <Target Name="BuildFallbackArchive" DependsOnTargets="ResolveRepoInfo;GeneratePropsFiles">
 
     <ItemGroup>
-      <_FallbackArchiveRestoreSources Include="$(RestoreSources)" />
-      <_FallbackArchiveRestoreSources Include="$(BuildDir)" Condition="Exists($(BuildDir))" />
-      <_FallbackArchiveRestoreSources Include="$(MetapackageRestoreSource)" Condition="Exists($(MetapackageRestoreSource))" />
+      <ArchiveProjects Include="$(RepositoryRoot)src\PackageArchive\Archive.*\*.*proj" />
     </ItemGroup>
 
-    <RepoTasks.GenerateRestoreSourcesPropsFile
-      Sources="@(_FallbackArchiveRestoreSources)"
-      OutputPath="$(GeneratedFallbackRestoreSourcesPropsPath)" />
+    <PropertyGroup>
+      <ArchiveBuildProps>
+        DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcesPropsPath);
+        DotNetPackageVersionPropsPath=$(GeneratedPackageVersionPropsPath);
+        OutputPath=$(ArtifactsDir)lzma\;
+        _BuildToolsAssembly=$(_BuildToolsAssembly)
+      </ArchiveBuildProps>
+    </PropertyGroup>
 
-    <!-- Create the Staging Dir -->
-    <MakeDir Directories="$(FallbackStagingDir);$(FallbackOutputDir)" />
+    <Error Text="Could not find any package archive projects to build"
+      Condition=" @(ArchiveProjects->Count()) == 0 " />
 
-    <!-- Restore the target project -->
-    <MSBuild
-      Projects="$(_WorkRoot)Archive.csproj"
+    <MSBuild Projects="@(ArchiveProjects)"
       Targets="Restore"
-      Properties="RestorePackagesPath=$(FallbackStagingDir);RuntimeFrameworkVersion=$(MicrosoftNETCoreApp22PackageVersion);DotNetRestoreSourcePropsPath=$(GeneratedFallbackRestoreSourcesPropsPath);DotNetBuildOffline=true;AspNetUniverseBuildOffline=true" />
+      BuildInParallel="true"
+      Properties="$(ArchiveBuildProps);_Dummy=restore" />
 
-    <!-- Create the archive -->
-    <RepoTasks.CreateLzma OutputPath="$(FallbackOutputPath)" Sources="$(FallbackStagingDir)" />
-  </Target>
-
-  <Target Name="UpdatePreviousArchiveManifest">
-    <Error Text="Please only specify one of PreviousLzmaUrl or PreviousLzmaFile but not both" Condition="'$(PreviousLzmaUrl)' != '' AND '$(PreviousLzmaFile)' != ''" />
-
-    <PropertyGroup>
-      <PreviousLzmaLayout>$(_WorkRoot)previous\</PreviousLzmaLayout>
-      <PreviousLzmaFile Condition="'$(PreviousLzmaFile)' == ''">$(RepositoryRoot).deps\nuGetPackagesArchive.previous.lzma</PreviousLzmaFile>
-    </PropertyGroup>
-
-    <!-- Clear the directories -->
-    <RemoveDir Directories="$(PreviousLzmaLayout)" />
-
-    <!-- Download and extract the previous LZMA if specified -->
-    <KoreBuild.Tasks.DownloadFile
-      Uri="$(PreviousLzmaUrl)"
-      DestinationPath="$(PreviousLzmaFile)"
-      Condition="'$(PreviousLzmaUrl)' != ''" />
-    <RepoTasks.ExtractLzma
-      InputArchive="$(PreviousLzmaFile)"
-      OutputPath="$(PreviousLzmaLayout)"
-      Condition="Exists($(PreviousLzmaFile))" />
-
-    <ItemGroup>
-      <PreviousLzmaContents Remove="@(PreviousLzmaContents)" />
-      <PreviousLzmaContents Include="$(PreviousLzmaLayout)**\*.*" />
-    </ItemGroup>
-
-    <!-- Create the archive -->
-    <RepoTasks.UpdatePreviousArchiveManifest OutputPath="$(PreviousArchivePropsFile)" Contents="@(PreviousLzmaContents)" />
-  </Target>
-
-  <Target Name="BuildAntaresFallbackZip">
-    <Error Text="Please only specify one of InputLzmaUrl or InputLzmaFile but not both" Condition="'$(InputLzmaUrl)' != '' AND '$(InputLzmaFile)' != ''" />
-
-    <PropertyGroup>
-      <InputLzmaLayout>$(_WorkRoot)input\</InputLzmaLayout>
-      <InputLzmaFile Condition="'$(InputLzmaFile)' == ''">$(RepositoryRoot).deps\nuGetPackagesArchive.input.lzma</InputLzmaFile>
-    </PropertyGroup>
-
-    <!-- Clear the directories -->
-    <RemoveDir Directories="$(InputLzmaLayout)" />
-
-    <!-- Download and extract the input LZMA if specified -->
-    <KoreBuild.Tasks.DownloadFile
-      Uri="$(InputLzmaUrl)"
-      DestinationPath="$(InputLzmaFile)"
-      Condition="'$(InputLzmaUrl)' != ''" />
-    <RepoTasks.ExtractLzma
-      InputArchive="$(InputLzmaFile)"
-      OutputPath="$(InputLzmaLayout)"
-      Condition="Exists($(InputLzmaFile))" />
-
-    <ItemGroup>
-      <InputLzmaContents Include="$(InputLzmaLayout)**\*.*"  Exclude="$(InputLzmaLayout)**\*.nupkg" />
-    </ItemGroup>
-
-    <Error Text="No lzma content found. Please specify a lzma via InputLzmaUrl or InputLzmaFile or run the BuildFallbackArchive target." Condition="'@(InputLzmaContents)' == ''" />
-
-    <!-- Filter lzma content to remove existing content and .xml files -->
-    <RepoTasks.FilterLzmaContent PreviousLzmaContent="@(PreviousLzmaContents)" InputLzmaContent="@(InputLzmaContents)">
-      <Output TaskParameter="FilteredLzmaContent" ItemName="AntaresLzmaContents" />
-    </RepoTasks.FilterLzmaContent>
-
-    <!-- Create antares zip -->
-    <ZipArchive
-      File="$(FallbackAntaresZipOutputPath)"
-      SourceFiles="@(AntaresLzmaContents)"
-      WorkingDirectory="$(InputLzmaLayout)"
-      Overwrite="true"
-      Condition="'@(AntaresLzmaContents)' != ''"/>
+    <MSBuild Projects="@(ArchiveProjects)"
+      Targets="Build"
+      BuildInParallel="false"
+      StopOnFirstFailure="true"
+      Properties="$(ArchiveBuildProps)" />
   </Target>
 </Project>
