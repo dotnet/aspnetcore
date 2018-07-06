@@ -10,4 +10,5 @@ This project is part of ASP.NET Core. You can find documentation for Data Protec
 
 ## Community Maintained Data Protection Providers & Projects
 
- - [ASP.NET Core DataProtection for Service Fabric](https://github.com/MedAnd/AspNetCore.DataProtection.ServiceFabric)
+ - [ASP.NET Core DataProtection Provider for Service Fabric](https://github.com/MedAnd/AspNetCore.DataProtection.ServiceFabric)
+ - [ASP.NET Core DataProtection Provider for Google Cloud Storage](https://github.com/ocinbat/GoogleCloudStorage.AspNetCore.DataProtection)
