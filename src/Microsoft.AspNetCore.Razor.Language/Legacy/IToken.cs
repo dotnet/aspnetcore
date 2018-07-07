@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
-    internal interface ISymbol
+    internal interface IToken
     {
         Span Parent { get; set; }
 

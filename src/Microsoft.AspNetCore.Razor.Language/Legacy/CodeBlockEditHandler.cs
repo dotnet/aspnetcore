@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
     internal class CodeBlockEditHandler : SpanEditHandler
     {
-        public CodeBlockEditHandler(Func<string, IEnumerable<ISymbol>> tokenizer) : base(tokenizer)
+        public CodeBlockEditHandler(Func<string, IEnumerable<IToken>> tokenizer) : base(tokenizer)
         {
         }
 

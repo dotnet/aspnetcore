@@ -1,26 +1,26 @@
 Statement block - Gen<None> - 52 - (0:0,0)
-    MetaCode span - Gen<None> - [{] - SpanEditHandler;Accepts:None - (0:0,0) - Symbols:1
-        CSharpSymbolType.LeftBrace;[{];
-    Code span - Gen<Stmt> - [foo"b}ar" if(condition) { string.Format("{0}"); } ] - AutoCompleteEditHandler;Accepts:Any,AutoComplete:[<null>];AtEOL - (1:0,1) - Symbols:20
-        CSharpSymbolType.Identifier;[foo];
-        CSharpSymbolType.StringLiteral;["b}ar"];
-        CSharpSymbolType.WhiteSpace;[ ];
-        CSharpSymbolType.Keyword;[if];
-        CSharpSymbolType.LeftParenthesis;[(];
-        CSharpSymbolType.Identifier;[condition];
-        CSharpSymbolType.RightParenthesis;[)];
-        CSharpSymbolType.WhiteSpace;[ ];
-        CSharpSymbolType.LeftBrace;[{];
-        CSharpSymbolType.WhiteSpace;[ ];
-        CSharpSymbolType.Keyword;[string];
-        CSharpSymbolType.Dot;[.];
-        CSharpSymbolType.Identifier;[Format];
-        CSharpSymbolType.LeftParenthesis;[(];
-        CSharpSymbolType.StringLiteral;["{0}"];
-        CSharpSymbolType.RightParenthesis;[)];
-        CSharpSymbolType.Semicolon;[;];
-        CSharpSymbolType.WhiteSpace;[ ];
-        CSharpSymbolType.RightBrace;[}];
-        CSharpSymbolType.WhiteSpace;[ ];
-    MetaCode span - Gen<None> - [}] - SpanEditHandler;Accepts:None - (51:0,51) - Symbols:1
-        CSharpSymbolType.RightBrace;[}];
+    MetaCode span - Gen<None> - [{] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
+        CSharpTokenType.LeftBrace;[{];
+    Code span - Gen<Stmt> - [foo"b}ar" if(condition) { string.Format("{0}"); } ] - AutoCompleteEditHandler;Accepts:Any,AutoComplete:[<null>];AtEOL - (1:0,1) - Tokens:20
+        CSharpTokenType.Identifier;[foo];
+        CSharpTokenType.StringLiteral;["b}ar"];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.Keyword;[if];
+        CSharpTokenType.LeftParenthesis;[(];
+        CSharpTokenType.Identifier;[condition];
+        CSharpTokenType.RightParenthesis;[)];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.LeftBrace;[{];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.Keyword;[string];
+        CSharpTokenType.Dot;[.];
+        CSharpTokenType.Identifier;[Format];
+        CSharpTokenType.LeftParenthesis;[(];
+        CSharpTokenType.StringLiteral;["{0}"];
+        CSharpTokenType.RightParenthesis;[)];
+        CSharpTokenType.Semicolon;[;];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.RightBrace;[}];
+        CSharpTokenType.WhiteSpace;[ ];
+    MetaCode span - Gen<None> - [}] - SpanEditHandler;Accepts:None - (51:0,51) - Tokens:1
+        CSharpTokenType.RightBrace;[}];

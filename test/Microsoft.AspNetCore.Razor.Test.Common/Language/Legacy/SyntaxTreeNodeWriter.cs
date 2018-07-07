@@ -184,37 +184,37 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             WriteSeparator();
             WriteSourceLocation(span.Start);
             WriteSeparator();
-            Write($"Symbols:{span.Symbols.Count}");
+            Write($"Tokens:{span.Tokens.Count}");
 
-            // Write symbols
+            // Write tokens
             Depth++;
-            foreach (var symbol in span.Symbols)
+            foreach (var token in span.Tokens)
             {
                 WriteNewLine();
                 WriteIndent();
-                WriteSymbol(symbol);
+                WriteToken(token);
             }
             Depth--;
         }
 
-        protected void WriteSymbol(ISymbol symbol)
+        protected void WriteToken(IToken token)
         {
-            var symbolType = string.Empty;
+            var tokenType = string.Empty;
             IEnumerable<RazorDiagnostic> diagnostics = RazorDiagnostic.EmptyArray;
 
-            if (symbol is HtmlSymbol htmlSymbol)
+            if (token is HtmlToken htmlToken)
             {
-                symbolType = $"{htmlSymbol.Type.GetType().Name}.{htmlSymbol.Type}";
-                diagnostics = htmlSymbol.Errors;
+                tokenType = $"{htmlToken.Type.GetType().Name}.{htmlToken.Type}";
+                diagnostics = htmlToken.Errors;
             }
-            else if (symbol is CSharpSymbol csharpSymbol)
+            else if (token is CSharpToken csharpToken)
             {
-                symbolType = $"{csharpSymbol.Type.GetType().Name}.{csharpSymbol.Type}";
-                diagnostics = csharpSymbol.Errors;
+                tokenType = $"{csharpToken.Type.GetType().Name}.{csharpToken.Type}";
+                diagnostics = csharpToken.Errors;
             }
 
-            var symbolString = $"{symbolType};[{symbol.Content}];{string.Join(", ", diagnostics.Select(diagnostic => diagnostic.Id + diagnostic.Span))}";
-            Write(symbolString);
+            var tokenString = $"{tokenType};[{token.Content}];{string.Join(", ", diagnostics.Select(diagnostic => diagnostic.Id + diagnostic.Span))}";
+            Write(tokenString);
         }
 
         protected void WriteSourceLocation(SourceLocation location)

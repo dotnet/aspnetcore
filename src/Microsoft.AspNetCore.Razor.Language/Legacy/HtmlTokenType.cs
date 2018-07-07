@@ -6,7 +6,7 @@ using System;
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
     [Flags]
-    internal enum HtmlSymbolType
+    internal enum HtmlTokenType
     {
         Unknown,
         Text, // Text which isn't one of the below

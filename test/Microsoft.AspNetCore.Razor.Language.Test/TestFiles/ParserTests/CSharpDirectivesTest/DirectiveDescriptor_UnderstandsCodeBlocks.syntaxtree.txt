@@ -1,27 +1,27 @@
 Directive block - Gen<Directive:{custom;CodeBlock;Unrestricted}> - 32 - (0:0,0)
-    Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Symbols:1
-        CSharpSymbolType.Transition;[@];
-    MetaCode span - Gen<None> - [custom] - SpanEditHandler;Accepts:None - (1:0,1) - Symbols:1
-        CSharpSymbolType.Identifier;[custom];
-    Markup span - Gen<None> - [ ] - SpanEditHandler;Accepts:WhiteSpace - (7:0,7) - Symbols:1
-        CSharpSymbolType.WhiteSpace;[ ];
-    Code span - Gen<DirectiveToken {;String;Opt:False}> - ["Name"] - DirectiveTokenEditHandler;Accepts:NonWhiteSpace - (8:0,8) - Symbols:1
-        CSharpSymbolType.StringLiteral;["Name"];
-    Markup span - Gen<None> - [ ] - SpanEditHandler;Accepts:AllWhiteSpace - (14:0,14) - Symbols:1
-        CSharpSymbolType.WhiteSpace;[ ];
-    MetaCode span - Gen<None> - [{] - AutoCompleteEditHandler;Accepts:None,AutoComplete:[<null>];AtEnd - (15:0,15) - Symbols:1
-        CSharpSymbolType.LeftBrace;[{];
-    Code span - Gen<Stmt> - [ foo(); bar(); ] - CodeBlockEditHandler;Accepts:Any;CodeBlock - (16:0,16) - Symbols:11
-        CSharpSymbolType.WhiteSpace;[ ];
-        CSharpSymbolType.Identifier;[foo];
-        CSharpSymbolType.LeftParenthesis;[(];
-        CSharpSymbolType.RightParenthesis;[)];
-        CSharpSymbolType.Semicolon;[;];
-        CSharpSymbolType.WhiteSpace;[ ];
-        CSharpSymbolType.Identifier;[bar];
-        CSharpSymbolType.LeftParenthesis;[(];
-        CSharpSymbolType.RightParenthesis;[)];
-        CSharpSymbolType.Semicolon;[;];
-        CSharpSymbolType.WhiteSpace;[ ];
-    MetaCode span - Gen<None> - [}] - SpanEditHandler;Accepts:None - (31:0,31) - Symbols:1
-        CSharpSymbolType.RightBrace;[}];
+    Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
+        CSharpTokenType.Transition;[@];
+    MetaCode span - Gen<None> - [custom] - SpanEditHandler;Accepts:None - (1:0,1) - Tokens:1
+        CSharpTokenType.Identifier;[custom];
+    Markup span - Gen<None> - [ ] - SpanEditHandler;Accepts:WhiteSpace - (7:0,7) - Tokens:1
+        CSharpTokenType.WhiteSpace;[ ];
+    Code span - Gen<DirectiveToken {;String;Opt:False}> - ["Name"] - DirectiveTokenEditHandler;Accepts:NonWhiteSpace - (8:0,8) - Tokens:1
+        CSharpTokenType.StringLiteral;["Name"];
+    Markup span - Gen<None> - [ ] - SpanEditHandler;Accepts:AllWhiteSpace - (14:0,14) - Tokens:1
+        CSharpTokenType.WhiteSpace;[ ];
+    MetaCode span - Gen<None> - [{] - AutoCompleteEditHandler;Accepts:None,AutoComplete:[<null>];AtEnd - (15:0,15) - Tokens:1
+        CSharpTokenType.LeftBrace;[{];
+    Code span - Gen<Stmt> - [ foo(); bar(); ] - CodeBlockEditHandler;Accepts:Any;CodeBlock - (16:0,16) - Tokens:11
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.Identifier;[foo];
+        CSharpTokenType.LeftParenthesis;[(];
+        CSharpTokenType.RightParenthesis;[)];
+        CSharpTokenType.Semicolon;[;];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.Identifier;[bar];
+        CSharpTokenType.LeftParenthesis;[(];
+        CSharpTokenType.RightParenthesis;[)];
+        CSharpTokenType.Semicolon;[;];
+        CSharpTokenType.WhiteSpace;[ ];
+    MetaCode span - Gen<None> - [}] - SpanEditHandler;Accepts:None - (31:0,31) - Tokens:1
+        CSharpTokenType.RightBrace;[}];

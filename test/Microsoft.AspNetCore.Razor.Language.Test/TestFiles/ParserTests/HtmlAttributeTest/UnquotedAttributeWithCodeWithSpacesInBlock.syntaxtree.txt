@@ -1,20 +1,20 @@
 Markup block - Gen<None> - 20 - (0:0,0)
     Tag block - Gen<None> - 20 - (0:0,0)
-        Markup span - Gen<Markup> - [<input] - SpanEditHandler;Accepts:Any - (0:0,0) - Symbols:2
-            HtmlSymbolType.OpenAngle;[<];
-            HtmlSymbolType.Text;[input];
+        Markup span - Gen<Markup> - [<input] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:2
+            HtmlTokenType.OpenAngle;[<];
+            HtmlTokenType.Text;[input];
         Markup block - Gen<Attr:value, value=@(6:0,6),@(17:0,17)> - 11 - (6:0,6)
-            Markup span - Gen<None> - [ value=] - SpanEditHandler;Accepts:Any - (6:0,6) - Symbols:3
-                HtmlSymbolType.WhiteSpace;[ ];
-                HtmlSymbolType.Text;[value];
-                HtmlSymbolType.Equals;[=];
+            Markup span - Gen<None> - [ value=] - SpanEditHandler;Accepts:Any - (6:0,6) - Tokens:3
+                HtmlTokenType.WhiteSpace;[ ];
+                HtmlTokenType.Text;[value];
+                HtmlTokenType.Equals;[=];
             Markup block - Gen<DynAttr:@(13:0,13)> - 4 - (13:0,13)
                 Expression block - Gen<Expr> - 4 - (13:0,13)
-                    Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (13:0,13) - Symbols:1
-                        CSharpSymbolType.Transition;[@];
-                    Code span - Gen<Expr> - [foo] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K14 - (14:0,14) - Symbols:1
-                        CSharpSymbolType.Identifier;[foo];
-        Markup span - Gen<Markup> - [ />] - SpanEditHandler;Accepts:None - (17:0,17) - Symbols:3
-            HtmlSymbolType.WhiteSpace;[ ];
-            HtmlSymbolType.ForwardSlash;[/];
-            HtmlSymbolType.CloseAngle;[>];
+                    Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (13:0,13) - Tokens:1
+                        CSharpTokenType.Transition;[@];
+                    Code span - Gen<Expr> - [foo] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K14 - (14:0,14) - Tokens:1
+                        CSharpTokenType.Identifier;[foo];
+        Markup span - Gen<Markup> - [ />] - SpanEditHandler;Accepts:None - (17:0,17) - Tokens:3
+            HtmlTokenType.WhiteSpace;[ ];
+            HtmlTokenType.ForwardSlash;[/];
+            HtmlTokenType.CloseAngle;[>];

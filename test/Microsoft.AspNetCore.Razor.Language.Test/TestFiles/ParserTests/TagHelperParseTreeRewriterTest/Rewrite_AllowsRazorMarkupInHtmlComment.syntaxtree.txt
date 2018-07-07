@@ -2,31 +2,31 @@ Markup block - Gen<None> - 37 - (0:0,0)
     Tag block - Gen<TagHelper> - 37 - (0:0,0) - p - PTagHelper
         StartTagAndEndTag - <p> ... </p>
         Tag block - Gen<None> - 3 - (3:0,3)
-            Markup span - Gen<Markup> - [<b>] - SpanEditHandler;Accepts:Any - (3:0,3) - Symbols:3
-                HtmlSymbolType.OpenAngle;[<];
-                HtmlSymbolType.Text;[b];
-                HtmlSymbolType.CloseAngle;[>];
-        Markup span - Gen<Markup> - [asdf] - SpanEditHandler;Accepts:Any - (6:0,6) - Symbols:1
-            HtmlSymbolType.Text;[asdf];
+            Markup span - Gen<Markup> - [<b>] - SpanEditHandler;Accepts:Any - (3:0,3) - Tokens:3
+                HtmlTokenType.OpenAngle;[<];
+                HtmlTokenType.Text;[b];
+                HtmlTokenType.CloseAngle;[>];
+        Markup span - Gen<Markup> - [asdf] - SpanEditHandler;Accepts:Any - (6:0,6) - Tokens:1
+            HtmlTokenType.Text;[asdf];
         Tag block - Gen<None> - 4 - (10:0,10)
-            Markup span - Gen<Markup> - [</b>] - SpanEditHandler;Accepts:Any - (10:0,10) - Symbols:4
-                HtmlSymbolType.OpenAngle;[<];
-                HtmlSymbolType.ForwardSlash;[/];
-                HtmlSymbolType.Text;[b];
-                HtmlSymbolType.CloseAngle;[>];
+            Markup span - Gen<Markup> - [</b>] - SpanEditHandler;Accepts:Any - (10:0,10) - Tokens:4
+                HtmlTokenType.OpenAngle;[<];
+                HtmlTokenType.ForwardSlash;[/];
+                HtmlTokenType.Text;[b];
+                HtmlTokenType.CloseAngle;[>];
         HtmlComment block - Gen<None> - 19 - (14:0,14)
-            Markup span - Gen<Markup> - [<!--] - SpanEditHandler;Accepts:None - (14:0,14) - Symbols:3
-                HtmlSymbolType.OpenAngle;[<];
-                HtmlSymbolType.Bang;[!];
-                HtmlSymbolType.DoubleHyphen;[--];
-            Markup span - Gen<Markup> - [Hello ] - SpanEditHandler;Accepts:WhiteSpace - (18:0,18) - Symbols:2
-                HtmlSymbolType.Text;[Hello];
-                HtmlSymbolType.WhiteSpace;[ ];
+            Markup span - Gen<Markup> - [<!--] - SpanEditHandler;Accepts:None - (14:0,14) - Tokens:3
+                HtmlTokenType.OpenAngle;[<];
+                HtmlTokenType.Bang;[!];
+                HtmlTokenType.DoubleHyphen;[--];
+            Markup span - Gen<Markup> - [Hello ] - SpanEditHandler;Accepts:WhiteSpace - (18:0,18) - Tokens:2
+                HtmlTokenType.Text;[Hello];
+                HtmlTokenType.WhiteSpace;[ ];
             Expression block - Gen<Expr> - 6 - (24:0,24)
-                Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (24:0,24) - Symbols:1
-                    CSharpSymbolType.Transition;[@];
-                Code span - Gen<Expr> - [World] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K14 - (25:0,25) - Symbols:1
-                    CSharpSymbolType.Identifier;[World];
-            Markup span - Gen<Markup> - [-->] - SpanEditHandler;Accepts:None - (30:0,30) - Symbols:2
-                HtmlSymbolType.DoubleHyphen;[--];
-                HtmlSymbolType.CloseAngle;[>];
+                Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (24:0,24) - Tokens:1
+                    CSharpTokenType.Transition;[@];
+                Code span - Gen<Expr> - [World] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K14 - (25:0,25) - Tokens:1
+                    CSharpTokenType.Identifier;[World];
+            Markup span - Gen<Markup> - [-->] - SpanEditHandler;Accepts:None - (30:0,30) - Tokens:2
+                HtmlTokenType.DoubleHyphen;[--];
+                HtmlTokenType.CloseAngle;[>];

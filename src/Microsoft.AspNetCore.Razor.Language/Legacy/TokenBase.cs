@@ -8,9 +8,9 @@ using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
-    internal abstract class SymbolBase<TType> : ISymbol where TType : struct
+    internal abstract class TokenBase<TType> : IToken where TType : struct
     {
-        protected SymbolBase(
+        protected TokenBase(
             string content,
             TType type,
             IReadOnlyList<RazorDiagnostic> errors)
@@ -43,15 +43,15 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 }
 
                 var tracker = new SourceLocationTracker(Parent.Start);
-                for (var i = 0; i < Parent.Symbols.Count; i++)
+                for (var i = 0; i < Parent.Tokens.Count; i++)
                 {
-                    var symbol = Parent.Symbols[i];
-                    if (object.ReferenceEquals(this, symbol))
+                    var token = Parent.Tokens[i];
+                    if (object.ReferenceEquals(this, token))
                     {
                         break;
                     }
 
-                    tracker.UpdateLocation(symbol.Content);
+                    tracker.UpdateLocation(token.Content);
                 }
 
                 return tracker.CurrentLocation;
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         public override bool Equals(object obj)
         {
-            var other = obj as SymbolBase<TType>;
+            var other = obj as TokenBase<TType>;
             return other != null &&
                 string.Equals(Content, other.Content, StringComparison.Ordinal) &&
                 Type.Equals(other.Type);

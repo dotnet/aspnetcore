@@ -2,4 +2,4 @@ Markup block - Gen<None> - 14 - (0:0,0)
     Tag block - Gen<TagHelper> - 14 - (0:0,0) - p - ptaghelper
         StartTagAndEndTag - <p class=> ... </p>
         class - DoubleQuotes
-            Markup span - Gen<None> - [] - SpanEditHandler;Accepts:Any - (9:0,9) - Symbols:0
+            Markup span - Gen<None> - [] - SpanEditHandler;Accepts:Any - (9:0,9) - Tokens:0

@@ -1,109 +1,109 @@
 Markup block - Gen<None> - 167 - (0:0,0)
     Tag block - Gen<TagHelper> - 167 - (0:0,0) - p - ptaghelper
         StartTagAndEndTag - <p> ... </p>
-        Markup span - Gen<Markup> - [Hello ] - SpanEditHandler;Accepts:Any - (3:0,3) - Symbols:2
-            HtmlSymbolType.Text;[Hello];
-            HtmlSymbolType.WhiteSpace;[ ];
+        Markup span - Gen<Markup> - [Hello ] - SpanEditHandler;Accepts:Any - (3:0,3) - Tokens:2
+            HtmlTokenType.Text;[Hello];
+            HtmlTokenType.WhiteSpace;[ ];
         Statement block - Gen<None> - 58 - (9:0,9)
-            Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (9:0,9) - Symbols:1
-                CSharpSymbolType.Transition;[@];
-            Code span - Gen<Stmt> - [do { var foo = bar;] - SpanEditHandler;Accepts:Any - (10:0,10) - Symbols:12
-                CSharpSymbolType.Keyword;[do];
-                CSharpSymbolType.WhiteSpace;[ ];
-                CSharpSymbolType.LeftBrace;[{];
-                CSharpSymbolType.WhiteSpace;[ ];
-                CSharpSymbolType.Identifier;[var];
-                CSharpSymbolType.WhiteSpace;[ ];
-                CSharpSymbolType.Identifier;[foo];
-                CSharpSymbolType.WhiteSpace;[ ];
-                CSharpSymbolType.Assign;[=];
-                CSharpSymbolType.WhiteSpace;[ ];
-                CSharpSymbolType.Identifier;[bar];
-                CSharpSymbolType.Semicolon;[;];
+            Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (9:0,9) - Tokens:1
+                CSharpTokenType.Transition;[@];
+            Code span - Gen<Stmt> - [do { var foo = bar;] - SpanEditHandler;Accepts:Any - (10:0,10) - Tokens:12
+                CSharpTokenType.Keyword;[do];
+                CSharpTokenType.WhiteSpace;[ ];
+                CSharpTokenType.LeftBrace;[{];
+                CSharpTokenType.WhiteSpace;[ ];
+                CSharpTokenType.Identifier;[var];
+                CSharpTokenType.WhiteSpace;[ ];
+                CSharpTokenType.Identifier;[foo];
+                CSharpTokenType.WhiteSpace;[ ];
+                CSharpTokenType.Assign;[=];
+                CSharpTokenType.WhiteSpace;[ ];
+                CSharpTokenType.Identifier;[bar];
+                CSharpTokenType.Semicolon;[;];
             Markup block - Gen<None> - 12 - (29:0,29)
-                Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:Any - (29:0,29) - Symbols:1
-                    HtmlSymbolType.WhiteSpace;[ ];
+                Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:Any - (29:0,29) - Tokens:1
+                    HtmlTokenType.WhiteSpace;[ ];
                 Tag block - Gen<TagHelper> - 10 - (30:0,30) - p - ptaghelper
                     StartTagAndEndTag - <p> ... </p>
-                    Markup span - Gen<Markup> - [Foo] - SpanEditHandler;Accepts:Any - (33:0,33) - Symbols:1
-                        HtmlSymbolType.Text;[Foo];
-                Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:None - (40:0,40) - Symbols:1
-                    HtmlSymbolType.WhiteSpace;[ ];
-            Code span - Gen<Stmt> - [foo++; } while (foo<bar>);] - SpanEditHandler;Accepts:None - (41:0,41) - Symbols:15
-                CSharpSymbolType.Identifier;[foo];
-                CSharpSymbolType.Increment;[++];
-                CSharpSymbolType.Semicolon;[;];
-                CSharpSymbolType.WhiteSpace;[ ];
-                CSharpSymbolType.RightBrace;[}];
-                CSharpSymbolType.WhiteSpace;[ ];
-                CSharpSymbolType.Keyword;[while];
-                CSharpSymbolType.WhiteSpace;[ ];
-                CSharpSymbolType.LeftParenthesis;[(];
-                CSharpSymbolType.Identifier;[foo];
-                CSharpSymbolType.LessThan;[<];
-                CSharpSymbolType.Identifier;[bar];
-                CSharpSymbolType.GreaterThan;[>];
-                CSharpSymbolType.RightParenthesis;[)];
-                CSharpSymbolType.Semicolon;[;];
+                    Markup span - Gen<Markup> - [Foo] - SpanEditHandler;Accepts:Any - (33:0,33) - Tokens:1
+                        HtmlTokenType.Text;[Foo];
+                Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:None - (40:0,40) - Tokens:1
+                    HtmlTokenType.WhiteSpace;[ ];
+            Code span - Gen<Stmt> - [foo++; } while (foo<bar>);] - SpanEditHandler;Accepts:None - (41:0,41) - Tokens:15
+                CSharpTokenType.Identifier;[foo];
+                CSharpTokenType.Increment;[++];
+                CSharpTokenType.Semicolon;[;];
+                CSharpTokenType.WhiteSpace;[ ];
+                CSharpTokenType.RightBrace;[}];
+                CSharpTokenType.WhiteSpace;[ ];
+                CSharpTokenType.Keyword;[while];
+                CSharpTokenType.WhiteSpace;[ ];
+                CSharpTokenType.LeftParenthesis;[(];
+                CSharpTokenType.Identifier;[foo];
+                CSharpTokenType.LessThan;[<];
+                CSharpTokenType.Identifier;[bar];
+                CSharpTokenType.GreaterThan;[>];
+                CSharpTokenType.RightParenthesis;[)];
+                CSharpTokenType.Semicolon;[;];
         Tag block - Gen<None> - 8 - (67:0,67)
-            Markup span - Gen<Markup> - [<strong>] - SpanEditHandler;Accepts:Any - (67:0,67) - Symbols:3
-                HtmlSymbolType.OpenAngle;[<];
-                HtmlSymbolType.Text;[strong];
-                HtmlSymbolType.CloseAngle;[>];
-        Markup span - Gen<Markup> - [inside of ] - SpanEditHandler;Accepts:Any - (75:0,75) - Symbols:4
-            HtmlSymbolType.Text;[inside];
-            HtmlSymbolType.WhiteSpace;[ ];
-            HtmlSymbolType.Text;[of];
-            HtmlSymbolType.WhiteSpace;[ ];
+            Markup span - Gen<Markup> - [<strong>] - SpanEditHandler;Accepts:Any - (67:0,67) - Tokens:3
+                HtmlTokenType.OpenAngle;[<];
+                HtmlTokenType.Text;[strong];
+                HtmlTokenType.CloseAngle;[>];
+        Markup span - Gen<Markup> - [inside of ] - SpanEditHandler;Accepts:Any - (75:0,75) - Tokens:4
+            HtmlTokenType.Text;[inside];
+            HtmlTokenType.WhiteSpace;[ ];
+            HtmlTokenType.Text;[of];
+            HtmlTokenType.WhiteSpace;[ ];
         Statement block - Gen<None> - 58 - (85:0,85)
-            Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (85:0,85) - Symbols:1
-                CSharpSymbolType.Transition;[@];
-            Code span - Gen<Stmt> - [do { var foo = bar;] - SpanEditHandler;Accepts:Any - (86:0,86) - Symbols:12
-                CSharpSymbolType.Keyword;[do];
-                CSharpSymbolType.WhiteSpace;[ ];
-                CSharpSymbolType.LeftBrace;[{];
-                CSharpSymbolType.WhiteSpace;[ ];
-                CSharpSymbolType.Identifier;[var];
-                CSharpSymbolType.WhiteSpace;[ ];
-                CSharpSymbolType.Identifier;[foo];
-                CSharpSymbolType.WhiteSpace;[ ];
-                CSharpSymbolType.Assign;[=];
-                CSharpSymbolType.WhiteSpace;[ ];
-                CSharpSymbolType.Identifier;[bar];
-                CSharpSymbolType.Semicolon;[;];
+            Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (85:0,85) - Tokens:1
+                CSharpTokenType.Transition;[@];
+            Code span - Gen<Stmt> - [do { var foo = bar;] - SpanEditHandler;Accepts:Any - (86:0,86) - Tokens:12
+                CSharpTokenType.Keyword;[do];
+                CSharpTokenType.WhiteSpace;[ ];
+                CSharpTokenType.LeftBrace;[{];
+                CSharpTokenType.WhiteSpace;[ ];
+                CSharpTokenType.Identifier;[var];
+                CSharpTokenType.WhiteSpace;[ ];
+                CSharpTokenType.Identifier;[foo];
+                CSharpTokenType.WhiteSpace;[ ];
+                CSharpTokenType.Assign;[=];
+                CSharpTokenType.WhiteSpace;[ ];
+                CSharpTokenType.Identifier;[bar];
+                CSharpTokenType.Semicolon;[;];
             Markup block - Gen<None> - 12 - (105:0,105)
-                Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:Any - (105:0,105) - Symbols:1
-                    HtmlSymbolType.WhiteSpace;[ ];
+                Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:Any - (105:0,105) - Tokens:1
+                    HtmlTokenType.WhiteSpace;[ ];
                 Tag block - Gen<TagHelper> - 10 - (106:0,106) - p - ptaghelper
                     StartTagAndEndTag - <p> ... </p>
-                    Markup span - Gen<Markup> - [Foo] - SpanEditHandler;Accepts:Any - (109:0,109) - Symbols:1
-                        HtmlSymbolType.Text;[Foo];
-                Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:None - (116:0,116) - Symbols:1
-                    HtmlSymbolType.WhiteSpace;[ ];
-            Code span - Gen<Stmt> - [foo++; } while (foo<bar>);] - SpanEditHandler;Accepts:None - (117:0,117) - Symbols:15
-                CSharpSymbolType.Identifier;[foo];
-                CSharpSymbolType.Increment;[++];
-                CSharpSymbolType.Semicolon;[;];
-                CSharpSymbolType.WhiteSpace;[ ];
-                CSharpSymbolType.RightBrace;[}];
-                CSharpSymbolType.WhiteSpace;[ ];
-                CSharpSymbolType.Keyword;[while];
-                CSharpSymbolType.WhiteSpace;[ ];
-                CSharpSymbolType.LeftParenthesis;[(];
-                CSharpSymbolType.Identifier;[foo];
-                CSharpSymbolType.LessThan;[<];
-                CSharpSymbolType.Identifier;[bar];
-                CSharpSymbolType.GreaterThan;[>];
-                CSharpSymbolType.RightParenthesis;[)];
-                CSharpSymbolType.Semicolon;[;];
-        Markup span - Gen<Markup> - [ strong tag] - SpanEditHandler;Accepts:Any - (143:0,143) - Symbols:4
-            HtmlSymbolType.WhiteSpace;[ ];
-            HtmlSymbolType.Text;[strong];
-            HtmlSymbolType.WhiteSpace;[ ];
-            HtmlSymbolType.Text;[tag];
+                    Markup span - Gen<Markup> - [Foo] - SpanEditHandler;Accepts:Any - (109:0,109) - Tokens:1
+                        HtmlTokenType.Text;[Foo];
+                Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:None - (116:0,116) - Tokens:1
+                    HtmlTokenType.WhiteSpace;[ ];
+            Code span - Gen<Stmt> - [foo++; } while (foo<bar>);] - SpanEditHandler;Accepts:None - (117:0,117) - Tokens:15
+                CSharpTokenType.Identifier;[foo];
+                CSharpTokenType.Increment;[++];
+                CSharpTokenType.Semicolon;[;];
+                CSharpTokenType.WhiteSpace;[ ];
+                CSharpTokenType.RightBrace;[}];
+                CSharpTokenType.WhiteSpace;[ ];
+                CSharpTokenType.Keyword;[while];
+                CSharpTokenType.WhiteSpace;[ ];
+                CSharpTokenType.LeftParenthesis;[(];
+                CSharpTokenType.Identifier;[foo];
+                CSharpTokenType.LessThan;[<];
+                CSharpTokenType.Identifier;[bar];
+                CSharpTokenType.GreaterThan;[>];
+                CSharpTokenType.RightParenthesis;[)];
+                CSharpTokenType.Semicolon;[;];
+        Markup span - Gen<Markup> - [ strong tag] - SpanEditHandler;Accepts:Any - (143:0,143) - Tokens:4
+            HtmlTokenType.WhiteSpace;[ ];
+            HtmlTokenType.Text;[strong];
+            HtmlTokenType.WhiteSpace;[ ];
+            HtmlTokenType.Text;[tag];
         Tag block - Gen<None> - 9 - (154:0,154)
-            Markup span - Gen<Markup> - [</strong>] - SpanEditHandler;Accepts:Any - (154:0,154) - Symbols:4
-                HtmlSymbolType.OpenAngle;[<];
-                HtmlSymbolType.ForwardSlash;[/];
-                HtmlSymbolType.Text;[strong];
-                HtmlSymbolType.CloseAngle;[>];
+            Markup span - Gen<Markup> - [</strong>] - SpanEditHandler;Accepts:Any - (154:0,154) - Tokens:4
+                HtmlTokenType.OpenAngle;[<];
+                HtmlTokenType.ForwardSlash;[/];
+                HtmlTokenType.Text;[strong];
+                HtmlTokenType.CloseAngle;[>];

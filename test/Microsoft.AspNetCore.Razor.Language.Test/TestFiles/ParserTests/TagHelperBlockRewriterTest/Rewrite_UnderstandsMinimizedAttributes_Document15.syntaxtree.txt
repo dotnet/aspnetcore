@@ -3,8 +3,8 @@ Markup block - Gen<None> - 43 - (0:0,0)
         SelfClosing - <input string-prefix-value='some string' />
         string-prefix-value - SingleQuotes
             Markup block - Gen<None> - 11 - (28:0,28)
-                Markup span - Gen<Markup> - [some] - SpanEditHandler;Accepts:Any - (28:0,28) - Symbols:1
-                    HtmlSymbolType.Text;[some];
-                Markup span - Gen<Markup> - [ string] - SpanEditHandler;Accepts:Any - (32:0,32) - Symbols:2
-                    HtmlSymbolType.WhiteSpace;[ ];
-                    HtmlSymbolType.Text;[string];
+                Markup span - Gen<Markup> - [some] - SpanEditHandler;Accepts:Any - (28:0,28) - Tokens:1
+                    HtmlTokenType.Text;[some];
+                Markup span - Gen<Markup> - [ string] - SpanEditHandler;Accepts:Any - (32:0,32) - Tokens:2
+                    HtmlTokenType.WhiteSpace;[ ];
+                    HtmlTokenType.Text;[string];

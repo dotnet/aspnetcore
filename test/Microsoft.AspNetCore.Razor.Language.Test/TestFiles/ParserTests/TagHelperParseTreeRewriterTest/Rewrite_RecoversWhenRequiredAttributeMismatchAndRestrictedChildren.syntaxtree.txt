@@ -3,13 +3,13 @@ Markup block - Gen<None> - 43 - (0:0,0)
         StartTagAndEndTag - <strong required> ... </strong>
         required - Minimized
         Tag block - Gen<None> - 8 - (17:0,17)
-            Markup span - Gen<Markup> - [<strong>] - SpanEditHandler;Accepts:Any - (17:0,17) - Symbols:3
-                HtmlSymbolType.OpenAngle;[<];
-                HtmlSymbolType.Text;[strong];
-                HtmlSymbolType.CloseAngle;[>];
+            Markup span - Gen<Markup> - [<strong>] - SpanEditHandler;Accepts:Any - (17:0,17) - Tokens:3
+                HtmlTokenType.OpenAngle;[<];
+                HtmlTokenType.Text;[strong];
+                HtmlTokenType.CloseAngle;[>];
         Tag block - Gen<None> - 9 - (25:0,25)
-            Markup span - Gen<Markup> - [</strong>] - SpanEditHandler;Accepts:Any - (25:0,25) - Symbols:4
-                HtmlSymbolType.OpenAngle;[<];
-                HtmlSymbolType.ForwardSlash;[/];
-                HtmlSymbolType.Text;[strong];
-                HtmlSymbolType.CloseAngle;[>];
+            Markup span - Gen<Markup> - [</strong>] - SpanEditHandler;Accepts:Any - (25:0,25) - Tokens:4
+                HtmlTokenType.OpenAngle;[<];
+                HtmlTokenType.ForwardSlash;[/];
+                HtmlTokenType.Text;[strong];
+                HtmlTokenType.CloseAngle;[>];

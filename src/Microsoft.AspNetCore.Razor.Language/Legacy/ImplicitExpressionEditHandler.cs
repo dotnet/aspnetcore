@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         private readonly ISet<string> _keywords;
         private readonly IReadOnlyCollection<string> _readOnlyKeywords;
 
-        public ImplicitExpressionEditHandler(Func<string, IEnumerable<ISymbol>> tokenizer, ISet<string> keywords, bool acceptTrailingDot)
+        public ImplicitExpressionEditHandler(Func<string, IEnumerable<IToken>> tokenizer, ISet<string> keywords, bool acceptTrailingDot)
             : base(tokenizer)
         {
             _keywords = keywords ?? new HashSet<string>();
@@ -170,44 +170,44 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 return false;
             }
 
-            for (var i = 0; i < target.Symbols.Count; i++)
+            for (var i = 0; i < target.Tokens.Count; i++)
             {
-                var symbol = target.Symbols[i] as CSharpSymbol;
+                var token = target.Tokens[i] as CSharpToken;
 
-                if (symbol == null)
+                if (token == null)
                 {
                     break;
                 }
 
-                var symbolStartIndex = symbol.Start.AbsoluteIndex;
-                var symbolEndIndex = symbolStartIndex + symbol.Content.Length;
+                var tokenStartIndex = token.Start.AbsoluteIndex;
+                var tokenEndIndex = tokenStartIndex + token.Content.Length;
 
-                // We're looking for the first symbol that contains the SourceChange.
-                if (symbolEndIndex > change.Span.AbsoluteIndex)
+                // We're looking for the first token that contains the SourceChange.
+                if (tokenEndIndex > change.Span.AbsoluteIndex)
                 {
-                    if (symbolEndIndex >= change.Span.AbsoluteIndex + change.Span.Length && symbol.Type == CSharpSymbolType.Identifier)
+                    if (tokenEndIndex >= change.Span.AbsoluteIndex + change.Span.Length && token.Type == CSharpTokenType.Identifier)
                     {
-                        // The symbol we're changing happens to be an identifier. Need to check if its transformed state is also one.
+                        // The token we're changing happens to be an identifier. Need to check if its transformed state is also one.
                         // We do this transformation logic to capture the case that the new text change happens to not be an identifier;
                         // i.e. "5". Alone, it's numeric, within an identifier it's classified as identifier.
-                        var transformedContent = change.GetEditedContent(symbol.Content, change.Span.AbsoluteIndex - symbolStartIndex);
-                        var newSymbols = Tokenizer(transformedContent);
+                        var transformedContent = change.GetEditedContent(token.Content, change.Span.AbsoluteIndex - tokenStartIndex);
+                        var newTokens = Tokenizer(transformedContent);
 
-                        if (newSymbols.Count() != 1)
+                        if (newTokens.Count() != 1)
                         {
-                            // The transformed content resulted in more than one symbol; we can only replace a single identifier with
+                            // The transformed content resulted in more than one token; we can only replace a single identifier with
                             // another single identifier.
                             break;
                         }
 
-                        var newSymbol = (CSharpSymbol)newSymbols.First();
-                        if (newSymbol.Type == CSharpSymbolType.Identifier)
+                        var newToken = (CSharpToken)newTokens.First();
+                        if (newToken.Type == CSharpTokenType.Identifier)
                         {
                             return true;
                         }
                     }
 
-                    // Change is touching a non-identifier symbol or spans multiple symbols.
+                    // Change is touching a non-identifier token or spans multiple tokens.
 
                     break;
                 }
@@ -241,7 +241,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             var changeStart = change.Span.AbsoluteIndex;
             var changeLength = change.Span.Length;
             var changeEnd = changeStart + changeLength;
-            var tokens = target.Symbols.Cast<CSharpSymbol>().ToArray();
+            var tokens = target.Tokens.Cast<CSharpToken>().ToArray();
             if (!IsInsideParenthesis(changeStart, tokens) || !IsInsideParenthesis(changeEnd, tokens))
             {
                 // Either the start or end of the delete does not fall inside of parenthesis, unacceptable inner deletion.
@@ -274,7 +274,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 return false;
             }
 
-            var tokens = target.Symbols.Cast<CSharpSymbol>().ToArray();
+            var tokens = target.Tokens.Cast<CSharpToken>().ToArray();
             if (IsInsideParenthesis(change.Span.AbsoluteIndex, tokens))
             {
                 return true;
@@ -284,7 +284,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         // Internal for testing
-        internal static bool IsInsideParenthesis(int position, IReadOnlyList<CSharpSymbol> tokens)
+        internal static bool IsInsideParenthesis(int position, IReadOnlyList<CSharpToken> tokens)
         {
             var balanceCount = 0;
             var foundInsertionPoint = false;
@@ -322,7 +322,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         // Internal for testing
-        internal static bool ContainsPosition(int position, CSharpSymbol currentToken)
+        internal static bool ContainsPosition(int position, CSharpToken currentToken)
         {
             var tokenStart = currentToken.Start.AbsoluteIndex;
             if (tokenStart == position)
@@ -342,14 +342,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         // Internal for testing
-        internal static bool TryUpdateBalanceCount(CSharpSymbol token, ref int count)
+        internal static bool TryUpdateBalanceCount(CSharpToken token, ref int count)
         {
             var updatedCount = count;
-            if (token.Type == CSharpSymbolType.LeftParenthesis)
+            if (token.Type == CSharpTokenType.LeftParenthesis)
             {
                 updatedCount++;
             }
-            else if (token.Type == CSharpSymbolType.RightParenthesis)
+            else if (token.Type == CSharpTokenType.RightParenthesis)
             {
                 if (updatedCount == 0)
                 {
@@ -358,7 +358,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
                 updatedCount--;
             }
-            else if (token.Type == CSharpSymbolType.StringLiteral)
+            else if (token.Type == CSharpTokenType.StringLiteral)
             {
                 var content = token.Content;
                 if (content.Length > 0 && content[content.Length - 1] != '"')
@@ -370,7 +370,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     }
                 }
             }
-            else if (token.Type == CSharpSymbolType.CharacterLiteral)
+            else if (token.Type == CSharpTokenType.CharacterLiteral)
             {
                 var content = token.Content;
                 if (content.Length > 0 && content[content.Length - 1] != '\'')

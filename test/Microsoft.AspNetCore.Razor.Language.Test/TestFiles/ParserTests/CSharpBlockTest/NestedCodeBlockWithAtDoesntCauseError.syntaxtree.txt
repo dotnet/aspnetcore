@@ -1,25 +1,25 @@
 Statement block - Gen<None> - 28 - (0:0,0)
-    Code span - Gen<Stmt> - [if (true) { ] - SpanEditHandler;Accepts:Any - (0:0,0) - Symbols:8
-        CSharpSymbolType.Keyword;[if];
-        CSharpSymbolType.WhiteSpace;[ ];
-        CSharpSymbolType.LeftParenthesis;[(];
-        CSharpSymbolType.Keyword;[true];
-        CSharpSymbolType.RightParenthesis;[)];
-        CSharpSymbolType.WhiteSpace;[ ];
-        CSharpSymbolType.LeftBrace;[{];
-        CSharpSymbolType.WhiteSpace;[ ];
+    Code span - Gen<Stmt> - [if (true) { ] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:8
+        CSharpTokenType.Keyword;[if];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.LeftParenthesis;[(];
+        CSharpTokenType.Keyword;[true];
+        CSharpTokenType.RightParenthesis;[)];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.LeftBrace;[{];
+        CSharpTokenType.WhiteSpace;[ ];
     Statement block - Gen<None> - 14 - (12:0,12)
-        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (12:0,12) - Symbols:1
-            CSharpSymbolType.Transition;[@];
-        Code span - Gen<Stmt> - [if(false) { }] - SpanEditHandler;Accepts:Any - (13:0,13) - Symbols:8
-            CSharpSymbolType.Keyword;[if];
-            CSharpSymbolType.LeftParenthesis;[(];
-            CSharpSymbolType.Keyword;[false];
-            CSharpSymbolType.RightParenthesis;[)];
-            CSharpSymbolType.WhiteSpace;[ ];
-            CSharpSymbolType.LeftBrace;[{];
-            CSharpSymbolType.WhiteSpace;[ ];
-            CSharpSymbolType.RightBrace;[}];
-    Code span - Gen<Stmt> - [ }] - SpanEditHandler;Accepts:Any - (26:0,26) - Symbols:2
-        CSharpSymbolType.WhiteSpace;[ ];
-        CSharpSymbolType.RightBrace;[}];
+        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (12:0,12) - Tokens:1
+            CSharpTokenType.Transition;[@];
+        Code span - Gen<Stmt> - [if(false) { }] - SpanEditHandler;Accepts:Any - (13:0,13) - Tokens:8
+            CSharpTokenType.Keyword;[if];
+            CSharpTokenType.LeftParenthesis;[(];
+            CSharpTokenType.Keyword;[false];
+            CSharpTokenType.RightParenthesis;[)];
+            CSharpTokenType.WhiteSpace;[ ];
+            CSharpTokenType.LeftBrace;[{];
+            CSharpTokenType.WhiteSpace;[ ];
+            CSharpTokenType.RightBrace;[}];
+    Code span - Gen<Stmt> - [ }] - SpanEditHandler;Accepts:Any - (26:0,26) - Tokens:2
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.RightBrace;[}];

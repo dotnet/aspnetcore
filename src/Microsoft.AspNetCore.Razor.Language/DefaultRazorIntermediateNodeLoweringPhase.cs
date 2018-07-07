@@ -593,14 +593,14 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             public override void VisitMarkupSpan(MarkupChunkGenerator chunkGenerator, Span span)
             {
-                if (span.Symbols.Count == 1)
+                if (span.Tokens.Count == 1)
                 {
-                    var symbol = span.Symbols[0] as HtmlSymbol;
-                    if (symbol != null &&
-                        symbol.Type == HtmlSymbolType.Unknown &&
-                        symbol.Content.Length == 0)
+                    var token = span.Tokens[0] as HtmlToken;
+                    if (token != null &&
+                        token.Type == HtmlTokenType.Unknown &&
+                        token.Content.Length == 0)
                     {
-                        // We don't want to create IR nodes for marker symbols.
+                        // We don't want to create IR nodes for marker tokens.
                         return;
                     }
                 }

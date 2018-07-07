@@ -4,12 +4,12 @@ Markup block - Gen<None> - 28 - (0:0,0)
         bound - SingleQuotes
             Markup block - Gen<None> - 11 - (13:0,13)
                 Markup block - Gen<None> - 9 - (13:0,13)
-                    Code span - Gen<Expr> - [    ] - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14 - (13:0,13) - Symbols:1
-                        HtmlSymbolType.WhiteSpace;[    ];
+                    Code span - Gen<Expr> - [    ] - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14 - (13:0,13) - Tokens:1
+                        HtmlTokenType.WhiteSpace;[    ];
                     Expression block - Gen<Expr> - 5 - (17:0,17)
-                        Code span - Gen<Expr> - [@] - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14 - (17:0,17) - Symbols:1
-                            CSharpSymbolType.Transition;[@];
-                        Code span - Gen<Expr> - [true] - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14 - (18:0,18) - Symbols:1
-                            CSharpSymbolType.Keyword;[true];
-                Code span - Gen<Expr> - [  ] - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14 - (22:0,22) - Symbols:1
-                    HtmlSymbolType.WhiteSpace;[  ];
+                        Code span - Gen<Expr> - [@] - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14 - (17:0,17) - Tokens:1
+                            CSharpTokenType.Transition;[@];
+                        Code span - Gen<Expr> - [true] - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14 - (18:0,18) - Tokens:1
+                            CSharpTokenType.Keyword;[true];
+                Code span - Gen<Expr> - [  ] - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14 - (22:0,22) - Tokens:1
+                    HtmlTokenType.WhiteSpace;[  ];

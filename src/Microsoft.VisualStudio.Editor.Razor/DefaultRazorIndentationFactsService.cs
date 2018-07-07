@@ -142,9 +142,9 @@ namespace Microsoft.VisualStudio.Editor.Razor
         internal static bool IsCSharpOpenCurlyBrace(SyntaxTreeNode currentChild)
         {
             return currentChild is Span currentSpan &&
-                currentSpan.Symbols.Count == 1 &&
-                currentSpan.Symbols[0] is CSharpSymbol symbol &&
-                symbol.Type == CSharpSymbolType.LeftBrace;
+                currentSpan.Tokens.Count == 1 &&
+                currentSpan.Tokens[0] is CSharpToken symbol &&
+                symbol.Type == CSharpTokenType.LeftBrace;
         }
     }
 }

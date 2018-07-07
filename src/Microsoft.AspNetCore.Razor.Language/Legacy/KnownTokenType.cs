@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
-    internal enum KnownSymbolType
+    internal enum KnownTokenType
     {
         WhiteSpace,
         NewLine,

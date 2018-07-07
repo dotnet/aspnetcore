@@ -34,7 +34,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         {
             // Arrange
             var childBuilder = new SpanBuilder(SourceLocation.Zero);
-            childBuilder.Accept(new CSharpSymbol("{", CSharpSymbolType.LeftBrace));
+            childBuilder.Accept(new CSharpToken("{", CSharpTokenType.LeftBrace));
             var child = childBuilder.Build();
 
             // Act
@@ -45,16 +45,16 @@ namespace Microsoft.VisualStudio.Editor.Razor
         }
 
         [Theory]
-        [InlineData("if", CSharpSymbolType.Keyword)]
-        [InlineData("}", CSharpSymbolType.RightBrace)]
-        [InlineData("++", CSharpSymbolType.Increment)]
-        [InlineData("text", CSharpSymbolType.Identifier)]
+        [InlineData("if", CSharpTokenType.Keyword)]
+        [InlineData("}", CSharpTokenType.RightBrace)]
+        [InlineData("++", CSharpTokenType.Increment)]
+        [InlineData("text", CSharpTokenType.Identifier)]
         public void IsCSharpOpenCurlyBrace_SpanWithUnsupportedSymbolType_ReturnFalse(string content, object symbolTypeObject)
         {
             // Arrange
-            var symbolType = (CSharpSymbolType)symbolTypeObject;
+            var symbolType = (CSharpTokenType)symbolTypeObject;
             var childBuilder = new SpanBuilder(SourceLocation.Zero);
-            childBuilder.Accept(new CSharpSymbol(content, symbolType));
+            childBuilder.Accept(new CSharpToken(content, symbolType));
             var child = childBuilder.Build();
 
             // Act
@@ -69,8 +69,8 @@ namespace Microsoft.VisualStudio.Editor.Razor
         {
             // Arrange
             var childBuilder = new SpanBuilder(SourceLocation.Zero);
-            childBuilder.Accept(new CSharpSymbol("hello", CSharpSymbolType.Identifier));
-            childBuilder.Accept(new CSharpSymbol(",", CSharpSymbolType.Comma));
+            childBuilder.Accept(new CSharpToken("hello", CSharpTokenType.Identifier));
+            childBuilder.Accept(new CSharpToken(",", CSharpTokenType.Comma));
             var child = childBuilder.Build();
 
             // Act
@@ -85,7 +85,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         {
             // Arrange
             var childBuilder = new SpanBuilder(SourceLocation.Zero);
-            childBuilder.Accept(new HtmlSymbol("hello", HtmlSymbolType.Text));
+            childBuilder.Accept(new HtmlToken("hello", HtmlTokenType.Text));
             var child = childBuilder.Build();
 
             // Act

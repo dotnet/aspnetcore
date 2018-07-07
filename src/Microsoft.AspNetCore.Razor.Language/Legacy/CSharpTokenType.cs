@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
-    internal enum CSharpSymbolType
+    internal enum CSharpTokenType
     {
         Unknown,
         Identifier,

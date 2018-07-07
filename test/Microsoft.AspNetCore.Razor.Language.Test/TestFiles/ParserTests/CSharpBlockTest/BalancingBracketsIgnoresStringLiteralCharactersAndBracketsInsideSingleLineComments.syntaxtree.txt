@@ -1,19 +1,19 @@
 Statement block - Gen<None> - 47 - (0:0,0)
-    Code span - Gen<Stmt> - [if(foo) {LF    // bar } " baz 'LF    zoop();LF}] - SpanEditHandler;Accepts:Any - (0:0,0) - Symbols:17
-        CSharpSymbolType.Keyword;[if];
-        CSharpSymbolType.LeftParenthesis;[(];
-        CSharpSymbolType.Identifier;[foo];
-        CSharpSymbolType.RightParenthesis;[)];
-        CSharpSymbolType.WhiteSpace;[ ];
-        CSharpSymbolType.LeftBrace;[{];
-        CSharpSymbolType.NewLine;[LF];
-        CSharpSymbolType.WhiteSpace;[    ];
-        CSharpSymbolType.Comment;[// bar } " baz '];
-        CSharpSymbolType.NewLine;[LF];
-        CSharpSymbolType.WhiteSpace;[    ];
-        CSharpSymbolType.Identifier;[zoop];
-        CSharpSymbolType.LeftParenthesis;[(];
-        CSharpSymbolType.RightParenthesis;[)];
-        CSharpSymbolType.Semicolon;[;];
-        CSharpSymbolType.NewLine;[LF];
-        CSharpSymbolType.RightBrace;[}];
+    Code span - Gen<Stmt> - [if(foo) {LF    // bar } " baz 'LF    zoop();LF}] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:17
+        CSharpTokenType.Keyword;[if];
+        CSharpTokenType.LeftParenthesis;[(];
+        CSharpTokenType.Identifier;[foo];
+        CSharpTokenType.RightParenthesis;[)];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.LeftBrace;[{];
+        CSharpTokenType.NewLine;[LF];
+        CSharpTokenType.WhiteSpace;[    ];
+        CSharpTokenType.Comment;[// bar } " baz '];
+        CSharpTokenType.NewLine;[LF];
+        CSharpTokenType.WhiteSpace;[    ];
+        CSharpTokenType.Identifier;[zoop];
+        CSharpTokenType.LeftParenthesis;[(];
+        CSharpTokenType.RightParenthesis;[)];
+        CSharpTokenType.Semicolon;[;];
+        CSharpTokenType.NewLine;[LF];
+        CSharpTokenType.RightBrace;[}];
