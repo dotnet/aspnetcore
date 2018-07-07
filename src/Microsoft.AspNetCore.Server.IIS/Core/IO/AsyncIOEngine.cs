@@ -12,6 +12,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
 {
     internal partial class AsyncIOEngine : IAsyncIOEngine
     {
+        private readonly object _contextSync;
         private readonly IntPtr _handler;
 
         private bool _stopped;
@@ -23,8 +24,9 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
         private AsyncWriteOperation _cachedAsyncWriteOperation;
         private AsyncFlushOperation _cachedAsyncFlushOperation;
 
-        public AsyncIOEngine(IntPtr handler)
+        public AsyncIOEngine(object contextSync, IntPtr handler)
         {
+            _contextSync = contextSync;
             _handler = handler;
         }
 
@@ -46,7 +48,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
 
         private void Run(AsyncIOOperation ioOperation)
         {
-            lock (this)
+            lock (_contextSync)
             {
                 if (_stopped)
                 {
@@ -99,7 +101,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
             AsyncIOOperation.AsyncContinuation continuation;
             AsyncIOOperation.AsyncContinuation? nextContinuation = null;
 
-            lock (this)
+            lock (_contextSync)
             {
                 Debug.Assert(_runningOperation != null);
 
@@ -135,7 +137,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
 
         public void Dispose()
         {
-            lock (this)
+            lock (_contextSync)
             {
                 _stopped = true;
                 NativeMethods.HttpTryCancelIO(_handler);

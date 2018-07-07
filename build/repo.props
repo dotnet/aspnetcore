@@ -9,11 +9,6 @@
   <ItemGroup>
     <ExcludeFromTest Include="$(RepositoryRoot)test\TestSites\*.csproj" />
     <ExcludeFromTest Include="$(RepositoryRoot)test\IISTestSite\*.csproj" />
-    <ExcludeFromTest Include="$(RepositoryRoot)test\IISIntegration.FunctionalTests\*.csproj" Condition="'$(OS)' != 'Windows_NT'" />
-    <ExcludeFromTest Include="$(RepositoryRoot)test\IISIntegration.IISServerFunctionalTests\*.csproj" Condition="'$(OS)' != 'Windows_NT'" />
-    <ExcludeFromTest Include="$(RepositoryRoot)test\AspNetCoreModule.TestSites.Standard\*.csproj" />
-    <ExcludeFromTest Include="$(RepositoryRoot)test\WebSocketClientEXE\*.csproj" />
-    <ExcludeFromTest Include="$(RepositoryRoot)test\AspNetCoreModule.Test\*.csproj" Condition="'$(OS)' != 'Windows_NT'" />
     <ExcludeSolutions Include="$(RepositoryRoot)IISIntegration.NoV1.sln" />
   </ItemGroup>
 
