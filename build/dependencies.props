@@ -4,22 +4,22 @@
   </PropertyGroup>
   <PropertyGroup Label="Package Versions">
     <BenchmarkDotNetPackageVersion>0.10.13</BenchmarkDotNetPackageVersion>
-    <InternalAspNetCoreSdkPackageVersion>2.2.0-preview1-17090</InternalAspNetCoreSdkPackageVersion>
-    <MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>2.2.0-preview1-34530</MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>
-    <MicrosoftAspNetCoreHtmlAbstractionsPackageVersion>2.2.0-preview1-34530</MicrosoftAspNetCoreHtmlAbstractionsPackageVersion>
-    <MicrosoftAspNetCoreTestingPackageVersion>2.2.0-preview1-34530</MicrosoftAspNetCoreTestingPackageVersion>
+    <InternalAspNetCoreSdkPackageVersion>2.2.0-preview1-17099</InternalAspNetCoreSdkPackageVersion>
+    <MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>2.2.0-preview1-34640</MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>
+    <MicrosoftAspNetCoreHtmlAbstractionsPackageVersion>2.2.0-preview1-34640</MicrosoftAspNetCoreHtmlAbstractionsPackageVersion>
+    <MicrosoftAspNetCoreTestingPackageVersion>2.2.0-preview1-34640</MicrosoftAspNetCoreTestingPackageVersion>
     <MicrosoftBuildFrameworkPackageVersion>15.6.82</MicrosoftBuildFrameworkPackageVersion>
     <MicrosoftBuildPackageVersion>15.6.82</MicrosoftBuildPackageVersion>
     <MicrosoftBuildUtilitiesCorePackageVersion>15.6.82</MicrosoftBuildUtilitiesCorePackageVersion>
     <MicrosoftCodeAnalysisCommonPackageVersion>2.8.0</MicrosoftCodeAnalysisCommonPackageVersion>
     <MicrosoftCodeAnalysisCSharpPackageVersion>2.8.0</MicrosoftCodeAnalysisCSharpPackageVersion>
-    <MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>2.2.0-preview1-34530</MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>
-    <MicrosoftExtensionsCopyOnWriteDictionarySourcesPackageVersion>2.2.0-preview1-34530</MicrosoftExtensionsCopyOnWriteDictionarySourcesPackageVersion>
+    <MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>2.2.0-preview1-34640</MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>
+    <MicrosoftExtensionsCopyOnWriteDictionarySourcesPackageVersion>2.2.0-preview1-34640</MicrosoftExtensionsCopyOnWriteDictionarySourcesPackageVersion>
     <MicrosoftExtensionsDependencyModelPackageVersion>2.2.0-preview1-26618-02</MicrosoftExtensionsDependencyModelPackageVersion>
-    <MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>2.2.0-preview1-34530</MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>
-    <MicrosoftExtensionsWebEncodersPackageVersion>2.2.0-preview1-34530</MicrosoftExtensionsWebEncodersPackageVersion>
-    <MicrosoftNETCoreApp20PackageVersion>2.0.0</MicrosoftNETCoreApp20PackageVersion>
-    <MicrosoftNETCoreApp21PackageVersion>2.1.0</MicrosoftNETCoreApp21PackageVersion>
+    <MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>2.2.0-preview1-34640</MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>
+    <MicrosoftExtensionsWebEncodersPackageVersion>2.2.0-preview1-34640</MicrosoftExtensionsWebEncodersPackageVersion>
+    <MicrosoftNETCoreApp20PackageVersion>2.0.7</MicrosoftNETCoreApp20PackageVersion>
+    <MicrosoftNETCoreApp21PackageVersion>2.1.1</MicrosoftNETCoreApp21PackageVersion>
     <MicrosoftNETCoreApp22PackageVersion>2.2.0-preview1-26618-02</MicrosoftNETCoreApp22PackageVersion>
     <MicrosoftNETTestSdkPackageVersion>15.6.1</MicrosoftNETTestSdkPackageVersion>
     <MicrosoftVisualStudioComponentModelHostPackageVersion>15.0.26606</MicrosoftVisualStudioComponentModelHostPackageVersion>
@@ -59,7 +59,7 @@
     <VSIX_MicrosoftVisualStudioLanguageServicesRazorRemoteClientPackageVersion>2.9.0-beta4-62911-02</VSIX_MicrosoftVisualStudioLanguageServicesRazorRemoteClientPackageVersion>
     <XunitAnalyzersPackageVersion>0.8.0</XunitAnalyzersPackageVersion>
     <XunitPackageVersion>2.3.1</XunitPackageVersion>
-    <XunitRunnerVisualStudioPackageVersion>2.4.0-beta.1.build3945</XunitRunnerVisualStudioPackageVersion>
+    <XunitRunnerVisualStudioPackageVersion>2.4.0-rc.1.build4038</XunitRunnerVisualStudioPackageVersion>
   </PropertyGroup>
 
   <Import Project="$(DotNetPackageVersionPropsPath)" Condition=" '$(DotNetPackageVersionPropsPath)' != '' " />
