@@ -3,20 +3,20 @@
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
   <PropertyGroup Label="Package Versions">
-    <InternalAspNetCoreSdkPackageVersion>3.0.0-alpha1-10000</InternalAspNetCoreSdkPackageVersion>
-    <MicrosoftAspNetCoreHostingAbstractionsPackageVersion>3.0.0-alpha1-10016</MicrosoftAspNetCoreHostingAbstractionsPackageVersion>
-    <MicrosoftAspNetCoreHostingPackageVersion>3.0.0-alpha1-10016</MicrosoftAspNetCoreHostingPackageVersion>
-    <MicrosoftAspNetCoreTestingPackageVersion>3.0.0-alpha1-10016</MicrosoftAspNetCoreTestingPackageVersion>
+    <InternalAspNetCoreSdkPackageVersion>3.0.0-alpha1-10005</InternalAspNetCoreSdkPackageVersion>
+    <MicrosoftAspNetCoreHostingAbstractionsPackageVersion>3.0.0-alpha1-10044</MicrosoftAspNetCoreHostingAbstractionsPackageVersion>
+    <MicrosoftAspNetCoreHostingPackageVersion>3.0.0-alpha1-10044</MicrosoftAspNetCoreHostingPackageVersion>
+    <MicrosoftAspNetCoreTestingPackageVersion>3.0.0-alpha1-10044</MicrosoftAspNetCoreTestingPackageVersion>
     <MicrosoftAzureKeyVaultPackageVersion>2.3.2</MicrosoftAzureKeyVaultPackageVersion>
-    <MicrosoftExtensionsConfigurationJsonPackageVersion>3.0.0-alpha1-10016</MicrosoftExtensionsConfigurationJsonPackageVersion>
-    <MicrosoftExtensionsConfigurationPackageVersion>3.0.0-alpha1-10016</MicrosoftExtensionsConfigurationPackageVersion>
-    <MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>3.0.0-alpha1-10016</MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>
-    <MicrosoftExtensionsDependencyInjectionPackageVersion>3.0.0-alpha1-10016</MicrosoftExtensionsDependencyInjectionPackageVersion>
-    <MicrosoftExtensionsLoggingAbstractionsPackageVersion>3.0.0-alpha1-10016</MicrosoftExtensionsLoggingAbstractionsPackageVersion>
-    <MicrosoftExtensionsLoggingConsolePackageVersion>3.0.0-alpha1-10016</MicrosoftExtensionsLoggingConsolePackageVersion>
-    <MicrosoftExtensionsLoggingPackageVersion>3.0.0-alpha1-10016</MicrosoftExtensionsLoggingPackageVersion>
-    <MicrosoftExtensionsOptionsPackageVersion>3.0.0-alpha1-10016</MicrosoftExtensionsOptionsPackageVersion>
-    <MicrosoftExtensionsWebEncodersSourcesPackageVersion>3.0.0-alpha1-10016</MicrosoftExtensionsWebEncodersSourcesPackageVersion>
+    <MicrosoftExtensionsConfigurationJsonPackageVersion>3.0.0-alpha1-10044</MicrosoftExtensionsConfigurationJsonPackageVersion>
+    <MicrosoftExtensionsConfigurationPackageVersion>3.0.0-alpha1-10044</MicrosoftExtensionsConfigurationPackageVersion>
+    <MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>3.0.0-alpha1-10044</MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>
+    <MicrosoftExtensionsDependencyInjectionPackageVersion>3.0.0-alpha1-10044</MicrosoftExtensionsDependencyInjectionPackageVersion>
+    <MicrosoftExtensionsLoggingAbstractionsPackageVersion>3.0.0-alpha1-10044</MicrosoftExtensionsLoggingAbstractionsPackageVersion>
+    <MicrosoftExtensionsLoggingConsolePackageVersion>3.0.0-alpha1-10044</MicrosoftExtensionsLoggingConsolePackageVersion>
+    <MicrosoftExtensionsLoggingPackageVersion>3.0.0-alpha1-10044</MicrosoftExtensionsLoggingPackageVersion>
+    <MicrosoftExtensionsOptionsPackageVersion>3.0.0-alpha1-10044</MicrosoftExtensionsOptionsPackageVersion>
+    <MicrosoftExtensionsWebEncodersSourcesPackageVersion>3.0.0-alpha1-10044</MicrosoftExtensionsWebEncodersSourcesPackageVersion>
     <MicrosoftIdentityModelClientsActiveDirectoryPackageVersion>3.14.2</MicrosoftIdentityModelClientsActiveDirectoryPackageVersion>
     <MicrosoftNETCoreApp20PackageVersion>2.0.0</MicrosoftNETCoreApp20PackageVersion>
     <MicrosoftNETCoreApp21PackageVersion>2.1.0</MicrosoftNETCoreApp21PackageVersion>
@@ -30,7 +30,7 @@
     <SystemSecurityPrincipalWindowsPackageVersion>4.6.0-preview1-26617-01</SystemSecurityPrincipalWindowsPackageVersion>
     <WindowsAzureStoragePackageVersion>8.1.4</WindowsAzureStoragePackageVersion>
     <XunitPackageVersion>2.3.1</XunitPackageVersion>
-    <XunitRunnerVisualStudioPackageVersion>2.4.0-beta.1.build3945</XunitRunnerVisualStudioPackageVersion>
+    <XunitRunnerVisualStudioPackageVersion>2.4.0-rc.1.build4038</XunitRunnerVisualStudioPackageVersion>
   </PropertyGroup>
   <Import Project="$(DotNetPackageVersionPropsPath)" Condition=" '$(DotNetPackageVersionPropsPath)' != '' " />
 </Project>
