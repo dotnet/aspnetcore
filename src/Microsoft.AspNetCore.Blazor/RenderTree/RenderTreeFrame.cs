@@ -137,13 +137,13 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
         /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.ElementReferenceCapture"/>,
         /// gets the ID of the reference capture. Otherwise, the value is undefined.
         /// </summary>
-        [FieldOffset(8)] public readonly int ElementReferenceCaptureId;
+        [FieldOffset(16)] public readonly string ElementReferenceCaptureId;
 
         /// <summary>
         /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.ElementReferenceCapture"/>,
         /// gets the action that writes the reference to its target. Otherwise, the value is undefined.
         /// </summary>
-        [FieldOffset(16)] public readonly Action<ElementRef> ElementReferenceCaptureAction;
+        [FieldOffset(24)] public readonly Action<ElementRef> ElementReferenceCaptureAction;
 
         // --------------------------------------------------------------------------------
         // RenderTreeFrameType.ComponentReferenceCapture
@@ -227,7 +227,7 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
             RegionSubtreeLength = regionSubtreeLength;
         }
 
-        private RenderTreeFrame(int sequence, Action<ElementRef> elementReferenceCaptureAction, int elementReferenceCaptureId)
+        private RenderTreeFrame(int sequence, Action<ElementRef> elementReferenceCaptureAction, string elementReferenceCaptureId)
             : this()
         {
             FrameType = RenderTreeFrameType.ElementReferenceCapture;
@@ -264,7 +264,7 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
             => new RenderTreeFrame(sequence, regionSubtreeLength: 0);
 
         internal static RenderTreeFrame ElementReferenceCapture(int sequence, Action<ElementRef> elementReferenceCaptureAction)
-            => new RenderTreeFrame(sequence, elementReferenceCaptureAction: elementReferenceCaptureAction, elementReferenceCaptureId: 0);
+            => new RenderTreeFrame(sequence, elementReferenceCaptureAction: elementReferenceCaptureAction, elementReferenceCaptureId: null);
 
         internal static RenderTreeFrame ComponentReferenceCapture(int sequence, Action<object> componentReferenceCaptureAction, int parentFrameIndex)
             => new RenderTreeFrame(sequence, componentReferenceCaptureAction: componentReferenceCaptureAction, parentFrameIndex: parentFrameIndex);
@@ -287,7 +287,7 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
         internal RenderTreeFrame WithRegionSubtreeLength(int regionSubtreeLength)
             => new RenderTreeFrame(Sequence, regionSubtreeLength: regionSubtreeLength);
 
-        internal RenderTreeFrame WithElementReferenceCaptureId(int elementReferenceCaptureId)
+        internal RenderTreeFrame WithElementReferenceCaptureId(string elementReferenceCaptureId)
             => new RenderTreeFrame(Sequence, ElementReferenceCaptureAction, elementReferenceCaptureId);
 
         /// <inheritdoc />

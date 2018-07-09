@@ -194,7 +194,7 @@ namespace Microsoft.AspNetCore.Blazor.Server
                     RenderTreeFrame.Element(128, "Some element")
                         .WithElementSubtreeLength(1234),
                     RenderTreeFrame.ElementReferenceCapture(129, value => { })
-                        .WithElementReferenceCaptureId(12121),
+                        .WithElementReferenceCaptureId("my unique ID"),
                     RenderTreeFrame.Region(130)
                         .WithRegionSubtreeLength(1234),
                     RenderTreeFrame.Text(131, "Some text"),
@@ -212,7 +212,7 @@ namespace Microsoft.AspNetCore.Blazor.Server
                 RenderTreeFrameType.Component, 5678, 2000, 0,
                 RenderTreeFrameType.ComponentReferenceCapture, 0, 0, 0,
                 RenderTreeFrameType.Element, 1234, "Some element", 0,
-                RenderTreeFrameType.ElementReferenceCapture, 12121, 0, 0,
+                RenderTreeFrameType.ElementReferenceCapture, "my unique ID", 0, 0,
                 RenderTreeFrameType.Region, 1234, 0, 0,
                 RenderTreeFrameType.Text, "Some text", 0, 0
             );

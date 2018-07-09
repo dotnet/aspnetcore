@@ -158,7 +158,7 @@ namespace Microsoft.AspNetCore.Blazor.Server.Circuits
                     WritePadding(_binaryWriter, 4);
                     break;
                 case RenderTreeFrameType.ElementReferenceCapture:
-                    _binaryWriter.Write(frame.ElementReferenceCaptureId);
+                    WriteString(frame.ElementReferenceCaptureId);
                     WritePadding(_binaryWriter, 8);
                     break;
                 case RenderTreeFrameType.Region:

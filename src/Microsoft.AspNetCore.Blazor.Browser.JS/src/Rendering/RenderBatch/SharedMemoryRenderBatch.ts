@@ -77,7 +77,7 @@ const frameReader = {
   structLength: 28,
   frameType: (frame: RenderTreeFrame) => platform.readInt32Field(frame as any, 4) as FrameType,
   subtreeLength: (frame: RenderTreeFrame) => platform.readInt32Field(frame as any, 8),
-  elementReferenceCaptureId: (frame: RenderTreeFrame) => platform.readInt32Field(frame as any, 8),
+  elementReferenceCaptureId: (frame: RenderTreeFrame) => platform.readStringField(frame as any, 16),
   componentId: (frame: RenderTreeFrame) => platform.readInt32Field(frame as any, 12),
   elementName: (frame: RenderTreeFrame) => platform.readStringField(frame as any, 16),
   textContent: (frame: RenderTreeFrame) => platform.readStringField(frame as any, 16),

@@ -43,7 +43,7 @@ export interface RenderTreeEditReader {
 export interface RenderTreeFrameReader {
   frameType(frame: RenderTreeFrame): FrameType;
   subtreeLength(frame: RenderTreeFrame): number;
-  elementReferenceCaptureId(frame: RenderTreeFrame): number;
+  elementReferenceCaptureId(frame: RenderTreeFrame): string | null;
   componentId(frame: RenderTreeFrame): number;
   elementName(frame: RenderTreeFrame): string | null;
   textContent(frame: RenderTreeFrame): string | null;
