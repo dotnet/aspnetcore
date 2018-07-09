@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     values[i] = value as string ?? Convert.ToString(value);
                 }
             }
-            
+
             if (cache.OrdinalEntries.TryGetValue(values, out var matchingRouteValues) ||
                 cache.OrdinalIgnoreCaseEntries.TryGetValue(values, out matchingRouteValues))
             {
@@ -441,7 +441,14 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 var hash = new HashCodeCombiner();
                 for (var i = 0; i < obj.Length; i++)
                 {
-                    hash.Add(obj[i], _valueComparer);
+                    var o = obj[i];
+
+                    // Route values define null and "" to be equivalent.
+                    if (string.IsNullOrEmpty(o))
+                    {
+                        o = null;
+                    }
+                    hash.Add(o, _valueComparer);
                 }
 
                 return hash.CombinedHash;
