@@ -363,6 +363,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             var valueEnd = length - 3;
             var nameEnd = FindEndOfName(headerLine, length);
 
+            // Header name is empty
+            if (nameEnd == 0)
+            {
+                RejectRequestHeader(headerLine, length);
+            }
+
             if (headerLine[valueEnd + 2] != ByteLF)
             {
                 RejectRequestHeader(headerLine, length);
@@ -437,53 +443,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         [MethodImpl(MethodImplOptions.NoInlining)]
         private unsafe Span<byte> GetUnknownMethod(byte* data, int length, out int methodLength)
         {
-            methodLength = 0;
-            for (var i = 0; i < length; i++)
+            var invalidIndex = HttpCharacters.IndexOfInvalidTokenChar(data, length);
+
+            if (invalidIndex <= 0 || data[invalidIndex] != ByteSpace)
             {
-                var ch = data[i];
-
-                if (ch == ByteSpace)
-                {
-                    if (i == 0)
-                    {
-                        RejectRequestLine(data, length);
-                    }
-
-                    methodLength = i;
-                    break;
-                }
-                else if (!IsValidTokenChar((char)ch))
-                {
-                    RejectRequestLine(data, length);
-                }
+                RejectRequestLine(data, length);
             }
 
+            methodLength = invalidIndex;
             return new Span<byte>(data, methodLength);
-        }
-
-        private static bool IsValidTokenChar(char c)
-        {
-            // Determines if a character is valid as a 'token' as defined in the
-            // HTTP spec: https://tools.ietf.org/html/rfc7230#section-3.2.6
-            return
-                (c >= '0' && c <= '9') ||
-                (c >= 'A' && c <= 'Z') ||
-                (c >= 'a' && c <= 'z') ||
-                c == '!' ||
-                c == '#' ||
-                c == '$' ||
-                c == '%' ||
-                c == '&' ||
-                c == '\'' ||
-                c == '*' ||
-                c == '+' ||
-                c == '-' ||
-                c == '.' ||
-                c == '^' ||
-                c == '_' ||
-                c == '`' ||
-                c == '|' ||
-                c == '~';
         }
 
         [StackTraceHidden]

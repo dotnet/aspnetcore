@@ -403,7 +403,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected override void SetValueFast(string key, in StringValues value)
         {{{(loop.ClassName == "HttpResponseHeaders" ? @"
-            ValidateHeaderCharacters(value);" : "")}
+            ValidateHeaderValueCharacters(value);" : "")}
             switch (key.Length)
             {{{Each(loop.HeadersByLength, byLength => $@"
                 case {byLength.Key}:
@@ -425,7 +425,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected override bool AddValueFast(string key, in StringValues value)
         {{{(loop.ClassName == "HttpResponseHeaders" ? @"
-            ValidateHeaderCharacters(value);" : "")}
+            ValidateHeaderValueCharacters(value);" : "")}
             switch (key.Length)
             {{{Each(loop.HeadersByLength, byLength => $@"
                 case {byLength.Key}:
@@ -451,7 +451,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     break;")}
             }}
 {(loop.ClassName == "HttpResponseHeaders" ? @"
-            ValidateHeaderCharacters(key);" : "")}
+            ValidateHeaderNameCharacters(key);" : "")}
             Unknown.Add(key, value);
             // Return true, above will throw and exit for false
             return true;

@@ -13,8 +13,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
     public static partial class HttpUtilities
     {
-        private static readonly bool[] HostCharValidity = new bool[127];
-
         public const string Http10Version = "HTTP/1.0";
         public const string Http11Version = "HTTP/1.1";
         public const string Http2Version = "HTTP/2";
@@ -30,35 +28,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
         private const ulong _http10VersionLong = 3471766442030158920; // GetAsciiStringAsLong("HTTP/1.0"); const results in better codegen
         private const ulong _http11VersionLong = 3543824036068086856; // GetAsciiStringAsLong("HTTP/1.1"); const results in better codegen
-
-        // Only called from the static constructor
-        private static void InitializeHostCharValidity()
-        {
-            // Matches Http.Sys
-            // Matches RFC 3986 except "*" / "+" / "," / ";" / "=" and "%" HEXDIG HEXDIG which are not allowed by Http.Sys
-            HostCharValidity['!'] = true;
-            HostCharValidity['$'] = true;
-            HostCharValidity['&'] = true;
-            HostCharValidity['\''] = true;
-            HostCharValidity['('] = true;
-            HostCharValidity[')'] = true;
-            HostCharValidity['-'] = true;
-            HostCharValidity['.'] = true;
-            HostCharValidity['_'] = true;
-            HostCharValidity['~'] = true;
-            for (var ch = '0'; ch <= '9'; ch++)
-            {
-                HostCharValidity[ch] = true;
-            }
-            for (var ch = 'A'; ch <= 'Z'; ch++)
-            {
-                HostCharValidity[ch] = true;
-            }
-            for (var ch = 'a'; ch <= 'z'; ch++)
-            {
-                HostCharValidity[ch] = true;
-            }
-        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void SetKnownMethod(ulong mask, ulong knownMethodUlong, HttpMethod knownMethod, int length)
@@ -448,16 +417,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                     BadHttpRequestException.Throw(RequestRejectionReason.InvalidHostHeader, hostText);
                 }
 
-                // Enregister array
-                var hostCharValidity = HostCharValidity;
-                for (var i = 0; i < hostText.Length; i++)
+                var invalid = HttpCharacters.IndexOfInvalidHostChar(hostText);
+                if (invalid >= 0)
                 {
-                    if (!hostCharValidity[hostText[i]])
-                    {
-                        // Tail call
-                        ValidateHostPort(hostText, i); 
-                        return;
-                    }
+                    // Tail call
+                    ValidateHostPort(hostText, invalid);
                 }
             }
         }

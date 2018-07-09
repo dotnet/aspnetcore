@@ -524,6 +524,9 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
   <data name="Http2ErrorInvalidPreface" xml:space="preserve">
     <value>Invalid HTTP/2 connection preface.</value>
   </data>
+  <data name="InvalidEmptyHeaderName" xml:space="preserve">
+    <value>Header name cannot be a null or empty string.</value>
+  </data>
   <data name="ConnectionOrStreamAbortedByCancellationToken" xml:space="preserve">
     <value>The connection or stream was aborted because a write operation was aborted with a CancellationToken.</value>
   </data>

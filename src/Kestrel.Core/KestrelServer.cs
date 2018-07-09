@@ -57,6 +57,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             Features = new FeatureCollection();
             _serverAddresses = new ServerAddressesFeature();
             Features.Set(_serverAddresses);
+
+            HttpCharacters.Initialize();
         }
 
         private static ServiceContext CreateServiceContext(IOptions<KestrelServerOptions> options, ILoggerFactory loggerFactory)

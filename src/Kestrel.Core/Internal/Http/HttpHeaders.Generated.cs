@@ -5862,7 +5862,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected override void SetValueFast(string key, in StringValues value)
         {
-            ValidateHeaderCharacters(value);
+            ValidateHeaderValueCharacters(value);
             switch (key.Length)
             {
                 case 13:
@@ -6167,7 +6167,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected override bool AddValueFast(string key, in StringValues value)
         {
-            ValidateHeaderCharacters(value);
+            ValidateHeaderValueCharacters(value);
             switch (key.Length)
             {
                 case 13:
@@ -6611,7 +6611,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     break;
             }
 
-            ValidateHeaderCharacters(key);
+            ValidateHeaderNameCharacters(key);
             Unknown.Add(key, value);
             // Return true, above will throw and exit for false
             return true;
