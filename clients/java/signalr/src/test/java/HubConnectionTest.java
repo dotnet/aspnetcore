@@ -19,6 +19,46 @@ public class HubConnectionTest {
         assertFalse(hubConnection.connected);
     }
 
+    @Test
+    public void RegisteringMultipleHandlersAndBothGetTriggered() throws Exception {
+
+        AtomicReference<Double> value = new AtomicReference<>(0.0);
+        Transport mockTransport = new MockEchoTransport();
+        HubConnection hubConnection = new HubConnection("http://example.com", mockTransport);
+        Action action = () -> value.getAndUpdate((val) -> val + 1);
+
+        hubConnection.on("inc", action);
+        hubConnection.on("inc", action);
+
+        assertEquals(0.0, value.get(), 0);
+
+        hubConnection.start();
+        hubConnection.send("inc");
+
+        // Confirming that our handler was called and that the counter property was incremented.
+        assertEquals(2, value.get(), 0);
+    }
+
+    @Test
+    public void RegisteringMultipleHandlersThatTakeParamsAndBothGetTriggered() throws Exception {
+        AtomicReference<Double> value = new AtomicReference<>(0.0);
+        Transport mockTransport = new MockEchoTransport();
+        HubConnection hubConnection = new HubConnection("http://example.com", mockTransport);
+
+        Action1<Double> action = (number) -> value.getAndUpdate((val) -> val + number);
+
+        hubConnection.on("add", action, Double.class);
+        hubConnection.on("add", action, Double.class);
+
+        assertEquals(0, value.get(), 0);
+        hubConnection.start();
+        hubConnection.send("add", 12);
+
+        // Confirming that our handler was called and the correct message was passed in.
+        assertEquals(24, value.get(), 0);
+    }
+
+
     // We're using AtomicReference<Double> in the send tests instead of int here because Gson has trouble deserializing to Integer
     @Test
     public void SendWithNoParamsTriggersOnHandler() throws Exception {
@@ -29,7 +69,7 @@ public class HubConnectionTest {
 
         hubConnection.on("inc", () ->{
             assertEquals(0.0, value.get(), 0);
-            value.getAndSet(value.get() + 1);
+            value.getAndUpdate((val) -> val + 1);
         });
 
         hubConnection.start();

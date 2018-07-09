@@ -6,13 +6,13 @@ import com.google.gson.JsonArray;
 
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.List;
 
 public class HubConnection {
     private String url;
     private Transport transport;
     private OnReceiveCallBack callback;
-    private HashMap<String, ActionBase> handlers = new HashMap<>();
+    private CallbackMap handlers = new CallbackMap();
     private HubProtocol protocol;
     private Gson gson = new Gson();
 
@@ -29,9 +29,13 @@ public class HubConnection {
             // Adding this to avoid getting error messages on pings for now.
             for (InvocationMessage message : messages) {
                 if (message != null && handlers.containsKey(message.target)) {
-                    ArrayList<Object> types = gson.fromJson((JsonArray)message.arguments[0], (new ArrayList<Object>()).getClass());
-
-                    handlers.get(message.target).invoke(types.toArray());
+                    ArrayList<Object> args = gson.fromJson((JsonArray)message.arguments[0], (new ArrayList<Object>()).getClass());
+                    List<ActionBase> actions = handlers.get(message.target);
+                    if (actions != null) {
+                        for (ActionBase action: actions) {
+                            action.invoke(args.toArray());
+                        }
+                    }
                 }
             }
         };
