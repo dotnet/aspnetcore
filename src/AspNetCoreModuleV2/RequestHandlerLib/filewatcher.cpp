@@ -1,10 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
+#include "stdafx.h"
 #include "filewatcher.h"
-
-#include "ntassert.h"
-#include "applicationinfo.h"
 
 FILE_WATCHER::FILE_WATCHER() :
     m_hCompletionPort(NULL),
@@ -214,7 +212,7 @@ FILE_WATCHER_ENTRY::FILE_WATCHER_ENTRY(FILE_WATCHER *   pFileMonitor) :
     _pFileMonitor(pFileMonitor),
     _hDirectory(INVALID_HANDLE_VALUE),
     _hImpersonationToken(NULL),
-    _pApplicationInfo(NULL),
+    _pCallback(),
     _lStopMonitorCalled(0),
     _cRefs(1),
     _fIsValid(TRUE)
@@ -225,6 +223,8 @@ FILE_WATCHER_ENTRY::FILE_WATCHER_ENTRY(FILE_WATCHER *   pFileMonitor) :
 
 FILE_WATCHER_ENTRY::~FILE_WATCHER_ENTRY()
 {
+    StopMonitor();
+
     _dwSignature = FILE_WATCHER_ENTRY_SIGNATURE_FREE;
 
     if (_hDirectory != INVALID_HANDLE_VALUE)
@@ -330,16 +330,16 @@ HRESULT
         }
     }
 
+Finished:
+    ReleaseSRWLockExclusive(&_srwLock);
+
     if (fFileChanged)
     {
         //
         // so far we only monitoring app_offline
         //
-        _pApplicationInfo->UpdateAppOfflineFileHandle();
+        _pCallback();
     }
-
-Finished:
-    ReleaseSRWLockExclusive(&_srwLock);
     return hr;
 }
 
@@ -399,7 +399,7 @@ HRESULT
 FILE_WATCHER_ENTRY::Create(
     _In_ PCWSTR                  pszDirectoryToMonitor,
     _In_ PCWSTR                  pszFileNameToMonitor,
-    _In_ APPLICATION_INFO*       pApplicationInfo,
+    _In_ std::function<void()>   pCallback,
     _In_ HANDLE                  hImpersonationToken
 )
 {
@@ -408,17 +408,14 @@ FILE_WATCHER_ENTRY::Create(
 
     if (pszDirectoryToMonitor == NULL ||
         pszFileNameToMonitor == NULL ||
-        pApplicationInfo == NULL)
+        pCallback == NULL)
     {
         DBG_ASSERT(FALSE);
         hr = HRESULT_FROM_WIN32(ERROR_INVALID_PARAMETER);
         goto Finished;
     }
 
-    //
-    //remember the application
-    //
-    _pApplicationInfo = pApplicationInfo;
+    _pCallback = pCallback;
 
     if (FAILED(hr = _strFileName.Copy(pszFileNameToMonitor)))
     {

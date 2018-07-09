@@ -3,21 +3,13 @@
 
 #pragma once
 
-#include "precomp.hxx"
 #include "requesthandler.h"
-#include "StartupExceptionApplication.h"
 
 class StartupExceptionApplication;
 
 class StartupExceptionHandler : public REQUEST_HANDLER
 {
 public:
-    virtual REQUEST_NOTIFICATION_STATUS OnExecuteRequestHandler() override;
-
-    virtual REQUEST_NOTIFICATION_STATUS OnAsyncCompletion(DWORD cbCompletion, HRESULT hrCompletionStatus) override;
-
-    virtual VOID TerminateRequest(bool fClientInitiated) override;
-
     StartupExceptionHandler(IHttpContext* pContext, BOOL disableLogs, StartupExceptionApplication* pApplication)
         :
         m_pContext(pContext),
@@ -26,9 +18,7 @@ public:
     {
     }
 
-    ~StartupExceptionHandler()
-    {
-    }
+    REQUEST_NOTIFICATION_STATUS OnExecuteRequestHandler() override;
 
 private:
     IHttpContext * m_pContext;

@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
+#include "precomp.hxx"
 #include "inprocesshandler.h"
 #include "inprocessapplication.h"
 #include "aspnetcore_event.h"
@@ -12,9 +13,10 @@ IN_PROCESS_HANDLER::IN_PROCESS_HANDLER(
     _In_ IHttpContext   *pW3Context,
     _In_ IN_PROCESS_APPLICATION    *pApplication
 ):  m_pW3Context(pW3Context),
-    m_pApplication(pApplication)
+    m_requestNotificationStatus(RQ_NOTIFICATION_PENDING),
+    m_pApplication(pApplication),
+    m_fManagedRequestComplete(FALSE)
 {
-    m_fManagedRequestComplete = FALSE;
 }
 
 IN_PROCESS_HANDLER::~IN_PROCESS_HANDLER()

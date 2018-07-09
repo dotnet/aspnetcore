@@ -41,7 +41,6 @@ public:
 class MockElement : public IAppHostElement
 {
 public:
-
     MOCK_METHOD2_WITH_CALLTYPE(__stdcall, QueryInterface, HRESULT(REFIID riid, void ** ppvObject));
     MOCK_METHOD0_WITH_CALLTYPE(__stdcall, AddRef, ULONG());
     MOCK_METHOD0_WITH_CALLTYPE(__stdcall, Release, ULONG());
@@ -165,6 +164,16 @@ class MockHttpServer : public IHttpServer
     {
         return E_NOTIMPL;
     }
+};
+
+
+class MockHttpApplication: public IHttpApplication
+{
+public:
+    MOCK_CONST_METHOD0(GetApplicationPhysicalPath, PCWSTR ());
+    MOCK_CONST_METHOD0(GetApplicationId, PCWSTR ());
+    MOCK_CONST_METHOD0(GetAppConfigPath, PCWSTR ());
+    MOCK_METHOD0(GetModuleContextContainer, IHttpModuleContextContainer* ());
 };
 
 class MockRequestHandlerConfig : public REQUESTHANDLER_CONFIG

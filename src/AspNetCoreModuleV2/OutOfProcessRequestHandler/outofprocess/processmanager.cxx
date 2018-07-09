@@ -114,6 +114,11 @@ PROCESS_MANAGER::GetProcess(
     DWORD            dwProcessIndex = 0;
     SERVER_PROCESS  *pSelectedServerProcess = NULL;
 
+    if (InterlockedCompareExchange(&m_lStopping, 1L, 1L) == 1L)
+    {
+        return hr = E_APPLICATION_EXITING;
+    }
+
     if (!m_fServerProcessListReady)
     {
         AcquireSRWLockExclusive(&m_srwLock);

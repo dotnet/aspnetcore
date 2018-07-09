@@ -3,7 +3,9 @@
 
 #pragma once
 
-class OUT_OF_PROCESS_APPLICATION : public APPLICATION
+#include "AppOfflineTrackingApplication.h"
+
+class OUT_OF_PROCESS_APPLICATION : public AppOfflineTrackingApplication
 {
     enum WEBSOCKET_STATUS
     {
@@ -14,7 +16,8 @@ class OUT_OF_PROCESS_APPLICATION : public APPLICATION
 
 public:
     OUT_OF_PROCESS_APPLICATION(
-        REQUESTHANDLER_CONFIG  *pConfig);
+        IHttpApplication& pApplication,
+        std::unique_ptr<REQUESTHANDLER_CONFIG> pConfig);
 
     __override
     ~OUT_OF_PROCESS_APPLICATION() override;
@@ -44,13 +47,14 @@ public:
         _Out_ IREQUEST_HANDLER   **pRequestHandler)
     override;
 
-    REQUESTHANDLER_CONFIG*
-    QueryConfig()
-    const;
-
     BOOL
     QueryWebsocketStatus()
     const;
+
+    REQUESTHANDLER_CONFIG* QueryConfig()
+    {
+        return m_pConfig.get();
+    }
 
 private:
 
@@ -60,6 +64,6 @@ private:
     SRWLOCK           m_srwLock;
     IHttpServer      *m_pHttpServer;
 
-    REQUESTHANDLER_CONFIG*        m_pConfig;
     WEBSOCKET_STATUS              m_fWebSocketSupported;
+    std::unique_ptr<REQUESTHANDLER_CONFIG> m_pConfig;
 };

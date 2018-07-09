@@ -54,7 +54,8 @@ enum APP_HOSTING_MODEL
 class REQUESTHANDLER_CONFIG
 {
 public:
-    virtual
+
+
     ~REQUESTHANDLER_CONFIG();
 
     static
@@ -217,7 +218,6 @@ protected:
     REQUESTHANDLER_CONFIG() :
         m_fStdoutLogEnabled(FALSE),
         m_pEnvironmentVariables(NULL),
-        m_cRefs(1),
         m_hostingModel(HOSTING_UNKNOWN),
         m_ppStrArguments(NULL)
     {
@@ -228,8 +228,6 @@ protected:
         IHttpServer      *pHttpServer,
         IHttpApplication *pHttpApplication
     );
-
-    mutable LONG           m_cRefs;
 
     DWORD                  m_dwRequestTimeoutInMS;
     DWORD                  m_dwStartupTimeLimitInMS;
@@ -254,4 +252,5 @@ protected:
     STRU                   m_struHostFxrLocation;
     PWSTR*                 m_ppStrArguments;
     DWORD                  m_dwArgc;
+
 };

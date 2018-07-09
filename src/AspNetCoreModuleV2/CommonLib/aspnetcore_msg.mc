@@ -171,7 +171,7 @@ Language=English
 .
 
 Messageid=1024
-SymbolicName=ASPNETCORE_EVENT_RECYCLE_APPOFFLINE_REMOVED
+SymbolicName=ASPNETCORE_EVENT_MONITOR_APPOFFLINE_ERROR
 Language=English
 %1
 .

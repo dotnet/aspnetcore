@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
+#include "precomp.hxx"
 #include "inprocessapplication.h"
 #include "inprocesshandler.h"
 #include "hostfxroptions.h"
@@ -18,17 +19,17 @@ const LPCSTR IN_PROCESS_APPLICATION::s_exeLocationParameterName = "InProcessExeL
 IN_PROCESS_APPLICATION*  IN_PROCESS_APPLICATION::s_Application = NULL;
 
 IN_PROCESS_APPLICATION::IN_PROCESS_APPLICATION(
-    IHttpServer *pHttpServer,
+    IHttpServer& pHttpServer,
+    IHttpApplication& pApplication,
     std::unique_ptr<REQUESTHANDLER_CONFIG> pConfig,
     APPLICATION_PARAMETER *pParameters,
     DWORD                  nParameters) :
-    InProcessApplicationBase(pHttpServer),
+    InProcessApplicationBase(pHttpServer, pApplication),
     m_pHttpServer(pHttpServer),
     m_ProcessExitCode(0),
     m_fBlockCallbacksIntoManaged(FALSE),
     m_fShutdownCalledFromNative(FALSE),
     m_fShutdownCalledFromManaged(FALSE),
-    m_fInitialized(FALSE),
     m_pConfig(std::move(pConfig))
 {
     // is it guaranteed that we have already checked app offline at this point?
@@ -662,14 +663,6 @@ IN_PROCESS_APPLICATION::RunDotnetApplication(DWORD argc, CONST PCWSTR* argv, hos
     }
 
     return hr;
-}
-
-// static
-
-REQUESTHANDLER_CONFIG*
-IN_PROCESS_APPLICATION::QueryConfig() const
-{
-    return m_pConfig.get();
 }
 
 HRESULT

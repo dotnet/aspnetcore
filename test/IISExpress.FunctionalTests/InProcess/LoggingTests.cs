@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             var tempFile = Path.GetTempFileName();
             try
             {
-                var deploymentParameters = Helpers.GetBaseDeploymentParameters();
+                var deploymentParameters = Helpers.GetBaseDeploymentParameters(publish: true);
                 deploymentParameters.EnvironmentVariables["ASPNETCORE_MODULE_DEBUG_FILE"] = tempFile;
 
                 var deploymentResult = await DeployAsync(deploymentParameters);

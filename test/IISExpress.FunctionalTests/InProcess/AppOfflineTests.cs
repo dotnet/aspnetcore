@@ -19,21 +19,25 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.Inprocess
     public class AppOfflineTests : IISFunctionalTestBase
     {
         // TODO these will differ between IIS and IISExpress
-        [ConditionalFact]
-        public async Task AppOfflineDroppedWhileSiteIsDown_SiteReturns503()
+        [ConditionalTheory]
+        [InlineData(HostingModel.InProcess)]
+        [InlineData(HostingModel.OutOfProcess)]
+        public async Task AppOfflineDroppedWhileSiteIsDown_SiteReturns503(HostingModel hostingModel)
         {
-            var deploymentResult = await DeployApp();
+            var deploymentResult = await DeployApp(hostingModel);
 
             AddAppOffline(deploymentResult.DeploymentResult.ContentRoot);
 
             await AssertAppOffline(deploymentResult);
         }
 
-        [ConditionalFact]
-        public async Task AppOfflineDroppedWhileSiteIsDown_CustomResponse()
+        [ConditionalTheory]
+        [InlineData(HostingModel.InProcess)]
+        [InlineData(HostingModel.OutOfProcess)]
+        public async Task AppOfflineDroppedWhileSiteIsDown_CustomResponse(HostingModel hostingModel)
         {
             var expectedResponse = "The app is offline.";
-            var deploymentResult = await DeployApp();
+            var deploymentResult = await DeployApp(hostingModel);
 
             AddAppOffline(deploymentResult.DeploymentResult.ContentRoot, expectedResponse);
 
@@ -41,9 +45,9 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.Inprocess
         }
 
         [ConditionalFact]
-        public async Task AppOfflineDroppedWhileSiteRunning_SiteShutsDown()
+        public async Task AppOfflineDroppedWhileSiteRunning_SiteShutsDown_InProcess()
         {
-            var deploymentResult = await AssertStarts();
+            var deploymentResult = await AssertStarts(HostingModel.InProcess);
 
             AddAppOffline(deploymentResult.DeploymentResult.ContentRoot);
 
@@ -51,9 +55,26 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.Inprocess
         }
 
         [ConditionalFact]
-        public async Task AppOfflineDropped_CanRemoveAppOfflineAfterAddingAndSiteWorks()
+        public async Task AppOfflineDroppedWhileSiteRunning_SiteShutsDown_OutOfProcess()
         {
-            var deploymentResult = await DeployApp();
+            var deploymentResult = await AssertStarts(HostingModel.OutOfProcess);
+
+            // Repeat dropping file and restarting multiple times
+            for (int i = 0; i < 5; i++)
+            {
+                AddAppOffline(deploymentResult.DeploymentResult.ContentRoot);
+                await AssertAppOffline(deploymentResult);
+                RemoveAppOffline(deploymentResult.DeploymentResult.ContentRoot);
+                await AssertRunning(deploymentResult);
+            }
+        }
+
+        [ConditionalTheory]
+        [InlineData(HostingModel.InProcess)]
+        [InlineData(HostingModel.OutOfProcess)]
+        public async Task AppOfflineDropped_CanRemoveAppOfflineAfterAddingAndSiteWorks(HostingModel hostingModel)
+        {
+            var deploymentResult = await DeployApp(hostingModel);
 
             AddAppOffline(deploymentResult.DeploymentResult.ContentRoot);
 
@@ -61,13 +82,12 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.Inprocess
 
             RemoveAppOffline(deploymentResult.DeploymentResult.ContentRoot);
 
-            var response = await deploymentResult.HttpClient.GetAsync("HelloWorld");
-
+            await AssertRunning(deploymentResult);
         }
 
-        private async Task<IISDeploymentResult> DeployApp()
+        private async Task<IISDeploymentResult> DeployApp(HostingModel hostingModel = HostingModel.InProcess)
         {
-            var deploymentParameters = Helpers.GetBaseDeploymentParameters();
+            var deploymentParameters = Helpers.GetBaseDeploymentParameters(hostingModel: hostingModel, publish: true);
 
             return await DeployAsync(deploymentParameters);
         }
@@ -118,18 +138,21 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.Inprocess
             Assert.True(hostShutdownToken.IsCancellationRequested);
         }
 
-        private async Task<IISDeploymentResult> AssertStarts()
+        private async Task<IISDeploymentResult> AssertStarts(HostingModel hostingModel)
         {
-            var deploymentParameters = Helpers.GetBaseDeploymentParameters();
+            var deploymentResult = await DeployApp(hostingModel);
 
-            var deploymentResult = await DeployAsync(deploymentParameters);
+            await AssertRunning(deploymentResult);
 
+            return deploymentResult;
+        }
+
+        private static async Task AssertRunning(IISDeploymentResult deploymentResult)
+        {
             var response = await deploymentResult.RetryingHttpClient.GetAsync("HelloWorld");
 
             var responseText = await response.Content.ReadAsStringAsync();
             Assert.Equal("Hello World", responseText);
-
-            return deploymentResult;
         }
     }
 }

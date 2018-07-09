@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
+#include "precomp.hxx"
+
+#include "StartupExceptionApplication.h"
 #include "StartupExceptionHandler.h"
 
 REQUEST_NOTIFICATION_STATUS StartupExceptionHandler::OnExecuteRequestHandler()
@@ -28,15 +31,5 @@ REQUEST_NOTIFICATION_STATUS StartupExceptionHandler::OnExecuteRequestHandler()
     }
 
     return REQUEST_NOTIFICATION_STATUS::RQ_NOTIFICATION_FINISH_REQUEST;
-
 }
 
-REQUEST_NOTIFICATION_STATUS StartupExceptionHandler::OnAsyncCompletion(DWORD , HRESULT )
-{
-    return REQUEST_NOTIFICATION_STATUS::RQ_NOTIFICATION_FINISH_REQUEST;
-}
-
-VOID StartupExceptionHandler::TerminateRequest(bool )
-{
-    return VOID();
-}

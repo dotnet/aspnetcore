@@ -205,6 +205,7 @@
     <ClInclude Include="debugutil.h" />
     <ClInclude Include="disconnectcontext.h" />
     <ClInclude Include="irequesthandler.h" />
+    <ClInclude Include="PollingAppOfflineApplication.h" />
     <ClInclude Include="requesthandler.h" />
     <ClInclude Include="resources.h" />
     <ClInclude Include="SRWExclusiveLock.h" />
@@ -221,6 +222,7 @@
     <ClCompile Include="HandleWrapper.cpp" />
     <ClCompile Include="hostfxr_utility.cpp" />
     <ClCompile Include="hostfxroptions.cpp" />
+    <ClCompile Include="PollingAppOfflineApplication.cpp" />
     <ClCompile Include="SRWExclusiveLock.cpp" />
     <ClCompile Include="SRWSharedLock.cpp" />
     <ClCompile Include="stdafx.cpp">

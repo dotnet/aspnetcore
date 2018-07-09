@@ -107,37 +107,6 @@ ASPNET_CORE_PROXY_MODULE::OnExecuteRequestHandler(
             goto Finished;
         }
 
-        // app_offline check to avoid loading aspnetcorerh.dll unnecessarily
-        if (m_pApplicationInfo->AppOfflineFound())
-        {
-            // servicing app_offline
-            HTTP_DATA_CHUNK   DataChunk;
-            IHttpResponse    *pResponse = NULL;
-            APP_OFFLINE_HTM  *pAppOfflineHtm = NULL;
-
-            pResponse = pHttpContext->GetResponse();
-            pAppOfflineHtm = m_pApplicationInfo->QueryAppOfflineHtm();
-            DBG_ASSERT(pAppOfflineHtm);
-            DBG_ASSERT(pResponse);
-
-            // Ignore failure hresults as nothing we can do
-            // Set fTrySkipCustomErrors to true as we want client see the offline content
-            pResponse->SetStatus(503, "Service Unavailable", 0, hr, NULL, TRUE);
-            pResponse->SetHeader("Content-Type",
-            "text/html",
-            (USHORT)strlen("text/html"),
-            FALSE
-            );
-
-            DataChunk.DataChunkType = HttpDataChunkFromMemory;
-            DataChunk.FromMemory.pBuffer = (PVOID)pAppOfflineHtm->m_Contents.QueryStr();
-            DataChunk.FromMemory.BufferLength = pAppOfflineHtm->m_Contents.QueryCB();
-            pResponse->WriteEntityChunkByReference(&DataChunk);
-
-            retVal = RQ_NOTIFICATION_FINISH_REQUEST;
-            goto Finished;
-        }
-
         // make sure assmebly is loaded and application is created
         hr = m_pApplicationInfo->EnsureApplicationCreated(pHttpContext);
         if (FAILED(hr))
@@ -147,18 +116,18 @@ ASPNET_CORE_PROXY_MODULE::OnExecuteRequestHandler(
 
         m_pApplicationInfo->ExtractApplication(&pApplication);
 
-        // make sure application is in running state	
-        // cannot recreate the application as we cannot reload clr for inprocess	
-        if (pApplication != NULL &&
-            pApplication->QueryStatus() != APPLICATION_STATUS::RUNNING &&
+        DBG_ASSERT(pHttpContext);
+        
+        // We allow OFFLINE application to serve pages
+        if (pApplication->QueryStatus() != APPLICATION_STATUS::RUNNING &&
             pApplication->QueryStatus() != APPLICATION_STATUS::STARTING)
         {
             hr = HRESULT_FROM_WIN32(ERROR_SERVER_DISABLED);
             goto Finished;
         }
+
         // Create RequestHandler and process the request
-        hr = pApplication->CreateHandler(pHttpContext,
-                    &m_pHandler);
+        hr = pApplication->CreateHandler(pHttpContext, &m_pHandler);
 
         if (FAILED(hr))
         {

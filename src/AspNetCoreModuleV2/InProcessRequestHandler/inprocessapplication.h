@@ -3,7 +3,6 @@
 
 #pragma once
 
-#include "precomp.hxx"
 #include "InProcessApplicationBase.h"
 #include "inprocesshandler.h"
 #include "requesthandler_config.h"
@@ -17,7 +16,8 @@ class IN_PROCESS_APPLICATION : public InProcessApplicationBase
 {
 public:
     IN_PROCESS_APPLICATION(
-        IHttpServer* pHttpServer,
+        IHttpServer& pHttpServer,
+        IHttpApplication& pApplication,
         std::unique_ptr<REQUESTHANDLER_CONFIG> pConfig,
         APPLICATION_PARAMETER *pParameters,
         DWORD                  nParameters);
@@ -105,17 +105,21 @@ public:
         return s_Application;
     }
 
-    REQUESTHANDLER_CONFIG*
-    QueryConfig() const;
-
     PCWSTR
     QueryExeLocation()
     {
         return m_struExeLocation.QueryStr();
     }
 
+    REQUESTHANDLER_CONFIG*
+    QueryConfig()
+    {
+        return m_pConfig.get();
+    }
+
 private:
-    IHttpServer* const      m_pHttpServer;
+
+    IHttpServer &                   m_pHttpServer;
 
     // Thread executing the .NET Core process
     HANDLE                          m_hThread;
@@ -144,12 +148,11 @@ private:
     volatile BOOL                   m_fShutdownCalledFromManaged;
     BOOL                            m_fRecycleCalled;
     BOOL                            m_fInitialized;
-
+    std::unique_ptr<REQUESTHANDLER_CONFIG> m_pConfig;
 
     static IN_PROCESS_APPLICATION*  s_Application;
 
     IOutputManager*                 m_pLoggerProvider;
-    std::unique_ptr<REQUESTHANDLER_CONFIG>          m_pConfig;
 
     static const LPCSTR             s_exeLocationParameterName;
 

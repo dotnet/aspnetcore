@@ -1,9 +1,12 @@
 #include "..\precomp.hxx"
+#include "SRWExclusiveLock.h"
 
 OUT_OF_PROCESS_APPLICATION::OUT_OF_PROCESS_APPLICATION(
-    REQUESTHANDLER_CONFIG  *pConfig) :
+    IHttpApplication& pApplication,
+    std::unique_ptr<REQUESTHANDLER_CONFIG> pConfig) :
+    AppOfflineTrackingApplication(pApplication),
     m_fWebSocketSupported(WEBSOCKET_STATUS::WEBSOCKET_UNKNOWN),
-    m_pConfig(pConfig)
+    m_pConfig(std::move(pConfig))
 {
     m_status = APPLICATION_STATUS::RUNNING;
     m_pProcessManager = NULL;
@@ -12,17 +15,12 @@ OUT_OF_PROCESS_APPLICATION::OUT_OF_PROCESS_APPLICATION(
 
 OUT_OF_PROCESS_APPLICATION::~OUT_OF_PROCESS_APPLICATION()
 {
+    SRWExclusiveLock lock(m_srwLock);
     if (m_pProcessManager != NULL)
     {
-        m_pProcessManager->ShutdownAllProcesses();
+        m_pProcessManager->Shutdown();
         m_pProcessManager->DereferenceProcessManager();
         m_pProcessManager = NULL;
-    }
-
-    if (m_pConfig != NULL)
-    {
-        delete m_pConfig;
-        m_pConfig = NULL;
     }
 }
 
@@ -56,29 +54,18 @@ OUT_OF_PROCESS_APPLICATION::GetProcess(
     _Out_   SERVER_PROCESS       **ppServerProcess
 )
 {
-    return m_pProcessManager->GetProcess(m_pConfig, QueryWebsocketStatus(), ppServerProcess);
-}
-
-REQUESTHANDLER_CONFIG*
-OUT_OF_PROCESS_APPLICATION::QueryConfig() const
-{
-    return m_pConfig;
+    return m_pProcessManager->GetProcess(m_pConfig.get(), QueryWebsocketStatus(), ppServerProcess);
 }
 
 __override
 VOID
 OUT_OF_PROCESS_APPLICATION::ShutDown()
-{
-    AcquireSRWLockExclusive(&m_srwLock);
+{   
+    SRWExclusiveLock lock(m_srwLock);
+    if (m_pProcessManager != NULL)
     {
-        if (m_pProcessManager != NULL)
-        {
-            m_pProcessManager->ShutdownAllProcesses();
-            m_pProcessManager->DereferenceProcessManager();
-            m_pProcessManager = NULL;
-        }
+        m_pProcessManager->Shutdown();
     }
-    ReleaseSRWLockExclusive(&m_srwLock);
 }
 
 __override

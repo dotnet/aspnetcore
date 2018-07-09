@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [ConditionalFact]
         public async Task ServerShutsDownWhenMainExits()
         {
-            var parameters = Helpers.GetBaseDeploymentParameters();
+            var parameters = Helpers.GetBaseDeploymentParameters(publish: true);
             var result = await DeployAsync(parameters);
 
             var response = await result.RetryingHttpClient.GetAsync("/Shutdown");

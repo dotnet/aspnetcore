@@ -53,15 +53,20 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
 
         // Defaults to inprocess specific deployment parameters
-        public static DeploymentParameters GetBaseDeploymentParameters(string site = "InProcessWebSite")
+        public static DeploymentParameters GetBaseDeploymentParameters(string site = null, HostingModel hostingModel = HostingModel.InProcess, bool publish = false)
         {
+            if (site == null)
+            {
+                site = hostingModel == HostingModel.InProcess ? "InProcessWebSite" : "OutOfProcessWebSite";
+            }
+
             return new DeploymentParameters(Helpers.GetTestWebSitePath(site), DeployerSelector.ServerType, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64)
             {
                 TargetFramework = Tfm.NetCoreApp22,
                 ApplicationType = ApplicationType.Portable,
                 AncmVersion = AncmVersion.AspNetCoreModuleV2,
-                HostingModel = HostingModel.InProcess,
-                PublishApplicationBeforeDeployment = site == "InProcessWebSite",
+                HostingModel = hostingModel,
+                PublishApplicationBeforeDeployment = publish,
             };
         }
 

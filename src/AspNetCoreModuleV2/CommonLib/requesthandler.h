@@ -24,11 +24,24 @@ public:
     {
         DBG_ASSERT(m_cRefs != 0);
 
-        LONG cRefs = 0;
-        if ((cRefs = InterlockedDecrement(&m_cRefs)) == 0)
+        if (InterlockedDecrement(&m_cRefs) == 0)
         {
             delete this;
         }
+    }
+
+    REQUEST_NOTIFICATION_STATUS OnAsyncCompletion(DWORD cbCompletion, HRESULT hrCompletionStatus) override
+    {
+        UNREFERENCED_PARAMETER(cbCompletion);
+        UNREFERENCED_PARAMETER(hrCompletionStatus);
+        // We shouldn't get here in default implementation
+        DBG_ASSERT(FALSE);
+        return RQ_NOTIFICATION_FINISH_REQUEST;
+    }
+
+    VOID TerminateRequest(bool fClientInitiated) override
+    {
+        UNREFERENCED_PARAMETER(fClientInitiated);
     }
 
 private:

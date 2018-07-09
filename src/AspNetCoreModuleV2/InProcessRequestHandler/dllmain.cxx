@@ -4,7 +4,6 @@
 // dllmain.cpp : Defines the entry point for the DLL application.
 
 #include "precomp.hxx"
-#include <IPHlpApi.h>
 #include <VersionHelpers.h>
 
 #include "inprocessapplication.h"
@@ -39,7 +38,7 @@ InitializeGlobalConfiguration(
             g_pHttpServer = pServer;
             RETURN_IF_FAILED(ALLOC_CACHE_HANDLER::StaticInitialize());
             RETURN_IF_FAILED(IN_PROCESS_HANDLER::StaticInitialize());
-
+            
             if (pServer->IsCommandLineLaunch())
             {
                 g_hEventLog = RegisterEventSource(NULL, ASPNETCORE_IISEXPRESS_EVENT_PROVIDER);
@@ -89,27 +88,30 @@ CreateApplication(
     _Out_ IAPPLICATION          **ppApplication
 )
 {
-    REQUESTHANDLER_CONFIG  *pConfig = NULL;
 
     try
     {
-        // Initialze some global variables here
         RETURN_IF_FAILED(InitializeGlobalConfiguration(pServer));
+        
+        REQUESTHANDLER_CONFIG *pConfig = nullptr;
         RETURN_IF_FAILED(REQUESTHANDLER_CONFIG::CreateRequestHandlerConfig(pServer, pHttpApplication, &pConfig));
+        std::unique_ptr<REQUESTHANDLER_CONFIG> pRequestHandlerConfig(pConfig);
+        
+        BOOL disableStartupPage = pConfig->QueryDisableStartUpErrorPage();
 
-        auto config = std::unique_ptr<REQUESTHANDLER_CONFIG>(pConfig);
-
-        const bool disableStartupPage = pConfig->QueryDisableStartUpErrorPage();
-
-        auto pApplication = std::make_unique<IN_PROCESS_APPLICATION>(pServer, std::move(config), pParameters, nParameters);
-
+        auto pApplication = std::make_unique<IN_PROCESS_APPLICATION>(*pServer, *pHttpApplication, std::move(pRequestHandlerConfig), pParameters, nParameters);
+        
         if (FAILED_LOG(pApplication->LoadManagedApplication()))
         {
             // Set the currently running application to a fake application that returns startup exceptions.
-            *ppApplication = new StartupExceptionApplication(pServer, disableStartupPage);
+            auto pErrorApplication = std::make_unique<StartupExceptionApplication>(*pServer, *pHttpApplication, disableStartupPage);
+            
+            RETURN_IF_FAILED(pErrorApplication->StartMonitoringAppOffline());
+            *ppApplication = pErrorApplication.release();
         }
         else
         {
+            RETURN_IF_FAILED(pApplication->StartMonitoringAppOffline());
             *ppApplication = pApplication.release();
         }
     }
