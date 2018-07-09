@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>netcoreapp2.2</TargetFrameworks>
+    <TestGroupName>IIS.FunctionalTests</TestGroupName>
   </PropertyGroup>
 
   <ItemGroup>
