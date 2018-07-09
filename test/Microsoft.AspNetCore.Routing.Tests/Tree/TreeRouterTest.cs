@@ -1399,7 +1399,6 @@ namespace Microsoft.AspNetCore.Routing.Tree
             Assert.Empty(pathData.DataTokens);
         }
 
-
         [Fact]
         public void TreeRouter_GenerateLink_Match_WithParameters()
         {
@@ -1963,6 +1962,94 @@ namespace Microsoft.AspNetCore.Routing.Tree
             Assert.Equal("examplecategory", nestedValues["category2"]);
             Assert.Equal("exampleproduct", nestedValues["product"]);
             Assert.DoesNotContain(nestedValues, kvp => kvp.Key == "category1");
+        }
+
+        [Fact]
+        public void TreeRouter_GenerateLink_MatchesNullRequiredValue_WithNullRequestValueString()
+        {
+            // Arrange
+            var builder = CreateBuilder();
+            var entry = MapOutboundEntry(
+                builder,
+                "Help/Store",
+                requiredValues: new { area = (string)null, action = "Edit", controller = "Store" });
+            var route = builder.Build();
+            var context = CreateVirtualPathContext(new { area = (string)null, action = "Edit", controller = "Store" });
+
+            // Act
+            var pathData = route.GetVirtualPath(context);
+
+            // Assert
+            Assert.NotNull(pathData);
+            Assert.Equal("/Help/Store", pathData.VirtualPath);
+            Assert.Same(route, pathData.Router);
+            Assert.Empty(pathData.DataTokens);
+        }
+
+        [Fact]
+        public void TreeRouter_GenerateLink_MatchesNullRequiredValue_WithEmptyRequestValueString()
+        {
+            // Arrange
+            var builder = CreateBuilder();
+            var entry = MapOutboundEntry(
+                builder,
+                "Help/Store",
+                requiredValues: new { area = (string)null, action = "Edit", controller = "Store" });
+            var route = builder.Build();
+            var context = CreateVirtualPathContext(new { area = "", action = "Edit", controller = "Store" });
+
+            // Act
+            var pathData = route.GetVirtualPath(context);
+
+            // Assert
+            Assert.NotNull(pathData);
+            Assert.Equal("/Help/Store", pathData.VirtualPath);
+            Assert.Same(route, pathData.Router);
+            Assert.Empty(pathData.DataTokens);
+        }
+
+        [Fact]
+        public void TreeRouter_GenerateLink_MatchesEmptyStringRequiredValue_WithNullRequestValueString()
+        {
+            // Arrange
+            var builder = CreateBuilder();
+            var entry = MapOutboundEntry(
+                builder,
+                "Help/Store",
+                requiredValues: new { foo = "", action = "Edit", controller = "Store" });
+            var route = builder.Build();
+            var context = CreateVirtualPathContext(new { foo = (string)null, action = "Edit", controller = "Store" });
+
+            // Act
+            var pathData = route.GetVirtualPath(context);
+
+            // Assert
+            Assert.NotNull(pathData);
+            Assert.Equal("/Help/Store", pathData.VirtualPath);
+            Assert.Same(route, pathData.Router);
+            Assert.Empty(pathData.DataTokens);
+        }
+
+        [Fact]
+        public void TreeRouter_GenerateLink_MatchesEmptyStringRequiredValue_WithEmptyRequestValueString()
+        {
+            // Arrange
+            var builder = CreateBuilder();
+            var entry = MapOutboundEntry(
+                builder,
+                "Help/Store",
+                requiredValues: new { foo = "", action = "Edit", controller = "Store" });
+            var route = builder.Build();
+            var context = CreateVirtualPathContext(new { foo = "", action = "Edit", controller = "Store" });
+
+            // Act
+            var pathData = route.GetVirtualPath(context);
+
+            // Assert
+            Assert.NotNull(pathData);
+            Assert.Equal("/Help/Store", pathData.VirtualPath);
+            Assert.Same(route, pathData.Router);
+            Assert.Empty(pathData.DataTokens);
         }
 
         private static RouteContext CreateRouteContext(string requestPath)
