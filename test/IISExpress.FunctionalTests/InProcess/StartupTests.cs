@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             Assert.Equal("Hello World", responseText);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task DetectsOveriddenServer()
         {
             var deploymentResult = await DeployAsync(GetBaseDeploymentParameters("OverriddenServerWebSite"));

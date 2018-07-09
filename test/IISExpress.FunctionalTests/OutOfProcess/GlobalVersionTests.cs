@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
+using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -21,7 +22,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         private const string _helloWorldResponse = "Hello World";
         private const string _outOfProcessVersionVariable = "/p:AspNetCoreModuleOutOfProcessVersion=";
 
-        [Fact]
+        [ConditionalFact]
         public async Task GlobalVersion_DefaultWorks()
         {
             var deploymentParameters = GetGlobalVersionBaseDeploymentParameters();
@@ -45,7 +46,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             Assert.Equal(_helloWorldResponse, responseText);
         }
 
-        [Theory] // Tests need to publish to change folder locations
+        [ConditionalTheory]
         [InlineData("2.1.0")]
         [InlineData("2.1.0-preview")]
         public async Task GlobalVersion_NewVersionNumber_Fails(string version)
@@ -60,7 +61,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             Assert.False(response.IsSuccessStatusCode);
         }
 
-        [Theory] // Tests need to publish to change folder locations
+        [ConditionalTheory]
         [InlineData("2.1.0")]
         [InlineData("2.1.0-preview")]
         public async Task GlobalVersion_NewVersionNumber(string version)
@@ -78,7 +79,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             AssertLoadedVersion(version);
         }
 
-        [Theory] // Tests need to publish to change folder locations
+        [ConditionalTheory]
         [InlineData("2.1.0")]
         [InlineData("2.1.0-preview")]
         public async Task GlobalVersion_MultipleRequestHandlers_PicksHighestOne(string version)
@@ -103,7 +104,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             AssertLoadedVersion(version);
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData("2.1.0")]
         [InlineData("2.1.0-preview")]
         public async Task GlobalVersion_MultipleRequestHandlers_UpgradeWorks(string version)
