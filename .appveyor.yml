@@ -4,7 +4,7 @@ install:
   - ps: Install-Product node 8 x64
 branches:
   only:
-  - dev
+  - master
   - /^release\/.*$/
   - /^(.*\/)?ci-.*$/
 environment:
