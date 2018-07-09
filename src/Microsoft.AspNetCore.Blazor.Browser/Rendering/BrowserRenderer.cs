@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Rendering
         /// <param name="serviceProvider">The <see cref="IServiceProvider"/> to use when initializing components.</param>
         public BrowserRenderer(IServiceProvider serviceProvider): base(serviceProvider)
         {
-            _browserRendererId = BrowserRendererRegistry.Add(this);
+            _browserRendererId = BrowserRendererRegistry.CurrentUserInstance.Add(this);
         }
 
         internal void DispatchBrowserEvent(int componentId, int eventHandlerId, UIEventArgs eventArgs)
@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Rendering
         /// </summary>
         public void Dispose()
         {
-            BrowserRendererRegistry.TryRemove(_browserRendererId);
+            BrowserRendererRegistry.CurrentUserInstance.TryRemove(_browserRendererId);
         }
 
         /// <inheritdoc />

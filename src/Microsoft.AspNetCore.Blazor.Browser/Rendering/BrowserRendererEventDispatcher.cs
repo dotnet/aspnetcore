@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Rendering
             BrowserEventDescriptor eventDescriptor, string eventArgsJson)
         {
             var eventArgs = ParseEventArgsJson(eventDescriptor.EventArgsType, eventArgsJson);
-            var browserRenderer = BrowserRendererRegistry.Find(eventDescriptor.BrowserRendererId);
+            var browserRenderer = BrowserRendererRegistry.CurrentUserInstance.Find(eventDescriptor.BrowserRendererId);
             browserRenderer.DispatchBrowserEvent(
                 eventDescriptor.ComponentId,
                 eventDescriptor.EventHandlerId,
