@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Blazor.Components
     /// <summary>
     /// Resolves components for an application.
     /// </summary>
-    internal class ComponentResolver
+    internal static class ComponentResolver
     {
         /// <summary>
         /// Lists all the types 
