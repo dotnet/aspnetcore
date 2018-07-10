@@ -59,10 +59,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var dataSource = CreateMvcEndpointDataSource(mockDescriptorProvider.Object);
 
             // Act
-            dataSource.InitializeEndpoints();
+            var endpoints = dataSource.Endpoints;
 
             // Assert
-            var endpoint = Assert.Single(dataSource.Endpoints);
+            var endpoint = Assert.Single(endpoints);
             var matcherEndpoint = Assert.IsType<MatcherEndpoint>(endpoint);
 
             var endpointValue = matcherEndpoint.RequiredValues["Name"];
@@ -115,10 +115,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 new MvcEndpointInvokerFactory(actionInvokerProviderMock.Object));
 
             // Act
-            dataSource.InitializeEndpoints();
+            var endpoints = dataSource.Endpoints;
 
             // Assert
-            var endpoint = Assert.Single(dataSource.Endpoints);
+            var endpoint = Assert.Single(endpoints);
             var matcherEndpoint = Assert.IsType<MatcherEndpoint>(endpoint);
 
             var invokerDelegate = matcherEndpoint.Invoker((next) => Task.CompletedTask);
@@ -192,7 +192,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             dataSource.ConventionalEndpointInfos.Add(CreateEndpointInfo(string.Empty, endpointInfoRoute));
 
             // Act
-            dataSource.InitializeEndpoints();
+            var endpoints = dataSource.Endpoints;
 
             // Assert
             var inspectors = finalEndpointTemplates
@@ -200,7 +200,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 .ToArray();
 
             // Assert
-            Assert.Collection(dataSource.Endpoints, inspectors);
+            Assert.Collection(endpoints, inspectors);
         }
 
         [Theory]
@@ -219,7 +219,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             dataSource.ConventionalEndpointInfos.Add(CreateEndpointInfo(string.Empty, endpointInfoRoute));
 
             // Act
-            dataSource.InitializeEndpoints();
+            var endpoints = dataSource.Endpoints;
 
             // Assert
             var inspectors = finalEndpointTemplates
@@ -227,7 +227,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 .ToArray();
 
             // Assert
-            Assert.Collection(dataSource.Endpoints, inspectors);
+            Assert.Collection(endpoints, inspectors);
         }
 
         [Fact]
@@ -243,10 +243,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 new RouteValueDictionary(new { action = "TestAction" })));
 
             // Act
-            dataSource.InitializeEndpoints();
+            var endpoints = dataSource.Endpoints;
 
             // Assert
-            Assert.Collection(dataSource.Endpoints,
+            Assert.Collection(endpoints,
                 (e) => Assert.Equal("TestController", Assert.IsType<MatcherEndpoint>(e).Template),
                 (e) => Assert.Equal("TestController/TestAction", Assert.IsType<MatcherEndpoint>(e).Template));
         }
@@ -266,10 +266,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 constraints: new RouteValueDictionary(new { action = "(TestAction1|TestAction2)" })));
 
             // Act
-            dataSource.InitializeEndpoints();
+            var endpoints = dataSource.Endpoints;
 
             // Assert
-            Assert.Collection(dataSource.Endpoints,
+            Assert.Collection(endpoints,
                 (e) => Assert.Equal("TestController/TestAction1", Assert.IsType<MatcherEndpoint>(e).Template),
                 (e) => Assert.Equal("TestController/TestAction2", Assert.IsType<MatcherEndpoint>(e).Template));
         }
@@ -291,14 +291,14 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 endpointInfoRoute));
 
             // Act
-            dataSource.InitializeEndpoints();
+            var endpoints = dataSource.Endpoints;
 
             var inspectors = finalEndpointTemplates
                 .Select(t => new Action<Endpoint>(e => Assert.Equal(t, Assert.IsType<MatcherEndpoint>(e).Template)))
                 .ToArray();
 
             // Assert
-            Assert.Collection(dataSource.Endpoints, inspectors);
+            Assert.Collection(endpoints, inspectors);
         }
 
         [Fact]
@@ -312,10 +312,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 CreateEndpointInfo(string.Empty, "named/{controller}/{action}/{id?}"));
 
             // Act
-            dataSource.InitializeEndpoints();
+            var endpoints = dataSource.Endpoints;
 
             // Assert
-            var endpoint = Assert.Single(dataSource.Endpoints);
+            var endpoint = Assert.Single(endpoints);
             var matcherEndpoint = Assert.IsType<MatcherEndpoint>(endpoint);
             var routeNameMetadata = matcherEndpoint.Metadata.GetMetadata<IRouteNameMetadata>();
             Assert.Null(routeNameMetadata);
@@ -333,11 +333,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 CreateEndpointInfo("namedRoute", "named/{controller}/{action}/{id?}"));
 
             // Act
-            dataSource.InitializeEndpoints();
+            var endpoints = dataSource.Endpoints;
 
             // Assert
             Assert.Collection(
-                dataSource.Endpoints,
+                endpoints,
                 (ep) =>
                 {
                     var matcherEndpoint = Assert.IsType<MatcherEndpoint>(ep);
@@ -372,11 +372,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 "named/{controller}/{action}/{id?}"));
 
             // Act
-            dataSource.InitializeEndpoints();
+            var endpoints = dataSource.Endpoints;
 
             // Assert
             Assert.Collection(
-                dataSource.Endpoints,
+                endpoints,
                 (ep) =>
                 {
                     var matcherEndpoint = Assert.IsType<MatcherEndpoint>(ep);
@@ -413,10 +413,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             dataSource.ConventionalEndpointInfos.Add(CreateEndpointInfo(string.Empty, "{controller}/{action}"));
 
             // Act
-            dataSource.InitializeEndpoints();
+            var endpoints = dataSource.Endpoints;
 
             // Assert
-            Assert.Empty(dataSource.Endpoints);
+            Assert.Empty(endpoints);
         }
 
         // Since area, controller, action and page are special, check to see if the followin test succeeds for a 
@@ -431,10 +431,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             dataSource.ConventionalEndpointInfos.Add(CreateEndpointInfo(string.Empty, "{controller}/{action}"));
 
             // Act
-            dataSource.InitializeEndpoints();
+            var endpoints = dataSource.Endpoints;
 
             // Assert
-            Assert.Empty(dataSource.Endpoints);
+            Assert.Empty(endpoints);
         }
 
         [Fact]
@@ -447,10 +447,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             dataSource.ConventionalEndpointInfos.Add(CreateEndpointInfo(string.Empty, "{area}/{controller}/{action}"));
 
             // Act
-            dataSource.InitializeEndpoints();
+            var endpoints = dataSource.Endpoints;
 
             // Assert
-            Assert.Empty(dataSource.Endpoints);
+            Assert.Empty(endpoints);
         }
 
         [Fact]
@@ -463,10 +463,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             dataSource.ConventionalEndpointInfos.Add(CreateEndpointInfo(string.Empty, "{area=admin}/{controller}/{action}"));
 
             // Act
-            dataSource.InitializeEndpoints();
+            var endpoints = dataSource.Endpoints;
 
             // Assert
-            Assert.Empty(dataSource.Endpoints);
+            Assert.Empty(endpoints);
         }
 
         [Fact]
@@ -479,10 +479,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             dataSource.ConventionalEndpointInfos.Add(CreateEndpointInfo(string.Empty, "{area}/{controller}/{action}"));
 
             // Act
-            dataSource.InitializeEndpoints();
+            var endpoints = dataSource.Endpoints;
 
             // Assert
-            Assert.Empty(dataSource.Endpoints);
+            Assert.Empty(endpoints);
         }
 
         [Fact]
@@ -495,10 +495,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             dataSource.ConventionalEndpointInfos.Add(CreateEndpointInfo(string.Empty, "{controller}/{action}"));
 
             // Act
-            dataSource.InitializeEndpoints();
+            var endpoints = dataSource.Endpoints;
 
             // Assert
-            var endpoint = Assert.Single(dataSource.Endpoints);
+            var endpoint = Assert.Single(endpoints);
             var matcherEndpoint = Assert.IsType<MatcherEndpoint>(endpoint);
             Assert.Equal("Foo/Bar", matcherEndpoint.Template);
             AssertIsSubset(expectedDefaults, matcherEndpoint.Defaults);
@@ -517,10 +517,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 CreateEndpointInfo(string.Empty, "{controller=Home}/{action=Index}"));
 
             // Act
-            dataSource.InitializeEndpoints();
+            var endpoints = dataSource.Endpoints;
 
             // Assert
-            var endpoint = Assert.Single(dataSource.Endpoints);
+            var endpoint = Assert.Single(endpoints);
             var matcherEndpoint = Assert.IsType<MatcherEndpoint>(endpoint);
             Assert.Equal("Foo/Bar", matcherEndpoint.Template);
             AssertIsSubset(expectedDefaults, matcherEndpoint.Defaults);
@@ -540,10 +540,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 CreateEndpointInfo(string.Empty, "{controller=Home}/{action=Index}/{subscription=general}"));
 
             // Act
-            dataSource.InitializeEndpoints();
+            var endpoints = dataSource.Endpoints;
 
             // Assert
-            var endpoint = Assert.Single(dataSource.Endpoints);
+            var endpoint = Assert.Single(endpoints);
             var matcherEndpoint = Assert.IsType<MatcherEndpoint>(endpoint);
             Assert.Equal("Foo/Bar/{subscription=general}", matcherEndpoint.Template);
             AssertIsSubset(expectedDefaults, matcherEndpoint.Defaults);
@@ -562,10 +562,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 CreateEndpointInfo(string.Empty, "{controller=Home}/{action=Index}"));
 
             // Act
-            dataSource.InitializeEndpoints();
+            var endpoints = dataSource.Endpoints;
 
             // Assert
-            var endpoint = Assert.Single(dataSource.Endpoints);
+            var endpoint = Assert.Single(endpoints);
             var matcherEndpoint = Assert.IsType<MatcherEndpoint>(endpoint);
             Assert.Equal("Foo/Bar", matcherEndpoint.Template);
             AssertIsSubset(expectedDefaults, matcherEndpoint.Defaults);

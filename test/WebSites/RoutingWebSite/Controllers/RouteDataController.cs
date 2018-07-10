@@ -6,16 +6,16 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 
-namespace BasicWebSite
+namespace RoutingWebSite.Controllers
 {
-    public class RoutingController : Controller
+    public class RouteDataController : Controller
     {
         public object Conventional()
         {
             return GetData();
         }
 
-        [Route("Routing/Attribute")]
+        [Route("RouteData/Attribute")]
         public object Attribute()
         {
             return GetData();

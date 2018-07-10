@@ -24,8 +24,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         private readonly IServiceProvider _serviceProvider;
         private readonly IActionDescriptorChangeProvider[] _actionDescriptorChangeProviders;
         private readonly List<Endpoint> _endpoints;
+        private readonly object _lock = new object();
 
         private IChangeToken _changeToken;
+        private bool _initialized;
 
         public MvcEndpointDataSource(
             IActionDescriptorCollectionProvider actions,
@@ -62,7 +64,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             ConventionalEndpointInfos = new List<MvcEndpointInfo>();
         }
 
-        public void InitializeEndpoints()
+        private void InitializeEndpoints()
         {
             foreach (var action in _actions.ActionDescriptors.Items)
             {
@@ -387,8 +389,27 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             }
         }
 
-        public override IReadOnlyList<Endpoint> Endpoints => _endpoints;
+        public override IReadOnlyList<Endpoint> Endpoints
+        {
+            get
+            {
+                if (!_initialized)
+                {
+                    lock (_lock)
+                    {
+                        if (!_initialized)
+                        {
+                            InitializeEndpoints();
+                            _initialized = true;
+                        }
+                    }
+                }
 
+                return _endpoints;
+            }
+        }
+
+        // REVIEW: Infos added after endpoints are initialized will not be used
         public List<MvcEndpointInfo> ConventionalEndpointInfos { get; }
 
         private class RouteNameMetadata : IRouteNameMetadata
