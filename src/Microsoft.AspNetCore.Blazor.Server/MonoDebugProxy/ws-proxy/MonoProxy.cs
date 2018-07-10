@@ -589,8 +589,17 @@ namespace WsProxy {
 			var res = new StringWriter ();
 			res.WriteLine ($"//dotnet:{id}");
 
-			using (var f = new StreamReader (File.Open (src_file.LocalPath, FileMode.Open))) {
-				res.Write (f.ReadToEnd ());
+			try
+			{
+				using (var f = new StreamReader(File.Open(src_file.LocalPath, FileMode.Open)))
+				{
+					res.Write(f.ReadToEnd());
+				}
+			}
+			catch (Exception ex)
+			{
+				res.WriteLine($"Unable to open file {src_file.LocalPath}");
+				res.WriteLine($"\nException:\n{ex}");
 			}
 
 			var o = JObject.FromObject (new {
