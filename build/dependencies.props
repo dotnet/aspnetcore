@@ -1,36 +1,36 @@
 ﻿<Project>
   <!-- These package versions may be overridden or updated by automation. -->
   <PropertyGroup Label="Package Versions: Auto" Condition=" '$(DotNetPackageVersionPropsPath)' == '' ">
-    <MicrosoftCSharpPackageVersion>4.6.0-preview1-26704-05</MicrosoftCSharpPackageVersion>
-    <MicrosoftExtensionsDependencyModelPackageVersion>3.0.0-preview1-26709-03</MicrosoftExtensionsDependencyModelPackageVersion>
+    <MicrosoftCSharpPackageVersion>4.6.0-preview1-26708-04</MicrosoftCSharpPackageVersion>
+    <MicrosoftExtensionsDependencyModelPackageVersion>3.0.0-preview1-26710-03</MicrosoftExtensionsDependencyModelPackageVersion>
     <!-- MicrosoftNETCoreApp30PackageVersion is assigned at the bottom so it can automatically pick up MicrosoftNETCoreAppPackageVersion in an orchestrated build. -->
-    <MicrosoftNETCoreAppPackageVersion>3.0.0-preview1-26709-03</MicrosoftNETCoreAppPackageVersion>
-    <MicrosoftNETCoreDotNetAppHostPackageVersion>3.0.0-preview1-26709-03</MicrosoftNETCoreDotNetAppHostPackageVersion>
-    <MicrosoftWin32RegistryPackageVersion>4.6.0-preview1-26704-05</MicrosoftWin32RegistryPackageVersion>
+    <MicrosoftNETCoreAppPackageVersion>3.0.0-preview1-26710-03</MicrosoftNETCoreAppPackageVersion>
+    <MicrosoftNETCoreDotNetAppHostPackageVersion>3.0.0-preview1-26710-03</MicrosoftNETCoreDotNetAppHostPackageVersion>
+    <MicrosoftWin32RegistryPackageVersion>4.6.0-preview1-26708-04</MicrosoftWin32RegistryPackageVersion>
     <NuGetFrameworksPackageVersion>4.8.0-preview1.5116</NuGetFrameworksPackageVersion>
-    <SystemBuffersPackageVersion>4.6.0-preview1-26704-05</SystemBuffersPackageVersion>
-    <SystemCollectionsImmutablePackageVersion>1.6.0-preview1-26704-05</SystemCollectionsImmutablePackageVersion>
-    <SystemComponentModelAnnotationsPackageVersion>4.6.0-preview1-26704-05</SystemComponentModelAnnotationsPackageVersion>
-    <SystemDataSqlClientPackageVersion>4.6.0-preview1-26704-05</SystemDataSqlClientPackageVersion>
-    <SystemDiagnosticsDiagnosticSourcePackageVersion>4.6.0-preview1-26704-05</SystemDiagnosticsDiagnosticSourcePackageVersion>
-    <SystemDiagnosticsEventLogPackageVersion>4.6.0-preview1-26704-05</SystemDiagnosticsEventLogPackageVersion>
-    <SystemIOPipelinesPackageVersion>4.6.0-preview1-26704-05</SystemIOPipelinesPackageVersion>
-    <SystemMemoryPackageVersion>4.6.0-preview1-26704-05</SystemMemoryPackageVersion>
-    <SystemNetHttpWinHttpHandlerPackageVersion>4.6.0-preview1-26704-05</SystemNetHttpWinHttpHandlerPackageVersion>
-    <SystemNetWebSocketsWebSocketProtocolPackageVersion>4.6.0-preview1-26704-05</SystemNetWebSocketsWebSocketProtocolPackageVersion>
-    <SystemNumericsVectorsPackageVersion>4.6.0-preview1-26704-05</SystemNumericsVectorsPackageVersion>
-    <SystemReflectionMetadataPackageVersion>1.7.0-preview1-26704-05</SystemReflectionMetadataPackageVersion>
-    <SystemRuntimeCompilerServicesUnsafePackageVersion>4.6.0-preview1-26704-05</SystemRuntimeCompilerServicesUnsafePackageVersion>
-    <SystemSecurityCryptographyCngPackageVersion>4.6.0-preview1-26704-05</SystemSecurityCryptographyCngPackageVersion>
-    <SystemSecurityCryptographyXmlPackageVersion>4.6.0-preview1-26704-05</SystemSecurityCryptographyXmlPackageVersion>
-    <SystemSecurityPermissionsPackageVersion>4.6.0-preview1-26704-05</SystemSecurityPermissionsPackageVersion>
-    <SystemSecurityPrincipalWindowsPackageVersion>4.6.0-preview1-26704-05</SystemSecurityPrincipalWindowsPackageVersion>
-    <SystemServiceProcessServiceControllerPackageVersion>4.6.0-preview1-26704-05</SystemServiceProcessServiceControllerPackageVersion>
-    <SystemTextEncodingsWebPackageVersion>4.6.0-preview1-26704-05</SystemTextEncodingsWebPackageVersion>
-    <SystemThreadingChannelsPackageVersion>4.6.0-preview1-26704-05</SystemThreadingChannelsPackageVersion>
-    <SystemThreadingTasksDataflowPackageVersion>4.10.0-preview1-26704-05</SystemThreadingTasksDataflowPackageVersion>
-    <SystemThreadingTasksExtensionsPackageVersion>4.6.0-preview1-26704-05</SystemThreadingTasksExtensionsPackageVersion>
-    <SystemValueTuplePackageVersion>4.6.0-preview1-26704-05</SystemValueTuplePackageVersion>
+    <SystemBuffersPackageVersion>4.6.0-preview1-26708-04</SystemBuffersPackageVersion>
+    <SystemCollectionsImmutablePackageVersion>1.6.0-preview1-26708-04</SystemCollectionsImmutablePackageVersion>
+    <SystemComponentModelAnnotationsPackageVersion>4.6.0-preview1-26708-04</SystemComponentModelAnnotationsPackageVersion>
+    <SystemDataSqlClientPackageVersion>4.6.0-preview1-26708-04</SystemDataSqlClientPackageVersion>
+    <SystemDiagnosticsDiagnosticSourcePackageVersion>4.6.0-preview1-26708-04</SystemDiagnosticsDiagnosticSourcePackageVersion>
+    <SystemDiagnosticsEventLogPackageVersion>4.6.0-preview1-26708-04</SystemDiagnosticsEventLogPackageVersion>
+    <SystemIOPipelinesPackageVersion>4.6.0-preview1-26708-04</SystemIOPipelinesPackageVersion>
+    <SystemMemoryPackageVersion>4.6.0-preview1-26708-04</SystemMemoryPackageVersion>
+    <SystemNetHttpWinHttpHandlerPackageVersion>4.6.0-preview1-26708-04</SystemNetHttpWinHttpHandlerPackageVersion>
+    <SystemNetWebSocketsWebSocketProtocolPackageVersion>4.6.0-preview1-26708-04</SystemNetWebSocketsWebSocketProtocolPackageVersion>
+    <SystemNumericsVectorsPackageVersion>4.6.0-preview1-26708-04</SystemNumericsVectorsPackageVersion>
+    <SystemReflectionMetadataPackageVersion>1.7.0-preview1-26708-04</SystemReflectionMetadataPackageVersion>
+    <SystemRuntimeCompilerServicesUnsafePackageVersion>4.6.0-preview1-26708-04</SystemRuntimeCompilerServicesUnsafePackageVersion>
+    <SystemSecurityCryptographyCngPackageVersion>4.6.0-preview1-26708-04</SystemSecurityCryptographyCngPackageVersion>
+    <SystemSecurityCryptographyXmlPackageVersion>4.6.0-preview1-26708-04</SystemSecurityCryptographyXmlPackageVersion>
+    <SystemSecurityPermissionsPackageVersion>4.6.0-preview1-26708-04</SystemSecurityPermissionsPackageVersion>
+    <SystemSecurityPrincipalWindowsPackageVersion>4.6.0-preview1-26708-04</SystemSecurityPrincipalWindowsPackageVersion>
+    <SystemServiceProcessServiceControllerPackageVersion>4.6.0-preview1-26708-04</SystemServiceProcessServiceControllerPackageVersion>
+    <SystemTextEncodingsWebPackageVersion>4.6.0-preview1-26708-04</SystemTextEncodingsWebPackageVersion>
+    <SystemThreadingChannelsPackageVersion>4.6.0-preview1-26708-04</SystemThreadingChannelsPackageVersion>
+    <SystemThreadingTasksDataflowPackageVersion>4.10.0-preview1-26708-04</SystemThreadingTasksDataflowPackageVersion>
+    <SystemThreadingTasksExtensionsPackageVersion>4.6.0-preview1-26708-04</SystemThreadingTasksExtensionsPackageVersion>
+    <SystemValueTuplePackageVersion>4.6.0-preview1-26708-04</SystemValueTuplePackageVersion>
   </PropertyGroup>
 
   <Import Project="$(DotNetPackageVersionPropsPath)" Condition="'$(DotNetPackageVersionPropsPath)' != ''" />
