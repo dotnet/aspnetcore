@@ -68,7 +68,7 @@ You will need to sign a [Contributor License Agreement](https://cla.dotnetfounda
 
 If you don't know what a pull request is read this article: https://help.github.com/articles/using-pull-requests. Make sure the respository can build and all tests pass. Familiarize yourself with the project workflow and our coding conventions. The coding, style, and general engineering guidelines are published on the [Engineering guidelines](https://github.com/aspnet/Home/wiki/Engineering-guidelines) page.
 
-Pull requests should all be done to the **dev** branch (not master). 
+Pull requests should all be done to the **release/2.2** (for the next release) or **master** (for 3.0 work) branch.
 
 **Commit/Pull Request Format**
 
@@ -89,4 +89,4 @@ Addresses #bugnumber (in this specific format)
 
 **Feedback**
 
-Your pull request will now go through extensive checks by the subject matter experts on our team. Please be patient; we have hundreds of pull requests across all of our repositories. Update your pull request according to feedback until it is approved by one of the ASP.NET team members. After that, one of our team members will add the pull request to **dev**.
+Your pull request will now go through extensive checks by the subject matter experts on our team. Please be patient; we have hundreds of pull requests across all of our repositories. Update your pull request according to feedback until it is approved by one of the ASP.NET team members. After that, one of our team members will add the pull request to **release/2.2** or **master**.
