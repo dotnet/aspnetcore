@@ -2,6 +2,7 @@
 @model ExternalLoginsModel
 @{
     ViewData["Title"] = "Manage your external logins";
+    ViewData["ActivePage"] = ManageNavPages.ExternalLogins;
 }
 
 @Html.Partial("_StatusMessage", Model.StatusMessage)
