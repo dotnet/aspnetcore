@@ -1,8 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -29,10 +27,12 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
             var symbolCache = new ApiControllerSymbolCache(compilation);
 
             // Act
-            var result = SymbolApiResponseMetadataProvider.GetDeclaredResponseMetadata(symbolCache, method, Array.Empty<AttributeData>());
+            var result = SymbolApiResponseMetadataProvider.GetDeclaredResponseMetadata(symbolCache, method);
 
             // Assert
-            Assert.Empty(result);
+            Assert.Collection(
+                result,
+                metadata => Assert.True(metadata.IsImplicit));
         }
 
         [Fact]
@@ -45,10 +45,12 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
             var symbolCache = new ApiControllerSymbolCache(compilation);
 
             // Act
-            var result = SymbolApiResponseMetadataProvider.GetDeclaredResponseMetadata(symbolCache, method, Array.Empty<AttributeData>());
+            var result = SymbolApiResponseMetadataProvider.GetDeclaredResponseMetadata(symbolCache, method);
 
             // Assert
-            Assert.Empty(result);
+            Assert.Collection(
+                result,
+                metadata => Assert.True(metadata.IsImplicit));
         }
 
         [Fact]
@@ -61,10 +63,12 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
             var symbolCache = new ApiControllerSymbolCache(compilation);
 
             // Act
-            var result = SymbolApiResponseMetadataProvider.GetDeclaredResponseMetadata(symbolCache, method, Array.Empty<AttributeData>());
+            var result = SymbolApiResponseMetadataProvider.GetDeclaredResponseMetadata(symbolCache, method);
 
             // Assert
-            Assert.Empty(result);
+            Assert.Collection(
+                result,
+                metadata => Assert.True(metadata.IsImplicit));
         }
 
         [Fact]
@@ -77,7 +81,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
             var symbolCache = new ApiControllerSymbolCache(compilation);
 
             // Act
-            var result = SymbolApiResponseMetadataProvider.GetDeclaredResponseMetadata(symbolCache, method, Array.Empty<AttributeData>());
+            var result = SymbolApiResponseMetadataProvider.GetDeclaredResponseMetadata(symbolCache, method);
 
             // Assert
             Assert.Collection(
@@ -86,7 +90,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
                 {
                     Assert.Equal(201, metadata.StatusCode);
                     Assert.NotNull(metadata.Attribute);
-                    Assert.Null(metadata.Convention);
+                    Assert.Equal(method, metadata.AttributeSource);
                 });
         }
 
@@ -100,7 +104,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
             var symbolCache = new ApiControllerSymbolCache(compilation);
 
             // Act
-            var result = SymbolApiResponseMetadataProvider.GetDeclaredResponseMetadata(symbolCache, method, Array.Empty<AttributeData>());
+            var result = SymbolApiResponseMetadataProvider.GetDeclaredResponseMetadata(symbolCache, method);
 
             // Assert
             Assert.Collection(
@@ -109,7 +113,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
                 {
                     Assert.Equal(202, metadata.StatusCode);
                     Assert.NotNull(metadata.Attribute);
-                    Assert.Null(metadata.Convention);
+                    Assert.Equal(method, metadata.AttributeSource);
                 });
         }
 
@@ -123,7 +127,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
             var symbolCache = new ApiControllerSymbolCache(compilation);
 
             // Act
-            var result = SymbolApiResponseMetadataProvider.GetDeclaredResponseMetadata(symbolCache, method, Array.Empty<AttributeData>());
+            var result = SymbolApiResponseMetadataProvider.GetDeclaredResponseMetadata(symbolCache, method);
 
             // Assert
             Assert.Collection(
@@ -132,7 +136,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
                 {
                     Assert.Equal(203, metadata.StatusCode);
                     Assert.NotNull(metadata.Attribute);
-                    Assert.Null(metadata.Convention);
+                    Assert.Equal(method, metadata.AttributeSource);
                 });
         }
 
@@ -146,7 +150,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
             var symbolCache = new ApiControllerSymbolCache(compilation);
 
             // Act
-            var result = SymbolApiResponseMetadataProvider.GetDeclaredResponseMetadata(symbolCache, method, Array.Empty<AttributeData>());
+            var result = SymbolApiResponseMetadataProvider.GetDeclaredResponseMetadata(symbolCache, method);
 
             // Assert
             Assert.Collection(
@@ -155,7 +159,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
                 {
                     Assert.Equal(201, metadata.StatusCode);
                     Assert.NotNull(metadata.Attribute);
-                    Assert.Null(metadata.Convention);
+                    Assert.Equal(method, metadata.AttributeSource);
                 });
         }
 
@@ -169,7 +173,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
             var symbolCache = new ApiControllerSymbolCache(compilation);
 
             // Act
-            var result = SymbolApiResponseMetadataProvider.GetDeclaredResponseMetadata(symbolCache, method, Array.Empty<AttributeData>());
+            var result = SymbolApiResponseMetadataProvider.GetDeclaredResponseMetadata(symbolCache, method);
 
             // Assert
             Assert.Collection(
@@ -178,7 +182,6 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
                 {
                     Assert.Equal(201, metadata.StatusCode);
                     Assert.NotNull(metadata.Attribute);
-                    Assert.Null(metadata.Convention);
                 });
         }
 
@@ -192,7 +195,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
             var symbolCache = new ApiControllerSymbolCache(compilation);
 
             // Act
-            var result = SymbolApiResponseMetadataProvider.GetDeclaredResponseMetadata(symbolCache, method, Array.Empty<AttributeData>());
+            var result = SymbolApiResponseMetadataProvider.GetDeclaredResponseMetadata(symbolCache, method);
 
             // Assert
             Assert.Collection(
@@ -206,6 +209,10 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
                 {
                     Assert.Equal(404, metadata.StatusCode);
                     Assert.NotNull(metadata.Attribute);
+                },
+                metadata =>
+                {
+                    Assert.True(metadata.IsDefault);
                 });
         }
 
@@ -219,7 +226,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
             var symbolCache = new ApiControllerSymbolCache(compilation);
 
             // Act
-            var result = SymbolApiResponseMetadataProvider.GetDeclaredResponseMetadata(symbolCache, method, Array.Empty<AttributeData>());
+            var result = SymbolApiResponseMetadataProvider.GetDeclaredResponseMetadata(symbolCache, method);
 
             // Assert
             Assert.Collection(
@@ -241,16 +248,18 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
             var symbolCache = new ApiControllerSymbolCache(compilation);
 
             // Act
-            var result = SymbolApiResponseMetadataProvider.GetDeclaredResponseMetadata(symbolCache, method, Array.Empty<AttributeData>());
+            var result = SymbolApiResponseMetadataProvider.GetDeclaredResponseMetadata(symbolCache, method);
 
             // Assert
-            Assert.Empty(result);
+            Assert.Collection(
+                result,
+                metadata => Assert.True(metadata.IsImplicit));
         }
 
         [Fact]
         public Task GetResponseMetadata_IgnoresAttributesWithIncorrectStatusCodeType()
         {
-            return GetResponseMetadata_IgnoresInvalidOrUnsupportedAttribues(
+            return GetResponseMetadata_WorksForInvalidOrUnsupportedAttribues(
                 nameof(GetResponseMetadata_ControllerActionWithAttributes),
                 nameof(GetResponseMetadata_ControllerActionWithAttributes.ActionWithProducesResponseTypeWithIncorrectStatusCodeType));
         }
@@ -258,12 +267,12 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
         [Fact]
         public Task GetResponseMetadata_IgnoresDerivedAttributesWithoutPropertyOnConstructorArguments()
         {
-            return GetResponseMetadata_IgnoresInvalidOrUnsupportedAttribues(
+            return GetResponseMetadata_WorksForInvalidOrUnsupportedAttribues(
                 nameof(GetResponseMetadata_ControllerActionWithAttributes),
                 nameof(GetResponseMetadata_ControllerActionWithAttributes.ActionWithCustomProducesResponseTypeAttributeWithoutArguments));
         }
 
-        private async Task GetResponseMetadata_IgnoresInvalidOrUnsupportedAttribues(string typeName, string methodName)
+        private async Task GetResponseMetadata_WorksForInvalidOrUnsupportedAttribues(string typeName, string methodName)
         {
             // Arrange
             var compilation = await GetResponseMetadataCompilation();
@@ -272,7 +281,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
             var symbolCache = new ApiControllerSymbolCache(compilation);
 
             // Act
-            var result = SymbolApiResponseMetadataProvider.GetDeclaredResponseMetadata(symbolCache, method, Array.Empty<AttributeData>());
+            var result = SymbolApiResponseMetadataProvider.GetDeclaredResponseMetadata(symbolCache, method);
 
             // Assert
             Assert.Collection(
@@ -280,8 +289,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
                 metadata =>
                 {
                     Assert.Equal(200, metadata.StatusCode);
-                    Assert.NotNull(metadata.Attribute);
-                    Assert.Null(metadata.Convention);
+                    Assert.Same(method, metadata.AttributeSource);
                 });
         }
 

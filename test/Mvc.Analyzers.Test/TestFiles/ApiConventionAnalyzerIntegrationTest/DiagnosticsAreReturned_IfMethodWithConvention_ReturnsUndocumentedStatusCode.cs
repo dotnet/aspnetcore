@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Analyzers;
 
-[assembly: ApiConventionType(typeof(DefaultApiConventions))]
+[assembly: ApiConventionType(typeof(DiagnosticsAreReturned_IfMethodWithConvention_ReturnsUndocumentedStatusCodeConvention))]
 
 namespace Microsoft.AspNetCore.Mvc.Analyzers
 {
@@ -21,5 +22,12 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
 
             return Ok();
         }
+    }
+
+    public static class DiagnosticsAreReturned_IfMethodWithConvention_ReturnsUndocumentedStatusCodeConvention
+    {
+        [ProducesResponseType(200)]
+        [ProducesResponseType(404)]
+        public static void Get(int id) { }
     }
 }
