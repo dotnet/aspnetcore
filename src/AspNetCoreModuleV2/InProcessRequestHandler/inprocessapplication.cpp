@@ -208,98 +208,11 @@ IN_PROCESS_APPLICATION::ShutDownInternal()
     s_Application = NULL;
 }
 
-REQUEST_NOTIFICATION_STATUS
-IN_PROCESS_APPLICATION::OnAsyncCompletion(
-    DWORD           cbCompletion,
-    HRESULT         hrCompletionStatus,
-    IN_PROCESS_HANDLER* pInProcessHandler
-)
-{
-    REQUEST_NOTIFICATION_STATUS dwRequestNotificationStatus = RQ_NOTIFICATION_CONTINUE;
-
-    ReferenceApplication();
-
-    if (pInProcessHandler->QueryIsManagedRequestComplete())
-    {
-        // means PostCompletion has been called and this is the associated callback.
-        dwRequestNotificationStatus = pInProcessHandler->QueryAsyncCompletionStatus();
-    }
-    else if (m_fBlockCallbacksIntoManaged)
-    {
-        // this can potentially happen in ungraceful shutdown.
-        // Or something really wrong happening with async completions
-        // At this point, managed is in a shutting down state and we cannot send a request to it.
-        pInProcessHandler->QueryHttpContext()->GetResponse()->SetStatus(503,
-            "Server has been shutdown",
-            0,
-            (ULONG)HRESULT_FROM_WIN32(ERROR_SHUTDOWN_IN_PROGRESS));
-        dwRequestNotificationStatus = RQ_NOTIFICATION_FINISH_REQUEST;
-    }
-    else
-    {
-        // Call the managed handler for async completion.
-        dwRequestNotificationStatus = m_AsyncCompletionHandler(pInProcessHandler->QueryManagedHttpContext(), hrCompletionStatus, cbCompletion);
-    }
-
-    DereferenceApplication();
-
-    return dwRequestNotificationStatus;
-}
-
-REQUEST_NOTIFICATION_STATUS
-IN_PROCESS_APPLICATION::OnExecuteRequest(
-    _In_ IHttpContext* pHttpContext,
-    _In_ IN_PROCESS_HANDLER* pInProcessHandler
-)
-{
-    REQUEST_NOTIFICATION_STATUS dwRequestNotificationStatus = RQ_NOTIFICATION_CONTINUE;
-    PFN_REQUEST_HANDLER pRequestHandler = NULL;
-
-    ReferenceApplication();
-    pRequestHandler = m_RequestHandler;
-
-    if (pRequestHandler == NULL)
-    {
-        //
-        // return error as the application did not register callback
-        //
-        if (ANCMEvents::ANCM_EXECUTE_REQUEST_FAIL::IsEnabled(pHttpContext->GetTraceContext()))
-        {
-            ANCMEvents::ANCM_EXECUTE_REQUEST_FAIL::RaiseEvent(pHttpContext->GetTraceContext(),
-                NULL,
-                (ULONG)E_APPLICATION_ACTIVATION_EXEC_FAILURE);
-        }
-
-        pHttpContext->GetResponse()->SetStatus(500,
-            "Internal Server Error",
-            0,
-            (ULONG)E_APPLICATION_ACTIVATION_EXEC_FAILURE);
-
-        dwRequestNotificationStatus = RQ_NOTIFICATION_FINISH_REQUEST;
-    }
-    else if (m_status != APPLICATION_STATUS::RUNNING || m_fBlockCallbacksIntoManaged)
-    {
-        pHttpContext->GetResponse()->SetStatus(503,
-            "Server is currently shutting down.",
-            0,
-            (ULONG)HRESULT_FROM_WIN32(ERROR_SHUTDOWN_IN_PROGRESS));
-        dwRequestNotificationStatus = RQ_NOTIFICATION_FINISH_REQUEST;
-    }
-    else
-    {
-        dwRequestNotificationStatus = pRequestHandler(pInProcessHandler, m_RequestHandlerContext);
-    }
-
-    DereferenceApplication();
-
-    return dwRequestNotificationStatus;
-}
-
 VOID
 IN_PROCESS_APPLICATION::SetCallbackHandles(
     _In_ PFN_REQUEST_HANDLER request_handler,
     _In_ PFN_SHUTDOWN_HANDLER shutdown_handler,
-    _In_ PFN_MANAGED_CONTEXT_HANDLER async_completion_handler,
+    _In_ PFN_ASYNC_COMPLETION_HANDLER async_completion_handler,
     _In_ VOID* pvRequstHandlerContext,
     _In_ VOID* pvShutdownHandlerContext
 )
@@ -673,7 +586,7 @@ IN_PROCESS_APPLICATION::CreateHandler(
     HRESULT hr = S_OK;
     IREQUEST_HANDLER* pHandler = NULL;
 
-    pHandler = new IN_PROCESS_HANDLER(pHttpContext, this);
+    pHandler = new IN_PROCESS_HANDLER(::ReferenceApplication(this), pHttpContext, m_RequestHandler, m_RequestHandlerContext, m_AsyncCompletionHandler);
 
     if (pHandler == NULL)
     {

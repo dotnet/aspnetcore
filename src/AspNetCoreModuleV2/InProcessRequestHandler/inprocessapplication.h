@@ -4,13 +4,13 @@
 #pragma once
 
 #include "InProcessApplicationBase.h"
-#include "inprocesshandler.h"
 #include "requesthandler_config.h"
 #include "IOutputManager.h"
 
+class IN_PROCESS_HANDLER;
 typedef REQUEST_NOTIFICATION_STATUS(WINAPI * PFN_REQUEST_HANDLER) (IN_PROCESS_HANDLER* pInProcessHandler, void* pvRequestHandlerContext);
 typedef BOOL(WINAPI * PFN_SHUTDOWN_HANDLER) (void* pvShutdownHandlerContext);
-typedef REQUEST_NOTIFICATION_STATUS(WINAPI * PFN_MANAGED_CONTEXT_HANDLER)(void *pvManagedHttpContext, HRESULT hrCompletionStatus, DWORD cbCompletion);
+typedef REQUEST_NOTIFICATION_STATUS(WINAPI * PFN_ASYNC_COMPLETION_HANDLER)(void *pvManagedHttpContext, HRESULT hrCompletionStatus, DWORD cbCompletion);
 
 class IN_PROCESS_APPLICATION : public InProcessApplicationBase
 {
@@ -32,7 +32,7 @@ public:
     SetCallbackHandles(
         _In_ PFN_REQUEST_HANDLER request_callback,
         _In_ PFN_SHUTDOWN_HANDLER shutdown_callback,
-        _In_ PFN_MANAGED_CONTEXT_HANDLER managed_context_callback,
+        _In_ PFN_ASYNC_COMPLETION_HANDLER managed_context_callback,
         _In_ VOID* pvRequstHandlerContext,
         _In_ VOID* pvShutdownHandlerContext
     );
@@ -58,20 +58,6 @@ public:
     VOID
     LogErrorsOnMainExit(
         HRESULT hr
-    );
-
-    REQUEST_NOTIFICATION_STATUS
-    OnAsyncCompletion(
-        DWORD                   cbCompletion,
-        HRESULT                 hrCompletionStatus,
-        IN_PROCESS_HANDLER*     pInProcessHandler
-    );
-
-    REQUEST_NOTIFICATION_STATUS
-    OnExecuteRequest
-    (
-        IHttpContext* pHttpContext,
-        IN_PROCESS_HANDLER* pInProcessHandler
     );
 
     VOID
@@ -117,6 +103,12 @@ public:
         return m_pConfig.get();
     }
 
+    bool
+    QueryBlockCallbacksIntoManaged() const
+    {
+        return m_fBlockCallbacksIntoManaged;
+    }
+
 private:
 
     IHttpServer &                   m_pHttpServer;
@@ -132,7 +124,7 @@ private:
     PFN_SHUTDOWN_HANDLER            m_ShutdownHandler;
     VOID*                           m_ShutdownHandlerContext;
 
-    PFN_MANAGED_CONTEXT_HANDLER     m_AsyncCompletionHandler;
+    PFN_ASYNC_COMPLETION_HANDLER    m_AsyncCompletionHandler;
 
     // The event that gets triggered when managed initialization is complete
     HANDLE                          m_pInitalizeEvent;

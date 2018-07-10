@@ -14,7 +14,7 @@ register_callbacks(
     _In_ IN_PROCESS_APPLICATION* pInProcessApplication,
     _In_ PFN_REQUEST_HANDLER request_handler,
     _In_ PFN_SHUTDOWN_HANDLER shutdown_handler,
-    _In_ PFN_MANAGED_CONTEXT_HANDLER async_completion_handler,
+    _In_ PFN_ASYNC_COMPLETION_HANDLER async_completion_handler,
     _In_ VOID* pvRequstHandlerContext,
     _In_ VOID* pvShutdownHandlerContext
 )
