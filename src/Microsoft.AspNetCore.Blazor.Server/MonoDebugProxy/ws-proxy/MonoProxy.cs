@@ -265,6 +265,15 @@ namespace WsProxy {
 						var method = asm.GetMethodByToken (method_token);
 						var location = method.GetLocationByIl (il_pos);
 
+                        // When hitting a breakpoint on the "IncrementCount" method in the standard
+                        // Blazor project template, one of the stack frames is inside mscorlib.dll
+                        // and we get location==null for it. It will trigger a NullReferenceException
+                        // if we don't skip over that stack frame.
+                        if (location == null)
+                        {
+                            continue;
+                        }
+
 						Info ($"frame il offset: {il_pos} method token: {method_token} assembly name: {assembly_name}");
 						Info ($"\tmethod {method.Name} location: {location}");
 						frames.Add (new Frame (method, location, frame_id));
@@ -403,7 +412,11 @@ namespace WsProxy {
 			var values = res.Value? ["result"]? ["value"]?.Values<JObject> ().ToArray ();
 
 			var var_list = new List<JObject> ();
-			for (int i = 0; i < vars.Length; ++i) {
+
+            // Trying to inspect the stack frame for DotNetDispatcher::InvokeSynchronously
+            // results in a "Memory access out of bounds", causing 'values' to be null,
+            // so skip returning variable values in that case.
+			for (int i = 0; values != null && i < vars.Length; ++i) {
 				var_list.Add (JObject.FromObject (new {
 					name = vars [i].Name,
 					value = values [i] ["value"]
