@@ -28,6 +28,7 @@
     <ExcludePackageFileFromSigning Include="tools/$(TargetFramework)/any/runtimes/win-x64/native/sni.dll" />
     <ExcludePackageFileFromSigning Include="tools/$(TargetFramework)/any/runtimes/win-x86/native/sni.dll" />
     <ExcludePackageFileFromSigning Include="tools/$(TargetFramework)/any/System.Data.SqlClient.dll" />
+    <ExcludePackageFileFromSigning Include="tools/$(TargetFramework)/any/System.Security.Permissions.dll" />
     <ExcludePackageFileFromSigning Include="tools/$(TargetFramework)/any/runtimes/unix/lib/netcoreapp2.1/System.Data.SqlClient.dll" />
     <ExcludePackageFileFromSigning Include="tools/$(TargetFramework)/any/runtimes/win/lib/netcoreapp2.1/System.Data.SqlClient.dll" />
     <ExcludePackageFileFromSigning Include="tools/$(TargetFramework)/any/System.Runtime.CompilerServices.Unsafe.dll" />
