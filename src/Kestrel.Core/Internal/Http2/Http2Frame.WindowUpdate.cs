@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
     {
         public int WindowUpdateSizeIncrement
         {
-            get => ((Payload[0] << 24) | (Payload[1] << 16) | (Payload[2] << 16) | Payload[3]) & 0x7fffffff;
+            get => ((Payload[0] << 24) | (Payload[1] << 16) | (Payload[2] << 8) | Payload[3]) & 0x7fffffff;
             set
             {
                 Payload[0] = (byte)(((uint)value >> 24) & 0x7f);

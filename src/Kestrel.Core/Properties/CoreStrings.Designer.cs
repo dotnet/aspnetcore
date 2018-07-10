@@ -1904,6 +1904,90 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         internal static string FormatHttp2ErrorInvalidPreface()
             => GetString("Http2ErrorInvalidPreface");
 
+        /// <summary>
+        /// The connection or stream was aborted because a write operation was aborted with a CancellationToken.
+        /// </summary>
+        internal static string ConnectionOrStreamAbortedByCancellationToken
+        {
+            get => GetString("ConnectionOrStreamAbortedByCancellationToken");
+        }
+
+        /// <summary>
+        /// The connection or stream was aborted because a write operation was aborted with a CancellationToken.
+        /// </summary>
+        internal static string FormatConnectionOrStreamAbortedByCancellationToken()
+            => GetString("ConnectionOrStreamAbortedByCancellationToken");
+
+        /// <summary>
+        /// The client sent a SETTINGS frame with a SETTINGS_INITIAL_WINDOW_SIZE that caused a flow-control window to exceed the maximum size.
+        /// </summary>
+        internal static string Http2ErrorInitialWindowSizeInvalid
+        {
+            get => GetString("Http2ErrorInitialWindowSizeInvalid");
+        }
+
+        /// <summary>
+        /// The client sent a SETTINGS frame with a SETTINGS_INITIAL_WINDOW_SIZE that caused a flow-control window to exceed the maximum size.
+        /// </summary>
+        internal static string FormatHttp2ErrorInitialWindowSizeInvalid()
+            => GetString("Http2ErrorInitialWindowSizeInvalid");
+
+        /// <summary>
+        /// The client sent a WINDOW_UPDATE frame that caused a flow-control window to exceed the maximum size.
+        /// </summary>
+        internal static string Http2ErrorWindowUpdateSizeInvalid
+        {
+            get => GetString("Http2ErrorWindowUpdateSizeInvalid");
+        }
+
+        /// <summary>
+        /// The client sent a WINDOW_UPDATE frame that caused a flow-control window to exceed the maximum size.
+        /// </summary>
+        internal static string FormatHttp2ErrorWindowUpdateSizeInvalid()
+            => GetString("Http2ErrorWindowUpdateSizeInvalid");
+
+        /// <summary>
+        /// The HTTP/2 connection faulted.
+        /// </summary>
+        internal static string Http2ConnectionFaulted
+        {
+            get => GetString("Http2ConnectionFaulted");
+        }
+
+        /// <summary>
+        /// The HTTP/2 connection faulted.
+        /// </summary>
+        internal static string FormatHttp2ConnectionFaulted()
+            => GetString("Http2ConnectionFaulted");
+
+        /// <summary>
+        /// The client reset the request stream.
+        /// </summary>
+        internal static string Http2StreamResetByClient
+        {
+            get => GetString("Http2StreamResetByClient");
+        }
+
+        /// <summary>
+        /// The client reset the request stream.
+        /// </summary>
+        internal static string FormatHttp2StreamResetByClient()
+            => GetString("Http2StreamResetByClient");
+
+        /// <summary>
+        /// The request stream was aborted.
+        /// </summary>
+        internal static string Http2StreamAborted
+        {
+            get => GetString("Http2StreamAborted");
+        }
+
+        /// <summary>
+        /// The request stream was aborted.
+        /// </summary>
+        internal static string FormatHttp2StreamAborted()
+            => GetString("Http2StreamAborted");
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

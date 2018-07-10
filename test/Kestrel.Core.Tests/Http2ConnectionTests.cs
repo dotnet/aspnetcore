@@ -125,6 +125,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         private readonly RequestDelegate _largeHeadersApplication;
         private readonly RequestDelegate _waitForAbortApplication;
         private readonly RequestDelegate _waitForAbortFlushingApplication;
+        private readonly RequestDelegate _waitForAbortWithDataApplication;
 
         private Task _connectionTask;
 
@@ -265,6 +266,28 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 await sem.WaitAsync().DefaultTimeout();
 
                 await context.Response.Body.FlushAsync();
+
+                _runningStreams[streamIdFeature.StreamId].TrySetResult(null);
+            };
+
+            _waitForAbortWithDataApplication = async context =>
+            {
+                var streamIdFeature = context.Features.Get<IHttp2StreamIdFeature>();
+                var sem = new SemaphoreSlim(0);
+
+                context.RequestAborted.Register(() =>
+                {
+                    lock (_abortedStreamIdsLock)
+                    {
+                        _abortedStreamIds.Add(streamIdFeature.StreamId);
+                    }
+
+                    sem.Release();
+                });
+
+                await sem.WaitAsync().DefaultTimeout();
+
+                await context.Response.Body.WriteAsync(new byte[10], 0, 10);
 
                 _runningStreams[streamIdFeature.StreamId].TrySetResult(null);
             };
@@ -465,6 +488,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 withFlags: (byte)Http2DataFrameFlags.END_STREAM,
                 withStreamId: 3);
 
+            // Ensure that Http2FrameWriter._writeLock isn't acquired when completing the frame processing loop.
+            // Otherwise there's a deadlock where Http2OutputProducer.Abort() being called from the frame processing
+            // loop blocks waiting Http2OutputProducer.Dispose() being called from the stream processing loop to
+            // acquire the _writeLock.
+            await ThreadPoolAwaitable.Instance;
+
             await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
 
             Assert.Equal(stream1DataFrame1.DataPayload, _helloBytes);
@@ -535,6 +564,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 withLength: 0,
                 withFlags: (byte)Http2DataFrameFlags.END_STREAM,
                 withStreamId: 1);
+
+            // Ensure that Http2FrameWriter._writeLock isn't acquired when completing the frame processing loop.
+            // Otherwise there's a deadlock where Http2OutputProducer.Abort() being called from the frame processing
+            // loop blocks waiting Http2OutputProducer.Dispose() being called from the stream processing loop to
+            // acquire the _writeLock.
+            await ThreadPoolAwaitable.Instance;
 
             await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
         }
@@ -750,6 +785,122 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedLastStreamId: 3,
                 expectedErrorCode: Http2ErrorCode.STREAM_CLOSED,
                 expectedErrorMessage: CoreStrings.FormatHttp2ErrorStreamClosed(Http2FrameType.DATA, streamId: 1));
+        }
+
+        [Fact]
+        public async Task DATA_Sent_DespiteConnectionBackpressure_IfEmptyAndEndsStream()
+        {
+            // Zero-length data frames are allowed to be sent even if there is no space available in the flow control window.
+            // https://httpwg.org/specs/rfc7540.html#rfc.section.6.9.1
+
+            var expectedFullFrameCountBeforeBackpressure = Http2PeerSettings.DefaultInitialWindowSize / _maxData.Length;
+            var remainingBytesBeforeBackpressure = (int)Http2PeerSettings.DefaultInitialWindowSize % _maxData.Length;
+            var remainingBytesAfterBackpressure = _maxData.Length - remainingBytesBeforeBackpressure;
+
+            // Double the stream window to be 128KiB so it doesn't interfere with the rest of the test.
+            _clientSettings.InitialWindowSize = Http2PeerSettings.DefaultInitialWindowSize * 2;
+
+            await InitializeConnectionAsync(async context =>
+            {
+                var streamId = context.Features.Get<IHttp2StreamIdFeature>().StreamId;
+
+                try
+                {
+                    if (streamId == 1)
+                    {
+                        for (var i = 0; i < expectedFullFrameCountBeforeBackpressure + 1; i++)
+                        {
+                            await context.Response.Body.WriteAsync(_maxData, 0, _maxData.Length);
+                        }
+                    }
+
+                    _runningStreams[streamId].SetResult(null);
+                }
+                catch (Exception ex)
+                {
+                    _runningStreams[streamId].SetException(ex);
+                    throw;
+                }
+            });
+
+            // Start one stream that consumes the entire connection output window.
+            await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
+
+            await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 37,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1);
+
+            for (var i = 0; i < expectedFullFrameCountBeforeBackpressure; i++)
+            {
+                await ExpectAsync(Http2FrameType.DATA,
+                    withLength: _maxData.Length,
+                    withFlags: (byte)Http2DataFrameFlags.NONE,
+                    withStreamId: 1);
+            }
+
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: remainingBytesBeforeBackpressure,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 1);
+
+            // Start one more stream that receives an empty response despite connection backpressure.
+            await StartStreamAsync(3, _browserRequestHeaders, endStream: true);
+
+            await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 55,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 3);
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 0,
+                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withStreamId: 3);
+
+            // Relieve connection backpressure to receive the rest of the first streams body.
+            await SendWindowUpdateAsync(0, remainingBytesAfterBackpressure);
+
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: remainingBytesAfterBackpressure,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 1);
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 0,
+                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withStreamId: 1);
+
+            // Ensure that Http2FrameWriter._writeLock isn't acquired when completing the frame processing loop.
+            // Otherwise there's a deadlock where Http2OutputProducer.Abort() being called from the frame processing
+            // loop blocks waiting Http2OutputProducer.Dispose() being called from the stream processing loop to
+            // acquire the _writeLock.
+            await ThreadPoolAwaitable.Instance;
+
+            await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
+            await WaitForAllStreamsAsync();
+        }
+
+        [Fact]
+        public async Task DATA_Sent_DespiteStreamBackpressure_IfEmptyAndEndsStream()
+        {
+            // Zero-length data frames are allowed to be sent even if there is no space available in the flow control window.
+            // https://httpwg.org/specs/rfc7540.html#rfc.section.6.9.1
+
+            // This only affects the stream windows. The connection-level window is always initialized at 64KiB.
+            _clientSettings.InitialWindowSize = 0;
+
+            await InitializeConnectionAsync(_noopApplication);
+
+            await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
+
+            await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 55,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1);
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 0,
+                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withStreamId: 1);
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
         }
 
         [Fact]
@@ -1197,7 +1348,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await SendHeadersAsync(1, Http2HeadersFrameFlags.END_HEADERS, headerBlock);
             await WaitForStreamErrorAsync(
-                ignoreNonRstStreamFrames: false,
                 expectedStreamId: 1,
                 expectedErrorCode: Http2ErrorCode.PROTOCOL_ERROR,
                 expectedErrorMessage: CoreStrings.Http2ErrorHeaderNameUppercase);
@@ -1286,7 +1436,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await SendHeadersAsync(1, Http2HeadersFrameFlags.END_HEADERS, headers);
             await WaitForStreamErrorAsync(
-                ignoreNonRstStreamFrames: false,
                 expectedStreamId: 1,
                 expectedErrorCode: Http2ErrorCode.PROTOCOL_ERROR,
                 expectedErrorMessage: expectedErrorMessage);
@@ -1740,33 +1889,351 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
             await SendRstStreamAsync(1);
-
-            // No data is received from the stream since it was aborted before writing anything
-
-            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
-
             await WaitForAllStreamsAsync();
             Assert.Contains(1, _abortedStreamIds);
+
+            await SendGoAwayAsync();
+
+            // No data is received from the stream since it was aborted before writing anything
+            await WaitForConnectionStopAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+
+            // TODO: Check logs
         }
 
         [Fact]
-        public async Task RST_STREAM_Received_AbortsStream_FlushedDataIsSent()
+        public async Task RST_STREAM_Received_AbortsStream_FlushedHeadersNotSent()
         {
             await InitializeConnectionAsync(_waitForAbortFlushingApplication);
 
             await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
             await SendRstStreamAsync(1);
+            await WaitForAllStreamsAsync();
+            Assert.Contains(1, _abortedStreamIds);
+
+            await SendGoAwayAsync();
+
+            // No END_STREAM HEADERS or DATA frame is received since the stream was aborted
+            await WaitForConnectionStopAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+
+            // TODO: Check logs
+        }
+
+        [Fact]
+        public async Task RST_STREAM_Received_AbortsStream_FlushedDataNotSent()
+        {
+            await InitializeConnectionAsync(_waitForAbortWithDataApplication);
+
+            await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
+            await SendRstStreamAsync(1);
+            await WaitForAllStreamsAsync();
+            Assert.Contains(1, _abortedStreamIds);
+
+            await SendGoAwayAsync();
+
+            // No END_STREAM HEADERS or DATA frame is received since the stream was aborted
+            await WaitForConnectionStopAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+
+            // TODO: Check logs
+        }
+
+        [Fact]
+        public async Task RST_STREAM_Received_RelievesConnectionBackpressure()
+        {
+            var writeTasks = new Task[4];
+
+            var expectedFullFrameCountBeforeBackpressure = Http2PeerSettings.DefaultInitialWindowSize / _maxData.Length;
+            var remainingBytesBeforeBackpressure = (int)Http2PeerSettings.DefaultInitialWindowSize % _maxData.Length;
+
+            // Double the stream window to be 128KiB so it doesn't interfere with the rest of the test.
+            _clientSettings.InitialWindowSize = Http2PeerSettings.DefaultInitialWindowSize * 2;
+
+            await InitializeConnectionAsync(async context =>
+            {
+                var streamId = context.Features.Get<IHttp2StreamIdFeature>().StreamId;
+
+                var abortedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                var writeTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+                context.RequestAborted.Register(() =>
+                {
+                    lock (_abortedStreamIdsLock)
+                    {
+                        _abortedStreamIds.Add(streamId);
+                        abortedTcs.SetResult(null);
+                    }
+                });
+
+                try
+                {
+                    writeTasks[streamId] = writeTcs.Task;
+
+                    // Flush headers even if the body can't yet be written because of flow control.
+                    await context.Response.Body.FlushAsync();
+
+                    for (var i = 0; i < expectedFullFrameCountBeforeBackpressure; i++)
+                    {
+                        await context.Response.Body.WriteAsync(_maxData, 0, _maxData.Length);
+                    }
+
+                    await context.Response.Body.WriteAsync(_maxData, 0, remainingBytesBeforeBackpressure + 1);
+
+                    writeTcs.SetResult(null);
+
+                    await abortedTcs.Task;
+
+                    _runningStreams[streamId].SetResult(null);
+                }
+                catch (Exception ex)
+                {
+                    _runningStreams[streamId].SetException(ex);
+                    throw;
+                }
+            });
+
+            // Start one stream that consumes the entire connection output window.
+            await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
 
             await ExpectAsync(Http2FrameType.HEADERS,
                 withLength: 37,
                 withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
                 withStreamId: 1);
 
-            // No END_STREAM DATA frame is received since the stream was aborted
+            for (var i = 0; i < expectedFullFrameCountBeforeBackpressure; i++)
+            {
+                await ExpectAsync(Http2FrameType.DATA,
+                    withLength: _maxData.Length,
+                    withFlags: (byte)Http2DataFrameFlags.NONE,
+                    withStreamId: 1);
+            }
 
-            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: remainingBytesBeforeBackpressure,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 1);
 
+            // Ensure connection-level backpressure was hit.
+            Assert.False(writeTasks[1].IsCompleted);
+
+            // Start another stream that immediately experiences backpressure.
+            await StartStreamAsync(3, _browserRequestHeaders, endStream: true);
+
+            // The headers, but not the data for stream 3, can be sent prior to any window updates.
+            await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 37,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 3);
+
+            await SendRstStreamAsync(1);
+            // Any paused writes for stream 1 should complete after an RST_STREAM
+            // even without any preceeding window updates.
+            await _runningStreams[1].Task.DefaultTimeout();
+
+            // A connection-level window update allows the non-reset stream to continue.
+            await SendWindowUpdateAsync(0, (int)Http2PeerSettings.DefaultInitialWindowSize);
+
+            for (var i = 0; i < expectedFullFrameCountBeforeBackpressure; i++)
+            {
+                await ExpectAsync(Http2FrameType.DATA,
+                    withLength: _maxData.Length,
+                    withFlags: (byte)Http2DataFrameFlags.NONE,
+                    withStreamId: 3);
+            }
+
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: remainingBytesBeforeBackpressure,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 3);
+
+            Assert.False(writeTasks[3].IsCompleted);
+
+            await SendRstStreamAsync(3);
+            await _runningStreams[3].Task.DefaultTimeout();
+
+            await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
+
+            await WaitForAllStreamsAsync();
             Assert.Contains(1, _abortedStreamIds);
+            Assert.Contains(3, _abortedStreamIds);
+        }
+
+        [Fact]
+        public async Task RST_STREAM_Received_RelievesStreamBackpressure()
+        {
+            var writeTasks = new Task[6];
+            var initialWindowSize = _helloWorldBytes.Length / 2;
+
+            // This only affects the stream windows. The connection-level window is always initialized at 64KiB.
+            _clientSettings.InitialWindowSize = (uint)initialWindowSize;
+
+            await InitializeConnectionAsync(async context =>
+            {
+                var streamId = context.Features.Get<IHttp2StreamIdFeature>().StreamId;
+
+                var abortedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                var writeTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+                context.RequestAborted.Register(() =>
+                {
+                    lock (_abortedStreamIdsLock)
+                    {
+                        _abortedStreamIds.Add(streamId);
+                        abortedTcs.SetResult(null);
+                    }
+                });
+
+                try
+                {
+                    writeTasks[streamId] = writeTcs.Task;
+                    await context.Response.Body.WriteAsync(_helloWorldBytes, 0, _helloWorldBytes.Length);
+                    writeTcs.SetResult(null);
+
+                    await abortedTcs.Task;
+
+                    _runningStreams[streamId].SetResult(null);
+                }
+                catch (Exception ex)
+                {
+                    _runningStreams[streamId].SetException(ex);
+                    throw;
+                }
+            });
+
+            async Task VerifyStreamBackpressure(int streamId)
+            {
+                await StartStreamAsync(streamId, _browserRequestHeaders, endStream: true);
+
+                await ExpectAsync(Http2FrameType.HEADERS,
+                    withLength: 37,
+                    withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                    withStreamId: streamId);
+
+                var dataFrame = await ExpectAsync(Http2FrameType.DATA,
+                    withLength: initialWindowSize,
+                    withFlags: (byte)Http2DataFrameFlags.NONE,
+                    withStreamId: streamId);
+
+                Assert.Equal(dataFrame.DataPayload, new ArraySegment<byte>(_helloWorldBytes, 0, initialWindowSize));
+                Assert.False(writeTasks[streamId].IsCompleted);
+            }
+
+            await VerifyStreamBackpressure(1);
+            await VerifyStreamBackpressure(3);
+            await VerifyStreamBackpressure(5);
+
+            await SendRstStreamAsync(1);
+            await writeTasks[1].DefaultTimeout();
+            Assert.False(writeTasks[3].IsCompleted);
+            Assert.False(writeTasks[5].IsCompleted);
+
+            await SendRstStreamAsync(3);
+            await writeTasks[3].DefaultTimeout();
+            Assert.False(writeTasks[5].IsCompleted);
+
+            await SendRstStreamAsync(5);
+            await writeTasks[5].DefaultTimeout();
+
+            await StopConnectionAsync(expectedLastStreamId: 5, ignoreNonGoAwayFrames: false);
+
+            await WaitForAllStreamsAsync();
+            Assert.Contains(1, _abortedStreamIds);
+            Assert.Contains(3, _abortedStreamIds);
+            Assert.Contains(5, _abortedStreamIds);
+        }
+
+        [Fact]
+        public async Task RST_STREAM_WaitingForRequestBody_RequestBodyThrows()
+        {
+            var sem = new SemaphoreSlim(0);
+            await InitializeConnectionAsync(async context =>
+            {
+                var streamIdFeature = context.Features.Get<IHttp2StreamIdFeature>();
+
+                try
+                {
+                    var readTask = context.Request.Body.ReadAsync(new byte[100], 0, 100).DefaultTimeout();
+                    sem.Release();
+                    await readTask;
+
+                    _runningStreams[streamIdFeature.StreamId].TrySetException(new Exception("ReadAsync was expected to throw."));
+                }
+                catch (IOException) // Expected failure
+                {
+                    await context.Response.Body.WriteAsync(new byte[10], 0, 10);
+
+                    lock (_abortedStreamIdsLock)
+                    {
+                        _abortedStreamIds.Add(streamIdFeature.StreamId);
+                    }
+
+                    _runningStreams[streamIdFeature.StreamId].TrySetResult(null);
+                }
+                catch (Exception ex)
+                {
+                    _runningStreams[streamIdFeature.StreamId].TrySetException(ex);
+                }
+            });
+
+            await StartStreamAsync(1, _browserRequestHeaders, endStream: false);
+            await sem.WaitAsync().DefaultTimeout();
+            await SendRstStreamAsync(1);
+            await WaitForAllStreamsAsync();
+            Assert.Contains(1, _abortedStreamIds);
+
+            await SendGoAwayAsync();
+
+            // No data is received from the stream since it was aborted before writing anything
+            await WaitForConnectionStopAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+
+            // TODO: Check logs
+        }
+
+        [Fact]
+        public async Task RST_STREAM_IncompleteRequest_RequestBodyThrows()
+        {
+            var sem = new SemaphoreSlim(0);
+            await InitializeConnectionAsync(async context =>
+            {
+                var streamIdFeature = context.Features.Get<IHttp2StreamIdFeature>();
+
+                try
+                {
+                    var read = await context.Request.Body.ReadAsync(new byte[100], 0, 100).DefaultTimeout();
+                    var readTask = context.Request.Body.ReadAsync(new byte[100], 0, 100).DefaultTimeout();
+                    sem.Release();
+                    await readTask;
+
+                    _runningStreams[streamIdFeature.StreamId].TrySetException(new Exception("ReadAsync was expected to throw."));
+                }
+                catch (IOException) // Expected failure
+                {
+                    await context.Response.Body.WriteAsync(new byte[10], 0, 10);
+
+                    lock (_abortedStreamIdsLock)
+                    {
+                        _abortedStreamIds.Add(streamIdFeature.StreamId);
+                    }
+
+                    _runningStreams[streamIdFeature.StreamId].TrySetResult(null);
+                }
+                catch (Exception ex)
+                {
+                    _runningStreams[streamIdFeature.StreamId].TrySetException(ex);
+                }
+            });
+
+            await StartStreamAsync(1, _browserRequestHeaders, endStream: false);
+            await SendDataAsync(1, new byte[10], endStream: false);
+            await sem.WaitAsync().DefaultTimeout();
+            await SendRstStreamAsync(1);
+            await WaitForAllStreamsAsync();
+            Assert.Contains(1, _abortedStreamIds);
+
+            await SendGoAwayAsync();
+
+            // No data is received from the stream since it was aborted before writing anything
+            await WaitForConnectionStopAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+
+            // TODO: Check logs
         }
 
         [Fact]
@@ -1941,6 +2408,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
+        public async Task SETTINGS_Received_WithInitialWindowSizePushingStreamWindowOverMax_ConnectionError()
+        {
+            await InitializeConnectionAsync(_waitForAbortApplication);
+
+            await StartStreamAsync(1, _browserRequestHeaders, endStream: false);
+
+            await SendWindowUpdateAsync(1, (int)(Http2PeerSettings.MaxWindowSize - _clientSettings.InitialWindowSize));
+
+            _clientSettings.InitialWindowSize += 1;
+            await SendSettingsAsync();
+
+            await WaitForConnectionErrorAsync<Http2ConnectionErrorException>(
+                ignoreNonGoAwayFrames: false,
+                expectedLastStreamId: 1,
+                expectedErrorCode: Http2ErrorCode.FLOW_CONTROL_ERROR,
+                expectedErrorMessage: CoreStrings.Http2ErrorInitialWindowSizeInvalid);
+        }
+
+        [Fact]
         public async Task PUSH_PROMISE_Received_ConnectionError()
         {
             await InitializeConnectionAsync(_noopApplication);
@@ -2048,6 +2534,180 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await SendGoAwayAsync();
 
             await WaitForConnectionStopAsync(expectedLastStreamId: 5, ignoreNonGoAwayFrames: true);
+
+            await WaitForAllStreamsAsync();
+            Assert.Contains(1, _abortedStreamIds);
+            Assert.Contains(3, _abortedStreamIds);
+            Assert.Contains(5, _abortedStreamIds);
+        }
+
+        [Fact]
+        public async Task GOAWAY_Received_RelievesConnectionBackpressure()
+        {
+            var writeTasks = new Task[6];
+            var expectedFullFrameCountBeforeBackpressure = Http2PeerSettings.DefaultInitialWindowSize / _maxData.Length;
+            var remainingBytesBeforeBackpressure = (int)Http2PeerSettings.DefaultInitialWindowSize % _maxData.Length;
+
+            // Double the stream window to be 128KiB so it doesn't interfere with the rest of the test.
+            _clientSettings.InitialWindowSize = Http2PeerSettings.DefaultInitialWindowSize * 2;
+
+            await InitializeConnectionAsync(async context =>
+            {
+                var streamId = context.Features.Get<IHttp2StreamIdFeature>().StreamId;
+
+                var abortedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                var writeTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+                context.RequestAborted.Register(() =>
+                {
+                    lock (_abortedStreamIdsLock)
+                    {
+                        _abortedStreamIds.Add(streamId);
+                        abortedTcs.SetResult(null);
+                    }
+                });
+
+                try
+                {
+                    writeTasks[streamId] = writeTcs.Task;
+
+                    // Flush headers even if the body can't yet be written because of flow control.
+                    await context.Response.Body.FlushAsync();
+
+                    for (var i = 0; i < expectedFullFrameCountBeforeBackpressure; i++)
+                    {
+                        await context.Response.Body.WriteAsync(_maxData, 0, _maxData.Length);
+                    }
+
+                    await context.Response.Body.WriteAsync(_maxData, 0, remainingBytesBeforeBackpressure + 1);
+
+                    writeTcs.SetResult(null);
+
+                    await abortedTcs.Task;
+
+                    _runningStreams[streamId].SetResult(null);
+                }
+                catch (Exception ex)
+                {
+                    _runningStreams[streamId].SetException(ex);
+                    throw;
+                }
+            });
+
+            // Start one stream that consumes the entire connection output window.
+            await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
+
+            await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 37,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1);
+
+            for (var i = 0; i < expectedFullFrameCountBeforeBackpressure; i++)
+            {
+                await ExpectAsync(Http2FrameType.DATA,
+                    withLength: _maxData.Length,
+                    withFlags: (byte)Http2DataFrameFlags.NONE,
+                    withStreamId: 1);
+            }
+
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: remainingBytesBeforeBackpressure,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 1);
+
+            Assert.False(writeTasks[1].IsCompleted);
+
+            // Start two more streams that immediately experience backpressure.
+            // The headers, but not the data for the stream, can still be sent.
+            await StartStreamAsync(3, _browserRequestHeaders, endStream: true);
+            await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 37,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 3);
+
+            await StartStreamAsync(5, _browserRequestHeaders, endStream: true);
+            await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 37,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 5);
+
+            await SendGoAwayAsync();
+
+            await WaitForConnectionStopAsync(expectedLastStreamId: 5, ignoreNonGoAwayFrames: false);
+
+            await WaitForAllStreamsAsync();
+            Assert.Contains(1, _abortedStreamIds);
+            Assert.Contains(3, _abortedStreamIds);
+            Assert.Contains(5, _abortedStreamIds);
+        }
+
+        [Fact]
+        public async Task GOAWAY_Received_RelievesStreamBackpressure()
+        {
+            var writeTasks = new Task[6];
+            var initialWindowSize = _helloWorldBytes.Length / 2;
+
+            // This only affects the stream windows. The connection-level window is always initialized at 64KiB.
+            _clientSettings.InitialWindowSize = (uint)initialWindowSize;
+
+            await InitializeConnectionAsync(async context =>
+            {
+                var streamId = context.Features.Get<IHttp2StreamIdFeature>().StreamId;
+
+                var abortedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                var writeTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+                context.RequestAborted.Register(() =>
+                {
+                    lock (_abortedStreamIdsLock)
+                    {
+                        _abortedStreamIds.Add(streamId);
+                        abortedTcs.SetResult(null);
+                    }
+                });
+
+                try
+                {
+                    writeTasks[streamId] = writeTcs.Task;
+                    await context.Response.Body.WriteAsync(_helloWorldBytes, 0, _helloWorldBytes.Length);
+                    writeTcs.SetResult(null);
+
+                    await abortedTcs.Task;
+
+                    _runningStreams[streamId].SetResult(null);
+                }
+                catch (Exception ex)
+                {
+                    _runningStreams[streamId].SetException(ex);
+                    throw;
+                }
+            });
+
+            async Task VerifyStreamBackpressure(int streamId)
+            {
+                await StartStreamAsync(streamId, _browserRequestHeaders, endStream: true);
+
+                await ExpectAsync(Http2FrameType.HEADERS,
+                    withLength: 37,
+                    withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                    withStreamId: streamId);
+
+                var dataFrame = await ExpectAsync(Http2FrameType.DATA,
+                    withLength: initialWindowSize,
+                    withFlags: (byte)Http2DataFrameFlags.NONE,
+                    withStreamId: streamId);
+
+                Assert.Equal(dataFrame.DataPayload, new ArraySegment<byte>(_helloWorldBytes, 0, initialWindowSize));
+                Assert.False(writeTasks[streamId].IsCompleted);
+            }
+
+            await VerifyStreamBackpressure(1);
+            await VerifyStreamBackpressure(3);
+            await VerifyStreamBackpressure(5);
+
+            await SendGoAwayAsync();
+
+            await WaitForConnectionStopAsync(expectedLastStreamId: 5, ignoreNonGoAwayFrames: false);
 
             await WaitForAllStreamsAsync();
             Assert.Contains(1, _abortedStreamIds);
@@ -2172,6 +2832,230 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedLastStreamId: 0,
                 expectedErrorCode: Http2ErrorCode.PROTOCOL_ERROR,
                 expectedErrorMessage: CoreStrings.FormatHttp2ErrorStreamIdle(Http2FrameType.WINDOW_UPDATE, streamId: 1));
+        }
+
+        [Fact]
+        public async Task WINDOW_UPDATE_Received_OnConnection_IncreasesWindowAboveMaxValue_ConnectionError()
+        {
+            var maxIncrement = (int)(Http2PeerSettings.MaxWindowSize - Http2PeerSettings.DefaultInitialWindowSize);
+
+            await InitializeConnectionAsync(_noopApplication);
+
+            await SendWindowUpdateAsync(0, sizeIncrement: maxIncrement);
+            await SendWindowUpdateAsync(0, sizeIncrement: 1);
+
+            await WaitForConnectionErrorAsync<Http2ConnectionErrorException>(
+                ignoreNonGoAwayFrames: false,
+                expectedLastStreamId: 0,
+                expectedErrorCode: Http2ErrorCode.FLOW_CONTROL_ERROR,
+                expectedErrorMessage: CoreStrings.Http2ErrorWindowUpdateSizeInvalid);
+        }
+
+        [Fact]
+        public async Task WINDOW_UPDATE_Received_OnStream_IncreasesWindowAboveMaxValue_StreamError()
+        {
+            var maxIncrement = (int)(Http2PeerSettings.MaxWindowSize - Http2PeerSettings.DefaultInitialWindowSize);
+
+            await InitializeConnectionAsync(_waitForAbortApplication);
+
+            await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
+            await SendWindowUpdateAsync(1, sizeIncrement: maxIncrement);
+            await SendWindowUpdateAsync(1, sizeIncrement: 1);
+
+            await WaitForStreamErrorAsync(
+                expectedStreamId: 1,
+                expectedErrorCode: Http2ErrorCode.FLOW_CONTROL_ERROR,
+                expectedErrorMessage: CoreStrings.Http2ErrorWindowUpdateSizeInvalid);
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+        }
+
+        [Fact]
+        public async Task WINDOW_UPDATE_Received_OnConnection_Respected()
+        {
+            var expectedFullFrameCountBeforeBackpressure = Http2PeerSettings.DefaultInitialWindowSize / _maxData.Length;
+
+            // Use this semaphore to wait until a new data frame is expected before trying to send it.
+            // This way we're sure that if Response.Body.WriteAsync returns an incomplete task, it's because
+            // of the flow control window and not Pipe backpressure.
+            var expectingDataSem = new SemaphoreSlim(0);
+            var backpressureObservedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var backpressureReleasedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            // Double the stream window to be 128KiB so it doesn't interfere with the rest of the test.
+            _clientSettings.InitialWindowSize = Http2PeerSettings.DefaultInitialWindowSize * 2;
+
+            await InitializeConnectionAsync(async context =>
+            {
+                try
+                {
+                    // Flush the headers so expectingDataSem is released. 
+                    await context.Response.Body.FlushAsync();
+
+                    for (var i = 0; i < expectedFullFrameCountBeforeBackpressure; i++)
+                    {
+                        await expectingDataSem.WaitAsync();
+                        Assert.True(context.Response.Body.WriteAsync(_maxData, 0, _maxData.Length).IsCompleted);
+                    }
+
+                    await expectingDataSem.WaitAsync();
+                    var lastWriteTask = context.Response.Body.WriteAsync(_maxData, 0, _maxData.Length);
+
+                    Assert.False(lastWriteTask.IsCompleted);
+                    backpressureObservedTcs.TrySetResult(null);
+
+                    await lastWriteTask;
+                    backpressureReleasedTcs.TrySetResult(null);
+                }
+                catch (Exception ex)
+                {
+                    backpressureObservedTcs.TrySetException(ex);
+                    backpressureReleasedTcs.TrySetException(ex);
+                    throw;
+                }
+            });
+
+            await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
+
+            await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 37,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1);
+
+            for (var i = 0; i < expectedFullFrameCountBeforeBackpressure; i++)
+            {
+                expectingDataSem.Release();
+                await ExpectAsync(Http2FrameType.DATA,
+                    withLength: _maxData.Length,
+                    withFlags: (byte)Http2DataFrameFlags.NONE,
+                    withStreamId: 1);
+            }
+
+            var remainingBytesBeforeBackpressure = (int)Http2PeerSettings.DefaultInitialWindowSize % _maxData.Length;
+            var remainingBytesAfterBackpressure = _maxData.Length - remainingBytesBeforeBackpressure;
+
+            expectingDataSem.Release();
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: remainingBytesBeforeBackpressure,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 1);
+
+            await backpressureObservedTcs.Task.DefaultTimeout();
+
+            await SendWindowUpdateAsync(0, remainingBytesAfterBackpressure);
+
+            await backpressureReleasedTcs.Task.DefaultTimeout();
+
+            // This is the remaining data that could have come in the last frame if not for the flow control window,
+            // so there's no need to release the semaphore again.
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: remainingBytesAfterBackpressure,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 1);
+
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 0,
+                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withStreamId: 1);
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+        }
+
+        [Fact]
+        public async Task WINDOW_UPDATE_Received_OnStream_Respected()
+        {
+            var initialWindowSize = _helloWorldBytes.Length / 2;
+
+            // This only affects the stream windows. The connection-level window is always initialized at 64KiB.
+            _clientSettings.InitialWindowSize = (uint)initialWindowSize;
+
+            await InitializeConnectionAsync(_echoApplication);
+
+            await StartStreamAsync(1, _browserRequestHeaders, endStream: false);
+            await SendDataAsync(1, _helloWorldBytes, endStream: true);
+
+            await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 37,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1);
+
+            var dataFrame1 = await ExpectAsync(Http2FrameType.DATA,
+                withLength: initialWindowSize,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 1);
+
+            await SendWindowUpdateAsync(1, initialWindowSize);
+
+            var dataFrame2 = await ExpectAsync(Http2FrameType.DATA,
+                withLength: initialWindowSize,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 1);
+
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 0,
+                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withStreamId: 1);
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+
+            Assert.Equal(dataFrame1.DataPayload, new ArraySegment<byte>(_helloWorldBytes, 0, initialWindowSize));
+            Assert.Equal(dataFrame2.DataPayload, new ArraySegment<byte>(_helloWorldBytes, initialWindowSize, initialWindowSize));
+        }
+
+        [Fact]
+        public async Task WINDOW_UPDATE_Received_OnStream_Respected_WhenInitialWindowSizeReducedMidStream()
+        {
+            // This only affects the stream windows. The connection-level window is always initialized at 64KiB.
+            _clientSettings.InitialWindowSize = 6;
+
+            await InitializeConnectionAsync(_echoApplication);
+
+            await StartStreamAsync(1, _browserRequestHeaders, endStream: false);
+            await SendDataAsync(1, _helloWorldBytes, endStream: true);
+
+            await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 37,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1);
+
+            var dataFrame1 = await ExpectAsync(Http2FrameType.DATA,
+                withLength: 6,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 1);
+
+            // Reduce the initial window size for response data by 3 bytes.
+            _clientSettings.InitialWindowSize = 3;
+            await SendSettingsAsync();
+
+            await ExpectAsync(Http2FrameType.SETTINGS,
+                withLength: 0,
+                withFlags: (byte)Http2SettingsFrameFlags.ACK,
+                withStreamId: 0);
+
+            await SendWindowUpdateAsync(1, 6);
+
+            var dataFrame2 = await ExpectAsync(Http2FrameType.DATA,
+                withLength: 3,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 1);
+
+            await SendWindowUpdateAsync(1, 3);
+
+            var dataFrame3 = await ExpectAsync(Http2FrameType.DATA,
+                withLength: 3,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 1);
+
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 0,
+                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withStreamId: 1);
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+
+            Assert.Equal(dataFrame1.DataPayload, new ArraySegment<byte>(_helloWorldBytes, 0, 6));
+            Assert.Equal(dataFrame2.DataPayload, new ArraySegment<byte>(_helloWorldBytes, 6, 3));
+            Assert.Equal(dataFrame3.DataPayload, new ArraySegment<byte>(_helloWorldBytes, 9, 3));
         }
 
         [Fact]
@@ -2313,7 +3197,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await SendEmptyContinuationFrameAsync(1, Http2ContinuationFrameFlags.END_HEADERS);
 
             await WaitForStreamErrorAsync(
-                ignoreNonRstStreamFrames: false,
                 expectedStreamId: 1,
                 expectedErrorCode: Http2ErrorCode.PROTOCOL_ERROR,
                 expectedErrorMessage: CoreStrings.Http2ErrorMissingMandatoryPseudoHeaderFields);
@@ -3028,17 +3911,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _pair.Application.Output.Complete();
         }
 
-        private async Task WaitForStreamErrorAsync(bool ignoreNonRstStreamFrames, int expectedStreamId, Http2ErrorCode expectedErrorCode, string expectedErrorMessage)
+        private async Task WaitForStreamErrorAsync(int expectedStreamId, Http2ErrorCode expectedErrorCode, string expectedErrorMessage)
         {
             var frame = await ReceiveFrameAsync();
-
-            if (ignoreNonRstStreamFrames)
-            {
-                while (frame.Type != Http2FrameType.RST_STREAM)
-                {
-                    frame = await ReceiveFrameAsync();
-                }
-            }
 
             Assert.Equal(Http2FrameType.RST_STREAM, frame.Type);
             Assert.Equal(4, frame.Length);

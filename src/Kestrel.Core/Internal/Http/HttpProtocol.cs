@@ -429,7 +429,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         /// <summary>
         /// Immediately kill the connection and poison the request and response streams with an error if there is one.
         /// </summary>
-        public void Abort(ConnectionAbortedException abortReason)
+        public virtual void Abort(ConnectionAbortedException abortReason)
         {
             if (Interlocked.Exchange(ref _requestAborted, 1) != 0)
             {
@@ -966,7 +966,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 RequestHeaders.TryGetValue("Expect", out var expect) &&
                 (expect.FirstOrDefault() ?? "").Equals("100-continue", StringComparison.OrdinalIgnoreCase))
             {
-                Output.Write100ContinueAsync(default(CancellationToken)).GetAwaiter().GetResult();
+                Output.Write100ContinueAsync().GetAwaiter().GetResult();
             }
         }
 
@@ -1097,7 +1097,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             // For the same reason we call CheckLastWrite() in Content-Length responses.
             _abortedCts = null;
 
-            await Output.WriteStreamSuffixAsync(default(CancellationToken));
+            await Output.WriteStreamSuffixAsync();
 
             if (_keepAlive)
             {

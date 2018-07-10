@@ -3,13 +3,12 @@
 
 using System;
 using System.Buffers;
+using System.IO;
 using System.IO.Pipelines;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
-using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
@@ -17,13 +16,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
     public partial class Http2Stream : HttpProtocol
     {
         private readonly Http2StreamContext _context;
+        private readonly Http2StreamOutputFlowControl _outputFlowControl;
 
         public Http2Stream(Http2StreamContext context)
             : base(context)
         {
             _context = context;
+            _outputFlowControl = new Http2StreamOutputFlowControl(context.ConnectionOutputFlowControl, context.ClientPeerSettings.InitialWindowSize);
 
-            Output = new Http2OutputProducer(StreamId, _context.FrameWriter);
+            Output = new Http2OutputProducer(context.StreamId, context.FrameWriter, _outputFlowControl, context.TimeoutControl, context.MemoryPool);
         }
 
         public int StreamId => _context.StreamId;
@@ -143,15 +144,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
         }
 
-        // TODO: The HTTP/2 tests expect the request and response streams to be aborted with
-        // non-ConnectionAbortedExceptions. The abortReasons can include things like
-        // Http2ConnectionErrorException which don't derive from IOException or
-        // OperationCanceledException. This is probably not a good idea.
-        public void Http2Abort(Exception abortReason)
+        public override void Abort(ConnectionAbortedException abortReason)
         {
-            _streams?.Abort(abortReason);
+            base.Abort(abortReason);
 
-            OnInputOrOutputCompleted();
+            // Unblock the request body.
+            RequestBodyPipe.Writer.Complete(new IOException(CoreStrings.Http2StreamAborted, abortReason));
+        }
+
+        public bool TryUpdateOutputWindow(int bytes)
+        {
+            return _context.FrameWriter.TryUpdateStreamWindow(_outputFlowControl, bytes);
         }
     }
 }

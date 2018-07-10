@@ -14,6 +14,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         public const uint DefaultInitialWindowSize = 65535;
         public const uint DefaultMaxFrameSize = 16384;
         public const uint DefaultMaxHeaderListSize = uint.MaxValue;
+        public const uint MaxWindowSize = int.MaxValue;
 
         public uint HeaderTableSize { get; set; } = DefaultHeaderTableSize;
 
@@ -59,11 +60,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                         MaxConcurrentStreams = value;
                         break;
                     case Http2SettingsParameter.SETTINGS_INITIAL_WINDOW_SIZE:
-                        if (value > int.MaxValue)
+                        if (value > MaxWindowSize)
                         {
                             throw new Http2SettingsParameterOutOfRangeException(Http2SettingsParameter.SETTINGS_INITIAL_WINDOW_SIZE,
                                 lowerBound: 0,
-                                upperBound: int.MaxValue);
+                                upperBound: MaxWindowSize);
                         }
 
                         InitialWindowSize = value;
