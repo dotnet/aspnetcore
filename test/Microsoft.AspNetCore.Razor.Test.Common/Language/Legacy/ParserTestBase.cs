@@ -1,3 +1,4 @@
+
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
@@ -92,10 +93,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         internal void AssertSyntaxTreeNodeMatchesBaseline(RazorSyntaxTree syntaxTree)
         {
-            AssertSyntaxTreeNodeMatchesBaseline(syntaxTree.Root, syntaxTree.Diagnostics.ToArray());
+            AssertSyntaxTreeNodeMatchesBaseline(syntaxTree.Root, syntaxTree.Source.FilePath, syntaxTree.Diagnostics.ToArray());
         }
 
-        internal void AssertSyntaxTreeNodeMatchesBaseline(Block root, params RazorDiagnostic[] diagnostics)
+        internal void AssertSyntaxTreeNodeMatchesBaseline(Block root, string filePath, params RazorDiagnostic[] diagnostics)
         {
             if (FileName == null)
             {
@@ -111,12 +112,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
             var baselineFileName = Path.ChangeExtension(FileName, ".syntaxtree.txt");
             var baselineDiagnosticsFileName = Path.ChangeExtension(FileName, ".diagnostics.txt");
+            var baselineClassifiedSpansFileName = Path.ChangeExtension(FileName, ".classifiedspans.txt");
+            var baselineTagHelperSpansFileName = Path.ChangeExtension(FileName, ".taghelperspans.txt");
 
             if (GenerateBaselines)
             {
+                // Write syntax tree baseline
                 var baselineFullPath = Path.Combine(TestProjectRoot, baselineFileName);
                 File.WriteAllText(baselineFullPath, SyntaxTreeNodeSerializer.Serialize(root));
 
+                // Write diagnostics baseline
                 var baselineDiagnosticsFullPath = Path.Combine(TestProjectRoot, baselineDiagnosticsFileName);
                 var lines = diagnostics.Select(SerializeDiagnostic).ToArray();
                 if (lines.Any())
@@ -128,9 +133,26 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     File.Delete(baselineDiagnosticsFullPath);
                 }
 
+                // Write classified spans baseline
+                var classifiedSpansBaselineFullPath = Path.Combine(TestProjectRoot, baselineClassifiedSpansFileName);
+                File.WriteAllText(classifiedSpansBaselineFullPath, ClassifiedSpanSerializer.Serialize(root, filePath));
+
+                // Write tag helper spans baseline
+                var tagHelperSpansBaselineFullPath = Path.Combine(TestProjectRoot, baselineTagHelperSpansFileName);
+                var serializedTagHelperSpans = TagHelperSpanSerializer.Serialize(root, filePath);
+                if (!string.IsNullOrEmpty(serializedTagHelperSpans))
+                {
+                    File.WriteAllText(tagHelperSpansBaselineFullPath, serializedTagHelperSpans);
+                }
+                else if (File.Exists(tagHelperSpansBaselineFullPath))
+                {
+                    File.Delete(tagHelperSpansBaselineFullPath);
+                }
+
                 return;
             }
 
+            // Verify syntax tree
             var stFile = TestFile.Create(baselineFileName, GetType().GetTypeInfo().Assembly);
             if (!stFile.Exists())
             {
@@ -140,6 +162,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             var baseline = stFile.ReadAllText().Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
             SyntaxTreeNodeVerifier.Verify(root, baseline);
 
+            // Verify diagnostics
             var baselineDiagnostics = string.Empty;
             var diagnosticsFile = TestFile.Create(baselineDiagnosticsFileName, GetType().GetTypeInfo().Assembly);
             if (diagnosticsFile.Exists())
@@ -149,6 +172,23 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
             var actualDiagnostics = string.Concat(diagnostics.Select(d => SerializeDiagnostic(d) + "\r\n"));
             Assert.Equal(baselineDiagnostics, actualDiagnostics);
+
+            // Verify classified spans
+            var classifiedSpanFile = TestFile.Create(baselineClassifiedSpansFileName, GetType().GetTypeInfo().Assembly);
+            if (!classifiedSpanFile.Exists())
+            {
+                throw new XunitException($"The resource {baselineClassifiedSpansFileName} was not found.");
+            }
+
+            // Verify tag helper spans
+            var tagHelperSpanFile = TestFile.Create(baselineTagHelperSpansFileName, GetType().GetTypeInfo().Assembly);
+            var tagHelperSpanBaseline = new string[0];
+            if (tagHelperSpanFile.Exists())
+            {
+                tagHelperSpanBaseline = tagHelperSpanFile.ReadAllText().Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+            }
+
+            TagHelperSpanVerifier.Verify(root, filePath, tagHelperSpanBaseline);
         }
 
         private static string SerializeDiagnostic(RazorDiagnostic diagnostic)
@@ -174,14 +214,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             AssertSyntaxTreeNodeMatchesBaseline(syntaxTree);
         }
 
-        internal virtual void BaselineTest(Block root, bool verifySyntaxTree = true, params RazorDiagnostic[] diagnostics)
+        internal virtual void BaselineTest(Block root, string filePath = null, bool verifySyntaxTree = true, params RazorDiagnostic[] diagnostics)
         {
             if (verifySyntaxTree)
             {
                 SyntaxTreeVerifier.Verify(root);
             }
 
-            AssertSyntaxTreeNodeMatchesBaseline(root, diagnostics);
+            AssertSyntaxTreeNodeMatchesBaseline(root, filePath, diagnostics);
         }
 
         internal RazorSyntaxTree ParseBlock(string document, bool designTime)
