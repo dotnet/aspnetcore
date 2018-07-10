@@ -38,7 +38,17 @@ namespace Microsoft.AspNetCore.ResponseCompression
             if (_providers.Length == 0)
             {
                 // Use the factory so it can resolve IOptions<GzipCompressionProviderOptions> from DI.
-                _providers = new ICompressionProvider[] { new CompressionProviderFactory(typeof(GzipCompressionProvider)) };
+                _providers = new ICompressionProvider[]
+                {
+#if NETCOREAPP2_1
+                    new CompressionProviderFactory(typeof(BrotliCompressionProvider)),
+#elif NET461 || NETSTANDARD2_0
+                    // Brotli is only supported in .NET Core 2.1+
+#else
+#error Target frameworks need to be updated.
+#endif
+                    new CompressionProviderFactory(typeof(GzipCompressionProvider)),
+                };
             }
             for (var i = 0; i < _providers.Length; i++)
             {
@@ -62,42 +72,76 @@ namespace Microsoft.AspNetCore.ResponseCompression
         /// <inheritdoc />
         public virtual ICompressionProvider GetCompressionProvider(HttpContext context)
         {
-            IList<StringWithQualityHeaderValue> unsorted;
-
             // e.g. Accept-Encoding: gzip, deflate, sdch
             var accept = context.Request.Headers[HeaderNames.AcceptEncoding];
-            if (!StringValues.IsNullOrEmpty(accept)
-                && StringWithQualityHeaderValue.TryParseList(accept, out unsorted)
-                && unsorted != null && unsorted.Count > 0)
-            {
-                // TODO PERF: clients don't usually include quality values so this sort will not have any effect. Fast-path?
-                var sorted = unsorted
-                    .Where(s => s.Quality.GetValueOrDefault(1) > 0)
-                    .OrderByDescending(s => s.Quality.GetValueOrDefault(1));
 
-                foreach (var encoding in sorted)
+            if (StringValues.IsNullOrEmpty(accept))
+            {
+                return null;
+            }
+
+            if (StringWithQualityHeaderValue.TryParseList(accept, out var encodings))
+            {
+                if (encodings.Count == 0)
                 {
-                    // There will rarely be more than three providers, and there's only one by default
-                    foreach (var provider in _providers)
+                    return null;
+                }
+
+                var candidates = new HashSet<ProviderCandidate>();
+
+                foreach (var encoding in encodings)
+                {
+                    var encodingName = encoding.Value;
+                    var quality = encoding.Quality.GetValueOrDefault(1);
+
+                    if (quality < double.Epsilon)
                     {
-                        if (StringSegment.Equals(provider.EncodingName, encoding.Value, StringComparison.OrdinalIgnoreCase))
+                        continue;
+                    }
+
+                    for (int i = 0; i < _providers.Length; i++)
+                    {
+                        var provider = _providers[i];
+
+                        if (StringSegment.Equals(provider.EncodingName, encodingName, StringComparison.OrdinalIgnoreCase))
                         {
-                            return provider;
+                            candidates.Add(new ProviderCandidate(provider.EncodingName, quality, i, provider));
                         }
                     }
 
                     // Uncommon but valid options
-                    if (StringSegment.Equals("*", encoding.Value, StringComparison.Ordinal))
+                    if (StringSegment.Equals("*", encodingName, StringComparison.Ordinal))
                     {
-                        // Any
-                        return _providers[0];
+                        for (int i = 0; i < _providers.Length; i++)
+                        {
+                            var provider = _providers[i];
+                            
+                            // Any provider is a candidate.
+                            candidates.Add(new ProviderCandidate(provider.EncodingName, quality, i, provider));
+                        }
+
+                        break;
                     }
-                    if (StringSegment.Equals("identity", encoding.Value, StringComparison.OrdinalIgnoreCase))
+
+                    if (StringSegment.Equals("identity", encodingName, StringComparison.OrdinalIgnoreCase))
                     {
-                        // No compression
-                        return null;
+                        // We add 'identity' to the list of "candidates" with a very low priority and no provider.
+                        // This will allow it to be ordered based on its quality (and priority) later in the method.
+                        candidates.Add(new ProviderCandidate(encodingName.Value, quality, priority: int.MaxValue, provider: null));
                     }
                 }
+
+                if (candidates.Count <= 1)
+                {
+                    return candidates.ElementAtOrDefault(0).Provider;
+                }
+
+                var accepted = candidates
+                    .OrderByDescending(x => x.Quality)
+                    .ThenBy(x => x.Priority)
+                    .First();
+
+                return accepted.Provider;
             }
 
             return null;
@@ -138,6 +182,40 @@ namespace Microsoft.AspNetCore.ResponseCompression
                 return false;
             }
             return !string.IsNullOrEmpty(context.Request.Headers[HeaderNames.AcceptEncoding]);
+        }
+
+        private readonly struct ProviderCandidate : IEquatable<ProviderCandidate>
+        {
+            public ProviderCandidate(string encodingName, double quality, int priority, ICompressionProvider provider)
+            {
+                EncodingName = encodingName;
+                Quality = quality;
+                Priority = priority;
+                Provider = provider;
+            }
+
+            public string EncodingName { get; }
+
+            public double Quality { get; }
+
+            public int Priority { get; }
+
+            public ICompressionProvider Provider { get; }
+
+            public bool Equals(ProviderCandidate other)
+            {
+                return string.Equals(EncodingName, other.EncodingName, StringComparison.OrdinalIgnoreCase);
+            }
+
+            public override bool Equals(object obj)
+            {
+                return obj is ProviderCandidate candidate && Equals(candidate);
+            }
+
+            public override int GetHashCode()
+            {
+                return StringComparer.OrdinalIgnoreCase.GetHashCode(EncodingName);
+            }
         }
     }
 }
