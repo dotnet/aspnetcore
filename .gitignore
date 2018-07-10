@@ -25,3 +25,5 @@ global.json
 msbuild.ProjectImports.zip
 .env
 scripts/tmp/
+.dotnet/
+.tools/

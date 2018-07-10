@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <!-- aspnet/BuildTools#662 Don't police what version of NetCoreApp we use -->
+    <NETCoreAppMaximumVersion>99.9</NETCoreAppMaximumVersion>
+    <MaxImplicitVersion>2.2.0</MaxImplicitVersion>
+    <!-- Use pre-release versions up until 2.1.0, then don't lift higher than "2.1.0" -->
+    <MicrosoftNETCoreAppPackageVersion Condition="$(MicrosoftNETCoreApp22PackageVersion.StartsWith('$(MaxImplicitVersion)-'))">$(MicrosoftNETCoreApp22PackageVersion)</MicrosoftNETCoreAppPackageVersion>
+    <MicrosoftNETCoreAppPackageVersion>$([MSbuild]::ValueOrDefault('$(MicrosoftNETCoreAppPackageVersion)','$(MaxImplicitVersion)'))</MicrosoftNETCoreAppPackageVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NETCore.App" Version="$(MicrosoftNETCoreAppPackageVersion)" />
+  </ItemGroup>
+
+</Project>

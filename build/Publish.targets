@@ -61,7 +61,6 @@
       <BlobBasePath>aspnetcore/Runtime/$(PackageVersion)/</BlobBasePath>
       <NpmBlobBasePath>aspnetcore/npm/</NpmBlobBasePath>
       <AliasBlobBasePath>aspnetcore/Runtime/$(SharedFxCliBlobChannel)/</AliasBlobBasePath>
-      <PackageArchiveFileName>nuGetPackagesArchive-$(PackageVersion).lzma</PackageArchiveFileName>
       <SiteExtensionArchiveFileName>runtime-site-extension-internal-$(PackageVersion).zip</SiteExtensionArchiveFileName>
       <InstallerBaseFileName>aspnetcore-runtime-$(PackageVersion)</InstallerBaseFileName>
       <InstallerAliasBaseFileName>aspnetcore-runtime-latest</InstallerAliasBaseFileName>
@@ -76,14 +75,30 @@
         <ManifestArtifactData>ShipInstaller=dotnetcli</ManifestArtifactData>
       </FilesToPublish>
 
+      <!-- Package archives -->
+      <FilesToPublish Include="$(DependencyAssetsDir)nuGetPackagesArchive-ci-server-$(PackageVersion).zip" >
+        <RelativeBlobPath>$(BlobBasePath)nuGetPackagesArchive-ci-server-$(PackageVersion).zip</RelativeBlobPath>
+        <ManifestArtifactData>ShipInstaller=dotnetcli</ManifestArtifactData>
+      </FilesToPublish>
+
+      <FilesToPublish Include="$(DependencyAssetsDir)nuGetPackagesArchive-ci-server-$(PackageVersion).patch.zip" >
+        <RelativeBlobPath>$(BlobBasePath)nuGetPackagesArchive-ci-server-$(PackageVersion).patch.zip</RelativeBlobPath>
+        <ManifestArtifactData>ShipInstaller=dotnetcli</ManifestArtifactData>
+      </FilesToPublish>
+
+      <FilesToPublish Include="$(DependencyAssetsDir)nuGetPackagesArchive-ci-server-compat-$(PackageVersion).patch.zip" >
+        <RelativeBlobPath>$(BlobBasePath)nuGetPackagesArchive-ci-server-compat-$(PackageVersion).patch.zip</RelativeBlobPath>
+        <ManifestArtifactData>ShipInstaller=dotnetcli</ManifestArtifactData>
+      </FilesToPublish>
+
       <!-- Intermediate files passed on to the dotnet-CLI. -->
       <FilesToPublish Include="$(DependencyAssetsDir)$(SiteExtensionArchiveFileName)" Condition="@(Repository->AnyHaveMetadataValue('Identity', 'AzureIntegration'))">
         <RelativeBlobPath>$(BlobBasePath)$(SiteExtensionArchiveFileName)</RelativeBlobPath>
         <ManifestArtifactData>ShipInstaller=dotnetcli</ManifestArtifactData>
       </FilesToPublish>
 
-      <FilesToPublish Include="$(DependencyAssetsDir)$(PackageArchiveFileName)" >
-        <RelativeBlobPath>$(BlobBasePath)$(PackageArchiveFileName)</RelativeBlobPath>
+      <FilesToPublish Include="$(DependencyAssetsDir)nuGetPackagesArchive-$(PackageVersion).lzma" >
+        <RelativeBlobPath>$(BlobBasePath)nuGetPackagesArchive-$(PackageVersion).lzma</RelativeBlobPath>
         <ManifestArtifactData>ShipInstaller=dotnetcli</ManifestArtifactData>
       </FilesToPublish>
 
