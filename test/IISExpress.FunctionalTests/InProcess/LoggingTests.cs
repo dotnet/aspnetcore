@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 StopServer();
 
                 var logContents = File.ReadAllText(tempFile);
-                Assert.Contains("[aspnetcore.dll]", logContents);
+                Assert.Contains("[aspnetcorev2.dll]", logContents);
                 Assert.Contains("[aspnetcorev2_inprocess.dll]", logContents);
             }
             finally

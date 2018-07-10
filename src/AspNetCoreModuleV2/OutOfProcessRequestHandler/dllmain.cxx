@@ -54,7 +54,7 @@ InitializeGlobalConfiguration(
         }
 
         if (RegOpenKeyEx(HKEY_LOCAL_MACHINE,
-            L"SOFTWARE\\Microsoft\\IIS Extensions\\IIS AspNetCore Module\\Parameters",
+            L"SOFTWARE\\Microsoft\\IIS Extensions\\IIS AspNetCore Module V2\\Parameters",
             0,
             KEY_READ,
             &hKey) == NO_ERROR)

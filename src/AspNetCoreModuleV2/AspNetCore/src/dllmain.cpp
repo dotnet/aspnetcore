@@ -11,7 +11,7 @@
 #include "resources.h"
 #include "exceptions.h"
 
-DECLARE_DEBUG_PRINT_OBJECT("aspnetcore.dll");
+DECLARE_DEBUG_PRINT_OBJECT("aspnetcorev2.dll");
 
 HTTP_MODULE_ID      g_pModuleId = NULL;
 IHttpServer *       g_pHttpServer = NULL;
@@ -120,7 +120,7 @@ HRESULT
 
     // check whether the feature is disabled due to security reason
     if (RegOpenKeyEx(HKEY_LOCAL_MACHINE,
-        L"SOFTWARE\\Microsoft\\IIS Extensions\\IIS AspNetCore Module\\Parameters",
+        L"SOFTWARE\\Microsoft\\IIS Extensions\\IIS AspNetCore Module V2\\Parameters",
         0,
         KEY_READ,
         &hKey) == NO_ERROR)
