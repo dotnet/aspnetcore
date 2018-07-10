@@ -711,7 +711,6 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             // Assert
             var description = Assert.Single(result);
-            Assert.Equal(2, description.SupportedResponseTypes.Count);
 
             Assert.Collection(
                 description.SupportedResponseTypes.OrderBy(responseType => responseType.StatusCode),
@@ -749,7 +748,6 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             // Assert
             var description = Assert.Single(result);
-            Assert.Equal(2, description.SupportedResponseTypes.Count);
 
             Assert.Collection(
                 description.SupportedResponseTypes.OrderBy(responseType => responseType.StatusCode),
@@ -1172,6 +1170,10 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                 description.SupportedResponseTypes.OrderBy(r => r.StatusCode),
                 responseType =>
                 {
+                    Assert.True(responseType.IsDefaultResponse);
+                },
+                responseType =>
+                {
                     Assert.Equal(typeof(Product).FullName, responseType.ResponseType);
                     Assert.Equal(200, responseType.StatusCode);
                     Assert.Equal(expectedMediaTypes, GetSortedMediaTypes(responseType));
@@ -1256,6 +1258,10 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                 description.SupportedResponseTypes.OrderBy(r => r.StatusCode),
                 responseType =>
                 {
+                    Assert.True(responseType.IsDefaultResponse);
+                },
+                responseType =>
+                {
                     Assert.Equal(typeof(void).FullName, responseType.ResponseType);
                     Assert.Equal(201, responseType.StatusCode);
                     Assert.Empty(responseType.ResponseFormats);
@@ -1282,6 +1288,10 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var description = Assert.Single(result);
             Assert.Collection(
                 description.SupportedResponseTypes.OrderBy(r => r.StatusCode),
+                responseType =>
+                {
+                    Assert.True(responseType.IsDefaultResponse);
+                },
                 responseType =>
                 {
                     Assert.Equal(typeof(void).FullName, responseType.ResponseType);
@@ -1315,6 +1325,10 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var description = Assert.Single(result);
             Assert.Collection(
                 description.SupportedResponseTypes.OrderBy(r => r.StatusCode),
+                responseType =>
+                {
+                    Assert.True(responseType.IsDefaultResponse);
+                },
                 responseType =>
                 {
                     Assert.Equal(typeof(void).FullName, responseType.ResponseType);

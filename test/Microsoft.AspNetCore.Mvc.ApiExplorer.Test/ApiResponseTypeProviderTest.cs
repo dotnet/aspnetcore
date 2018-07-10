@@ -73,6 +73,60 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         }
 
         [Fact]
+        public void GetApiResponseTypes_CombinesFilters()
+        {
+            // Arrange
+            var filterDescriptors = new[]
+            {
+                new FilterDescriptor(new ProducesResponseTypeAttribute(400), FilterScope.Global),
+                new FilterDescriptor(new ProducesResponseTypeAttribute(typeof(object), 201), FilterScope.Controller),
+                new FilterDescriptor(new ProducesResponseTypeAttribute(typeof(ProblemDetails), 400), FilterScope.Controller),
+                new FilterDescriptor(new ProducesResponseTypeAttribute(typeof(BaseModel), 201), FilterScope.Action),
+                new FilterDescriptor(new ProducesResponseTypeAttribute(404), FilterScope.Action),
+            };
+
+            var actionDescriptor = new ControllerActionDescriptor
+            {
+                FilterDescriptors = filterDescriptors,
+                MethodInfo = typeof(GetApiResponseTypes_ReturnsResponseTypesFromActionIfPresentController).GetMethod(nameof(GetApiResponseTypes_ReturnsResponseTypesFromActionIfPresentController.Get)),
+            };
+
+            var provider = GetProvider();
+
+            // Act
+            var result = provider.GetApiResponseTypes(actionDescriptor);
+
+            // Assert
+            Assert.Collection(
+                result.OrderBy(r => r.StatusCode),
+                responseType =>
+                {
+                    Assert.Equal(201, responseType.StatusCode);
+                    Assert.Equal(typeof(BaseModel), responseType.Type);
+                    Assert.False(responseType.IsDefaultResponse);
+                    Assert.Collection(
+                        responseType.ApiResponseFormats,
+                        format => Assert.Equal("application/json", format.MediaType));
+                },
+                responseType =>
+                {
+                    Assert.Equal(400, responseType.StatusCode);
+                    Assert.Equal(typeof(ProblemDetails), responseType.Type);
+                    Assert.False(responseType.IsDefaultResponse);
+                    Assert.Collection(
+                        responseType.ApiResponseFormats,
+                        format => Assert.Equal("application/json", format.MediaType));
+                },
+                responseType =>
+                {
+                    Assert.Equal(404, responseType.StatusCode);
+                    Assert.Equal(typeof(void), responseType.Type);
+                    Assert.False(responseType.IsDefaultResponse);
+                    Assert.Empty(responseType.ApiResponseFormats);
+                });
+        }
+
+        [Fact]
         public void GetApiResponseTypes_ReturnsResponseTypesFromApiConventionItem()
         {
             // Arrange
@@ -157,6 +211,54 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         public class GetApiResponseTypes_ReturnsDefaultResultsIfNoConventionsMatchController : ControllerBase
         {
             public Task<ActionResult<BaseModel>> PostModel(int id, BaseModel model) => null;
+        }
+
+        [Fact]
+        public void GetApiResponseTypes_ReturnsDefaultProblemResponse()
+        {
+            // Arrange
+            var actionDescriptor = GetControllerActionDescriptor(
+                typeof(GetApiResponseTypes_ReturnsResponseTypesFromDefaultConventionsController),
+                nameof(GetApiResponseTypes_ReturnsResponseTypesFromDefaultConventionsController.DeleteBase));
+            actionDescriptor.Properties[typeof(ApiConventionResult)] = new ApiConventionResult(new IApiResponseMetadataProvider[]
+            {
+                new ProducesResponseTypeAttribute(201),
+                new ProducesResponseTypeAttribute(404),
+                new ProducesDefaultResponseTypeAttribute(typeof(SerializableError)),
+            });
+
+            var provider = GetProvider();
+
+            // Act
+            var result = provider.GetApiResponseTypes(actionDescriptor);
+
+            // Assert
+            Assert.Collection(
+                result.OrderBy(r => r.StatusCode),
+                responseType =>
+                {
+                    Assert.True(responseType.IsDefaultResponse);
+                    Assert.Equal(typeof(SerializableError), responseType.Type);
+                    Assert.Collection(
+                        responseType.ApiResponseFormats,
+                        format => Assert.Equal("application/json", format.MediaType));
+                },
+                responseType =>
+                {
+                    Assert.Equal(201, responseType.StatusCode);
+                    Assert.Equal(typeof(BaseModel), responseType.Type);
+                    Assert.False(responseType.IsDefaultResponse);
+                    Assert.Collection(
+                        responseType.ApiResponseFormats,
+                        format => Assert.Equal("application/json", format.MediaType));
+                },
+                responseType =>
+                {
+                    Assert.Equal(404, responseType.StatusCode);
+                    Assert.Equal(typeof(void), responseType.Type);
+                    Assert.False(responseType.IsDefaultResponse);
+                    Assert.Empty(responseType.ApiResponseFormats);
+                });
         }
 
         private static ApiResponseTypeProvider GetProvider()

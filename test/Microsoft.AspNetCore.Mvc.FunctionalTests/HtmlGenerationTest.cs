@@ -566,7 +566,7 @@ Products: Music Systems, Televisions (3)";
             var document = await Client.GetHtmlDocumentAsync(url);
 
             // Assert
-            var banner = QuerySelector(document, ".banner");
+            var banner = document.RequiredQuerySelector(".banner");
             Assert.Equal("Some status message", banner.TextContent);
         }
 
@@ -581,19 +581,36 @@ Products: Music Systems, Televisions (3)";
             var document = await Client.GetHtmlDocumentAsync(url);
 
             // Assert
-            var banner = QuerySelector(document, ".banner");
+            var banner = document.RequiredQuerySelector(".banner");
             Assert.Empty(banner.TextContent);
         }
 
-        private static IElement QuerySelector(IHtmlDocument document, string selector)
+        [Fact]
+        public async Task PartialTagHelper_AllowsUsingFallback()
         {
-            var element = document.QuerySelector(selector);
-            if (element == null)
-            {
-                throw new ArgumentException($"Document does not contain element that matches the selector {selector}: " + Environment.NewLine + document.DocumentElement.OuterHtml);
-            }
+            // Arrange
+            var url = "/Customer/PartialWithFallback";
 
-            return element;
+            // Act
+            var document = await Client.GetHtmlDocumentAsync(url);
+
+            // Assert
+            var content = document.RequiredQuerySelector("#content");
+            Assert.Equal("Hello from fallback", content.TextContent);
+        }
+
+        [Fact]
+        public async Task PartialTagHelper_AllowsUsingOptional()
+        {
+            // Arrange
+            var url = "/Customer/PartialWithOptional";
+
+            // Act
+            var document = await Client.GetHtmlDocumentAsync(url);
+
+            // Assert
+            var content = document.RequiredQuerySelector("#content");
+            Assert.Empty(content.TextContent);
         }
 
         private static HttpRequestMessage RequestWithLocale(string url, string locale)

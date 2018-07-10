@@ -278,6 +278,176 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         }
 
         [Fact]
+        public void SelectCandidates_Match_CaseSensitiveMatch_MatchesOnEmptyString()
+        {
+            var actions = new ActionDescriptor[]
+            {
+                new ActionDescriptor()
+                {
+                    DisplayName = "A1",
+                    RouteValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        { "area", null },
+                        { "controller", "Home" },
+                        { "action", "Index" }
+                    },
+                }
+            };
+
+            var selector = CreateSelector(actions);
+
+            var routeContext = CreateRouteContext("GET");
+            // Example: In conventional route, one could set non-inline defaults
+            // new { area = "", controller = "Home", action = "Index" }
+            routeContext.RouteData.Values.Add("area", "");
+            routeContext.RouteData.Values.Add("controller", "Home");
+            routeContext.RouteData.Values.Add("action", "Index");
+
+            // Act
+            var candidates = selector.SelectCandidates(routeContext);
+
+            // Assert
+            var action = Assert.Single(candidates);
+            Assert.Same(actions[0], action);
+        }
+
+        [Fact]
+        public void SelectCandidates_Match_CaseInsensitiveMatch_MatchesOnEmptyString()
+        {
+            var actions = new ActionDescriptor[]
+            {
+                new ActionDescriptor()
+                {
+                    DisplayName = "A1",
+                    RouteValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        { "area", null },
+                        { "controller", "Home" },
+                        { "action", "Index" }
+                    },
+                }
+            };
+
+            var selector = CreateSelector(actions);
+
+            var routeContext = CreateRouteContext("GET");
+            // Example: In conventional route, one could set non-inline defaults
+            // new { area = "", controller = "Home", action = "Index" }
+            routeContext.RouteData.Values.Add("area", "");
+            routeContext.RouteData.Values.Add("controller", "HoMe");
+            routeContext.RouteData.Values.Add("action", "InDeX");
+
+            // Act
+            var candidates = selector.SelectCandidates(routeContext);
+
+            // Assert
+            var action = Assert.Single(candidates);
+            Assert.Same(actions[0], action);
+        }
+
+        [Fact]
+        public void SelectCandidates_Match_MatchesOnNull()
+        {
+            var actions = new ActionDescriptor[]
+            {
+                new ActionDescriptor()
+                {
+                    DisplayName = "A1",
+                    RouteValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        { "area", null },
+                        { "controller", "Home" },
+                        { "action", "Index" }
+                    },
+                }
+            };
+
+            var selector = CreateSelector(actions);
+
+            var routeContext = CreateRouteContext("GET");
+            // Example: In conventional route, one could set non-inline defaults
+            // new { area = (string)null, controller = "Foo", action = "Index" }
+            routeContext.RouteData.Values.Add("area", null);
+            routeContext.RouteData.Values.Add("controller", "Home");
+            routeContext.RouteData.Values.Add("action", "Index");
+
+            // Act
+            var candidates = selector.SelectCandidates(routeContext);
+
+            // Assert
+            var action = Assert.Single(candidates);
+            Assert.Same(actions[0], action);
+        }
+
+        [Fact]
+        public void SelectCandidates_Match_ActionDescriptorWithEmptyRouteValues_MatchesOnEmptyString()
+        {
+            var actions = new ActionDescriptor[]
+            {
+                new ActionDescriptor()
+                {
+                    DisplayName = "A1",
+                    RouteValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        { "foo", "" },
+                        { "controller", "Home" },
+                        { "action", "Index" }
+                    },
+                }
+            };
+
+            var selector = CreateSelector(actions);
+
+            var routeContext = CreateRouteContext("GET");
+            // Example: In conventional route, one could set non-inline defaults
+            // new { area = (string)null, controller = "Home", action = "Index" }
+            routeContext.RouteData.Values.Add("foo", "");
+            routeContext.RouteData.Values.Add("controller", "Home");
+            routeContext.RouteData.Values.Add("action", "Index");
+
+            // Act
+            var candidates = selector.SelectCandidates(routeContext);
+
+            // Assert
+            var action = Assert.Single(candidates);
+            Assert.Same(actions[0], action);
+        }
+
+        [Fact]
+        public void SelectCandidates_Match_ActionDescriptorWithEmptyRouteValues_MatchesOnNull()
+        {
+            var actions = new ActionDescriptor[]
+            {
+                new ActionDescriptor()
+                {
+                    DisplayName = "A1",
+                    RouteValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        { "foo", "" },
+                        { "controller", "Home" },
+                        { "action", "Index" }
+                    },
+                }
+            };
+
+            var selector = CreateSelector(actions);
+
+            var routeContext = CreateRouteContext("GET");
+            // Example: In conventional route, one could set non-inline defaults
+            // new { area = (string)null, controller = "Home", action = "Index" }
+            routeContext.RouteData.Values.Add("foo", null);
+            routeContext.RouteData.Values.Add("controller", "Home");
+            routeContext.RouteData.Values.Add("action", "Index");
+
+            // Act
+            var candidates = selector.SelectCandidates(routeContext);
+
+            // Assert
+            var action = Assert.Single(candidates);
+            Assert.Same(actions[0], action);
+        }
+
+        [Fact]
         public void SelectBestCandidate_AmbiguousActions_LogIsCorrect()
         {
             // Arrange

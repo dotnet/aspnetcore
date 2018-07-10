@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Mvc
                 var errorMessage = Resources.FormatApiConvention_UnsupportedAttributesOnConvention(
                     methodDisplayName,
                     Environment.NewLine + string.Join(Environment.NewLine, unsupportedAttributes) + Environment.NewLine,
-                    $"{nameof(ProducesResponseTypeAttribute)}, {nameof(ApiConventionNameMatchAttribute)}");
+                    $"{nameof(ProducesResponseTypeAttribute)}, {nameof(ProducesDefaultResponseTypeAttribute)}, {nameof(ApiConventionNameMatchAttribute)}");
 
                 throw new ArgumentException(errorMessage, nameof(conventionType));
             }
@@ -83,6 +83,7 @@ namespace Microsoft.AspNetCore.Mvc
         private static bool IsAllowedAttribute(object attribute)
         {
             return attribute is ProducesResponseTypeAttribute ||
+                attribute is ProducesDefaultResponseTypeAttribute ||
                 attribute is ApiConventionNameMatchAttribute;
         }
     }

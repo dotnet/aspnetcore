@@ -1214,6 +1214,33 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         public virtual UnauthorizedResult Unauthorized()
             => new UnauthorizedResult();
 
+        /// <summary>
+        /// Creates a <see cref="PartialViewResult"/> by specifying the name of a partial to render.
+        /// </summary>
+        /// <param name="viewName">The partial name.</param>
+        /// <returns>The created <see cref="PartialViewResult"/> object for the response.</returns>
+        public virtual PartialViewResult Partial(string viewName)
+        {
+            return Partial(viewName, model: null);
+        }
+
+        /// <summary>
+        /// Creates a <see cref="PartialViewResult"/> by specifying the name of a partial to render and the model object.
+        /// </summary>
+        /// <param name="viewName">The partial name.</param>
+        /// <param name="model">The model to be passed into the partial.</param>
+        /// <returns>The created <see cref="PartialViewResult"/> object for the response.</returns>
+        public virtual PartialViewResult Partial(string viewName, object model)
+        {
+            ViewContext.ViewData.Model = model;
+
+            return new PartialViewResult
+            {
+                ViewName = viewName,
+                ViewData = ViewContext.ViewData
+            };
+        }
+
         #region ViewComponentResult
         /// <summary>
         /// Creates a <see cref="ViewComponentResult"/> by specifying the name of a view component to render.
