@@ -76,6 +76,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.HostFi
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.HostFiltering", "src\Microsoft.AspNetCore.HostFiltering\Microsoft.AspNetCore.HostFiltering.csproj", "{762F7276-C916-4111-A6C0-41668ABB3823}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "benchmarks", "benchmarks", "{C6DA6317-30FC-42FE-891C-64E75D88FF12}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.ResponseCompression.Benchmarks", "benchmarks\Microsoft.AspNetCore.ResponseCompression.Benchmarks\Microsoft.AspNetCore.ResponseCompression.Benchmarks.csproj", "{5AF10E85-5076-40B9-84CF-9830B585ABE5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -154,6 +158,10 @@ Global
 		{762F7276-C916-4111-A6C0-41668ABB3823}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{762F7276-C916-4111-A6C0-41668ABB3823}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{762F7276-C916-4111-A6C0-41668ABB3823}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5AF10E85-5076-40B9-84CF-9830B585ABE5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5AF10E85-5076-40B9-84CF-9830B585ABE5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5AF10E85-5076-40B9-84CF-9830B585ABE5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5AF10E85-5076-40B9-84CF-9830B585ABE5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -178,6 +186,7 @@ Global
 		{5CEA6F31-A829-4A02-8CD5-EC3DDD4CC1EA} = {59A9B64C-E9BE-409E-89A2-58D72E2918F5}
 		{4BC947ED-13B8-4BE6-82A4-96A48D86980B} = {8437B0F3-3894-4828-A945-A9187F37631D}
 		{762F7276-C916-4111-A6C0-41668ABB3823} = {A5076D28-FA7E-4606-9410-FEDD0D603527}
+		{5AF10E85-5076-40B9-84CF-9830B585ABE5} = {C6DA6317-30FC-42FE-891C-64E75D88FF12}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {4518E9CE-3680-4E05-9259-B64EA7807158}
