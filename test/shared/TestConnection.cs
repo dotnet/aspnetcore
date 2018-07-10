@@ -47,6 +47,8 @@ namespace Microsoft.AspNetCore.Testing
             _reader = new StreamReader(_stream, Encoding.ASCII);
         }
 
+        public Socket Socket => _socket;
+
         public Stream Stream => _stream;
 
         public StreamReader Reader => _reader;
