@@ -151,8 +151,8 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 PrepareConfig(contentRoot, dllRoot, port);
 
                 var parameters = string.IsNullOrEmpty(DeploymentParameters.ServerConfigLocation) ?
-                                string.Format("/port:{0} /path:\"{1}\" /trace:error", uri.Port, contentRoot) :
-                                string.Format("/site:{0} /config:{1} /trace:error", DeploymentParameters.SiteName, DeploymentParameters.ServerConfigLocation);
+                                string.Format("/port:{0} /path:\"{1}\" /trace:error /systray:false", uri.Port, contentRoot) :
+                                string.Format("/site:{0} /config:{1} /trace:error /systray:false", DeploymentParameters.SiteName, DeploymentParameters.ServerConfigLocation);
 
                 var iisExpressPath = GetIISExpressPath();
 
