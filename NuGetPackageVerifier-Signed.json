@@ -135,14 +135,9 @@
                 ],
                 "Exclusions": {
                     "ASSEMBLY_COMMIT_HASH": {
-                        "tools/netcoreapp2.1/any/runtimes/unix/lib/netcoreapp2.0/System.Buffers.dll": "Assembly is built by another project but bundled in our nupkg.",
-                        "tools/netcoreapp2.1/any/runtimes/win/lib/netcoreapp2.0/System.Buffers.dll": "Assembly is built by another project but bundled in our nupkg.",
-                        "tools/netcoreapp2.1/any/System.Buffers.dll": "Assembly is built by another project but bundled in our nupkg.",
-                        "tools/netcoreapp2.1/any/System.Memory.dll": "Assembly is built by another project but bundled in our nupkg.",
-                        "tools/netcoreapp2.1/any/System.Numerics.Vectors.dll": "Assembly is built by another project but bundled in our nupkg.",
-                        "tools/netcoreapp2.1/any/Newtonsoft.Json.dll": "Assembly is built by another project but bundled in our nupkg.",
-                        "tools/netcoreapp2.1/any/NuGet.Frameworks.dll": "Assembly is built by another project but bundled in our nupkg.",
-                        "tools/netcoreapp2.1/any/System.Runtime.CompilerServices.Unsafe.dll": "Assembly is built by another project but bundled in our nupkg."
+                        "tools/netcoreapp3.0/any/Newtonsoft.Json.dll": "Assembly is built by another project but bundled in our nupkg.",
+                        "tools/netcoreapp3.0/any/NuGet.Frameworks.dll": "Assembly is built by another project but bundled in our nupkg.",
+                        "tools/netcoreapp3.0/any/System.Runtime.CompilerServices.Unsafe.dll": "Assembly is built by another project but bundled in our nupkg."
                     }
                 }
             },
