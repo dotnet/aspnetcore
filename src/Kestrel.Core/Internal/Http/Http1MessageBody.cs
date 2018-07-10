@@ -87,7 +87,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                                 break;
                             }
                         }
-                        else if (result.IsCompleted)
+
+                        // Read() will have already have greedily consumed the entire request body if able.
+                        if (result.IsCompleted)
                         {
                             // Treat any FIN from an upgraded request as expected.
                             // It's up to higher-level consumer (i.e. WebSocket middleware) to determine 

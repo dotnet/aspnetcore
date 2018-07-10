@@ -1,14 +1,17 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
@@ -631,6 +634,54 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         "Content-Length: 0",
                         "",
                         "");
+                }
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(ConnectionAdapterData))]
+        public async Task ClosingConnectionMidChunkPrefixThrows(ListenOptions listenOptions)
+        {
+            var testContext = new TestServiceContext(LoggerFactory);
+            var readStartedTcs = new TaskCompletionSource<object>();
+            var exTcs = new TaskCompletionSource<BadHttpRequestException>();
+
+            using (var server = new TestServer(async httpContext =>
+            {
+                var readTask = httpContext.Request.Body.CopyToAsync(Stream.Null);
+                readStartedTcs.SetResult(null);
+
+                try
+                {
+                    await readTask;
+                }
+                catch (BadHttpRequestException badRequestEx)
+                {
+                    exTcs.TrySetResult(badRequestEx);
+                }
+                catch (Exception ex)
+                {
+                    exTcs.SetException(ex);
+                }
+            }, testContext, listenOptions))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.SendAll(
+                        "POST / HTTP/1.1",
+                        "Host:",
+                        "Transfer-Encoding: chunked",
+                        "",
+                        "1");
+
+                    await readStartedTcs.Task.TimeoutAfter(TestConstants.DefaultTimeout);
+
+                    connection.Socket.Shutdown(SocketShutdown.Send);
+
+                    await connection.ReceiveEnd();
+
+                    var badReqEx = await exTcs.Task.TimeoutAfter(TestConstants.DefaultTimeout);
+                    Assert.Equal(RequestRejectionReason.UnexpectedEndOfRequestContent, badReqEx.Reason);
                 }
             }
         }

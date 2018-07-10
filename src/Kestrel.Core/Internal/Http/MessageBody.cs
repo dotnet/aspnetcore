@@ -57,7 +57,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         slice.CopyTo(buffer.Span);
                         return actual;
                     }
-                    else if (result.IsCompleted)
+
+                    if (result.IsCompleted)
                     {
                         return 0;
                     }
@@ -96,7 +97,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 #endif
                         }
                     }
-                    else if (result.IsCompleted)
+
+                    if (result.IsCompleted)
                     {
                         return;
                     }
