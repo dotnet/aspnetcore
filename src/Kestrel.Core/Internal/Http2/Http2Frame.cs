@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
     public partial class Http2Frame
     {
-        public  const int MinAllowedMaxFrameSize = 16 * 1024;
+        public const int MinAllowedMaxFrameSize = 16 * 1024;
         public const int MaxAllowedMaxFrameSize = 16 * 1024 * 1024 - 1;
         public const int HeaderLength = 9;
 
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             get => _data[FlagsOffset];
             set
             {
-                _data[FlagsOffset] = (byte)value;
+                _data[FlagsOffset] = value;
             }
         }
 

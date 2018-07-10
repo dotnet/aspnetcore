@@ -524,4 +524,22 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
   <data name="Http2ErrorInvalidPreface" xml:space="preserve">
     <value>Invalid HTTP/2 connection preface.</value>
   </data>
+  <data name="ConnectionOrStreamAbortedByCancellationToken" xml:space="preserve">
+    <value>The connection or stream was aborted because a write operation was aborted with a CancellationToken.</value>
+  </data>
+  <data name="Http2ErrorInitialWindowSizeInvalid" xml:space="preserve">
+    <value>The client sent a SETTINGS frame with a SETTINGS_INITIAL_WINDOW_SIZE that caused a flow-control window to exceed the maximum size.</value>
+  </data>
+  <data name="Http2ErrorWindowUpdateSizeInvalid" xml:space="preserve">
+    <value>The client sent a WINDOW_UPDATE frame that caused a flow-control window to exceed the maximum size.</value>
+  </data>
+  <data name="Http2ConnectionFaulted" xml:space="preserve">
+    <value>The HTTP/2 connection faulted.</value>
+  </data>
+  <data name="Http2StreamResetByClient" xml:space="preserve">
+    <value>The client reset the request stream.</value>
+  </data>
+  <data name="Http2StreamAborted" xml:space="preserve">
+    <value>The request stream was aborted.</value>
+  </data>
 </root>

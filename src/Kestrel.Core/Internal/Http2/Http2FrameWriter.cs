@@ -7,13 +7,15 @@ using System.Collections.Generic;
 using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
-    public class Http2FrameWriter : IHttp2FrameWriter
+    public class Http2FrameWriter
     {
         // Literal Header Field without Indexing - Indexed Name (Index 8 - :status)
         private static readonly byte[] _continueBytes = new byte[] { 0x08, 0x03, (byte)'1', (byte)'0', (byte)'0' };
@@ -23,13 +25,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private readonly HPackEncoder _hpackEncoder = new HPackEncoder();
         private readonly PipeWriter _outputWriter;
         private readonly PipeReader _outputReader;
+        private readonly Http2OutputFlowControl _connectionOutputFlowControl;
+        private readonly StreamSafePipeFlusher _flusher;
 
         private bool _completed;
 
-        public Http2FrameWriter(PipeWriter outputPipeWriter, PipeReader outputPipeReader)
+        public Http2FrameWriter(
+            PipeWriter outputPipeWriter,
+            PipeReader outputPipeReader,
+            Http2OutputFlowControl connectionOutputFlowControl,
+            ITimeoutControl timeoutControl)
         {
             _outputWriter = outputPipeWriter;
             _outputReader = outputPipeReader;
+
+            _connectionOutputFlowControl = connectionOutputFlowControl;
+            _flusher = new StreamSafePipeFlusher(_outputWriter, timeoutControl);
         }
 
         public void Complete()
@@ -42,30 +53,28 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 }
 
                 _completed = true;
+                _connectionOutputFlowControl.Abort();
                 _outputWriter.Complete();
             }
         }
 
-        public void Abort(Exception ex)
+        public void Abort(ConnectionAbortedException ex)
+        {
+            // TODO: Really abort the connection using the ConnectionContex like Http1OutputProducer.
+            _outputReader.CancelPendingRead();
+            Complete();
+        }
+
+        public Task FlushAsync(IHttpOutputProducer outputProducer, CancellationToken cancellationToken)
         {
             lock (_writeLock)
             {
                 if (_completed)
                 {
-                    return;
+                    return Task.CompletedTask;
                 }
 
-                _completed = true;
-                _outputReader.CancelPendingRead();
-                _outputWriter.Complete(ex);
-            }
-        }
-
-        public Task FlushAsync(CancellationToken cancellationToken)
-        {
-            lock (_writeLock)
-            {
-                return WriteAsync(Constants.EmptyData);
+                return _flusher.FlushAsync(0, outputProducer, cancellationToken);
             }
         }
 
@@ -77,7 +86,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 _outgoingFrame.Length = _continueBytes.Length;
                 _continueBytes.CopyTo(_outgoingFrame.HeadersPayload);
 
-                return WriteAsync(_outgoingFrame.Raw);
+                return WriteUnsynchronizedAsync(_outgoingFrame.Raw);
             }
         }
 
@@ -85,6 +94,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         {
             lock (_writeLock)
             {
+                if (_completed)
+                {
+                    return;
+                }
+
                 _outgoingFrame.PrepareHeaders(Http2HeadersFrameFlags.NONE, streamId);
 
                 var done = _hpackEncoder.BeginEncode(statusCode, EnumerateHeaders(headers), _outgoingFrame.Payload, out var payloadLength);
@@ -95,7 +109,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     _outgoingFrame.HeadersFlags = Http2HeadersFrameFlags.END_HEADERS;
                 }
 
-                Append(_outgoingFrame.Raw);
+                _outputWriter.Write(_outgoingFrame.Raw);
 
                 while (!done)
                 {
@@ -109,43 +123,120 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                         _outgoingFrame.ContinuationFlags = Http2ContinuationFrameFlags.END_HEADERS;
                     }
 
-                    Append(_outgoingFrame.Raw);
+                    _outputWriter.Write(_outgoingFrame.Raw);
                 }
             }
         }
 
-        public Task WriteDataAsync(int streamId, ReadOnlySpan<byte> data, CancellationToken cancellationToken)
-            => WriteDataAsync(streamId, data, endStream: false, cancellationToken: cancellationToken);
-
-        public Task WriteDataAsync(int streamId, ReadOnlySpan<byte> data, bool endStream, CancellationToken cancellationToken)
+        public Task WriteDataAsync(int streamId, Http2StreamOutputFlowControl flowControl, ReadOnlySequence<byte> data, bool endStream)
         {
-            var tasks = new List<Task>();
+            // The Length property of a ReadOnlySequence can be expensive, so we cache the value.
+            var dataLength = data.Length;
 
             lock (_writeLock)
             {
-                _outgoingFrame.PrepareData(streamId);
-
-                while (data.Length > _outgoingFrame.Length)
+                if (_completed || flowControl.IsAborted)
                 {
-                    data.Slice(0, _outgoingFrame.Length).CopyTo(_outgoingFrame.Payload);
-                    data = data.Slice(_outgoingFrame.Length);
-
-                    tasks.Add(WriteAsync(_outgoingFrame.Raw, cancellationToken));
+                    return Task.CompletedTask;
                 }
 
-                _outgoingFrame.Length = data.Length;
-
-                if (endStream)
+                // Zero-length data frames are allowed to be sent immediately even if there is no space available in the flow control window.
+                // https://httpwg.org/specs/rfc7540.html#rfc.section.6.9.1
+                if (dataLength != 0 && dataLength > flowControl.Available)
                 {
-                    _outgoingFrame.DataFlags = Http2DataFrameFlags.END_STREAM;
+                    return WriteDataAsyncAwaited(streamId, flowControl, data, dataLength, endStream);
                 }
 
-                data.CopyTo(_outgoingFrame.Payload);
-
-                tasks.Add(WriteAsync(_outgoingFrame.Raw, cancellationToken));
-
-                return Task.WhenAll(tasks);
+                // This cast is safe since if dataLength would overflow an int, it's guaranteed to be greater than the available flow control window.
+                flowControl.Advance((int)dataLength);
+                return WriteDataUnsynchronizedAsync(streamId, data, endStream);
             }
+        }
+
+        private Task WriteDataUnsynchronizedAsync(int streamId, ReadOnlySequence<byte> data, bool endStream)
+        {
+            _outgoingFrame.PrepareData(streamId);
+
+            var payload = _outgoingFrame.Payload;
+            var unwrittenPayloadLength = 0;
+
+            foreach (var buffer in data)
+            {
+                var current = buffer;
+
+                while (current.Length > payload.Length)
+                {
+                    current.Span.Slice(0, payload.Length).CopyTo(payload);
+                    current = current.Slice(payload.Length);
+
+                    _outputWriter.Write(_outgoingFrame.Raw);
+                    payload = _outgoingFrame.Payload;
+                    unwrittenPayloadLength = 0;
+                }
+
+                if (current.Length > 0)
+                {
+                    current.Span.CopyTo(payload);
+                    payload = payload.Slice(current.Length);
+                    unwrittenPayloadLength += current.Length;
+                }
+            }
+
+            if (endStream)
+            {
+                _outgoingFrame.DataFlags = Http2DataFrameFlags.END_STREAM;
+            }
+
+            _outgoingFrame.Length = unwrittenPayloadLength;
+            _outputWriter.Write(_outgoingFrame.Raw);
+
+            return FlushUnsynchronizedAsync();
+        }
+
+        private async Task WriteDataAsyncAwaited(int streamId, Http2StreamOutputFlowControl flowControl, ReadOnlySequence<byte> data, long dataLength, bool endStream)
+        {
+            while (dataLength > 0)
+            {
+                Http2OutputFlowControlAwaitable availabilityAwaitable;
+                var writeTask = Task.CompletedTask;
+
+                lock (_writeLock)
+                {
+                    if (_completed || flowControl.IsAborted)
+                    {
+                        break;
+                    }
+
+                    var actual = flowControl.AdvanceUpToAndWait(dataLength, out availabilityAwaitable);
+
+                    if (actual > 0)
+                    {
+                        if (actual < dataLength)
+                        {
+                            writeTask = WriteDataUnsynchronizedAsync(streamId, data.Slice(0, actual), endStream: false);
+                            data = data.Slice(actual);
+                            dataLength -= actual;
+                        }
+                        else
+                        {
+                            writeTask = WriteDataUnsynchronizedAsync(streamId, data, endStream);
+                            dataLength = 0;
+                        }
+                    }
+                }
+
+                // This awaitable releases continuations in FIFO order when the window updates.
+                // It should be very rare for a continuation to run without any availability. 
+                if (availabilityAwaitable != null)
+                {
+                    await availabilityAwaitable;
+                }
+
+                await writeTask;
+            }
+
+            // Ensure that the application continuation isn't executed inline by ProcessWindowUpdateFrameAsync.
+            await ThreadPoolAwaitable.Instance;
         }
 
         public Task WriteRstStreamAsync(int streamId, Http2ErrorCode errorCode)
@@ -153,7 +244,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             lock (_writeLock)
             {
                 _outgoingFrame.PrepareRstStream(streamId, errorCode);
-                return WriteAsync(_outgoingFrame.Raw);
+                return WriteUnsynchronizedAsync(_outgoingFrame.Raw);
             }
         }
 
@@ -163,7 +254,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             {
                 // TODO: actually send settings
                 _outgoingFrame.PrepareSettings(Http2SettingsFrameFlags.NONE);
-                return WriteAsync(_outgoingFrame.Raw);
+                return WriteUnsynchronizedAsync(_outgoingFrame.Raw);
             }
         }
 
@@ -172,7 +263,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             lock (_writeLock)
             {
                 _outgoingFrame.PrepareSettings(Http2SettingsFrameFlags.ACK);
-                return WriteAsync(_outgoingFrame.Raw);
+                return WriteUnsynchronizedAsync(_outgoingFrame.Raw);
             }
         }
 
@@ -182,7 +273,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             {
                 _outgoingFrame.PreparePing(Http2PingFrameFlags.ACK);
                 payload.CopyTo(_outgoingFrame.Payload);
-                return WriteAsync(_outgoingFrame.Raw);
+                return WriteUnsynchronizedAsync(_outgoingFrame.Raw);
             }
         }
 
@@ -191,23 +282,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             lock (_writeLock)
             {
                 _outgoingFrame.PrepareGoAway(lastStreamId, errorCode);
-                return WriteAsync(_outgoingFrame.Raw);
+                return WriteUnsynchronizedAsync(_outgoingFrame.Raw);
             }
         }
 
-        // Must be called with _writeLock
-        private void Append(ReadOnlySpan<byte> data)
-        {
-            if (_completed)
-            {
-                return;
-            }
-
-            _outputWriter.Write(data);
-        }
-
-        // Must be called with _writeLock
-        private Task WriteAsync(ReadOnlySpan<byte> data, CancellationToken cancellationToken = default(CancellationToken))
+        private Task WriteUnsynchronizedAsync(ReadOnlySpan<byte> data)
         {
             if (_completed)
             {
@@ -215,12 +294,36 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
 
             _outputWriter.Write(data);
-            return FlushAsync(_outputWriter, cancellationToken);
+            return FlushUnsynchronizedAsync();
         }
 
-        private async Task FlushAsync(PipeWriter outputWriter, CancellationToken cancellationToken)
+        private Task FlushUnsynchronizedAsync()
         {
-            await outputWriter.FlushAsync(cancellationToken);
+            return _flusher.FlushAsync();
+        }
+
+        public bool TryUpdateConnectionWindow(int bytes)
+        {
+            lock (_writeLock)
+            {
+                return _connectionOutputFlowControl.TryUpdateWindow(bytes);
+            }
+        }
+
+        public bool TryUpdateStreamWindow(Http2StreamOutputFlowControl flowControl, int bytes)
+        {
+            lock (_writeLock)
+            {
+                return flowControl.TryUpdateWindow(bytes);
+            }
+        }
+
+        public void AbortPendingStreamDataWrites(Http2StreamOutputFlowControl flowControl)
+        {
+            lock (_writeLock)
+            {
+                flowControl.Abort();
+            }
         }
 
         private static IEnumerable<KeyValuePair<string, string>> EnumerateHeaders(IHeaderDictionary headers)

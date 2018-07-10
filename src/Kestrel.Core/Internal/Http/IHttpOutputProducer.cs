@@ -14,12 +14,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         void Abort(ConnectionAbortedException abortReason);
         Task WriteAsync<T>(Func<PipeWriter, T, long> callback, T state);
         Task FlushAsync(CancellationToken cancellationToken);
-        Task Write100ContinueAsync(CancellationToken cancellationToken);
+        Task Write100ContinueAsync();
         void WriteResponseHeaders(int statusCode, string ReasonPhrase, HttpResponseHeaders responseHeaders);
         // The reason this is ReadOnlySpan and not ReadOnlyMemory is because writes are always
         // synchronous. Flushing to get back pressure is the only time we truly go async but
         // that's after the buffer is copied
         Task WriteDataAsync(ReadOnlySpan<byte> data, CancellationToken cancellationToken);
-        Task WriteStreamSuffixAsync(CancellationToken cancellationToken);
+        Task WriteStreamSuffixAsync();
     }
 }
