@@ -6,23 +6,22 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 {
     [Collection(IISTestSiteCollection.Name)]
-    public class SynchronousReadAndWriteTests
+    public class SynchronousReadAndWriteTests: FixtureLoggedTest
     {
         private readonly IISTestSiteFixture _fixture;
 
-        public SynchronousReadAndWriteTests(IISTestSiteFixture fixture)
+        public SynchronousReadAndWriteTests(IISTestSiteFixture fixture): base(fixture)
         {
             _fixture = fixture;
         }
 
-        [ConditionalFact(Skip = "See: https://github.com/aspnet/IISIntegration/issues/766")]
+        [ConditionalFact]
         public async Task ReadAndWriteSynchronously()
         {
             for (int i = 0; i < 100; i++)
