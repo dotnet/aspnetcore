@@ -22,11 +22,14 @@ namespace Microsoft.AspNetCore.Identity.Test
             var services = new ServiceCollection();
             services.AddIdentityCore<PocoUser>(o => { })
                 .AddRoles<PocoRole>()
+                .AddUserStore<NoopUserStore>()
                 .AddRoleStore<NoopRoleStore>();
             var sp = services.BuildServiceProvider();
             Assert.NotNull(sp.GetRequiredService<IRoleValidator<PocoRole>>());
             Assert.IsType<NoopRoleStore>(sp.GetRequiredService<IRoleStore<PocoRole>>());
             Assert.IsType<RoleManager<PocoRole>>(sp.GetRequiredService<RoleManager<PocoRole>>());
+            Assert.NotNull(sp.GetRequiredService<RoleManager<PocoRole>>());
+            Assert.IsType<UserClaimsPrincipalFactory<PocoUser, PocoRole>>(sp.GetRequiredService<IUserClaimsPrincipalFactory<PocoUser>>());
         }
 
         [Fact]

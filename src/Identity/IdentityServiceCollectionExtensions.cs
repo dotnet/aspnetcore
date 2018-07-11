@@ -117,6 +117,5 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The services.</returns>
         public static IServiceCollection ConfigureExternalCookie(this IServiceCollection services, Action<CookieAuthenticationOptions> configure)
             => services.Configure(IdentityConstants.ExternalScheme, configure);
-
     }
 }
