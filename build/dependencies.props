@@ -24,6 +24,7 @@
     <MicrosoftExtensionsLoggingTestingPackageVersion>3.0.0-alpha1-10044</MicrosoftExtensionsLoggingTestingPackageVersion>
     <MicrosoftExtensionsOptionsConfigurationExtensionsPackageVersion>3.0.0-alpha1-10044</MicrosoftExtensionsOptionsConfigurationExtensionsPackageVersion>
     <MicrosoftExtensionsOptionsPackageVersion>3.0.0-alpha1-10044</MicrosoftExtensionsOptionsPackageVersion>
+    <MicrosoftNETCoreApp21PackageVersion>2.1.2</MicrosoftNETCoreApp21PackageVersion>
     <MicrosoftNETCoreApp22PackageVersion>2.2.0-preview1-26618-02</MicrosoftNETCoreApp22PackageVersion>
     <MicrosoftNetHttpHeadersPackageVersion>3.0.0-alpha1-10044</MicrosoftNetHttpHeadersPackageVersion>
     <MicrosoftNETTestSdkPackageVersion>15.6.1</MicrosoftNETTestSdkPackageVersion>
