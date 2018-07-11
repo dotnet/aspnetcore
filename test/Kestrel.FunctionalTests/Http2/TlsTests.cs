@@ -100,18 +100,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
                 var consumed = buffer.Start;
                 var examined = buffer.End;
 
-                if (buffer.IsEmpty && result.IsCompleted)
-                {
-                    throw new IOException("The reader completed without returning a frame.");
-                }
-
                 try
                 {
-                    // Assert.True(buffer.Length > 0);
-
                     if (Http2FrameReader.ReadFrame(buffer, frame, 16_384, out consumed, out examined))
                     {
                         return frame;
+                    }
+
+                    if (result.IsCompleted)
+                    {
+                        throw new IOException("The reader completed without returning a frame.");
                     }
                 }
                 finally

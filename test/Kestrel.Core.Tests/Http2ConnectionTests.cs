@@ -3841,6 +3841,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                     {
                         return frame;
                     }
+
+                    if (result.IsCompleted)
+                    {
+                        throw new IOException("The reader completed without returning a frame.");
+                    }
                 }
                 finally
                 {
