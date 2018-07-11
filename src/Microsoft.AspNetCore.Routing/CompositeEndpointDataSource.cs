@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Routing
@@ -12,9 +13,9 @@ namespace Microsoft.AspNetCore.Routing
     {
         private readonly EndpointDataSource[] _dataSources;
         private readonly object _lock;
-
-        private IChangeToken _changeToken;
         private IReadOnlyList<Endpoint> _endpoints;
+        private IChangeToken _consumerChangeToken;
+        private CancellationTokenSource _cts;
 
         internal CompositeEndpointDataSource(IEnumerable<EndpointDataSource> dataSources)
         {
@@ -23,6 +24,7 @@ namespace Microsoft.AspNetCore.Routing
                 throw new ArgumentNullException(nameof(dataSources));
             }
 
+            CreateChangeToken();
             _dataSources = dataSources.ToArray();
             _lock = new object();
         }
@@ -32,7 +34,7 @@ namespace Microsoft.AspNetCore.Routing
             get
             {
                 EnsureInitialized();
-                return _changeToken;
+                return _consumerChangeToken;
             }
         }
 
@@ -48,7 +50,7 @@ namespace Microsoft.AspNetCore.Routing
         // Defer initialization to avoid doing lots of reflection on startup.
         private void EnsureInitialized()
         {
-            if (_changeToken == null)
+            if (_endpoints == null)
             {
                 Initialize();
             }
@@ -60,11 +62,49 @@ namespace Microsoft.AspNetCore.Routing
         {
             lock (_lock)
             {
-                _changeToken = new CompositeChangeToken(_dataSources.Select(d => d.ChangeToken).ToArray());
+                if (_endpoints == null)
+                {
+                    _endpoints = _dataSources.SelectMany(d => d.Endpoints).ToArray();
+
+                    foreach (var dataSource in _dataSources)
+                    {
+                        Extensions.Primitives.ChangeToken.OnChange(
+                            () => dataSource.ChangeToken,
+                            () => HandleChange());
+                    }
+                }
+            }
+        }
+
+        private void HandleChange()
+        {
+            lock (_lock)
+            {
+                // Refresh the endpoints from datasource so that callbacks can get the latest endpoints
                 _endpoints = _dataSources.SelectMany(d => d.Endpoints).ToArray();
 
-                _changeToken.RegisterChangeCallback((state) => Initialize(), null);
+                // Prevent consumers from re-registering callback to inflight events as that can 
+                // cause a stackoverflow
+                // Example:
+                // 1. B registers A
+                // 2. A fires event causing B's callback to get called
+                // 3. B executes some code in its callback, but needs to re-register callback 
+                //    in the same callback
+                var oldTokenSource = _cts;
+                var oldToken = _consumerChangeToken;
+
+                CreateChangeToken();
+
+                // Raise consumer callbacks. Any new callback registration would happen on the new token
+                // created in earlier step.
+                oldTokenSource.Cancel();
             }
+        }
+
+        private void CreateChangeToken()
+        {
+            _cts = new CancellationTokenSource();
+            _consumerChangeToken = new CancellationChangeToken(_cts.Token);
         }
     }
 }

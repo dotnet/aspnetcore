@@ -27,7 +27,13 @@ namespace Microsoft.AspNetCore.Routing
             _endpointDataSource = endpointDataSource;
             _objectPool = objectPool;
 
+            // Build initial matches
             BuildOutboundMatches();
+
+            // Register for changes in endpoints
+            Extensions.Primitives.ChangeToken.OnChange(
+                () => _endpointDataSource.ChangeToken,
+                () => HandleChange());
         }
 
         public IEnumerable<Endpoint> FindEndpoints(RouteValuesBasedEndpointFinderContext context)
@@ -56,14 +62,28 @@ namespace Microsoft.AspNetCore.Routing
                 .Select(match => (MatcherEndpoint)match.Entry.Data);
         }
 
-        private void BuildOutboundMatches()
+        private void HandleChange()
         {
-            var (allOutboundMatches, namedOutboundMatches) = GetOutboundMatches();
-            _namedMatches = GetNamedMatches(namedOutboundMatches);
-            _allMatchesLinkGenerationTree = new LinkGenerationDecisionTree(allOutboundMatches.ToArray());
+            // rebuild the matches
+            BuildOutboundMatches();
+
+            // re-register the callback as the change token is one time use only and a new change token
+            // is produced every time
+            Extensions.Primitives.ChangeToken.OnChange(
+                () => _endpointDataSource.ChangeToken,
+                () => HandleChange());
         }
 
-        private (IEnumerable<OutboundMatch>, IDictionary<string, List<OutboundMatch>>) GetOutboundMatches()
+        private void BuildOutboundMatches()
+        {
+            // Refresh the matches in the case where a datasource's endpoints changes. The following is OK to do
+            // as refresh of new endpoints happens within a lock and also these fields are not publicly accessible.
+            var (allMatches, namedMatches) = GetOutboundMatches();
+            _namedMatches = GetNamedMatches(namedMatches);
+            _allMatchesLinkGenerationTree = new LinkGenerationDecisionTree(allMatches.ToArray());
+        }
+
+        protected virtual (IEnumerable<OutboundMatch>, IDictionary<string, List<OutboundMatch>>) GetOutboundMatches()
         {
             var allOutboundMatches = new List<OutboundMatch>();
             var namedOutboundMatches = new Dictionary<string, List<OutboundMatch>>(StringComparer.OrdinalIgnoreCase);
