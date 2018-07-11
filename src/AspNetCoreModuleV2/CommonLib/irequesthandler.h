@@ -4,6 +4,7 @@
 #pragma once
 
 #include <httpserv.h>
+#include <memory>
 
 //
 // Pure abstract class
@@ -45,4 +46,13 @@ public:
     DereferenceRequestHandler(
         VOID
     ) = 0;
+};
+
+
+struct IREQUEST_HANDLER_DELETER
+{
+    void operator ()(IREQUEST_HANDLER* application) const
+    {
+        application->DereferenceRequestHandler();
+    }
 };

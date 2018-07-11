@@ -48,7 +48,7 @@ Return value:
 }
 
 ASPNET_CORE_PROXY_MODULE::ASPNET_CORE_PROXY_MODULE(
-) : m_pApplicationInfo(NULL), m_pHandler(NULL)
+) : m_pApplicationInfo(nullptr), m_pApplication(nullptr), m_pHandler(nullptr)
 {
 }
 
@@ -58,12 +58,6 @@ ASPNET_CORE_PROXY_MODULE::~ASPNET_CORE_PROXY_MODULE()
     {
         m_pApplicationInfo->DereferenceApplicationInfo();
         m_pApplicationInfo = NULL;
-    }
-
-    if (m_pHandler != NULL)
-    {
-        m_pHandler->DereferenceRequestHandler();
-        m_pHandler = NULL;
     }
 }
 
@@ -77,44 +71,33 @@ ASPNET_CORE_PROXY_MODULE::OnExecuteRequestHandler(
     HRESULT hr = S_OK;
     APPLICATION_MANAGER   *pApplicationManager = NULL;
     REQUEST_NOTIFICATION_STATUS retVal = RQ_NOTIFICATION_CONTINUE;
-    IAPPLICATION* pApplication = NULL;
     STRU struExeLocation;
     try
     {
 
         if (g_fInShutdown)
         {
-            hr = HRESULT_FROM_WIN32(ERROR_SERVER_SHUTDOWN_IN_PROGRESS);
-            goto Finished;
+            FINISHED(HRESULT_FROM_WIN32(ERROR_SERVER_SHUTDOWN_IN_PROGRESS));
         }
 
         pApplicationManager = APPLICATION_MANAGER::GetInstance();
 
-        hr = pApplicationManager->GetOrCreateApplicationInfo(
+        FINISHED_IF_FAILED(pApplicationManager->GetOrCreateApplicationInfo(
             g_pHttpServer,
             pHttpContext,
-            &m_pApplicationInfo);
-        if (FAILED(hr))
-        {
-            goto Finished;
-        }
+            &m_pApplicationInfo));
 
         if (!m_pApplicationInfo->IsValid())
         {
             // Application cannot be started due to wrong hosting mode
             // the error should already been logged to window event log for the first request
-            hr = E_APPLICATION_ACTIVATION_EXEC_FAILURE;
-            goto Finished;
+            FINISHED(E_APPLICATION_ACTIVATION_EXEC_FAILURE);
         }
 
         // make sure assmebly is loaded and application is created
-        hr = m_pApplicationInfo->EnsureApplicationCreated(pHttpContext);
-        if (FAILED(hr))
-        {
-            goto Finished;
-        }
+        FINISHED_IF_FAILED(m_pApplicationInfo->EnsureApplicationCreated(pHttpContext));
 
-        m_pApplicationInfo->ExtractApplication(&pApplication);
+        auto pApplication = m_pApplicationInfo->ExtractApplication();
 
         DBG_ASSERT(pHttpContext);
         
@@ -126,13 +109,10 @@ ASPNET_CORE_PROXY_MODULE::OnExecuteRequestHandler(
             goto Finished;
         }
 
+        IREQUEST_HANDLER* pHandler;
         // Create RequestHandler and process the request
-        hr = pApplication->CreateHandler(pHttpContext, &m_pHandler);
-
-        if (FAILED(hr))
-        {
-            goto Finished;
-        }
+        FINISHED_IF_FAILED(pApplication->CreateHandler(pHttpContext, &pHandler));
+        m_pHandler.reset(pHandler);
 
         retVal = m_pHandler->OnExecuteRequestHandler();
     }
@@ -155,10 +135,6 @@ Finished:
         }
     }
 
-    if (pApplication != NULL)
-    {
-        pApplication->DereferenceApplication();
-    }
     return retVal;
 }
 

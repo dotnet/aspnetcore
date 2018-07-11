@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-#include "precomp.hxx"
 #include "inprocessapplication.h"
 #include "inprocesshandler.h"
 #include "requesthandler_config.h"
@@ -63,8 +62,6 @@ http_get_server_variable(
 {
     PCWSTR pszVariableValue;
     DWORD cbLength;
-
-    DBG_ASSERT(pszVariableValue != NULL);
 
     HRESULT hr = pInProcessHandler
         ->QueryHttpContext()

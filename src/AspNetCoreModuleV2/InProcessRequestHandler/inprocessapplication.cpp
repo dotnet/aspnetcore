@@ -1,13 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
-#include "precomp.hxx"
 #include "inprocessapplication.h"
 #include "inprocesshandler.h"
 #include "hostfxroptions.h"
 #include "requesthandler_config.h"
 #include "environmentvariablehelpers.h"
-#include "aspnetcore_event.h"
 #include "utility.h"
 #include "EventLog.h"
 #include "SRWExclusiveLock.h"
@@ -32,10 +30,7 @@ IN_PROCESS_APPLICATION::IN_PROCESS_APPLICATION(
     m_fShutdownCalledFromManaged(FALSE),
     m_pConfig(std::move(pConfig))
 {
-    // is it guaranteed that we have already checked app offline at this point?
-    // If so, I don't think there is much to do here.
-    DBG_ASSERT(pHttpServer != NULL);
-    DBG_ASSERT(pConfig != NULL);
+    DBG_ASSERT(m_pConfig);
 
     for (DWORD i = 0; i < nParameters; i++)
     {

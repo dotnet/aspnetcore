@@ -3,7 +3,6 @@
 
 // dllmain.cpp : Defines the entry point for the DLL application.
 
-#include "precomp.hxx"
 #include <VersionHelpers.h>
 
 #include "inprocessapplication.h"

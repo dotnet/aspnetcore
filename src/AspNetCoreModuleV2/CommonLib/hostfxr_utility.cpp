@@ -225,8 +225,8 @@ HOSTFXR_UTILITY::ParseHostfxrArguments(
 {
     UNREFERENCED_PARAMETER(hEventLog); // TODO use event log to set errors.
 
-    DBG_ASSERT(dwArgCount != NULL);
-    DBG_ASSERT(pwzArgv != NULL);
+    DBG_ASSERT(pdwArgCount != NULL);
+    DBG_ASSERT(pbstrArgv != NULL);
     DBG_ASSERT(pwzExePath != NULL);
 
     HRESULT     hr = S_OK;
@@ -324,7 +324,6 @@ Finished:
     if (pwzArgs != NULL)
     {
         LocalFree(pwzArgs);
-        DBG_ASSERT(pwzArgs == NULL);
     }
     return hr;
 }

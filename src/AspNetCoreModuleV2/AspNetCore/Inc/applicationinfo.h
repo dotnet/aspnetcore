@@ -93,15 +93,11 @@ public:
     // Caller is responsible for dereference the application.
     // Otherwise memory leak
     //
-    VOID
-    ExtractApplication(IAPPLICATION** ppApplication)
+    std::unique_ptr<IAPPLICATION, IAPPLICATION_DELETER>
+    ExtractApplication() const
     {
         SRWSharedLock lock(m_srwLock);
-        if (m_pApplication != NULL)
-        {
-            m_pApplication->ReferenceApplication();
-        }
-        *ppApplication = m_pApplication;
+        return ReferenceApplication(m_pApplication);
     }
 
     VOID

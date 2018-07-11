@@ -3,7 +3,6 @@
 
 #pragma once
 
-#include "precomp.hxx"
 #include "application.h"
 #include "AppOfflineTrackingApplication.h"
 

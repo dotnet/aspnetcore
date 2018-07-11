@@ -119,7 +119,7 @@ HRESULT
 EnsureOutOfProcessInitializtion()
 {
 
-    DBG_ASSERT(pServer);
+    DBG_ASSERT(g_pHttpServer);
 
     HRESULT hr = S_OK;
     BOOL    fLocked = FALSE;

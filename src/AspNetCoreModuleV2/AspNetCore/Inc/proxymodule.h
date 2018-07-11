@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <memory>
 #include "applicationinfo.h"
 #include "irequesthandler.h"
 
@@ -50,7 +51,7 @@ class ASPNET_CORE_PROXY_MODULE : public CHttpModule
 
     APPLICATION_INFO *m_pApplicationInfo;
     IAPPLICATION      *m_pApplication;
-    IREQUEST_HANDLER  *m_pHandler;
+    std::unique_ptr<IREQUEST_HANDLER, IREQUEST_HANDLER_DELETER>  m_pHandler;
 };
 
 class ASPNET_CORE_PROXY_MODULE_FACTORY : public IHttpModuleFactory

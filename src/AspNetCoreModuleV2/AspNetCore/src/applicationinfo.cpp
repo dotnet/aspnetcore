@@ -328,7 +328,7 @@ APPLICATION_INFO::FindNativeAssemblyFromHostfxr(
     DWORD       dwBufferSize = 1024 * 10;
     DWORD       dwRequiredBufferSize = 0;
 
-    DBG_ASSERT(struFileName != NULL);
+    DBG_ASSERT(struFilename != NULL);
 
     FINISHED_LAST_ERROR_IF_NULL(hmHostFxrDll = LoadLibraryW(hostfxrOptions->GetHostFxrLocation()));
 
