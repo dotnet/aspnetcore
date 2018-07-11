@@ -3,17 +3,12 @@
 
 #pragma once
 
-#include <httpserv.h>
-
 #include "hostfxroptions.h"
-#include "appoffline.h"
-#include "filewatcher.h"
 #include "hashtable.h"
 #include "hashfn.h"
 #include "aspnetcore_shim_config.h"
 #include "iapplication.h"
 #include "SRWSharedLock.h"
-#include "ntassert.h"
 
 #define API_BUFFER_TOO_SMALL 0x80008098
 
@@ -37,11 +32,8 @@ public:
     APPLICATION_INFO() :
         m_pServer(NULL),
         m_cRefs(1),
-        m_fAppOfflineFound(FALSE),
         m_fValid(FALSE),
-        m_fDoneAppCreation(FALSE),
-        m_pAppOfflineHtm(NULL),
-        m_pFileWatcherEntry(NULL),
+        m_fAppCreationAttempted(FALSE),
         m_pConfiguration(NULL),
         m_pfnAspNetCoreCreateApplication(NULL)
     {
@@ -60,8 +52,7 @@ public:
     HRESULT
     Initialize(
         _In_ IHttpServer         *pServer,
-        _In_ IHttpApplication    *pApplication,
-        _In_ FILE_WATCHER        *pFileWatcher
+        _In_ IHttpApplication    *pApplication
     );
 
     VOID
@@ -79,18 +70,6 @@ public:
         }
     }
 
-    APP_OFFLINE_HTM*
-    QueryAppOfflineHtm()
-    {
-        return m_pAppOfflineHtm;
-    }
-
-    BOOL
-    AppOfflineFound()
-    {
-        return m_fAppOfflineFound;
-    }
-
     BOOL
     IsValid()
     {
@@ -103,33 +82,22 @@ public:
         m_fValid = TRUE;
     }
 
-    VOID
-    UpdateAppOfflineFileHandle();
-
-    HRESULT
-    StartMonitoringAppOffline();
-
     ASPNETCORE_SHIM_CONFIG*
     QueryConfig()
     {
         return m_pConfiguration;
     }
 
-
     //
     // ExtractApplication will increase the reference counter of the application
     // Caller is responsible for dereference the application.
     // Otherwise memory leak
     //
-    VOID
-    ExtractApplication(IAPPLICATION** ppApplication)
+    std::unique_ptr<IAPPLICATION, IAPPLICATION_DELETER>
+    ExtractApplication() const
     {
         SRWSharedLock lock(m_srwLock);
-        if (m_pApplication != NULL)
-        {
-            m_pApplication->ReferenceApplication();
-        }
-        *ppApplication = m_pApplication;
+        return ReferenceApplication(m_pApplication);
     }
 
     VOID
@@ -152,11 +120,8 @@ private:
 
     mutable LONG            m_cRefs;
     STRU                    m_struInfoKey;
-    BOOL                    m_fAppOfflineFound;
     BOOL                    m_fValid;
-    BOOL                    m_fDoneAppCreation;
-    APP_OFFLINE_HTM        *m_pAppOfflineHtm;
-    FILE_WATCHER_ENTRY     *m_pFileWatcherEntry;
+    BOOL                    m_fAppCreationAttempted;
     ASPNETCORE_SHIM_CONFIG *m_pConfiguration;
     IAPPLICATION           *m_pApplication;
     SRWLOCK                 m_srwLock;

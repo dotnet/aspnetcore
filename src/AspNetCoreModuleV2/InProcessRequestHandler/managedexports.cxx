@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-#include "precomp.hxx"
 #include "inprocessapplication.h"
 #include "inprocesshandler.h"
 #include "requesthandler_config.h"
@@ -14,7 +13,7 @@ register_callbacks(
     _In_ IN_PROCESS_APPLICATION* pInProcessApplication,
     _In_ PFN_REQUEST_HANDLER request_handler,
     _In_ PFN_SHUTDOWN_HANDLER shutdown_handler,
-    _In_ PFN_MANAGED_CONTEXT_HANDLER async_completion_handler,
+    _In_ PFN_ASYNC_COMPLETION_HANDLER async_completion_handler,
     _In_ VOID* pvRequstHandlerContext,
     _In_ VOID* pvShutdownHandlerContext
 )
@@ -63,8 +62,6 @@ http_get_server_variable(
 {
     PCWSTR pszVariableValue;
     DWORD cbLength;
-
-    DBG_ASSERT(pszVariableValue != NULL);
 
     HRESULT hr = pInProcessHandler
         ->QueryHttpContext()

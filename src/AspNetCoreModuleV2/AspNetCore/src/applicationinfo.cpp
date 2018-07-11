@@ -12,29 +12,14 @@
 #include "SRWExclusiveLock.h"
 #include "GlobalVersionUtility.h"
 #include "exceptions.h"
+#include "HandleWrapper.h"
+#include "PollingAppOfflineApplication.h"
 
 const PCWSTR APPLICATION_INFO::s_pwzAspnetcoreInProcessRequestHandlerName = L"aspnetcorev2_inprocess.dll";
 const PCWSTR APPLICATION_INFO::s_pwzAspnetcoreOutOfProcessRequestHandlerName = L"aspnetcorev2_outofprocess.dll";
 
 APPLICATION_INFO::~APPLICATION_INFO()
 {
-    if (m_pAppOfflineHtm != NULL)
-    {
-        m_pAppOfflineHtm->DereferenceAppOfflineHtm();
-        m_pAppOfflineHtm = NULL;
-    }
-
-    if (m_pFileWatcherEntry != NULL)
-    {
-        // Mark the entry as invalid,
-        // StopMonitor will close the file handle and trigger a FCN
-        // the entry will delete itself when processing this FCN
-        m_pFileWatcherEntry->MarkEntryInValid();
-        m_pFileWatcherEntry->StopMonitor();
-        m_pFileWatcherEntry->DereferenceFileWatcherEntry();
-        m_pFileWatcherEntry = NULL;
-    }
-
     if (m_pApplication != NULL)
     {
         // shutdown the application
@@ -55,118 +40,24 @@ APPLICATION_INFO::~APPLICATION_INFO()
 HRESULT
 APPLICATION_INFO::Initialize(
     _In_ IHttpServer              *pServer,
-    _In_ IHttpApplication         *pApplication,
-    _In_ FILE_WATCHER             *pFileWatcher
+    _In_ IHttpApplication         *pApplication
 )
 {
     HRESULT hr = S_OK;
 
     DBG_ASSERT(pServer);
     DBG_ASSERT(pApplication);
-    DBG_ASSERT(pFileWatcher);
 
     // todo: make sure Initialize should be called only once
     m_pServer = pServer;
     FINISHED_IF_NULL_ALLOC(m_pConfiguration = new ASPNETCORE_SHIM_CONFIG());
     FINISHED_IF_FAILED(m_pConfiguration->Populate(m_pServer, pApplication));
     FINISHED_IF_FAILED(m_struInfoKey.Copy(pApplication->GetApplicationId()));
-    FINISHED_IF_NULL_ALLOC(m_pFileWatcherEntry = new FILE_WATCHER_ENTRY(pFileWatcher));
-
-    UpdateAppOfflineFileHandle();
 
 Finished:
     return hr;
 }
 
-HRESULT
-APPLICATION_INFO::StartMonitoringAppOffline()
-{
-    if (m_pFileWatcherEntry != NULL)
-    {
-        RETURN_IF_FAILED(m_pFileWatcherEntry->Create(m_pConfiguration->QueryApplicationPhysicalPath()->QueryStr(), L"app_offline.htm", this, NULL));
-    }
-    return S_OK;
-}
-
-//
-// Called by the file watcher when the app_offline.htm's file status has been changed.
-// If it finds it, we will call recycle on the application.
-//
-VOID
-APPLICATION_INFO::UpdateAppOfflineFileHandle()
-{
-    STRU strFilePath;
-    UTILITY::ConvertPathToFullPath(L".\\app_offline.htm",
-        m_pConfiguration->QueryApplicationPhysicalPath()->QueryStr(),
-        &strFilePath);
-    APP_OFFLINE_HTM *pOldAppOfflineHtm = NULL;
-    APP_OFFLINE_HTM *pNewAppOfflineHtm = NULL;
-
-    ReferenceApplicationInfo();
-
-    if (INVALID_FILE_ATTRIBUTES == GetFileAttributes(strFilePath.QueryStr()))
-    {
-        // Check if app offline was originally present.
-        // if it was, log that app_offline has been dropped.
-        if (m_fAppOfflineFound)
-        {
-            UTILITY::LogEvent(g_hEventLog,
-                EVENTLOG_INFORMATION_TYPE,
-                ASPNETCORE_EVENT_RECYCLE_APPOFFLINE_REMOVED,
-                ASPNETCORE_EVENT_RECYCLE_APPOFFLINE_REMOVED_MSG);
-        }
-
-        m_fAppOfflineFound = FALSE;
-    }
-    else
-    {
-        pNewAppOfflineHtm = new APP_OFFLINE_HTM(strFilePath.QueryStr());
-
-        if (pNewAppOfflineHtm != NULL)
-        {
-            if (pNewAppOfflineHtm->Load())
-            {
-                //
-                // loaded the new app_offline.htm
-                //
-                pOldAppOfflineHtm = (APP_OFFLINE_HTM *)InterlockedExchangePointer((VOID**)&m_pAppOfflineHtm, pNewAppOfflineHtm);
-
-                if (pOldAppOfflineHtm != NULL)
-                {
-                    pOldAppOfflineHtm->DereferenceAppOfflineHtm();
-                    pOldAppOfflineHtm = NULL;
-                }
-            }
-            else
-            {
-                // ignored the new app_offline file because the file does not exist.
-                pNewAppOfflineHtm->DereferenceAppOfflineHtm();
-                pNewAppOfflineHtm = NULL;
-            }
-        }
-
-        m_fAppOfflineFound = TRUE;
-
-        // recycle the application
-        if (m_pApplication != NULL)
-        {
-            STACK_STRU(strEventMsg, 256);
-            if (SUCCEEDED(strEventMsg.SafeSnwprintf(
-                ASPNETCORE_EVENT_RECYCLE_APPOFFLINE_MSG,
-                m_pConfiguration->QueryApplicationPhysicalPath()->QueryStr())))
-            {
-                UTILITY::LogEvent(g_hEventLog,
-                    EVENTLOG_INFORMATION_TYPE,
-                    ASPNETCORE_EVENT_RECYCLE_APPOFFLINE,
-                    strEventMsg.QueryStr());
-            }
-
-            RecycleApplication();
-        }
-    }
-
-    DereferenceApplicationInfo();
-}
 
 HRESULT
 APPLICATION_INFO::EnsureApplicationCreated(
@@ -179,57 +70,68 @@ APPLICATION_INFO::EnsureApplicationCreated(
     STRU                struHostFxrDllLocation;
     STACK_STRU(struFileName, 300);  // >MAX_PATH
 
-    if (m_pApplication != NULL)
+    if (m_pApplication != nullptr && m_pApplication->QueryStatus() != RECYCLED)
     {
         return S_OK;
     }
 
-    // one optimization for failure scenario is to reduce the lock scope
     SRWExclusiveLock lock(m_srwLock);
 
+    if (m_pApplication != nullptr)
     {
-        if (m_pApplication != NULL)
+        if (m_pApplication->QueryStatus() == RECYCLED)
         {
-            // another thread created the applicaiton
-            FINISHED(S_OK);
+            LOG_INFO("Application went offline");
+            // Application that went offline
+            // are supposed to recycle themselves
+            m_pApplication->DereferenceApplication();
+            m_pApplication = nullptr;
         }
-        else if (m_fDoneAppCreation)
+        else
         {
-            // previous CreateApplication failed
-            FINISHED(E_APPLICATION_ACTIVATION_EXEC_FAILURE);
+            // another thread created the application
+            FINISHED(S_OK);   
         }
+    }
+    else if (m_fAppCreationAttempted)
+    {
+        // previous CreateApplication failed
+        FINISHED(E_APPLICATION_ACTIVATION_EXEC_FAILURE);
+    }
 
-        //
-        // in case of app offline, we don't want to create a new application now
-        //
-        if (!m_fAppOfflineFound)
+    auto& httpApplication = *pHttpContext->GetApplication();
+    if (PollingAppOfflineApplication::ShouldBeStarted(httpApplication))
+    {
+        LOG_INFO("Detected app_ofline file, creating polling application");
+        m_pApplication = new PollingAppOfflineApplication(httpApplication);
+    }
+    else
+    {
+        // Move the request handler check inside of the lock
+        // such that only one request finds and loads it.
+        // FindRequestHandlerAssembly obtains a global lock, but after releasing the lock,
+        // there is a period where we could call
+
+        m_fAppCreationAttempted = TRUE;
+        FINISHED_IF_FAILED(FindRequestHandlerAssembly(struExeLocation));
+
+        if (m_pfnAspNetCoreCreateApplication == NULL)
         {
-            // Move the request handler check inside of the lock
-            // such that only one request finds and loads it.
-            // FindRequestHandlerAssembly obtains a global lock, but after releasing the lock,
-            // there is a period where we could call
-
-            m_fDoneAppCreation = TRUE;
-            FINISHED_IF_FAILED(FindRequestHandlerAssembly(struExeLocation));
-
-            if (m_pfnAspNetCoreCreateApplication == NULL)
-            {
-                FINISHED(HRESULT_FROM_WIN32(ERROR_INVALID_FUNCTION));
-            }
-
-            std::array<APPLICATION_PARAMETER, 1> parameters {
-                {"InProcessExeLocation", struExeLocation.QueryStr()}
-            };
-
-            FINISHED_IF_FAILED(m_pfnAspNetCoreCreateApplication(
-                m_pServer,
-                pHttpContext->GetApplication(),
-                parameters.data(),
-                static_cast<DWORD>(parameters.size()),
-                &pApplication));
-
-            m_pApplication = pApplication;
+            FINISHED(HRESULT_FROM_WIN32(ERROR_INVALID_FUNCTION));
         }
+
+        std::array<APPLICATION_PARAMETER, 1> parameters {
+            {"InProcessExeLocation", struExeLocation.QueryStr()}
+        };
+        LOG_INFO("Creating handler application");
+        FINISHED_IF_FAILED(m_pfnAspNetCoreCreateApplication(
+            m_pServer,
+            pHttpContext->GetApplication(),
+            parameters.data(),
+            static_cast<DWORD>(parameters.size()),
+            &pApplication));
+
+        m_pApplication = pApplication;
     }
 
 Finished:
@@ -426,7 +328,7 @@ APPLICATION_INFO::FindNativeAssemblyFromHostfxr(
     DWORD       dwBufferSize = 1024 * 10;
     DWORD       dwRequiredBufferSize = 0;
 
-    DBG_ASSERT(struFileName != NULL);
+    DBG_ASSERT(struFilename != NULL);
 
     FINISHED_LAST_ERROR_IF_NULL(hmHostFxrDll = LoadLibraryW(hostfxrOptions->GetHostFxrLocation()));
 

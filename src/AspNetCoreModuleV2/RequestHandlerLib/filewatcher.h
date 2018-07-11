@@ -1,19 +1,17 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
+
 #pragma once
 
-#include <windows.h>
-
-#include "stringu.h"
+#include <Windows.h>
+#include <functional>
 
 #define FILE_WATCHER_SHUTDOWN_KEY           (ULONG_PTR)(-1)
 #define FILE_WATCHER_ENTRY_BUFFER_SIZE      4096
-#define FILE_NOTIFY_VALID_MASK          0x00000fff
+#define FILE_NOTIFY_VALID_MASK              0x00000fff
 #define FILE_WATCHER_ENTRY_SIGNATURE       ((DWORD) 'FWES')
 #define FILE_WATCHER_ENTRY_SIGNATURE_FREE  ((DWORD) 'sewf')
-
-class APPLICATION_INFO;
 
 class FILE_WATCHER{
 public:
@@ -62,7 +60,7 @@ public:
     Create(
         _In_ PCWSTR                  pszDirectoryToMonitor,
         _In_ PCWSTR                  pszFileNameToMonitor,
-        _In_ APPLICATION_INFO*       pApplicationInfo,
+        _In_ std::function<void()>   pCallback,
         _In_ HANDLE                  hImpersonationToken
         );
 
@@ -111,11 +109,20 @@ private:
     HANDLE                  _hImpersonationToken;
     HANDLE                  _hDirectory;
     FILE_WATCHER*           _pFileMonitor;
-    APPLICATION_INFO*       _pApplicationInfo;
     STRU                    _strFileName;
     STRU                    _strDirectoryName;
     LONG                    _lStopMonitorCalled;
     mutable LONG            _cRefs;
     BOOL                    _fIsValid;
     SRWLOCK                 _srwLock;
+    std::function<void()>   _pCallback;
+};
+
+
+struct FILE_WATCHER_ENTRY_DELETER
+{
+    void operator()(FILE_WATCHER_ENTRY* entry) const
+    {
+        entry->DereferenceFileWatcherEntry();
+    }
 };

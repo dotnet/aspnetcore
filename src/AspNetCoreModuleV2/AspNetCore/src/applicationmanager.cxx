@@ -57,7 +57,7 @@ APPLICATION_MANAGER::GetOrCreateApplicationInfo(
     {
         pApplicationInfo = new APPLICATION_INFO();
 
-        FINISHED_IF_FAILED(pApplicationInfo->Initialize(pServer, pHttpContext->GetApplication(), m_pFileWatcher));
+        FINISHED_IF_FAILED(pApplicationInfo->Initialize(pServer, pHttpContext->GetApplication()));
 
         SRWExclusiveLock lock(m_srwLock);
 
@@ -102,10 +102,7 @@ APPLICATION_MANAGER::GetOrCreateApplicationInfo(
 
         FINISHED_IF_FAILED(m_pApplicationInfoHash->InsertRecord(pApplicationInfo));
 
-
         *ppApplicationInfo = pApplicationInfo;
-        pApplicationInfo->StartMonitoringAppOffline();
-
         pApplicationInfo = NULL;
     }
 
@@ -323,12 +320,6 @@ APPLICATION_MANAGER::ShutDown()
     g_fInShutdown = TRUE;
     if (m_pApplicationInfoHash != NULL)
     {
-        if (m_pFileWatcher != NULL)
-        {
-            delete  m_pFileWatcher;
-            m_pFileWatcher = NULL;
-        }
-
         DBG_ASSERT(m_pApplicationInfoHash);
 
         // During shutdown we lock until we delete the application

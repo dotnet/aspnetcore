@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -188,7 +188,9 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="AppOfflineTrackingApplication.h" />
     <ClInclude Include="environmentvariablehelpers.h" />
+    <ClInclude Include="filewatcher.h" />
     <ClInclude Include="NullOutputManager.h" />
     <ClInclude Include="FileOutputManager.h" />
     <ClInclude Include="environmentvariablehash.h" />
@@ -199,7 +201,9 @@
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AppOfflineTrackingApplication.cpp" />
     <ClCompile Include="FileOutputManager.cpp" />
+    <ClCompile Include="filewatcher.cpp" />
     <ClCompile Include="requesthandler_config.cpp" />
     <ClCompile Include="LoggingHelpers.cpp" />
     <ClCompile Include="PipeOutputManager.cpp" />

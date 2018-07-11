@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <memory>
 #include "irequesthandler.h"
 
 enum APPLICATION_STATUS
@@ -11,6 +12,7 @@ enum APPLICATION_STATUS
     STARTING,
     RUNNING,
     SHUTDOWN,
+    RECYCLED,
     FAIL
 };
 
@@ -52,4 +54,19 @@ public:
     CreateHandler(
         _In_  IHttpContext       *pHttpContext,
         _Out_ IREQUEST_HANDLER  **pRequestHandler) = 0;
+};
+
+struct IAPPLICATION_DELETER
+{
+    void operator ()(IAPPLICATION* application) const
+    {
+        application->DereferenceApplication();
+    }
+};
+
+template< class APPLICATION >
+std::unique_ptr<APPLICATION, IAPPLICATION_DELETER> ReferenceApplication(APPLICATION* application)
+{
+    application->ReferenceApplication();
+    return std::unique_ptr<APPLICATION, IAPPLICATION_DELETER>(application);
 };

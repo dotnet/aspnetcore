@@ -54,7 +54,7 @@ InitializeGlobalConfiguration(
         }
 
         if (RegOpenKeyEx(HKEY_LOCAL_MACHINE,
-            L"SOFTWARE\\Microsoft\\IIS Extensions\\IIS AspNetCore Module\\Parameters",
+            L"SOFTWARE\\Microsoft\\IIS Extensions\\IIS AspNetCore Module V2\\Parameters",
             0,
             KEY_READ,
             &hKey) == NO_ERROR)
@@ -119,7 +119,7 @@ HRESULT
 EnsureOutOfProcessInitializtion()
 {
 
-    DBG_ASSERT(pServer);
+    DBG_ASSERT(g_pHttpServer);
 
     HRESULT hr = S_OK;
     BOOL    fLocked = FALSE;
@@ -148,7 +148,7 @@ EnsureOutOfProcessInitializtion()
 
         g_hWinHttpModule = GetModuleHandle(TEXT("winhttp.dll"));
 
-        g_hAspNetCoreModule = GetModuleHandle(TEXT("aspnetcore.dll"));
+        g_hAspNetCoreModule = GetModuleHandle(TEXT("aspnetcorev2.dll"));
 
         hr = WINHTTP_HELPER::StaticInitialize();
         if (FAILED(hr))
@@ -279,42 +279,20 @@ CreateApplication(
 {
     UNREFERENCED_PARAMETER(pParameters);
     UNREFERENCED_PARAMETER(nParameters);
-    HRESULT      hr = S_OK;
-    IAPPLICATION *pApplication = NULL;
-    REQUESTHANDLER_CONFIG *pConfig = NULL;
-
-    // Initialze some global variables here
+    
     InitializeGlobalConfiguration(pServer);
 
-    hr = REQUESTHANDLER_CONFIG::CreateRequestHandlerConfig(pServer, pHttpApplication, &pConfig);
-    if (FAILED(hr))
-    {
-        return hr;
-    }
+    REQUESTHANDLER_CONFIG *pConfig = nullptr;
+    RETURN_IF_FAILED(REQUESTHANDLER_CONFIG::CreateRequestHandlerConfig(pServer, pHttpApplication, &pConfig));
+    std::unique_ptr<REQUESTHANDLER_CONFIG> pRequestHandlerConfig(pConfig);
 
-    hr = EnsureOutOfProcessInitializtion();
-    if (FAILED(hr))
-    {
-        goto Finished;
-    }
+    RETURN_IF_FAILED(EnsureOutOfProcessInitializtion());
 
-    pApplication = new OUT_OF_PROCESS_APPLICATION(pConfig);
-    if (pApplication == NULL)
-    {
-        hr = HRESULT_FROM_WIN32(ERROR_OUTOFMEMORY);
-        goto Finished;
-    }
+    std::unique_ptr<OUT_OF_PROCESS_APPLICATION> pApplication = std::make_unique<OUT_OF_PROCESS_APPLICATION>(*pHttpApplication, std::move(pRequestHandlerConfig));
 
-    hr = ((OUT_OF_PROCESS_APPLICATION*)pApplication)->Initialize();
-    if (FAILED(hr))
-    {
-        delete pApplication;
-        pApplication = NULL;
-        goto Finished;
-    }
+    RETURN_IF_FAILED(pApplication->Initialize());
+    RETURN_IF_FAILED(pApplication->StartMonitoringAppOffline());
 
-    *ppApplication = pApplication;
-
-Finished:
-    return hr;
+    *ppApplication = pApplication.release();
+    return S_OK;
 }

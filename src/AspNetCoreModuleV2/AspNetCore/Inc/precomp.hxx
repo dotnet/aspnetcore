@@ -16,8 +16,9 @@
 #include <Windows.h>
 #include <atlbase.h>
 #include <httpserv.h>
+#include <ntassert.h>
 #include "stringu.h"
-#include "stringu.h"
+#include "stringa.h"
 
 extern PVOID        g_pModuleId;
 extern BOOL         g_fAspnetcoreRHAssemblyLoaded;

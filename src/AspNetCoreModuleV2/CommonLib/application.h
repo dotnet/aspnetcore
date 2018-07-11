@@ -4,12 +4,18 @@
 #pragma once
 
 #include "iapplication.h"
+#include "exceptions.h"
+#include "utility.h"
 #include "ntassert.h"
+
 
 class APPLICATION : public IAPPLICATION
 {
 
 public:
+    // Non-copyable
+    APPLICATION(const APPLICATION&) = delete;
+    const APPLICATION& operator=(const APPLICATION&) = delete;
 
     APPLICATION_STATUS
     QueryStatus() override
@@ -33,8 +39,7 @@ public:
     {
         DBG_ASSERT(m_cRefs != 0);
 
-        LONG cRefs = 0;
-        if ((cRefs = InterlockedDecrement(&m_cRefs)) == 0)
+        if (InterlockedDecrement(&m_cRefs) == 0)
         {
             delete this;
         }
@@ -42,7 +47,7 @@ public:
 
 protected:
     volatile APPLICATION_STATUS     m_status = APPLICATION_STATUS::UNKNOWN;
-
 private:
+
     mutable LONG                    m_cRefs;
 };

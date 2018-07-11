@@ -40,7 +40,7 @@
   </ItemGroup>
    
   <PropertyGroup>
-    <IISExpressArguments>/config:"$(IISExpressAppHostConfig)"</IISExpressArguments>
+    <IISExpressArguments>/config:"$(IISExpressAppHostConfig)" /systray:false</IISExpressArguments>
     <IISArguments>-h "$(IISAppHostConfig)"</IISArguments>
 
     <AncmPath>$(NativePlatform)\aspnetcore.dll</AncmPath>

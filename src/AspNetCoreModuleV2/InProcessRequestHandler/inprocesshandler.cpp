@@ -9,17 +9,20 @@
 ALLOC_CACHE_HANDLER * IN_PROCESS_HANDLER::sm_pAlloc = NULL;
 
 IN_PROCESS_HANDLER::IN_PROCESS_HANDLER(
+    _In_ std::unique_ptr<IN_PROCESS_APPLICATION, IAPPLICATION_DELETER> pApplication,
     _In_ IHttpContext   *pW3Context,
-    _In_ IN_PROCESS_APPLICATION    *pApplication
-):  m_pW3Context(pW3Context),
-    m_pApplication(pApplication)
+    _In_ PFN_REQUEST_HANDLER pRequestHandler,
+    _In_ void * pRequestHandlerContext,
+    _In_ PFN_ASYNC_COMPLETION_HANDLER pAsyncCompletion
+): m_pManagedHttpContext(nullptr),
+   m_requestNotificationStatus(RQ_NOTIFICATION_PENDING),
+   m_fManagedRequestComplete(FALSE),
+   m_pW3Context(pW3Context),
+   m_pApplication(std::move(pApplication)),
+   m_pRequestHandler(pRequestHandler),
+   m_pRequestHandlerContext(pRequestHandlerContext),
+   m_pAsyncCompletionHandler(pAsyncCompletion)
 {
-    m_fManagedRequestComplete = FALSE;
-}
-
-IN_PROCESS_HANDLER::~IN_PROCESS_HANDLER()
-{
-    //todo
 }
 
 __override
@@ -36,8 +39,32 @@ IN_PROCESS_HANDLER::OnExecuteRequestHandler()
             L"InProcess Application");
     }
 
-    //SetHttpSysDisconnectCallback();
-    return m_pApplication->OnExecuteRequest(m_pW3Context, this);
+    if (m_pRequestHandler == NULL)
+    {
+        //
+        // return error as the application did not register callback
+        //
+        if (ANCMEvents::ANCM_EXECUTE_REQUEST_FAIL::IsEnabled(m_pW3Context->GetTraceContext()))
+        {
+            ANCMEvents::ANCM_EXECUTE_REQUEST_FAIL::RaiseEvent(m_pW3Context->GetTraceContext(),
+                                                              NULL,
+                                                              (ULONG)E_APPLICATION_ACTIVATION_EXEC_FAILURE);
+        }
+
+        m_pW3Context->GetResponse()->SetStatus(500,
+                                               "Internal Server Error",
+                                               0,
+                                               (ULONG)E_APPLICATION_ACTIVATION_EXEC_FAILURE);
+
+        return RQ_NOTIFICATION_FINISH_REQUEST;
+    }
+    else if (m_pApplication->QueryStatus() != APPLICATION_STATUS::RUNNING || m_pApplication->
+        QueryBlockCallbacksIntoManaged())
+    {
+        return ServerShutdownMessage();
+    }
+    
+    return m_pRequestHandler(this, m_pRequestHandlerContext);
 }
 
 __override
@@ -47,9 +74,28 @@ IN_PROCESS_HANDLER::OnAsyncCompletion(
     HRESULT     hrCompletionStatus
 )
 {
-    // OnAsyncCompletion must call into the application if there was a error. We will redo calls
-    // to Read/Write if we called cancelIo on the IHttpContext.
-    return m_pApplication->OnAsyncCompletion(cbCompletion, hrCompletionStatus, this);
+    if (m_fManagedRequestComplete)
+    {
+        // means PostCompletion has been called and this is the associated callback.
+        return m_requestNotificationStatus;
+    }
+    if (m_pApplication->QueryBlockCallbacksIntoManaged())
+    {
+        // this can potentially happen in ungraceful shutdown.
+        // Or something really wrong happening with async completions
+        // At this point, managed is in a shutting down state and we cannot send a request to it.
+        return ServerShutdownMessage();
+    }
+
+    // Call the managed handler for async completion.
+    return m_pAsyncCompletionHandler(m_pManagedHttpContext, hrCompletionStatus, cbCompletion);
+}
+
+REQUEST_NOTIFICATION_STATUS IN_PROCESS_HANDLER::ServerShutdownMessage() const
+{
+    m_pW3Context->GetResponse()->SetStatus(503, "Server has been shutdown", 0,
+                                           (ULONG)HRESULT_FROM_WIN32(ERROR_SHUTDOWN_IN_PROGRESS));
+    return RQ_NOTIFICATION_FINISH_REQUEST;
 }
 
 VOID
@@ -58,31 +104,6 @@ IN_PROCESS_HANDLER::TerminateRequest(
 )
 {
     UNREFERENCED_PARAMETER(fClientInitiated);
-    //todo
-}
-
-PVOID
-IN_PROCESS_HANDLER::QueryManagedHttpContext(
-    VOID
-)
-{
-    return m_pManagedHttpContext;
-}
-
-BOOL
-IN_PROCESS_HANDLER::QueryIsManagedRequestComplete(
-    VOID
-)
-{
-    return m_fManagedRequestComplete;
-}
-
-IHttpContext*
-IN_PROCESS_HANDLER::QueryHttpContext(
-    VOID
-)
-{
-    return m_pW3Context;
 }
 
 VOID
@@ -91,14 +112,6 @@ IN_PROCESS_HANDLER::IndicateManagedRequestComplete(
 )
 {
     m_fManagedRequestComplete = TRUE;
-}
-
-REQUEST_NOTIFICATION_STATUS
-IN_PROCESS_HANDLER::QueryAsyncCompletionStatus(
-    VOID
-)
-{
-    return m_requestNotificationStatus;
 }
 
 VOID
@@ -163,7 +176,7 @@ HRESULT
     }
 
     hr = sm_pAlloc->Initialize(sizeof(IN_PROCESS_HANDLER),
-        64); // nThreshold
+                               64); // nThreshold
 
 Finished:
     if (FAILED(hr))

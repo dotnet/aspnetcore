@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [ConditionalFact]
         public async Task Authentication_InProcess()
         {
-            var deploymentParameters = Helpers.GetBaseDeploymentParameters();
+            var deploymentParameters = Helpers.GetBaseDeploymentParameters(publish: true);
             deploymentParameters.ServerConfigTemplateContent = GetWindowsAuthConfig();
 
             var deploymentResult = await DeployAsync(deploymentParameters);

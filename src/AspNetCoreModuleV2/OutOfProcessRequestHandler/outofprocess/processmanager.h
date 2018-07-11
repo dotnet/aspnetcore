@@ -88,6 +88,16 @@ public:
         ReleaseSRWLockExclusive( &m_srwLock );
     }
 
+    VOID
+    Shutdown(
+    )
+    {
+        if (InterlockedCompareExchange(&m_lStopping, 1L, 0L) == 0L)
+        {
+            ShutdownAllProcesses();
+        }
+    }
+
     VOID 
     IncrementRapidFailCount(
         VOID
@@ -103,6 +113,7 @@ public:
         m_dwProcessesPerApplication( 1 ),
         m_dwRouteToProcessIndex( 0 ),
         m_fServerProcessListReady(FALSE),
+        m_lStopping(0),
         m_cRefs( 1 )
     {
         m_ppServerProcessList = NULL;
@@ -193,4 +204,5 @@ private:
 
     volatile static BOOL              sm_fWSAStartupDone;
     volatile BOOL                     m_fServerProcessListReady;
+    volatile LONG                     m_lStopping;
 };

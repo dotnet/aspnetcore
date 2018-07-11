@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             var tempFile = Path.GetTempFileName();
             try
             {
-                var deploymentParameters = Helpers.GetBaseDeploymentParameters();
+                var deploymentParameters = Helpers.GetBaseDeploymentParameters(publish: true);
                 deploymentParameters.EnvironmentVariables["ASPNETCORE_MODULE_DEBUG_FILE"] = tempFile;
 
                 var deploymentResult = await DeployAsync(deploymentParameters);
@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 StopServer();
 
                 var logContents = File.ReadAllText(tempFile);
-                Assert.Contains("[aspnetcore.dll]", logContents);
+                Assert.Contains("[aspnetcorev2.dll]", logContents);
                 Assert.Contains("[aspnetcorev2_inprocess.dll]", logContents);
             }
             finally

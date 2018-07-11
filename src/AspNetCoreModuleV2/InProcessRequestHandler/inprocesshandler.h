@@ -3,8 +3,10 @@
 
 #pragma once
 
-#include "precomp.hxx"
 #include "requesthandler.h"
+#include <memory>
+#include "iapplication.h"
+#include "inprocessapplication.h"
 
 class IN_PROCESS_APPLICATION;
 
@@ -12,10 +14,13 @@ class IN_PROCESS_HANDLER : public REQUEST_HANDLER
 {
 public:
     IN_PROCESS_HANDLER(
+        _In_ std::unique_ptr<IN_PROCESS_APPLICATION, IAPPLICATION_DELETER> pApplication,
         _In_ IHttpContext   *pW3Context,
-        _In_ IN_PROCESS_APPLICATION  *pApplication);
+        _In_ PFN_REQUEST_HANDLER pRequestHandler,
+        _In_ void * pRequestHandlerContext,
+        _In_ PFN_ASYNC_COMPLETION_HANDLER pAsyncCompletion);
 
-    ~IN_PROCESS_HANDLER() override;
+    ~IN_PROCESS_HANDLER() override = default;
 
     __override
     REQUEST_NOTIFICATION_STATUS
@@ -33,34 +38,22 @@ public:
     TerminateRequest(
         bool    fClientInitiated
     ) override;
-
-    PVOID
-    QueryManagedHttpContext(
+    
+    IHttpContext*
+    QueryHttpContext(
         VOID
-    );
+    ) const
+    {
+        return m_pW3Context;
+    }
 
     VOID
     SetManagedHttpContext(
         PVOID pManagedHttpContext
     );
 
-    IHttpContext*
-    QueryHttpContext(
-        VOID
-    );
-
-    BOOL
-    QueryIsManagedRequestComplete(
-        VOID
-    );
-
     VOID
     IndicateManagedRequestComplete(
-        VOID
-    );
-
-    REQUEST_NOTIFICATION_STATUS
-    QueryAsyncCompletionStatus(
         VOID
     );
 
@@ -77,12 +70,18 @@ public:
     HRESULT
     StaticInitialize(VOID);
 
-
 private:
+    REQUEST_NOTIFICATION_STATUS
+    ServerShutdownMessage() const;
+
     PVOID m_pManagedHttpContext;
     BOOL m_fManagedRequestComplete;
     REQUEST_NOTIFICATION_STATUS m_requestNotificationStatus;
     IHttpContext*               m_pW3Context;
-    IN_PROCESS_APPLICATION*     m_pApplication;
+    std::unique_ptr<IN_PROCESS_APPLICATION, IAPPLICATION_DELETER> m_pApplication;
+    PFN_REQUEST_HANDLER         m_pRequestHandler;
+    void*                       m_pRequestHandlerContext;
+    PFN_ASYNC_COMPLETION_HANDLER m_pAsyncCompletionHandler;
+
     static ALLOC_CACHE_HANDLER *   sm_pAlloc;
 };
