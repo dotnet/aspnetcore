@@ -93,7 +93,7 @@ def transform_yaml_doc(document):
     if not 'branches' in document:
         document['branches'] = {}
     document['branches']['only'] = [
-        'dev', '/^release\/.*$/', '/^(.*\/)?ci-.*$/']
+        'master', '/^release\/.*$/', '/^(.*\/)?ci-.*$/']
     return document
 
 update(".travis.yml", transform_yaml_doc)

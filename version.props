@@ -1,16 +1,16 @@
 <Project>
   <PropertyGroup>
-    <AspNetCoreMajorVersion>2</AspNetCoreMajorVersion>
-    <AspNetCoreMinorVersion>2</AspNetCoreMinorVersion>
+    <AspNetCoreMajorVersion>3</AspNetCoreMajorVersion>
+    <AspNetCoreMinorVersion>0</AspNetCoreMinorVersion>
     <AspNetCorePatchVersion>0</AspNetCorePatchVersion>
     <VersionPrefix>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).$(AspNetCorePatchVersion)</VersionPrefix>
-    <PrereleaseVersionLabel>preview1</PrereleaseVersionLabel>
+    <PrereleaseVersionLabel>alpha1</PrereleaseVersionLabel>
     <BuildNumber Condition="'$(BuildNumber)' == ''">t000</BuildNumber>
 
     <!-- The 'human friendly' version to display in installers. In pre-release builds, this might be "2.0.7 Preview 2" -->
-    <PackageBrandingVersion>$(VersionPrefix) Preview 1</PackageBrandingVersion>
+    <PackageBrandingVersion>$(VersionPrefix) Alpha 1</PackageBrandingVersion>
 
-    <ExperimentalVersionPrefix>0.2.0</ExperimentalVersionPrefix>
+    <ExperimentalVersionPrefix>0.3.0</ExperimentalVersionPrefix>
     <ExperimentalVersionSuffix>alpha1</ExperimentalVersionSuffix>
 
     <PackageVersionSuffix Condition=" '$(IsFinalBuild)' != 'true' AND '$(PrereleaseVersionLabel)' != '' ">$(PrereleaseVersionLabel)</PackageVersionSuffix>
@@ -31,7 +31,7 @@
     <ExperimentalPackageVersion Condition=" '$(IsFinalBuild)' == 'true' AND '$(ExperimentalVersionSuffix)' != 'rtm' ">$(ExperimentalVersionPrefix)-$(ExperimentalVersionSuffix)-final</ExperimentalPackageVersion>
     <ExperimentalVersionSuffix Condition=" '$(ExperimentalVersionSuffix)' != '' AND '$(BuildNumber)' != '' ">$(ExperimentalVersionSuffix)-$(BuildNumber)</ExperimentalVersionSuffix>
 
-    <SharedFxCliBlobChannel>release/2.2</SharedFxCliBlobChannel>
+    <SharedFxCliBlobChannel>master</SharedFxCliBlobChannel>
   </PropertyGroup>
 
 </Project>

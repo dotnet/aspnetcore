@@ -177,6 +177,23 @@
     <PackageArtifact Include="Microsoft.AspNetCore.TestHost" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Testing" Category="noship" />
 
+    <!-- WebHooks packages are not currently shipping, alone or in a meta-package. -->
+    <PackageArtifact Include="Microsoft.AspNetCore.WebHooks.Receivers" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.WebHooks.Receivers.AzureAlert" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.WebHooks.Receivers.AzureContainerRegistry" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.WebHooks.Receivers.BitBucket" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.WebHooks.Receivers.Dropbox" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.WebHooks.Receivers.DynamicsCRM" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.WebHooks.Receivers.GitHub" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.WebHooks.Receivers.Kudu" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.WebHooks.Receivers.MailChimp" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.WebHooks.Receivers.Pusher" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.WebHooks.Receivers.Salesforce" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.WebHooks.Receivers.Slack" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.WebHooks.Receivers.Stripe" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.WebHooks.Receivers.Trello" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.WebHooks.Receivers.WordPress" Category="noship" />
+
     <PackageArtifact Include="Microsoft.AspNetCore.WebSockets" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.WebUtilities" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.CodeAnalysis.Razor" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
@@ -186,7 +203,7 @@
     <PackageArtifact Include="Microsoft.Data.Sqlite.Core" Category="ship" AllMetapackage="true" />
     <PackageArtifact Include="Microsoft.DotNet.Web.Client.ItemTemplates" Category="shipoob" />
     <PackageArtifact Include="Microsoft.DotNet.Web.ItemTemplates" Category="shipoob" />
-    <PackageArtifact Include="Microsoft.DotNet.Web.ProjectTemplates.2.2" Category="shipoob" />
+    <PackageArtifact Include="Microsoft.DotNet.Web.ProjectTemplates.3.0" Category="shipoob" />
     <PackageArtifact Include="Microsoft.DotNet.Web.Spa.ProjectTemplates" Category="shipoob" />
     <PackageArtifact Include="Microsoft.EntityFrameworkCore" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.EntityFrameworkCore.Analyzers" Category="ship" Analyzer="true" AppMetapackage="true" AllMetapackage="true" />

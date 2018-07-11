@@ -85,7 +85,7 @@ Microsoft.AspNetCore              | [![][metapackage-myget-badge]][metapackage-m
 [linux-arm-tar-rel-21]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.1/aspnetcore-runtime-latest-linux-arm.tar.gz
 [linux-musl-x64-tar-rel-21]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.1/aspnetcore-runtime-latest-linux-musl-x64.tar.gz
 
-Platform              | Latest (dev branch) <br> ![][badge-master]                      | release/2.2 <br> ![][badge-rel-22] | release/2.1 <br> ![][badge-rel-21]
+Platform              | Latest (master branch) <br> ![][badge-master]                      | release/2.2 <br> ![][badge-rel-22] | release/2.1 <br> ![][badge-rel-21]
 :---------------------|:----------------------------------------------------------------|:------------------------------------------------------------------------- |:-------------------------------------------------------------------------
 Channel name<sup>1</sup> | `master` | `release/2.2` | `release/2.1`
 Windows (x64)         | [Installer (exe)][win-x64-exe]<br>[Archive (zip)][win-x64-zip]   | [Installer (exe)][win-x64-exe-rel-22]<br>[Archive (zip)][win-x64-zip-rel-22] | [Installer (exe)][win-x64-exe-rel-21]<br>[Archive (zip)][win-x64-zip-rel-21]

@@ -47,7 +47,7 @@
       <CommonProps>$(CommonProps);DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcesPropsPath)</CommonProps>
       <CommonProps>$(CommonProps);DotNetBuildOffline=true</CommonProps>
       <CommonProps>$(CommonProps);AspNetUniverseBuildOffline=true</CommonProps>
-      <CommonProps>$(CommonProps);RuntimeFrameworkVersion=$(MicrosoftNETCoreApp22PackageVersion)</CommonProps>
+      <CommonProps>$(CommonProps);RuntimeFrameworkVersion=$(MicrosoftNETCoreApp30PackageVersion)</CommonProps>
       <CommonProps>$(CommonProps);AppMetapackageVersion=$(PackageVersion)</CommonProps>
     </PropertyGroup>
 
@@ -173,10 +173,10 @@
   <Target Name="PrepareForSharedFx" DependsOnTargets="DefineSharedFxPrerequisites">
     <PropertyGroup>
       <AppSharedFxProps>SharedFxWorkDirectory=$(AppSharedFxWorkDirectory)</AppSharedFxProps>
-      <AppSharedFxProps>$(AppSharedFxProps);RuntimeFrameworkVersion=$(MicrosoftNETCoreApp22PackageVersion)</AppSharedFxProps>
+      <AppSharedFxProps>$(AppSharedFxProps);RuntimeFrameworkVersion=$(MicrosoftNETCoreApp30PackageVersion)</AppSharedFxProps>
       <AppSharedFxProps>$(AppSharedFxProps);SharedFxPackage=Microsoft.AspNetCore.App</AppSharedFxProps>
       <AllSharedFxProps>SharedFxWorkDirectory=$(AllSharedFxWorkDirectory)</AllSharedFxProps>
-      <AllSharedFxProps>$(AllSharedFxProps);RuntimeFrameworkVersion=$(MicrosoftNETCoreApp22PackageVersion)</AllSharedFxProps>
+      <AllSharedFxProps>$(AllSharedFxProps);RuntimeFrameworkVersion=$(MicrosoftNETCoreApp30PackageVersion)</AllSharedFxProps>
       <AllSharedFxProps>$(AllSharedFxProps);SharedFxPackage=Microsoft.AspNetCore.All</AllSharedFxProps>
       <AllSharedFxProps>$(AllSharedFxProps);SharedFxDep=Microsoft.AspNetCore.App</AllSharedFxProps>
       <AllSharedFxProps>$(AllSharedFxProps);SharedFxDepVersion=$(PackageVersion)</AllSharedFxProps>

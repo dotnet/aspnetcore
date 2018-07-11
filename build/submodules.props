@@ -51,6 +51,7 @@
     <Repository Include="Session" />
     <Repository Include="SignalR" />
     <Repository Include="StaticFiles" />
+    <Repository Include="WebHooks" />
     <Repository Include="WebSockets" />
   </ItemGroup>
 </Project>

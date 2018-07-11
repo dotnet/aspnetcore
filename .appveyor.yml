@@ -4,7 +4,6 @@ branches:
   only:
     - master
     - /^release\/.*/
-    - dev
     - /^(.*\/)?ci-.*$/
 install:
   - git submodule update --init --recursive
