@@ -122,7 +122,6 @@ namespace Microsoft.AspNetCore.Builder
             configureRoutes(routeBuilder);
 
             mvcEndpointDataSource.ConventionalEndpointInfos.AddRange(routeBuilder.EndpointInfos);
-            mvcEndpointDataSource.InitializeEndpoints();
 
             return app.UseEndpoint();
         }
