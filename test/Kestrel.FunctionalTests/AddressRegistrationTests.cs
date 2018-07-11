@@ -48,17 +48,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
         [ConditionalTheory]
         [MemberData(nameof(AddressRegistrationDataIPv4Port5000Default))]
-        [PortSupportedCondition(5000)]
         public async Task RegisterAddresses_IPv4Port5000Default_Success(string addressInput, string testUrl)
         {
+            if (!CanBindToEndpoint(IPAddress.Loopback, 5000))
+            {
+                return;
+            }
+
             await RegisterAddresses_Success(addressInput, testUrl, 5000);
         }
 
         [ConditionalTheory]
         [MemberData(nameof(AddressRegistrationDataIPv4Port80))]
-        [PortSupportedCondition(80)]
         public async Task RegisterAddresses_IPv4Port80_Success(string addressInput, string testUrl)
         {
+            if (!CanBindToEndpoint(IPAddress.Loopback, 80))
+            {
+                return;
+            }
+
             await RegisterAddresses_Success(addressInput, testUrl, 80);
         }
 
@@ -98,9 +106,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [ConditionalTheory]
         [MemberData(nameof(IPEndPointRegistrationDataPort443))]
         [IPv6SupportedCondition]
-        [PortSupportedCondition(443)]
         public async Task RegisterIPEndPoint_Port443_Success(IPEndPoint endpoint, string testUrl)
         {
+            if (!CanBindToEndpoint(endpoint.Address, 443))
+            {
+                return;
+            }
+
             await RegisterIPEndPoint_Success(endpoint, testUrl, 443);
         }
 
@@ -115,18 +127,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [ConditionalTheory]
         [MemberData(nameof(AddressRegistrationDataIPv6Port5000Default))]
         [IPv6SupportedCondition]
-        [PortSupportedCondition(5000)]
         public async Task RegisterAddresses_IPv6Port5000Default_Success(string addressInput, string[] testUrls)
         {
+            if (!CanBindToEndpoint(IPAddress.Loopback, 5000) || !CanBindToEndpoint(IPAddress.IPv6Loopback, 5000))
+            {
+                return;
+            }
+
             await RegisterAddresses_Success(addressInput, testUrls);
         }
 
         [ConditionalTheory]
         [MemberData(nameof(AddressRegistrationDataIPv6Port80))]
         [IPv6SupportedCondition]
-        [PortSupportedCondition(80)]
         public async Task RegisterAddresses_IPv6Port80_Success(string addressInput, string[] testUrls)
         {
+            if (!CanBindToEndpoint(IPAddress.Loopback, 80) || !CanBindToEndpoint(IPAddress.IPv6Loopback, 80))
+            {
+                return;
+            }
+
             await RegisterAddresses_Success(addressInput, testUrls);
         }
 
@@ -381,36 +401,51 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
         }
 
-        [ConditionalFact]
-        [PortSupportedCondition(5000)]
+        [Fact]
         public Task DefaultsServerAddress_BindsToIPv4()
         {
+            if (!CanBindToEndpoint(IPAddress.Loopback, 5000))
+            {
+                return Task.CompletedTask;
+            }
+
             return RegisterDefaultServerAddresses_Success(new[] { "http://127.0.0.1:5000" });
         }
 
         [ConditionalFact]
         [IPv6SupportedCondition]
-        [PortSupportedCondition(5000)]
         public Task DefaultsServerAddress_BindsToIPv6()
         {
+            if (!CanBindToEndpoint(IPAddress.Loopback, 5000) || !CanBindToEndpoint(IPAddress.IPv6Loopback, 5000))
+            {
+                return Task.CompletedTask;
+            }
+
             return RegisterDefaultServerAddresses_Success(new[] { "http://127.0.0.1:5000", "http://[::1]:5000" });
         }
 
         [ConditionalFact]
-        [PortSupportedCondition(5000)]
-        [PortSupportedCondition(5001)]
         public Task DefaultsServerAddress_BindsToIPv4WithHttps()
         {
+            if (!CanBindToEndpoint(IPAddress.Loopback, 5000) || !CanBindToEndpoint(IPAddress.Loopback, 5001))
+            {
+                return Task.CompletedTask;
+            }
+
             return RegisterDefaultServerAddresses_Success(
                 new[] { "http://127.0.0.1:5000", "https://127.0.0.1:5001" }, mockHttps: true);
         }
 
         [ConditionalFact]
         [IPv6SupportedCondition]
-        [PortSupportedCondition(5000)]
-        [PortSupportedCondition(5001)]
         public Task DefaultsServerAddress_BindsToIPv6WithHttps()
         {
+            if (!CanBindToEndpoint(IPAddress.Loopback, 5000) || !CanBindToEndpoint(IPAddress.IPv6Loopback, 5000)
+                || !CanBindToEndpoint(IPAddress.Loopback, 5001) || !CanBindToEndpoint(IPAddress.IPv6Loopback, 5001))
+            {
+                return Task.CompletedTask;
+            }
+
             return RegisterDefaultServerAddresses_Success(new[] {
                 "http://127.0.0.1:5000", "http://[::1]:5000",
                 "https://127.0.0.1:5001", "https://[::1]:5001"},
@@ -1048,37 +1083,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
         }
 
-        [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
-        private class PortSupportedConditionAttribute : Attribute, ITestCondition
+        private static bool CanBindToEndpoint(IPAddress address, int port)
         {
-            private readonly int _port;
-            private readonly Lazy<bool> _portSupported;
-
-            public PortSupportedConditionAttribute(int port)
+            try
             {
-                _port = port;
-                _portSupported = new Lazy<bool>(CanBindToPort);
+                using (var socket = new Socket(address.AddressFamily, SocketType.Stream, ProtocolType.Tcp))
+                {
+                    socket.Bind(new IPEndPoint(address, port));
+                    socket.Listen(0);
+                    return true;
+                }
             }
-
-            public bool IsMet => _portSupported.Value;
-
-            public string SkipReason => $"Cannot bind to port {_port} on the host.";
-
-            private bool CanBindToPort()
+            catch (SocketException)
             {
-                try
-                {
-                    using (var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
-                    {
-                        socket.Bind(new IPEndPoint(IPAddress.Loopback, _port));
-                        socket.Listen(0);
-                        return true;
-                    }
-                }
-                catch (SocketException)
-                {
-                    return false;
-                }
+                return false;
             }
         }
     }
