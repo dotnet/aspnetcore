@@ -34,7 +34,7 @@
     <!--
       Used by the dotnet/cli build to determine which version of Microsoft.NETCore.App is used.
     -->
-    <WriteLinesToFile File="$(BaseRuntimeVersionFile)" Lines="$(MicrosoftNetCoreApp22PackageVersion)" Overwrite="true" />
+    <WriteLinesToFile File="$(BaseRuntimeVersionFile)" Lines="$(MicrosoftNETCoreApp30PackageVersion)" Overwrite="true" />
 
     <!--
       Used by the downloader scripts when pulling from a 'channel' instead of a specific version.
