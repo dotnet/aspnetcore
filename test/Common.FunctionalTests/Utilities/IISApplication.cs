@@ -199,9 +199,20 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                     e => _logger.LogWarning($"Failed to delete file : {e.Message}"));
             }
 
-            RetryFileOperation(
-                () => File.Move(_apphostConfigBackupPath, _apphostConfigPath),
-                e => _logger.LogError($"Failed to backup apphost.config: {e.Message}"));
+            if (File.Exists(_apphostConfigBackupPath))
+            {
+                RetryFileOperation(
+                    () => File.Move(_apphostConfigBackupPath, _apphostConfigPath),
+                    e => _logger.LogError($"Failed to backup apphost.config: {e.Message}"));
+            }
+            else
+            {
+                // Test failed to create backup config file, put a default one from IIS.config there instead.
+                // An apphost.config file is required to be replaced because we use it for removing the app pool.
+                RetryFileOperation(
+                               () => File.WriteAllText(_apphostConfigPath, File.ReadAllText("IIS.config")),
+                               e => _logger.LogWarning($"Failed to copy IIS.config to apphost.config: {e.Message}"));
+            }
 
             _logger.LogInformation($"Restored {_apphostConfigPath}.");
         }
