@@ -296,7 +296,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
             var entries = ModelState.FindKeysWithPrefix(key);
             foreach (var entry in entries)
             {
-                entry.Value.ValidationState = ModelValidationState.Skipped;
+                if (entry.Value.ValidationState != ModelValidationState.Invalid)
+                {
+                    entry.Value.ValidationState = ModelValidationState.Skipped;
+                }
             }
         }
 
