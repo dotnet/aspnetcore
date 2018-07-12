@@ -708,7 +708,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void TemplateBinder_KeepsExplicitlySuppliedRouteValues_OnFailedRouetMatch()
+        public void TemplateBinder_KeepsExplicitlySuppliedRouteValues_OnFailedRouteMatch()
         {
             // Arrange
             var template = "{area?}/{controller=Home}/{action=Index}/{id?}";
@@ -1211,6 +1211,8 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
 
         [Theory]
         [InlineData(null, null, true)]
+        [InlineData("", null, true)]
+        [InlineData(null, "", true)]
         [InlineData("blog", null, false)]
         [InlineData(null, "store", false)]
         [InlineData("Cool", "cool", true)]
@@ -1226,6 +1228,64 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
             {
                 Assert.False(TemplateBinder.RoutePartsEqual(left, right));
             }
+        }
+
+        [Fact]
+        public void GetValues_SuccessfullyMatchesRouteValues_ForExplicitEmptyStringValue_AndNullDefault()
+        {
+            // Arrange
+            var expected = "/Home/Index";
+            var template = "Home/Index";
+            var defaults = new RouteValueDictionary(new { controller = "Home", action = "Index", area = (string)null });
+            var ambientValues = new RouteValueDictionary(new { controller = "Rail", action = "Schedule", area = "Travel" });
+            var explicitValues = new RouteValueDictionary(new { controller = "Home", action = "Index", area = "" });
+            var binder = new TemplateBinder(
+                UrlEncoder.Default,
+                new DefaultObjectPoolProvider().Create(new UriBuilderContextPooledObjectPolicy()),
+                TemplateParser.Parse(template),
+                defaults);
+
+            // Act1
+            var result = binder.GetValues(ambientValues, explicitValues);
+
+            // Assert1
+            Assert.NotNull(result);
+
+            // Act2
+            var boundTemplate = binder.BindValues(result.AcceptedValues);
+
+            // Assert2
+            Assert.NotNull(boundTemplate);
+            Assert.Equal(expected, boundTemplate);
+        }
+
+        [Fact]
+        public void GetValues_SuccessfullyMatchesRouteValues_ForExplicitNullValue_AndEmptyStringDefault()
+        {
+            // Arrange
+            var expected = "/Home/Index";
+            var template = "Home/Index";
+            var defaults = new RouteValueDictionary(new { controller = "Home", action = "Index", area = "" });
+            var ambientValues = new RouteValueDictionary(new { controller = "Rail", action = "Schedule", area = "Travel" });
+            var explicitValues = new RouteValueDictionary(new { controller = "Home", action = "Index", area = (string)null });
+            var binder = new TemplateBinder(
+                UrlEncoder.Default,
+                new DefaultObjectPoolProvider().Create(new UriBuilderContextPooledObjectPolicy()),
+                TemplateParser.Parse(template),
+                defaults);
+
+            // Act1
+            var result = binder.GetValues(ambientValues, explicitValues);
+
+            // Assert1
+            Assert.NotNull(result);
+
+            // Act2
+            var boundTemplate = binder.BindValues(result.AcceptedValues);
+
+            // Assert2
+            Assert.NotNull(boundTemplate);
+            Assert.Equal(expected, boundTemplate);
         }
 
         private static IInlineConstraintResolver GetInlineConstraintResolver()
