@@ -11,6 +11,8 @@ using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Internal;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.EndpointConstraints;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Mvc
@@ -24,7 +26,8 @@ namespace Microsoft.AspNetCore.Mvc
         Attribute,
         IResourceFilter,
         IConsumesActionConstraint,
-        IApiRequestMetadataProvider
+        IApiRequestMetadataProvider,
+        IConsumesEndpointConstraint
     {
         public static readonly int ConsumesActionConstraintOrder = 200;
 
@@ -54,6 +57,11 @@ namespace Microsoft.AspNetCore.Mvc
         // with default order.
         /// <inheritdoc />
         int IActionConstraint.Order => ConsumesActionConstraintOrder;
+
+        // The value used is a non default value so that it avoids getting mixed with other endpoint constraints
+        // with default order.
+        /// <inheritdoc />
+        int IEndpointConstraint.Order => ConsumesActionConstraintOrder;
 
         /// <summary>
         /// Gets or sets the supported request content types. Used to select an action when there would otherwise be
@@ -184,6 +192,83 @@ namespace Microsoft.AspNetCore.Mvc
             return true;
         }
 
+        /// <inheritdoc />
+        public bool Accept(EndpointConstraintContext context)
+        {
+            // If this constraint is not closest to the endpoint, it will be skipped.
+            if (!IsApplicable(context.CurrentCandidate.Endpoint))
+            {
+                // Since the constraint is to be skipped, returning true here
+                // will let the current candidate ignore this constraint and will
+                // be selected based on other constraints for this endpoint.
+                return true;
+            }
+
+            var requestContentType = context.HttpContext.Request.ContentType;
+
+            // If the request content type is null we need to act like pass through.
+            // In case there is a single candidate with a constraint it should be selected.
+            // If there are multiple endpoints with consumes endpoint constraints this should result in ambiguous exception
+            // unless there is another endpoint without a consumes constraint.
+            if (requestContentType == null)
+            {
+                var isEndpointWithoutConsumeConstraintPresent = context.Candidates.Any(
+                    candidate => candidate.Constraints == null ||
+                    !candidate.Constraints.Any(constraint => constraint is IConsumesEndpointConstraint));
+
+                return !isEndpointWithoutConsumeConstraintPresent;
+            }
+
+            // Confirm the request's content type is more specific than (a media type this endpoint supports e.g. OK
+            // if client sent "text/plain" data and this endpoint supports "text/*".
+            if (IsSubsetOfAnyContentType(requestContentType))
+            {
+                return true;
+            }
+
+            var firstCandidate = context.Candidates[0];
+            if (firstCandidate.Endpoint != context.CurrentCandidate.Endpoint)
+            {
+                // If the current candidate is not same as the first candidate,
+                // we need not probe other candidates to see if they apply.
+                // Only the first candidate is allowed to probe other candidates and based on the result select itself.
+                return false;
+            }
+
+            // Run the matching logic for all IConsumesEndpointConstraints we can find, and see what matches.
+            // 1). If we have a unique best match, then only that constraint should return true.
+            // 2). If we have multiple matches, then all constraints that match will return true
+            // , resulting in ambiguity(maybe).
+            // 3). If we have no matches, then we choose the first constraint to return true.It will later return a 415
+            foreach (var candidate in context.Candidates)
+            {
+                if (candidate.Endpoint == firstCandidate.Endpoint)
+                {
+                    continue;
+                }
+
+                var tempContext = new EndpointConstraintContext()
+                {
+                    Candidates = context.Candidates,
+                    HttpContext = context.HttpContext,
+                    CurrentCandidate = candidate
+                };
+
+                if (candidate.Constraints == null || candidate.Constraints.Count == 0 ||
+                    candidate.Constraints.Any(constraint => constraint is IConsumesEndpointConstraint &&
+                                                            constraint.Accept(tempContext)))
+                {
+                    // There is someone later in the chain which can handle the request.
+                    // end the process here.
+                    return false;
+                }
+            }
+
+            // There is no one later in the chain that can handle this content type return a false positive so that
+            // later we can detect and return a 415.
+            return true;
+        }
+
         private bool IsApplicable(ActionDescriptor actionDescriptor)
         {
             // If there are multiple IConsumeActionConstraints which are defined at the class and
@@ -193,7 +278,17 @@ namespace Microsoft.AspNetCore.Mvc
             // closest to the action), we apply this constraint only if there is no IConsumeActionConstraint after this.
             return actionDescriptor.FilterDescriptors.Last(
                 filter => filter.Filter is IConsumesActionConstraint).Filter == this;
+        }
 
+        private bool IsApplicable(Endpoint endpoint)
+        {
+            // If there are multiple IConsumeActionConstraints which are defined at the class and
+            // at the action level, the one closest to the action overrides the others. To ensure this
+            // we take advantage of the fact that ConsumesAttribute is both an IActionFilter and an
+            // IConsumeActionConstraint. Since filterdescriptor collection is ordered (the last filter is the one
+            // closest to the action), we apply this constraint only if there is no IConsumeActionConstraint after this.
+            return endpoint.Metadata.Last(
+                metadata => metadata is IConsumesEndpointConstraint) == this;
         }
 
         private MediaTypeCollection GetContentTypes(string firstArg, string[] args)

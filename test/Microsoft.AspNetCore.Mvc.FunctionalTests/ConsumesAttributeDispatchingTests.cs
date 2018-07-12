@@ -3,9 +3,9 @@
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
-    public class ConsumesAttributeTests : ConsumesAttributeTestsBase<BasicWebSite.Startup>
+    public class ConsumesAttributeDispatchingTests : ConsumesAttributeTestsBase<BasicWebSite.StartupWithDispatching>
     {
-        public ConsumesAttributeTests(MvcTestFixture<BasicWebSite.Startup> fixture)
+        public ConsumesAttributeDispatchingTests(MvcTestFixture<BasicWebSite.StartupWithDispatching> fixture)
             : base(fixture)
         {
         }
