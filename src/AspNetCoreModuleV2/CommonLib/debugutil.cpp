@@ -10,9 +10,12 @@
 #include "dbgutil.h"
 #include "Environment.h"
 #include "SRWExclusiveLock.h"
+#include "exceptions.h"
+#include "atlbase.h"
+#include "config_utility.h"
 
-inline HANDLE g_hStandardOutput;
-inline HANDLE g_logFile;
+inline HANDLE g_hStandardOutput = INVALID_HANDLE_VALUE;
+inline HANDLE g_logFile = INVALID_HANDLE_VALUE;
 inline SRWLOCK g_logFileLock;
 
 VOID
@@ -21,6 +24,8 @@ DebugInitialize()
     g_hStandardOutput = GetStdHandle(STD_OUTPUT_HANDLE);
 
     HKEY hKey;
+    InitializeSRWLock(&g_logFileLock);
+
 
     if (RegOpenKeyEx(HKEY_LOCAL_MACHINE,
             L"SOFTWARE\\Microsoft\\IIS Extensions\\IIS AspNetCore Module V2\\Parameters",
@@ -47,18 +52,9 @@ DebugInitialize()
         RegCloseKey(hKey);
     }
 
-    // We expect single digit value and a null char
-    const size_t environmentVariableValueSize = 2;
-    std::wstring environmentVariableValue(environmentVariableValueSize, '\0');
-
     try
     {
-        const auto value = std::stoi(Environment::GetEnvironmentVariableValue(L"ASPNETCORE_MODULE_DEBUG").value_or(L"0"));
-
-        if (value >= 1) DEBUG_FLAGS_VAR |= ASPNETCORE_DEBUG_FLAG_ERROR;
-        if (value >= 2) DEBUG_FLAGS_VAR |= ASPNETCORE_DEBUG_FLAG_WARNING;
-        if (value >= 3) DEBUG_FLAGS_VAR |= ASPNETCORE_DEBUG_FLAG_INFO;
-        if (value >= 4) DEBUG_FLAGS_VAR |= ASPNETCORE_DEBUG_FLAG_CONSOLE;
+        SetDebugFlags(Environment::GetEnvironmentVariableValue(L"ASPNETCORE_MODULE_DEBUG").value_or(L"0"));
     }
     catch (...)
     {
@@ -69,9 +65,73 @@ DebugInitialize()
     {
         const auto debugOutputFile = Environment::GetEnvironmentVariableValue(L"ASPNETCORE_MODULE_DEBUG_FILE");
 
-        if (debugOutputFile.has_value())
+        CreateDebugLogFile(debugOutputFile.value_or(L""));
+    }
+    catch (...)
+    {
+        // ignore
+    }
+}
+
+HRESULT
+DebugInitializeFromConfig(IHttpServer& pHttpServer, IHttpApplication& pHttpApplication)
+{
+    CComPtr<IAppHostElement>        pAspNetCoreElement;
+
+    const CComBSTR bstrAspNetCoreSection = L"system.webServer/aspNetCore";
+    CComBSTR bstrConfigPath = pHttpApplication.GetAppConfigPath();
+
+    RETURN_IF_FAILED(pHttpServer.GetAdminManager()->GetAdminSection(bstrAspNetCoreSection,
+        bstrConfigPath,
+        &pAspNetCoreElement));
+
+    STRU debugFile;
+    RETURN_IF_FAILED(ConfigUtility::FindDebugFile(pAspNetCoreElement, debugFile));
+
+    STRU debugValue;
+    RETURN_IF_FAILED(ConfigUtility::FindDebugLevel(pAspNetCoreElement, debugValue));
+
+    SetDebugFlags(debugFile.QueryStr());
+
+    CreateDebugLogFile(debugFile.QueryStr());
+
+    return S_OK;
+}
+
+void SetDebugFlags(const std::wstring &debugValue)
+{
+    try
+    {
+        if (!debugValue.empty())
         {
-            g_logFile = CreateFileW(debugOutputFile.value().c_str(),
+            const auto value = std::stoi(debugValue.c_str());
+
+            if (value >= 1) DEBUG_FLAGS_VAR |= ASPNETCORE_DEBUG_FLAG_ERROR;
+            if (value >= 2) DEBUG_FLAGS_VAR |= ASPNETCORE_DEBUG_FLAG_WARNING;
+            if (value >= 3) DEBUG_FLAGS_VAR |= ASPNETCORE_DEBUG_FLAG_INFO;
+            if (value >= 4) DEBUG_FLAGS_VAR |= ASPNETCORE_DEBUG_FLAG_CONSOLE;
+        }
+    }
+    catch (...)
+    {
+        // ignore
+    }
+}
+
+void CreateDebugLogFile(const std::wstring &debugOutputFile)
+{
+    try
+    {
+        if (!debugOutputFile.empty())
+        {
+            if (g_logFile != INVALID_HANDLE_VALUE)
+            {
+                WLOG_INFOF(L"Switching debug log files to %s", debugOutputFile.c_str());
+                CloseHandle(g_logFile);
+                DEBUG_FLAGS_VAR &= ~ASPNETCORE_DEBUG_FLAG_FILE;
+
+            }
+            g_logFile = CreateFileW(debugOutputFile.c_str(),
                 (GENERIC_READ | GENERIC_WRITE),
                 (FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE),
                 nullptr,
@@ -81,11 +141,9 @@ DebugInitialize()
             );
             if (g_logFile != INVALID_HANDLE_VALUE)
             {
-                InitializeSRWLock(&g_logFileLock);
                 DEBUG_FLAGS_VAR |= ASPNETCORE_DEBUG_FLAG_FILE;
             }
         }
-
     }
     catch (...)
     {

@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.IntegrationTesting
@@ -58,12 +59,13 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
 
                 // For now, only support using published output 
                 DeploymentParameters.PublishApplicationBeforeDeployment = true;
-
                 if (DeploymentParameters.PublishApplicationBeforeDeployment)
                 {
                     DotnetPublish();
                     contentRoot = DeploymentParameters.PublishedApplicationRootPath;
                 }
+
+                Helpers.AddDebugLogToWebConfig(contentRoot, Path.Combine(contentRoot, $"{_application.WebSiteName}.txt"));
 
                 var uri = TestIISUriHelper.BuildTestUri(ServerType.IIS, DeploymentParameters.ApplicationBaseUriHint);
                 // To prevent modifying the IIS setup concurrently.

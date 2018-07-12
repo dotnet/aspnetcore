@@ -221,6 +221,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 var pool = _serverManager.ApplicationPools.Add(AppPoolName);
                 pool.ProcessModel.IdentityType = ProcessModelIdentityType.LocalSystem;
                 pool.ManagedRuntimeVersion = string.Empty;
+                pool.StartMode = StartMode.AlwaysRunning;
 
                 AddEnvironmentVariables(contentRoot, pool);
 
@@ -244,7 +245,6 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 {
                     AddEnvironmentVariableToAppPool(envCollection, tuple.Key, tuple.Value);
                 }
-                AddEnvironmentVariableToAppPool(envCollection, "ASPNETCORE_MODULE_DEBUG_FILE", $"{WebSiteName}.txt");
             }
             catch (COMException comException)
             {

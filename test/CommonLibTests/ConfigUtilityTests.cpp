@@ -13,7 +13,7 @@ namespace ConfigUtilityTests
     class ConfigUtilityTest : public Test
     {
     protected:
-        void Test(std::wstring key, std::wstring value, std::wstring expected)
+        void TestHandlerVersion(std::wstring key, std::wstring value, std::wstring expected, HRESULT(*func)(IAppHostElement*, STRU&))
         {
             IAppHostElement* retElement = NULL;
 
@@ -40,7 +40,7 @@ namespace ConfigUtilityTests
                 .WillOnce(DoAll(testing::SetArgPointee<0>(SysAllocString(key.c_str())), testing::Return(S_OK)))
                 .WillOnce(DoAll(testing::SetArgPointee<0>(SysAllocString(value.c_str())), testing::Return(S_OK)));
 
-            HRESULT hr = ConfigUtility::FindHandlerVersion(element.get(), &handlerVersion);
+            HRESULT hr = func(element.get(), handlerVersion);
 
             EXPECT_EQ(hr, S_OK);
             EXPECT_STREQ(handlerVersion.QueryStr(), expected.c_str());
@@ -49,12 +49,29 @@ namespace ConfigUtilityTests
 
     TEST_F(ConfigUtilityTest, CheckHandlerVersionKeysAndValues)
     {
-        Test(L"handlerVersion", L"value", L"value");
-        Test(L"handlerversion", L"value", L"value");
-        Test(L"HandlerversioN", L"value", L"value");
-        Test(L"randomvalue", L"value", L"");
-        Test(L"", L"value", L"");
-        Test(L"", L"", L"");
+        auto func = ConfigUtility::FindHandlerVersion;
+        TestHandlerVersion(L"handlerVersion", L"value", L"value", func);
+        TestHandlerVersion(L"handlerversion", L"value", L"value", func);
+        TestHandlerVersion(L"HandlerversioN", L"value", L"value", func);
+        TestHandlerVersion(L"randomvalue", L"value", L"", func);
+        TestHandlerVersion(L"", L"value", L"", func);
+        TestHandlerVersion(L"", L"", L"", func);
+    }
+
+    TEST_F(ConfigUtilityTest, CheckDebugLogFile)
+    {
+        auto func = ConfigUtility::FindDebugFile;
+
+        TestHandlerVersion(L"debugFile", L"value", L"value", func);
+        TestHandlerVersion(L"debugFILE", L"value", L"value", func);
+    }
+
+    TEST_F(ConfigUtilityTest, CheckDebugLevel)
+    {
+        auto func = ConfigUtility::FindDebugLevel;
+
+        TestHandlerVersion(L"debugLevel", L"value", L"value", func);
+        TestHandlerVersion(L"debugLEVEL", L"value", L"value", func);
     }
 
     TEST(ConfigUtilityTestSingle, MultipleElements)
@@ -84,7 +101,7 @@ namespace ConfigUtilityTests
             .WillOnce(DoAll(testing::SetArgPointee<0>(SysAllocString(L"handlerVersion")), testing::Return(S_OK)))
             .WillOnce(DoAll(testing::SetArgPointee<0>(SysAllocString(L"value2")), testing::Return(S_OK)));
 
-        HRESULT hr = ConfigUtility::FindHandlerVersion(element.get(), &handlerVersion);
+        HRESULT hr = ConfigUtility::FindHandlerVersion(element.get(), handlerVersion);
 
         EXPECT_EQ(hr, S_OK);
         EXPECT_STREQ(handlerVersion.QueryStr(), L"value2");
@@ -98,7 +115,7 @@ namespace ConfigUtilityTests
         ON_CALL(*element, GetElementByName(_, _))
             .WillByDefault(DoAll(testing::SetArgPointee<1>(nullptr), testing::Return(HRESULT_FROM_WIN32( ERROR_INVALID_INDEX ))));
 
-        HRESULT hr = ConfigUtility::FindHandlerVersion(element.get(), &handlerVersion);
+        HRESULT hr = ConfigUtility::FindHandlerVersion(element.get(), handlerVersion);
 
         EXPECT_EQ(hr, S_OK);
         EXPECT_STREQ(handlerVersion.QueryStr(), L"");

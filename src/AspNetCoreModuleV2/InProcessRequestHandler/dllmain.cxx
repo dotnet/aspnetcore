@@ -25,7 +25,8 @@ HANDLE              g_hEventLog = NULL;
 
 HRESULT
 InitializeGlobalConfiguration(
-    IHttpServer * pServer
+    IHttpServer * pServer,
+    IHttpApplication* pHttpApplication
 )
 {
     if (!g_fGlobalInitialize)
@@ -48,6 +49,8 @@ InitializeGlobalConfiguration(
             }
 
             DebugInitialize();
+            DebugInitializeFromConfig(*pServer, *pHttpApplication);
+
             g_fGlobalInitialize = TRUE;
         }
     }
@@ -87,10 +90,9 @@ CreateApplication(
     _Out_ IAPPLICATION          **ppApplication
 )
 {
-
     try
     {
-        RETURN_IF_FAILED(InitializeGlobalConfiguration(pServer));
+        RETURN_IF_FAILED(InitializeGlobalConfiguration(pServer, pHttpApplication));
         
         REQUESTHANDLER_CONFIG *pConfig = nullptr;
         RETURN_IF_FAILED(REQUESTHANDLER_CONFIG::CreateRequestHandlerConfig(pServer, pHttpApplication, &pConfig));

@@ -38,6 +38,15 @@ APPLICATION_MANAGER::GetOrCreateApplicationInfo(
 
     *ppApplicationInfo = NULL;
 
+    if (!m_fDebugInitialize)
+    {
+        SRWExclusiveLock lock(m_srwLock);
+        if (!m_fDebugInitialize)
+        {
+            DebugInitializeFromConfig(*pServer, *pHttpContext->GetApplication());
+            m_fDebugInitialize = TRUE;
+        }
+    }
     // The configuration path is unique for each application and is used for the
     // key in the applicationInfoHash.
     pszApplicationId = pHttpContext->GetApplication()->GetApplicationId();

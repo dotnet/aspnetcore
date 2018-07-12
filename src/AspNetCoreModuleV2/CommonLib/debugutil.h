@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include "stdafx.h"
+#include "stringu.h"
 #include <Windows.h>
 #include "dbgutil.h"
 
@@ -26,6 +28,14 @@
 
 VOID
 DebugInitialize();
+
+VOID
+CreateDebugLogFile(const std::wstring &debugOutputFile);
+
+HRESULT 
+DebugInitializeFromConfig(IHttpServer& pHttpServer, IHttpApplication& pHttpApplication);
+
+void SetDebugFlags(const std::wstring &value);
 
 VOID
 DebugStop();
