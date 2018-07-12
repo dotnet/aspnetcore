@@ -4,7 +4,6 @@
 using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace System.IO.Pipelines.Tests
@@ -73,15 +72,20 @@ namespace System.IO.Pipelines.Tests
         [InlineData(1, 2)]
         [InlineData(2, 1)]
         [InlineData(1, 1)]
-        public void CanWriteWithOffsetAndLenght(int offset, int length)
+        public void CanWriteWithOffsetAndLength(int offset, int length)
         {
             BufferWriter<PipeWriter> writer = new BufferWriter<PipeWriter>(Pipe.Writer);
             var array = new byte[] { 1, 2, 3 };
 
             writer.Write(new Span<byte>(array, offset, length));
+
+            Assert.Equal(0, writer.BytesCommitted);
+
             writer.Commit();
 
+            Assert.Equal(length, writer.BytesCommitted);
             Assert.Equal(array.Skip(offset).Take(length).ToArray(), Read());
+            Assert.Equal(length, writer.BytesCommitted);
         }
 
         [Fact]
@@ -94,6 +98,7 @@ namespace System.IO.Pipelines.Tests
             writer.Write(new Span<byte>(array, 0, array.Length));
             writer.Commit();
 
+            Assert.Equal(0, writer.BytesCommitted);
             Assert.Equal(array, Read());
         }
 
@@ -105,6 +110,7 @@ namespace System.IO.Pipelines.Tests
             writer.Write(new byte[] { 1, 2, 3 });
             writer.Commit();
 
+            Assert.Equal(3, writer.BytesCommitted);
             Assert.Equal(new byte[] { 1, 2, 3 }, Read());
         }
 
@@ -118,6 +124,7 @@ namespace System.IO.Pipelines.Tests
             writer.Write(new byte[] { 3 });
             writer.Commit();
 
+            Assert.Equal(3, writer.BytesCommitted);
             Assert.Equal(new byte[] { 1, 2, 3 }, Read());
         }
 
@@ -133,6 +140,7 @@ namespace System.IO.Pipelines.Tests
             writer.Write(expectedBytes);
             writer.Commit();
 
+            Assert.Equal(expectedBytes.LongLength, writer.BytesCommitted);
             Assert.Equal(expectedBytes, Read());
         }
 
@@ -142,6 +150,7 @@ namespace System.IO.Pipelines.Tests
             BufferWriter<PipeWriter> writer = new BufferWriter<PipeWriter>(Pipe.Writer);
             writer.Ensure(10);
             Assert.True(writer.Span.Length > 10);
+            Assert.Equal(0, writer.BytesCommitted);
             Assert.Equal(new byte[] { }, Read());
         }
 
@@ -164,6 +173,7 @@ namespace System.IO.Pipelines.Tests
             writer.Write(new byte[] { 1, 2, 3 });
             writer.Commit();
 
+            Assert.Equal(3, writer.BytesCommitted);
             Assert.Equal(initialLength - 3, writer.Span.Length);
             Assert.Equal(Pipe.Writer.GetMemory().Length, writer.Span.Length);
             Assert.Equal(new byte[] { 1, 2, 3 }, Read());
@@ -175,49 +185,17 @@ namespace System.IO.Pipelines.Tests
         [InlineData(500)]
         [InlineData(5000)]
         [InlineData(50000)]
-        public async Task WriteLargeDataBinary(int length)
+        public void WriteLargeDataBinary(int length)
         {
             var data = new byte[length];
             new Random(length).NextBytes(data);
-            PipeWriter output = Pipe.Writer;
-            output.Write(data);
-            await output.FlushAsync();
 
-            ReadResult result = await Pipe.Reader.ReadAsync();
-            ReadOnlySequence<byte> input = result.Buffer;
-            Assert.Equal(data, input.ToArray());
-            Pipe.Reader.AdvanceTo(input.End);
-        }
+            BufferWriter<PipeWriter> writer = new BufferWriter<PipeWriter>(Pipe.Writer);
+            writer.Write(data);
+            writer.Commit();
 
-        [Fact]
-        public async Task CanWriteNothingToBuffer()
-        {
-            PipeWriter buffer = Pipe.Writer;
-            buffer.GetMemory(0);
-            buffer.Advance(0); // doing nothing, the hard way
-            await buffer.FlushAsync();
-        }
-
-        [Fact]
-        public void EmptyWriteDoesNotThrow()
-        {
-            Pipe.Writer.Write(new byte[0]);
-        }
-
-        [Fact]
-        public void ThrowsOnAdvanceOverMemorySize()
-        {
-            Memory<byte> buffer = Pipe.Writer.GetMemory(1);
-            var exception = Assert.Throws<InvalidOperationException>(() => Pipe.Writer.Advance(buffer.Length + 1));
-            Assert.Equal("Can't advance past buffer size.", exception.Message);
-        }
-
-        [Fact]
-        public void ThrowsOnAdvanceWithNoMemory()
-        {
-            PipeWriter buffer = Pipe.Writer;
-            var exception = Assert.Throws<InvalidOperationException>(() => buffer.Advance(1));
-            Assert.Equal("No writing operation. Make sure GetMemory() was called.", exception.Message);
+            Assert.Equal(length, writer.BytesCommitted);
+            Assert.Equal(data, Read());
         }
     }
 }

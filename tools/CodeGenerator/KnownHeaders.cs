@@ -548,7 +548,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return true;
         }}
         {(loop.ClassName == "HttpResponseHeaders" ? $@"
-        internal void CopyToFast(ref CountingBufferWriter<PipeWriter> output)
+        internal void CopyToFast(ref BufferWriter<PipeWriter> output)
         {{
             var tempBits = _bits | (_contentLength.HasValue ? {1L << 63}L : 0);
             {Each(loop.Headers.Where(header => header.Identifier != "ContentLength").OrderBy(h => !h.PrimaryHeader), header => $@"

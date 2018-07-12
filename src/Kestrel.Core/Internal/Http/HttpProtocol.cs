@@ -936,7 +936,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             var bytesWritten = 0L;
             if (buffer.Length > 0)
             {
-                var writer = new CountingBufferWriter<PipeWriter>(writableBuffer);
+                var writer = new BufferWriter<PipeWriter>(writableBuffer);
 
                 ChunkWriter.WriteBeginChunkBytes(ref writer, buffer.Length);
                 writer.Write(buffer.Span);
