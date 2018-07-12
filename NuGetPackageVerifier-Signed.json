@@ -149,7 +149,8 @@
                         "tools/netcoreapp3.0/any/runtimes/win/lib/netcoreapp2.1/System.Data.SqlClient.dll": "Assembly is built by another project but bundled in our nupkg.",
                         "tools/netcoreapp3.0/any/System.Data.SqlClient.dll": "Assembly is built by another project but bundled in our nupkg.",
                         "tools/netcoreapp3.0/any/System.Runtime.CompilerServices.Unsafe.dll": "Assembly is built by another project but bundled in our nupkg.",
-                        "tools/netcoreapp3.0/any/System.Text.Encoding.CodePages.dll": "Assembly is built by another project but bundled in our nupkg."
+                        "tools/netcoreapp3.0/any/System.Text.Encoding.CodePages.dll": "Assembly is built by another project but bundled in our nupkg.",
+                        "tools/netcoreapp3.0/any/System.Security.Permissions.dll": "Assembly is built by another project but bundled in our nupkg."
                     }
                 }
             },
