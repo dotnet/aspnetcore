@@ -2,8 +2,10 @@
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
-  <PropertyGroup Label="Package Versions">
-    <InternalAspNetCoreSdkPackageVersion>2.1.1-rtm-15793</InternalAspNetCoreSdkPackageVersion>
+
+  <!-- These package versions may be overridden or updated by automation. -->
+  <PropertyGroup Label="Package Versions: Auto" />
+    <InternalAspNetCoreSdkPackageVersion>2.1.3-rtm-15802</InternalAspNetCoreSdkPackageVersion>
     <MicrosoftAspNetCoreAspNetCoreModulePackageVersion>2.1.1</MicrosoftAspNetCoreAspNetCoreModulePackageVersion>
     <MicrosoftAspNetCoreAspNetCoreModuleV1PackageVersion>2.1.1</MicrosoftAspNetCoreAspNetCoreModuleV1PackageVersion>
     <MicrosoftAspNetCoreResponseCompressionPackageVersion>2.1.1</MicrosoftAspNetCoreResponseCompressionPackageVersion>
@@ -11,7 +13,7 @@
     <MicrosoftAspNetCoreServerIISIntegrationPackageVersion>2.1.1</MicrosoftAspNetCoreServerIISIntegrationPackageVersion>
     <MicrosoftAspNetCoreServerIISPackageVersion>2.1.1</MicrosoftAspNetCoreServerIISPackageVersion>
     <MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>0.5.1</MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>
-    <MicrosoftAspNetCoreServerKestrelPackageVersion>2.1.1</MicrosoftAspNetCoreServerKestrelPackageVersion>
+    <MicrosoftAspNetCoreServerKestrelPackageVersion>2.1.2</MicrosoftAspNetCoreServerKestrelPackageVersion>
     <MicrosoftAspNetCoreWebUtilitiesPackageVersion>2.1.1</MicrosoftAspNetCoreWebUtilitiesPackageVersion>
     <MicrosoftExtensionsConfigurationCommandLinePackageVersion>2.1.1</MicrosoftExtensionsConfigurationCommandLinePackageVersion>
     <MicrosoftExtensionsConfigurationJsonPackageVersion>2.1.1</MicrosoftExtensionsConfigurationJsonPackageVersion>
@@ -19,7 +21,7 @@
     <MicrosoftExtensionsLoggingPackageVersion>2.1.1</MicrosoftExtensionsLoggingPackageVersion>
     <MicrosoftExtensionsLoggingTestingPackageVersion>2.1.1</MicrosoftExtensionsLoggingTestingPackageVersion>
     <MicrosoftNETCoreApp20PackageVersion>2.0.0</MicrosoftNETCoreApp20PackageVersion>
-    <MicrosoftNETCoreApp21PackageVersion>2.1.1</MicrosoftNETCoreApp21PackageVersion>
+    <MicrosoftNETCoreApp21PackageVersion>2.1.2</MicrosoftNETCoreApp21PackageVersion>
     <MicrosoftNetHttpHeadersPackageVersion>2.1.1</MicrosoftNetHttpHeadersPackageVersion>
     <MicrosoftNETTestSdkPackageVersion>15.6.1</MicrosoftNETTestSdkPackageVersion>
     <NETStandardLibrary20PackageVersion>2.0.3</NETStandardLibrary20PackageVersion>
@@ -28,5 +30,10 @@
     <XunitPackageVersion>2.3.1</XunitPackageVersion>
     <XunitRunnerVisualStudioPackageVersion>2.4.0-beta.1.build3945</XunitRunnerVisualStudioPackageVersion>
   </PropertyGroup>
+
+  <!-- This may import a generated file which may override the variables above. -->
   <Import Project="$(DotNetPackageVersionPropsPath)" Condition=" '$(DotNetPackageVersionPropsPath)' != '' " />
+
+  <!-- These are package versions that should not be overridden or updated by automation. -->
+  <PropertyGroup Label="Package Versions: Pinned" />
 </Project>
