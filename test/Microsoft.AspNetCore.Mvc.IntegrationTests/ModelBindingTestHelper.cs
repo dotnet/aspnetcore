@@ -64,6 +64,11 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             }
         }
 
+        public static ParameterBinder GetParameterBinder(ModelBindingTestContext testContext)
+        {
+            return GetParameterBinder(testContext.HttpContext.RequestServices);
+        }
+
         public static ParameterBinder GetParameterBinder(IServiceProvider serviceProvider)
         {
             var metadataProvider = serviceProvider.GetRequiredService<IModelMetadataProvider>();

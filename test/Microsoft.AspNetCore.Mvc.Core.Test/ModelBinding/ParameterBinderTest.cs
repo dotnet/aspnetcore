@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
         [Theory]
         [MemberData(nameof(BindModelAsyncData))]
-        public async Task BindModelAsync_PassesExpectedBindingInfoAndMetadata_IfPrefixDoesNotMatch(
+        public async Task ObsoleteBindModelAsync_PassesExpectedBindingInfoAndMetadata_IfPrefixDoesNotMatch(
             BindingInfo parameterBindingInfo,
             string metadataBinderModelName,
             string parameterName,
@@ -116,13 +116,15 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var controllerContext = GetControllerContext();
 
             // Act & Assert
+#pragma warning disable CS0618 // Type or member is obsolete
             await parameterBinder.BindModelAsync(controllerContext, new SimpleValueProvider(), parameterDescriptor);
+#pragma warning restore CS0618 // Type or member is obsolete
             Assert.True(binderExecuted);
 
         }
 
         [Fact]
-        public async Task BindModelAsync_PassesExpectedBindingInfoAndMetadata_IfPrefixMatches()
+        public async Task ObsoleteBindModelAsync_PassesExpectedBindingInfoAndMetadata_IfPrefixMatches()
         {
             // Arrange
             var expectedModelName = "expectedName";
@@ -174,7 +176,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var controllerContext = GetControllerContext();
 
             // Act & Assert
+#pragma warning disable CS0618 // Type or member is obsolete
             await argumentBinder.BindModelAsync(controllerContext, valueProvider, parameterDescriptor);
+#pragma warning restore CS0618 // Type or member is obsolete
             Assert.True(binderExecuted);
         }
 
