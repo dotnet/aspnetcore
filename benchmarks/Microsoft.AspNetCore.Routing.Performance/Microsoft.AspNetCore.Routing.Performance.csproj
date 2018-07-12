@@ -33,12 +33,6 @@
     <Compile Include="..\..\test\Microsoft.AspNetCore.Routing.Tests\Matchers\DfaMatcherBuilder.cs">
       <Link>Matchers\DfaMatcherBuilder.cs</Link>
     </Compile>
-    <Compile Include="..\..\test\Microsoft.AspNetCore.Routing.Tests\Matchers\InstructionMatcher.cs">
-      <Link>Matchers\InstructionMatcher.cs</Link>
-    </Compile>
-    <Compile Include="..\..\test\Microsoft.AspNetCore.Routing.Tests\Matchers\InstructionMatcherBuilder.cs">
-      <Link>Matchers\InstructionMatcherBuilder.cs</Link>
-    </Compile>
     <Compile Include="..\..\test\Microsoft.AspNetCore.Routing.Tests\Matchers\RouteMatcher.cs">
       <Link>Matchers\RouteMatcher.cs</Link>
     </Compile>
