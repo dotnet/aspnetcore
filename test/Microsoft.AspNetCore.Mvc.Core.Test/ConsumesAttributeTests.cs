@@ -12,6 +12,8 @@ using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.EndpointConstraints;
+using Microsoft.AspNetCore.Routing.Matchers;
 using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit;
@@ -80,7 +82,7 @@ namespace Microsoft.AspNetCore.Mvc
         [InlineData("application/json")]
         [InlineData("application/json;Parameter1=12")]
         [InlineData("text/xml")]
-        public void Accept_MatchesForMachingRequestContentType(string contentType)
+        public void ActionConstraint_Accept_MatchesForMachingRequestContentType(string contentType)
         {
             // Arrange
             var constraint = new ConsumesAttribute("application/json", "text/xml");
@@ -104,7 +106,7 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         [Fact]
-        public void Accept_TheFirstCandidateReturnsFalse_IfALaterOneMatches()
+        public void ActionConstraint_Accept_TheFirstCandidateReturnsFalse_IfALaterOneMatches()
         {
             // Arrange
             var constraint1 = new ConsumesAttribute("application/json", "text/xml");
@@ -114,7 +116,7 @@ namespace Microsoft.AspNetCore.Mvc
                     new List<FilterDescriptor>() { new FilterDescriptor(constraint1, FilterScope.Action) }
             };
 
-            var constraint2 = new Mock<ITestConsumeConstraint>();
+            var constraint2 = new Mock<ITestActionConsumeConstraint>();
             var action2 = new ActionDescriptor()
             {
                 FilterDescriptors =
@@ -142,7 +144,7 @@ namespace Microsoft.AspNetCore.Mvc
         [InlineData("application/custom")]
         [InlineData("")]
         [InlineData(null)]
-        public void Accept_ForNoMatchingCandidates_SelectsTheFirstCandidate(string contentType)
+        public void ActionConstraint_Accept_ForNoMatchingCandidates_SelectsTheFirstCandidate(string contentType)
         {
             // Arrange
             var constraint1 = new ConsumesAttribute("application/json", "text/xml");
@@ -152,7 +154,7 @@ namespace Microsoft.AspNetCore.Mvc
                     new List<FilterDescriptor>() { new FilterDescriptor(constraint1, FilterScope.Action) }
             };
 
-            var constraint2 = new Mock<ITestConsumeConstraint>();
+            var constraint2 = new Mock<ITestActionConsumeConstraint>();
             var action2 = new ActionDescriptor()
             {
                 FilterDescriptors =
@@ -179,7 +181,7 @@ namespace Microsoft.AspNetCore.Mvc
         [Theory]
         [InlineData("")]
         [InlineData(null)]
-        public void Accept_ForNoRequestType_SelectsTheCandidateWithoutConstraintIfPresent(string contentType)
+        public void ActionConstraint_Accept_ForNoRequestType_SelectsTheCandidateWithoutConstraintIfPresent(string contentType)
         {
             // Arrange
             var constraint1 = new ConsumesAttribute("application/json");
@@ -219,7 +221,7 @@ namespace Microsoft.AspNetCore.Mvc
         [InlineData("application/xml")]
         [InlineData("application/custom")]
         [InlineData("invalid/invalid")]
-        public void Accept_UnrecognizedMediaType_SelectsTheCandidateWithoutConstraintIfPresent(string contentType)
+        public void ActionConstraint_Accept_UnrecognizedMediaType_SelectsTheCandidateWithoutConstraintIfPresent(string contentType)
         {
             // Arrange
             var actionWithoutConstraint = new ActionDescriptor();
@@ -258,7 +260,7 @@ namespace Microsoft.AspNetCore.Mvc
         [Theory]
         [InlineData("")]
         [InlineData(null)]
-        public void Accept_ForNoRequestType_ReturnsTrueForAllConstraints(string contentType)
+        public void ActionConstraint_Accept_ForNoRequestType_ReturnsTrueForAllConstraints(string contentType)
         {
             // Arrange
             var constraint1 = new ConsumesAttribute("application/json");
@@ -285,6 +287,193 @@ namespace Microsoft.AspNetCore.Mvc
             };
 
             context.RouteContext = CreateRouteContext(contentType: contentType);
+
+            // Act & Assert
+            context.CurrentCandidate = context.Candidates[0];
+            Assert.True(constraint1.Accept(context));
+            context.CurrentCandidate = context.Candidates[1];
+            Assert.True(constraint2.Accept(context));
+        }
+
+        private MatcherEndpoint CreateEndpoint(params IEndpointConstraint[] constraints)
+        {
+            EndpointMetadataCollection endpointMetadata = new EndpointMetadataCollection(constraints);
+
+            return new MatcherEndpoint(
+                (r) => null,
+                "",
+                new RouteValueDictionary(),
+                new RouteValueDictionary(),
+                0,
+                endpointMetadata,
+                "");
+        }
+
+        [Theory]
+        [InlineData("application/json")]
+        [InlineData("application/json;Parameter1=12")]
+        [InlineData("text/xml")]
+        public void EndpointConstraint_Accept_MatchesForMachingRequestContentType(string contentType)
+        {
+            // Arrange
+            var constraint = new ConsumesAttribute("application/json", "text/xml");
+            var endpoint = CreateEndpoint(constraint);
+
+            var context = new EndpointConstraintContext();
+            context.Candidates = new List<EndpointSelectorCandidate>()
+            {
+                new EndpointSelectorCandidate(endpoint, new [] { constraint }),
+            };
+
+            context.CurrentCandidate = context.Candidates[0];
+            context.HttpContext = CreateHttpContext(contentType: contentType);
+
+            // Act & Assert
+            Assert.True(constraint.Accept(context));
+        }
+
+        [Fact]
+        public void EndpointConstraint_Accept_TheFirstCandidateReturnsFalse_IfALaterOneMatches()
+        {
+            // Arrange
+            var constraint1 = new ConsumesAttribute("application/json", "text/xml");
+            var endpoint1 = CreateEndpoint(constraint1);
+
+            var constraint2 = new Mock<ITestEndpointConsumeConstraint>();
+            var endpoint2 = CreateEndpoint(constraint2.Object);
+
+            constraint2.Setup(o => o.Accept(It.IsAny<EndpointConstraintContext>()))
+                       .Returns(true);
+
+            var context = new EndpointConstraintContext();
+            context.Candidates = new List<EndpointSelectorCandidate>()
+            {
+                new EndpointSelectorCandidate(endpoint1, new [] { constraint1 }),
+                new EndpointSelectorCandidate(endpoint2, new [] { constraint2.Object }),
+            };
+
+            context.CurrentCandidate = context.Candidates[0];
+            context.HttpContext = CreateHttpContext(contentType: "application/custom");
+
+            // Act & Assert
+            Assert.False(constraint1.Accept(context));
+        }
+
+        [Theory]
+        [InlineData("application/custom")]
+        [InlineData("")]
+        [InlineData(null)]
+        public void EndpointConstraint_Accept_ForNoMatchingCandidates_SelectsTheFirstCandidate(string contentType)
+        {
+            // Arrange
+            var constraint1 = new ConsumesAttribute("application/json", "text/xml");
+            var endpoint1 = CreateEndpoint(constraint1);
+
+            var constraint2 = new Mock<ITestEndpointConsumeConstraint>();
+            var endpoint2 = CreateEndpoint(constraint2.Object);
+
+            constraint2.Setup(o => o.Accept(It.IsAny<EndpointConstraintContext>()))
+                       .Returns(false);
+
+            var context = new EndpointConstraintContext();
+            context.Candidates = new List<EndpointSelectorCandidate>()
+            {
+                new EndpointSelectorCandidate(endpoint1, new [] { constraint1 }),
+                new EndpointSelectorCandidate(endpoint2, new [] { constraint2.Object }),
+            };
+
+            context.CurrentCandidate = context.Candidates[0];
+            context.HttpContext = CreateHttpContext(contentType: contentType);
+
+            // Act & Assert
+            Assert.True(constraint1.Accept(context));
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData(null)]
+        public void EndpointConstraint_Accept_ForNoRequestType_SelectsTheCandidateWithoutConstraintIfPresent(string contentType)
+        {
+            // Arrange
+            var constraint1 = new ConsumesAttribute("application/json");
+            var endpointWithConstraint = CreateEndpoint(constraint1);
+
+            var constraint2 = new ConsumesAttribute("text/xml");
+            var endpointWithConstraint2 = CreateEndpoint(constraint2);
+
+            var endpointWithoutConstraint = CreateEndpoint();
+
+            var context = new EndpointConstraintContext();
+            context.Candidates = new List<EndpointSelectorCandidate>()
+            {
+                new EndpointSelectorCandidate(endpointWithConstraint, new [] { constraint1 }),
+                new EndpointSelectorCandidate(endpointWithConstraint2, new [] { constraint2 }),
+                new EndpointSelectorCandidate(endpointWithoutConstraint, new List<IEndpointConstraint>()),
+            };
+
+            context.HttpContext = CreateHttpContext(contentType: contentType);
+
+            // Act & Assert
+            context.CurrentCandidate = context.Candidates[0];
+            Assert.False(constraint1.Accept(context));
+            context.CurrentCandidate = context.Candidates[1];
+            Assert.False(constraint2.Accept(context));
+        }
+
+        [Theory]
+        [InlineData("application/xml")]
+        [InlineData("application/custom")]
+        [InlineData("invalid/invalid")]
+        public void EndpointConstraint_Accept_UnrecognizedMediaType_SelectsTheCandidateWithoutConstraintIfPresent(string contentType)
+        {
+            // Arrange
+            var endpointWithoutConstraint = CreateEndpoint();
+            var constraint1 = new ConsumesAttribute("application/json");
+            var endpointWithConstraint = CreateEndpoint(constraint1);
+
+            var constraint2 = new ConsumesAttribute("text/xml");
+            var endpointWithConstraint2 = CreateEndpoint(constraint2);
+
+            var context = new EndpointConstraintContext();
+            context.Candidates = new List<EndpointSelectorCandidate>()
+            {
+                new EndpointSelectorCandidate(endpointWithConstraint, new [] { constraint1 }),
+                new EndpointSelectorCandidate(endpointWithConstraint2, new [] { constraint2 }),
+                new EndpointSelectorCandidate(endpointWithoutConstraint, new List<IEndpointConstraint>()),
+            };
+
+            context.HttpContext = CreateHttpContext(contentType: contentType);
+
+            // Act & Assert
+            context.CurrentCandidate = context.Candidates[0];
+            Assert.False(constraint1.Accept(context));
+
+            context.CurrentCandidate = context.Candidates[1];
+            Assert.False(constraint2.Accept(context));
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData(null)]
+        public void EndpointConstraint_Accept_ForNoRequestType_ReturnsTrueForAllConstraints(string contentType)
+        {
+            // Arrange
+            var constraint1 = new ConsumesAttribute("application/json");
+            var endpointWithConstraint = CreateEndpoint(constraint1);
+
+            var constraint2 = new ConsumesAttribute("text/xml");
+            var endpointWithConstraint2 = CreateEndpoint(constraint2);
+
+            var endpointWithoutConstraint = CreateEndpoint();
+
+            var context = new EndpointConstraintContext();
+            context.Candidates = new List<EndpointSelectorCandidate>()
+            {
+                new EndpointSelectorCandidate(endpointWithConstraint, new [] { constraint1 }),
+                new EndpointSelectorCandidate(endpointWithConstraint2, new [] { constraint2 }),
+            };
+
+            context.HttpContext = CreateHttpContext(contentType: contentType);
 
             // Act & Assert
             context.CurrentCandidate = context.Candidates[0];
@@ -404,11 +593,7 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static RouteContext CreateRouteContext(string contentType = null, object routeValues = null)
         {
-            var httpContext = new DefaultHttpContext();
-            if (contentType != null)
-            {
-                httpContext.Request.ContentType = contentType;
-            }
+            var httpContext = CreateHttpContext(contentType);
 
             var routeContext = new RouteContext(httpContext);
             routeContext.RouteData = new RouteData();
@@ -421,7 +606,22 @@ namespace Microsoft.AspNetCore.Mvc
             return routeContext;
         }
 
-        public interface ITestConsumeConstraint : IConsumesActionConstraint, IResourceFilter
+        private static HttpContext CreateHttpContext(string contentType = null, object routeValues = null)
+        {
+            var httpContext = new DefaultHttpContext();
+            if (contentType != null)
+            {
+                httpContext.Request.ContentType = contentType;
+            }
+
+            return httpContext;
+        }
+
+        public interface ITestActionConsumeConstraint : IConsumesActionConstraint, IResourceFilter
+        {
+        }
+
+        public interface ITestEndpointConsumeConstraint : IConsumesEndpointConstraint, IResourceFilter
         {
         }
     }
