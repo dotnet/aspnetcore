@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             }
         }
 
-        private void RequestRefresh(AuthenticationTicket ticket)
+        private void RequestRefresh(AuthenticationTicket ticket, ClaimsPrincipal replacedPrincipal = null)
         {
             var issuedUtc = ticket.Properties.IssuedUtc;
             var expiresUtc = ticket.Properties.ExpiresUtc;
@@ -97,14 +97,15 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
                 _refreshIssuedUtc = currentUtc;
                 var timeSpan = expiresUtc.Value.Subtract(issuedUtc.Value);
                 _refreshExpiresUtc = currentUtc.Add(timeSpan);
-                _refreshTicket = CloneTicket(ticket);
+                _refreshTicket = CloneTicket(ticket, replacedPrincipal);
             }
         }
 
-        private AuthenticationTicket CloneTicket(AuthenticationTicket ticket)
+        private AuthenticationTicket CloneTicket(AuthenticationTicket ticket, ClaimsPrincipal replacedPrincipal)
         {
+            var principal = replacedPrincipal ?? ticket.Principal;
             var newPrincipal = new ClaimsPrincipal();
-            foreach (var identity in ticket.Principal.Identities)
+            foreach (var identity in principal.Identities)
             {
                 newPrincipal.AddIdentity(identity.Clone());
             }
@@ -183,7 +184,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
 
             if (context.ShouldRenew)
             {
-                RequestRefresh(result.Ticket);
+                RequestRefresh(result.Ticket, context.Principal);
             }
 
             return AuthenticateResult.Success(new AuthenticationTicket(context.Principal, context.Properties, Scheme.Name));
