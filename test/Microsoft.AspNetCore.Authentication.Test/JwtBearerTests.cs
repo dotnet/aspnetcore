@@ -469,6 +469,43 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
         }
 
         [Fact]
+        public async Task SaveBearerToken()
+        {
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(new string('a', 128)));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var claims = new[]
+            {
+                new Claim(ClaimTypes.NameIdentifier, "Bob")
+            };
+
+            var token = new JwtSecurityToken(
+                issuer: "issuer.contoso.com",
+                audience: "audience.contoso.com",
+                claims: claims,
+                expires: DateTime.Now.AddMinutes(30),
+                signingCredentials: creds);
+
+            var tokenText = new JwtSecurityTokenHandler().WriteToken(token);
+
+            var server = CreateServer(o =>
+            {
+                o.SaveToken = true;
+                o.TokenValidationParameters = new TokenValidationParameters()
+                {
+                    ValidIssuer = "issuer.contoso.com",
+                    ValidAudience = "audience.contoso.com",
+                    IssuerSigningKey = key,
+                };
+            });
+
+            var newBearerToken = "Bearer " + tokenText;
+            var response = await SendAsync(server, "http://example.com/token", newBearerToken);
+            Assert.Equal(HttpStatusCode.OK, response.Response.StatusCode);
+            Assert.Equal(tokenText, await response.Response.Content.ReadAsStringAsync());
+        }
+
+        [Fact]
         public async Task SignInThrows()
         {
             var server = CreateServer();
@@ -1139,6 +1176,11 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
                             }
 
                             await context.Response.WriteAsync(identifier.Value);
+                        }
+                        else if (context.Request.Path == new PathString("/token"))
+                        {
+                            var token = await context.GetTokenAsync("access_token");
+                            await context.Response.WriteAsync(token);
                         }
                         else if (context.Request.Path == new PathString("/unauthorized"))
                         {
