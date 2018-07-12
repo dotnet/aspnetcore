@@ -31,8 +31,8 @@
     <PackageArtifact Include="Microsoft.AspNetCore.Antiforgery" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.App" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.ApplicationInsights.HostingStartup" AllMetapackage="true" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.AspNetCoreModule" Category="noship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.AspNetCoreModuleV1" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.AspNetCoreModule" Category="noship" Condition=" '$(OS)' == 'Windows_NT' " />
+    <PackageArtifact Include="Microsoft.AspNetCore.AspNetCoreModuleV1" Category="noship" Condition=" '$(OS)' == 'Windows_NT' " />
     <PackageArtifact Include="Microsoft.AspNetCore.Authentication.Abstractions" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Authentication.AzureAD.UI" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Authentication.AzureADB2C.UI" Category="ship" />
@@ -144,7 +144,7 @@
     <PackageArtifact Include="Microsoft.AspNetCore.Routing.DecisionTree.Sources" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Routing" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Server.HttpSys" AllMetapackage="true" AppMetapackage="true" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Server.IIS" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Server.IIS" Category="noship" Condition=" '$(OS)' == 'Windows_NT' " />
     <PackageArtifact Include="Microsoft.AspNetCore.Server.IISIntegration" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Server.IntegrationTesting" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Server.Kestrel.Core" AllMetapackage="true" AppMetapackage="true" Category="ship" />
@@ -166,12 +166,15 @@
     <PackageArtifact Include="Microsoft.AspNetCore.SpaServices" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.StaticFiles" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.TestHost" Category="ship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Testing" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.WebSockets" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.WebUtilities" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.CodeAnalysis.Razor.Workspaces" Category="shipoob" />
     <PackageArtifact Include="Microsoft.CodeAnalysis.Razor" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.CodeAnalysis.Remote.Razor" Category="shipoob" />
+    <PackageArtifact Include="Microsoft.Data.Sqlite.Core" AllMetapackage="true" Category="ship" />
+    <PackageArtifact Include="Microsoft.Data.Sqlite" AllMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.DotNet.Web.Client.ItemTemplates" Category="shipoob" />
     <PackageArtifact Include="Microsoft.DotNet.Web.ItemTemplates" Category="shipoob" />
     <PackageArtifact Include="Microsoft.DotNet.Web.ProjectTemplates.2.1" Category="shipoob" />
@@ -192,7 +195,6 @@
     <PackageArtifact Include="Microsoft.EntityFrameworkCore" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.Extensions.ActivatorUtilities.Sources" Category="noship" />
     <PackageArtifact Include="Microsoft.Extensions.ApplicationModelDetection" Category="noship" />
-    <PackageArtifact Include="Microsoft.Extensions.Buffers.Sources" Category="noship" />
     <PackageArtifact Include="Microsoft.Extensions.Buffers.Testing.Sources" Category="noship" />
     <PackageArtifact Include="Microsoft.Extensions.Caching.Abstractions" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.Extensions.Caching.Memory" AllMetapackage="true" AppMetapackage="true" Category="ship" />
@@ -216,6 +218,7 @@
     <PackageArtifact Include="Microsoft.Extensions.DependencyInjection.Abstractions" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.Extensions.DependencyInjection.Specification.Tests" Category="ship" />
     <PackageArtifact Include="Microsoft.Extensions.DependencyInjection" AllMetapackage="true" AppMetapackage="true" Category="ship" />
+    <PackageArtifact Include="Microsoft.Extensions.DiagnosticAdapter" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" Category="noship" />
     <PackageArtifact Include="Microsoft.Extensions.Diagnostics.HealthChecks" Category="noship" />
     <PackageArtifact Include="Microsoft.Extensions.FileProviders.Abstractions" AllMetapackage="true" AppMetapackage="true" Category="ship" />

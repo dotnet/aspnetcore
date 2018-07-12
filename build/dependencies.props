@@ -28,8 +28,8 @@
     <FSharpCorePackageVersion>4.2.1</FSharpCorePackageVersion>
     <GoogleProtobufPackageVersion>3.1.0</GoogleProtobufPackageVersion>
     <LibuvPackageVersion>1.10.0</LibuvPackageVersion>
-    <LZMAMicrosoftNETCoreApp21PackageVersion>2.1.0</LZMAMicrosoftNETCoreApp21PackageVersion>
     <LZMAMicrosoftAspNetCoreAppAll21PackageVersion>2.1.1</LZMAMicrosoftAspNetCoreAppAll21PackageVersion>
+    <LZMAMicrosoftNETCoreApp21PackageVersion>2.1.0</LZMAMicrosoftNETCoreApp21PackageVersion>
     <MessagePackPackageVersion>1.7.3.4</MessagePackPackageVersion>
     <MicrosoftApplicationInsightsAspNetCorePackageVersion>2.1.1</MicrosoftApplicationInsightsAspNetCorePackageVersion>
     <MicrosoftAspNetIdentityEntityFrameworkPackageVersion>2.2.1</MicrosoftAspNetIdentityEntityFrameworkPackageVersion>
@@ -92,6 +92,10 @@
     <PollyExtensionsHttpPackageVersion>2.0.1</PollyExtensionsHttpPackageVersion>
     <PollyPackageVersion>6.0.1</PollyPackageVersion>
     <RemotionLinqPackageVersion>2.2.0</RemotionLinqPackageVersion>
+    <SeleniumFirefoxWebDriverPackageVersion>0.20.0</SeleniumFirefoxWebDriverPackageVersion>
+    <SeleniumSupportPackageVersion>3.12.1</SeleniumSupportPackageVersion>
+    <SeleniumWebDriverMicrosoftDriverPackageVersion>17.17134.0</SeleniumWebDriverMicrosoftDriverPackageVersion>
+    <SeleniumWebDriverPackageVersion>3.12.1</SeleniumWebDriverPackageVersion>
     <SerilogExtensionsLoggingPackageVersion>1.4.0</SerilogExtensionsLoggingPackageVersion>
     <SerilogSinksFilePackageVersion>3.2.0</SerilogSinksFilePackageVersion>
     <SQLitePCLRawBundleGreenPackageVersion>1.1.11</SQLitePCLRawBundleGreenPackageVersion>

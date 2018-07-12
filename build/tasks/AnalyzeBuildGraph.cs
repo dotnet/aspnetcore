@@ -32,6 +32,9 @@ namespace RepoTasks
         public ITaskItem[] Artifacts { get; set; }
 
         [Required]
+        public ITaskItem[] Repositories { get; set; }
+
+        [Required]
         public ITaskItem[] Dependencies { get; set; }
 
         [Required]
@@ -68,6 +71,18 @@ namespace RepoTasks
 
             var solutions = factory.Create(Solutions, props, defaultConfig, _cts.Token);
             Log.LogMessage($"Found {solutions.Count} and {solutions.Sum(p => p.Projects.Count)} projects");
+
+            var policies = new Dictionary<string, PatchPolicy>();
+            foreach (var repo in Repositories)
+            {
+                policies.Add(repo.ItemSpec, Enum.Parse<PatchPolicy>(repo.GetMetadata("PatchPolicy")));
+            }
+
+            foreach (var solution in solutions)
+            {
+                var repoName = Path.GetFileName(solution.Directory);
+                solution.PatchPolicy = policies[repoName];
+            }
 
             if (_cts.IsCancellationRequested)
             {
@@ -109,9 +124,7 @@ namespace RepoTasks
             }
 
             var inconsistentVersions = new List<VersionMismatch>();
-            var reposThatShouldPatch = new HashSet<string>();
 
-            // TODO cleanup the 4-deep nested loops
             foreach (var solution in solutions)
             foreach (var project in solution.Projects)
             foreach (var tfm in project.Frameworks)
@@ -147,19 +160,25 @@ namespace RepoTasks
                     continue;
                 }
 
-                if (!solution.ShouldBuild && solution.Shipped)
+                var shouldCascade = (solution.PatchPolicy & PatchPolicy.CascadeVersions) != 0;
+                if (!solution.ShouldBuild && !solution.IsPatching && shouldCascade)
                 {
-                    reposThatShouldPatch.Add(Path.GetFileName(Path.GetDirectoryName(solution.FullPath)));
+                    var repoName = Path.GetFileName(Path.GetDirectoryName(solution.FullPath));
+                    Log.LogError($"{repoName} should not be marked 'IsPatching=false'. Version changes in other repositories mean it should be patched to perserve cascading version upgrades.");
+
                 }
 
-                inconsistentVersions.Add(new VersionMismatch
+                if (shouldCascade)
                 {
-                    Solution = solution,
-                    Project = project,
-                    PackageId = dependency.Key,
-                    ActualVersion = dependency.Value.Version,
-                    ExpectedVersion = package.PackageInfo.Version,
-                });
+                    inconsistentVersions.Add(new VersionMismatch
+                    {
+                        Solution = solution,
+                        Project = project,
+                        PackageId = dependency.Key,
+                        ActualVersion = dependency.Value.Version,
+                        ExpectedVersion = package.PackageInfo.Version,
+                    });
+                }
             }
 
             if (inconsistentVersions.Count != 0)
@@ -191,11 +210,6 @@ namespace RepoTasks
                     // See https://github.com/aspnet/Universe/wiki/Build-warning-and-error-codes#potentially-unused-external-dependency for details
                     Log.LogMessage(MessageImportance.Normal, $"Potentially unused external dependency: {item.PackageId}/{item.Version}. See https://github.com/aspnet/Universe/wiki/Build-warning-and-error-codes for details.");
                 }
-            }
-
-            foreach (var repo in reposThatShouldPatch)
-            {
-                Log.LogError($"{repo} should not be a 'ShippedRepository'. Version changes in other repositories mean it should be patched to perserve cascading version upgrades.");
             }
         }
 

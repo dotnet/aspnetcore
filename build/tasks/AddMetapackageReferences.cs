@@ -30,9 +30,6 @@ namespace RepoTasks
         }
 
         [Required]
-        public ITaskItem[] BuildArtifacts { get; set; }
-
-        [Required]
         public ITaskItem[] PackageArtifacts { get; set; }
 
         [Required]
@@ -49,9 +46,6 @@ namespace RepoTasks
             // Parse input
             var metapackageArtifacts = PackageArtifacts.Where(p => p.GetMetadata(MetapackageReferenceType) == "true");
             var externalArtifacts = ExternalDependencies.Where(p => p.GetMetadata(MetapackageReferenceType) == "true");
-            var buildArtifacts = BuildArtifacts.Select(ArtifactInfo.Parse)
-                .OfType<ArtifactInfo.Package>()
-                .Where(p => !p.IsSymbolsArtifact);
 
             var xmlDoc = new XmlDocument();
             xmlDoc.Load(ReferencePackagePath);
@@ -66,19 +60,7 @@ namespace RepoTasks
             foreach (var package in metapackageArtifacts)
             {
                 var packageName = package.ItemSpec;
-                string packageVersion;
-                try
-                {
-                    packageVersion = buildArtifacts
-                        .Single(p => string.Equals(p.PackageInfo.Id, packageName, StringComparison.OrdinalIgnoreCase))
-                        .PackageInfo.Version.ToString();
-                }
-                catch (InvalidOperationException)
-                {
-                    Log.LogError($"Missing Package: {packageName} from build artifacts");
-                    throw;
-                }
-
+                var packageVersion = package.GetMetadata("Version");
                 if (string.IsNullOrEmpty(packageVersion))
                 {
                     Log.LogError("Missing version information for package {0}", packageName);

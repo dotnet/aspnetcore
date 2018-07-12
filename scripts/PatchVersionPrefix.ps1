@@ -5,11 +5,19 @@
     Updates the version.props file in repos to a newer patch version
 .PARAMETER Repos
     A list of the repositories that should be patched
+.PARAMETER Mode
+    Version bump options: Major, Minor, Patch
+.PARAMETER VersionSuffix
+    The version suffix to use
 #>
-[CmdletBinding()]
+[cmdletbinding(SupportsShouldProcess = $true)]
 param(
     [Parameter(Mandatory = $true)]
     [string[]]$Repos,
+    [Parameter(Mandatory = $true)]
+    [ValidateSet('Major', 'Minor', 'Patch')]
+    [string]$Mode,
+    [string]$VersionSuffix = $null,
     [switch]$NoCommit
 )
 
@@ -17,12 +25,39 @@ $ErrorActionPreference = 'Stop'
 
 Import-Module -Scope Local -Force "$PSScriptRoot/common.psm1"
 
-function BumpPatch([System.Xml.XmlNode]$node) {
+function SetVersionSuffix([System.Xml.XmlNode]$node) {
+    if (-not $node) {
+        return
+    }
+    $node.InnerText = $VersionSuffix
+    return "Setting $($node.Name) to $VersionSuffix"
+}
+
+function BumpVersion([System.Xml.XmlNode]$node) {
     if (-not $node) {
         return
     }
     [version] $version = $node.InnerText
-    $node.InnerText = "{0}.{1}.{2}" -f $version.Major, $version.Minor, ($version.Build + 1)
+
+    $experimental = $version.Major -eq 0
+
+    switch ($mode) {
+        { ($_ -ne 'Patch') -and $experimental} {
+            $node.InnerText = "{0}.{1}.{2}" -f $version.Major, ($version.Minor + 1), 0
+        }
+        { ($_ -eq 'Major') -and -not $experimental } {
+            $node.InnerText = "{0}.{1}.{2}" -f ($version.Major + 1), 0, 0
+        }
+        { ($_ -eq 'Minor') -and -not $experimental } {
+            $node.InnerText = "{0}.{1}.{2}" -f $version.Major, ($version.Minor + 1), 0
+        }
+        'Patch' {
+            $node.InnerText = "{0}.{1}.{2}" -f $version.Major, $version.Minor, ($version.Build + 1)
+        }
+        default {
+            throw "Could not figure out how to apply patch policy $mode"
+        }
+    }
     return "Bumping version from $version to $($node.InnerText)"
 }
 
@@ -46,17 +81,26 @@ foreach ($repo in $Repos) {
             write-error "$path does not have VersionSuffix"
         }
 
+        if ($VersionSuffix) {
+            SetVersionSuffix $xml.SelectSingleNode('/Project/PropertyGroup/VersionSuffix') | write-host
+            SetVersionSuffix $xml.SelectSingleNode('/Project/PropertyGroup/ExperimentalProjectVersionSuffix') | write-host
+            SetVersionSuffix $xml.SelectSingleNode('/Project/PropertyGroup/ExperimentalVersionSuffix') | write-host
+        }
+
         $versionPrefix = $xml.SelectSingleNode('/Project/PropertyGroup/VersionPrefix')
         $epxVersionPrefix = $xml.SelectSingleNode('/Project/PropertyGroup/ExperimentalProjectVersionPrefix')
         $exVersionPrefix = $xml.SelectSingleNode('/Project/PropertyGroup/ExperimentalVersionPrefix')
-        BumpPatch $epxVersionPrefix | write-host
-        BumpPatch $exVersionPrefix | write-host
-        $message = BumpPatch $versionPrefix
+        BumpVersion $epxVersionPrefix | write-host
+        BumpVersion $exVersionPrefix | write-host
+        $message = BumpVersion $versionPrefix
         Write-Host $message
-        SaveXml $xml $path
-        if (-not $NoCommit) {
-            Invoke-Block { & git add $path }
-            Invoke-Block { & git commit -m $message }
+
+        if ($PSCmdlet.ShouldProcess("Update $path")) {
+            SaveXml $xml $path
+            if (-not $NoCommit) {
+                Invoke-Block { & git add $path }
+                Invoke-Block { & git commit -m $message }
+            }
         }
     }
     finally
