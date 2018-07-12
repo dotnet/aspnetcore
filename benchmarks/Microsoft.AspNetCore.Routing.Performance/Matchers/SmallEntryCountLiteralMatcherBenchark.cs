@@ -11,7 +11,6 @@ namespace Microsoft.AspNetCore.Routing.Matchers
     {
         private Matcher _baseline;
         private Matcher _dfa;
-        private Matcher _instruction;
         private Matcher _route;
         private Matcher _tree;
 
@@ -26,7 +25,6 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 
             _baseline = SetupMatcher(new TrivialMatcherBuilder());
             _dfa = SetupMatcher(new DfaMatcherBuilder());
-            _instruction = SetupMatcher(new InstructionMatcherBuilder());
             _route = SetupMatcher(new RouteMatcherBuilder());
             _tree = SetupMatcher(new TreeRouterMatcherBuilder());
 
@@ -86,14 +84,6 @@ namespace Microsoft.AspNetCore.Routing.Matchers
         {
             var feature = _feature;
             await _dfa.MatchAsync(_requests[0], feature);
-            Validate(_requests[0], _endpoints[9], feature.Endpoint);
-        }
-
-        [Benchmark]
-        public async Task Instruction()
-        {
-            var feature = _feature;
-            await _instruction.MatchAsync(_requests[0], feature);
             Validate(_requests[0], _endpoints[9], feature.Endpoint);
         }
 

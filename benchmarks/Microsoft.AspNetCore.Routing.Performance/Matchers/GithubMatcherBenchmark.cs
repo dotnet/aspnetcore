@@ -13,7 +13,6 @@ namespace Microsoft.AspNetCore.Routing.Matchers
     {
         private BarebonesMatcher _baseline;
         private Matcher _dfa;
-        private Matcher _instruction;
         private Matcher _route;
         private Matcher _tree;
 
@@ -28,7 +27,6 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 
             _baseline = (BarebonesMatcher)SetupMatcher(new BarebonesMatcherBuilder());
             _dfa = SetupMatcher(new DfaMatcherBuilder());
-            _instruction = SetupMatcher(new InstructionMatcherBuilder());
             _route = SetupMatcher(new RouteMatcherBuilder());
             _tree = SetupMatcher(new TreeRouterMatcherBuilder());
 
@@ -55,18 +53,6 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             {
                 var httpContext = _requests[i];
                 await _dfa.MatchAsync(httpContext, feature);
-                Validate(httpContext, _endpoints[i], feature.Endpoint);
-            }
-        }
-
-        [Benchmark(OperationsPerInvoke = EndpointCount)]
-        public async Task Instruction()
-        {
-            var feature = _feature;
-            for (var i = 0; i < EndpointCount; i++)
-            {
-                var httpContext = _requests[i];
-                await _instruction.MatchAsync(httpContext, feature);
                 Validate(httpContext, _endpoints[i], feature.Endpoint);
             }
         }
