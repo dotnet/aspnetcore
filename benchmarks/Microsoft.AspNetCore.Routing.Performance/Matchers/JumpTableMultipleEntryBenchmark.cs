@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using BenchmarkDotNet.Attributes;
 
 namespace Microsoft.AspNetCore.Routing.Matchers
@@ -14,9 +15,12 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 
         private JumpTable _linearSearch;
         private JumpTable _dictionary;
+        private JumpTable _ascii;
+        private JumpTable _dictionaryLookup;
+        private JumpTable _customHashTable;
 
         // All factors of 100 to support sampling
-        [Params(2, 5, 10, 25, 50, 100)]
+        [Params(2, 4, 5, 10, 25)]
         public int Count;
 
         [GlobalSetup]
@@ -44,6 +48,9 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 
             _linearSearch = new LinearSearchJumpTable(0, -1, entries.ToArray());
             _dictionary = new DictionaryJumpTable(0, -1, entries.ToArray());
+            Debug.Assert(AsciiKeyedJumpTable.TryCreate(0, -1, entries, out _ascii));
+            _dictionaryLookup = new DictionaryLookupJumpTable(0, -1, entries.ToArray());
+            _customHashTable = new CustomHashTableJumpTable(0, -1, entries.ToArray());
         }
 
         // This baseline is similar to SingleEntryJumpTable. We just want
@@ -99,6 +106,51 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             for (var i = 0; i < strings.Length; i++)
             {
                 destination = _dictionary.GetDestination(strings[i], segments[i]);
+            }
+
+            return destination;
+        }
+
+        [Benchmark(OperationsPerInvoke = 100)]
+        public int Ascii()
+        {
+            var strings = _strings;
+            var segments = _segments;
+
+            var destination = 0;
+            for (var i = 0; i < strings.Length; i++)
+            {
+                destination = _ascii.GetDestination(strings[i], segments[i]);
+            }
+
+            return destination;
+        }
+
+        [Benchmark(OperationsPerInvoke = 100)]
+        public int DictionaryLookup()
+        {
+            var strings = _strings;
+            var segments = _segments;
+
+            var destination = 0;
+            for (var i = 0; i < strings.Length; i++)
+            {
+                destination = _dictionaryLookup.GetDestination(strings[i], segments[i]);
+            }
+
+            return destination;
+        }
+
+        [Benchmark(OperationsPerInvoke = 100)]
+        public int CustomHashTable()
+        {
+            var strings = _strings;
+            var segments = _segments;
+
+            var destination = 0;
+            for (var i = 0; i < strings.Length; i++)
+            {
+                destination = _customHashTable.GetDestination(strings[i], segments[i]);
             }
 
             return destination;
