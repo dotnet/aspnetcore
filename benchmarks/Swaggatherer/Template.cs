@@ -12,8 +12,10 @@ namespace Swaggatherer
         {
             var setupEndpointsLines = new List<string>();
             for (var i = 0; i < entries.Count; i++)
-            {
-                setupEndpointsLines.Add($"            _endpoints[{i}] = CreateEndpoint(\"{entries[i].Template.TemplateText}\");");
+           {
+                var entry = entries[i];
+                var httpMethodText = entry.Method == null ? string.Empty : $", \"{entry.Method.ToUpperInvariant()}\"";
+                setupEndpointsLines.Add($"            _endpoints[{i}] = CreateEndpoint(\"{entry.Template.TemplateText}\"{httpMethodText});");
             }
 
             var setupRequestsLines = new List<string>();

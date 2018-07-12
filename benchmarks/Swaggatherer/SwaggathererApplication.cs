@@ -18,6 +18,7 @@ namespace Swaggatherer
         {
             Invoke = InvokeCore;
 
+            HttpMethods = Option("-m|--method", "allow multiple endpoints with different http method", CommandOptionType.NoValue);
             Input = Option("-i", "input swagger 2.0 JSON file", CommandOptionType.MultipleValue);
             InputDirectory = Option("-d", "input directory", CommandOptionType.SingleValue);
             Output = Option("-o", "output", CommandOptionType.SingleValue);
@@ -28,6 +29,9 @@ namespace Swaggatherer
         public CommandOption Input { get; }
 
         public CommandOption InputDirectory { get; }
+
+        // Support multiple endpoints that are distinguished only by http method.
+        public CommandOption HttpMethods { get; }
 
         public CommandOption Output { get; }
 
@@ -55,6 +59,7 @@ namespace Swaggatherer
                 Input.Values.AddRange(Directory.EnumerateFiles(InputDirectory.Value(), "*.json", SearchOption.AllDirectories));
             }
 
+            Console.WriteLine($"Processing {Input.Values.Count} files...");
             var entries = new List<RouteEntry>();
             for (var i = 0; i < Input.Values.Count; i++)
             {
@@ -69,7 +74,6 @@ namespace Swaggatherer
                 {
                     Out.WriteLine("Skipping route with complex segment: " + entries[i].Template.TemplateText);
                     entries.RemoveAt(i);
-                    break;
                 }
             }
 
@@ -96,7 +100,7 @@ namespace Swaggatherer
 
                 matches.Add(entry);
             }
-            
+
             // We're not too sophisticated with how we generate parameter values, just hoping for
             // the best. For parameters we generate a segment that is the same length as the parameter name
             // but with a minimum of 5 characters to avoid collisions.
@@ -128,14 +132,14 @@ namespace Swaggatherer
                 }
                 catch (JsonReaderException ex)
                 {
-                    Out.WriteLine("Error reading: {0}");
+                    Out.WriteLine($"Error reading: {input}");
                     Out.WriteLine(ex);
                     return new JObject();
                 }
             }
         }
 
-        private static void ParseEntries(JObject input, List<RouteEntry> entries)
+        private void ParseEntries(JObject input, List<RouteEntry> entries)
         {
             var basePath = "";
             if (input["basePath"] is JProperty basePathProperty)
@@ -153,7 +157,7 @@ namespace Swaggatherer
                         var parsed = TemplateParser.Parse(template);
                         entries.Add(new RouteEntry()
                         {
-                            Method = method.Name,
+                            Method = HttpMethods.HasValue() ? method.Name.ToString() : null,
                             Template = parsed,
                             Precedence = RoutePrecedence.ComputeInbound(parsed),
                         });
@@ -175,7 +179,7 @@ namespace Swaggatherer
             return false;
         }
 
-        private static bool IsDuplicateTemplate(RouteEntry entry, List<RouteEntry> others)
+        private bool IsDuplicateTemplate(RouteEntry entry, List<RouteEntry> others)
         {
             for (var j = 0; j < others.Count; j++)
             {
@@ -187,9 +191,16 @@ namespace Swaggatherer
                 for (var k = 0; k < entry.Template.Segments.Count; k++)
                 {
                     if (!string.Equals(
-                        entry.Template.Segments[k].Parts[0].Text, 
+                        entry.Template.Segments[k].Parts[0].Text,
                         other.Template.Segments[k].Parts[0].Text,
                         StringComparison.OrdinalIgnoreCase))
+                    {
+                        isSame = false;
+                        break;
+                    }
+
+                    if (HttpMethods.HasValue() && 
+                        !string.Equals(entry.Method, other.Method, StringComparison.OrdinalIgnoreCase))
                     {
                         isSame = false;
                         break;
