@@ -9,18 +9,18 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 {
     internal class TreeMatcherFactory : MatcherFactory
     {
-        private readonly MatchProcessorFactory _matchProcessorFactory;
+        private readonly IInlineConstraintResolver _constraintFactory;
         private readonly ILogger<TreeMatcher> _logger;
         private readonly EndpointSelector _endpointSelector;
 
         public TreeMatcherFactory(
-            MatchProcessorFactory matchProcessorFactory,
+            IInlineConstraintResolver constraintFactory,
             ILogger<TreeMatcher> logger,
             EndpointSelector endpointSelector)
         {
-            if (matchProcessorFactory == null)
+            if (constraintFactory == null)
             {
-                throw new ArgumentNullException(nameof(matchProcessorFactory));
+                throw new ArgumentNullException(nameof(constraintFactory));
             }
 
             if (logger == null)
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                 throw new ArgumentNullException(nameof(endpointSelector));
             }
 
-            _matchProcessorFactory = matchProcessorFactory;
+            _constraintFactory = constraintFactory;
             _logger = logger;
             _endpointSelector = endpointSelector;
         }
@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                 throw new ArgumentNullException(nameof(dataSource));
             }
 
-            return new TreeMatcher(_matchProcessorFactory, _logger, dataSource, _endpointSelector);
+            return new TreeMatcher(_constraintFactory, _logger, dataSource, _endpointSelector);
         }
     }
 }

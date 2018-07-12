@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Template;
@@ -21,7 +20,6 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             string template,
             RouteValueDictionary defaults,
             RouteValueDictionary requiredValues,
-            List<MatchProcessorReference> nonInlineMatchProcessorReferences,
             int order,
             EndpointMetadataCollection metadata,
             string displayName)
@@ -46,9 +44,6 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             RequiredValues = requiredValues;
             var mergedDefaults = GetDefaults(ParsedTemplate, defaults);
             Defaults = mergedDefaults;
-
-            var mergedReferences = MergeMatchProcessorReferences(ParsedTemplate, nonInlineMatchProcessorReferences);
-            MatchProcessorReferences = mergedReferences.AsReadOnly();
         }
 
         public int Order { get; }
@@ -61,8 +56,6 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 
         // Todo: needs review
         public RouteTemplate ParsedTemplate { get; }
-
-        public IReadOnlyList<MatchProcessorReference> MatchProcessorReferences { get; }
 
         // Merge inline and non inline defaults into one
         private RouteValueDictionary GetDefaults(RouteTemplate parsedTemplate, RouteValueDictionary nonInlineDefaults)
@@ -87,34 +80,6 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             }
 
             return result;
-        }
-
-        private List<MatchProcessorReference> MergeMatchProcessorReferences(
-            RouteTemplate parsedTemplate,
-            List<MatchProcessorReference> nonInlineReferences)
-        {
-            var matchProcessorReferences = new List<MatchProcessorReference>();
-
-            if (nonInlineReferences != null)
-            {
-                matchProcessorReferences.AddRange(nonInlineReferences);
-            }
-
-            foreach (var parameter in parsedTemplate.Parameters)
-            {
-                if (parameter.InlineConstraints != null)
-                {
-                    foreach (var constraint in parameter.InlineConstraints)
-                    {
-                        matchProcessorReferences.Add(
-                            new MatchProcessorReference(
-                                parameter.Name,
-                                optional: parameter.IsOptional,
-                                constraintText: constraint.Constraint));
-                    }
-                }
-            }
-            return matchProcessorReferences;
         }
     }
 }

@@ -17,20 +17,20 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 {
     internal class TreeMatcher : Matcher
     {
-        private readonly MatchProcessorFactory _matchProcessorFactory;
+        private readonly IInlineConstraintResolver _constraintFactory;
         private readonly ILogger _logger;
         private readonly EndpointSelector _endpointSelector;
         private readonly DataSourceDependantCache<UrlMatchingTree[]> _cache;
 
         public TreeMatcher(
-            MatchProcessorFactory matchProcessorFactory,
+            IInlineConstraintResolver constraintFactory,
             ILogger logger,
             EndpointDataSource dataSource,
             EndpointSelector endpointSelector)
         {
-            if (matchProcessorFactory == null)
+            if (constraintFactory == null)
             {
-                throw new ArgumentNullException(nameof(matchProcessorFactory));
+                throw new ArgumentNullException(nameof(constraintFactory));
             }
 
             if (logger == null)
@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                 throw new ArgumentNullException(nameof(dataSource));
             }
 
-            _matchProcessorFactory = matchProcessorFactory;
+            _constraintFactory = constraintFactory;
             _logger = logger;
             _endpointSelector = endpointSelector;
             _cache = new DataSourceDependantCache<UrlMatchingTree[]>(dataSource, CreateTrees);
@@ -79,7 +79,6 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                     foreach (var item in node.Matches)
                     {
                         var entry = item.Entry;
-                        var tagData = (InboundEntryTagData)entry.Tag;
                         var matcher = item.TemplateMatcher;
 
                         values.Clear();
@@ -90,12 +89,12 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 
                         Log.MatchedTemplate(_logger, httpContext, entry.RouteTemplate);
 
-                        if (!MatchConstraints(httpContext, values, tagData.MatchProcessors))
+                        if (!MatchConstraints(httpContext, values, entry.Constraints))
                         {
                             continue;
                         }
 
-                        SelectEndpoint(httpContext, feature, tagData.Endpoints);
+                        SelectEndpoint(httpContext, feature, (MatcherEndpoint[])entry.Tag);
 
                         if (feature.Endpoint != null)
                         {
@@ -124,14 +123,18 @@ namespace Microsoft.AspNetCore.Routing.Matchers
         private bool MatchConstraints(
             HttpContext httpContext,
             RouteValueDictionary values,
-            IList<MatchProcessor> matchProcessors)
+            IDictionary<string, IRouteConstraint> constraints)
         {
-            if (matchProcessors != null)
+            if (constraints != null)
             {
-                foreach (var processor in matchProcessors)
+                foreach (var kvp in constraints)
                 {
-                    if (!processor.ProcessInbound(httpContext, values))
+                    var constraint = kvp.Value;
+                    if (!constraint.Match(httpContext, new DummyRouter(), kvp.Key, values, RouteDirection.IncomingRequest))
                     {
+                        values.TryGetValue(kvp.Key, out var value);
+
+                        Log.ConstraintFailed(_logger, value, kvp.Key, kvp.Value);
                         return false;
                     }
                 }
@@ -220,7 +223,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             return trees.ToArray();
         }
 
-        private InboundRouteEntry MapInbound(RouteTemplate template, MatcherEndpoint[] endpoints, int order)
+        private InboundRouteEntry MapInbound(RouteTemplate template, Endpoint[] endpoints, int order)
         {
             if (template == null)
             {
@@ -232,24 +235,27 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                 Precedence = RoutePrecedence.ComputeInbound(template),
                 RouteTemplate = template,
                 Order = order,
+                Tag = endpoints,
             };
 
-            // Since all endpoints within a group are expected to have same template and same constraints,
-            // get the first endpoint which has the processor references
-            var endpoint = endpoints[0];
-
-            var matchProcessors = new List<MatchProcessor>();
-            foreach (var matchProcessorReference in endpoint.MatchProcessorReferences)
+            var constraintBuilder = new RouteConstraintBuilder(_constraintFactory, template.TemplateText);
+            foreach (var parameter in template.Parameters)
             {
-                var matchProcessor = _matchProcessorFactory.Create(matchProcessorReference);
-                matchProcessors.Add(matchProcessor);
+                if (parameter.InlineConstraints != null)
+                {
+                    if (parameter.IsOptional)
+                    {
+                        constraintBuilder.SetOptional(parameter.Name);
+                    }
+
+                    foreach (var constraint in parameter.InlineConstraints)
+                    {
+                        constraintBuilder.AddResolvedConstraint(parameter.Name, constraint.Constraint);
+                    }
+                }
             }
 
-            entry.Tag = new InboundEntryTagData()
-            {
-                Endpoints = endpoints,
-                MatchProcessors = matchProcessors,
-            };
+            entry.Constraints = constraintBuilder.Build();
 
             entry.Defaults = new RouteValueDictionary();
             foreach (var parameter in entry.RouteTemplate.Parameters)
@@ -343,12 +349,6 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             {
                 _matchedTemplate(logger, template.TemplateText, httpContext.Request.Path, null);
             }
-        }
-
-        private class InboundEntryTagData
-        {
-            public MatcherEndpoint[] Endpoints { get; set; }
-            public List<MatchProcessor> MatchProcessors { get; set; }
         }
     }
 }

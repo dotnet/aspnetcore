@@ -34,14 +34,13 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             }
 
             return new MatcherEndpoint(
-                (next) => (context) => Task.CompletedTask,
-                template,
-                new RouteValueDictionary(),
-                new RouteValueDictionary(),
-                new List<MatchProcessorReference>(),
-                0,
-                EndpointMetadataCollection.Empty,
-                template);
+               (next) => (context) => Task.CompletedTask,
+               template,
+               new RouteValueDictionary(),
+               new RouteValueDictionary(),
+               0,
+               new EndpointMetadataCollection(metadata),
+               template);
         }
 
         internal static  int[] SampleRequests(int endpointCount, int count)

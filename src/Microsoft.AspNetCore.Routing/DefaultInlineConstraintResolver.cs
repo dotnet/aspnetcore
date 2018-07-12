@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.Routing
             }
         }
 
-        internal static IRouteConstraint CreateConstraint(Type constraintType, string argumentString)
+        private static IRouteConstraint CreateConstraint(Type constraintType, string argumentString)
         {
             // No arguments - call the default constructor
             if (argumentString == null)
