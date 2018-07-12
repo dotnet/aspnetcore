@@ -32,6 +32,11 @@ namespace Microsoft.AspNetCore.Routing
         public async Task Invoke(HttpContext httpContext)
         {
             var feature = httpContext.Features.Get<IEndpointFeature>();
+            if (feature == null)
+            {
+                throw new InvalidOperationException("Unable to execute an endpoint because the dispatcher was not run. Ensure dispatcher middleware is registered.");
+            }
+
             if (feature.Invoker != null)
             {
                 Log.ExecutingEndpoint(_logger, feature.Endpoint);
