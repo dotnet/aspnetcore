@@ -1,4 +1,10 @@
 {
+    "adx-nonshipping": {
+        "rules": [],
+        "packages": {
+            "Microsoft.Extensions.Buffers.Testing.Sources": {}
+        }
+    },
     "Default": {
         "rules": [
             "DefaultCompositeRule"

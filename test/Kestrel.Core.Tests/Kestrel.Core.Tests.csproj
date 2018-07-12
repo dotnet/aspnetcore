@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <Compile Include="..\shared\**\*.cs" />
+    <Compile Include="..\..\shared\Microsoft.Extensions.Buffers.Testing.Sources\*.cs" />
     <Content Include="..\shared\TestCertificates\*.pfx" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
