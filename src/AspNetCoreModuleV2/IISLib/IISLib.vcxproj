@@ -187,7 +187,7 @@
     <ClInclude Include="treehash.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="acache.cxx" />
+    <ClCompile Include="acache.cpp" />
     <ClCompile Include="ahutil.cpp" />
     <ClCompile Include="base64.cpp" />
     <ClCompile Include="multisz.cpp" />
@@ -196,7 +196,7 @@
     <ClCompile Include="stringa.cpp" />
     <ClCompile Include="stringu.cpp" />
     <ClCompile Include="tracelog.c" />
-    <ClCompile Include="util.cxx" />
+    <ClCompile Include="util.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

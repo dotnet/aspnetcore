@@ -1,5 +1,5 @@
 // dllmain.cpp : Defines the entry point for the DLL application.
-#include "precomp.hxx"
+
 #include <IPHlpApi.h>
 #include <VersionHelpers.h>
 

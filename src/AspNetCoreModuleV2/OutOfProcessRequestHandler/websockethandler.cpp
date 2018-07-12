@@ -27,7 +27,7 @@ This prevents the need for data buffering at the Asp.Net Core Module level.
 
 --*/
 
-#include "..\precomp.hxx"
+#include "websockethandler.h"
 
 SRWLOCK WEBSOCKET_HANDLER::sm_RequestsListLock;
 

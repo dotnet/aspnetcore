@@ -217,7 +217,7 @@
   <ItemGroup>
     <ClCompile Include="debugutil.cpp" />
     <ClCompile Include="Environment.cpp" />
-    <ClCompile Include="fx_ver.cxx" />
+    <ClCompile Include="fx_ver.cpp" />
     <ClCompile Include="GlobalVersionUtility.cpp" />
     <ClCompile Include="HandleWrapper.cpp" />
     <ClCompile Include="hostfxr_utility.cpp" />
@@ -231,7 +231,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="utility.cxx" />
+    <ClCompile Include="utility.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\IISLib\IISLib.vcxproj">

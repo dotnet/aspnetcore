@@ -3,8 +3,6 @@
 
 #pragma once
 
-#include "precomp.hxx"
-
 class ENVIRONMENT_VAR_HELPERS
 {
 

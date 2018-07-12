@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
-#include "..\precomp.hxx"
+#include "winhttphelper.h"
 
 PFN_WINHTTP_WEBSOCKET_COMPLETE_UPGRADE
 WINHTTP_HELPER::sm_pfnWinHttpWebSocketCompleteUpgrade;
