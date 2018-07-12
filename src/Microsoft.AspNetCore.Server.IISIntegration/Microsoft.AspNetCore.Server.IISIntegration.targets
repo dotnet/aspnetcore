@@ -1,0 +1,7 @@
+<Project>
+
+  <PropertyGroup>
+    <AspNetCoreModuleVersion Condition=" '$(AspNetCoreModuleVersion)' == '' ">V2</AspNetCoreModuleVersion>
+  </PropertyGroup>
+
+</Project>

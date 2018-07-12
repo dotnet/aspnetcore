@@ -23,6 +23,7 @@
     <PackageReference Include="Microsoft.AspNetCore.HttpOverrides" Version="$(MicrosoftAspNetCoreHttpOverridesPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="$(MicrosoftExtensionsLoggingAbstractionsPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="$(MicrosoftExtensionsOptionsPackageVersion)" />
+    <Content Include="$(PackageId).targets" PackagePath="build/$(TargetFramework)/" />
   </ItemGroup>
 
 </Project>
