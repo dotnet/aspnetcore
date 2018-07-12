@@ -13,10 +13,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Connections.Abstractions\Connections.Abstractions.csproj" />
+    <Compile Include="..\shared\ThrowHelper.cs" />
   </ItemGroup>
+
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Buffers.Sources" Version="$(MicrosoftExtensionsBuffersSourcesPackageVersion)" PrivateAssets="All" />
+    <ProjectReference Include="..\Connections.Abstractions\Connections.Abstractions.csproj" />
   </ItemGroup>
 
 </Project>
