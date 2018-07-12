@@ -4,7 +4,7 @@
   </PropertyGroup>
 
   <!-- These package versions may be overridden or updated by automation. -->
-  <PropertyGroup Label="Package Versions: Auto" />
+  <PropertyGroup Label="Package Versions: Auto">
     <InternalAspNetCoreSdkPackageVersion>2.1.3-rtm-15802</InternalAspNetCoreSdkPackageVersion>
     <MicrosoftAspNetCoreAuthenticationCookiesPackageVersion>2.1.1</MicrosoftAspNetCoreAuthenticationCookiesPackageVersion>
     <MicrosoftAspNetCoreAuthenticationFacebookPackageVersion>2.1.1</MicrosoftAspNetCoreAuthenticationFacebookPackageVersion>
