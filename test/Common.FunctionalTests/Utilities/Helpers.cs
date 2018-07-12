@@ -52,41 +52,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             config.Save(webConfigFile);
         }
 
-        public static void AddDebugLogToWebConfig(string contentRoot, string filename)
-        {
-            var path = Path.Combine(contentRoot, "web.config");
-            var webconfig = XDocument.Load(path);
-            var xElement = webconfig.Descendants("aspNetCore").Single();
-
-            var element = xElement.Descendants("handlerSettings").SingleOrDefault();
-            if (element == null)
-            {
-                element = new XElement("handlerSettings");
-                xElement.Add(element);
-            }
-
-            CreateOrSetElement(element, "debugLevel", "4");
-
-            CreateOrSetElement(element, "debugFile", Path.Combine(contentRoot, filename));
-
-            webconfig.Save(path);
-        }
-
-        private static void CreateOrSetElement(XElement rootElement, string name, string value)
-        {
-            if (rootElement.Descendants()
-                .Attributes()
-                .Where(attribute => attribute.Value == name)
-                .Any())
-            {
-                return;
-            }
-            var element = new XElement("handlerSetting");
-            element.SetAttributeValue("name", name);
-            element.SetAttributeValue("value", value);
-            rootElement.Add(element);
-        }
-
         // Defaults to inprocess specific deployment parameters
         public static DeploymentParameters GetBaseDeploymentParameters(string site = null, HostingModel hostingModel = HostingModel.InProcess, bool publish = false)
         {

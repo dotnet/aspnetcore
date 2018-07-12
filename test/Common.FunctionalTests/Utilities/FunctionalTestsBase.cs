@@ -25,16 +25,12 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 parameters.EnvironmentVariables[DebugEnvironmentVariable] = "4";
             }
 
-            if (parameters.ServerType == ServerType.IIS)
-            {
-                // Currently hosting throws if the Servertype = IIS.
-                _deployer = new IISDeployer(parameters, LoggerFactory);
-            }
-            else if (parameters.ServerType == ServerType.IISExpress)
+            if (parameters.ServerType == ServerType.IISExpress)
             {
                 parameters.ServerConfigTemplateContent = parameters.ServerConfigTemplateContent ?? File.ReadAllText("IISExpress.config");
-                _deployer = new IISExpressDeployer(parameters, LoggerFactory);
             }
+
+            _deployer = IISApplicationDeployerFactory.Create(parameters, LoggerFactory);
 
             var result = await _deployer.DeployAsync();
 

@@ -3,12 +3,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Net.Http;
 using System.Threading;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging.Testing;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
@@ -36,15 +34,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             _forwardingProvider = new ForwardingProvider();
             var loggerFactory = logging.CreateLoggerFactory(null, nameof(IISTestSiteFixture));
             loggerFactory.AddProvider(_forwardingProvider);
-            if (deploymentParameters.ServerType == ServerType.IIS)
-            {
-                // Currently hosting throws if the Servertype = IIS.
-                _deployer = new IISDeployer(deploymentParameters, loggerFactory);
-            }
-            else if (deploymentParameters.ServerType == ServerType.IISExpress)
-            {
-                _deployer = new IISExpressDeployer(deploymentParameters, loggerFactory);
-            }
+
+            _deployer = IISApplicationDeployerFactory.Create(deploymentParameters, loggerFactory);
 
             DeploymentResult = _deployer.DeployAsync().Result;
             Client = DeploymentResult.HttpClient;

@@ -8,7 +8,6 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
 using Microsoft.Web.Administration;
 
@@ -72,7 +71,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
 
                 if (_deploymentParameters.ApplicationType == ApplicationType.Portable)
                 {
-                    ModifyAspNetCoreSectionInWebConfig("processPath", DotNetMuxer.MuxerPathOrDefault());
+                    ModifyAspNetCoreSectionInWebConfig("processPath", DotNetCommands.GetDotNetExecutable(_deploymentParameters.RuntimeArchitecture));
                 }
 
                 _serverManager.CommitChanges();

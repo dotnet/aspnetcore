@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Testing.xunit;
-using Microsoft.Extensions.CommandLineUtils;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -17,7 +16,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 {
     public class StartupTests : IISFunctionalTestBase
     {
-        private readonly string _dotnetLocation = DotNetMuxer.MuxerPathOrDefault();
+        private readonly string _dotnetLocation = DotNetCommands.GetDotNetExecutable(RuntimeArchitecture.x64);
 
         public StartupTests(ITestOutputHelper output) : base(output)
         {

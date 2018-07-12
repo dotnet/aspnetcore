@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
+using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging;
 using Xunit;
@@ -104,7 +105,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 deploymentParameters.EnvironmentVariables["ASPNETCORE_MODULE_DEBUG_FILE"] = firstTempFile;
 
                 var deploymentResult = await DeployAsync(deploymentParameters);
-                Helpers.AddDebugLogToWebConfig(deploymentParameters.PublishedApplicationRootPath, secondTempFile);
+                WebConfigHelpers.AddDebugLogToWebConfig(deploymentParameters.PublishedApplicationRootPath, secondTempFile);
 
                 var response = await deploymentResult.RetryingHttpClient.GetAsync("/");
 
