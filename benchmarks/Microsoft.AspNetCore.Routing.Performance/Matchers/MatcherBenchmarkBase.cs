@@ -2,10 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing.EndpointConstraints;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Routing.Matchers
@@ -23,15 +25,21 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             return services.BuildServiceProvider();
         }
 
-        internal static MatcherEndpoint CreateEndpoint(string template)
+        internal static MatcherEndpoint CreateEndpoint(string template, string httpMethod = null)
         {
+            var metadata = new List<object>();
+            if (httpMethod != null)
+            {
+                metadata.Add(new HttpMethodEndpointConstraint(new string[] { httpMethod, }));
+            }
+
             return new MatcherEndpoint(
                (next) => (context) => Task.CompletedTask,
                template,
                new RouteValueDictionary(),
                new RouteValueDictionary(),
                0,
-               EndpointMetadataCollection.Empty,
+               new EndpointMetadataCollection(metadata),
                template);
         }
 
