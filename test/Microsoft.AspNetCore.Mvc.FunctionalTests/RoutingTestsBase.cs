@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Routing;
 using Newtonsoft.Json;
@@ -18,53 +19,20 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
     {
         protected RoutingTestsBase(MvcTestFixture<TStartup> fixture)
         {
-            Client = fixture.CreateDefaultClient();
+            var factory = fixture.Factories.FirstOrDefault() ?? fixture.WithWebHostBuilder(ConfigureWebHostBuilder);
+            Client = factory.CreateDefaultClient();
         }
+
+        private static void ConfigureWebHostBuilder(IWebHostBuilder builder) =>
+            builder.UseStartup<TStartup>();
 
         public HttpClient Client { get; }
 
         [Fact]
-        public async Task RouteData_Routers_ConventionalRoute()
-        {
-            // Arrange & Act
-            var response = await Client.GetAsync("http://localhost/RouteData/Conventional");
-
-            // Assert
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-
-            var body = await response.Content.ReadAsStringAsync();
-            var result = JsonConvert.DeserializeObject<ResultData>(body);
-
-            Assert.Equal(
-                new string[]
-                {
-                    typeof(RouteCollection).FullName,
-                    typeof(Route).FullName,
-                    typeof(MvcRouteHandler).FullName,
-                },
-                result.Routers);
-        }
+        public abstract Task RouteData_Routers_ConventionalRoute();
 
         [Fact]
-        public async Task RouteData_Routers_AttributeRoute()
-        {
-            // Arrange & Act
-            var response = await Client.GetAsync("http://localhost/RouteData/Attribute");
-
-            // Assert
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-
-            var body = await response.Content.ReadAsStringAsync();
-            var result = JsonConvert.DeserializeObject<ResultData>(body);
-
-            Assert.Equal(new string[]
-                {
-                    typeof(RouteCollection).FullName,
-                    typeof(AttributeRoute).FullName,
-                    typeof(MvcAttributeRouteHandler).FullName,
-                },
-                result.Routers);
-        }
+        public abstract Task RouteData_Routers_AttributeRoute();
 
         // Verifies that components in the MVC pipeline can modify datatokens
         // without impacting any static data.
@@ -95,7 +63,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Single(result.DataTokens, kvp => kvp.Key == "actionName" && ((string)kvp.Value) == "Conventional");
         }
 
-        private class ResultData
+        protected class ResultData
         {
             public Dictionary<string, object> DataTokens { get; set; }
 
