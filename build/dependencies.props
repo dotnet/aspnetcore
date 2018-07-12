@@ -4,7 +4,7 @@
   </PropertyGroup>
 
   <!-- These package versions may be overridden or updated by automation. -->
-  <PropertyGroup Label="Package Versions: Auto" />
+  <PropertyGroup Label="Package Versions: Auto">
     <MicrosoftAspNetCoreAllPackageVersion>2.1.2</MicrosoftAspNetCoreAllPackageVersion>
     <MicrosoftAspNetCoreAspNetCoreModulePackageVersion>2.1.1</MicrosoftAspNetCoreAspNetCoreModulePackageVersion>
     <MicrosoftAspNetCoreAuthenticationCookiesPackageVersion>2.1.1</MicrosoftAspNetCoreAuthenticationCookiesPackageVersion>
