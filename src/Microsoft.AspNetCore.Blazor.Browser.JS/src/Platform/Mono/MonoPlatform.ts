@@ -188,7 +188,10 @@ function addScriptTagsToDocument() {
     meminitXHR.send(null);
   }
 
-  document.write(`<script defer src="${monoRuntimeScriptUrl}"></script>`);
+  const scriptElem = document.createElement('script');
+  scriptElem.src = monoRuntimeScriptUrl;
+  scriptElem.defer = true;
+  document.body.appendChild(scriptElem);
 }
 
 function createEmscriptenModuleInstance(loadAssemblyUrls: string[], onReady: () => void, onError: (reason?: any) => void) {

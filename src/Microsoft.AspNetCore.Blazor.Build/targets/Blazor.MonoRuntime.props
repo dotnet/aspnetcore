@@ -21,8 +21,8 @@
     <BaseBlazorJsOutputPath>$(BaseBlazorRuntimeOutputPath)</BaseBlazorJsOutputPath>
     <BaseBlazorIntermediateOutputPath>blazor/</BaseBlazorIntermediateOutputPath>
     <BlazorWebRootName>wwwroot/</BlazorWebRootName>
-    <BlazorIndexHtmlName>Index.html</BlazorIndexHtmlName>
-    <BlazorOutputIndexHtmlName>$(BlazorIndexHtmlName.ToLowerInvariant())</BlazorOutputIndexHtmlName>
+    <BlazorBootJsonName>blazor.boot.json</BlazorBootJsonName>
+    <BlazorBootJsonOutputPath>$(BaseBlazorRuntimeOutputPath)$(BlazorBootJsonName)</BlazorBootJsonOutputPath>
   </PropertyGroup>
 
   <ItemGroup>

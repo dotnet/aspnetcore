@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Blazor.Build.Cli.Commands;
@@ -15,9 +15,9 @@ namespace Microsoft.AspNetCore.Blazor.Build
                 Name = "Microsoft.AspNetCore.Blazor.Build"
             };
             app.HelpOption("-?|-h|--help");
-            
-            app.Command("build", BuildIndexHtmlCommand.Command);
+
             app.Command("resolve-dependencies", ResolveRuntimeDependenciesCommand.Command);
+            app.Command("write-boot-json", WriteBootJsonCommand.Command);
 
             if (args.Length > 0)
             {

@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Net.Http.Headers;
 using System.Net.Mime;
 using System;
+using System.IO;
 
 namespace Microsoft.AspNetCore.Builder
 {
@@ -48,12 +49,6 @@ namespace Microsoft.AspNetCore.Builder
             // hence all the path manipulation here. We shouldn't be hardcoding 'dist' here either.
             var env = (IHostingEnvironment)app.ApplicationServices.GetService(typeof(IHostingEnvironment));
             var config = BlazorConfig.Read(options.ClientAssemblyPath);
-            var distDirStaticFiles = new StaticFileOptions
-            {
-                FileProvider = new PhysicalFileProvider(config.DistPath),
-                ContentTypeProvider = CreateContentTypeProvider(config.EnableDebugging),
-                OnPrepareResponse = SetCacheHeaders
-            };
 
             if (env.IsDevelopment() && config.EnableAutoRebuilding)
             {
@@ -68,15 +63,21 @@ namespace Microsoft.AspNetCore.Builder
             }
 
             // First, match the request against files in the client app dist directory
-            app.UseStaticFiles(distDirStaticFiles);
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                FileProvider = new PhysicalFileProvider(config.DistPath),
+                ContentTypeProvider = CreateContentTypeProvider(config.EnableDebugging),
+                OnPrepareResponse = SetCacheHeaders
+            });
 
-            // Next, match the request against static files in wwwroot
+            // * Before publishing, we serve the wwwroot files directly from source
+            //   (and don't require them to be copied into dist).
+            //   In this case, WebRootPath will be nonempty if that directory exists.
+            // * After publishing, the wwwroot files are already copied to 'dist' and
+            //   will be served by the above middleware, so we do nothing here.
+            //   In this case, WebRootPath will be empty (the publish process sets this).
             if (!string.IsNullOrEmpty(config.WebRootPath))
             {
-                // In development, we serve the wwwroot files directly from source
-                // (and don't require them to be copied into dist).
-                // TODO: When publishing is implemented, have config.WebRootPath set
-                // to null so that it only serves files that were copied to dist
                 app.UseStaticFiles(new StaticFileOptions
                 {
                     FileProvider = new PhysicalFileProvider(config.WebRootPath),
@@ -94,11 +95,46 @@ namespace Microsoft.AspNetCore.Builder
             // excluding /_framework/*)
             app.MapWhen(IsNotFrameworkDir, childAppBuilder =>
             {
+                var indexHtmlPath = FindIndexHtmlFile(config);
+                var indexHtmlStaticFileOptions = string.IsNullOrEmpty(indexHtmlPath)
+                    ? null : new StaticFileOptions
+                    {
+                        FileProvider = new PhysicalFileProvider(Path.GetDirectoryName(indexHtmlPath)),
+                        OnPrepareResponse = SetCacheHeaders
+                    };
+
                 childAppBuilder.UseSpa(spa =>
                 {
-                    spa.Options.DefaultPageStaticFileOptions = distDirStaticFiles;
+                    spa.Options.DefaultPageStaticFileOptions = indexHtmlStaticFileOptions;
                 });
             });
+        }
+
+        private static string FindIndexHtmlFile(BlazorConfig config)
+        {
+            // Before publishing, the client project may have a wwwroot directory.
+            // If so, and if it contains index.html, use that.
+            if (!string.IsNullOrEmpty(config.WebRootPath))
+            {
+                var wwwrootIndexHtmlPath = Path.Combine(config.WebRootPath, "index.html");
+                if (File.Exists(wwwrootIndexHtmlPath))
+                {
+                    return wwwrootIndexHtmlPath;
+                }
+            }
+
+            // After publishing, the client project won't have a wwwroot directory.
+            // The contents from that dir will have been copied to "dist" during publish.
+            // So if "dist/index.html" now exists, use that.
+            var distIndexHtmlPath = Path.Combine(config.DistPath, "index.html");
+            if (File.Exists(distIndexHtmlPath))
+            {
+                return distIndexHtmlPath;
+            }
+
+            // Since there's no index.html, we'll use the default DefaultPageStaticFileOptions,
+            // hence we'll look for index.html in the host server app's wwwroot.
+            return null;
         }
 
         private static void SetCacheHeaders(StaticFileResponseContext ctx)

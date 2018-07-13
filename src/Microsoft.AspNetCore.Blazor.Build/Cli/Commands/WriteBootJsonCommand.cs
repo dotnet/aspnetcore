@@ -1,20 +1,16 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.Extensions.CommandLineUtils;
 using System;
 using System.IO;
-using Microsoft.Extensions.CommandLineUtils;
 
 namespace Microsoft.AspNetCore.Blazor.Build.Cli.Commands
 {
-    internal class BuildIndexHtmlCommand
+    internal class WriteBootJsonCommand
     {
         public static void Command(CommandLineApplication command)
         {
-            var clientPage = command.Option("--html-page",
-                "Path to the HTML Page containing the Blazor bootstrap script tag.",
-                CommandOptionType.SingleValue);
-
             var referencesFile = command.Option("--references",
                 "The path to a file that lists the paths to given referenced dll files",
                 CommandOptionType.SingleValue);
@@ -36,8 +32,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Cli.Commands
 
             command.OnExecute(() =>
             {
-                if (string.IsNullOrEmpty(mainAssemblyPath.Value) ||
-                    !clientPage.HasValue() || !outputPath.HasValue())
+                if (string.IsNullOrEmpty(mainAssemblyPath.Value) || !outputPath.HasValue())
                 {
                     command.ShowHelp(command.Name);
                     return 1;
@@ -53,8 +48,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Cli.Commands
                         ? File.ReadAllLines(embeddedResourcesFile.Value())
                         : Array.Empty<string>();
 
-                    IndexHtmlWriter.UpdateIndex(
-                        clientPage.Value(),
+                    BootJsonWriter.WriteFile(
                         mainAssemblyPath.Value,
                         referencesSources,
                         embeddedResourcesSources,

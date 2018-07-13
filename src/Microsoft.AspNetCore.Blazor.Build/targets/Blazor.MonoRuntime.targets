@@ -5,7 +5,8 @@
     DependsOnTargets="PrepareBlazorOutputs"
     Inputs="@(BlazorItemOutput)"
     Outputs="@(BlazorItemOutput->'%(TargetOutputPath)')"
-    AfterTargets="CopyFilesToOutputDirectory">
+    AfterTargets="CopyFilesToOutputDirectory"
+    Condition="'$(OutputType.ToLowerInvariant())'=='exe'">
 
     <!-- Copy the blazor output files  -->
     <Copy
@@ -63,7 +64,7 @@
             _ReadResolvedBlazorApplicationAssemblies
             _IntermediateCopyBlazorApplicationAssemblies
             _TouchBlazorApplicationAssemblies
-      _GenerateBlazorIndexHtml
+      _GenerateBlazorBootJson
     _BlazorCopyFilesToOutputDirectory
 
     The process for doing builds goes as follows:
@@ -89,11 +90,11 @@
        that updated versions of the files get copied to the output folder.
 
     Once the binary outputs are resolved:
-    1) Create a marker file with the resolved assemblies and the index html file as inputs.
-    2) If the marker file is newer than the index.html in the output folder, regenerate the
-       index.html
+    1) Create a marker file with the resolved assemblies and the boot json data as inputs.
+    2) If the marker file is newer than the boot json in the output folder, regenerate the
+       boot json
 
-    Once all the outputs are resolved (static content + binary outputs + index.html)
+    Once all the outputs are resolved (static content + binary outputs + boot json)
     Copy all the files to the output folder.
     -->
 
@@ -102,7 +103,7 @@
       _PrepareBlazorOutputConfiguration;
       _DefineBlazorCommonInputs;
       _BlazorResolveOutputBinaries;
-      _GenerateBlazorIndexHtml;
+      _GenerateBlazorBootJson;
     </PrepareBlazorOutputs>
   </PropertyGroup>
 
@@ -124,8 +125,7 @@
     /_framework/asmjs <- This will contain the asmjs runtime copied from the nuget package.
     /_framework/wasm <- This will contain the wsm runtime copied from the nuget package.
     /_framework/blazor.js <- This is the blazor.js file copied from the nuget package.
-    /index.html <- This is the optional index.html file generated from wwwroot/Index.html in case it's present. It
-    will be canonicalized to index.html
+    /_framework/blazor.boot.json <- This is the boot json file
 
     This task also defines some intermediate paths that we will use:
     /obj/<<configuration>>/<<targetframework>>/blazor/blazor/linker <- This will be used to create the output from the linker.
@@ -145,8 +145,8 @@
     /obj/<<configuration>>/<<targetframework>>/blazor/resolvedassemblies/ <- This will be used to store the resolved assemblies
     before copying them to the output when linking is not enabled.
     /obj/<<configuration>>/<<targetframework>>/blazor/resolved.assemblies.txt <- This keeps track of all the resolved assemblies.
-    /obj/<<configuration>>/<<targetframework>>/blazor/index.html <- The generated index.html with the updated blazor script tag.
-    /obj/<<configuration>>/<<targetframework>>/blazor/inputs.index.cache <- The marker file that track whether index.html needs to
+    /obj/<<configuration>>/<<targetframework>>/blazor/blazor.boot.json <- The generated boot json file
+    /obj/<<configuration>>/<<targetframework>>/blazor/inputs.bootjson.cache <- The marker file that track whether boot json needs to
     be regenerated.
     -->
 
@@ -154,11 +154,6 @@
       <_BlazorShouldLinkApplicationAssemblies Condition="$(BlazorLinkOnBuild) == 'false'"></_BlazorShouldLinkApplicationAssemblies>
       <_BlazorShouldLinkApplicationAssemblies Condition="$(BlazorLinkOnBuild) == 'true'">true</_BlazorShouldLinkApplicationAssemblies>
       <_BlazorBuiltInBclLinkerDescriptor>$(MSBuildThisFileDirectory)BuiltInBclLinkerDescriptor.xml</_BlazorBuiltInBclLinkerDescriptor>
-    </PropertyGroup>
-
-    <PropertyGroup Label="Blazor HTML inputs">
-      <BlazorWebRootPath>$(ProjectDir)$(BlazorWebRootName)</BlazorWebRootPath>
-      <BlazorIndexHtml>$(BlazorWebRootPath)$(BlazorIndexHtmlName)</BlazorIndexHtml>
     </PropertyGroup>
 
     <ItemGroup Label="Static content to copy to the output folder">
@@ -225,22 +220,22 @@
       <!-- /obj/<<configuration>>/<<targetframework>>/blazor/resolved.assemblies.txt -->
       <BlazorResolvedAssembliesOutputPath>$(BlazorIntermediateOutputPath)resolved.assemblies.txt</BlazorResolvedAssembliesOutputPath>
 
-      <!-- Index.html related paths and markers -->
+      <!-- boot json related paths and markers -->
 
       <!-- /obj/<<configuration>>/<<targetframework>>/blazor/ -->
-      <BlazorIndexHtmlOutputDir>$(BlazorIntermediateOutputPath)</BlazorIndexHtmlOutputDir>
+      <BlazorBootJsonIntermediateOutputDir>$(BlazorIntermediateOutputPath)</BlazorBootJsonIntermediateOutputDir>
 
-      <!-- /obj/<<configuration>>/<<targetframework>>/blazor/index.html -->
-      <BlazorIndexHtmlOutputPath>$(BlazorIndexHtmlOutputDir)$(BlazorOutputIndexHtmlName)</BlazorIndexHtmlOutputPath>
+      <!-- /obj/<<configuration>>/<<targetframework>>/blazor/blazor.boot.json -->
+      <BlazorBootJsonIntermediateOutputPath>$(BlazorBootJsonIntermediateOutputDir)$(BlazorBootJsonName)</BlazorBootJsonIntermediateOutputPath>
 
-      <!-- /obj/<<configuration>>/<<targetframework>>/blazor/inputs.index.cache -->
-      <BlazorBuildIndexInputsCache>$(BlazorIntermediateOutputPath)inputs.index.cache</BlazorBuildIndexInputsCache>
+      <!-- /obj/<<configuration>>/<<targetframework>>/blazor/inputs.bootjson.cache -->
+      <BlazorBuildBootJsonInputsCache>$(BlazorIntermediateOutputPath)inputs.bootjson.cache</BlazorBuildBootJsonInputsCache>
 
       <!-- /obj/<<configuration>>/<<targetframework>>/blazor/resolve-dependencies.txt -->
       <BlazorResolveDependenciesFilePath>$(BlazorIntermediateOutputPath)resolve-dependencies.txt</BlazorResolveDependenciesFilePath>
 
-      <!-- /obj/<<configuration>>/<<targetframework>>/blazor/indexhtml-references.txt -->
-      <BlazorIndexHtmlReferencesFilePath>$(BlazorIntermediateOutputPath)indexhtml-references.txt</BlazorIndexHtmlReferencesFilePath>
+      <!-- /obj/<<configuration>>/<<targetframework>>/blazor/bootjson-references.txt -->
+      <BlazorBootJsonReferencesFilePath>$(BlazorIntermediateOutputPath)bootjson-references.txt</BlazorBootJsonReferencesFilePath>
 
       <!-- /obj/<<configuration>>/<<targetframework>>/blazor/embedded.resources.txt -->
       <BlazorEmbeddedResourcesConfigFilePath>$(BlazorIntermediateOutputPath)embedded.resources.txt</BlazorEmbeddedResourcesConfigFilePath>
@@ -586,36 +581,35 @@
   Final part of the build pipeline:
 
   * Collect the blazor application assemblies to be copied to the output and create a marker file.
-  * Call our CLI tool to generate the index html if the list of assemblies has changed.
+  * Call our CLI tool to generate the boot json if the list of assemblies has changed.
   -->
 
-  <Target Name="_ResolveBlazorIndexHtmlInputs">
+  <Target Name="_ResolveBlazorBootJsonInputs">
     <ItemGroup>
-      <BlazorIndexHtmlInput Include="$(BlazorIndexHtml)" />
-      <BlazorIndexHtmlInput Include="$(Configuration)" />
-      <BlazorIndexHtmlInput Include="@(BlazorItemOutput->WithMetadataValue('Type','Assembly')->'%(FullPath)')" />
-      <BlazorIndexHtmlInput Include="@(BlazorItemOutput->WithMetadataValue('Type','Pdb')->'%(FullPath)')" />
-      <BlazorIndexHtmlInput Include="@(_BlazorLinkingOption)" />
-      <BlazorIndexHtmlInput Include="$(BlazorEnableDebugging)" />
+      <BlazorBootJsonInput Include="$(Configuration)" />
+      <BlazorBootJsonInput Include="@(BlazorItemOutput->WithMetadataValue('Type','Assembly')->'%(FullPath)')" />
+      <BlazorBootJsonInput Include="@(BlazorItemOutput->WithMetadataValue('Type','Pdb')->'%(FullPath)')" />
+      <BlazorBootJsonInput Include="@(_BlazorLinkingOption)" />
+      <BlazorBootJsonInput Include="$(BlazorEnableDebugging)" />
     </ItemGroup>
 
     <WriteLinesToFile
-      File="$(BlazorBuildIndexInputsCache)"
-      Lines="@(BlazorIndexHtmlInput)"
+      File="$(BlazorBuildBootJsonInputsCache)"
+      Lines="@(BlazorBootJsonInput)"
       Overwrite="true"
       WriteOnlyWhenDifferent="True" />
 
     <ItemGroup>
-      <FileWrites Include="$(BlazorBuildIndexInputsCache)" />
+      <FileWrites Include="$(BlazorBuildBootJsonInputsCache)" />
     </ItemGroup>
 
   </Target>
 
   <Target
-    Name="_GenerateBlazorIndexHtml"
-    DependsOnTargets="_ResolveBlazorIndexHtmlInputs"
-    Inputs="$(BlazorBuildIndexInputsCache);$(BlazorIndexHtml);@(_BlazorDependencyInput)"
-    Outputs="$(BlazorIndexHtmlOutputPath)">
+    Name="_GenerateBlazorBootJson"
+    DependsOnTargets="_ResolveBlazorBootJsonInputs"
+    Inputs="$(BlazorBuildBootJsonInputsCache);@(_BlazorDependencyInput)"
+    Outputs="$(BlazorBootJsonIntermediateOutputPath)">
     <ItemGroup>
       <_UnlinkedAppReferencesPaths Include="@(_BlazorDependencyInput)" />
       <_AppReferences Include="@(BlazorItemOutput->WithMetadataValue('Type','Assembly')->WithMetadataValue('PrimaryOutput','')->'%(FileName)%(Extension)')" />
@@ -623,12 +617,12 @@
     </ItemGroup>
     <PropertyGroup>
       <_LinkerEnabledFlag Condition="'$(_BlazorShouldLinkApplicationAssemblies)' != ''">--linker-enabled</_LinkerEnabledFlag>
-      <_ReferencesArg Condition="'@(_AppReferences)' != ''">--references &quot;$(BlazorIndexHtmlReferencesFilePath)&quot;</_ReferencesArg>
+      <_ReferencesArg Condition="'@(_AppReferences)' != ''">--references &quot;$(BlazorBootJsonReferencesFilePath)&quot;</_ReferencesArg>
       <_EmbeddedResourcesArg Condition="'@(_UnlinkedAppReferencesPaths)' != ''">--embedded-resources &quot;$(BlazorEmbeddedResourcesConfigFilePath)&quot;</_EmbeddedResourcesArg>
     </PropertyGroup>
 
     <WriteLinesToFile
-      File="$(BlazorIndexHtmlReferencesFilePath)"
+      File="$(BlazorBootJsonReferencesFilePath)"
       Lines="@(_AppReferences)"
       Overwrite="true" />
 
@@ -638,20 +632,20 @@
       Lines="@(_UnlinkedAppReferencesPaths)"
       Overwrite="true" />
 
-    <Exec Command="$(BlazorBuildExe) build @(IntermediateAssembly) --html-page &quot;$(BlazorIndexHtml)&quot; $(_ReferencesArg) $(_EmbeddedResourcesArg) $(_LinkerEnabledFlag) --output &quot;$(BlazorIndexHtmlOutputPath)&quot;" />
+    <Exec Command="$(BlazorBuildExe) write-boot-json @(IntermediateAssembly) $(_ReferencesArg) $(_EmbeddedResourcesArg) $(_LinkerEnabledFlag) --output &quot;$(BlazorBootJsonIntermediateOutputPath)&quot;" />
 
-    <ItemGroup Condition="Exists('$(BlazorIndexHtmlOutputPath)')">
-      <_BlazorIndex Include="$(BlazorIndexHtmlOutputPath)" />
-      <_BlazorIndexEmbeddedContentFile Include="$(BlazorIndexHtmlOutputDir)_content\**\*.*" />
-      <BlazorItemOutput Include="@(_BlazorIndex)">
-        <TargetOutputPath>$(ProjectDir)$(OutputPath)dist/%(FileName)%(Extension)</TargetOutputPath>
-        <Type>EntryPoint</Type>
+    <ItemGroup Condition="Exists('$(BlazorBootJsonIntermediateOutputPath)')">
+      <_BlazorBootJson Include="$(BlazorBootJsonIntermediateOutputPath)" />
+      <_BlazorBootJsonEmbeddedContentFile Include="$(BlazorBootJsonIntermediateOutputDir)_content\**\*.*" />
+      <BlazorItemOutput Include="@(_BlazorBootJson)">
+        <TargetOutputPath>$(ProjectDir)$(OutputPath)$(BlazorBootJsonOutputPath)</TargetOutputPath>
+        <Type>BootJson</Type>
       </BlazorItemOutput>
-      <BlazorItemOutput Include="@(_BlazorIndexEmbeddedContentFile)">
+      <BlazorItemOutput Include="@(_BlazorBootJsonEmbeddedContentFile)">
         <TargetOutputPath>$(ProjectDir)$(OutputPath)dist/_content/%(RecursiveDir)%(FileName)%(Extension)</TargetOutputPath>
       </BlazorItemOutput>
-      <FileWrites Include="$(BlazorIndexHtmlOutputPath)" />
-      <FileWrites Include="@(_BlazorIndexEmbeddedContentFile)" />
+      <FileWrites Include="$(BlazorBootJsonIntermediateOutputPath)" />
+      <FileWrites Include="@(_BlazorBootJsonEmbeddedContentFile)" />
     </ItemGroup>
 
   </Target>

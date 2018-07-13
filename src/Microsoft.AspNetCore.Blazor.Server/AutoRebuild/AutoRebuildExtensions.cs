@@ -16,10 +16,9 @@ namespace Microsoft.AspNetCore.Builder
     internal static class AutoRebuildExtensions
     {
         // Note that we don't need to watch typical static-file extensions (.css, .js, etc.)
-        // because anything in wwwroot is just served directly from disk on each reload. But
-        // as a special case, we do watch index.html because it needs compilation.
+        // because anything in wwwroot is just served directly from disk on each reload.
         // TODO: Make the set of extensions and exclusions configurable in csproj
-        private static string[] _includedSuffixes = new[] { ".cs", ".cshtml", "index.html" };
+        private static string[] _includedSuffixes = new[] { ".cs", ".cshtml" };
         private static string[] _excludedDirectories = new[] { "obj", "bin" };
 
         // To ensure the FileSystemWatchers aren't collected, reference them
