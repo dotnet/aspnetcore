@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Mvc
             var services = new ServiceCollection();
 
             // Register a mock implementation of each service, AddMvcServices should add another implementation.
-            foreach (var serviceType in MutliRegistrationServiceTypes)
+            foreach (var serviceType in MultiRegistrationServiceTypes)
             {
                 var mockType = typeof(Mock<>).MakeGenericType(serviceType.Key);
                 services.Add(ServiceDescriptor.Transient(serviceType.Key, mockType));
@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Mvc
             MvcCoreServiceCollectionExtensions.AddMvcCoreServices(services);
 
             // Assert
-            foreach (var serviceType in MutliRegistrationServiceTypes)
+            foreach (var serviceType in MultiRegistrationServiceTypes)
             {
                 AssertServiceCountEquals(services, serviceType.Key, serviceType.Value.Length + 1);
 
@@ -222,14 +222,14 @@ namespace Microsoft.AspNetCore.Mvc
                 var services = new ServiceCollection();
                 MvcCoreServiceCollectionExtensions.AddMvcCoreServices(services);
 
-                var multiRegistrationServiceTypes = MutliRegistrationServiceTypes;
+                var multiRegistrationServiceTypes = MultiRegistrationServiceTypes;
                 return services
                     .Where(sd => !multiRegistrationServiceTypes.Keys.Contains(sd.ServiceType))
                     .Select(sd => sd.ServiceType);
             }
         }
 
-        private Dictionary<Type, Type[]> MutliRegistrationServiceTypes
+        private Dictionary<Type, Type[]> MultiRegistrationServiceTypes
         {
             get
             {
@@ -311,6 +311,13 @@ namespace Microsoft.AspNetCore.Mvc
                         new Type[]
                         {
                             typeof(MvcEndpointDataSource),
+                        }
+                    },
+                    {
+                        typeof(IStartupFilter),
+                        new Type[]
+                        {
+                            typeof(MiddlewareFilterBuilderStartupFilter)
                         }
                     },
                 };
