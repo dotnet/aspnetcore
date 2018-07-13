@@ -21,6 +21,18 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             string template,
             RouteValueDictionary defaults,
             RouteValueDictionary requiredValues,
+            int order,
+            EndpointMetadataCollection metadata,
+            string displayName)
+            : this(invoker, template, defaults, requiredValues, new List<MatchProcessorReference>(), order, metadata, displayName)
+        {
+        }
+
+        public MatcherEndpoint(
+            Func<RequestDelegate, RequestDelegate> invoker,
+            string template,
+            RouteValueDictionary defaults,
+            RouteValueDictionary requiredValues,
             List<MatchProcessorReference> nonInlineMatchProcessorReferences,
             int order,
             EndpointMetadataCollection metadata,
