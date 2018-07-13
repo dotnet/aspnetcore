@@ -79,9 +79,6 @@ namespace Microsoft.AspNetCore.Builder
 
             VerifyMvcIsRegistered(app);
 
-            var middlewarePipelineBuilder = app.ApplicationServices.GetRequiredService<MiddlewareFilterBuilder>();
-            middlewarePipelineBuilder.ApplicationBuilder = app.New();
-
             var routes = new RouteBuilder(app)
             {
                 DefaultHandler = app.ApplicationServices.GetRequiredService<MvcRouteHandler>(),

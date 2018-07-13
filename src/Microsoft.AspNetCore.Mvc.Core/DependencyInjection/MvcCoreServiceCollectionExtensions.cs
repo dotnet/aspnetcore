@@ -273,6 +273,8 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<MiddlewareFilterConfigurationProvider>();
             // This maintains a cache of middleware pipelines, so it needs to be a singleton
             services.TryAddSingleton<MiddlewareFilterBuilder>();
+            // Sets ApplicationBuilder on MiddlewareFilterBuilder
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<IStartupFilter, MiddlewareFilterBuilderStartupFilter>());
         }
 
         private static void ConfigureDefaultServices(IServiceCollection services)
