@@ -325,28 +325,56 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
             var content = builder.ToString();
 
-            var charactersConsumed = 0;
+            WriteHtmlLiteral(context, MaxStringLiteralLength, content);
+        }
 
-            // Render the string in pieces to avoid Roslyn OOM exceptions at compile time: https://github.com/aspnet/External/issues/54
-            while (charactersConsumed < content.Length)
+        // Internal for testing
+        internal void WriteHtmlLiteral(CodeRenderingContext context, int maxStringLiteralLength, string literal)
+        {
+            if (literal.Length <= maxStringLiteralLength)
             {
-                string textToRender;
-                if (content.Length <= MaxStringLiteralLength)
+                WriteLiteral(literal);
+                return;
+            }
+
+            // String is too large, render the string in pieces to avoid Roslyn OOM exceptions at compile time: https://github.com/aspnet/External/issues/54
+            var charactersConsumed = 0;
+            do
+            {
+                var charactersRemaining = literal.Length - charactersConsumed;
+                var charactersToSubstring = Math.Min(maxStringLiteralLength, charactersRemaining);
+                var lastCharBeforeSplitIndex = charactersConsumed + charactersToSubstring - 1;
+                var lastCharBeforeSplit = literal[lastCharBeforeSplitIndex];
+
+                if (char.IsHighSurrogate(lastCharBeforeSplit))
                 {
-                    textToRender = content;
-                }
-                else
-                {
-                    var charactersToSubstring = Math.Min(MaxStringLiteralLength, content.Length - charactersConsumed);
-                    textToRender = content.Substring(charactersConsumed, charactersToSubstring);
+                    if (charactersRemaining > 1)
+                    {
+                        // Take one less character this iteration. We're attempting to split inbetween a surrogate pair.
+                        // This can happen when something like an emoji sits on the barrier between splits; if we were to 
+                        // split the emoji we'd end up with invalid bytes in our output.
+                        charactersToSubstring--;
+                    }
+                    else
+                    {
+                        // The user has an invalid file with a partial surrogate a the splitting point. 
+                        // We'll let the invalid character flow but we'll explode later on.
+                    }
                 }
 
-                context.CodeWriter
-                    .WriteStartMethodInvocation(WriteHtmlContentMethod)
-                    .WriteStringLiteral(textToRender)
-                    .WriteEndMethodInvocation();
+                var textToRender = literal.Substring(charactersConsumed, charactersToSubstring);
+
+                WriteLiteral(textToRender);
 
                 charactersConsumed += textToRender.Length;
+            } while (charactersConsumed < literal.Length);
+
+            void WriteLiteral(string content)
+            {
+                context.CodeWriter
+                    .WriteStartMethodInvocation(WriteHtmlContentMethod)
+                    .WriteStringLiteral(content)
+                    .WriteEndMethodInvocation();
             }
         }
 
