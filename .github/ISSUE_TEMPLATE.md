@@ -36,6 +36,10 @@ If you believe you have an issue that affects the security of the platform pleas
 
 Tips for opening great bugs:
 
-1.  Try enabling logging (in the most verbose level) and see if the details help you in fixing the issue you are seeing. Share the logs too if it helps in diagnosing the issue faster. More info: https://docs.microsoft.com/en-us/aspnet/core/fundamentals/logging
-
-2.  If you are seeing an exception, include the full exceptions details (message and stack trace). More info: https://docs.microsoft.com/en-us/aspnet/core/fundamentals/error-handling
+1. Try enabling logging (in the most verbose level) and see if the details help you in fixing the issue you are seeing. Share the logs too if it helps in diagnosing the issue faster. More info: https://docs.microsoft.com/en-us/aspnet/core/fundamentals/logging
+2. If you are seeing an exception, include the full exceptions details (message and stack trace). More info: https://docs.microsoft.com/en-us/aspnet/core/fundamentals/error-handling
+3. Please try to include as much information as possible:
+   1. Description of the problem:
+   2. Steps to reproduce (preferrably a link to a GitHub repo with a repro project)
+   3. The version of `Microsoft.AspNetCore.App` or `Microsoft.AspNetCore.All`
+   4. The output of `dotnet --info`
