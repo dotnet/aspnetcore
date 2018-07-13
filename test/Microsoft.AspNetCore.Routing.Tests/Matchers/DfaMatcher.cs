@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             
             for (var i = 0; i < count; i++)
             {
-                current = states[current].Transitions.GetDestination(buffer, i, path);
+                current = states[current].Transitions.GetDestination(path, buffer[i]);
             }
 
             var matches = new List<(Endpoint, RouteValueDictionary)>();
@@ -87,65 +87,6 @@ namespace Microsoft.AspNetCore.Routing.Matchers
         {
             public Endpoint Endpoint;
             public string[] Parameters;
-        }
-
-        public abstract class JumpTable
-        {
-            public unsafe abstract int GetDestination(PathSegment* segments, int depth, string path);
-        }
-
-        public class JumpTableBuilder
-        {
-            private readonly List<(string text, int destination)> _entries = new List<(string text, int destination)>();
-
-            public int Depth { get; set; }
-
-            public int Exit { get; set; }
-
-            public void AddEntry(string text, int destination)
-            {
-                _entries.Add((text, destination));
-            }
-
-            public JumpTable Build()
-            {
-                return new SimpleJumpTable(Depth, Exit, _entries.ToArray());
-            }
-        }
-
-        private class SimpleJumpTable : JumpTable
-        {
-            private readonly (string text, int destination)[] _entries;
-            private readonly int _depth;
-            private readonly int _exit;
-
-            public SimpleJumpTable(int depth, int exit, (string text, int destination)[] entries)
-            {
-                _depth = depth;
-                _exit = exit;
-                _entries = entries;
-            }
-
-            public unsafe override int GetDestination(PathSegment* segments, int depth, string path)
-            {
-                for (var i = 0; i < _entries.Length; i++)
-                {
-                    var segment = segments[depth];
-                    if (segment.Length == _entries[i].text.Length &&
-                        string.Compare(
-                        path,
-                        segment.Start,
-                        _entries[i].text,
-                        0,
-                        segment.Length,
-                        StringComparison.OrdinalIgnoreCase) == 0)
-                    {
-                        return _entries[i].destination;
-                    }
-                }
-
-                return _exit;
-            }
         }
     }
 }
