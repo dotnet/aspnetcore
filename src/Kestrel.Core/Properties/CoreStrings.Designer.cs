@@ -1905,6 +1905,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             => GetString("Http2ErrorInvalidPreface");
 
         /// <summary>
+        /// Header name cannot be a null or empty string.
+        /// </summary>
+        internal static string InvalidEmptyHeaderName
+        {
+            get => GetString("InvalidEmptyHeaderName");
+        }
+
+        /// <summary>
+        /// Header name cannot be a null or empty string.
+        /// </summary>
+        internal static string FormatInvalidEmptyHeaderName()
+            => GetString("InvalidEmptyHeaderName");
+
+        /// <summary>
         /// The connection or stream was aborted because a write operation was aborted with a CancellationToken.
         /// </summary>
         internal static string ConnectionOrStreamAbortedByCancellationToken

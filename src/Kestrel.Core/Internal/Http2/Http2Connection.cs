@@ -147,7 +147,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                                 await ProcessFrameAsync(application);
                             }
                         }
-                        else if (result.IsCompleted)
+
+                        if (result.IsCompleted)
                         {
                             return;
                         }
@@ -254,6 +255,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                             return true;
                         }
                     }
+
                     if (result.IsCompleted)
                     {
                         return false;

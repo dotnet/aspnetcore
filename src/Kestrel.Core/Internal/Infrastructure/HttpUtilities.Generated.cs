@@ -51,7 +51,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             SetKnownMethod(_mask8Chars, _httpConnectMethodLong, HttpMethod.Connect, 7);
             SetKnownMethod(_mask8Chars, _httpOptionsMethodLong, HttpMethod.Options, 7);
             FillKnownMethodsGaps();
-            InitializeHostCharValidity();
             _methodNames[(byte)HttpMethod.Connect] = HttpMethods.Connect;
             _methodNames[(byte)HttpMethod.Delete] = HttpMethods.Delete;
             _methodNames[(byte)HttpMethod.Get] = HttpMethods.Get;
