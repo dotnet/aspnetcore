@@ -1,7 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -15,8 +14,6 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public class ApiConventionAnalyzer : DiagnosticAnalyzer
     {
-        private static readonly Func<SyntaxNode, bool> _shouldDescendIntoChildren = ShouldDescendIntoChildren;
-
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(
             DiagnosticDescriptors.MVC1004_ActionReturnsUndocumentedStatusCode,
             DiagnosticDescriptors.MVC1005_ActionReturnsUndocumentedSuccessResult,
@@ -44,6 +41,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
         {
             compilationStartAnalysisContext.RegisterSyntaxNodeAction(syntaxNodeContext =>
             {
+                var cancellationToken = syntaxNodeContext.CancellationToken;
                 var methodSyntax = (MethodDeclarationSyntax)syntaxNodeContext.Node;
                 var semanticModel = syntaxNodeContext.SemanticModel;
                 var method = semanticModel.GetDeclaredSymbol(methodSyntax, syntaxNodeContext.CancellationToken);
@@ -54,34 +52,47 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
                 }
 
                 var conventionAttributes = GetConventionTypeAttributes(symbolCache, method);
-                var expectedResponseMetadata = SymbolApiResponseMetadataProvider.GetResponseMetadata(symbolCache, method, conventionAttributes);
-                var actualResponseMetadata = new HashSet<int>();
+                var declaredResponseMetadata = SymbolApiResponseMetadataProvider.GetDeclaredResponseMetadata(symbolCache, method, conventionAttributes);
 
-                var context = new ApiConventionContext(
-                    symbolCache,
-                    syntaxNodeContext,
-                    expectedResponseMetadata,
-                    actualResponseMetadata);
-
+                var hasUnreadableStatusCodes = SymbolApiResponseMetadataProvider.TryGetActualResponseMetadata(symbolCache, semanticModel, methodSyntax, cancellationToken, out var actualResponseMetadata);
                 var hasUndocumentedStatusCodes = false;
-                foreach (var returnStatementSyntax in methodSyntax.DescendantNodes(_shouldDescendIntoChildren).OfType<ReturnStatementSyntax>())
+                foreach (var item in actualResponseMetadata)
                 {
-                    hasUndocumentedStatusCodes |= VisitReturnStatementSyntax(context, returnStatementSyntax);
+                    var location = item.ReturnStatement.GetLocation();
+
+                    if (item.IsDefaultResponse)
+                    {
+                        if (!(HasStatusCode(declaredResponseMetadata, 200) || HasStatusCode(declaredResponseMetadata, 201)))
+                        {
+                            hasUndocumentedStatusCodes = true;
+                            syntaxNodeContext.ReportDiagnostic(Diagnostic.Create(
+                                DiagnosticDescriptors.MVC1005_ActionReturnsUndocumentedSuccessResult,
+                                location));
+                        }
+                    }
+                    else if (!HasStatusCode(declaredResponseMetadata, item.StatusCode))
+                    {
+                        hasUndocumentedStatusCodes = true;
+                        syntaxNodeContext.ReportDiagnostic(Diagnostic.Create(
+                            DiagnosticDescriptors.MVC1004_ActionReturnsUndocumentedStatusCode,
+                            location,
+                            item.StatusCode));
+                    }
                 }
 
-                if (hasUndocumentedStatusCodes)
+                if (hasUndocumentedStatusCodes || hasUnreadableStatusCodes)
                 {
                     // If we produced analyzer warnings about undocumented status codes, don't attempt to determine
                     // if there are documented status codes that are missing from the method body.
                     return;
                 }
 
-                for (var i = 0; i < expectedResponseMetadata.Count; i++)
+                for (var i = 0; i < declaredResponseMetadata.Count; i++)
                 {
-                    var expectedStatusCode = expectedResponseMetadata[i].StatusCode;
-                    if (!actualResponseMetadata.Contains(expectedStatusCode))
+                    var expectedStatusCode = declaredResponseMetadata[i].StatusCode;
+                    if (!HasStatusCode(actualResponseMetadata, expectedStatusCode))
                     {
-                        context.SyntaxNodeContext.ReportDiagnostic(Diagnostic.Create(
+                        syntaxNodeContext.ReportDiagnostic(Diagnostic.Create(
                             DiagnosticDescriptors.MVC1006_ActionDoesNotReturnDocumentedStatusCode,
                             methodSyntax.Identifier.GetLocation(),
                             expectedStatusCode));
@@ -100,86 +111,6 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
             }
 
             return attributes;
-        }
-
-        // Returns true if the return statement returns an undocumented status code.
-        private static bool VisitReturnStatementSyntax(
-            in ApiConventionContext context,
-            ReturnStatementSyntax returnStatementSyntax)
-        {
-            var returnExpression = returnStatementSyntax.Expression;
-            if (returnExpression.IsMissing)
-            {
-                return false;
-            }
-
-            var syntaxNodeContext = context.SyntaxNodeContext;
-
-            var typeInfo = syntaxNodeContext.SemanticModel.GetTypeInfo(returnExpression, syntaxNodeContext.CancellationToken);
-            if (typeInfo.Type.TypeKind == TypeKind.Error)
-            {
-                return false;
-            }
-
-            var location = returnStatementSyntax.GetLocation();
-            var diagnostic = InspectReturnExpression(context, typeInfo.Type, location);
-            if (diagnostic != null)
-            {
-                context.SyntaxNodeContext.ReportDiagnostic(diagnostic);
-                return true;
-            }
-
-            return false;
-        }
-
-        internal static Diagnostic InspectReturnExpression(in ApiConventionContext context, ITypeSymbol type, Location location)
-        {
-            var defaultStatusCodeAttribute = type
-                .GetAttributes(context.SymbolCache.DefaultStatusCodeAttribute, inherit: true)
-                .FirstOrDefault();
-
-            if (defaultStatusCodeAttribute != null)
-            {
-                var statusCode = GetDefaultStatusCode(defaultStatusCodeAttribute);
-                if (statusCode == null)
-                {
-                    // Unable to read the status code. Treat this as valid.
-                    return null;
-                }
-
-                context.ActualResponseMetadata.Add(statusCode.Value);
-                if (!HasStatusCode(context.ExpectedResponseMetadata, statusCode.Value))
-                {
-                    return Diagnostic.Create(
-                        DiagnosticDescriptors.MVC1004_ActionReturnsUndocumentedStatusCode,
-                        location,
-                        statusCode);
-                }
-            }
-            else if (!context.SymbolCache.IActionResult.IsAssignableFrom(type))
-            {
-                if (!HasStatusCode(context.ExpectedResponseMetadata, 200) && !HasStatusCode(context.ExpectedResponseMetadata, 201))
-                {
-                    return Diagnostic.Create(
-                        DiagnosticDescriptors.MVC1005_ActionReturnsUndocumentedSuccessResult,
-                        location);
-                }
-            }
-
-            return null;
-        }
-
-        internal static int? GetDefaultStatusCode(AttributeData attribute)
-        {
-            if (attribute != null &&
-                attribute.ConstructorArguments.Length == 1 &&
-                attribute.ConstructorArguments[0].Kind == TypedConstantKind.Primitive &&
-                attribute.ConstructorArguments[0].Value is int statusCode)
-            {
-                return statusCode;
-            }
-
-            return null;
         }
 
         internal static bool ShouldEvaluateMethod(ApiControllerSymbolCache symbolCache, IMethodSymbol method)
@@ -212,7 +143,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
             return true;
         }
 
-        internal static bool HasStatusCode(IList<ApiResponseMetadata> declaredApiResponseMetadata, int statusCode)
+        internal static bool HasStatusCode(IList<DeclaredApiResponseMetadata> declaredApiResponseMetadata, int statusCode)
         {
             if (declaredApiResponseMetadata.Count == 0)
             {
@@ -231,47 +162,22 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
             return false;
         }
 
-        private static bool ShouldDescendIntoChildren(SyntaxNode syntaxNode)
+        internal static bool HasStatusCode(IList<ActualApiResponseMetadata> actualResponseMetadata, int statusCode)
         {
-            return !syntaxNode.IsKind(SyntaxKind.LocalFunctionStatement) &&
-                !syntaxNode.IsKind(SyntaxKind.ParenthesizedLambdaExpression) &&
-                !syntaxNode.IsKind(SyntaxKind.SimpleLambdaExpression) &&
-                !syntaxNode.IsKind(SyntaxKind.AnonymousMethodExpression);
-        }
-
-
-        internal readonly struct ApiConventionContext
-        {
-            public ApiConventionContext(
-                ApiControllerSymbolCache symbolCache,
-                SyntaxNodeAnalysisContext syntaxNodeContext,
-                IList<ApiResponseMetadata> expectedResponseMetadata,
-                HashSet<int> actualResponseMetadata,
-                Action<Diagnostic> reportDiagnostic = null)
+            for (var i = 0; i < actualResponseMetadata.Count; i++)
             {
-                SymbolCache = symbolCache;
-                SyntaxNodeContext = syntaxNodeContext;
-                ExpectedResponseMetadata = expectedResponseMetadata;
-                ActualResponseMetadata = actualResponseMetadata;
-                ReportDiagnosticAction = reportDiagnostic;
-            }
-
-            public ApiControllerSymbolCache SymbolCache { get; }
-            public SyntaxNodeAnalysisContext SyntaxNodeContext { get; }
-            public IList<ApiResponseMetadata> ExpectedResponseMetadata { get; }
-            public HashSet<int> ActualResponseMetadata { get; }
-            private Action<Diagnostic> ReportDiagnosticAction { get; }
-
-            public void ReportDiagnostic(Diagnostic diagnostic)
-            {
-                if (ReportDiagnosticAction != null)
+                if (actualResponseMetadata[i].IsDefaultResponse)
                 {
-                    ReportDiagnosticAction(diagnostic);
+                    return statusCode == 200 || statusCode == 201;
                 }
 
-                SyntaxNodeContext.ReportDiagnostic(diagnostic);
+                else if(actualResponseMetadata[i].StatusCode == statusCode)
+                {
+                    return true;
+                }
             }
-        }
 
+            return false;
+        }
     }
 }

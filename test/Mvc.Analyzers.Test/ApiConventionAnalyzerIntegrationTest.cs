@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
 {
     public class ApiConventionAnalyzerIntegrationTest
     {
-        private MvcDiagnosticAnalyzerRunner Executor { get; } = new MvcDiagnosticAnalyzerRunner(new ApiConventionAnalyzer());
+        private MvcDiagnosticAnalyzerRunner Executor { get; } = new ApiCoventionWith1006DiagnosticEnabledRunner();
 
         [Fact]
         public Task NoDiagnosticsAreReturned_ForNonApiController()
@@ -77,11 +77,15 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
 
         [Fact]
         public Task DiagnosticsAreReturned_IfMethodWithProducesResponseTypeAttribute_DoesNotReturnDocumentedStatusCode()
-            => RunTestFor1006(400);
+            => RunTest(DiagnosticDescriptors.MVC1006_ActionDoesNotReturnDocumentedStatusCode, 400);
 
         [Fact]
         public Task DiagnosticsAreReturned_IfMethodWithConvention_DoesNotReturnDocumentedStatusCode()
-            => RunTestFor1006(404);
+            => RunTest(DiagnosticDescriptors.MVC1006_ActionDoesNotReturnDocumentedStatusCode, 404);
+
+        [Fact]
+        public Task DiagnosticsAreReturned_IfMethodWithProducesResponseTypeAttribute_DoesNotDocumentSuccessStatusCode()
+            => RunTest(DiagnosticDescriptors.MVC1006_ActionDoesNotReturnDocumentedStatusCode, 200);
 
         private async Task RunNoDiagnosticsAreReturned([CallerMemberName] string testMethod = "")
         {
@@ -122,30 +126,6 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
                     Assert.Equal(string.Format(descriptor.MessageFormat.ToString(), args), diagnostic.GetMessage());
                 });
         }
-
-        private async Task RunTestFor1006(int statusCode, [CallerMemberName] string testMethod = "")
-        {
-            // Arrange
-            var descriptor = DiagnosticDescriptors.MVC1006_ActionDoesNotReturnDocumentedStatusCode;
-            var testSource = MvcTestSource.Read(GetType().Name, testMethod);
-            var expectedLocation = testSource.DefaultMarkerLocation;
-            var executor = new ApiCoventionWith1006DiagnosticEnabledRunner();
-
-            // Act
-            var result = await executor.GetDiagnosticsAsync(testSource.Source);
-
-            // Assert
-            Assert.Collection(
-                result,
-                diagnostic =>
-                {
-                    Assert.Equal(descriptor.Id, diagnostic.Id);
-                    Assert.Same(descriptor, diagnostic.Descriptor);
-                    AnalyzerAssert.DiagnosticLocation(expectedLocation, diagnostic.Location);
-                    Assert.Equal(string.Format(descriptor.MessageFormat.ToString(), new[] { statusCode.ToString() }), diagnostic.GetMessage());
-                });
-        }
-
         private class ApiCoventionWith1006DiagnosticEnabledRunner : MvcDiagnosticAnalyzerRunner
         {
             public ApiCoventionWith1006DiagnosticEnabledRunner() : base(new ApiConventionAnalyzer())
@@ -155,6 +135,9 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
             protected override CompilationOptions ConfigureCompilationOptions(CompilationOptions options)
             {
                 var compilationOptions = base.ConfigureCompilationOptions(options);
+
+                // 10006 is disabled by default. Explicitly enable it so we can correctly validate no diagnostics
+                // are returned scenarios.
                 var specificDiagnosticOptions = compilationOptions.SpecificDiagnosticOptions.Add(
                     DiagnosticDescriptors.MVC1006_ActionDoesNotReturnDocumentedStatusCode.Id,
                     ReportDiagnostic.Info);

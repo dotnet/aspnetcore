@@ -5,9 +5,9 @@ using Microsoft.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Mvc.Analyzers
 {
-    internal readonly struct ApiResponseMetadata
+    internal readonly struct DeclaredApiResponseMetadata
     {
-        public ApiResponseMetadata(int statusCode, AttributeData attributeData, IMethodSymbol convention)
+        public DeclaredApiResponseMetadata(int statusCode, AttributeData attributeData, IMethodSymbol convention)
         {
             StatusCode = statusCode;
             Attribute = attributeData;
