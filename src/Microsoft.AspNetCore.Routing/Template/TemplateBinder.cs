@@ -375,7 +375,13 @@ namespace Microsoft.AspNetCore.Routing.Template
             var sa = a as string;
             var sb = b as string;
 
-            if (sa != null && sb != null)
+            // In case of strings, consider empty and null the same.
+            // Since null cannot tell us the type, consider it to be a string if the other value is a string.
+            if ((sa == string.Empty && sb == null) || (sb == string.Empty && sa == null))
+            {
+                return true;
+            }
+            else if (sa != null && sb != null)
             {
                 // For strings do a case-insensitive comparison
                 return string.Equals(sa, sb, StringComparison.OrdinalIgnoreCase);
