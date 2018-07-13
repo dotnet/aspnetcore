@@ -34,8 +34,8 @@ namespace AspNetCoreSdkTests.Util
             var versionString = Regex.Match(info, @"Version:\W*([0-9.]+)").Groups[1].Value;
             var version = new Version(versionString);
 
-            // Supported version range is [2.1.300,2.1.302] (inclusive)
-            if (version >= new Version(2, 1, 300) && version <= new Version(2, 1, 302))
+            // Supported version range is [2.1.300,2.1.401] (inclusive)
+            if (version >= new Version(2, 1, 300) && version <= new Version(2, 1, 401))
             {
                 return version;
             }
