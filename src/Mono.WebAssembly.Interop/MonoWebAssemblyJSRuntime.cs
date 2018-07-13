@@ -27,6 +27,32 @@ namespace Mono.WebAssembly.Interop
             InternalCalls.InvokeJSMarshalled(out _, ref asyncHandle, identifier, argsJson);
         }
 
+        // Invoked via Mono's JS interop mechanism (invoke_method)
+        private static string InvokeDotNet(string assemblyName, string methodIdentifier, string dotNetObjectId, string argsJson)
+            => DotNetDispatcher.Invoke(assemblyName, methodIdentifier, dotNetObjectId == null ? default : long.Parse(dotNetObjectId), argsJson);
+
+        // Invoked via Mono's JS interop mechanism (invoke_method)
+        private static void BeginInvokeDotNet(string callId, string assemblyNameOrDotNetObjectId, string methodIdentifier, string argsJson)
+        {
+            // Figure out whether 'assemblyNameOrDotNetObjectId' is the assembly name or the instance ID
+            // We only need one for any given call. This helps to work around the limitation that we can
+            // only pass a maximum of 4 args in a call from JS to Mono WebAssembly.
+            string assemblyName;
+            long dotNetObjectId;
+            if (char.IsDigit(assemblyNameOrDotNetObjectId[0]))
+            {
+                dotNetObjectId = long.Parse(assemblyNameOrDotNetObjectId);
+                assemblyName = null;
+            }
+            else
+            {
+                dotNetObjectId = default;
+                assemblyName = assemblyNameOrDotNetObjectId;
+            }
+
+            DotNetDispatcher.BeginInvoke(callId, assemblyName, methodIdentifier, dotNetObjectId, argsJson);
+        }
+
         #region Custom MonoWebAssemblyJSRuntime methods
 
         /// <summary>

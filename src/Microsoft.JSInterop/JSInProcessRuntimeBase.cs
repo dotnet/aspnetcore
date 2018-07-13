@@ -17,8 +17,8 @@ namespace Microsoft.JSInterop
         /// <returns>An instance of <typeparamref name="T"/> obtained by JSON-deserializing the return value.</returns>
         public T Invoke<T>(string identifier, params object[] args)
         {
-            var resultJson = InvokeJS(identifier, Json.Serialize(args));
-            return Json.Deserialize<T>(resultJson);
+            var resultJson = InvokeJS(identifier, Json.Serialize(args, ArgSerializerStrategy));
+            return Json.Deserialize<T>(resultJson, ArgSerializerStrategy);
         }
 
         /// <summary>

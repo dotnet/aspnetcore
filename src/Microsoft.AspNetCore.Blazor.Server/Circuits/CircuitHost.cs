@@ -112,7 +112,7 @@ namespace Microsoft.AspNetCore.Blazor.Server.Circuits
             _isInitialized = true;
         }
 
-        public async void BeginInvokeDotNetFromJS(string callId, string assemblyName, string methodIdentifier, string argsJson)
+        public async void BeginInvokeDotNetFromJS(string callId, string assemblyName, string methodIdentifier, long dotNetObjectId, string argsJson)
         {
             AssertInitialized();
 
@@ -122,7 +122,7 @@ namespace Microsoft.AspNetCore.Blazor.Server.Circuits
                 {
                     SetCurrentCircuitHost(this);
                     
-                    DotNetDispatcher.BeginInvoke(callId, assemblyName, methodIdentifier, argsJson);
+                    DotNetDispatcher.BeginInvoke(callId, assemblyName, methodIdentifier, dotNetObjectId, argsJson);
                 });
             }
             catch (Exception ex)

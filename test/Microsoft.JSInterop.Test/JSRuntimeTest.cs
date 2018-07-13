@@ -29,6 +29,9 @@ namespace Microsoft.JSInterop.Test
         {
             public Task<T> InvokeAsync<T>(string identifier, params object[] args)
                 => throw new NotImplementedException();
+
+            public void UntrackObjectRef(DotNetObjectRef dotNetObjectRef)
+                => throw new NotImplementedException();
         }
     }
 }

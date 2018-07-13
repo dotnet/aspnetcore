@@ -191,16 +191,6 @@ namespace Microsoft.JSInterop.Test
                 exception.Message);
         }
 
-        [Fact]
-        public void SupportsInternalCustomSerializer()
-        {
-            // Arrange/Act
-            var json = Json.Serialize(new WithCustomSerializer());
-
-            // Asssert
-            Assert.Equal("{\"key1\":\"value1\",\"key2\":123}", json);
-        }
-
         // Test cases based on https://github.com/JamesNK/Newtonsoft.Json/blob/122afba9908832bd5ac207164ee6c303bfd65cf1/Src/Newtonsoft.Json.Tests/Utilities/StringUtilsTests.cs#L41
         // The only difference is that our logic doesn't have to handle space-separated words,
         // because we're only use this for camelcasing .NET member names
@@ -272,18 +262,6 @@ namespace Microsoft.JSInterop.Test
         }
 
         enum Hobbies { Reading = 1, Swordfighting = 2 }
-
-        class WithCustomSerializer : ICustomJsonSerializer
-        {
-            public object ToJsonPrimitive()
-            {
-                return new Dictionary<string, object>
-                {
-                    { "key1", "value1" },
-                    { "key2", 123 },
-                };
-            }
-        }
 
 #pragma warning disable 0649
         class ClashingProperties

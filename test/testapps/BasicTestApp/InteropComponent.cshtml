@@ -13,6 +13,20 @@
 </div>
 
 <div>
+    <h1>.NET to JS calls: passing .NET object by ref, receiving .NET object by ref</h1>
+    @foreach (var kvp in ReceiveDotNetObjectByRefResult)
+    {
+        <h2>@(kvp.Key)Sync</h2>
+        <p id="@(kvp.Key)Sync">@kvp.Value</p>
+    }
+    @foreach (var kvp in ReceiveDotNetObjectByRefAsyncResult)
+    {
+        <h2>@(kvp.Key)Async</h2>
+        <p id="@(kvp.Key)Async">@kvp.Value</p>
+    }
+</div>
+
+<div>
     <h1>Return values and exceptions thrown from .NET</h1>
     @foreach (var returnValue in ReturnValues)
     {
@@ -44,14 +58,23 @@
     public JSException SyncExceptionFromAsyncMethod { get; set; }
     public JSException AsyncExceptionFromAsyncMethod { get; set; }
 
+    public IDictionary<string, object> ReceiveDotNetObjectByRefResult { get; set; } = new Dictionary<string, object>();
+    public IDictionary<string, object> ReceiveDotNetObjectByRefAsyncResult { get; set; } = new Dictionary<string, object>();
+
     public bool DoneWithInterop { get; set; }
 
     public async Task InvokeInteropAsync()
     {
         var inProcRuntime = ((IJSInProcessRuntime)JSRuntime.Current);
+        var testDTOTOPassByRef = new TestDTO(nonSerializedValue: 123);
+
+        var instanceMethodsTarget = new JavaScriptInterop();
 
         Console.WriteLine("Starting interop invocations.");
-        await JSRuntime.Current.InvokeAsync<object>("jsInteropTests.invokeDotNetInteropMethodsAsync");
+        await JSRuntime.Current.InvokeAsync<object>(
+            "jsInteropTests.invokeDotNetInteropMethodsAsync",
+            new DotNetObjectRef(testDTOTOPassByRef),
+            new DotNetObjectRef(instanceMethodsTarget));
         Console.WriteLine("Showing interop invocation results.");
         var collectResults = inProcRuntime.Invoke<Dictionary<string,string>>("jsInteropTests.collectInteropResults");
 
@@ -90,6 +113,20 @@
         {
             AsyncExceptionFromAsyncMethod = e;
         }
+
+        var passDotNetObjectByRef = new TestDTO(99999);
+        var passDotNetObjectByRefArg = new Dictionary<string, object>
+        {
+            { "stringValue", "My string" },
+            { "testDto", new DotNetObjectRef(passDotNetObjectByRef) },
+        };
+        ReceiveDotNetObjectByRefResult = inProcRuntime.Invoke<Dictionary<string, object>>("receiveDotNetObjectByRef", passDotNetObjectByRefArg);
+        ReceiveDotNetObjectByRefAsyncResult = await JSRuntime.Current.InvokeAsync<Dictionary<string, object>>("receiveDotNetObjectByRefAsync", passDotNetObjectByRefArg);
+        ReceiveDotNetObjectByRefResult["testDto"] = ReceiveDotNetObjectByRefResult["testDto"] == passDotNetObjectByRef ? "Same" : "Different";
+        ReceiveDotNetObjectByRefAsyncResult["testDto"] = ReceiveDotNetObjectByRefAsyncResult["testDto"] == passDotNetObjectByRef ? "Same" : "Different";
+
+        ReturnValues["returnPrimitive"] = inProcRuntime.Invoke<int>("returnPrimitive").ToString();
+        ReturnValues["returnPrimitiveAsync"] = (await JSRuntime.Current.InvokeAsync<int>("returnPrimitiveAsync")).ToString();
 
         Invocations = invocations;
         DoneWithInterop = true;

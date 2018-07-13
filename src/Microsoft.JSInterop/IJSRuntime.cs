@@ -18,5 +18,15 @@ namespace Microsoft.JSInterop
         /// <param name="args">JSON-serializable arguments.</param>
         /// <returns>An instance of <typeparamref name="T"/> obtained by JSON-deserializing the return value.</returns>
         Task<T> InvokeAsync<T>(string identifier, params object[] args);
+
+        /// <summary>
+        /// Stops tracking the .NET object represented by the <see cref="DotNetObjectRef"/>.
+        /// This allows it to be garbage collected (if nothing else holds a reference to it)
+        /// and means the JS-side code can no longer invoke methods on the instance or pass
+        /// it as an argument to subsequent calls.
+        /// </summary>
+        /// <param name="dotNetObjectRef">The reference to stop tracking.</param>
+        /// <remarks>This method is called automaticallly by <see cref="DotNetObjectRef.Dispose"/>.</remarks>
+        void UntrackObjectRef(DotNetObjectRef dotNetObjectRef);
     }
 }

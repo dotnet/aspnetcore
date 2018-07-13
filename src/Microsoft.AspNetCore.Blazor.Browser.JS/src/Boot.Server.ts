@@ -32,8 +32,8 @@ function boot() {
   connection.start()
     .then(async () => {
       DotNet.attachDispatcher({
-        beginInvokeDotNetFromJS: (callId, assemblyName, methodIdentifier, argsJson) => {
-          connection.send('BeginInvokeDotNetFromJS', callId ? callId.toString() : null, assemblyName, methodIdentifier, argsJson);
+        beginInvokeDotNetFromJS: (callId, assemblyName, methodIdentifier, dotNetObjectId, argsJson) => {
+          connection.send('BeginInvokeDotNetFromJS', callId ? callId.toString() : null, assemblyName, methodIdentifier, dotNetObjectId || 0, argsJson);
         }
       });
 

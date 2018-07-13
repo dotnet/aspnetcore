@@ -292,27 +292,34 @@ function getArrayDataPointer<T>(array: System_Array<T>): number {
 }
 
 function attachInteropInvoker() {
-  const dotNetDispatcherInvokeMethodHandle = findMethod('Microsoft.JSInterop', 'Microsoft.JSInterop', 'DotNetDispatcher', 'Invoke');
-  const dotNetDispatcherBeginInvokeMethodHandle = findMethod('Microsoft.JSInterop', 'Microsoft.JSInterop', 'DotNetDispatcher', 'BeginInvoke');
+  const dotNetDispatcherInvokeMethodHandle = findMethod('Mono.WebAssembly.Interop', 'Mono.WebAssembly.Interop', 'MonoWebAssemblyJSRuntime', 'InvokeDotNet');
+  const dotNetDispatcherBeginInvokeMethodHandle = findMethod('Mono.WebAssembly.Interop', 'Mono.WebAssembly.Interop', 'MonoWebAssemblyJSRuntime', 'BeginInvokeDotNet');
 
   DotNet.attachDispatcher({
-    beginInvokeDotNetFromJS: (callId, assemblyName, methodIdentifier, argsJson) => {
+    beginInvokeDotNetFromJS: (callId, assemblyName, methodIdentifier, dotNetObjectId, argsJson) => {
+      // As a current limitation, we can only pass 4 args. Fortunately we only need one of
+      // 'assemblyName' or 'dotNetObjectId', so overload them in a single slot
+      const assemblyNameOrDotNetObjectId = dotNetObjectId
+        ? dotNetObjectId.toString()
+        : assemblyName;
+      
       monoPlatform.callMethod(dotNetDispatcherBeginInvokeMethodHandle, null, [
         callId ? monoPlatform.toDotNetString(callId.toString()) : null,
-        monoPlatform.toDotNetString(assemblyName),
+        monoPlatform.toDotNetString(assemblyNameOrDotNetObjectId!),
         monoPlatform.toDotNetString(methodIdentifier),
         monoPlatform.toDotNetString(argsJson)
       ]);
     },
 
-    invokeDotNetFromJS: (assemblyName, methodIdentifier, argsJson) => {
+    invokeDotNetFromJS: (assemblyName, methodIdentifier, dotNetObjectId, argsJson) => {
       const resultJsonStringPtr = monoPlatform.callMethod(dotNetDispatcherInvokeMethodHandle, null, [
-        monoPlatform.toDotNetString(assemblyName),
+        assemblyName ? monoPlatform.toDotNetString(assemblyName) : null,
         monoPlatform.toDotNetString(methodIdentifier),
+        dotNetObjectId ? monoPlatform.toDotNetString(dotNetObjectId.toString()) : null,
         monoPlatform.toDotNetString(argsJson)
       ]) as System_String;
       return resultJsonStringPtr
-        ? JSON.parse(monoPlatform.toJavaScriptString(resultJsonStringPtr))
+        ? monoPlatform.toJavaScriptString(resultJsonStringPtr)
         : null;
     },
   });

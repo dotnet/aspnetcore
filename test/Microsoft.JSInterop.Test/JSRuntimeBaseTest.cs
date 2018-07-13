@@ -1,8 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.JSInterop.Internal;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Xunit;
 
 namespace Microsoft.JSInterop.Test
@@ -98,7 +100,57 @@ namespace Microsoft.JSInterop.Test
             });
             Assert.Equal($"There is no pending task with handle '{asyncHandle}'.", ex.Message);
         }
-        
+
+        [Fact]
+        public void SerializesDotNetObjectWrappersInKnownFormat()
+        {
+            // Arrange
+            var runtime = new TestJSRuntime();
+            var obj1 = new object();
+            var obj2 = new object();
+            var obj3 = new object();
+
+            // Act
+            // Showing we can pass the DotNetObject either as top-level args or nested
+            var obj1Ref = new DotNetObjectRef(obj1);
+            var obj1DifferentRef = new DotNetObjectRef(obj1);
+            runtime.InvokeAsync<object>("test identifier",
+                obj1Ref,
+                new Dictionary<string, object>
+                {
+                    { "obj2", new DotNetObjectRef(obj2) },
+                    { "obj3", new DotNetObjectRef(obj3) },
+                    { "obj1SameRef", obj1Ref },
+                    { "obj1DifferentRef", obj1DifferentRef },
+                });
+
+            // Assert: Serialized as expected
+            var call = runtime.BeginInvokeCalls.Single();
+            Assert.Equal("test identifier", call.Identifier);
+            Assert.Equal("[\"__dotNetObject:1\",{\"obj2\":\"__dotNetObject:2\",\"obj3\":\"__dotNetObject:3\",\"obj1SameRef\":\"__dotNetObject:1\",\"obj1DifferentRef\":\"__dotNetObject:4\"}]", call.ArgsJson);
+
+            // Assert: Objects were tracked
+            Assert.Same(obj1, runtime.ArgSerializerStrategy.FindDotNetObject(1));
+            Assert.Same(obj2, runtime.ArgSerializerStrategy.FindDotNetObject(2));
+            Assert.Same(obj3, runtime.ArgSerializerStrategy.FindDotNetObject(3));
+            Assert.Same(obj1, runtime.ArgSerializerStrategy.FindDotNetObject(4));
+        }
+
+        [Fact]
+        public void SupportsCustomSerializationForArguments()
+        {
+            // Arrange
+            var runtime = new TestJSRuntime();
+
+            // Arrange/Act
+            runtime.InvokeAsync<object>("test identifier",
+                new WithCustomArgSerializer());
+
+            // Asssert
+            var call = runtime.BeginInvokeCalls.Single();
+            Assert.Equal("[{\"key1\":\"value1\",\"key2\":123}]", call.ArgsJson);
+        }
+
         class TestJSRuntime : JSRuntimeBase
         {
             public List<BeginInvokeAsyncArgs> BeginInvokeCalls = new List<BeginInvokeAsyncArgs>();
@@ -122,6 +174,18 @@ namespace Microsoft.JSInterop.Test
 
             public void OnEndInvoke(long asyncHandle, bool succeeded, object resultOrException)
                 => EndInvokeJS(asyncHandle, succeeded, resultOrException);
+        }
+
+        class WithCustomArgSerializer : ICustomArgSerializer
+        {
+            public object ToJsonPrimitive()
+            {
+                return new Dictionary<string, object>
+                {
+                    { "key1", "value1" },
+                    { "key2", 123 },
+                };
+            }
         }
     }
 }

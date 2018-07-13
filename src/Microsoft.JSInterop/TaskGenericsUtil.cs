@@ -22,26 +22,41 @@ namespace Microsoft.JSInterop
         public static void SetTaskCompletionSourceException(object taskCompletionSource, Exception exception)
             => CreateResultSetter(taskCompletionSource).SetException(taskCompletionSource, exception);
 
+        public static Type GetTaskCompletionSourceResultType(object taskCompletionSource)
+            => CreateResultSetter(taskCompletionSource).ResultType;
+
         public static object GetTaskResult(Task task)
         {
-            var getter = _cachedResultGetters.GetOrAdd(task.GetType(), taskType =>
+            var getter = _cachedResultGetters.GetOrAdd(task.GetType(), taskInstanceType =>
             {
-                if (taskType.IsGenericType)
-                {
-                    var resultType = taskType.GetGenericArguments().Single();
-                    return (ITaskResultGetter)Activator.CreateInstance(
+                var resultType = GetTaskResultType(taskInstanceType);
+                return resultType == null
+                    ? new VoidTaskResultGetter()
+                    : (ITaskResultGetter)Activator.CreateInstance(
                         typeof(TaskResultGetter<>).MakeGenericType(resultType));
-                }
-                else
-                {
-                    return new VoidTaskResultGetter();
-                }
             });
             return getter.GetResult(task);
         }
 
+        private static Type GetTaskResultType(Type taskType)
+        {
+            // It might be something derived from Task or Task<T>, so we have to scan
+            // up the inheritance hierarchy to find the Task or Task<T>
+            while (taskType != typeof(Task) &&
+                (!taskType.IsGenericType || taskType.GetGenericTypeDefinition() != typeof(Task<>)))
+            {
+                taskType = taskType.BaseType
+                    ?? throw new ArgumentException($"The type '{taskType.FullName}' is not inherited from '{typeof(Task).FullName}'.");
+            }
+
+            return taskType.IsGenericType
+                ? taskType.GetGenericArguments().Single()
+                : null;
+        }
+
         interface ITcsResultSetter
         {
+            Type ResultType { get; }
             void SetResult(object taskCompletionSource, object result);
             void SetException(object taskCompletionSource, Exception exception);
         }
@@ -67,10 +82,18 @@ namespace Microsoft.JSInterop
 
         private class TcsResultSetter<T> : ITcsResultSetter
         {
+            public Type ResultType => typeof(T);
+
             public void SetResult(object tcs, object result)
             {
                 var typedTcs = (TaskCompletionSource<T>)tcs;
-                typedTcs.SetResult((T)result);
+
+                // If necessary, attempt a cast
+                var typedResult = result is T resultT
+                    ? resultT
+                    : (T)Convert.ChangeType(result, typeof(T));
+
+                typedTcs.SetResult(typedResult);
             }
 
             public void SetException(object tcs, Exception exception)

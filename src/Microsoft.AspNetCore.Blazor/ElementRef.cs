@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Blazor
     /// <summary>
     /// Represents a reference to a rendered element.
     /// </summary>
-    public readonly struct ElementRef : ICustomJsonSerializer
+    public readonly struct ElementRef : ICustomArgSerializer
     {
         static long _nextIdForWebAssemblyOnly = 1;
 
@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Blazor
         internal static ElementRef CreateWithUniqueId()
             => new ElementRef(CreateUniqueId());
 
-        object ICustomJsonSerializer.ToJsonPrimitive()
+        object ICustomArgSerializer.ToJsonPrimitive()
         {
             return new Dictionary<string, object>
             {

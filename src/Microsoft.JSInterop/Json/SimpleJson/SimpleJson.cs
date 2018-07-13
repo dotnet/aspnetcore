@@ -67,7 +67,6 @@ using System.Reflection;
 using System.Runtime.Serialization;
 using System.Text;
 using Microsoft.JSInterop;
-using Microsoft.JSInterop.Internal;
 using SimpleJson.Reflection;
 
 // ReSharper disable LoopCanBeConvertedToQuery
@@ -1538,8 +1537,6 @@ namespace SimpleJson
                 output = input.ToString();
             else if (input is TimeSpan)
                 output = ((TimeSpan)input).ToString("c");
-            else if (input is ICustomJsonSerializer customJsonSerializer)
-                output = customJsonSerializer.ToJsonPrimitive();
             else
             {
                 Enum inputEnum = input as Enum;
