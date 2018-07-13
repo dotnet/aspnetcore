@@ -58,7 +58,7 @@ ASPNETCORE_SHIM_CONFIG::Populate(
 
     if (m_hostingModel == HOSTING_OUT_PROCESS)
     {
-        RETURN_IF_FAILED(ConfigUtility::FindHandlerVersion(pAspNetCoreElement, &m_struHandlerVersion));
+        RETURN_IF_FAILED(ConfigUtility::FindHandlerVersion(pAspNetCoreElement, m_struHandlerVersion));
     }
 
     return S_OK;

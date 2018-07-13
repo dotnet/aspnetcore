@@ -221,6 +221,11 @@ IN_PROCESS_APPLICATION::SetCallbackHandles(
     m_pLoggerProvider->NotifyStartupComplete();
     // Can't check the std err handle as it isn't a critical error
     // Initialization complete
+    UTILITY::LogEventF(g_hEventLog,
+        EVENTLOG_INFORMATION_TYPE,
+        ASPNETCORE_EVENT_INPROCESS_START_SUCCESS,
+        ASPNETCORE_EVENT_INPROCESS_START_SUCCESS_MSG,
+        m_pConfig->QueryApplicationPhysicalPath()->QueryStr());
     SetEvent(m_pInitalizeEvent);
     m_fInitialized = TRUE;
 }

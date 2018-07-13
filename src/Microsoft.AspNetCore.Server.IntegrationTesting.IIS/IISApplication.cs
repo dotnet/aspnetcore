@@ -8,7 +8,6 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
 using Microsoft.Web.Administration;
 
@@ -72,7 +71,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
 
                 if (_deploymentParameters.ApplicationType == ApplicationType.Portable)
                 {
-                    ModifyAspNetCoreSectionInWebConfig("processPath", DotNetMuxer.MuxerPathOrDefault());
+                    ModifyAspNetCoreSectionInWebConfig("processPath", DotNetCommands.GetDotNetExecutable(_deploymentParameters.RuntimeArchitecture));
                 }
 
                 _serverManager.CommitChanges();
@@ -199,9 +198,20 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                     e => _logger.LogWarning($"Failed to delete file : {e.Message}"));
             }
 
-            RetryFileOperation(
-                () => File.Move(_apphostConfigBackupPath, _apphostConfigPath),
-                e => _logger.LogError($"Failed to backup apphost.config: {e.Message}"));
+            if (File.Exists(_apphostConfigBackupPath))
+            {
+                RetryFileOperation(
+                    () => File.Move(_apphostConfigBackupPath, _apphostConfigPath),
+                    e => _logger.LogError($"Failed to backup apphost.config: {e.Message}"));
+            }
+            else
+            {
+                // Test failed to create backup config file, put a default one from IIS.config there instead.
+                // An apphost.config file is required to be replaced because we use it for removing the app pool.
+                RetryFileOperation(
+                               () => File.WriteAllText(_apphostConfigPath, File.ReadAllText("IIS.config")),
+                               e => _logger.LogWarning($"Failed to copy IIS.config to apphost.config: {e.Message}"));
+            }
 
             _logger.LogInformation($"Restored {_apphostConfigPath}.");
         }
@@ -221,6 +231,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 var pool = _serverManager.ApplicationPools.Add(AppPoolName);
                 pool.ProcessModel.IdentityType = ProcessModelIdentityType.LocalSystem;
                 pool.ManagedRuntimeVersion = string.Empty;
+                pool.StartMode = StartMode.AlwaysRunning;
 
                 AddEnvironmentVariables(contentRoot, pool);
 
@@ -244,7 +255,6 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 {
                     AddEnvironmentVariableToAppPool(envCollection, tuple.Key, tuple.Value);
                 }
-                AddEnvironmentVariableToAppPool(envCollection, "ASPNETCORE_MODULE_DEBUG_FILE", $"{WebSiteName}.txt");
             }
             catch (COMException comException)
             {

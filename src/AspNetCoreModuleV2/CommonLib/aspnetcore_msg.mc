@@ -218,6 +218,12 @@ Language=English
 %1
 .
 
+Messageid=1032
+SymbolicName=ASPNETCORE_EVENT_INPROCESS_START_SUCCESS
+Language=English
+%1
+.
+
 ;
 ;#endif     // _ASPNETCORE_MODULE_MSG_H_
 ;

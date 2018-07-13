@@ -51,3 +51,4 @@
 #define ASPNETCORE_EVENT_INVALID_PROCESS_PATH_MSG            L"Invalid or unknown processPath provided in web.config: processPath = %s, ErrorCode = '0x%x'."
 #define ASPNETCORE_EVENT_INPROCESS_RH_MISSING_MSG            L"Could not find the assembly '%s' for in-process application. Please confirm the Microsoft.AspNetCore.Server.IIS package is referenced in your application."
 #define ASPNETCORE_EVENT_OUT_OF_PROCESS_RH_MISSING_MSG       L"Could not find the assembly '%s' for out-of-process application. Please confirm the assembly is installed correctly for IIS or IISExpress."
+#define ASPNETCORE_EVENT_INPROCESS_START_SUCCESS_MSG         L"Application '%s' started the coreclr in-process successfully."

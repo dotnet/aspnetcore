@@ -1,4 +1,8 @@
-#include "..\precomp.hxx"
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the MIT License. See License.txt in the project root for license information.
+
+#include "outprocessapplication.h"
+
 #include "SRWExclusiveLock.h"
 
 OUT_OF_PROCESS_APPLICATION::OUT_OF_PROCESS_APPLICATION(

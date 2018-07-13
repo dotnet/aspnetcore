@@ -4,9 +4,11 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Testing;
+using Xunit;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 {
@@ -60,7 +62,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 site = hostingModel == HostingModel.InProcess ? "InProcessWebSite" : "OutOfProcessWebSite";
             }
 
-            return new DeploymentParameters(Helpers.GetTestWebSitePath(site), DeployerSelector.ServerType, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64)
+            return new DeploymentParameters(GetTestWebSitePath(site), DeployerSelector.ServerType, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64)
             {
                 TargetFramework = Tfm.NetCoreApp22,
                 ApplicationType = ApplicationType.Portable,
@@ -72,5 +74,14 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         private static string GetWebConfigFile(IISDeploymentResult deploymentResult)
             => Path.Combine(deploymentResult.DeploymentResult.ContentRoot, "web.config");
+
+        public static async Task AssertStarts(IISDeploymentResult deploymentResult, string path = "/HelloWorld")
+        {
+            var response = await deploymentResult.RetryingHttpClient.GetAsync(path);
+
+            var responseText = await response.Content.ReadAsStringAsync();
+
+            Assert.Equal("Hello World", responseText);
+        }
     }
 }

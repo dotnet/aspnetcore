@@ -5,6 +5,9 @@
 #include "requesthandler_config.h"
 #include "debugutil.h"
 #include "environmentvariablehash.h"
+#include "exceptions.h"
+#include "config_utility.h"
+
 
 REQUESTHANDLER_CONFIG::~REQUESTHANDLER_CONFIG()
 {

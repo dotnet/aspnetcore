@@ -25,6 +25,7 @@ BOOL                g_fAspnetcoreRHLoadedError = FALSE;
 BOOL                g_fInShutdown = FALSE;
 DWORD               g_dwActiveServerProcesses = 0;
 SRWLOCK             g_srwLock;
+
 PFN_ASPNETCORE_CREATE_APPLICATION      g_pfnAspNetCoreCreateApplication;
 
 VOID

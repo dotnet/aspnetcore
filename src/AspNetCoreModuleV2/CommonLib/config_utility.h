@@ -7,24 +7,49 @@
 #include "ahutil.h"
 #include "stringu.h"
 #include "exceptions.h"
+#include "atlbase.h"
 
 class ConfigUtility
 {
     #define CS_ASPNETCORE_HANDLER_SETTINGS                   L"handlerSettings"
     #define CS_ASPNETCORE_HANDLER_VERSION                    L"handlerVersion"
+    #define CS_ASPNETCORE_DEBUG_FILE                         L"debugFile"
+    #define CS_ASPNETCORE_DEBUG_LEVEL                        L"debugLevel"
     #define CS_ASPNETCORE_HANDLER_SETTINGS_NAME              L"name"
     #define CS_ASPNETCORE_HANDLER_SETTINGS_VALUE             L"value"
 
 public:
     static
     HRESULT
-    FindHandlerVersion(IAppHostElement* pElement, STRU* strHandlerVersionValue)
+    FindHandlerVersion(IAppHostElement* pElement, STRU& strHandlerVersionValue)
+    {
+        return FindKeyValuePair(pElement, CS_ASPNETCORE_HANDLER_VERSION, strHandlerVersionValue);
+    }
+
+    static
+    HRESULT
+    FindDebugFile(IAppHostElement* pElement, STRU& strDebugFile)
+    {
+        return FindKeyValuePair(pElement, CS_ASPNETCORE_DEBUG_FILE, strDebugFile);
+    }
+
+    static
+    HRESULT
+    FindDebugLevel(IAppHostElement* pElement, STRU& strDebugFile)
+    {
+        return FindKeyValuePair(pElement, CS_ASPNETCORE_DEBUG_LEVEL, strDebugFile);
+    }
+
+private:
+    static
+    HRESULT
+    FindKeyValuePair(IAppHostElement* pElement, PCWSTR key, STRU& strHandlerVersionValue)
     {
         HRESULT hr;
         CComPtr<IAppHostElement>           pHandlerSettings = nullptr;
         CComPtr<IAppHostElementCollection> pHandlerSettingsCollection = nullptr;
         CComPtr<IAppHostElement>           pHandlerVar = nullptr;
-        ENUM_INDEX                         index {};
+        ENUM_INDEX                         index{};
         STRU strHandlerName;
         STRU strHandlerValue;
 
@@ -43,9 +68,9 @@ public:
             RETURN_IF_FAILED(GetElementStringProperty(pHandlerVar, CS_ASPNETCORE_HANDLER_SETTINGS_NAME, &strHandlerName));
             RETURN_IF_FAILED(GetElementStringProperty(pHandlerVar, CS_ASPNETCORE_HANDLER_SETTINGS_VALUE, &strHandlerValue));
 
-            if (strHandlerName.Equals(CS_ASPNETCORE_HANDLER_VERSION, TRUE))
+            if (strHandlerName.Equals(key, TRUE))
             {
-                RETURN_IF_FAILED(strHandlerVersionValue->Copy(strHandlerValue));
+                RETURN_IF_FAILED(strHandlerVersionValue.Copy(strHandlerValue));
                 break;
             }
 
