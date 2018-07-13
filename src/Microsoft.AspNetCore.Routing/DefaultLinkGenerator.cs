@@ -13,15 +13,18 @@ using Microsoft.Extensions.ObjectPool;
 
 namespace Microsoft.AspNetCore.Routing
 {
-    public class DefaultLinkGenerator : ILinkGenerator
+    internal class DefaultLinkGenerator : ILinkGenerator
     {
+        private readonly MatchProcessorFactory _matchProcessorFactory;
         private readonly ObjectPool<UriBuildingContext> _uriBuildingContextPool;
         private readonly ILogger<DefaultLinkGenerator> _logger;
 
         public DefaultLinkGenerator(
+            MatchProcessorFactory matchProcessorFactory,
             ObjectPool<UriBuildingContext> uriBuildingContextPool,
             ILogger<DefaultLinkGenerator> logger)
         {
+            _matchProcessorFactory = matchProcessorFactory;
             _uriBuildingContextPool = uriBuildingContextPool;
             _logger = logger;
         }
@@ -61,7 +64,7 @@ namespace Microsoft.AspNetCore.Routing
 
             foreach (var endpoint in matcherEndpoints)
             {
-                link = GetLink(endpoint.ParsedTemplate, endpoint.Defaults, explicitValues, ambientValues);
+                link = GetLink(endpoint, explicitValues, ambientValues);
                 if (link != null)
                 {
                     return true;
@@ -72,27 +75,55 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         private string GetLink(
-            RouteTemplate template,
-            RouteValueDictionary defaults,
+            MatcherEndpoint endpoint,
             RouteValueDictionary explicitValues,
             RouteValueDictionary ambientValues)
         {
             var templateBinder = new TemplateBinder(
                 UrlEncoder.Default,
                 _uriBuildingContextPool,
-                template,
-                defaults);
+                endpoint.ParsedTemplate,
+                endpoint.Defaults);
 
-            var values = templateBinder.GetValues(ambientValues, explicitValues);
-            if (values == null)
+            var templateValuesResult = templateBinder.GetValues(ambientValues, explicitValues);
+            if (templateValuesResult == null)
             {
                 // We're missing one of the required values for this route.
                 return null;
             }
 
-            //TODO: route constraint matching here
+            if (!Match(endpoint, templateValuesResult.CombinedValues))
+            {
+                return null;
+            }
 
-            return templateBinder.BindValues(values.AcceptedValues);
+            return templateBinder.BindValues(templateValuesResult.AcceptedValues);
+        }
+
+        private bool Match(MatcherEndpoint endpoint, RouteValueDictionary routeValues)
+        {
+            if (routeValues == null)
+            {
+                throw new ArgumentNullException(nameof(routeValues));
+            }
+
+            for (var i = 0; i < endpoint.MatchProcessorReferences.Count; i++)
+            {
+                var matchProcessorReference = endpoint.MatchProcessorReferences[i];
+                var parameter = endpoint.ParsedTemplate.GetParameter(matchProcessorReference.ParameterName);
+                if (parameter.IsOptional && !routeValues.ContainsKey(parameter.Name))
+                {
+                    continue;
+                }
+
+                var matchProcessor = _matchProcessorFactory.Create(matchProcessorReference);
+                if (!matchProcessor.ProcessOutbound(httpContext: null, routeValues))
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
     }
 }
