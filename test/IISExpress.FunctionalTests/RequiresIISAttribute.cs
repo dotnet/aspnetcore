@@ -13,5 +13,12 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         public bool IsMet => IISExpressAncmSchema.SupportsInProcessHosting;
 
         public string SkipReason => IISExpressAncmSchema.SkipReason;
+
+        public RequiresIISAttribute() { }
+
+        public RequiresIISAttribute(IISCapability capabilities)
+        {
+            // IISCapabilities aren't pretinent to IISExpress
+        }
     }
 }

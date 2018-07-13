@@ -69,6 +69,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
 
         [ConditionalFact]
+        [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
         public async Task StartupMessagesAreLoggedIntoDebugLogFile()
         {
             var tempFile = Path.GetTempFileName();
@@ -78,6 +79,9 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 deploymentParameters.EnvironmentVariables["ASPNETCORE_MODULE_DEBUG_FILE"] = tempFile;
 
                 var deploymentResult = await DeployAsync(deploymentParameters);
+
+                Helpers.AddDebugLogToWebConfig(deploymentResult.DeploymentResult.ContentRoot, tempFile);
+
                 var response = await deploymentResult.RetryingHttpClient.GetAsync("/");
 
                 StopServer();
@@ -93,7 +97,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
 
         [ConditionalFact]
-        [SkipIIS]
+        [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
         public async Task StartupMessagesLogFileSwitchedWhenLogFilePresentInWebConfig()
         {
             var firstTempFile = Path.GetTempFileName();

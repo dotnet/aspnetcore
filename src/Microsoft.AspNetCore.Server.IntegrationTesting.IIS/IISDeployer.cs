@@ -34,7 +34,6 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
             }
 
             GetLogsFromFile($"{_application.WebSiteName}.txt");
-            GetLogsFromFile("web.config");
 
             CleanPublishedOutput();
             InvokeUserApplicationCleanup();
@@ -88,9 +87,11 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
             var arr = new string[0];
 
             RetryHelper.RetryOperation(() => arr = File.ReadAllLines(Path.Combine(DeploymentParameters.PublishedApplicationRootPath, file)),
-                            (ex) => Logger.LogError("Could not read log file"),
+                            (ex) => Logger.LogWarning("Could not read log file"),
                             5,
                             200);
+
+            Logger.LogInformation($"Found debug log file: {file}");
             foreach (var line in arr)
             {
                 Logger.LogInformation(line);

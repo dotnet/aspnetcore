@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         {
             var deploymentParameters = Helpers.GetBaseDeploymentParameters(publish: true);
             var deploymentResult = await DeployAsync(deploymentParameters);
-            await Helpers.AssertStarts(deploymentResult, "/HelloWorld");
+            await Helpers.AssertStarts(deploymentResult);
 
             StopServer();
 
