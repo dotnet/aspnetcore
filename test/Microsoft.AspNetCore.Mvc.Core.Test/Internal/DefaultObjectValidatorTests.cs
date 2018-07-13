@@ -133,6 +133,27 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             Assert.Empty(entry.Errors);
         }
 
+        // More like how product code does suppressions than Validate_SimpleType_SuppressValidation()
+        [Fact]
+        public void Validate_SimpleType_SuppressValidationWithNullKey()
+        {
+            // Arrange
+            var actionContext = new ActionContext();
+            var modelState = actionContext.ModelState;
+            var validator = CreateValidator();
+            var model = "test";
+            var validationState = new ValidationStateDictionary
+            {
+                { model, new ValidationStateEntry { SuppressValidation = true } }
+            };
+
+            // Act
+            validator.Validate(actionContext, validationState, "parameter", model);
+
+            // Assert
+            Assert.True(modelState.IsValid);
+            Assert.Empty(modelState);
+        }
 
         [Fact]
         public void Validate_ComplexValueType_Valid()
@@ -1193,6 +1214,48 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var entry = Assert.Single(modelState);
             Assert.Equal(ModelValidationState.Valid, entry.Value.ValidationState);
             Assert.Empty(entry.Value.Errors);
+        }
+
+        // Regression test for aspnet/Mvc#7992
+        [Fact]
+        public void Validate_SuppressValidation_AfterHasReachedMaxErrors_Invalid()
+        {
+            // Arrange
+            var actionContext = new ActionContext();
+            var modelState = actionContext.ModelState;
+            modelState.MaxAllowedErrors = 2;
+            modelState.AddModelError(key: "one", errorMessage: "1");
+            modelState.AddModelError(key: "two", errorMessage: "2");
+
+            var validator = CreateValidator();
+            var model = (object)23; // Box ASAP
+            var validationState = new ValidationStateDictionary
+            {
+                { model, new ValidationStateEntry { SuppressValidation = true } }
+            };
+
+            // Act
+            validator.Validate(actionContext, validationState, prefix: string.Empty, model);
+
+            // Assert
+            Assert.False(modelState.IsValid);
+            Assert.True(modelState.HasReachedMaxErrors);
+            Assert.Collection(
+                modelState,
+                kvp =>
+                {
+                    Assert.Empty(kvp.Key);
+                    Assert.Equal(ModelValidationState.Invalid, kvp.Value.ValidationState);
+                    var error = Assert.Single(kvp.Value.Errors);
+                    Assert.IsType<TooManyModelErrorsException>(error.Exception);
+                },
+                kvp =>
+                {
+                    Assert.Equal("one", kvp.Key);
+                    Assert.Equal(ModelValidationState.Invalid, kvp.Value.ValidationState);
+                    var error = Assert.Single(kvp.Value.Errors);
+                    Assert.Equal("1", error.ErrorMessage);
+                });
         }
 
         private static DefaultObjectValidator CreateValidator(Type excludedType)
