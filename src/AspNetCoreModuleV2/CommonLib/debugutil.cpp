@@ -91,7 +91,7 @@ DebugInitializeFromConfig(IHttpServer& pHttpServer, IHttpApplication& pHttpAppli
     STRU debugValue;
     RETURN_IF_FAILED(ConfigUtility::FindDebugLevel(pAspNetCoreElement, debugValue));
 
-    SetDebugFlags(debugFile.QueryStr());
+    SetDebugFlags(debugValue.QueryStr());
 
     CreateDebugLogFile(debugFile.QueryStr());
 

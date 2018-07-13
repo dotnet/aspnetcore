@@ -197,7 +197,6 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                     () => File.Delete(_apphostConfigPath),
                     e => _logger.LogWarning($"Failed to delete file : {e.Message}"));
             }
-
             if (File.Exists(_apphostConfigBackupPath))
             {
                 RetryFileOperation(
