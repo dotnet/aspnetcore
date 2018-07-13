@@ -61,6 +61,74 @@ namespace Microsoft.AspNetCore.Routing.FunctionalTests
             Assert.Equal(expectedContent, actualContent);
         }
 
+        [Fact]
+        public async Task MatchesEndpoint_WithSuccessfulConstraintMatch()
+        {
+            // Arrange
+            var expectedContent = "WithConstraints";
+
+            // Act
+            var response = await _client.GetAsync("/withconstraints/555_001");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.NotNull(response.Content);
+            var actualContent = await response.Content.ReadAsStringAsync();
+            Assert.Equal(expectedContent, actualContent);
+        }
+
+        [Fact]
+        public async Task DoesNotMatchEndpoint_IfConstraintMatchFails()
+        {
+            // Arrange & Act
+            var response = await _client.GetAsync("/withconstraints/555");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task MatchesEndpoint_WithSuccessful_OptionalConstraintMatch()
+        {
+            // Arrange
+            var expectedContent = "withoptionalconstraints";
+
+            // Act
+            var response = await _client.GetAsync("/withoptionalconstraints/555_001");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.NotNull(response.Content);
+            var actualContent = await response.Content.ReadAsStringAsync();
+            Assert.Equal(expectedContent, actualContent);
+        }
+
+        [Fact]
+        public async Task MatchesEndpoint_WithSuccessful_OptionalConstraintMatch_NoValueForParameter()
+        {
+            // Arrange
+            var expectedContent = "withoptionalconstraints";
+
+            // Act
+            var response = await _client.GetAsync("/withoptionalconstraints");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.NotNull(response.Content);
+            var actualContent = await response.Content.ReadAsStringAsync();
+            Assert.Equal(expectedContent, actualContent);
+        }
+
+        [Fact]
+        public async Task DoesNotMatchEndpoint_IfOptionalConstraintMatchFails()
+        {
+            // Arrange & Act
+            var response = await _client.GetAsync("/withoptionalconstraints/555");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
+
         public void Dispose()
         {
             _testServer.Dispose();

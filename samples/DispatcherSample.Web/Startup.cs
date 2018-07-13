@@ -2,8 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Text;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Matchers;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,7 +19,13 @@ namespace DispatcherSample.Web
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddRouting();
+            services.AddTransient<EndsWithStringMatchProcessor>();
+
+            services.AddRouting(options =>
+            {
+                options.ConstraintMap.Add("endsWith", typeof(EndsWithStringMatchProcessor));
+            });
+
             services.AddDispatcher(options =>
             {
                 options.DataSources.Add(new DefaultEndpointDataSource(new[]
@@ -31,7 +39,13 @@ namespace DispatcherSample.Web
                             response.ContentLength = payloadLength;
                             return response.Body.WriteAsync(_homePayload, 0, payloadLength);
                         },
-                        "/", new RouteValueDictionary(), new RouteValueDictionary(), 0, EndpointMetadataCollection.Empty, "Home"),
+                        "/",
+                        new RouteValueDictionary(),
+                        new RouteValueDictionary(),
+                        new List<MatchProcessorReference>(),
+                        0,
+                        EndpointMetadataCollection.Empty,
+                        "Home"),
                     new MatcherEndpoint((next) => (httpContext) =>
                         {
                             var response = httpContext.Response;
@@ -41,7 +55,41 @@ namespace DispatcherSample.Web
                             response.ContentLength = payloadLength;
                             return response.Body.WriteAsync(_helloWorldPayload, 0, payloadLength);
                         },
-                        "/plaintext", new RouteValueDictionary(), new RouteValueDictionary(), 0, EndpointMetadataCollection.Empty, "Plaintext"),
+                        "/plaintext",
+                        new RouteValueDictionary(),
+                        new RouteValueDictionary(),
+                        new List<MatchProcessorReference>(),
+                        0,
+                        EndpointMetadataCollection.Empty,
+                        "Plaintext"),
+                    new MatcherEndpoint((next) => (httpContext) =>
+                        {
+                            var response = httpContext.Response;
+                            response.StatusCode = 200;
+                            response.ContentType = "text/plain";
+                            return response.WriteAsync("WithConstraints");
+                        },
+                        "/withconstraints/{id:endsWith(_001)}",
+                        new RouteValueDictionary(),
+                        new RouteValueDictionary(),
+                        new List<MatchProcessorReference>(),
+                        0,
+                        EndpointMetadataCollection.Empty,
+                        "withconstraints"),
+                    new MatcherEndpoint((next) => (httpContext) =>
+                        {
+                            var response = httpContext.Response;
+                            response.StatusCode = 200;
+                            response.ContentType = "text/plain";
+                            return response.WriteAsync("withoptionalconstraints");
+                        },
+                        "/withoptionalconstraints/{id:endsWith(_001)?}",
+                        new RouteValueDictionary(),
+                        new RouteValueDictionary(),
+                        new List<MatchProcessorReference>(),
+                        0,
+                        EndpointMetadataCollection.Empty,
+                        "withoptionalconstraints"),
                 }));
             });
         }
