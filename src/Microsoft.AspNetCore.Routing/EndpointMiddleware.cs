@@ -34,7 +34,10 @@ namespace Microsoft.AspNetCore.Routing
             var feature = httpContext.Features.Get<IEndpointFeature>();
             if (feature == null)
             {
-                throw new InvalidOperationException("Unable to execute an endpoint because the dispatcher was not run. Ensure dispatcher middleware is registered.");
+                var message = $"Unable to execute an endpoint because the {nameof(DispatcherMiddleware)} was not run for this request. " +
+                    $"Ensure {nameof(DispatcherMiddleware)} is added to the request execution pipeline before {nameof(EndpointMiddleware)} in application startup code.";
+
+                throw new InvalidOperationException(message);
             }
 
             if (feature.Invoker != null)

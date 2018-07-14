@@ -12,7 +12,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Builder
 {
-    public class DispatcherApplicationBuilderExtensions
+    public class DispatcherApplicationBuilderExtensionsTest
     {
         [Fact]
         public void UseDispatcher_ServicesNotRegistered_Throws()
@@ -69,7 +69,26 @@ namespace Microsoft.AspNetCore.Builder
         }
 
         [Fact]
-        public async Task UseEndpoint_ServicesRegistered_SetsFeature()
+        public void UseEndpoint_ServicesRegisteredAndNoDispatcherRegistered_Throws()
+        {
+            // Arrange
+            var services = CreateServices();
+
+            var app = new ApplicationBuilder(services);
+
+            // Act
+            var ex = Assert.Throws<InvalidOperationException>(() => app.UseEndpoint());
+
+            // Assert
+            Assert.Equal(
+                "DispatcherMiddleware must be added to the request execution pipeline before EndpointMiddleware. " +
+                "Please add DispatcherMiddleware by calling 'IApplicationBuilder.UseDispatcher' " +
+                "inside the call to 'Configure(...)' in the application startup code.",
+                ex.Message);
+        }
+
+        [Fact]
+        public async Task UseEndpoint_ServicesRegisteredAndDispatcherRegistered_SetsFeature()
         {
             // Arrange
             var services = CreateServices();
