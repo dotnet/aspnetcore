@@ -416,6 +416,48 @@ namespace Microsoft.AspNetCore.Routing
         internal static string FormatAmbiguousEndpoints(object p0, object p1)
             => string.Format(CultureInfo.CurrentCulture, GetString("AmbiguousEndpoints"), p0, p1);
 
+        /// <summary>
+        /// Value cannot be null or empty.
+        /// </summary>
+        internal static string Argument_NullOrEmpty
+        {
+            get => GetString("Argument_NullOrEmpty");
+        }
+
+        /// <summary>
+        /// Value cannot be null or empty.
+        /// </summary>
+        internal static string FormatArgument_NullOrEmpty()
+            => GetString("Argument_NullOrEmpty");
+
+        /// <summary>
+        /// The collection cannot be empty.
+        /// </summary>
+        internal static string RoutePatternBuilder_CollectionCannotBeEmpty
+        {
+            get => GetString("RoutePatternBuilder_CollectionCannotBeEmpty");
+        }
+
+        /// <summary>
+        /// The collection cannot be empty.
+        /// </summary>
+        internal static string FormatRoutePatternBuilder_CollectionCannotBeEmpty()
+            => GetString("RoutePatternBuilder_CollectionCannotBeEmpty");
+
+        /// <summary>
+        /// The constraint entry '{0}' - '{1}' must have a string value or be of a type which implements '{2}'.
+        /// </summary>
+        internal static string ConstraintMustBeStringOrConstraint
+        {
+            get => GetString("ConstraintMustBeStringOrConstraint");
+        }
+
+        /// <summary>
+        /// The constraint entry '{0}' - '{1}' must have a string value or be of a type which implements '{2}'.
+        /// </summary>
+        internal static string FormatConstraintMustBeStringOrConstraint(object p0, object p1, object p2)
+            => string.Format(CultureInfo.CurrentCulture, GetString("ConstraintMustBeStringOrConstraint"), p0, p1, p2);
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

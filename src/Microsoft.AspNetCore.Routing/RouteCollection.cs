@@ -161,7 +161,7 @@ namespace Microsoft.AspNetCore.Routing
                     queryString = queryString.ToLowerInvariant();
                 }
 
-                if (_options.AppendTrailingSlash && !urlWithoutQueryString.EndsWith("/"))
+                if (_options.AppendTrailingSlash && !urlWithoutQueryString.EndsWith("/", StringComparison.Ordinal))
                 {
                     urlWithoutQueryString += "/";
                 }

@@ -204,4 +204,13 @@
   <data name="AmbiguousEndpoints" xml:space="preserve">
     <value>The request matched multiple endpoints. Matches: {0}{0}{1}</value>
   </data>
+  <data name="Argument_NullOrEmpty" xml:space="preserve">
+    <value>Value cannot be null or empty.</value>
+  </data>
+  <data name="RoutePatternBuilder_CollectionCannotBeEmpty" xml:space="preserve">
+    <value>The collection cannot be empty.</value>
+  </data>
+  <data name="ConstraintMustBeStringOrConstraint" xml:space="preserve">
+    <value>The constraint entry '{0}' - '{1}' must have a string value or be of a type which implements '{2}'.</value>
+  </data>
 </root>
