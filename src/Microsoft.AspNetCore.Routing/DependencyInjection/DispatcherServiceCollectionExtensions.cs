@@ -6,6 +6,7 @@ using System.Reflection;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.EndpointConstraints;
 using Microsoft.AspNetCore.Routing.EndpointFinders;
+using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.AspNetCore.Routing.Matchers;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
@@ -34,6 +35,7 @@ namespace Microsoft.Extensions.DependencyInjection
             //
             // Default matcher implementation
             //
+            services.TryAddSingleton<MatchProcessorFactory, DefaultMatchProcessorFactory>();
             services.TryAddSingleton<MatcherFactory, TreeMatcherFactory>();
 
             // Link generation related services
@@ -49,6 +51,8 @@ namespace Microsoft.Extensions.DependencyInjection
             // Will be cached by the EndpointSelector
             services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IEndpointConstraintProvider, DefaultEndpointConstraintProvider>());
+
+            services.TryAddSingleton(typeof(DispatcherMarkerService));
 
             return services;
         }

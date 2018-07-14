@@ -6,10 +6,10 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Microsoft.AspNetCore.Routing.Internal
 {
     /// <summary>
-    /// A marker class used to determine if all the routing services were added
-    /// to the <see cref="IServiceCollection"/> before routing is configured.
+    /// A marker class used to determine if all the dispatcher services were added
+    /// to the <see cref="IServiceCollection"/> before dispatcher is configured.
     /// </summary>
-    internal class RoutingMarkerService
+    internal class DispatcherMarkerService
     {
     }
 }
