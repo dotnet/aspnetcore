@@ -41,6 +41,22 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             config.Save(webConfigFile);
         }
 
+        public static void ModifyEnvironmentVariableCollectionInWebConfig(IISDeploymentResult deploymentResult, string key, string value)
+        {
+            var webConfigFile = GetWebConfigFile(deploymentResult);
+            var config = XDocument.Load(webConfigFile);
+
+            var envVarElement = new XElement("environmentVariable");
+            envVarElement.SetAttributeValue("name", key);
+            envVarElement.SetAttributeValue("value", value);
+
+            config.Descendants("aspNetCore").Single()
+                .Descendants("environmentVariables").Single()
+                .Add(envVarElement);
+
+            config.Save(webConfigFile);
+        }
+
         public static void ModifyHandlerSectionInWebConfig(IISDeploymentResult deploymentResult, string handlerVersionValue)
         {
             var webConfigFile = GetWebConfigFile(deploymentResult);

@@ -19,53 +19,56 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [ConditionalTheory]
         [InlineData("CheckErrLogFile")]
         [InlineData("CheckLogFile")]
-        public async Task CheckStdoutLogging(string path)
+        public async Task CheckStdoutLoggingToFile(string path)
         {
             var deploymentParameters = Helpers.GetBaseDeploymentParameters();
             deploymentParameters.PublishApplicationBeforeDeployment = true;
-            deploymentParameters.PreservePublishedApplicationForDebugging = true; // workaround for keeping
 
             var deploymentResult = await DeployAsync(deploymentParameters);
+            var pathToLogs = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
 
             try
             {
                 Helpers.ModifyAspNetCoreSectionInWebConfig(deploymentResult, "stdoutLogEnabled", "true");
-                Helpers.ModifyAspNetCoreSectionInWebConfig(deploymentResult, "stdoutLogFile", @".\logs\stdout");
+                Helpers.ModifyAspNetCoreSectionInWebConfig(deploymentResult, "stdoutLogFile", Path.Combine(pathToLogs, "std"));
 
-                var response = await deploymentResult.RetryingHttpClient.GetAsync(path);
-
-                var responseText = await response.Content.ReadAsStringAsync();
-
-                Assert.Equal("Hello World", responseText);
+                await Helpers.AssertStarts(deploymentResult, path);
 
                 StopServer();
 
-                var folderPath = Path.Combine(deploymentResult.DeploymentResult.ContentRoot, @"logs");
+                var fileInDirectory = Directory.GetFiles(pathToLogs).Single();
 
-                var fileInDirectory = Directory.GetFiles(folderPath).Single();
-                Assert.NotNull(fileInDirectory);
-
-                string contents = null;
-
-                // RetryOperation doesn't support async lambdas, call synchronous ReadAllText.
-                RetryHelper.RetryOperation(
-                    () => contents = File.ReadAllText(fileInDirectory),
-                    e => Logger.LogError($"Failed to read file: {e.Message}"),
-                    retryCount: 10,
-                    retryDelayMilliseconds: 100);
+                var contents = File.ReadAllText(fileInDirectory);
 
                 Assert.NotNull(contents);
                 Assert.Contains("TEST MESSAGE", contents);
+                Assert.DoesNotContain(TestSink.Writes, context => context.Message.Contains("TEST MESSAGE"));
+                // TODO we should check that debug logs are restored during graceful shutdown.
+                // The IIS Express deployer doesn't support graceful shutdown.
+                //Assert.Contains(TestSink.Writes, context => context.Message.Contains("Restoring original stdout: "));
             }
             finally
             {
 
                 RetryHelper.RetryOperation(
-                    () => Directory.Delete(deploymentParameters.PublishedApplicationRootPath, true),
+                    () => Directory.Delete(pathToLogs, true),
                     e => Logger.LogWarning($"Failed to delete directory : {e.Message}"),
                     retryCount: 3,
                     retryDelayMilliseconds: 100);
             }
+        }
+
+        [ConditionalFact]
+        public async Task InvalidFilePathForLogs_ServerStillRuns()
+        {
+            var deploymentParameters = Helpers.GetBaseDeploymentParameters(publish: true);
+
+            var deploymentResult = await DeployAsync(deploymentParameters);
+
+            Helpers.ModifyAspNetCoreSectionInWebConfig(deploymentResult, "stdoutLogEnabled", "true");
+            Helpers.ModifyAspNetCoreSectionInWebConfig(deploymentResult, "stdoutLogFile", Path.Combine("Q:", "std"));
+
+            await Helpers.AssertStarts(deploymentResult, "HelloWorld");
         }
 
         [ConditionalFact]
@@ -93,6 +96,48 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             finally
             {
                 File.Delete(tempFile);
+            }
+        }
+
+        [ConditionalTheory]
+        [InlineData("CheckErrLogFile")]
+        [InlineData("CheckLogFile")]
+        public async Task CheckStdoutLoggingToPipe_DoesNotCrashProcess(string path)
+        {
+            var deploymentParameters = Helpers.GetBaseDeploymentParameters(publish: true);
+            var deploymentResult = await DeployAsync(deploymentParameters);
+
+            await Helpers.AssertStarts(deploymentResult, path);
+
+            StopServer();
+
+            if (deploymentParameters.ServerType == ServerType.IISExpress)
+            {
+                Assert.Contains(TestSink.Writes, context => context.Message.Contains("TEST MESSAGE"));
+            }
+        }
+
+        [ConditionalTheory]
+        [InlineData("CheckErrLogFile")]
+        [InlineData("CheckLogFile")]
+        public async Task CheckStdoutLoggingToPipeWithFirstWrite(string path)
+        {
+            var deploymentParameters = Helpers.GetBaseDeploymentParameters(publish: true);
+
+            var deploymentResult = await DeployAsync(deploymentParameters);
+            var firstWriteString = path + path;
+
+            Helpers.ModifyEnvironmentVariableCollectionInWebConfig(deploymentResult, "ASPNETCORE_INPROCESS_INITIAL_WRITE", firstWriteString);
+
+            await Helpers.AssertStarts(deploymentResult, path);
+
+            StopServer();
+
+            if (deploymentParameters.ServerType == ServerType.IISExpress)
+            {
+                // We can't read stdout logs from IIS as they aren't redirected.
+                Assert.Contains(TestSink.Writes, context => context.Message.Contains(firstWriteString));
+                Assert.Contains(TestSink.Writes, context => context.Message.Contains("TEST MESSAGE"));
             }
         }
 

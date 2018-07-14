@@ -19,7 +19,7 @@ public:
 
     virtual bool GetStdOutContent(STRA* struStdOutput) override;
     virtual HRESULT Start() override;
-    virtual void NotifyStartupComplete() override;
+    virtual void NotifyStartupComplete() override {};
 
 private:
     HandleWrapper<InvalidHandleTraits> m_hLogFileHandle;

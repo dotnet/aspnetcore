@@ -14,7 +14,9 @@ PipeOutputManager::PipeOutputManager() :
     m_hErrReadPipe(INVALID_HANDLE_VALUE),
     m_hErrWritePipe(INVALID_HANDLE_VALUE),
     m_hErrThread(NULL),
-    m_fDisposed(FALSE)
+    m_fDisposed(FALSE),
+    m_fdPreviousStdOut(-1),
+    m_fdPreviousStdErr(-1)
 {
     InitializeSRWLock(&m_srwLock);
 }
@@ -54,7 +56,7 @@ PipeOutputManager::StopOutputRedirection()
 
     if (m_fdPreviousStdOut >= 0)
     {
-        LOG_IF_DUPFAIL(_dup2(m_fdPreviousStdOut, _fileno(stdout)));
+        LOG_LAST_ERROR_IF(SetStdHandle(STD_OUTPUT_HANDLE, (HANDLE)_get_osfhandle(m_fdPreviousStdOut)));
     }
     else
     {
@@ -63,7 +65,7 @@ PipeOutputManager::StopOutputRedirection()
 
     if (m_fdPreviousStdErr >= 0)
     {
-        LOG_IF_DUPFAIL(_dup2(m_fdPreviousStdErr, _fileno(stderr)));
+        LOG_LAST_ERROR_IF(SetStdHandle(STD_ERROR_HANDLE, (HANDLE)_get_osfhandle(m_fdPreviousStdErr)));
     }
     else
     {

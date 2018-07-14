@@ -53,7 +53,13 @@ namespace Microsoft.AspNetCore.Server.IIS
         private static extern void http_indicate_completion(IntPtr pInProcessHandler, REQUEST_NOTIFICATION_STATUS notificationStatus);
 
         [DllImport(AspNetCoreModuleDll)]
-        private static extern int register_callbacks(IntPtr pInProcessApplication, PFN_REQUEST_HANDLER requestCallback, PFN_SHUTDOWN_HANDLER shutdownCallback, PFN_ASYNC_COMPLETION asyncCallback, IntPtr pvRequestContext, IntPtr pvShutdownContext);
+        private static extern int register_callbacks(IntPtr pInProcessApplication,
+            PFN_REQUEST_HANDLER requestCallback,
+            PFN_SHUTDOWN_HANDLER shutdownCallback,
+            PFN_ASYNC_COMPLETION asyncCallback,
+            IntPtr pvRequestContext,
+            IntPtr pvShutdownContext,
+            out bool resetStandardStreams);
 
         [DllImport(AspNetCoreModuleDll)]
         private static extern unsafe int http_write_response_bytes(IntPtr pInProcessHandler, HttpApiTypes.HTTP_DATA_CHUNK* pDataChunks, int nChunks, out bool fCompletionExpected);
@@ -135,9 +141,15 @@ namespace Microsoft.AspNetCore.Server.IIS
             Validate(http_set_completion_status(pInProcessHandler, rquestNotificationStatus));
         }
 
-        public static void HttpRegisterCallbacks(IntPtr pInProcessApplication, PFN_REQUEST_HANDLER requestCallback, PFN_SHUTDOWN_HANDLER shutdownCallback, PFN_ASYNC_COMPLETION asyncCallback, IntPtr pvRequestContext, IntPtr pvShutdownContext)
+        public static void HttpRegisterCallbacks(IntPtr pInProcessApplication,
+            PFN_REQUEST_HANDLER requestCallback,
+            PFN_SHUTDOWN_HANDLER shutdownCallback,
+            PFN_ASYNC_COMPLETION asyncCallback,
+            IntPtr pvRequestContext,
+            IntPtr pvShutdownContext,
+            out bool resetStandardStreams)
         {
-            Validate(register_callbacks(pInProcessApplication, requestCallback, shutdownCallback, asyncCallback, pvRequestContext, pvShutdownContext));
+            Validate(register_callbacks(pInProcessApplication, requestCallback, shutdownCallback, asyncCallback, pvRequestContext, pvShutdownContext, out resetStandardStreams));
         }
 
         public static unsafe int HttpWriteResponseBytes(IntPtr pInProcessHandler, HttpApiTypes.HTTP_DATA_CHUNK* pDataChunks, int nChunks, out bool fCompletionExpected)

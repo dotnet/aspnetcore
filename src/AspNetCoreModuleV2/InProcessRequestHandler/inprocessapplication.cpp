@@ -277,10 +277,7 @@ IN_PROCESS_APPLICATION::LoadManagedApplication
                 goto Finished;
             }
 
-            if (FAILED(hr = m_pLoggerProvider->Start()))
-            {
-                goto Finished;
-            }
+            LOG_IF_FAILED(m_pLoggerProvider->Start());
         }
 
         if (m_status != APPLICATION_STATUS::STARTING)
