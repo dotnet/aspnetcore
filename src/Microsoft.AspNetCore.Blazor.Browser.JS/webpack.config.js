@@ -9,6 +9,7 @@ module.exports = (env, args) => ({
     },
     entry: {
         'blazor.webassembly': './src/Boot.WebAssembly.ts',
+        'blazor.server': './src/Boot.Server.ts',
     },
     output: { path: path.join(__dirname, '/dist'), filename: '[name].js' }
 });

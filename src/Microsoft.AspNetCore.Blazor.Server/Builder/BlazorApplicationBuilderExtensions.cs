@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Builder
     /// <summary>
     /// Provides extension methods that add Blazor-related middleware to the ASP.NET pipeline.
     /// </summary>
-    public static class BlazorAppBuilderExtensions
+    public static class BlazorApplicationBuilderExtensions
     {
         const string DevServerApplicationName = "dotnet-blazor";
 

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Blazor.E2ETest.Infrastructure;
@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
         [Fact]
         public void HasFetchDataPage()
         {
-            // Navigate to "Counter"
+            // Navigate to "Fetch data"
             Browser.FindElement(By.LinkText("Fetch data")).Click();
             Assert.Equal("Weather forecast", Browser.FindElement(By.TagName("h1")).Text);
 

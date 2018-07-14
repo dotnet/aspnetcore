@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <!-- Requires 2.1 because of the dependency on applications -->
@@ -22,6 +22,8 @@
     <ProjectReference Include="..\..\samples\HostedInAspNet.Server\HostedInAspNet.Server.csproj" />
     <ProjectReference Include="..\..\samples\MonoSanityClient\MonoSanityClient.csproj" />
     <ProjectReference Include="..\..\samples\MonoSanity\MonoSanity.csproj" />
+    <ProjectReference Include="..\..\samples\ServerSideBlazor.Client\ServerSideBlazor.Client.csproj" />
+    <ProjectReference Include="..\..\samples\ServerSideBlazor.Server\ServerSideBlazor.Server.csproj" />
     <ProjectReference Include="..\..\samples\StandaloneApp\StandaloneApp.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Blazor.Cli\Microsoft.AspNetCore.Blazor.Cli.csproj" />
     <ProjectReference Include="..\testapps\BasicTestApp\BasicTestApp.csproj" />

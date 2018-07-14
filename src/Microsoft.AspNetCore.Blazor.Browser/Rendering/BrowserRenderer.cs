@@ -31,7 +31,10 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Rendering
         /// <param name="serviceProvider">The <see cref="IServiceProvider"/> to use when initializing components.</param>
         public BrowserRenderer(IServiceProvider serviceProvider): base(serviceProvider)
         {
-            _browserRendererId = BrowserRendererRegistry.CurrentUserInstance.Add(this);
+            // The browser renderer registers and unregisters itself with the static
+            // registry. This works well with the WebAssembly runtime, and is simple for the
+            // case where Blazor is running in process.
+            _browserRendererId = RendererRegistry.Current.Add(this);
         }
 
         internal void DispatchBrowserEvent(int componentId, int eventHandlerId, UIEventArgs eventArgs)
@@ -79,7 +82,7 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Rendering
         /// </summary>
         public void Dispose()
         {
-            BrowserRendererRegistry.CurrentUserInstance.TryRemove(_browserRendererId);
+            RendererRegistry.Current.TryRemove(_browserRendererId);
         }
 
         /// <inheritdoc />

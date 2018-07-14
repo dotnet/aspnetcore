@@ -7,6 +7,7 @@
     <BenchmarkDotNetPackageVersion>0.10.13</BenchmarkDotNetPackageVersion>
     <InternalAspNetCoreSdkPackageVersion>2.1.0-rtm-15789</InternalAspNetCoreSdkPackageVersion>
     <MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>2.2.0-preview1-34576</MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>
+    <SignalRPackageVersion>1.0.0</SignalRPackageVersion>
     <TemplateBlazorPackageVersion>0.5.0-preview1-10325</TemplateBlazorPackageVersion>
   </PropertyGroup>
 

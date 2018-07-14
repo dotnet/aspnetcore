@@ -70,14 +70,14 @@ namespace Microsoft.AspNetCore.Blazor.Hosting
             services.AddSingleton<IWebAssemblyHost, WebAssemblyHost>();
             services.AddSingleton<IJSRuntime, MonoWebAssemblyJSRuntime>();
 
-            services.AddSingleton<IUriHelper, BrowserUriHelper>();
+            services.AddSingleton<IUriHelper>(BrowserUriHelper.Instance);
             services.AddSingleton<HttpClient>(s =>
             {
                 // Creating the URI helper needs to wait until the JS Runtime is initialized, so defer it.
                 var uriHelper = s.GetRequiredService<IUriHelper>();
                 return new HttpClient(new BrowserHttpMessageHandler())
                 {
-                    BaseAddress = new Uri(uriHelper.GetBaseUri())
+                    BaseAddress = new Uri(BrowserUriHelper.Instance.GetBaseUri())
                 };
             });
 

@@ -1,11 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Net.Http;
 using Microsoft.AspNetCore.Blazor.Browser.Http;
 using Microsoft.AspNetCore.Blazor.Services;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Net.Http;
 
 namespace Microsoft.AspNetCore.Blazor.Browser.Services
 {
@@ -48,11 +48,10 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Services
 
         private void AddDefaultServices(ServiceCollection serviceCollection)
         {
-            var uriHelper = new BrowserUriHelper();
-            serviceCollection.AddSingleton<IUriHelper>(uriHelper);
+            serviceCollection.AddSingleton<IUriHelper>(BrowserUriHelper.Instance);
             serviceCollection.AddSingleton(new HttpClient(new BrowserHttpMessageHandler())
             {
-                BaseAddress = new Uri(uriHelper.GetBaseUri())
+                BaseAddress = new Uri(BrowserUriHelper.Instance.GetBaseUri())
             });
         }
     }

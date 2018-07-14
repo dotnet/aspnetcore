@@ -1,8 +1,7 @@
-import { platform } from '../Environment';
-import { MethodHandle, System_String } from '../Platform/Platform';
-const registeredFunctionPrefix = 'Microsoft.AspNetCore.Blazor.Browser.Services.BrowserUriHelper';
-let notifyLocationChangedMethod: MethodHandle;
 let hasRegisteredEventListeners = false;
+
+// Will be initialized once someone registers
+let notifyLocationChangedCallback: { assemblyName: string, functionName: string } | null = null;
 
 // These are the functions we're making available for invocation from .NET
 export const internalFunctions = {
@@ -12,10 +11,12 @@ export const internalFunctions = {
   getLocationHref: () => location.href,
 }
 
-function enableNavigationInterception() {
-  if (hasRegisteredEventListeners) {
+function enableNavigationInterception(assemblyName: string, functionName: string) {
+  if (hasRegisteredEventListeners || assemblyName === undefined || functionName === undefined) {
     return;
   }
+
+  notifyLocationChangedCallback = { assemblyName, functionName };
   hasRegisteredEventListeners = true;
 
   document.addEventListener('click', event => {
@@ -53,11 +54,13 @@ function performInternalNavigation(absoluteInternalHref: string) {
 }
 
 async function handleInternalNavigation() {
-  await DotNet.invokeMethodAsync(
-    'Microsoft.AspNetCore.Blazor.Browser',
-    'NotifyLocationChanged',
-    location.href
-  );
+  if (notifyLocationChangedCallback) {
+    await DotNet.invokeMethodAsync(
+      notifyLocationChangedCallback.assemblyName,
+      notifyLocationChangedCallback.functionName,
+      location.href
+    );
+  }
 }
 
 let testAnchor: HTMLAnchorElement;

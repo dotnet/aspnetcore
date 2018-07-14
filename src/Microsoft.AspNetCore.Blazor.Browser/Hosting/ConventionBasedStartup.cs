@@ -24,12 +24,12 @@ namespace Microsoft.AspNetCore.Blazor.Hosting
     // - DI into constructor
     internal class ConventionBasedStartup : IBlazorStartup
     {
-        private readonly object _instance;
-
         public ConventionBasedStartup(object instance)
         {
-            _instance = instance ?? throw new ArgumentNullException(nameof(instance));
+            Instance = instance ?? throw new ArgumentNullException(nameof(instance));
         }
+
+        public object Instance { get; }
 
         public void Configure(IBlazorApplicationBuilder app, IServiceProvider services)
         {
@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Blazor.Hosting
                         : services.GetRequiredService(parameter.ParameterType);
                 }
 
-                method.Invoke(_instance, arguments);
+                method.Invoke(Instance, arguments);
             }
             catch (Exception ex)
             {
@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Blazor.Hosting
 
         internal MethodInfo GetConfigureMethod()
         {
-            var methods = _instance.GetType()
+            var methods = Instance.GetType()
                 .GetMethods(BindingFlags.Instance | BindingFlags.Public)
                 .Where(m => string.Equals(m.Name, "Configure", StringComparison.Ordinal))
                 .ToArray();
@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Blazor.Hosting
                 var method = GetConfigureServicesMethod();
                 if (method != null)
                 {
-                     method.Invoke(_instance, new object[] { services });
+                     method.Invoke(Instance, new object[] { services });
                 }
             }
             catch (Exception ex)
@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.Blazor.Hosting
 
         internal MethodInfo GetConfigureServicesMethod()
         {
-            return _instance.GetType()
+            return Instance.GetType()
                 .GetMethod(
                     "ConfigureServices",
                     BindingFlags.Public | BindingFlags.Instance,

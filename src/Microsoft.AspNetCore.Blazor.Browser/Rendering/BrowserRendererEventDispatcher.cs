@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.AspNetCore.Blazor.Rendering;
 using Microsoft.JSInterop;
 using System;
 
@@ -12,17 +13,6 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Rendering
     /// </summary>
     public static class BrowserRendererEventDispatcher
     {
-        // TODO: Fix this for multi-user scenarios. Currently it doesn't stop people from
-        // triggering events for other people by passing an arbitrary browserRendererId.
-        //
-        // Preferred fix: Instead of storing the Renderer instances in a static dictionary
-        // store them within the context of a Circuit. Then we'll only look up the ones
-        // associated with the caller's circuit. This takes care of ensuring they are
-        // released when the circuit is closed too.
-        //
-        // More generally, we must move away from using statics for any per-user state
-        // now that we have multi-user scenarios.
-
         /// <summary>
         /// For framework use only.
         /// </summary>
@@ -31,8 +21,8 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Rendering
             BrowserEventDescriptor eventDescriptor, string eventArgsJson)
         {
             var eventArgs = ParseEventArgsJson(eventDescriptor.EventArgsType, eventArgsJson);
-            var browserRenderer = BrowserRendererRegistry.CurrentUserInstance.Find(eventDescriptor.BrowserRendererId);
-            browserRenderer.DispatchBrowserEvent(
+            var renderer = RendererRegistry.Current.Find(eventDescriptor.BrowserRendererId);
+            renderer.DispatchEvent(
                 eventDescriptor.ComponentId,
                 eventDescriptor.EventHandlerId,
                 eventArgs);

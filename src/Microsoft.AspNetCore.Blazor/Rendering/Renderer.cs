@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
         /// <param name="componentId">The unique identifier for the component within the scope of this <see cref="Renderer"/>.</param>
         /// <param name="eventHandlerId">The <see cref="RenderTreeFrame.AttributeEventHandlerId"/> value from the original event attribute.</param>
         /// <param name="eventArgs">Arguments to be passed to the event handler.</param>
-        protected void DispatchEvent(int componentId, int eventHandlerId, UIEventArgs eventArgs)
+        public void DispatchEvent(int componentId, int eventHandlerId, UIEventArgs eventArgs)
         {
             if (_eventBindings.TryGetValue(eventHandlerId, out var binding))
             {
