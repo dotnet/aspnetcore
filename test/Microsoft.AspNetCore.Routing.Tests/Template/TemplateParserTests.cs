@@ -5,9 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
-using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Routing.Template.Tests
@@ -528,8 +525,8 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
 
         [Theory]
         [InlineData("{p1}.{p2?}.{p3}", "p2", ".")]
-        [InlineData("{p1?}{p2}", "p1", "p2")]
-        [InlineData("{p1?}{p2?}", "p1", "p2")]
+        [InlineData("{p1?}{p2}", "p1", "{p2}")]
+        [InlineData("{p1?}{p2?}", "p1", "{p2?}")]
         [InlineData("{p1}.{p2?})", "p2", ")")]
         [InlineData("{foorb?}-bar-{z}", "foorb", "-bar-")]
         public void Parse_ComplexSegment_OptionalParameter_NotTheLastPart(
@@ -655,18 +652,6 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
                 "Parameter name: routeTemplate");
         }
 
-        [Theory]
-        [InlineData("/foo")]
-        [InlineData("~/foo")]
-        public void ValidTemplate_CanStartWithSlashOrTildeSlash(string routeTemplate)
-        {
-            // Arrange & Act
-            var template = TemplateParser.Parse(routeTemplate);
-
-            // Assert
-            Assert.Equal(routeTemplate, template.TemplateText);
-        }
-
         [Fact]
         public void InvalidTemplate_CannotHaveConsecutiveOpenBrace()
         {
@@ -778,6 +763,18 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
                 "A path segment cannot contain two consecutive parameters. They must be separated by a '/' or by " +
                 "a literal string." + Environment.NewLine +
                 "Parameter name: routeTemplate");
+        }
+
+        [Theory]
+        [InlineData("/foo")]
+        [InlineData("~/foo")]
+        public void ValidTemplate_CanStartWithSlashOrTildeSlash(string routeTemplate)
+        {
+            // Arrange & Act
+            var pattern = TemplateParser.Parse(routeTemplate);
+
+            // Assert
+            Assert.Equal(routeTemplate, pattern.TemplateText);
         }
 
         [Fact]

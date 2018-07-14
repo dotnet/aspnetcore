@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNetCore.Routing.Patterns;
 
 namespace Microsoft.AspNetCore.Routing.Template
 {
@@ -22,6 +23,16 @@ namespace Microsoft.AspNetCore.Routing.Template
             }
 
             Constraint = constraint;
+        }
+
+        public InlineConstraint(RoutePatternConstraintReference other)
+        {
+            if (other == null)
+            {
+                throw new ArgumentNullException(nameof(other));
+            }
+
+            Constraint = other.Content;
         }
 
         /// <summary>
