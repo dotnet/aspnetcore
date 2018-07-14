@@ -30,7 +30,6 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(services));
             }
 
-            services.TryAddSingleton<MatchProcessorFactory, DefaultMatchProcessorFactory>();
             services.TryAddTransient<IInlineConstraintResolver, DefaultInlineConstraintResolver>();
             services.TryAddSingleton<ObjectPool<UriBuildingContext>>(s =>
             {
