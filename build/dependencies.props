@@ -3,22 +3,22 @@
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
   <PropertyGroup Label="Package Versions">
-    <InternalAspNetCoreSdkPackageVersion>3.0.0-alpha1-10005</InternalAspNetCoreSdkPackageVersion>
-    <MicrosoftAspNetCoreDataProtectionPackageVersion>3.0.0-alpha1-10044</MicrosoftAspNetCoreDataProtectionPackageVersion>
-    <MicrosoftAspNetCoreHttpAbstractionsPackageVersion>3.0.0-alpha1-10044</MicrosoftAspNetCoreHttpAbstractionsPackageVersion>
-    <MicrosoftAspNetCoreServerIISIntegrationPackageVersion>3.0.0-alpha1-10044</MicrosoftAspNetCoreServerIISIntegrationPackageVersion>
-    <MicrosoftAspNetCoreServerKestrelPackageVersion>3.0.0-alpha1-10044</MicrosoftAspNetCoreServerKestrelPackageVersion>
-    <MicrosoftAspNetCoreTestHostPackageVersion>3.0.0-alpha1-10044</MicrosoftAspNetCoreTestHostPackageVersion>
-    <MicrosoftExtensionsCachingAbstractionsPackageVersion>3.0.0-alpha1-10044</MicrosoftExtensionsCachingAbstractionsPackageVersion>
-    <MicrosoftExtensionsCachingMemoryPackageVersion>3.0.0-alpha1-10044</MicrosoftExtensionsCachingMemoryPackageVersion>
-    <MicrosoftExtensionsCachingRedisPackageVersion>3.0.0-alpha1-10044</MicrosoftExtensionsCachingRedisPackageVersion>
-    <MicrosoftExtensionsCachingSqlServerPackageVersion>3.0.0-alpha1-10044</MicrosoftExtensionsCachingSqlServerPackageVersion>
-    <MicrosoftExtensionsLoggingAbstractionsPackageVersion>3.0.0-alpha1-10044</MicrosoftExtensionsLoggingAbstractionsPackageVersion>
-    <MicrosoftExtensionsLoggingConsolePackageVersion>3.0.0-alpha1-10044</MicrosoftExtensionsLoggingConsolePackageVersion>
-    <MicrosoftExtensionsLoggingTestingPackageVersion>3.0.0-alpha1-10044</MicrosoftExtensionsLoggingTestingPackageVersion>
-    <MicrosoftExtensionsOptionsPackageVersion>3.0.0-alpha1-10044</MicrosoftExtensionsOptionsPackageVersion>
-    <MicrosoftNETCoreApp20PackageVersion>2.0.0</MicrosoftNETCoreApp20PackageVersion>
-    <MicrosoftNETCoreApp21PackageVersion>2.1.0</MicrosoftNETCoreApp21PackageVersion>
+    <InternalAspNetCoreSdkPackageVersion>3.0.0-alpha1-10009</InternalAspNetCoreSdkPackageVersion>
+    <MicrosoftAspNetCoreDataProtectionPackageVersion>3.0.0-alpha1-10081</MicrosoftAspNetCoreDataProtectionPackageVersion>
+    <MicrosoftAspNetCoreHttpAbstractionsPackageVersion>3.0.0-alpha1-10081</MicrosoftAspNetCoreHttpAbstractionsPackageVersion>
+    <MicrosoftAspNetCoreServerIISIntegrationPackageVersion>3.0.0-alpha1-10081</MicrosoftAspNetCoreServerIISIntegrationPackageVersion>
+    <MicrosoftAspNetCoreServerKestrelPackageVersion>3.0.0-alpha1-10081</MicrosoftAspNetCoreServerKestrelPackageVersion>
+    <MicrosoftAspNetCoreTestHostPackageVersion>3.0.0-alpha1-10081</MicrosoftAspNetCoreTestHostPackageVersion>
+    <MicrosoftExtensionsCachingAbstractionsPackageVersion>3.0.0-alpha1-10081</MicrosoftExtensionsCachingAbstractionsPackageVersion>
+    <MicrosoftExtensionsCachingMemoryPackageVersion>3.0.0-alpha1-10081</MicrosoftExtensionsCachingMemoryPackageVersion>
+    <MicrosoftExtensionsCachingRedisPackageVersion>3.0.0-alpha1-10081</MicrosoftExtensionsCachingRedisPackageVersion>
+    <MicrosoftExtensionsCachingSqlServerPackageVersion>3.0.0-alpha1-10081</MicrosoftExtensionsCachingSqlServerPackageVersion>
+    <MicrosoftExtensionsLoggingAbstractionsPackageVersion>3.0.0-alpha1-10081</MicrosoftExtensionsLoggingAbstractionsPackageVersion>
+    <MicrosoftExtensionsLoggingConsolePackageVersion>3.0.0-alpha1-10081</MicrosoftExtensionsLoggingConsolePackageVersion>
+    <MicrosoftExtensionsLoggingTestingPackageVersion>3.0.0-alpha1-10081</MicrosoftExtensionsLoggingTestingPackageVersion>
+    <MicrosoftExtensionsOptionsPackageVersion>3.0.0-alpha1-10081</MicrosoftExtensionsOptionsPackageVersion>
+    <MicrosoftNETCoreApp20PackageVersion>2.0.9</MicrosoftNETCoreApp20PackageVersion>
+    <MicrosoftNETCoreApp21PackageVersion>2.1.2</MicrosoftNETCoreApp21PackageVersion>
     <MicrosoftNETCoreApp22PackageVersion>2.2.0-preview1-26618-02</MicrosoftNETCoreApp22PackageVersion>
     <MicrosoftNETTestSdkPackageVersion>15.6.1</MicrosoftNETTestSdkPackageVersion>
     <NETStandardLibrary20PackageVersion>2.0.3</NETStandardLibrary20PackageVersion>
