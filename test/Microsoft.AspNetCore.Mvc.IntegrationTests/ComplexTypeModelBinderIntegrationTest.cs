@@ -50,7 +50,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task MutableObjectModelBinder_BindsNestedPOCO_WithBodyModelBinder_WithPrefix_Success()
         {
             // Arrange
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -65,10 +64,19 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             });
 
             var modelState = testContext.ModelState;
+            var metadata = GetMetadata(testContext, parameter);
+            var modelBinder = GetModelBinder(testContext, parameter, metadata);
             var valueProvider = await CompositeValueProvider.CreateAsync(testContext);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext);
 
             // Act
-            var modelBindingResult = await parameterBinder.BindModelAsync(testContext, valueProvider, parameter);
+            var modelBindingResult = await parameterBinder.BindModelAsync(
+                testContext,
+                modelBinder,
+                valueProvider,
+                parameter,
+                metadata,
+                value: null);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -92,7 +100,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task MutableObjectModelBinder_BindsNestedPOCO_WithBodyModelBinder_WithEmptyPrefix_Success()
         {
             // Arrange
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -107,10 +114,19 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             });
 
             var modelState = testContext.ModelState;
+            var metadata = GetMetadata(testContext, parameter);
+            var modelBinder = GetModelBinder(testContext, parameter, metadata);
             var valueProvider = await CompositeValueProvider.CreateAsync(testContext);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext);
 
             // Act
-            var modelBindingResult = await parameterBinder.BindModelAsync(testContext, valueProvider, parameter);
+            var modelBindingResult = await parameterBinder.BindModelAsync(
+                testContext,
+                modelBinder,
+                valueProvider,
+                parameter,
+                metadata,
+                value: null);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -150,11 +166,19 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             testContext.MvcOptions.AllowEmptyInputInBodyModelBinding = true;
 
             var modelState = testContext.ModelState;
+            var metadata = GetMetadata(testContext, parameter);
+            var modelBinder = GetModelBinder(testContext, parameter, metadata);
             var valueProvider = await CompositeValueProvider.CreateAsync(testContext);
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext.HttpContext.RequestServices);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext);
 
             // Act
-            var modelBindingResult = await parameterBinder.BindModelAsync(testContext, valueProvider, parameter);
+            var modelBindingResult = await parameterBinder.BindModelAsync(
+                testContext,
+                modelBinder,
+                valueProvider,
+                parameter,
+                metadata,
+                value: null);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -179,7 +203,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task MutableObjectModelBinder_BindsNestedPOCO_WithBodyModelBinder_WithPrefix_PartialData()
         {
             // Arrange
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -194,10 +217,19 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             });
 
             var modelState = testContext.ModelState;
+            var metadata = GetMetadata(testContext, parameter);
+            var modelBinder = GetModelBinder(testContext, parameter, metadata);
             var valueProvider = await CompositeValueProvider.CreateAsync(testContext);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext);
 
             // Act
-            var modelBindingResult = await parameterBinder.BindModelAsync(testContext, valueProvider, parameter);
+            var modelBindingResult = await parameterBinder.BindModelAsync(
+                testContext,
+                modelBinder,
+                valueProvider,
+                parameter,
+                metadata,
+                value: null);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -221,7 +253,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task MutableObjectModelBinder_BindsNestedPOCO_WithBodyModelBinder_WithPrefix_NoData()
         {
             // Arrange
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -236,10 +267,19 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             });
 
             var modelState = testContext.ModelState;
+            var metadata = GetMetadata(testContext, parameter);
+            var modelBinder = GetModelBinder(testContext, parameter, metadata);
             var valueProvider = await CompositeValueProvider.CreateAsync(testContext);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext);
 
             // Act
-            var modelBindingResult = await parameterBinder.BindModelAsync(testContext, valueProvider, parameter);
+            var modelBindingResult = await parameterBinder.BindModelAsync(
+                testContext,
+                modelBinder,
+                valueProvider,
+                parameter,
+                metadata,
+                value: null);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -270,7 +310,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task MutableObjectModelBinder_BindsNestedPOCO_WithByteArrayModelBinder_WithPrefix_Success()
         {
             // Arrange
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -285,10 +324,19 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             });
 
             var modelState = testContext.ModelState;
+            var metadata = GetMetadata(testContext, parameter);
+            var modelBinder = GetModelBinder(testContext, parameter, metadata);
             var valueProvider = await CompositeValueProvider.CreateAsync(testContext);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext);
 
             // Act
-            var modelBindingResult = await parameterBinder.BindModelAsync(testContext, valueProvider, parameter);
+            var modelBindingResult = await parameterBinder.BindModelAsync(
+                testContext,
+                modelBinder,
+                valueProvider,
+                parameter,
+                metadata,
+                value: null);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -315,7 +363,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task MutableObjectModelBinder_BindsNestedPOCO_WithByteArrayModelBinder_WithEmptyPrefix_Success()
         {
             // Arrange
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -329,10 +376,19 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             });
 
             var modelState = testContext.ModelState;
+            var metadata = GetMetadata(testContext, parameter);
+            var modelBinder = GetModelBinder(testContext, parameter, metadata);
             var valueProvider = await CompositeValueProvider.CreateAsync(testContext);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext);
 
             // Act
-            var modelBindingResult = await parameterBinder.BindModelAsync(testContext, valueProvider, parameter);
+            var modelBindingResult = await parameterBinder.BindModelAsync(
+                testContext,
+                modelBinder,
+                valueProvider,
+                parameter,
+                metadata,
+                value: null);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -359,7 +415,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task MutableObjectModelBinder_BindsNestedPOCO_WithByteArrayModelBinder_WithPrefix_NoData()
         {
             // Arrange
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -373,10 +428,19 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             });
 
             var modelState = testContext.ModelState;
+            var metadata = GetMetadata(testContext, parameter);
+            var modelBinder = GetModelBinder(testContext, parameter, metadata);
             var valueProvider = await CompositeValueProvider.CreateAsync(testContext);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext);
 
             // Act
-            var modelBindingResult = await parameterBinder.BindModelAsync(testContext, valueProvider, parameter);
+            var modelBindingResult = await parameterBinder.BindModelAsync(
+                testContext,
+                modelBinder,
+                valueProvider,
+                parameter,
+                metadata,
+                value: null);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -413,7 +477,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task MutableObjectModelBinder_BindsNestedPOCO_WithFormFileModelBinder_WithPrefix_Success()
         {
             // Arrange
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -428,10 +491,19 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             });
 
             var modelState = testContext.ModelState;
+            var metadata = GetMetadata(testContext, parameter);
+            var modelBinder = GetModelBinder(testContext, parameter, metadata);
             var valueProvider = await CompositeValueProvider.CreateAsync(testContext);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext);
 
             // Act
-            var modelBindingResult = await parameterBinder.BindModelAsync(testContext, valueProvider, parameter);
+            var modelBindingResult = await parameterBinder.BindModelAsync(
+                testContext,
+                modelBinder,
+                valueProvider,
+                parameter,
+                metadata,
+                value: null);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -458,7 +530,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task MutableObjectModelBinder_BindsNestedPOCO_WithFormFileModelBinder_WithEmptyPrefix_Success()
         {
             // Arrange
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -473,10 +544,19 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             });
 
             var modelState = testContext.ModelState;
+            var metadata = GetMetadata(testContext, parameter);
+            var modelBinder = GetModelBinder(testContext, parameter, metadata);
             var valueProvider = await CompositeValueProvider.CreateAsync(testContext);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext);
 
             // Act
-            var modelBindingResult = await parameterBinder.BindModelAsync(testContext, valueProvider, parameter);
+            var modelBindingResult = await parameterBinder.BindModelAsync(
+                testContext,
+                modelBinder,
+                valueProvider,
+                parameter,
+                metadata,
+                value: null);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -503,7 +583,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task MutableObjectModelBinder_BindsNestedPOCO_WithFormFileModelBinder_WithPrefix_NoBodyData()
         {
             // Arrange
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -519,10 +598,19 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             });
 
             var modelState = testContext.ModelState;
+            var metadata = GetMetadata(testContext, parameter);
+            var modelBinder = GetModelBinder(testContext, parameter, metadata);
             var valueProvider = await CompositeValueProvider.CreateAsync(testContext);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext);
 
             // Act
-            var modelBindingResult = await parameterBinder.BindModelAsync(testContext, valueProvider, parameter);
+            var modelBindingResult = await parameterBinder.BindModelAsync(
+                testContext,
+                modelBinder,
+                valueProvider,
+                parameter,
+                metadata,
+                value: null);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -548,7 +636,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task MutableObjectModelBinder_BindsNestedPOCO_WithFormFileModelBinder_WithPrefix_PartialData()
         {
             // Arrange
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -563,10 +650,19 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             });
 
             var modelState = testContext.ModelState;
+            var metadata = GetMetadata(testContext, parameter);
+            var modelBinder = GetModelBinder(testContext, parameter, metadata);
             var valueProvider = await CompositeValueProvider.CreateAsync(testContext);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext);
 
             // Act
-            var modelBindingResult = await parameterBinder.BindModelAsync(testContext, valueProvider, parameter);
+            var modelBindingResult = await parameterBinder.BindModelAsync(
+                testContext,
+                modelBinder,
+                valueProvider,
+                parameter,
+                metadata,
+                value: null);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -590,7 +686,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task MutableObjectModelBinder_BindsNestedPOCO_WithFormFileModelBinder_WithPrefix_NoData()
         {
             // Arrange
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -605,10 +700,19 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             });
 
             var modelState = testContext.ModelState;
+            var metadata = GetMetadata(testContext, parameter);
+            var modelBinder = GetModelBinder(testContext, parameter, metadata);
             var valueProvider = await CompositeValueProvider.CreateAsync(testContext);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext);
 
             // Act
-            var modelBindingResult = await parameterBinder.BindModelAsync(testContext, valueProvider, parameter);
+            var modelBindingResult = await parameterBinder.BindModelAsync(
+                testContext,
+                modelBinder,
+                valueProvider,
+                parameter,
+                metadata,
+                value: null);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -632,7 +736,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task MutableObjectModelBinder_BindsArrayProperty_WithPrefix_Success()
         {
             // Arrange
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -647,10 +750,19 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             });
 
             var modelState = testContext.ModelState;
+            var metadata = GetMetadata(testContext, parameter);
+            var modelBinder = GetModelBinder(testContext, parameter, metadata);
             var valueProvider = await CompositeValueProvider.CreateAsync(testContext);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext);
 
             // Act
-            var modelBindingResult = await parameterBinder.BindModelAsync(testContext, valueProvider, parameter);
+            var modelBindingResult = await parameterBinder.BindModelAsync(
+                testContext,
+                modelBinder,
+                valueProvider,
+                parameter,
+                metadata,
+                value: null);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -680,7 +792,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task MutableObjectModelBinder_BindsArrayProperty_EmptyPrefix_Success()
         {
             // Arrange
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -694,10 +805,19 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             });
 
             var modelState = testContext.ModelState;
+            var metadata = GetMetadata(testContext, parameter);
+            var modelBinder = GetModelBinder(testContext, parameter, metadata);
             var valueProvider = await CompositeValueProvider.CreateAsync(testContext);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext);
 
             // Act
-            var modelBindingResult = await parameterBinder.BindModelAsync(testContext, valueProvider, parameter);
+            var modelBindingResult = await parameterBinder.BindModelAsync(
+                testContext,
+                modelBinder,
+                valueProvider,
+                parameter,
+                metadata,
+                value: null);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -727,7 +847,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task MutableObjectModelBinder_BindsArrayProperty_NoCollectionData()
         {
             // Arrange
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -741,10 +860,19 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             });
 
             var modelState = testContext.ModelState;
+            var metadata = GetMetadata(testContext, parameter);
+            var modelBinder = GetModelBinder(testContext, parameter, metadata);
             var valueProvider = await CompositeValueProvider.CreateAsync(testContext);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext);
 
             // Act
-            var modelBindingResult = await parameterBinder.BindModelAsync(testContext, valueProvider, parameter);
+            var modelBindingResult = await parameterBinder.BindModelAsync(
+                testContext,
+                modelBinder,
+                valueProvider,
+                parameter,
+                metadata,
+                value: null);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -766,7 +894,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task MutableObjectModelBinder_BindsArrayProperty_NoData()
         {
             // Arrange
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -780,10 +907,19 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             });
 
             var modelState = testContext.ModelState;
+            var metadata = GetMetadata(testContext, parameter);
+            var modelBinder = GetModelBinder(testContext, parameter, metadata);
             var valueProvider = await CompositeValueProvider.CreateAsync(testContext);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext);
 
             // Act
-            var modelBindingResult = await parameterBinder.BindModelAsync(testContext, valueProvider, parameter);
+            var modelBindingResult = await parameterBinder.BindModelAsync(
+                testContext,
+                modelBinder,
+                valueProvider,
+                parameter,
+                metadata,
+                value: null);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -808,7 +944,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task MutableObjectModelBinder_BindsListProperty_WithPrefix_Success()
         {
             // Arrange
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -823,10 +958,19 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             });
 
             var modelState = testContext.ModelState;
+            var metadata = GetMetadata(testContext, parameter);
+            var modelBinder = GetModelBinder(testContext, parameter, metadata);
             var valueProvider = await CompositeValueProvider.CreateAsync(testContext);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext);
 
             // Act
-            var modelBindingResult = await parameterBinder.BindModelAsync(testContext, valueProvider, parameter);
+            var modelBindingResult = await parameterBinder.BindModelAsync(
+                testContext,
+                modelBinder,
+                valueProvider,
+                parameter,
+                metadata,
+                value: null);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -856,7 +1000,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task MutableObjectModelBinder_BindsListProperty_EmptyPrefix_Success()
         {
             // Arrange
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -870,10 +1013,19 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             });
 
             var modelState = testContext.ModelState;
+            var metadata = GetMetadata(testContext, parameter);
+            var modelBinder = GetModelBinder(testContext, parameter, metadata);
             var valueProvider = await CompositeValueProvider.CreateAsync(testContext);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext);
 
             // Act
-            var modelBindingResult = await parameterBinder.BindModelAsync(testContext, valueProvider, parameter);
+            var modelBindingResult = await parameterBinder.BindModelAsync(
+                testContext,
+                modelBinder,
+                valueProvider,
+                parameter,
+                metadata,
+                value: null);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -903,7 +1055,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task MutableObjectModelBinder_BindsListProperty_NoCollectionData()
         {
             // Arrange
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -917,10 +1068,19 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             });
 
             var modelState = testContext.ModelState;
+            var metadata = GetMetadata(testContext, parameter);
+            var modelBinder = GetModelBinder(testContext, parameter, metadata);
             var valueProvider = await CompositeValueProvider.CreateAsync(testContext);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext);
 
             // Act
-            var modelBindingResult = await parameterBinder.BindModelAsync(testContext, valueProvider, parameter);
+            var modelBindingResult = await parameterBinder.BindModelAsync(
+                testContext,
+                modelBinder,
+                valueProvider,
+                parameter,
+                metadata,
+                value: null);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -942,7 +1102,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task MutableObjectModelBinder_BindsListProperty_NoData()
         {
             // Arrange
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -956,10 +1115,19 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             });
 
             var modelState = testContext.ModelState;
+            var metadata = GetMetadata(testContext, parameter);
+            var modelBinder = GetModelBinder(testContext, parameter, metadata);
             var valueProvider = await CompositeValueProvider.CreateAsync(testContext);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext);
 
             // Act
-            var modelBindingResult = await parameterBinder.BindModelAsync(testContext, valueProvider, parameter);
+            var modelBindingResult = await parameterBinder.BindModelAsync(
+                testContext,
+                modelBinder,
+                valueProvider,
+                parameter,
+                metadata,
+                value: null);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -984,7 +1152,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task MutableObjectModelBinder_BindsDictionaryProperty_WithPrefix_Success()
         {
             // Arrange
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -999,10 +1166,19 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             });
 
             var modelState = testContext.ModelState;
+            var metadata = GetMetadata(testContext, parameter);
+            var modelBinder = GetModelBinder(testContext, parameter, metadata);
             var valueProvider = await CompositeValueProvider.CreateAsync(testContext);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext);
 
             // Act
-            var modelBindingResult = await parameterBinder.BindModelAsync(testContext, valueProvider, parameter);
+            var modelBindingResult = await parameterBinder.BindModelAsync(
+                testContext,
+                modelBinder,
+                valueProvider,
+                parameter,
+                metadata,
+                value: null);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -1032,7 +1208,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task MutableObjectModelBinder_BindsDictionaryProperty_EmptyPrefix_Success()
         {
             // Arrange
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -1046,10 +1221,19 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             });
 
             var modelState = testContext.ModelState;
+            var metadata = GetMetadata(testContext, parameter);
+            var modelBinder = GetModelBinder(testContext, parameter, metadata);
             var valueProvider = await CompositeValueProvider.CreateAsync(testContext);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext);
 
             // Act
-            var modelBindingResult = await parameterBinder.BindModelAsync(testContext, valueProvider, parameter);
+            var modelBindingResult = await parameterBinder.BindModelAsync(
+                testContext,
+                modelBinder,
+                valueProvider,
+                parameter,
+                metadata,
+                value: null);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -1079,7 +1263,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task MutableObjectModelBinder_BindsDictionaryProperty_NoCollectionData()
         {
             // Arrange
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -1093,10 +1276,19 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             });
 
             var modelState = testContext.ModelState;
+            var metadata = GetMetadata(testContext, parameter);
+            var modelBinder = GetModelBinder(testContext, parameter, metadata);
             var valueProvider = await CompositeValueProvider.CreateAsync(testContext);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext);
 
             // Act
-            var modelBindingResult = await parameterBinder.BindModelAsync(testContext, valueProvider, parameter);
+            var modelBindingResult = await parameterBinder.BindModelAsync(
+                testContext,
+                modelBinder,
+                valueProvider,
+                parameter,
+                metadata,
+                value: null);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -1118,7 +1310,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task MutableObjectModelBinder_BindsDictionaryProperty_NoData()
         {
             // Arrange
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -1132,10 +1323,19 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             });
 
             var modelState = testContext.ModelState;
+            var metadata = GetMetadata(testContext, parameter);
+            var modelBinder = GetModelBinder(testContext, parameter, metadata);
             var valueProvider = await CompositeValueProvider.CreateAsync(testContext);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext);
 
             // Act
-            var modelBindingResult = await parameterBinder.BindModelAsync(testContext, valueProvider, parameter);
+            var modelBindingResult = await parameterBinder.BindModelAsync(
+                testContext,
+                modelBinder,
+                valueProvider,
+                parameter,
+                metadata,
+                value: null);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -1181,7 +1381,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task MutableObjectModelBinder_BindsDictionaryProperty_WithIEnumerableComplexTypeValue_Success()
         {
             // Arrange
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "p",
@@ -1201,10 +1400,19 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             });
 
             var modelState = testContext.ModelState;
+            var metadata = GetMetadata(testContext, parameter);
+            var modelBinder = GetModelBinder(testContext, parameter, metadata);
             var valueProvider = await CompositeValueProvider.CreateAsync(testContext);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext);
 
             // Act
-            var modelBindingResult = await parameterBinder.BindModelAsync(testContext, valueProvider, parameter);
+            var modelBindingResult = await parameterBinder.BindModelAsync(
+                testContext,
+                modelBinder,
+                valueProvider,
+                parameter,
+                metadata,
+                value: null);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -1280,7 +1488,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task MutableObjectModelBinder_BindsDictionaryProperty_WithArrayOfComplexTypeValue_Success()
         {
             // Arrange
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "p",
@@ -1300,10 +1507,19 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             });
 
             var modelState = testContext.ModelState;
+            var metadata = GetMetadata(testContext, parameter);
+            var modelBinder = GetModelBinder(testContext, parameter, metadata);
             var valueProvider = await CompositeValueProvider.CreateAsync(testContext);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext);
 
             // Act
-            var modelBindingResult = await parameterBinder.BindModelAsync(testContext, valueProvider, parameter);
+            var modelBindingResult = await parameterBinder.BindModelAsync(
+                testContext,
+                modelBinder,
+                valueProvider,
+                parameter,
+                metadata,
+                value: null);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -1379,7 +1595,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task MutableObjectModelBinder_BindsDictionaryProperty_WithIEnumerableOfKeyValuePair_Success()
         {
             // Arrange
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "p",
@@ -1399,10 +1614,19 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             });
 
             var modelState = testContext.ModelState;
+            var metadata = GetMetadata(testContext, parameter);
+            var modelBinder = GetModelBinder(testContext, parameter, metadata);
             var valueProvider = await CompositeValueProvider.CreateAsync(testContext);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext);
 
             // Act
-            var modelBindingResult = await parameterBinder.BindModelAsync(testContext, valueProvider, parameter);
+            var modelBindingResult = await parameterBinder.BindModelAsync(
+                testContext,
+                modelBinder,
+                valueProvider,
+                parameter,
+                metadata,
+                value: null);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -1485,7 +1709,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task MutableObjectModelBinder_BindsKeyValuePairProperty_WithPrefix_Success()
         {
             // Arrange
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -1500,10 +1723,19 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             });
 
             var modelState = testContext.ModelState;
+            var metadata = GetMetadata(testContext, parameter);
+            var modelBinder = GetModelBinder(testContext, parameter, metadata);
             var valueProvider = await CompositeValueProvider.CreateAsync(testContext);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext);
 
             // Act
-            var modelBindingResult = await parameterBinder.BindModelAsync(testContext, valueProvider, parameter);
+            var modelBindingResult = await parameterBinder.BindModelAsync(
+                testContext,
+                modelBinder,
+                valueProvider,
+                parameter,
+                metadata,
+                value: null);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -1533,7 +1765,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task MutableObjectModelBinder_BindsKeyValuePairProperty_EmptyPrefix_Success()
         {
             // Arrange
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -1547,10 +1778,19 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             });
 
             var modelState = testContext.ModelState;
+            var metadata = GetMetadata(testContext, parameter);
+            var modelBinder = GetModelBinder(testContext, parameter, metadata);
             var valueProvider = await CompositeValueProvider.CreateAsync(testContext);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext);
 
             // Act
-            var modelBindingResult = await parameterBinder.BindModelAsync(testContext, valueProvider, parameter);
+            var modelBindingResult = await parameterBinder.BindModelAsync(
+                testContext,
+                modelBinder,
+                valueProvider,
+                parameter,
+                metadata,
+                value: null);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -1580,7 +1820,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task MutableObjectModelBinder_BindsKeyValuePairProperty_NoCollectionData()
         {
             // Arrange
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -1594,10 +1833,19 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             });
 
             var modelState = testContext.ModelState;
+            var metadata = GetMetadata(testContext, parameter);
+            var modelBinder = GetModelBinder(testContext, parameter, metadata);
             var valueProvider = await CompositeValueProvider.CreateAsync(testContext);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext);
 
             // Act
-            var modelBindingResult = await parameterBinder.BindModelAsync(testContext, valueProvider, parameter);
+            var modelBindingResult = await parameterBinder.BindModelAsync(
+                testContext,
+                modelBinder,
+                valueProvider,
+                parameter,
+                metadata,
+                value: null);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -1619,7 +1867,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task MutableObjectModelBinder_BindsKeyValuePairProperty_NoData()
         {
             // Arrange
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -1633,10 +1880,19 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             });
 
             var modelState = testContext.ModelState;
+            var metadata = GetMetadata(testContext, parameter);
+            var modelBinder = GetModelBinder(testContext, parameter, metadata);
             var valueProvider = await CompositeValueProvider.CreateAsync(testContext);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext);
 
             // Act
-            var modelBindingResult = await parameterBinder.BindModelAsync(testContext, valueProvider, parameter);
+            var modelBindingResult = await parameterBinder.BindModelAsync(
+                testContext,
+                modelBinder,
+                valueProvider,
+                parameter,
+                metadata,
+                value: null);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -1661,7 +1917,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task Foo_MutableObjectModelBinder_BindsKeyValuePairProperty_WithPrefix_Success()
         {
             // Arrange
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "p",
@@ -1682,10 +1937,19 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             });
 
             var modelState = testContext.ModelState;
+            var metadata = GetMetadata(testContext, parameter);
+            var modelBinder = GetModelBinder(testContext, parameter, metadata);
             var valueProvider = await CompositeValueProvider.CreateAsync(testContext);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext);
 
             // Act
-            var modelBindingResult = await parameterBinder.BindModelAsync(testContext, valueProvider, parameter);
+            var modelBindingResult = await parameterBinder.BindModelAsync(
+                testContext,
+                modelBinder,
+                valueProvider,
+                parameter,
+                metadata,
+                value: null);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -1752,7 +2016,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task MutableObjectModelBinder_BindsNestedPOCO_WithAllGreedyBoundProperties()
         {
             // Arrange
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -1767,10 +2030,19 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             });
 
             var modelState = testContext.ModelState;
+            var metadata = GetMetadata(testContext, parameter);
+            var modelBinder = GetModelBinder(testContext, parameter, metadata);
             var valueProvider = await CompositeValueProvider.CreateAsync(testContext);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext);
 
             // Act
-            var modelBindingResult = await parameterBinder.BindModelAsync(testContext, valueProvider, parameter);
+            var modelBindingResult = await parameterBinder.BindModelAsync(
+                testContext,
+                modelBinder,
+                valueProvider,
+                parameter,
+                metadata,
+                value: null);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -1801,7 +2073,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task MutableObjectModelBinder_WithRequiredComplexProperty_NoData_GetsErrors()
         {
             // Arrange
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -1812,10 +2083,19 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var testContext = ModelBindingTestHelper.GetTestContext();
 
             var modelState = testContext.ModelState;
+            var metadata = GetMetadata(testContext, parameter);
+            var modelBinder = GetModelBinder(testContext, parameter, metadata);
             var valueProvider = await CompositeValueProvider.CreateAsync(testContext);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext);
 
             // Act
-            var modelBindingResult = await parameterBinder.BindModelAsync(testContext, valueProvider, parameter);
+            var modelBindingResult = await parameterBinder.BindModelAsync(
+                testContext,
+                modelBinder,
+                valueProvider,
+                parameter,
+                metadata,
+                value: null);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -1848,7 +2128,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                         name => $"Hurts when '{ name }' is not provided.");
                 }));
 
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(metadataProvider);
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -1856,13 +2135,22 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             };
 
             // No Data
-            var testContext = ModelBindingTestHelper.GetTestContext();
+            var testContext = ModelBindingTestHelper.GetTestContext(metadataProvider: metadataProvider);
 
             var modelState = testContext.ModelState;
+            var metadata = GetMetadata(testContext, parameter);
+            var modelBinder = GetModelBinder(testContext, parameter, metadata);
             var valueProvider = await CompositeValueProvider.CreateAsync(testContext);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext);
 
             // Act
-            var modelBindingResult = await parameterBinder.BindModelAsync(testContext, valueProvider, parameter);
+            var modelBindingResult = await parameterBinder.BindModelAsync(
+                testContext,
+                modelBinder,
+                valueProvider,
+                parameter,
+                metadata,
+                value: null);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -1898,7 +2186,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task MutableObjectModelBinder_WithNestedRequiredProperty_WithPartialData_GetsErrors()
         {
             // Arrange
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -1912,10 +2199,19 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             });
 
             var modelState = testContext.ModelState;
+            var metadata = GetMetadata(testContext, parameter);
+            var modelBinder = GetModelBinder(testContext, parameter, metadata);
             var valueProvider = await CompositeValueProvider.CreateAsync(testContext);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext);
 
             // Act
-            var modelBindingResult = await parameterBinder.BindModelAsync(testContext, valueProvider, parameter);
+            var modelBindingResult = await parameterBinder.BindModelAsync(
+                testContext,
+                modelBinder,
+                valueProvider,
+                parameter,
+                metadata,
+                value: null);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -1944,7 +2240,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task MutableObjectModelBinder_WithNestedRequiredProperty_WithData_EmptyPrefix_GetsErrors()
         {
             // Arrange
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -1958,10 +2253,19 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             });
 
             var modelState = testContext.ModelState;
+            var metadata = GetMetadata(testContext, parameter);
+            var modelBinder = GetModelBinder(testContext, parameter, metadata);
             var valueProvider = await CompositeValueProvider.CreateAsync(testContext);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext);
 
             // Act
-            var modelBindingResult = await parameterBinder.BindModelAsync(testContext, valueProvider, parameter);
+            var modelBindingResult = await parameterBinder.BindModelAsync(
+                testContext,
+                modelBinder,
+                valueProvider,
+                parameter,
+                metadata,
+                value: null);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -1990,7 +2294,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task MutableObjectModelBinder_WithNestedRequiredProperty_WithData_CustomPrefix_GetsErrors()
         {
             // Arrange
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -2008,10 +2311,19 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             });
 
             var modelState = testContext.ModelState;
+            var metadata = GetMetadata(testContext, parameter);
+            var modelBinder = GetModelBinder(testContext, parameter, metadata);
             var valueProvider = await CompositeValueProvider.CreateAsync(testContext);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext);
 
             // Act
-            var modelBindingResult = await parameterBinder.BindModelAsync(testContext, valueProvider, parameter);
+            var modelBindingResult = await parameterBinder.BindModelAsync(
+                testContext,
+                modelBinder,
+                valueProvider,
+                parameter,
+                metadata,
+                value: null);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -2046,7 +2358,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task MutableObjectModelBinder_WithRequiredProperty_NoData_GetsErrors()
         {
             // Arrange
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -2060,10 +2371,19 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             });
 
             var modelState = testContext.ModelState;
+            var metadata = GetMetadata(testContext, parameter);
+            var modelBinder = GetModelBinder(testContext, parameter, metadata);
             var valueProvider = await CompositeValueProvider.CreateAsync(testContext);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext);
 
             // Act
-            var modelBindingResult = await parameterBinder.BindModelAsync(testContext, valueProvider, parameter);
+            var modelBindingResult = await parameterBinder.BindModelAsync(
+                testContext,
+                modelBinder,
+                valueProvider,
+                parameter,
+                metadata,
+                value: null);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -2086,7 +2406,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task MutableObjectModelBinder_WithRequiredProperty_NoData_CustomPrefix_GetsErros()
         {
             // Arrange
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -2104,10 +2423,19 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             });
 
             var modelState = testContext.ModelState;
+            var metadata = GetMetadata(testContext, parameter);
+            var modelBinder = GetModelBinder(testContext, parameter, metadata);
             var valueProvider = await CompositeValueProvider.CreateAsync(testContext);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext);
 
             // Act
-            var modelBindingResult = await parameterBinder.BindModelAsync(testContext, valueProvider, parameter);
+            var modelBindingResult = await parameterBinder.BindModelAsync(
+                testContext,
+                modelBinder,
+                valueProvider,
+                parameter,
+                metadata,
+                value: null);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -2130,7 +2458,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task MutableObjectModelBinder_WithRequiredProperty_WithData_EmptyPrefix_GetsBound()
         {
             // Arrange
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -2144,10 +2471,19 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             });
 
             var modelState = testContext.ModelState;
+            var metadata = GetMetadata(testContext, parameter);
+            var modelBinder = GetModelBinder(testContext, parameter, metadata);
             var valueProvider = await CompositeValueProvider.CreateAsync(testContext);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext);
 
             // Act
-            var modelBindingResult = await parameterBinder.BindModelAsync(testContext, valueProvider, parameter);
+            var modelBindingResult = await parameterBinder.BindModelAsync(
+                testContext,
+                modelBinder,
+                valueProvider,
+                parameter,
+                metadata,
+                value: null);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -2174,7 +2510,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task MutableObjectModelBinder_WithRequiredCollectionProperty_NoData_GetsErros()
         {
             // Arrange
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -2188,10 +2523,19 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             });
 
             var modelState = testContext.ModelState;
+            var metadata = GetMetadata(testContext, parameter);
+            var modelBinder = GetModelBinder(testContext, parameter, metadata);
             var valueProvider = await CompositeValueProvider.CreateAsync(testContext);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext);
 
             // Act
-            var modelBindingResult = await parameterBinder.BindModelAsync(testContext, valueProvider, parameter);
+            var modelBindingResult = await parameterBinder.BindModelAsync(
+                testContext,
+                modelBinder,
+                valueProvider,
+                parameter,
+                metadata,
+                value: null);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -2214,7 +2558,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task MutableObjectModelBinder_WithRequiredCollectionProperty_NoData_CustomPrefix_GetsErros()
         {
             // Arrange
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -2232,10 +2575,19 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             });
 
             var modelState = testContext.ModelState;
+            var metadata = GetMetadata(testContext, parameter);
+            var modelBinder = GetModelBinder(testContext, parameter, metadata);
             var valueProvider = await CompositeValueProvider.CreateAsync(testContext);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext);
 
             // Act
-            var modelBindingResult = await parameterBinder.BindModelAsync(testContext, valueProvider, parameter);
+            var modelBindingResult = await parameterBinder.BindModelAsync(
+                testContext,
+                modelBinder,
+                valueProvider,
+                parameter,
+                metadata,
+                value: null);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -2258,24 +2610,31 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task MutableObjectModelBinder_WithRequiredCollectionProperty_WithData_EmptyPrefix_GetsBound()
         {
             // Arrange
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
                 ParameterType = typeof(Order13),
             };
 
-            // No Data
             var testContext = ModelBindingTestHelper.GetTestContext(request =>
             {
                 request.QueryString = new QueryString("?OrderIds[0]=123");
             });
 
             var modelState = testContext.ModelState;
+            var metadata = GetMetadata(testContext, parameter);
+            var modelBinder = GetModelBinder(testContext, parameter, metadata);
             var valueProvider = await CompositeValueProvider.CreateAsync(testContext);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext);
 
             // Act
-            var modelBindingResult = await parameterBinder.BindModelAsync(testContext, valueProvider, parameter);
+            var modelBindingResult = await parameterBinder.BindModelAsync(
+                testContext,
+                modelBinder,
+                valueProvider,
+                parameter,
+                metadata,
+                value: null);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -2303,7 +2662,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task MutableObjectModelBinder_BindsPOCO_TypeConvertedPropertyNonConvertableValue_GetsError()
         {
             // Arrange
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -2317,10 +2675,19 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             });
 
             var modelState = testContext.ModelState;
+            var metadata = GetMetadata(testContext, parameter);
+            var modelBinder = GetModelBinder(testContext, parameter, metadata);
             var valueProvider = await CompositeValueProvider.CreateAsync(testContext);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext);
 
             // Act
-            var modelBindingResult = await parameterBinder.BindModelAsync(testContext, valueProvider, parameter);
+            var modelBindingResult = await parameterBinder.BindModelAsync(
+                testContext,
+                modelBinder,
+                valueProvider,
+                parameter,
+                metadata,
+                value: null);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -2349,7 +2716,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task MutableObjectModelBinder_BindsPOCO_TypeConvertedPropertyWithEmptyValue_Error()
         {
             // Arrange
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -2363,10 +2729,19 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             });
 
             var modelState = testContext.ModelState;
+            var metadata = GetMetadata(testContext, parameter);
+            var modelBinder = GetModelBinder(testContext, parameter, metadata);
             var valueProvider = await CompositeValueProvider.CreateAsync(testContext);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext);
 
             // Act
-            var modelBindingResult = await parameterBinder.BindModelAsync(testContext, valueProvider, parameter);
+            var modelBindingResult = await parameterBinder.BindModelAsync(
+                testContext,
+                modelBinder,
+                valueProvider,
+                parameter,
+                metadata,
+                value: null);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -2408,7 +2783,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task ModelNameOnPropertyType_WithData_Succeeds(BindingInfo bindingInfo)
         {
             // Arrange
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor
             {
                 Name = "parameter-name",
@@ -2418,11 +2792,21 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
             var testContext = ModelBindingTestHelper.GetTestContext(
                 request => request.QueryString = new QueryString("?HomeAddress.Street=someStreet"));
+
             var modelState = testContext.ModelState;
+            var metadata = GetMetadata(testContext, parameter);
+            var modelBinder = GetModelBinder(testContext, parameter, metadata);
             var valueProvider = await CompositeValueProvider.CreateAsync(testContext);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext);
 
             // Act
-            var modelBindingResult = await parameterBinder.BindModelAsync(testContext, valueProvider, parameter);
+            var modelBindingResult = await parameterBinder.BindModelAsync(
+                testContext,
+                modelBinder,
+                valueProvider,
+                parameter,
+                metadata,
+                value: null);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -2448,7 +2832,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task ModelNameOnParameterType_WithData_Succeeds(BindingInfo bindingInfo)
         {
             // Arrange
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor
             {
                 Name = "parameter-name",
@@ -2458,11 +2841,21 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
             var testContext = ModelBindingTestHelper.GetTestContext(
                 request => request.QueryString = new QueryString("?HomeAddress.Street=someStreet"));
+
             var modelState = testContext.ModelState;
+            var metadata = GetMetadata(testContext, parameter);
+            var modelBinder = GetModelBinder(testContext, parameter, metadata);
             var valueProvider = await CompositeValueProvider.CreateAsync(testContext);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext);
 
             // Act
-            var modelBindingResult = await parameterBinder.BindModelAsync(testContext, valueProvider, parameter);
+            var modelBindingResult = await parameterBinder.BindModelAsync(
+                testContext,
+                modelBinder,
+                valueProvider,
+                parameter,
+                metadata,
+                value: null);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -2506,7 +2899,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task BindAttributeOnPropertyType_WithData_Succeeds(BindingInfo bindingInfo)
         {
             // Arrange
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor
             {
                 Name = "parameter-name",
@@ -2517,11 +2909,21 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var testContext = ModelBindingTestHelper.GetTestContext(
                 request => request.QueryString = new QueryString(
                     "?Address.Number=23&Address.Street=someStreet&Address.City=Redmond&Address.State=WA"));
+
             var modelState = testContext.ModelState;
+            var metadata = GetMetadata(testContext, parameter);
+            var modelBinder = GetModelBinder(testContext, parameter, metadata);
             var valueProvider = await CompositeValueProvider.CreateAsync(testContext);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext);
 
             // Act
-            var modelBindingResult = await parameterBinder.BindModelAsync(testContext, valueProvider, parameter);
+            var modelBindingResult = await parameterBinder.BindModelAsync(
+                testContext,
+                modelBinder,
+                valueProvider,
+                parameter,
+                metadata,
+                value: null);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -2552,7 +2954,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task BindAttributeOnParameterType_WithData_Succeeds(BindingInfo bindingInfo)
         {
             // Arrange
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor
             {
                 Name = "parameter-name",
@@ -2562,11 +2963,21 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
             var testContext = ModelBindingTestHelper.GetTestContext(
                 request => request.QueryString = new QueryString("?Number=23&Street=someStreet&City=Redmond&State=WA"));
+
             var modelState = testContext.ModelState;
+            var metadata = GetMetadata(testContext, parameter);
+            var modelBinder = GetModelBinder(testContext, parameter, metadata);
             var valueProvider = await CompositeValueProvider.CreateAsync(testContext);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext);
 
             // Act
-            var modelBindingResult = await parameterBinder.BindModelAsync(testContext, valueProvider, parameter);
+            var modelBindingResult = await parameterBinder.BindModelAsync(
+                testContext,
+                modelBinder,
+                valueProvider,
+                parameter,
+                metadata,
+                value: null);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -2601,7 +3012,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task ComplexTypeModelBinder_BindsSettableProperties(string queryString)
         {
             // Arrange
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -2614,10 +3024,20 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 request.QueryString = new QueryString(queryString);
                 SetJsonBodyContent(request, AddressBodyContent);
             });
+
+            var metadata = GetMetadata(testContext, parameter);
+            var modelBinder = GetModelBinder(testContext, parameter, metadata);
             var valueProvider = await CompositeValueProvider.CreateAsync(testContext);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext);
 
             // Act
-            var modelBindingResult = await parameterBinder.BindModelAsync(testContext, valueProvider, parameter);
+            var modelBindingResult = await parameterBinder.BindModelAsync(
+                testContext,
+                modelBinder,
+                valueProvider,
+                parameter,
+                metadata,
+                value: null);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -2648,7 +3068,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task MutableObjectModelBinder_BindsKeyValuePairProperty_HavingFromHeaderProperty_Success()
         {
             // Arrange
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -2663,10 +3082,19 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             });
 
             var modelState = testContext.ModelState;
+            var metadata = GetMetadata(testContext, parameter);
+            var modelBinder = GetModelBinder(testContext, parameter, metadata);
             var valueProvider = await CompositeValueProvider.CreateAsync(testContext);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext);
 
             // Act
-            var modelBindingResult = await parameterBinder.BindModelAsync(testContext, valueProvider, parameter);
+            var modelBindingResult = await parameterBinder.BindModelAsync(
+                testContext,
+                modelBinder,
+                valueProvider,
+                parameter,
+                metadata,
+                value: null);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -2723,6 +3151,29 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             {
                 Headers = request.Headers
             });
+        }
+
+        private ModelMetadata GetMetadata(ModelBindingTestContext context, ParameterDescriptor parameter)
+        {
+            return context.MetadataProvider.GetMetadataForType(parameter.ParameterType);
+        }
+
+        private IModelBinder GetModelBinder(
+            ModelBindingTestContext context,
+            ParameterDescriptor parameter,
+            ModelMetadata metadata)
+        {
+            var factory = ModelBindingTestHelper.GetModelBinderFactory(
+                context.MetadataProvider,
+                context.HttpContext.RequestServices);
+            var factoryContext = new ModelBinderFactoryContext
+            {
+                BindingInfo = parameter.BindingInfo,
+                CacheToken = parameter,
+                Metadata = metadata,
+            };
+
+            return factory.CreateBinder(factoryContext);
         }
     }
 }
