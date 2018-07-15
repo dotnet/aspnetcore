@@ -14,18 +14,18 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 {
     public abstract class MatcherBenchmarkBase
     {
-        internal MatcherEndpoint[] _endpoints;
-        internal HttpContext[] _requests;
+        private protected MatcherEndpoint[] Endpoints;
+        private protected HttpContext[] Requests;
 
         // The older routing implementations retrieve services when they first execute.
-        internal static IServiceProvider CreateServices()
+        private protected static IServiceProvider CreateServices()
         {
             var services = new ServiceCollection();
             services.AddLogging();
             return services.BuildServiceProvider();
         }
 
-        internal static MatcherEndpoint CreateEndpoint(string template, string httpMethod = null)
+        private protected static MatcherEndpoint CreateEndpoint(string template, string httpMethod = null)
         {
             var metadata = new List<object>();
             if (httpMethod != null)
@@ -40,11 +40,11 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                 new RouteValueDictionary(),
                 new List<MatchProcessorReference>(),
                 0,
-                EndpointMetadataCollection.Empty,
+                new EndpointMetadataCollection(metadata),
                 template);
         }
 
-        internal static  int[] SampleRequests(int endpointCount, int count)
+        private protected static  int[] SampleRequests(int endpointCount, int count)
         {
             // This isn't very high tech, but it's at least regular distribution.
             // We sort the route templates by precedence, so this should result in
@@ -67,12 +67,12 @@ namespace Microsoft.AspNetCore.Routing.Matchers
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        internal void Validate(HttpContext httpContext, Endpoint expected, Endpoint actual)
+        private protected void Validate(HttpContext httpContext, Endpoint expected, Endpoint actual)
         {
             if (!object.ReferenceEquals(expected, actual))
             {
                 var message = new StringBuilder();
-                message.AppendLine($"Validation failed for request {Array.IndexOf(_requests, httpContext)}");
+                message.AppendLine($"Validation failed for request {Array.IndexOf(Requests, httpContext)}");
                 message.AppendLine($"{httpContext.Request.Method} {httpContext.Request.Path}");
                 message.AppendLine($"expected: '{((MatcherEndpoint)expected)?.DisplayName ?? "null"}'");
                 message.AppendLine($"actual:   '{((MatcherEndpoint)actual)?.DisplayName ?? "null"}'");

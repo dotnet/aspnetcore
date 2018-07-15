@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             _exitDestination = exitDestination;
         }
 
-        public unsafe override int GetDestination(string path, PathSegment segment)
+        public override int GetDestination(string path, PathSegment segment)
         {
             return segment.Length == 0 ? _exitDestination : _defaultDestination;
         }

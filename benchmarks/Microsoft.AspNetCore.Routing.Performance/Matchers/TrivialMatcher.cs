@@ -10,16 +10,23 @@ namespace Microsoft.AspNetCore.Routing.Matchers
     // A test-only matcher implementation - used as a baseline for simpler
     // perf tests. The idea with this matcher is that we can cheat on the requirements
     // to establish a lower bound for perf comparisons.
-    internal class TrivialMatcher : Matcher
+    internal sealed class TrivialMatcher : Matcher
     {
         private readonly MatcherEndpoint _endpoint;
+        private readonly CandidateSet _candidates;
 
         public TrivialMatcher(MatcherEndpoint endpoint)
         {
             _endpoint = endpoint;
+
+            _candidates = new CandidateSet(
+                new Candidate[] { new Candidate(endpoint), },
+
+                // Single candidate group that contains one entry.
+                CandidateSet.MakeGroups(new[] { 1 }));
         }
 
-        public override Task MatchAsync(HttpContext httpContext, IEndpointFeature feature)
+        public sealed override Task MatchAsync(HttpContext httpContext, IEndpointFeature feature)
         {
             if (httpContext == null)
             {
@@ -39,6 +46,17 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             }
 
             return Task.CompletedTask;
+        }
+
+        // This is here so this can be tested alongside DFA matcher.
+        internal CandidateSet SelectCandidates(string path, ReadOnlySpan<PathSegment> segments)
+        {
+            if (string.Equals(_endpoint.Template, path, StringComparison.OrdinalIgnoreCase))
+            {
+                return _candidates;
+            }
+
+            return CandidateSet.Empty;
         }
     }
 }

@@ -3,8 +3,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing.EndpointConstraints;
 
 namespace Microsoft.AspNetCore.Routing.Matchers
 {
@@ -17,7 +19,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             _states = states;
         }
 
-        public unsafe override Task MatchAsync(HttpContext httpContext, IEndpointFeature feature)
+        public override Task MatchAsync(HttpContext httpContext, IEndpointFeature feature)
         {
             if (httpContext == null)
             {
@@ -29,45 +31,52 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                 throw new ArgumentNullException(nameof(feature));
             }
 
-            var states = _states;
-            var current = 0;
-
             var path = httpContext.Request.Path.Value;
-            var buffer = stackalloc PathSegment[32];
-            var count = FastPathTokenizer.Tokenize(path, buffer, 32);
-            
-            for (var i = 0; i < count; i++)
-            {
-                current = states[current].Transitions.GetDestination(path, buffer[i]);
-            }
+            Span<PathSegment> segments = stackalloc PathSegment[FastPathTokenizer.DefaultSegmentCount];
+            var count = FastPathTokenizer.Tokenize(path, segments);
+
+            var candidates = SelectCandidates(path, segments.Slice(0, count));
 
             var matches = new List<(Endpoint, RouteValueDictionary)>();
 
-            var candidates = states[current].Matches;
-            for (var i = 0; i < candidates.Length; i++)
+            // This code ignores groups for right now.
+            for (var i = 0; i < candidates.Candidates.Length; i++)
             {
+                var isMatch = true;
+
+                var candidate = candidates.Candidates[i];
                 var values = new RouteValueDictionary();
-                var parameters = candidates[i].Parameters;
+                var parameters = candidate.Parameters;
                 if (parameters != null)
                 {
                     for (var j = 0; j < parameters.Length; j++)
                     {
                         var parameter = parameters[j];
-                        if (parameter != null && buffer[j].Length == 0)
+                        if (parameter != null && segments[j].Length == 0)
                         {
-                            goto notmatch;
+                            isMatch = false;
+                            break;
                         }
                         else if (parameter != null)
                         {
-                            var value = path.Substring(buffer[j].Start, buffer[j].Length);
+                            var value = path.Substring(segments[j].Start, segments[j].Length);
                             values.Add(parameter, value);
                         }
                     }
                 }
 
-                matches.Add((candidates[i].Endpoint, values));
+                // This is some super super temporary code so we can pass the benchmarks
+                // that do HTTP method matching.
+                var httpMethodConstraint = candidate.Endpoint.Metadata.GetMetadata<HttpMethodEndpointConstraint>();
+                if (httpMethodConstraint != null && !MatchHttpMethod(httpContext.Request.Method, httpMethodConstraint))
+                {
+                    isMatch = false;
+                }
 
-                notmatch: ;
+                if (isMatch)
+                {
+                    matches.Add((candidate.Endpoint, values));
+                }
             }
             
             feature.Endpoint = matches.Count == 0 ? null : matches[0].Item1;
@@ -76,17 +85,50 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             return Task.CompletedTask;
         }
 
-        public struct State
+        // This is some super super temporary code so we can pass the benchmarks
+        // that do HTTP method matching.
+        private bool MatchHttpMethod(string httpMethod, HttpMethodEndpointConstraint constraint)
         {
-            public bool IsAccepting;
-            public Candidate[] Matches;
-            public JumpTable Transitions;
+            foreach (var supportedHttpMethod in constraint.HttpMethods)
+            {
+                if (string.Equals(supportedHttpMethod, httpMethod, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
-        public struct Candidate
+        public CandidateSet SelectCandidates(string path, ReadOnlySpan<PathSegment> segments)
         {
-            public Endpoint Endpoint;
-            public string[] Parameters;
+            var states = _states;
+            var current = 0;
+
+            for (var i = 0; i < segments.Length; i++)
+            {
+                current = states[current].Transitions.GetDestination(path, segments[i]);
+            }
+
+            return states[current].Candidates;
+        }
+
+        [DebuggerDisplay("{DebuggerToString(),nq}")]
+        public readonly struct State
+        {
+            public readonly CandidateSet Candidates;
+            public readonly JumpTable Transitions;
+
+            public State(CandidateSet candidates, JumpTable transitions)
+            {
+                Candidates = candidates;
+                Transitions = transitions;
+            }
+
+            public string DebuggerToString()
+            {
+                return $"m: {Candidates.Candidates?.Length ?? 0}, j: ({Transitions?.DebuggerToString()})";
+            }
         }
     }
 }

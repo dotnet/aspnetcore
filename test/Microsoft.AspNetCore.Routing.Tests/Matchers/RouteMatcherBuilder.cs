@@ -3,8 +3,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Routing.EndpointConstraints;
 using Microsoft.AspNetCore.Routing.Template;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Routing.Matchers
@@ -12,80 +15,90 @@ namespace Microsoft.AspNetCore.Routing.Matchers
     internal class RouteMatcherBuilder : MatcherBuilder
     {
         private readonly IInlineConstraintResolver _constraintResolver;
-        private readonly List<Entry> _entries;
+        private readonly List<MatcherBuilderEntry> _entries;
 
         public RouteMatcherBuilder()
         {
             _constraintResolver = new DefaultInlineConstraintResolver(Options.Create(new RouteOptions()));
-            _entries = new List<Entry>();
+            _entries = new List<MatcherBuilderEntry>();
         }
 
         public override void AddEndpoint(MatcherEndpoint endpoint)
         {
-            var handler = new RouteHandler(c =>
-            {
-                c.Features.Get<IEndpointFeature>().Endpoint = endpoint;
-                return Task.CompletedTask;
-            });
-
-            // MatcherEndpoint.Values contains the default values parsed from the template
-            // as well as those specified with a literal. We need to separate those
-            // for legacy cases.
-            var defaults = endpoint.Defaults;
-            for (var i = 0; i < endpoint.ParsedTemplate.Parameters.Count; i++)
-            {
-                var parameter = endpoint.ParsedTemplate.Parameters[i];
-                if (parameter.DefaultValue != null)
-                {
-                    defaults.Remove(parameter.Name);
-                }
-            }
-
-            _entries.Add(new Entry()
-            {
-                Endpoint = endpoint,
-                Route = new Route(
-                    handler,
-                    endpoint.Template,
-                    defaults,
-                    new Dictionary<string, object>(),
-                    new RouteValueDictionary(),
-                    _constraintResolver),
-            });
+            _entries.Add(new MatcherBuilderEntry(endpoint));
         }
 
         public override Matcher Build()
         {
             _entries.Sort();
+
+            var cache = new EndpointConstraintCache(
+                new CompositeEndpointDataSource(Array.Empty<EndpointDataSource>()),
+                new[] { new DefaultEndpointConstraintProvider(), });
+            var selector = new EndpointSelector(null, cache, NullLoggerFactory.Instance);
+
+            var groups = _entries
+                .GroupBy(e => (e.Order, e.Precedence, e.Endpoint.Template))
+                .OrderBy(g => g.Key.Order)
+                .ThenBy(g => g.Key.Precedence);
+
             var routes = new RouteCollection();
-            for (var i = 0; i < _entries.Count; i++)
+
+            foreach (var group in groups)
             {
-                routes.Add(_entries[i].Route);
+                var candidates = group.Select(e => e.Endpoint).ToArray();
+
+                // MatcherEndpoint.Values contains the default values parsed from the template
+                // as well as those specified with a literal. We need to separate those
+                // for legacy cases.
+                var endpoint = group.First().Endpoint;
+                var defaults = new RouteValueDictionary(endpoint.Defaults);
+                for (var i = 0; i < endpoint.ParsedTemplate.Parameters.Count; i++)
+                {
+                    var parameter = endpoint.ParsedTemplate.Parameters[i];
+                    if (parameter.DefaultValue != null)
+                    {
+                        defaults.Remove(parameter.Name);
+                    }
+                }
+
+                routes.Add(new Route(
+                    new SelectorRouter(selector, candidates),
+                    endpoint.Template,
+                    defaults,
+                    new Dictionary<string, object>(),
+                    new RouteValueDictionary(),
+                    _constraintResolver));
             }
 
             return new RouteMatcher(routes);
         }
 
-        private struct Entry : IComparable<Entry>
+        private class SelectorRouter : IRouter
         {
-            public MatcherEndpoint Endpoint;
-            public Route Route;
+            private readonly EndpointSelector _selector;
+            private readonly Endpoint[] _candidates;
 
-            public int CompareTo(Entry other)
+            public SelectorRouter(EndpointSelector selector, Endpoint[] candidates)
             {
-                var comparison = Endpoint.Order.CompareTo(other.Endpoint.Order);
-                if (comparison != 0)
-                {
-                    return comparison;
-                }
+                _selector = selector;
+                _candidates = candidates;
+            }
 
-                comparison = RoutePrecedence.ComputeInbound(Endpoint.ParsedTemplate).CompareTo(RoutePrecedence.ComputeInbound(other.Endpoint.ParsedTemplate));
-                if (comparison != 0)
-                {
-                    return comparison;
-                }
+            public VirtualPathData GetVirtualPath(VirtualPathContext context)
+            {
+                throw new NotImplementedException();
+            }
 
-                return Endpoint.Template.CompareTo(other.Endpoint.Template);
+            public Task RouteAsync(RouteContext context)
+            {
+                var endpoint = _selector.SelectBestCandidate(context.HttpContext, _candidates);
+                if (endpoint != null)
+                {
+                    context.HttpContext.Features.Get<IEndpointFeature>().Endpoint = endpoint;
+                    context.Handler = (_) => Task.CompletedTask;
+                }
+                return Task.CompletedTask;
             }
         }
     }
