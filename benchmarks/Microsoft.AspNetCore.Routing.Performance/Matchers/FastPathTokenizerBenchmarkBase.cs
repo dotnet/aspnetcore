@@ -5,7 +5,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 {
     public abstract class FastPathTokenizerBenchmarkBase
     {
-        internal unsafe void NaiveBaseline(string path, PathSegment * segments, int maxCount)
+        internal unsafe void NaiveBaseline(string path, PathSegment* segments, int maxCount)
         {
             int count = 0;
             int start = 1; // Paths always start with a leading /

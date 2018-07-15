@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             _indexes = indexes;
         }
 
-        public override unsafe int GetDestination(string path, PathSegment segment)
+        public override int GetDestination(string path, PathSegment segment)
         {
             if (segment.Length == 0)
             {

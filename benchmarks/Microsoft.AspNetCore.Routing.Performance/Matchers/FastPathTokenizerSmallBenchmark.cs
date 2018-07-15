@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using BenchmarkDotNet.Attributes;
 
 namespace Microsoft.AspNetCore.Routing.Matchers
@@ -21,12 +22,12 @@ namespace Microsoft.AspNetCore.Routing.Matchers
         }
 
         [Benchmark]
-        public unsafe void Implementation()
+        public void Implementation()
         {
             var path = Input;
-            var segments = stackalloc PathSegment[MaxCount];
+            Span<PathSegment> segments = stackalloc PathSegment[MaxCount];
 
-            FastPathTokenizer.Tokenize(path, segments, MaxCount);
+            FastPathTokenizer.Tokenize(path, segments);
         }
     }
 }

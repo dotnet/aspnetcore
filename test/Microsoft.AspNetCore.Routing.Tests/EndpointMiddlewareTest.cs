@@ -34,7 +34,10 @@ namespace Microsoft.AspNetCore.Routing
             // Assert
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () => await invokeTask);
 
-            Assert.Equal("Unable to execute an endpoint because the dispatcher was not run. Ensure dispatcher middleware is registered.", ex.Message);
+            Assert.Equal(
+                "Unable to execute an endpoint because the DispatcherMiddleware was not run for this request. " +
+                "Ensure DispatcherMiddleware is added to the request execution pipeline before EndpointMiddleware in application startup code.",
+                ex.Message);
         }
 
         private class ServiceProvider : IServiceProvider

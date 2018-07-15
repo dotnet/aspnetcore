@@ -1,20 +1,21 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Routing.Matchers
 {
-    public unsafe class FastPathTokenizerTest
+    public class FastPathTokenizerTest
     {
         [Fact] // Note: tokenizing a truly empty string is undefined.
         public void Tokenize_EmptyPath()
         {
             // Arrange
-            var segments = stackalloc PathSegment[32];
+            Span<PathSegment> segments = stackalloc PathSegment[1];
 
             // Act
-            var count = FastPathTokenizer.Tokenize("/", segments, 1);
+            var count = FastPathTokenizer.Tokenize("/", segments);
 
             // Assert
             Assert.Equal(0, count);
@@ -24,10 +25,10 @@ namespace Microsoft.AspNetCore.Routing.Matchers
         public void Tokenize_SingleSegment()
         {
             // Arrange
-            var segments = stackalloc PathSegment[32];
+            Span<PathSegment> segments = stackalloc PathSegment[1];
 
             // Act
-            var count = FastPathTokenizer.Tokenize("/abc", segments, 1);
+            var count = FastPathTokenizer.Tokenize("/abc", segments);
 
             // Assert
             Assert.Equal(1, count);
@@ -38,10 +39,10 @@ namespace Microsoft.AspNetCore.Routing.Matchers
         public void Tokenize_WithSomeSegments()
         {
             // Arrange
-            var segments = stackalloc PathSegment[32];
+            Span<PathSegment> segments = stackalloc PathSegment[3];
 
             // Act
-            var count = FastPathTokenizer.Tokenize("/a/b/c", segments, 3);
+            var count = FastPathTokenizer.Tokenize("/a/b/c", segments);
 
             // Assert
             Assert.Equal(3, count);
@@ -54,10 +55,10 @@ namespace Microsoft.AspNetCore.Routing.Matchers
         public void Tokenize_WithSomeSegments_TrailingSlash()
         {
             // Arrange
-            var segments = stackalloc PathSegment[32];
+            Span<PathSegment> segments = stackalloc PathSegment[3];
 
             // Act
-            var count = FastPathTokenizer.Tokenize("/a/b/c/", segments, 3);
+            var count = FastPathTokenizer.Tokenize("/a/b/c/", segments);
 
             // Assert
             Assert.Equal(3, count);
@@ -70,10 +71,10 @@ namespace Microsoft.AspNetCore.Routing.Matchers
         public void Tokenize_LongerSegments()
         {
             // Arrange
-            var segments = stackalloc PathSegment[32];
+            Span<PathSegment> segments = stackalloc PathSegment[3];
 
             // Act
-            var count = FastPathTokenizer.Tokenize("/aaa/bb/ccccc", segments, 3);
+            var count = FastPathTokenizer.Tokenize("/aaa/bb/ccccc", segments);
 
             // Assert
             Assert.Equal(3, count);
@@ -86,10 +87,10 @@ namespace Microsoft.AspNetCore.Routing.Matchers
         public void Tokenize_EmptySegments()
         {
             // Arrange
-            var segments = stackalloc PathSegment[32];
+            Span<PathSegment> segments = stackalloc PathSegment[3];
 
             // Act
-            var count = FastPathTokenizer.Tokenize("///c", segments, 3);
+            var count = FastPathTokenizer.Tokenize("///c", segments);
 
             // Assert
             Assert.Equal(3, count);
@@ -102,10 +103,10 @@ namespace Microsoft.AspNetCore.Routing.Matchers
         public void Tokenize_TooManySegments()
         {
             // Arrange
-            var segments = stackalloc PathSegment[32];
+            Span<PathSegment> segments = stackalloc PathSegment[3];
 
             // Act
-            var count = FastPathTokenizer.Tokenize("/a/b/c/d", segments, 3);
+            var count = FastPathTokenizer.Tokenize("/a/b/c/d", segments);
 
             // Assert
             Assert.Equal(3, count);

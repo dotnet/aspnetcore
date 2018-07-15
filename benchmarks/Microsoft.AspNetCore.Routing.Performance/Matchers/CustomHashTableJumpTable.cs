@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             return Primes[Primes.Length - 1];
         }
 
-        public override unsafe int GetDestination(string path, PathSegment segment)
+        public override int GetDestination(string path, PathSegment segment)
         {
             if (segment.Length == 0)
             {
