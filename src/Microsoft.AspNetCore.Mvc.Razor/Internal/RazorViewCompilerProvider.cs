@@ -75,7 +75,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                 _fileProviderAccessor.FileProvider,
                 _razorProjectEngine,
                 _csharpCompiler,
+#pragma warning disable CS0618 // Type or member is obsolete
                 _viewEngineOptions.CompilationCallback,
+#pragma warning restore CS0618 // Type or member is obsolete
                 feature.ViewDescriptors,
                 _compilationMemoryCacheProvider.CompilationMemoryCache,
                 _logger);

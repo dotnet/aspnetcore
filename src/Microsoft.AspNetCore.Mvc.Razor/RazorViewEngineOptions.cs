@@ -157,6 +157,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// Gets the <see cref="MetadataReference" /> instances that should be included in Razor compilation, along with
         /// those discovered by <see cref="MetadataReferenceFeatureProvider" />s.
         /// </summary>
+        [Obsolete("This property is obsolete and will be removed in a future version. See https://aka.ms/AA1x4gg for details.")]
         public IList<MetadataReference> AdditionalCompilationReferences { get; } = new List<MetadataReference>();
 
         /// <summary>
@@ -166,6 +167,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// <remarks>
         /// Customizations made here would not reflect in tooling (Intellisense).
         /// </remarks>
+        [Obsolete("This property is obsolete and will be removed in a future version. See https://aka.ms/AA1x4gg for details.")]
         public Action<RoslynCompilationContext> CompilationCallback
         {
             get => _compilationCallback;
