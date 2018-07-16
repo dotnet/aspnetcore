@@ -5,6 +5,7 @@ using System;
 using System.Buffers;
 using System.IO;
 using System.IO.Pipelines;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
@@ -16,15 +17,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
     public partial class Http2Stream : HttpProtocol
     {
         private readonly Http2StreamContext _context;
+        private readonly Http2OutputProducer _http2Output;
         private readonly Http2StreamOutputFlowControl _outputFlowControl;
+        private int _requestAborted;
 
         public Http2Stream(Http2StreamContext context)
             : base(context)
         {
             _context = context;
             _outputFlowControl = new Http2StreamOutputFlowControl(context.ConnectionOutputFlowControl, context.ClientPeerSettings.InitialWindowSize);
-
-            Output = new Http2OutputProducer(context.StreamId, context.FrameWriter, _outputFlowControl, context.TimeoutControl, context.MemoryPool);
+            _http2Output = new Http2OutputProducer(context.StreamId, context.FrameWriter, _outputFlowControl, context.TimeoutControl, context.MemoryPool);
+            Output = _http2Output;
         }
 
         public int StreamId => _context.StreamId;
@@ -144,17 +147,47 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
         }
 
+        public bool TryUpdateOutputWindow(int bytes)
+        {
+            return _context.FrameWriter.TryUpdateStreamWindow(_outputFlowControl, bytes);
+        }
+
         public override void Abort(ConnectionAbortedException abortReason)
+        {
+            if (Interlocked.Exchange(ref _requestAborted, 1) != 0)
+            {
+                return;
+            }
+
+            AbortCore(abortReason);
+        }
+
+        protected override void ApplicationAbort()
+        {
+            Log.ApplicationAbortedConnection(ConnectionId, TraceIdentifier);
+            var abortReason = new ConnectionAbortedException(CoreStrings.ConnectionAbortedByApplication);
+            ResetAndAbort(abortReason, Http2ErrorCode.CANCEL);
+        }
+
+        private void ResetAndAbort(ConnectionAbortedException abortReason, Http2ErrorCode error)
+        {
+            if (Interlocked.Exchange(ref _requestAborted, 1) != 0)
+            {
+                return;
+            }
+
+            // Don't block on IO. This never faults.
+            _ = _http2Output.WriteRstStreamAsync(error);
+
+            AbortCore(abortReason);
+        }
+
+        private void AbortCore(ConnectionAbortedException abortReason)
         {
             base.Abort(abortReason);
 
             // Unblock the request body.
             RequestBodyPipe.Writer.Complete(new IOException(CoreStrings.Http2StreamAborted, abortReason));
-        }
-
-        public bool TryUpdateOutputWindow(int bytes)
-        {
-            return _context.FrameWriter.TryUpdateStreamWindow(_outputFlowControl, bytes);
         }
     }
 }

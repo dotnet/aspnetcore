@@ -1892,12 +1892,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await WaitForAllStreamsAsync();
             Assert.Contains(1, _abortedStreamIds);
 
-            await SendGoAwayAsync();
-
-            // No data is received from the stream since it was aborted before writing anything
-            await WaitForConnectionStopAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
-
-            // TODO: Check logs
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
         }
 
         [Fact]
@@ -1910,12 +1905,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await WaitForAllStreamsAsync();
             Assert.Contains(1, _abortedStreamIds);
 
-            await SendGoAwayAsync();
-
-            // No END_STREAM HEADERS or DATA frame is received since the stream was aborted
-            await WaitForConnectionStopAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
-
-            // TODO: Check logs
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
         }
 
         [Fact]
@@ -1928,12 +1918,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await WaitForAllStreamsAsync();
             Assert.Contains(1, _abortedStreamIds);
 
-            await SendGoAwayAsync();
-
-            // No END_STREAM HEADERS or DATA frame is received since the stream was aborted
-            await WaitForConnectionStopAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
-
-            // TODO: Check logs
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
         }
 
         [Fact]
@@ -2179,12 +2164,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await WaitForAllStreamsAsync();
             Assert.Contains(1, _abortedStreamIds);
 
-            await SendGoAwayAsync();
-
-            // No data is received from the stream since it was aborted before writing anything
-            await WaitForConnectionStopAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
-
-            // TODO: Check logs
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
         }
 
         [Fact]
@@ -2228,12 +2208,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await WaitForAllStreamsAsync();
             Assert.Contains(1, _abortedStreamIds);
 
-            await SendGoAwayAsync();
-
-            // No data is received from the stream since it was aborted before writing anything
-            await WaitForConnectionStopAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
-
-            // TODO: Check logs
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
         }
 
         [Fact]
@@ -2310,6 +2285,98 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedLastStreamId: 0,
                 expectedErrorCode: Http2ErrorCode.PROTOCOL_ERROR,
                 expectedErrorMessage: CoreStrings.FormatHttp2ErrorHeadersInterleaved(Http2FrameType.RST_STREAM, streamId: 1, headersStreamId: 1));
+        }
+
+        [Fact]
+        public async Task RequestAbort_SendsRstStream()
+        {
+            await InitializeConnectionAsync(async context =>
+            {
+                var streamIdFeature = context.Features.Get<IHttp2StreamIdFeature>();
+
+                try
+                {
+                    context.RequestAborted.Register(() =>
+                    {
+                        lock (_abortedStreamIdsLock)
+                        {
+                            _abortedStreamIds.Add(streamIdFeature.StreamId);
+                        }
+
+                        _runningStreams[streamIdFeature.StreamId].TrySetResult(null);
+                    });
+
+                    context.Abort();
+
+                    // Not sent
+                    await context.Response.Body.WriteAsync(new byte[10], 0, 10);
+
+                    await _runningStreams[streamIdFeature.StreamId].Task;
+                }
+                catch (Exception ex)
+                {
+                    _runningStreams[streamIdFeature.StreamId].TrySetException(ex);
+                }
+            });
+
+            await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
+            await WaitForStreamErrorAsync(expectedStreamId: 1, Http2ErrorCode.CANCEL, expectedErrorMessage: null);
+            await WaitForAllStreamsAsync();
+            Assert.Contains(1, _abortedStreamIds);
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+        }
+
+        [Fact]
+        public async Task RequestAbort_AfterDataSent_SendsRstStream()
+        {
+            await InitializeConnectionAsync(async context =>
+            {
+                var streamIdFeature = context.Features.Get<IHttp2StreamIdFeature>();
+
+                try
+                {
+                    context.RequestAborted.Register(() =>
+                    {
+                        lock (_abortedStreamIdsLock)
+                        {
+                            _abortedStreamIds.Add(streamIdFeature.StreamId);
+                        }
+
+                        _runningStreams[streamIdFeature.StreamId].TrySetResult(null);
+                    });
+
+                    await context.Response.Body.WriteAsync(new byte[10], 0, 10);
+
+                    context.Abort();
+
+                    // Not sent
+                    await context.Response.Body.WriteAsync(new byte[11], 0, 11);
+
+                    await _runningStreams[streamIdFeature.StreamId].Task;
+                }
+                catch (Exception ex)
+                {
+                    _runningStreams[streamIdFeature.StreamId].TrySetException(ex);
+                }
+            });
+
+            await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
+
+            var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 37,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1);
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 10,
+                withFlags: 0,
+                withStreamId: 1);
+
+            await WaitForStreamErrorAsync(expectedStreamId: 1, Http2ErrorCode.CANCEL, expectedErrorMessage: null);
+            await WaitForAllStreamsAsync();
+            Assert.Contains(1, _abortedStreamIds);
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
         }
 
         [Fact]
