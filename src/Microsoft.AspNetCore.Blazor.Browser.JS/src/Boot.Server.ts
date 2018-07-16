@@ -6,10 +6,16 @@ import { MessagePackHubProtocol } from '@aspnet/signalr-protocol-msgpack';
 import { OutOfProcessRenderBatch } from './Rendering/RenderBatch/OutOfProcessRenderBatch';
 import { internalFunctions as uriHelperFunctions } from './Services/UriHelper';
 import { renderBatch } from './Rendering/Renderer';
+import { fetchBootConfigAsync, loadEmbeddedResourcesAsync } from './BootCommon';
 
 let connection : signalR.HubConnection;
 
 function boot() {
+  // In the background, start loading the boot config and any embedded resources
+  const embeddedResourcesPromise = fetchBootConfigAsync().then(bootConfig => {
+    return loadEmbeddedResourcesAsync(bootConfig);
+  });
+
   connection = new signalR.HubConnectionBuilder()
     .withUrl('/_blazor')
     .withHubProtocol(new MessagePackHubProtocol())
@@ -24,12 +30,15 @@ function boot() {
   connection.on('JS.Error', unhandledError);
 
   connection.start()
-    .then(() => {
+    .then(async () => {
       DotNet.attachDispatcher({
         beginInvokeDotNetFromJS: (callId, assemblyName, methodIdentifier, argsJson) => {
           connection.send('BeginInvokeDotNetFromJS', callId ? callId.toString() : null, assemblyName, methodIdentifier, argsJson);
         }
       });
+
+      // Ensure any embedded resources have been loaded before starting the app
+      await embeddedResourcesPromise;
 
       connection.send(
         'StartCircuit',
