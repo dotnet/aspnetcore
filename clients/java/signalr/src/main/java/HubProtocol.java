@@ -5,7 +5,7 @@ public interface HubProtocol {
     String getName();
     int getVersion();
     TransferFormat getTransferFormat();
-    InvocationMessage[] parseMessages(String message);
+    HubMessage[] parseMessages(String message);
     String writeMessage(InvocationMessage message);
 }
 

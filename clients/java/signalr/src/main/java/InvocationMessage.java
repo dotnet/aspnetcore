@@ -1,8 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-public class InvocationMessage {
-    int type = 1;
+public class InvocationMessage extends HubMessage {
+    int type = HubMessageType.INVOCATION.value;
     String invocationId;
     String target;
     Object[] arguments;
@@ -34,5 +34,10 @@ public class InvocationMessage {
 
     public void setArguments(Object[] arguments) {
         this.arguments = arguments;
+    }
+
+    @Override
+    HubMessageType getMessageType() {
+        return HubMessageType.INVOCATION;
     }
 }
