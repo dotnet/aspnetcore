@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -8,6 +8,7 @@ using System.ComponentModel.Composition;
 using System.Linq;
 using System.Reflection;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Host;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.VisualStudio.Editor.Razor;
 using Microsoft.VisualStudio.Text;
@@ -27,6 +28,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Blazor
         private readonly HashSet<IWpfTextView> _openViews;
 
         private Type _codeGeneratorType;
+        private Type _projectSnapshotManagerType;
 
         [ImportingConstructor]
         public BlazorOpenDocumentTracker(
@@ -109,13 +111,49 @@ namespace Microsoft.VisualStudio.LanguageServices.Blazor
                         break;
                     }
 
-                    OnDeclarationsChanged();
+                    OnDeclarationsChanged(e.NewSolution.GetProject(e.ProjectId));
                     break;
             }
         }
 
-        private void OnDeclarationsChanged()
+        private void OnDeclarationsChanged(Project project)
         {
+            // In 15.8 the Razor Language Services provides the actual Tag Helper discovery logic.
+            // We can interface with that if we're running in a 15.8 build.
+            if (_projectSnapshotManagerType == null && _codeGeneratorType == null)
+            {
+                try
+                {
+                    var assembly = typeof(Microsoft.CodeAnalysis.Razor.IProjectEngineFactory).Assembly;
+                    _projectSnapshotManagerType = assembly.GetType("Microsoft.CodeAnalysis.Razor.ProjectSystem.ProjectSnapshotManager");
+                }
+                catch (Exception)
+                {
+                    // If the above fails, try the 15.7 logic.
+                }
+            }
+
+            if (_projectSnapshotManagerType != null)
+            {
+                try
+                {
+                    var languageServices = _workspace.Services.GetLanguageServices(RazorLanguage.Name);
+                    var manager = languageServices
+                        .GetType()
+                        .GetMethod(nameof(HostLanguageServices.GetService))
+                        .MakeGenericMethod(_projectSnapshotManagerType)
+                        .Invoke(languageServices, null);
+
+                    manager.GetType().GetMethod("WorkspaceProjectChanged").Invoke(manager, new object[] { project, });
+                    return;
+                }
+                catch (Exception)
+                {
+                    // If the above fails, try the 15.7 logic.
+                }
+            }
+
+
             // This is a design-time Razor file change.Go poke all of the open
             // Razor documents and tell them to update.
             var buffers = _openViews
