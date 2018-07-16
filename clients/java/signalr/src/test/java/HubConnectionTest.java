@@ -40,6 +40,74 @@ public class HubConnectionTest {
     }
 
     @Test
+    public void RemoveHandlerByName() throws Exception {
+        AtomicReference<Double> value = new AtomicReference<>(0.0);
+        Transport mockTransport = new MockEchoTransport();
+        HubConnection hubConnection = new HubConnection("http://example.com", mockTransport);
+        Action action = () -> value.getAndUpdate((val) -> val + 1);
+
+        hubConnection.on("inc", action);
+
+        assertEquals(0.0, value.get(), 0);
+
+        hubConnection.start();
+        hubConnection.send("inc");
+
+        // Confirming that our handler was called and that the counter property was incremented.
+        assertEquals(1, value.get(), 0);
+
+        hubConnection.remove("inc");
+        hubConnection.send("inc");
+        assertEquals(1, value.get(), 0);
+    }
+
+    @Test
+    public void AddAndRemoveHandlerImmediately() throws Exception {
+
+        AtomicReference<Double> value = new AtomicReference<>(0.0);
+        Transport mockTransport = new MockEchoTransport();
+        HubConnection hubConnection = new HubConnection("http://example.com", mockTransport);
+        Action action = () -> value.getAndUpdate((val) -> val + 1);
+
+        hubConnection.on("inc", action);
+        hubConnection.remove("inc");
+
+        assertEquals(0.0, value.get(), 0);
+
+        hubConnection.start();
+        hubConnection.send("inc");
+
+        // Confirming that the handler was removed.
+        assertEquals(0, value.get(), 0);
+    }
+
+    @Test
+    public void RemovingMultipleHandlersWithOneCallToRemove() throws Exception {
+
+        AtomicReference<Double> value = new AtomicReference<>(0.0);
+        Transport mockTransport = new MockEchoTransport();
+        HubConnection hubConnection = new HubConnection("http://example.com", mockTransport);
+        Action action = () -> value.getAndUpdate((val) -> val + 1);
+        Action secondAction = () -> value.getAndUpdate((val) -> val + 2);
+
+        hubConnection.on("inc", action);
+        hubConnection.on("inc", secondAction);
+
+        assertEquals(0.0, value.get(), 0);
+
+        hubConnection.start();
+        hubConnection.send("inc");
+
+        assertEquals(3, value.get(), 0);
+
+        hubConnection.remove("inc");
+        hubConnection.send("inc");
+
+        // Confirm that another invocation doesn't change anything because the handlers have been removed.
+        assertEquals(3, value.get(), 0);
+    }
+
+    @Test
     public void RegisteringMultipleHandlersThatTakeParamsAndBothGetTriggered() throws Exception {
         AtomicReference<Double> value = new AtomicReference<>(0.0);
         Transport mockTransport = new MockEchoTransport();
@@ -57,7 +125,6 @@ public class HubConnectionTest {
         // Confirming that our handler was called and the correct message was passed in.
         assertEquals(24, value.get(), 0);
     }
-
 
     // We're using AtomicReference<Double> in the send tests instead of int here because Gson has trouble deserializing to Integer
     @Test

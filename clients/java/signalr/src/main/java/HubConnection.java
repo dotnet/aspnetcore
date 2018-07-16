@@ -17,7 +17,7 @@ public class HubConnection {
     private Gson gson = new Gson();
     private HubConnectionState connectionState = HubConnectionState.DISCONNECTED;
 
-    public HubConnection(String url, Transport transport){
+    public HubConnection(String url, Transport transport) {
         this.url = url;
         this.protocol = new JsonHubProtocol();
         this.callback = (payload) -> {
@@ -125,5 +125,9 @@ public class HubConnection {
                     param5.cast(params[4]));
         };
         handlers.put(target, action);
+    }
+
+    public void remove(String name) {
+        handlers.remove(name);
     }
 }
