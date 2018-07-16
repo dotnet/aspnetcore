@@ -30,9 +30,9 @@ public class JsonHubProtocol implements HubProtocol {
     }
 
     @Override
-    public InvocationMessage[] parseMessages(String payload) {
+    public HubMessage[] parseMessages(String payload) {
         String[] messages = payload.split(RECORD_SEPARATOR);
-        List<InvocationMessage> invocationMessages = new ArrayList<>();
+        List<HubMessage> hubMessages = new ArrayList<>();
         for (String splitMessage : messages) {
             // Empty handshake response "{}". We can ignore it
             if (splitMessage.equals("{}")) {
@@ -40,41 +40,35 @@ public class JsonHubProtocol implements HubProtocol {
             }
 
             JsonObject jsonMessage = jsonParser.parse(splitMessage).getAsJsonObject();
-            String messageType = jsonMessage.get("type").toString();
+            HubMessageType messageType = HubMessageType.values()[jsonMessage.get("type").getAsInt() -1];
             switch (messageType) {
-                case "1":
+                case INVOCATION:
                     //Invocation Message
                     String target = jsonMessage.get("target").getAsString();
                     JsonElement args = jsonMessage.get("arguments");
-                    invocationMessages.add(new InvocationMessage(target, new Object[] {args}));
+                    hubMessages.add(new InvocationMessage(target, new Object[] {args}));
                     break;
-                case "2":
-                    //Stream item
+                case STREAM_ITEM:
+                    throw new UnsupportedOperationException("Support for streaming is not yet available");
+                case COMPLETION:
                     //Don't care yet
                     break;
-                case "3":
-                    //Completion
-                    //Don't care yet
-                    break;
-                case "4":
-                    //Stream invocation
+                case STREAM_INVOCATION:
                     //Don't care yet;
+                    throw new UnsupportedOperationException("Support for streaming is not yet available");
+                case CANCEL_INVOCATION:
+                    // Not tracking invocations yet
                     break;
-                case "5":
-                    //Cancel invocation
-                    //Don't care yet
-                    break;
-                case "6":
+                case PING:
                     //Ping
-                    //Don't care yet
+                    hubMessages.add(new PingMessage());
                     break;
-                case "7":
-                    // Close message
+                case CLOSE:
                     //Don't care yet;
                     break;
             }
         }
-        return invocationMessages.toArray(new InvocationMessage[invocationMessages.size()]);
+        return hubMessages.toArray(new HubMessage[hubMessages.size()]);
     }
 
     @Override

@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 import com.google.gson.JsonArray;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import static org.junit.Assert.*;
 
@@ -34,30 +36,63 @@ public class JsonHubProtocolTest {
     }
 
     @Test
-    public void ParseSingleMessage() {
-        String stringifiedMessage = "{\"type\":1,\"target\":\"test\",\"arguments\":[42]}\u001E";
-        InvocationMessage[] messages = jsonHubProtocol.parseMessages(stringifiedMessage);
+    public void ParsePingMessage() {
+        String stringifiedMessage = "{\"type\":6}\u001E";
+        HubMessage[] messages = jsonHubProtocol.parseMessages(stringifiedMessage);
 
         //We know it's only one message
         assertEquals(1, messages.length);
-        InvocationMessage message = messages[0];
-        assertEquals("test", message.target);
-        assertEquals(null, message.invocationId);
-        assertEquals(1, message.type);
-        JsonArray messageResult = (JsonArray) message.arguments[0];
+        assertEquals(HubMessageType.PING, messages[0].getMessageType());
+    }
+
+    @Test
+    public void ParseSingleMessage() {
+        String stringifiedMessage = "{\"type\":1,\"target\":\"test\",\"arguments\":[42]}\u001E";
+        HubMessage[] messages = jsonHubProtocol.parseMessages(stringifiedMessage);
+
+        //We know it's only one message
+        assertEquals(1, messages.length);
+
+        assertEquals(HubMessageType.INVOCATION, messages[0].getMessageType());
+
+        //We can safely cast here because we know that it's an invocation message.
+        InvocationMessage invocationMessage = (InvocationMessage) messages[0];
+
+        assertEquals("test", invocationMessage.target);
+        assertEquals(null, invocationMessage.invocationId);
+
+        JsonArray messageResult = (JsonArray) invocationMessage.arguments[0];
         assertEquals(42, messageResult.getAsInt());
+    }
+
+    @Rule
+    public ExpectedException exceptionRule = ExpectedException.none();
+
+    @Test
+    public void ParseSingleUnsupportedStreamItemMessage() {
+        exceptionRule.expect(UnsupportedOperationException.class);
+        exceptionRule.expectMessage("Support for streaming is not yet available");
+        String stringifiedMessage = "{\"type\":2,\"Id\":1,\"Item\":42}\u001E";
+        HubMessage[] messages = jsonHubProtocol.parseMessages(stringifiedMessage);
+    }
+
+    @Test
+    public void ParseSingleUnsupportedStreamInvocationMessage() {
+        exceptionRule.expect(UnsupportedOperationException.class);
+        exceptionRule.expectMessage("Support for streaming is not yet available");
+        String stringifiedMessage = "{\"type\":4,\"Id\":1,\"target\":\"test\",\"arguments\":[42]}\u001E";
+        HubMessage[] messages = jsonHubProtocol.parseMessages(stringifiedMessage);
     }
 
     @Test
     public void ParseHandshakeResponsePlusMessage() {
         String twoMessages = "{}\u001E{\"type\":1,\"target\":\"test\",\"arguments\":[42]}\u001E";
-        InvocationMessage[] messages = jsonHubProtocol.parseMessages(twoMessages);
+        HubMessage[] messages = jsonHubProtocol.parseMessages(twoMessages);
+        assertEquals(HubMessageType.INVOCATION, messages[0].getMessageType());
 
-        //We ignore the Handshake response for now
-        InvocationMessage message = messages[0];
+        //We ignore the Handshake response for now and we can cast because we know we have in invocation message.
+        InvocationMessage message = (InvocationMessage) messages[0];
         assertEquals("test", message.target);
-        assertEquals(null, message.invocationId);
-        assertEquals(1, message.type);
         JsonArray messageResult = (JsonArray) message.arguments[0];
         assertEquals(42, messageResult.getAsInt());
     }
@@ -65,36 +100,43 @@ public class JsonHubProtocolTest {
     @Test
     public void ParseTwoMessages() {
         String twoMessages = "{\"type\":1,\"target\":\"one\",\"arguments\":[42]}\u001E{\"type\":1,\"target\":\"two\",\"arguments\":[43]}\u001E";
-        InvocationMessage[] messages = jsonHubProtocol.parseMessages(twoMessages);
+        HubMessage[] messages = jsonHubProtocol.parseMessages(twoMessages);
         assertEquals(2, messages.length);
 
         // Check the first message
-        InvocationMessage message = messages[0];
-        assertEquals("one", message.target);
-        assertEquals(null, message.invocationId);
-        assertEquals(1, message.type);
-        JsonArray messageResult = (JsonArray) message.arguments[0];
+        assertEquals(HubMessageType.INVOCATION, messages[0].getMessageType());
+
+        //Now that we know we have an invocation message we can cast the hubMessage.
+        InvocationMessage invocationMessage = (InvocationMessage) messages[0];
+
+        assertEquals("one", invocationMessage.target);
+        assertEquals(null, invocationMessage.invocationId);
+        JsonArray messageResult = (JsonArray) invocationMessage.arguments[0];
         assertEquals(42, messageResult.getAsInt());
 
         // Check the second message
-        InvocationMessage secondMessage = messages[1];
-        assertEquals("two", secondMessage.target);
-        assertEquals(null, secondMessage.invocationId);
-        assertEquals(1, secondMessage.type);
-        JsonArray secondMessageResult = (JsonArray) secondMessage.arguments[0];
+        assertEquals(HubMessageType.INVOCATION, messages[1].getMessageType());
+
+        //Now that we know we have an invocation message we can cast the hubMessage.
+        InvocationMessage invocationMessage2 = (InvocationMessage) messages[1];
+
+        assertEquals("two", invocationMessage2.target);
+        assertEquals(null, invocationMessage2.invocationId);
+        JsonArray secondMessageResult = (JsonArray) invocationMessage2.arguments[0];
         assertEquals(43, secondMessageResult.getAsInt());
     }
 
     @Test
     public void ParseSingleMessageMutipleArgs() {
         String stringifiedMessage = "{\"type\":1,\"target\":\"test\",\"arguments\":[42, 24]}\u001E";
-        InvocationMessage[] messages = jsonHubProtocol.parseMessages(stringifiedMessage);
+        HubMessage[] messages = jsonHubProtocol.parseMessages(stringifiedMessage);
 
         //We know it's only one message
-        InvocationMessage message = messages[0];
+        assertEquals(HubMessageType.INVOCATION, messages[0].getMessageType());
+
+        InvocationMessage message = (InvocationMessage)messages[0];
         assertEquals("test", message.target);
         assertEquals(null, message.invocationId);
-        assertEquals(1, message.type);
         JsonArray messageResult = ((JsonArray) message.arguments[0]);
         assertEquals(42, messageResult.get(0).getAsInt());
         assertEquals(24, messageResult.get(1).getAsInt());
