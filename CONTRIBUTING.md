@@ -22,8 +22,10 @@ For non-security related bugs please log a new issue in the appropriate GitHub r
 
 Or browse the full list of repos in the [aspnet](https://github.com/aspnet/) organization.
 
+
 ## Reporting security issues and bugs
 Security issues and bugs should be reported privately, via email, to the Microsoft Security Response Center (MSRC)  secure@microsoft.com. You should receive a response within 24 hours. If for some reason you do not, please follow up via email to ensure we received your original message. Further information, including the MSRC PGP key, can be found in the [Security TechCenter](https://technet.microsoft.com/en-us/security/ff852094.aspx).
+
 
 ## Other discussions
 Our team members also monitor several other discussion forums:
@@ -50,19 +52,19 @@ GitHub supports [markdown](https://help.github.com/articles/github-flavored-mark
 
 ## Contributing code and content
 
-**Identifying the scale**
+### Identifying the scale
 
 If you would like to contribute to one of our repositories, first identify the scale of what you would like to contribute. If it is small (grammar/spelling or a bug fix) feel free to start working on a fix. If you are submitting a feature or substantial code contribution, please discuss it with the team and ensure it follows the product roadmap. You might also read these two blogs posts on contributing code: [Open Source Contribution Etiquette](http://tirania.org/blog/archive/2010/Dec-31.html) by Miguel de Icaza and [Don't "Push" Your Pull Requests](https://www.igvita.com/2011/12/19/dont-push-your-pull-requests/) by Ilya Grigorik. Note that all code submissions will be rigorously reviewed and tested by the ASP.NET and Entity Framework teams, and only those that meet an extremely high bar for both quality and design/roadmap appropriateness will be merged into the source.
 
-**Obtaining the source code**
+### Obtaining the source code
 
 If you are an outside contributer, please fork the ASP.NET repository you would like to contribute to your account. See the GitHub documentation for [forking a repo](https://help.github.com/articles/fork-a-repo/) if you have any questions about this. 
 
-**Building our Repositories**
+### Building our Repositories
 
 As our repositories use the latest bits of our code, we have a custom build script to fetch and use them. Please go through [building our repositories from source](https://github.com/aspnet/Home/wiki/Building-from-source) to understand and fix any issues. 
 
-**Submitting a pull request**
+### Submitting a pull request
 
 You will need to sign a [Contributor License Agreement](https://cla.dotnetfoundation.org/) when submitting your pull request. To complete the Contributor License Agreement (CLA), you will need to follow the instructions provided by the CLA bot when you send the pull request. This needs to only be done once for any .NET Foundation OSS project.
 
@@ -70,7 +72,7 @@ If you don't know what a pull request is read this article: https://help.github.
 
 Pull requests should all be done to the **release/2.2** (for the next release) or **master** (for 3.0 work) branch.
 
-**Commit/Pull Request Format**
+### Commit/Pull Request Format
 
 ```
 Summary of the changes (Less than 80 chars)
@@ -80,13 +82,17 @@ Summary of the changes (Less than 80 chars)
 Addresses #bugnumber (in this specific format)
 ```
 
-**Tests**
+### Tests
 
 -  Tests need to be provided for every bug/feature that is completed.
 -  Tests only need to be present for issues that need to be verified by QA (e.g. not tasks)
 -  If there is a scenario that is far too hard to test there does not need to be a test for it.
   - "Too hard" is determined by the team as a whole.
 
-**Feedback**
+### Feedback
 
 Your pull request will now go through extensive checks by the subject matter experts on our team. Please be patient; we have hundreds of pull requests across all of our repositories. Update your pull request according to feedback until it is approved by one of the ASP.NET team members. After that, one of our team members will add the pull request to **release/2.2** or **master**.
+
+## Code of conduct
+
+This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).  For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
