@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework Condition="'$(TargetFrameworkOverride)' == ''">netcoreapp2.2</TargetFramework>
+    <TargetFramework Condition="'$(TargetFrameworkOverride)' == ''">netcoreapp3.0</TargetFramework>
     <TargetFramework Condition="'$(TargetFrameworkOverride)' != ''">TargetFrameworkOverride</TargetFramework>
     <UserSecretsId Condition="'$(IndividualAuth)' == 'True' OR '$(OrganizationalAuth)' == 'True'">aspnet-Company.WebApplication1-0ce56475-d1db-490f-8af1-a881ea4fcd2d</UserSecretsId>
     <DebugType Condition="'$(TargetFrameworkOverride)' != ''">full</DebugType>
@@ -9,11 +9,11 @@
     <WebProject_DirectoryAccessLevelKey Condition="'$(OrganizationalAuth)' == 'True' AND '$(OrgReadAccess)' == 'True'">1</WebProject_DirectoryAccessLevelKey>
     <!-- aspnet/BuildTools#662 Don't police what version of NetCoreApp we use -->
     <NETCoreAppMaximumVersion>99.9</NETCoreAppMaximumVersion>
-    <RuntimeFrameworkVersion>${MicrosoftNETCoreApp22PackageVersion}</RuntimeFrameworkVersion>
+    <RuntimeFrameworkVersion>${MicrosoftNETCoreApp30PackageVersion}</RuntimeFrameworkVersion>
   </PropertyGroup>
 
   <ItemGroup>
-    <DotNetCoreRuntime Include="${MicrosoftNETCoreApp22PackageVersion}" />
+    <DotNetCoreRuntime Include="${MicrosoftNETCoreApp30PackageVersion}" />
   </ItemGroup>
   <!--#if (IndividualLocalAuth && !UseLocalDB) -->
 

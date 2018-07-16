@@ -1,15 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework Condition="'$(TargetFrameworkOverride)' == ''">netcoreapp2.2</TargetFramework>
+    <TargetFramework Condition="'$(TargetFrameworkOverride)' == ''">netcoreapp3.0</TargetFramework>
     <TargetFramework Condition="'$(TargetFrameworkOverride)' != ''">TargetFrameworkOverride</TargetFramework>
     <!-- aspnet/BuildTools#662 Don't police what version of NetCoreApp we use -->
     <NETCoreAppMaximumVersion>99.9</NETCoreAppMaximumVersion>
-    <RuntimeFrameworkVersion>${MicrosoftNETCoreApp22PackageVersion}</RuntimeFrameworkVersion>
+    <RuntimeFrameworkVersion>${MicrosoftNETCoreApp30PackageVersion}</RuntimeFrameworkVersion>
   </PropertyGroup>
 
   <ItemGroup>
-    <DotNetCoreRuntime Include="${MicrosoftNETCoreApp22PackageVersion}" />
+    <DotNetCoreRuntime Include="${MicrosoftNETCoreApp30PackageVersion}" />
   </ItemGroup>
 
   <ItemGroup>
