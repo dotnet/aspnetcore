@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Routing.EndpointFinders;
 using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.AspNetCore.Routing.Matchers;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
@@ -27,7 +26,11 @@ namespace Microsoft.AspNetCore.Routing
             var context = CreateRouteValuesContext(new { controller = "Home" });
 
             // Act
-            var link = linkGenerator.GetLink(new[] { endpoint }, context.ExplicitValues, context.AmbientValues);
+            var link = linkGenerator.GetLink(
+                httpContext: null,
+                new[] { endpoint },
+                context.ExplicitValues,
+                context.AmbientValues);
 
             // Assert
             Assert.Equal("/Home", link);
@@ -44,7 +47,11 @@ namespace Microsoft.AspNetCore.Routing
 
             // Act & Assert
             var exception = Assert.Throws<InvalidOperationException>(
-                () => linkGenerator.GetLink(new[] { endpoint }, context.ExplicitValues, context.AmbientValues));
+                () => linkGenerator.GetLink(
+                    httpContext: null,
+                    new[] { endpoint },
+                    context.ExplicitValues,
+                    context.AmbientValues));
             Assert.Equal(expectedMessage, exception.Message);
         }
 
@@ -58,6 +65,7 @@ namespace Microsoft.AspNetCore.Routing
 
             // Act
             var canGenerateLink = linkGenerator.TryGetLink(
+                httpContext: null,
                 new[] { endpoint },
                 context.ExplicitValues,
                 context.AmbientValues,
@@ -80,6 +88,7 @@ namespace Microsoft.AspNetCore.Routing
 
             // Act
             var link = linkGenerator.GetLink(
+                httpContext: null,
                 new[] { endpoint1, endpoint2, endpoint3 },
                 context.ExplicitValues,
                 context.AmbientValues);
@@ -100,6 +109,7 @@ namespace Microsoft.AspNetCore.Routing
 
             // Act
             var link = linkGenerator.GetLink(
+                httpContext: null,
                 new[] { endpoint1, endpoint2, endpoint3 },
                 context.ExplicitValues,
                 context.AmbientValues);
@@ -119,7 +129,11 @@ namespace Microsoft.AspNetCore.Routing
                 ambientValues: new { controller = "Home", action = "Index" });
 
             // Act
-            var link = linkGenerator.GetLink(new[] { endpoint }, context.ExplicitValues, context.AmbientValues);
+            var link = linkGenerator.GetLink(
+                httpContext: null,
+                new[] { endpoint },
+                context.ExplicitValues,
+                context.AmbientValues);
 
             // Assert
             Assert.Equal("/Home/Index?name=name%20with%20%25special%20%23characters", link);
@@ -136,7 +150,11 @@ namespace Microsoft.AspNetCore.Routing
                 new { controller = "Home", action = "Index" });
 
             // Act
-            var link = linkGenerator.GetLink(new[] { endpoint }, context.ExplicitValues, context.AmbientValues);
+            var link = linkGenerator.GetLink(
+                httpContext: null,
+                new[] { endpoint },
+                context.ExplicitValues,
+                context.AmbientValues);
 
             // Assert
             Assert.Equal("/Home/Index?color=red&color=green&color=blue", link);
@@ -153,7 +171,11 @@ namespace Microsoft.AspNetCore.Routing
                 new { controller = "Home", action = "Index" });
 
             // Act
-            var link = linkGenerator.GetLink(new[] { endpoint }, context.ExplicitValues, context.AmbientValues);
+            var link = linkGenerator.GetLink(
+                httpContext: null,
+                new[] { endpoint },
+                context.ExplicitValues,
+                context.AmbientValues);
 
             // Assert
             Assert.Equal("/Home/Index?items=10&items=20&items=30", link);
@@ -170,7 +192,11 @@ namespace Microsoft.AspNetCore.Routing
                 new { controller = "Home", action = "Index" });
 
             // Act
-            var link = linkGenerator.GetLink(new[] { endpoint }, context.ExplicitValues, context.AmbientValues);
+            var link = linkGenerator.GetLink(
+                httpContext: null,
+                new[] { endpoint },
+                context.ExplicitValues,
+                context.AmbientValues);
 
             // Assert
             Assert.Equal("/Home/Index", link);
@@ -187,7 +213,11 @@ namespace Microsoft.AspNetCore.Routing
                 new { controller = "Home", action = "Index" });
 
             // Act
-            var link = linkGenerator.GetLink(new[] { endpoint }, context.ExplicitValues, context.AmbientValues);
+            var link = linkGenerator.GetLink(
+                httpContext: null,
+                new[] { endpoint },
+                context.ExplicitValues,
+                context.AmbientValues);
 
             // Assert
             Assert.Equal("/Home/Index?page=1&color=red&color=green&color=blue&message=textfortest", link);
@@ -204,7 +234,11 @@ namespace Microsoft.AspNetCore.Routing
                 ambientValues: new { controller = "Home" });
 
             // Act
-            var link = linkGenerator.GetLink(new[] { endpoint }, context.ExplicitValues, context.AmbientValues);
+            var link = linkGenerator.GetLink(
+                httpContext: null,
+                new[] { endpoint },
+                context.ExplicitValues,
+                context.AmbientValues);
 
             // Assert
             Assert.Equal("/Home/Index", link);
@@ -582,7 +616,11 @@ namespace Microsoft.AspNetCore.Routing
                 suppliedValues: new { action = "Index", controller = "Home", name = "products" });
 
             // Act
-            var link = linkGenerator.GetLink(new[] { endpoint }, context.ExplicitValues, context.AmbientValues);
+            var link = linkGenerator.GetLink(
+                httpContext: null,
+                new[] { endpoint },
+                context.ExplicitValues,
+                context.AmbientValues);
 
             // Assert
             Assert.Equal("/Home/Index/products", link);
@@ -598,7 +636,11 @@ namespace Microsoft.AspNetCore.Routing
                 suppliedValues: new { action = "Index", controller = "Home" });
 
             // Act
-            var link = linkGenerator.GetLink(new[] { endpoint }, context.ExplicitValues, context.AmbientValues);
+            var link = linkGenerator.GetLink(
+                httpContext: null,
+                new[] { endpoint },
+                context.ExplicitValues,
+                context.AmbientValues);
 
             // Assert
             Assert.Equal("/Home/Index", link);
@@ -616,7 +658,11 @@ namespace Microsoft.AspNetCore.Routing
                 suppliedValues: new { action = "Index", controller = "Home", name = "products" });
 
             // Act
-            var link = linkGenerator.GetLink(new[] { endpoint }, context.ExplicitValues, context.AmbientValues);
+            var link = linkGenerator.GetLink(
+                httpContext: null,
+                new[] { endpoint },
+                context.ExplicitValues,
+                context.AmbientValues);
 
             // Assert
             Assert.Equal("/Home/Index/products", link);
@@ -634,7 +680,11 @@ namespace Microsoft.AspNetCore.Routing
                 suppliedValues: new { action = "Index", controller = "Home" });
 
             // Act
-            var link = linkGenerator.GetLink(new[] { endpoint }, context.ExplicitValues, context.AmbientValues);
+            var link = linkGenerator.GetLink(
+                httpContext: null,
+                new[] { endpoint },
+                context.ExplicitValues,
+                context.AmbientValues);
 
             // Assert
             Assert.Equal("/Home/Index", link);
@@ -650,7 +700,11 @@ namespace Microsoft.AspNetCore.Routing
                 suppliedValues: new { action = "Index", controller = "Home", name = "products", format = "json" });
 
             // Act
-            var link = linkGenerator.GetLink(new[] { endpoint }, context.ExplicitValues, context.AmbientValues);
+            var link = linkGenerator.GetLink(
+                httpContext: null,
+                new[] { endpoint },
+                context.ExplicitValues,
+                context.AmbientValues);
 
             // Assert
             Assert.Equal("/Home/Index/products?format=json", link);
@@ -710,7 +764,11 @@ namespace Microsoft.AspNetCore.Routing
                 suppliedValues: new { action = "Index", controller = "Home" });
 
             // Act
-            var link = linkGenerator.GetLink(new[] { endpoint }, context.ExplicitValues, context.AmbientValues);
+            var link = linkGenerator.GetLink(
+                httpContext: null,
+                new[] { endpoint },
+                context.ExplicitValues,
+                context.AmbientValues);
 
             // Assert
             Assert.Equal("/Home/Index", link);
@@ -796,7 +854,7 @@ namespace Microsoft.AspNetCore.Routing
                 null);
         }
 
-        private ILinkGenerator CreateLinkGenerator()
+        private LinkGenerator CreateLinkGenerator()
         {
             return new DefaultLinkGenerator(
                 new DefaultMatchProcessorFactory(

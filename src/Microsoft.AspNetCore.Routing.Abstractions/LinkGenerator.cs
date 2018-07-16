@@ -2,18 +2,21 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Routing
 {
-    public interface ILinkGenerator
+    public abstract class LinkGenerator
     {
-        bool TryGetLink(
+        public abstract bool TryGetLink(
+            HttpContext httpContext,
             IEnumerable<Endpoint> endpoints,
             RouteValueDictionary explicitValues,
             RouteValueDictionary ambientValues,
             out string link);
 
-        string GetLink(
+        public abstract string GetLink(
+            HttpContext httpContext,
             IEnumerable<Endpoint> endpoints,
             RouteValueDictionary explicitValues,
             RouteValueDictionary ambientValues);
