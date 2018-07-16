@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -611,6 +612,51 @@ Products: Music Systems, Televisions (3)";
             // Assert
             var content = document.RequiredQuerySelector("#content");
             Assert.Empty(content.TextContent);
+        }
+
+        [Fact]
+        public async Task ValidationProviderAttribute_ValidationTagHelpers_GeneratesExpectedDataAttributes()
+        {
+            // Act
+            var document = await Client.GetHtmlDocumentAsync("HtmlGeneration_Home/ValidationProviderAttribute");
+
+            // Assert
+            var firstName = document.RequiredQuerySelector("#FirstName");
+            Assert.Equal("true", firstName.GetAttribute("data-val"));
+            Assert.Equal("The FirstName field is required.", firstName.GetAttribute("data-val-required"));
+            Assert.Equal("The field FirstName must be a string with a maximum length of 5.", firstName.GetAttribute("data-val-length"));
+            Assert.Equal("5", firstName.GetAttribute("data-val-length-max"));
+            Assert.Equal("The field FirstName must match the regular expression '[A-Za-z]*'.", firstName.GetAttribute("data-val-regex"));
+            Assert.Equal("[A-Za-z]*", firstName.GetAttribute("data-val-regex-pattern"));
+
+            var lastName = document.RequiredQuerySelector("#LastName");
+            Assert.Equal("true", lastName.GetAttribute("data-val"));
+            Assert.Equal("The LastName field is required.", lastName.GetAttribute("data-val-required"));
+            Assert.Equal("The field LastName must be a string with a maximum length of 6.", lastName.GetAttribute("data-val-length"));
+            Assert.Equal("6", lastName.GetAttribute("data-val-length-max"));
+            Assert.False(lastName.HasAttribute("data-val-regex"));
+        }
+
+        [Fact]
+        public async Task ValidationProviderAttribute_ValidationTagHelpers_GeneratesExpectedSpansAndDivsOnValidationError()
+        {
+            // Arrange
+            var request = new HttpRequestMessage(HttpMethod.Post, "HtmlGeneration_Home/ValidationProviderAttribute");
+            request.Content = new FormUrlEncodedContent(new Dictionary<string, string>
+            {
+                { "FirstName", "TestFirstName" },
+            });
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            await response.AssertStatusCodeAsync(HttpStatusCode.OK);
+            var document = await response.GetHtmlDocumentAsync();
+            Assert.Collection(
+                document.QuerySelectorAll("div.validation-summary-errors ul li"),
+                item => Assert.Equal("The field FirstName must be a string with a maximum length of 5.", item.TextContent),
+                item => Assert.Equal("The LastName field is required.", item.TextContent));
         }
 
         private static HttpRequestMessage RequestWithLocale(string url, string locale)

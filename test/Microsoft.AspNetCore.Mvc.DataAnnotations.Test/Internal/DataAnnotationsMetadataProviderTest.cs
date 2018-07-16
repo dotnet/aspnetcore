@@ -1241,6 +1241,38 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             Assert.Equal(initialValue, context.ValidationMetadata.IsRequired);
         }
 
+        [Fact]
+        public void CreateValidationMetadata_WillAddValidationAttributes_From_ValidationProviderAttribute()
+        {
+            // Arrange
+            var provider = new DataAnnotationsMetadataProvider(
+                Options.Create(new MvcDataAnnotationsLocalizationOptions()),
+                stringLocalizerFactory: null);
+            var validationProviderAttribute = new FooCompositeValidationAttribute(
+                attributes: new List<ValidationAttribute>
+                {
+                    new RequiredAttribute(),
+                    new StringLengthAttribute(5)
+                });
+
+            var attributes = new Attribute[] { new EmailAddressAttribute(), validationProviderAttribute };
+            var key = ModelMetadataIdentity.ForProperty(typeof(string), "Length", typeof(string));
+            var context = new ValidationMetadataProviderContext(key, GetModelAttributes(new object[0], attributes));
+
+            // Act
+            provider.CreateValidationMetadata(context);
+
+            // Assert
+            var expected = new List<object>
+            {
+                new EmailAddressAttribute(),
+                new RequiredAttribute(),
+                new StringLengthAttribute(5)
+            };
+            
+            Assert.Equal(expected, actual: context.ValidationMetadata.ValidatorMetadata);
+        }
+
         // [Required] has no effect on IsBindingRequired
         [Theory]
         [InlineData(true)]
@@ -1544,6 +1576,21 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             public int Id { get; private set; }
 
             public string Name { get; private set; }
+        }
+
+        private class FooCompositeValidationAttribute : ValidationProviderAttribute
+        {
+            private IEnumerable<ValidationAttribute> _attributes;
+
+            public FooCompositeValidationAttribute(IEnumerable<ValidationAttribute> attributes)
+            {
+                _attributes = attributes;
+            }
+
+            public override IEnumerable<ValidationAttribute> GetValidationAttributes()
+            {
+                return _attributes;
+            }
         }
     }
 }
