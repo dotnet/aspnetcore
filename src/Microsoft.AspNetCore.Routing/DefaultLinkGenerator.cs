@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Encodings.Web;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.AspNetCore.Routing.Matchers;
 using Microsoft.AspNetCore.Routing.Template;
@@ -13,7 +14,7 @@ using Microsoft.Extensions.ObjectPool;
 
 namespace Microsoft.AspNetCore.Routing
 {
-    internal class DefaultLinkGenerator : ILinkGenerator
+    internal class DefaultLinkGenerator : LinkGenerator
     {
         private readonly MatchProcessorFactory _matchProcessorFactory;
         private readonly ObjectPool<UriBuildingContext> _uriBuildingContextPool;
@@ -29,12 +30,13 @@ namespace Microsoft.AspNetCore.Routing
             _logger = logger;
         }
 
-        public string GetLink(
+        public override string GetLink(
+            HttpContext httpContext,
             IEnumerable<Endpoint> endpoints,
             RouteValueDictionary explicitValues,
             RouteValueDictionary ambientValues)
         {
-            if (TryGetLink(endpoints, explicitValues, ambientValues, out var link))
+            if (TryGetLink(httpContext, endpoints, explicitValues, ambientValues, out var link))
             {
                 return link;
             }
@@ -42,7 +44,8 @@ namespace Microsoft.AspNetCore.Routing
             throw new InvalidOperationException("Could not find a matching endpoint to generate a link.");
         }
 
-        public bool TryGetLink(
+        public override bool TryGetLink(
+            HttpContext httpContext,
             IEnumerable<Endpoint> endpoints,
             RouteValueDictionary explicitValues,
             RouteValueDictionary ambientValues,
@@ -64,7 +67,7 @@ namespace Microsoft.AspNetCore.Routing
 
             foreach (var endpoint in matcherEndpoints)
             {
-                link = GetLink(endpoint, explicitValues, ambientValues);
+                link = GetLink(httpContext, endpoint, explicitValues, ambientValues);
                 if (link != null)
                 {
                     return true;
@@ -75,6 +78,7 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         private string GetLink(
+            HttpContext httpContext,
             MatcherEndpoint endpoint,
             RouteValueDictionary explicitValues,
             RouteValueDictionary ambientValues)
@@ -92,7 +96,7 @@ namespace Microsoft.AspNetCore.Routing
                 return null;
             }
 
-            if (!Match(endpoint, templateValuesResult.CombinedValues))
+            if (!Match(httpContext, endpoint, templateValuesResult.CombinedValues))
             {
                 return null;
             }
@@ -100,7 +104,7 @@ namespace Microsoft.AspNetCore.Routing
             return templateBinder.BindValues(templateValuesResult.AcceptedValues);
         }
 
-        private bool Match(MatcherEndpoint endpoint, RouteValueDictionary routeValues)
+        private bool Match(HttpContext httpContext, MatcherEndpoint endpoint, RouteValueDictionary routeValues)
         {
             if (routeValues == null)
             {
@@ -117,7 +121,7 @@ namespace Microsoft.AspNetCore.Routing
                 }
 
                 var matchProcessor = _matchProcessorFactory.Create(matchProcessorReference);
-                if (!matchProcessor.ProcessOutbound(httpContext: null, routeValues))
+                if (!matchProcessor.ProcessOutbound(httpContext, routeValues))
                 {
                     return false;
                 }
