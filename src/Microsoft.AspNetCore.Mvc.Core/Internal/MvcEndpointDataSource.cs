@@ -293,6 +293,25 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 return invoker.InvokeAsync();
             };
 
+            var metadataCollection = BuildEndpointMetadata(action, routeName, source);
+            var endpoint = new MatcherEndpoint(
+                next => invokerDelegate,
+                template,
+                new RouteValueDictionary(nonInlineDefaults),
+                new RouteValueDictionary(action.RouteValues),
+                order,
+                metadataCollection,
+                action.DisplayName);
+
+            // Use defaults after the endpoint is created as it merges both the inline and
+            // non-inline defaults into one.
+            EnsureRequiredValuesInDefaults(endpoint.RequiredValues, endpoint.Defaults);
+
+            return endpoint;
+        }
+
+        private static EndpointMetadataCollection BuildEndpointMetadata(ActionDescriptor action, string routeName, object source)
+        {
             var metadata = new List<object>();
             // REVIEW: Used for debugging. Consider removing before release
             metadata.Add(source);
@@ -312,30 +331,27 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             if (action.ActionConstraints != null && action.ActionConstraints.Count > 0)
             {
+                // REVIEW: What is the best way to pick up endpoint constraints of an ActionDescriptor?
+                // Currently they need to implement IActionConstraintMetadata
                 foreach (var actionConstraint in action.ActionConstraints)
                 {
                     if (actionConstraint is HttpMethodActionConstraint httpMethodActionConstraint)
                     {
                         metadata.Add(new HttpMethodEndpointConstraint(httpMethodActionConstraint.HttpMethods));
                     }
+                    else if (actionConstraint is IEndpointConstraintMetadata)
+                    {
+                        // The constraint might have been added earlier, e.g. it is also a filter descriptor
+                        if (!metadata.Contains(actionConstraint))
+                        {
+                            metadata.Add(actionConstraint);
+                        }
+                    }
                 }
             }
 
             var metadataCollection = new EndpointMetadataCollection(metadata);
-            var endpoint = new MatcherEndpoint(
-                next => invokerDelegate,
-                template,
-                new RouteValueDictionary(nonInlineDefaults),
-                new RouteValueDictionary(action.RouteValues),
-                order,
-                metadataCollection,
-                action.DisplayName);
-
-            // Use defaults after the endpoint is created as it merges both the inline and
-            // non-inline defaults into one.
-            EnsureRequiredValuesInDefaults(endpoint.RequiredValues, endpoint.Defaults);
-
-            return endpoint;
+            return metadataCollection;
         }
 
         // Ensure required values are a subset of defaults

@@ -3,9 +3,9 @@
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
-    public class VersioningTests : VersioningTestsBase<VersioningWebSite.Startup>
+    public class VersioningDispatchingTests : VersioningTestsBase<VersioningWebSite.StartupWithDispatching>
     {
-        public VersioningTests(MvcTestFixture<VersioningWebSite.Startup> fixture)
+        public VersioningDispatchingTests(MvcTestFixture<VersioningWebSite.StartupWithDispatching> fixture)
             : base(fixture)
         {
         }

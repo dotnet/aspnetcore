@@ -9,10 +9,12 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace VersioningWebSite
 {
-    public class Startup
+    public class StartupWithDispatching
     {
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddDispatcher();
+
             // Add MVC services to the services container
             services.AddMvc();
 
@@ -22,7 +24,14 @@ namespace VersioningWebSite
 
         public void Configure(IApplicationBuilder app)
         {
-            app.UseMvcWithDefaultRoute();
+            app.UseDispatcher();
+
+            app.UseMvcWithEndpoint(endpoints =>
+            {
+                endpoints.MapEndpoint(
+                    name: "default",
+                    template: "{controller=Home}/{action=Index}/{id?}");
+            });
         }
     }
 }
