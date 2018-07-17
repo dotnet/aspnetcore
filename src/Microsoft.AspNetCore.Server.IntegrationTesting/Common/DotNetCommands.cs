@@ -7,14 +7,14 @@ using System.Runtime.InteropServices;
 
 namespace Microsoft.AspNetCore.Server.IntegrationTesting
 {
-    public static class DotNetCommands
+    internal static class DotNetCommands
     {
         private const string _dotnetFolderName = ".dotnet";
 
         internal static string DotNetHome { get; } = GetDotNetHome();
 
         // Compare to https://github.com/aspnet/BuildTools/blob/314c98e4533217a841ff9767bb38e144eb6c93e4/tools/KoreBuild.Console/Commands/CommandContext.cs#L76
-        public static string GetDotNetHome()
+        private static string GetDotNetHome()
         {
             var dotnetHome = Environment.GetEnvironmentVariable("DOTNET_HOME");
             var userProfile = Environment.GetEnvironmentVariable("USERPROFILE");
@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
             return result;
         }
 
-        public static string GetDotNetInstallDir(RuntimeArchitecture arch)
+        internal static string GetDotNetInstallDir(RuntimeArchitecture arch)
         {
             var dotnetDir = DotNetHome;
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
             return dotnetDir;
         }
 
-        public static string GetDotNetExecutable(RuntimeArchitecture arch)
+        internal static string GetDotNetExecutable(RuntimeArchitecture arch)
         {
             var dotnetDir = GetDotNetInstallDir(arch);
 
