@@ -115,7 +115,7 @@ namespace Microsoft.AspNetCore.Routing
             {
                 var matchProcessorReference = endpoint.MatchProcessorReferences[i];
                 var parameter = endpoint.ParsedTemplate.GetParameter(matchProcessorReference.ParameterName);
-                if (parameter.IsOptional && !routeValues.ContainsKey(parameter.Name))
+                if (parameter != null && parameter.IsOptional && !routeValues.ContainsKey(parameter.Name))
                 {
                     continue;
                 }

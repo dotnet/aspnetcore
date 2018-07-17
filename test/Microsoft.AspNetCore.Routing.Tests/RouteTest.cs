@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.AspNetCore.Routing.Internal;
+using Microsoft.AspNetCore.Routing.TestObjects;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -1842,22 +1843,6 @@ namespace Microsoft.AspNetCore.Routing
                 .Returns(new RouteOptions());
 
             return new DefaultInlineConstraintResolver(routeOptions.Object);
-        }
-
-        private class CapturingConstraint : IRouteConstraint
-        {
-            public IDictionary<string, object> Values { get; private set; }
-
-            public bool Match(
-                HttpContext httpContext,
-                IRouter route,
-                string routeKey,
-                RouteValueDictionary values,
-                RouteDirection routeDirection)
-            {
-                Values = new RouteValueDictionary(values);
-                return true;
-            }
         }
     }
 }
