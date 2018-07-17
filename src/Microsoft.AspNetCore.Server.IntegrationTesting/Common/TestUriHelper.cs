@@ -2,16 +2,19 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Net;
+using System.Net.Sockets;
+
 namespace Microsoft.AspNetCore.Server.IntegrationTesting.Common
 {
-    public static class TestUriHelper
+    internal static class TestUriHelper
     {
-        public static Uri BuildTestUri(ServerType serverType)
+        internal static Uri BuildTestUri(ServerType serverType)
         {
             return BuildTestUri(serverType, hint: null);
         }
 
-        public static Uri BuildTestUri(ServerType serverType, string hint)
+        internal static Uri BuildTestUri(ServerType serverType, string hint)
         {
             // Assume status messages are enabled for Kestrel and disabled for all other servers.
             var statusMessagesEnabled = (serverType == ServerType.Kestrel);
