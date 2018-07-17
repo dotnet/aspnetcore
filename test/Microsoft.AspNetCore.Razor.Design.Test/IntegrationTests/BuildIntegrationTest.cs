@@ -4,7 +4,6 @@
 using System;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Testing.xunit;
@@ -566,6 +565,28 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
             Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.Views.dll");
             Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.Views.pdb");
+        }
+
+        [Fact]
+        [InitializeTestProject("SimpleMvc")]
+        public async Task Build_WithDeterministicFlagSet_OutputsDeterministicViewsAssembly()
+        {
+            // Build 1
+            var result = await DotnetMSBuild("Build", $"/p:Deterministic=true");
+
+            Assert.BuildPassed(result);
+            Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.Views.dll");
+            var filePath = Path.Combine(result.Project.DirectoryPath, IntermediateOutputPath, "SimpleMvc.Views.dll");
+            var firstAssemblyBytes = File.ReadAllBytes(filePath);
+
+            // Build 2
+            result = await DotnetMSBuild("Rebuild", $"/p:Deterministic=true");
+
+            Assert.BuildPassed(result);
+            Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.Views.dll");
+            var secondAssemblyBytes = File.ReadAllBytes(filePath);
+
+            Assert.Equal(firstAssemblyBytes, secondAssemblyBytes);
         }
 
         private static DependencyContext ReadDependencyContext(string depsFilePath)
