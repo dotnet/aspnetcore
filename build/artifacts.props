@@ -144,7 +144,7 @@
     <PackageArtifact Include="Microsoft.AspNetCore.Routing.Abstractions" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.Routing.DecisionTree.Sources" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Server.HttpSys" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
-    <PackageArtifact Include="Microsoft.AspNetCore.Server.IIS" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Server.IIS" Category="ship" AppMetapackage="true" AllMetapackage="true" />
     <PackageArtifact Include="Microsoft.AspNetCore.Server.IISIntegration" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.Server.IntegrationTesting" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Server.IntegrationTesting.IIS" Category="noship" />
