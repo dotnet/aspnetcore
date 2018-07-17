@@ -31,9 +31,10 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                 throw new ArgumentNullException(nameof(feature));
             }
 
+            var path = httpContext.Request.Path.Value;
             for (var i = 0; i < Matchers.Length; i++)
             {
-                if (Matchers[i].TryMatch(httpContext.Request.Path.Value))
+                if (Matchers[i].TryMatch(path))
                 {
                     feature.Endpoint = Matchers[i].Endpoint;
                     feature.Values = new RouteValueDictionary();
