@@ -9,13 +9,13 @@ using Microsoft.Extensions.Logging;
 namespace Microsoft.AspNetCore.Mvc.Routing
 {
     /// <summary>
-    /// An implementation of <see cref="IUrlHelper"/> that uses <see cref="ILinkGenerator"/> to build URLs 
+    /// An implementation of <see cref="IUrlHelper"/> that uses <see cref="LinkGenerator"/> to build URLs 
     /// for ASP.NET MVC within an application.
     /// </summary>
     internal class DispatcherUrlHelper : UrlHelperBase
     {
         private readonly ILogger<DispatcherUrlHelper> _logger;
-        private readonly ILinkGenerator _linkGenerator;
+        private readonly LinkGenerator _linkGenerator;
         private readonly IEndpointFinder<RouteValuesBasedEndpointFinderContext> _routeValuesBasedEndpointFinder;
 
         /// <summary>
@@ -26,12 +26,12 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         /// <param name="routeValuesBasedEndpointFinder">
         /// The <see cref="IEndpointFinder{T}"/> which finds endpoints by required route values.
         /// </param>
-        /// <param name="linkGenerator">The <see cref="ILinkGenerator"/> used to generate the link.</param>
+        /// <param name="linkGenerator">The <see cref="LinkGenerator"/> used to generate the link.</param>
         /// <param name="logger">The <see cref="ILogger"/>.</param>
         public DispatcherUrlHelper(
             ActionContext actionContext,
             IEndpointFinder<RouteValuesBasedEndpointFinderContext> routeValuesBasedEndpointFinder,
-            ILinkGenerator linkGenerator,
+            LinkGenerator linkGenerator,
             ILogger<DispatcherUrlHelper> logger)
             : base(actionContext)
         {
@@ -94,6 +94,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 });
 
             var successfullyGeneratedLink = _linkGenerator.TryGetLink(
+                ActionContext.HttpContext,
                 endpoints,
                 valuesDictionary,
                 AmbientValues,
@@ -128,6 +129,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 });
 
             var successfullyGeneratedLink = _linkGenerator.TryGetLink(
+                ActionContext.HttpContext,
                 endpoints,
                 valuesDictionary,
                 AmbientValues,

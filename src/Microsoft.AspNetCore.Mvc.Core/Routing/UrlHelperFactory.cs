@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             if (endpointFeature?.Endpoint != null)
             {
                 var services = httpContext.RequestServices;
-                var linkGenerator = services.GetRequiredService<ILinkGenerator>();
+                var linkGenerator = services.GetRequiredService<LinkGenerator>();
                 var routeValuesBasedEndpointFinder = services.GetRequiredService<IEndpointFinder<RouteValuesBasedEndpointFinderContext>>();
                 var logger = services.GetRequiredService<ILogger<DispatcherUrlHelper>>();
 
