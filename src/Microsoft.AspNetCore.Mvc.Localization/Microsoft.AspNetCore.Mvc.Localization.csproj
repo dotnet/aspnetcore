@@ -17,7 +17,6 @@ Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer</Description>
     <PackageReference Include="Microsoft.AspNetCore.Localization" Version="$(MicrosoftAspNetCoreLocalizationPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="$(MicrosoftExtensionsDependencyInjectionPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.Localization" Version="$(MicrosoftExtensionsLocalizationPackageVersion)" />
-    <PackageReference Include="Microsoft.Extensions.PropertyHelper.Sources" PrivateAssets="All" Version="$(MicrosoftExtensionsPropertyHelperSourcesPackageVersion)" />
   </ItemGroup>
 
 </Project>

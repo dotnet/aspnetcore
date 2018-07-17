@@ -5,12 +5,13 @@ using System;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
+using Microsoft.AspNetCore.Routing.EndpointConstraints;
 
 namespace VersioningWebSite
 {
-    public class VersionRoute : RouteAttribute, IActionConstraintFactory
+    public class VersionRouteAttribute : RouteAttribute, IActionConstraintFactory, IEndpointConstraintFactory
     {
-        private readonly IActionConstraint _constraint;
+        private readonly IActionConstraint _actionConstraint;
 
         // 5
         // [5]
@@ -28,12 +29,12 @@ namespace VersioningWebSite
 
         public bool IsReusable => true;
 
-        public VersionRoute(string template)
+        public VersionRouteAttribute(string template)
             : base(template)
         {
         }
 
-        public VersionRoute(string template, string versionRange)
+        public VersionRouteAttribute(string template, string versionRange)
             : base(template)
         {
             var constraint = CreateVersionConstraint(versionRange);
@@ -44,7 +45,7 @@ namespace VersioningWebSite
                 throw new ArgumentException(message, "versionRange");
             }
 
-            _constraint = constraint;
+            _actionConstraint = constraint;
         }
 
         private static IActionConstraint CreateVersionConstraint(string versionRange)
@@ -122,9 +123,14 @@ namespace VersioningWebSite
             }
         }
 
-        public IActionConstraint CreateInstance(IServiceProvider services)
+        IActionConstraint IActionConstraintFactory.CreateInstance(IServiceProvider services)
         {
-            return _constraint;
+            return _actionConstraint;
+        }
+
+        IEndpointConstraint IEndpointConstraintFactory.CreateInstance(IServiceProvider services)
+        {
+            return (IEndpointConstraint)_actionConstraint;
         }
     }
 }

@@ -607,6 +607,22 @@ Hello from /Pages/Shared/";
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
 
+        [Fact]
+        public async Task ViewDataSetInViewStart_IsAvailableToPage()
+        {
+            // Arrange & Act
+            var document = await Client.GetHtmlDocumentAsync("/ViewData/ViewDataSetInViewStart");
+
+            // Assert
+            var valueSetInViewStart = document.RequiredQuerySelector("#valuefromviewstart").TextContent;
+            var valueSetInPageModel = document.RequiredQuerySelector("#valuefrompagemodel").TextContent;
+            var valueSetInPage = document.RequiredQuerySelector("#valuefrompage").TextContent;
+
+            Assert.Equal("Value from _ViewStart", valueSetInViewStart);
+            Assert.Equal("Value from Page Model", valueSetInPageModel);
+            Assert.Equal("Value from Page", valueSetInPage);
+        }
+
         private async Task AddAntiforgeryHeadersAsync(HttpRequestMessage request)
         {
             var response = await Client.GetAsync(request.RequestUri);
