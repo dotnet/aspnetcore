@@ -33,7 +33,6 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             var compositeDataSource = new CompositeEndpointDataSource(new[] { endpointDataSource });
             var defaultInlineConstraintResolver = new DefaultMatchProcessorFactory(
                 Options.Create(new RouteOptions()),
-                NullLogger<DefaultMatchProcessorFactory>.Instance,
                 Mock.Of<IServiceProvider>());
             var endpointSelector = new EndpointSelector(
                 compositeDataSource,

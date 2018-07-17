@@ -3,7 +3,6 @@
 
 using System;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Routing.Matchers
@@ -11,16 +10,13 @@ namespace Microsoft.AspNetCore.Routing.Matchers
     internal class DefaultMatchProcessorFactory : MatchProcessorFactory
     {
         private readonly RouteOptions _options;
-        private readonly ILogger<DefaultMatchProcessorFactory> _logger;
         private readonly IServiceProvider _serviceProvider;
 
         public DefaultMatchProcessorFactory(
             IOptions<RouteOptions> options,
-            ILogger<DefaultMatchProcessorFactory> logger,
             IServiceProvider serviceProvider)
         {
             _options = options.Value;
-            _logger = logger;
             _serviceProvider = serviceProvider;
         }
 
@@ -67,13 +63,16 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             {
                 throw new InvalidOperationException(
                     Resources.FormatDefaultInlineConstraintResolver_TypeNotConstraint(
-                        constraintType, constraintName, typeof(IRouteConstraint).Name));
+                        constraintType,
+                        constraintName,
+                        typeof(IRouteConstraint).Name));
             }
 
             try
             {
                 return CreateMatchProcessorFromRouteConstraint(
                     matchProcessorReference.ParameterName,
+                    matchProcessorReference.Optional,
                     constraintType,
                     constraintArgument);
             }
@@ -91,11 +90,20 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 
         private MatchProcessor CreateMatchProcessorFromRouteConstraint(
             string parameterName,
+            bool optional,
             Type constraintType,
             string constraintArgument)
         {
             var routeConstraint = DefaultInlineConstraintResolver.CreateConstraint(constraintType, constraintArgument);
-            return (new MatchProcessorReference(parameterName, routeConstraint)).MatchProcessor;
+            var matchProcessor = new MatchProcessorReference(parameterName, routeConstraint).MatchProcessor;
+            if (optional)
+            {
+                matchProcessor = new OptionalMatchProcessor(matchProcessor);
+            }
+
+            matchProcessor.Initialize(parameterName, constraintArgument);
+
+            return matchProcessor;
         }
 
         private MatchProcessor ResolveMatchProcessor(
