@@ -191,13 +191,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             // Called by http/2
             if (value == null)
             {
-                throw new ArgumentNullException(nameof(value));
+                return HttpMethod.None;
             }
 
             var length = value.Length;
             if (length == 0)
             {
-                throw new ArgumentException(nameof(value));
+                return HttpMethod.None;
             }
 
             // Start with custom and assign if known method is found
@@ -395,39 +395,41 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             }
         }
 
-        public static void ValidateHostHeader(string hostText)
+        public static bool IsHostHeaderValid(string hostText)
         {
             if (string.IsNullOrEmpty(hostText))
             {
                 // The spec allows empty values
-                return;
+                return true;
             }
 
             var firstChar = hostText[0];
             if (firstChar == '[')
             {
                 // Tail call
-                ValidateIPv6Host(hostText);
+                return IsIPv6HostValid(hostText);
             }
             else
             {
                 if (firstChar == ':')
                 {
                     // Only a port
-                    BadHttpRequestException.Throw(RequestRejectionReason.InvalidHostHeader, hostText);
+                    return false;
                 }
 
                 var invalid = HttpCharacters.IndexOfInvalidHostChar(hostText);
                 if (invalid >= 0)
                 {
                     // Tail call
-                    ValidateHostPort(hostText, invalid);
+                    return IsHostPortValid(hostText, invalid);
                 }
+
+                return true;
             }
         }
 
         // The lead '[' was already checked
-        private static void ValidateIPv6Host(string hostText)
+        private static bool IsIPv6HostValid(string hostText)
         {
             for (var i = 1; i < hostText.Length; i++)
             {
@@ -437,43 +439,45 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                     // [::1] is the shortest valid IPv6 host
                     if (i < 4)
                     {
-                        BadHttpRequestException.Throw(RequestRejectionReason.InvalidHostHeader, hostText);
+                        return false;
                     }
                     else if (i + 1 < hostText.Length)
                     {
                         // Tail call
-                        ValidateHostPort(hostText, i + 1);
+                        return IsHostPortValid(hostText, i + 1);
                     }
-                    return;
+                    return true;
                 }
 
                 if (!IsHex(ch) && ch != ':' && ch != '.')
                 {
-                    BadHttpRequestException.Throw(RequestRejectionReason.InvalidHostHeader, hostText);
+                    return false;
                 }
             }
 
             // Must contain a ']'
-            BadHttpRequestException.Throw(RequestRejectionReason.InvalidHostHeader, hostText);
+            return false;
         }
 
-        private static void ValidateHostPort(string hostText, int offset)
+        private static bool IsHostPortValid(string hostText, int offset)
         {
             var firstChar = hostText[offset];
             offset++;
             if (firstChar != ':' || offset == hostText.Length)
             {
                 // Must have at least one number after the colon if present.
-                BadHttpRequestException.Throw(RequestRejectionReason.InvalidHostHeader, hostText);
+                return false;
             }
 
             for (var i = offset; i < hostText.Length; i++)
             {
                 if (!IsNumeric(hostText[i]))
                 {
-                    BadHttpRequestException.Throw(RequestRejectionReason.InvalidHostHeader, hostText);
+                    return false;
                 }
             }
+
+            return true;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -545,4 +545,16 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
   <data name="Http2StreamAborted" xml:space="preserve">
     <value>The request stream was aborted.</value>
   </data>
+  <data name="Http2ErrorConnectMustNotSendSchemeOrPath" xml:space="preserve">
+    <value>CONNECT requests must not send :scheme or :path headers.</value>
+  </data>
+  <data name="Http2ErrorMethodInvalid" xml:space="preserve">
+    <value>The Method '{method}' is invalid.</value>
+  </data>
+  <data name="Http2StreamErrorPathInvalid" xml:space="preserve">
+    <value>The request :path is invalid: '{path}'</value>
+  </data>
+  <data name="Http2StreamErrorSchemeMismatch" xml:space="preserve">
+    <value>The request :scheme header '{requestScheme}' does not match the transport scheme '{transportScheme}'.</value>
+  </data>
 </root>

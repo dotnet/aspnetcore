@@ -204,6 +204,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             Debug.Assert(HttpVersion != null, "HttpVersion was not set");
         }
 
+        // Compare with Http2Stream.TryValidatePseudoHeaders
         private void OnOriginFormTarget(HttpMethod method, HttpVersion version, Span<byte> target, Span<byte> path, Span<byte> query, Span<byte> customMethod, bool pathEncoded)
         {
             Debug.Assert(target[0] == ByteForwardSlash, "Should only be called when path starts with /");
@@ -213,59 +214,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             // URIs are always encoded/escaped to ASCII https://tools.ietf.org/html/rfc3986#page-11
             // Multibyte Internationalized Resource Identifiers (IRIs) are first converted to utf8;
             // then encoded/escaped to ASCII  https://www.ietf.org/rfc/rfc3987.txt "Mapping of IRIs to URIs"
-            string requestUrlPath = null;
-            string rawTarget = null;
 
             try
             {
                 // Read raw target before mutating memory.
-                rawTarget = target.GetAsciiStringNonNullCharacters();
-
-                if (pathEncoded)
-                {
-                    // URI was encoded, unescape and then parse as UTF-8
-                    // Disabling warning temporary
-                    var pathLength = UrlDecoder.Decode(path, path);
-
-                    // Removing dot segments must be done after unescaping. From RFC 3986:
-                    //
-                    // URI producing applications should percent-encode data octets that
-                    // correspond to characters in the reserved set unless these characters
-                    // are specifically allowed by the URI scheme to represent data in that
-                    // component.  If a reserved character is found in a URI component and
-                    // no delimiting role is known for that character, then it must be
-                    // interpreted as representing the data octet corresponding to that
-                    // character's encoding in US-ASCII.
-                    //
-                    // https://tools.ietf.org/html/rfc3986#section-2.2
-                    pathLength = PathNormalizer.RemoveDotSegments(path.Slice(0, pathLength));
-
-                    requestUrlPath = GetUtf8String(path.Slice(0, pathLength));
-                }
-                else
-                {
-                    var pathLength = PathNormalizer.RemoveDotSegments(path);
-
-                    if (path.Length == pathLength && query.Length == 0)
-                    {
-                        // If no decoding was required, no dot segments were removed and
-                        // there is no query, the request path is the same as the raw target
-                        requestUrlPath = rawTarget;
-                    }
-                    else
-                    {
-                        requestUrlPath = path.Slice(0, pathLength).GetAsciiStringNonNullCharacters();
-                    }
-                }
+                RawTarget = target.GetAsciiStringNonNullCharacters();
+                QueryString = query.GetAsciiStringNonNullCharacters();
+                Path = PathNormalizer.DecodePath(path, pathEncoded, RawTarget, query.Length);
             }
             catch (InvalidOperationException)
             {
                 ThrowRequestTargetRejected(target);
             }
-
-            QueryString = query.GetAsciiStringNonNullCharacters();
-            RawTarget = rawTarget;
-            Path = requestUrlPath;
         }
 
         private void OnAuthorityFormTarget(HttpMethod method, Span<byte> target)
@@ -346,16 +306,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             QueryString = query.GetAsciiStringNonNullCharacters();
         }
 
-        private static unsafe string GetUtf8String(Span<byte> path)
-        {
-            // .NET 451 doesn't have pointer overloads for Encoding.GetString so we
-            // copy to an array
-            fixed (byte* pointer = &MemoryMarshal.GetReference(path))
-            {
-                return Encoding.UTF8.GetString(pointer, path.Length);
-            }
-        }
-
         internal void EnsureHostHeaderExists()
         {
             // https://tools.ietf.org/html/rfc7230#section-5.4
@@ -383,10 +333,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 // Tail call
                 ValidateNonOrginHostHeader(hostText);
             }
-            else
+            else if (!HttpUtilities.IsHostHeaderValid(hostText))
             {
-                // Tail call
-                HttpUtilities.ValidateHostHeader(hostText);
+                BadHttpRequestException.Throw(RequestRejectionReason.InvalidHostHeader, hostText);
             }
         }
 
@@ -418,8 +367,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 }
             }
 
-            // Tail call
-            HttpUtilities.ValidateHostHeader(hostText);
+            if (!HttpUtilities.IsHostHeaderValid(hostText))
+            {
+                BadHttpRequestException.Throw(RequestRejectionReason.InvalidHostHeader, hostText);
+            }
         }
 
         protected override void OnReset()

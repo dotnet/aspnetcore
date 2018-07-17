@@ -116,7 +116,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         private readonly object _abortedStreamIdsLock = new object();
 
         private readonly RequestDelegate _noopApplication;
-        private readonly RequestDelegate _echoHost;
         private readonly RequestDelegate _readHeadersApplication;
         private readonly RequestDelegate _readTrailersApplication;
         private readonly RequestDelegate _bufferingApplication;
@@ -150,13 +149,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _pair = DuplexPipe.CreateConnectionPair(inputPipeOptions, outputPipeOptions);
 
             _noopApplication = context => Task.CompletedTask;
-
-            _echoHost = context =>
-            {
-                context.Response.Headers[HeaderNames.Host] = context.Request.Headers[HeaderNames.Host];
-
-                return Task.CompletedTask;
-            };
 
             _readHeadersApplication = context =>
             {
@@ -1496,311 +1488,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public async Task HEADERS_Received_InvalidAuthority_400Status()
-        {
-            var headers = new[]
-            {
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
-                new KeyValuePair<string, string>(HeaderNames.Authority, "local=host:80"),
-            };
-            await InitializeConnectionAsync(_noopApplication);
-
-            await StartStreamAsync(1, headers, endStream: true);
-
-            var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
-                withLength: 55,
-                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
-                withStreamId: 1);
-            await ExpectAsync(Http2FrameType.DATA,
-                withLength: 0,
-                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
-                withStreamId: 1);
-
-            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
-
-            _hpackDecoder.Decode(headersFrame.HeadersPayload, endHeaders: false, handler: this);
-
-            Assert.Equal(3, _decodedHeaders.Count);
-            Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-            Assert.Equal("400", _decodedHeaders[HeaderNames.Status]);
-            Assert.Equal("0", _decodedHeaders["content-length"]);
-        }
-
-        [Fact]
-        public async Task HEADERS_Received_MissingAuthority_400Status()
-        {
-            var headers = new[]
-            {
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
-            };
-            await InitializeConnectionAsync(_noopApplication);
-
-            await StartStreamAsync(1, headers, endStream: true);
-
-            var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
-                withLength: 55,
-                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
-                withStreamId: 1);
-            await ExpectAsync(Http2FrameType.DATA,
-                withLength: 0,
-                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
-                withStreamId: 1);
-
-            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
-
-            _hpackDecoder.Decode(headersFrame.HeadersPayload, endHeaders: false, handler: this);
-
-            Assert.Equal(3, _decodedHeaders.Count);
-            Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-            Assert.Equal("400", _decodedHeaders[HeaderNames.Status]);
-            Assert.Equal("0", _decodedHeaders["content-length"]);
-        }
-
-        [Fact]
-        public async Task HEADERS_Received_TwoHosts_400Status()
-        {
-            var headers = new[]
-            {
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
-                new KeyValuePair<string, string>("Host", "host1"),
-                new KeyValuePair<string, string>("Host", "host2"),
-            };
-            await InitializeConnectionAsync(_noopApplication);
-
-            await StartStreamAsync(1, headers, endStream: true);
-
-            var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
-                withLength: 55,
-                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
-                withStreamId: 1);
-            await ExpectAsync(Http2FrameType.DATA,
-                withLength: 0,
-                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
-                withStreamId: 1);
-
-            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
-
-            _hpackDecoder.Decode(headersFrame.HeadersPayload, endHeaders: false, handler: this);
-
-            Assert.Equal(3, _decodedHeaders.Count);
-            Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-            Assert.Equal("400", _decodedHeaders[HeaderNames.Status]);
-            Assert.Equal("0", _decodedHeaders["content-length"]);
-        }
-
-        [Fact]
-        public async Task HEADERS_Received_EmptyAuthority_200Status()
-        {
-            var headers = new[]
-            {
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
-                new KeyValuePair<string, string>(HeaderNames.Authority, ""),
-            };
-            await InitializeConnectionAsync(_noopApplication);
-
-            await StartStreamAsync(1, headers, endStream: true);
-
-            var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
-                withLength: 55,
-                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
-                withStreamId: 1);
-            await ExpectAsync(Http2FrameType.DATA,
-                withLength: 0,
-                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
-                withStreamId: 1);
-
-            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
-
-            _hpackDecoder.Decode(headersFrame.HeadersPayload, endHeaders: false, handler: this);
-
-            Assert.Equal(3, _decodedHeaders.Count);
-            Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-            Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
-            Assert.Equal("0", _decodedHeaders["content-length"]);
-        }
-
-        [Fact]
-        public async Task HEADERS_Received_EmptyAuthorityOverridesHost_200Status()
-        {
-            var headers = new[]
-            {
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
-                new KeyValuePair<string, string>(HeaderNames.Authority, ""),
-                new KeyValuePair<string, string>("Host", "abc"),
-            };
-            await InitializeConnectionAsync(_echoHost);
-
-            await StartStreamAsync(1, headers, endStream: true);
-
-            var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
-                withLength: 62,
-                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
-                withStreamId: 1);
-            await ExpectAsync(Http2FrameType.DATA,
-                withLength: 0,
-                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
-                withStreamId: 1);
-
-            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
-
-            _hpackDecoder.Decode(headersFrame.HeadersPayload, endHeaders: false, handler: this);
-
-            Assert.Equal(4, _decodedHeaders.Count);
-            Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-            Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
-            Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
-            Assert.Equal("", _decodedHeaders[HeaderNames.Host]);
-        }
-
-        [Fact]
-        public async Task HEADERS_Received_AuthorityOverridesHost_200Status()
-        {
-            var headers = new[]
-            {
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
-                new KeyValuePair<string, string>(HeaderNames.Authority, "def"),
-                new KeyValuePair<string, string>("Host", "abc"),
-            };
-            await InitializeConnectionAsync(_echoHost);
-
-            await StartStreamAsync(1, headers, endStream: true);
-
-            var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
-                withLength: 65,
-                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
-                withStreamId: 1);
-            await ExpectAsync(Http2FrameType.DATA,
-                withLength: 0,
-                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
-                withStreamId: 1);
-
-            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
-
-            _hpackDecoder.Decode(headersFrame.HeadersPayload, endHeaders: false, handler: this);
-
-            Assert.Equal(4, _decodedHeaders.Count);
-            Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-            Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
-            Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
-            Assert.Equal("def", _decodedHeaders[HeaderNames.Host]);
-        }
-
-        [Fact]
-        public async Task HEADERS_Received_MissingAuthorityFallsBackToHost_200Status()
-        {
-            var headers = new[]
-            {
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
-                new KeyValuePair<string, string>("Host", "abc"),
-            };
-            await InitializeConnectionAsync(_echoHost);
-
-            await StartStreamAsync(1, headers, endStream: true);
-
-            var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
-                withLength: 65,
-                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
-                withStreamId: 1);
-            await ExpectAsync(Http2FrameType.DATA,
-                withLength: 0,
-                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
-                withStreamId: 1);
-
-            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
-
-            _hpackDecoder.Decode(headersFrame.HeadersPayload, endHeaders: false, handler: this);
-
-            Assert.Equal(4, _decodedHeaders.Count);
-            Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-            Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
-            Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
-            Assert.Equal("abc", _decodedHeaders[HeaderNames.Host]);
-        }
-
-        [Fact]
-        public async Task HEADERS_Received_AuthorityOverridesInvalidHost_200Status()
-        {
-            var headers = new[]
-            {
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
-                new KeyValuePair<string, string>(HeaderNames.Authority, "def"),
-                new KeyValuePair<string, string>("Host", "a=bc"),
-            };
-            await InitializeConnectionAsync(_echoHost);
-
-            await StartStreamAsync(1, headers, endStream: true);
-
-            var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
-                withLength: 65,
-                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
-                withStreamId: 1);
-            await ExpectAsync(Http2FrameType.DATA,
-                withLength: 0,
-                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
-                withStreamId: 1);
-
-            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
-
-            _hpackDecoder.Decode(headersFrame.HeadersPayload, endHeaders: false, handler: this);
-
-            Assert.Equal(4, _decodedHeaders.Count);
-            Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-            Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
-            Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
-            Assert.Equal("def", _decodedHeaders[HeaderNames.Host]);
-        }
-
-        [Fact]
-        public async Task HEADERS_Received_InvalidAuthorityWithValidHost_400Status()
-        {
-            var headers = new[]
-            {
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
-                new KeyValuePair<string, string>(HeaderNames.Authority, "d=ef"),
-                new KeyValuePair<string, string>("Host", "abc"),
-            };
-            await InitializeConnectionAsync(_echoHost);
-
-            await StartStreamAsync(1, headers, endStream: true);
-
-            var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
-                withLength: 55,
-                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
-                withStreamId: 1);
-            await ExpectAsync(Http2FrameType.DATA,
-                withLength: 0,
-                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
-                withStreamId: 1);
-
-            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
-
-            _hpackDecoder.Decode(headersFrame.HeadersPayload, endHeaders: false, handler: this);
-
-            Assert.Equal(3, _decodedHeaders.Count);
-            Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-            Assert.Equal("400", _decodedHeaders[HeaderNames.Status]);
-            Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
-        }
-
-        [Fact]
         public async Task PRIORITY_Received_StreamIdZero_ConnectionError()
         {
             await InitializeConnectionAsync(_noopApplication);
@@ -1871,45 +1558,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedLastStreamId: 0,
                 expectedErrorCode: Http2ErrorCode.PROTOCOL_ERROR,
                 expectedErrorMessage: CoreStrings.FormatHttp2ErrorStreamSelfDependency(Http2FrameType.PRIORITY, 1));
-        }
-
-        [Fact]
-        public async Task RST_STREAM_Received_AbortsStream()
-        {
-            await InitializeConnectionAsync(_waitForAbortApplication);
-
-            await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
-            await SendRstStreamAsync(1);
-            await WaitForAllStreamsAsync();
-            Assert.Contains(1, _abortedStreamIds);
-
-            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
-        }
-
-        [Fact]
-        public async Task RST_STREAM_Received_AbortsStream_FlushedHeadersNotSent()
-        {
-            await InitializeConnectionAsync(_waitForAbortFlushingApplication);
-
-            await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
-            await SendRstStreamAsync(1);
-            await WaitForAllStreamsAsync();
-            Assert.Contains(1, _abortedStreamIds);
-
-            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
-        }
-
-        [Fact]
-        public async Task RST_STREAM_Received_AbortsStream_FlushedDataNotSent()
-        {
-            await InitializeConnectionAsync(_waitForAbortWithDataApplication);
-
-            await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
-            await SendRstStreamAsync(1);
-            await WaitForAllStreamsAsync();
-            Assert.Contains(1, _abortedStreamIds);
-
-            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
         }
 
         [Fact]
@@ -2117,92 +1765,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public async Task RST_STREAM_WaitingForRequestBody_RequestBodyThrows()
-        {
-            var sem = new SemaphoreSlim(0);
-            await InitializeConnectionAsync(async context =>
-            {
-                var streamIdFeature = context.Features.Get<IHttp2StreamIdFeature>();
-
-                try
-                {
-                    var readTask = context.Request.Body.ReadAsync(new byte[100], 0, 100).DefaultTimeout();
-                    sem.Release();
-                    await readTask;
-
-                    _runningStreams[streamIdFeature.StreamId].TrySetException(new Exception("ReadAsync was expected to throw."));
-                }
-                catch (IOException) // Expected failure
-                {
-                    await context.Response.Body.WriteAsync(new byte[10], 0, 10);
-
-                    lock (_abortedStreamIdsLock)
-                    {
-                        _abortedStreamIds.Add(streamIdFeature.StreamId);
-                    }
-
-                    _runningStreams[streamIdFeature.StreamId].TrySetResult(null);
-                }
-                catch (Exception ex)
-                {
-                    _runningStreams[streamIdFeature.StreamId].TrySetException(ex);
-                }
-            });
-
-            await StartStreamAsync(1, _browserRequestHeaders, endStream: false);
-            await sem.WaitAsync().DefaultTimeout();
-            await SendRstStreamAsync(1);
-            await WaitForAllStreamsAsync();
-            Assert.Contains(1, _abortedStreamIds);
-
-            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
-        }
-
-        [Fact]
-        public async Task RST_STREAM_IncompleteRequest_RequestBodyThrows()
-        {
-            var sem = new SemaphoreSlim(0);
-            await InitializeConnectionAsync(async context =>
-            {
-                var streamIdFeature = context.Features.Get<IHttp2StreamIdFeature>();
-
-                try
-                {
-                    var read = await context.Request.Body.ReadAsync(new byte[100], 0, 100).DefaultTimeout();
-                    var readTask = context.Request.Body.ReadAsync(new byte[100], 0, 100).DefaultTimeout();
-                    sem.Release();
-                    await readTask;
-
-                    _runningStreams[streamIdFeature.StreamId].TrySetException(new Exception("ReadAsync was expected to throw."));
-                }
-                catch (IOException) // Expected failure
-                {
-                    await context.Response.Body.WriteAsync(new byte[10], 0, 10);
-
-                    lock (_abortedStreamIdsLock)
-                    {
-                        _abortedStreamIds.Add(streamIdFeature.StreamId);
-                    }
-
-                    _runningStreams[streamIdFeature.StreamId].TrySetResult(null);
-                }
-                catch (Exception ex)
-                {
-                    _runningStreams[streamIdFeature.StreamId].TrySetException(ex);
-                }
-            });
-
-            await StartStreamAsync(1, _browserRequestHeaders, endStream: false);
-            await SendDataAsync(1, new byte[10], endStream: false);
-            await sem.WaitAsync().DefaultTimeout();
-            await SendRstStreamAsync(1);
-            await WaitForAllStreamsAsync();
-            Assert.Contains(1, _abortedStreamIds);
-
-            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
-        }
-
-        [Fact]
         public async Task RST_STREAM_Received_StreamIdZero_ConnectionError()
         {
             await InitializeConnectionAsync(_noopApplication);
@@ -2276,98 +1838,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedLastStreamId: 0,
                 expectedErrorCode: Http2ErrorCode.PROTOCOL_ERROR,
                 expectedErrorMessage: CoreStrings.FormatHttp2ErrorHeadersInterleaved(Http2FrameType.RST_STREAM, streamId: 1, headersStreamId: 1));
-        }
-
-        [Fact]
-        public async Task RequestAbort_SendsRstStream()
-        {
-            await InitializeConnectionAsync(async context =>
-            {
-                var streamIdFeature = context.Features.Get<IHttp2StreamIdFeature>();
-
-                try
-                {
-                    context.RequestAborted.Register(() =>
-                    {
-                        lock (_abortedStreamIdsLock)
-                        {
-                            _abortedStreamIds.Add(streamIdFeature.StreamId);
-                        }
-
-                        _runningStreams[streamIdFeature.StreamId].TrySetResult(null);
-                    });
-
-                    context.Abort();
-
-                    // Not sent
-                    await context.Response.Body.WriteAsync(new byte[10], 0, 10);
-
-                    await _runningStreams[streamIdFeature.StreamId].Task;
-                }
-                catch (Exception ex)
-                {
-                    _runningStreams[streamIdFeature.StreamId].TrySetException(ex);
-                }
-            });
-
-            await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
-            await WaitForStreamErrorAsync(expectedStreamId: 1, Http2ErrorCode.CANCEL, expectedErrorMessage: null);
-            await WaitForAllStreamsAsync();
-            Assert.Contains(1, _abortedStreamIds);
-
-            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
-        }
-
-        [Fact]
-        public async Task RequestAbort_AfterDataSent_SendsRstStream()
-        {
-            await InitializeConnectionAsync(async context =>
-            {
-                var streamIdFeature = context.Features.Get<IHttp2StreamIdFeature>();
-
-                try
-                {
-                    context.RequestAborted.Register(() =>
-                    {
-                        lock (_abortedStreamIdsLock)
-                        {
-                            _abortedStreamIds.Add(streamIdFeature.StreamId);
-                        }
-
-                        _runningStreams[streamIdFeature.StreamId].TrySetResult(null);
-                    });
-
-                    await context.Response.Body.WriteAsync(new byte[10], 0, 10);
-
-                    context.Abort();
-
-                    // Not sent
-                    await context.Response.Body.WriteAsync(new byte[11], 0, 11);
-
-                    await _runningStreams[streamIdFeature.StreamId].Task;
-                }
-                catch (Exception ex)
-                {
-                    _runningStreams[streamIdFeature.StreamId].TrySetException(ex);
-                }
-            });
-
-            await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
-
-            var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
-                withLength: 37,
-                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
-                withStreamId: 1);
-            await ExpectAsync(Http2FrameType.DATA,
-                withLength: 10,
-                withFlags: 0,
-                withStreamId: 1);
-
-            await WaitForStreamErrorAsync(expectedStreamId: 1, Http2ErrorCode.CANCEL, expectedErrorMessage: null);
-            await WaitForAllStreamsAsync();
-            Assert.Contains(1, _abortedStreamIds);
-
-            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
         }
 
         [Fact]
@@ -3540,28 +3010,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await SendAsync(frame.Raw);
         }
 
-        private Task SendStreamDataAsync(int streamId, Span<byte> data)
-        {
-            var tasks = new List<Task>();
-            var frame = new Http2Frame();
-
-            frame.PrepareData(streamId);
-
-            while (data.Length > frame.Length)
-            {
-                data.Slice(0, frame.Length).CopyTo(frame.Payload);
-                data = data.Slice(frame.Length);
-                tasks.Add(SendAsync(frame.Raw));
-            }
-
-            frame.Length = data.Length;
-            frame.DataFlags = Http2DataFrameFlags.END_STREAM;
-            data.CopyTo(frame.Payload);
-            tasks.Add(SendAsync(frame.Raw));
-
-            return Task.WhenAll(tasks);
-        }
-
         private Task WaitForAllStreamsAsync()
         {
             return Task.WhenAll(_runningStreams.Values.Select(tcs => tcs.Task)).DefaultTimeout();
@@ -3912,14 +3360,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             }
         }
 
-        private async Task ReceiveSettingsAck()
-        {
-            var frame = await ReceiveFrameAsync();
-
-            Assert.Equal(Http2FrameType.SETTINGS, frame.Type);
-            Assert.Equal(Http2SettingsFrameFlags.ACK, frame.SettingsFlags);
-        }
-
         private async Task<Http2Frame> ExpectAsync(Http2FrameType type, int withLength, byte withFlags, int withStreamId)
         {
             var frame = await ReceiveFrameAsync();
@@ -4087,19 +3527,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             get
             {
                 var data = new TheoryData<IEnumerable<KeyValuePair<string, string>>>();
-                var methodHeader = new[] { new KeyValuePair<string, string>(HeaderNames.Method, "CONNECT") };
-                var requestHeaders = new[]
-                {
-                    new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                    new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
-                    new KeyValuePair<string, string>(HeaderNames.Authority, "127.0.0.1"),
-                };
-
-                foreach (var headerField in requestHeaders)
-                {
-                    var headers = methodHeader.Concat(requestHeaders.Except(new[] { headerField }));
-                    data.Add(headers);
-                }
+                var methodHeader = new KeyValuePair<string, string>(HeaderNames.Method, "CONNECT");
+                var headers = new[] { methodHeader };
+                data.Add(headers);
 
                 return data;
             }

@@ -2002,6 +2002,62 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         internal static string FormatHttp2StreamAborted()
             => GetString("Http2StreamAborted");
 
+        /// <summary>
+        /// CONNECT requests must not send :scheme or :path headers.
+        /// </summary>
+        internal static string Http2ErrorConnectMustNotSendSchemeOrPath
+        {
+            get => GetString("Http2ErrorConnectMustNotSendSchemeOrPath");
+        }
+
+        /// <summary>
+        /// CONNECT requests must not send :scheme or :path headers.
+        /// </summary>
+        internal static string FormatHttp2ErrorConnectMustNotSendSchemeOrPath()
+            => GetString("Http2ErrorConnectMustNotSendSchemeOrPath");
+
+        /// <summary>
+        /// The Method '{method}' is invalid.
+        /// </summary>
+        internal static string Http2ErrorMethodInvalid
+        {
+            get => GetString("Http2ErrorMethodInvalid");
+        }
+
+        /// <summary>
+        /// The Method '{method}' is invalid.
+        /// </summary>
+        internal static string FormatHttp2ErrorMethodInvalid(object method)
+            => string.Format(CultureInfo.CurrentCulture, GetString("Http2ErrorMethodInvalid", "method"), method);
+
+        /// <summary>
+        /// The request :path is invalid: '{path}'
+        /// </summary>
+        internal static string Http2StreamErrorPathInvalid
+        {
+            get => GetString("Http2StreamErrorPathInvalid");
+        }
+
+        /// <summary>
+        /// The request :path is invalid: '{path}'
+        /// </summary>
+        internal static string FormatHttp2StreamErrorPathInvalid(object path)
+            => string.Format(CultureInfo.CurrentCulture, GetString("Http2StreamErrorPathInvalid", "path"), path);
+
+        /// <summary>
+        /// The request :scheme header '{requestScheme}' does not match the transport scheme '{transportScheme}'.
+        /// </summary>
+        internal static string Http2StreamErrorSchemeMismatch
+        {
+            get => GetString("Http2StreamErrorSchemeMismatch");
+        }
+
+        /// <summary>
+        /// The request :scheme header '{requestScheme}' does not match the transport scheme '{transportScheme}'.
+        /// </summary>
+        internal static string FormatHttp2StreamErrorSchemeMismatch(object requestScheme, object transportScheme)
+            => string.Format(CultureInfo.CurrentCulture, GetString("Http2StreamErrorSchemeMismatch", "requestScheme", "transportScheme"), requestScheme, transportScheme);
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);
