@@ -13,20 +13,10 @@
 
 DECLARE_DEBUG_PRINT_OBJECT("aspnetcorev2.dll");
 
-HTTP_MODULE_ID      g_pModuleId = NULL;
-IHttpServer *       g_pHttpServer = NULL;
 HANDLE              g_hEventLog = NULL;
 BOOL                g_fRecycleProcessCalled = FALSE;
-PCWSTR              g_pszModuleName = NULL;
 HINSTANCE           g_hModule;
-HMODULE             g_hAspnetCoreRH = NULL;
-BOOL                g_fAspnetcoreRHAssemblyLoaded = FALSE;
-BOOL                g_fAspnetcoreRHLoadedError = FALSE;
 BOOL                g_fInShutdown = FALSE;
-DWORD               g_dwActiveServerProcesses = 0;
-SRWLOCK             g_srwLock;
-
-PFN_ASPNETCORE_CREATE_APPLICATION      g_pfnAspNetCoreCreateApplication;
 
 VOID
 StaticCleanup()
@@ -100,17 +90,10 @@ HRESULT
     BOOL                                fDisableANCM = FALSE;
     ASPNET_CORE_PROXY_MODULE_FACTORY *  pFactory = NULL;
     ASPNET_CORE_GLOBAL_MODULE *         pGlobalModule = NULL;
-    APPLICATION_MANAGER *               pApplicationManager = NULL;
 
     UNREFERENCED_PARAMETER(dwServerVersion);
 
-    InitializeSRWLock(&g_srwLock);
-
-    g_pModuleId = pModuleInfo->GetId();
-    g_pszModuleName = pModuleInfo->GetName();
-    g_pHttpServer = pHttpServer;
-
-    if (g_pHttpServer->IsCommandLineLaunch())
+    if (pHttpServer->IsCommandLineLaunch())
     {
         g_hEventLog = RegisterEventSource(NULL, ASPNETCORE_IISEXPRESS_EVENT_PROVIDER);
     }
@@ -175,13 +158,12 @@ HRESULT
                                   0));
 
     pFactory = NULL;
-    pApplicationManager = APPLICATION_MANAGER::GetInstance();
 
-    FINISHED_IF_FAILED(pApplicationManager->Initialize());
+    FINISHED_IF_FAILED(APPLICATION_MANAGER::StaticInitialize(*pHttpServer));
 
     pGlobalModule = NULL;
 
-    pGlobalModule = new ASPNET_CORE_GLOBAL_MODULE(pApplicationManager);
+    pGlobalModule = new ASPNET_CORE_GLOBAL_MODULE(APPLICATION_MANAGER::GetInstance());
 
     FINISHED_IF_FAILED(pModuleInfo->SetGlobalNotifications(
                                      pGlobalModule,

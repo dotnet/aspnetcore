@@ -8,6 +8,9 @@
 #include "resources.h"
 #include "SRWExclusiveLock.h"
 #include "exceptions.h"
+#include "EventLog.h"
+
+extern BOOL         g_fInShutdown;
 
 // The application manager is a singleton across ANCM.
 APPLICATION_MANAGER* APPLICATION_MANAGER::sm_pApplicationManager = NULL;
@@ -18,7 +21,6 @@ APPLICATION_MANAGER* APPLICATION_MANAGER::sm_pApplicationManager = NULL;
 //
 HRESULT
 APPLICATION_MANAGER::GetOrCreateApplicationInfo(
-    _In_ IHttpServer*          pServer,
     _In_ IHttpContext*         pHttpContext,
     _Out_ APPLICATION_INFO **  ppApplicationInfo
 )
@@ -32,56 +34,37 @@ APPLICATION_MANAGER::GetOrCreateApplicationInfo(
 
     STACK_STRU ( strEventMsg, 256 );
 
-    DBG_ASSERT(pServer);
     DBG_ASSERT(pHttpContext);
     DBG_ASSERT(ppApplicationInfo);
 
     *ppApplicationInfo = NULL;
+    IHttpApplication &pApplication = *pHttpContext->GetApplication();
 
-    if (!m_fDebugInitialize)
-    {
-        SRWExclusiveLock lock(m_srwLock);
-        if (!m_fDebugInitialize)
-        {
-            DebugInitializeFromConfig(*pServer, *pHttpContext->GetApplication());
-            m_fDebugInitialize = TRUE;
-        }
-    }
     // The configuration path is unique for each application and is used for the
     // key in the applicationInfoHash.
-    pszApplicationId = pHttpContext->GetApplication()->GetApplicationId();
+    pszApplicationId = pApplication.GetApplicationId();
 
     // When accessing the m_pApplicationInfoHash, we need to acquire the application manager
     // lock to avoid races on setting state.
+    SRWSharedLock lock(m_srwLock);
+    if (!m_fDebugInitialize)
     {
-        SRWSharedLock lock(m_srwLock);
-        if (g_fInShutdown)
-        {
-            FINISHED(HRESULT_FROM_WIN32(ERROR_SERVER_SHUTDOWN_IN_PROGRESS));
-        }
-        m_pApplicationInfoHash->FindKey(pszApplicationId, ppApplicationInfo);
+        DebugInitializeFromConfig(m_pHttpServer, pApplication);
+        m_fDebugInitialize = TRUE;
     }
+
+    if (g_fInShutdown)
+    {
+        FINISHED(HRESULT_FROM_WIN32(ERROR_SERVER_SHUTDOWN_IN_PROGRESS));
+    }
+
+    m_pApplicationInfoHash->FindKey(pszApplicationId, ppApplicationInfo);
 
     if (*ppApplicationInfo == NULL)
     {
-        pApplicationInfo = new APPLICATION_INFO();
+        pApplicationInfo = new APPLICATION_INFO(m_pHttpServer);
 
-        FINISHED_IF_FAILED(pApplicationInfo->Initialize(pServer, pHttpContext->GetApplication()));
-
-        SRWExclusiveLock lock(m_srwLock);
-
-        if (g_fInShutdown)
-        {
-            // Already in shuting down. No need to create the application
-            FINISHED(HRESULT_FROM_WIN32(ERROR_SERVER_SHUTDOWN_IN_PROGRESS));
-        }
-        m_pApplicationInfoHash->FindKey(pszApplicationId, ppApplicationInfo);
-
-        if (*ppApplicationInfo != NULL)
-        {
-            // someone else created the application
-            FINISHED(S_OK);
-        }
+        FINISHED_IF_FAILED(pApplicationInfo->Initialize(pApplication));
 
         hostingModel = pApplicationInfo->QueryConfig()->QueryHostingModel();
 
@@ -309,7 +292,7 @@ Finished:
         if (!g_fRecycleProcessCalled)
         {
             g_fRecycleProcessCalled = TRUE;
-            g_pHttpServer->RecycleProcess(L"AspNetCore Recycle Process on Demand Due Application Recycle Error");
+            m_pHttpServer.RecycleProcess(L"AspNetCore Recycle Process on Demand Due Application Recycle Error");
         }
     }
 

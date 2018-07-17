@@ -12,11 +12,20 @@
 #include "SRWExclusiveLock.h"
 #include "GlobalVersionUtility.h"
 #include "exceptions.h"
-#include "HandleWrapper.h"
 #include "PollingAppOfflineApplication.h"
+#include "EventLog.h"
+
+extern HINSTANCE    g_hModule;
 
 const PCWSTR APPLICATION_INFO::s_pwzAspnetcoreInProcessRequestHandlerName = L"aspnetcorev2_inprocess.dll";
 const PCWSTR APPLICATION_INFO::s_pwzAspnetcoreOutOfProcessRequestHandlerName = L"aspnetcorev2_outofprocess.dll";
+
+SRWLOCK      APPLICATION_INFO::s_requestHandlerLoadLock {};
+bool         APPLICATION_INFO::s_fAspnetcoreRHAssemblyLoaded = false;
+bool         APPLICATION_INFO::s_fAspnetcoreRHLoadedError = false;
+HMODULE      APPLICATION_INFO::s_hAspnetCoreRH = nullptr;
+
+PFN_ASPNETCORE_CREATE_APPLICATION APPLICATION_INFO::s_pfnAspNetCoreCreateApplication = nullptr;
 
 APPLICATION_INFO::~APPLICATION_INFO()
 {
@@ -39,23 +48,14 @@ APPLICATION_INFO::~APPLICATION_INFO()
 
 HRESULT
 APPLICATION_INFO::Initialize(
-    _In_ IHttpServer              *pServer,
-    _In_ IHttpApplication         *pApplication
+    _In_ IHttpApplication         &pApplication
 )
 {
-    HRESULT hr = S_OK;
+    m_pConfiguration = new ASPNETCORE_SHIM_CONFIG();
+    RETURN_IF_FAILED(m_pConfiguration->Populate(&m_pServer, &pApplication));
+    RETURN_IF_FAILED(m_struInfoKey.Copy(pApplication.GetApplicationId()));
 
-    DBG_ASSERT(pServer);
-    DBG_ASSERT(pApplication);
-
-    // todo: make sure Initialize should be called only once
-    m_pServer = pServer;
-    FINISHED_IF_NULL_ALLOC(m_pConfiguration = new ASPNETCORE_SHIM_CONFIG());
-    FINISHED_IF_FAILED(m_pConfiguration->Populate(m_pServer, pApplication));
-    FINISHED_IF_FAILED(m_struInfoKey.Copy(pApplication->GetApplicationId()));
-
-Finished:
-    return hr;
+    return S_OK;
 }
 
 
@@ -125,7 +125,7 @@ APPLICATION_INFO::EnsureApplicationCreated(
         };
         LOG_INFO("Creating handler application");
         FINISHED_IF_FAILED(m_pfnAspNetCoreCreateApplication(
-            m_pServer,
+            &m_pServer,
             pHttpContext->GetApplication(),
             parameters.data(),
             static_cast<DWORD>(parameters.size()),
@@ -157,19 +157,18 @@ APPLICATION_INFO::FindRequestHandlerAssembly(STRU& location)
     PCWSTR              pstrHandlerDllName;
     STACK_STRU(struFileName, 256);
 
-    if (g_fAspnetcoreRHLoadedError)
+    if (s_fAspnetcoreRHLoadedError)
     {
         FINISHED(E_APPLICATION_ACTIVATION_EXEC_FAILURE);
     }
-    else if (!g_fAspnetcoreRHAssemblyLoaded)
+    else if (!s_fAspnetcoreRHAssemblyLoaded)
     {
-        SRWExclusiveLock lock(g_srwLock);
-
-        if (g_fAspnetcoreRHLoadedError)
+        SRWExclusiveLock lock(s_requestHandlerLoadLock);
+        if (s_fAspnetcoreRHLoadedError)
         {
             FINISHED(E_APPLICATION_ACTIVATION_EXEC_FAILURE);
         }
-        if (g_fAspnetcoreRHAssemblyLoaded)
+        if (s_fAspnetcoreRHAssemblyLoaded)
         {
             FINISHED(S_OK);
         }
@@ -184,9 +183,9 @@ APPLICATION_INFO::FindRequestHandlerAssembly(STRU& location)
         }
 
         // Try to see if RH is already loaded
-        g_hAspnetCoreRH = GetModuleHandle(pstrHandlerDllName);
+        s_hAspnetCoreRH = GetModuleHandle(pstrHandlerDllName);
 
-        if (g_hAspnetCoreRH == NULL)
+        if (s_hAspnetCoreRH == NULL)
         {
             if (m_pConfiguration->QueryHostingModel() == APP_HOSTING_MODEL::HOSTING_IN_PROCESS)
             {
@@ -229,22 +228,22 @@ APPLICATION_INFO::FindRequestHandlerAssembly(STRU& location)
 
             WLOG_INFOF(L"Loading request handler: %s", struFileName.QueryStr());
 
-            g_hAspnetCoreRH = LoadLibraryW(struFileName.QueryStr());
+            s_hAspnetCoreRH = LoadLibraryW(struFileName.QueryStr());
 
-            if (g_hAspnetCoreRH == NULL)
+            if (s_hAspnetCoreRH == NULL)
             {
                 FINISHED(HRESULT_FROM_WIN32(GetLastError()));
             }
         }
 
-        g_pfnAspNetCoreCreateApplication = (PFN_ASPNETCORE_CREATE_APPLICATION)
-            GetProcAddress(g_hAspnetCoreRH, "CreateApplication");
-        if (g_pfnAspNetCoreCreateApplication == NULL)
+        s_pfnAspNetCoreCreateApplication = (PFN_ASPNETCORE_CREATE_APPLICATION)
+            GetProcAddress(s_hAspnetCoreRH, "CreateApplication");
+        if (s_pfnAspNetCoreCreateApplication == NULL)
         {
             FINISHED(HRESULT_FROM_WIN32(GetLastError()));
         }
 
-        g_fAspnetcoreRHAssemblyLoaded = TRUE;
+        s_fAspnetcoreRHAssemblyLoaded = TRUE;
     }
 
 Finished:
@@ -252,11 +251,11 @@ Finished:
     // Question: we remember the load failure so that we will not try again.
     // User needs to check whether the fuction pointer is NULL
     //
-    m_pfnAspNetCoreCreateApplication = g_pfnAspNetCoreCreateApplication;
+    m_pfnAspNetCoreCreateApplication = s_pfnAspNetCoreCreateApplication;
 
-    if (!g_fAspnetcoreRHLoadedError && FAILED(hr))
+    if (!s_fAspnetcoreRHLoadedError && FAILED(hr))
     {
-        g_fAspnetcoreRHLoadedError = TRUE;
+        s_fAspnetcoreRHLoadedError = TRUE;
     }
     return hr;
 }
@@ -457,7 +456,7 @@ APPLICATION_INFO::RecycleApplication()
             if (m_pConfiguration->QueryHostingModel() == HOSTING_IN_PROCESS)
             {
                 // In process application failed to start for whatever reason, need to recycle the work process
-                m_pServer->RecycleProcess(L"AspNetCore InProcess Recycle Process on Demand");
+                m_pServer.RecycleProcess(L"AspNetCore InProcess Recycle Process on Demand");
             }
         }
 
@@ -466,7 +465,7 @@ APPLICATION_INFO::RecycleApplication()
             if (!g_fRecycleProcessCalled)
             {
                 g_fRecycleProcessCalled = TRUE;
-                g_pHttpServer->RecycleProcess(L"On Demand by AspNetCore Module for recycle application failure");
+                m_pServer.RecycleProcess(L"On Demand by AspNetCore Module for recycle application failure");
             }
         }
         else

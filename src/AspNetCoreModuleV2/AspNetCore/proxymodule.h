@@ -8,8 +8,6 @@
 #include "irequesthandler.h"
 
 extern HTTP_MODULE_ID   g_pModuleId;
-extern IHttpServer     *g_pHttpServer;
-extern HMODULE          g_hAspnetCoreRH;
 
 class ASPNET_CORE_PROXY_MODULE : public CHttpModule
 {

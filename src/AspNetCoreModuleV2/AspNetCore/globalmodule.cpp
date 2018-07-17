@@ -3,6 +3,8 @@
 
 #include "globalmodule.h"
 
+extern BOOL         g_fInShutdown;
+
 ASPNET_CORE_GLOBAL_MODULE::ASPNET_CORE_GLOBAL_MODULE(
     APPLICATION_MANAGER* pApplicationManager)
 {
