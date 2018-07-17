@@ -57,6 +57,20 @@ namespace Microsoft.AspNetCore.Routing.Matchers
         }
 
         [Fact]
+        public void Create_CreatesMatchProcessor_FromConstraintText_AndRouteConstraint_Optional()
+        {
+            // Arrange
+            var factory = GetMatchProcessorFactory();
+            var matchProcessorReference = new MatchProcessorReference("id", true, "int");
+
+            // Act
+            var processor = factory.Create(matchProcessorReference);
+
+            // Assert
+            Assert.IsType<OptionalMatchProcessor>(processor);
+        }
+
+        [Fact]
         public void Create_CreatesMatchProcessor_FromConstraintText_AndCustomMatchProcessor()
         {
             // Arrange
@@ -143,7 +157,6 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 
             return new DefaultMatchProcessorFactory(
                 Options.Create(options),
-                NullLogger<DefaultMatchProcessorFactory>.Instance,
                 services.BuildServiceProvider());
         }
 

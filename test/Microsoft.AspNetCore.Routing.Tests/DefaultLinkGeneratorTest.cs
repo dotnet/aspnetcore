@@ -801,7 +801,6 @@ namespace Microsoft.AspNetCore.Routing
             return new DefaultLinkGenerator(
                 new DefaultMatchProcessorFactory(
                     Options.Create(new RouteOptions()),
-                    NullLogger<DefaultMatchProcessorFactory>.Instance,
                     Mock.Of<IServiceProvider>()),
                 new DefaultObjectPool<UriBuildingContext>(new UriBuilderContextPooledObjectPolicy()),
                 NullLogger<DefaultLinkGenerator>.Instance);
