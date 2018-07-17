@@ -21,7 +21,7 @@
     <MicrosoftAspNetCorePackageVersion>2.2.0-preview1-34694</MicrosoftAspNetCorePackageVersion>
     <MicrosoftAspNetCoreServerHttpSysPackageVersion>2.2.0-preview1-34694</MicrosoftAspNetCoreServerHttpSysPackageVersion>
     <MicrosoftAspNetCoreServerIISPackageVersion>2.2.0-preview1-34694</MicrosoftAspNetCoreServerIISPackageVersion>
-    <MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>0.6.0-preview1-34694</MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>
+    <MicrosoftAspNetCoreServerIntegrationTestingIISPackageVersion>2.2.0-preview1-34694</MicrosoftAspNetCoreServerIntegrationTestingIISPackageVersion>
     <MicrosoftAspNetCoreSessionPackageVersion>2.2.0-preview1-34694</MicrosoftAspNetCoreSessionPackageVersion>
     <MicrosoftAspNetCoreStaticFilesPackageVersion>2.2.0-preview1-34694</MicrosoftAspNetCoreStaticFilesPackageVersion>
     <MicrosoftAspNetCoreWebUtilitiesPackageVersion>2.2.0-preview1-34694</MicrosoftAspNetCoreWebUtilitiesPackageVersion>
