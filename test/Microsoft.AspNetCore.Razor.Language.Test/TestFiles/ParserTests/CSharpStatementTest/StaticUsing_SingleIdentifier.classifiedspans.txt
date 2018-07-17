@@ -1,0 +1,2 @@
+Transition span at (0:0,0 [1] ) (Accepts:None) - Parent: Directive block at (0:0,0 [20] )
+Code span at (1:0,1 [19] ) (Accepts:AnyExceptNewline) - Parent: Directive block at (0:0,0 [20] )
