@@ -14,9 +14,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
         {
             Endpoint = endpoint;
 
-            HttpMethod = endpoint.Metadata
-                .OfType<HttpMethodEndpointConstraint>()
-                .FirstOrDefault()?.HttpMethods.Single();
+            HttpMethod = endpoint.Metadata.OfType<HttpMethodEndpointConstraint>().FirstOrDefault()?.HttpMethods.Single();
             Precedence = RoutePrecedence.ComputeInbound(endpoint.ParsedTemplate);
         }
 
@@ -44,15 +42,12 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                 return comparison;
             }
 
-            // Treat the presence of an HttpMethod as a boolean for the purposes of
-            // comparison. We want HttpMethod != null to mean *more specific*.
-            comparison = (HttpMethod == null).CompareTo(other.HttpMethod == null);
-            if (comparison != 0)
-            {
-                return comparison;
-            }
-
             return Pattern.TemplateText.CompareTo(other.Pattern.TemplateText);
+        }
+
+        public bool PriorityEquals(MatcherBuilderEntry other)
+        {
+            return Order == other.Order && Precedence == other.Precedence;
         }
     }
 }

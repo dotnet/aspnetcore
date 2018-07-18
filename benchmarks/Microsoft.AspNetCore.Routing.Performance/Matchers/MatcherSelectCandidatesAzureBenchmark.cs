@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             _samples = SampleRequests(EndpointCount, SampleCount);
 
             _baseline = (BarebonesMatcher)SetupMatcher(new BarebonesMatcherBuilder());
-            _dfa = (DfaMatcher)SetupMatcher(new DfaMatcherBuilder());
+            _dfa = (DfaMatcher)SetupMatcher(CreateDfaMatcherBuilder());
         }
 
         [Benchmark(Baseline = true, OperationsPerInvoke = SampleCount)]

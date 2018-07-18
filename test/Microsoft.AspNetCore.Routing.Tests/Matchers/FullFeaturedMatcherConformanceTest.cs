@@ -171,10 +171,14 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             DispatcherAssert.AssertMatch(feature, endpoint, keys, values);
         }
 
+        // Historically catchall segments don't match an empty segment, but only if it's
+        // the first one. So `/a/b//` would match, but `/a//` would not. This is pretty
+        // wierd and inconsistent with the intent of using a catch all. The DfaMatcher
+        // fixes this issue.
         [Theory]
-        [InlineData("/{a}/{*b=b}", "/a///")]
-        [InlineData("/{a}/{*b=b}", "/a//c/")]
-        public virtual async Task NotMatch_CatchAllParameter(string template, string path)
+        [InlineData("/{a}/{*b=b}", "/a///", new[] { "a", "b", }, new[] { "a", "//" })]
+        [InlineData("/{a}/{*b=b}", "/a//c/", new[] { "a", "b", }, new[] { "a", "/c/" })]
+        public virtual async Task Quirks_CatchAllParameter(string template, string path, string[] keys, string[] values)
         {
             // Arrange
             var (matcher, endpoint) = CreateMatcher(template);
@@ -185,6 +189,11 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 
             // Assert
             DispatcherAssert.AssertNotMatch(feature);
+
+            // Need to access these to prevent a warning from the xUnit analyzer.
+            // Some of these tests will match (and process the values) and some will not.
+            GC.KeepAlive(keys);
+            GC.KeepAlive(values);
         }
 
         [Theory]
