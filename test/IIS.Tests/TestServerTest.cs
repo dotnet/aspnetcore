@@ -2,31 +2,26 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 {
-    [SkipIfHostableWebCoreNotAvailible]
-    public class TestServerTest: LoggedTest
+    [SkipIfHostableWebCoreNotAvailable]
+    [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, "https://github.com/aspnet/IISIntegration/issues/866")]
+    public class TestServerTest : LoggedTest
     {
-        public TestServerTest(ITestOutputHelper output = null) : base(output)
-        {
-        }
-
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, "https://github.com/aspnet/IISIntegration/issues/866")]
         public async Task SingleProcessTestServer_HelloWorld()
         {
             var helloWorld = "Hello World";
             var expectedPath = "/Path";
 
             string path = null;
-            using (var testServer = await TestServer.Create(ctx => {
+            using (var testServer = await TestServer.Create(ctx =>
+            {
                 path = ctx.Request.Path.ToString();
                 return ctx.Response.WriteAsync(helloWorld);
             }, LoggerFactory))

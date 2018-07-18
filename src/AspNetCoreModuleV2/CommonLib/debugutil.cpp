@@ -26,7 +26,6 @@ DebugInitialize()
     HKEY hKey;
     InitializeSRWLock(&g_logFileLock);
 
-
     if (RegOpenKeyEx(HKEY_LOCAL_MACHINE,
             L"SOFTWARE\\Microsoft\\IIS Extensions\\IIS AspNetCore Module V2\\Parameters",
             0,
@@ -70,6 +69,11 @@ DebugInitialize()
     catch (...)
     {
         // ignore
+    }
+
+    if (IsDebuggerPresent())
+    {
+        DEBUG_FLAGS_VAR |= DEBUG_FLAGS_INFO;
     }
 }
 

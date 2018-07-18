@@ -13,6 +13,7 @@ namespace Microsoft.AspNetCore.Server.IIS
         internal const int HR_OK = 0;
         internal const int ERROR_NOT_FOUND = unchecked((int)0x80070490);
         internal const int ERROR_OPERATION_ABORTED = unchecked((int)0x800703E3);
+        internal const int COR_E_IO = unchecked((int)0x80131620);
 
         private const string KERNEL32 = "kernel32.dll";
 

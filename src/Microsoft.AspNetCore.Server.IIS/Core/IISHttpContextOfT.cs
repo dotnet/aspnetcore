@@ -90,8 +90,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                     await _writeBodyTask;
                 }
 
-                // Cancell all remaining IO, thre might be reads pending if not entire request body was sent
-                // by client
+                // Cancel all remaining IO, there might be reads pending if not entire request body was sent by client
                 AsyncIO.Dispose();
 
                 if (_readBodyTask != null)

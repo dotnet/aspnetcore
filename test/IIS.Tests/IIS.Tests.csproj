@@ -1,26 +1,13 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>netcoreapp2.2</TargetFrameworks>
-    <TestGroupName>IIS.FunctionalTests</TestGroupName>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Content Include="..\Common.FunctionalTests\AppHostConfig\*.config" CopyToOutputDirectory="PreserveNewest" />
-  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Server.IIS\Microsoft.AspNetCore.Server.IIS.csproj" />
-    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Server.IISIntegration\Microsoft.AspNetCore.Server.IISIntegration.csproj" />
-    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Server.IntegrationTesting.IIS\Microsoft.AspNetCore.Server.IntegrationTesting.IIS.csproj" />
     <ProjectReference Include="..\Common.Tests\Common.Tests.csproj" />
-    <ProjectReference Include="..\WebSites\**\*.csproj">
-      <ReferenceOutputAssembly>False</ReferenceOutputAssembly>
-    </ProjectReference>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Include="..\Common.FunctionalTests\**\*.cs" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
@@ -29,7 +16,6 @@
     <None Include="$(MSBuildThisFileDirectory)..\..\src\AspNetCoreModuleV2\AspNetCore\bin\$(Configuration)\x64\aspnetcorev2.dll" CopyToOutputDirectory="PreserveNewest" Visible="true" Link="%(FileName)%(Extension)" />
     <None Include="$(MSBuildThisFileDirectory)..\..\src\AspNetCoreModuleV2\AspNetCore\bin\$(Configuration)\x64\aspnetcorev2.pdb" CopyToOutputDirectory="PreserveNewest" Visible="true" Link="%(FileName)%(Extension)" />
   </ItemGroup>
-
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Server.IntegrationTesting" Version="$(MicrosoftAspNetCoreServerIntegrationTestingPackageVersion)" />
@@ -44,13 +30,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="AppHostConfig\HostableWebCore.config" />
-  </ItemGroup>
-  
-  <ItemGroup>
-    <Content Update="AppHostConfig\HostableWebCore.config">
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </Content>
+    <None Include="AppHostConfig\HostableWebCore.config" CopyToOutputDirectory="PreserveNewest" Link="%(FileName)%(Extension)" />
   </ItemGroup>
 
 </Project>

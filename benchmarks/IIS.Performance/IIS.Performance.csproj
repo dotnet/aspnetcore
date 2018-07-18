@@ -25,6 +25,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Server.IISIntegration\Microsoft.AspNetCore.Server.IISIntegration.csproj" />
     <ProjectReference Include="..\..\test\IISExpress.FunctionalTests\IISExpress.FunctionalTests.csproj" />
+    <ProjectReference Include="..\..\test\IIS.Tests\IIS.Tests.csproj" />
     <ProjectReference Include="..\..\test\WebSites\**\*.csproj">
       <ReferenceOutputAssembly>False</ReferenceOutputAssembly>
     </ProjectReference>

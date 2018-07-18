@@ -134,7 +134,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.Inprocess
 
             var hostShutdownToken = deploymentResult.DeploymentResult.HostShutdownToken;
 
-            Assert.True(hostShutdownToken.WaitHandle.WaitOne(Helpers.DefaultTimeout));
+            Assert.True(hostShutdownToken.WaitHandle.WaitOne(TimeoutExtensions.DefaultTimeout));
             Assert.True(hostShutdownToken.IsCancellationRequested);
         }
 
