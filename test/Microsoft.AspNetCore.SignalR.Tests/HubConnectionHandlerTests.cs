@@ -375,6 +375,32 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
 
         [Fact]
+        public async Task ConnectionClosesOnServerWithPartialHandshakeMessageAndCompletedPipe()
+        {
+            var connectionHandler = HubConnectionHandlerTestUtils.GetHubConnectionHandler(typeof(HubT));
+
+            using (var client = new TestClient())
+            {
+                // partial handshake
+                var payload = Encoding.UTF8.GetBytes("{\"protocol\": \"json\",\"ver");
+                await client.Connection.Application.Output.WriteAsync(payload).OrTimeout();
+
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler, sendHandshakeRequestMessage: false, expectedHandshakeResponseMessage: false);
+                // Complete the pipe to 'close' the connection
+                client.Connection.Application.Output.Complete();
+
+                // This will never complete as the pipe was completed and nothing can be written to it
+                var handshakeReadTask =  client.ReadAsync(true);
+
+                // Check that the connection was closed on the server
+                await connectionHandlerTask.OrTimeout();
+                Assert.False(handshakeReadTask.IsCompleted);
+
+                client.Dispose();
+            }
+        }
+
+        [Fact]
         public async Task LifetimeManagerOnDisconnectedAsyncCalledIfLifetimeManagerOnConnectedAsyncThrows()
         {
             var mockLifetimeManager = new Mock<HubLifetimeManager<Hub>>();
