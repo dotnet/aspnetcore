@@ -105,7 +105,7 @@ namespace ServerComparison.FunctionalTests
                     deploymentParameters.ServerConfigTemplateContent = Helpers.GetConfigContent(variant.Server, "NoCompression.config", "NoCompression.conf");
                 }
 
-                using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, loggerFactory))
+                using (var deployer = IISApplicationDeployerFactory.Create(deploymentParameters, loggerFactory))
                 {
                     var deploymentResult = await deployer.DeployAsync();
                     var httpClientHandler = new HttpClientHandler() { AutomaticDecompression = DecompressionMethods.None };
