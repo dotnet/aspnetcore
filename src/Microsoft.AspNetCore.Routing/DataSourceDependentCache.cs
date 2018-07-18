@@ -5,9 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 
-namespace Microsoft.AspNetCore.Routing.Internal
+namespace Microsoft.AspNetCore.Routing
 {
-    internal class DataSourceDependantCache<T> where T : class
+    internal class DataSourceDependentCache<T> where T : class
     {
         private readonly EndpointDataSource _dataSource;
         private readonly Func<IReadOnlyList<Endpoint>, T> _initializeCore;
@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
         private bool _initialized;
         private T _value;
 
-        public DataSourceDependantCache(EndpointDataSource dataSource, Func<IReadOnlyList<Endpoint>, T> initialize)
+        public DataSourceDependentCache(EndpointDataSource dataSource, Func<IReadOnlyList<Endpoint>, T> initialize)
         {
             if (dataSource == null)
             {

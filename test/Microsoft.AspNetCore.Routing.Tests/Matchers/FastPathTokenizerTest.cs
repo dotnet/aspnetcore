@@ -8,8 +8,23 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 {
     public class FastPathTokenizerTest
     {
-        [Fact] // Note: tokenizing a truly empty string is undefined.
-        public void Tokenize_EmptyPath()
+        // Generally this will only happen in tests when the HttpContext hasn't been
+        // initialized. We still don't want to crash in this case.
+        [Fact]
+        public void Tokenize_EmptyString()
+        {
+            // Arrange
+            Span<PathSegment> segments = stackalloc PathSegment[1];
+
+            // Act
+            var count = FastPathTokenizer.Tokenize("", segments);
+
+            // Assert
+            Assert.Equal(0, count);
+        }
+
+        [Fact]
+        public void Tokenize_RootPath()
         {
             // Arrange
             Span<PathSegment> segments = stackalloc PathSegment[1];

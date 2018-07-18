@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.EndpointConstraints;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -13,14 +14,16 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Routing.Matchers
 {
-    public class TreeMatcherTests
+    // Many of these are integration tests that exercise the system end to end,
+    // so we're reusing the services here.
+    public class DfaMatcherTest
     {
         private MatcherEndpoint CreateEndpoint(string template, int order, object defaultValues = null, EndpointMetadataCollection metadata = null)
         {
-            var defaults = defaultValues == null ? new RouteValueDictionary() : new RouteValueDictionary(defaultValues);
             return new MatcherEndpoint(
                 (next) => null,
-                template, defaults,
+                template, 
+                new RouteValueDictionary(defaultValues),
                 new RouteValueDictionary(),
                 new List<MatchProcessorReference>(),
                 order,
@@ -28,18 +31,17 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                 template);
         }
 
-        private TreeMatcher CreateTreeMatcher(EndpointDataSource endpointDataSource)
+        private Matcher CreateDfaMatcher(EndpointDataSource dataSource)
         {
-            var compositeDataSource = new CompositeEndpointDataSource(new[] { endpointDataSource });
-            var defaultInlineConstraintResolver = new DefaultMatchProcessorFactory(
-                Options.Create(new RouteOptions()),
-                Mock.Of<IServiceProvider>());
-            var endpointSelector = new EndpointSelector(
-                compositeDataSource,
-                new EndpointConstraintCache(compositeDataSource, new IEndpointConstraintProvider[] { new DefaultEndpointConstraintProvider() }),
-                NullLoggerFactory.Instance);
+            var services = new ServiceCollection()
+                .AddLogging()
+                .AddOptions()
+                .AddRouting()
+                .AddDispatcher()
+                .BuildServiceProvider();
 
-            return new TreeMatcher(defaultInlineConstraintResolver, NullLogger.Instance, endpointDataSource, endpointSelector);
+            var factory = services.GetRequiredService<MatcherFactory>();
+            return Assert.IsType<DataSourceDependentMatcher>(factory.CreateMatcher(dataSource));
         }
 
         [Fact]
@@ -51,7 +53,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                 CreateEndpoint("/{p:int}", 0)
             });
 
-            var treeMatcher = CreateTreeMatcher(endpointDataSource);
+            var treeMatcher = CreateDfaMatcher(endpointDataSource);
 
             var httpContext = new DefaultHttpContext();
             httpContext.Request.Path = "/1";
@@ -74,7 +76,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                 CreateEndpoint("/{p:int}", 0)
             });
 
-            var treeMatcher = CreateTreeMatcher(endpointDataSource);
+            var treeMatcher = CreateDfaMatcher(endpointDataSource);
 
             var httpContext = new DefaultHttpContext();
             httpContext.Request.Path = "/One";
@@ -101,7 +103,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                 lowerOrderEndpoint
             });
 
-            var treeMatcher = CreateTreeMatcher(endpointDataSource);
+            var treeMatcher = CreateDfaMatcher(endpointDataSource);
 
             var httpContext = new DefaultHttpContext();
             httpContext.Request.Path = "/Teams";
@@ -131,7 +133,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                 endpointWithConstraint
             });
 
-            var treeMatcher = CreateTreeMatcher(endpointDataSource);
+            var treeMatcher = CreateDfaMatcher(endpointDataSource);
 
             var httpContext = new DefaultHttpContext();
             httpContext.Request.Method = "POST";

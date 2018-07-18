@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Routing
             }
         }
 
-        // Note: we can't use DataSourceDependantCache here because we also need to handle a list of change
+        // Note: we can't use DataSourceDependentCache here because we also need to handle a list of change
         // tokens, which is a complication most of our code doesn't have.
         private void Initialize()
         {

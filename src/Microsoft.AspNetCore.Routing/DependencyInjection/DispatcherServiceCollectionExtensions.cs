@@ -36,7 +36,8 @@ namespace Microsoft.Extensions.DependencyInjection
             // Default matcher implementation
             //
             services.TryAddSingleton<MatchProcessorFactory, DefaultMatchProcessorFactory>();
-            services.TryAddSingleton<MatcherFactory, TreeMatcherFactory>();
+            services.TryAddSingleton<MatcherFactory, DfaMatcherFactory>();
+            services.TryAddTransient<DfaMatcherBuilder>();
 
             // Link generation related services
             services.TryAddSingleton<IEndpointFinder<string>, NameBasedEndpointFinder>();

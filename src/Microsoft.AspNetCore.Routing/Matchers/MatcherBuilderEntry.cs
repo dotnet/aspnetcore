@@ -14,13 +14,10 @@ namespace Microsoft.AspNetCore.Routing.Matchers
         {
             Endpoint = endpoint;
 
-            HttpMethod = endpoint.Metadata.OfType<HttpMethodEndpointConstraint>().FirstOrDefault()?.HttpMethods.Single();
             Precedence = RoutePrecedence.ComputeInbound(endpoint.ParsedTemplate);
         }
 
         public MatcherEndpoint Endpoint { get; }
-
-        public string HttpMethod { get; }
 
         public int Order => Endpoint.Order;
 
