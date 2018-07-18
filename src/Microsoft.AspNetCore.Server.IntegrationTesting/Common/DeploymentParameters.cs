@@ -78,6 +78,27 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
             }
         }
 
+        public DeploymentParameters(DeploymentParameters parameters)
+        {
+            foreach (var propertyInfo in typeof(DeploymentParameters).GetProperties())
+            {
+                if (propertyInfo.CanWrite)
+                {
+                    propertyInfo.SetValue(this, propertyInfo.GetValue(parameters));
+                }
+            }
+
+            foreach (var kvp in parameters.EnvironmentVariables)
+            {
+                EnvironmentVariables.Add(kvp);
+            }
+
+            foreach (var kvp in parameters.PublishEnvironmentVariables)
+            {
+                PublishEnvironmentVariables.Add(kvp);
+            }
+        }
+
         public ServerType ServerType { get; set;  }
 
         public RuntimeFlavor RuntimeFlavor { get; set;  }
