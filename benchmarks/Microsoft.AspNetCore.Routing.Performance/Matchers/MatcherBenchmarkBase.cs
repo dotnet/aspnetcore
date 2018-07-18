@@ -22,7 +22,16 @@ namespace Microsoft.AspNetCore.Routing.Matchers
         {
             var services = new ServiceCollection();
             services.AddLogging();
+            services.AddOptions();
+            services.AddRouting();
+            services.AddDispatcher();
             return services.BuildServiceProvider();
+        }
+
+        private protected DfaMatcherBuilder CreateDfaMatcherBuilder()
+        {
+            var services = CreateServices();
+            return ActivatorUtilities.CreateInstance<DfaMatcherBuilder>(services);
         }
 
         private protected static MatcherEndpoint CreateEndpoint(string template, string httpMethod = null)

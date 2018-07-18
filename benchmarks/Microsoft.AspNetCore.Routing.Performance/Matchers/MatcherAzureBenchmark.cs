@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             _samples = SampleRequests(EndpointCount, SampleCount);
 
             _baseline = (BarebonesMatcher)SetupMatcher(new BarebonesMatcherBuilder());
-            _dfa = SetupMatcher(new DfaMatcherBuilder());
+            _dfa = SetupMatcher(CreateDfaMatcherBuilder());
             _tree = SetupMatcher(new TreeRouterMatcherBuilder());
 
             _feature = new EndpointFeature();

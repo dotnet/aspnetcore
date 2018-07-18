@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             Requests[0].Request.Path = "/plaintext";
 
             _baseline = (BarebonesMatcher)SetupMatcher(new BarebonesMatcherBuilder());
-            _dfa = SetupMatcher(new DfaMatcherBuilder());
+            _dfa = SetupMatcher(CreateDfaMatcherBuilder());
             _route = SetupMatcher(new RouteMatcherBuilder());
             _tree = SetupMatcher(new TreeRouterMatcherBuilder());
 

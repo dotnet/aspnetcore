@@ -5,8 +5,6 @@ using System;
 
 namespace Microsoft.AspNetCore.Routing.Matchers
 {
-    // This is not yet fleshed out - this is a work in progress to 
-    // unblock the benchmarks.
     internal class CandidateSet
     {
         public static readonly CandidateSet Empty = new CandidateSet(Array.Empty<Candidate>(), Array.Empty<int>());

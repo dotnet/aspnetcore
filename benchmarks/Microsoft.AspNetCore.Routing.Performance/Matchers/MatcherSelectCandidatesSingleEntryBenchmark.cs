@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             Requests[0].Request.Path = "/plaintext";
             
             _baseline = (TrivialMatcher)SetupMatcher(new TrivialMatcherBuilder());
-            _dfa = (DfaMatcher)SetupMatcher(new DfaMatcherBuilder());
+            _dfa = (DfaMatcher)SetupMatcher(CreateDfaMatcherBuilder());
         }
 
         private Matcher SetupMatcher(MatcherBuilder builder)

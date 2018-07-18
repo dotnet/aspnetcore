@@ -25,6 +25,57 @@ namespace Microsoft.AspNetCore.Routing
         private int _count;
 
         /// <summary>
+        /// Creates a new <see cref="RouteValueDictionary"/> from the provided array.
+        /// The new instance will take ownership of the array, and may mutate it.
+        /// </summary>
+        /// <param name="items">The items array.</param>
+        /// <returns>A new <see cref="RouteValueDictionary"/>.</returns>
+        public static RouteValueDictionary FromArray(KeyValuePair<string, object>[] items)
+        {
+            if (items == null)
+            {
+                throw new ArgumentNullException(nameof(items));
+            }
+
+            // We need to compress the array by removing non-contiguous items. We
+            // typically have a very small number of items to process. We don't need
+            // to preserve order.
+            var start = 0;
+            var end = items.Length - 1;
+
+            // We walk forwards from the beginning of the array and fill in 'null' slots.
+            // We walk backwards from the end of the array end move items in non-null' slots
+            // into whatever start is pointing to. O(n)
+            while (start <= end)
+            {
+                if (items[start].Key != null)
+                {
+                    start++;
+                }
+                else if (items[end].Key != null)
+                {
+                    // Swap this item into start and advance
+                    items[start] = items[end];
+                    items[end] = default;
+                    start++;
+                    end--;
+                }
+                else
+                {
+                    // Both null, we need to hold on 'start' since we
+                    // still need to fill it with something.
+                    end--;
+                }
+            }
+
+            return new RouteValueDictionary()
+            {
+                _arrayStorage = items,
+                _count = start,
+            };
+        }
+
+        /// <summary>
         /// Creates an empty <see cref="RouteValueDictionary"/>.
         /// </summary>
         public RouteValueDictionary()
@@ -134,7 +185,6 @@ namespace Microsoft.AspNetCore.Routing
                 }
                 else
                 {
-                    
                     _arrayStorage[index] = new KeyValuePair<string, object>(key, value);
                 }
             }
@@ -325,7 +375,7 @@ namespace Microsoft.AspNetCore.Routing
             EnsureCapacity(Count);
 
             var index = FindInArray(item.Key);
-                var array = _arrayStorage;
+            var array = _arrayStorage;
             if (index >= 0 && EqualityComparer<object>.Default.Equals(array[index].Value, item.Value))
             {
                 Array.Copy(array, index + 1, array, index, _count - index);
@@ -426,7 +476,7 @@ namespace Microsoft.AspNetCore.Routing
                     var property = storage.Properties[i];
                     array[i] = new KeyValuePair<string, object>(property.Name, property.GetValue(storage.Value));
                 }
-                
+
                 _arrayStorage = array;
                 _propertyStorage = null;
                 return;

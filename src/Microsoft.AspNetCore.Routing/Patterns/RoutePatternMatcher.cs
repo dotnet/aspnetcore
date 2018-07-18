@@ -161,7 +161,7 @@ namespace Microsoft.AspNetCore.Routing
                 }
                 if (!pathSegment.IsSimple)
                 {
-                    if (!MatchComplexSegment(pathSegment, requestSegment.ToString(), Defaults, values))
+                    if (!MatchComplexSegment(pathSegment, requestSegment.ToString(), values))
                     {
                         return false;
                     }
@@ -287,10 +287,9 @@ namespace Microsoft.AspNetCore.Routing
             return false;
         }
 
-        private bool MatchComplexSegment(
+        internal static bool MatchComplexSegment(
             RoutePatternPathSegment routeSegment,
             string requestSegment,
-            IReadOnlyDictionary<string, object> defaults,
             RouteValueDictionary values)
         {
             var indexOfLastSegment = routeSegment.Parts.Count - 1;
@@ -307,7 +306,7 @@ namespace Microsoft.AspNetCore.Routing
             if (routeSegment.Parts[indexOfLastSegment] is RoutePatternParameterPart parameter && parameter.IsOptional &&
                 routeSegment.Parts[indexOfLastSegment - 1].IsSeparator)
             {
-                if (MatchComplexSegmentCore(routeSegment, requestSegment, Defaults, values, indexOfLastSegment))
+                if (MatchComplexSegmentCore(routeSegment, requestSegment, values, indexOfLastSegment))
                 {
                     return true;
                 }
@@ -322,21 +321,19 @@ namespace Microsoft.AspNetCore.Routing
                     return MatchComplexSegmentCore(
                         routeSegment,
                         requestSegment,
-                        Defaults,
                         values,
                         indexOfLastSegment - 2);
                 }
             }
             else
             {
-                return MatchComplexSegmentCore(routeSegment, requestSegment, Defaults, values, indexOfLastSegment);
+                return MatchComplexSegmentCore(routeSegment, requestSegment, values, indexOfLastSegment);
             }
         }
 
-        private bool MatchComplexSegmentCore(
+        private static bool MatchComplexSegmentCore(
             RoutePatternPathSegment routeSegment,
             string requestSegment,
-            IReadOnlyDictionary<string, object> defaults,
             RouteValueDictionary values,
             int indexOfLastSegmentUsed)
         {
@@ -499,7 +496,7 @@ namespace Microsoft.AspNetCore.Routing
             {
                 foreach (var item in outValues)
                 {
-                    values.Add(item.Key, item.Value);
+                    values[item.Key] = item.Value;
                 }
 
                 return true;

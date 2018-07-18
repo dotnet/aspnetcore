@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             SetupRequests();
 
             _baseline = (TrivialMatcher)SetupMatcher(new TrivialMatcherBuilder());
-            _dfa = (DfaMatcher)SetupMatcher(new DfaMatcherBuilder());
+            _dfa = (DfaMatcher)SetupMatcher(CreateDfaMatcherBuilder());
 
             _feature = new EndpointFeature();
         }
