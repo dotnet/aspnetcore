@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using BasicTestApp;
@@ -11,13 +11,14 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Blazor.E2ETest.Infrastructure
 {
-    public class BasicTestAppTestBase : ServerTestBase<DevHostServerFixture<Program>>
+    public class BasicTestAppTestBase : ServerTestBase<ToggleExecutionModeServerFixture<Program>>
     {
-        public const string ServerPathBase = "/subdir";
+        public string ServerPathBase
+            => "/subdir" + (_serverFixture.UsingAspNetHost ? "#server" : "");
 
         public BasicTestAppTestBase(
             BrowserFixture browserFixture,
-            DevHostServerFixture<Program> serverFixture,
+            ToggleExecutionModeServerFixture<Program> serverFixture,
             ITestOutputHelper output)
             : base(browserFixture, serverFixture, output)
         {
@@ -27,19 +28,18 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Infrastructure
         protected IWebElement MountTestComponent<TComponent>() where TComponent : IComponent
         {
             var componentTypeName = typeof(TComponent).FullName;
-            WaitUntilDotNetRunningInBrowser();
-            ((IJavaScriptExecutor)Browser).ExecuteScript(
-                $"mountTestComponent('{componentTypeName}')");
+            var testSelector = WaitUntilTestSelectorReady();
+            testSelector.SelectByValue("none");
+            testSelector.SelectByValue(componentTypeName);
             return Browser.FindElement(By.TagName("app"));
         }
 
-        protected void WaitUntilDotNetRunningInBrowser()
+        protected SelectElement WaitUntilTestSelectorReady()
         {
-            new WebDriverWait(Browser, TimeSpan.FromSeconds(30)).Until(driver =>
-            {
-                return ((IJavaScriptExecutor)driver)
-                    .ExecuteScript("return window.isTestReady;");
-            });
+            var elemToFind = By.CssSelector("#test-selector > select");
+            new WebDriverWait(Browser, TimeSpan.FromSeconds(30)).Until(
+                driver => driver.FindElement(elemToFind) != null);
+            return new SelectElement(Browser.FindElement(elemToFind));
         }
     }
 }

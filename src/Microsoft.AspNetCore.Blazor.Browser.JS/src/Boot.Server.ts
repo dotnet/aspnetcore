@@ -17,7 +17,7 @@ function boot() {
   });
 
   connection = new signalR.HubConnectionBuilder()
-    .withUrl('/_blazor')
+    .withUrl('_blazor')
     .withHubProtocol(new MessagePackHubProtocol())
     .configureLogging(signalR.LogLevel.Information)
     .build();

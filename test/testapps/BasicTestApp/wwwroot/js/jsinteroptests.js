@@ -4,40 +4,42 @@
 var results = {};
 var assemblyName = 'BasicTestApp';
 
-function invokeDotNetInteropMethodsAsync(dotNetObjectByRef, instanceMethodsTarget) {
-  console.log('Invoking void sync methods.');
-  DotNet.invokeMethod(assemblyName, 'VoidParameterless');
-  DotNet.invokeMethod(assemblyName, 'VoidWithOneParameter', ...createArgumentList(1, dotNetObjectByRef));
-  DotNet.invokeMethod(assemblyName, 'VoidWithTwoParameters', ...createArgumentList(2, dotNetObjectByRef));
-  DotNet.invokeMethod(assemblyName, 'VoidWithThreeParameters', ...createArgumentList(3, dotNetObjectByRef));
-  DotNet.invokeMethod(assemblyName, 'VoidWithFourParameters', ...createArgumentList(4, dotNetObjectByRef));
-  DotNet.invokeMethod(assemblyName, 'VoidWithFiveParameters', ...createArgumentList(5, dotNetObjectByRef));
-  DotNet.invokeMethod(assemblyName, 'VoidWithSixParameters', ...createArgumentList(6, dotNetObjectByRef));
-  DotNet.invokeMethod(assemblyName, 'VoidWithSevenParameters', ...createArgumentList(7, dotNetObjectByRef));
-  DotNet.invokeMethod(assemblyName, 'VoidWithEightParameters', ...createArgumentList(8, dotNetObjectByRef));
+function invokeDotNetInteropMethodsAsync(shouldSupportSyncInterop, dotNetObjectByRef, instanceMethodsTarget) {
+  if (shouldSupportSyncInterop) {
+    console.log('Invoking void sync methods.');
+    DotNet.invokeMethod(assemblyName, 'VoidParameterless');
+    DotNet.invokeMethod(assemblyName, 'VoidWithOneParameter', ...createArgumentList(1, dotNetObjectByRef));
+    DotNet.invokeMethod(assemblyName, 'VoidWithTwoParameters', ...createArgumentList(2, dotNetObjectByRef));
+    DotNet.invokeMethod(assemblyName, 'VoidWithThreeParameters', ...createArgumentList(3, dotNetObjectByRef));
+    DotNet.invokeMethod(assemblyName, 'VoidWithFourParameters', ...createArgumentList(4, dotNetObjectByRef));
+    DotNet.invokeMethod(assemblyName, 'VoidWithFiveParameters', ...createArgumentList(5, dotNetObjectByRef));
+    DotNet.invokeMethod(assemblyName, 'VoidWithSixParameters', ...createArgumentList(6, dotNetObjectByRef));
+    DotNet.invokeMethod(assemblyName, 'VoidWithSevenParameters', ...createArgumentList(7, dotNetObjectByRef));
+    DotNet.invokeMethod(assemblyName, 'VoidWithEightParameters', ...createArgumentList(8, dotNetObjectByRef));
 
-  console.log('Invoking returning sync methods.');
-  results['result1'] = DotNet.invokeMethod(assemblyName, 'ReturnArray');
-  results['result2'] = DotNet.invokeMethod(assemblyName, 'EchoOneParameter', ...createArgumentList(1, dotNetObjectByRef));
-  results['result3'] = DotNet.invokeMethod(assemblyName, 'EchoTwoParameters', ...createArgumentList(2, dotNetObjectByRef));
-  results['result4'] = DotNet.invokeMethod(assemblyName, 'EchoThreeParameters', ...createArgumentList(3, dotNetObjectByRef));
-  results['result5'] = DotNet.invokeMethod(assemblyName, 'EchoFourParameters', ...createArgumentList(4, dotNetObjectByRef));
-  results['result6'] = DotNet.invokeMethod(assemblyName, 'EchoFiveParameters', ...createArgumentList(5, dotNetObjectByRef));
-  results['result7'] = DotNet.invokeMethod(assemblyName, 'EchoSixParameters', ...createArgumentList(6, dotNetObjectByRef));
-  results['result8'] = DotNet.invokeMethod(assemblyName, 'EchoSevenParameters', ...createArgumentList(7, dotNetObjectByRef));
-  results['result9'] = DotNet.invokeMethod(assemblyName, 'EchoEightParameters', ...createArgumentList(8, dotNetObjectByRef));
+    console.log('Invoking returning sync methods.');
+    results['result1'] = DotNet.invokeMethod(assemblyName, 'ReturnArray');
+    results['result2'] = DotNet.invokeMethod(assemblyName, 'EchoOneParameter', ...createArgumentList(1, dotNetObjectByRef));
+    results['result3'] = DotNet.invokeMethod(assemblyName, 'EchoTwoParameters', ...createArgumentList(2, dotNetObjectByRef));
+    results['result4'] = DotNet.invokeMethod(assemblyName, 'EchoThreeParameters', ...createArgumentList(3, dotNetObjectByRef));
+    results['result5'] = DotNet.invokeMethod(assemblyName, 'EchoFourParameters', ...createArgumentList(4, dotNetObjectByRef));
+    results['result6'] = DotNet.invokeMethod(assemblyName, 'EchoFiveParameters', ...createArgumentList(5, dotNetObjectByRef));
+    results['result7'] = DotNet.invokeMethod(assemblyName, 'EchoSixParameters', ...createArgumentList(6, dotNetObjectByRef));
+    results['result8'] = DotNet.invokeMethod(assemblyName, 'EchoSevenParameters', ...createArgumentList(7, dotNetObjectByRef));
+    results['result9'] = DotNet.invokeMethod(assemblyName, 'EchoEightParameters', ...createArgumentList(8, dotNetObjectByRef));
 
-  var returnDotNetObjectByRefResult = DotNet.invokeMethod(assemblyName, 'ReturnDotNetObjectByRef');
-  results['resultReturnDotNetObjectByRefSync'] = DotNet.invokeMethod(assemblyName, 'ExtractNonSerializedValue', returnDotNetObjectByRefResult['Some sync instance']);
+    var returnDotNetObjectByRefResult = DotNet.invokeMethod(assemblyName, 'ReturnDotNetObjectByRef');
+    results['resultReturnDotNetObjectByRefSync'] = DotNet.invokeMethod(assemblyName, 'ExtractNonSerializedValue', returnDotNetObjectByRefResult['Some sync instance']);
 
-  var instanceMethodResult = instanceMethodsTarget.invokeMethod('InstanceMethod', {
-    stringValue: 'My string',
-    dtoByRef: dotNetObjectByRef
-  });
-  results['instanceMethodThisTypeName'] = instanceMethodResult.thisTypeName;
-  results['instanceMethodStringValueUpper'] = instanceMethodResult.stringValueUpper;
-  results['instanceMethodIncomingByRef'] = instanceMethodResult.incomingByRef;
-  results['instanceMethodOutgoingByRef'] = DotNet.invokeMethod(assemblyName, 'ExtractNonSerializedValue', instanceMethodResult.outgoingByRef);
+    var instanceMethodResult = instanceMethodsTarget.invokeMethod('InstanceMethod', {
+      stringValue: 'My string',
+      dtoByRef: dotNetObjectByRef
+    });
+    results['instanceMethodThisTypeName'] = instanceMethodResult.thisTypeName;
+    results['instanceMethodStringValueUpper'] = instanceMethodResult.stringValueUpper;
+    results['instanceMethodIncomingByRef'] = instanceMethodResult.incomingByRef;
+    results['instanceMethodOutgoingByRef'] = DotNet.invokeMethod(assemblyName, 'ExtractNonSerializedValue', instanceMethodResult.outgoingByRef);
+  }
 
   console.log('Invoking void async methods.');
   return DotNet.invokeMethodAsync(assemblyName, 'VoidParameterlessAsync')
@@ -70,8 +72,9 @@ function invokeDotNetInteropMethodsAsync(dotNetObjectByRef, instanceMethodsTarge
         .then(() => DotNet.invokeMethodAsync(assemblyName, 'EchoEightParametersAsync', ...createArgumentList(8, dotNetObjectByRef)))
         .then(r => results['result9Async'] = r)
         .then(() => DotNet.invokeMethodAsync(assemblyName, 'ReturnDotNetObjectByRefAsync'))
+        .then(r => DotNet.invokeMethodAsync(assemblyName, 'ExtractNonSerializedValue', r['Some async instance']))
         .then(r => {
-          results['resultReturnDotNetObjectByRefAsync'] = DotNet.invokeMethod(assemblyName, 'ExtractNonSerializedValue', r['Some async instance']);
+          results['resultReturnDotNetObjectByRefAsync'] = r;
         })
         .then(() => instanceMethodsTarget.invokeMethodAsync('InstanceMethodAsync', {
           stringValue: 'My string',
@@ -81,13 +84,15 @@ function invokeDotNetInteropMethodsAsync(dotNetObjectByRef, instanceMethodsTarge
           results['instanceMethodThisTypeNameAsync'] = r.thisTypeName;
           results['instanceMethodStringValueUpperAsync'] = r.stringValueUpper;
           results['instanceMethodIncomingByRefAsync'] = r.incomingByRef;
-          results['instanceMethodOutgoingByRefAsync'] = DotNet.invokeMethod(assemblyName, 'ExtractNonSerializedValue', r.outgoingByRef);
+          return DotNet.invokeMethodAsync(assemblyName, 'ExtractNonSerializedValue', r.outgoingByRef);
+        }).then(r => {
+          results['instanceMethodOutgoingByRefAsync'] = r;
         })
     })
     .then(() => {
       console.log('Invoking methods that throw exceptions');
       try {
-        DotNet.invokeMethod(assemblyName, 'ThrowException');
+        shouldSupportSyncInterop && DotNet.invokeMethod(assemblyName, 'ThrowException');
       } catch (e) {
         results['ThrowException'] = e.message;
       }
@@ -224,10 +229,18 @@ function receiveDotNetObjectByRef(incomingData) {
 }
 
 function receiveDotNetObjectByRefAsync(incomingData) {
-  return new Promise(function (resolve, reject) {
-    setTimeout(function () {
-      const promiseResult = receiveDotNetObjectByRef(incomingData);
-      resolve(promiseResult);
-    }, 100);
+  const stringValue = incomingData.stringValue;
+  const testDto = incomingData.testDto;
+
+  // To verify we received a proper reference to testDto, pass it back into .NET
+  // to have it evaluate something that only .NET can know
+  return DotNet.invokeMethodAsync(assemblyName, 'ExtractNonSerializedValue', testDto).then(testDtoNonSerializedValue => {
+    // To show we can return a .NET object by ref anywhere in a complex structure,
+    // return it among other values
+    return {
+      stringValueUpper: stringValue.toUpperCase(),
+      testDtoNonSerializedValue: testDtoNonSerializedValue,
+      testDto: testDto
+    };
   });
 }

@@ -6,71 +6,26 @@
     <base href="/subdir/" />
 </head>
 <body>
-  <div id="test-selector" style="display: none;">
-    Select test:
-    <select onchange="mountTestComponent(event.target.value)">
-      <option value="">Choose...</option>
-      <option value="BasicTestApp.InteropComponent">Interop component</option>
-      <option value="BasicTestApp.AsyncEventHandlerComponent">Async event handlers</option>
-      <option value="BasicTestApp.AddRemoveChildComponents">Add/remove child components</option>
-      <option value="BasicTestApp.CounterComponent">Counter</option>
-      <option value="BasicTestApp.CounterComponentUsingChild">Counter using child component</option>
-      <option value="BasicTestApp.CounterComponentWrapper">Counter wrapped in parent</option>
-      <option value="BasicTestApp.FocusEventComponent">Focus events</option>
-      <option value="BasicTestApp.KeyPressEventComponent">Key press event</option>
-      <option value="BasicTestApp.MouseEventComponent">Mouse events</option>
-      <option value="BasicTestApp.TouchEventComponent">Touch events</option>
-      <option value="BasicTestApp.ParentChildComponent">Parent component with child</option>
-      <option value="BasicTestApp.PropertiesChangedHandlerParent">Parent component that changes parameters on child</option>
-      <option value="BasicTestApp.RedTextComponent">Red text</option>
-      <option value="BasicTestApp.RenderFragmentToggler">Render fragment renderer</option>
-      <option value="BasicTestApp.TextOnlyComponent">Plain text</option>
-      <option value="BasicTestApp.HierarchicalImportsTest.Subdir.ComponentUsingImports">Imports statement</option>
-      <option value="BasicTestApp.HttpClientTest.HttpRequestsComponent">HttpClient tester</option>
-      <option value="BasicTestApp.HttpClientTest.BinaryHttpRequestsComponent">Binary HttpClient tester</option>
-      <option value="BasicTestApp.HttpClientTest.CookieCounterComponent">HttpClient cookies</option>
-      <option value="BasicTestApp.BindCasesComponent">@bind cases</option>
-      <option value="BasicTestApp.ExternalContentPackage">External content package</option>
-      <option value="BasicTestApp.SvgComponent">SVG</option>
-      <option value="BasicTestApp.SvgWithChildComponent">SVG with child component</option>
-      <option value="BasicTestApp.LogicalElementInsertionCases">Logical element insertion cases</option>
-      <option value="BasicTestApp.ElementRefComponent">Element ref component</option>
-      <option value="BasicTestApp.ComponentRefComponent">Component ref component</option>
-      <option value="BasicTestApp.AfterRenderInteropComponent">After-render interop component</option>
-      <option value="BasicTestApp.EventCasesComponent">Event cases</option>
-      <!--<option value="BasicTestApp.RouterTest.Default">Router</option> Excluded because it requires additional setup to work correctly when loaded manually -->
-    </select>
-    &nbsp;
-    <span id="source-info"></span>
-    <hr />
-  </div>
-
-  <app>Loading...</app>
-
-  <script src="_framework/blazor.webassembly.js"></script>
+  <root>Loading...</root>
 
   <!-- Used for testing interop scenarios between JS and .NET -->
   <script src="js/jsinteroptests.js"></script>
 
   <script>
-    // The client-side .NET code calls this when it is ready to be called from test code
-    // The Xunit test code polls until it sees the flag is set
-    function testReady() {
-      window.isTestReady = true;
-      document.getElementsByTagName('APP')[0].textContent = '';
-      document.getElementById('test-selector').style.display = 'block';
-    }
-
-    // The Xunit test code calls this when setting up tests for specific components
-    function mountTestComponent(typeName) {
-      document.getElementById('source-info').innerHTML = '<code><tt>' + typeName.replace(/\./g, '/') + '.cshtml</code></strong>';
-      DotNet.invokeMethodAsync('BasicTestApp', 'MountTestComponent', typeName);
-    }
-
     // Used by ElementRefComponent
     function setElementValue(element, newValue) {
       element.value = newValue;
     }
+
+    (function () {
+      // Load either blazor.webassembly.js or blazor.server.js depending
+      // on the hash part of the URL. This is just to give a way for the
+      // test runner to make the selection.
+      var src = location.hash === '#server'
+        ? 'blazor.server.js'
+        : 'blazor.webassembly.js';
+      document.write('<script src="_framework/' + src + '"><' + '/script>');
+    })();
   </script>
 </body>
 </html>

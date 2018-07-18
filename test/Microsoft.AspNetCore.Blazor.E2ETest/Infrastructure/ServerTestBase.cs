@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Blazor.E2ETest.Infrastructure.ServerFixtures;
@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Infrastructure
         : BrowserTestBase, IClassFixture<TServerFixture>
         where TServerFixture: ServerFixture
     {
-        private readonly TServerFixture _serverFixture;
+        protected readonly TServerFixture _serverFixture;
 
         public ServerTestBase(BrowserFixture browserFixture, TServerFixture serverFixture, ITestOutputHelper output)
             : base(browserFixture, output)
@@ -33,6 +33,7 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Infrastructure
                 }
             }
 
+            Browser.Navigate().GoToUrl("about:blank");
             Browser.Navigate().GoToUrl(absoluteUrl);
         }
     }

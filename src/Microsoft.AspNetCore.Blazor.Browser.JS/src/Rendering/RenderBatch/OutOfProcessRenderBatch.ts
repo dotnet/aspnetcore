@@ -118,7 +118,8 @@ class OutOfProcessRenderTreeFrameReader implements RenderTreeFrameReader {
   }
 
   elementReferenceCaptureId(frame: RenderTreeFrame) {
-    return readInt32LE(this.batchDataUint8, frame as any + 4); // 2nd int
+    const stringIndex = readInt32LE(this.batchDataUint8, frame as any + 4); // 2nd int
+    return this.stringReader.readString(stringIndex);
   }
 
   componentId(frame: RenderTreeFrame) {
@@ -159,14 +160,15 @@ class OutOfProcessStringReader {
   }
 
   readString(index: number): string | null {
-    const stringTableEntry = readInt32LE(this.batchDataUint8, this.stringTableStartIndex + index * stringTableEntryLength);
-    if (stringTableEntry === -1) { // Special value encodes 'null'
+    if (index === -1) { // Special value encodes 'null'
       return null;
     } else {
+      const stringTableEntryPos = readInt32LE(this.batchDataUint8, this.stringTableStartIndex + index * stringTableEntryLength);
+
       // By default, .NET's BinaryWriter gives LEB128-length-prefixed UTF-8 data.
       // This is convenient enough to decode in JavaScript.
-      const numUtf8Bytes = readLEB128(this.batchDataUint8, stringTableEntry);
-      const charsStart = stringTableEntry + numLEB128Bytes(numUtf8Bytes);
+      const numUtf8Bytes = readLEB128(this.batchDataUint8, stringTableEntryPos);
+      const charsStart = stringTableEntryPos + numLEB128Bytes(numUtf8Bytes);
       const utf8Data = new DataView(
         this.batchDataUint8.buffer,
         this.batchDataUint8.byteOffset + charsStart,

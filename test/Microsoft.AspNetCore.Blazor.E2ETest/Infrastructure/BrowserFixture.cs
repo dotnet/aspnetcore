@@ -39,6 +39,7 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Infrastructure
             try
             {
                 var driver = new RemoteWebDriver(opts);
+                driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(1);
                 Browser = driver;
                 Logs = new RemoteLogs(driver);
             }

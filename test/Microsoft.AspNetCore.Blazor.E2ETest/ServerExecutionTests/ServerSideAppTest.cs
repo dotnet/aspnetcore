@@ -10,23 +10,20 @@ using System.Linq;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
+namespace Microsoft.AspNetCore.Blazor.E2ETest.ServerExecutionTests
 {
-    public class ServerSideBlazorTest : ServerTestBase<AspNetSiteServerFixture>, IDisposable
+    public class ServerSideAppTest : ServerTestBase<AspNetSiteServerFixture>
     {
-        private readonly AspNetSiteServerFixture _serverFixture;
-
-        public ServerSideBlazorTest(
+        public ServerSideAppTest(
             BrowserFixture browserFixture,
             AspNetSiteServerFixture serverFixture,
             ITestOutputHelper output)
             : base(browserFixture, serverFixture, output)
         {
-            _serverFixture = serverFixture;
             _serverFixture.Environment = AspNetEnvironment.Development;
             _serverFixture.BuildWebHostMethod = ServerSideBlazor.Server.Program.BuildWebHost;
 
-            Navigate("/", noReload: true);
+            Navigate("/", noReload: false);
             WaitUntilLoaded();
         }
 
@@ -58,13 +55,13 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
             Browser.FindElement(By.LinkText("Counter")).Click();
 
             // Verify we're now on the counter page, with that nav link (only) highlighted
-            Assert.Equal("Counter", Browser.FindElement(mainHeaderSelector).Text);
+            WaitAssert.Equal("Counter", () => Browser.FindElement(mainHeaderSelector).Text);
             Assert.Collection(Browser.FindElements(activeNavLinksSelector),
                 item => Assert.Equal("Counter", item.Text));
 
             // Verify we can navigate back to home too
             Browser.FindElement(By.LinkText("Home")).Click();
-            Assert.Equal("Hello, world!", Browser.FindElement(mainHeaderSelector).Text);
+            WaitAssert.Equal("Hello, world!", () => Browser.FindElement(mainHeaderSelector).Text);
             Assert.Collection(Browser.FindElements(activeNavLinksSelector),
                 item => Assert.Equal("Home", item.Text));
         }
@@ -74,7 +71,7 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
         {
             // Navigate to "Counter"
             Browser.FindElement(By.LinkText("Counter")).Click();
-            Assert.Equal("Counter", Browser.FindElement(By.TagName("h1")).Text);
+            WaitAssert.Equal("Counter", () => Browser.FindElement(By.TagName("h1")).Text);
 
             // Observe the initial value is zero
             var countDisplayElement = Browser.FindElement(By.CssSelector("h1 + p"));
@@ -83,17 +80,19 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
             // Click the button; see it counts
             var button = Browser.FindElement(By.CssSelector(".main button"));
             button.Click();
+            WaitAssert.Equal("Current count: 1", () => countDisplayElement.Text);
             button.Click();
+            WaitAssert.Equal("Current count: 2", () => countDisplayElement.Text);
             button.Click();
-            Assert.Equal("Current count: 3", countDisplayElement.Text);
+            WaitAssert.Equal("Current count: 3", () => countDisplayElement.Text);
         }
 
-        [Fact(Skip = "This is failing and I don't know why")]
+        [Fact]
         public void HasFetchDataPage()
         {
             // Navigate to "Fetch Data"
             Browser.FindElement(By.LinkText("Fetch data")).Click();
-            Assert.Equal("Weather forecast", Browser.FindElement(By.TagName("h1")).Text);
+            WaitAssert.Equal("Weather forecast", () => Browser.FindElement(By.TagName("h1")).Text);
 
             // Wait until loaded
             var tableSelector = By.CssSelector("table.table");
@@ -114,13 +113,6 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
         {
             new WebDriverWait(Browser, TimeSpan.FromSeconds(30)).Until(
                 driver => driver.FindElement(By.TagName("app")).Text != "Loading...");
-        }
-
-        public void Dispose()
-        {
-            // Make the tests run faster by navigating back to the home page when we are done
-            // If we don't, then the next test will reload the whole page before it starts
-            Browser.FindElement(By.LinkText("Home")).Click();
         }
     }
 }

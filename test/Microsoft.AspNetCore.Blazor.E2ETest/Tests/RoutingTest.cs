@@ -15,25 +15,22 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
 {
-    public class RoutingTest : BasicTestAppTestBase, IDisposable
+    public class RoutingTest : BasicTestAppTestBase
     {
-        private readonly ServerFixture _server;
-
         public RoutingTest(
-            BrowserFixture browserFixture, 
-            DevHostServerFixture<Program> serverFixture,
+            BrowserFixture browserFixture,
+            ToggleExecutionModeServerFixture<Program> serverFixture,
             ITestOutputHelper output)
             : base(browserFixture, serverFixture, output)
         {
-            _server = serverFixture;
-            Navigate(ServerPathBase, noReload: true);
-            WaitUntilDotNetRunningInBrowser();
+            Navigate(ServerPathBase, noReload: false);
+            WaitUntilTestSelectorReady();
         }
 
         [Fact]
         public void CanArriveAtDefaultPage()
         {
-            SetUrlViaPushState($"{ServerPathBase}/");
+            SetUrlViaPushState("/");
 
             var app = MountTestComponent<TestRouter>();
             Assert.Equal("This is the default page.", app.FindElement(By.Id("test-info")).Text);
@@ -47,7 +44,7 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
             // servers to enforce a canonical URL (with trailing slash) for the homepage.
             // But in case they don't want to, we need to handle it the same as if the URL does
             // have a trailing slash.
-            SetUrlViaPushState($"{ServerPathBase}");
+            SetUrlViaPushState("");
 
             var app = MountTestComponent<TestRouter>();
             Assert.Equal("This is the default page.", app.FindElement(By.Id("test-info")).Text);
@@ -57,7 +54,7 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
         [Fact]
         public void CanArriveAtPageWithParameters()
         {
-            SetUrlViaPushState($"{ServerPathBase}/WithParameters/Name/Ghi/LastName/O'Jkl");
+            SetUrlViaPushState("/WithParameters/Name/Ghi/LastName/O'Jkl");
 
             var app = MountTestComponent<TestRouter>();
             Assert.Equal("Your full name is Ghi O'Jkl.", app.FindElement(By.Id("test-info")).Text);
@@ -67,7 +64,7 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
         [Fact]
         public void CanArriveAtNonDefaultPage()
         {
-            SetUrlViaPushState($"{ServerPathBase}/Other");
+            SetUrlViaPushState("/Other");
 
             var app = MountTestComponent<TestRouter>();
             Assert.Equal("This is another page.", app.FindElement(By.Id("test-info")).Text);
@@ -77,11 +74,11 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
         [Fact]
         public void CanFollowLinkToOtherPage()
         {
-            SetUrlViaPushState($"{ServerPathBase}/");
+            SetUrlViaPushState("/");
 
             var app = MountTestComponent<TestRouter>();
             app.FindElement(By.LinkText("Other")).Click();
-            Assert.Equal("This is another page.", app.FindElement(By.Id("test-info")).Text);
+            WaitAssert.Equal("This is another page.", () => app.FindElement(By.Id("test-info")).Text);
             AssertHighlightedLinks("Other", "Other with base-relative URL (matches all)");
         }
 
@@ -93,20 +90,20 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
 
             try
             {
-                SetUrlViaPushState($"{ServerPathBase}/");
+                SetUrlViaPushState("/");
 
                 var app = MountTestComponent<TestRouter>();
                 var button = app.FindElement(By.LinkText("Other"));
               
                 new Actions(Browser).KeyDown(key).Click(button).Build().Perform();
 
-                Assert.Equal(2, Browser.WindowHandles.Count);
+                WaitAssert.Equal(2, () => Browser.WindowHandles.Count);
             }
             finally
             {
                 // Leaving the ctrl key up 
                 new Actions(Browser).KeyUp(key).Build().Perform();
-                
+
                 // Closing newly opened windows if a new one was opened
                 while (Browser.WindowHandles.Count > 1)
                 {
@@ -123,7 +120,7 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
         [Fact]
         public void CanFollowLinkToOtherPageDoesNotOpenNewWindow()
         {
-            SetUrlViaPushState($"{ServerPathBase}/");
+            SetUrlViaPushState("/");
 
             var app = MountTestComponent<TestRouter>();
             
@@ -135,106 +132,106 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
         [Fact]
         public void CanFollowLinkToOtherPageWithBaseRelativeUrl()
         {
-            SetUrlViaPushState($"{ServerPathBase}/");            
+            SetUrlViaPushState("/");            
 
             var app = MountTestComponent<TestRouter>();
             app.FindElement(By.LinkText("Other with base-relative URL (matches all)")).Click();
-            Assert.Equal("This is another page.", app.FindElement(By.Id("test-info")).Text);
+            WaitAssert.Equal("This is another page.", () => app.FindElement(By.Id("test-info")).Text);
             AssertHighlightedLinks("Other", "Other with base-relative URL (matches all)");
         }
 
         [Fact]
         public void CanFollowLinkToEmptyStringHrefAsBaseRelativeUrl()
         {
-            SetUrlViaPushState($"{ServerPathBase}/Other");
+            SetUrlViaPushState("/Other");
 
             var app = MountTestComponent<TestRouter>();
             app.FindElement(By.LinkText("Default with base-relative URL (matches all)")).Click();
-            Assert.Equal("This is the default page.", app.FindElement(By.Id("test-info")).Text);
+            WaitAssert.Equal("This is the default page.", () => app.FindElement(By.Id("test-info")).Text);
             AssertHighlightedLinks("Default (matches all)", "Default with base-relative URL (matches all)");
         }
 
         [Fact]
         public void CanFollowLinkToPageWithParameters()
         {
-            SetUrlViaPushState($"{ServerPathBase}/Other");
+            SetUrlViaPushState("/Other");
 
             var app = MountTestComponent<TestRouter>();
             app.FindElement(By.LinkText("With parameters")).Click();
-            Assert.Equal("Your full name is Abc McDef.", app.FindElement(By.Id("test-info")).Text);
+            WaitAssert.Equal("Your full name is Abc McDef.", () => app.FindElement(By.Id("test-info")).Text);
             AssertHighlightedLinks("With parameters");
         }
 
         [Fact]
         public void CanFollowLinkToDefaultPage()
         {
-            SetUrlViaPushState($"{ServerPathBase}/Other");
+            SetUrlViaPushState("/Other");
 
             var app = MountTestComponent<TestRouter>();
             app.FindElement(By.LinkText("Default (matches all)")).Click();
-            Assert.Equal("This is the default page.", app.FindElement(By.Id("test-info")).Text);
+            WaitAssert.Equal("This is the default page.", () => app.FindElement(By.Id("test-info")).Text);
             AssertHighlightedLinks("Default (matches all)", "Default with base-relative URL (matches all)");
         }
 
         [Fact]
         public void CanFollowLinkToOtherPageWithQueryString()
         {
-            SetUrlViaPushState($"{ServerPathBase}/");
+            SetUrlViaPushState("/");
 
             var app = MountTestComponent<TestRouter>();
             app.FindElement(By.LinkText("Other with query")).Click();
-            Assert.Equal("This is another page.", app.FindElement(By.Id("test-info")).Text);
+            WaitAssert.Equal("This is another page.", () => app.FindElement(By.Id("test-info")).Text);
             AssertHighlightedLinks("Other", "Other with query");
         }
 
         [Fact]
         public void CanFollowLinkToDefaultPageWithQueryString()
         {
-            SetUrlViaPushState($"{ServerPathBase}/Other");
+            SetUrlViaPushState("/Other");
 
             var app = MountTestComponent<TestRouter>();
             app.FindElement(By.LinkText("Default with query")).Click();
-            Assert.Equal("This is the default page.", app.FindElement(By.Id("test-info")).Text);
+            WaitAssert.Equal("This is the default page.", () => app.FindElement(By.Id("test-info")).Text);
             AssertHighlightedLinks("Default with query");
         }
 
         [Fact]
         public void CanFollowLinkToOtherPageWithHash()
         {
-            SetUrlViaPushState($"{ServerPathBase}/");
+            SetUrlViaPushState("/");
 
             var app = MountTestComponent<TestRouter>();
             app.FindElement(By.LinkText("Other with hash")).Click();
-            Assert.Equal("This is another page.", app.FindElement(By.Id("test-info")).Text);
+            WaitAssert.Equal("This is another page.", () => app.FindElement(By.Id("test-info")).Text);
             AssertHighlightedLinks("Other", "Other with hash");
         }
 
         [Fact]
         public void CanFollowLinkToDefaultPageWithHash()
         {
-            SetUrlViaPushState($"{ServerPathBase}/Other");
+            SetUrlViaPushState("/Other");
 
             var app = MountTestComponent<TestRouter>();
             app.FindElement(By.LinkText("Default with hash")).Click();
-            Assert.Equal("This is the default page.", app.FindElement(By.Id("test-info")).Text);
+            WaitAssert.Equal("This is the default page.", () => app.FindElement(By.Id("test-info")).Text);
             AssertHighlightedLinks("Default with hash");
         }
 
         [Fact]
         public void CanNavigateProgrammatically()
         {
-            SetUrlViaPushState($"{ServerPathBase}/");
+            SetUrlViaPushState("/");
 
             var app = MountTestComponent<TestRouter>();
             app.FindElement(By.TagName("button")).Click();
-            Assert.Equal("This is another page.", app.FindElement(By.Id("test-info")).Text);
+            WaitAssert.Equal("This is another page.", () => app.FindElement(By.Id("test-info")).Text);
             AssertHighlightedLinks("Other", "Other with base-relative URL (matches all)");
         }
 
         [Fact]
         public void ClickingAnchorWithNoHrefShouldNotNavigate()
         {
-            SetUrlViaPushState($"{ServerPathBase}/");
+            SetUrlViaPushState("/");
             var initialUrl = Browser.Url;
 
             var app = MountTestComponent<TestRouter>();
@@ -244,25 +241,19 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
             AssertHighlightedLinks("Default (matches all)", "Default with base-relative URL (matches all)");
         }
 
-        public void Dispose()
-        {
-            // Clear any existing state
-            SetUrlViaPushState(ServerPathBase);
-            MountTestComponent<TextOnlyComponent>();
-        }
-
         private void SetUrlViaPushState(string relativeUri)
         {
+            var pathBaseWithoutHash = ServerPathBase.Split('#')[0];
             var jsExecutor = (IJavaScriptExecutor)Browser;
-            var absoluteUri = new Uri(_server.RootUri, relativeUri);
+            var absoluteUri = new Uri(_serverFixture.RootUri, $"{pathBaseWithoutHash}{relativeUri}");
             jsExecutor.ExecuteScript($"Blazor.navigateTo('{absoluteUri.ToString().Replace("'", "\\'")}')");
         }
 
         private void AssertHighlightedLinks(params string[] linkTexts)
         {
-            var actual = Browser.FindElements(By.CssSelector("a.active"));
-            var actualTexts = actual.Select(x => x.Text);
-            Assert.Equal(linkTexts, actualTexts);
+            WaitAssert.Equal(linkTexts, () => Browser
+                .FindElements(By.CssSelector("a.active"))
+                .Select(x => x.Text));
         }
     }
 }

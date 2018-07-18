@@ -15,15 +15,12 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
     public class StandaloneAppTest
         : ServerTestBase<DevHostServerFixture<StandaloneApp.Program>>, IDisposable
     {
-        private readonly ServerFixture _serverFixture;
-
         public StandaloneAppTest(
             BrowserFixture browserFixture, 
             DevHostServerFixture<StandaloneApp.Program> serverFixture,
             ITestOutputHelper output)
             : base(browserFixture, serverFixture, output)
         {
-            _serverFixture = serverFixture;
             Navigate("/", noReload: true);
             WaitUntilLoaded();
         }

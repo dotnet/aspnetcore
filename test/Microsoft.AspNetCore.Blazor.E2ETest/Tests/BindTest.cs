@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using BasicTestApp;
@@ -14,12 +14,13 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
     public class BindTest : BasicTestAppTestBase
     {
         public BindTest(
-            BrowserFixture browserFixture, 
-            DevHostServerFixture<Program> serverFixture,
+            BrowserFixture browserFixture,
+            ToggleExecutionModeServerFixture<Program> serverFixture,
             ITestOutputHelper output)
             : base(browserFixture, serverFixture, output)
         {
-            Navigate(ServerPathBase, noReload: true);
+            // On WebAssembly, page reloads are expensive so skip if possible
+            Navigate(ServerPathBase, noReload: !serverFixture.UsingAspNetHost);
             MountTestComponent<BindCasesComponent>();
         }
         
@@ -39,12 +40,12 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
             Assert.Equal(string.Empty, boundValue.Text); // Doesn't update until change event
             Assert.Equal(string.Empty, mirrorValue.GetAttribute("value"));
             target.SendKeys("\t");
-            Assert.Equal("Changed value", boundValue.Text);
+            WaitAssert.Equal("Changed value", () => boundValue.Text);
             Assert.Equal("Changed value", mirrorValue.GetAttribute("value"));
 
             // Remove the value altogether
             setNullButton.Click();
-            Assert.Equal(string.Empty, target.GetAttribute("value"));
+            WaitAssert.Equal(string.Empty, () => target.GetAttribute("value"));
             Assert.Equal(string.Empty, boundValue.Text);
             Assert.Equal(string.Empty, mirrorValue.GetAttribute("value"));
         }
@@ -63,12 +64,12 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
             // Modify target; verify value is updated and that textboxes linked to the same data are updated
             target.Clear();
             target.SendKeys("Changed value\t");
-            Assert.Equal("Changed value", boundValue.Text);
+            WaitAssert.Equal("Changed value", () => boundValue.Text);
             Assert.Equal("Changed value", mirrorValue.GetAttribute("value"));
 
             // Remove the value altogether
             setNullButton.Click();
-            Assert.Equal(string.Empty, target.GetAttribute("value"));
+            WaitAssert.Equal(string.Empty, () => target.GetAttribute("value"));
             Assert.Equal(string.Empty, boundValue.Text);
             Assert.Equal(string.Empty, mirrorValue.GetAttribute("value"));
         }
@@ -85,7 +86,7 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
             target.SendKeys("Changed value");
             Assert.Equal(string.Empty, boundValue.Text); // Don't update as there's no change event fired yet.
             target.SendKeys("\t");
-            Assert.Equal("Changed value", boundValue.Text);
+            WaitAssert.Equal("Changed value", () => boundValue.Text);
         }
 
         [Fact]
@@ -99,7 +100,7 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
             // Modify target; verify value is updated
             target.Clear();
             target.SendKeys("Changed value\t");
-            Assert.Equal("Changed value", boundValue.Text);
+            WaitAssert.Equal("Changed value", () => boundValue.Text);
         }
 
         [Fact]
@@ -113,12 +114,12 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
 
             // Modify target; verify value is updated
             target.Click();
-            Assert.True(target.Selected);
+            WaitAssert.True(() => target.Selected);
             Assert.Equal("True", boundValue.Text);
 
             // Modify data; verify checkbox is updated
             invertButton.Click();
-            Assert.False(target.Selected);
+            WaitAssert.False(() => target.Selected);
             Assert.Equal("False", boundValue.Text);
         }
 
@@ -133,12 +134,12 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
 
             // Modify target; verify value is updated
             target.Click();
-            Assert.False(target.Selected);
+            WaitAssert.False(() => target.Selected);
             Assert.Equal("False", boundValue.Text);
 
             // Modify data; verify checkbox is updated
             invertButton.Click();
-            Assert.True(target.Selected);
+            WaitAssert.True(() => target.Selected);
             Assert.Equal("True", boundValue.Text);
         }
 
@@ -152,13 +153,13 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
 
             // Modify target; verify value is updated
             target.SelectByText("Third choice");
-            Assert.Equal("Third", boundValue.Text);
+            WaitAssert.Equal("Third", () => boundValue.Text);
 
             // Also verify we can add and select new options atomically
             // Don't move this into a separate test, because then the previous assertions
             // would be dependent on test execution order (or would require a full page reload)
             Browser.FindElement(By.Id("select-box-add-option")).Click();
-            Assert.Equal("Fourth", boundValue.Text);
+            WaitAssert.Equal("Fourth", () => boundValue.Text);
             Assert.Equal("Fourth choice", target.SelectedOption.Text);
         }
 
@@ -175,7 +176,7 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
             // Modify target; verify value is updated and that textboxes linked to the same data are updated
             target.Clear();
             target.SendKeys("42\t");
-            Assert.Equal("42", boundValue.Text);
+            WaitAssert.Equal("42", () => boundValue.Text);
             Assert.Equal("42", mirrorValue.GetAttribute("value"));
         }
 
@@ -192,7 +193,7 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
             // Modify target; verify value is updated and that textboxes linked to the same data are updated
             target.Clear();
             target.SendKeys("-3000000000\t");
-            Assert.Equal("-3000000000", boundValue.Text);
+            WaitAssert.Equal("-3000000000", () => boundValue.Text);
             Assert.Equal("-3000000000", mirrorValue.GetAttribute("value"));
         }
 
@@ -209,7 +210,7 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
             // Modify target; verify value is updated and that textboxes linked to the same data are updated
             target.Clear();
             target.SendKeys("-3.141\t");
-            Assert.Equal("-3.141", boundValue.Text);
+            WaitAssert.Equal("-3.141", () => boundValue.Text);
             Assert.Equal("-3.141", mirrorValue.GetAttribute("value"));
         }
 
@@ -226,14 +227,14 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
             // Modify target; verify value is updated and that textboxes linked to the same data are updated
             target.Clear();
             target.SendKeys("-3.14159265359\t");
-            Assert.Equal("-3.14159265359", boundValue.Text);
+            WaitAssert.Equal("-3.14159265359", () => boundValue.Text);
             Assert.Equal("-3.14159265359", mirrorValue.GetAttribute("value"));
 
             // Modify target; verify value is updated and that textboxes linked to the same data are updated
             // Double shouldn't preserve trailing zeros
             target.Clear();
             target.SendKeys("0.010\t");
-            Assert.Equal("0.01", boundValue.Text);
+            WaitAssert.Equal("0.01", () => boundValue.Text);
             Assert.Equal("0.01", mirrorValue.GetAttribute("value"));
         }
 
@@ -251,7 +252,7 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
             // Decimal should preserve trailing zeros
             target.Clear();
             target.SendKeys("0.010\t");
-            Assert.Equal("0.010", boundValue.Text);
+            WaitAssert.Equal("0.010", () => boundValue.Text);
             Assert.Equal("0.010", mirrorValue.GetAttribute("value"));
         }
     }

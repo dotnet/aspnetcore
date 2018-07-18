@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using BasicTestApp;
@@ -20,12 +20,12 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
         // the one that doesn't match the 'bubbles' flag on the received event object.
 
         public EventBubblingTest(
-            BrowserFixture browserFixture, 
-            DevHostServerFixture<Program> serverFixture,
+            BrowserFixture browserFixture,
+            ToggleExecutionModeServerFixture<Program> serverFixture,
             ITestOutputHelper output)
             : base(browserFixture, serverFixture, output)
         {
-            Navigate(ServerPathBase, noReload: true);
+            Navigate(ServerPathBase, noReload: !serverFixture.UsingAspNetHost);
             MountTestComponent<EventBubblingComponent>();
         }
         
@@ -35,9 +35,9 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
             Browser.FindElement(By.Id("button-with-onclick")).Click();
 
             // Triggers event on target and ancestors with handler in upwards direction
-            Assert.Equal(
+            WaitAssert.Equal(
                 new[] { "target onclick", "parent onclick" },
-                GetLogLines());
+                GetLogLines);
         }
 
         [Fact]
@@ -46,9 +46,9 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
             Browser.FindElement(By.Id("button-without-onclick")).Click();
 
             // Triggers event on ancestors with handler in upwards direction
-            Assert.Equal(
+            WaitAssert.Equal(
                 new[] { "parent onclick" },
-                GetLogLines());
+                GetLogLines);
         }
 
         [Fact]
@@ -57,9 +57,9 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
             TriggerCustomBubblingEvent("element-with-onsneeze", "sneeze");
 
             // Triggers event on target and ancestors with handler in upwards direction
-            Assert.Equal(
+            WaitAssert.Equal(
                 new[] { "target onsneeze", "parent onsneeze" },
-                GetLogLines());
+                GetLogLines);
         }
 
         [Fact]
@@ -68,9 +68,9 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
             TriggerCustomBubblingEvent("element-without-onsneeze", "sneeze");
 
             // Triggers event on ancestors with handler in upwards direction
-            Assert.Equal(
+            WaitAssert.Equal(
                 new[] { "parent onsneeze" },
-                GetLogLines());
+                GetLogLines);
         }
 
         [Fact]
@@ -79,7 +79,9 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
             Browser.FindElement(By.Id("input-with-onfocus")).Click();
 
             // Triggers event only on target, not other ancestors with event handler
-            Assert.Equal(new[] { "target onfocus" }, GetLogLines());
+            WaitAssert.Equal(
+                new[] { "target onfocus" },
+                GetLogLines);
         }
 
         [Fact]
@@ -88,7 +90,7 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
             Browser.FindElement(By.Id("input-without-onfocus")).Click();
 
             // Triggers no event
-            Assert.Empty(GetLogLines());
+            WaitAssert.Empty(GetLogLines);
         }
 
         private string[] GetLogLines()

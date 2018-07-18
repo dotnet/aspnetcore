@@ -1,13 +1,11 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using BasicTestApp;
 using Microsoft.AspNetCore.Blazor.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Blazor.E2ETest.Infrastructure.ServerFixtures;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Interactions;
-using OpenQA.Selenium.Support.UI;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -16,8 +14,8 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
     public class EventTest : BasicTestAppTestBase
     {
         public EventTest(
-            BrowserFixture browserFixture, 
-            DevHostServerFixture<Program> serverFixture,
+            BrowserFixture browserFixture,
+            ToggleExecutionModeServerFixture<Program> serverFixture,
             ITestOutputHelper output)
             : base(browserFixture, serverFixture, output)
         {
@@ -38,13 +36,13 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
             // Focus the target, verify onfocusin is fired
             input.Click();
 
-            Assert.Equal("onfocus,onfocusin,", output.Text);
+            WaitAssert.Equal("onfocus,onfocusin,", () => output.Text);
 
             // Focus something else, verify onfocusout is also fired
             var other = Browser.FindElement(By.Id("other"));
             other.Click();
 
-            Assert.Equal("onfocus,onfocusin,onblur,onfocusout,", output.Text);
+            WaitAssert.Equal("onfocus,onfocusin,onblur,onfocusout,", () => output.Text);
         }
 
         [Fact]
@@ -65,7 +63,7 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
                 .MoveToElement(other);
 
             actions.Perform();
-            Assert.Equal("onmouseover,onmouseout,", output.Text);
+            WaitAssert.Equal("onmouseover,onmouseout,", () => output.Text);
         }
 
         [Fact]
@@ -84,7 +82,7 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
                 .MoveToElement(input, 10, 10);
 
             actions.Perform();
-            Assert.Contains("onmousemove,", output.Text);
+            WaitAssert.Contains("onmousemove,", () => output.Text);
         }
 
         [Fact]
@@ -103,12 +101,12 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
             var actions = new Actions(Browser).ClickAndHold(input);
 
             actions.Perform();
-            Assert.Equal("onmousedown,", output.Text);
+            WaitAssert.Equal("onmousedown,", () => output.Text);
 
             actions = new Actions(Browser).Release(input);
 
             actions.Perform();
-            Assert.Equal("onmousedown,onmouseup,", output.Text);
+            WaitAssert.Equal("onmousedown,onmouseup,", () => output.Text);
         }
     }
 }

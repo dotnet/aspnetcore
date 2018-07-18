@@ -72,14 +72,25 @@ namespace Microsoft.JSInterop
                 ? null
                 : jsRuntimeBaseInstance.ArgSerializerStrategy.FindDotNetObject(dotNetObjectId);
 
-            var syncResult = InvokeSynchronously(assemblyName, methodIdentifier, targetInstance, argsJson);
+            object syncResult = null;
+            Exception syncException = null;
+
+            try
+            {
+                syncResult = InvokeSynchronously(assemblyName, methodIdentifier, targetInstance, argsJson);
+            }
+            catch (Exception ex)
+            {
+                syncException = ex;
+            }
 
             // If there was no callId, the caller does not want to be notified about the result
             if (callId != null)
             {
                 // Invoke and coerce the result to a Task so the caller can use the same async API
                 // for both synchronous and asynchronous methods
-                var task = syncResult is Task syncResultTask ? syncResultTask : Task.FromResult(syncResult);
+                var task = CoerceToTask(syncResult, syncException);
+
                 task.ContinueWith(completedTask =>
                 {
                     try
@@ -93,6 +104,22 @@ namespace Microsoft.JSInterop
                         jsRuntimeBaseInstance.EndInvokeDotNet(callId, false, ex);
                     }
                 });
+            }
+        }
+
+        private static Task CoerceToTask(object syncResult, Exception syncException)
+        {
+            if (syncException != null)
+            {
+                return Task.FromException(syncException);
+            }
+            else if (syncResult is Task syncResultTask)
+            {
+                return syncResultTask;
+            }
+            else
+            {
+                return Task.FromResult(syncResult);
             }
         }
 

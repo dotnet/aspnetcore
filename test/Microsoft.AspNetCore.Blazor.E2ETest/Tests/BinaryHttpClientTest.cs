@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using BasicTestApp.HttpClientTest;
@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
 
         public BinaryHttpClientTest(
             BrowserFixture browserFixture,
-            DevHostServerFixture<BasicTestApp.Program> devHostServerFixture,
+            ToggleExecutionModeServerFixture<BasicTestApp.Program> devHostServerFixture,
             AspNetSiteServerFixture apiServerFixture,
             ITestOutputHelper output)
             : base(browserFixture, devHostServerFixture, output)

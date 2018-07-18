@@ -138,7 +138,21 @@ namespace Microsoft.AspNetCore.Blazor.Server.Circuits
             {
                 case RenderTreeFrameType.Attribute:
                     WriteString(frame.AttributeName);
-                    WriteString(frame.AttributeValue as string);
+                    if (frame.AttributeValue is bool boolValue)
+                    {
+                        // Encoding the bool as either "" or null is pretty odd, but avoids
+                        // having to pack any "what type of thing is this" info into the same
+                        // 4 bytes as the string table index. If, later, we need a way of
+                        // distinguishing whether an attribute value is really a bool or a string
+                        // or something else, we'll need a different encoding mechanism. Since there
+                        // would never be more than (say) 2^28 (268 million) distinct string table
+                        // entries, we could use the first 4 bits to encode the value type.
+                        WriteString(boolValue ? string.Empty : null);
+                    }
+                    else
+                    {
+                        WriteString(frame.AttributeValue as string);
+                    }
                     _binaryWriter.Write(frame.AttributeEventHandlerId);
                     break;
                 case RenderTreeFrameType.Component:

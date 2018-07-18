@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,6 +22,7 @@ namespace TestServer
             {
                 options.AddPolicy("AllowAll", _ => { /* Controlled below */ });
             });
+            services.AddServerSideBlazor<BasicTestApp.Startup>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -34,6 +35,12 @@ namespace TestServer
 
             AllowCorsForAnyLocalhostPort(app);
             app.UseMvc();
+
+            // Mount the server-side Blazor app on /subdir
+            app.Map("/subdir", subdirApp =>
+            {
+                subdirApp.UseServerSideBlazor<BasicTestApp.Startup>();
+            });
         }
 
         private static void AllowCorsForAnyLocalhostPort(IApplicationBuilder app)

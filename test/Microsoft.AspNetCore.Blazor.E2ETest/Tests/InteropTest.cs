@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
     {
         public InteropTest(
             BrowserFixture browserFixture,
-            DevHostServerFixture<Program> serverFixture,
+            ToggleExecutionModeServerFixture<Program> serverFixture,
             ITestOutputHelper output)
             : base(browserFixture, serverFixture, output)
         {
@@ -26,7 +26,42 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
         public void CanInvokeDotNetMethods()
         {
             // Arrange
-            var expectedValues = new Dictionary<string, string>
+            var expectedAsyncValues = new Dictionary<string, string>
+            {
+                ["VoidParameterlessAsync"] = "[]",
+                ["VoidWithOneParameterAsync"] = @"[{""id"":1,""isValid"":false,""data"":{""source"":""Some random text with at least 1 characters"",""start"":1,""length"":1}}]",
+                ["VoidWithTwoParametersAsync"] = @"[{""id"":2,""isValid"":true,""data"":{""source"":""Some random text with at least 2 characters"",""start"":2,""length"":2}},2]",
+                ["VoidWithThreeParametersAsync"] = @"[{""id"":3,""isValid"":false,""data"":{""source"":""Some random text with at least 3 characters"",""start"":3,""length"":3}},3,123]",
+                ["VoidWithFourParametersAsync"] = @"[{""id"":4,""isValid"":true,""data"":{""source"":""Some random text with at least 4 characters"",""start"":4,""length"":4}},4,123,16]",
+                ["VoidWithFiveParametersAsync"] = @"[{""id"":5,""isValid"":false,""data"":{""source"":""Some random text with at least 5 characters"",""start"":5,""length"":5}},5,123,20,40]",
+                ["VoidWithSixParametersAsync"] = @"[{""id"":6,""isValid"":true,""data"":{""source"":""Some random text with at least 6 characters"",""start"":6,""length"":6}},6,123,24,48,6.25]",
+                ["VoidWithSevenParametersAsync"] = @"[{""id"":7,""isValid"":false,""data"":{""source"":""Some random text with at least 7 characters"",""start"":7,""length"":7}},7,123,28,56,7.25,[0.5,1.5,2.5,3.5,4.5,5.5,6.5]]",
+                ["VoidWithEightParametersAsync"] = @"[{""id"":8,""isValid"":true,""data"":{""source"":""Some random text with at least 8 characters"",""start"":8,""length"":8}},8,123,32,64,8.25,[0.5,1.5,2.5,3.5,4.5,5.5,6.5,7.5],{""source"":""Some random text with at least 7 characters"",""start"":9,""length"":9}]",
+                ["result1Async"] = @"[0.1,0.2]",
+                ["result2Async"] = @"[{""id"":1,""isValid"":false,""data"":{""source"":""Some random text with at least 1 characters"",""start"":1,""length"":1}}]",
+                ["result3Async"] = @"[{""id"":2,""isValid"":true,""data"":{""source"":""Some random text with at least 2 characters"",""start"":2,""length"":2}},2]",
+                ["result4Async"] = @"[{""id"":3,""isValid"":false,""data"":{""source"":""Some random text with at least 3 characters"",""start"":3,""length"":3}},3,123]",
+                ["result5Async"] = @"[{""id"":4,""isValid"":true,""data"":{""source"":""Some random text with at least 4 characters"",""start"":4,""length"":4}},4,123,16]",
+                ["result6Async"] = @"[{""id"":5,""isValid"":false,""data"":{""source"":""Some random text with at least 5 characters"",""start"":5,""length"":5}},5,123,20,40]",
+                ["result7Async"] = @"[{""id"":6,""isValid"":true,""data"":{""source"":""Some random text with at least 6 characters"",""start"":6,""length"":6}},6,123,24,48,6.25]",
+                ["result8Async"] = @"[{""id"":7,""isValid"":false,""data"":{""source"":""Some random text with at least 7 characters"",""start"":7,""length"":7}},7,123,28,56,7.25,[0.5,1.5,2.5,3.5,4.5,5.5,6.5]]",
+                ["result9Async"] = @"[{""id"":8,""isValid"":true,""data"":{""source"":""Some random text with at least 8 characters"",""start"":8,""length"":8}},8,123,32,64,8.25,[0.5,1.5,2.5,3.5,4.5,5.5,6.5,7.5],{""source"":""Some random text with at least 7 characters"",""start"":9,""length"":9}]",
+                ["AsyncThrowSyncException"] = @"""System.InvalidOperationException: Threw a sync exception!",
+                ["AsyncThrowAsyncException"] = @"""System.InvalidOperationException: Threw an async exception!",
+                ["SyncExceptionFromAsyncMethod"] = "Function threw a sync exception!",
+                ["AsyncExceptionFromAsyncMethod"] = "Function threw an async exception!",
+                ["resultReturnDotNetObjectByRefAsync"] = "1001",
+                ["instanceMethodThisTypeNameAsync"] = @"""JavaScriptInterop""",
+                ["instanceMethodStringValueUpperAsync"] = @"""MY STRING""",
+                ["instanceMethodIncomingByRefAsync"] = "123",
+                ["instanceMethodOutgoingByRefAsync"] = "1234",
+                ["stringValueUpperAsync"] = "MY STRING",
+                ["testDtoNonSerializedValueAsync"] = "99999",
+                ["testDtoAsync"] = "Same",
+                ["returnPrimitiveAsync"] = "123",
+            };
+
+            var expectedSyncValues = new Dictionary<string, string>
             {
                 ["VoidParameterless"] = "[]",
                 ["VoidWithOneParameter"] = @"[{""id"":1,""isValid"":false,""data"":{""source"":""Some random text with at least 1 characters"",""start"":1,""length"":1}}]",
@@ -37,15 +72,6 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
                 ["VoidWithSixParameters"] = @"[{""id"":6,""isValid"":true,""data"":{""source"":""Some random text with at least 6 characters"",""start"":6,""length"":6}},6,123,24,48,6.25]",
                 ["VoidWithSevenParameters"] = @"[{""id"":7,""isValid"":false,""data"":{""source"":""Some random text with at least 7 characters"",""start"":7,""length"":7}},7,123,28,56,7.25,[0.5,1.5,2.5,3.5,4.5,5.5,6.5]]",
                 ["VoidWithEightParameters"] = @"[{""id"":8,""isValid"":true,""data"":{""source"":""Some random text with at least 8 characters"",""start"":8,""length"":8}},8,123,32,64,8.25,[0.5,1.5,2.5,3.5,4.5,5.5,6.5,7.5],{""source"":""Some random text with at least 7 characters"",""start"":9,""length"":9}]",
-                ["VoidParameterlessAsync"] = "[]",
-                ["VoidWithOneParameterAsync"] = @"[{""id"":1,""isValid"":false,""data"":{""source"":""Some random text with at least 1 characters"",""start"":1,""length"":1}}]",
-                ["VoidWithTwoParametersAsync"] = @"[{""id"":2,""isValid"":true,""data"":{""source"":""Some random text with at least 2 characters"",""start"":2,""length"":2}},2]",
-                ["VoidWithThreeParametersAsync"] = @"[{""id"":3,""isValid"":false,""data"":{""source"":""Some random text with at least 3 characters"",""start"":3,""length"":3}},3,123]",
-                ["VoidWithFourParametersAsync"] = @"[{""id"":4,""isValid"":true,""data"":{""source"":""Some random text with at least 4 characters"",""start"":4,""length"":4}},4,123,16]",
-                ["VoidWithFiveParametersAsync"] = @"[{""id"":5,""isValid"":false,""data"":{""source"":""Some random text with at least 5 characters"",""start"":5,""length"":5}},5,123,20,40]",
-                ["VoidWithSixParametersAsync"] = @"[{""id"":6,""isValid"":true,""data"":{""source"":""Some random text with at least 6 characters"",""start"":6,""length"":6}},6,123,24,48,6.25]",
-                ["VoidWithSevenParametersAsync"] = @"[{""id"":7,""isValid"":false,""data"":{""source"":""Some random text with at least 7 characters"",""start"":7,""length"":7}},7,123,28,56,7.25,[0.5,1.5,2.5,3.5,4.5,5.5,6.5]]",
-                ["VoidWithEightParametersAsync"] = @"[{""id"":8,""isValid"":true,""data"":{""source"":""Some random text with at least 8 characters"",""start"":8,""length"":8}},8,123,32,64,8.25,[0.5,1.5,2.5,3.5,4.5,5.5,6.5,7.5],{""source"":""Some random text with at least 7 characters"",""start"":9,""length"":9}]",
                 ["result1"] = @"[0.1,0.2]",
                 ["result2"] = @"[{""id"":1,""isValid"":false,""data"":{""source"":""Some random text with at least 1 characters"",""start"":1,""length"":1}}]",
                 ["result3"] = @"[{""id"":2,""isValid"":true,""data"":{""source"":""Some random text with at least 2 characters"",""start"":2,""length"":2}},2]",
@@ -55,40 +81,29 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
                 ["result7"] = @"[{""id"":6,""isValid"":true,""data"":{""source"":""Some random text with at least 6 characters"",""start"":6,""length"":6}},6,123,24,48,6.25]",
                 ["result8"] = @"[{""id"":7,""isValid"":false,""data"":{""source"":""Some random text with at least 7 characters"",""start"":7,""length"":7}},7,123,28,56,7.25,[0.5,1.5,2.5,3.5,4.5,5.5,6.5]]",
                 ["result9"] = @"[{""id"":8,""isValid"":true,""data"":{""source"":""Some random text with at least 8 characters"",""start"":8,""length"":8}},8,123,32,64,8.25,[0.5,1.5,2.5,3.5,4.5,5.5,6.5,7.5],{""source"":""Some random text with at least 7 characters"",""start"":9,""length"":9}]",
-                ["result1Async"] = @"[0.1,0.2]",
-                ["result2Async"] = @"[{""id"":1,""isValid"":false,""data"":{""source"":""Some random text with at least 1 characters"",""start"":1,""length"":1}}]",
-                ["result3Async"] = @"[{""id"":2,""isValid"":true,""data"":{""source"":""Some random text with at least 2 characters"",""start"":2,""length"":2}},2]",
-                ["result4Async"] = @"[{""id"":3,""isValid"":false,""data"":{""source"":""Some random text with at least 3 characters"",""start"":3,""length"":3}},3,123]",
-                ["result5Async"] = @"[{""id"":4,""isValid"":true,""data"":{""source"":""Some random text with at least 4 characters"",""start"":4,""length"":4}},4,123,16]",
-                ["result6Async"] = @"[{""id"":5,""isValid"":false,""data"":{""source"":""Some random text with at least 5 characters"",""start"":5,""length"":5}},5,123,20,40]",
-                ["result7Async"] = @"[{""id"":6,""isValid"":true,""data"":{""source"":""Some random text with at least 6 characters"",""start"":6,""length"":6}},6,123,24,48,6.25]",
-                ["result8Async"] = @"[{""id"":7,""isValid"":false,""data"":{""source"":""Some random text with at least 7 characters"",""start"":7,""length"":7}},7,123,28,56,7.25,[0.5,1.5,2.5,3.5,4.5,5.5,6.5]]",
-                ["result9Async"] = @"[{""id"":8,""isValid"":true,""data"":{""source"":""Some random text with at least 8 characters"",""start"":8,""length"":8}},8,123,32,64,8.25,[0.5,1.5,2.5,3.5,4.5,5.5,6.5,7.5],{""source"":""Some random text with at least 7 characters"",""start"":9,""length"":9}]",
                 ["ThrowException"] = @"""System.InvalidOperationException: Threw an exception!",
-                ["AsyncThrowSyncException"] = @"""System.InvalidOperationException: Threw a sync exception!",
-                ["AsyncThrowAsyncException"] = @"""System.InvalidOperationException: Threw an async exception!",
                 ["ExceptionFromSyncMethod"] = "Function threw an exception!",
-                ["SyncExceptionFromAsyncMethod"] = "Function threw a sync exception!",
-                ["AsyncExceptionFromAsyncMethod"] = "Function threw an async exception!",
                 ["resultReturnDotNetObjectByRefSync"] = "1000",
-                ["resultReturnDotNetObjectByRefAsync"] = "1001",
                 ["instanceMethodThisTypeName"] = @"""JavaScriptInterop""",
                 ["instanceMethodStringValueUpper"] = @"""MY STRING""",
                 ["instanceMethodIncomingByRef"] = "123",
                 ["instanceMethodOutgoingByRef"] = "1234",
-                ["instanceMethodThisTypeNameAsync"] = @"""JavaScriptInterop""",
-                ["instanceMethodStringValueUpperAsync"] = @"""MY STRING""",
-                ["instanceMethodIncomingByRefAsync"] = "123",
-                ["instanceMethodOutgoingByRefAsync"] = "1234",
                 ["stringValueUpperSync"] = "MY STRING",
                 ["testDtoNonSerializedValueSync"] = "99999",
                 ["testDtoSync"] = "Same",
-                ["stringValueUpperAsync"] = "MY STRING",
-                ["testDtoNonSerializedValueAsync"] = "99999",
-                ["testDtoAsync"] = "Same",
                 ["returnPrimitive"] = "123",
-                ["returnPrimitiveAsync"] = "123",
             };
+
+            // Include the sync assertions only when running under WebAssembly
+            var expectedValues = expectedAsyncValues;
+            if (!_serverFixture.UsingAspNetHost)
+            {
+                foreach (var kvp in expectedSyncValues)
+                {
+                    expectedValues.Add(kvp.Key, kvp.Value);
+                }
+            }
+            
             var actualValues = new Dictionary<string, string>();
 
             // Act

@@ -7,4 +7,9 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.App" Version="$(AspNetCorePackageVersion)" />
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Microsoft.AspNetCore.Blazor.Server\Microsoft.AspNetCore.Blazor.Server.csproj" />
+    <ProjectReference Include="..\BasicTestApp\BasicTestApp.csproj" />
+  </ItemGroup>
 </Project>
