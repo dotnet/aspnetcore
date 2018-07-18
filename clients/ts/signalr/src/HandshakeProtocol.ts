@@ -10,6 +10,7 @@ export interface HandshakeRequestMessage {
 
 export interface HandshakeResponseMessage {
     readonly error: string;
+    readonly minorVersion: number;
 }
 
 export class HandshakeProtocol {
