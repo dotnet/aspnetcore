@@ -52,7 +52,7 @@
         $(UnsignedSharedFxPath)**\microsoft.*.dll;
         $(UnsignedSharedFxPath)**\system.*.dll;
         $(UnsignedSharedFxPath)**\libuv.dll;
-        $(UnsignedSharedFxPath)**\aspnetcorerh.dll;
+        $(UnsignedSharedFxPath)**\aspnetcorev2_inprocess.dll;
         $(UnsignedSharedFxPath)**\sni.dll"
         Exclude="@(ThirdPartyBinaries)"/>
 
