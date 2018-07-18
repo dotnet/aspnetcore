@@ -10,8 +10,8 @@
 
 FileOutputManager::FileOutputManager() :
     m_hLogFileHandle(INVALID_HANDLE_VALUE),
-    m_fdPreviousStdOut(0),
-    m_fdPreviousStdErr(0)
+    m_fdPreviousStdOut(-1),
+    m_fdPreviousStdErr(-1)
 {
 }
 
@@ -40,14 +40,14 @@ FileOutputManager::~FileOutputManager()
 
     if (m_fdPreviousStdOut >= 0)
     {
-        _dup2(m_fdPreviousStdOut, _fileno(stdout));
-        LOG_INFOF("Restoring original stdout of stdout: %d", m_fdPreviousStdOut);
+        LOG_LAST_ERROR_IF(SetStdHandle(STD_OUTPUT_HANDLE, (HANDLE)_get_osfhandle(m_fdPreviousStdOut)));
+        LOG_INFOF("Restoring original stdout: %d", m_fdPreviousStdOut);
     }
 
     if (m_fdPreviousStdErr >= 0)
     {
-        _dup2(m_fdPreviousStdErr, _fileno(stderr));
-        LOG_INFOF("Restoring original stdout of stdout: %d", m_fdPreviousStdOut);
+        LOG_LAST_ERROR_IF(SetStdHandle(STD_ERROR_HANDLE, (HANDLE)_get_osfhandle(m_fdPreviousStdErr)));
+        LOG_INFOF("Restoring original stderr: %d", m_fdPreviousStdOut);
     }
 }
 
@@ -58,10 +58,6 @@ FileOutputManager::Initialize(PCWSTR pwzStdOutLogFileName, PCWSTR pwzApplication
     RETURN_IF_FAILED(m_wsStdOutLogFileName.Copy(pwzStdOutLogFileName));
 
     return S_OK;
-}
-
-void FileOutputManager::NotifyStartupComplete()
-{
 }
 
 bool FileOutputManager::GetStdOutContent(STRA* struStdOutput)

@@ -3,6 +3,8 @@
 
 #include "globalmodule.h"
 
+extern BOOL         g_fInShutdown;
+
 ASPNET_CORE_GLOBAL_MODULE::ASPNET_CORE_GLOBAL_MODULE(
     APPLICATION_MANAGER* pApplicationManager)
 {
@@ -19,6 +21,8 @@ ASPNET_CORE_GLOBAL_MODULE::OnGlobalStopListening(
 )
 {
     UNREFERENCED_PARAMETER(pProvider);
+
+    LOG_INFO("ASPNET_CORE_GLOBAL_MODULE::OnGlobalStopListening");
 
     if (g_fInShutdown)
     {
@@ -51,6 +55,8 @@ ASPNET_CORE_GLOBAL_MODULE::OnGlobalConfigurationChange(
     }
     // Retrieve the path that has changed.
     PCWSTR pwszChangePath = pProvider->GetChangePath();
+
+    LOG_INFOF("ASPNET_CORE_GLOBAL_MODULE::OnGlobalConfigurationChange %S", pwszChangePath);
 
     // Test for an error.
     if (NULL != pwszChangePath &&

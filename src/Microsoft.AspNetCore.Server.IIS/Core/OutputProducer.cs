@@ -121,6 +121,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             }
             catch (OperationCanceledException)
             {
+                _pipe.Writer.Complete();
                 _completed = true;
                 throw;
             }

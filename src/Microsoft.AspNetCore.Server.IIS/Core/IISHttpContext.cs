@@ -217,7 +217,16 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
             if (flushHeaders)
             {
-                await AsyncIO.FlushAsync();
+                try
+                {
+                    await AsyncIO.FlushAsync();
+                }
+                // Client might be disconnected at this point
+                // don't leak the exception
+                catch (IOException)
+                {
+                    // ignore
+                }
             }
 
             _writeBodyTask = WriteBody(!flushHeaders);

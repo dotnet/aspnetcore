@@ -3,6 +3,7 @@
 
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
+using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 using Xunit.Abstractions;
@@ -23,7 +24,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             var result = await DeployAsync(parameters);
 
             var response = await result.RetryingHttpClient.GetAsync("/Shutdown");
-            Assert.True(result.DeploymentResult.HostShutdownToken.WaitHandle.WaitOne(Helpers.DefaultTimeout));
+            Assert.True(result.DeploymentResult.HostShutdownToken.WaitHandle.WaitOne(TimeoutExtensions.DefaultTimeout));
         }
     }
 }

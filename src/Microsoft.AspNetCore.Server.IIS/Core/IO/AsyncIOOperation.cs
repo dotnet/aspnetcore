@@ -2,8 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks.Sources;
 
@@ -101,7 +103,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
                 _result = bytes;
                 if (hr != NativeMethods.HR_OK)
                 {
-                    _exception = new IOException("IO exception occurred", hr);
+                    _exception = new IOException("Native IO operation failed", Marshal.GetExceptionForHR(hr));
                 }
             }
             else

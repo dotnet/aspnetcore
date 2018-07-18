@@ -15,7 +15,8 @@ register_callbacks(
     _In_ PFN_SHUTDOWN_HANDLER shutdown_handler,
     _In_ PFN_ASYNC_COMPLETION_HANDLER async_completion_handler,
     _In_ VOID* pvRequstHandlerContext,
-    _In_ VOID* pvShutdownHandlerContext
+    _In_ VOID* pvShutdownHandlerContext,
+    _Out_ BOOL* pfResetStandardStreams
 )
 {
     if (pInProcessApplication == NULL)
@@ -30,6 +31,7 @@ register_callbacks(
         pvRequstHandlerContext,
         pvShutdownHandlerContext
     );
+    *pfResetStandardStreams = !pInProcessApplication->QueryConfig()->QueryStdoutLogEnabled();
 
     return S_OK;
 }

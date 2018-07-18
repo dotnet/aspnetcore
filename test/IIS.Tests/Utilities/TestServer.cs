@@ -6,8 +6,11 @@ using System.IO;
 using System.Net.Http;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Runtime.Loader;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml.Linq;
+using System.Xml.XPath;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -24,6 +27,10 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         private const string HWebCoreDll = "hwebcore.dll";
 
         internal static string HostableWebCoreLocation => Environment.ExpandEnvironmentVariables($@"%windir%\system32\inetsrv\{HWebCoreDll}");
+        internal static string BasePath => Path.GetDirectoryName(new Uri(typeof(TestServer).Assembly.CodeBase).AbsolutePath);
+        internal static string InProcessHandlerLocation => Path.Combine(BasePath, InProcessHandlerDll);
+
+        internal static string AspNetCoreModuleLocation => Path.Combine(BasePath, AspNetCoreModuleDll);
 
         private static readonly SemaphoreSlim WebCoreLock = new SemaphoreSlim(1, 1);
 
@@ -35,14 +42,18 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         private readonly Action<IApplicationBuilder> _appBuilder;
         private readonly ILoggerFactory _loggerFactory;
+        private readonly hostfxr_main_fn _hostfxrMainFn;
 
         public HttpClient HttpClient { get; }
         public TestConnection CreateConnection() => new TestConnection(BasePort);
 
         private IWebHost _host;
 
+        private string _appHostConfigPath;
+
         private TestServer(Action<IApplicationBuilder> appBuilder, ILoggerFactory loggerFactory)
         {
+            _hostfxrMainFn = Main;
             _appBuilder = appBuilder;
             _loggerFactory = loggerFactory;
 
@@ -57,7 +68,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             await WebCoreLock.WaitAsync();
             var server = new TestServer(appBuilder, loggerFactory);
             server.Start();
-            await server.HttpClient.GetAsync("/start");
+            (await server.HttpClient.GetAsync("/start")).EnsureSuccessStatusCode();
             await server._startedTaskCompletionSource.Task;
             return server;
         }
@@ -70,11 +81,16 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         private void Start()
         {
             LoadLibrary(HostableWebCoreLocation);
-            LoadLibrary(InProcessHandlerDll);
-            LoadLibrary(AspNetCoreModuleDll);
+            _appHostConfigPath = Path.GetTempFileName();
 
-            set_main_handler(Main);
-            var startResult = WebCoreActivate(Path.GetFullPath("HostableWebCore.config"), null, "Instance");
+            var webHostConfig = XDocument.Load(Path.GetFullPath("HostableWebCore.config"));
+            webHostConfig.XPathSelectElement("/configuration/system.webServer/globalModules/add[@name='AspNetCoreModuleV2']")
+                .SetAttributeValue("image", AspNetCoreModuleLocation);
+            webHostConfig.Save(_appHostConfigPath);
+
+            set_main_handler(_hostfxrMainFn);
+
+            var startResult = WebCoreActivate(_appHostConfigPath, null, "Instance");
             if (startResult != 0)
             {
                 throw new InvalidOperationException($"Error while running WebCoreActivate: {startResult}");
@@ -87,8 +103,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 .UseIIS()
                 .ConfigureServices(services => {
                         services.AddSingleton<IStartup>(this);
-                        services.AddSingleton<ILoggerFactory>(_loggerFactory);
-                    })
+                        services.AddSingleton(_loggerFactory);
+                })
                 .UseSetting(WebHostDefaults.ApplicationKey, typeof(TestServer).GetTypeInfo().Assembly.FullName)
                 .Build();
 

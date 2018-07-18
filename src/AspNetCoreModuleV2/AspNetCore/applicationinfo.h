@@ -23,14 +23,13 @@ HRESULT
     );
 
 extern BOOL     g_fRecycleProcessCalled;
-extern PFN_ASPNETCORE_CREATE_APPLICATION      g_pfnAspNetCoreCreateApplication;
 
 class APPLICATION_INFO
 {
 public:
 
-    APPLICATION_INFO() :
-        m_pServer(NULL),
+    APPLICATION_INFO(_In_ IHttpServer &pServer) :
+        m_pServer(pServer),
         m_cRefs(1),
         m_fValid(FALSE),
         m_fAppCreationAttempted(FALSE),
@@ -48,11 +47,17 @@ public:
 
     virtual
     ~APPLICATION_INFO();
+    
+    static 
+    void
+    StaticInitialize()
+    {
+        InitializeSRWLock(&s_requestHandlerLoadLock);
+    }
 
     HRESULT
     Initialize(
-        _In_ IHttpServer         *pServer,
-        _In_ IHttpApplication    *pApplication
+        _In_ IHttpApplication    &pApplication
     );
 
     VOID
@@ -125,11 +130,17 @@ private:
     ASPNETCORE_SHIM_CONFIG *m_pConfiguration;
     IAPPLICATION           *m_pApplication;
     SRWLOCK                 m_srwLock;
-    IHttpServer            *m_pServer;
+    IHttpServer            &m_pServer;
     PFN_ASPNETCORE_CREATE_APPLICATION      m_pfnAspNetCoreCreateApplication;
 
     static const PCWSTR          s_pwzAspnetcoreInProcessRequestHandlerName;
     static const PCWSTR          s_pwzAspnetcoreOutOfProcessRequestHandlerName;
+
+    static SRWLOCK      s_requestHandlerLoadLock;
+    static bool         s_fAspnetcoreRHAssemblyLoaded;
+    static bool         s_fAspnetcoreRHLoadedError;
+    static HMODULE      s_hAspnetCoreRH;
+    static PFN_ASPNETCORE_CREATE_APPLICATION  s_pfnAspNetCoreCreateApplication;
 };
 
 class APPLICATION_INFO_HASH :

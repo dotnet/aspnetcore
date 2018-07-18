@@ -277,10 +277,7 @@ IN_PROCESS_APPLICATION::LoadManagedApplication
                 goto Finished;
             }
 
-            if (FAILED(hr = m_pLoggerProvider->Start()))
-            {
-                goto Finished;
-            }
+            LOG_IF_FAILED(m_pLoggerProvider->Start());
         }
 
         if (m_status != APPLICATION_STATUS::STARTING)
@@ -564,14 +561,19 @@ IN_PROCESS_APPLICATION::RunDotnetApplication(DWORD argc, CONST PCWSTR* argv, hos
 
     __try
     {
+        LOG_INFO("Starting managed application");
         m_ProcessExitCode = pProc(argc, argv);
         if (m_ProcessExitCode != 0)
         {
             hr = HRESULT_FROM_WIN32(GetLastError());
         }
+        
+        LOG_INFOF("Managed application exited with code %d", m_ProcessExitCode);
     }
     __except(GetExceptionCode() != 0)
     {
+        
+        LOG_INFOF("Managed threw an exception %d", GetExceptionCode());
         hr = HRESULT_FROM_WIN32(GetLastError());
     }
 

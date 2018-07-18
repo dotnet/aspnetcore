@@ -7,6 +7,9 @@
 #include "applicationinfo.h"
 #include "acache.h"
 #include "exceptions.h"
+
+extern BOOL         g_fInShutdown;
+
 __override
 HRESULT
 ASPNET_CORE_PROXY_MODULE_FACTORY::GetHttpModule(
@@ -83,7 +86,6 @@ ASPNET_CORE_PROXY_MODULE::OnExecuteRequestHandler(
         pApplicationManager = APPLICATION_MANAGER::GetInstance();
 
         FINISHED_IF_FAILED(pApplicationManager->GetOrCreateApplicationInfo(
-            g_pHttpServer,
             pHttpContext,
             &m_pApplicationInfo));
 

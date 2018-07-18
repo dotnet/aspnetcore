@@ -14,10 +14,8 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 {
-    public class Helpers
+    public static class Helpers
     {
-        public static TimeSpan DefaultTimeout = TimeSpan.FromSeconds(3);
-
         public static string GetTestWebSitePath(string name)
         {
             return Path.Combine(TestPathUtilities.GetSolutionRootDirectory("IISIntegration"),"test", "WebSites", name);
@@ -37,6 +35,22 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             var element = config.Descendants(section).Single();
             element.SetAttributeValue(key, value);
+
+            config.Save(webConfigFile);
+        }
+
+        public static void ModifyEnvironmentVariableCollectionInWebConfig(IISDeploymentResult deploymentResult, string key, string value)
+        {
+            var webConfigFile = GetWebConfigFile(deploymentResult);
+            var config = XDocument.Load(webConfigFile);
+
+            var envVarElement = new XElement("environmentVariable");
+            envVarElement.SetAttributeValue("name", key);
+            envVarElement.SetAttributeValue("value", value);
+
+            config.Descendants("aspNetCore").Single()
+                .Descendants("environmentVariables").Single()
+                .Add(envVarElement);
 
             config.Save(webConfigFile);
         }

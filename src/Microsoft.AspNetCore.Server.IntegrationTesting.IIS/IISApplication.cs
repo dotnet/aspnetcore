@@ -231,7 +231,6 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 pool.ProcessModel.IdentityType = ProcessModelIdentityType.LocalSystem;
                 pool.ManagedRuntimeVersion = string.Empty;
                 pool.StartMode = StartMode.AlwaysRunning;
-
                 AddEnvironmentVariables(contentRoot, pool);
 
                 _logger.LogInformation($"Configured AppPool {AppPoolName}");

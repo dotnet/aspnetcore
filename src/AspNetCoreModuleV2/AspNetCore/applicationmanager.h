@@ -27,15 +27,9 @@ public:
 
     static
     APPLICATION_MANAGER*
-    GetInstance(
-        VOID
-    )
+    GetInstance()
     {
-        if ( sm_pApplicationManager == NULL )
-        {
-            sm_pApplicationManager = new APPLICATION_MANAGER();
-        }
-
+        assert(sm_pApplicationManager);
         return sm_pApplicationManager;
     }
 
@@ -68,7 +62,6 @@ public:
 
     HRESULT
     GetOrCreateApplicationInfo(
-        _In_ IHttpServer*          pServer,
         _In_ IHttpContext*         pHttpContext,
         _Out_ APPLICATION_INFO **  ppApplicationInfo
     );
@@ -92,6 +85,16 @@ public:
         }
     }
 
+    static HRESULT StaticInitialize(IHttpServer& pHttpServer)
+    {
+        assert(!sm_pApplicationManager);
+        sm_pApplicationManager = new APPLICATION_MANAGER(pHttpServer);
+        RETURN_IF_FAILED(sm_pApplicationManager->Initialize());
+
+        APPLICATION_INFO::StaticInitialize();
+        return S_OK;
+    }
+
     HRESULT Initialize()
     {
         if(m_pApplicationInfoHash == NULL)
@@ -107,12 +110,11 @@ public:
     }
 
 private:
-    //
-    // we currently limit the size of m_pstrErrorInfo to 5000, be careful if you want to change its payload
-    //
-    APPLICATION_MANAGER() : m_pApplicationInfoHash(NULL),
+    APPLICATION_MANAGER(IHttpServer& pHttpServer) :
+                            m_pApplicationInfoHash(NULL),
                             m_hostingModel(HOSTING_UNKNOWN),
-                            m_fDebugInitialize(FALSE)
+                            m_fDebugInitialize(FALSE),
+                            m_pHttpServer(pHttpServer)
     {
         InitializeSRWLock(&m_srwLock);
     }
@@ -120,6 +122,7 @@ private:
     APPLICATION_INFO_HASH      *m_pApplicationInfoHash;
     static APPLICATION_MANAGER *sm_pApplicationManager;
     SRWLOCK                     m_srwLock;
-    APP_HOSTING_MODEL          m_hostingModel;
+    APP_HOSTING_MODEL           m_hostingModel;
     BOOL                        m_fDebugInitialize;
+    IHttpServer                &m_pHttpServer;
 };

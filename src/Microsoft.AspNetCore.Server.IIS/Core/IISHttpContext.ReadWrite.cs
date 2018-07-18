@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -25,7 +26,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
             while (true)
             {
-                var result = await _bodyInputPipe.Reader.ReadAsync();
+                var result = await _bodyInputPipe.Reader.ReadAsync(cancellationToken);
                 var readableBuffer = result.Buffer;
                 try
                 {
@@ -158,9 +159,13 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                     }
                 }
             }
+            // We want to swallow IO exception and allow app to finish writing
             catch (Exception ex)
             {
-                _bodyOutput.Reader.Complete(ex);
+                if (!(ex is IOException))
+                {
+                    _bodyOutput.Reader.Complete(ex);
+                }
             }
             finally
             {

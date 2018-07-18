@@ -8,10 +8,10 @@ using Microsoft.AspNetCore.Testing.xunit;
 namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 {
     [AttributeUsage(AttributeTargets.Assembly | AttributeTargets.Class | AttributeTargets.Method)]
-    public sealed class SkipIfHostableWebCoreNotAvailibleAttribute : Attribute, ITestCondition
+    public sealed class SkipIfHostableWebCoreNotAvailableAttribute : Attribute, ITestCondition
     {
         public bool IsMet { get; } = File.Exists(TestServer.HostableWebCoreLocation);
 
-        public string SkipReason { get; } = $"Hostable Web Core not availible, {TestServer.HostableWebCoreLocation} not found.";
+        public string SkipReason { get; } = $"Hostable Web Core not available, {TestServer.HostableWebCoreLocation} not found.";
     }
 }
