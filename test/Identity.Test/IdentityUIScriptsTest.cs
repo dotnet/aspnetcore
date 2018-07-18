@@ -42,10 +42,10 @@ namespace Microsoft.AspNetCore.Identity.Test
         {
             string expectedIntegrity;
             using (var respStream = await _httpClient.GetStreamAsync(scriptTag.Src))
-            using (var alg = SHA384.Create())
+            using (var alg = SHA256.Create())
             {
                 var hash = alg.ComputeHash(respStream);
-                expectedIntegrity = "sha384-" + Convert.ToBase64String(hash);
+                expectedIntegrity = "sha256-" + Convert.ToBase64String(hash);
             }
 
             Assert.Equal(expectedIntegrity, scriptTag.Integrity);
