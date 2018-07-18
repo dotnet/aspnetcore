@@ -26,6 +26,12 @@ namespace Microsoft.AspNetCore.Routing.Matchers
         // computed based on the string length.
         public static int Tokenize(string path, Span<PathSegment> segments)
         {
+            // This can happen in test scenarios.
+            if (path == string.Empty)
+            {
+                return 0;
+            }
+
             int count = 0;
             int start = 1; // Paths always start with a leading /
             int end;

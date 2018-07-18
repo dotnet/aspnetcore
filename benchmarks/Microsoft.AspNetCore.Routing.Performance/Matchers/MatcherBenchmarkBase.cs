@@ -30,8 +30,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 
         private protected DfaMatcherBuilder CreateDfaMatcherBuilder()
         {
-            var services = CreateServices();
-            return ActivatorUtilities.CreateInstance<DfaMatcherBuilder>(services);
+            return CreateServices().GetRequiredService<DfaMatcherBuilder>();
         }
 
         private protected static MatcherEndpoint CreateEndpoint(string template, string httpMethod = null)

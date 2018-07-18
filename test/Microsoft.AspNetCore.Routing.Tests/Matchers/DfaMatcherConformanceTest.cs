@@ -30,7 +30,6 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                 .AddOptions()
                 .AddRouting()
                 .AddDispatcher()
-                .AddTransient<DfaMatcherBuilder>()
                 .BuildServiceProvider();
 
             var builder = services.GetRequiredService<DfaMatcherBuilder>();
