@@ -44,7 +44,7 @@ In an empty directory, run (for example) `dotnet new angular`. Other supported S
 Once the generator has run and restored all the dependencies, you can start up your new ASP.NET Core SPA:
 
     npm install
-    dotnet run 
+    dotnet run
 
 ### Option 2: Creating Angular/React/Redux applications using Visual Studio 2017 Update 3 or later (Windows only)
 

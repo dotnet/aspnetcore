@@ -9,7 +9,7 @@ This package enables:
  * [**Hot module replacement**](#webpack-hot-module-replacement) so that, during development, your code and markup changes will be pushed to your browser and updated in the running application automatically, without even needing to reload the page
  * [**Routing helpers**](#routing-helper-mapspafallbackroute) for integrating server-side routing with client-side routing
 
-Behind the scenes, it uses the [`Microsoft.AspNetCore.NodeServices`](https://github.com/aspnet/JavaScriptServices/tree/dev/src/Microsoft.AspNetCore.NodeServices) package as a fast and robust way to invoke Node.js-hosted code from ASP.NET Core at runtime.
+Behind the scenes, it uses the [`Microsoft.AspNetCore.NodeServices`](https://github.com/aspnet/JavaScriptServices/tree/master/src/Microsoft.AspNetCore.NodeServices) package as a fast and robust way to invoke Node.js-hosted code from ASP.NET Core at runtime.
 
 ### Requirements
 
