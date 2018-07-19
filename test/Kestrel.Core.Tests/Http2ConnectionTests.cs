@@ -131,14 +131,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         public Http2ConnectionTests()
         {
-            var inlineSchedulingPipeOptions = new PipeOptions(
+            // Always dispatch test code back to the ThreadPool. This prevents deadlocks caused by continuing
+            // Http2Connection.ProcessRequestsAsync() loop with writer locks acquired. Run product code inline to make
+            // it easier to verify request frames are processed correctly immediately after sending the them.
+            var inputPipeOptions = new PipeOptions(
                 pool: _memoryPool,
                 readerScheduler: PipeScheduler.Inline,
+                writerScheduler: PipeScheduler.ThreadPool,
+                useSynchronizationContext: false
+            );
+            var outputPipeOptions = new PipeOptions(
+                pool: _memoryPool,
+                readerScheduler: PipeScheduler.ThreadPool,
                 writerScheduler: PipeScheduler.Inline,
                 useSynchronizationContext: false
             );
 
-            _pair = DuplexPipe.CreateConnectionPair(inlineSchedulingPipeOptions, inlineSchedulingPipeOptions);
+            _pair = DuplexPipe.CreateConnectionPair(inputPipeOptions, outputPipeOptions);
 
             _noopApplication = context => Task.CompletedTask;
 
@@ -488,12 +497,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 withFlags: (byte)Http2DataFrameFlags.END_STREAM,
                 withStreamId: 3);
 
-            // Ensure that Http2FrameWriter._writeLock isn't acquired when completing the frame processing loop.
-            // Otherwise there's a deadlock where Http2OutputProducer.Abort() being called from the frame processing
-            // loop blocks waiting Http2OutputProducer.Dispose() being called from the stream processing loop to
-            // acquire the _writeLock.
-            await ThreadPoolAwaitable.Instance;
-
             await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
 
             Assert.Equal(stream1DataFrame1.DataPayload, _helloBytes);
@@ -564,12 +567,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 withLength: 0,
                 withFlags: (byte)Http2DataFrameFlags.END_STREAM,
                 withStreamId: 1);
-
-            // Ensure that Http2FrameWriter._writeLock isn't acquired when completing the frame processing loop.
-            // Otherwise there's a deadlock where Http2OutputProducer.Abort() being called from the frame processing
-            // loop blocks waiting Http2OutputProducer.Dispose() being called from the stream processing loop to
-            // acquire the _writeLock.
-            await ThreadPoolAwaitable.Instance;
 
             await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
         }
@@ -867,12 +864,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 withLength: 0,
                 withFlags: (byte)Http2DataFrameFlags.END_STREAM,
                 withStreamId: 1);
-
-            // Ensure that Http2FrameWriter._writeLock isn't acquired when completing the frame processing loop.
-            // Otherwise there's a deadlock where Http2OutputProducer.Abort() being called from the frame processing
-            // loop blocks waiting Http2OutputProducer.Dispose() being called from the stream processing loop to
-            // acquire the _writeLock.
-            await ThreadPoolAwaitable.Instance;
 
             await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
             await WaitForAllStreamsAsync();
