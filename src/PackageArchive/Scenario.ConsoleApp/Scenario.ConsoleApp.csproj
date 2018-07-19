@@ -4,12 +4,12 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <MaxImplicitVersion>2.1.0</MaxImplicitVersion>
     <!-- Use pre-release versions up until 2.1.0, then don't lift higher than "2.1.0" -->
-    <MicrosoftNETCoreAppPackageVersion Condition="$(MicrosoftNETCoreApp21PackageVersion.StartsWith('$(MaxImplicitVersion)-'))">$(MicrosoftNETCoreApp21PackageVersion)</MicrosoftNETCoreAppPackageVersion>
-    <MicrosoftNETCoreAppPackageVersion>$([MSbuild]::ValueOrDefault('$(MicrosoftNETCoreAppPackageVersion)','$(MaxImplicitVersion)'))</MicrosoftNETCoreAppPackageVersion>
+    <NETCoreImplicitVersion Condition="$(MicrosoftNETCoreApp21PackageVersion.StartsWith('$(MaxImplicitVersion)-'))">$(MicrosoftNETCoreApp21PackageVersion)</NETCoreImplicitVersion>
+    <NETCoreImplicitVersion>$([MSbuild]::ValueOrDefault('$(NETCoreImplicitVersion)','$(MaxImplicitVersion)'))</NETCoreImplicitVersion>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.NETCore.App" Version="$(MicrosoftNETCoreAppPackageVersion)" />
+    <PackageReference Include="Microsoft.NETCore.App" Version="$(NETCoreImplicitVersion)" />
   </ItemGroup>
 
 </Project>
