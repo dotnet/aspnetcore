@@ -19,15 +19,13 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 {
     internal class MvcEndpointDataSource : EndpointDataSource
     {
+        private readonly object _lock = new object();
         private readonly IActionDescriptorCollectionProvider _actions;
         private readonly MvcEndpointInvokerFactory _invokerFactory;
         private readonly IServiceProvider _serviceProvider;
         private readonly IActionDescriptorChangeProvider[] _actionDescriptorChangeProviders;
-        private readonly List<Endpoint> _endpoints;
-        private readonly object _lock = new object();
 
-        private IChangeToken _changeToken;
-        private bool _initialized;
+        private List<Endpoint> _endpoints;
 
         public MvcEndpointDataSource(
             IActionDescriptorCollectionProvider actions,
@@ -60,12 +58,17 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             _serviceProvider = serviceProvider;
             _actionDescriptorChangeProviders = actionDescriptorChangeProviders.ToArray();
 
-            _endpoints = new List<Endpoint>();
             ConventionalEndpointInfos = new List<MvcEndpointInfo>();
+
+            Extensions.Primitives.ChangeToken.OnChange(
+                GetCompositeChangeToken,
+                UpdateEndpoints);
         }
 
-        private void InitializeEndpoints()
+        private List<Endpoint> CreateEndpoints()
         {
+            List<Endpoint> endpoints = new List<Endpoint>();
+
             foreach (var action in _actions.ActionDescriptors.Items)
             {
                 if (action.AttributeRouteInfo == null)
@@ -117,7 +120,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                                         endpointInfo.Defaults,
                                         ++conventionalRouteOrder,
                                         endpointInfo);
-                                    _endpoints.Add(subEndpoint);
+                                    endpoints.Add(subEndpoint);
                                 }
 
                                 var segment = newEndpointTemplate.Segments[i];
@@ -142,7 +145,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                                 endpointInfo.Defaults,
                                 ++conventionalRouteOrder,
                                 endpointInfo);
-                            _endpoints.Add(endpoint);
+                            endpoints.Add(endpoint);
                         }
                     }
                 }
@@ -155,9 +158,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                         nonInlineDefaults: null,
                         action.AttributeRouteInfo.Order,
                         action.AttributeRouteInfo);
-                    _endpoints.Add(endpoint);
+                    endpoints.Add(endpoint);
                 }
             }
+
+            return endpoints;
         }
 
         private bool IsMvcParameter(string name)
@@ -392,36 +397,36 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             return new CompositeChangeToken(changeTokens);
         }
 
-        public override IChangeToken ChangeToken
-        {
-            get
-            {
-                if (_changeToken == null)
-                {
-                    _changeToken = GetCompositeChangeToken();
-                }
-
-                return _changeToken;
-            }
-        }
+        public override IChangeToken ChangeToken => GetCompositeChangeToken();
 
         public override IReadOnlyList<Endpoint> Endpoints
         {
             get
             {
-                if (!_initialized)
+                // Want to initialize endpoints once and then cache while ensuring a null collection is never returned
+                // Local copy for thread safety + double check locking
+                var localEndpoints = _endpoints;
+                if (localEndpoints == null)
                 {
                     lock (_lock)
                     {
-                        if (!_initialized)
+                        localEndpoints = _endpoints;
+                        if (localEndpoints == null)
                         {
-                            InitializeEndpoints();
-                            _initialized = true;
+                            _endpoints = localEndpoints = CreateEndpoints();
                         }
                     }
                 }
 
-                return _endpoints;
+                return localEndpoints;
+            }
+        }
+
+        private void UpdateEndpoints()
+        {
+            lock (_lock)
+            {
+                _endpoints = CreateEndpoints();
             }
         }
 

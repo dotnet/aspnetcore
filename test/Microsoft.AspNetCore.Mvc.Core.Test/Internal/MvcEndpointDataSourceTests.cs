@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -183,7 +184,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         [InlineData("{controller}/{action=TestAction}/{id?}/{*catchAll}", new[] { "TestController", "TestController/TestAction/{id?}/{*catchAll}" })]
         //[InlineData("{controller}/{action}.{ext?}", new[] { "TestController/TestAction.{ext?}" })]
         //[InlineData("{controller}/{action=TestAction}.{ext?}", new[] { "TestController", "TestController/TestAction.{ext?}" })]
-        public void InitializeEndpoints_SingleAction(string endpointInfoRoute, string[] finalEndpointTemplates)
+        public void Endpoints_SingleAction(string endpointInfoRoute, string[] finalEndpointTemplates)
         {
             // Arrange
             var actionDescriptorCollection = GetActionDescriptorCollection(
@@ -210,7 +211,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         [InlineData("{area=TestArea}/{controller}/{action=TestAction}/{id?}", new[] { "TestArea/TestController", "TestArea/TestController/TestAction/{id?}" })]
         [InlineData("{area=TestArea}/{controller=TestController}/{action=TestAction}/{id?}", new[] { "", "TestArea", "TestArea/TestController", "TestArea/TestController/TestAction/{id?}" })]
         [InlineData("{area:exists}/{controller}/{action}/{id?}", new[] { "TestArea/TestController/TestAction/{id?}" })]
-        public void InitializeEndpoints_AreaSingleAction(string endpointInfoRoute, string[] finalEndpointTemplates)
+        public void Endpoints_AreaSingleAction(string endpointInfoRoute, string[] finalEndpointTemplates)
         {
             // Arrange
             var actionDescriptorCollection = GetActionDescriptorCollection(
@@ -231,7 +232,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
-        public void InitializeEndpoints_SingleAction_WithActionDefault()
+        public void Endpoints_SingleAction_WithActionDefault()
         {
             // Arrange
             var actionDescriptorCollection = GetActionDescriptorCollection(
@@ -252,7 +253,93 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
-        public void InitializeEndpoints_MultipleActions_WithActionConstraint()
+        public void Endpoints_CalledMultipleTimes_ReturnsSameInstance()
+        {
+            // Arrange
+            var actionDescriptorCollectionProviderMock = new Mock<IActionDescriptorCollectionProvider>();
+            actionDescriptorCollectionProviderMock
+                .Setup(m => m.ActionDescriptors)
+                .Returns(new ActionDescriptorCollection(new[]
+                {
+                    CreateActionDescriptor(new { controller = "TestController", action = "TestAction" })
+                }, version: 0));
+
+            var dataSource = CreateMvcEndpointDataSource(actionDescriptorCollectionProviderMock.Object);
+            dataSource.ConventionalEndpointInfos.Add(CreateEndpointInfo(
+                string.Empty,
+                "{controller}/{action}",
+                new RouteValueDictionary(new { action = "TestAction" })));
+
+            // Act
+            var endpoints1 = dataSource.Endpoints;
+            var endpoints2 = dataSource.Endpoints;
+
+            // Assert
+            Assert.Collection(endpoints1,
+                (e) => Assert.Equal("TestController", Assert.IsType<MatcherEndpoint>(e).Template),
+                (e) => Assert.Equal("TestController/TestAction", Assert.IsType<MatcherEndpoint>(e).Template));
+            Assert.Same(endpoints1, endpoints2);
+
+            actionDescriptorCollectionProviderMock.VerifyGet(m => m.ActionDescriptors, Times.Once);
+        }
+
+        [Fact]
+        public void Endpoints_ChangeTokenTriggered_EndpointsRecreated()
+        {
+            // Arrange
+            var actionDescriptorCollectionProviderMock = new Mock<IActionDescriptorCollectionProvider>();
+            actionDescriptorCollectionProviderMock
+                .Setup(m => m.ActionDescriptors)
+                .Returns(new ActionDescriptorCollection(new[]
+                {
+                    CreateActionDescriptor(new { controller = "TestController", action = "TestAction" })
+                }, version: 0));
+
+            CancellationTokenSource cts = null;
+
+            var changeProviderMock = new Mock<IActionDescriptorChangeProvider>();
+            changeProviderMock.Setup(m => m.GetChangeToken()).Returns(() =>
+            {
+                cts = new CancellationTokenSource();
+                var changeToken = new CancellationChangeToken(cts.Token);
+
+                return changeToken;
+            });
+
+            var dataSource = CreateMvcEndpointDataSource(
+                actionDescriptorCollectionProviderMock.Object,
+                actionDescriptorChangeProviders: new[] { changeProviderMock.Object });
+            dataSource.ConventionalEndpointInfos.Add(CreateEndpointInfo(
+                string.Empty,
+                "{controller}/{action}",
+                new RouteValueDictionary(new { action = "TestAction" })));
+
+            // Act
+            var endpoints = dataSource.Endpoints;
+
+            Assert.Collection(endpoints,
+                (e) => Assert.Equal("TestController", Assert.IsType<MatcherEndpoint>(e).Template),
+                (e) => Assert.Equal("TestController/TestAction", Assert.IsType<MatcherEndpoint>(e).Template));
+
+            actionDescriptorCollectionProviderMock
+                .Setup(m => m.ActionDescriptors)
+                .Returns(new ActionDescriptorCollection(new[]
+                {
+                    CreateActionDescriptor(new { controller = "NewTestController", action = "NewTestAction" })
+                }, version: 1));
+
+            cts.Cancel();
+
+            // Assert
+            var newEndpoints = dataSource.Endpoints;
+
+            Assert.NotSame(endpoints, newEndpoints);
+            Assert.Collection(newEndpoints,
+                (e) => Assert.Equal("NewTestController/NewTestAction", Assert.IsType<MatcherEndpoint>(e).Template));
+        }
+
+        [Fact]
+        public void Endpoints_MultipleActions_WithActionConstraint()
         {
             // Arrange
             var actionDescriptorCollection = GetActionDescriptorCollection(
@@ -277,7 +364,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         [Theory]
         [InlineData("{controller}/{action}", new[] { "TestController1/TestAction1", "TestController1/TestAction2", "TestController1/TestAction3", "TestController2/TestAction1" })]
         [InlineData("{controller}/{action:regex((TestAction1|TestAction2))}", new[] { "TestController1/TestAction1", "TestController1/TestAction2", "TestController2/TestAction1" })]
-        public void InitializeEndpoints_MultipleActions(string endpointInfoRoute, string[] finalEndpointTemplates)
+        public void Endpoints_MultipleActions(string endpointInfoRoute, string[] finalEndpointTemplates)
         {
             // Arrange
             var actionDescriptorCollection = GetActionDescriptorCollection(
@@ -302,7 +389,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
-        public void ConventionalRoute_WithNoRouteName_DoesNotAddRouteNameMetadata()
+        public void Endpoints_ConventionalRoute_WithNoRouteName_DoesNotAddRouteNameMetadata()
         {
             // Arrange
             var actionDescriptorCollection = GetActionDescriptorCollection(
@@ -322,7 +409,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
-        public void CanCreateMultipleEndpoints_WithSameRouteName()
+        public void Endpoints_CanCreateMultipleEndpoints_WithSameRouteName()
         {
             // Arrange
             var actionDescriptorCollection = GetActionDescriptorCollection(
@@ -357,7 +444,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
-        public void InitializeEndpoints_ConventionalRoutes_StaticallyDefinedOrder_IsMaintained()
+        public void Endpoints_ConventionalRoutes_StaticallyDefinedOrder_IsMaintained()
         {
             // Arrange
             var actionDescriptorCollection = GetActionDescriptorCollection(
@@ -619,11 +706,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 actionDescriptors.Add(CreateActionDescriptor(requiredValue));
             }
 
-            var actionDescriptorCollectionProvider = new Mock<IActionDescriptorCollectionProvider>();
-            actionDescriptorCollectionProvider
+            var actionDescriptorCollectionProviderMock = new Mock<IActionDescriptorCollectionProvider>();
+            actionDescriptorCollectionProviderMock
                 .Setup(m => m.ActionDescriptors)
                 .Returns(new ActionDescriptorCollection(actionDescriptors, version: 0));
-            return actionDescriptorCollectionProvider.Object;
+            return actionDescriptorCollectionProviderMock.Object;
         }
 
         private ActionDescriptor CreateActionDescriptor(string controller, string action, string area = null)
