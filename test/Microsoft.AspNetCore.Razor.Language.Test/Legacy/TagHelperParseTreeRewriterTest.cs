@@ -82,42 +82,42 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         };
 
         [Fact]
-        public void Rewrite_UnderstandsPartialRequiredParentTags1()
+        public void UnderstandsPartialRequiredParentTags1()
         {
             var document = "<p><strong>";
             EvaluateData(PartialRequiredParentTags_Descriptors, document);
         }
 
         [Fact]
-        public void Rewrite_UnderstandsPartialRequiredParentTags2()
+        public void UnderstandsPartialRequiredParentTags2()
         {
             var document = "<p><strong></strong>";
             EvaluateData(PartialRequiredParentTags_Descriptors, document);
         }
 
         [Fact]
-        public void Rewrite_UnderstandsPartialRequiredParentTags3()
+        public void UnderstandsPartialRequiredParentTags3()
         {
             var document = "<p><strong></p><strong>";
             EvaluateData(PartialRequiredParentTags_Descriptors, document);
         }
 
         [Fact]
-        public void Rewrite_UnderstandsPartialRequiredParentTags4()
+        public void UnderstandsPartialRequiredParentTags4()
         {
             var document = "<<p><<strong></</strong</strong></p>";
             EvaluateData(PartialRequiredParentTags_Descriptors, document);
         }
 
         [Fact]
-        public void Rewrite_UnderstandsPartialRequiredParentTags5()
+        public void UnderstandsPartialRequiredParentTags5()
         {
             var document = "<<p><<strong></</strong></strong></p>";
             EvaluateData(PartialRequiredParentTags_Descriptors, document);
         }
 
         [Fact]
-        public void Rewrite_UnderstandsPartialRequiredParentTags6()
+        public void UnderstandsPartialRequiredParentTags6()
         {
             var document = "<<p><<custom></<</custom></custom></p>";
             EvaluateData(PartialRequiredParentTags_Descriptors, document);
@@ -147,56 +147,56 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         };
 
         [Fact]
-        public void Rewrite_UnderstandsNestedVoidSelfClosingRequiredParent1()
+        public void UnderstandsNestedVoidSelfClosingRequiredParent1()
         {
             var document = "<input><strong></strong>";
             EvaluateData(NestedVoidSelfClosingRequiredParent_Descriptors, document);
         }
 
         [Fact]
-        public void Rewrite_UnderstandsNestedVoidSelfClosingRequiredParent2()
+        public void UnderstandsNestedVoidSelfClosingRequiredParent2()
         {
             var document = "<p><input><strong></strong></p>";
             EvaluateData(NestedVoidSelfClosingRequiredParent_Descriptors, document);
         }
 
         [Fact]
-        public void Rewrite_UnderstandsNestedVoidSelfClosingRequiredParent3()
+        public void UnderstandsNestedVoidSelfClosingRequiredParent3()
         {
             var document = "<p><br><strong></strong></p>";
             EvaluateData(NestedVoidSelfClosingRequiredParent_Descriptors, document);
         }
 
         [Fact]
-        public void Rewrite_UnderstandsNestedVoidSelfClosingRequiredParent4()
+        public void UnderstandsNestedVoidSelfClosingRequiredParent4()
         {
             var document = "<p><p><br></p><strong></strong></p>";
             EvaluateData(NestedVoidSelfClosingRequiredParent_Descriptors, document);
         }
 
         [Fact]
-        public void Rewrite_UnderstandsNestedVoidSelfClosingRequiredParent5()
+        public void UnderstandsNestedVoidSelfClosingRequiredParent5()
         {
             var document = "<input><strong></strong>";
             EvaluateData(NestedVoidSelfClosingRequiredParent_Descriptors, document);
         }
 
         [Fact]
-        public void Rewrite_UnderstandsNestedVoidSelfClosingRequiredParent6()
+        public void UnderstandsNestedVoidSelfClosingRequiredParent6()
         {
             var document = "<p><input /><strong /></p>";
             EvaluateData(NestedVoidSelfClosingRequiredParent_Descriptors, document);
         }
 
         [Fact]
-        public void Rewrite_UnderstandsNestedVoidSelfClosingRequiredParent7()
+        public void UnderstandsNestedVoidSelfClosingRequiredParent7()
         {
             var document = "<p><br /><strong /></p>";
             EvaluateData(NestedVoidSelfClosingRequiredParent_Descriptors, document);
         }
 
         [Fact]
-        public void Rewrite_UnderstandsNestedVoidSelfClosingRequiredParent8()
+        public void UnderstandsNestedVoidSelfClosingRequiredParent8()
         {
             var document = "<p><p><br /></p><strong /></p>";
             EvaluateData(NestedVoidSelfClosingRequiredParent_Descriptors, document);
@@ -220,42 +220,42 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         };
 
         [Fact]
-        public void Rewrite_UnderstandsNestedRequiredParent1()
+        public void UnderstandsNestedRequiredParent1()
         {
             var document = "<strong></strong>";
             EvaluateData(NestedRequiredParent_Descriptors, document);
         }
 
         [Fact]
-        public void Rewrite_UnderstandsNestedRequiredParent2()
+        public void UnderstandsNestedRequiredParent2()
         {
             var document = "<p><strong></strong></p>";
             EvaluateData(NestedRequiredParent_Descriptors, document);
         }
 
         [Fact]
-        public void Rewrite_UnderstandsNestedRequiredParent3()
+        public void UnderstandsNestedRequiredParent3()
         {
             var document = "<div><strong></strong></div>";
             EvaluateData(NestedRequiredParent_Descriptors, document);
         }
 
         [Fact]
-        public void Rewrite_UnderstandsNestedRequiredParent4()
+        public void UnderstandsNestedRequiredParent4()
         {
             var document = "<strong><strong></strong></strong>";
             EvaluateData(NestedRequiredParent_Descriptors, document);
         }
 
         [Fact]
-        public void Rewrite_UnderstandsNestedRequiredParent5()
+        public void UnderstandsNestedRequiredParent5()
         {
             var document = "<p><strong><strong></strong></strong></p>";
             EvaluateData(NestedRequiredParent_Descriptors, document);
         }
 
         [Fact]
-        public void Rewrite_UnderstandsTagHelperPrefixAndAllowedChildren()
+        public void UnderstandsTagHelperPrefixAndAllowedChildren()
         {
             // Arrange
             var documentContent = "<th:p><th:strong></th:strong></th:p>";
@@ -278,7 +278,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsTagHelperPrefixAndAllowedChildrenAndRequireParent()
+        public void UnderstandsTagHelperPrefixAndAllowedChildrenAndRequireParent()
         {
             // Arrange
             var documentContent = "<th:p><th:strong></th:strong></th:p>";
@@ -301,8 +301,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_InvalidStructure_UnderstandsTagHelperPrefixAndAllowedChildrenAndRequireParent()
+        public void InvalidStructure_UnderstandsTHPrefixAndAllowedChildrenAndRequireParent()
         {
+            // Rewrite_InvalidStructure_UnderstandsTagHelperPrefixAndAllowedChildrenAndRequireParent
             // Arrange
             var documentContent = "<th:p></th:strong></th:p>";
             var descriptors = new TagHelperDescriptor[]
@@ -324,7 +325,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_NonTagHelperChild_UnderstandsTagHelperPrefixAndAllowedChildren()
+        public void NonTagHelperChild_UnderstandsTagHelperPrefixAndAllowedChildren()
         {
             // Arrange
             var documentContent = "<th:p><strong></strong></th:p>";
@@ -344,63 +345,63 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void TagHelperParseTreeRewriter_DoesNotUnderstandTagHelpersInInvalidHtmlTypedScriptTags1()
+        public void DoesNotUnderstandTagHelpersInInvalidHtmlTypedScriptTags1()
         {
             var document = "<script type><input /></script>";
             RunParseTreeRewriterTest(document, "input");
         }
 
         [Fact]
-        public void TagHelperParseTreeRewriter_DoesNotUnderstandTagHelpersInInvalidHtmlTypedScriptTags2()
+        public void DoesNotUnderstandTagHelpersInInvalidHtmlTypedScriptTags2()
         {
             var document = "<script types='text/html'><input /></script>";
             RunParseTreeRewriterTest(document, "input");
         }
 
         [Fact]
-        public void TagHelperParseTreeRewriter_DoesNotUnderstandTagHelpersInInvalidHtmlTypedScriptTags3()
+        public void DoesNotUnderstandTagHelpersInInvalidHtmlTypedScriptTags3()
         {
             var document = "<script type='text/html invalid'><input /></script>";
             RunParseTreeRewriterTest(document, "input");
         }
 
         [Fact]
-        public void TagHelperParseTreeRewriter_DoesNotUnderstandTagHelpersInInvalidHtmlTypedScriptTags4()
+        public void DoesNotUnderstandTagHelpersInInvalidHtmlTypedScriptTags4()
         {
             var document = "<script type='text/ng-*' type='text/html'><input /></script>";
             RunParseTreeRewriterTest(document, "input");
         }
 
         [Fact]
-        public void TagHelperParseTreeRewriter_UnderstandsTagHelpersInHtmlTypedScriptTags1()
+        public void UnderstandsTagHelpersInHtmlTypedScriptTags1()
         {
             var document = "<script type='text/html'><input /></script>";
             RunParseTreeRewriterTest(document, "p", "input");
         }
 
         [Fact]
-        public void TagHelperParseTreeRewriter_UnderstandsTagHelpersInHtmlTypedScriptTags2()
+        public void UnderstandsTagHelpersInHtmlTypedScriptTags2()
         {
             var document = "<script id='scriptTag' type='text/html' class='something'><input /></script>";
             RunParseTreeRewriterTest(document, "p", "input");
         }
 
         [Fact]
-        public void TagHelperParseTreeRewriter_UnderstandsTagHelpersInHtmlTypedScriptTags3()
+        public void UnderstandsTagHelpersInHtmlTypedScriptTags3()
         {
             var document = "<script type='text/html'><p><script type='text/html'><input /></script></p></script>";
             RunParseTreeRewriterTest(document, "p", "input");
         }
 
         [Fact]
-        public void TagHelperParseTreeRewriter_UnderstandsTagHelpersInHtmlTypedScriptTags4()
+        public void UnderstandsTagHelpersInHtmlTypedScriptTags4()
         {
             var document = "<script type='text/html'><p><script type='text/ html'><input /></script></p></script>";
             RunParseTreeRewriterTest(document, "p", "input");
         }
 
         [Fact]
-        public void Rewrite_CanHandleInvalidChildrenWithWhitespace()
+        public void CanHandleInvalidChildrenWithWhitespace()
         {
             // Arrange
             var documentContent = $"<p>{Environment.NewLine}    <strong>{Environment.NewLine}        Hello" +
@@ -418,7 +419,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_RecoversWhenRequiredAttributeMismatchAndRestrictedChildren()
+        public void RecoversWhenRequiredAttributeMismatchAndRestrictedChildren()
         {
             // Arrange
             var documentContent = "<strong required><strong></strong></strong>";
@@ -438,7 +439,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_CanHandleMultipleTagHelpersWithAllowedChildren_OneNull()
+        public void CanHandleMultipleTagHelpersWithAllowedChildren_OneNull()
         {
             // Arrange
             var documentContent = "<p><strong>Hello World</strong><br></p>";
@@ -468,7 +469,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_CanHandleMultipleTagHelpersWithAllowedChildren()
+        public void CanHandleMultipleTagHelpersWithAllowedChildren()
         {
             // Arrange
             var documentContent = "<p><strong>Hello World</strong><br></p>";
@@ -498,7 +499,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsAllowedChildren1()
+        public void UnderstandsAllowedChildren1()
         {
             // Arrange
             var documentContent = "<p><br /></p>";
@@ -509,7 +510,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsAllowedChildren2()
+        public void UnderstandsAllowedChildren2()
         {
             // Arrange
             var documentContent = $"<p>{Environment.NewLine}<br />{Environment.NewLine}</p>";
@@ -520,7 +521,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsAllowedChildren3()
+        public void UnderstandsAllowedChildren3()
         {
             // Arrange
             var documentContent = "<p><br></p>";
@@ -531,7 +532,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsAllowedChildren4()
+        public void UnderstandsAllowedChildren4()
         {
             // Arrange
             var documentContent = "<p>Hello</p>";
@@ -542,7 +543,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsAllowedChildren5()
+        public void UnderstandsAllowedChildren5()
         {
             // Arrange
             var documentContent = "<p><hr /></p>";
@@ -553,7 +554,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsAllowedChildren6()
+        public void UnderstandsAllowedChildren6()
         {
             // Arrange
             var documentContent = "<p><br>Hello</p>";
@@ -564,7 +565,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsAllowedChildren7()
+        public void UnderstandsAllowedChildren7()
         {
             // Arrange
             var documentContent = "<p><strong>Title:</strong><br />Something</p>";
@@ -575,7 +576,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsAllowedChildren8()
+        public void UnderstandsAllowedChildren8()
         {
             // Arrange
             var documentContent = "<p><strong>Title:</strong><br />Something</p>";
@@ -586,7 +587,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsAllowedChildren9()
+        public void UnderstandsAllowedChildren9()
         {
             // Arrange
             var documentContent = "<p>  <strong>Title:</strong>  <br />  Something</p>";
@@ -597,7 +598,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsAllowedChildren10()
+        public void UnderstandsAllowedChildren10()
         {
             // Arrange
             var documentContent = "<p><strong>Title:<br><em>A Very Cool</em></strong><br />Something</p>";
@@ -608,7 +609,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsAllowedChildren11()
+        public void UnderstandsAllowedChildren11()
         {
             // Arrange
             var documentContent = "<p><custom>Title:<br><em>A Very Cool</em></custom><br />Something</p>";
@@ -619,7 +620,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsAllowedChildren12()
+        public void UnderstandsAllowedChildren12()
         {
             // Arrange
             var documentContent = "<p></</p>";
@@ -630,7 +631,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsAllowedChildren13()
+        public void UnderstandsAllowedChildren13()
         {
             // Arrange
             var documentContent = "<p><</p>";
@@ -641,7 +642,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsAllowedChildren14()
+        public void UnderstandsAllowedChildren14()
         {
             // Arrange
             var documentContent = "<p><custom><br>:<strong><strong>Hello</strong></strong>:<input></custom></p>";
@@ -679,7 +680,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_AllowsSimpleHtmlCommentsAsChildren()
+        public void AllowsSimpleHtmlCommentsAsChildren()
         {
             // Arrange
             var allowedChildren = new List<string> { "b" };
@@ -705,7 +706,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_DoesntAllowSimpleHtmlCommentsAsChildrenWhenFeatureFlagIsOff()
+        public void DoesntAllowSimpleHtmlCommentsAsChildrenWhenFeatureFlagIsOff()
         {
             // Arrange
             var allowedChildren = new List<string> { "b" };
@@ -733,7 +734,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_FailsForContentWithCommentsAsChildren()
+        public void FailsForContentWithCommentsAsChildren()
         {
             // Arrange
             var allowedChildren = new List<string> { "b" };
@@ -760,7 +761,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_AllowsRazorCommentsAsChildren()
+        public void AllowsRazorCommentsAsChildren()
         {
             // Arrange
             var allowedChildren = new List<string> { "b" };
@@ -786,7 +787,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_AllowsRazorMarkupInHtmlComment()
+        public void AllowsRazorMarkupInHtmlComment()
         {
             // Arrange
             var allowedChildren = new List<string> { "b" };
@@ -815,7 +816,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsNullTagNameWithAllowedChildrenForCatchAll()
+        public void UnderstandsNullTagNameWithAllowedChildrenForCatchAll()
         {
             // Arrange
             var documentContent = "<p></</p>";
@@ -835,7 +836,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsNullTagNameWithAllowedChildrenForCatchAllWithPrefix()
+        public void UnderstandsNullTagNameWithAllowedChildrenForCatchAllWithPrefix()
         {
             // Arrange
             var documentContent = "<th:p></</th:p>";
@@ -855,7 +856,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_CanHandleStartTagOnlyTagTagMode()
+        public void CanHandleStartTagOnlyTagTagMode()
         {
             // Arrange
             var documentContent = "<input>";
@@ -874,7 +875,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_CreatesErrorForWithoutEndTagTagStructureForEndTags()
+        public void CreatesErrorForWithoutEndTagTagStructureForEndTags()
         {
             // Arrange
             var documentContent = "</input>";
@@ -893,7 +894,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_CreatesErrorForInconsistentTagStructures()
+        public void CreatesErrorForInconsistentTagStructures()
         {
             // Arrange
             var documentContent = "<input>";
@@ -941,181 +942,181 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         };
 
         [Fact]
-        public void Rewrite_RequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly1()
+        public void RequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly1()
         {
             EvaluateData(RequiredAttribute_Descriptors, "<p />");
         }
 
         [Fact]
-        public void Rewrite_RequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly2()
+        public void RequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly2()
         {
             EvaluateData(RequiredAttribute_Descriptors, "<p></p>");
         }
 
         [Fact]
-        public void Rewrite_RequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly3()
+        public void RequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly3()
         {
             EvaluateData(RequiredAttribute_Descriptors, "<div />");
         }
 
         [Fact]
-        public void Rewrite_RequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly4()
+        public void RequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly4()
         {
             EvaluateData(RequiredAttribute_Descriptors, "<div></div>");
         }
 
         [Fact]
-        public void Rewrite_RequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly5()
+        public void RequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly5()
         {
             EvaluateData(RequiredAttribute_Descriptors, "<p class=\"btn\" />");
         }
 
         [Fact]
-        public void Rewrite_RequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly6()
+        public void RequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly6()
         {
             EvaluateData(RequiredAttribute_Descriptors, "<p class=\"@DateTime.Now\" />");
         }
 
         [Fact]
-        public void Rewrite_RequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly7()
+        public void RequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly7()
         {
             EvaluateData(RequiredAttribute_Descriptors, "<p class=\"btn\">words and spaces</p>");
         }
 
         [Fact]
-        public void Rewrite_RequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly8()
+        public void RequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly8()
         {
             EvaluateData(RequiredAttribute_Descriptors, "<p class=\"@DateTime.Now\">words and spaces</p>");
         }
 
         [Fact]
-        public void Rewrite_RequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly9()
+        public void RequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly9()
         {
             EvaluateData(RequiredAttribute_Descriptors, "<p class=\"btn\">words<strong>and</strong>spaces</p>");
         }
 
         [Fact]
-        public void Rewrite_RequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly10()
+        public void RequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly10()
         {
             EvaluateData(RequiredAttribute_Descriptors, "<strong catchAll=\"hi\" />");
         }
 
         [Fact]
-        public void Rewrite_RequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly11()
+        public void RequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly11()
         {
             EvaluateData(RequiredAttribute_Descriptors, "<strong catchAll=\"@DateTime.Now\" />");
         }
 
         [Fact]
-        public void Rewrite_RequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly12()
+        public void RequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly12()
         {
             EvaluateData(RequiredAttribute_Descriptors, "<strong catchAll=\"hi\">words and spaces</strong>");
         }
 
         [Fact]
-        public void Rewrite_RequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly13()
+        public void RequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly13()
         {
             EvaluateData(RequiredAttribute_Descriptors, "<strong catchAll=\"@DateTime.Now\">words and spaces</strong>");
         }
 
         [Fact]
-        public void Rewrite_RequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly14()
+        public void RequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly14()
         {
             EvaluateData(RequiredAttribute_Descriptors, "<div class=\"btn\" />");
         }
 
         [Fact]
-        public void Rewrite_RequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly15()
+        public void RequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly15()
         {
             EvaluateData(RequiredAttribute_Descriptors, "<div class=\"btn\"></div>");
         }
 
         [Fact]
-        public void Rewrite_RequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly16()
+        public void RequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly16()
         {
             EvaluateData(RequiredAttribute_Descriptors, "<p notRequired=\"a\" class=\"btn\" />");
         }
 
         [Fact]
-        public void Rewrite_RequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly17()
+        public void RequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly17()
         {
             EvaluateData(RequiredAttribute_Descriptors, "<p notRequired=\"@DateTime.Now\" class=\"btn\" />");
         }
 
         [Fact]
-        public void Rewrite_RequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly18()
+        public void RequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly18()
         {
             EvaluateData(RequiredAttribute_Descriptors, "<p notRequired=\"a\" class=\"btn\">words and spaces</p>");
         }
 
         [Fact]
-        public void Rewrite_RequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly19()
+        public void RequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly19()
         {
             EvaluateData(RequiredAttribute_Descriptors, "<div style=\"\" class=\"btn\" />");
         }
 
         [Fact]
-        public void Rewrite_RequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly20()
+        public void RequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly20()
         {
             EvaluateData(RequiredAttribute_Descriptors, "<div style=\"@DateTime.Now\" class=\"btn\" />");
         }
 
         [Fact]
-        public void Rewrite_RequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly21()
+        public void RequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly21()
         {
             EvaluateData(RequiredAttribute_Descriptors, "<div style=\"\" class=\"btn\">words and spaces</div>");
         }
 
         [Fact]
-        public void Rewrite_RequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly22()
+        public void RequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly22()
         {
             EvaluateData(RequiredAttribute_Descriptors, "<div style=\"@DateTime.Now\" class=\"@DateTime.Now\">words and spaces</div>");
         }
 
         [Fact]
-        public void Rewrite_RequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly23()
+        public void RequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly23()
         {
             EvaluateData(RequiredAttribute_Descriptors, "<div style=\"\" class=\"btn\">words<strong>and</strong>spaces</div>");
         }
 
         [Fact]
-        public void Rewrite_RequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly24()
+        public void RequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly24()
         {
             EvaluateData(RequiredAttribute_Descriptors, "<p class=\"btn\" catchAll=\"hi\" />");
         }
 
         [Fact]
-        public void Rewrite_RequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly25()
+        public void RequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly25()
         {
             EvaluateData(RequiredAttribute_Descriptors, "<p class=\"btn\" catchAll=\"hi\">words and spaces</p>");
         }
 
         [Fact]
-        public void Rewrite_RequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly26()
+        public void RequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly26()
         {
             EvaluateData(RequiredAttribute_Descriptors, "<div style=\"\" class=\"btn\" catchAll=\"hi\" />");
         }
 
         [Fact]
-        public void Rewrite_RequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly27()
+        public void RequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly27()
         {
             EvaluateData(RequiredAttribute_Descriptors, "<div style=\"\" class=\"btn\" catchAll=\"hi\" >words and spaces</div>");
         }
 
         [Fact]
-        public void Rewrite_RequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly28()
+        public void RequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly28()
         {
             EvaluateData(RequiredAttribute_Descriptors, "<div style=\"\" class=\"btn\" catchAll=\"@@hi\" >words and spaces</div>");
         }
 
         [Fact]
-        public void Rewrite_RequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly29()
+        public void RequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly29()
         {
             EvaluateData(RequiredAttribute_Descriptors, "<div style=\"@DateTime.Now\" class=\"@DateTime.Now\" catchAll=\"@DateTime.Now\" >words and spaces</div>");
         }
 
         [Fact]
-        public void Rewrite_RequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly30()
+        public void RequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly30()
         {
             EvaluateData(RequiredAttribute_Descriptors, "<div style=\"\" class=\"btn\" catchAll=\"hi\" >words<strong>and</strong>spaces</div>");
         }
@@ -1137,61 +1138,61 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         };
 
         [Fact]
-        public void Rewrite_NestedRequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly1()
+        public void NestedRequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly1()
         {
             EvaluateData(NestedRequiredAttribute_Descriptors, "<p class=\"btn\"><p></p></p>");
         }
 
         [Fact]
-        public void Rewrite_NestedRequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly2()
+        public void NestedRequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly2()
         {
             EvaluateData(NestedRequiredAttribute_Descriptors, "<strong catchAll=\"hi\"><strong></strong></strong>");
         }
 
         [Fact]
-        public void Rewrite_NestedRequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly3()
+        public void NestedRequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly3()
         {
             EvaluateData(NestedRequiredAttribute_Descriptors, "<p class=\"btn\"><strong><p></p></strong></p>");
         }
 
         [Fact]
-        public void Rewrite_NestedRequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly4()
+        public void NestedRequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly4()
         {
             EvaluateData(NestedRequiredAttribute_Descriptors, "<strong catchAll=\"hi\"><p><strong></strong></p></strong>");
         }
 
         [Fact]
-        public void Rewrite_NestedRequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly5()
+        public void NestedRequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly5()
         {
             EvaluateData(NestedRequiredAttribute_Descriptors, "<p class=\"btn\"><strong catchAll=\"hi\"><p></p></strong></p>");
         }
 
         [Fact]
-        public void Rewrite_NestedRequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly6()
+        public void NestedRequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly6()
         {
             EvaluateData(NestedRequiredAttribute_Descriptors, "<strong catchAll=\"hi\"><p class=\"btn\"><strong></strong></p></strong>");
         }
 
         [Fact]
-        public void Rewrite_NestedRequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly7()
+        public void NestedRequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly7()
         {
             EvaluateData(NestedRequiredAttribute_Descriptors, "<p class=\"btn\"><p class=\"btn\"><p></p></p></p>");
         }
 
         [Fact]
-        public void Rewrite_NestedRequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly8()
+        public void NestedRequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly8()
         {
             EvaluateData(NestedRequiredAttribute_Descriptors, "<strong catchAll=\"hi\"><strong catchAll=\"hi\"><strong></strong></strong></strong>");
         }
 
         [Fact]
-        public void Rewrite_NestedRequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly9()
+        public void NestedRequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly9()
         {
             EvaluateData(NestedRequiredAttribute_Descriptors, "<p class=\"btn\"><p><p><p class=\"btn\"><p></p></p></p></p></p>");
         }
 
         [Fact]
-        public void Rewrite_NestedRequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly10()
+        public void NestedRequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly10()
         {
             EvaluateData(NestedRequiredAttribute_Descriptors, "<strong catchAll=\"hi\"><strong><strong><strong catchAll=\"hi\"><strong></strong></strong></strong></strong></strong>");
         }
@@ -1207,61 +1208,61 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         };
 
         [Fact]
-        public void Rewrite_RequiredAttributeDescriptorsCreateMalformedTagHelperBlocksCorrectly1()
+        public void RequiredAttributeDescriptorsCreateMalformedTagHelperBlocksCorrectly1()
         {
             EvaluateData(MalformedRequiredAttribute_Descriptors, "<p");
         }
 
         [Fact]
-        public void Rewrite_RequiredAttributeDescriptorsCreateMalformedTagHelperBlocksCorrectly2()
+        public void RequiredAttributeDescriptorsCreateMalformedTagHelperBlocksCorrectly2()
         {
             EvaluateData(MalformedRequiredAttribute_Descriptors, "<p class=\"btn\"");
         }
 
         [Fact]
-        public void Rewrite_RequiredAttributeDescriptorsCreateMalformedTagHelperBlocksCorrectly3()
+        public void RequiredAttributeDescriptorsCreateMalformedTagHelperBlocksCorrectly3()
         {
             EvaluateData(MalformedRequiredAttribute_Descriptors, "<p notRequired=\"hi\" class=\"btn\"");
         }
 
         [Fact]
-        public void Rewrite_RequiredAttributeDescriptorsCreateMalformedTagHelperBlocksCorrectly4()
+        public void RequiredAttributeDescriptorsCreateMalformedTagHelperBlocksCorrectly4()
         {
             EvaluateData(MalformedRequiredAttribute_Descriptors, "<p></p");
         }
 
         [Fact]
-        public void Rewrite_RequiredAttributeDescriptorsCreateMalformedTagHelperBlocksCorrectly5()
+        public void RequiredAttributeDescriptorsCreateMalformedTagHelperBlocksCorrectly5()
         {
             EvaluateData(MalformedRequiredAttribute_Descriptors, "<p class=\"btn\"></p");
         }
 
         [Fact]
-        public void Rewrite_RequiredAttributeDescriptorsCreateMalformedTagHelperBlocksCorrectly6()
+        public void RequiredAttributeDescriptorsCreateMalformedTagHelperBlocksCorrectly6()
         {
             EvaluateData(MalformedRequiredAttribute_Descriptors, "<p notRequired=\"hi\" class=\"btn\"></p");
         }
 
         [Fact]
-        public void Rewrite_RequiredAttributeDescriptorsCreateMalformedTagHelperBlocksCorrectly7()
+        public void RequiredAttributeDescriptorsCreateMalformedTagHelperBlocksCorrectly7()
         {
             EvaluateData(MalformedRequiredAttribute_Descriptors, "<p class=\"btn\" <p>");
         }
 
         [Fact]
-        public void Rewrite_RequiredAttributeDescriptorsCreateMalformedTagHelperBlocksCorrectly8()
+        public void RequiredAttributeDescriptorsCreateMalformedTagHelperBlocksCorrectly8()
         {
             EvaluateData(MalformedRequiredAttribute_Descriptors, "<p notRequired=\"hi\" class=\"btn\" <p>");
         }
 
         [Fact]
-        public void Rewrite_RequiredAttributeDescriptorsCreateMalformedTagHelperBlocksCorrectly9()
+        public void RequiredAttributeDescriptorsCreateMalformedTagHelperBlocksCorrectly9()
         {
             EvaluateData(MalformedRequiredAttribute_Descriptors, "<p class=\"btn\" </p");
         }
 
         [Fact]
-        public void Rewrite_RequiredAttributeDescriptorsCreateMalformedTagHelperBlocksCorrectly10()
+        public void RequiredAttributeDescriptorsCreateMalformedTagHelperBlocksCorrectly10()
         {
             EvaluateData(MalformedRequiredAttribute_Descriptors, "<p notRequired=\"hi\" class=\"btn\" </p");
         }
@@ -1289,583 +1290,583 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         };
 
         [Fact]
-        public void Rewrite_AllowsPrefixedTagHelpers1()
+        public void AllowsPrefixedTagHelpers1()
         {
             EvaluateData(PrefixedTagHelperCatchAll_Descriptors, "<th: />", tagHelperPrefix: "th:");
         }
 
         [Fact]
-        public void Rewrite_AllowsPrefixedTagHelpers2()
+        public void AllowsPrefixedTagHelpers2()
         {
             EvaluateData(PrefixedTagHelperCatchAll_Descriptors, "<th:>words and spaces</th:>", tagHelperPrefix: "th:");
         }
 
         [Fact]
-        public void Rewrite_AllowsPrefixedTagHelpers3()
+        public void AllowsPrefixedTagHelpers3()
         {
             EvaluateData(PrefixedTagHelperColon_Descriptors, "<th:myth />", tagHelperPrefix: "th:");
         }
 
         [Fact]
-        public void Rewrite_AllowsPrefixedTagHelpers4()
+        public void AllowsPrefixedTagHelpers4()
         {
             EvaluateData(PrefixedTagHelperColon_Descriptors, "<th:myth></th:myth>", tagHelperPrefix: "th:");
         }
 
         [Fact]
-        public void Rewrite_AllowsPrefixedTagHelpers5()
+        public void AllowsPrefixedTagHelpers5()
         {
             EvaluateData(PrefixedTagHelperColon_Descriptors, "<th:myth><th:my2th></th:my2th></th:myth>", tagHelperPrefix: "th:");
         }
 
         [Fact]
-        public void Rewrite_AllowsPrefixedTagHelpers6()
+        public void AllowsPrefixedTagHelpers6()
         {
             EvaluateData(PrefixedTagHelperColon_Descriptors, "<!th:myth />", tagHelperPrefix: "th:");
         }
 
         [Fact]
-        public void Rewrite_AllowsPrefixedTagHelpers7()
+        public void AllowsPrefixedTagHelpers7()
         {
             EvaluateData(PrefixedTagHelperColon_Descriptors, "<!th:myth></!th:myth>", tagHelperPrefix: "th:");
         }
 
         [Fact]
-        public void Rewrite_AllowsPrefixedTagHelpers8()
+        public void AllowsPrefixedTagHelpers8()
         {
             EvaluateData(PrefixedTagHelperColon_Descriptors, "<th:myth class=\"btn\" />", tagHelperPrefix: "th:");
         }
 
         [Fact]
-        public void Rewrite_AllowsPrefixedTagHelpers9()
+        public void AllowsPrefixedTagHelpers9()
         {
             EvaluateData(PrefixedTagHelperColon_Descriptors, "<th:myth2 class=\"btn\" />", tagHelperPrefix: "th:");
         }
 
         [Fact]
-        public void Rewrite_AllowsPrefixedTagHelpers10()
+        public void AllowsPrefixedTagHelpers10()
         {
             EvaluateData(PrefixedTagHelperColon_Descriptors, "<th:myth class=\"btn\">words and spaces</th:myth>", tagHelperPrefix: "th:");
         }
 
         [Fact]
-        public void Rewrite_AllowsPrefixedTagHelpers11()
+        public void AllowsPrefixedTagHelpers11()
         {
             EvaluateData(PrefixedTagHelperColon_Descriptors, "<th:myth2 bound=\"@DateTime.Now\" />", tagHelperPrefix: "th:");
         }
 
         [Fact]
-        public void Rewrite_AllowsTagHelperElementOptForCompleteTextTagInCSharpBlock_WithAttributeTextTag1()
+        public void AllowsTHElementOptForCompleteTextTagInCSharpBlock_WithAttrTextTag1()
         {
             RunParseTreeRewriterTest("@{<!text class=\"btn\">}", "p", "text");
         }
 
         [Fact]
-        public void Rewrite_AllowsTagHelperElementOptForCompleteTextTagInCSharpBlock_WithAttributeTextTag2()
+        public void AllowsTHElementOptForCompleteTextTagInCSharpBlock_WithAttrTextTag2()
         {
             RunParseTreeRewriterTest("@{<!text class=\"btn\"></!text>}", "p", "text");
         }
 
         [Fact]
-        public void Rewrite_AllowsTagHelperElementOptForCompleteTextTagInCSharpBlock_WithAttributeTextTag3()
+        public void AllowsTHElementOptForCompleteTextTagInCSharpBlock_WithAttrTextTag3()
         {
             RunParseTreeRewriterTest("@{<!text class=\"btn\">words with spaces</!text>}", "p", "text");
         }
 
         [Fact]
-        public void Rewrite_AllowsTagHelperElementOptForCompleteTextTagInCSharpBlock_WithAttributeTextTag4()
+        public void AllowsTHElementOptForCompleteTextTagInCSharpBlock_WithAttrTextTag4()
         {
             RunParseTreeRewriterTest("@{<!text class='btn1 btn2' class2=btn></!text>}", "p", "text");
         }
 
         [Fact]
-        public void Rewrite_AllowsTagHelperElementOptForCompleteTextTagInCSharpBlock_WithAttributeTextTag5()
+        public void AllowsTHElementOptForCompleteTextTagInCSharpBlock_WithAttrTextTag5()
         {
             RunParseTreeRewriterTest("@{<!text class='btn1 @DateTime.Now btn2'></!text>}", "p", "text");
         }
 
         [Fact]
-        public void Rewrite_AllowsTagHelperElementOptForCompleteTextTagInCSharpBlock_WithBlockTextTag1()
+        public void AllowsTHElementOptForCompleteTextTagInCSharpBlock_WithBlockTextTag1()
         {
             RunParseTreeRewriterTest("@{<!text>}", "p", "text");
         }
 
         [Fact]
-        public void Rewrite_AllowsTagHelperElementOptForCompleteTextTagInCSharpBlock_WithBlockTextTag2()
+        public void AllowsTHElementOptForCompleteTextTagInCSharpBlock_WithBlockTextTag2()
         {
             RunParseTreeRewriterTest("@{</!text>}", "p", "text");
         }
 
         [Fact]
-        public void Rewrite_AllowsTagHelperElementOptForCompleteTextTagInCSharpBlock_WithBlockTextTag3()
+        public void AllowsTHElementOptForCompleteTextTagInCSharpBlock_WithBlockTextTag3()
         {
             RunParseTreeRewriterTest("@{<!text></!text>}", "p", "text");
         }
 
         [Fact]
-        public void Rewrite_AllowsTagHelperElementOptForCompleteTextTagInCSharpBlock_WithBlockTextTag4()
+        public void AllowsTHElementOptForCompleteTextTagInCSharpBlock_WithBlockTextTag4()
         {
             RunParseTreeRewriterTest("@{<!text>words and spaces</!text>}", "p", "text");
         }
 
         [Fact]
-        public void Rewrite_AllowsTagHelperElementOptForCompleteTextTagInCSharpBlock_WithBlockTextTag5()
+        public void AllowsTHElementOptForCompleteTextTagInCSharpBlock_WithBlockTextTag5()
         {
             RunParseTreeRewriterTest("@{<!text></text>}", "p", "text");
         }
 
         [Fact]
-        public void Rewrite_AllowsTagHelperElementOptForCompleteTextTagInCSharpBlock_WithBlockTextTag6()
+        public void AllowsTHElementOptForCompleteTextTagInCSharpBlock_WithBlockTextTag6()
         {
             RunParseTreeRewriterTest("@{<text></!text>}", "p", "text");
         }
 
         [Fact]
-        public void Rewrite_AllowsTagHelperElementOptForCompleteTextTagInCSharpBlock_WithBlockTextTag7()
+        public void AllowsTHElementOptForCompleteTextTagInCSharpBlock_WithBlockTextTag7()
         {
             RunParseTreeRewriterTest("@{<!text><text></text></!text>}", "p", "text");
         }
 
         [Fact]
-        public void Rewrite_AllowsTagHelperElementOptForCompleteTextTagInCSharpBlock_WithBlockTextTag8()
+        public void AllowsTHElementOptForCompleteTextTagInCSharpBlock_WithBlockTextTag8()
         {
             RunParseTreeRewriterTest("@{<text><!text></!text>}", "p", "text");
         }
 
         [Fact]
-        public void Rewrite_AllowsTagHelperElementOptForCompleteTextTagInCSharpBlock_WithBlockTextTag9()
+        public void AllowsTHElementOptForCompleteTextTagInCSharpBlock_WithBlockTextTag9()
         {
             RunParseTreeRewriterTest("@{<!text></!text></text>}", "p", "text");
         }
 
         [Fact]
-        public void Rewrite_AllowsTagHelperElementOptForIncompleteTextTagInCSharpBlock1()
+        public void AllowsTagHelperElementOptForIncompleteTextTagInCSharpBlock1()
         {
             RunParseTreeRewriterTest("@{<!text}", "text");
         }
 
         [Fact]
-        public void Rewrite_AllowsTagHelperElementOptForIncompleteTextTagInCSharpBlock2()
+        public void AllowsTagHelperElementOptForIncompleteTextTagInCSharpBlock2()
         {
             RunParseTreeRewriterTest("@{<!text /}", "text");
         }
 
         [Fact]
-        public void Rewrite_AllowsTagHelperElementOptForIncompleteTextTagInCSharpBlock3()
+        public void AllowsTagHelperElementOptForIncompleteTextTagInCSharpBlock3()
         {
             RunParseTreeRewriterTest("@{<!text class=}", "text");
         }
 
         [Fact]
-        public void Rewrite_AllowsTagHelperElementOptForIncompleteTextTagInCSharpBlock4()
+        public void AllowsTagHelperElementOptForIncompleteTextTagInCSharpBlock4()
         {
             RunParseTreeRewriterTest("@{<!text class=\"btn}", "text");
         }
 
         [Fact]
-        public void Rewrite_AllowsTagHelperElementOptForIncompleteTextTagInCSharpBlock5()
+        public void AllowsTagHelperElementOptForIncompleteTextTagInCSharpBlock5()
         {
             RunParseTreeRewriterTest("@{<!text class=\"btn\"}", "text");
         }
 
         [Fact]
-        public void Rewrite_AllowsTagHelperElementOptForIncompleteTextTagInCSharpBlock6()
+        public void AllowsTagHelperElementOptForIncompleteTextTagInCSharpBlock6()
         {
             RunParseTreeRewriterTest("@{<!text class=\"btn\" /}", "text");
         }
 
         [Fact]
-        public void Rewrite_AllowsTagHelperElementOptForIncompleteHTMLInCSharpBlock1()
+        public void AllowsTagHelperElementOptForIncompleteHTMLInCSharpBlock1()
         {
             RunParseTreeRewriterTest("@{<!}", "strong", "p");
         }
 
         [Fact]
-        public void Rewrite_AllowsTagHelperElementOptForIncompleteHTMLInCSharpBlock2()
+        public void AllowsTagHelperElementOptForIncompleteHTMLInCSharpBlock2()
         {
             RunParseTreeRewriterTest("@{<!p}", "strong", "p");
         }
 
         [Fact]
-        public void Rewrite_AllowsTagHelperElementOptForIncompleteHTMLInCSharpBlock3()
+        public void AllowsTagHelperElementOptForIncompleteHTMLInCSharpBlock3()
         {
             RunParseTreeRewriterTest("@{<!p /}", "strong", "p");
         }
 
         [Fact]
-        public void Rewrite_AllowsTagHelperElementOptForIncompleteHTMLInCSharpBlock4()
+        public void AllowsTagHelperElementOptForIncompleteHTMLInCSharpBlock4()
         {
             RunParseTreeRewriterTest("@{<!p class=}", "strong", "p");
         }
 
         [Fact]
-        public void Rewrite_AllowsTagHelperElementOptForIncompleteHTMLInCSharpBlock5()
+        public void AllowsTagHelperElementOptForIncompleteHTMLInCSharpBlock5()
         {
             RunParseTreeRewriterTest("@{<!p class=\"btn}", "strong", "p");
         }
 
         [Fact]
-        public void Rewrite_AllowsTagHelperElementOptForIncompleteHTMLInCSharpBlock6()
+        public void AllowsTagHelperElementOptForIncompleteHTMLInCSharpBlock6()
         {
             RunParseTreeRewriterTest("@{<!p class=\"btn@@}", "strong", "p");
         }
 
         [Fact]
-        public void Rewrite_AllowsTagHelperElementOptForIncompleteHTMLInCSharpBlock7()
+        public void AllowsTagHelperElementOptForIncompleteHTMLInCSharpBlock7()
         {
             RunParseTreeRewriterTest("@{<!p class=\"btn\"}", "strong", "p");
         }
 
         [Fact]
-        public void Rewrite_AllowsTagHelperElementOptForIncompleteHTMLInCSharpBlock8()
+        public void AllowsTagHelperElementOptForIncompleteHTMLInCSharpBlock8()
         {
             RunParseTreeRewriterTest("@{<!p class=\"btn\" /}", "strong", "p");
         }
 
         [Fact]
-        public void Rewrite_AllowsTagHelperElementOptForIncompleteHTML1()
+        public void AllowsTagHelperElementOptForIncompleteHTML1()
         {
             RunParseTreeRewriterTest("<!", "strong", "p");
         }
 
         [Fact]
-        public void Rewrite_AllowsTagHelperElementOptForIncompleteHTML2()
+        public void AllowsTagHelperElementOptForIncompleteHTML2()
         {
             RunParseTreeRewriterTest("<!p", "strong", "p");
         }
 
         [Fact]
-        public void Rewrite_AllowsTagHelperElementOptForIncompleteHTML3()
+        public void AllowsTagHelperElementOptForIncompleteHTML3()
         {
             RunParseTreeRewriterTest("<!p /", "strong", "p");
         }
 
         [Fact]
-        public void Rewrite_AllowsTagHelperElementOptForIncompleteHTML4()
+        public void AllowsTagHelperElementOptForIncompleteHTML4()
         {
             RunParseTreeRewriterTest("<!p class=", "strong", "p");
         }
 
         [Fact]
-        public void Rewrite_AllowsTagHelperElementOptForIncompleteHTML5()
+        public void AllowsTagHelperElementOptForIncompleteHTML5()
         {
             RunParseTreeRewriterTest("<!p class=\"btn", "strong", "p");
         }
 
         [Fact]
-        public void Rewrite_AllowsTagHelperElementOptForIncompleteHTML6()
+        public void AllowsTagHelperElementOptForIncompleteHTML6()
         {
             RunParseTreeRewriterTest("<!p class=\"btn\"", "strong", "p");
         }
 
         [Fact]
-        public void Rewrite_AllowsTagHelperElementOptForIncompleteHTML7()
+        public void AllowsTagHelperElementOptForIncompleteHTML7()
         {
             RunParseTreeRewriterTest("<!p class=\"btn\" /", "strong", "p");
         }
 
         [Fact]
-        public void Rewrite_AllowsTagHelperElementOptOutCSharp_WithBlockData1()
+        public void AllowsTagHelperElementOptOutCSharp_WithBlockData1()
         {
             RunParseTreeRewriterTest("@{<!p>}", "strong", "p");
         }
 
         [Fact]
-        public void Rewrite_AllowsTagHelperElementOptOutCSharp_WithBlockData2()
+        public void AllowsTagHelperElementOptOutCSharp_WithBlockData2()
         {
             RunParseTreeRewriterTest("@{</!p>}", "strong", "p");
         }
 
         [Fact]
-        public void Rewrite_AllowsTagHelperElementOptOutCSharp_WithBlockData3()
+        public void AllowsTagHelperElementOptOutCSharp_WithBlockData3()
         {
             RunParseTreeRewriterTest("@{<!p></!p>}", "strong", "p");
         }
 
         [Fact]
-        public void Rewrite_AllowsTagHelperElementOptOutCSharp_WithBlockData4()
+        public void AllowsTagHelperElementOptOutCSharp_WithBlockData4()
         {
             RunParseTreeRewriterTest("@{<!p>words and spaces</!p>}", "strong", "p");
         }
 
         [Fact]
-        public void Rewrite_AllowsTagHelperElementOptOutCSharp_WithBlockData5()
+        public void AllowsTagHelperElementOptOutCSharp_WithBlockData5()
         {
             RunParseTreeRewriterTest("@{<!p></p>}", "strong", "p");
         }
 
         [Fact]
-        public void Rewrite_AllowsTagHelperElementOptOutCSharp_WithBlockData6()
+        public void AllowsTagHelperElementOptOutCSharp_WithBlockData6()
         {
             RunParseTreeRewriterTest("@{<p></!p>}", "strong", "p");
         }
 
         [Fact]
-        public void Rewrite_AllowsTagHelperElementOptOutCSharp_WithBlockData7()
+        public void AllowsTagHelperElementOptOutCSharp_WithBlockData7()
         {
             RunParseTreeRewriterTest("@{<p><!p></!p></p>}", "strong", "p");
         }
 
         [Fact]
-        public void Rewrite_AllowsTagHelperElementOptOutCSharp_WithBlockData8()
+        public void AllowsTagHelperElementOptOutCSharp_WithBlockData8()
         {
             RunParseTreeRewriterTest("@{<p><!p></!p>}", "strong", "p");
         }
 
         [Fact]
-        public void Rewrite_AllowsTagHelperElementOptOutCSharp_WithBlockData9()
+        public void AllowsTagHelperElementOptOutCSharp_WithBlockData9()
         {
             RunParseTreeRewriterTest("@{<!p></!p></p>}", "strong", "p");
         }
 
         [Fact]
-        public void Rewrite_AllowsTagHelperElementOptOutCSharp_WithBlockData10()
+        public void AllowsTagHelperElementOptOutCSharp_WithBlockData10()
         {
             RunParseTreeRewriterTest("@{<strong></!p></strong>}", "strong", "p");
         }
 
         [Fact]
-        public void Rewrite_AllowsTagHelperElementOptOutCSharp_WithBlockData11()
+        public void AllowsTagHelperElementOptOutCSharp_WithBlockData11()
         {
             RunParseTreeRewriterTest("@{<strong></strong><!p></!p>}", "strong", "p");
         }
 
         [Fact]
-        public void Rewrite_AllowsTagHelperElementOptOutCSharp_WithBlockData12()
+        public void AllowsTagHelperElementOptOutCSharp_WithBlockData12()
         {
             RunParseTreeRewriterTest("@{<p><strong></!strong><!p></strong></!p>}", "strong", "p");
         }
 
         [Fact]
-        public void Rewrite_AllowsTagHelperElementOptOutCSharp_WithAttributeData1()
+        public void AllowsTagHelperElementOptOutCSharp_WithAttributeData1()
         {
             RunParseTreeRewriterTest("@{<!p class=\"btn\">}", "strong", "p");
         }
 
         [Fact]
-        public void Rewrite_AllowsTagHelperElementOptOutCSharp_WithAttributeData2()
+        public void AllowsTagHelperElementOptOutCSharp_WithAttributeData2()
         {
             RunParseTreeRewriterTest("@{<!p class=\"btn\"></!p>}", "strong", "p");
         }
 
         [Fact]
-        public void Rewrite_AllowsTagHelperElementOptOutCSharp_WithAttributeData3()
+        public void AllowsTagHelperElementOptOutCSharp_WithAttributeData3()
         {
             RunParseTreeRewriterTest("@{<!p class=\"btn\">words with spaces</!p>}", "strong", "p");
         }
 
         [Fact]
-        public void Rewrite_AllowsTagHelperElementOptOutCSharp_WithAttributeData4()
+        public void AllowsTagHelperElementOptOutCSharp_WithAttributeData4()
         {
             RunParseTreeRewriterTest("@{<!p class='btn1 btn2' class2=btn></!p>}", "strong", "p");
         }
 
         [Fact]
-        public void Rewrite_AllowsTagHelperElementOptOutCSharp_WithAttributeData5()
+        public void AllowsTagHelperElementOptOutCSharp_WithAttributeData5()
         {
             RunParseTreeRewriterTest("@{<!p class='btn1 @DateTime.Now btn2'></!p>}", "strong", "p");
         }
 
         [Fact]
-        public void Rewrite_AllowsTagHelperElementOptOutHTML_WithBlockData1()
+        public void AllowsTagHelperElementOptOutHTML_WithBlockData1()
         {
             RunParseTreeRewriterTest("<!p>", "strong", "p");
         }
 
         [Fact]
-        public void Rewrite_AllowsTagHelperElementOptOutHTML_WithBlockData2()
+        public void AllowsTagHelperElementOptOutHTML_WithBlockData2()
         {
             RunParseTreeRewriterTest("</!p>", "strong", "p");
         }
 
         [Fact]
-        public void Rewrite_AllowsTagHelperElementOptOutHTML_WithBlockData3()
+        public void AllowsTagHelperElementOptOutHTML_WithBlockData3()
         {
             RunParseTreeRewriterTest("<!p></!p>", "strong", "p");
         }
 
         [Fact]
-        public void Rewrite_AllowsTagHelperElementOptOutHTML_WithBlockData4()
+        public void AllowsTagHelperElementOptOutHTML_WithBlockData4()
         {
             RunParseTreeRewriterTest("<!p>words and spaces</!p>", "strong", "p");
         }
 
         [Fact]
-        public void Rewrite_AllowsTagHelperElementOptOutHTML_WithBlockData5()
+        public void AllowsTagHelperElementOptOutHTML_WithBlockData5()
         {
             RunParseTreeRewriterTest("<!p></p>", "strong", "p");
         }
 
         [Fact]
-        public void Rewrite_AllowsTagHelperElementOptOutHTML_WithBlockData6()
+        public void AllowsTagHelperElementOptOutHTML_WithBlockData6()
         {
             RunParseTreeRewriterTest("<p></!p>", "strong", "p");
         }
 
         [Fact]
-        public void Rewrite_AllowsTagHelperElementOptOutHTML_WithBlockData7()
+        public void AllowsTagHelperElementOptOutHTML_WithBlockData7()
         {
             RunParseTreeRewriterTest("<p><!p></!p></p>", "strong", "p");
         }
 
         [Fact]
-        public void Rewrite_AllowsTagHelperElementOptOutHTML_WithBlockData8()
+        public void AllowsTagHelperElementOptOutHTML_WithBlockData8()
         {
             RunParseTreeRewriterTest("<p><!p></!p>", "strong", "p");
         }
 
         [Fact]
-        public void Rewrite_AllowsTagHelperElementOptOutHTML_WithBlockData9()
+        public void AllowsTagHelperElementOptOutHTML_WithBlockData9()
         {
             RunParseTreeRewriterTest("<!p></!p></p>", "strong", "p");
         }
 
         [Fact]
-        public void Rewrite_AllowsTagHelperElementOptOutHTML_WithBlockData10()
+        public void AllowsTagHelperElementOptOutHTML_WithBlockData10()
         {
             RunParseTreeRewriterTest("<strong></!p></strong>", "strong", "p");
         }
 
         [Fact]
-        public void Rewrite_AllowsTagHelperElementOptOutHTML_WithBlockData11()
+        public void AllowsTagHelperElementOptOutHTML_WithBlockData11()
         {
             RunParseTreeRewriterTest("<strong></strong><!p></!p>", "strong", "p");
         }
 
         [Fact]
-        public void Rewrite_AllowsTagHelperElementOptOutHTML_WithBlockData12()
+        public void AllowsTagHelperElementOptOutHTML_WithBlockData12()
         {
             RunParseTreeRewriterTest("<p><strong></!strong><!p></strong></!p>", "strong", "p");
         }
 
         [Fact]
-        public void Rewrite_AllowsTagHelperElementOptOutHTML_WithAttributeData1()
+        public void AllowsTagHelperElementOptOutHTML_WithAttributeData1()
         {
             RunParseTreeRewriterTest("<!p class=\"btn\">", "strong", "p");
         }
 
         [Fact]
-        public void Rewrite_AllowsTagHelperElementOptOutHTML_WithAttributeData2()
+        public void AllowsTagHelperElementOptOutHTML_WithAttributeData2()
         {
             RunParseTreeRewriterTest("<!p class=\"btn\"></!p>", "strong", "p");
         }
 
         [Fact]
-        public void Rewrite_AllowsTagHelperElementOptOutHTML_WithAttributeData3()
+        public void AllowsTagHelperElementOptOutHTML_WithAttributeData3()
         {
             RunParseTreeRewriterTest("<!p class=\"btn\">words and spaces</!p>", "strong", "p");
         }
 
         [Fact]
-        public void Rewrite_AllowsTagHelperElementOptOutHTML_WithAttributeData4()
+        public void AllowsTagHelperElementOptOutHTML_WithAttributeData4()
         {
             RunParseTreeRewriterTest("<!p class='btn1 btn2' class2=btn></!p>", "strong", "p");
         }
 
         [Fact]
-        public void Rewrite_AllowsTagHelperElementOptOutHTML_WithAttributeData5()
+        public void AllowsTagHelperElementOptOutHTML_WithAttributeData5()
         {
             RunParseTreeRewriterTest("<!p class='btn1 @DateTime.Now btn2'></!p>", "strong", "p");
         }
 
         [Fact]
-        public void TagHelperParseTreeRewriter_DoesNotRewriteTextTagTransitionTagHelpers1()
+        public void DoesNotRewriteTextTagTransitionTagHelpers1()
         {
             RunParseTreeRewriterTest("<text>Hello World</text>", "p", "text");
         }
 
         [Fact]
-        public void TagHelperParseTreeRewriter_DoesNotRewriteTextTagTransitionTagHelpers2()
+        public void DoesNotRewriteTextTagTransitionTagHelpers2()
         {
             RunParseTreeRewriterTest("@{<text>Hello World</text>}", "p", "text");
         }
 
         [Fact]
-        public void TagHelperParseTreeRewriter_DoesNotRewriteTextTagTransitionTagHelpers3()
+        public void DoesNotRewriteTextTagTransitionTagHelpers3()
         {
             RunParseTreeRewriterTest("@{<text><p>Hello World</p></text>}", "p", "text");
         }
 
         [Fact]
-        public void TagHelperParseTreeRewriter_DoesNotRewriteTextTagTransitionTagHelpers4()
+        public void DoesNotRewriteTextTagTransitionTagHelpers4()
         {
             RunParseTreeRewriterTest("@{<p><text>Hello World</text></p>}", "p", "text");
         }
 
         [Fact]
-        public void TagHelperParseTreeRewriter_DoesNotRewriteSpecialTagTagHelpers1()
+        public void DoesNotRewriteSpecialTagTagHelpers1()
         {
             RunParseTreeRewriterTest("<foo><!-- Hello World --></foo>", "!--", "?xml", "![CDATA[", "!DOCTYPE");
         }
 
         [Fact]
-        public void TagHelperParseTreeRewriter_DoesNotRewriteSpecialTagTagHelpers2()
+        public void DoesNotRewriteSpecialTagTagHelpers2()
         {
             RunParseTreeRewriterTest("<foo><!-- @foo --></foo>", "!--", "?xml", "![CDATA[", "!DOCTYPE");
         }
 
         [Fact]
-        public void TagHelperParseTreeRewriter_DoesNotRewriteSpecialTagTagHelpers3()
+        public void DoesNotRewriteSpecialTagTagHelpers3()
         {
             RunParseTreeRewriterTest("<foo><?xml Hello World ?></foo>", "!--", "?xml", "![CDATA[", "!DOCTYPE");
         }
 
         [Fact]
-        public void TagHelperParseTreeRewriter_DoesNotRewriteSpecialTagTagHelpers4()
+        public void DoesNotRewriteSpecialTagTagHelpers4()
         {
             RunParseTreeRewriterTest("<foo><?xml @foo ?></foo>", "!--", "?xml", "![CDATA[", "!DOCTYPE");
         }
 
         [Fact]
-        public void TagHelperParseTreeRewriter_DoesNotRewriteSpecialTagTagHelpers5()
+        public void DoesNotRewriteSpecialTagTagHelpers5()
         {
             RunParseTreeRewriterTest("<foo><!DOCTYPE @foo ></foo>", "!--", "?xml", "![CDATA[", "!DOCTYPE");
         }
 
         [Fact]
-        public void TagHelperParseTreeRewriter_DoesNotRewriteSpecialTagTagHelpers6()
+        public void DoesNotRewriteSpecialTagTagHelpers6()
         {
             RunParseTreeRewriterTest("<foo><!DOCTYPE hello=\"world\" ></foo>", "!--", "?xml", "![CDATA[", "!DOCTYPE");
         }
 
         [Fact]
-        public void TagHelperParseTreeRewriter_DoesNotRewriteSpecialTagTagHelpers7()
+        public void DoesNotRewriteSpecialTagTagHelpers7()
         {
             RunParseTreeRewriterTest("<foo><![CDATA[ Hello World ]]></foo>", "!--", "?xml", "![CDATA[", "!DOCTYPE");
         }
 
         [Fact]
-        public void TagHelperParseTreeRewriter_DoesNotRewriteSpecialTagTagHelpers8()
+        public void DoesNotRewriteSpecialTagTagHelpers8()
         {
             RunParseTreeRewriterTest("<foo><![CDATA[ @foo ]]></foo>", "!--", "?xml", "![CDATA[", "!DOCTYPE");
         }
 
         [Fact]
-        public void TagHelperParseTreeRewriter_RewritesNestedTagHelperTagBlocks1()
+        public void RewritesNestedTagHelperTagBlocks1()
         {
             RunParseTreeRewriterTest("<p><div></div></p>", "p", "div");
         }
 
         [Fact]
-        public void TagHelperParseTreeRewriter_RewritesNestedTagHelperTagBlocks2()
+        public void RewritesNestedTagHelperTagBlocks2()
         {
             RunParseTreeRewriterTest("<p>Hello World <div></div></p>", "p", "div");
         }
 
         [Fact]
-        public void TagHelperParseTreeRewriter_RewritesNestedTagHelperTagBlocks3()
+        public void RewritesNestedTagHelperTagBlocks3()
         {
             RunParseTreeRewriterTest("<p>Hel<p>lo</p></p> <p><div>World</div></p>", "p", "div");
         }
 
         [Fact]
-        public void TagHelperParseTreeRewriter_RewritesNestedTagHelperTagBlocks4()
+        public void RewritesNestedTagHelperTagBlocks4()
         {
             RunParseTreeRewriterTest("<p>Hel<strong>lo</strong></p> <p><span>World</span></p>", "p", "div");
         }
 
         [Fact]
-        public void Rewrite_HandlesMalformedNestedNonTagHelperTags_Correctly()
+        public void HandlesMalformedNestedNonTagHelperTags_Correctly()
         {
             RunParseTreeRewriterTest("<div>@{</div>}");
         }

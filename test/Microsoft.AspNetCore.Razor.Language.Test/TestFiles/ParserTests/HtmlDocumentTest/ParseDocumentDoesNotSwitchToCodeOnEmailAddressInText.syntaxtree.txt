@@ -1,3 +1,0 @@
-Markup block - Gen<None> - 20 - (0:0,0)
-    Markup span - Gen<Markup> - [anurse@microsoft.com] - SpanEditHandler;Accepts:Any - (0:0,0) - Symbols:1
-        HtmlSymbolType.Text;[anurse@microsoft.com];

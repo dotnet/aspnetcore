@@ -15,13 +15,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void ParseBlockGivesSpacesToCodeOnAtTagTemplateTransitionInDesignTimeMode()
+        public void GivesSpacesToCodeOnAtTagTemplateTransitionInDesignTimeMode()
         {
             ParseBlockTest("Foo(    @<p>Foo</p>    )", designTime: true);
         }
 
         [Fact]
-        public void ParseBlockGivesSpacesToCodeOnAtColonTemplateTransitionInDesignTimeMode()
+        public void GivesSpacesToCodeOnAtColonTemplateTransitionInDesignTimeMode()
         {
             ParseBlockTest("Foo(    " + Environment.NewLine
                          + "@:<p>Foo</p>    " + Environment.NewLine
@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void ParseBlockGivesSpacesToCodeOnTagTransitionInDesignTimeMode()
+        public void GivesSpacesToCodeOnTagTransitionInDesignTimeMode()
         {
             ParseBlockTest("{" + Environment.NewLine
                          + "    <p>Foo</p>    " + Environment.NewLine
@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void ParseBlockGivesSpacesToCodeOnInvalidAtTagTransitionInDesignTimeMode()
+        public void GivesSpacesToCodeOnInvalidAtTagTransitionInDesignTimeMode()
         {
             ParseBlockTest("{" + Environment.NewLine
                          + "    @<p>Foo</p>    " + Environment.NewLine
@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void ParseBlockGivesSpacesToCodeOnAtColonTransitionInDesignTimeMode()
+        public void GivesSpacesToCodeOnAtColonTransitionInDesignTimeMode()
         {
             ParseBlockTest("{" + Environment.NewLine
                          + "    @:<p>Foo</p>    " + Environment.NewLine
@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void ParseBlockShouldSupportSingleLineMarkupContainingStatementBlock()
+        public void ShouldSupportSingleLineMarkupContainingStatementBlock()
         {
             ParseBlockTest("Repeat(10," + Environment.NewLine
                          + "    @: @{}" + Environment.NewLine
@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void ParseBlockShouldSupportMarkupWithoutPreceedingWhitespace()
+        public void ShouldSupportMarkupWithoutPreceedingWhitespace()
         {
             ParseBlockTest("foreach(var file in files){" + Environment.NewLine
                          + Environment.NewLine
@@ -74,8 +74,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void ParseBlockGivesAllWhitespaceOnSameLineExcludingPreceedingNewlineButIncludingTrailingNewLineToMarkup()
+        public void GivesAllWhitespaceOnSameLineWithTrailingNewLineToMarkupExclPreceedingNewline()
         {
+            // ParseBlockGivesAllWhitespaceOnSameLineExcludingPreceedingNewlineButIncludingTrailingNewLineToMarkup
             ParseBlockTest("if(foo) {" + Environment.NewLine
                          + "    var foo = \"After this statement there are 10 spaces\";          " + Environment.NewLine
                          + "    <p>" + Environment.NewLine
@@ -88,19 +89,19 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void ParseBlockAllowsMarkupInIfBodyWithBraces()
+        public void AllowsMarkupInIfBodyWithBraces()
         {
             ParseBlockTest("if(foo) { <p>Bar</p> } else if(bar) { <p>Baz</p> } else { <p>Boz</p> }");
         }
 
         [Fact]
-        public void ParseBlockAllowsMarkupInIfBodyWithBracesWithinCodeBlock()
+        public void AllowsMarkupInIfBodyWithBracesWithinCodeBlock()
         {
             ParseBlockTest("{ if(foo) { <p>Bar</p> } else if(bar) { <p>Baz</p> } else { <p>Boz</p> } }");
         }
 
         [Fact]
-        public void ParseBlockSupportsMarkupInCaseAndDefaultBranchesOfSwitch()
+        public void SupportsMarkupInCaseAndDefaultBranchesOfSwitch()
         {
             // Arrange
             ParseBlockTest("switch(foo) {" + Environment.NewLine
@@ -121,7 +122,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void ParseBlockSupportsMarkupInCaseAndDefaultBranchesOfSwitchInCodeBlock()
+        public void SupportsMarkupInCaseAndDefaultBranchesOfSwitchInCodeBlock()
         {
             // Arrange
             ParseBlockTest("{ switch(foo) {" + Environment.NewLine
@@ -142,19 +143,19 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void ParseBlockParsesMarkupStatementOnOpenAngleBracket()
+        public void ParsesMarkupStatementOnOpenAngleBracket()
         {
             ParseBlockTest("for(int i = 0; i < 10; i++) { <p>Foo</p> }");
         }
 
         [Fact]
-        public void ParseBlockParsesMarkupStatementOnOpenAngleBracketInCodeBlock()
+        public void ParsesMarkupStatementOnOpenAngleBracketInCodeBlock()
         {
             ParseBlockTest("{ for(int i = 0; i < 10; i++) { <p>Foo</p> } }");
         }
 
         [Fact]
-        public void ParseBlockParsesMarkupStatementOnSwitchCharacterFollowedByColon()
+        public void ParsesMarkupStatementOnSwitchCharacterFollowedByColon()
         {
             // Arrange
             ParseBlockTest("if(foo) { @:Bar" + Environment.NewLine
@@ -162,7 +163,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void ParseBlockParsesMarkupStatementOnSwitchCharacterFollowedByDoubleColon()
+        public void ParsesMarkupStatementOnSwitchCharacterFollowedByDoubleColon()
         {
             // Arrange
             ParseBlockTest("if(foo) { @::Sometext" + Environment.NewLine
@@ -171,7 +172,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
 
         [Fact]
-        public void ParseBlockParsesMarkupStatementOnSwitchCharacterFollowedByTripleColon()
+        public void ParsesMarkupStatementOnSwitchCharacterFollowedByTripleColon()
         {
             // Arrange
             ParseBlockTest("if(foo) { @:::Sometext" + Environment.NewLine
@@ -179,7 +180,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void ParseBlockParsesMarkupStatementOnSwitchCharacterFollowedByColonInCodeBlock()
+        public void ParsesMarkupStatementOnSwitchCharacterFollowedByColonInCodeBlock()
         {
             // Arrange
             ParseBlockTest("{ if(foo) { @:Bar" + Environment.NewLine
@@ -187,19 +188,19 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void ParseBlockCorrectlyReturnsFromMarkupBlockWithPseudoTag()
+        public void CorrectlyReturnsFromMarkupBlockWithPseudoTag()
         {
             ParseBlockTest("if (i > 0) { <text>;</text> }");
         }
 
         [Fact]
-        public void ParseBlockCorrectlyReturnsFromMarkupBlockWithPseudoTagInCodeBlock()
+        public void CorrectlyReturnsFromMarkupBlockWithPseudoTagInCodeBlock()
         {
             ParseBlockTest("{ if (i > 0) { <text>;</text> } }");
         }
 
         [Fact]
-        public void ParseBlockSupportsAllKindsOfImplicitMarkupInCodeBlock()
+        public void SupportsAllKindsOfImplicitMarkupInCodeBlock()
         {
             ParseBlockTest("{" + Environment.NewLine
                          + "    if(true) {" + Environment.NewLine

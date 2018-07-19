@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
     public class CSharpSectionTest : CsHtmlMarkupParserTestBase
     {
         [Fact]
-        public void ParseSectionBlockCapturesNewlineImmediatelyFollowing()
+        public void CapturesNewlineImmediatelyFollowing()
         {
             ParseDocumentTest(
                 "@section" + Environment.NewLine,
@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void ParseSectionBlockCapturesWhitespaceToEndOfLineInSectionStatementMissingOpenBrace()
+        public void CapturesWhitespaceToEndOfLineInSectionStatementMissingOpenBrace()
         {
             ParseDocumentTest(
                 "@section Foo         " + Environment.NewLine + "    ",
@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void ParseSectionBlockCapturesWhitespaceToEndOfLineInSectionStatementMissingName()
+        public void CapturesWhitespaceToEndOfLineInSectionStatementMissingName()
         {
             ParseDocumentTest(
                 "@section         " + Environment.NewLine + "    ",
@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void ParseSectionBlockIgnoresSectionUnlessAllLowerCase()
+        public void IgnoresSectionUnlessAllLowerCase()
         {
             ParseDocumentTest(
                 "@Section foo",
@@ -42,16 +42,18 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void ParseSectionBlockReportsErrorAndTerminatesSectionBlockIfKeywordNotFollowedByIdentifierStartCharacter()
+        public void ReportsErrorAndTerminatesSectionBlockIfKeywordNotFollowedByIdentifierStartChar()
         {
+            // ParseSectionBlockReportsErrorAndTerminatesSectionBlockIfKeywordNotFollowedByIdentifierStartCharacter
             ParseDocumentTest(
                 "@section 9 { <p>Foo</p> }",
                 new[] { SectionDirective.Directive });
         }
 
         [Fact]
-        public void ParseSectionBlockReportsErrorAndTerminatesSectionBlockIfNameNotFollowedByOpenBrace()
+        public void ReportsErrorAndTerminatesSectionBlockIfNameNotFollowedByOpenBrace()
         {
+            // ParseSectionBlockReportsErrorAndTerminatesSectionBlockIfNameNotFollowedByOpenBrace
             ParseDocumentTest(
                 "@section foo-bar { <p>Foo</p> }",
                 new[] { SectionDirective.Directive });
@@ -66,7 +68,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void ParseSectionBlockHandlesEOFAfterOpenBrace()
+        public void HandlesEOFAfterOpenBrace()
         {
             ParseDocumentTest(
                 "@section foo {",
@@ -74,7 +76,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void ParseSectionBlockHandlesEOFAfterOpenContent1()
+        public void HandlesEOFAfterOpenContent1()
         {
             
             ParseDocumentTest(
@@ -83,7 +85,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void ParseSectionBlockHandlesEOFAfterOpenContent2()
+        public void HandlesEOFAfterOpenContent2()
         {
 
             ParseDocumentTest(
@@ -92,7 +94,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void ParseSectionBlockHandlesEOFAfterOpenContent3()
+        public void HandlesEOFAfterOpenContent3()
         {
 
             ParseDocumentTest(
@@ -101,7 +103,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void ParseSectionBlockHandlesEOFAfterOpenContent4()
+        public void HandlesEOFAfterOpenContent4()
         {
 
             ParseDocumentTest(
@@ -110,7 +112,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void ParseSectionBlockHandlesUnterminatedSection()
+        public void HandlesUnterminatedSection()
         {
             ParseDocumentTest(
                 "@section foo { <p>Foo{}</p>",
@@ -118,7 +120,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void ParseSectionBlockHandlesUnterminatedSectionWithNestedIf()
+        public void HandlesUnterminatedSectionWithNestedIf()
         {
             // Arrange
             var newLine = Environment.NewLine;
@@ -134,8 +136,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void ParseSectionBlockReportsErrorAndAcceptsWhitespaceToEndOfLineIfSectionNotFollowedByOpenBrace()
+        public void ReportsErrorAndAcceptsWhitespaceToEOLIfSectionNotFollowedByOpenBrace()
         {
+            // ParseSectionBlockReportsErrorAndAcceptsWhitespaceToEndOfLineIfSectionNotFollowedByOpenBrace
             // Arrange
             var chunkGenerator = new DirectiveChunkGenerator(SectionDirective.Directive);
             chunkGenerator.Diagnostics.Add(
@@ -151,7 +154,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void ParseSectionBlockAcceptsOpenBraceMultipleLinesBelowSectionName()
+        public void AcceptsOpenBraceMultipleLinesBelowSectionName()
         {
             ParseDocumentTest(
                 "@section foo      "
@@ -168,7 +171,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void ParseSectionBlockParsesNamedSectionCorrectly()
+        public void ParsesNamedSectionCorrectly()
         {
             ParseDocumentTest(
                 "@section foo { <p>Foo</p> }",
@@ -176,7 +179,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void ParseSectionBlockDoesNotRequireSpaceBetweenSectionNameAndOpenBrace()
+        public void DoesNotRequireSpaceBetweenSectionNameAndOpenBrace()
         {
             ParseDocumentTest(
                 "@section foo{ <p>Foo</p> }",
@@ -184,7 +187,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void ParseSectionBlockBalancesBraces()
+        public void BalancesBraces()
         {
             ParseDocumentTest(
                 "@section foo { <script>(function foo() { return 1; })();</script> }",
@@ -192,7 +195,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void ParseSectionBlockAllowsBracesInCSharpExpression()
+        public void AllowsBracesInCSharpExpression()
         {
             ParseDocumentTest(
                 "@section foo { I really want to render a close brace, so here I go: @(\"}\") }",
@@ -211,8 +214,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void SectionIsCorrectlyTerminatedWhenCloseBraceImmediatelyFollowsCodeBlockNoWhitespace()
+        public void SectionCorrectlyTerminatedWhenCloseBraceFollowsCodeBlockNoWhitespace()
         {
+            // SectionIsCorrectlyTerminatedWhenCloseBraceImmediatelyFollowsCodeBlockNoWhitespace
             ParseDocumentTest(
                 "@section Foo {" + Environment.NewLine
                 + "@if(true) {" + Environment.NewLine
@@ -221,7 +225,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void ParseSectionBlockCorrectlyTerminatesWhenCloseBraceImmediatelyFollowsMarkup()
+        public void CorrectlyTerminatesWhenCloseBraceImmediatelyFollowsMarkup()
         {
             ParseDocumentTest(
                 "@section foo {something}",
@@ -229,7 +233,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void ParseSectionBlockParsesComment()
+        public void ParsesComment()
         {
             ParseDocumentTest(
                 "@section s {<!-- -->}",
@@ -239,7 +243,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         // This was a user reported bug (codeplex #710), the section parser wasn't handling
         // comments.
         [Fact]
-        public void ParseSectionBlockParsesCommentWithDelimiters()
+        public void ParsesCommentWithDelimiters()
         {
             ParseDocumentTest(
                 "@section s {<!-- > \" '-->}",
@@ -247,7 +251,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void ParseSectionBlockCommentRecoversFromUnclosedTag()
+        public void CommentRecoversFromUnclosedTag()
         {
             ParseDocumentTest(
                 "@section s {" + Environment.NewLine + "<a" + Environment.NewLine + "<!--  > \" '-->}",
@@ -255,7 +259,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void ParseSectionBlockParsesXmlProcessingInstruction()
+        public void ParsesXmlProcessingInstruction()
         {
             ParseDocumentTest(
                 "@section s { <? xml bleh ?>}",
@@ -263,13 +267,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void ParseSectionBlock_WithDoubleTransition1()
+        public void _WithDoubleTransition1()
         {
             ParseDocumentTest("@section s {<span foo='@@' />}", new[] { SectionDirective.Directive });
         }
 
         [Fact]
-        public void ParseSectionBlock_WithDoubleTransition2()
+        public void _WithDoubleTransition2()
         {
             ParseDocumentTest("@section s {<span foo='@DateTime.Now @@' />}", new[] { SectionDirective.Directive });
         }
