@@ -14,7 +14,7 @@
     <MicrosoftAspNetCoreHttpOverridesPackageVersion>3.0.0-alpha1-10102</MicrosoftAspNetCoreHttpOverridesPackageVersion>
     <MicrosoftAspNetCoreHttpPackageVersion>3.0.0-alpha1-10102</MicrosoftAspNetCoreHttpPackageVersion>
     <MicrosoftAspNetCoreHttpSysSourcesPackageVersion>3.0.0-alpha1-10102</MicrosoftAspNetCoreHttpSysSourcesPackageVersion>
-    <MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>0.7.0-alpha1-10102</MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>
+    <MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>0.7.0-a-alpha1-hosting-fix-17089</MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>
     <MicrosoftAspNetCoreServerKestrelPackageVersion>3.0.0-alpha1-10102</MicrosoftAspNetCoreServerKestrelPackageVersion>
     <MicrosoftAspNetCoreTestHostPackageVersion>3.0.0-alpha1-10102</MicrosoftAspNetCoreTestHostPackageVersion>
     <MicrosoftAspNetCoreTestingPackageVersion>3.0.0-alpha1-10102</MicrosoftAspNetCoreTestingPackageVersion>
