@@ -19,10 +19,16 @@ namespace BasicWebSite
                 .AddXmlDataContractSerializerFormatters();
 
             services.ConfigureBaseWebSiteAuthPolicies();
+
+            services.AddHttpContextAccessor();
+            services.AddScoped<RequestIdService>();
         }
 
         public void Configure(IApplicationBuilder app)
         {
+            // Initializes the RequestId service for each request
+            app.UseMiddleware<RequestIdMiddleware>();
+
             app.UseDispatcher();
 
             app.UseMvcWithEndpoint(routes =>

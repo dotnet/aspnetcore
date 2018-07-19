@@ -3,9 +3,9 @@
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
-    public class RequestServicesTest : RequestServicesTestBase<BasicWebSite.Startup>
+    public class RequestServicesDispatchingTest : RequestServicesTestBase<BasicWebSite.StartupWithDispatching>
     {
-        public RequestServicesTest(MvcTestFixture<BasicWebSite.Startup> fixture)
+        public RequestServicesDispatchingTest(MvcTestFixture<BasicWebSite.StartupWithDispatching> fixture)
             : base(fixture)
         {
         }
