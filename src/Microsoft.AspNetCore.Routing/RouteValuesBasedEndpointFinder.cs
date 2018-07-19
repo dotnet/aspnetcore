@@ -120,13 +120,13 @@ namespace Microsoft.AspNetCore.Routing
             {
                 Handler = NullRouter.Instance,
                 Order = endpoint.Order,
-                Precedence = RoutePrecedence.ComputeOutbound(endpoint.ParsedTemplate),
-                RequiredLinkValues = endpoint.RequiredValues,
-                RouteTemplate = endpoint.ParsedTemplate,
+                Precedence = RoutePrecedence.ComputeOutbound(endpoint.RoutePattern),
+                RequiredLinkValues = new RouteValueDictionary(endpoint.RequiredValues),
+                RouteTemplate = new RouteTemplate(endpoint.RoutePattern),
                 Data = endpoint,
                 RouteName = routeNameMetadata?.Name,
             };
-            entry.Defaults = endpoint.Defaults;
+            entry.Defaults = new RouteValueDictionary(endpoint.RoutePattern.Defaults);
             return entry;
         }
 

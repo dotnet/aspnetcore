@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.AspNetCore.Routing.TestObjects;
 using Xunit;
 
@@ -35,8 +36,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 
             var endpoint = new MatcherEndpoint(
                 MatcherEndpoint.EmptyInvoker,
-                "a/b/c",
-                new RouteValueDictionary(),
+                RoutePatternFactory.Parse("a/b/c"),
                 new RouteValueDictionary(),
                 0,
                 EndpointMetadataCollection.Empty,

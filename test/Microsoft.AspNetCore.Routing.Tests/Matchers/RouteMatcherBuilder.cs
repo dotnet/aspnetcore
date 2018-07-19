@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Routing.EndpointConstraints;
+using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
@@ -38,7 +39,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             var selector = new EndpointSelector(null, cache, NullLoggerFactory.Instance);
 
             var groups = _entries
-                .GroupBy(e => (e.Order, e.Precedence, e.Endpoint.Template))
+                .GroupBy(e => (e.Order, e.Precedence, e.Endpoint.RoutePattern.RawText))
                 .OrderBy(g => g.Key.Order)
                 .ThenBy(g => g.Key.Precedence);
 
@@ -47,16 +48,19 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             foreach (var group in groups)
             {
                 var candidates = group.Select(e => e.Endpoint).ToArray();
+                var endpoint = group.First().Endpoint;
 
-                // MatcherEndpoint.Values contains the default values parsed from the template
+                // RoutePattern.Defaults contains the default values parsed from the template
                 // as well as those specified with a literal. We need to separate those
                 // for legacy cases.
-                var endpoint = group.First().Endpoint;
-                var defaults = new RouteValueDictionary(endpoint.Defaults);
-                for (var i = 0; i < endpoint.ParsedTemplate.Parameters.Count; i++)
+                //
+                // To do this we re-parse the original text and compare.
+                var withoutDefaults = RoutePatternFactory.Parse(endpoint.RoutePattern.RawText);
+                var defaults = new RouteValueDictionary(endpoint.RoutePattern.Defaults);
+                for (var i = 0; i < withoutDefaults.Parameters.Count; i++)
                 {
-                    var parameter = endpoint.ParsedTemplate.Parameters[i];
-                    if (parameter.DefaultValue != null)
+                    var parameter = withoutDefaults.Parameters[i];
+                    if (parameter.Default != null)
                     {
                         defaults.Remove(parameter.Name);
                     }
@@ -64,7 +68,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 
                 routes.Add(new Route(
                     new SelectorRouter(selector, candidates),
-                    endpoint.Template,
+                    endpoint.RoutePattern.RawText,
                     defaults,
                     new Dictionary<string, object>(),
                     new RouteValueDictionary(),

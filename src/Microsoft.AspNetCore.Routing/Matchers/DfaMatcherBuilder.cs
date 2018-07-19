@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             for (var i = 0; i < _entries.Count; i++)
             {
                 var entry = _entries[i];
-                maxDepth = Math.Max(maxDepth, entry.Pattern.Segments.Count);
+                maxDepth = Math.Max(maxDepth, entry.RoutePattern.PathSegments.Count);
 
                 work.Add((entry, new List<DfaNode>() { root, }));
             }
@@ -88,9 +88,10 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                     for (var j = 0; j < parents.Count; j++)
                     {
                         var parent = parents[j];
-                        if (segment.IsSimple && segment.Parts[0].IsLiteral)
+                        var part = segment.Parts[0];
+                        if (segment.IsSimple && part is RoutePatternLiteralPart literalPart)
                         {
-                            var literal = segment.Parts[0].Text;
+                            var literal = literalPart.Content;
                             if (!parent.Literals.TryGetValue(literal, out var next))
                             {
                                 next = new DfaNode()
@@ -103,7 +104,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 
                             nextParents.Add(next);
                         }
-                        else if (segment.IsSimple && segment.Parts[0].IsCatchAll)
+                        else if (segment.IsSimple && part is RoutePatternParameterPart parameterPart && parameterPart.IsCatchAll)
                         {
                             // A catch all should traverse all literal nodes as well as parameter nodes
                             // we don't need to create the parameter node here because of ordering
@@ -134,7 +135,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 
                             parent.CatchAll.Matches.Add(entry);
                         }
-                        else if (segment.IsSimple && segment.Parts[0].IsParameter)
+                        else if (segment.IsSimple && part.IsParameter)
                         {
                             if (parent.Parameters == null)
                             {
@@ -182,20 +183,20 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             return root;
         }
 
-        private TemplateSegment GetCurrentSegment(MatcherBuilderEntry entry, int depth)
+        private RoutePatternPathSegment GetCurrentSegment(MatcherBuilderEntry entry, int depth)
         {
-            if (depth < entry.Pattern.Segments.Count)
+            if (depth < entry.RoutePattern.PathSegments.Count)
             {
-                return entry.Pattern.Segments[depth];
+                return entry.RoutePattern.PathSegments[depth];
             }
 
-            if (entry.Pattern.Segments.Count == 0)
+            if (entry.RoutePattern.PathSegments.Count == 0)
             {
                 return null;
             }
 
-            var lastSegment = entry.Pattern.Segments[entry.Pattern.Segments.Count - 1];
-            if (lastSegment.IsSimple && lastSegment.Parts[0].IsCatchAll)
+            var lastSegment = entry.RoutePattern.PathSegments[entry.RoutePattern.PathSegments.Count - 1];
+            if (lastSegment.IsSimple && lastSegment.Parts[0] is RoutePatternParameterPart parameterPart && parameterPart.IsCatchAll)
             {
                 return lastSegment;
             }
@@ -305,63 +306,68 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             var captures = new List<(string parameterName, int segmentIndex, int slotIndex)>();
             (string parameterName, int segmentIndex, int slotIndex) catchAll = default;
 
-            foreach (var kvp in entry.Endpoint.Defaults)
+            foreach (var kvp in entry.Endpoint.RoutePattern.Defaults)
             {
                 assignments.Add(kvp.Key, assignments.Count);
                 slots.Add(kvp);
             }
 
-            for (var i = 0; i < entry.Pattern.Segments.Count; i++)
+            for (var i = 0; i < entry.Endpoint.RoutePattern.PathSegments.Count; i++)
             {
-                var segment = entry.Pattern.Segments[i];
+                var segment = entry.Endpoint.RoutePattern.PathSegments[i];
                 if (!segment.IsSimple)
                 {
                     continue;
                 }
 
-                var part = segment.Parts[0];
-                if (!part.IsParameter)
+                var parameterPart = segment.Parts[0] as RoutePatternParameterPart;
+                if (parameterPart == null)
                 {
                     continue;
                 }
 
-                if (!assignments.TryGetValue(part.Name, out var slotIndex))
+                if (!assignments.TryGetValue(parameterPart.Name, out var slotIndex))
                 {
                     slotIndex = assignments.Count;
-                    assignments.Add(part.Name, slotIndex);
+                    assignments.Add(parameterPart.Name, slotIndex);
 
-                    var hasDefaultValue = part.DefaultValue != null || part.IsCatchAll;
-                    slots.Add(hasDefaultValue ? new KeyValuePair<string, object>(part.Name, part.DefaultValue) : default);
+                    var hasDefaultValue = parameterPart.Default != null || parameterPart.IsCatchAll;
+                    slots.Add(hasDefaultValue ? new KeyValuePair<string, object>(parameterPart.Name, parameterPart.Default) : default);
                 }
 
-                if (part.IsCatchAll)
+                if (parameterPart.IsCatchAll)
                 {
-                    catchAll = (part.Name, i, slotIndex);
+                    catchAll = (parameterPart.Name, i, slotIndex);
                 }
                 else
                 {
-                    captures.Add((part.Name, i, slotIndex));
+                    captures.Add((parameterPart.Name, i, slotIndex));
                 }
             }
 
             var complexSegments = new List<(RoutePatternPathSegment pathSegment, int segmentIndex)>();
-            for (var i = 0; i < entry.Pattern.Segments.Count; i++)
+            for (var i = 0; i < entry.RoutePattern.PathSegments.Count; i++)
             {
-                var segment = entry.Pattern.Segments[i];
+                var segment = entry.RoutePattern.PathSegments[i];
                 if (segment.IsSimple)
                 {
                     continue;
                 }
 
-                complexSegments.Add((segment.ToRoutePatternPathSegment(), i));
+                complexSegments.Add((segment, i));
             }
 
             var matchProcessors = new List<MatchProcessor>();
-            for (var i = 0; i < entry.Endpoint.MatchProcessorReferences.Count; i++)
+            foreach (var kvp in entry.Endpoint.RoutePattern.Constraints)
             {
-                var reference = entry.Endpoint.MatchProcessorReferences[i];
-                var processor = _matchProcessorFactory.Create(reference);
-                matchProcessors.Add(processor);
+                var parameter = entry.Endpoint.RoutePattern.GetParameter(kvp.Key); // may be null, that's ok
+                var constraintReferences = kvp.Value;
+                for (var i = 0; i < constraintReferences.Count; i++)
+                {
+                    var constraintReference = constraintReferences[i];
+                    var matchProcessor = _matchProcessorFactory.Create(parameter, constraintReference);
+                    matchProcessors.Add(matchProcessor);
+                }
             }
 
             return new Candidate(
@@ -405,25 +411,25 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 
         private static bool HasAdditionalRequiredSegments(MatcherBuilderEntry entry, int depth)
         {
-            for (var i = depth; i < entry.Pattern.Segments.Count; i++)
+            for (var i = depth; i < entry.RoutePattern.PathSegments.Count; i++)
             {
-                var segment = entry.Pattern.Segments[i];
+                var segment = entry.RoutePattern.PathSegments[i];
                 if (!segment.IsSimple)
                 {
                     // Complex segments always require more processing
                     return true;
                 }
 
-                var part = segment.Parts[0];
-                if (part.IsLiteral)
+                var parameterPart = segment.Parts[0] as RoutePatternParameterPart;
+                if (parameterPart == null)
                 {
+                    // It's a literal
                     return true;
                 }
 
-                if (!part.IsOptional &&
-                    !part.IsCatchAll &&
-                    part.DefaultValue == null &&
-                    !entry.Endpoint.Defaults.ContainsKey(part.Name))
+                if (!parameterPart.IsOptional &&
+                    !parameterPart.IsCatchAll &&
+                    parameterPart.Default == null)
                 {
                     return true;
                 }

@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Matchers;
+using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace DispatcherSample.Web
@@ -39,10 +40,8 @@ namespace DispatcherSample.Web
                             response.ContentLength = payloadLength;
                             return response.Body.WriteAsync(_homePayload, 0, payloadLength);
                         },
-                        "/",
+                        RoutePatternFactory.Parse("/"),
                         new RouteValueDictionary(),
-                        new RouteValueDictionary(),
-                        new List<MatchProcessorReference>(),
                         0,
                         EndpointMetadataCollection.Empty,
                         "Home"),
@@ -55,10 +54,8 @@ namespace DispatcherSample.Web
                             response.ContentLength = payloadLength;
                             return response.Body.WriteAsync(_helloWorldPayload, 0, payloadLength);
                         },
-                        "/plaintext",
-                        new RouteValueDictionary(),
-                        new RouteValueDictionary(),
-                        new List<MatchProcessorReference>(),
+                         RoutePatternFactory.Parse("/plaintext"),
+                         new RouteValueDictionary(),
                         0,
                         EndpointMetadataCollection.Empty,
                         "Plaintext"),
@@ -69,10 +66,8 @@ namespace DispatcherSample.Web
                             response.ContentType = "text/plain";
                             return response.WriteAsync("WithConstraints");
                         },
-                        "/withconstraints/{id:endsWith(_001)}",
+                        RoutePatternFactory.Parse("/withconstraints/{id:endsWith(_001)}"),
                         new RouteValueDictionary(),
-                        new RouteValueDictionary(),
-                        new List<MatchProcessorReference>(),
                         0,
                         EndpointMetadataCollection.Empty,
                         "withconstraints"),
@@ -83,10 +78,8 @@ namespace DispatcherSample.Web
                             response.ContentType = "text/plain";
                             return response.WriteAsync("withoptionalconstraints");
                         },
-                        "/withoptionalconstraints/{id:endsWith(_001)?}",
+                        RoutePatternFactory.Parse("/withoptionalconstraints/{id:endsWith(_001)?}"),
                         new RouteValueDictionary(),
-                        new RouteValueDictionary(),
-                        new List<MatchProcessorReference>(),
                         0,
                         EndpointMetadataCollection.Empty,
                         "withoptionalconstraints"),

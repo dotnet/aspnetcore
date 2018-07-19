@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.AspNetCore.Routing.Template;
 using static Microsoft.AspNetCore.Routing.Matchers.BarebonesMatcher;
 
@@ -22,11 +23,11 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             var matchers = new InnerMatcher[_endpoints.Count];
             for (var i = 0; i < _endpoints.Count; i++)
             {
-                var parsed = TemplateParser.Parse(_endpoints[i].Template);
-                var segments = parsed.Segments
-                    .Select(s => s.IsSimple && s.Parts[0].IsLiteral ? s.Parts[0].Text : null)
+                var endpoint = _endpoints[i];
+                var pathSegments = endpoint.RoutePattern.PathSegments
+                    .Select(s => s.IsSimple && s.Parts[0] is RoutePatternLiteralPart literalPart ? literalPart.Content : null)
                     .ToArray();
-                matchers[i] = new InnerMatcher(segments, _endpoints[i]);
+                matchers[i] = new InnerMatcher(pathSegments, _endpoints[i]);
             }
 
             return new BarebonesMatcher(matchers);

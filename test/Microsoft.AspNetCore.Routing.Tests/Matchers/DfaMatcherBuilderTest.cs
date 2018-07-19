@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.AspNetCore.Routing.EndpointConstraints;
+using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
@@ -575,10 +576,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
         public void CreateCandidate_MatchProcessors()
         {
             // Arrange
-            var endpoint = CreateEndpoint("/a/b/c", matchProcessors: new MatchProcessorReference[]
-            {
-                new MatchProcessorReference("a", new IntRouteConstraint()),
-            });
+            var endpoint = CreateEndpoint("/a/b/c", constraints: new { a = new IntRouteConstraint(), });
 
             var builder = CreateDfaMatcherBuilder();
 
@@ -606,18 +604,14 @@ namespace Microsoft.AspNetCore.Routing.Matchers
         }
 
         private MatcherEndpoint CreateEndpoint(
-            string template, 
+            string template,
             object defaults = null,
-            IEnumerable<MatchProcessorReference> matchProcessors = null)
+            object constraints = null)
         {
-            matchProcessors = matchProcessors ?? Array.Empty<MatchProcessorReference>();
-
             return new MatcherEndpoint(
                 MatcherEndpoint.EmptyInvoker,
-                template,
-                new RouteValueDictionary(defaults),
+                RoutePatternFactory.Parse(template, new RouteValueDictionary(defaults), new RouteValueDictionary(constraints)),
                 new RouteValueDictionary(),
-                matchProcessors.ToList(),
                 0,
                 new EndpointMetadataCollection(Array.Empty<object>()),
                 "test");

@@ -86,8 +86,8 @@ namespace Microsoft.AspNetCore.Routing
             var templateBinder = new TemplateBinder(
                 UrlEncoder.Default,
                 _uriBuildingContextPool,
-                endpoint.ParsedTemplate,
-                endpoint.Defaults);
+                new RouteTemplate(endpoint.RoutePattern),
+                new RouteValueDictionary(endpoint.RoutePattern.Defaults));
 
             var templateValuesResult = templateBinder.GetValues(ambientValues, explicitValues);
             if (templateValuesResult == null)
@@ -110,20 +110,19 @@ namespace Microsoft.AspNetCore.Routing
             {
                 throw new ArgumentNullException(nameof(routeValues));
             }
-
-            for (var i = 0; i < endpoint.MatchProcessorReferences.Count; i++)
+            
+            foreach (var kvp in endpoint.RoutePattern.Constraints)
             {
-                var matchProcessorReference = endpoint.MatchProcessorReferences[i];
-                var parameter = endpoint.ParsedTemplate.GetParameter(matchProcessorReference.ParameterName);
-                if (parameter != null && parameter.IsOptional && !routeValues.ContainsKey(parameter.Name))
+                var parameter = endpoint.RoutePattern.GetParameter(kvp.Key); // may be null, that's ok
+                var constraintReferences = kvp.Value;
+                for (var i = 0; i < constraintReferences.Count; i++)
                 {
-                    continue;
-                }
-
-                var matchProcessor = _matchProcessorFactory.Create(matchProcessorReference);
-                if (!matchProcessor.ProcessOutbound(httpContext, routeValues))
-                {
-                    return false;
+                    var constraintReference = constraintReferences[i];
+                    var matchProcessor = _matchProcessorFactory.Create(parameter, constraintReference);
+                    if (!matchProcessor.ProcessOutbound(httpContext, routeValues))
+                    {
+                        return false;
+                    }
                 }
             }
 

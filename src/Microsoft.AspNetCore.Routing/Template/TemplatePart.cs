@@ -118,7 +118,7 @@ namespace Microsoft.AspNetCore.Routing.Template
                         RoutePatternParameterKind.Optional :
                         RoutePatternParameterKind.Standard;
 
-                var constraints = InlineConstraints.Select(c => new RoutePatternConstraintReference(Name, c.Constraint));
+                var constraints = InlineConstraints.Select(c => new RoutePatternConstraintReference(c.Constraint));
                 return RoutePatternFactory.ParameterPart(Name, DefaultValue, kind, constraints);
             }
         }

@@ -340,7 +340,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                         "p1",
                         null,
                         RoutePatternParameterKind.Standard,
-                        Constraint("p1", constraint))));
+                        Constraint(constraint))));
 
             // Act
             var actual = RoutePatternParser.Parse(template);
@@ -741,7 +741,6 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             public bool Equals(RoutePatternConstraintReference x, RoutePatternConstraintReference y)
             {
                 return
-                    x.ParameterName == y.ParameterName &&
                     x.Content == y.Content &&
                     x.Constraint == y.Constraint;
             }

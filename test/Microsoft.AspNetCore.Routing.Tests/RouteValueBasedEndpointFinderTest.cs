@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.AspNetCore.Routing.Matchers;
+using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.AspNetCore.Routing.TestObjects;
 using Microsoft.AspNetCore.Routing.Tree;
 using Microsoft.Extensions.ObjectPool;
@@ -185,15 +186,12 @@ namespace Microsoft.AspNetCore.Routing
 
         private MatcherEndpoint CreateEndpoint(
             string template,
-            object defaultValues = null,
+            object defaults = null,
             object requiredValues = null,
             int order = 0,
             string routeName = null,
             EndpointMetadataCollection metadataCollection = null)
         {
-            var defaults = defaultValues == null ? new RouteValueDictionary() : new RouteValueDictionary(defaultValues);
-            var required = requiredValues == null ? new RouteValueDictionary() : new RouteValueDictionary(requiredValues);
-
             if (metadataCollection == null)
             {
                 metadataCollection = EndpointMetadataCollection.Empty;
@@ -204,10 +202,9 @@ namespace Microsoft.AspNetCore.Routing
             }
 
             return new MatcherEndpoint(
-                next => (httpContext) => Task.CompletedTask,
-                template,
-                defaults,
-                required,
+                MatcherEndpoint.EmptyInvoker,
+                RoutePatternFactory.Parse(template, defaults, constraints: null),
+                new RouteValueDictionary(requiredValues),
                 order,
                 metadataCollection,
                 null);
