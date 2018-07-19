@@ -110,10 +110,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 throw new InvalidOperationException(message);
             }
 
-            var baselineFileName = Path.ChangeExtension(FileName, ".syntaxtree.txt");
-            var baselineDiagnosticsFileName = Path.ChangeExtension(FileName, ".diagnostics.txt");
-            var baselineClassifiedSpansFileName = Path.ChangeExtension(FileName, ".classifiedspans.txt");
-            var baselineTagHelperSpansFileName = Path.ChangeExtension(FileName, ".taghelperspans.txt");
+            var baselineFileName = Path.ChangeExtension(FileName, ".stree.txt");
+            var baselineDiagnosticsFileName = Path.ChangeExtension(FileName, ".diag.txt");
+            var baselineClassifiedSpansFileName = Path.ChangeExtension(FileName, ".cspans.txt");
+            var baselineTagHelperSpansFileName = Path.ChangeExtension(FileName, ".tspans.txt");
 
             if (GenerateBaselines)
             {

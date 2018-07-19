@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Linq;
 using Microsoft.AspNetCore.Razor.Language.Extensions;
 using Xunit;
 
@@ -11,31 +10,31 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
     public class HtmlToCodeSwitchTest : CsHtmlMarkupParserTestBase
     {
         [Fact]
-        public void ParseBlockSwitchesWhenCharacterBeforeSwapIsNonAlphanumeric()
+        public void SwitchesWhenCharacterBeforeSwapIsNonAlphanumeric()
         {
             ParseBlockTest("<p>foo#@i</p>");
         }
 
         [Fact]
-        public void ParseBlockSwitchesToCodeWhenSwapCharacterEncounteredMidTag()
+        public void SwitchesToCodeWhenSwapCharacterEncounteredMidTag()
         {
             ParseBlockTest("<foo @bar />");
         }
 
         [Fact]
-        public void ParseBlockSwitchesToCodeWhenSwapCharacterEncounteredInAttributeValue()
+        public void SwitchesToCodeWhenSwapCharacterEncounteredInAttributeValue()
         {
             ParseBlockTest("<foo bar=\"@baz\" />");
         }
 
         [Fact]
-        public void ParseBlockSwitchesToCodeWhenSwapCharacterEncounteredInTagContent()
+        public void SwitchesToCodeWhenSwapCharacterEncounteredInTagContent()
         {
             ParseBlockTest("<foo>@bar<baz>@boz</baz></foo>");
         }
 
         [Fact]
-        public void ParseBlockParsesCodeWithinSingleLineMarkup()
+        public void ParsesCodeWithinSingleLineMarkup()
         {
             // TODO: Fix at a later date, HTML should be a tag block: https://github.com/aspnet/Razor/issues/101
             ParseBlockTest("@:<li>Foo @Bar Baz" + Environment.NewLine
@@ -43,25 +42,25 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void ParseBlockSupportsCodeWithinComment()
+        public void SupportsCodeWithinComment()
         {
             ParseBlockTest("<foo><!-- @foo --></foo>");
         }
 
         [Fact]
-        public void ParseBlockSupportsCodeWithinSGMLDeclaration()
+        public void SupportsCodeWithinSGMLDeclaration()
         {
             ParseBlockTest("<foo><!DOCTYPE foo @bar baz></foo>");
         }
 
         [Fact]
-        public void ParseBlockSupportsCodeWithinCDataDeclaration()
+        public void SupportsCodeWithinCDataDeclaration()
         {
             ParseBlockTest("<foo><![CDATA[ foo @bar baz]]></foo>");
         }
 
         [Fact]
-        public void ParseBlockSupportsCodeWithinXMLProcessingInstruction()
+        public void SupportsCodeWithinXMLProcessingInstruction()
         {
             ParseBlockTest("<foo><?xml foo @bar baz?></foo>");
         }
@@ -73,13 +72,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void ParseBlockDoesNotSwitchToCodeOnEmailAddressInAttribute()
+        public void DoesNotSwitchToCodeOnEmailAddressInAttribute()
         {
             ParseBlockTest("<a href=\"mailto:anurse@microsoft.com\">Email me</a>");
         }
 
         [Fact]
-        public void ParseBlockGivesWhitespacePreceedingAtToCodeIfThereIsNoMarkupOnThatLine()
+        public void GivesWhitespacePreceedingAtToCodeIfThereIsNoMarkupOnThatLine()
         {
             ParseBlockTest("   <ul>" + Environment.NewLine
                          + "    @foreach(var p in Products) {" + Environment.NewLine
@@ -125,13 +124,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         // Tests for "@@" escape sequence:
         [Fact]
-        public void ParseBlockTreatsTwoAtSignsAsEscapeSequence()
+        public void TreatsTwoAtSignsAsEscapeSequence()
         {
             ParseBlockTest("<foo>@@bar</foo>");
         }
 
         [Fact]
-        public void ParseBlockTreatsPairsOfAtSignsAsEscapeSequence()
+        public void TreatsPairsOfAtSignsAsEscapeSequence()
         {
             ParseBlockTest("<foo>@@@@@bar</foo>");
         }

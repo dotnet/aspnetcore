@@ -50,43 +50,43 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         };
 
         [Fact]
-        public void Rewrite_CanHandleSymbolBoundAttributes1()
+        public void CanHandleSymbolBoundAttributes1()
         {
             EvaluateData(SymbolBoundAttributes_Descriptors, "<ul bound [item]='items'></ul>");
         }
 
         [Fact]
-        public void Rewrite_CanHandleSymbolBoundAttributes2()
+        public void CanHandleSymbolBoundAttributes2()
         {
             EvaluateData(SymbolBoundAttributes_Descriptors, "<ul bound [(item)]='items'></ul>");
         }
 
         [Fact]
-        public void Rewrite_CanHandleSymbolBoundAttributes3()
+        public void CanHandleSymbolBoundAttributes3()
         {
             EvaluateData(SymbolBoundAttributes_Descriptors, "<button bound (click)='doSomething()'>Click Me</button>");
         }
 
         [Fact]
-        public void Rewrite_CanHandleSymbolBoundAttributes4()
+        public void CanHandleSymbolBoundAttributes4()
         {
             EvaluateData(SymbolBoundAttributes_Descriptors, "<button bound (^click)='doSomething()'>Click Me</button>");
         }
 
         [Fact]
-        public void Rewrite_CanHandleSymbolBoundAttributes5()
+        public void CanHandleSymbolBoundAttributes5()
         {
             EvaluateData(SymbolBoundAttributes_Descriptors, "<template bound *something='value'></template>");
         }
 
         [Fact]
-        public void Rewrite_CanHandleSymbolBoundAttributes6()
+        public void CanHandleSymbolBoundAttributes6()
         {
             EvaluateData(SymbolBoundAttributes_Descriptors, "<div bound #localminimized></div>");
         }
 
         [Fact]
-        public void Rewrite_CanHandleSymbolBoundAttributes7()
+        public void CanHandleSymbolBoundAttributes7()
         {
             EvaluateData(SymbolBoundAttributes_Descriptors, "<div bound #local='value'></div>");
         }
@@ -102,31 +102,31 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         };
 
         [Fact]
-        public void Rewrite_CanHandleWithoutEndTagTagStructure1()
+        public void CanHandleWithoutEndTagTagStructure1()
         {
             EvaluateData(WithoutEndTag_Descriptors, "<input>");
         }
 
         [Fact]
-        public void Rewrite_CanHandleWithoutEndTagTagStructure2()
+        public void CanHandleWithoutEndTagTagStructure2()
         {
             EvaluateData(WithoutEndTag_Descriptors, "<input type='text'>");
         }
 
         [Fact]
-        public void Rewrite_CanHandleWithoutEndTagTagStructure3()
+        public void CanHandleWithoutEndTagTagStructure3()
         {
             EvaluateData(WithoutEndTag_Descriptors, "<input><input>");
         }
 
         [Fact]
-        public void Rewrite_CanHandleWithoutEndTagTagStructure4()
+        public void CanHandleWithoutEndTagTagStructure4()
         {
             EvaluateData(WithoutEndTag_Descriptors, "<input type='text'><input>");
         }
 
         [Fact]
-        public void Rewrite_CanHandleWithoutEndTagTagStructure5()
+        public void CanHandleWithoutEndTagTagStructure5()
         {
             EvaluateData(WithoutEndTag_Descriptors, "<div><input><input></div>");
         }
@@ -153,7 +153,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_AllowsCompatibleTagStructures1()
+        public void AllowsCompatibleTagStructures1()
         {
             // Arrange
             var descriptors = GetTagStructureCompatibilityDescriptors(TagStructure.Unspecified, TagStructure.Unspecified);
@@ -163,7 +163,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_AllowsCompatibleTagStructures2()
+        public void AllowsCompatibleTagStructures2()
         {
             // Arrange
             var descriptors = GetTagStructureCompatibilityDescriptors(TagStructure.Unspecified, TagStructure.Unspecified);
@@ -173,7 +173,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_AllowsCompatibleTagStructures3()
+        public void AllowsCompatibleTagStructures3()
         {
             // Arrange
             var descriptors = GetTagStructureCompatibilityDescriptors(TagStructure.Unspecified, TagStructure.WithoutEndTag);
@@ -183,7 +183,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_AllowsCompatibleTagStructures4()
+        public void AllowsCompatibleTagStructures4()
         {
             // Arrange
             var descriptors = GetTagStructureCompatibilityDescriptors(TagStructure.WithoutEndTag, TagStructure.WithoutEndTag);
@@ -193,7 +193,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_AllowsCompatibleTagStructures5()
+        public void AllowsCompatibleTagStructures5()
         {
             // Arrange
             var descriptors = GetTagStructureCompatibilityDescriptors(TagStructure.Unspecified, TagStructure.NormalOrSelfClosing);
@@ -203,7 +203,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_AllowsCompatibleTagStructures6()
+        public void AllowsCompatibleTagStructures6()
         {
             // Arrange
             var descriptors = GetTagStructureCompatibilityDescriptors(TagStructure.Unspecified, TagStructure.WithoutEndTag);
@@ -213,7 +213,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_AllowsCompatibleTagStructures7()
+        public void AllowsCompatibleTagStructures7()
         {
             // Arrange
             var descriptors = GetTagStructureCompatibilityDescriptors(TagStructure.NormalOrSelfClosing, TagStructure.Unspecified);
@@ -223,163 +223,163 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_CreatesErrorForMalformedTagHelpersWithAttributes1()
+        public void CreatesErrorForMalformedTagHelpersWithAttributes1()
         {
             RunParseTreeRewriterTest("<p class='", "strong", "p");
         }
 
         [Fact]
-        public void Rewrite_CreatesErrorForMalformedTagHelpersWithAttributes2()
+        public void CreatesErrorForMalformedTagHelpersWithAttributes2()
         {
             RunParseTreeRewriterTest("<p bar=\"false\"\" <strong>", "strong", "p");
         }
 
         [Fact]
-        public void Rewrite_CreatesErrorForMalformedTagHelpersWithAttributes3()
+        public void CreatesErrorForMalformedTagHelpersWithAttributes3()
         {
             RunParseTreeRewriterTest("<p bar='false  <strong>", "strong", "p");
         }
 
         [Fact]
-        public void Rewrite_CreatesErrorForMalformedTagHelpersWithAttributes4()
+        public void CreatesErrorForMalformedTagHelpersWithAttributes4()
         {
             RunParseTreeRewriterTest("<p bar='false  <strong'", "strong", "p");
         }
 
         [Fact]
-        public void Rewrite_CreatesErrorForMalformedTagHelpersWithAttributes5()
+        public void CreatesErrorForMalformedTagHelpersWithAttributes5()
         {
             RunParseTreeRewriterTest("<p bar=false'", "strong", "p");
         }
 
         [Fact]
-        public void Rewrite_CreatesErrorForMalformedTagHelpersWithAttributes6()
+        public void CreatesErrorForMalformedTagHelpersWithAttributes6()
         {
             RunParseTreeRewriterTest("<p bar=\"false'", "strong", "p");
         }
 
         [Fact]
-        public void Rewrite_CreatesErrorForMalformedTagHelpersWithAttributes7()
+        public void CreatesErrorForMalformedTagHelpersWithAttributes7()
         {
             RunParseTreeRewriterTest("<p bar=\"false' ></p>", "strong", "p");
         }
 
         [Fact]
-        public void Rewrite_CreatesErrorForMalformedTagHelpersWithAttributes8()
+        public void CreatesErrorForMalformedTagHelpersWithAttributes8()
         {
             RunParseTreeRewriterTest("<p foo bar<strong>", "strong", "p");
         }
 
         [Fact]
-        public void Rewrite_CreatesErrorForMalformedTagHelpersWithAttributes9()
+        public void CreatesErrorForMalformedTagHelpersWithAttributes9()
         {
             RunParseTreeRewriterTest("<p class=btn\" bar<strong>", "strong", "p");
         }
 
         [Fact]
-        public void Rewrite_CreatesErrorForMalformedTagHelpersWithAttributes10()
+        public void CreatesErrorForMalformedTagHelpersWithAttributes10()
         {
             RunParseTreeRewriterTest("<p class=btn\" bar=\"foo\"<strong>", "strong", "p");
         }
 
         [Fact]
-        public void Rewrite_CreatesErrorForMalformedTagHelpersWithAttributes11()
+        public void CreatesErrorForMalformedTagHelpersWithAttributes11()
         {
             RunParseTreeRewriterTest("<p class=\"btn bar=\"foo\"<strong>", "strong", "p");
         }
 
         [Fact]
-        public void Rewrite_CreatesErrorForMalformedTagHelpersWithAttributes12()
+        public void CreatesErrorForMalformedTagHelpersWithAttributes12()
         {
             RunParseTreeRewriterTest("<p class=\"btn bar=\"foo\"></p>", "strong", "p");
         }
 
         [Fact]
-        public void Rewrite_CreatesErrorForMalformedTagHelpersWithAttributes13()
+        public void CreatesErrorForMalformedTagHelpersWithAttributes13()
         {
             RunParseTreeRewriterTest("<p @DateTime.Now class=\"btn\"></p>", "strong", "p");
         }
 
         [Fact]
-        public void Rewrite_CreatesErrorForMalformedTagHelpersWithAttributes14()
+        public void CreatesErrorForMalformedTagHelpersWithAttributes14()
         {
             RunParseTreeRewriterTest("<p @DateTime.Now=\"btn\"></p>", "strong", "p");
         }
 
         [Fact]
-        public void Rewrite_CreatesErrorForMalformedTagHelpersWithAttributes15()
+        public void CreatesErrorForMalformedTagHelpersWithAttributes15()
         {
             RunParseTreeRewriterTest("<p class=@DateTime.Now\"></p>", "strong", "p");
         }
 
         [Fact]
-        public void Rewrite_CreatesErrorForMalformedTagHelpersWithAttributes16()
+        public void CreatesErrorForMalformedTagHelpersWithAttributes16()
         {
             RunParseTreeRewriterTest("<p class=\"@do {", "strong", "p");
         }
 
         [Fact]
-        public void Rewrite_CreatesErrorForMalformedTagHelpersWithAttributes17()
+        public void CreatesErrorForMalformedTagHelpersWithAttributes17()
         {
             RunParseTreeRewriterTest("<p class=\"@do {\"></p>", "strong", "p");
         }
 
         [Fact]
-        public void Rewrite_CreatesErrorForMalformedTagHelpersWithAttributes18()
+        public void CreatesErrorForMalformedTagHelpersWithAttributes18()
         {
             RunParseTreeRewriterTest("<p @do { someattribute=\"btn\"></p>", "strong", "p");
         }
 
         [Fact]
-        public void Rewrite_CreatesErrorForMalformedTagHelpersWithAttributes19()
+        public void CreatesErrorForMalformedTagHelpersWithAttributes19()
         {
             RunParseTreeRewriterTest("<p class=some=thing attr=\"@value\"></p>", "strong", "p");
         }
 
         [Fact]
-        public void Rewrite_CreatesErrorForMalformedTagHelper1()
+        public void CreatesErrorForMalformedTagHelper1()
         {
             RunParseTreeRewriterTest("<p", "strong", "p");
         }
 
         [Fact]
-        public void Rewrite_CreatesErrorForMalformedTagHelper2()
+        public void CreatesErrorForMalformedTagHelper2()
         {
             RunParseTreeRewriterTest("<p></p", "strong", "p");
         }
 
         [Fact]
-        public void Rewrite_CreatesErrorForMalformedTagHelper3()
+        public void CreatesErrorForMalformedTagHelper3()
         {
             RunParseTreeRewriterTest("<p><strong", "strong", "p");
         }
 
         [Fact]
-        public void Rewrite_CreatesErrorForMalformedTagHelper4()
+        public void CreatesErrorForMalformedTagHelper4()
         {
             RunParseTreeRewriterTest("<strong <p>", "strong", "p");
         }
 
         [Fact]
-        public void Rewrite_CreatesErrorForMalformedTagHelper5()
+        public void CreatesErrorForMalformedTagHelper5()
         {
             RunParseTreeRewriterTest("<strong </strong", "strong", "p");
         }
 
         [Fact]
-        public void Rewrite_CreatesErrorForMalformedTagHelper6()
+        public void CreatesErrorForMalformedTagHelper6()
         {
             RunParseTreeRewriterTest("<<</strong> <<p>", "strong", "p");
         }
 
         [Fact]
-        public void Rewrite_CreatesErrorForMalformedTagHelper7()
+        public void CreatesErrorForMalformedTagHelper7()
         {
             RunParseTreeRewriterTest("<<<strong>> <<>>", "strong", "p");
         }
 
         [Fact]
-        public void Rewrite_CreatesErrorForMalformedTagHelper8()
+        public void CreatesErrorForMalformedTagHelper8()
         {
             RunParseTreeRewriterTest("<str<strong></p></strong>", "strong", "p");
         }
@@ -407,67 +407,67 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         };
 
         [Fact]
-        public void Rewrite_CreatesMarkupCodeSpansForNonStringTagHelperAttributes1()
+        public void CreatesMarkupCodeSpansForNonStringTagHelperAttributes1()
         {
             EvaluateData(CodeTagHelperAttributes_Descriptors, "<person age=\"12\" />");
         }
 
         [Fact]
-        public void Rewrite_CreatesMarkupCodeSpansForNonStringTagHelperAttributes2()
+        public void CreatesMarkupCodeSpansForNonStringTagHelperAttributes2()
         {
             EvaluateData(CodeTagHelperAttributes_Descriptors, "<person birthday=\"DateTime.Now\" />");
         }
 
         [Fact]
-        public void Rewrite_CreatesMarkupCodeSpansForNonStringTagHelperAttributes3()
+        public void CreatesMarkupCodeSpansForNonStringTagHelperAttributes3()
         {
             EvaluateData(CodeTagHelperAttributes_Descriptors, "<person age=\"@DateTime.Now.Year\" />");
         }
 
         [Fact]
-        public void Rewrite_CreatesMarkupCodeSpansForNonStringTagHelperAttributes4()
+        public void CreatesMarkupCodeSpansForNonStringTagHelperAttributes4()
         {
             EvaluateData(CodeTagHelperAttributes_Descriptors, "<person age=\" @DateTime.Now.Year\" />");
         }
 
         [Fact]
-        public void Rewrite_CreatesMarkupCodeSpansForNonStringTagHelperAttributes5()
+        public void CreatesMarkupCodeSpansForNonStringTagHelperAttributes5()
         {
             EvaluateData(CodeTagHelperAttributes_Descriptors, "<person name=\"John\" />");
         }
 
         [Fact]
-        public void Rewrite_CreatesMarkupCodeSpansForNonStringTagHelperAttributes6()
+        public void CreatesMarkupCodeSpansForNonStringTagHelperAttributes6()
         {
             EvaluateData(CodeTagHelperAttributes_Descriptors, "<person name=\"Time: @DateTime.Now\" />");
         }
 
         [Fact]
-        public void Rewrite_CreatesMarkupCodeSpansForNonStringTagHelperAttributes7()
+        public void CreatesMarkupCodeSpansForNonStringTagHelperAttributes7()
         {
             EvaluateData(CodeTagHelperAttributes_Descriptors, "<person age=\"1 + @value + 2\" birthday='(bool)@Bag[\"val\"] ? @@DateTime : @DateTime.Now'/>");
         }
 
         [Fact]
-        public void Rewrite_CreatesMarkupCodeSpansForNonStringTagHelperAttributes8()
+        public void CreatesMarkupCodeSpansForNonStringTagHelperAttributes8()
         {
             EvaluateData(CodeTagHelperAttributes_Descriptors, "<person age=\"12\" birthday=\"DateTime.Now\" name=\"Time: @DateTime.Now\" />");
         }
 
         [Fact]
-        public void Rewrite_CreatesMarkupCodeSpansForNonStringTagHelperAttributes9()
+        public void CreatesMarkupCodeSpansForNonStringTagHelperAttributes9()
         {
             EvaluateData(CodeTagHelperAttributes_Descriptors, "<person age=\"12\" birthday=\"DateTime.Now\" name=\"Time: @@ @DateTime.Now\" />");
         }
 
         [Fact]
-        public void Rewrite_CreatesMarkupCodeSpansForNonStringTagHelperAttributes10()
+        public void CreatesMarkupCodeSpansForNonStringTagHelperAttributes10()
         {
             EvaluateData(CodeTagHelperAttributes_Descriptors, "<person age=\"12\" birthday=\"DateTime.Now\" name=\"@@BoundStringAttribute\" />");
         }
 
         [Fact]
-        public void Rewrite_CreatesMarkupCodeSpansForNonStringTagHelperAttributes11()
+        public void CreatesMarkupCodeSpansForNonStringTagHelperAttributes11()
         {
             EvaluateData(CodeTagHelperAttributes_Descriptors, "<person age=\"@@@(11+1)\" birthday=\"DateTime.Now\" name=\"Time: @DateTime.Now\" />");
         }
@@ -755,31 +755,31 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsEmptyAttributeTagHelpers1()
+        public void UnderstandsEmptyAttributeTagHelpers1()
         {
             RunParseTreeRewriterTest("<p class=\"\"></p>", "p");
         }
 
         [Fact]
-        public void Rewrite_UnderstandsEmptyAttributeTagHelpers2()
+        public void UnderstandsEmptyAttributeTagHelpers2()
         {
             RunParseTreeRewriterTest("<p class=''></p>", "p");
         }
 
         [Fact]
-        public void Rewrite_UnderstandsEmptyAttributeTagHelpers3()
+        public void UnderstandsEmptyAttributeTagHelpers3()
         {
             RunParseTreeRewriterTest("<p class=></p>", "p");
         }
 
         [Fact]
-        public void Rewrite_UnderstandsEmptyAttributeTagHelpers4()
+        public void UnderstandsEmptyAttributeTagHelpers4()
         {
             RunParseTreeRewriterTest("<p class1='' class2= class3=\"\" />", "p");
         }
 
         [Fact]
-        public void Rewrite_UnderstandsEmptyAttributeTagHelpers5()
+        public void UnderstandsEmptyAttributeTagHelpers5()
         {
             RunParseTreeRewriterTest("<p class1=''class2=\"\"class3= />", "p");
         }
@@ -802,85 +802,85 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         };
 
         [Fact]
-        public void Rewrite_CreatesErrorForEmptyTagHelperBoundAttributes1()
+        public void CreatesErrorForEmptyTagHelperBoundAttributes1()
         {
             EvaluateData(EmptyTagHelperBoundAttribute_Descriptors, "<myth bound='' />");
         }
 
         [Fact]
-        public void Rewrite_CreatesErrorForEmptyTagHelperBoundAttributes2()
+        public void CreatesErrorForEmptyTagHelperBoundAttributes2()
         {
             EvaluateData(EmptyTagHelperBoundAttribute_Descriptors, "<myth bound='    true' />");
         }
 
         [Fact]
-        public void Rewrite_CreatesErrorForEmptyTagHelperBoundAttributes3()
+        public void CreatesErrorForEmptyTagHelperBoundAttributes3()
         {
             EvaluateData(EmptyTagHelperBoundAttribute_Descriptors, "<myth bound='    ' />");
         }
 
         [Fact]
-        public void Rewrite_CreatesErrorForEmptyTagHelperBoundAttributes4()
+        public void CreatesErrorForEmptyTagHelperBoundAttributes4()
         {
             EvaluateData(EmptyTagHelperBoundAttribute_Descriptors, "<myth bound=''  bound=\"\" />");
         }
 
         [Fact]
-        public void Rewrite_CreatesErrorForEmptyTagHelperBoundAttributes5()
+        public void CreatesErrorForEmptyTagHelperBoundAttributes5()
         {
             EvaluateData(EmptyTagHelperBoundAttribute_Descriptors, "<myth bound=' '  bound=\"  \" />");
         }
 
         [Fact]
-        public void Rewrite_CreatesErrorForEmptyTagHelperBoundAttributes6()
+        public void CreatesErrorForEmptyTagHelperBoundAttributes6()
         {
             EvaluateData(EmptyTagHelperBoundAttribute_Descriptors, "<myth bound='true' bound=  />");
         }
 
         [Fact]
-        public void Rewrite_CreatesErrorForEmptyTagHelperBoundAttributes7()
+        public void CreatesErrorForEmptyTagHelperBoundAttributes7()
         {
             EvaluateData(EmptyTagHelperBoundAttribute_Descriptors, "<myth bound= name='' />");
         }
 
         [Fact]
-        public void Rewrite_CreatesErrorForEmptyTagHelperBoundAttributes8()
+        public void CreatesErrorForEmptyTagHelperBoundAttributes8()
         {
             EvaluateData(EmptyTagHelperBoundAttribute_Descriptors, "<myth bound= name='  ' />");
         }
 
         [Fact]
-        public void Rewrite_CreatesErrorForEmptyTagHelperBoundAttributes9()
+        public void CreatesErrorForEmptyTagHelperBoundAttributes9()
         {
             EvaluateData(EmptyTagHelperBoundAttribute_Descriptors, "<myth bound='true' name='john' bound= name= />");
         }
 
         [Fact]
-        public void Rewrite_CreatesErrorForEmptyTagHelperBoundAttributes10()
+        public void CreatesErrorForEmptyTagHelperBoundAttributes10()
         {
             EvaluateData(EmptyTagHelperBoundAttribute_Descriptors, "<myth BouND='' />");
         }
 
         [Fact]
-        public void Rewrite_CreatesErrorForEmptyTagHelperBoundAttributes11()
+        public void CreatesErrorForEmptyTagHelperBoundAttributes11()
         {
             EvaluateData(EmptyTagHelperBoundAttribute_Descriptors, "<myth BOUND=''    bOUnd=\"\" />");
         }
 
         [Fact]
-        public void Rewrite_CreatesErrorForEmptyTagHelperBoundAttributes12()
+        public void CreatesErrorForEmptyTagHelperBoundAttributes12()
         {
             EvaluateData(EmptyTagHelperBoundAttribute_Descriptors, "<myth BOUND= nAMe='john'></myth>");
         }
 
         [Fact]
-        public void Rewrite_CreatesErrorForEmptyTagHelperBoundAttributes13()
+        public void CreatesErrorForEmptyTagHelperBoundAttributes13()
         {
             EvaluateData(EmptyTagHelperBoundAttribute_Descriptors, "<myth bound='    @true  ' />");
         }
 
         [Fact]
-        public void Rewrite_CreatesErrorForEmptyTagHelperBoundAttributes14()
+        public void CreatesErrorForEmptyTagHelperBoundAttributes14()
         {
             EvaluateData(EmptyTagHelperBoundAttribute_Descriptors, "<myth bound='    @(true)  ' />");
         }
@@ -1026,7 +1026,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_GeneratesExpectedOutputForUnboundDataDashAttributes_Document1()
+        public void GeneratesExpectedOutputForUnboundDataDashAttributes_Document1()
         {
             // Arrange
             var dateTimeNowString = "@DateTime.Now";
@@ -1037,7 +1037,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_GeneratesExpectedOutputForUnboundDataDashAttributes_Document2()
+        public void GeneratesExpectedOutputForUnboundDataDashAttributes_Document2()
         {
             // Arrange
             var document = "<input data-required='value' />";
@@ -1047,7 +1047,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_GeneratesExpectedOutputForUnboundDataDashAttributes_Document3()
+        public void GeneratesExpectedOutputForUnboundDataDashAttributes_Document3()
         {
             // Arrange
             var dateTimeNowString = "@DateTime.Now";
@@ -1058,7 +1058,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_GeneratesExpectedOutputForUnboundDataDashAttributes_Document4()
+        public void GeneratesExpectedOutputForUnboundDataDashAttributes_Document4()
         {
             // Arrange
             var dateTimeNowString = "@DateTime.Now";
@@ -1069,7 +1069,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_GeneratesExpectedOutputForUnboundDataDashAttributes_Document5()
+        public void GeneratesExpectedOutputForUnboundDataDashAttributes_Document5()
         {
             // Arrange
             var dateTimeNowString = "@DateTime.Now";
@@ -1080,7 +1080,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_GeneratesExpectedOutputForUnboundDataDashAttributes_Document6()
+        public void GeneratesExpectedOutputForUnboundDataDashAttributes_Document6()
         {
             // Arrange
             var dateTimeNowString = "@DateTime.Now";
@@ -1091,7 +1091,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_GeneratesExpectedOutputForUnboundDataDashAttributes_Document7()
+        public void GeneratesExpectedOutputForUnboundDataDashAttributes_Document7()
         {
             // Arrange
             var dateTimeNowString = "@DateTime.Now";
@@ -1102,7 +1102,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_GeneratesExpectedOutputForUnboundDataDashAttributes_Block1()
+        public void GeneratesExpectedOutputForUnboundDataDashAttributes_Block1()
         {
             // Arrange
             var dateTimeNowString = "@DateTime.Now";
@@ -1116,7 +1116,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_GeneratesExpectedOutputForUnboundDataDashAttributes_Block2()
+        public void GeneratesExpectedOutputForUnboundDataDashAttributes_Block2()
         {
             // Arrange
             var document = "<input data-required='value' />";
@@ -1129,7 +1129,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_GeneratesExpectedOutputForUnboundDataDashAttributes_Block3()
+        public void GeneratesExpectedOutputForUnboundDataDashAttributes_Block3()
         {
             // Arrange
             var dateTimeNowString = "@DateTime.Now";
@@ -1143,7 +1143,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_GeneratesExpectedOutputForUnboundDataDashAttributes_Block4()
+        public void GeneratesExpectedOutputForUnboundDataDashAttributes_Block4()
         {
             // Arrange
             var dateTimeNowString = "@DateTime.Now";
@@ -1157,7 +1157,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_GeneratesExpectedOutputForUnboundDataDashAttributes_Block5()
+        public void GeneratesExpectedOutputForUnboundDataDashAttributes_Block5()
         {
             // Arrange
             var dateTimeNowString = "@DateTime.Now";
@@ -1171,7 +1171,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_GeneratesExpectedOutputForUnboundDataDashAttributes_Block6()
+        public void GeneratesExpectedOutputForUnboundDataDashAttributes_Block6()
         {
             // Arrange
             var dateTimeNowString = "@DateTime.Now";
@@ -1185,7 +1185,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_GeneratesExpectedOutputForUnboundDataDashAttributes_Block7()
+        public void GeneratesExpectedOutputForUnboundDataDashAttributes_Block7()
         {
             // Arrange
             var dateTimeNowString = "@DateTime.Now";
@@ -1257,7 +1257,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         };
 
         [Fact]
-        public void Rewrite_UnderstandsMinimizedAttributes_Document1()
+        public void UnderstandsMinimizedAttributes_Document1()
         {
             // Arrange
             var document = "<input unbound-required />";
@@ -1267,7 +1267,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsMinimizedAttributes_Document2()
+        public void UnderstandsMinimizedAttributes_Document2()
         {
             // Arrange
             var document = "<p bound-string></p>";
@@ -1277,7 +1277,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsMinimizedAttributes_Document3()
+        public void UnderstandsMinimizedAttributes_Document3()
         {
             // Arrange
             var document = "<input bound-required-string />";
@@ -1287,7 +1287,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsMinimizedAttributes_Document4()
+        public void UnderstandsMinimizedAttributes_Document4()
         {
             // Arrange
             var document = "<input bound-required-int />";
@@ -1297,7 +1297,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsMinimizedAttributes_Document5()
+        public void UnderstandsMinimizedAttributes_Document5()
         {
             // Arrange
             var document = "<p bound-int></p>";
@@ -1307,7 +1307,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsMinimizedAttributes_Document6()
+        public void UnderstandsMinimizedAttributes_Document6()
         {
             // Arrange
             var document = "<input int-dictionary/>";
@@ -1317,7 +1317,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsMinimizedAttributes_Document7()
+        public void UnderstandsMinimizedAttributes_Document7()
         {
             // Arrange
             var document = "<input string-dictionary />";
@@ -1327,7 +1327,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsMinimizedAttributes_Document8()
+        public void UnderstandsMinimizedAttributes_Document8()
         {
             // Arrange
             var document = "<input int-prefix- />";
@@ -1337,7 +1337,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsMinimizedAttributes_Document9()
+        public void UnderstandsMinimizedAttributes_Document9()
         {
             // Arrange
             var document = "<input string-prefix-/>";
@@ -1347,7 +1347,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsMinimizedAttributes_Document10()
+        public void UnderstandsMinimizedAttributes_Document10()
         {
             // Arrange
             var document = "<input int-prefix-value/>";
@@ -1357,7 +1357,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsMinimizedAttributes_Document11()
+        public void UnderstandsMinimizedAttributes_Document11()
         {
             // Arrange
             var document = "<input string-prefix-value />";
@@ -1367,7 +1367,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsMinimizedAttributes_Document12()
+        public void UnderstandsMinimizedAttributes_Document12()
         {
             // Arrange
             var document = "<input int-prefix-value='' />";
@@ -1377,7 +1377,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsMinimizedAttributes_Document13()
+        public void UnderstandsMinimizedAttributes_Document13()
         {
             // Arrange
             var document = "<input string-prefix-value=''/>";
@@ -1387,7 +1387,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsMinimizedAttributes_Document14()
+        public void UnderstandsMinimizedAttributes_Document14()
         {
             // Arrange
             var document = "<input int-prefix-value='3'/>";
@@ -1397,7 +1397,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsMinimizedAttributes_Document15()
+        public void UnderstandsMinimizedAttributes_Document15()
         {
             // Arrange
             var document = "<input string-prefix-value='some string' />";
@@ -1407,7 +1407,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsMinimizedAttributes_Document16()
+        public void UnderstandsMinimizedAttributes_Document16()
         {
             // Arrange
             var document = "<input unbound-required bound-required-string />";
@@ -1417,7 +1417,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsMinimizedAttributes_Document17()
+        public void UnderstandsMinimizedAttributes_Document17()
         {
             // Arrange
             var document = "<p bound-int bound-string></p>";
@@ -1427,7 +1427,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsMinimizedAttributes_Document18()
+        public void UnderstandsMinimizedAttributes_Document18()
         {
             // Arrange
             var document = "<input bound-required-int unbound-required bound-required-string />";
@@ -1437,7 +1437,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsMinimizedAttributes_Document19()
+        public void UnderstandsMinimizedAttributes_Document19()
         {
             // Arrange
             var document = "<p bound-int bound-string bound-string></p>";
@@ -1447,7 +1447,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsMinimizedAttributes_Document20()
+        public void UnderstandsMinimizedAttributes_Document20()
         {
             // Arrange
             var document = "<input unbound-required class='btn' />";
@@ -1457,7 +1457,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsMinimizedAttributes_Document21()
+        public void UnderstandsMinimizedAttributes_Document21()
         {
             // Arrange
             var document = "<p bound-string class='btn'></p>";
@@ -1467,7 +1467,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsMinimizedAttributes_Document22()
+        public void UnderstandsMinimizedAttributes_Document22()
         {
             // Arrange
             var document = "<input class='btn' unbound-required />";
@@ -1477,7 +1477,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsMinimizedAttributes_Document23()
+        public void UnderstandsMinimizedAttributes_Document23()
         {
             // Arrange
             var document = "<p class='btn' bound-string></p>";
@@ -1487,7 +1487,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsMinimizedAttributes_Document24()
+        public void UnderstandsMinimizedAttributes_Document24()
         {
             // Arrange
             var document = "<input bound-required-string class='btn' />";
@@ -1497,7 +1497,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsMinimizedAttributes_Document25()
+        public void UnderstandsMinimizedAttributes_Document25()
         {
             // Arrange
             var document = "<input class='btn' bound-required-string />";
@@ -1507,7 +1507,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsMinimizedAttributes_Document26()
+        public void UnderstandsMinimizedAttributes_Document26()
         {
             // Arrange
             var document = "<input bound-required-int class='btn' />";
@@ -1517,7 +1517,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsMinimizedAttributes_Document27()
+        public void UnderstandsMinimizedAttributes_Document27()
         {
             // Arrange
             var document = "<p bound-int class='btn'></p>";
@@ -1527,7 +1527,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsMinimizedAttributes_Document28()
+        public void UnderstandsMinimizedAttributes_Document28()
         {
             // Arrange
             var document = "<input class='btn' bound-required-int />";
@@ -1537,7 +1537,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsMinimizedAttributes_Document29()
+        public void UnderstandsMinimizedAttributes_Document29()
         {
             // Arrange
             var document = "<p class='btn' bound-int></p>";
@@ -1547,7 +1547,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsMinimizedAttributes_Document30()
+        public void UnderstandsMinimizedAttributes_Document30()
         {
             // Arrange
             var expressionString = "@DateTime.Now + 1";
@@ -1558,7 +1558,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsMinimizedAttributes_Document31()
+        public void UnderstandsMinimizedAttributes_Document31()
         {
             // Arrange
             var expressionString = "@DateTime.Now + 1";
@@ -1569,7 +1569,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsMinimizedAttributes_Document32()
+        public void UnderstandsMinimizedAttributes_Document32()
         {
             // Arrange
             var expressionString = "@DateTime.Now + 1";
@@ -1580,7 +1580,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsMinimizedAttributes_Document33()
+        public void UnderstandsMinimizedAttributes_Document33()
         {
             // Arrange
             var expressionString = "@DateTime.Now + 1";
@@ -1591,7 +1591,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsMinimizedAttributes_Block1()
+        public void UnderstandsMinimizedAttributes_Block1()
         {
             // Arrange
             var document = "<input unbound-required />";
@@ -1604,7 +1604,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsMinimizedAttributes_Block2()
+        public void UnderstandsMinimizedAttributes_Block2()
         {
             // Arrange
             var document = "<p bound-string></p>";
@@ -1617,7 +1617,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsMinimizedAttributes_Block3()
+        public void UnderstandsMinimizedAttributes_Block3()
         {
             // Arrange
             var document = "<input bound-required-string />";
@@ -1630,7 +1630,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsMinimizedAttributes_Block4()
+        public void UnderstandsMinimizedAttributes_Block4()
         {
             // Arrange
             var document = "<input bound-required-int />";
@@ -1643,7 +1643,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsMinimizedAttributes_Block5()
+        public void UnderstandsMinimizedAttributes_Block5()
         {
             // Arrange
             var document = "<p bound-int></p>";
@@ -1656,7 +1656,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsMinimizedAttributes_Block6()
+        public void UnderstandsMinimizedAttributes_Block6()
         {
             // Arrange
             var document = "<input int-dictionary/>";
@@ -1669,7 +1669,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsMinimizedAttributes_Block7()
+        public void UnderstandsMinimizedAttributes_Block7()
         {
             // Arrange
             var document = "<input string-dictionary />";
@@ -1682,7 +1682,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsMinimizedAttributes_Block8()
+        public void UnderstandsMinimizedAttributes_Block8()
         {
             // Arrange
             var document = "<input int-prefix- />";
@@ -1695,7 +1695,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsMinimizedAttributes_Block9()
+        public void UnderstandsMinimizedAttributes_Block9()
         {
             // Arrange
             var document = "<input string-prefix-/>";
@@ -1708,7 +1708,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsMinimizedAttributes_Block10()
+        public void UnderstandsMinimizedAttributes_Block10()
         {
             // Arrange
             var document = "<input int-prefix-value/>";
@@ -1721,7 +1721,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsMinimizedAttributes_Block11()
+        public void UnderstandsMinimizedAttributes_Block11()
         {
             // Arrange
             var document = "<input string-prefix-value />";
@@ -1734,7 +1734,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsMinimizedAttributes_Block12()
+        public void UnderstandsMinimizedAttributes_Block12()
         {
             // Arrange
             var document = "<input int-prefix-value='' />";
@@ -1747,7 +1747,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsMinimizedAttributes_Block13()
+        public void UnderstandsMinimizedAttributes_Block13()
         {
             // Arrange
             var document = "<input string-prefix-value=''/>";
@@ -1760,7 +1760,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsMinimizedAttributes_Block14()
+        public void UnderstandsMinimizedAttributes_Block14()
         {
             // Arrange
             var document = "<input int-prefix-value='3'/>";
@@ -1773,7 +1773,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsMinimizedAttributes_Block15()
+        public void UnderstandsMinimizedAttributes_Block15()
         {
             // Arrange
             var document = "<input string-prefix-value='some string' />";
@@ -1786,7 +1786,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsMinimizedAttributes_Block16()
+        public void UnderstandsMinimizedAttributes_Block16()
         {
             // Arrange
             var document = "<input unbound-required bound-required-string />";
@@ -1799,7 +1799,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsMinimizedAttributes_Block17()
+        public void UnderstandsMinimizedAttributes_Block17()
         {
             // Arrange
             var document = "<p bound-int bound-string></p>";
@@ -1812,7 +1812,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsMinimizedAttributes_Block18()
+        public void UnderstandsMinimizedAttributes_Block18()
         {
             // Arrange
             var document = "<input bound-required-int unbound-required bound-required-string />";
@@ -1825,7 +1825,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsMinimizedAttributes_Block19()
+        public void UnderstandsMinimizedAttributes_Block19()
         {
             // Arrange
             var document = "<p bound-int bound-string bound-string></p>";
@@ -1838,7 +1838,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsMinimizedAttributes_Block20()
+        public void UnderstandsMinimizedAttributes_Block20()
         {
             // Arrange
             var document = "<input unbound-required class='btn' />";
@@ -1851,7 +1851,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsMinimizedAttributes_Block21()
+        public void UnderstandsMinimizedAttributes_Block21()
         {
             // Arrange
             var document = "<p bound-string class='btn'></p>";
@@ -1864,7 +1864,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsMinimizedAttributes_Block22()
+        public void UnderstandsMinimizedAttributes_Block22()
         {
             // Arrange
             var document = "<input class='btn' unbound-required />";
@@ -1877,7 +1877,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsMinimizedAttributes_Block23()
+        public void UnderstandsMinimizedAttributes_Block23()
         {
             // Arrange
             var document = "<p class='btn' bound-string></p>";
@@ -1890,7 +1890,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsMinimizedAttributes_Block24()
+        public void UnderstandsMinimizedAttributes_Block24()
         {
             // Arrange
             var document = "<input bound-required-string class='btn' />";
@@ -1903,7 +1903,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsMinimizedAttributes_Block25()
+        public void UnderstandsMinimizedAttributes_Block25()
         {
             // Arrange
             var document = "<input class='btn' bound-required-string />";
@@ -1916,7 +1916,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsMinimizedAttributes_Block26()
+        public void UnderstandsMinimizedAttributes_Block26()
         {
             // Arrange
             var document = "<input bound-required-int class='btn' />";
@@ -1929,7 +1929,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsMinimizedAttributes_Block27()
+        public void UnderstandsMinimizedAttributes_Block27()
         {
             // Arrange
             var document = "<p bound-int class='btn'></p>";
@@ -1942,7 +1942,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsMinimizedAttributes_Block28()
+        public void UnderstandsMinimizedAttributes_Block28()
         {
             // Arrange
             var document = "<input class='btn' bound-required-int />";
@@ -1955,7 +1955,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsMinimizedAttributes_Block29()
+        public void UnderstandsMinimizedAttributes_Block29()
         {
             // Arrange
             var document = "<p class='btn' bound-int></p>";
@@ -1968,7 +1968,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsMinimizedAttributes_Block30()
+        public void UnderstandsMinimizedAttributes_Block30()
         {
             // Arrange
             var expressionString = "@DateTime.Now + 1";
@@ -1982,7 +1982,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsMinimizedAttributes_Block31()
+        public void UnderstandsMinimizedAttributes_Block31()
         {
             // Arrange
             var expressionString = "@DateTime.Now + 1";
@@ -1996,7 +1996,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsMinimizedAttributes_Block32()
+        public void UnderstandsMinimizedAttributes_Block32()
         {
             // Arrange
             var expressionString = "@DateTime.Now + 1";
@@ -2010,7 +2010,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsMinimizedAttributes_Block33()
+        public void UnderstandsMinimizedAttributes_Block33()
         {
             // Arrange
             var expressionString = "@DateTime.Now + 1";
@@ -2024,55 +2024,55 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_UnderstandsMinimizedAttributes_PartialTags1()
+        public void UnderstandsMinimizedAttributes_PartialTags1()
         {
             EvaluateData(MinimizedAttribute_Descriptors, "<input unbound-required");
         }
 
         [Fact]
-        public void Rewrite_UnderstandsMinimizedAttributes_PartialTags2()
+        public void UnderstandsMinimizedAttributes_PartialTags2()
         {
             EvaluateData(MinimizedAttribute_Descriptors, "<input bound-required-string");
         }
 
         [Fact]
-        public void Rewrite_UnderstandsMinimizedAttributes_PartialTags3()
+        public void UnderstandsMinimizedAttributes_PartialTags3()
         {
             EvaluateData(MinimizedAttribute_Descriptors, "<input bound-required-int");
         }
 
         [Fact]
-        public void Rewrite_UnderstandsMinimizedAttributes_PartialTags4()
+        public void UnderstandsMinimizedAttributes_PartialTags4()
         {
             EvaluateData(MinimizedAttribute_Descriptors, "<input bound-required-int unbound-required bound-required-string");
         }
 
         [Fact]
-        public void Rewrite_UnderstandsMinimizedAttributes_PartialTags5()
+        public void UnderstandsMinimizedAttributes_PartialTags5()
         {
             EvaluateData(MinimizedAttribute_Descriptors, "<p bound-string");
         }
 
         [Fact]
-        public void Rewrite_UnderstandsMinimizedAttributes_PartialTags6()
+        public void UnderstandsMinimizedAttributes_PartialTags6()
         {
             EvaluateData(MinimizedAttribute_Descriptors, "<p bound-int");
         }
 
         [Fact]
-        public void Rewrite_UnderstandsMinimizedAttributes_PartialTags7()
+        public void UnderstandsMinimizedAttributes_PartialTags7()
         {
             EvaluateData(MinimizedAttribute_Descriptors, "<p bound-int bound-string");
         }
 
         [Fact]
-        public void Rewrite_UnderstandsMinimizedAttributes_PartialTags8()
+        public void UnderstandsMinimizedAttributes_PartialTags8()
         {
             EvaluateData(MinimizedAttribute_Descriptors, "<input bound-required-int unbound-required bound-required-string<p bound-int bound-string");
         }
 
         [Fact]
-        public void Rewrite_UnderstandsMinimizedBooleanBoundAttributes()
+        public void UnderstandsMinimizedBooleanBoundAttributes()
         {
             // Arrange
             var document = "<input boundbool boundbooldict-key />";
@@ -2101,7 +2101,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_FeatureDisabled_AddsErrorForMinimizedBooleanBoundAttributes()
+        public void FeatureDisabled_AddsErrorForMinimizedBooleanBoundAttributes()
         {
             // Arrange
             var document = "<input boundbool boundbooldict-key />";

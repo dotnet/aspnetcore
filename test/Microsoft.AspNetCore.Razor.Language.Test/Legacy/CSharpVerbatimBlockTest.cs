@@ -17,31 +17,31 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void InnerImplicitExpressionWithOnlySingleAtOutputsZeroLengthCodeSpan()
+        public void InnerImplicitExprWithOnlySingleAtOutputsZeroLengthCodeSpan()
         {
             ParseBlockTest("{@}");
         }
 
         [Fact]
-        public void InnerImplicitExpressionDoesNotAcceptDotAfterAt()
+        public void InnerImplicitExprDoesNotAcceptDotAfterAt()
         {
             ParseBlockTest("{@.}");
         }
 
         [Fact]
-        public void InnerImplicitExpressionWithOnlySingleAtAcceptsSingleSpaceOrNewlineAtDesignTime()
+        public void InnerImplicitExprWithOnlySingleAtAcceptsSingleSpaceOrNewlineAtDesignTime()
         {
             ParseBlockTest("{" + Environment.NewLine + "    @" + Environment.NewLine + "}", designTime: true);
         }
 
         [Fact]
-        public void InnerImplicitExpressionDoesNotAcceptTrailingNewlineInRunTimeMode()
+        public void InnerImplicitExprDoesNotAcceptTrailingNewlineInRunTimeMode()
         {
             ParseBlockTest("{@foo." + Environment.NewLine + "}");
         }
 
         [Fact]
-        public void InnerImplicitExpressionAcceptsTrailingNewlineInDesignTimeMode()
+        public void InnerImplicitExprAcceptsTrailingNewlineInDesignTimeMode()
         {
             ParseBlockTest("{@foo." + Environment.NewLine + "}", designTime: true);
         }

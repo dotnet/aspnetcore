@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
     public class HtmlBlockTest : CsHtmlMarkupParserTestBase
     {
         [Fact]
-        public void ParseBlockHandlesUnbalancedTripleDashHTMLComments()
+        public void HandlesUnbalancedTripleDashHTMLComments()
         {
             ParseDocumentTest(
 @"@{
@@ -18,14 +18,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void ParseBlockHandlesOpenAngleAtEof()
+        public void HandlesOpenAngleAtEof()
         {
             ParseDocumentTest("@{" + Environment.NewLine
                             + "<");
         }
 
         [Fact]
-        public void ParseBlockHandlesOpenAngleWithProperTagFollowingIt()
+        public void HandlesOpenAngleWithProperTagFollowingIt()
         {
             ParseDocumentTest("@{" + Environment.NewLine
                             + "<" + Environment.NewLine
@@ -41,104 +41,104 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void ParseBlockAllowsStartAndEndTagsToDifferInCase()
+        public void AllowsStartAndEndTagsToDifferInCase()
         {
             ParseBlockTest("<li><p>Foo</P></lI>");
         }
 
         [Fact]
-        public void ParseBlockReadsToEndOfLineIfFirstCharacterAfterTransitionIsColon()
+        public void ReadsToEndOfLineIfFirstCharacterAfterTransitionIsColon()
         {
             ParseBlockTest("@:<li>Foo Bar Baz" + Environment.NewLine
                          + "bork");
         }
 
         [Fact]
-        public void ParseBlockStopsParsingSingleLineBlockAtEOFIfNoEOLReached()
+        public void StopsParsingSingleLineBlockAtEOFIfNoEOLReached()
         {
             ParseBlockTest("@:foo bar");
         }
 
         [Fact]
-        public void ParseBlockStopsAtMatchingCloseTagToStartTag()
+        public void StopsAtMatchingCloseTagToStartTag()
         {
             ParseBlockTest("<a><b></b></a><c></c>");
         }
 
         [Fact]
-        public void ParseBlockParsesUntilMatchingEndTagIfFirstNonWhitespaceCharacterIsStartTag()
+        public void ParsesUntilMatchingEndTagIfFirstNonWhitespaceCharacterIsStartTag()
         {
             ParseBlockTest("<baz><boz><biz></biz></boz></baz>");
         }
 
         [Fact]
-        public void ParseBlockAllowsUnclosedTagsAsLongAsItCanRecoverToAnExpectedEndTag()
+        public void AllowsUnclosedTagsAsLongAsItCanRecoverToAnExpectedEndTag()
         {
             ParseBlockTest("<foo><bar><baz></foo>");
         }
 
         [Fact]
-        public void ParseBlockWithSelfClosingTagJustEmitsTag()
+        public void WithSelfClosingTagJustEmitsTag()
         {
             ParseBlockTest("<foo />");
         }
 
         [Fact]
-        public void ParseBlockCanHandleSelfClosingTagsWithinBlock()
+        public void CanHandleSelfClosingTagsWithinBlock()
         {
             ParseBlockTest("<foo><bar /></foo>");
         }
 
         [Fact]
-        public void ParseBlockSupportsTagsWithAttributes()
+        public void SupportsTagsWithAttributes()
         {
             ParseBlockTest("<foo bar=\"baz\"><biz><boz zoop=zork/></biz></foo>");
         }
 
         [Fact]
-        public void ParseBlockAllowsCloseAngleBracketInAttributeValueIfDoubleQuoted()
+        public void AllowsCloseAngleBracketInAttributeValueIfDoubleQuoted()
         {
             ParseBlockTest("<foo><bar baz=\">\" /></foo>");
         }
 
         [Fact]
-        public void ParseBlockAllowsCloseAngleBracketInAttributeValueIfSingleQuoted()
+        public void AllowsCloseAngleBracketInAttributeValueIfSingleQuoted()
         {
             ParseBlockTest("<foo><bar baz=\'>\' /></foo>");
         }
 
         [Fact]
-        public void ParseBlockAllowsSlashInAttributeValueIfDoubleQuoted()
+        public void AllowsSlashInAttributeValueIfDoubleQuoted()
         {
             ParseBlockTest("<foo><bar baz=\"/\"></bar></foo>");
         }
 
         [Fact]
-        public void ParseBlockAllowsSlashInAttributeValueIfSingleQuoted()
+        public void AllowsSlashInAttributeValueIfSingleQuoted()
         {
             ParseBlockTest("<foo><bar baz=\'/\'></bar></foo>");
         }
 
         [Fact]
-        public void ParseBlockTerminatesAtEOF()
+        public void TerminatesAtEOF()
         {
             ParseBlockTest("<foo>");
         }
 
         [Fact]
-        public void ParseBlockSupportsCommentAsBlock()
+        public void SupportsCommentAsBlock()
         {
             ParseBlockTest("<!-- foo -->");
         }
 
         [Fact]
-        public void ParseBlockSupportsCommentWithExtraDashAsBlock()
+        public void SupportsCommentWithExtraDashAsBlock()
         {
             ParseBlockTest("<!-- foo --->");
         }
 
         [Fact]
-        public void ParseBlockSupportsCommentWithinBlock()
+        public void SupportsCommentWithinBlock()
         {
             ParseBlockTest("<foo>bar<!-- zoop -->baz</foo>");
         }
@@ -155,116 +155,117 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void ParseBlockProperlyBalancesCommentStartAndEndTags()
+        public void ProperlyBalancesCommentStartAndEndTags()
         {
             ParseBlockTest("<!--<foo></bar>-->");
         }
 
         [Fact]
-        public void ParseBlockTerminatesAtEOFWhenParsingComment()
+        public void TerminatesAtEOFWhenParsingComment()
         {
             ParseBlockTest("<!--<foo>");
         }
 
         [Fact]
-        public void ParseBlockOnlyTerminatesCommentOnFullEndSequence()
+        public void OnlyTerminatesCommentOnFullEndSequence()
         {
             ParseBlockTest("<!--<foo>--</bar>-->");
         }
 
         [Fact]
-        public void ParseBlockTerminatesCommentAtFirstOccurrenceOfEndSequence()
+        public void TerminatesCommentAtFirstOccurrenceOfEndSequence()
         {
             ParseBlockTest("<foo><!--<foo></bar-->--></foo>");
         }
 
         [Fact]
-        public void ParseBlockTreatsMalformedTagsAsContent()
+        public void TreatsMalformedTagsAsContent()
         {
             ParseBlockTest("<foo></!-- bar --></foo>");
         }
 
 
         [Fact]
-        public void ParseBlockParsesSGMLDeclarationAsEmptyTag()
+        public void ParsesSGMLDeclarationAsEmptyTag()
         {
             ParseBlockTest("<foo><!DOCTYPE foo bar baz></foo>");
         }
 
         [Fact]
-        public void ParseBlockTerminatesSGMLDeclarationAtFirstCloseAngle()
+        public void TerminatesSGMLDeclarationAtFirstCloseAngle()
         {
             ParseBlockTest("<foo><!DOCTYPE foo bar> baz></foo>");
         }
 
         [Fact]
-        public void ParseBlockParsesXMLProcessingInstructionAsEmptyTag()
+        public void ParsesXMLProcessingInstructionAsEmptyTag()
         {
             ParseBlockTest("<foo><?xml foo bar baz?></foo>");
         }
 
         [Fact]
-        public void ParseBlockTerminatesXMLProcessingInstructionAtQuestionMarkCloseAnglePair()
+        public void TerminatesXMLProcessingInstructionAtQuestionMarkCloseAnglePair()
         {
             ParseBlockTest("<foo><?xml foo bar baz?> baz</foo>");
         }
 
         [Fact]
-        public void ParseBlockDoesNotTerminateXMLProcessingInstructionAtCloseAngleUnlessPreceededByQuestionMark()
+        public void DoesNotTerminateXMLProcInstrAtCloseAngleUnlessPreceededByQuestionMark()
         {
+            // ParseBlockDoesNotTerminateXMLProcessingInstructionAtCloseAngleUnlessPreceededByQuestionMark
             ParseBlockTest("<foo><?xml foo bar> baz?></foo>");
         }
 
         [Fact]
-        public void ParseBlockSupportsScriptTagsWithLessThanSignsInThem()
+        public void SupportsScriptTagsWithLessThanSignsInThem()
         {
             ParseBlockTest(@"<script>if(foo<bar) { alert(""baz"");)</script>");
         }
 
         [Fact]
-        public void ParseBlockSupportsScriptTagsWithSpacedLessThanSignsInThem()
+        public void SupportsScriptTagsWithSpacedLessThanSignsInThem()
         {
             ParseBlockTest(@"<script>if(foo < bar) { alert(""baz"");)</script>");
         }
 
         [Fact]
-        public void ParseBlockAcceptsEmptyTextTag()
+        public void AcceptsEmptyTextTag()
         {
             ParseBlockTest("<text/>");
         }
 
         [Fact]
-        public void ParseBlockAcceptsTextTagAsOuterTagButDoesNotRender()
+        public void AcceptsTextTagAsOuterTagButDoesNotRender()
         {
             ParseBlockTest("<text>Foo Bar <foo> Baz</text> zoop");
         }
 
         [Fact]
-        public void ParseBlockRendersLiteralTextTagIfDoubled()
+        public void RendersLiteralTextTagIfDoubled()
         {
             ParseBlockTest("<text><text>Foo Bar <foo> Baz</text></text> zoop");
         }
 
         [Fact]
-        public void ParseBlockDoesNotConsiderPsuedoTagWithinMarkupBlock()
+        public void DoesNotConsiderPsuedoTagWithinMarkupBlock()
         {
             ParseBlockTest("<foo><text><bar></bar></foo>");
         }
 
         [Fact]
-        public void ParseBlockStopsParsingMidEmptyTagIfEOFReached()
+        public void StopsParsingMidEmptyTagIfEOFReached()
         {
             ParseBlockTest("<br/");
         }
 
         [Fact]
-        public void ParseBlockCorrectlyHandlesSingleLineOfMarkupWithEmbeddedStatement()
+        public void CorrectlyHandlesSingleLineOfMarkupWithEmbeddedStatement()
         {
             ParseBlockTest("<div>Foo @if(true) {} Bar</div>");
         }
 
         [Fact]
-        public void ParseBlockIgnoresTagsInContentsOfScriptTag()
+        public void IgnoresTagsInContentsOfScriptTag()
         {
             ParseBlockTest(@"<script>foo<bar baz='@boz'></script>");
         }

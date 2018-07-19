@@ -30,14 +30,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void ParseBlockBalancesBracesOutsideStringsIfFirstCharacterIsBraceAndReturnsSpanOfTypeCode()
+        public void BalancesBracesOutsideStringsIfFirstCharIsBraceAndReturnsSpanOfTypeCode()
         {
+            // ParseBlockBalancesBracesOutsideStringsIfFirstCharacterIsBraceAndReturnsSpanOfTypeCode
             ParseBlockTest("{foo\"b}ar\" if(condition) { string.Format(\"{0}\"); } }");
         }
 
         [Fact]
-        public void ParseBlockBalancesParensOutsideStringsIfFirstCharacterIsParenAndReturnsSpanOfTypeExpression()
+        public void BalancesParensOutsideStringsIfFirstCharIsParenAndReturnsSpanOfTypeExpr()
         {
+            // ParseBlockBalancesParensOutsideStringsIfFirstCharacterIsParenAndReturnsSpanOfTypeExpression
             ParseBlockTest("(foo\"b)ar\" if(condition) { string.Format(\"{0}\"); } )");
         }
 
