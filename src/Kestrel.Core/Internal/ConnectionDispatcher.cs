@@ -59,6 +59,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 {
                     Log.LogCritical(0, ex, $"{nameof(ConnectionDispatcher)}.{nameof(Execute)}() {connectionContext.ConnectionId}");
                 }
+                finally
+                {
+                    // Complete the transport PipeReader and PipeWriter after calling into application code
+                    connectionContext.Transport.Input.Complete();
+                    connectionContext.Transport.Output.Complete();
+                }
             }
         }
 
