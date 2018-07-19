@@ -159,6 +159,21 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             return Clients.Caller.SendAsync("Send", message);
         }
+
+        public Task ProtocolError()
+        {
+            return Clients.Caller.SendAsync("Send", new string('x', 3000), new SelfRef());
+        }
+
+        private class SelfRef
+        {
+            public SelfRef()
+            {
+                Self = this;
+            }
+
+            public SelfRef Self;
+        }
     }
 
     public abstract class TestHub : Hub
