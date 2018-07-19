@@ -44,10 +44,11 @@ namespace Microsoft.AspNetCore.Components.Services
         /// </summary>
         /// <param name="uri">The destination URI. This can be absolute, or relative to the base URI
         /// (as returned by <see cref="GetBaseUri"/>).</param>
-        public void NavigateTo(string uri)
+        /// <param name="forceLoad">Indicator to force load the URI, even if it's not a blazor route.</param>
+        public void NavigateTo(string uri, bool forceLoad = false)
         {
             EnsureInitialized();
-            NavigateToCore(uri);
+            NavigateToCore(uri, forceLoad);
         }
 
         /// <summary>
@@ -55,7 +56,8 @@ namespace Microsoft.AspNetCore.Components.Services
         /// </summary>
         /// <param name="uri">The destination URI. This can be absolute, or relative to the base URI
         /// (as returned by <see cref="GetBaseUri"/>).</param>
-        protected abstract void NavigateToCore(string uri);
+        /// <param name="forceLoad">Indicator to force load the URI, even if it's not a blazor route.</param>
+        protected abstract void NavigateToCore(string uri, bool forceLoad);
 
         /// <summary>
         /// Called to initialize BaseURI and current URI before those values the first time.

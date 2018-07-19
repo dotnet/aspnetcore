@@ -50,6 +50,7 @@ namespace Microsoft.AspNetCore.Components.Services
         /// </summary>
         /// <param name="uri">The destination URI. This can be absolute, or relative to the base URI
         /// (as returned by <see cref="GetBaseUri"/>).</param>
-        void NavigateTo(string uri);
+        /// <param name="forceLoad">Indicator to force load the URI, even if it's not a blazor route.</param>
+        void NavigateTo(string uri, bool forceLoad = false);
     }
 }

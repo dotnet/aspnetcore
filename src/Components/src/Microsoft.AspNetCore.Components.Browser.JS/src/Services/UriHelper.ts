@@ -41,7 +41,10 @@ function enableNavigationInterception(assemblyName: string, functionName: string
   window.addEventListener('popstate', handleInternalNavigation);
 }
 
-export function navigateTo(uri: string) {
+export function navigateTo(uri: string, forceLoad: boolean) {
+  if (forceLoad) {
+    location.href = uri;
+  }
   const absoluteUri = toAbsoluteUri(uri);
   if (isWithinBaseUriSpace(absoluteUri)) {
     performInternalNavigation(absoluteUri);
