@@ -1302,11 +1302,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     ? target.GetAsciiStringEscaped(Constants.MaxExceptionDetailSize)
                     : string.Empty);
 
-        public void SetBadRequestState(RequestRejectionReason reason)
-        {
-            SetBadRequestState(BadHttpRequestException.GetException(reason));
-        }
-
         public void SetBadRequestState(BadHttpRequestException ex)
         {
             Log.ConnectionBadRequest(ConnectionId, ex);
