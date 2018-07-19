@@ -8,6 +8,7 @@ using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
+using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 using Xunit.Abstractions;
@@ -27,8 +28,12 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         {
             // Point to dotnet installed in user profile.
             await AssertStarts(
-                deploymentResult => Helpers.ModifyAspNetCoreSectionInWebConfig(deploymentResult, "processPath", "%DotnetPath%"),
-                deploymentParameters => deploymentParameters.EnvironmentVariables["DotnetPath"] = _dotnetLocation);
+                deploymentParameters =>
+                {
+                    deploymentParameters.EnvironmentVariables["DotnetPath"] = _dotnetLocation;
+                    deploymentParameters.ModifyAspNetCoreSectionInWebConfig("processPath", "%DotnetPath%");
+                }
+            );
         }
 
         [ConditionalTheory]
@@ -38,10 +43,9 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         public async Task InvalidProcessPath_ExpectServerError(string path)
         {
             var deploymentParameters = GetBaseDeploymentParameters();
+            deploymentParameters.ModifyAspNetCoreSectionInWebConfig("processPath", path);
 
             var deploymentResult = await DeployAsync(deploymentParameters);
-
-            Helpers.ModifyAspNetCoreSectionInWebConfig(deploymentResult, "processPath", path);
 
             var response = await deploymentResult.RetryingHttpClient.GetAsync("HelloWorld");
 
@@ -54,16 +58,23 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             var dotnetLocationWithoutExtension = _dotnetLocation.Substring(0, _dotnetLocation.LastIndexOf("."));
 
             await AssertStarts(
-                deploymentResult => Helpers.ModifyAspNetCoreSectionInWebConfig(deploymentResult, "processPath", dotnetLocationWithoutExtension));
+                deploymentParameters =>
+                {
+                    deploymentParameters.ModifyAspNetCoreSectionInWebConfig("processPath", dotnetLocationWithoutExtension);
+                }
+            );
         }
 
         [ConditionalFact]
         public async Task StartsWithDotnetLocationUppercase()
         {
             var dotnetLocationWithoutExtension = _dotnetLocation.Substring(0, _dotnetLocation.LastIndexOf(".")).ToUpperInvariant();
-
             await AssertStarts(
-                deploymentResult => Helpers.ModifyAspNetCoreSectionInWebConfig(deploymentResult, "processPath", dotnetLocationWithoutExtension));
+                deploymentParameters =>
+                {
+                    deploymentParameters.ModifyAspNetCoreSectionInWebConfig("processPath", dotnetLocationWithoutExtension);
+                }
+            );
         }
 
         [ConditionalTheory]
@@ -72,22 +83,24 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         public async Task StartsWithDotnetOnThePath(string path)
         {
             await AssertStarts(
-                deploymentResult => Helpers.ModifyAspNetCoreSectionInWebConfig(deploymentResult, "processPath", path),
-                deploymentParameters => deploymentParameters.EnvironmentVariables["PATH"] = Path.GetDirectoryName(_dotnetLocation));
+                deploymentParameters =>
+                {
+                    deploymentParameters.EnvironmentVariables["PATH"] = Path.GetDirectoryName(_dotnetLocation);
+                    deploymentParameters.ModifyAspNetCoreSectionInWebConfig("processPath", path);
+                }
+            );
 
             // Verify that in this scenario where.exe was invoked only once by shim and request handler uses cached value
             Assert.Equal(1, TestSink.Writes.Count(w => w.Message.Contains("Invoking where.exe to find dotnet.exe")));
         }
 
-        private async Task AssertStarts(Action<IISDeploymentResult> postDeploy, Action<DeploymentParameters> preDeploy = null)
+        private async Task AssertStarts(Action<IISDeploymentParameters> preDeploy = null)
         {
             var deploymentParameters = GetBaseDeploymentParameters();
 
             preDeploy?.Invoke(deploymentParameters);
 
             var deploymentResult = await DeployAsync(deploymentParameters);
-
-            postDeploy?.Invoke(deploymentResult);
 
             var response = await deploymentResult.RetryingHttpClient.GetAsync("HelloWorld");
 
@@ -105,7 +118,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [MemberData(nameof(TestVariants))]
         public async Task HelloWorld(TestVariant variant)
         {
-            var deploymentParameters = new DeploymentParameters(variant)
+            var deploymentParameters = new IISDeploymentParameters(variant)
             {
                 ApplicationPath = Helpers.GetInProcessTestSitesPath(),
                 PublishApplicationBeforeDeployment = true
@@ -132,9 +145,9 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
 
         // Defaults to inprocess specific deployment parameters
-        public static DeploymentParameters GetBaseDeploymentParameters(string site = "InProcessWebSite")
+        public static IISDeploymentParameters GetBaseDeploymentParameters(string site = "InProcessWebSite")
         {
-            return new DeploymentParameters(Helpers.GetTestWebSitePath(site), DeployerSelector.ServerType, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64)
+            return new IISDeploymentParameters(Helpers.GetTestWebSitePath(site), DeployerSelector.ServerType, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64)
             {
                 TargetFramework = Tfm.NetCoreApp22,
                 ApplicationType = ApplicationType.Portable,

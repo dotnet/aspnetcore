@@ -3,6 +3,7 @@
 
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit.Abstractions;
 
@@ -18,7 +19,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
 
         private ApplicationDeployer _deployer;
 
-        protected virtual async Task<IISDeploymentResult> DeployAsync(DeploymentParameters parameters)
+        protected virtual async Task<IISDeploymentResult> DeployAsync(IISDeploymentParameters parameters)
         {
             if (!parameters.EnvironmentVariables.ContainsKey(DebugEnvironmentVariable))
             {

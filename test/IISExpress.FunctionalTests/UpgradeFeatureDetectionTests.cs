@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
+using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 using Xunit.Abstractions;
@@ -59,7 +60,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         private async Task UpgradeFeatureDetectionDeployer(bool disableWebSocket, string sitePath, string expected, HostingModel hostingModel)
         {
-            var deploymentParameters = new DeploymentParameters(sitePath, DeployerSelector.ServerType, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64)
+            var deploymentParameters = new IISDeploymentParameters(sitePath, DeployerSelector.ServerType, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64)
             {
                 TargetFramework = Tfm.NetCoreApp22,
                 ApplicationType = ApplicationType.Portable,
@@ -71,7 +72,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             if (disableWebSocket)
             {
                 // For IIS, we need to modify the apphost.config file
-                deploymentParameters.ServerConfigTemplateContent = GetServerConfig(
+                deploymentParameters.AddServerConfigAction(
                     element => element.Descendants("webSocket")
                         .Single()
                         .SetAttributeValue("enabled", "false"));

@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting.Common;
+using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 using Xunit.Abstractions;
@@ -33,12 +34,13 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         public async Task HttpsHelloWorld(TestVariant variant)
         {
             var port = TestPortHelper.GetNextSSLPort();
-            var deploymentParameters = new DeploymentParameters(variant)
+            var deploymentParameters = new IISDeploymentParameters(variant)
             {
                 ApplicationPath = Helpers.GetOutOfProcessTestSitesPath(),
-                ApplicationBaseUriHint = $"https://localhost:{port}/",
-                ServerConfigTemplateContent = GetHttpsServerConfig()
+                ApplicationBaseUriHint = $"https://localhost:{port}/"
             };
+
+            deploymentParameters.AddHttpsToServerConfig();
 
             var deploymentResult = await DeployAsync(deploymentParameters);
 
@@ -71,12 +73,13 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         private async Task HttpsHelloWorldCerts(TestVariant variant, bool sendClientCert)
         {
             var port = TestPortHelper.GetNextSSLPort();
-            var deploymentParameters = new DeploymentParameters(variant)
+            var deploymentParameters = new IISDeploymentParameters(variant)
             {
                 ApplicationPath = Helpers.GetOutOfProcessTestSitesPath(),
                 ApplicationBaseUriHint = $"https://localhost:{port}/",
-                ServerConfigTemplateContent = GetHttpsServerConfig()
             };
+
+            deploymentParameters.AddHttpsToServerConfig();
 
             var deploymentResult = await DeployAsync(deploymentParameters);
 

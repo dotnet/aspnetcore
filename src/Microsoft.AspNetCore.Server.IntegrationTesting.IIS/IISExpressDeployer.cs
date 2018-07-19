@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
     /// <summary>
     /// Deployment helper for IISExpress.
     /// </summary>
-    public class IISExpressDeployer : ApplicationDeployer
+    public class IISExpressDeployer : IISDeployerBase
     {
         private const string IISExpressRunningMessage = "IIS Express is running.";
         private const string FailedToInitializeBindingsMessage = "Failed to initialize site bindings";
@@ -31,6 +31,11 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
         private Process _hostProcess;
 
         public IISExpressDeployer(DeploymentParameters deploymentParameters, ILoggerFactory loggerFactory)
+            : base(new IISDeploymentParameters(deploymentParameters), loggerFactory)
+        {
+        }
+
+        public IISExpressDeployer(IISDeploymentParameters deploymentParameters, ILoggerFactory loggerFactory)
             : base(deploymentParameters, loggerFactory)
         {
         }
@@ -94,7 +99,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                 // Right now this works only for urls like http://localhost:5001/. Does not work for http://localhost:5001/subpath.
                 return new DeploymentResult(
                     LoggerFactory,
-                    DeploymentParameters,
+                    IISDeploymentParameters,
                     applicationBaseUri: actualUri.ToString(),
                     contentRoot: contentRoot,
                     hostShutdownToken: hostExitToken);
@@ -272,11 +277,12 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
             if (DeploymentParameters.PublishApplicationBeforeDeployment)
             {
                 // For published apps, prefer the content in the web.config, but update it.
-                ModifyAspNetCoreSectionInWebConfig(key: "hostingModel",
+                IISDeploymentParameters.ModifyAspNetCoreSectionInWebConfig(key: "hostingModel",
                     value: DeploymentParameters.HostingModel == HostingModel.InProcess ? "inprocess" : "");
-                ModifyHandlerSectionInWebConfig(key: "modules", value: DeploymentParameters.AncmVersion.ToString());
+                IISDeploymentParameters.ModifyHandlerSectionInWebConfig(key: "modules", value: DeploymentParameters.AncmVersion.ToString());
                 ModifyDotNetExePathInWebConfig();
                 serverConfig = RemoveRedundantElements(serverConfig);
+                RunWebConfigActions();
             }
             else
             {
@@ -284,6 +290,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                 serverConfig = ReplacePlaceholder(serverConfig, "[HostingModel]", DeploymentParameters.HostingModel.ToString());
                 serverConfig = ReplacePlaceholder(serverConfig, "[AspNetCoreModule]", DeploymentParameters.AncmVersion.ToString());
             }
+            serverConfig = RunServerConfigActions(serverConfig);
 
             DeploymentParameters.ServerConfigLocation = Path.GetTempFileName();
             Logger.LogDebug("Saving Config to {configPath}", DeploymentParameters.ServerConfigLocation);
@@ -394,27 +401,8 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                 {
                     throw new Exception($"Unable to find '{executableName}'.'");
                 }
-                ModifyAspNetCoreSectionInWebConfig("processPath", executableName);
+                IISDeploymentParameters.ModifyAspNetCoreSectionInWebConfig("processPath", executableName);
             }
-        }
-
-        // Transforms the web.config file to set attributes like hostingModel="inprocess" element
-        private void ModifyAspNetCoreSectionInWebConfig(string key, string value)
-        {
-            var webConfigFile = Path.Combine(DeploymentParameters.PublishedApplicationRootPath, "web.config");
-            var config = XDocument.Load(webConfigFile);
-            var element = config.Descendants("aspNetCore").FirstOrDefault();
-            element.SetAttributeValue(key, value);
-            config.Save(webConfigFile);
-        }
-
-        private void ModifyHandlerSectionInWebConfig(string key, string value)
-        {
-            var webConfigFile = Path.Combine(DeploymentParameters.PublishedApplicationRootPath, "web.config");
-            var config = XDocument.Load(webConfigFile);
-            var element = config.Descendants("handlers").FirstOrDefault().Descendants("add").FirstOrDefault();
-            element.SetAttributeValue(key, value);
-            config.Save(webConfigFile);
         }
 
         // These elements are duplicated in the web.config if you publish. Remove them from the host.config.
