@@ -152,8 +152,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         private string GetANCMRequestHandlerPath(IISDeploymentResult deploymentResult, string version)
         {
-            return Path.Combine(deploymentResult.DeploymentResult.ContentRoot,
-               deploymentResult.DeploymentResult.DeploymentParameters.RuntimeArchitecture.ToString(),
+            return Path.Combine(deploymentResult.ContentRoot,
+               deploymentResult.DeploymentParameters.RuntimeArchitecture.ToString(),
                version,
                _aspNetCoreDll);
         }

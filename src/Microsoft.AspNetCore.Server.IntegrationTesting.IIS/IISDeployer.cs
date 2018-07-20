@@ -75,13 +75,13 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
 
                 // Warm up time for IIS setup.
                 Logger.LogInformation("Successfully finished IIS application directory setup.");
-
-                return new DeploymentResult(
+                return new IISDeploymentResult(
                     LoggerFactory,
                     IISDeploymentParameters,
                     applicationBaseUri: uri.ToString(),
                     contentRoot: contentRoot,
-                    hostShutdownToken: _hostShutdownToken.Token
+                    hostShutdownToken: _hostShutdownToken.Token,
+                    hostProcess: _application.HostProcess
                 );
             }
         }

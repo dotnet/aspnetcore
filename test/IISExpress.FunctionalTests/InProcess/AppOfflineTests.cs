@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging;
 using Xunit;
+using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 
 namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.Inprocess
 {
@@ -26,7 +27,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.Inprocess
         {
             var deploymentResult = await DeployApp(hostingModel);
 
-            AddAppOffline(deploymentResult.DeploymentResult.ContentRoot);
+            AddAppOffline(deploymentResult.ContentRoot);
 
             await AssertAppOffline(deploymentResult);
         }
@@ -39,7 +40,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.Inprocess
             var expectedResponse = "The app is offline.";
             var deploymentResult = await DeployApp(hostingModel);
 
-            AddAppOffline(deploymentResult.DeploymentResult.ContentRoot, expectedResponse);
+            AddAppOffline(deploymentResult.ContentRoot, expectedResponse);
 
             await AssertAppOffline(deploymentResult, expectedResponse);
         }
@@ -49,7 +50,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.Inprocess
         {
             var deploymentResult = await AssertStarts(HostingModel.InProcess);
 
-            AddAppOffline(deploymentResult.DeploymentResult.ContentRoot);
+            AddAppOffline(deploymentResult.ContentRoot);
 
             await AssertStopsProcess(deploymentResult);
         }
@@ -62,9 +63,9 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.Inprocess
             // Repeat dropping file and restarting multiple times
             for (int i = 0; i < 5; i++)
             {
-                AddAppOffline(deploymentResult.DeploymentResult.ContentRoot);
+                AddAppOffline(deploymentResult.ContentRoot);
                 await AssertAppOffline(deploymentResult);
-                RemoveAppOffline(deploymentResult.DeploymentResult.ContentRoot);
+                RemoveAppOffline(deploymentResult.ContentRoot);
                 await AssertRunning(deploymentResult);
             }
         }
@@ -76,11 +77,11 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.Inprocess
         {
             var deploymentResult = await DeployApp(hostingModel);
 
-            AddAppOffline(deploymentResult.DeploymentResult.ContentRoot);
+            AddAppOffline(deploymentResult.ContentRoot);
 
             await AssertAppOffline(deploymentResult);
 
-            RemoveAppOffline(deploymentResult.DeploymentResult.ContentRoot);
+            RemoveAppOffline(deploymentResult.ContentRoot);
 
             await AssertRunning(deploymentResult);
         }
@@ -132,7 +133,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.Inprocess
                 // dropping app_offline will kill the process
             }
 
-            var hostShutdownToken = deploymentResult.DeploymentResult.HostShutdownToken;
+            var hostShutdownToken = deploymentResult.HostShutdownToken;
 
             Assert.True(hostShutdownToken.WaitHandle.WaitOne(TimeoutExtensions.DefaultTimeout));
             Assert.True(hostShutdownToken.IsCancellationRequested);

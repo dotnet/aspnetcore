@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
 
             var httpClientHandler = new HttpClientHandler() { UseDefaultCredentials = true };
-            var httpClient = deploymentResult.DeploymentResult.CreateHttpClient(httpClientHandler);
+            var httpClient = deploymentResult.CreateHttpClient(httpClientHandler);
 
             response = await httpClient.GetAsync("/AuthenticationAnonymous");
             responseText = await response.Content.ReadAsStringAsync();

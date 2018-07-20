@@ -20,5 +20,18 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             EventLogHelpers.VerifyEventLogEvent(TestSink, "Application '.+' started the coreclr in-process successfully.");
         }
+
+        [ConditionalFact]
+        public async Task CheckShutdownEventLogMessage()
+        {
+            var deploymentParameters = Helpers.GetBaseDeploymentParameters(publish: true);
+            deploymentParameters.GracefulShutdown = true;
+            var deploymentResult = await DeployAsync(deploymentParameters);
+            await Helpers.AssertStarts(deploymentResult);
+
+            StopServer();
+
+            EventLogHelpers.VerifyEventLogEvent(TestSink, "Application '.+' has shutdown.");
+        }
     }
 }

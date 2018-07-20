@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
 {
@@ -43,6 +44,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                 ServerConfigActionList = tempParameters.ServerConfigActionList;
                 WebConfigBasedEnvironmentVariables = tempParameters.WebConfigBasedEnvironmentVariables;
                 HandlerSettings = tempParameters.HandlerSettings;
+                GracefulShutdown = tempParameters.GracefulShutdown;
             }
         }
 
@@ -58,6 +60,8 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
         public IDictionary<string, string> WebConfigBasedEnvironmentVariables { get; set; } = new Dictionary<string, string>();
 
         public IDictionary<string, string> HandlerSettings { get; set; } = new Dictionary<string, string>();
+
+        public bool GracefulShutdown { get; set; }
 
         private Action<XElement> AddWebConfigEnvironmentVariables()
         {

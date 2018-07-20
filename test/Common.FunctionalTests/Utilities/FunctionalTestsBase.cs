@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
         {
         }
 
-        private ApplicationDeployer _deployer;
+        protected ApplicationDeployer _deployer;
 
         protected virtual async Task<IISDeploymentResult> DeployAsync(IISDeploymentParameters parameters)
         {
@@ -31,11 +31,10 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 parameters.ServerConfigTemplateContent = parameters.ServerConfigTemplateContent ?? File.ReadAllText("IISExpress.config");
             }
 
+
             _deployer = IISApplicationDeployerFactory.Create(parameters, LoggerFactory);
 
-            var result = await _deployer.DeployAsync();
-
-            return new IISDeploymentResult(result, Logger);
+            return (IISDeploymentResult)await _deployer.DeployAsync();
         }
 
         public override void Dispose()

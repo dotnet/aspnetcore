@@ -68,7 +68,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             var deploymentResult = await DeployAsync(deploymentParameters);
 
-
             await Helpers.AssertStarts(deploymentResult, "HelloWorld");
         }
 

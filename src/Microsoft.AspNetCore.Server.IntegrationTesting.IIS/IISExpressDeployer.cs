@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -25,7 +26,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
         private const string FailedToInitializeBindingsMessage = "Failed to initialize site bindings";
         private const string UnableToStartIISExpressMessage = "Unable to start iisexpress.";
         private const int MaximumAttempts = 5;
-
+        private readonly TimeSpan ShutdownTimeSpan = TimeSpan.FromSeconds(60);
         private static readonly Regex UrlDetectorRegex = new Regex(@"^\s*Successfully registered URL ""(?<url>[^""]+)"" for site.*$");
 
         private Process _hostProcess;
@@ -97,12 +98,14 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                 Logger.LogInformation("Application ready at URL: {appUrl}", actualUri);
 
                 // Right now this works only for urls like http://localhost:5001/. Does not work for http://localhost:5001/subpath.
-                return new DeploymentResult(
+
+                return new IISDeploymentResult(
                     LoggerFactory,
                     IISDeploymentParameters,
                     applicationBaseUri: actualUri.ToString(),
                     contentRoot: contentRoot,
-                    hostShutdownToken: hostExitToken);
+                    hostShutdownToken: hostExitToken,
+                    hostProcess: _hostProcess);
             }
         }
 
@@ -352,7 +355,14 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
         {
             using (Logger.BeginScope("Dispose"))
             {
-                ShutDownIfAnyHostProcess(_hostProcess);
+                if (IISDeploymentParameters.GracefulShutdown)
+                {
+                    GracefullyShutdownProcess(_hostProcess);
+                }
+                else
+                {
+                    ShutDownIfAnyHostProcess(_hostProcess);
+                }
 
                 if (!string.IsNullOrEmpty(DeploymentParameters.ServerConfigLocation)
                     && File.Exists(DeploymentParameters.ServerConfigLocation))
@@ -385,6 +395,59 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
             if (_hostProcess != null && !_hostProcess.HasExited)
             {
                 throw new Exception($"iisexpress Process {_hostProcess.Id} failed to shutdown");
+            }
+        }
+
+        private class WindowsNativeMethods
+        {
+            [DllImport("user32.dll")]
+            internal static extern IntPtr GetTopWindow(IntPtr hWnd);
+            [DllImport("user32.dll")]
+            internal static extern IntPtr GetWindow(IntPtr hWnd, uint uCmd);
+            [DllImport("user32.dll")]
+            internal static extern uint GetWindowThreadProcessId(IntPtr hwnd, out uint lpdwProcessId);
+            [DllImport("user32.dll")]
+            internal static extern bool PostMessage(HandleRef hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
+        }
+
+        private static void SendStopMessageToProcess(int pid)
+        {
+            for (var ptr = WindowsNativeMethods.GetTopWindow(IntPtr.Zero); ptr != IntPtr.Zero; ptr = WindowsNativeMethods.GetWindow(ptr, 2))
+            {
+                uint num;
+                WindowsNativeMethods.GetWindowThreadProcessId(ptr, out num);
+                if (pid == num)
+                {
+                    var hWnd = new HandleRef(null, ptr);
+                    WindowsNativeMethods.PostMessage(hWnd, 0x12, IntPtr.Zero, IntPtr.Zero);
+                    return;
+                }
+            }
+        }
+
+        private void GracefullyShutdownProcess(Process hostProcess)
+        {
+            if (hostProcess != null && !hostProcess.HasExited)
+            {
+                // Calling hostProcess.StandardInput.WriteLine("q") with StandardInput redirected
+                // for the process does not work when stopping IISExpress
+                // Also, hostProcess.CloseMainWindow() doesn't work either.
+                // Instead we have to send WM_QUIT to the iisexpress process via pInvokes.
+                // See: https://stackoverflow.com/questions/4772092/starting-and-stopping-iis-express-programmatically
+
+                SendStopMessageToProcess(hostProcess.Id);
+                if (!hostProcess.WaitForExit((int)ShutdownTimeSpan.TotalMilliseconds))
+                {
+                    throw new InvalidOperationException($"iisexpress Process {hostProcess.Id} failed to gracefully shutdown.");
+                }
+                if (hostProcess.ExitCode != 0)
+                {
+                    Logger.LogWarning($"IISExpress exit code is non-zero after graceful shutdown. Exit code: {hostProcess.ExitCode}");
+                }
+            }
+            else
+            {
+                throw new InvalidOperationException($"iisexpress Process {hostProcess.Id} crashed before shutdown was triggered.");
             }
         }
 
