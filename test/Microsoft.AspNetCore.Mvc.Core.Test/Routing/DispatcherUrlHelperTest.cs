@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Matchers;
+using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Xunit;
@@ -35,8 +36,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             var endpoints = GetDefaultEndpoints();
             endpoints.Add(new MatcherEndpoint(
                 next => httpContext => Task.CompletedTask,
-                template,
-                new RouteValueDictionary(),
+                RoutePatternFactory.Parse(template),
                 new RouteValueDictionary(),
                 0,
                 EndpointMetadataCollection.Empty,
@@ -51,8 +51,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             {
                 Endpoint = new MatcherEndpoint(
                     next => cntxt => Task.CompletedTask,
-                    "/",
-                    new RouteValueDictionary(),
+                    RoutePatternFactory.Parse("/"),
                     new RouteValueDictionary(),
                     0,
                     EndpointMetadataCollection.Empty,
@@ -100,14 +99,14 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         private List<MatcherEndpoint> GetDefaultEndpoints()
         {
             var endpoints = new List<MatcherEndpoint>();
-            endpoints.Add(CreateEndpoint(null, "home/newaction/{id?}", new { id = "defaultid", controller = "home", action = "newaction" }, 1));
-            endpoints.Add(CreateEndpoint(null, "home/contact/{id?}", new { id = "defaultid", controller = "home", action = "contact" }, 2));
-            endpoints.Add(CreateEndpoint(null, "home2/newaction/{id?}", new { id = "defaultid", controller = "home2", action = "newaction" }, 3));
-            endpoints.Add(CreateEndpoint(null, "home2/contact/{id?}", new { id = "defaultid", controller = "home2", action = "contact" }, 4));
-            endpoints.Add(CreateEndpoint(null, "home3/contact/{id?}", new { id = "defaultid", controller = "home3", action = "contact" }, 5));
-            endpoints.Add(CreateEndpoint("namedroute", "named/home/newaction/{id?}", new { id = "defaultid", controller = "home", action = "newaction" }, 6));
-            endpoints.Add(CreateEndpoint("namedroute", "named/home2/newaction/{id?}", new { id = "defaultid", controller = "home2", action = "newaction" }, 7));
-            endpoints.Add(CreateEndpoint("namedroute", "named/home/contact/{id?}", new { id = "defaultid", controller = "home", action = "contact" }, 8));
+            endpoints.Add(CreateEndpoint(null, "home/newaction/{id}", new { id = "defaultid", controller = "home", action = "newaction" }, 1));
+            endpoints.Add(CreateEndpoint(null, "home/contact/{id}", new { id = "defaultid", controller = "home", action = "contact" }, 2));
+            endpoints.Add(CreateEndpoint(null, "home2/newaction/{id}", new { id = "defaultid", controller = "home2", action = "newaction" }, 3));
+            endpoints.Add(CreateEndpoint(null, "home2/contact/{id}", new { id = "defaultid", controller = "home2", action = "contact" }, 4));
+            endpoints.Add(CreateEndpoint(null, "home3/contact/{id}", new { id = "defaultid", controller = "home3", action = "contact" }, 5));
+            endpoints.Add(CreateEndpoint("namedroute", "named/home/newaction/{id}", new { id = "defaultid", controller = "home", action = "newaction" }, 6));
+            endpoints.Add(CreateEndpoint("namedroute", "named/home2/newaction/{id}", new { id = "defaultid", controller = "home2", action = "newaction" }, 7));
+            endpoints.Add(CreateEndpoint("namedroute", "named/home/contact/{id}", new { id = "defaultid", controller = "home", action = "contact" }, 8));
             endpoints.Add(CreateEndpoint("MyRouteName", "any/url", new { }, 9));
             return endpoints;
         }
@@ -122,8 +121,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 
             return new MatcherEndpoint(
                 next => (httpContext) => Task.CompletedTask,
-                template,
-                new RouteValueDictionary(defaults),
+                RoutePatternFactory.Parse(template, defaults, constraints: null),
                 new RouteValueDictionary(),
                 order,
                 metadata,
@@ -149,8 +147,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         {
             return new MatcherEndpoint(
                 next => c => Task.CompletedTask,
-                template,
-                defaults,
+                RoutePatternFactory.Parse(template, defaults, constraints: null),
                 new RouteValueDictionary(),
                 0,
                 EndpointMetadataCollection.Empty,
