@@ -6,21 +6,9 @@ namespace TriageBuildFailures.TeamCity
 {
     public class TeamCityConfig
     {
-        public string Server
-        {
-            get
-            {
-                return "aspnetci";
-            }
-        }
+        public string Server { get; set; }
 
-        public string User
-        {
-            get
-            {
-                return "redmond\\asplab";
-            }
-        }
+        public string User { get; set; }
 
         public string Password { get; set; }
     }

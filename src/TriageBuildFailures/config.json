@@ -1,0 +1,52 @@
+{
+    "BuildIdAllowList": [
+      "Lite_Infrastructure_AspNetCoreModuleSetup",
+      "Coherence_SiteExtension",
+      "Lite_UniverseTest",
+      "Lite_KestrelStressTest",
+      // Main Build
+      "UniverseCoherence",
+      "Coherence_SharedFxLinuxMusl",
+      "Coherence_UpdateUniverse",
+      "Lite_Public_DnxTools",
+      "CoherenceSigned",
+      // Project builds
+      "Lite_DockerLogging",
+      "Lite_EntityFrameworkTest",
+      "Lite_EntityFramework",
+      "Lite_MusicStore",
+      "Lite_MvcTest",      
+      "Lite_SignalR",
+      // Universe tests
+      "Lite_MusicStoreTest",
+      "XPlat_Mac_MacUniverseCoreCLR",
+      "XPlat_HighSierraOsxUniverse",
+      "XPlat_Linux_UbuntuUniverseCoreCLR",
+      "XPlat_Windows_Win8_Universe",
+      "XPlat_Windows_Win10Universe",
+      // Release 21 Public
+      "Releases_21Public_UbuntuUniverse",
+      "Releases_21Public_OsxUniverse",
+      "Releases_21Public_Publish",
+      "Releases_21Public_Win2012",
+      // Release 22 Public
+      "Releases_22xPublic_OsxUniverse"
+    ],
+    "Email": {
+      "QuietEmail": "rybrande@microsoft.com",
+      "EngineeringAlias": "projectk-runtime-eng@microsoft.com",
+      "BuildBuddyEmail": "rybrande@microsoft.com",
+      "FromEmail": "asplab@microsoft.com",
+      "SMTPConfig":  {
+        "Host":  "smtp.office365.com",
+        "Port":  "587"
+      }
+    },
+    "GitHub": {
+      //"FlakyProjectColumn": 2260926
+      "FlakyProjectColumn": 2728656
+    },
+    "TeamCity": {
+      "Server": "aspnetci"
+    }
+  }

@@ -18,37 +18,34 @@ namespace TriageBuildFailures.Commands
 {
     internal class RootCommand : CommandBase
     {
-        private string[] _args;
         private CommandOption _gitHubAccessToken;
         private CommandOption _teamCityUserName;
         private CommandOption _teamCityPassword;
         private CommandOption _smtpLogin;
         private CommandOption _smtpPassword;
 
-        public RootCommand(string[] args)
-        {
-            _args = args;
-        }
+        private IReporter _reporter;
 
         protected override void ConfigureCore(CommandLineApplication application)
         {
-            _gitHubAccessToken = application.Option("--github-access-token <ACCESSTOKEN>", "", CommandOptionType.SingleValue);
-            _teamCityUserName = application.Option("--team-city-username <TCUSERNAME>", "", CommandOptionType.SingleValue);
-            _teamCityPassword = application.Option("--team-city-password <TCPASSWORD>", "", CommandOptionType.SingleValue);
-            _smtpLogin = application.Option("--smtp-login <SMTPLOGIN>", "", CommandOptionType.SingleValue);
-            _smtpPassword = application.Option("--smtp-password <SMTPPASSWORD>", "", CommandOptionType.SingleValue);
+            _gitHubAccessToken = application.Option("-ghat|--github-access-token <ACCESSTOKEN>", "", CommandOptionType.SingleValue);
+            _teamCityUserName = application.Option("-tcun|--team-city-username <TCUSERNAME>", "", CommandOptionType.SingleValue);
+            _teamCityPassword = application.Option("-tcpw|--team-city-password <TCPASSWORD>", "", CommandOptionType.SingleValue);
+            _smtpLogin = application.Option("-sl|--smtp-login <SMTPLOGIN>", "", CommandOptionType.SingleValue);
+            _smtpPassword = application.Option("-sp|--smtp-password <SMTPPASSWORD>", "", CommandOptionType.SingleValue);
+            _reporter = GetReporter();
         }
 
-        protected override void ConfigureDefaultOptions(CommandLineApplication application)
+        private static IReporter GetReporter()
         {
-            throw new NotImplementedException();
+            return new ConsoleReporter(PhysicalConsole.Singleton);
         }
 
         protected override async Task<int> Execute()
         {
             try
             {
-                await new Triage(_args).TriageFailures();
+                await new Triage(GetConfig(), _reporter).TriageFailures();
             }
             catch(Exception)
             {
@@ -57,9 +54,47 @@ namespace TriageBuildFailures.Commands
             return 0;
         }
 
+        public Config GetConfig()
+        {
+            var config = JsonConvert.DeserializeObject<Config>(File.ReadAllText("config.json"));
+
+            config.GitHub.AccessToken = _gitHubAccessToken.Value();
+            config.Email.SmtpConfig.Login = _smtpLogin.Value();
+            config.Email.SmtpConfig.Password = _smtpPassword.Value();
+            config.TeamCity.User = _teamCityUserName.Value();
+            config.TeamCity.Password = _teamCityPassword.Value();
+
+            if (string.IsNullOrEmpty(config.GitHub.AccessToken))
+            {
+                _reporter.Error("Must provide the Github AccessToken");
+            }
+
+            if (string.IsNullOrEmpty(config.Email.SmtpConfig.Login))
+            {
+                _reporter.Error("Must provide the SMTP Login");
+            }
+
+            if (string.IsNullOrEmpty(config.Email.SmtpConfig.Password))
+            {
+                _reporter.Error("Must provide the SMTP Password");
+            }
+
+            if (string.IsNullOrEmpty(config.TeamCity.User))
+            {
+                _reporter.Error("Must provide the TeamCity Username");
+            }
+
+            if (string.IsNullOrEmpty(config.TeamCity.Password))
+            {
+                _reporter.Error("Must provide the TeamCity Password");
+            }
+
+            return config;
+        }
+
         protected override bool IsValid()
         {
-            throw new NotImplementedException();
+            return true;
         }
     }
 
@@ -73,18 +108,13 @@ namespace TriageBuildFailures.Commands
         private IReporter _reporter;
         private readonly Config _config;
 
-        public Triage(string[] args)
+        public Triage(Config config, IReporter reporter)
         {
-            _config = GetConfig();
-            _reporter = GetReporter();
+            _config = config;
+            _reporter = reporter;
             _tcClient = GetTeamCityClient(_config);
             _ghClient = GetGitHubClient(_config);
             _emailClient = GetEmailClient(_config);
-        }
-
-        public static Config GetConfig()
-        {
-            return JsonConvert.DeserializeObject<Config>(File.ReadAllText("config.json"));
         }
 
         private DateTime CutoffDate { get; } = DateTime.Now.AddHours(-24);
@@ -98,14 +128,17 @@ namespace TriageBuildFailures.Commands
             var stopWatch = new Stopwatch();
             stopWatch.Start();
             var builds = GetUnTriagedFailures();
-
+            _reporter.Output($"Let's triage!");
+            var failedCount = 0;
             foreach (var build in builds)
             {
+                failedCount++;
+                _reporter.Output($"Triaging {build.WebURL}...");
                 await HandleFailure(build);
             }
             stopWatch.Stop();
 
-            _reporter.Output($"There were {builds.Count()} untriaged failures since {CutoffDate} and we handled them in {stopWatch.Elapsed.TotalMinutes} minutes. Let's get some coffee!");
+            _reporter.Output($"There were {failedCount} untriaged failures since {CutoffDate} and we handled them in {stopWatch.Elapsed.TotalMinutes} minutes. Let's get some coffee!");
         }
 
         private static readonly IEnumerable<HandleFailureBase> Handlers = new List<HandleFailureBase> { new HandleLowValueBuilds(), new HandleNonAllowedBuilds(),
@@ -157,11 +190,6 @@ namespace TriageBuildFailures.Commands
         private void MarkTriaged(TeamCityBuild build)
         {
             _tcClient.SetTag(build, TriagedTag);
-        }
-
-        private static IReporter GetReporter()
-        {
-            return new ConsoleReporter(PhysicalConsole.Singleton);
         }
 
         private GitHubClientWrapper GetGitHubClient(Config config)

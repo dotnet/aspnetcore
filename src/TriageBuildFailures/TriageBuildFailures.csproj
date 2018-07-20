@@ -20,4 +20,8 @@
     <ItemGroup>
       <None Update="config.json" CopyToOutputDirectory="PreserveNewest" />
     </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Properties\" />
+    </ItemGroup>
 </Project>

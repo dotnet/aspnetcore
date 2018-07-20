@@ -12,7 +12,6 @@ namespace TriageBuildFailures.Commands
 
         public void Configure(CommandLineApplication application)
         {
-            ConfigureDefaultOptions(application);
             ConfigureCore(application);
 
             _application = application;
@@ -33,8 +32,6 @@ namespace TriageBuildFailures.Commands
                     }
                 });
         }
-
-        protected abstract void ConfigureDefaultOptions(CommandLineApplication application);
 
         protected abstract void ConfigureCore(CommandLineApplication application);
 

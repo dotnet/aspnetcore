@@ -23,7 +23,7 @@ namespace TriageBuildFailures
         {
             var application = new CommandLineApplication();
 
-            new RootCommand(args).Configure(application);
+            new RootCommand().Configure(application);
 
             application.Execute(args);
         }
