@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.EndpointConstraints;
 using Microsoft.AspNetCore.Routing.Matchers;
+using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.Extensions.Primitives;
 
@@ -298,19 +299,17 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 return invoker.InvokeAsync();
             };
 
+            var defaults = new RouteValueDictionary(nonInlineDefaults);
+            EnsureRequiredValuesInDefaults(action.RouteValues, defaults);
+
             var metadataCollection = BuildEndpointMetadata(action, routeName, source);
             var endpoint = new MatcherEndpoint(
                 next => invokerDelegate,
-                template,
-                new RouteValueDictionary(nonInlineDefaults),
+                RoutePatternFactory.Parse(template, defaults, constraints: null),
                 new RouteValueDictionary(action.RouteValues),
                 order,
                 metadataCollection,
                 action.DisplayName);
-
-            // Use defaults after the endpoint is created as it merges both the inline and
-            // non-inline defaults into one.
-            EnsureRequiredValuesInDefaults(endpoint.RequiredValues, endpoint.Defaults);
 
             return endpoint;
         }
@@ -373,7 +372,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         // Required values: controller=foo, action=bar
         // Final constructed template: foo/bar/{category}/{id?}
         // Final defaults: controller=foo, action=bar, category=products
-        private void EnsureRequiredValuesInDefaults(RouteValueDictionary requiredValues, RouteValueDictionary defaults)
+        private void EnsureRequiredValuesInDefaults(IDictionary<string, string> requiredValues, RouteValueDictionary defaults)
         {
             foreach (var kvp in requiredValues)
             {

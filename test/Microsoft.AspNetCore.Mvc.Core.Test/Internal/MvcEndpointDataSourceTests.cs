@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             Assert.Equal(displayName, matcherEndpoint.DisplayName);
             Assert.Equal(order, matcherEndpoint.Order);
-            Assert.Equal(template, matcherEndpoint.Template);
+            Assert.Equal(template, matcherEndpoint.RoutePattern.RawText);
         }
 
         [Fact]
@@ -197,7 +197,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             // Assert
             var inspectors = finalEndpointTemplates
-                .Select(t => new Action<Endpoint>(e => Assert.Equal(t, Assert.IsType<MatcherEndpoint>(e).Template)))
+                .Select(t => new Action<Endpoint>(e => Assert.Equal(t, Assert.IsType<MatcherEndpoint>(e).RoutePattern.RawText)))
                 .ToArray();
 
             // Assert
@@ -224,7 +224,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             // Assert
             var inspectors = finalEndpointTemplates
-                .Select(t => new Action<Endpoint>(e => Assert.Equal(t, Assert.IsType<MatcherEndpoint>(e).Template)))
+                .Select(t => new Action<Endpoint>(e => Assert.Equal(t, Assert.IsType<MatcherEndpoint>(e).RoutePattern.RawText)))
                 .ToArray();
 
             // Assert
@@ -248,8 +248,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             // Assert
             Assert.Collection(endpoints,
-                (e) => Assert.Equal("TestController", Assert.IsType<MatcherEndpoint>(e).Template),
-                (e) => Assert.Equal("TestController/TestAction", Assert.IsType<MatcherEndpoint>(e).Template));
+                (e) => Assert.Equal("TestController", Assert.IsType<MatcherEndpoint>(e).RoutePattern.RawText),
+                (e) => Assert.Equal("TestController/TestAction", Assert.IsType<MatcherEndpoint>(e).RoutePattern.RawText));
         }
 
         [Fact]
@@ -276,8 +276,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             // Assert
             Assert.Collection(endpoints1,
-                (e) => Assert.Equal("TestController", Assert.IsType<MatcherEndpoint>(e).Template),
-                (e) => Assert.Equal("TestController/TestAction", Assert.IsType<MatcherEndpoint>(e).Template));
+                (e) => Assert.Equal("TestController", Assert.IsType<MatcherEndpoint>(e).RoutePattern.RawText),
+                (e) => Assert.Equal("TestController/TestAction", Assert.IsType<MatcherEndpoint>(e).RoutePattern.RawText));
             Assert.Same(endpoints1, endpoints2);
 
             actionDescriptorCollectionProviderMock.VerifyGet(m => m.ActionDescriptors, Times.Once);
@@ -318,8 +318,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var endpoints = dataSource.Endpoints;
 
             Assert.Collection(endpoints,
-                (e) => Assert.Equal("TestController", Assert.IsType<MatcherEndpoint>(e).Template),
-                (e) => Assert.Equal("TestController/TestAction", Assert.IsType<MatcherEndpoint>(e).Template));
+                (e) => Assert.Equal("TestController", Assert.IsType<MatcherEndpoint>(e).RoutePattern.RawText),
+                (e) => Assert.Equal("TestController/TestAction", Assert.IsType<MatcherEndpoint>(e).RoutePattern.RawText));
 
             actionDescriptorCollectionProviderMock
                 .Setup(m => m.ActionDescriptors)
@@ -335,7 +335,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             Assert.NotSame(endpoints, newEndpoints);
             Assert.Collection(newEndpoints,
-                (e) => Assert.Equal("NewTestController/NewTestAction", Assert.IsType<MatcherEndpoint>(e).Template));
+                (e) => Assert.Equal("NewTestController/NewTestAction", Assert.IsType<MatcherEndpoint>(e).RoutePattern.RawText));
         }
 
         [Fact]
@@ -357,8 +357,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             // Assert
             Assert.Collection(endpoints,
-                (e) => Assert.Equal("TestController/TestAction1", Assert.IsType<MatcherEndpoint>(e).Template),
-                (e) => Assert.Equal("TestController/TestAction2", Assert.IsType<MatcherEndpoint>(e).Template));
+                (e) => Assert.Equal("TestController/TestAction1", Assert.IsType<MatcherEndpoint>(e).RoutePattern.RawText),
+                (e) => Assert.Equal("TestController/TestAction2", Assert.IsType<MatcherEndpoint>(e).RoutePattern.RawText));
         }
 
         [Theory]
@@ -381,7 +381,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var endpoints = dataSource.Endpoints;
 
             var inspectors = finalEndpointTemplates
-                .Select(t => new Action<Endpoint>(e => Assert.Equal(t, Assert.IsType<MatcherEndpoint>(e).Template)))
+                .Select(t => new Action<Endpoint>(e => Assert.Equal(t, Assert.IsType<MatcherEndpoint>(e).RoutePattern.RawText)))
                 .ToArray();
 
             // Assert
@@ -431,7 +431,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     var routeNameMetadata = matcherEndpoint.Metadata.GetMetadata<IRouteNameMetadata>();
                     Assert.NotNull(routeNameMetadata);
                     Assert.Equal("namedRoute", routeNameMetadata.Name);
-                    Assert.Equal("named/Home/Index/{id?}", matcherEndpoint.Template);
+                    Assert.Equal("named/Home/Index/{id?}", matcherEndpoint.RoutePattern.RawText);
                 },
                 (ep) =>
                 {
@@ -439,7 +439,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     var routeNameMetadata = matcherEndpoint.Metadata.GetMetadata<IRouteNameMetadata>();
                     Assert.NotNull(routeNameMetadata);
                     Assert.Equal("namedRoute", routeNameMetadata.Name);
-                    Assert.Equal("named/Products/Details/{id?}", matcherEndpoint.Template);
+                    Assert.Equal("named/Products/Details/{id?}", matcherEndpoint.RoutePattern.RawText);
                 });
         }
 
@@ -467,25 +467,25 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 (ep) =>
                 {
                     var matcherEndpoint = Assert.IsType<MatcherEndpoint>(ep);
-                    Assert.Equal("Home/Index/{id?}", matcherEndpoint.Template);
+                    Assert.Equal("Home/Index/{id?}", matcherEndpoint.RoutePattern.RawText);
                     Assert.Equal(1, matcherEndpoint.Order);
                 },
                 (ep) =>
                 {
                     var matcherEndpoint = Assert.IsType<MatcherEndpoint>(ep);
-                    Assert.Equal("named/Home/Index/{id?}", matcherEndpoint.Template);
+                    Assert.Equal("named/Home/Index/{id?}", matcherEndpoint.RoutePattern.RawText);
                     Assert.Equal(2, matcherEndpoint.Order);
                 },
                 (ep) =>
                 {
                     var matcherEndpoint = Assert.IsType<MatcherEndpoint>(ep);
-                    Assert.Equal("Products/Details/{id?}", matcherEndpoint.Template);
+                    Assert.Equal("Products/Details/{id?}", matcherEndpoint.RoutePattern.RawText);
                     Assert.Equal(1, matcherEndpoint.Order);
                 },
                 (ep) =>
                 {
                     var matcherEndpoint = Assert.IsType<MatcherEndpoint>(ep);
-                    Assert.Equal("named/Products/Details/{id?}", matcherEndpoint.Template);
+                    Assert.Equal("named/Products/Details/{id?}", matcherEndpoint.RoutePattern.RawText);
                     Assert.Equal(2, matcherEndpoint.Order);
                 });
         }
@@ -587,8 +587,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             // Assert
             var endpoint = Assert.Single(endpoints);
             var matcherEndpoint = Assert.IsType<MatcherEndpoint>(endpoint);
-            Assert.Equal("Foo/Bar", matcherEndpoint.Template);
-            AssertIsSubset(expectedDefaults, matcherEndpoint.Defaults);
+            Assert.Equal("Foo/Bar", matcherEndpoint.RoutePattern.RawText);
+            AssertIsSubset(expectedDefaults, matcherEndpoint.RoutePattern.Defaults);
         }
 
         [Fact]
@@ -609,8 +609,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             // Assert
             var endpoint = Assert.Single(endpoints);
             var matcherEndpoint = Assert.IsType<MatcherEndpoint>(endpoint);
-            Assert.Equal("Foo/Bar", matcherEndpoint.Template);
-            AssertIsSubset(expectedDefaults, matcherEndpoint.Defaults);
+            Assert.Equal("Foo/Bar", matcherEndpoint.RoutePattern.RawText);
+            AssertIsSubset(expectedDefaults, matcherEndpoint.RoutePattern.Defaults);
         }
 
         [Fact]
@@ -632,8 +632,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             // Assert
             var endpoint = Assert.Single(endpoints);
             var matcherEndpoint = Assert.IsType<MatcherEndpoint>(endpoint);
-            Assert.Equal("Foo/Bar/{subscription=general}", matcherEndpoint.Template);
-            AssertIsSubset(expectedDefaults, matcherEndpoint.Defaults);
+            Assert.Equal("Foo/Bar/{subscription=general}", matcherEndpoint.RoutePattern.RawText);
+            AssertIsSubset(expectedDefaults, matcherEndpoint.RoutePattern.Defaults);
         }
 
         [Fact]
@@ -654,8 +654,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             // Assert
             var endpoint = Assert.Single(endpoints);
             var matcherEndpoint = Assert.IsType<MatcherEndpoint>(endpoint);
-            Assert.Equal("Foo/Bar", matcherEndpoint.Template);
-            AssertIsSubset(expectedDefaults, matcherEndpoint.Defaults);
+            Assert.Equal("Foo/Bar", matcherEndpoint.RoutePattern.RawText);
+            AssertIsSubset(expectedDefaults, matcherEndpoint.RoutePattern.Defaults);
         }
 
         private MvcEndpointDataSource CreateMvcEndpointDataSource(
@@ -729,7 +729,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             return actionDescriptor;
         }
 
-        private void AssertIsSubset(RouteValueDictionary subset, RouteValueDictionary fullSet)
+        private void AssertIsSubset(
+            IReadOnlyDictionary<string, object> subset,
+            IReadOnlyDictionary<string, object> fullSet)
         {
             foreach (var subsetPair in subset)
             {

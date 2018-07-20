@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.EndpointConstraints;
 using Microsoft.AspNetCore.Routing.Matchers;
+using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit;
@@ -297,12 +298,11 @@ namespace Microsoft.AspNetCore.Mvc
 
         private MatcherEndpoint CreateEndpoint(params IEndpointConstraint[] constraints)
         {
-            EndpointMetadataCollection endpointMetadata = new EndpointMetadataCollection(constraints);
+            var endpointMetadata = new EndpointMetadataCollection(constraints);
 
             return new MatcherEndpoint(
                 (r) => null,
-                "",
-                new RouteValueDictionary(),
+                RoutePatternFactory.Parse("/"),
                 new RouteValueDictionary(),
                 0,
                 endpointMetadata,

@@ -10,6 +10,14 @@
 
     <PackageReference Include="Microsoft.AspNetCore.Authentication" Version="$(MicrosoftAspNetCoreAuthenticationPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Localization.Routing" Version="$(MicrosoftAspNetCoreLocalizationRoutingPackageVersion)" />
+
+    <!--
+      Explicitly referencing routing here to make it easy to integrate breaking changes. Localization.Routing brings in a transitive
+      reference to routing, which makes it hard to work with builds from a feature branch.
+    -->
+    <PackageReference Include="Microsoft.AspNetCore.Routing.Abstractions" Version="$(MicrosoftAspNetCoreRoutingAbstractionsPackageVersion)" NoWarn="NU1605" />
+    <PackageReference Include="Microsoft.AspNetCore.Routing" Version="$(MicrosoftAspNetCoreRoutingPackageVersion)" NoWarn="NU1605" />
+
     <PackageReference Include="Microsoft.AspNetCore.Server.IISIntegration" Version="$(MicrosoftAspNetCoreServerIISIntegrationPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="$(MicrosoftAspNetCoreServerKestrelPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Session" Version="$(MicrosoftAspNetCoreSessionPackageVersion)" />
