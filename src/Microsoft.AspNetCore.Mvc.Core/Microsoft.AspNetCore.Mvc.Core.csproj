@@ -25,6 +25,7 @@ Microsoft.AspNetCore.Mvc.RouteAttribute</Description>
     <PackageReference Include="Microsoft.AspNetCore.Http" Version="$(MicrosoftAspNetCoreHttpPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="$(MicrosoftAspNetCoreHttpExtensionsPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" Version="$(MicrosoftAspNetCoreResponseCachingAbstractionsPackageVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Routing.Abstractions" Version="$(MicrosoftAspNetCoreRoutingAbstractionsPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Routing" Version="$(MicrosoftAspNetCoreRoutingPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="$(MicrosoftExtensionsDependencyInjectionPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="$(MicrosoftExtensionsDependencyModelPackageVersion)" />
