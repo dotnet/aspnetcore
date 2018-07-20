@@ -4,23 +4,24 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
-using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.Performance
 {
     public class MvcEndpointDataSourceBenchmark
     {
         private const string DefaultRoute = "{Controller=Home}/{Action=Index}/{id?}";
+
+        // Attribute routes can't have controller and action as parameters, so we edit the
+        // route template in the test to make it more realistic.
+        private const string ControllerReplacementToken = "{Controller=Home}";
+        private const string ActionReplacementToken = "{Action=Index}";
 
         private MockActionDescriptorCollectionProvider _conventionalActionProvider;
         private MockActionDescriptorCollectionProvider _attributeActionProvider;
@@ -33,11 +34,11 @@ namespace Microsoft.AspNetCore.Mvc.Performance
         public void Setup()
         {
             _conventionalActionProvider = new MockActionDescriptorCollectionProvider(
-                Enumerable.Range(0, ActionCount).Select(i => CreateActionDescriptor(i, false)).ToList()
+                Enumerable.Range(0, ActionCount).Select(i => CreateConventionalRoutedAction(i)).ToList()
                 );
 
             _attributeActionProvider = new MockActionDescriptorCollectionProvider(
-                Enumerable.Range(0, ActionCount).Select(i => CreateActionDescriptor(i, true)).ToList()
+                Enumerable.Range(0, ActionCount).Select(i => CreateAttributeRoutedAction(i)).ToList()
                 );
 
             _conventionalEndpointInfos = new List<MvcEndpointInfo>
@@ -67,27 +68,40 @@ namespace Microsoft.AspNetCore.Mvc.Performance
             var endpoints = endpointDataSource.Endpoints;
         }
 
-        private ActionDescriptor CreateActionDescriptor(int id, bool attributeRoute)
+        private ActionDescriptor CreateAttributeRoutedAction(int id)
         {
-            var actionDescriptor = new ActionDescriptor
+            var routeValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
-                RouteValues = new Dictionary<string, string>
+                ["Controller"] = "Controller" + id,
+                ["Action"] = "Index"
+            };
+
+            var template = DefaultRoute
+                .Replace(ControllerReplacementToken, routeValues["Controller"])
+                .Replace(ActionReplacementToken, routeValues["Action"]);
+
+            return new ActionDescriptor
+            {
+                RouteValues = routeValues,
+                DisplayName = "Action " + id,
+                AttributeRouteInfo = new AttributeRouteInfo()
+                {
+                    Template = template,
+                }
+            };
+        }
+
+        private ActionDescriptor CreateConventionalRoutedAction(int id)
+        {
+            return new ActionDescriptor
+            {
+                RouteValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                 {
                     ["Controller"] = "Controller" + id,
                     ["Action"] = "Index"
                 },
                 DisplayName = "Action " + id
             };
-
-            if (attributeRoute)
-            {
-                actionDescriptor.AttributeRouteInfo = new AttributeRouteInfo
-                {
-                    Template = DefaultRoute
-                };
-            }
-
-            return actionDescriptor;
         }
 
         private MvcEndpointDataSource CreateMvcEndpointDataSource(
