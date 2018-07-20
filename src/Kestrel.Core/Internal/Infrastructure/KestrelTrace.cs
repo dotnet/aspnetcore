@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
@@ -85,6 +86,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         private static readonly Action<ILogger, string, string, Exception> _applicationAbortedConnection =
             LoggerMessage.Define<string, string>(LogLevel.Information, new EventId(34, nameof(RequestBodyDrainTimedOut)), @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": the application aborted the connection.");
+
+        private static readonly Action<ILogger, string, Http2ErrorCode, Exception> _http2StreamResetError =
+            LoggerMessage.Define<string, Http2ErrorCode>(LogLevel.Debug, new EventId(35, nameof(Http2StreamResetAbort)),
+                @"Trace id ""{TraceIdentifier}"": HTTP/2 stream error ""{error}"". A Reset is being sent to the stream.");
 
         protected readonly ILogger _logger;
 
@@ -211,6 +216,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         public virtual void Http2StreamError(string connectionId, Http2StreamErrorException ex)
         {
             _http2StreamError(_logger, connectionId, ex);
+        }
+
+        public void Http2StreamResetAbort(string traceIdentifier, Http2ErrorCode error, ConnectionAbortedException abortReason)
+        {
+            _http2StreamResetError(_logger, traceIdentifier, error, abortReason);
         }
 
         public virtual void HPackDecodingError(string connectionId, int streamId, HPackDecodingException ex)

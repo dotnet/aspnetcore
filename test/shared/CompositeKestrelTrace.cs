@@ -3,6 +3,7 @@
 
 using System;
 using System.IO.Pipelines;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
@@ -188,6 +189,12 @@ namespace Microsoft.AspNetCore.Testing
         {
             _trace1.HPackDecodingError(connectionId, streamId, ex);
             _trace2.HPackDecodingError(connectionId, streamId, ex);
+        }
+
+        public void Http2StreamResetAbort(string traceIdentifier, Http2ErrorCode error, ConnectionAbortedException abortReason)
+        {
+            _trace1.Http2StreamResetAbort(traceIdentifier, error, abortReason);
+            _trace2.Http2StreamResetAbort(traceIdentifier, error, abortReason);
         }
     }
 }

@@ -91,8 +91,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         // Read() will have already have greedily consumed the entire request body if able.
                         if (result.IsCompleted)
                         {
+                            // OnInputOrOutputCompleted() is an idempotent method that closes the connection. Sometimes
+                            // input completion is observed here before the Input.OnWriterCompleted() callback is fired,
+                            // so we call OnInputOrOutputCompleted() now to prevent a race in our tests where a 400
+                            // response is written after observing the unexpected end of request content instead of just
+                            // closing the connection without a response as expected.
+                            _context.OnInputOrOutputCompleted();
+
                             // Treat any FIN from an upgraded request as expected.
-                            // It's up to higher-level consumer (i.e. WebSocket middleware) to determine 
+                            // It's up to higher-level consumer (i.e. WebSocket middleware) to determine
                             // if the end is actually expected based on higher-level framing.
                             if (RequestUpgrade)
                             {

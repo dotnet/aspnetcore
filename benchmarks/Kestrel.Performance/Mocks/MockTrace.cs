@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack;
@@ -48,5 +49,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         public void Http2ConnectionError(string connectionId, Http2ConnectionErrorException ex) { }
         public void Http2StreamError(string connectionId, Http2StreamErrorException ex) { }
         public void HPackDecodingError(string connectionId, int streamId, HPackDecodingException ex) { }
+        public void Http2StreamResetAbort(string traceIdentifier, Http2ErrorCode error, ConnectionAbortedException abortReason) { }
     }
 }
