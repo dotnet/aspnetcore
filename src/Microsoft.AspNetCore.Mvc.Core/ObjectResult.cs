@@ -50,6 +50,11 @@ namespace Microsoft.AspNetCore.Mvc
             if (StatusCode.HasValue)
             {
                 context.HttpContext.Response.StatusCode = StatusCode.Value;
+
+                if (Value is ProblemDetails details && !details.Status.HasValue)
+                {
+                    details.Status = StatusCode.Value;
+                }
             }
         }
     }
