@@ -57,6 +57,9 @@ namespace Microsoft.AspNetCore.Routing
             var feature = new EndpointFeature();
             httpContext.Features.Set<IEndpointFeature>(feature);
 
+            // Back compat support for users of IRoutingFeature
+            httpContext.Features.Set<IRoutingFeature>(feature);
+
             // There's an inherent race condition between waiting for init and accessing the matcher
             // this is OK because once `_matcher` is initialized, it will not be set to null again.
             var matcher = await InitializeAsync();

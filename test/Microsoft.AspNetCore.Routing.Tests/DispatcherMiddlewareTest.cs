@@ -58,6 +58,30 @@ namespace Microsoft.AspNetCore.Routing
             Assert.Equal(expectedMessage, write.State?.ToString());
         }
 
+        [Fact]
+        public async Task Invoke_BackCompatGetRouteValue_ValueUsedFromEndpointFeature()
+        {
+            // Arrange
+            var httpContext = new DefaultHttpContext();
+            httpContext.RequestServices = new TestServiceProvider();
+
+            var middleware = CreateMiddleware();
+
+            // Act
+            await middleware.Invoke(httpContext);
+            var routeData = httpContext.GetRouteData();
+            var routeValue = httpContext.GetRouteValue("controller");
+            var endpointFeature = httpContext.Features.Get<IEndpointFeature>();
+
+            // Assert
+            Assert.NotNull(routeData);
+            Assert.Equal("Home", (string)routeValue);
+
+            // changing route data value is reflected in endpoint feature values
+            routeData.Values["testKey"] = "testValue";
+            Assert.Equal("testValue", endpointFeature.Values["testKey"]);
+        }
+
         private DispatcherMiddleware CreateMiddleware(Logger<DispatcherMiddleware> logger = null)
         {
             RequestDelegate next = (c) => Task.FromResult<object>(null);

@@ -20,6 +20,7 @@ namespace Microsoft.AspNetCore.Routing.TestObjects
         {
             if (_isHandled)
             {
+                feature.Values = new RouteValueDictionary(new { controller = "Home", action = "Index" });
                 feature.Endpoint = new TestEndpoint(EndpointMetadataCollection.Empty, "Test endpoint");
             }
 
