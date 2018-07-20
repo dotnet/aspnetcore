@@ -363,11 +363,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 error = CoreStrings.EndPointRequiresAtLeastOneProtocol;
             }
 
-            if (!hasTls && http1Enabled && http2Enabled)
-            {
-                error = CoreStrings.EndPointRequiresTlsForHttp1AndHttp2;
-            }
-
             if (!http1Enabled && http2Enabled && hasTls && !Http2Id.Span.SequenceEqual(applicationProtocol.Span))
             {
                 error = CoreStrings.EndPointHttp2NotNegotiated;
@@ -377,6 +372,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             {
                 Log.LogError(0, error);
                 return HttpProtocols.None;
+            }
+
+            if (!hasTls && http1Enabled)
+            {
+                // Even if Http2 was enabled, default to Http1 because it's ambiguous without ALPN.
+                return HttpProtocols.Http1;
             }
 
             return http2Enabled && (!hasTls || Http2Id.Span.SequenceEqual(applicationProtocol.Span)) ? HttpProtocols.Http2 : HttpProtocols.Http1;

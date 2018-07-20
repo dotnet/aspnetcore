@@ -25,9 +25,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         [Fact]
-        public Task Server_Http1AndHttp2_Cleartext_Error()
+        public Task Server_Http1AndHttp2_Cleartext_Http1Default()
         {
-            return TestError<InvalidOperationException>(HttpProtocols.Http1AndHttp2, CoreStrings.EndPointRequiresTlsForHttp1AndHttp2);
+            return TestSuccess(HttpProtocols.Http1AndHttp2, "GET / HTTP/1.1\r\nHost:\r\n\r\n", "HTTP/1.1 200 OK");
         }
 
         [Fact]

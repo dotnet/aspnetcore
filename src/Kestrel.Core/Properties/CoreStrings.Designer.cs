@@ -1117,20 +1117,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             => GetString("EndPointRequiresAtLeastOneProtocol");
 
         /// <summary>
-        /// Using both HTTP/1.x and HTTP/2 on the same endpoint requires the use of TLS.
-        /// </summary>
-        internal static string EndPointRequiresTlsForHttp1AndHttp2
-        {
-            get => GetString("EndPointRequiresTlsForHttp1AndHttp2");
-        }
-
-        /// <summary>
-        /// Using both HTTP/1.x and HTTP/2 on the same endpoint requires the use of TLS.
-        /// </summary>
-        internal static string FormatEndPointRequiresTlsForHttp1AndHttp2()
-            => GetString("EndPointRequiresTlsForHttp1AndHttp2");
-
-        /// <summary>
         /// HTTP/2 over TLS was not negotiated on an HTTP/2-only endpoint.
         /// </summary>
         internal static string EndPointHttp2NotNegotiated
