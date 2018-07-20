@@ -3,12 +3,16 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Text;
 using Microsoft.AspNetCore.Routing.DecisionTree;
 using Microsoft.AspNetCore.Routing.Tree;
 
 namespace Microsoft.AspNetCore.Routing.Internal
 {
     // A decision tree that matches link generation entries based on route data.
+    [DebuggerDisplay("{DebuggerDisplayString,nq}")]
     public class LinkGenerationDecisionTree
     {
         private readonly DecisionTreeNode<OutboundMatch> _root;
@@ -158,6 +162,52 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 return StringComparer.Ordinal.Compare(
                     x.Match.Entry.RouteTemplate.TemplateText,
                     y.Match.Entry.RouteTemplate.TemplateText);
+            }
+        }
+
+        // Example output:
+        //
+        // => action: Buy => controller: Store => version: V1(Matches: Store/Buy/V1)
+        // => action: Buy => controller: Store => version: V2(Matches: Store/Buy/V2)
+        // => action: Buy => controller: Store => area: Admin(Matches: Admin/Store/Buy)
+        // => action: Buy => controller: Products(Matches: Products/Buy)
+        // => action: Cart => controller: Store(Matches: Store/Cart)
+        internal string DebuggerDisplayString
+        {
+            get
+            {
+                var sb = new StringBuilder();
+                var branchStack = new Stack<string>();
+                branchStack.Push(string.Empty);
+                FlattenTree(_root, branchStack, sb);
+                return sb.ToString();
+            }
+        }
+
+        private void FlattenTree(DecisionTreeNode<OutboundMatch> node, Stack<string> branchStack, StringBuilder sb)
+        {
+            // leaf node
+            if (node.Criteria.Count == 0)
+            {
+                var temp = new StringBuilder();
+                foreach (var branch in branchStack)
+                {
+                    temp.Insert(0, branch);
+                }
+                sb.Append(temp.ToString());
+                sb.Append(" (Matches: ");
+                sb.Append(string.Join(", ", node.Matches.Select(m => m.Entry.RouteTemplate.TemplateText)));
+                sb.AppendLine(")");
+            }
+
+            foreach (var criterion in node.Criteria)
+            {
+                foreach (var branch in criterion.Branches)
+                {
+                    branchStack.Push($" => {criterion.Key}: {branch.Key}");
+                    FlattenTree(branch.Value, branchStack, sb);
+                    branchStack.Pop();
+                }
             }
         }
     }
