@@ -4,7 +4,7 @@ There are lots of ways to contribute to Blazor and we appreciate the help from t
 
 ## Code of conduct
 
-To better foster an open, innovative and inclusive community please refer to our [Code of Conduct](https://github.com/aspnet/Blazor/blob/dev/CODE_OF_CONDUCT.md) when contributing.
+To better foster an open, innovative and inclusive community please refer to our [Code of Conduct](CODE_OF_CONDUCT.md) when contributing.
 
 ## Provide feedback
 
@@ -37,4 +37,4 @@ If you have a question be sure to first checkout our [documentation](https://git
 
 ## Contributing code and content
 
-Blazor is an open source project and we welcome code and content contributions from the community. For details on how to submit a PR please see the ["Contributing code and content" section of the ASP.NET Contributing Guide](https://github.com/aspnet/Home/blob/dev/CONTRIBUTING.md#contributing-code-and-content).
+Blazor is an open source project and we welcome code and content contributions from the community. For details on how to submit a PR please see the ["Contributing code and content" section of the ASP.NET Contributing Guide](https://github.com/aspnet/Home/blob/master/CONTRIBUTING.md#contributing-code-and-content).
