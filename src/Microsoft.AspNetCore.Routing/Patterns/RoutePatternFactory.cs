@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Routing.Constraints;
+using Microsoft.AspNetCore.Routing.Matchers;
 
 namespace Microsoft.AspNetCore.Routing.Patterns
 {
@@ -158,7 +159,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                 {
                     updatedConstraints.Add(kvp.Key, new List<RoutePatternConstraintReference>()
                     {
-                        Constraint(kvp.Key, kvp.Value),
+                        Constraint(kvp.Value),
                     });
                 }
             }
@@ -450,55 +451,73 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             return new RoutePatternParameterPart(parameterName, @default, parameterKind, constraints.ToArray());
         }
 
-        public static RoutePatternConstraintReference Constraint(string parameterName, object constraint)
+        public static RoutePatternConstraintReference Constraint(object constraint)
         {
             // Similar to RouteConstraintBuilder
             if (constraint is IRouteConstraint routeConstraint)
             {
-                return ConstraintCore(parameterName, routeConstraint);
+                return ConstraintCore(routeConstraint);
+            }
+            else if (constraint is MatchProcessor matchProcessor)
+            {
+                return ConstraintCore(matchProcessor);
             }
             else if (constraint is string content)
             {
-                return ConstraintCore(parameterName, new RegexRouteConstraint("^(" + content + ")$"));
+                return ConstraintCore(new RegexRouteConstraint("^(" + content + ")$"));
             }
             else
             {
-                throw new InvalidOperationException(Resources.FormatConstraintMustBeStringOrConstraint(
-                    parameterName,
-                    constraint,
-                    typeof(IRouteConstraint)));
+                throw new InvalidOperationException(Resources.FormatRoutePattern_InvalidConstraintReference(
+                    constraint ?? "null",
+                    typeof(IRouteConstraint),
+                    typeof(MatchProcessor)));
             }
         }
 
-        public static RoutePatternConstraintReference Constraint(string parameterName, IRouteConstraint constraint)
+        public static RoutePatternConstraintReference Constraint(IRouteConstraint constraint)
         {
             if (constraint == null)
             {
                 throw new ArgumentNullException(nameof(constraint));
             }
 
-            return ConstraintCore(parameterName, constraint);
+            return ConstraintCore(constraint);
         }
 
-        public static RoutePatternConstraintReference Constraint(string parameterName, string constraint)
+        public static RoutePatternConstraintReference Constraint(MatchProcessor matchProcessor)
+        {
+            if (matchProcessor == null)
+            {
+                throw new ArgumentNullException(nameof(matchProcessor));
+            }
+
+            return ConstraintCore(matchProcessor);
+        }
+
+        public static RoutePatternConstraintReference Constraint(string constraint)
         {
             if (string.IsNullOrEmpty(constraint))
             {
                 throw new ArgumentException(Resources.Argument_NullOrEmpty, nameof(constraint));
             }
 
-            return ConstraintCore(parameterName, constraint);
+            return ConstraintCore(constraint);
         }
 
-
-        private static RoutePatternConstraintReference ConstraintCore(string parameterName, IRouteConstraint constraint)
+        private static RoutePatternConstraintReference ConstraintCore(string constraint)
         {
-            return new RoutePatternConstraintReference(parameterName, constraint);
+            return new RoutePatternConstraintReference(constraint);
         }
 
-        private static RoutePatternConstraintReference ConstraintCore(string parameterName, string constraint)
+        private static RoutePatternConstraintReference ConstraintCore(IRouteConstraint constraint)
         {
-            return new RoutePatternConstraintReference(parameterName, constraint);
+            return new RoutePatternConstraintReference(constraint);
+        }
+
+        private static RoutePatternConstraintReference ConstraintCore(MatchProcessor matchProcessor)
+        {
+            return new RoutePatternConstraintReference(matchProcessor);
         }
     }
 }

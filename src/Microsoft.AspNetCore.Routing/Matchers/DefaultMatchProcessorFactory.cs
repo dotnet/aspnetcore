@@ -20,145 +20,113 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             _serviceProvider = serviceProvider;
         }
 
-        public override MatchProcessor Create(MatchProcessorReference matchProcessorReference)
+        public override MatchProcessor Create(string parameterName, IRouteConstraint value, bool optional)
         {
-            if (matchProcessorReference == null)
+            if (value == null)
             {
-                throw new ArgumentNullException(nameof(matchProcessorReference));
+                throw new ArgumentNullException(nameof(value));
             }
 
-            if (matchProcessorReference.MatchProcessor != null)
+            return InitializeMatchProcessor(parameterName, optional, value, argument: null);
+        }
+
+        public override MatchProcessor Create(string parameterName, MatchProcessor value, bool optional)
+        {
+            if (value == null)
             {
-                return matchProcessorReference.MatchProcessor;
+                throw new ArgumentNullException(nameof(value));
+            }
+
+            return InitializeMatchProcessor(parameterName, optional, value, argument: null);
+        }
+
+        public override MatchProcessor Create(string parameterName, string value, bool optional)
+        {
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
             }
 
             // Example:
             // {productId:regex(\d+)}
             //
             // ParameterName: productId
-            // ConstraintText: regex(\d+)
-            // ConstraintName: regex
-            // ConstraintArgument: \d+
+            // value: regex(\d+)
+            // name: regex
+            // argument: \d+
+            (var name, var argument) = Parse(value);
 
-            (var constraintName, var constraintArgument) = Parse(matchProcessorReference.ConstraintText);
-
-            if (!_options.ConstraintMap.TryGetValue(constraintName, out var constraintType))
+            if (!_options.ConstraintMap.TryGetValue(name, out var type))
             {
-                throw new InvalidOperationException(
-                    $"No constraint has been registered with name '{constraintName}'.");
+                throw new InvalidOperationException(Resources.FormatRoutePattern_ConstraintReferenceNotFound(
+                    name,
+                    typeof(RouteOptions),
+                    nameof(RouteOptions.ConstraintMap)));
             }
 
-            var processor = ResolveMatchProcessor(
-                matchProcessorReference.ParameterName,
-                matchProcessorReference.Optional,
-                constraintType,
-                constraintArgument);
-
-            if (processor != null)
+            if (typeof(MatchProcessor).IsAssignableFrom(type))
             {
-                return processor;
+                var matchProcessor = (MatchProcessor)_serviceProvider.GetRequiredService(type);
+                return InitializeMatchProcessor(parameterName, optional, matchProcessor, argument);
             }
 
-            if (!typeof(IRouteConstraint).IsAssignableFrom(constraintType))
+            if (typeof(IRouteConstraint).IsAssignableFrom(type))
             {
-                throw new InvalidOperationException(
-                    Resources.FormatDefaultInlineConstraintResolver_TypeNotConstraint(
-                        constraintType,
-                        constraintName,
-                        typeof(IRouteConstraint).Name));
+                var constraint = DefaultInlineConstraintResolver.CreateConstraint(type, argument);
+                return InitializeMatchProcessor(parameterName, optional, constraint, argument);
             }
 
-            try
-            {
-                return CreateMatchProcessorFromRouteConstraint(
-                    matchProcessorReference.ParameterName,
-                    matchProcessorReference.Optional,
-                    constraintType,
-                    constraintArgument);
-            }
-            catch (RouteCreationException)
-            {
-                throw;
-            }
-            catch (Exception exception)
-            {
-                throw new InvalidOperationException(
-                    $"An error occurred while trying to create an instance of route constraint '{constraintType.FullName}'.",
-                    exception);
-            }
+            var message = Resources.FormatRoutePattern_InvalidStringConstraintReference(
+                type,
+                name,
+                typeof(IRouteConstraint),
+                typeof(MatchProcessor));
+            throw new InvalidOperationException(message);
         }
 
-        private MatchProcessor CreateMatchProcessorFromRouteConstraint(
+        private MatchProcessor InitializeMatchProcessor(
             string parameterName,
             bool optional,
-            Type constraintType,
-            string constraintArgument)
+            IRouteConstraint constraint,
+            string argument)
         {
-            var routeConstraint = DefaultInlineConstraintResolver.CreateConstraint(constraintType, constraintArgument);
-            var matchProcessor = new MatchProcessorReference(parameterName, routeConstraint).MatchProcessor;
+            var matchProcessor = (MatchProcessor)new RouteConstraintMatchProcessor(parameterName, constraint);
+            return InitializeMatchProcessor(parameterName, optional, matchProcessor, argument);
+        }
+
+        private MatchProcessor InitializeMatchProcessor(
+            string parameterName,
+            bool optional,
+            MatchProcessor matchProcessor,
+            string argument)
+        {
             if (optional)
             {
                 matchProcessor = new OptionalMatchProcessor(matchProcessor);
             }
 
-            matchProcessor.Initialize(parameterName, constraintArgument);
-
+            matchProcessor.Initialize(parameterName, argument);
             return matchProcessor;
         }
 
-        private MatchProcessor ResolveMatchProcessor(
-            string parameterName,
-            bool optional,
-            Type constraintType,
-            string constraintArgument)
+        private (string name, string argument) Parse(string text)
         {
-            if (constraintType == null)
+            string name;
+            string argument;
+            var indexOfFirstOpenParens = text.IndexOf('(');
+            if (indexOfFirstOpenParens >= 0 && text.EndsWith(")", StringComparison.Ordinal))
             {
-                throw new ArgumentNullException(nameof(constraintType));
-            }
-
-            if (!typeof(MatchProcessor).IsAssignableFrom(constraintType))
-            {
-                // Since a constraint type could be of type IRouteConstraint, do not throw
-                return null;
-            }
-
-            var registeredProcessor = _serviceProvider.GetRequiredService(constraintType);
-            if (registeredProcessor is MatchProcessor matchProcessor)
-            {
-                if (optional)
-                {
-                    matchProcessor = new OptionalMatchProcessor(matchProcessor);
-                }
-
-                matchProcessor.Initialize(parameterName, constraintArgument);
-                return matchProcessor;
-            }
-            else
-            {
-                throw new InvalidOperationException(
-                    $"Registered constraint type '{constraintType}' is not of type '{typeof(MatchProcessor)}'.");
-            }
-        }
-
-        private (string constraintName, string constraintArgument) Parse(string constraintText)
-        {
-            string constraintName;
-            string constraintArgument;
-            var indexOfFirstOpenParens = constraintText.IndexOf('(');
-            if (indexOfFirstOpenParens >= 0 && constraintText.EndsWith(")", StringComparison.Ordinal))
-            {
-                constraintName = constraintText.Substring(0, indexOfFirstOpenParens);
-                constraintArgument = constraintText.Substring(
+                name = text.Substring(0, indexOfFirstOpenParens);
+                argument = text.Substring(
                     indexOfFirstOpenParens + 1,
-                    constraintText.Length - indexOfFirstOpenParens - 2);
+                    text.Length - indexOfFirstOpenParens - 2);
             }
             else
             {
-                constraintName = constraintText;
-                constraintArgument = null;
+                name = text;
+                argument = null;
             }
-            return (constraintName, constraintArgument);
+            return (name, argument);
         }
     }
 }

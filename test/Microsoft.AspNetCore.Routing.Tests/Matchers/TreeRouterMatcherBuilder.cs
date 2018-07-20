@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Routing.EndpointConstraints;
 using Microsoft.AspNetCore.Routing.Internal;
+using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.AspNetCore.Routing.Tree;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.ObjectPool;
@@ -43,7 +44,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             var selector = new EndpointSelector(null, cache, NullLoggerFactory.Instance);
 
             var groups = _entries
-                .GroupBy(e => (e.Order, e.Precedence, e.Endpoint.Template))
+                .GroupBy(e => (e.Order, e.Precedence, e.Endpoint.RoutePattern.RawText))
                 .OrderBy(g => g.Key.Order)
                 .ThenBy(g => g.Key.Precedence);
 
@@ -57,11 +58,11 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                 // as well as those specified with a literal. We need to separate those
                 // for legacy cases.
                 var endpoint = group.First().Endpoint;
-                var defaults = new RouteValueDictionary(endpoint.Defaults);
-                for (var i = 0; i < endpoint.ParsedTemplate.Parameters.Count; i++)
+                var defaults = new RouteValueDictionary(endpoint.RoutePattern.Defaults);
+                for (var i = 0; i < endpoint.RoutePattern.Parameters.Count; i++)
                 {
-                    var parameter = endpoint.ParsedTemplate.Parameters[i];
-                    if (parameter.DefaultValue != null)
+                    var parameter = endpoint.RoutePattern.Parameters[i];
+                    if (parameter.Default != null)
                     {
                         defaults.Remove(parameter.Name);
                     }
@@ -69,7 +70,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 
                 builder.MapInbound(
                     new SelectorRouter(selector, candidates),
-                    endpoint.ParsedTemplate,
+                    new RouteTemplate(endpoint.RoutePattern),
                     routeName: null,
                     order: endpoint.Order);
             }

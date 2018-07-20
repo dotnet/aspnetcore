@@ -4,6 +4,8 @@
 using System;
 using System.Linq;
 using Microsoft.AspNetCore.Routing.Constraints;
+using Microsoft.AspNetCore.Routing.Matchers;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Routing.Patterns
@@ -193,6 +195,42 @@ namespace Microsoft.AspNetCore.Routing.Patterns
         }
 
         [Fact]
+        public void Pattern_ExtraConstraints_MatchProcessor()
+        {
+            // Arrange
+            var template = "{a}/{b}/{c}";
+            var defaults = new { };
+            var constraints = new { d = Mock.Of<MatchProcessor>(), e = Mock.Of<MatchProcessor>(), };
+
+            var original = RoutePatternFactory.Parse(template);
+
+            // Act
+            var actual = RoutePatternFactory.Pattern(
+                original.RawText,
+                defaults,
+                constraints,
+                original.PathSegments);
+
+            // Assert
+            Assert.Collection(
+                actual.Constraints.OrderBy(kvp => kvp.Key),
+                kvp =>
+                {
+                    Assert.Equal("d", kvp.Key);
+                    Assert.Collection(
+                        kvp.Value,
+                        c => Assert.NotNull(c.MatchProcessor));
+                },
+                kvp =>
+                {
+                    Assert.Equal("e", kvp.Key);
+                    Assert.Collection(
+                        kvp.Value,
+                        c => Assert.NotNull(c.MatchProcessor));
+                });
+        }
+
+        [Fact]
         public void Pattern_CreatesConstraintFromString()
         {
             // Arrange
@@ -239,8 +277,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
             // Assert
             Assert.Equal(
-                "The constraint entry 'd' - '17' must have a string value or be of a type " +
-                "which implements 'Microsoft.AspNetCore.Routing.IRouteConstraint'.",
+                $"Invalid constraint '17'. A constraint must be of type 'string', '{typeof(IRouteConstraint)}', or '{typeof(MatchProcessor)}'.",
                 ex.Message);
         }
     }

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Routing.Matchers
@@ -35,16 +36,14 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 
         internal static MatcherEndpoint CreateEndpoint(
             string template, 
-            object defaultValues = null,
+            object defaults = null,
+            object constraints = null,
             int? order = null)
         {
-            var defaults = defaultValues == null ? new RouteValueDictionary() : new RouteValueDictionary(defaultValues);
             return new MatcherEndpoint(
                 MatcherEndpoint.EmptyInvoker,
-                template,
-                defaults,
+                RoutePatternFactory.Parse(template, defaults, constraints),
                 new RouteValueDictionary(),
-                new List<MatchProcessorReference>(),
                 order ?? 0,
                 EndpointMetadataCollection.Empty,
                 "endpoint: " + template);

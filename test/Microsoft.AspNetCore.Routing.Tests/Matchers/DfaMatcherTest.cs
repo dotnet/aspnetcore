@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.EndpointConstraints;
+using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
@@ -18,14 +19,12 @@ namespace Microsoft.AspNetCore.Routing.Matchers
     // so we're reusing the services here.
     public class DfaMatcherTest
     {
-        private MatcherEndpoint CreateEndpoint(string template, int order, object defaultValues = null, EndpointMetadataCollection metadata = null)
+        private MatcherEndpoint CreateEndpoint(string template, int order, object defaults = null, EndpointMetadataCollection metadata = null)
         {
             return new MatcherEndpoint(
-                (next) => null,
-                template, 
-                new RouteValueDictionary(defaultValues),
+                MatcherEndpoint.EmptyInvoker,
+                RoutePatternFactory.Parse(template, defaults, constraints: null),
                 new RouteValueDictionary(),
-                new List<MatchProcessorReference>(),
                 order,
                 metadata ?? EndpointMetadataCollection.Empty,
                 template);

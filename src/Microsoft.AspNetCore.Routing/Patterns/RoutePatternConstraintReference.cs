@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Diagnostics;
+using Microsoft.AspNetCore.Routing.Matchers;
 
 namespace Microsoft.AspNetCore.Routing.Patterns
 {
@@ -11,16 +12,19 @@ namespace Microsoft.AspNetCore.Routing.Patterns
     [DebuggerDisplay("{DebuggerToString()}")]
     public sealed class RoutePatternConstraintReference
     {
-        internal RoutePatternConstraintReference(string parameterName, string content)
+        internal RoutePatternConstraintReference(string content)
         {
-            ParameterName = parameterName;
             Content = content;
         }
 
-        internal RoutePatternConstraintReference(string parameterName, IRouteConstraint constraint)
+        internal RoutePatternConstraintReference(IRouteConstraint constraint)
         {
-            ParameterName = parameterName;
             Constraint = constraint;
+        }
+
+        internal RoutePatternConstraintReference(MatchProcessor matchProcessor)
+        {
+            MatchProcessor = matchProcessor;
         }
 
         /// <summary>
@@ -34,9 +38,9 @@ namespace Microsoft.AspNetCore.Routing.Patterns
         public IRouteConstraint Constraint { get; }
 
         /// <summary>
-        /// Gets the parameter name associated with the constraint.
+        /// Gets a pre-existing <see cref="Matchers.MatchProcessor"/> that was used to construct this reference.
         /// </summary>
-        public string ParameterName { get; }
+        public MatchProcessor MatchProcessor { get; }
 
         private string DebuggerToString()
         {

@@ -5,6 +5,7 @@ using System.Text;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Matchers;
+using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Benchmarks
@@ -31,10 +32,8 @@ namespace Benchmarks
                             response.ContentLength = payloadLength;
                             return response.Body.WriteAsync(_helloWorldPayload, 0, payloadLength);
                         },
-                        template: "/plaintext",
-                        defaults: new RouteValueDictionary(),
+                        routePattern: RoutePatternFactory.Parse("/plaintext"),
                         requiredValues: new RouteValueDictionary(),
-                        nonInlineMatchProcessorReferences: null,
                         order: 0,
                         metadata: EndpointMetadataCollection.Empty,
                         displayName: "Plaintext"),

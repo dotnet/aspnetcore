@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.EndpointConstraints;
+using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Routing.Matchers
@@ -42,11 +43,9 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             }
 
             return new MatcherEndpoint(
-                (next) => (context) => Task.CompletedTask,
-                template,
+                MatcherEndpoint.EmptyInvoker,
+                RoutePatternFactory.Parse(template),
                 new RouteValueDictionary(),
-                new RouteValueDictionary(),
-                new List<MatchProcessorReference>(),
                 0,
                 new EndpointMetadataCollection(metadata),
                 template);

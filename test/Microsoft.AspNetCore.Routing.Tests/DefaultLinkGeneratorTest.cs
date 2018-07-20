@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.AspNetCore.Routing.EndpointFinders;
 using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.AspNetCore.Routing.Matchers;
+using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.AspNetCore.Routing.TestObjects;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.ObjectPool;
@@ -254,12 +255,11 @@ namespace Microsoft.AspNetCore.Routing
             // Arrange
             var context = CreateRouteValuesContext(new { p1 = "abcd" });
             var linkGenerator = CreateLinkGenerator();
-            var matchProcessorReferences = new List<MatchProcessorReference>();
-            matchProcessorReferences.Add(new MatchProcessorReference("p2", new RegexRouteConstraint("\\d{4}")));
+
             var endpoint = CreateEndpoint(
                 "{p1}/{p2}",
                 new { p2 = "catchall" },
-                matchProcessorReferences: matchProcessorReferences);
+                constraints: new { p2 = "\\d{4}" });
 
             // Act
             var canGenerateLink = linkGenerator.TryGetLink(
@@ -279,12 +279,11 @@ namespace Microsoft.AspNetCore.Routing
             // Arrange
             var context = CreateRouteValuesContext(new { p1 = "hello", p2 = "1234" });
             var linkGenerator = CreateLinkGenerator();
-            var matchProcessorReferences = new List<MatchProcessorReference>();
-            matchProcessorReferences.Add(new MatchProcessorReference("p2", new RegexRouteConstraint("\\d{4}")));
+
             var endpoint = CreateEndpoint(
                 "{p1}/{p2}",
                 new { p2 = "catchall" },
-                matchProcessorReferences);
+                new { p2 = new RegexRouteConstraint("\\d{4}"), });
 
             // Act
             var canGenerateLink = linkGenerator.TryGetLink(
@@ -305,12 +304,11 @@ namespace Microsoft.AspNetCore.Routing
             // Arrange
             var context = CreateRouteValuesContext(new { p1 = "abcd" });
             var linkGenerator = CreateLinkGenerator();
-            var matchProcessorReferences = new List<MatchProcessorReference>();
-            matchProcessorReferences.Add(new MatchProcessorReference("p2", new RegexRouteConstraint("\\d{4}")));
+
             var endpoint = CreateEndpoint(
                 "{p1}/{*p2}",
                 new { p2 = "catchall" },
-                matchProcessorReferences: matchProcessorReferences);
+                new { p2 = new RegexRouteConstraint("\\d{4}") });
 
             // Act
             var canGenerateLink = linkGenerator.TryGetLink(
@@ -330,12 +328,11 @@ namespace Microsoft.AspNetCore.Routing
             // Arrange
             var context = CreateRouteValuesContext(new { p1 = "hello", p2 = "1234" });
             var linkGenerator = CreateLinkGenerator();
-            var matchProcessorReferences = new List<MatchProcessorReference>();
-            matchProcessorReferences.Add(new MatchProcessorReference("p2", new RegexRouteConstraint("\\d{4}")));
+
             var endpoint = CreateEndpoint(
                 "{p1}/{*p2}",
                 new { p2 = "catchall" },
-                matchProcessorReferences);
+                new { p2 = new RegexRouteConstraint("\\d{4}") });
 
             // Act
             var canGenerateLink = linkGenerator.TryGetLink(
@@ -370,11 +367,8 @@ namespace Microsoft.AspNetCore.Routing
 
             var endpoint = CreateEndpoint(
                 "{p1}/{p2}",
-                defaultValues: new { p2 = "catchall" },
-                matchProcessorReferences: new List<MatchProcessorReference>
-                {
-                    new MatchProcessorReference("p2", target.Object)
-                });
+                defaults: new { p2 = "catchall" },
+                constraints: new { p2 = target.Object });
 
             // Act
             var canGenerateLink = linkGenerator.TryGetLink(
@@ -400,11 +394,8 @@ namespace Microsoft.AspNetCore.Routing
             var linkGenerator = CreateLinkGenerator();
             var endpoint = CreateEndpoint(
                 template: "slug/Home/Store",
-                defaultValues: new { controller = "Home", action = "Store" },
-                matchProcessorReferences: new List<MatchProcessorReference>()
-                {
-                    new MatchProcessorReference("c", constraint)
-                });
+                defaults: new { controller = "Home", action = "Store" },
+                constraints: new { c = constraint });
 
             var context = CreateRouteValuesContext(
                 suppliedValues: new { action = "Store" },
@@ -437,11 +428,8 @@ namespace Microsoft.AspNetCore.Routing
             var linkGenerator = CreateLinkGenerator();
             var endpoint = CreateEndpoint(
                 template: "slug/Home/Store",
-                defaultValues: new { controller = "Home", action = "Store", otherthing = "17" },
-                matchProcessorReferences: new List<MatchProcessorReference>()
-                {
-                    new MatchProcessorReference("c", constraint)
-                });
+                defaults: new { controller = "Home", action = "Store", otherthing = "17" },
+                constraints: new { c = constraint });
 
             var context = CreateRouteValuesContext(
                 suppliedValues: new { action = "Store" },
@@ -471,11 +459,8 @@ namespace Microsoft.AspNetCore.Routing
             var linkGenerator = CreateLinkGenerator();
             var endpoint = CreateEndpoint(
                 template: "slug/{controller}/{action}",
-                defaultValues: new { action = "Index" },
-                matchProcessorReferences: new List<MatchProcessorReference>()
-                {
-                    new MatchProcessorReference("c", constraint)
-                });
+                defaults: new { action = "Index" },
+                constraints: new { c = constraint, });
 
             var context = CreateRouteValuesContext(
                 suppliedValues: new { controller = "Shopping" },
@@ -506,11 +491,8 @@ namespace Microsoft.AspNetCore.Routing
             var linkGenerator = CreateLinkGenerator();
             var endpoint = CreateEndpoint(
                 template: "slug/Home/Store",
-                defaultValues: new { controller = "Home", action = "Store", otherthing = "17", thirdthing = "13" },
-                matchProcessorReferences: new List<MatchProcessorReference>()
-                {
-                    new MatchProcessorReference("c", constraint)
-                });
+                defaults: new { controller = "Home", action = "Store", otherthing = "17", thirdthing = "13" },
+                constraints: new { c = constraint, });
 
             var context = CreateRouteValuesContext(
                 suppliedValues: new { action = "Store", thirdthing = "13" },
@@ -537,12 +519,10 @@ namespace Microsoft.AspNetCore.Routing
             // Arrange
             var linkGenerator = CreateLinkGenerator();
             var endpoint = CreateEndpoint(
-                template: "Home/Index/{id}",
-                defaultValues: new { controller = "Home", action = "Index" },
-                matchProcessorReferences: new List<MatchProcessorReference>()
-                {
-                    new MatchProcessorReference("id", "int")
-                });
+                template: "Home/Index/{id:int}",
+                defaults: new { controller = "Home", action = "Index" },
+                constraints: new { });
+
             var context = CreateRouteValuesContext(
                 suppliedValues: new { action = "Index", controller = "Home", id = 4 });
 
@@ -564,11 +544,9 @@ namespace Microsoft.AspNetCore.Routing
             var linkGenerator = CreateLinkGenerator();
             var endpoint = CreateEndpoint(
                 template: "Home/Index/{id}",
-                defaultValues: new { controller = "Home", action = "Index" },
-                matchProcessorReferences: new List<MatchProcessorReference>()
-                {
-                    new MatchProcessorReference("id", "int")
-                });
+                defaults: new { controller = "Home", action = "Index" },
+                constraints: new {id = "int"});
+
             var context = CreateRouteValuesContext(
                 suppliedValues: new { action = "Index", controller = "Home", id = "not-an-integer" });
 
@@ -590,12 +568,9 @@ namespace Microsoft.AspNetCore.Routing
             // Arrange
             var linkGenerator = CreateLinkGenerator();
             var endpoint = CreateEndpoint(
-                template: "Home/Index/{id}",
-                defaultValues: new { controller = "Home", action = "Index" },
-                matchProcessorReferences: new List<MatchProcessorReference>()
-                {
-                    new MatchProcessorReference("id", optional: true, "int")
-                });
+                template: "Home/Index/{id:int?}",
+                defaults: new { controller = "Home", action = "Index" },
+                constraints: new { });
             var context = CreateRouteValuesContext(
                 suppliedValues: new { action = "Index", controller = "Home", id = 98 });
 
@@ -617,11 +592,9 @@ namespace Microsoft.AspNetCore.Routing
             var linkGenerator = CreateLinkGenerator();
             var endpoint = CreateEndpoint(
                 template: "Home/Index/{id?}",
-                defaultValues: new { controller = "Home", action = "Index" },
-                matchProcessorReferences: new List<MatchProcessorReference>()
-                {
-                    new MatchProcessorReference("id", optional: true, "int")
-                });
+                defaults: new { controller = "Home", action = "Index" },
+                constraints: new { id = "int" });
+
             var context = CreateRouteValuesContext(
                 suppliedValues: new { action = "Index", controller = "Home" });
 
@@ -642,12 +615,10 @@ namespace Microsoft.AspNetCore.Routing
             // Arrange
             var linkGenerator = CreateLinkGenerator();
             var endpoint = CreateEndpoint(
-                template: "Home/Index/{id}",
-                defaultValues: new { controller = "Home", action = "Index" },
-                matchProcessorReferences: new List<MatchProcessorReference>()
-                {
-                    new MatchProcessorReference("id", optional: true, "int")
-                });
+                template: "Home/Index/{id?}",
+                defaults: new { controller = "Home", action = "Index" },
+                constraints: new { id = "int" });
+
             var context = CreateRouteValuesContext(
                 suppliedValues: new { action = "Index", controller = "Home", id = "not-an-integer" });
 
@@ -664,18 +635,15 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         [Fact]
-        public void GetLink_InlineConstraints_CompositeInlineConstraint()
+        public void GetLink_InlineConstraints_MultipleInlineConstraints()
         {
             // Arrange
             var linkGenerator = CreateLinkGenerator();
             var endpoint = CreateEndpoint(
-                template: "Home/Index/{id}",
-                defaultValues: new { controller = "Home", action = "Index" },
-                matchProcessorReferences: new List<MatchProcessorReference>()
-                {
-                    new MatchProcessorReference("id", "int"),
-                    new MatchProcessorReference("id", "range(1,20)")
-                });
+                template: "Home/Index/{id:int:range(1,20)}",
+                defaults: new { controller = "Home", action = "Index" },
+                constraints: new { });
+
             var context = CreateRouteValuesContext(
                 suppliedValues: new { action = "Index", controller = "Home", id = 14 });
 
@@ -696,13 +664,10 @@ namespace Microsoft.AspNetCore.Routing
             // Arrange
             var linkGenerator = CreateLinkGenerator();
             var endpoint = CreateEndpoint(
-                template: "Home/Index/{id}",
-                defaultValues: new { controller = "Home", action = "Index" },
-                matchProcessorReferences: new List<MatchProcessorReference>()
-                {
-                    new MatchProcessorReference("id", "int"),
-                    new MatchProcessorReference("id", "range(1,20)")
-                });
+                template: "Home/Index/{id:int:range(1,20)}",
+                defaults: new { controller = "Home", action = "Index" },
+                constraints: new { });
+
             var context = CreateRouteValuesContext(
                 suppliedValues: new { action = "Index", controller = "Home", id = 50 });
 
@@ -726,11 +691,9 @@ namespace Microsoft.AspNetCore.Routing
             var linkGenerator = CreateLinkGenerator();
             var endpoint = CreateEndpoint(
                 template: "Home/Index/{name}",
-                defaultValues: new { controller = "Home", action = "Index" },
-                matchProcessorReferences: new List<MatchProcessorReference>()
-                {
-                    new MatchProcessorReference("name", constraint)
-                });
+                defaults: new { controller = "Home", action = "Index" },
+                constraints: new { name = constraint });
+
             var context = CreateRouteValuesContext(
                 suppliedValues: new { action = "Index", controller = "Home", name = "products" });
 
@@ -770,50 +733,6 @@ namespace Microsoft.AspNetCore.Routing
         {
             // Arrange
             var endpoint = CreateEndpoint("{controller}/{action}/{name?}");
-            var linkGenerator = CreateLinkGenerator();
-            var context = CreateRouteValuesContext(
-                suppliedValues: new { action = "Index", controller = "Home" });
-
-            // Act
-            var link = linkGenerator.GetLink(
-                httpContext: null,
-                new[] { endpoint },
-                context.ExplicitValues,
-                context.AmbientValues);
-
-            // Assert
-            Assert.Equal("/Home/Index", link);
-        }
-
-        [Fact]
-        public void GetLink_OptionalParameter_ParameterPresentInValuesAndDefaults()
-        {
-            // Arrange
-            var endpoint = CreateEndpoint(
-                template: "{controller}/{action}/{name?}",
-                defaultValues: new { name = "default-products" });
-            var linkGenerator = CreateLinkGenerator();
-            var context = CreateRouteValuesContext(
-                suppliedValues: new { action = "Index", controller = "Home", name = "products" });
-
-            // Act
-            var link = linkGenerator.GetLink(
-                httpContext: null,
-                new[] { endpoint },
-                context.ExplicitValues,
-                context.AmbientValues);
-
-            // Assert
-            Assert.Equal("/Home/Index/products", link);
-        }
-
-        [Fact]
-        public void GetLink_OptionalParameter_ParameterNotPresentInValues_PresentInDefaults()
-        {
-            // Arrange
-            var endpoint = CreateEndpoint(
-                template: "{controller}/{action}/{name?}",
-                defaultValues: new { name = "products" });
             var linkGenerator = CreateLinkGenerator();
             var context = CreateRouteValuesContext(
                 suppliedValues: new { action = "Index", controller = "Home" });
@@ -958,7 +877,7 @@ namespace Microsoft.AspNetCore.Routing
         public void GetLink_TwoOptionalParametersAfterDefault_LastValueFromAmbientValues()
         {
             // Arrange
-            var endpoint = CreateEndpoint("a/{b=15}/{c?}/{d?}", defaultValues: new { });
+            var endpoint = CreateEndpoint("a/{b=15}/{c?}/{d?}");
             var linkGenerator = CreateLinkGenerator();
             var context = CreateRouteValuesContext(
                suppliedValues: new { },
@@ -985,23 +904,15 @@ namespace Microsoft.AspNetCore.Routing
 
         private MatcherEndpoint CreateEndpoint(
             string template,
-            object defaultValues = null,
-            object requiredValues = null,
-            List<MatchProcessorReference> matchProcessorReferences = null,
-            int order = 0,
-            EndpointMetadataCollection metadata = null)
+             object defaults = null, 
+             object constraints = null,
+             int order = 0,
+             EndpointMetadataCollection metadata = null)
         {
-            var defaults = defaultValues == null ? new RouteValueDictionary() : new RouteValueDictionary(defaultValues);
-            var required = requiredValues == null ? new RouteValueDictionary() : new RouteValueDictionary(requiredValues);
-            metadata = metadata ?? EndpointMetadataCollection.Empty;
-            matchProcessorReferences = matchProcessorReferences ?? new List<MatchProcessorReference>();
-
             return new MatcherEndpoint(
-                next => (httpContext) => Task.CompletedTask,
-                template,
-                defaults,
-                required,
-                matchProcessorReferences,
+                MatcherEndpoint.EmptyInvoker,
+                RoutePatternFactory.Parse(template, defaults, constraints),
+                new RouteValueDictionary(),
                 order,
                 metadata,
                 null);

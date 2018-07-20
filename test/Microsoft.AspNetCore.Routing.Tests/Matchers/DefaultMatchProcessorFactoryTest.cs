@@ -4,10 +4,10 @@
 using System;
 using System.Globalization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing.Constraints;
+using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
-using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Routing.Matchers
@@ -19,11 +19,153 @@ namespace Microsoft.AspNetCore.Routing.Matchers
         {
             // Arrange
             var factory = GetMatchProcessorFactory();
-            var matchProcessorReference = new MatchProcessorReference("id", @"notpresent(\d+)");
 
-            // Act & Assert
+            // Act
             var exception = Assert.Throws<InvalidOperationException>(
-                () => factory.Create(matchProcessorReference));
+                () => factory.Create("id", @"notpresent(\d+)", optional: false));
+
+            // Assert
+            Assert.Equal(
+                $"The constraint reference 'notpresent' could not be resolved to a type. " +
+                $"Register the constraint type with '{typeof(RouteOptions)}.{nameof(RouteOptions.ConstraintMap)}'.",
+                exception.Message);
+        }
+
+        [Fact]
+        public void Create_ThrowsException_OnInvalidType()
+        {
+            // Arrange
+            var options = new RouteOptions();
+            options.ConstraintMap.Add("bad", typeof(string));
+
+            var services = new ServiceCollection();
+            services.AddTransient<EndsWithStringMatchProcessor>();
+
+            var factory = GetMatchProcessorFactory(options, services);
+
+            // Act
+            var exception = Assert.Throws<InvalidOperationException>(
+                () => factory.Create("id", @"bad", optional: false));
+
+            // Assert
+            Assert.Equal(
+                $"Invalid constraint type '{typeof(string)}' registered as 'bad'. " +
+                $"A constraint  type must either implement '{typeof(IRouteConstraint)}', or inherit from '{typeof(MatchProcessor)}'.",
+                exception.Message);
+        }
+
+        [Fact]
+        public void Create_CreatesMatchProcessor_FromRoutePattern_String()
+        {
+            // Arrange
+            var factory = GetMatchProcessorFactory();
+
+            var parameter = RoutePatternFactory.ParameterPart(
+                "id", 
+                @default: null, 
+                parameterKind: RoutePatternParameterKind.Standard,
+                constraints: new[] { RoutePatternFactory.Constraint("int"), });
+
+            // Act
+            var matchProcessor = factory.Create(parameter, parameter.Constraints[0]);
+
+            // Assert
+            Assert.IsType<IntRouteConstraint>(Assert.IsType<RouteConstraintMatchProcessor>(matchProcessor).Constraint);
+        }
+
+        [Fact]
+        public void Create_CreatesMatchProcessor_FromRoutePattern_String_Optional()
+        {
+            // Arrange
+            var factory = GetMatchProcessorFactory();
+
+            var parameter = RoutePatternFactory.ParameterPart(
+                "id",
+                @default: null,
+                parameterKind: RoutePatternParameterKind.Optional,
+                constraints: new[] { RoutePatternFactory.Constraint("int"), });
+
+            // Act
+            var matchProcessor = factory.Create(parameter, parameter.Constraints[0]);
+
+            // Assert
+            Assert.IsType<OptionalMatchProcessor>(matchProcessor);
+        }
+
+        [Fact]
+        public void Create_CreatesMatchProcessor_FromRoutePattern_Constraint()
+        {
+            // Arrange
+            var factory = GetMatchProcessorFactory();
+
+            var parameter = RoutePatternFactory.ParameterPart(
+                "id",
+                @default: null,
+                parameterKind: RoutePatternParameterKind.Standard,
+                constraints: new[] { RoutePatternFactory.Constraint(new IntRouteConstraint()), });
+
+            // Act
+            var matchProcessor = factory.Create(parameter, parameter.Constraints[0]);
+
+            // Assert
+            Assert.IsType<IntRouteConstraint>(Assert.IsType<RouteConstraintMatchProcessor>(matchProcessor).Constraint);
+        }
+
+        [Fact]
+        public void Create_CreatesMatchProcessor_FromRoutePattern_Constraint_Optional()
+        {
+            // Arrange
+            var factory = GetMatchProcessorFactory();
+
+            var parameter = RoutePatternFactory.ParameterPart(
+                "id",
+                @default: null,
+                parameterKind: RoutePatternParameterKind.Optional,
+                constraints: new[] { RoutePatternFactory.Constraint(new IntRouteConstraint()), });
+
+            // Act
+            var matchProcessor = factory.Create(parameter, parameter.Constraints[0]);
+
+            // Assert
+            Assert.IsType<OptionalMatchProcessor>(matchProcessor);
+        }
+
+        [Fact]
+        public void Create_CreatesMatchProcessor_FromRoutePattern_MatchProcessor()
+        {
+            // Arrange
+            var factory = GetMatchProcessorFactory();
+
+            var parameter = RoutePatternFactory.ParameterPart(
+                "id",
+                @default: null,
+                parameterKind: RoutePatternParameterKind.Standard,
+                constraints: new[] { RoutePatternFactory.Constraint(new EndsWithStringMatchProcessor()), });
+
+            // Act
+            var matchProcessor = factory.Create(parameter, parameter.Constraints[0]);
+
+            // Assert
+            Assert.IsType<EndsWithStringMatchProcessor>(matchProcessor);
+        }
+
+        [Fact]
+        public void Create_CreatesMatchProcessor_FromRoutePattern_MatchProcessor_Optional()
+        {
+            // Arrange
+            var factory = GetMatchProcessorFactory();
+
+            var parameter = RoutePatternFactory.ParameterPart(
+                "id",
+                @default: null,
+                parameterKind: RoutePatternParameterKind.Optional,
+                constraints: new[] { RoutePatternFactory.Constraint(new EndsWithStringMatchProcessor()), });
+
+            // Act
+            var matchProcessor = factory.Create(parameter, parameter.Constraints[0]);
+
+            // Assert
+            Assert.IsType<OptionalMatchProcessor>(matchProcessor);
         }
 
         [Fact]
@@ -31,29 +173,12 @@ namespace Microsoft.AspNetCore.Routing.Matchers
         {
             // Arrange
             var factory = GetMatchProcessorFactory();
-            var matchProcessorReference = new MatchProcessorReference("id", "int");
 
-            // Act 1
-            var processor = factory.Create(matchProcessorReference);
+            // Act
+            var matchProcessor = factory.Create("id", "int", optional: false);
 
-            // Assert 1
-            Assert.NotNull(processor);
-
-            // Act 2
-            var isMatch = processor.ProcessInbound(
-                new DefaultHttpContext(),
-                new RouteValueDictionary(new { id = 10 }));
-
-            // Assert 2
-            Assert.True(isMatch);
-
-            // Act 2
-            isMatch = processor.ProcessInbound(
-                new DefaultHttpContext(),
-                new RouteValueDictionary(new { id = "foo" }));
-
-            // Assert 2
-            Assert.False(isMatch);
+            // Assert
+            Assert.IsType<IntRouteConstraint>(Assert.IsType<RouteConstraintMatchProcessor>(matchProcessor).Constraint);
         }
 
         [Fact]
@@ -61,84 +186,50 @@ namespace Microsoft.AspNetCore.Routing.Matchers
         {
             // Arrange
             var factory = GetMatchProcessorFactory();
-            var matchProcessorReference = new MatchProcessorReference("id", true, "int");
 
             // Act
-            var processor = factory.Create(matchProcessorReference);
+            var matchProcessor = factory.Create("id", "int", optional: true);
 
             // Assert
-            Assert.IsType<OptionalMatchProcessor>(processor);
+            Assert.IsType<OptionalMatchProcessor>(matchProcessor);
         }
 
         [Fact]
-        public void Create_CreatesMatchProcessor_FromConstraintText_AndCustomMatchProcessor()
+        public void Create_CreatesMatchProcessor_FromConstraintText_AndMatchProcesor()
         {
             // Arrange
             var options = new RouteOptions();
             options.ConstraintMap.Add("endsWith", typeof(EndsWithStringMatchProcessor));
+
             var services = new ServiceCollection();
             services.AddTransient<EndsWithStringMatchProcessor>();
+
             var factory = GetMatchProcessorFactory(options, services);
-            var matchProcessorReference = new MatchProcessorReference("id", "endsWith(_001)");
 
-            // Act 1
-            var processor = factory.Create(matchProcessorReference);
+            // Act
+            var matchProcessor = factory.Create("id", "endsWith", optional: false);
 
-            // Assert 1
-            Assert.NotNull(processor);
-
-            // Act 2
-            var isMatch = processor.ProcessInbound(
-                new DefaultHttpContext(),
-                new RouteValueDictionary(new { id = "555_001" }));
-
-            // Assert 2
-            Assert.True(isMatch);
-
-            // Act 2
-            isMatch = processor.ProcessInbound(
-                new DefaultHttpContext(),
-                new RouteValueDictionary(new { id = "444" }));
-
-            // Assert 2
-            Assert.False(isMatch);
+            // Assert
+            Assert.IsType<EndsWithStringMatchProcessor>(matchProcessor);
         }
 
         [Fact]
-        public void Create_ReturnsMatchProcessor_IfAvailable()
+        public void Create_CreatesMatchProcessor_FromConstraintText_AndMatchProcessor_Optional()
         {
             // Arrange
-            var factory = GetMatchProcessorFactory();
-            var matchProcessorReference = new MatchProcessorReference("id", Mock.Of<MatchProcessor>());
-            var expected = matchProcessorReference.MatchProcessor;
+            var options = new RouteOptions();
+            options.ConstraintMap.Add("endsWith", typeof(EndsWithStringMatchProcessor));
+
+            var services = new ServiceCollection();
+            services.AddTransient<EndsWithStringMatchProcessor>();
+
+            var factory = GetMatchProcessorFactory(options, services);
 
             // Act
-            var processor = factory.Create(matchProcessorReference);
+            var matchProcessor = factory.Create("id", "endsWith", optional: true);
 
             // Assert
-            Assert.Same(expected, processor);
-        }
-
-        [Fact]
-        public void Create_ReturnsMatchProcessor_WithSuppliedRouteConstraint()
-        {
-            // Arrange
-            var factory = GetMatchProcessorFactory();
-            var constraint = TestRouteConstraint.Create();
-            var matchProcessorReference = new MatchProcessorReference("id", constraint);
-            var processor = factory.Create(matchProcessorReference);
-            var expectedHttpContext = new DefaultHttpContext();
-            var expectedValues = new RouteValueDictionary();
-
-            // Act
-            processor.ProcessInbound(expectedHttpContext, expectedValues);
-
-            // Assert
-            Assert.Same(expectedHttpContext, constraint.HttpContext);
-            Assert.Same(expectedValues, constraint.Values);
-            Assert.Equal("id", constraint.RouteKey);
-            Assert.Equal(RouteDirection.IncomingRequest, constraint.RouteDirection);
-            Assert.Same(NullRouter.Instance, constraint.Route);
+            Assert.IsType<OptionalMatchProcessor>(matchProcessor);
         }
 
         private DefaultMatchProcessorFactory GetMatchProcessorFactory(

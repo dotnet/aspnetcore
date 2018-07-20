@@ -2,8 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Linq;
-using Microsoft.AspNetCore.Routing.EndpointConstraints;
+using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.AspNetCore.Routing.Template;
 
 namespace Microsoft.AspNetCore.Routing.Matchers
@@ -14,14 +13,14 @@ namespace Microsoft.AspNetCore.Routing.Matchers
         {
             Endpoint = endpoint;
 
-            Precedence = RoutePrecedence.ComputeInbound(endpoint.ParsedTemplate);
+            Precedence = RoutePrecedence.ComputeInbound(endpoint.RoutePattern);
         }
 
         public MatcherEndpoint Endpoint { get; }
 
         public int Order => Endpoint.Order;
 
-        public RouteTemplate Pattern => Endpoint.ParsedTemplate;
+        public RoutePattern RoutePattern => Endpoint.RoutePattern;
 
         public decimal Precedence { get; }
 
@@ -39,7 +38,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                 return comparison;
             }
 
-            return Pattern.TemplateText.CompareTo(other.Pattern.TemplateText);
+            return RoutePattern.RawText.CompareTo(other.RoutePattern.RawText);
         }
 
         public bool PriorityEquals(MatcherBuilderEntry other)
