@@ -52,6 +52,20 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         /// <summary>
+        /// Creates a new <see cref="RouteData"/> instance with the specified values.
+        /// </summary>
+        /// <param name="values">The <see cref="RouteValueDictionary"/> values.</param>
+        public RouteData(RouteValueDictionary values)
+        {
+            if (values == null)
+            {
+                throw new ArgumentNullException(nameof(values));
+            }
+
+            _values = values;
+        }
+
+        /// <summary>
         /// Gets the data tokens produced by routes on the current routing path.
         /// </summary>
         public RouteValueDictionary DataTokens
@@ -84,7 +98,7 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         /// <summary>
-        /// Gets the set of values produced by routes on the current routing path.
+        /// Gets the values produced by routes on the current routing path.
         /// </summary>
         public RouteValueDictionary Values
         {
