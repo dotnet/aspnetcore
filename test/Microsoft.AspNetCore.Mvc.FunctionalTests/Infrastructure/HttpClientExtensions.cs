@@ -18,6 +18,11 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var response = await client.GetAsync(requestUri);
             await AssertStatusCodeAsync(response, HttpStatusCode.OK);
 
+            return await GetHtmlDocumentAsync(response);
+        }
+
+        public static async Task<IHtmlDocument> GetHtmlDocumentAsync(this HttpResponseMessage response)
+        {
             var content = await response.Content.ReadAsStringAsync();
             var parser = new HtmlParser();
             var document = parser.Parse(content);

@@ -67,5 +67,16 @@ namespace FormatterWebSite
         {
             return Json(simpleTypePropertiesModel);
         }
+
+        [HttpPost]
+        public IActionResult ValidationProviderAttribute([FromBody] ValidationProviderAttributeModel validationProviderAttributeModel)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            return Ok();
+        }
     }
 }
