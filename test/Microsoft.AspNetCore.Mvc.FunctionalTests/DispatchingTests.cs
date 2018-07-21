@@ -19,19 +19,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact(Skip = "Link generation issue in dispatching. Need to fix - https://github.com/aspnet/Routing/issues/590")]
-        public override Task AttributeRoutedAction_InArea_ExplicitLeaveArea()
-        {
-            return Task.CompletedTask;
-        }
-
-        [Fact(Skip = "Link generation issue in dispatching. Need to fix - https://github.com/aspnet/Routing/issues/590")]
         public override Task AttributeRoutedAction_InArea_StaysInArea_ActionDoesntExist()
-        {
-            return Task.CompletedTask;
-        }
-
-        [Fact(Skip = "Link generation issue in dispatching. Need to fix - https://github.com/aspnet/Routing/issues/590")]
-        public override Task ConventionalRoutedAction_InArea_ExplicitLeaveArea()
         {
             return Task.CompletedTask;
         }
