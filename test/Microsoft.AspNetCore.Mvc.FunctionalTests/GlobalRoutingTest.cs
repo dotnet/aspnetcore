@@ -4,27 +4,25 @@
 using System;
 using System.Net;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc.Internal;
-using Microsoft.AspNetCore.Routing;
 using Newtonsoft.Json;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
-    public class DispatchingTests : RoutingTestsBase<RoutingWebSite.StartupWithDispatching>
+    public class GlobalRoutingTest : RoutingTestsBase<RoutingWebSite.StartupWithGlobalRouting>
     {
-        public DispatchingTests(MvcTestFixture<RoutingWebSite.StartupWithDispatching> fixture)
+        public GlobalRoutingTest(MvcTestFixture<RoutingWebSite.StartupWithGlobalRouting> fixture)
             : base(fixture)
         {
         }
 
-        [Fact(Skip = "Link generation issue in dispatching. Need to fix - https://github.com/aspnet/Routing/issues/590")]
+        [Fact(Skip = "Link generation issue in global routing. Need to fix - https://github.com/aspnet/Routing/issues/590")]
         public override Task AttributeRoutedAction_InArea_StaysInArea_ActionDoesntExist()
         {
             return Task.CompletedTask;
         }
 
-        [Fact(Skip = "Link generation issue in dispatching. Need to fix - https://github.com/aspnet/Routing/issues/590")]
+        [Fact(Skip = "Link generation issue in global routing. Need to fix - https://github.com/aspnet/Routing/issues/590")]
         public override Task ConventionalRoutedAction_InArea_StaysInArea()
         {
             return Task.CompletedTask;

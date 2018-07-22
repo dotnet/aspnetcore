@@ -1,27 +1,18 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.IO;
-using System.Text;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.AspNetCore.Mvc.Internal;
-using Microsoft.AspNetCore.Routing;
-using Microsoft.AspNetCore.Routing.Matchers;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Logging;
 
 namespace RoutingWebSite
 {
-    public class StartupWithDispatching
+    public class StartupWithGlobalRouting
     {
         // Set up application services
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDispatcher();
+            services.AddRouting();
 
             services.AddMvc();
 
@@ -31,7 +22,7 @@ namespace RoutingWebSite
 
         public void Configure(IApplicationBuilder app)
         {
-            app.UseDispatcher();
+            app.UseGlobalRouting();
 
             app.UseMvcWithEndpoint(routes =>
             {

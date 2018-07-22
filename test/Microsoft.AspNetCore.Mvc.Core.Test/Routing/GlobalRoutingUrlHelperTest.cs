@@ -14,7 +14,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Routing
 {
-    public class DispatcherUrlHelperTest : UrlHelperTestBase
+    public class GlobalRoutingUrlHelperTest : UrlHelperTestBase
     {
         protected override IUrlHelper CreateUrlHelper(string appRoot, string host, string protocol)
         {
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 
             var urlHelperFactory = httpContext.RequestServices.GetRequiredService<IUrlHelperFactory>();
             var urlHelper = urlHelperFactory.GetUrlHelper(actionContext);
-            Assert.IsType<DispatcherUrlHelper>(urlHelper);
+            Assert.IsType<GlobalRoutingUrlHelper>(urlHelper);
             return urlHelper;
         }
 
@@ -136,7 +136,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             }
 
             var services = GetCommonServices();
-            services.AddDispatcher();
+            services.AddRouting();
             services.TryAddEnumerable(
                 ServiceDescriptor.Singleton<EndpointDataSource>(new DefaultEndpointDataSource(endpoints)));
             services.TryAddSingleton<IUrlHelperFactory, UrlHelperFactory>();

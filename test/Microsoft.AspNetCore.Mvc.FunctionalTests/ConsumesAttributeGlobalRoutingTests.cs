@@ -3,9 +3,9 @@
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
-    public class RequestServicesDispatchingTest : RequestServicesTestBase<BasicWebSite.StartupWithDispatching>
+    public class ConsumesAttributeGlobalRoutingTests : ConsumesAttributeTestsBase<BasicWebSite.StartupWithGlobalRouting>
     {
-        public RequestServicesDispatchingTest(MvcTestFixture<BasicWebSite.StartupWithDispatching> fixture)
+        public ConsumesAttributeGlobalRoutingTests(MvcTestFixture<BasicWebSite.StartupWithGlobalRouting> fixture)
             : base(fixture)
         {
         }

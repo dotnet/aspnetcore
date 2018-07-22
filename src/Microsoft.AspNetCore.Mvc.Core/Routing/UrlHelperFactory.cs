@@ -53,9 +53,9 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 var services = httpContext.RequestServices;
                 var linkGenerator = services.GetRequiredService<LinkGenerator>();
                 var routeValuesBasedEndpointFinder = services.GetRequiredService<IEndpointFinder<RouteValuesBasedEndpointFinderContext>>();
-                var logger = services.GetRequiredService<ILogger<DispatcherUrlHelper>>();
+                var logger = services.GetRequiredService<ILogger<GlobalRoutingUrlHelper>>();
 
-                urlHelper = new DispatcherUrlHelper(
+                urlHelper = new GlobalRoutingUrlHelper(
                     context,
                     routeValuesBasedEndpointFinder,
                     linkGenerator,
