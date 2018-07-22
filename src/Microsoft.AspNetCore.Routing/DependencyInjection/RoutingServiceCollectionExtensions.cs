@@ -4,12 +4,15 @@
 using System;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Constraints;
+using Microsoft.AspNetCore.Routing.EndpointConstraints;
+using Microsoft.AspNetCore.Routing.EndpointFinders;
 using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.AspNetCore.Routing.Matchers;
 using Microsoft.AspNetCore.Routing.Tree;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ObjectPool;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -48,6 +51,37 @@ namespace Microsoft.Extensions.DependencyInjection
             }));
 
             services.TryAddSingleton(typeof(RoutingMarkerService));
+
+            // Collect all data sources from DI.
+            services.TryAddEnumerable(ServiceDescriptor.Transient<IConfigureOptions<EndpointOptions>, ConfigureEndpointOptions>());
+
+            // Allow global access to the list of endpoints.
+            services.TryAddSingleton<CompositeEndpointDataSource>(s =>
+            {
+                var options = s.GetRequiredService<IOptions<EndpointOptions>>();
+                return new CompositeEndpointDataSource(options.Value.DataSources);
+            });
+
+            //
+            // Default matcher implementation
+            //
+            services.TryAddSingleton<MatchProcessorFactory, DefaultMatchProcessorFactory>();
+            services.TryAddSingleton<MatcherFactory, DfaMatcherFactory>();
+            services.TryAddTransient<DfaMatcherBuilder>();
+
+            // Link generation related services
+            services.TryAddSingleton<IEndpointFinder<string>, NameBasedEndpointFinder>();
+            services.TryAddSingleton<IEndpointFinder<RouteValuesBasedEndpointFinderContext>, RouteValuesBasedEndpointFinder>();
+            services.TryAddSingleton<LinkGenerator, DefaultLinkGenerator>();
+            //
+            // Endpoint Selection
+            //
+            services.TryAddSingleton<EndpointSelector>();
+            services.TryAddSingleton<EndpointConstraintCache>();
+
+            // Will be cached by the EndpointSelector
+            services.TryAddEnumerable(
+                ServiceDescriptor.Transient<IEndpointConstraintProvider, DefaultEndpointConstraintProvider>());
 
             return services;
         }

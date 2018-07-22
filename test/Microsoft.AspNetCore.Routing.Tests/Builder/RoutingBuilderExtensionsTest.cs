@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -14,6 +14,28 @@ namespace Microsoft.AspNetCore.Builder
 {
     public class RoutingBuilderExtensionsTest
     {
+        [Fact]
+        public void UseRouter_ThrowsInvalidOperationException_IfRoutingMarkerServiceIsNotRegistered()
+        {
+            // Arrange
+            var applicationBuilderMock = new Mock<IApplicationBuilder>();
+            applicationBuilderMock
+                .Setup(s => s.ApplicationServices)
+                .Returns(Mock.Of<IServiceProvider>());
+
+            var router = Mock.Of<IRouter>();
+            
+            // Act & Assert
+            var exception = Assert.Throws<InvalidOperationException>(
+                () => applicationBuilderMock.Object.UseRouter(router));
+
+            Assert.Equal(
+                "Unable to find the required services. Please add all the required services by calling " +
+                "'IServiceCollection.AddRouting' inside the call to 'ConfigureServices(...)'" +
+                " in the application startup code.",
+                exception.Message);
+        }
+
         [Fact]
         public void UseRouter_IRouter_ThrowsWithoutCallingAddRouting()
         {
@@ -59,7 +81,7 @@ namespace Microsoft.AspNetCore.Builder
             var router = new Mock<IRouter>(MockBehavior.Strict);
             router
                 .Setup(r => r.RouteAsync(It.IsAny<RouteContext>()))
-                .Returns(Task.FromResult(0))
+                .Returns(Task.CompletedTask)
                 .Verifiable();
 
             app.UseRouter(router.Object);
@@ -84,7 +106,7 @@ namespace Microsoft.AspNetCore.Builder
             var router = new Mock<IRouter>(MockBehavior.Strict);
             router
                 .Setup(r => r.RouteAsync(It.IsAny<RouteContext>()))
-                .Returns(Task.FromResult(0))
+                .Returns(Task.CompletedTask)
                 .Verifiable();
 
             app.UseRouter(b =>

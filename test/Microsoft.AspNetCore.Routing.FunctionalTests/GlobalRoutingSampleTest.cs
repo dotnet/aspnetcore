@@ -6,18 +6,19 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.TestHost;
+using RoutingSample.Web;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Routing.FunctionalTests
 {
-    public class DispatcherSampleTest : IDisposable
+    public class GlobalRoutingSampleTest : IDisposable
     {
         private readonly HttpClient _client;
         private readonly TestServer _testServer;
 
-        public DispatcherSampleTest()
+        public GlobalRoutingSampleTest()
         {
-            var webHostBuilder = DispatcherSample.Web.Program.GetWebHostBuilder();
+            var webHostBuilder = Program.GetWebHostBuilder(new[] { Program.GlobalRoutingScenario, });
             _testServer = new TestServer(webHostBuilder);
             _client = _testServer.CreateClient();
             _client.BaseAddress = new Uri("http://localhost");
@@ -28,7 +29,7 @@ namespace Microsoft.AspNetCore.Routing.FunctionalTests
         {
             // Arrange
             var expectedContentType = "text/plain";
-            var expectedContent = "Dispatcher sample endpoints:" + Environment.NewLine + "/plaintext";
+            var expectedContent = "Global Routing sample endpoints:" + Environment.NewLine + "/plaintext";
 
             // Act
             var response = await _client.GetAsync("/");

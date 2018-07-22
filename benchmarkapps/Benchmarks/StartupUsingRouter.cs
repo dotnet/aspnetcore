@@ -8,7 +8,7 @@ using System.Text;
 
 namespace Benchmarks
 {
-    public class StartupUsingRouting
+    public class StartupUsingRouter
     {
         private static readonly byte[] _helloWorldPayload = Encoding.UTF8.GetBytes("Hello, World!");
 

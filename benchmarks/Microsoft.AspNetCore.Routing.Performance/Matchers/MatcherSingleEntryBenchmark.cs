@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 
             var httpContext = Requests[0];
 
-            // This is required to make the legacy router implementation work with dispatcher.
+            // This is required to make the legacy router implementation work with global routing.
             httpContext.Features.Set<IEndpointFeature>(feature);
 
             await _tree.MatchAsync(httpContext, feature);
@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             var feature = _feature;
             var httpContext = Requests[0];
 
-            // This is required to make the legacy router implementation work with dispatcher.
+            // This is required to make the legacy router implementation work with global routing.
             httpContext.Features.Set<IEndpointFeature>(feature);
 
             await _route.MatchAsync(httpContext, feature);

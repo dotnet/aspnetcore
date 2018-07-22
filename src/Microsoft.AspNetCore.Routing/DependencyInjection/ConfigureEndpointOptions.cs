@@ -8,11 +8,11 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
-    internal class ConfigureDispatcherOptions : IConfigureOptions<DispatcherOptions>
+    internal class ConfigureEndpointOptions : IConfigureOptions<EndpointOptions>
     {
         private readonly IEnumerable<EndpointDataSource> _dataSources;
 
-        public ConfigureDispatcherOptions(IEnumerable<EndpointDataSource> dataSources)
+        public ConfigureEndpointOptions(IEnumerable<EndpointDataSource> dataSources)
         {
             if (dataSources == null)
             {
@@ -22,7 +22,7 @@ namespace Microsoft.Extensions.DependencyInjection
             _dataSources = dataSources;
         }
 
-        public void Configure(DispatcherOptions options)
+        public void Configure(EndpointOptions options)
         {
             if (options == null)
             {

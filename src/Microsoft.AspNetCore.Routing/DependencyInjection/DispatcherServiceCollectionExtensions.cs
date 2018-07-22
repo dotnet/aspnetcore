@@ -2,19 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Reflection;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.AspNetCore.Routing.EndpointConstraints;
-using Microsoft.AspNetCore.Routing.EndpointFinders;
-using Microsoft.AspNetCore.Routing.Internal;
-using Microsoft.AspNetCore.Routing.Matchers;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
+    // This whole class is temporary until we can remove its usage from MVC
     public static class DispatcherServiceCollectionExtensions
     {
+        // This whole class is temporary until we can remove its usage from MVC
         public static IServiceCollection AddDispatcher(this IServiceCollection services)
         {
             if (services == null)
@@ -22,53 +17,21 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(services));
             }
 
-            // Collect all data sources from DI.
-            services.TryAddEnumerable(ServiceDescriptor.Transient<IConfigureOptions<DispatcherOptions>, ConfigureDispatcherOptions>());
-
-            // Allow global access to the list of endpoints.
-            services.TryAddSingleton<CompositeEndpointDataSource>(s =>
-            {
-                var options = s.GetRequiredService<IOptions<DispatcherOptions>>();
-                return new CompositeEndpointDataSource(options.Value.DataSources);
-            });
-
-            //
-            // Default matcher implementation
-            //
-            services.TryAddSingleton<MatchProcessorFactory, DefaultMatchProcessorFactory>();
-            services.TryAddSingleton<MatcherFactory, DfaMatcherFactory>();
-            services.TryAddTransient<DfaMatcherBuilder>();
-
-            // Link generation related services
-            services.TryAddSingleton<IEndpointFinder<string>, NameBasedEndpointFinder>();
-            services.TryAddSingleton<IEndpointFinder<RouteValuesBasedEndpointFinderContext>, RouteValuesBasedEndpointFinder>();
-            services.TryAddSingleton<LinkGenerator, DefaultLinkGenerator>();
-            //
-            // Endpoint Selection
-            //
-            services.TryAddSingleton<EndpointSelector>();
-            services.TryAddSingleton<EndpointConstraintCache>();
-
-            // Will be cached by the EndpointSelector
-            services.TryAddEnumerable(
-                ServiceDescriptor.Transient<IEndpointConstraintProvider, DefaultEndpointConstraintProvider>());
-
-            services.TryAddSingleton(typeof(DispatcherMarkerService));
-
-            return services;
+            return services.AddRouting();
         }
 
-        public static IServiceCollection AddDispatcher(this IServiceCollection services, Action<DispatcherOptions> configuration)
+        // This whole class is temporary until we can remove its usage from MVC
+        public static IServiceCollection AddDispatcher(this IServiceCollection services, Action<EndpointOptions> configuration)
         {
             if (services == null)
             {
                 throw new ArgumentNullException(nameof(services));
             }
 
-            services.AddDispatcher();
+            services.AddRouting();
             if (configuration != null)
             {
-                services.Configure<DispatcherOptions>(configuration);
+                services.Configure<EndpointOptions>(configuration);
             }
 
             return services;

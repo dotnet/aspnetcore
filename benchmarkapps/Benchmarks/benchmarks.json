@@ -16,7 +16,13 @@
   "PlaintextRouting": {
     "Path": "/plaintext"
   },
+  "PlaintextRouter": {
+    "Path": "/plaintext"
+  },
   "PlaintextDispatcher": {
+    "Path": "/plaintext"
+  },
+  "PlaintextGlobalRouting": {
     "Path": "/plaintext"
   }
 }

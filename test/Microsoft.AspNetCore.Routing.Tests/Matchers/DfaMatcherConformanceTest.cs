@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             await matcher.MatchAsync(httpContext, feature);
 
             // Assert
-            DispatcherAssert.AssertMatch(feature, endpoint, keys, values);
+            MatcherAssert.AssertMatch(feature, endpoint, keys, values);
         }
 
         internal override Matcher CreateMatcher(params MatcherEndpoint[] endpoints)
@@ -29,7 +29,6 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                 .AddLogging()
                 .AddOptions()
                 .AddRouting()
-                .AddDispatcher()
                 .BuildServiceProvider();
 
             var builder = services.GetRequiredService<DfaMatcherBuilder>();

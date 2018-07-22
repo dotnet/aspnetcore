@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Routing
 {
-    public class DispatcherOptions
+    public class EndpointOptions
     {
         public IList<EndpointDataSource> DataSources { get; } = new List<EndpointDataSource>();
     }

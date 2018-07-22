@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.Routing
 
             public Task RouteAsync(RouteContext context)
             {
-                context.Handler = _isHandled ? (RequestDelegate)((c) => Task.FromResult(0)) : null;
+                context.Handler = _isHandled ? (RequestDelegate)((c) => Task.CompletedTask) : null;
                 return Task.FromResult<object>(null);
             }
         }

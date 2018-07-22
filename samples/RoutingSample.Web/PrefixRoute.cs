@@ -44,14 +44,14 @@ namespace RoutingSample.Web
                     var lastCharacter = requestPath[_prefix.Length];
                     if (lastCharacter != '/' && lastCharacter != '#' && lastCharacter != '?')
                     {
-                        return Task.FromResult(0);
+                        return Task.CompletedTask;
                     }
                 }
 
                 context.Handler = _target.GetRequestHandler(context.HttpContext, context.RouteData);
             }
 
-            return Task.FromResult(0);
+            return Task.CompletedTask;
         }
 
         public VirtualPathData GetVirtualPath(VirtualPathContext context)
