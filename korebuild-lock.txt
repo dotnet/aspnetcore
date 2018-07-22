@@ -1,7 +1,2 @@
-<<<<<<< HEAD
-version:3.0.0-alpha1-10009
-commithash:86be4707e47d2f1930a982f2b59eacfc4196da33
-=======
-version:2.2.0-preview1-17099
-commithash:263ed1db9866b6b419b1f5d5189a712aa218acb3
->>>>>>> merge/release/2.2-to-master
+version:3.0.0-alpha1-10011
+commithash:717c2eb1f91dafd2580c1a9b8e5064d12dd8c054
