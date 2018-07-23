@@ -1,4 +1,4 @@
-﻿<Project>
+<Project>
   <PropertyGroup>
     <BlazorLinkOnBuild Condition="'$(BlazorLinkOnBuild)'==''">true</BlazorLinkOnBuild>
     <BlazorPublishDistDir>$(AssemblyName)\dist\</BlazorPublishDistDir>
@@ -14,7 +14,8 @@
 
   <Target Name="BlazorGetCopyToPublishDirectoryItems"
           BeforeTargets="GetCopyToPublishDirectoryItems"
-          DependsOnTargets="PrepareBlazorOutputs">
+          DependsOnTargets="PrepareBlazorOutputs"
+          Condition="'$(OutputType.ToLowerInvariant())'=='exe'">
     <ItemGroup>
       <!-- Don't want to publish the assemblies from the regular 'bin' dir. Instead we publish ones from 'dist'. -->
       <ResolvedAssembliesToPublish Remove="@(ResolvedAssembliesToPublish)" />
