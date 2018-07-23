@@ -248,7 +248,7 @@ if [ -f "$config_file" ]; then
     [ ! -z "${config_tools_source:-}" ] && tools_source="$config_tools_source"
 fi
 
-[ -z "$channel" ] && channel='master'
+[ -z "$channel" ] && channel='dev'
 [ -z "$tools_source" ] && tools_source='https://aspnetcore.blob.core.windows.net/buildtools'
 
 get_korebuild

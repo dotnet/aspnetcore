@@ -7,7 +7,7 @@ resources:
   - repository: buildtools
     type: git
     name: aspnet-BuildTools
-    ref: refs/heads/master
+    ref: refs/heads/release/2.2
 
 phases:
 - template: .vsts-pipelines/templates/project-ci.yml@buildtools
