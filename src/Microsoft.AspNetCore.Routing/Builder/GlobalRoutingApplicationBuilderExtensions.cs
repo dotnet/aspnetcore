@@ -12,12 +12,6 @@ namespace Microsoft.AspNetCore.Builder
     {
         private const string GlobalRoutingRegisteredKey = "__GlobalRoutingMiddlewareRegistered";
 
-        // This is provided temporarily until we can remove usages of it from MVC.
-        public static IApplicationBuilder UseDispatcher(this IApplicationBuilder builder)
-        {
-            return UseGlobalRouting(builder);
-        }
-        
         public static IApplicationBuilder UseGlobalRouting(this IApplicationBuilder builder)
         {
             VerifyRoutingIsRegistered(builder);
