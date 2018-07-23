@@ -261,7 +261,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddTransient<MvcAttributeRouteHandler>(); // Many per app
 
             //
-            // Dispatching
+            // Global Routing / Endpoints
             //
             services.TryAddEnumerable(
                 ServiceDescriptor.Singleton<EndpointDataSource, MvcEndpointDataSource>());

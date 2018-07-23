@@ -12,14 +12,14 @@ namespace Microsoft.AspNetCore.Mvc.Routing
     /// An implementation of <see cref="IUrlHelper"/> that uses <see cref="LinkGenerator"/> to build URLs 
     /// for ASP.NET MVC within an application.
     /// </summary>
-    internal class DispatcherUrlHelper : UrlHelperBase
+    internal class GlobalRoutingUrlHelper : UrlHelperBase
     {
-        private readonly ILogger<DispatcherUrlHelper> _logger;
+        private readonly ILogger<GlobalRoutingUrlHelper> _logger;
         private readonly LinkGenerator _linkGenerator;
         private readonly IEndpointFinder<RouteValuesBasedEndpointFinderContext> _routeValuesBasedEndpointFinder;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DispatcherUrlHelper"/> class using the specified
+        /// Initializes a new instance of the <see cref="GlobalRoutingUrlHelper"/> class using the specified
         /// <paramref name="actionContext"/>.
         /// </summary>
         /// <param name="actionContext">The <see cref="Mvc.ActionContext"/> for the current request.</param>
@@ -28,11 +28,11 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         /// </param>
         /// <param name="linkGenerator">The <see cref="LinkGenerator"/> used to generate the link.</param>
         /// <param name="logger">The <see cref="ILogger"/>.</param>
-        public DispatcherUrlHelper(
+        public GlobalRoutingUrlHelper(
             ActionContext actionContext,
             IEndpointFinder<RouteValuesBasedEndpointFinderContext> routeValuesBasedEndpointFinder,
             LinkGenerator linkGenerator,
-            ILogger<DispatcherUrlHelper> logger)
+            ILogger<GlobalRoutingUrlHelper> logger)
             : base(actionContext)
         {
             if (linkGenerator == null)

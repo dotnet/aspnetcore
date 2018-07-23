@@ -9,11 +9,11 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace VersioningWebSite
 {
-    public class StartupWithDispatching
+    public class StartupWithGlobalRouting
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDispatcher();
+            services.AddRouting();
 
             // Add MVC services to the services container
             services.AddMvc();
@@ -24,7 +24,7 @@ namespace VersioningWebSite
 
         public void Configure(IApplicationBuilder app)
         {
-            app.UseDispatcher();
+            app.UseGlobalRouting();
 
             app.UseMvcWithEndpoint(endpoints =>
             {
