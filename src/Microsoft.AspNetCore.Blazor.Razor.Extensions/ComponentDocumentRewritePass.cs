@@ -150,6 +150,17 @@ namespace Microsoft.AspNetCore.Blazor.Razor
 
                             switch (token.Type)
                             {
+                                case HtmlTokenType.Doctype:
+                                    {
+                                        // DocType isn't meaningful in Blazor. We don't process them in the runtime
+                                        // it wouldn't really mean much anyway since we build a DOM directly rather
+                                        // than letting the user-agent parse the document.
+                                        //
+                                        // For now, <!DOCTYPE html> and similar things will just be skipped by the compiler
+                                        // unless we come up with something more meaningful to do.
+                                        break;
+                                    }
+
                                 case HtmlTokenType.Character:
                                     {
                                         // Text content

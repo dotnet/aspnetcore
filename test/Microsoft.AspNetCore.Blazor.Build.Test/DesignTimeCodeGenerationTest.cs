@@ -1013,5 +1013,22 @@ namespace Test
             AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
             CompileToAssembly(generated);
         }
+
+        [Fact] // We don't process <!DOCTYPE ...> - we just skip them
+        public void Component_WithDocType()
+        {
+            // Arrange
+
+            // Act
+            var generated = CompileToCSharp(@"
+<!DOCTYPE html>
+<div>
+</div>");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
     }
 }
