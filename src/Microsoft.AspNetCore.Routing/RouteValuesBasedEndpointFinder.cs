@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Routing
         private readonly CompositeEndpointDataSource _endpointDataSource;
         private readonly ObjectPool<UriBuildingContext> _objectPool;
         private LinkGenerationDecisionTree _allMatchesLinkGenerationTree;
-        private IDictionary<string, LinkGenerationDecisionTree> _namedMatches;
+        private IDictionary<string, List<OutboundMatchResult>> _namedMatchResults;
 
         public RouteValuesBasedEndpointFinder(
             CompositeEndpointDataSource endpointDataSource,
@@ -45,11 +45,9 @@ namespace Microsoft.AspNetCore.Routing
                     context.ExplicitValues,
                     context.AmbientValues);
             }
-            else if (_namedMatches.TryGetValue(context.RouteName, out var linkGenerationTree))
+            else if (_namedMatchResults.TryGetValue(context.RouteName, out var namedMatchResults))
             {
-                matchResults = linkGenerationTree.GetMatches(
-                    context.ExplicitValues,
-                    context.AmbientValues);
+                matchResults = namedMatchResults;
             }
 
             if (matchResults == null || !matchResults.Any())
@@ -78,15 +76,33 @@ namespace Microsoft.AspNetCore.Routing
         {
             // Refresh the matches in the case where a datasource's endpoints changes. The following is OK to do
             // as refresh of new endpoints happens within a lock and also these fields are not publicly accessible.
-            var (allMatches, namedMatches) = GetOutboundMatches();
-            _namedMatches = GetNamedMatches(namedMatches);
+            var (allMatches, namedMatchResults) = GetOutboundMatches();
+            _namedMatchResults = namedMatchResults;
             _allMatchesLinkGenerationTree = new LinkGenerationDecisionTree(allMatches.ToArray());
         }
 
-        protected virtual (IEnumerable<OutboundMatch>, IDictionary<string, List<OutboundMatch>>) GetOutboundMatches()
+        /// Decision tree is built using the 'required values' of actions.
+        /// - When generating a url using route values, decision tree checks the explicitly supplied route values +
+        ///   ambient values to see if they have a match for the required-values-based-tree.
+        /// - When generating a url using route name, route values for controller, action etc.might not be provided
+        ///   (this is expected because as a user I want to avoid writing all those and instead chose to use a
+        ///   routename which is quick). So since these values are not provided and might not be even in ambient
+        ///   values, decision tree would fail to find a match. So for this reason decision tree is not used for named
+        ///   matches. Instead all named matches are returned as is and the LinkGenerator uses a TemplateBinder to
+        ///   decide which of the matches can generate a url.
+        ///   For example, for a route defined like below with current ambient values like new { controller = "Home",
+        ///   action = "Index" }
+        ///     "api/orders/{id}",
+        ///     routeName: "OrdersApi",
+        ///     defaults: new { controller = "Orders", action = "GetById" },
+        ///     requiredValues: new { controller = "Orders", action = "GetById" },
+        ///   A call to GetLink("OrdersApi", new { id = "10" }) cannot generate url as neither the supplied values or
+        ///   current ambient values do not satisfy the decision tree that is built based on the required values.
+        protected virtual (IEnumerable<OutboundMatch>, IDictionary<string, List<OutboundMatchResult>>) GetOutboundMatches()
         {
             var allOutboundMatches = new List<OutboundMatch>();
-            var namedOutboundMatches = new Dictionary<string, List<OutboundMatch>>(StringComparer.OrdinalIgnoreCase);
+            var namedOutboundMatchResults = new Dictionary<string, List<OutboundMatchResult>>(
+                StringComparer.OrdinalIgnoreCase);
 
             var endpoints = _endpointDataSource.Endpoints.OfType<MatcherEndpoint>();
             foreach (var endpoint in endpoints)
@@ -101,16 +117,16 @@ namespace Microsoft.AspNetCore.Routing
                     continue;
                 }
 
-                List<OutboundMatch> matches;
-                if (!namedOutboundMatches.TryGetValue(entry.RouteName, out matches))
+                List<OutboundMatchResult> matchResults;
+                if (!namedOutboundMatchResults.TryGetValue(entry.RouteName, out matchResults))
                 {
-                    matches = new List<OutboundMatch>();
-                    namedOutboundMatches.Add(entry.RouteName, matches);
+                    matchResults = new List<OutboundMatchResult>();
+                    namedOutboundMatchResults.Add(entry.RouteName, matchResults);
                 }
-                matches.Add(outboundMatch);
+                matchResults.Add(new OutboundMatchResult(outboundMatch, isFallbackMatch: false));
             }
 
-            return (allOutboundMatches, namedOutboundMatches);
+            return (allOutboundMatches, namedOutboundMatchResults);
         }
 
         private OutboundRouteEntry CreateOutboundRouteEntry(MatcherEndpoint endpoint)
@@ -128,17 +144,6 @@ namespace Microsoft.AspNetCore.Routing
             };
             entry.Defaults = new RouteValueDictionary(endpoint.RoutePattern.Defaults);
             return entry;
-        }
-
-        private IDictionary<string, LinkGenerationDecisionTree> GetNamedMatches(
-            IDictionary<string, List<OutboundMatch>> namedOutboundMatches)
-        {
-            var result = new Dictionary<string, LinkGenerationDecisionTree>(StringComparer.OrdinalIgnoreCase);
-            foreach (var namedOutboundMatch in namedOutboundMatches)
-            {
-                result.Add(namedOutboundMatch.Key, new LinkGenerationDecisionTree(namedOutboundMatch.Value.ToArray()));
-            }
-            return result;
         }
     }
 }

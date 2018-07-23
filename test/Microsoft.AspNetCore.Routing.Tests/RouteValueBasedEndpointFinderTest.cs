@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Routing.EndpointFinders;
 using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.AspNetCore.Routing.Matchers;
 using Microsoft.AspNetCore.Routing.Patterns;
@@ -33,7 +34,7 @@ namespace Microsoft.AspNetCore.Routing
             Assert.NotNull(finder.NamedMatches);
             Assert.True(finder.NamedMatches.TryGetValue("named", out var namedMatches));
             var namedMatch = Assert.Single(namedMatches);
-            var actual = Assert.IsType<MatcherEndpoint>(namedMatch.Entry.Data);
+            var actual = Assert.IsType<MatcherEndpoint>(namedMatch.Match.Entry.Data);
             Assert.Same(endpoint2, actual);
         }
 
@@ -54,8 +55,8 @@ namespace Microsoft.AspNetCore.Routing
             Assert.NotNull(finder.NamedMatches);
             Assert.True(finder.NamedMatches.TryGetValue("named", out var namedMatches));
             Assert.Equal(2, namedMatches.Count);
-            Assert.Same(endpoint2, Assert.IsType<MatcherEndpoint>(namedMatches[0].Entry.Data));
-            Assert.Same(endpoint3, Assert.IsType<MatcherEndpoint>(namedMatches[1].Entry.Data));
+            Assert.Same(endpoint2, Assert.IsType<MatcherEndpoint>(namedMatches[0].Match.Entry.Data));
+            Assert.Same(endpoint3, Assert.IsType<MatcherEndpoint>(namedMatches[1].Match.Entry.Data));
         }
 
         [Fact]
@@ -75,8 +76,8 @@ namespace Microsoft.AspNetCore.Routing
             Assert.NotNull(finder.NamedMatches);
             Assert.True(finder.NamedMatches.TryGetValue("named", out var namedMatches));
             Assert.Equal(2, namedMatches.Count);
-            Assert.Same(endpoint2, Assert.IsType<MatcherEndpoint>(namedMatches[0].Entry.Data));
-            Assert.Same(endpoint3, Assert.IsType<MatcherEndpoint>(namedMatches[1].Entry.Data));
+            Assert.Same(endpoint2, Assert.IsType<MatcherEndpoint>(namedMatches[0].Match.Entry.Data));
+            Assert.Same(endpoint3, Assert.IsType<MatcherEndpoint>(namedMatches[1].Match.Entry.Data));
         }
 
         [Fact]
@@ -98,7 +99,7 @@ namespace Microsoft.AspNetCore.Routing
             Assert.NotNull(finder.NamedMatches);
             Assert.True(finder.NamedMatches.TryGetValue("named", out var namedMatches));
             var namedMatch = Assert.Single(namedMatches);
-            var actual = Assert.IsType<MatcherEndpoint>(namedMatch.Entry.Data);
+            var actual = Assert.IsType<MatcherEndpoint>(namedMatch.Match.Entry.Data);
             Assert.Same(endpoint2, actual);
         }
 
@@ -167,6 +168,60 @@ namespace Microsoft.AspNetCore.Routing
                     actual = Assert.IsType<MatcherEndpoint>(m.Entry.Data);
                     Assert.Same(endpoint4, actual);
                 });
+        }
+
+        [Fact]
+        public void FindEndpoints_ReturnsEndpoint_WhenLookedUpByRouteName()
+        {
+            // Arrange
+            var expected = CreateEndpoint(
+                "api/orders/{id}",
+                defaults: new { controller = "Orders", action = "GetById" },
+                requiredValues: new { controller = "Orders", action = "GetById" },
+                routeName: "OrdersApi");
+            var finder = CreateEndpointFinder(expected);
+
+            // Act
+            var foundEndpoints = finder.FindEndpoints(
+                new RouteValuesBasedEndpointFinderContext
+                {
+                    ExplicitValues = new RouteValueDictionary(new { id = 10 }),
+                    AmbientValues = new RouteValueDictionary(new { controller = "Home", action = "Index" }),
+                    RouteName = "OrdersApi"
+                });
+
+            // Assert
+            var actual = Assert.Single(foundEndpoints);
+            Assert.Same(expected, actual);
+        }
+
+        [Fact]
+        public void FindEndpoints_AlwaysReturnsEndpointsByRouteName_IgnoringMissingRequiredParameterValues()
+        {
+            // Here 'id' is the required value. The endpoint finder would always return an endpoint by looking up
+            // name only. Its the link generator which uses these endpoints finally to generate a link or not
+            // based on the required parameter values being present or not.
+
+            // Arrange
+            var expected = CreateEndpoint(
+                "api/orders/{id}",
+                defaults: new { controller = "Orders", action = "GetById" },
+                requiredValues: new { controller = "Orders", action = "GetById" },
+                routeName: "OrdersApi");
+            var finder = CreateEndpointFinder(expected);
+
+            // Act
+            var foundEndpoints = finder.FindEndpoints(
+                new RouteValuesBasedEndpointFinderContext
+                {
+                    ExplicitValues = new RouteValueDictionary(),
+                    AmbientValues = new RouteValueDictionary(),
+                    RouteName = "OrdersApi"
+                });
+
+            // Assert
+            var actual = Assert.Single(foundEndpoints);
+            Assert.Same(expected, actual);
         }
 
         private CustomRouteValuesBasedEndpointFinder CreateEndpointFinder(params Endpoint[] endpoints)
@@ -239,9 +294,9 @@ namespace Microsoft.AspNetCore.Routing
 
             public IEnumerable<OutboundMatch> AllMatches { get; private set; }
 
-            public IDictionary<string, List<OutboundMatch>> NamedMatches { get; private set; }
+            public IDictionary<string, List<OutboundMatchResult>> NamedMatches { get; private set; }
 
-            protected override (IEnumerable<OutboundMatch>, IDictionary<string, List<OutboundMatch>>) GetOutboundMatches()
+            protected override (IEnumerable<OutboundMatch>, IDictionary<string, List<OutboundMatchResult>>) GetOutboundMatches()
             {
                 var matches = base.GetOutboundMatches();
                 AllMatches = matches.Item1;
