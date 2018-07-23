@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.Routing
             var endpoints = compositeDataSource.Endpoints;
 
             // Assert1
-            var changeToken1 = compositeDataSource.ChangeToken;
+            var changeToken1 = compositeDataSource.GetChangeToken();
             var token = Assert.IsType<CancellationChangeToken>(changeToken1);
             Assert.False(token.HasChanged); // initial state
 
@@ -126,7 +126,7 @@ namespace Microsoft.AspNetCore.Routing
 
             // Assert2
             Assert.True(changeToken1.HasChanged); // old token is expected to be changed
-            var changeToken2 = compositeDataSource.ChangeToken; // new token is in a unchanged state
+            var changeToken2 = compositeDataSource.GetChangeToken(); // new token is in a unchanged state
             Assert.NotSame(changeToken2, changeToken1);
             token = Assert.IsType<CancellationChangeToken>(changeToken2);
             Assert.False(token.HasChanged);
@@ -139,7 +139,7 @@ namespace Microsoft.AspNetCore.Routing
 
             // Assert2
             Assert.True(changeToken2.HasChanged); // old token is expected to be changed
-            var changeToken3 = compositeDataSource.ChangeToken; // new token is in a unchanged state
+            var changeToken3 = compositeDataSource.GetChangeToken(); // new token is in a unchanged state
             Assert.NotSame(changeToken3, changeToken2);
             Assert.NotSame(changeToken3, changeToken1);
             token = Assert.IsType<CancellationChangeToken>(changeToken3);

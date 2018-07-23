@@ -32,8 +32,8 @@ namespace Microsoft.AspNetCore.Routing
 
             // Register for changes in endpoints
             Extensions.Primitives.ChangeToken.OnChange(
-                () => _endpointDataSource.ChangeToken,
-                () => HandleChange());
+                _endpointDataSource.GetChangeToken,
+                HandleChange);
         }
 
         public IEnumerable<Endpoint> FindEndpoints(RouteValuesBasedEndpointFinderContext context)
@@ -70,8 +70,8 @@ namespace Microsoft.AspNetCore.Routing
             // re-register the callback as the change token is one time use only and a new change token
             // is produced every time
             Extensions.Primitives.ChangeToken.OnChange(
-                () => _endpointDataSource.ChangeToken,
-                () => HandleChange());
+                _endpointDataSource.GetChangeToken,
+                HandleChange);
         }
 
         private void BuildOutboundMatches()
