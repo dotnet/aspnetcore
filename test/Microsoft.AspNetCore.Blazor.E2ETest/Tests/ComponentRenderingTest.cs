@@ -306,6 +306,10 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
 
             var svgCircleElement = appElement.FindElement(By.XPath("//*[local-name()='circle' and namespace-uri()='http://www.w3.org/2000/svg']"));
             Assert.NotNull(svgCircleElement);
+            Assert.Equal("10", svgCircleElement.GetAttribute("r"));
+
+            appElement.FindElement(By.TagName("button")).Click();
+            WaitAssert.Equal("20", () => svgCircleElement.GetAttribute("r"));
         }
 
         [Fact]

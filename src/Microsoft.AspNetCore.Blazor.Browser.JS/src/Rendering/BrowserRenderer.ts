@@ -79,7 +79,7 @@ export class BrowserRenderer {
           const frame = batch.referenceFramesEntry(referenceFrames, frameIndex);
           const siblingIndex = editReader.siblingIndex(edit);
           const element = getLogicalChild(parent, childIndexAtCurrentDepth + siblingIndex);
-          if (element instanceof HTMLElement) {
+          if (element instanceof Element) {
             this.applyAttribute(batch, componentId, element, frame);
           } else {
             throw new Error(`Cannot set attribute on non-element child`);
