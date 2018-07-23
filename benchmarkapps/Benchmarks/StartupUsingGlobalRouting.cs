@@ -10,7 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Benchmarks
 {
-    public class StartupUsingDispatcher
+    public class StartupUsingGlobalRouting
     {
         private static readonly byte[] _helloWorldPayload = Encoding.UTF8.GetBytes("Hello, World!");
 
@@ -18,7 +18,7 @@ namespace Benchmarks
         {
             services.AddRouting();
 
-            services.AddDispatcher(options =>
+            services.Configure<EndpointOptions>(options =>
             {
                 options.DataSources.Add(new DefaultEndpointDataSource(new[]
                 {
@@ -43,7 +43,7 @@ namespace Benchmarks
 
         public void Configure(IApplicationBuilder app)
         {
-            app.UseDispatcher();
+            app.UseGlobalRouting();
 
             app.UseEndpoint();
         }

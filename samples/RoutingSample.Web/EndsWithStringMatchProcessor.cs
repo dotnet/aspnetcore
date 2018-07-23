@@ -6,7 +6,7 @@ using System.Globalization;
 using Microsoft.AspNetCore.Routing.Matchers;
 using Microsoft.Extensions.Logging;
 
-namespace DispatcherSample.Web
+namespace RoutingSample.Web
 {
     internal class EndsWithStringMatchProcessor : MatchProcessorBase
     {

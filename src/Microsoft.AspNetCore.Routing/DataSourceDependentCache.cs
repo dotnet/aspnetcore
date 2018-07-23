@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Routing
         {
             lock (_lock)
             {
-                var changeToken = _dataSource.ChangeToken;
+                var changeToken = _dataSource.GetChangeToken();
                 _value = _initializeCore(_dataSource.Endpoints);
 
                 changeToken.RegisterChangeCallback(_initializerWithState, null);

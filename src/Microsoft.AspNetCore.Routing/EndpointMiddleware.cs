@@ -34,8 +34,8 @@ namespace Microsoft.AspNetCore.Routing
             var feature = httpContext.Features.Get<IEndpointFeature>();
             if (feature == null)
             {
-                var message = $"Unable to execute an endpoint because the {nameof(DispatcherMiddleware)} was not run for this request. " +
-                    $"Ensure {nameof(DispatcherMiddleware)} is added to the request execution pipeline before {nameof(EndpointMiddleware)} in application startup code.";
+                var message = $"Unable to execute an endpoint because the {nameof(GlobalRoutingMiddleware)} was not run for this request. " +
+                    $"Ensure {nameof(GlobalRoutingMiddleware)} is added to the request execution pipeline before {nameof(EndpointMiddleware)} in application startup code.";
 
                 throw new InvalidOperationException(message);
             }

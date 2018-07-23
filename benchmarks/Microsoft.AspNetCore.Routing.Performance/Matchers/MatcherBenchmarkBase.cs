@@ -25,7 +25,6 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             services.AddLogging();
             services.AddOptions();
             services.AddRouting();
-            services.AddDispatcher();
             return services.BuildServiceProvider();
         }
 

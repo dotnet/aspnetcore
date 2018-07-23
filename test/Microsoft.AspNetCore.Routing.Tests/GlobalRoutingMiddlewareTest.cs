@@ -13,7 +13,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Routing
 {
-    public class DispatcherMiddlewareTest
+    public class GlobalRoutingMiddlewareTest
     {
         [Fact]
         public async Task Invoke_OnCall_SetsEndpointFeature()
@@ -39,14 +39,14 @@ namespace Microsoft.AspNetCore.Routing
             var expectedMessage = "Request matched endpoint 'Test endpoint'.";
 
             var sink = new TestSink(
-                TestSink.EnableWithTypeName<DispatcherMiddleware>,
-                TestSink.EnableWithTypeName<DispatcherMiddleware>);
+                TestSink.EnableWithTypeName<GlobalRoutingMiddleware>,
+                TestSink.EnableWithTypeName<GlobalRoutingMiddleware>);
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
 
             var httpContext = new DefaultHttpContext();
             httpContext.RequestServices = new TestServiceProvider();
 
-            var logger = new Logger<DispatcherMiddleware>(loggerFactory);
+            var logger = new Logger<GlobalRoutingMiddleware>(loggerFactory);
             var middleware = CreateMiddleware(logger);
 
             // Act
@@ -82,15 +82,15 @@ namespace Microsoft.AspNetCore.Routing
             Assert.Equal("testValue", endpointFeature.Values["testKey"]);
         }
 
-        private DispatcherMiddleware CreateMiddleware(Logger<DispatcherMiddleware> logger = null)
+        private GlobalRoutingMiddleware CreateMiddleware(Logger<GlobalRoutingMiddleware> logger = null)
         {
             RequestDelegate next = (c) => Task.FromResult<object>(null);
 
-            logger = logger ?? new Logger<DispatcherMiddleware>(NullLoggerFactory.Instance);
+            logger = logger ?? new Logger<GlobalRoutingMiddleware>(NullLoggerFactory.Instance);
 
-            var options = Options.Create(new DispatcherOptions());
+            var options = Options.Create(new EndpointOptions());
             var matcherFactory = new TestMatcherFactory(true);
-            var middleware = new DispatcherMiddleware(
+            var middleware = new GlobalRoutingMiddleware(
                 matcherFactory,
                 new CompositeEndpointDataSource(Array.Empty<EndpointDataSource>()),
                 logger,

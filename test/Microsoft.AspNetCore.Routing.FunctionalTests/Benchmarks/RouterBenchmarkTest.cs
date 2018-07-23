@@ -11,12 +11,12 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Routing.FunctionalTests
 {
-    public class RoutingTest : IDisposable
+    public class RouterBenchmarkTest : IDisposable
     {
         private readonly HttpClient _client;
         private readonly TestServer _testServer;
 
-        public RoutingTest()
+        public RouterBenchmarkTest()
         {
             // This switch and value are set by benchmark server when running the app for profiling.
             var args = new[] { "--scenarios", "PlaintextRouting" };
@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Routing.FunctionalTests
 
             // Make sure we are using the right startup
             var startupName = webHostBuilder.GetSetting("Startup");
-            Assert.Equal(nameof(Benchmarks.StartupUsingRouting), startupName);
+            Assert.Equal(nameof(Benchmarks.StartupUsingRouter), startupName);
 
             _testServer = new TestServer(webHostBuilder);
             _client = _testServer.CreateClient();

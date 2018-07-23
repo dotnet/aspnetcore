@@ -29,22 +29,22 @@ namespace Benchmarks
                     .UseKestrel();
 
             var scenario = config["scenarios"]?.ToLower();
-            if (scenario == "plaintextdispatcher")
+            if (scenario == "plaintextdispatcher" || scenario == "plaintextglobalrouting")
             {
-                webHostBuilder.UseStartup<StartupUsingDispatcher>();
+                webHostBuilder.UseStartup<StartupUsingGlobalRouting>();
                 // for testing
-                webHostBuilder.UseSetting("Startup", nameof(StartupUsingDispatcher));
+                webHostBuilder.UseSetting("Startup", nameof(StartupUsingGlobalRouting));
             }
-            else if (scenario == "plaintextrouting")
+            else if (scenario == "plaintextrouting" || scenario == "plaintextrouter")
             {
-                webHostBuilder.UseStartup<StartupUsingRouting>();
+                webHostBuilder.UseStartup<StartupUsingRouter>();
                 // for testing
-                webHostBuilder.UseSetting("Startup", nameof(StartupUsingRouting));
+                webHostBuilder.UseSetting("Startup", nameof(StartupUsingRouter));
             }
             else
             {
                 throw new InvalidOperationException(
-                    $"Invalid scenario '{scenario}'. Allowed scenarios are PlaintextDispatcher and PlaintextRouting");
+                    $"Invalid scenario '{scenario}'. Allowed scenarios are PlaintextGlobalRouting and PlaintextRouter");
             }
 
             return webHostBuilder;

@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Routing
 {
     public class RouteCollectionTest
     {
-        private static readonly RequestDelegate NullHandler = (c) => Task.FromResult(0);
+        private static readonly RequestDelegate NullHandler = (c) => Task.CompletedTask;
 
         [Theory]
         [InlineData(@"Home/Index/23", "/home/index/23", true, false)]

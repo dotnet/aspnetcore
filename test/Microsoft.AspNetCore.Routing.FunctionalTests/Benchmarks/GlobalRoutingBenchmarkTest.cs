@@ -11,20 +11,20 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Routing.FunctionalTests
 {
-    public class DispatcherTest : IDisposable
+    public class GlobalRoutingBenchmarkTest : IDisposable
     {
         private readonly HttpClient _client;
         private readonly TestServer _testServer;
 
-        public DispatcherTest()
+        public GlobalRoutingBenchmarkTest()
         {
             // This switch and value are set by benchmark server when running the app for profiling.
-            var args = new[] { "--scenarios", "PlaintextDispatcher" };
+            var args = new[] { "--scenarios", "PlaintextGlobalRouting" };
             var webHostBuilder = Benchmarks.Program.GetWebHostBuilder(args);
 
             // Make sure we are using the right startup
             var startupName = webHostBuilder.GetSetting("Startup");
-            Assert.Equal(nameof(Benchmarks.StartupUsingDispatcher), startupName);
+            Assert.Equal(nameof(Benchmarks.StartupUsingGlobalRouting), startupName);
 
             _testServer = new TestServer(webHostBuilder);
             _client = _testServer.CreateClient();

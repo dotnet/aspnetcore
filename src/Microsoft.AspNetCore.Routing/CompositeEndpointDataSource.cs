@@ -69,8 +69,8 @@ namespace Microsoft.AspNetCore.Routing
                     foreach (var dataSource in _dataSources)
                     {
                         Extensions.Primitives.ChangeToken.OnChange(
-                            () => dataSource.ChangeToken,
-                            () => HandleChange());
+                            dataSource.GetChangeToken,
+                            HandleChange);
                     }
                 }
             }

@@ -12,21 +12,21 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Builder
 {
-    public class DispatcherApplicationBuilderExtensionsTest
+    public class GlobalRoutingBuilderExtensionsTest
     {
         [Fact]
-        public void UseDispatcher_ServicesNotRegistered_Throws()
+        public void UseGlobalRouting_ServicesNotRegistered_Throws()
         {
             // Arrange
             var app = new ApplicationBuilder(Mock.Of<IServiceProvider>());
 
             // Act
-            var ex = Assert.Throws<InvalidOperationException>(() => app.UseDispatcher());
+            var ex = Assert.Throws<InvalidOperationException>(() => app.UseGlobalRouting());
 
             // Assert
             Assert.Equal(
                 "Unable to find the required services. " +
-                "Please add all the required services by calling 'IServiceCollection.AddDispatcher' " +
+                "Please add all the required services by calling 'IServiceCollection.AddRouting' " +
                 "inside the call to 'ConfigureServices(...)' in the application startup code.",
                 ex.Message);
         }
@@ -43,20 +43,20 @@ namespace Microsoft.AspNetCore.Builder
             // Assert
             Assert.Equal(
                 "Unable to find the required services. " +
-                "Please add all the required services by calling 'IServiceCollection.AddDispatcher' " +
+                "Please add all the required services by calling 'IServiceCollection.AddRouting' " +
                 "inside the call to 'ConfigureServices(...)' in the application startup code.",
                 ex.Message);
         }
 
         [Fact]
-        public async Task UseDispatcher_ServicesRegistered_SetsFeature()
+        public async Task UseGlobalRouting_ServicesRegistered_SetsFeature()
         {
             // Arrange
             var services = CreateServices();
 
             var app = new ApplicationBuilder(services);
 
-            app.UseDispatcher();
+            app.UseGlobalRouting();
 
             var appFunc = app.Build();
             var httpContext = new DefaultHttpContext();
@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Builder
         }
 
         [Fact]
-        public void UseEndpoint_ServicesRegisteredAndNoDispatcherRegistered_Throws()
+        public void UseEndpoint_WithoutRoutingServicesRegistered_Throws()
         {
             // Arrange
             var services = CreateServices();
@@ -81,21 +81,21 @@ namespace Microsoft.AspNetCore.Builder
 
             // Assert
             Assert.Equal(
-                "DispatcherMiddleware must be added to the request execution pipeline before EndpointMiddleware. " +
-                "Please add DispatcherMiddleware by calling 'IApplicationBuilder.UseDispatcher' " +
+                "GlobalRoutingMiddleware must be added to the request execution pipeline before EndpointMiddleware. " +
+                "Please add GlobalRoutingMiddleware by calling 'IApplicationBuilder.UseGlobalRouting' " +
                 "inside the call to 'Configure(...)' in the application startup code.",
                 ex.Message);
         }
 
         [Fact]
-        public async Task UseEndpoint_ServicesRegisteredAndDispatcherRegistered_SetsFeature()
+        public async Task UseEndpoint_ServicesRegisteredAndGlobalRoutingRegistered_SetsFeature()
         {
             // Arrange
             var services = CreateServices();
 
             var app = new ApplicationBuilder(services);
 
-            app.UseDispatcher();
+            app.UseGlobalRouting();
             app.UseEndpoint();
 
             var appFunc = app.Build();
@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.Builder
 
             services.AddLogging();
             services.AddOptions();
-            services.AddDispatcher();
+            services.AddRouting();
 
             return services.BuildServiceProvider();
         }

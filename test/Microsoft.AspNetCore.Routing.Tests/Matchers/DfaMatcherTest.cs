@@ -36,7 +36,6 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                 .AddLogging()
                 .AddOptions()
                 .AddRouting()
-                .AddDispatcher()
                 .BuildServiceProvider();
 
             var factory = services.GetRequiredService<MatcherFactory>();

@@ -11,7 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace RoutingSample.Web
 {
-    public class Startup
+    public class UseRouterStartup
     {
         private static readonly TimeSpan RegexMatchTimeout = TimeSpan.FromSeconds(10);
 

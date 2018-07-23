@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Routing.Tree
 {
     public class TreeRouterTest
     {
-        private static readonly RequestDelegate NullHandler = (c) => Task.FromResult(0);
+        private static readonly RequestDelegate NullHandler = (c) => Task.CompletedTask;
 
         private static ObjectPool<UriBuildingContext> Pool = new DefaultObjectPoolProvider().Create(
             new UriBuilderContextPooledObjectPolicy());
@@ -1820,7 +1820,7 @@ namespace Microsoft.AspNetCore.Routing.Tree
                     nestedRouters = new List<IRouter>(c.RouteData.Routers);
                     c.Handler = null; // Not a match
                 })
-                .Returns(Task.FromResult(0));
+                .Returns(Task.CompletedTask);
 
             var builder = CreateBuilder();
             MapInboundEntry(builder, "api/Store", handler: next.Object);
@@ -1857,7 +1857,7 @@ namespace Microsoft.AspNetCore.Routing.Tree
                     nestedRouters = new List<IRouter>(c.RouteData.Routers);
                     c.Handler = null; // Not a match
                 })
-                .Returns(Task.FromResult(0));
+                .Returns(Task.CompletedTask);
 
             var builder = CreateBuilder();
             MapInboundEntry(builder, "api/Store", handler: next.Object);
@@ -1901,7 +1901,7 @@ namespace Microsoft.AspNetCore.Routing.Tree
                     nestedRouters = new List<IRouter>(c.RouteData.Routers);
                     throw new Exception();
                 })
-                .Returns(Task.FromResult(0));
+                .Returns(Task.CompletedTask);
 
             var builder = CreateBuilder();
             MapInboundEntry(builder, "api/Store", handler: next.Object);

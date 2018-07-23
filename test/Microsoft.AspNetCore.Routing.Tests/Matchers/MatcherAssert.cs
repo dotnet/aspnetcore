@@ -8,7 +8,7 @@ using Xunit.Sdk;
 
 namespace Microsoft.AspNetCore.Routing.Matchers
 {
-    internal static class DispatcherAssert
+    internal static class MatcherAssert
     {
         public static void AssertMatch(IEndpointFeature feature, Endpoint expected)
         {

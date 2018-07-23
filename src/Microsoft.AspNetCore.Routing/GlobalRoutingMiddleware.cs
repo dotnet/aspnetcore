@@ -11,7 +11,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Routing
 {
-    internal sealed class DispatcherMiddleware
+    internal sealed class GlobalRoutingMiddleware
     {
         private readonly MatcherFactory _matcherFactory;
         private readonly ILogger _logger;
@@ -20,10 +20,10 @@ namespace Microsoft.AspNetCore.Routing
 
         private Task<Matcher> _initializationTask;
 
-        public DispatcherMiddleware(
+        public GlobalRoutingMiddleware(
             MatcherFactory matcherFactory,
             CompositeEndpointDataSource endpointDataSource,
-            ILogger<DispatcherMiddleware> logger,
+            ILogger<GlobalRoutingMiddleware> logger,
             RequestDelegate next)
         {
             if (matcherFactory == null)
