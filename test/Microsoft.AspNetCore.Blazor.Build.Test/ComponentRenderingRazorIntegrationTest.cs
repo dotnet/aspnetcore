@@ -339,7 +339,7 @@ namespace Test
 
             var component = CompileToComponent(@"
 @addTagHelper *, TestAssembly
-<MyComponent MyAttr=""abc"">Some text<some-child a='1'>Nested text</some-child></MyComponent>");
+<MyComponent MyAttr=""abc"">Some text<some-child a='1'>Nested text @(""Hello"")</some-child></MyComponent>");
 
             // Act
             var frames = GetRenderTree(component);
@@ -356,9 +356,10 @@ namespace Test
             Assert.Collection(
                 childFrames,
                 frame => AssertFrame.Text(frame, "Some text", 3),
-                frame => AssertFrame.Element(frame, "some-child", 3, 4),
+                frame => AssertFrame.Element(frame, "some-child", 4, 4),
                 frame => AssertFrame.Attribute(frame, "a", "1", 5),
-                frame => AssertFrame.Text(frame, "Nested text", 6));
+                frame => AssertFrame.Text(frame, "Nested text ", 6),
+                frame => AssertFrame.Text(frame, "Hello", 7));
         }
 
         [Fact]

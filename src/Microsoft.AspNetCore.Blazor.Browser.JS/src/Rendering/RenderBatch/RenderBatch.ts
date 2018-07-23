@@ -47,6 +47,7 @@ export interface RenderTreeFrameReader {
   componentId(frame: RenderTreeFrame): number;
   elementName(frame: RenderTreeFrame): string | null;
   textContent(frame: RenderTreeFrame): string | null;
+  markupContent(frame: RenderTreeFrame): string;
   attributeName(frame: RenderTreeFrame): string | null;
   attributeValue(frame: RenderTreeFrame): string | null;
   attributeEventHandlerId(frame: RenderTreeFrame): number;
@@ -69,6 +70,7 @@ export enum EditType {
   updateText = 5,
   stepIn = 6,
   stepOut = 7,
+  updateMarkup = 8,
 }
 
 export enum FrameType {
@@ -79,4 +81,5 @@ export enum FrameType {
   component = 4,
   region = 5,
   elementReferenceCapture = 6,
+  markup = 8,
 }

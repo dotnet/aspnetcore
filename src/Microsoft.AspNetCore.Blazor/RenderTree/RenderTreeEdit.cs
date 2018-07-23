@@ -1,5 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 
 namespace Microsoft.AspNetCore.Blazor.RenderTree
 {
@@ -64,6 +66,9 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
 
         internal static RenderTreeEdit UpdateText(int siblingIndex, int referenceFrameIndex)
             => new RenderTreeEdit(RenderTreeEditType.UpdateText, siblingIndex, referenceFrameIndex);
+
+        internal static RenderTreeEdit UpdateMarkup(int siblingIndex, int referenceFrameIndex)
+            => new RenderTreeEdit(RenderTreeEditType.UpdateMarkup, siblingIndex, referenceFrameIndex);
 
         internal static RenderTreeEdit SetAttribute(int siblingIndex, int referenceFrameIndex)
             => new RenderTreeEdit(RenderTreeEditType.SetAttribute, siblingIndex, referenceFrameIndex);

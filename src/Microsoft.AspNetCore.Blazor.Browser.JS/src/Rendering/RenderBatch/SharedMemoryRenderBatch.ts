@@ -81,6 +81,7 @@ const frameReader = {
   componentId: (frame: RenderTreeFrame) => platform.readInt32Field(frame as any, 12),
   elementName: (frame: RenderTreeFrame) => platform.readStringField(frame as any, 16),
   textContent: (frame: RenderTreeFrame) => platform.readStringField(frame as any, 16),
+  markupContent: (frame: RenderTreeFrame) => platform.readStringField(frame as any, 16)!,
   attributeName: (frame: RenderTreeFrame) => platform.readStringField(frame as any, 16),
   attributeValue: (frame: RenderTreeFrame) => platform.readStringField(frame as any, 24),
   attributeEventHandlerId: (frame: RenderTreeFrame) => platform.readInt32Field(frame as any, 8),

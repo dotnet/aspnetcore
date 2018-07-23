@@ -296,6 +296,40 @@ namespace Microsoft.AspNetCore.Blazor.Test
         }
 
         [Fact]
+        public void RecognizesMarkupChanges()
+        {
+            // Arrange
+            oldTree.AddMarkupContent(1, "preserved");
+            oldTree.AddMarkupContent(3, "will be updated");
+            oldTree.AddMarkupContent(4, "will be removed");
+            newTree.AddMarkupContent(1, "preserved");
+            newTree.AddMarkupContent(2, "was inserted");
+            newTree.AddMarkupContent(3, "was updated");
+
+            // Act
+            var (result, referenceFrames) = GetSingleUpdatedComponent();
+
+            // Assert
+            Assert.Collection(result.Edits,
+                entry =>
+                {
+                    AssertEdit(entry, RenderTreeEditType.PrependFrame, 1);
+                    Assert.Equal(0, entry.ReferenceFrameIndex);
+                    Assert.Equal("was inserted", referenceFrames[entry.ReferenceFrameIndex].MarkupContent);
+                },
+                entry =>
+                {
+                    AssertEdit(entry, RenderTreeEditType.UpdateMarkup, 2);
+                    Assert.Equal(1, entry.ReferenceFrameIndex);
+                    Assert.Equal("was updated", referenceFrames[entry.ReferenceFrameIndex].MarkupContent);
+                },
+                entry =>
+                {
+                    AssertEdit(entry, RenderTreeEditType.RemoveFrame, 3);
+                });
+        }
+
+        [Fact]
         public void RecognizesElementNameChangesAtSameSequenceNumber()
         {
             // Note: It's not possible to trigger this scenario from a Razor component, because

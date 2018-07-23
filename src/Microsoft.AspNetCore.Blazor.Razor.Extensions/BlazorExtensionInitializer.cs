@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -79,6 +79,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             builder.Features.Add(new EventHandlerLoweringPass());
             builder.Features.Add(new RefLoweringPass());
             builder.Features.Add(new BindLoweringPass());
+            builder.Features.Add(new HtmlBlockPass());
 
             builder.Features.Add(new ComponentTagHelperDescriptorProvider());
             builder.Features.Add(new BindTagHelperDescriptorProvider());

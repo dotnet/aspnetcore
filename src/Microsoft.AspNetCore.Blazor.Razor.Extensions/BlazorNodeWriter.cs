@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -17,6 +17,8 @@ namespace Microsoft.AspNetCore.Blazor.Razor
         public abstract void WriteComponentAttribute(CodeRenderingContext context, ComponentAttributeExtensionNode node);
 
         public abstract void WriteHtmlElement(CodeRenderingContext context, HtmlElementIntermediateNode node);
+
+        public abstract void WriteHtmlBlock(CodeRenderingContext context, HtmlBlockIntermediateNode node);
 
         public abstract void WriteReferenceCapture(CodeRenderingContext context, RefExtensionNode node);
 

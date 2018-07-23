@@ -1,12 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using Microsoft.AspNetCore.Blazor.Components;
-using Microsoft.AspNetCore.Blazor.Layouts;
 using Microsoft.AspNetCore.Blazor.RenderTree;
 using Microsoft.AspNetCore.Blazor.Test.Helpers;
 using Xunit;
@@ -74,19 +70,81 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         }
 
         [Fact]
-        public void SupportsElements()
+        public void SupportsElementsWithDynamicContent()
+        {
+            // Arrange/Act
+            var component = CompileToComponent("<myelem>Hello @(\"there\")</myelem>");
+
+            // Assert
+            Assert.Collection(GetRenderTree(component),
+                frame => AssertFrame.Element(frame, "myelem", 3, 0),
+                frame => AssertFrame.Text(frame, "Hello ", 1),
+                frame => AssertFrame.Text(frame, "there", 2));
+        }
+
+        [Fact]
+        public void SupportsElementsAsStaticBlock()
         {
             // Arrange/Act
             var component = CompileToComponent("<myelem>Hello</myelem>");
 
             // Assert
             Assert.Collection(GetRenderTree(component),
-                frame => AssertFrame.Element(frame, "myelem", 2, 0),
-                frame => AssertFrame.Text(frame, "Hello", 1));
+                frame => AssertFrame.Markup(frame, "<myelem>Hello</myelem>", 0));
         }
 
         [Fact]
-        public void SupportsSelfClosingElements()
+        public void CreatesSeparateMarkupFrameForEachTopLevelStaticElement()
+        {
+            // The JavaScript-side rendering code does not rely on this behavior. It supports
+            // inserting markup frames with arbitrary markup (e.g., multiple top-level elements
+            // or none). This test exists only as an observation of the current behavior rather
+            // than a promise that we never want to change it.
+
+            // Arrange/Act
+            var component = CompileToComponent(
+                "<root>@(\"Hi\") <child1>a</child1> <child2><another>b</another></child2> </root>");
+
+            // Assert
+            Assert.Collection(GetRenderTree(component),
+                frame => AssertFrame.Element(frame, "root", 7, 0),
+                frame => AssertFrame.Text(frame, "Hi", 1),
+                frame => AssertFrame.Text(frame, " ", 2),
+                frame => AssertFrame.Markup(frame, "<child1>a</child1>", 3),
+                frame => AssertFrame.Text(frame, " ", 4),
+                frame => AssertFrame.Markup(frame, "<child2><another>b</another></child2>", 5),
+                frame => AssertFrame.Text(frame, " ", 6));
+        }
+
+        [Fact]
+        public void RendersMarkupStringAsMarkupFrame()
+        {
+            // Arrange/Act
+            var component = CompileToComponent(
+                "@{ var someMarkup = new MarkupString(\"<div>Hello</div>\"); }"
+                + "<p>@someMarkup</p>");
+
+            // Assert
+            Assert.Collection(GetRenderTree(component),
+                frame => AssertFrame.Element(frame, "p", 2, 0),
+                frame => AssertFrame.Markup(frame, "<div>Hello</div>", 1));
+        }
+
+        [Fact]
+        public void SupportsSelfClosingElementsWithDynamicContent()
+        {
+            // Arrange/Act
+            var component = CompileToComponent("Some text so elem isn't at position 0 <myelem myattr=@(\"val\") />");
+
+            // Assert
+            Assert.Collection(GetRenderTree(component),
+                frame => AssertFrame.Text(frame, "Some text so elem isn't at position 0 ", 0),
+                frame => AssertFrame.Element(frame, "myelem", 2, 1),
+                frame => AssertFrame.Attribute(frame, "myattr", "val", 2));
+        }
+
+        [Fact]
+        public void SupportsSelfClosingElementsAsStaticBlock()
         {
             // Arrange/Act
             var component = CompileToComponent("Some text so elem isn't at position 0 <myelem />");
@@ -94,7 +152,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             // Assert
             Assert.Collection(GetRenderTree(component),
                 frame => AssertFrame.Text(frame, "Some text so elem isn't at position 0 ", 0),
-                frame => AssertFrame.Element(frame, "myelem", 1, 1));
+                frame => AssertFrame.Markup(frame, "<myelem/>", 1));
         }
 
         [Fact]
@@ -106,7 +164,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             // Assert
             Assert.Collection(GetRenderTree(component),
                 frame => AssertFrame.Text(frame, "Some text so elem isn't at position 0 ", 0),
-                frame => AssertFrame.Element(frame, "img", 1, 1));
+                frame => AssertFrame.Markup(frame, "<img>", 1));
         }
 
         [Fact]
@@ -126,13 +184,14 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         public void SupportsAttributesWithLiteralValues()
         {
             // Arrange/Act
-            var component = CompileToComponent("<elem attrib-one=\"Value 1\" a2='v2' />");
+            var component = CompileToComponent("<elem attrib-one=\"Value 1\" a2='v2'>@(\"Hello\")</elem>");
 
             // Assert
             Assert.Collection(GetRenderTree(component),
-                frame => AssertFrame.Element(frame, "elem", 3, 0),
+                frame => AssertFrame.Element(frame, "elem", 4, 0),
                 frame => AssertFrame.Attribute(frame, "attrib-one", "Value 1", 1),
-                frame => AssertFrame.Attribute(frame, "a2", "v2", 2));
+                frame => AssertFrame.Attribute(frame, "a2", "v2", 2),
+                frame => AssertFrame.Text(frame, "Hello", 3));
         }
 
         [Fact]
@@ -222,33 +281,21 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         }
 
         [Fact]
-        public void SupportsDataDashAttributesWithLiteralValues()
-        {
-            // Arrange/Act
-            var component = CompileToComponent(
-                "<elem data-abc=\"Hello\" />");
-
-            // Assert
-            Assert.Collection(GetRenderTree(component),
-                frame => AssertFrame.Element(frame, "elem", 2, 0),
-                frame => AssertFrame.Attribute(frame, "data-abc", "Hello", 1));
-        }
-
-        [Fact]
-        public void SupportsDataDashAttributesWithCSharpExpressionValues()
+        public void SupportsDataDashAttributes()
         {
             // Arrange/Act
             var component = CompileToComponent(@"
 @{ 
-  var myValue = ""My string"";
+  var myValue = ""Expression value"";
 }
-<elem data-abc=""@myValue"" />");
+<elem data-abc=""Literal value"" data-def=""@myValue"" />");
 
             // Assert
             Assert.Collection(
                 GetRenderTree(component),
-                frame => AssertFrame.Element(frame, "elem", 2, 0),
-                frame => AssertFrame.Attribute(frame, "data-abc", "My string", 1));
+                frame => AssertFrame.Element(frame, "elem", 3, 0),
+                frame => AssertFrame.Attribute(frame, "data-abc", "Literal value", 1),
+                frame => AssertFrame.Attribute(frame, "data-def", "Expression value", 2));
         }
 
         [Fact]

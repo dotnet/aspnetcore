@@ -134,6 +134,11 @@ class OutOfProcessRenderTreeFrameReader implements RenderTreeFrameReader {
     return this.stringReader.readString(stringIndex);
   }
 
+  markupContent(frame: RenderTreeFrame) {
+    const stringIndex = readInt32LE(this.batchDataUint8, frame as any + 4); // 2nd int
+    return this.stringReader.readString(stringIndex)!;
+  }
+
   attributeName(frame: RenderTreeFrame) {
     const stringIndex = readInt32LE(this.batchDataUint8, frame as any + 4); // 2nd int
     return this.stringReader.readString(stringIndex);

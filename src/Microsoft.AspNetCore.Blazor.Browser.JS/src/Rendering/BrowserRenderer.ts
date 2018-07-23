@@ -6,6 +6,8 @@ import { EventForDotNet, UIEventArgs } from './EventForDotNet';
 import { LogicalElement, toLogicalElement, insertLogicalChild, removeLogicalChild, getLogicalParent, getLogicalChild, createAndInsertLogicalContainer, isSvgElement } from './LogicalElements';
 import { applyCaptureIdToElement } from './ElementReferenceCapture';
 const selectValuePropname = '_blazorSelectValue';
+const sharedTemplateElemForParsing = document.createElement('template');
+const sharedSvgElemForParsing = document.createElementNS('http://www.w3.org/2000/svg', 'g');
 let raiseEventMethod: MethodHandle;
 let renderComponentMethod: MethodHandle;
 
@@ -113,6 +115,14 @@ export class BrowserRenderer {
           }
           break;
         }
+        case EditType.updateMarkup: {
+          const frameIndex = editReader.newTreeIndex(edit);
+          const frame = batch.referenceFramesEntry(referenceFrames, frameIndex);
+          const siblingIndex = editReader.siblingIndex(edit);
+          removeLogicalChild(parent, childIndexAtCurrentDepth + siblingIndex);
+          this.insertMarkup(batch, parent, childIndexAtCurrentDepth + siblingIndex, frame);
+          break;
+        }
         case EditType.stepIn: {
           const siblingIndex = editReader.siblingIndex(edit);
           parent = getLogicalChild(parent, childIndexAtCurrentDepth + siblingIndex);
@@ -158,6 +168,9 @@ export class BrowserRenderer {
         } else {
           throw new Error('Reference capture frames can only be children of element frames.');
         }
+      case FrameType.markup:
+        this.insertMarkup(batch, parent, childIndex, frame);
+        return 1;
       default:
         const unknownType: never = frameType; // Compile-time verification that the switch was exhaustive
         throw new Error(`Unknown frame type: ${unknownType}`);
@@ -201,6 +214,17 @@ export class BrowserRenderer {
     const textContent = batch.frameReader.textContent(textFrame)!;
     const newTextNode = document.createTextNode(textContent);
     insertLogicalChild(newTextNode, parent, childIndex);
+  }
+
+  private insertMarkup(batch: RenderBatch, parent: LogicalElement, childIndex: number, markupFrame: RenderTreeFrame) {
+    const markupContainer = createAndInsertLogicalContainer(parent, childIndex);
+
+    const markupContent = batch.frameReader.markupContent(markupFrame);
+    const parsedMarkup = parseMarkup(markupContent, isSvgElement(parent));
+    let logicalSiblingIndex = 0;
+    while (parsedMarkup.firstChild) {
+      insertLogicalChild(parsedMarkup.firstChild, markupContainer, logicalSiblingIndex++);
+    }
   }
 
   private applyAttribute(batch: RenderBatch, componentId: number, toDomElement: Element, attributeFrame: RenderTreeFrame) {
@@ -302,6 +326,16 @@ export class BrowserRenderer {
     }
 
     return (childIndex - origChildIndex); // Total number of children inserted
+  }
+}
+
+function parseMarkup(markup: string, isSvg: boolean) {
+  if (isSvg) {
+    sharedSvgElemForParsing.innerHTML = markup || ' ';
+    return sharedSvgElemForParsing;
+  } else {
+    sharedTemplateElemForParsing.innerHTML = markup || ' ';
+    return sharedTemplateElemForParsing.content;
   }
 }
 

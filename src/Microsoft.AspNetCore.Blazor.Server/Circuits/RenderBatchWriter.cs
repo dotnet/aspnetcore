@@ -183,6 +183,10 @@ namespace Microsoft.AspNetCore.Blazor.Server.Circuits
                     WriteString(frame.TextContent);
                     WritePadding(_binaryWriter, 8);
                     break;
+                case RenderTreeFrameType.Markup:
+                    WriteString(frame.MarkupContent);
+                    WritePadding(_binaryWriter, 8);
+                    break;
                 default:
                     throw new ArgumentException($"Unsupported frame type: {frame.FrameType}");
             }

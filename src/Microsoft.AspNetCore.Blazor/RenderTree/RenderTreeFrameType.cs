@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 namespace Microsoft.AspNetCore.Blazor.RenderTree
@@ -45,5 +45,10 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
         /// Represents an instruction to capture or update a reference to the parent component.
         /// </summary>
         ComponentReferenceCapture = 7,
+
+        /// <summary>
+        /// Represents a block of markup content.
+        /// </summary>
+        Markup = 8,
     }
 }

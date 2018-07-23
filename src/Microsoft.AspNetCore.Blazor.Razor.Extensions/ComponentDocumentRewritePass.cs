@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
     {
         // Per the HTML spec, the following elements are inherently self-closing
         // For example, <img> is the same as <img /> (and therefore it cannot contain descendants)
-        private readonly static HashSet<string> VoidElements = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        public readonly static HashSet<string> VoidElements = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             "area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param", "source", "track", "wbr",
         };

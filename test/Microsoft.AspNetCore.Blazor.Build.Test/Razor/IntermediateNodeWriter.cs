@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -15,6 +15,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
     public class IntermediateNodeWriter :
         IntermediateNodeVisitor,
         IExtensionIntermediateNodeVisitor<HtmlElementIntermediateNode>,
+        IExtensionIntermediateNodeVisitor<HtmlBlockIntermediateNode>,
         IExtensionIntermediateNodeVisitor<ComponentExtensionNode>,
         IExtensionIntermediateNodeVisitor<ComponentAttributeExtensionNode>,
         IExtensionIntermediateNodeVisitor<RouteAttributeExtensionNode>,
@@ -267,6 +268,11 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
         void IExtensionIntermediateNodeVisitor<HtmlElementIntermediateNode>.VisitExtension(HtmlElementIntermediateNode node)
         {
             WriteContentNode(node, node.TagName);
+        }
+
+        void IExtensionIntermediateNodeVisitor<HtmlBlockIntermediateNode>.VisitExtension(HtmlBlockIntermediateNode node)
+        {
+            WriteContentNode(node, node.Content);
         }
 
         void IExtensionIntermediateNodeVisitor<ComponentExtensionNode>.VisitExtension(ComponentExtensionNode node)

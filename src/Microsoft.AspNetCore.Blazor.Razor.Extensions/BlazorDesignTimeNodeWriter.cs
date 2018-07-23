@@ -18,6 +18,21 @@ namespace Microsoft.AspNetCore.Blazor.Razor
 
         private readonly static string DesignTimeVariable = "__o";
 
+        public override void WriteHtmlBlock(CodeRenderingContext context, HtmlBlockIntermediateNode node)
+        {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (node == null)
+            {
+                throw new ArgumentNullException(nameof(node));
+            }
+
+            // Do nothing
+        }
+
         public override void WriteHtmlElement(CodeRenderingContext context, HtmlElementIntermediateNode node)
         {
             if (context == null)

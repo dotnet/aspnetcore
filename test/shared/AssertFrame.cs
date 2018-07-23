@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -22,6 +22,14 @@ namespace Microsoft.AspNetCore.Blazor.Test.Helpers
         {
             Assert.Equal(RenderTreeFrameType.Text, frame.FrameType);
             Assert.Equal(textContent, frame.TextContent);
+            Assert.Equal(0, frame.ElementSubtreeLength);
+            AssertFrame.Sequence(frame, sequence);
+        }
+
+        internal static void Markup(RenderTreeFrame frame, string markupContent, int? sequence = null)
+        {
+            Assert.Equal(RenderTreeFrameType.Markup, frame.FrameType);
+            Assert.Equal(markupContent, frame.MarkupContent);
             Assert.Equal(0, frame.ElementSubtreeLength);
             AssertFrame.Sequence(frame, sequence);
         }

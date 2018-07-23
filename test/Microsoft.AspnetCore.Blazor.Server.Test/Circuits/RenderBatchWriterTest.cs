@@ -146,6 +146,7 @@ namespace Microsoft.AspNetCore.Blazor.Server
                 RenderTreeEdit.UpdateText(105, 106),
                 RenderTreeEdit.StepIn(107),
                 RenderTreeEdit.StepOut(),
+                RenderTreeEdit.UpdateMarkup(108, 109),
             };
             var bytes = Serialize(new RenderBatch(
                 new ArrayRange<RenderTreeDiff>(new[]
@@ -165,14 +166,15 @@ namespace Microsoft.AspNetCore.Blazor.Server
 
             AssertBinaryContents(bytes, 0,
                 123, // Component ID for diff 0
-                7,  // diff[0].Edits.Count
+                8,  // diff[0].Edits.Count
                 RenderTreeEditType.PrependFrame, 456, 789, NullStringMarker,
                 RenderTreeEditType.RemoveFrame, 101, 0, NullStringMarker,
                 RenderTreeEditType.SetAttribute, 102, 103, NullStringMarker,
                 RenderTreeEditType.RemoveAttribute, 104, 0, "Some removed attribute",
                 RenderTreeEditType.UpdateText, 105, 106, NullStringMarker,
                 RenderTreeEditType.StepIn, 107, 0, NullStringMarker,
-                RenderTreeEditType.StepOut, 0, 0, NullStringMarker
+                RenderTreeEditType.StepOut, 0, 0, NullStringMarker,
+                RenderTreeEditType.UpdateMarkup, 108, 109, NullStringMarker
             );
         }
 
@@ -198,14 +200,15 @@ namespace Microsoft.AspNetCore.Blazor.Server
                     RenderTreeFrame.Region(130)
                         .WithRegionSubtreeLength(1234),
                     RenderTreeFrame.Text(131, "Some text"),
-                }, 9),
+                    RenderTreeFrame.Markup(132, "Some markup"),
+                }, 10),
                 default,
                 default));
 
             // Assert
             var referenceFramesStartIndex = ReadInt(bytes, bytes.Length - 16);
             AssertBinaryContents(bytes, referenceFramesStartIndex,
-                9, // Number of frames
+                10, // Number of frames
                 RenderTreeFrameType.Attribute, "Attribute with string value", "String value", 0,
                 RenderTreeFrameType.Attribute, "Attribute with nonstring value", NullStringMarker, 0,
                 RenderTreeFrameType.Attribute, "Attribute with delegate value", NullStringMarker, 789,
@@ -214,7 +217,8 @@ namespace Microsoft.AspNetCore.Blazor.Server
                 RenderTreeFrameType.Element, 1234, "Some element", 0,
                 RenderTreeFrameType.ElementReferenceCapture, "my unique ID", 0, 0,
                 RenderTreeFrameType.Region, 1234, 0, 0,
-                RenderTreeFrameType.Text, "Some text", 0, 0
+                RenderTreeFrameType.Text, "Some text", 0, 0,
+                RenderTreeFrameType.Markup, "Some markup", 0, 0
             );
         }
 

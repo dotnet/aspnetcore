@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -68,6 +68,14 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
         }
 
         /// <summary>
+        /// Appends a frame representing markup content.
+        /// </summary>
+        /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
+        /// <param name="markupContent">Content for the new markup frame.</param>
+        public void AddMarkupContent(int sequence, string markupContent)
+            => Append(RenderTreeFrame.Markup(sequence, markupContent ?? string.Empty));
+
+        /// <summary>
         /// Appends a frame representing text content.
         /// </summary>
         /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
@@ -93,6 +101,14 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
                 CloseRegion();
             }
         }
+
+        /// <summary>
+        /// Appends a frame representing markup content.
+        /// </summary>
+        /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
+        /// <param name="markupContent">Content for the new markup frame.</param>
+        public void AddContent(int sequence, MarkupString markupContent)
+            => AddMarkupContent(sequence, markupContent.Value);
 
         /// <summary>
         /// Appends a frame representing text content.

@@ -148,6 +148,26 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             }
         }
 
+        public override void WriteHtmlBlock(CodeRenderingContext context, HtmlBlockIntermediateNode node)
+        {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (node == null)
+            {
+                throw new ArgumentNullException(nameof(node));
+            }
+
+            context.CodeWriter
+                .WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{nameof(BlazorApi.RenderTreeBuilder.AddMarkupContent)}")
+                .Write((_sourceSequence++).ToString())
+                .WriteParameterSeparator()
+                .WriteStringLiteral(node.Content)
+                .WriteEndMethodInvocation();
+        }
+
         public override void WriteHtmlElement(CodeRenderingContext context, HtmlElementIntermediateNode node)
         {
             if (context == null)

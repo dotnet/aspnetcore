@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -167,6 +167,16 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
         /// </summary>
         [FieldOffset(16)] public readonly Action<object> ComponentReferenceCaptureAction;
 
+        // --------------------------------------------------------------------------------
+        // RenderTreeFrameType.Markup
+        // --------------------------------------------------------------------------------
+
+        /// <summary>
+        /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.Markup"/>,
+        /// gets the content of the markup frame. Otherwise, the value is undefined.
+        /// </summary>
+        [FieldOffset(16)] public readonly string MarkupContent;
+
         private RenderTreeFrame(int sequence, string elementName, int elementSubtreeLength)
             : this()
         {
@@ -245,11 +255,24 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
             ComponentReferenceCaptureParentFrameIndex = parentFrameIndex;
         }
 
+        // If we need further constructors whose signatures clash with the patterns above,
+        // we can add extra args to this general-purpose one.
+        private RenderTreeFrame(int sequence, RenderTreeFrameType frameType, string markupContent)
+            : this()
+        {
+            FrameType = frameType;
+            Sequence = sequence;
+            MarkupContent = markupContent;
+        }
+
         internal static RenderTreeFrame Element(int sequence, string elementName)
             => new RenderTreeFrame(sequence, elementName: elementName, elementSubtreeLength: 0);
 
         internal static RenderTreeFrame Text(int sequence, string textContent)
             => new RenderTreeFrame(sequence, textContent: textContent);
+
+        internal static RenderTreeFrame Markup(int sequence, string markupContent)
+            => new RenderTreeFrame(sequence, RenderTreeFrameType.Markup, markupContent);
 
         internal static RenderTreeFrame Attribute(int sequence, string name, MulticastDelegate value)
              => new RenderTreeFrame(sequence, attributeName: name, attributeValue: value);

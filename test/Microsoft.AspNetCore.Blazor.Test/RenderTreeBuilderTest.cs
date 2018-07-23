@@ -55,6 +55,61 @@ namespace Microsoft.AspNetCore.Blazor.Test
         }
 
         [Fact]
+        public void CanAddMarkup()
+        {
+            // Arrange
+            var builder = new RenderTreeBuilder(new TestRenderer());
+
+            // Act
+            builder.OpenElement(0, "some elem");
+            builder.AddMarkupContent(1, "Blah");
+            builder.AddMarkupContent(2, string.Empty);
+            builder.CloseElement();
+
+            // Assert
+            var frames = builder.GetFrames();
+            Assert.Collection(frames,
+                frame => AssertFrame.Element(frame, "some elem", 3),
+                frame => AssertFrame.Markup(frame, "Blah"),
+                frame => AssertFrame.Markup(frame, string.Empty));
+        }
+
+        [Fact]
+        public void CanAddMarkupViaMarkupString()
+        {
+            // This represents putting @someMarkupString into the component,
+            // as opposed to calling builder.AddMarkupContent directly.
+
+            // Arrange
+            var builder = new RenderTreeBuilder(new TestRenderer());
+
+            // Act - can use either constructor or cast
+            builder.AddContent(0, (MarkupString)"Some markup");
+            builder.AddContent(1, new MarkupString(null));
+
+            // Assert
+            var frames = builder.GetFrames();
+            Assert.Collection(frames,
+                frame => AssertFrame.Markup(frame, "Some markup"),
+                frame => AssertFrame.Markup(frame, string.Empty));
+        }
+
+        [Fact]
+        public void CanAddNullMarkup()
+        {
+            // Arrange
+            var builder = new RenderTreeBuilder(new TestRenderer());
+
+            // Act
+            builder.AddMarkupContent(0, null);
+
+            // Assert
+            var frames = builder.GetFrames();
+            Assert.Collection(frames,
+                frame => AssertFrame.Markup(frame, string.Empty));
+        }
+
+        [Fact]
         public void CanAddNonStringValueAsText()
         {
             // Arrange

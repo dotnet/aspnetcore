@@ -406,6 +406,42 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
             Assert.Equal("Value set after render", inputElement.GetAttribute("value"));
         }
 
+        [Fact]
+        public void CanRenderMarkupBlocks()
+        {
+            var appElement = MountTestComponent<MarkupBlockComponent>();
+
+            // Static markup
+            Assert.Equal(
+                "attributes",
+                appElement.FindElement(By.CssSelector("p span#attribute-example")).Text);
+
+            // Dynamic markup (from a custom RenderFragment)
+            Assert.Equal(
+                "[Here is an example. We support multiple-top-level nodes.]",
+                appElement.FindElement(By.Id("dynamic-markup-block")).Text);
+            Assert.Equal(
+                "example",
+                appElement.FindElement(By.CssSelector("#dynamic-markup-block strong#dynamic-element em")).Text);
+
+            // Dynamic markup (from a MarkupString)
+            Assert.Equal(
+                "This is a markup string.",
+                appElement.FindElement(By.ClassName("markup-string-value")).Text);
+            Assert.Equal(
+                "markup string",
+                appElement.FindElement(By.CssSelector(".markup-string-value em")).Text);
+
+            // Updating markup blocks
+            appElement.FindElement(By.TagName("button")).Click();
+            WaitAssert.Equal(
+                "[The output was changed completely.]",
+                () => appElement.FindElement(By.Id("dynamic-markup-block")).Text);
+            Assert.Equal(
+                "changed",
+                appElement.FindElement(By.CssSelector("#dynamic-markup-block span em")).Text);
+        }
+
         static IAlert SwitchToAlert(IWebDriver driver)
         {
             try
