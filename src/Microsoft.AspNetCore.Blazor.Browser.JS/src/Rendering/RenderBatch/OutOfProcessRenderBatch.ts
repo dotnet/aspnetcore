@@ -1,7 +1,5 @@
 import { RenderBatch, ArrayRange, RenderTreeDiff, ArrayValues, RenderTreeEdit, EditType, FrameType, RenderTreeFrame, RenderTreeDiffReader, RenderTreeFrameReader, RenderTreeEditReader, ArrayRangeReader, ArraySegmentReader, ArraySegment } from './RenderBatch';
-
-// TODO: Also support browsers that don't have TextDecoder (e.g., Edge)
-const utf8Decoder = new TextDecoder('utf-8');
+import { decodeUtf8 } from './Utf8Decoder';
 
 const updatedComponentsEntryLength = 4; // Each is a single int32 giving the location of the data
 const referenceFramesEntryLength = 16; // 1 byte for frame type, then 3 bytes for type-specific data
@@ -169,12 +167,12 @@ class OutOfProcessStringReader {
       // This is convenient enough to decode in JavaScript.
       const numUtf8Bytes = readLEB128(this.batchDataUint8, stringTableEntryPos);
       const charsStart = stringTableEntryPos + numLEB128Bytes(numUtf8Bytes);
-      const utf8Data = new DataView(
+      const utf8Data = new Uint8Array(
         this.batchDataUint8.buffer,
         this.batchDataUint8.byteOffset + charsStart,
         numUtf8Bytes
       );
-      return utf8Decoder.decode(utf8Data);
+      return decodeUtf8(utf8Data);
     }
   }
 }
