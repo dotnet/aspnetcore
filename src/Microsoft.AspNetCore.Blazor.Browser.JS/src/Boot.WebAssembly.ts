@@ -12,6 +12,7 @@ import { fetchBootConfigAsync, loadEmbeddedResourcesAsync } from './BootCommon';
 async function boot() {
   // Configure environment for execution under Mono WebAssembly with shared-memory rendering
   const platform = Environment.setPlatform(monoPlatform);
+  window['Blazor'].platform = platform;
   window['Blazor']._internal.renderBatch = (browserRendererId: number, batchAddress: Pointer) => {
     renderBatch(browserRendererId, new SharedMemoryRenderBatch(batchAddress));
   };
