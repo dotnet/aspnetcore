@@ -1,9 +1,9 @@
 ASP.NET Routing
 ===
 
-AppVeyor: [![AppVeyor](https://ci.appveyor.com/api/projects/status/fe4o5h1s9ve86nyv/branch/dev?svg=true)](https://ci.appveyor.com/project/aspnetci/Routing/branch/dev)
+AppVeyor: [![AppVeyor](https://ci.appveyor.com/api/projects/status/fe4o5h1s9ve86nyv/branch/master?svg=true)](https://ci.appveyor.com/project/aspnetci/Routing/branch/master)
 
-Travis:   [![Travis](https://travis-ci.org/aspnet/Routing.svg?branch=dev)](https://travis-ci.org/aspnet/Routing)
+Travis:   [![Travis](https://travis-ci.org/aspnet/Routing.svg?branch=master)](https://travis-ci.org/aspnet/Routing)
 
 Contains routing middleware for routing requests to application logic.
 
