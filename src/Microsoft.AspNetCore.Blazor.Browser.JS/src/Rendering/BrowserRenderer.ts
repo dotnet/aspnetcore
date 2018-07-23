@@ -8,6 +8,7 @@ import { applyCaptureIdToElement } from './ElementReferenceCapture';
 const selectValuePropname = '_blazorSelectValue';
 const sharedTemplateElemForParsing = document.createElement('template');
 const sharedSvgElemForParsing = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+const preventDefaultEvents: { [eventType: string]: boolean } = { submit: true };
 let raiseEventMethod: MethodHandle;
 let renderComponentMethod: MethodHandle;
 
@@ -354,7 +355,11 @@ function countDescendantFrames(batch: RenderBatch, frame: RenderTreeFrame): numb
   }
 }
 
-async function raiseEvent(event: Event, browserRendererId: number, componentId: number, eventHandlerId: number, eventArgs: EventForDotNet<UIEventArgs>) {
+function raiseEvent(event: Event, browserRendererId: number, componentId: number, eventHandlerId: number, eventArgs: EventForDotNet<UIEventArgs>) {
+  if (preventDefaultEvents[event.type]) {
+    event.preventDefault();
+  }
+
   const eventDescriptor = {
     browserRendererId,
     componentId,
@@ -362,7 +367,7 @@ async function raiseEvent(event: Event, browserRendererId: number, componentId: 
     eventArgsType: eventArgs.type
   };
 
-  await DotNet.invokeMethodAsync(
+  return DotNet.invokeMethodAsync(
     'Microsoft.AspNetCore.Blazor.Browser',
     'DispatchEvent',
     eventDescriptor,

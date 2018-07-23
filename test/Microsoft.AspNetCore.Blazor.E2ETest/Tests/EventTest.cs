@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Blazor.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Blazor.E2ETest.Infrastructure.ServerFixtures;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Interactions;
+using OpenQA.Selenium.Support.UI;
+using System;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -107,6 +109,23 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
 
             actions.Perform();
             WaitAssert.Equal("onmousedown,onmouseup,", () => output.Text);
+        }
+
+        [Fact]
+        public void PreventDefault_AppliesToFormOnSubmitHandlers()
+        {
+            var appElement = MountTestComponent<EventPreventDefaultComponent>();
+
+            appElement.FindElement(By.Id("form-1-button")).Click();
+            WaitAssert.Equal("Event was handled", () => appElement.FindElement(By.Id("event-handled")).Text);
+        }
+
+        [Fact]
+        public void PreventDefault_DotNotApplyByDefault()
+        {
+            var appElement = MountTestComponent<EventPreventDefaultComponent>();
+            appElement.FindElement(By.Id("form-2-button")).Click();
+            Assert.Contains("about:blank", Browser.Url);
         }
     }
 }
