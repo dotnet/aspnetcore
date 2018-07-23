@@ -458,6 +458,36 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         }
 
         [Fact]
+        public void RouteUrl_GeneratesUrl_WithRouteName_UsingDefaultValues_WhenExplicitOrAmbientValues_NotPresent()
+        {
+            // Arrange
+            var urlHelper = CreateUrlHelperWithDefaultRoutes();
+
+            // Act
+            var url = urlHelper.RouteUrl(
+                routeName: "OrdersApi",
+                values: new { id = "500" });
+
+            // Assert
+            Assert.Equal("/app/api/orders/500", url);
+        }
+
+        [Fact]
+        public void RouteUrl_WithRouteName_DoesNotGenerateUrl_WhenRequiredValueForParameter_NotPresent()
+        {
+            // Arrange
+            var urlHelper = CreateUrlHelperWithDefaultRoutes();
+
+            // Act
+            var url = urlHelper.RouteUrl(
+                routeName: "OrdersApi",
+                values: new { });
+
+            // Assert
+            Assert.Null(url);
+        }
+
+        [Fact]
         public void RouteUrlWithRouteNameAndDictionary()
         {
             // Arrange
@@ -921,7 +951,6 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             Assert.NotNull(url);
             Assert.Equal("/b/Store/Checkout", url);
         }
-
 
         protected abstract IServiceProvider CreateServices();
 

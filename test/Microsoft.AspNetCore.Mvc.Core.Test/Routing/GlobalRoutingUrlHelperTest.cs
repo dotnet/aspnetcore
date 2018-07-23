@@ -16,6 +16,83 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 {
     public class GlobalRoutingUrlHelperTest : UrlHelperTestBase
     {
+        [Fact]
+        public void RouteUrl_WithRouteName_GeneratesUrl_UsingDefaults()
+        {
+            // Arrange
+            var endpoint1 = CreateEndpoint(
+                "api/orders/{id}",
+                defaults: new { controller = "Orders", action = "GetById" },
+                requiredValues: new { controller = "Orders", action = "GetById" },
+                routeName: "OrdersApi");
+            var endpoint2 = CreateEndpoint(
+                "api/orders",
+                defaults: new { controller = "Orders", action = "GetAll" },
+                requiredValues: new { controller = "Orders", action = "GetAll" },
+                routeName: "OrdersApi");
+            var urlHelper = CreateUrlHelper(new[] { endpoint1, endpoint2 });
+
+            // Act
+            var url = urlHelper.RouteUrl(
+                routeName: "OrdersApi",
+                values: new { });
+
+            // Assert
+            Assert.Equal("/" + endpoint2.RoutePattern.RawText, url);
+        }
+
+        [Fact]
+        public void RouteUrl_WithRouteName_UsesAmbientValues()
+        {
+            // Arrange
+            var endpoint1 = CreateEndpoint(
+                "api/orders/{id}",
+                defaults: new { controller = "Orders", action = "GetById" },
+                requiredValues: new { controller = "Orders", action = "GetById" },
+                routeName: "OrdersApi");
+            var endpoint2 = CreateEndpoint(
+                "api/orders",
+                defaults: new { controller = "Orders", action = "GetAll" },
+                requiredValues: new { controller = "Orders", action = "GetAll" },
+                routeName: "OrdersApi");
+            var urlHelper = CreateUrlHelper(new[] { endpoint1, endpoint2 });
+            urlHelper.ActionContext.RouteData.Values["id"] = "500";
+
+            // Act
+            var url = urlHelper.RouteUrl(
+                routeName: "OrdersApi",
+                values: new { });
+
+            // Assert
+            Assert.Equal("/api/orders/500", url);
+        }
+
+        [Fact]
+        public void RouteUrl_WithRouteName_UsesSuppliedValue_OverridingAmbientValue()
+        {
+            // Arrange
+            var endpoint1 = CreateEndpoint(
+                "api/orders/{id}",
+                defaults: new { controller = "Orders", action = "GetById" },
+                requiredValues: new { controller = "Orders", action = "GetById" },
+                routeName: "OrdersApi");
+            var endpoint2 = CreateEndpoint(
+                "api/orders",
+                defaults: new { controller = "Orders", action = "GetAll" },
+                requiredValues: new { controller = "Orders", action = "GetAll" },
+                routeName: "OrdersApi");
+            var urlHelper = CreateUrlHelper(new[] { endpoint1, endpoint2 });
+            urlHelper.ActionContext.RouteData.Values["id"] = "500";
+
+            // Act
+            var url = urlHelper.RouteUrl(
+                routeName: "OrdersApi",
+                values: new { id = "10" });
+
+            // Assert
+            Assert.Equal("/api/orders/10", url);
+        }
+
         protected override IUrlHelper CreateUrlHelper(string appRoot, string host, string protocol)
         {
             return CreateUrlHelper(Enumerable.Empty<MatcherEndpoint>(), appRoot, host, protocol);
@@ -84,6 +161,14 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             return CreateUrlHelper(actionContext);
         }
 
+        private IUrlHelper CreateUrlHelper(IEnumerable<MatcherEndpoint> endpoints, ActionContext actionContext = null)
+        {
+            var serviceProvider = CreateServices(endpoints);
+            var httpContext = CreateHttpContext(serviceProvider, null, null, "http");
+            actionContext = actionContext ?? CreateActionContext(httpContext);
+            return CreateUrlHelper(actionContext);
+        }
+
         private IUrlHelper CreateUrlHelper(
             IEnumerable<MatcherEndpoint> endpoints,
             string appRoot,
@@ -99,33 +184,98 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         private List<MatcherEndpoint> GetDefaultEndpoints()
         {
             var endpoints = new List<MatcherEndpoint>();
-            endpoints.Add(CreateEndpoint(null, "home/newaction/{id}", new { id = "defaultid", controller = "home", action = "newaction" }, 1));
-            endpoints.Add(CreateEndpoint(null, "home/contact/{id}", new { id = "defaultid", controller = "home", action = "contact" }, 2));
-            endpoints.Add(CreateEndpoint(null, "home2/newaction/{id}", new { id = "defaultid", controller = "home2", action = "newaction" }, 3));
-            endpoints.Add(CreateEndpoint(null, "home2/contact/{id}", new { id = "defaultid", controller = "home2", action = "contact" }, 4));
-            endpoints.Add(CreateEndpoint(null, "home3/contact/{id}", new { id = "defaultid", controller = "home3", action = "contact" }, 5));
-            endpoints.Add(CreateEndpoint("namedroute", "named/home/newaction/{id}", new { id = "defaultid", controller = "home", action = "newaction" }, 6));
-            endpoints.Add(CreateEndpoint("namedroute", "named/home2/newaction/{id}", new { id = "defaultid", controller = "home2", action = "newaction" }, 7));
-            endpoints.Add(CreateEndpoint("namedroute", "named/home/contact/{id}", new { id = "defaultid", controller = "home", action = "contact" }, 8));
-            endpoints.Add(CreateEndpoint("MyRouteName", "any/url", new { }, 9));
+            endpoints.Add(
+                CreateEndpoint(
+                    "home/newaction/{id}",
+                    defaults: new { id = "defaultid", controller = "home", action = "newaction" },
+                    requiredValues: new { controller = "home", action = "newaction" },
+                    order: 1));
+            endpoints.Add(
+                CreateEndpoint(
+                    "home/contact/{id}",
+                    defaults: new { id = "defaultid", controller = "home", action = "contact" },
+                    requiredValues: new { controller = "home", action = "contact" },
+                    order: 2));
+            endpoints.Add(
+                CreateEndpoint(
+                    "home2/newaction/{id}",
+                    defaults: new { id = "defaultid", controller = "home2", action = "newaction" },
+                    requiredValues: new { controller = "home2", action = "newaction" },
+                    order: 3));
+            endpoints.Add(
+                CreateEndpoint(
+                    "home2/contact/{id}",
+                    defaults: new { id = "defaultid", controller = "home2", action = "contact" },
+                    requiredValues: new { controller = "home2", action = "contact" },
+                    order: 4));
+            endpoints.Add(
+                CreateEndpoint(
+                    "home3/contact/{id}",
+                    defaults: new { id = "defaultid", controller = "home3", action = "contact" },
+                    requiredValues: new { controller = "home3", action = "contact" },
+                    order: 5));
+            endpoints.Add(
+                CreateEndpoint(
+                    "named/home/newaction/{id}",
+                    defaults: new { id = "defaultid", controller = "home", action = "newaction" },
+                    requiredValues: new { controller = "home", action = "newaction" },
+                    order: 6,
+                    routeName: "namedroute"));
+            endpoints.Add(
+                CreateEndpoint(
+                    "named/home2/newaction/{id}",
+                    defaults: new { id = "defaultid", controller = "home2", action = "newaction" },
+                    requiredValues: new { controller = "home2", action = "newaction" },
+                    order: 7,
+                    routeName: "namedroute"));
+            endpoints.Add(
+                CreateEndpoint(
+                    "named/home/contact/{id}",
+                    defaults: new { id = "defaultid", controller = "home", action = "contact" },
+                    requiredValues: new { controller = "home", action = "contact" },
+                    order: 8,
+                    routeName: "namedroute"));
+            endpoints.Add(
+                CreateEndpoint(
+                    "any/url",
+                    defaults: new { },
+                    requiredValues: new { },
+                    order: 9,
+                    routeName: "MyRouteName"));
+            endpoints.Add(
+                CreateEndpoint(
+                    "api/orders/{id}",
+                    defaults: new { controller = "Orders", action = "GetById" },
+                    requiredValues: new { controller = "Orders", action = "GetById" },
+                    order: 10,
+                    routeName: "OrdersApi"));
             return endpoints;
         }
 
-        private MatcherEndpoint CreateEndpoint(string routeName, string template, object defaults, int order)
+        private MatcherEndpoint CreateEndpoint(
+            string template,
+            object defaults = null,
+            object requiredValues = null,
+            int order = 0,
+            string routeName = null,
+            EndpointMetadataCollection metadataCollection = null)
         {
-            var metadata = EndpointMetadataCollection.Empty;
-            if (!string.IsNullOrEmpty(routeName))
+            if (metadataCollection == null)
             {
-                metadata = new EndpointMetadataCollection(new[] { new RouteNameMetadata(routeName) });
+                metadataCollection = EndpointMetadataCollection.Empty;
+                if (!string.IsNullOrEmpty(routeName))
+                {
+                    metadataCollection = new EndpointMetadataCollection(new[] { new RouteNameMetadata(routeName) });
+                }
             }
 
             return new MatcherEndpoint(
                 next => (httpContext) => Task.CompletedTask,
                 RoutePatternFactory.Parse(template, defaults, constraints: null),
-                new RouteValueDictionary(),
+                new RouteValueDictionary(requiredValues),
                 order,
-                metadata,
-                "DisplayName");
+                metadataCollection,
+                null);
         }
 
         private IServiceProvider CreateServices(IEnumerable<Endpoint> endpoints)
