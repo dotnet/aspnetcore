@@ -17,20 +17,24 @@
     "Lite_MusicStore",
     "Lite_MvcTest",
     "Lite_SignalR",
+    "Lite_Templating",
     // Universe tests
     "Lite_MusicStoreTest",
     "XPlat_Mac_MacUniverseCoreCLR",
     "XPlat_HighSierraOsxUniverse",
     "XPlat_Linux_UbuntuUniverseCoreCLR",
+    "XPlat_Windows_Win7_Universe",
     "XPlat_Windows_Win8_Universe",
     "XPlat_Windows_Win10Universe",
+    "XPlat_Windows_Win2008r2_Universe",
     // Release 21 Public
     "Releases_21Public_UbuntuUniverse",
     "Releases_21Public_OsxUniverse",
     "Releases_21Public_Publish",
     "Releases_21Public_Win2012",
     // Release 22 Public
-    "Releases_22xPublic_OsxUniverse"
+    "Releases_22xPublic_OsxUniverse",
+    "Releases_22xPublic_UbuntuUniverse"
   ],
   "Email": {
     "QuietEmail": "rybrande@microsoft.com",
