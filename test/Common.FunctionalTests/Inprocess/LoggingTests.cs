@@ -23,10 +23,12 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         {
             var deploymentParameters = Helpers.GetBaseDeploymentParameters(publish: true);
 
-            deploymentParameters.ModifyAspNetCoreSectionInWebConfig("stdoutLogEnabled", "true");
+            deploymentParameters.WebConfigActionList.Add(
+                WebConfigHelpers.AddOrModifyAspNetCoreSection("stdoutLogEnabled", "true"));
 
             var pathToLogs = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-            deploymentParameters.ModifyAspNetCoreSectionInWebConfig("stdoutLogFile", Path.Combine(pathToLogs, "std"));
+            deploymentParameters.WebConfigActionList.Add(
+                WebConfigHelpers.AddOrModifyAspNetCoreSection("stdoutLogFile", Path.Combine(pathToLogs, "std")));
 
             var deploymentResult = await DeployAsync(deploymentParameters);
 
@@ -63,8 +65,10 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         {
             var deploymentParameters = Helpers.GetBaseDeploymentParameters(publish: true);
 
-            deploymentParameters.ModifyAspNetCoreSectionInWebConfig("stdoutLogEnabled", "true");
-            deploymentParameters.ModifyAspNetCoreSectionInWebConfig("stdoutLogFile", Path.Combine("Q:", "std"));
+            deploymentParameters.WebConfigActionList.Add(
+                WebConfigHelpers.AddOrModifyAspNetCoreSection("stdoutLogEnabled", "true"));
+            deploymentParameters.WebConfigActionList.Add(
+                WebConfigHelpers.AddOrModifyAspNetCoreSection("stdoutLogFile", Path.Combine("Q:", "std")));
 
             var deploymentResult = await DeployAsync(deploymentParameters);
 

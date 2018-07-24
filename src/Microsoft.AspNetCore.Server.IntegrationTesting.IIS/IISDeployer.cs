@@ -61,6 +61,15 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                 // For now, only support using published output
                 DeploymentParameters.PublishApplicationBeforeDeployment = true;
 
+
+                if (DeploymentParameters.ApplicationType == ApplicationType.Portable)
+                {
+                    DefaultWebConfigActions.Add(
+                        WebConfigHelpers.AddOrModifyAspNetCoreSection(
+                            "processPath",
+                            DotNetCommands.GetDotNetExecutable(DeploymentParameters.RuntimeArchitecture)));
+                }
+
                 if (DeploymentParameters.PublishApplicationBeforeDeployment)
                 {
                     DotnetPublish();

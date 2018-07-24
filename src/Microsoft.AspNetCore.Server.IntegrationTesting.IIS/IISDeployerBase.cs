@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -14,6 +15,8 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
     public abstract class IISDeployerBase : ApplicationDeployer
     {
         public IISDeploymentParameters IISDeploymentParameters { get; }
+
+        protected List<Action<XElement>> DefaultWebConfigActions { get; } = new List<Action<XElement>>();
 
         public IISDeployerBase(IISDeploymentParameters deploymentParameters, ILoggerFactory loggerFactory)
             : base(deploymentParameters, loggerFactory)
@@ -36,6 +39,12 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
             var path = Path.Combine(DeploymentParameters.PublishedApplicationRootPath, "web.config");
             var webconfig = XDocument.Load(path);
             var xElement = webconfig.Descendants("system.webServer").Single();
+
+            foreach (var action in DefaultWebConfigActions)
+            {
+                action.Invoke(xElement);
+            }
+
             foreach (var action in IISDeploymentParameters.WebConfigActionList)
             {
                 action.Invoke(xElement);
@@ -43,6 +52,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
 
             webconfig.Save(path);
         }
+
 
         public string RunServerConfigActions(string serverConfigString)
         {

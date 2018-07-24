@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 deploymentParameters =>
                 {
                     deploymentParameters.EnvironmentVariables["DotnetPath"] = _dotnetLocation;
-                    deploymentParameters.ModifyAspNetCoreSectionInWebConfig("processPath", "%DotnetPath%");
+                    deploymentParameters.WebConfigActionList.Add(WebConfigHelpers.AddOrModifyAspNetCoreSection("processPath", "%DotnetPath%"));
                 }
             );
         }
@@ -43,13 +43,16 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         public async Task InvalidProcessPath_ExpectServerError(string path)
         {
             var deploymentParameters = GetBaseDeploymentParameters();
-            deploymentParameters.ModifyAspNetCoreSectionInWebConfig("processPath", path);
+            deploymentParameters.WebConfigActionList.Add(WebConfigHelpers.AddOrModifyAspNetCoreSection("processPath", path));
+
 
             var deploymentResult = await DeployAsync(deploymentParameters);
 
             var response = await deploymentResult.RetryingHttpClient.GetAsync("HelloWorld");
 
             Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+
+            EventLogHelpers.VerifyEventLogEvent(TestSink, @"Invalid or unknown processPath provided in web\.config: processPath = '.+', ErrorCode = '0x80070002'\.");
         }
 
         [ConditionalFact]
@@ -60,7 +63,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             await AssertStarts(
                 deploymentParameters =>
                 {
-                    deploymentParameters.ModifyAspNetCoreSectionInWebConfig("processPath", dotnetLocationWithoutExtension);
+                    deploymentParameters.WebConfigActionList.Add(WebConfigHelpers.AddOrModifyAspNetCoreSection("processPath", dotnetLocationWithoutExtension));
                 }
             );
         }
@@ -72,7 +75,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             await AssertStarts(
                 deploymentParameters =>
                 {
-                    deploymentParameters.ModifyAspNetCoreSectionInWebConfig("processPath", dotnetLocationWithoutExtension);
+                    deploymentParameters.WebConfigActionList.Add(WebConfigHelpers.AddOrModifyAspNetCoreSection("processPath", dotnetLocationWithoutExtension));
                 }
             );
         }
@@ -86,7 +89,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 deploymentParameters =>
                 {
                     deploymentParameters.EnvironmentVariables["PATH"] = Path.GetDirectoryName(_dotnetLocation);
-                    deploymentParameters.ModifyAspNetCoreSectionInWebConfig("processPath", path);
+                    deploymentParameters.WebConfigActionList.Add(WebConfigHelpers.AddOrModifyAspNetCoreSection("processPath", path));
                 }
             );
 
@@ -142,6 +145,21 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             StopServer();
 
             Assert.Contains(TestSink.Writes, context => context.Message.Contains("Application is running inside IIS process but is not configured to use IIS server"));
+        }
+
+        [ConditionalFact]
+        public async Task CheckInvalidHostingModelParameter()
+        {
+            var deploymentParameters = GetBaseDeploymentParameters();
+            deploymentParameters.WebConfigActionList.Add(WebConfigHelpers.AddOrModifyAspNetCoreSection("hostingModel", "bogus"));
+
+            var deploymentResult = await DeployAsync(deploymentParameters);
+
+            var response = await deploymentResult.RetryingHttpClient.GetAsync("HelloWorld");
+
+            Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+
+            EventLogHelpers.VerifyEventLogEvent(TestSink, "Unknown hosting model 'bogus'. Please specify either hostingModel=\"inprocess\" or hostingModel=\"outofprocess\" in the web.config file.");
         }
 
         // Defaults to inprocess specific deployment parameters

@@ -71,24 +71,10 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
 
                 ConfigureAppHostConfig(contentRoot);
 
-                if (_deploymentParameters.ApplicationType == ApplicationType.Portable)
-                {
-                    ModifyAspNetCoreSectionInWebConfig("processPath", DotNetCommands.GetDotNetExecutable(_deploymentParameters.RuntimeArchitecture));
-                }
-
                 _serverManager.CommitChanges();
 
                 await WaitUntilSiteStarted(apppool);
             }
-        }
-
-        private void ModifyAspNetCoreSectionInWebConfig(string key, string value)
-        {
-            var webConfigFile = Path.Combine(_deploymentParameters.PublishedApplicationRootPath, "web.config");
-            var config = XDocument.Load(webConfigFile);
-            var element = config.Descendants("aspNetCore").FirstOrDefault();
-            element.SetAttributeValue(key, value);
-            config.Save(webConfigFile);
         }
 
         private async Task WaitUntilSiteStarted(ApplicationPool appPool)
