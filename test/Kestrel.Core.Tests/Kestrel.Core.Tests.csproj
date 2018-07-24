@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <Compile Include="..\shared\**\*.cs" />
+    <Compile Include="..\..\shared\Microsoft.Extensions.Buffers.Testing.Sources\*.cs" />
     <Content Include="..\shared\TestCertificates\*.pfx" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
@@ -23,7 +24,6 @@
     <PackageReference Include="Microsoft.AspNetCore.Http" Version="$(MicrosoftAspNetCoreHttpPackageVersion)" />
     <PackageReference Include="System.Memory" Version="$(SystemMemoryPackageVersion)" />
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="$(SystemRuntimeCompilerServicesUnsafePackageVersion)" />
-    <PackageReference Include="Microsoft.Extensions.Buffers.Testing.Sources" Version="$(MicrosoftExtensionsBuffersTestingSourcesPackageVersion)" />
   </ItemGroup>
 
 </Project>
