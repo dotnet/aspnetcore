@@ -149,7 +149,7 @@ namespace Microsoft.AspNetCore.Builder
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
                 return $@"<p>Close this browser, then in a terminal window execute the following:</p>
-                          <p><strong><code>open /Applications/Google\ Chrome.app --remote-debugging-port=9222 {appRootUrl}</code></strong></p>";
+                          <p><strong><code>open /Applications/Google\ Chrome.app --args --remote-debugging-port=9222 {appRootUrl}</code></strong></p>";
             }
             else
             {
