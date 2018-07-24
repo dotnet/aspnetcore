@@ -1,0 +1,12 @@
+{
+  "$schema": "http://json.schemastore.org/dotnetcli.host",
+  "symbolInfo": {
+    "skipRestore": {
+      "longName": "no-restore",
+      "shortName": ""
+    },
+    "Framework": {
+      "longName": "framework"
+    }
+  }
+}

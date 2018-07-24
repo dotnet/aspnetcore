@@ -14,8 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\BlazorHosted-CSharp.Client\BlazorHosted-CSharp.Client.csproj" />
-    <ProjectReference Include="..\BlazorHosted-CSharp.Shared\BlazorHosted-CSharp.Shared.csproj" />
+    <ProjectReference Include="..\BlazorServerSide-CSharp.App\BlazorServerSide-CSharp.App.csproj" />
   </ItemGroup>
 
 </Project>
