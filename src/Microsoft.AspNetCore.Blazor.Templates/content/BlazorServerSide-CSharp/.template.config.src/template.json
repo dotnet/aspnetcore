@@ -85,7 +85,7 @@
       "datatype": "string",
       "description": "Specifies which version of Blazor packages to use.",
       "replaces": "$(TemplateBlazorPackageVersion)",
-      "defaultValue": "0.5.0-preview1-t000"
+      "defaultValue": "${TemplateBlazorVersion}"
     },
     "skipRestore": {
       "type": "parameter",
