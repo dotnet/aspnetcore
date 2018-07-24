@@ -107,7 +107,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ServerSideBlazor", "ServerS
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServerSideBlazor.Server", "samples\ServerSideBlazor.Server\ServerSideBlazor.Server.csproj", "{5655AFF9-612C-4947-8221-7DB6949A6CA4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServerSideBlazor.Client", "samples\ServerSideBlazor.Client\ServerSideBlazor.Client.csproj", "{33C361D8-CAF1-47C0-A344-251AEF4FE1FE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServerSideBlazor.Client", "samples\ServerSideBlazor.Client\ServerSideBlazor.Client.csproj", "{33C361D8-CAF1-47C0-A344-251AEF4FE1FE}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BlazorServerSide-CSharp", "BlazorServerSide-CSharp", "{6BDD3018-3961-488E-97D3-1FB7320A8AC6}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorServerSide-CSharp.App", "src\Microsoft.AspNetCore.Blazor.Templates\content\BlazorServerSide-CSharp\BlazorServerSide-CSharp.App\BlazorServerSide-CSharp.App.csproj", "{49F0DC0E-D8E6-4E74-8A3F-F024EAAECB8B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorServerSide-CSharp.Server", "src\Microsoft.AspNetCore.Blazor.Templates\content\BlazorServerSide-CSharp\BlazorServerSide-CSharp.Server\BlazorServerSide-CSharp.Server.csproj", "{72004416-E278-4787-B84F-40C7E5668D74}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -400,6 +406,22 @@ Global
 		{33C361D8-CAF1-47C0-A344-251AEF4FE1FE}.Release|Any CPU.Build.0 = Release|Any CPU
 		{33C361D8-CAF1-47C0-A344-251AEF4FE1FE}.ReleaseNoVSIX|Any CPU.ActiveCfg = Release|Any CPU
 		{33C361D8-CAF1-47C0-A344-251AEF4FE1FE}.ReleaseNoVSIX|Any CPU.Build.0 = Release|Any CPU
+		{49F0DC0E-D8E6-4E74-8A3F-F024EAAECB8B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{49F0DC0E-D8E6-4E74-8A3F-F024EAAECB8B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{49F0DC0E-D8E6-4E74-8A3F-F024EAAECB8B}.DebugNoVSIX|Any CPU.ActiveCfg = Debug|Any CPU
+		{49F0DC0E-D8E6-4E74-8A3F-F024EAAECB8B}.DebugNoVSIX|Any CPU.Build.0 = Debug|Any CPU
+		{49F0DC0E-D8E6-4E74-8A3F-F024EAAECB8B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{49F0DC0E-D8E6-4E74-8A3F-F024EAAECB8B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{49F0DC0E-D8E6-4E74-8A3F-F024EAAECB8B}.ReleaseNoVSIX|Any CPU.ActiveCfg = Release|Any CPU
+		{49F0DC0E-D8E6-4E74-8A3F-F024EAAECB8B}.ReleaseNoVSIX|Any CPU.Build.0 = Release|Any CPU
+		{72004416-E278-4787-B84F-40C7E5668D74}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{72004416-E278-4787-B84F-40C7E5668D74}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{72004416-E278-4787-B84F-40C7E5668D74}.DebugNoVSIX|Any CPU.ActiveCfg = Debug|Any CPU
+		{72004416-E278-4787-B84F-40C7E5668D74}.DebugNoVSIX|Any CPU.Build.0 = Debug|Any CPU
+		{72004416-E278-4787-B84F-40C7E5668D74}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{72004416-E278-4787-B84F-40C7E5668D74}.Release|Any CPU.Build.0 = Release|Any CPU
+		{72004416-E278-4787-B84F-40C7E5668D74}.ReleaseNoVSIX|Any CPU.ActiveCfg = Release|Any CPU
+		{72004416-E278-4787-B84F-40C7E5668D74}.ReleaseNoVSIX|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -449,6 +471,9 @@ Global
 		{3173A9C0-4F66-4064-83EC-3C206F1430FB} = {F5FDD4E5-6A52-4A86-BE5E-5E42CB1DC8DA}
 		{5655AFF9-612C-4947-8221-7DB6949A6CA4} = {3173A9C0-4F66-4064-83EC-3C206F1430FB}
 		{33C361D8-CAF1-47C0-A344-251AEF4FE1FE} = {3173A9C0-4F66-4064-83EC-3C206F1430FB}
+		{6BDD3018-3961-488E-97D3-1FB7320A8AC6} = {E8EBA72C-D555-43AE-BC98-F0B2D05F6A07}
+		{49F0DC0E-D8E6-4E74-8A3F-F024EAAECB8B} = {6BDD3018-3961-488E-97D3-1FB7320A8AC6}
+		{72004416-E278-4787-B84F-40C7E5668D74} = {6BDD3018-3961-488E-97D3-1FB7320A8AC6}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {504DA352-6788-4DC0-8705-82167E72A4D3}

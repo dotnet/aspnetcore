@@ -1,9 +1,8 @@
-﻿using Microsoft.AspNetCore.Blazor.Server;
+using Microsoft.AspNetCore.Blazor.Server;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.DependencyInjection;
-using Newtonsoft.Json.Serialization;
 using System.Linq;
 using System.Net.Mime;
 
@@ -38,7 +37,7 @@ namespace BlazorServerSide_CSharp.Server
                 app.UseDeveloperExceptionPage();
             }
 
-            // Use component registrations and static files from the app startup.
+            // Use component registrations and static files from the app project.
             app.UseServerSideBlazor<App.Startup>();
         }
     }
