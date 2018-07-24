@@ -224,6 +224,21 @@ namespace Microsoft.AspNetCore.Routing
             Assert.Same(expected, actual);
         }
 
+        [Fact]
+        public void GetOutboundMatches_DoesNotInclude_EndpointsWithSuppressLinkGenerationMetadata()
+        {
+            // Arrange
+            var endpoint = CreateEndpoint(
+                "/a",
+                metadataCollection: new EndpointMetadataCollection(new[] { new SuppressLinkGenerationMetadata() }));
+
+            // Act
+            var finder = CreateEndpointFinder(endpoint);
+
+            // Assert
+            Assert.Empty(finder.AllMatches);
+        }
+
         private CustomRouteValuesBasedEndpointFinder CreateEndpointFinder(params Endpoint[] endpoints)
         {
             return CreateEndpointFinder(new DefaultEndpointDataSource(endpoints));
@@ -304,5 +319,7 @@ namespace Microsoft.AspNetCore.Routing
                 return matches;
             }
         }
+
+        private class SuppressLinkGenerationMetadata : ISuppressLinkGenerationMetadata { }
     }
 }
