@@ -21,17 +21,19 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [InlineData("CheckLogFile")]
         public async Task CheckStdoutLoggingToFile(string path)
         {
-            var deploymentParameters = Helpers.GetBaseDeploymentParameters();
-            deploymentParameters.PublishApplicationBeforeDeployment = true;
+            var deploymentParameters = Helpers.GetBaseDeploymentParameters(publish: true);
+
+            deploymentParameters.WebConfigActionList.Add(
+                WebConfigHelpers.AddOrModifyAspNetCoreSection("stdoutLogEnabled", "true"));
+
+            var pathToLogs = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            deploymentParameters.WebConfigActionList.Add(
+                WebConfigHelpers.AddOrModifyAspNetCoreSection("stdoutLogFile", Path.Combine(pathToLogs, "std")));
 
             var deploymentResult = await DeployAsync(deploymentParameters);
-            var pathToLogs = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
 
             try
             {
-                Helpers.ModifyAspNetCoreSectionInWebConfig(deploymentResult, "stdoutLogEnabled", "true");
-                Helpers.ModifyAspNetCoreSectionInWebConfig(deploymentResult, "stdoutLogFile", Path.Combine(pathToLogs, "std"));
-
                 await Helpers.AssertStarts(deploymentResult, path);
 
                 StopServer();
@@ -63,10 +65,12 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         {
             var deploymentParameters = Helpers.GetBaseDeploymentParameters(publish: true);
 
-            var deploymentResult = await DeployAsync(deploymentParameters);
+            deploymentParameters.WebConfigActionList.Add(
+                WebConfigHelpers.AddOrModifyAspNetCoreSection("stdoutLogEnabled", "true"));
+            deploymentParameters.WebConfigActionList.Add(
+                WebConfigHelpers.AddOrModifyAspNetCoreSection("stdoutLogFile", Path.Combine("Q:", "std")));
 
-            Helpers.ModifyAspNetCoreSectionInWebConfig(deploymentResult, "stdoutLogEnabled", "true");
-            Helpers.ModifyAspNetCoreSectionInWebConfig(deploymentResult, "stdoutLogFile", Path.Combine("Q:", "std"));
+            var deploymentResult = await DeployAsync(deploymentParameters);
 
             await Helpers.AssertStarts(deploymentResult, "HelloWorld");
         }
@@ -80,10 +84,9 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             {
                 var deploymentParameters = Helpers.GetBaseDeploymentParameters(publish: true);
                 deploymentParameters.EnvironmentVariables["ASPNETCORE_MODULE_DEBUG_FILE"] = tempFile;
+                deploymentParameters.AddDebugLogToWebConfig(tempFile);
 
                 var deploymentResult = await DeployAsync(deploymentParameters);
-
-                Helpers.AddDebugLogToWebConfig(deploymentResult.DeploymentResult.ContentRoot, tempFile);
 
                 var response = await deploymentResult.RetryingHttpClient.GetAsync("/");
 
@@ -123,11 +126,11 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         public async Task CheckStdoutLoggingToPipeWithFirstWrite(string path)
         {
             var deploymentParameters = Helpers.GetBaseDeploymentParameters(publish: true);
-
-            var deploymentResult = await DeployAsync(deploymentParameters);
             var firstWriteString = path + path;
 
-            Helpers.ModifyEnvironmentVariableCollectionInWebConfig(deploymentResult, "ASPNETCORE_INPROCESS_INITIAL_WRITE", firstWriteString);
+            deploymentParameters.WebConfigBasedEnvironmentVariables["ASPNETCORE_INPROCESS_INITIAL_WRITE"] = firstWriteString;
+
+            var deploymentResult = await DeployAsync(deploymentParameters);
 
             await Helpers.AssertStarts(deploymentResult, path);
 
@@ -152,9 +155,9 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             {
                 var deploymentParameters = Helpers.GetBaseDeploymentParameters(publish: true);
                 deploymentParameters.EnvironmentVariables["ASPNETCORE_MODULE_DEBUG_FILE"] = firstTempFile;
+                deploymentParameters.AddDebugLogToWebConfig(secondTempFile);
 
                 var deploymentResult = await DeployAsync(deploymentParameters);
-                WebConfigHelpers.AddDebugLogToWebConfig(deploymentParameters.PublishedApplicationRootPath, secondTempFile);
 
                 var response = await deploymentResult.RetryingHttpClient.GetAsync("/");
 

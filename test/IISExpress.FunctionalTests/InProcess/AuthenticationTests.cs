@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
+using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
@@ -17,7 +18,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         public async Task Authentication_InProcess()
         {
             var deploymentParameters = Helpers.GetBaseDeploymentParameters(publish: true);
-            deploymentParameters.ServerConfigTemplateContent = GetWindowsAuthConfig();
+            deploymentParameters.AddWindowsAuthToServerConfig();
 
             var deploymentResult = await DeployAsync(deploymentParameters);
 
@@ -45,7 +46,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
 
             var httpClientHandler = new HttpClientHandler() { UseDefaultCredentials = true };
-            var httpClient = deploymentResult.DeploymentResult.CreateHttpClient(httpClientHandler);
+            var httpClient = deploymentResult.CreateHttpClient(httpClientHandler);
 
             response = await httpClient.GetAsync("/AuthenticationAnonymous");
             responseText = await response.Content.ReadAsStringAsync();

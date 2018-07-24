@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
     /// </summary>
     internal class IISApplication
     {
-        private static readonly TimeSpan _timeout = TimeSpan.FromSeconds(5);
+        private static readonly TimeSpan _timeout = TimeSpan.FromSeconds(10);
         private static readonly TimeSpan _retryDelay = TimeSpan.FromMilliseconds(200);
         private readonly ServerManager _serverManager = new ServerManager();
         private readonly DeploymentParameters _deploymentParameters;
@@ -31,6 +31,8 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                                                                 "inetsrv",
                                                                 "config",
                                                                 "applicationhost.config");
+
+        public Process HostProcess { get; set; }
 
         public IISApplication(DeploymentParameters deploymentParameters, ILogger logger)
         {
@@ -63,33 +65,19 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 }
                 AddTemporaryAppHostConfig();
 
-                ConfigureAppPool(contentRoot);
+                var apppool = ConfigureAppPool(contentRoot);
 
                 ConfigureSite(contentRoot, port);
 
                 ConfigureAppHostConfig(contentRoot);
 
-                if (_deploymentParameters.ApplicationType == ApplicationType.Portable)
-                {
-                    ModifyAspNetCoreSectionInWebConfig("processPath", DotNetCommands.GetDotNetExecutable(_deploymentParameters.RuntimeArchitecture));
-                }
-
                 _serverManager.CommitChanges();
 
-                await WaitUntilSiteStarted();
+                await WaitUntilSiteStarted(apppool);
             }
         }
 
-        private void ModifyAspNetCoreSectionInWebConfig(string key, string value)
-        {
-            var webConfigFile = Path.Combine(_deploymentParameters.PublishedApplicationRootPath, "web.config");
-            var config = XDocument.Load(webConfigFile);
-            var element = config.Descendants("aspNetCore").FirstOrDefault();
-            element.SetAttributeValue(key, value);
-            config.Save(webConfigFile);
-        }
-
-        private async Task WaitUntilSiteStarted()
+        private async Task WaitUntilSiteStarted(ApplicationPool appPool)
         {
             var sw = Stopwatch.StartNew();
 
@@ -98,6 +86,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 try
                 {
                     var site = _serverManager.Sites.FirstOrDefault(s => s.Name.Equals(WebSiteName));
+
                     if (site.State == ObjectState.Started)
                     {
                         _logger.LogInformation($"Site {WebSiteName} has started.");

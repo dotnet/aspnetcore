@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
+using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 
@@ -20,7 +21,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         {
             var logging = AssemblyTestLog.ForAssembly(typeof(IISTestSiteFixture).Assembly);
 
-            var deploymentParameters = new DeploymentParameters(Helpers.GetInProcessTestSitesPath(),
+            var deploymentParameters = new IISDeploymentParameters(Helpers.GetInProcessTestSitesPath(),
                 DeployerSelector.ServerType,
                 RuntimeFlavor.CoreClr,
                 RuntimeArchitecture.x64)

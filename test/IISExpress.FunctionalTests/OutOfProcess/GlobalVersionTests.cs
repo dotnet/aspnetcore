@@ -1,16 +1,15 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
+using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 {
@@ -28,7 +27,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             var deploymentParameters = GetGlobalVersionBaseDeploymentParameters();
             deploymentParameters.PublishApplicationBeforeDeployment = false;
 
-            deploymentParameters.ServerConfigTemplateContent = GetServerConfig(
+            deploymentParameters.AddServerConfigAction(
                 element =>
                 {
                     var handlerVersionElement = new XElement("handlerSetting");
@@ -52,10 +51,9 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         public async Task GlobalVersion_NewVersionNumber_Fails(string version)
         {
             var deploymentParameters = GetGlobalVersionBaseDeploymentParameters();
+            deploymentParameters.HandlerSettings["handlerVersion"] = version;
 
             var deploymentResult = await DeployAsync(deploymentParameters);
-
-            Helpers.ModifyHandlerSectionInWebConfig(deploymentResult, version);
 
             var response = await deploymentResult.RetryingHttpClient.GetAsync(_helloWorldRequest);
             Assert.False(response.IsSuccessStatusCode);
@@ -68,10 +66,9 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         {
             var deploymentParameters = GetGlobalVersionBaseDeploymentParameters();
             deploymentParameters.AdditionalPublishParameters = $"{_outOfProcessVersionVariable}{version}";
+            deploymentParameters.HandlerSettings["handlerVersion"] = version;
 
             var deploymentResult = await DeployAsync(deploymentParameters);
-
-            Helpers.ModifyHandlerSectionInWebConfig(deploymentResult, version);
 
             var response = await deploymentResult.RetryingHttpClient.GetAsync(_helloWorldRequest);
             var responseText = await response.Content.ReadAsStringAsync();
@@ -140,9 +137,9 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             AssertLoadedVersion(version);
         }
 
-        private DeploymentParameters GetGlobalVersionBaseDeploymentParameters()
+        private IISDeploymentParameters GetGlobalVersionBaseDeploymentParameters()
         {
-            return new DeploymentParameters(Helpers.GetOutOfProcessTestSitesPath(), DeployerSelector.ServerType, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64)
+            return new IISDeploymentParameters(Helpers.GetOutOfProcessTestSitesPath(), DeployerSelector.ServerType, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64)
             {
                 TargetFramework = Tfm.NetCoreApp22,
                 ApplicationType = ApplicationType.Portable,
@@ -155,8 +152,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         private string GetANCMRequestHandlerPath(IISDeploymentResult deploymentResult, string version)
         {
-            return Path.Combine(deploymentResult.DeploymentResult.ContentRoot,
-               deploymentResult.DeploymentResult.DeploymentParameters.RuntimeArchitecture.ToString(),
+            return Path.Combine(deploymentResult.ContentRoot,
+               deploymentResult.DeploymentParameters.RuntimeArchitecture.ToString(),
                version,
                _aspNetCoreDll);
         }

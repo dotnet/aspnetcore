@@ -224,6 +224,19 @@ Language=English
 %1
 .
 
+
+Messageid=1033
+SymbolicName=ASPNETCORE_EVENT_APP_SHUTDOWN_SUCCESSFUL
+Language=English
+%1
+.
+
+Messageid=1034
+SymbolicName=ASPNETCORE_EVENT_UNKNOWN_HOSTING_MODEL_ERROR
+Language=English
+%1
+.
+
 ;
 ;#endif     // _ASPNETCORE_MODULE_MSG_H_
 ;

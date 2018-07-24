@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,18 +20,23 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
     /// <summary>
     /// Deployment helper for IISExpress.
     /// </summary>
-    public class IISExpressDeployer : ApplicationDeployer
+    public class IISExpressDeployer : IISDeployerBase
     {
         private const string IISExpressRunningMessage = "IIS Express is running.";
         private const string FailedToInitializeBindingsMessage = "Failed to initialize site bindings";
         private const string UnableToStartIISExpressMessage = "Unable to start iisexpress.";
         private const int MaximumAttempts = 5;
-
+        private readonly TimeSpan ShutdownTimeSpan = TimeSpan.FromSeconds(60);
         private static readonly Regex UrlDetectorRegex = new Regex(@"^\s*Successfully registered URL ""(?<url>[^""]+)"" for site.*$");
 
         private Process _hostProcess;
 
         public IISExpressDeployer(DeploymentParameters deploymentParameters, ILoggerFactory loggerFactory)
+            : base(new IISDeploymentParameters(deploymentParameters), loggerFactory)
+        {
+        }
+
+        public IISExpressDeployer(IISDeploymentParameters deploymentParameters, ILoggerFactory loggerFactory)
             : base(deploymentParameters, loggerFactory)
         {
         }
@@ -92,12 +98,14 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                 Logger.LogInformation("Application ready at URL: {appUrl}", actualUri);
 
                 // Right now this works only for urls like http://localhost:5001/. Does not work for http://localhost:5001/subpath.
-                return new DeploymentResult(
+
+                return new IISDeploymentResult(
                     LoggerFactory,
-                    DeploymentParameters,
+                    IISDeploymentParameters,
                     applicationBaseUri: actualUri.ToString(),
                     contentRoot: contentRoot,
-                    hostShutdownToken: hostExitToken);
+                    hostShutdownToken: hostExitToken,
+                    hostProcess: _hostProcess);
             }
         }
 
@@ -272,11 +280,16 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
             if (DeploymentParameters.PublishApplicationBeforeDeployment)
             {
                 // For published apps, prefer the content in the web.config, but update it.
-                ModifyAspNetCoreSectionInWebConfig(key: "hostingModel",
-                    value: DeploymentParameters.HostingModel == HostingModel.InProcess ? "inprocess" : "");
-                ModifyHandlerSectionInWebConfig(key: "modules", value: DeploymentParameters.AncmVersion.ToString());
+                DefaultWebConfigActions.Add(WebConfigHelpers.AddOrModifyAspNetCoreSection(
+                    key: "hostingModel",
+                    value: DeploymentParameters.HostingModel == HostingModel.InProcess ? "inprocess" : ""));
+
+                DefaultWebConfigActions.Add(WebConfigHelpers.AddOrModifyHandlerSection(
+                    key: "modules",
+                    value: DeploymentParameters.AncmVersion.ToString()));
                 ModifyDotNetExePathInWebConfig();
                 serverConfig = RemoveRedundantElements(serverConfig);
+                RunWebConfigActions();
             }
             else
             {
@@ -284,6 +297,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                 serverConfig = ReplacePlaceholder(serverConfig, "[HostingModel]", DeploymentParameters.HostingModel.ToString());
                 serverConfig = ReplacePlaceholder(serverConfig, "[AspNetCoreModule]", DeploymentParameters.AncmVersion.ToString());
             }
+            serverConfig = RunServerConfigActions(serverConfig);
 
             DeploymentParameters.ServerConfigLocation = Path.GetTempFileName();
             Logger.LogDebug("Saving Config to {configPath}", DeploymentParameters.ServerConfigLocation);
@@ -345,7 +359,14 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
         {
             using (Logger.BeginScope("Dispose"))
             {
-                ShutDownIfAnyHostProcess(_hostProcess);
+                if (IISDeploymentParameters.GracefulShutdown)
+                {
+                    GracefullyShutdownProcess(_hostProcess);
+                }
+                else
+                {
+                    ShutDownIfAnyHostProcess(_hostProcess);
+                }
 
                 if (!string.IsNullOrEmpty(DeploymentParameters.ServerConfigLocation)
                     && File.Exists(DeploymentParameters.ServerConfigLocation))
@@ -381,6 +402,59 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
             }
         }
 
+        private class WindowsNativeMethods
+        {
+            [DllImport("user32.dll")]
+            internal static extern IntPtr GetTopWindow(IntPtr hWnd);
+            [DllImport("user32.dll")]
+            internal static extern IntPtr GetWindow(IntPtr hWnd, uint uCmd);
+            [DllImport("user32.dll")]
+            internal static extern uint GetWindowThreadProcessId(IntPtr hwnd, out uint lpdwProcessId);
+            [DllImport("user32.dll")]
+            internal static extern bool PostMessage(HandleRef hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
+        }
+
+        private static void SendStopMessageToProcess(int pid)
+        {
+            for (var ptr = WindowsNativeMethods.GetTopWindow(IntPtr.Zero); ptr != IntPtr.Zero; ptr = WindowsNativeMethods.GetWindow(ptr, 2))
+            {
+                uint num;
+                WindowsNativeMethods.GetWindowThreadProcessId(ptr, out num);
+                if (pid == num)
+                {
+                    var hWnd = new HandleRef(null, ptr);
+                    WindowsNativeMethods.PostMessage(hWnd, 0x12, IntPtr.Zero, IntPtr.Zero);
+                    return;
+                }
+            }
+        }
+
+        private void GracefullyShutdownProcess(Process hostProcess)
+        {
+            if (hostProcess != null && !hostProcess.HasExited)
+            {
+                // Calling hostProcess.StandardInput.WriteLine("q") with StandardInput redirected
+                // for the process does not work when stopping IISExpress
+                // Also, hostProcess.CloseMainWindow() doesn't work either.
+                // Instead we have to send WM_QUIT to the iisexpress process via pInvokes.
+                // See: https://stackoverflow.com/questions/4772092/starting-and-stopping-iis-express-programmatically
+
+                SendStopMessageToProcess(hostProcess.Id);
+                if (!hostProcess.WaitForExit((int)ShutdownTimeSpan.TotalMilliseconds))
+                {
+                    throw new InvalidOperationException($"iisexpress Process {hostProcess.Id} failed to gracefully shutdown.");
+                }
+                if (hostProcess.ExitCode != 0)
+                {
+                    Logger.LogWarning($"IISExpress exit code is non-zero after graceful shutdown. Exit code: {hostProcess.ExitCode}");
+                }
+            }
+            else
+            {
+                throw new InvalidOperationException($"iisexpress Process {hostProcess.Id} crashed before shutdown was triggered.");
+            }
+        }
+
         private void ModifyDotNetExePathInWebConfig()
         {
             // We assume the x64 dotnet.exe is on the path so we need to provide an absolute path for x86 scenarios.
@@ -394,27 +468,9 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                 {
                     throw new Exception($"Unable to find '{executableName}'.'");
                 }
-                ModifyAspNetCoreSectionInWebConfig("processPath", executableName);
+                DefaultWebConfigActions.Add(
+                    WebConfigHelpers.AddOrModifyAspNetCoreSection("processPath", executableName));
             }
-        }
-
-        // Transforms the web.config file to set attributes like hostingModel="inprocess" element
-        private void ModifyAspNetCoreSectionInWebConfig(string key, string value)
-        {
-            var webConfigFile = Path.Combine(DeploymentParameters.PublishedApplicationRootPath, "web.config");
-            var config = XDocument.Load(webConfigFile);
-            var element = config.Descendants("aspNetCore").FirstOrDefault();
-            element.SetAttributeValue(key, value);
-            config.Save(webConfigFile);
-        }
-
-        private void ModifyHandlerSectionInWebConfig(string key, string value)
-        {
-            var webConfigFile = Path.Combine(DeploymentParameters.PublishedApplicationRootPath, "web.config");
-            var config = XDocument.Load(webConfigFile);
-            var element = config.Descendants("handlers").FirstOrDefault().Descendants("add").FirstOrDefault();
-            element.SetAttributeValue(key, value);
-            config.Save(webConfigFile);
         }
 
         // These elements are duplicated in the web.config if you publish. Remove them from the host.config.

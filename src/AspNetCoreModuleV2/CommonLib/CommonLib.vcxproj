@@ -195,6 +195,7 @@
     <ClInclude Include="application.h" />
     <ClInclude Include="config_utility.h" />
     <ClInclude Include="Environment.h" />
+    <ClInclude Include="EventLog.h" />
     <ClInclude Include="exceptions.h" />
     <ClInclude Include="GlobalVersionUtility.h" />
     <ClInclude Include="fx_ver.h" />

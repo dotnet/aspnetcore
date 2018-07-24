@@ -126,6 +126,14 @@ Finished:
         //
         exit(hr);
     }
+    else
+    {
+        UTILITY::LogEventF(g_hEventLog,
+            EVENTLOG_INFORMATION_TYPE,
+            ASPNETCORE_EVENT_APP_SHUTDOWN_SUCCESSFUL,
+            ASPNETCORE_EVENT_APP_SHUTDOWN_SUCCESSFUL_MSG,
+            m_pConfig->QueryConfigPath()->QueryStr());
+    }
 }
 
 VOID

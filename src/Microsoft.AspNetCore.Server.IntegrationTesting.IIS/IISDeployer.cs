@@ -2,10 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml.Linq;
 using Microsoft.AspNetCore.Server.IntegrationTesting.Common;
 using Microsoft.Extensions.Logging;
 
@@ -14,12 +12,17 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
     /// <summary>
     /// Deployer for IIS.
     /// </summary>
-    public partial class IISDeployer : ApplicationDeployer
+    public partial class IISDeployer : IISDeployerBase
     {
         private IISApplication _application;
         private CancellationTokenSource _hostShutdownToken = new CancellationTokenSource();
 
         public IISDeployer(DeploymentParameters deploymentParameters, ILoggerFactory loggerFactory)
+            : base(new IISDeploymentParameters(deploymentParameters), loggerFactory)
+        {
+        }
+
+        public IISDeployer(IISDeploymentParameters deploymentParameters, ILoggerFactory loggerFactory)
             : base(deploymentParameters, loggerFactory)
         {
         }
@@ -53,17 +56,27 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                     DeploymentParameters.ServerConfigTemplateContent = File.ReadAllText("IIS.config");
                 }
 
-                _application = new IISApplication(DeploymentParameters, Logger);
+                _application = new IISApplication(IISDeploymentParameters, Logger);
 
                 // For now, only support using published output
                 DeploymentParameters.PublishApplicationBeforeDeployment = true;
+
+
+                if (DeploymentParameters.ApplicationType == ApplicationType.Portable)
+                {
+                    DefaultWebConfigActions.Add(
+                        WebConfigHelpers.AddOrModifyAspNetCoreSection(
+                            "processPath",
+                            DotNetCommands.GetDotNetExecutable(DeploymentParameters.RuntimeArchitecture)));
+                }
+
                 if (DeploymentParameters.PublishApplicationBeforeDeployment)
                 {
                     DotnetPublish();
                     contentRoot = DeploymentParameters.PublishedApplicationRootPath;
+                    IISDeploymentParameters.AddDebugLogToWebConfig(Path.Combine(contentRoot, $"{_application.WebSiteName}.txt"));
+                    RunWebConfigActions();
                 }
-
-                WebConfigHelpers.AddDebugLogToWebConfig(contentRoot, Path.Combine(contentRoot, $"{_application.WebSiteName}.txt"));
 
                 var uri = TestUriHelper.BuildTestUri(ServerType.IIS, DeploymentParameters.ApplicationBaseUriHint);
                 // To prevent modifying the IIS setup concurrently.
@@ -71,13 +84,13 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
 
                 // Warm up time for IIS setup.
                 Logger.LogInformation("Successfully finished IIS application directory setup.");
-
-                return new DeploymentResult(
+                return new IISDeploymentResult(
                     LoggerFactory,
-                    DeploymentParameters,
+                    IISDeploymentParameters,
                     applicationBaseUri: uri.ToString(),
                     contentRoot: contentRoot,
-                    hostShutdownToken: _hostShutdownToken.Token
+                    hostShutdownToken: _hostShutdownToken.Token,
+                    hostProcess: _application.HostProcess
                 );
             }
         }

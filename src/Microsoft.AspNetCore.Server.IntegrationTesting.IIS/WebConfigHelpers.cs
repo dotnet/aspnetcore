@@ -2,49 +2,34 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
 using System.Linq;
 using System.Xml.Linq;
-using Microsoft.AspNetCore.Server.IntegrationTesting;
-using Microsoft.AspNetCore.Testing;
 
 namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
 {
-    public class WebConfigHelpers
+    public static class WebConfigHelpers
     {
-        public static void AddDebugLogToWebConfig(string contentRoot, string filename)
+        public static Action<XElement> AddOrModifyAspNetCoreSection(string key, string value)
+            => AddAction(key, value, section: "aspNetCore");
+
+        public static Action<XElement> AddAction(string key, string value, string section)
         {
-            var path = Path.Combine(contentRoot, "web.config");
-            var webconfig = XDocument.Load(path);
-            var xElement = webconfig.Descendants("aspNetCore").Single();
-
-            var element = xElement.Descendants("handlerSettings").SingleOrDefault();
-            if (element == null)
+            return (element) =>
             {
-                element = new XElement("handlerSettings");
-                xElement.Add(element);
-            }
-
-            CreateOrSetElement(element, "debugLevel", "4");
-
-            CreateOrSetElement(element, "debugFile", Path.Combine(contentRoot, filename));
-
-            webconfig.Save(path);
+                element.Descendants(section).SingleOrDefault().SetAttributeValue(key, value);
+            };
         }
 
-        private static void CreateOrSetElement(XElement rootElement, string name, string value)
+        public static Action<XElement> AddOrModifyHandlerSection(string key, string value)
         {
-            if (rootElement.Descendants()
-                .Attributes()
-                .Where(attribute => attribute.Value == name)
-                .Any())
+            return element =>
             {
-                return;
-            }
-            var element = new XElement("handlerSetting");
-            element.SetAttributeValue("name", name);
-            element.SetAttributeValue("value", value);
-            rootElement.Add(element);
+                element.Descendants("handlers")
+                        .FirstOrDefault()
+                        .Descendants("add")
+                        .FirstOrDefault()
+                        .SetAttributeValue(key, value);
+            };
         }
     }
 }

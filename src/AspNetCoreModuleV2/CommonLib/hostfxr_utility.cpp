@@ -141,7 +141,9 @@ HOSTFXR_UTILITY::GetHostFxrParameters(
         auto fullProcessPath = GetAbsolutePathToDotnet(applicationPhysicalPath, processPath);
         if (!fullProcessPath.has_value())
         {
-            return E_FAIL;
+            hr = HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND);
+            EVENTLOG(hEventLog, INVALID_PROCESS_PATH, processPath.c_str(), hr);
+            return hr;
         }
 
         processPath = fullProcessPath.value();
@@ -149,7 +151,8 @@ HOSTFXR_UTILITY::GetHostFxrParameters(
         auto hostFxrPath = GetAbsolutePathToHostFxr(processPath, hEventLog);
         if (!hostFxrPath.has_value())
         {
-            return E_FAIL;
+            hr = HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND);
+            return hr;
         }
 
         RETURN_IF_FAILED(HOSTFXR_UTILITY::ParseHostfxrArguments(
@@ -368,6 +371,8 @@ HOSTFXR_UTILITY::GetAbsolutePathToDotnet(
     // Only do it if no path is specified
     if (requestedPath.has_parent_path())
     {
+        WLOG_INFOF(L"Absolute path to dotnet.exe was not found at %s", requestedPath.c_str());
+
         return std::nullopt;
     }
 

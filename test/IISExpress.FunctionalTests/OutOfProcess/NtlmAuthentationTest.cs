@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
+using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 using Xunit.Abstractions;
@@ -31,12 +32,13 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [MemberData(nameof(TestVariants))]
         public async Task NtlmAuthentication(TestVariant variant)
         {
-            var deploymentParameters = new DeploymentParameters(variant)
+            var deploymentParameters = new IISDeploymentParameters(variant)
             {
                 ApplicationPath = Helpers.GetOutOfProcessTestSitesPath(),
-                ApplicationBaseUriHint = $"http://localhost:0/",
-                ServerConfigTemplateContent = GetWindowsAuthConfig()
+                ApplicationBaseUriHint = $"http://localhost:0/"
             };
+
+            deploymentParameters.AddWindowsAuthToServerConfig();
 
             var result = await DeployAsync(deploymentParameters);
             var response = await result.RetryingHttpClient.GetAsync("/HelloWorld");

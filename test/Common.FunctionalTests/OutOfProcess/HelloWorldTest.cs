@@ -5,6 +5,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
+using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 using Xunit.Abstractions;
@@ -29,7 +30,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         {
             // The default in hosting sets windows auth to true.
             // Set it to the IISExpress.config file
-            var deploymentParameters = new DeploymentParameters(variant)
+            var deploymentParameters = new IISDeploymentParameters(variant)
             {
                 ApplicationPath = Helpers.GetOutOfProcessTestSitesPath()
             };
