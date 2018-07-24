@@ -84,48 +84,51 @@ namespace AspNetCoreSdkTests
 
         private static IEnumerable<Template> GetTemplates(RuntimeIdentifier runtimeIdentifier)
         {
+            // Offline restore is broken in SDK 2.1.301 (https://github.com/aspnet/Universe/issues/1220)
+            var offlinePackageSource = (DotNetUtil.SdkVersion == new Version(2, 1, 301)) ?
+                NuGetPackageSource.NuGetOrg : NuGetPackageSource.None;
+
+            // Pre-release SDKs require a private nuget feed
+            var onlinePackageSource = (DotNetUtil.SdkVersion == new Version(2, 1, 401)) ?
+                NuGetPackageSource.EnvironmentVariableAndNuGetOrg : NuGetPackageSource.NuGetOrg;
+
             if (runtimeIdentifier == RuntimeIdentifier.None)
             {
-                // Offline restore is broken in SDK 2.1.301 (https://github.com/aspnet/Universe/issues/1220)
-                var packageSource = (DotNetUtil.SdkVersion == new Version(2, 1, 301)) ? NuGetPackageSource.NuGetOrg : NuGetPackageSource.None;
-
                 // Framework-dependent
                 return new[]
                 {
                     Template.GetInstance<ClassLibraryTemplate>(NuGetPackageSource.None, runtimeIdentifier),
-                    Template.GetInstance<ConsoleApplicationTemplate>(packageSource, runtimeIdentifier),
+                    Template.GetInstance<ConsoleApplicationTemplate>(offlinePackageSource, runtimeIdentifier),
                     
                     // Offline restore currently not supported for RazorClassLibrary template (https://github.com/aspnet/Universe/issues/1123)
-                    Template.GetInstance<RazorClassLibraryTemplate>(NuGetPackageSource.NuGetOrg, runtimeIdentifier),
+                    Template.GetInstance<RazorClassLibraryTemplate>(onlinePackageSource, runtimeIdentifier),
 
-                    Template.GetInstance<WebTemplate>(packageSource, runtimeIdentifier),
-                    Template.GetInstance<RazorTemplate>(packageSource, runtimeIdentifier),
-                    Template.GetInstance<MvcTemplate>(packageSource, runtimeIdentifier),
-                    Template.GetInstance<AngularTemplate>(packageSource, runtimeIdentifier),
-                    Template.GetInstance<ReactTemplate>(packageSource, runtimeIdentifier),
-                    Template.GetInstance<ReactReduxTemplate>(packageSource, runtimeIdentifier),
-                    Template.GetInstance<WebApiTemplate>(packageSource, runtimeIdentifier),
+                    Template.GetInstance<WebTemplate>(offlinePackageSource, runtimeIdentifier),
+                    Template.GetInstance<RazorTemplate>(offlinePackageSource, runtimeIdentifier),
+                    Template.GetInstance<MvcTemplate>(offlinePackageSource, runtimeIdentifier),
+                    Template.GetInstance<AngularTemplate>(offlinePackageSource, runtimeIdentifier),
+                    Template.GetInstance<ReactTemplate>(offlinePackageSource, runtimeIdentifier),
+                    Template.GetInstance<ReactReduxTemplate>(offlinePackageSource, runtimeIdentifier),
+                    Template.GetInstance<WebApiTemplate>(offlinePackageSource, runtimeIdentifier),
                 };
             }
             else
             {
-                // Pre-release SDKs require a private nuget feed
-                var packageSource = (DotNetUtil.SdkVersion == new Version(2, 1, 401)) ? NuGetPackageSource.EnvironmentVariableAndNuGetOrg : NuGetPackageSource.NuGetOrg;
-
                 // Self-contained
                 return new[]
                 {
                     // ClassLibrary does not require a package source, even for self-contained deployments
                     Template.GetInstance<ClassLibraryTemplate>(NuGetPackageSource.None, runtimeIdentifier),
-                    Template.GetInstance<ConsoleApplicationTemplate>(packageSource, runtimeIdentifier),
-                    Template.GetInstance<RazorClassLibraryTemplate>(packageSource, runtimeIdentifier),
-                    Template.GetInstance<WebTemplate>(packageSource, runtimeIdentifier),
-                    Template.GetInstance<RazorTemplate>(packageSource, runtimeIdentifier),
-                    Template.GetInstance<MvcTemplate>(packageSource, runtimeIdentifier),
-                    Template.GetInstance<AngularTemplate>(packageSource, runtimeIdentifier),
-                    Template.GetInstance<ReactTemplate>(packageSource, runtimeIdentifier),
-                    Template.GetInstance<ReactReduxTemplate>(packageSource, runtimeIdentifier),
-                    Template.GetInstance<WebApiTemplate>(packageSource, runtimeIdentifier),
+
+                    Template.GetInstance<ConsoleApplicationTemplate>(onlinePackageSource, runtimeIdentifier),
+                    Template.GetInstance<RazorClassLibraryTemplate>(onlinePackageSource, runtimeIdentifier),
+                    Template.GetInstance<WebTemplate>(onlinePackageSource, runtimeIdentifier),
+                    Template.GetInstance<RazorTemplate>(onlinePackageSource, runtimeIdentifier),
+                    Template.GetInstance<MvcTemplate>(onlinePackageSource, runtimeIdentifier),
+                    Template.GetInstance<AngularTemplate>(onlinePackageSource, runtimeIdentifier),
+                    Template.GetInstance<ReactTemplate>(onlinePackageSource, runtimeIdentifier),
+                    Template.GetInstance<ReactReduxTemplate>(onlinePackageSource, runtimeIdentifier),
+                    Template.GetInstance<WebApiTemplate>(onlinePackageSource, runtimeIdentifier),
                 };
             }
         }
