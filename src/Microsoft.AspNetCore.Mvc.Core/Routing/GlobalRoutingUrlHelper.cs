@@ -94,10 +94,13 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 });
 
             var successfullyGeneratedLink = _linkGenerator.TryGetLink(
-                ActionContext.HttpContext,
-                endpoints,
-                valuesDictionary,
-                AmbientValues,
+                new LinkGeneratorContext
+                {
+                    HttpContext = ActionContext.HttpContext,
+                    Endpoints = endpoints,
+                    ExplicitValues = valuesDictionary,
+                    AmbientValues = AmbientValues
+                },
                 out var link);
 
             if (!successfullyGeneratedLink)
@@ -129,10 +132,13 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 });
 
             var successfullyGeneratedLink = _linkGenerator.TryGetLink(
-                ActionContext.HttpContext,
-                endpoints,
-                valuesDictionary,
-                AmbientValues,
+                new LinkGeneratorContext
+                {
+                    HttpContext = ActionContext.HttpContext,
+                    Endpoints = endpoints,
+                    ExplicitValues = valuesDictionary,
+                    AmbientValues = AmbientValues
+                },
                 out var link);
 
             if (!successfullyGeneratedLink)
