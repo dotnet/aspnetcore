@@ -14,7 +14,7 @@ namespace Common
         /// <summary>
         /// This property keeps the various providers from making changes to their data sources when testing things out.
         /// </summary>
-        public static bool BeQuiet = true;
+        public static bool BeQuiet = false;
     }
 
     public static class TestToRepoMapper
