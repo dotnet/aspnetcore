@@ -62,7 +62,7 @@ module DotNet {
       const resultJson = dispatcher.invokeDotNetFromJS(assemblyName, methodIdentifier, dotNetObjectId, argsJson);
       return resultJson ? parseJsonWithRevivers(resultJson) : null;
     } else {
-      throw new Error('The current dispatcher does not support synchronous calls from JS to .NET. Use invokeAsync instead.');
+      throw new Error('The current dispatcher does not support synchronous calls from JS to .NET. Use invokeMethodAsync instead.');
     }
   }
 

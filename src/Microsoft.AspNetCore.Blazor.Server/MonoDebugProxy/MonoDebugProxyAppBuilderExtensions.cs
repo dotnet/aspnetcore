@@ -138,17 +138,17 @@ namespace Microsoft.AspNetCore.Builder
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                return $@"<p>Close this browser, then press Win+R and enter the following:</p>
+                return $@"<p>Close all Chrome instances, then press Win+R and enter the following:</p>
                           <p><strong><code>""%programfiles(x86)%\Google\Chrome\Application\chrome.exe"" --remote-debugging-port=9222 {appRootUrl}</code></strong></p>";
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                return $@"<p>Close this browser, then in a terminal window execute the following:</p>
+                return $@"<p>Close all Chrome instances, then in a terminal window execute the following:</p>
                           <p><strong><code>google-chrome --remote-debugging-port=9222 {appRootUrl}</code></strong></p>";
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
-                return $@"<p>Close this browser, then in a terminal window execute the following:</p>
+                return $@"<p>Close all Chrome instances, then in a terminal window execute the following:</p>
                           <p><strong><code>open /Applications/Google\ Chrome.app --args --remote-debugging-port=9222 {appRootUrl}</code></strong></p>";
             }
             else

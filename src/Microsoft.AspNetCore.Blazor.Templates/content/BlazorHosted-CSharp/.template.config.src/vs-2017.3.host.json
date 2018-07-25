@@ -6,7 +6,7 @@
     "id": "1050"
   },
   "description": {
-    "text": "A project template for creating an ASP.NET Core Blazor application",
+    "text": "A project template for creating a Blazor application that runs on WebAssembly and is hosted on an ASP.NET Core server.",
     "package": "{0CD94836-1526-4E85-87D3-FB5274C5AFC9}",
     "id": "1051"
   },
