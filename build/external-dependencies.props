@@ -125,6 +125,10 @@
     <ExternalDependency Include="Polly" Version="$(PollyPackageVersion)" />
     <ExternalDependency Include="Polly.Extensions.Http" Version="$(PollyExtensionsHttpPackageVersion)" />
     <ExternalDependency Include="Remotion.Linq" Version="$(RemotionLinqPackageVersion)" />
+    <ExternalDependency Include="Selenium.Firefox.WebDriver" Version="$(SeleniumFirefoxWebDriverPackageVersion)" />
+    <ExternalDependency Include="Selenium.Support" Version="$(SeleniumSupportPackageVersion)" />
+    <ExternalDependency Include="Selenium.WebDriver.MicrosoftDriver" Version="$(SeleniumWebDriverMicrosoftDriverPackageVersion)" />
+    <ExternalDependency Include="Selenium.WebDriver" Version="$(SeleniumWebDriverPackageVersion)" />
     <ExternalDependency Include="Serilog.Extensions.Logging" Version="$(SerilogExtensionsLoggingPackageVersion)" />
     <ExternalDependency Include="Serilog.Sinks.File" Version="$(SerilogSinksFilePackageVersion)" />
     <ExternalDependency Include="SQLitePCLRaw.bundle_green" Version="$(SQLitePCLRawBundleGreenPackageVersion)" />
