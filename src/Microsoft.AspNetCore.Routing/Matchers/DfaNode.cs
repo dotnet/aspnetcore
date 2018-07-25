@@ -16,7 +16,8 @@ namespace Microsoft.AspNetCore.Routing.Matchers
         public DfaNode()
         {
             Literals = new Dictionary<string, DfaNode>(StringComparer.OrdinalIgnoreCase);
-            Matches = new List<MatcherBuilderEntry>();
+            Matches = new List<MatcherEndpoint>();
+            PolicyEdges = new Dictionary<object, DfaNode>();
         }
 
         // The depth of the node. The depth indicates the number of segments
@@ -25,14 +26,45 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 
         // Just for diagnostics and debugging
         public string Label { get; set; }
-
-        public List<MatcherBuilderEntry> Matches { get; }
+        
+        public List<MatcherEndpoint> Matches { get; }
 
         public Dictionary<string, DfaNode> Literals { get; }
 
         public DfaNode Parameters { get; set; }
 
         public DfaNode CatchAll { get; set; }
+
+        public INodeBuilderPolicy NodeBuilder { get; set; }
+
+        public Dictionary<object, DfaNode> PolicyEdges { get; }
+
+        public void Visit(Action<DfaNode> visitor)
+        {
+            foreach (var kvp in Literals)
+            {
+                kvp.Value.Visit(visitor);
+            }
+
+            // Break cycles
+            if (Parameters != null && !ReferenceEquals(this, Parameters))
+            {
+                Parameters.Visit(visitor);
+            }
+
+            // Break cycles
+            if (CatchAll != null && !ReferenceEquals(this, CatchAll))
+            {
+                CatchAll.Visit(visitor);
+            }
+
+            foreach (var kvp in PolicyEdges)
+            {
+                kvp.Value.Visit(visitor);
+            }
+
+            visitor(this);
+        }
 
         private string DebuggerToString()
         {

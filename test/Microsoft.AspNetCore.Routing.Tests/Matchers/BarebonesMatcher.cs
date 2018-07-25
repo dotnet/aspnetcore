@@ -49,18 +49,14 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             public readonly MatcherEndpoint Endpoint;
 
             private readonly string[] _segments;
-            private readonly CandidateSet _candidates;
+            private readonly Candidate[] _candidates;
 
             public InnerMatcher(string[] segments, MatcherEndpoint endpoint)
             {
                 _segments = segments;
                 Endpoint = endpoint;
 
-                _candidates = new CandidateSet(
-                    new Candidate[] { new Candidate(endpoint), },
-
-                    // Single candidate group that contains one entry.
-                    CandidateSet.MakeGroups(new[] { 1 }));
+                _candidates = new Candidate[] { new Candidate(endpoint), };
             }
 
             public bool TryMatch(string path)
@@ -114,14 +110,14 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                 return segment == _segments.Length;
             }
 
-            internal CandidateSet SelectCandidates(string path, ReadOnlySpan<PathSegment> segments)
+            internal Candidate[] FindCandidateSet(string path, ReadOnlySpan<PathSegment> segments)
             {
                 if (TryMatch(path))
                 {
                     return _candidates;
                 }
 
-                return CandidateSet.Empty;
+                return Array.Empty<Candidate>();
             }
 
             public override Task MatchAsync(HttpContext httpContext, IEndpointFeature feature)

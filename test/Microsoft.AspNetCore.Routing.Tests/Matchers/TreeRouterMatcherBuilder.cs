@@ -17,22 +17,20 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 {
     internal class TreeRouterMatcherBuilder : MatcherBuilder
     {
-        private readonly List<MatcherBuilderEntry> _entries;
+        private readonly List<MatcherEndpoint> _endpoints;
 
         public TreeRouterMatcherBuilder()
         {
-            _entries = new List<MatcherBuilderEntry>();
+            _endpoints = new List<MatcherEndpoint>();
         }
 
         public override void AddEndpoint(MatcherEndpoint endpoint)
         {
-            _entries.Add(new MatcherBuilderEntry(endpoint));
+            _endpoints.Add(endpoint);
         }
 
         public override Matcher Build()
         {
-            _entries.Sort();
-
             var builder = new TreeRouteBuilder(
                 NullLoggerFactory.Instance,
                 new DefaultObjectPool<UriBuildingContext>(new UriBuilderContextPooledObjectPolicy()),
@@ -41,23 +39,23 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             var cache = new EndpointConstraintCache(
                 new CompositeEndpointDataSource(Array.Empty<EndpointDataSource>()),
                 new[] { new DefaultEndpointConstraintProvider(), });
-            var selector = new EndpointSelector(null, cache, NullLoggerFactory.Instance);
+            var selector = new EndpointConstraintEndpointSelector(null, cache, NullLoggerFactory.Instance);
 
-            var groups = _entries
-                .GroupBy(e => (e.Order, e.Precedence, e.Endpoint.RoutePattern.RawText))
+            var groups = _endpoints
+                .GroupBy(e => (e.Order, e.RoutePattern.InboundPrecedence, e.RoutePattern.RawText))
                 .OrderBy(g => g.Key.Order)
-                .ThenBy(g => g.Key.Precedence);
+                .ThenBy(g => g.Key.InboundPrecedence);
 
             var routes = new RouteCollection();
 
             foreach (var group in groups)
             {
-                var candidates = group.Select(e => e.Endpoint).ToArray();
+                var candidates = group.ToArray();
 
                 // MatcherEndpoint.Values contains the default values parsed from the template
                 // as well as those specified with a literal. We need to separate those
                 // for legacy cases.
-                var endpoint = group.First().Endpoint;
+                var endpoint = group.First();
                 var defaults = new RouteValueDictionary(endpoint.RoutePattern.Defaults);
                 for (var i = 0; i < endpoint.RoutePattern.Parameters.Count; i++)
                 {
@@ -81,12 +79,15 @@ namespace Microsoft.AspNetCore.Routing.Matchers
         private class SelectorRouter : IRouter
         {
             private readonly EndpointSelector _selector;
-            private readonly Endpoint[] _candidates;
+            private readonly MatcherEndpoint[] _candidates;
+            private readonly int[] _scores;
 
-            public SelectorRouter(EndpointSelector selector, Endpoint[] candidates)
+            public SelectorRouter(EndpointSelector selector, MatcherEndpoint[] candidates)
             {
                 _selector = selector;
                 _candidates = candidates;
+
+                _scores = new int[_candidates.Length];
             }
 
             public VirtualPathData GetVirtualPath(VirtualPathContext context)
@@ -94,15 +95,18 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                 throw new NotImplementedException();
             }
 
-            public Task RouteAsync(RouteContext context)
+            public async Task RouteAsync(RouteContext context)
             {
-                var endpoint = _selector.SelectBestCandidate(context.HttpContext, _candidates);
-                if (endpoint != null)
+                var feature = context.HttpContext.Features.Get<IEndpointFeature>();
+
+                // This is needed due to a quirk of our tests - they reuse the endpoint feature.
+                feature.Endpoint = null;
+                
+                await _selector.SelectAsync(context.HttpContext, feature, new CandidateSet(_candidates, _scores));
+                if (feature.Endpoint != null)
                 {
-                    context.HttpContext.Features.Get<IEndpointFeature>().Endpoint = endpoint;
                     context.Handler = (_) => Task.CompletedTask;
                 }
-                return Task.CompletedTask;
             }
         }
     }

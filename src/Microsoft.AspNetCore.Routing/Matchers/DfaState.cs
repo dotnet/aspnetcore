@@ -8,18 +8,23 @@ namespace Microsoft.AspNetCore.Routing.Matchers
     [DebuggerDisplay("{DebuggerToString(),nq}")]
     internal readonly struct DfaState
     {
-        public readonly CandidateSet Candidates;
-        public readonly JumpTable Transitions;
+        public readonly Candidate[] Candidates;
+        public readonly JumpTable PathTransitions;
+        public readonly PolicyJumpTable PolicyTransitions;
 
-        public DfaState(CandidateSet candidates, JumpTable transitions)
+        public DfaState(Candidate[] candidates, JumpTable pathTransitions, PolicyJumpTable policyTransitions)
         {
             Candidates = candidates;
-            Transitions = transitions;
+            PathTransitions = pathTransitions;
+            PolicyTransitions = policyTransitions;
         }
 
         public string DebuggerToString()
         {
-            return $"m: {Candidates.Candidates?.Length ?? 0}, j: ({Transitions?.DebuggerToString()})";
+            return 
+                $"matches: {Candidates?.Length ?? 0}, " +
+                $"path: ({PathTransitions?.DebuggerToString()}), " +
+                $"policy: ({PolicyTransitions?.DebuggerToString()})";
         }
     }
 }

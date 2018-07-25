@@ -2,56 +2,155 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Runtime.CompilerServices;
 
 namespace Microsoft.AspNetCore.Routing.Matchers
 {
-    internal class CandidateSet
+    public sealed class CandidateSet
     {
-        public static readonly CandidateSet Empty = new CandidateSet(Array.Empty<Candidate>(), Array.Empty<int>());
+        // We inline storage for 4 candidates here to avoid allocations in common
+        // cases. There's no real reason why 4 is important, it just seemed like 
+        // a plausible number.
+        private CandidateState _state0;
+        private CandidateState _state1;
+        private CandidateState _state2;
+        private CandidateState _state3;
 
-        // The array of candidates.
-        public readonly Candidate[] Candidates;
+        private CandidateState[] _additionalCandidates;
 
-        // The number of groups.
-        public readonly int GroupCount;
-
-        // The array of groups. Groups define a contiguous sets of indices into
-        // the candidates array.
-        //
-        // The groups array always contains N+1 entries where N is the number of groups.
-        // The extra array entry is there to make indexing easier, so we can lookup the 'end'
-        // of the last group without branching.
-        //
-        // Example:
-        //    Group0: Candidates[0], Candidates[1]
-        //    Group1: Candidates[2], Candidates[3], Candidates[4]
-        //
-        // The groups array would look like: { 0, 2, 5, }
-        public readonly int[] Groups;
-
-        public CandidateSet(Candidate[] candidates, int[] groups)
+        // Provided to make testing possible/easy for someone implementing
+        // an EndpointSelector.
+        public CandidateSet(MatcherEndpoint[] endpoints, int[] scores)
         {
-            Candidates = candidates;
-            Groups = groups;
+            Count = endpoints.Length;
 
-            GroupCount = groups.Length == 0 ? 0 : groups.Length - 1;
+            switch (endpoints.Length)
+            {
+                case 0:
+                    return;
+
+                case 1:
+                    _state0 = new CandidateState(endpoints[0], score: scores[0]);
+                    break;
+
+                case 2:
+                    _state0 = new CandidateState(endpoints[0], score: scores[0]);
+                    _state1 = new CandidateState(endpoints[1], score: scores[1]);
+                    break;
+
+                case 3:
+                    _state0 = new CandidateState(endpoints[0], score: scores[0]);
+                    _state1 = new CandidateState(endpoints[1], score: scores[1]);
+                    _state2 = new CandidateState(endpoints[2], score: scores[2]);
+                    break;
+
+                case 4:
+                    _state0 = new CandidateState(endpoints[0], score: scores[0]);
+                    _state1 = new CandidateState(endpoints[1], score: scores[1]);
+                    _state2 = new CandidateState(endpoints[2], score: scores[2]);
+                    _state3 = new CandidateState(endpoints[3], score: scores[3]);
+                    break;
+
+                default:
+                    _state0 = new CandidateState(endpoints[0], score: scores[0]);
+                    _state1 = new CandidateState(endpoints[1], score: scores[1]);
+                    _state2 = new CandidateState(endpoints[2], score: scores[2]);
+                    _state3 = new CandidateState(endpoints[3], score: scores[3]);
+
+                    _additionalCandidates = new CandidateState[endpoints.Length - 4];
+                    for (var i = 4; i < endpoints.Length; i++)
+                    {
+                        _additionalCandidates[i - 4] = new CandidateState(endpoints[i], score: scores[i]);
+                    }
+                    break;
+            }
         }
 
-        // See description on Groups.
-        public static int[] MakeGroups(int[] lengths)
+        internal CandidateSet(Candidate[] candidates)
         {
-            var groups = new int[lengths.Length + 1];
+            Count = candidates.Length;
 
-            var sum = 0;
-            for (var i = 0; i < lengths.Length; i++)
+            switch (candidates.Length)
             {
-                groups[i] = sum;
-                sum += lengths[i];
+                case 0:
+                    return;
+
+                case 1:
+                    _state0 = new CandidateState(candidates[0].Endpoint, candidates[0].Score);
+                    break;
+
+                case 2:
+                    _state0 = new CandidateState(candidates[0].Endpoint, candidates[0].Score);
+                    _state1 = new CandidateState(candidates[1].Endpoint, candidates[1].Score);
+                    break;
+
+                case 3:
+                    _state0 = new CandidateState(candidates[0].Endpoint, candidates[0].Score);
+                    _state1 = new CandidateState(candidates[1].Endpoint, candidates[1].Score);
+                    _state2 = new CandidateState(candidates[2].Endpoint, candidates[2].Score);
+                    break;
+
+                case 4:
+                    _state0 = new CandidateState(candidates[0].Endpoint, candidates[0].Score);
+                    _state1 = new CandidateState(candidates[1].Endpoint, candidates[1].Score);
+                    _state2 = new CandidateState(candidates[2].Endpoint, candidates[2].Score);
+                    _state3 = new CandidateState(candidates[3].Endpoint, candidates[3].Score);
+                    break;
+
+                default:
+                    _state0 = new CandidateState(candidates[0].Endpoint, candidates[0].Score);
+                    _state1 = new CandidateState(candidates[1].Endpoint, candidates[1].Score);
+                    _state2 = new CandidateState(candidates[2].Endpoint, candidates[2].Score);
+                    _state3 = new CandidateState(candidates[3].Endpoint, candidates[3].Score);
+
+                    _additionalCandidates = new CandidateState[candidates.Length - 4];
+                    for (var i = 4; i < candidates.Length; i++)
+                    {
+                        _additionalCandidates[i - 4] = new CandidateState(candidates[i].Endpoint, candidates[i].Score);
+                    }
+                    break;
             }
+        }
 
-            groups[lengths.Length] = sum;
+        public int Count { get; }
 
-            return groups;
+        // Note that this is a ref-return because of both mutability and performance.
+        // We don't want to copy these fat structs if it can be avoided.
+        public ref CandidateState this[int index]
+        {
+            // PERF: Force inlining
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get
+            {
+                // Friendliness for inlining
+                if ((uint)index >= Count)
+                {
+                    ThrowIndexArgumentOutOfRangeException();
+                }
+
+                switch (index)
+                {
+                    case 0:
+                        return ref _state0;
+
+                    case 1:
+                        return ref _state1;
+
+                    case 2:
+                        return ref _state2;
+
+                    case 3:
+                        return ref _state3;
+
+                    default:
+                        return ref _additionalCandidates[index - 4];
+                }
+            }
+        }
+
+        private static void ThrowIndexArgumentOutOfRangeException()
+        {
+            throw new ArgumentOutOfRangeException("index");
         }
     }
 }
