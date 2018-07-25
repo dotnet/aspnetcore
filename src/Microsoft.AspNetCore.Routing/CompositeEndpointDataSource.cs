@@ -34,13 +34,12 @@ namespace Microsoft.AspNetCore.Routing
             _lock = new object();
         }
 
-        public override IChangeToken ChangeToken
+        public override IChangeToken ChangeToken => GetChangeToken();
+
+        public override IChangeToken GetChangeToken()
         {
-            get
-            {
-                EnsureInitialized();
-                return _consumerChangeToken;
-            }
+            EnsureInitialized();
+            return _consumerChangeToken;
         }
 
         public override IReadOnlyList<Endpoint> Endpoints

@@ -173,7 +173,8 @@ namespace Microsoft.AspNetCore.Routing
                 _token = new CancellationChangeToken(_cts.Token);
             }
 
-            public override IChangeToken ChangeToken => _token;
+            public override IChangeToken GetChangeToken() => _token;
+            public override IChangeToken ChangeToken => GetChangeToken();
             public override IReadOnlyList<Endpoint> Endpoints => Array.Empty<Endpoint>();
         }
     }
