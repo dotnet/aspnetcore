@@ -39,7 +39,7 @@
     <MicrosoftAspNetCoreHttpPackageVersion>3.0.0-alpha1-10143</MicrosoftAspNetCoreHttpPackageVersion>
     <MicrosoftAspNetCoreJsonPatchPackageVersion>3.0.0-alpha1-10143</MicrosoftAspNetCoreJsonPatchPackageVersion>
     <MicrosoftAspNetCoreLocalizationPackageVersion>3.0.0-alpha1-10143</MicrosoftAspNetCoreLocalizationPackageVersion>
-    <MicrosoftAspNetCoreLocalizationRoutingPackageVersion>3.0.0-alpha1-10143</MicrosoftAspNetCoreLocalizationRoutingPackageVersion>
+    <MicrosoftAspNetCoreLocalizationRoutingPackageVersion>3.0.0-a-alpha1-master-changes-16732</MicrosoftAspNetCoreLocalizationRoutingPackageVersion>
     <MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>3.0.0-alpha1-10143</MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>
     <MicrosoftAspNetCoreRangeHelperSourcesPackageVersion>3.0.0-alpha1-10143</MicrosoftAspNetCoreRangeHelperSourcesPackageVersion>
     <MicrosoftAspNetCoreRazorDesignPackageVersion>3.0.0-alpha1-10143</MicrosoftAspNetCoreRazorDesignPackageVersion>
@@ -48,8 +48,8 @@
     <MicrosoftAspNetCoreRazorTagHelpersTestingSourcesPackageVersion>3.0.0-alpha1-10143</MicrosoftAspNetCoreRazorTagHelpersTestingSourcesPackageVersion>
     <MicrosoftAspNetCoreResponseCachingAbstractionsPackageVersion>3.0.0-alpha1-10143</MicrosoftAspNetCoreResponseCachingAbstractionsPackageVersion>
     <MicrosoftAspNetCoreResponseCachingPackageVersion>3.0.0-alpha1-10143</MicrosoftAspNetCoreResponseCachingPackageVersion>
-    <MicrosoftAspNetCoreRoutingAbstractionsPackageVersion>3.0.0-alpha1-10143</MicrosoftAspNetCoreRoutingAbstractionsPackageVersion>
-    <MicrosoftAspNetCoreRoutingPackageVersion>3.0.0-alpha1-10143</MicrosoftAspNetCoreRoutingPackageVersion>
+    <MicrosoftAspNetCoreRoutingAbstractionsPackageVersion>3.0.0-a-alpha1-master-changes-16793</MicrosoftAspNetCoreRoutingAbstractionsPackageVersion>
+    <MicrosoftAspNetCoreRoutingPackageVersion>3.0.0-a-alpha1-master-changes-16793</MicrosoftAspNetCoreRoutingPackageVersion>
     <MicrosoftAspNetCoreServerIISIntegrationPackageVersion>3.0.0-alpha1-10143</MicrosoftAspNetCoreServerIISIntegrationPackageVersion>
     <MicrosoftAspNetCoreServerKestrelPackageVersion>3.0.0-alpha1-10143</MicrosoftAspNetCoreServerKestrelPackageVersion>
     <MicrosoftAspNetCoreSessionPackageVersion>3.0.0-alpha1-10143</MicrosoftAspNetCoreSessionPackageVersion>
