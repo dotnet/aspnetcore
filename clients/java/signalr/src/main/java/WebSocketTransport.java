@@ -39,7 +39,6 @@ public class WebSocketTransport implements Transport {
     public void start() throws InterruptedException {
         webSocketClient = createWebSocket();
         webSocketClient.connectBlocking();
-        webSocketClient.send((new DefaultJsonProtocolHandShakeMessage()).createHandshakeMessage());
     }
 
     @Override

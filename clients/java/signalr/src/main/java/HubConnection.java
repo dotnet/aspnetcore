@@ -15,12 +15,30 @@ public class HubConnection {
     private CallbackMap handlers = new CallbackMap();
     private HubProtocol protocol;
     private Gson gson = new Gson();
+    private Boolean handshakeReceived = false;
+    private static final String RECORD_SEPARATOR = "\u001e";
     private HubConnectionState connectionState = HubConnectionState.DISCONNECTED;
 
     public HubConnection(String url, Transport transport) {
         this.url = url;
         this.protocol = new JsonHubProtocol();
         this.callback = (payload) -> {
+
+            if (!handshakeReceived) {
+                int handshakeLength = payload.indexOf(RECORD_SEPARATOR) + 1;
+                String handshakeResponseString = payload.substring(0, handshakeLength - 1);
+                HandshakeResponseMessage handshakeResponse = HandshakeProtocol.parseHandshakeResponse(handshakeResponseString);
+                if (handshakeResponse.error != null) {
+                    throw new Exception("Error in handshake " + handshakeResponse.error);
+                }
+                handshakeReceived = true;
+
+                payload = payload.substring(handshakeLength);
+                // The payload only contained the handshake response so we can return.
+                if (payload.length() == 0) {
+                    return;
+                }
+            }
 
             HubMessage[] messages = protocol.parseMessages(payload);
 
@@ -29,7 +47,7 @@ public class HubConnection {
                     case INVOCATION:
                         InvocationMessage invocationMessage = (InvocationMessage)message;
                         if (message != null && handlers.containsKey(invocationMessage.target)) {
-                            ArrayList<Object> args = gson.fromJson((JsonArray)invocationMessage.arguments[0], (new ArrayList<Object>()).getClass());
+                            ArrayList<Object> args = gson.fromJson((JsonArray)invocationMessage.arguments[0], (new ArrayList<>()).getClass());
                             List<ActionBase> actions = handlers.get(invocationMessage.target);
                             if (actions != null) {
                                 for (ActionBase action: actions) {
@@ -40,10 +58,10 @@ public class HubConnection {
                         break;
                     case STREAM_INVOCATION:
                     case STREAM_ITEM:
-                        throw new UnsupportedOperationException("Streaming is not yet supported");
                     case CLOSE:
                     case CANCEL_INVOCATION:
                     case COMPLETION:
+                        throw new UnsupportedOperationException("The message type " + message.getMessageType() + " is not supported yet.");
                     case PING:
                         // We don't need to do anything in the case of a ping message.
                         // The other message types aren't supported
@@ -71,9 +89,11 @@ public class HubConnection {
         return connectionState;
     }
 
-    public void start() throws InterruptedException {
+    public void start() throws Exception {
         transport.setOnReceive(this.callback);
         transport.start();
+        String handshake = HandshakeProtocol.createHandshakeRequestMessage(new HandshakeRequestMessage(protocol.getName(), protocol.getVersion()));
+        transport.send(handshake);
         connectionState = HubConnectionState.CONNECTED;
     }
 

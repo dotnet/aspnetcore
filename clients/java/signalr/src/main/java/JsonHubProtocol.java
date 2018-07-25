@@ -34,10 +34,6 @@ public class JsonHubProtocol implements HubProtocol {
         String[] messages = payload.split(RECORD_SEPARATOR);
         List<HubMessage> hubMessages = new ArrayList<>();
         for (String splitMessage : messages) {
-            // Empty handshake response "{}". We can ignore it
-            if (splitMessage.equals("{}")) {
-                continue;
-            }
 
             JsonObject jsonMessage = jsonParser.parse(splitMessage).getAsJsonObject();
             HubMessageType messageType = HubMessageType.values()[jsonMessage.get("type").getAsInt() -1];
@@ -72,7 +68,7 @@ public class JsonHubProtocol implements HubProtocol {
     }
 
     @Override
-    public String writeMessage(InvocationMessage invocationMessage) {
-        return gson.toJson(invocationMessage) + RECORD_SEPARATOR;
+    public String writeMessage(HubMessage hubMessage) {
+        return gson.toJson(hubMessage) + RECORD_SEPARATOR;
     }
 }
