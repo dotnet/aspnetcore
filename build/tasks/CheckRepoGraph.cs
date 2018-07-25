@@ -155,6 +155,15 @@ namespace RepoTasks
                 var repoName = GetDirectoryName(src.Directory);
                 var repo = repos[repoName];
 
+                var policy = Enum.Parse<PatchPolicy>(repo.GetMetadata("PatchPolicy"));
+
+                if ((policy & PatchPolicy.AlwaysUpdate) != 0 && !src.IsPatching)
+                {
+                    Log.LogError($"{repoName} is not currently set to patch, but it should because the policy is set to always include this in servicing updates. Update the configuration in submodule.props.");
+                    continue;
+                }
+
+                var srcShouldCascade = (policy & PatchPolicy.CascadeVersions) != 0;
                 for (var j = 0; j < repoGraph.Count; j++)
                 {
                     if (j == i) continue;
@@ -164,9 +173,9 @@ namespace RepoTasks
                         var targetRepoName = GetDirectoryName(target.Directory);
                         var targetRepo = repos[targetRepoName];
 
-                        if (src.Shipped && !target.Shipped)
+                        if (srcShouldCascade && !src.IsPatching && target.IsPatching)
                         {
-                            Log.LogError($"{repoName} cannot depend on {targetRepoName}. Repos marked as 'Shipped' cannot depend on repos that are rebuilding. Update the configuration in submodule.props.");
+                            Log.LogError($"{repoName} should be patching because it depend on {targetRepoName} and its patch policy is to cascade version changes. Update the configuration in submodule.props.");
                         }
                     }
                 }

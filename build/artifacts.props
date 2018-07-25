@@ -33,8 +33,8 @@
     <PackageArtifact Include="Microsoft.AspNetCore.Antiforgery" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.App" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.ApplicationInsights.HostingStartup" Category="ship" AllMetapackage="true" />
-    <PackageArtifact Include="Microsoft.AspNetCore.AspNetCoreModule" Category="noship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.AspNetCoreModuleV2" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.AspNetCoreModule" Category="noship" Condition=" '$(OS)' == 'Windows_NT' " />
+    <PackageArtifact Include="Microsoft.AspNetCore.AspNetCoreModuleV2" Category="noship" Condition=" '$(OS)' == 'Windows_NT' " />
     <PackageArtifact Include="Microsoft.AspNetCore.Authentication.Abstractions" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.Authentication.AzureAD.UI" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Authentication.AzureADB2C.UI" Category="ship" />
@@ -147,8 +147,8 @@
     <PackageArtifact Include="Microsoft.AspNetCore.Routing.DecisionTree.Sources" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Routing" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.Server.HttpSys" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
-    <PackageArtifact Include="Microsoft.AspNetCore.Server.IIS" Category="ship" AppMetapackage="true" AllMetapackage="true" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Server.IISIntegration" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
+    <PackageArtifact Include="Microsoft.AspNetCore.Server.IIS" Category="ship" AppMetapackage="true" AllMetapackage="true" Condition=" '$(OS)' == 'Windows_NT' "  />
+    <PackageArtifact Include="Microsoft.AspNetCore.Server.IISIntegration" Category="ship" AppMetapackage="true" AllMetapackage="true" />
     <PackageArtifact Include="Microsoft.AspNetCore.Server.IntegrationTesting.IIS" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Server.IntegrationTesting" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Server.Kestrel.Core" Category="ship" AppMetapackage="true" AllMetapackage="true"/>

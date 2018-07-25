@@ -77,6 +77,8 @@
 
   <Target Name="GetRepoBuildProps">
     <PropertyGroup>
+      <SkipTestsDueToMissingSharedFx Condition="'$(InstallSharedRuntimeFromPreviousBuild)' != 'true' And '$(TestsRequiredTheSharedRuntime)' == 'true' ">true</SkipTestsDueToMissingSharedFx>
+
       <!-- Should reduce allowable package feeds to only nuget.org. -->
       <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:AspNetUniverseBuildOffline=true</RepositoryBuildArguments>
       <!-- If there are duplicate properties, the properties which are defined later in the order would override the earlier ones -->
@@ -88,6 +90,7 @@
       <RepositoryBuildArguments>$(RepositoryBuildArguments) /noconsolelogger '/l:RepoTasks.FlowLogger,$(MSBuildThisFileDirectory)tasks\bin\publish\RepoTasks.dll;Summary;FlowId=$(RepositoryToBuild)'</RepositoryBuildArguments>
       <RepositoryBuildArguments>$(RepositoryBuildArguments) '/p:DotNetAssetRootAccessTokenSuffix=$(DotNetAssetRootAccessTokenSuffix)'</RepositoryBuildArguments>
       <RepositoryBuildArguments>$(RepositoryBuildArguments) '/p:DotNetAssetRootUrl=$(DotNetAssetRootUrl)'</RepositoryBuildArguments>
+      <RepositoryBuildArguments Condition=" '$(SkipTestsDueToMissingSharedFx)' == 'true' ">$(RepositoryBuildArguments) /p:SkipAspNetCoreRuntimeInstall=true</RepositoryBuildArguments>
 
       <SourceLockFile>$(RepositoryRoot)korebuild-lock.txt</SourceLockFile>
       <RepoLockFile>$(BuildRepositoryRoot)korebuild-lock.txt</RepoLockFile>
@@ -160,9 +163,12 @@
       <RepositoryTestResult Include="$(RepositoryToBuild)" Success="false" />
     </ItemGroup>
 
+    <!-- To enable this test, either publish the shared runtime to https://dotnetcli.blob.core.windows.net/dotnet, or override the install location by setting AspNetCoreFxFeed. -->
+    <Warning Text="Skipping tests because InstallSharedRuntimeFromPreviousBuild != 'true'." Condition="'$(SkipTestsDueToMissingSharedFx)' == 'true' "/>
+
     <Message Text="============ Testing $(RepositoryToBuild) ============" Importance="High" />
 
-    <Exec
+    <Exec Condition="'$(SkipTestsDueToMissingSharedFx)' != 'true' "
       Command="./$(_BuildScriptToExecute) -Path $(BuildRepositoryRoot) $(BuildArguments)"
       IgnoreStandardErrorWarningFormat="true"
       WorkingDirectory="$(RepositoryRoot)"
@@ -173,7 +179,7 @@
     <CallTarget Targets="_RestoreOriginalRepoLockFile" />
 
     <ItemGroup>
-      <RepositoryTestResult Update="$(RepositoryToBuild)" Success="true" Condition="'$(TestExitCode)' == '0'" />
+      <RepositoryTestResult Update="$(RepositoryToBuild)" Success="true" Condition="'$(TestExitCode)' == '0' OR '$(SkipTestsDueToMissingSharedFx)' == 'true' " />
     </ItemGroup>
 
     <Message Text="============ Done testing $(RepositoryToBuild) ============" Importance="High" />
