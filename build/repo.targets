@@ -2,7 +2,6 @@
   <Import Project="RepositoryBuild.targets" />
   <Import Project="PackageArchive.targets" />
   <Import Project="AzureIntegration.targets" />
-  <Import Project="Templating.targets" />
   <Import Project="SharedFx.targets" />
   <Import Project="SharedFxInstaller.targets" />
   <Import Project="Publish.targets" />
@@ -20,17 +19,16 @@
     <CleanDependsOn>$(CleanDependsOn);CleanArtifacts;CleanUniverseArtifacts</CleanDependsOn>
     <RestoreDependsOn>$(RestoreDependsOn);InstallDotNet</RestoreDependsOn>
     <CompileDependsOn>$(CompileDependsOn);BuildRepositories</CompileDependsOn>
-    <PackageDependsOn Condition="'$(TestOnly)' != 'true'">$(PackageDependsOn);BuildMetapackages;BuildTemplates;CheckExpectedPackagesExist</PackageDependsOn>
+    <PackageDependsOn Condition="'$(TestOnly)' != 'true'">$(PackageDependsOn);BuildMetapackages;CheckExpectedPackagesExist</PackageDependsOn>
     <TestDependsOn>$(TestDependsOn);_TestRepositories</TestDependsOn>
-    <VerifyDependsOn Condition="'$(TestOnly)' != 'true'">$(VerifyDependsOn);VerifyCoherentVersions</VerifyDependsOn>
-    <GetArtifactInfoDependsOn>$(GetArtifactInfoDependsOn);ResolveRepoInfo;GetLineupPackageInfo</GetArtifactInfoDependsOn>
+    <GetArtifactInfoDependsOn>$(GetArtifactInfoDependsOn);ResolveRepoInfo</GetArtifactInfoDependsOn>
   </PropertyGroup>
 
   <Target Name="PrepareOutputPaths">
     <MakeDir Directories="$(ArtifactsDir);$(BuildDir)" />
   </Target>
 
-  <Target Name="ResolveRepoInfo" DependsOnTargets="_PrepareRepositories">
+  <Target Name="ResolveRepoInfo" DependsOnTargets="_PrepareRepositories;GetMetapackageArtifactInfo;GetLineupPackageInfo">
     <!-- We need to pass the NETCoreApp package versions to msbuild so that it doesn't complain about us using a different one than it was restored against.  -->
     <PropertyGroup>
       <DesignTimeBuildProps>MicrosoftNETCoreAppPackageVersion=$(MicrosoftNETCoreAppPackageVersion);</DesignTimeBuildProps>
@@ -77,8 +75,41 @@
     </MSBuild>
 
     <ItemGroup>
-      <Solution Update="@(Solution)" Build="true" />
-      <_ShippedSolution Update="@(_ShippedSolution)" Build="false" Shipped="true" />
+      <_Temp Remove="@(_Temp)" />
+      <_Temp Include="@(PackageArtifact)" />
+      <PackageArtifact Remove="@(PackageArtifact)" />
+    </ItemGroup>
+
+    <!-- Join required because shipping category is stored in universe (PackageArtifact), but information about package ID and version comes from repos (ArtifactInfo). -->
+    <RepoTasks.JoinItems
+      Left="@(_Temp)"
+      LeftMetadata="*"
+      Right="@(ArtifactInfo->WithMetadataValue('ArtifactType','NuGetPackage'));@(ShippedArtifactInfo->WithMetadataValue('ArtifactType','NuGetPackage'))"
+      RightKey="PackageId"
+      RightMetadata="Version">
+      <Output TaskParameter="JoinResult" ItemName="PackageArtifact" />
+    </RepoTasks.JoinItems>
+
+    <ItemGroup>
+      <_PackageArtifactWithoutMatchingInfo Include="@(_Temp)" Exclude="@(PackageArtifact)" />
+    </ItemGroup>
+
+    <Error Text="Could not detect version information for package id:%0A * @(_PackageArtifactWithoutMatchingInfo, '%0A * ')"
+           Condition="@(_PackageArtifactWithoutMatchingInfo->Count()) != 0" />
+
+    <ItemGroup>
+      <!-- Adjust the list of what is considered external vs locally built. -->
+      <ExternalDependency Include="%(ShippedArtifactInfo.PackageId)" Condition="'%(ShippedArtifactInfo.ArtifactType)' == 'NuGetPackage'">
+        <Version>%(ShippedArtifactInfo.Version)</Version>
+      </ExternalDependency>
+
+      <!-- capture the original list of PackageArtifacts -->
+      <_PackageArtifactSpec Include="@(PackageArtifact)" />
+
+      <PackageArtifact Remove="%(ShippedArtifactInfo.PackageId)" Condition="'%(ShippedArtifactInfo.ArtifactType)' == 'NuGetPackage'" />
+
+      <Solution Update="@(Solution)" Build="true" IsPatching="true" />
+      <_ShippedSolution Update="@(_ShippedSolution)" Build="false" IsPatching="false" />
       <_NoBuildSolution Update="@(_NoBuildSolution)" Build="false" />
       <Solution Include="@(_NoBuildSolution);@(_ShippedSolution)" />
     </ItemGroup>
@@ -184,6 +215,10 @@
   <Target Name="BuildRepositories"
      DependsOnTargets="_PrepareRepositories;GeneratePropsFiles;ComputeGraph;_BuildRepositories" />
 
+  <Target Name="ListExpectedPackages" DependsOnTargets="ResolveRepoInfo">
+    <WriteLinesToFile File="$(RepositoryRoot)artifacts\packages.csv" Lines="PackageId,Version;@(ArtifactInfo->WithMetadataValue('ArtifactType', 'NuGetPackage')->'%(PackageId),%(Version)')" Overwrite="true" />
+  </Target>
+
   <Target Name="ComputeGraph" DependsOnTargets="ResolveRepoInfo;GeneratePropsFiles">
     <RepoTasks.CheckRepoGraph Condition=" ! $([MSBuild]::IsOSUnixLike())"
       Solutions="@(Solution)"
@@ -202,7 +237,8 @@
     <!-- Skipped to workaround #1014. The order is hardcoded in buildorder.props -->
     <RepoTasks.AnalyzeBuildGraph Condition=" ! $([MSBuild]::IsOSUnixLike())"
       Solutions="@(Solution)"
-      Artifacts="@(ArtifactInfo)"
+      Artifacts="@(ArtifactInfo);@(ShippedArtifactInfo)"
+      Repositories="@(Repository);@(ShippedRepository)"
       Dependencies="@(ExternalDependency)"
       StartGraphAt="$(BuildGraphOf)"
       Properties="Configuration=$(Configuration);BuildNumber=$(BuildNumber);DotNetPackageVersionPropsPath=$(GeneratedPackageVersionPropsPath);DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcesPropsPath)">
@@ -241,17 +277,6 @@
 
   <Target Name="CheckUniverse"
     DependsOnTargets="ComputeGraph;VerifyPackageArtifactConfig;VerifyAllReposHaveNuGetPackageVerifier" />
-
-  <Target Name="VerifyCoherentVersions" DependsOnTargets="ResolveRepoInfo">
-    <ItemGroup>
-      <ShippingPackageFiles Include="$(BuildDir)*.nupkg" Exclude="$(BuildDir)*.symbols.nupkg" />
-      <ShippedExternalDependency Include="%(ShippedArtifactInfo.PackageId)" Version="%(ShippedArtifactInfo.Version)" Condition="'%(ShippedArtifactInfo.ArtifactType)' == 'NuGetPackage' " />
-    </ItemGroup>
-
-    <RepoTasks.VerifyCoherentVersions
-      PackageFiles="@(ShippingPackageFiles)"
-      ExternalDependencies="@(ExternalDependency);@(ShippedExternalDependency)" />
-  </Target>
 
   <Target Name="CheckExpectedPackagesExist">
     <ItemGroup>

@@ -47,6 +47,7 @@
     <RepositoryBuildOrder Include="MusicStore" Order="16" />
     <RepositoryBuildOrder Include="SignalR" Order="16" />
     <RepositoryBuildOrder Include="AuthSamples" Order="16" />
+    <RepositoryBuildOrder Include="Templating" Order="17" />
 
     <RepositoryBuildOrder Update="@(RepositoryBuildOrder)" RootPath="$(SubmoduleRoot)%(Identity)" />
   </ItemGroup>

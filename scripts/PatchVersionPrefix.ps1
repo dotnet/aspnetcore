@@ -54,6 +54,9 @@ function BumpVersion([System.Xml.XmlNode]$node) {
         'Patch' {
             $node.InnerText = "{0}.{1}.{2}" -f $version.Major, $version.Minor, ($version.Build + 1)
         }
+        default {
+            throw "Could not figure out how to apply patch policy $mode"
+        }
     }
     return "Bumping version from $version to $($node.InnerText)"
 }
