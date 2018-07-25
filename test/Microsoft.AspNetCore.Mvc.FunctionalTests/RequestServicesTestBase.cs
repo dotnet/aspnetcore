@@ -26,6 +26,9 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
         public HttpClient Client { get; }
 
+        [Fact]
+        public abstract Task HasEndpointMatch();
+
         [Theory]
         [InlineData("http://localhost/RequestScopedService/FromFilter")]
         [InlineData("http://localhost/RequestScopedService/FromView")]

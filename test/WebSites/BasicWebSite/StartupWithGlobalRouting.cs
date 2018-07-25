@@ -15,7 +15,7 @@ namespace BasicWebSite
             services.AddRouting();
 
             services.AddMvc()
-                .SetCompatibilityVersion(CompatibilityVersion.Latest)
+                .SetCompatibilityVersion(CompatibilityVersion.Latest) // this compat version enables global routing
                 .AddXmlDataContractSerializerFormatters();
 
             services.ConfigureBaseWebSiteAuthPolicies();
@@ -31,9 +31,9 @@ namespace BasicWebSite
 
             app.UseGlobalRouting();
 
-            app.UseMvcWithEndpoint(routes =>
+            app.UseMvc(routes =>
             {
-                routes.MapEndpoint(
+                routes.MapRoute(
                     "ActionAsMethod",
                     "{controller}/{action}",
                     defaults: new { controller = "Home", action = "Index" });

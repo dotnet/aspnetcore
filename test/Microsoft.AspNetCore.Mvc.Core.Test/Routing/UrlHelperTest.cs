@@ -102,6 +102,11 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             routeBuilder.DefaultHandler = target.Object;
 
             routeBuilder.MapRoute(
+                "OrdersApi",
+                "api/orders/{id}",
+                new RouteValueDictionary(new { controller = "Orders", action = "GetById" }));
+
+            routeBuilder.MapRoute(
                 string.Empty,
                 "{controller}/{action}/{id}",
                 new RouteValueDictionary(new { id = "defaultid" }));

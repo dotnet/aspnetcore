@@ -18,6 +18,21 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
+        public async override Task HasEndpointMatch()
+        {
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/Routing/HasEndpointMatch");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            var body = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<bool>(body);
+
+            Assert.False(result);
+        }
+
+        [Fact]
         public async override Task RouteData_Routers_ConventionalRoute()
         {
             // Arrange & Act

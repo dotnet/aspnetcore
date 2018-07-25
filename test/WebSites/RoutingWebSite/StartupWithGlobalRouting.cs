@@ -12,9 +12,8 @@ namespace RoutingWebSite
         // Set up application services
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddRouting();
-
-            services.AddMvc();
+            services.AddMvc()
+                .AddMvcOptions(options => options.EnableGlobalRouting = true);
 
             services.AddScoped<TestResponseGenerator>();
             services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
@@ -22,23 +21,21 @@ namespace RoutingWebSite
 
         public void Configure(IApplicationBuilder app)
         {
-            app.UseGlobalRouting();
-
-            app.UseMvcWithEndpoint(routes =>
+            app.UseMvc(routes =>
             {
-                routes.MapAreaEndpoint(
+                routes.MapAreaRoute(
                    "flightRoute",
                    "adminRoute",
                    "{area:exists}/{controller}/{action}",
                    new { controller = "Home", action = "Index" },
                    new { area = "Travel" });
 
-                routes.MapEndpoint(
+                routes.MapRoute(
                     "ActionAsMethod",
                     "{controller}/{action}",
                     defaults: new { controller = "Home", action = "Index" });
 
-                routes.MapEndpoint(
+                routes.MapRoute(
                     "RouteWithOptionalSegment",
                     "{controller}/{action}/{path?}");
             });

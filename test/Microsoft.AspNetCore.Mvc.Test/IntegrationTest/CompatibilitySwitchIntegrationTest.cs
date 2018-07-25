@@ -39,6 +39,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTest
             Assert.Equal(InputFormatterExceptionPolicy.AllExceptions, mvcOptions.InputFormatterExceptionPolicy);
             Assert.False(jsonOptions.AllowInputFormatterExceptionMessages);
             Assert.False(razorPagesOptions.AllowAreas);
+            Assert.False(mvcOptions.EnableGlobalRouting);
         }
 
         [Fact]
@@ -63,6 +64,32 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTest
             Assert.Equal(InputFormatterExceptionPolicy.MalformedInputExceptions, mvcOptions.InputFormatterExceptionPolicy);
             Assert.True(jsonOptions.AllowInputFormatterExceptionMessages);
             Assert.True(razorPagesOptions.AllowAreas);
+            Assert.False(mvcOptions.EnableGlobalRouting);
+        }
+
+        [Fact]
+        public void CompatibilitySwitches_Version_2_2()
+        {
+            // Arrange
+            var serviceCollection = new ServiceCollection();
+            AddHostingServices(serviceCollection);
+            serviceCollection.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+
+            var services = serviceCollection.BuildServiceProvider();
+
+            // Act
+            var mvcOptions = services.GetRequiredService<IOptions<MvcOptions>>().Value;
+            var jsonOptions = services.GetRequiredService<IOptions<MvcJsonOptions>>().Value;
+            var razorPagesOptions = services.GetRequiredService<IOptions<RazorPagesOptions>>().Value;
+
+            // Assert
+            Assert.True(mvcOptions.AllowCombiningAuthorizeFilters);
+            Assert.True(mvcOptions.AllowBindingHeaderValuesToNonStringModelTypes);
+            Assert.True(mvcOptions.SuppressBindingUndefinedValueToEnumType);
+            Assert.Equal(InputFormatterExceptionPolicy.MalformedInputExceptions, mvcOptions.InputFormatterExceptionPolicy);
+            Assert.True(jsonOptions.AllowInputFormatterExceptionMessages);
+            Assert.True(razorPagesOptions.AllowAreas);
+            Assert.True(mvcOptions.EnableGlobalRouting);
         }
 
         [Fact]
@@ -87,6 +114,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTest
             Assert.Equal(InputFormatterExceptionPolicy.MalformedInputExceptions, mvcOptions.InputFormatterExceptionPolicy);
             Assert.True(jsonOptions.AllowInputFormatterExceptionMessages);
             Assert.True(razorPagesOptions.AllowAreas);
+            Assert.True(mvcOptions.EnableGlobalRouting);
         }
 
         // This just does the minimum needed to be able to resolve these options.
