@@ -34,7 +34,10 @@
     "Releases_21Public_Win2012",
     // Release 22 Public
     "Releases_22xPublic_OsxUniverse",
-    "Releases_22xPublic_UbuntuUniverse"
+    "Releases_22xPublic_UbuntuUniverse",
+    "Releases_22xPublic_Win2012",
+    "Releases_22xPublic_UpdateUniverse",
+    "Releases_22xPublic_Signed"
   ],
   "Email": {
     "QuietEmail": "rybrande@microsoft.com",
