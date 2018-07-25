@@ -46,6 +46,14 @@ namespace Microsoft.AspNetCore.Routing.EndpointConstraints
             Constraints = constraints;
         }
 
+        // Temporarily added to not break MVC build
+        public EndpointSelectorCandidate(
+            Endpoint endpoint,
+            IReadOnlyList<IEndpointConstraint> constraints)
+        {
+            throw new NotSupportedException();
+        }
+
         public Endpoint Endpoint { get; }
 
         public int Score { get; }
