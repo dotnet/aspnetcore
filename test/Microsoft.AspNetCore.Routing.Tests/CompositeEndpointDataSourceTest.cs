@@ -174,7 +174,6 @@ namespace Microsoft.AspNetCore.Routing
             }
 
             public override IChangeToken GetChangeToken() => _token;
-            public override IChangeToken ChangeToken => GetChangeToken();
             public override IReadOnlyList<Endpoint> Endpoints => Array.Empty<Endpoint>();
         }
     }

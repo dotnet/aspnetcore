@@ -34,8 +34,6 @@ namespace Microsoft.AspNetCore.Routing
             _lock = new object();
         }
 
-        public override IChangeToken ChangeToken => GetChangeToken();
-
         public override IChangeToken GetChangeToken()
         {
             EnsureInitialized();

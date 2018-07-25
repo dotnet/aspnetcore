@@ -25,8 +25,6 @@ namespace Microsoft.AspNetCore.Routing.TestObjects
 
         public override IChangeToken GetChangeToken() => _changeToken;
 
-        public override IChangeToken ChangeToken => GetChangeToken();
-
         public override IReadOnlyList<Endpoint> Endpoints => _endpoints;
 
         // Trigger change
