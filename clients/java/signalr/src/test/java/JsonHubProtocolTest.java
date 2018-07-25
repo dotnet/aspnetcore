@@ -10,7 +10,6 @@ import static org.junit.Assert.*;
 
 public class JsonHubProtocolTest {
     private JsonHubProtocol jsonHubProtocol = new JsonHubProtocol();
-    private static final String RECORD_SEPARATOR = "\u001e";
 
     @Test
     public void checkProtocolName() {
@@ -82,19 +81,6 @@ public class JsonHubProtocolTest {
         exceptionRule.expectMessage("Support for streaming is not yet available");
         String stringifiedMessage = "{\"type\":4,\"Id\":1,\"target\":\"test\",\"arguments\":[42]}\u001E";
         HubMessage[] messages = jsonHubProtocol.parseMessages(stringifiedMessage);
-    }
-
-    @Test
-    public void ParseHandshakeResponsePlusMessage() {
-        String twoMessages = "{}\u001E{\"type\":1,\"target\":\"test\",\"arguments\":[42]}\u001E";
-        HubMessage[] messages = jsonHubProtocol.parseMessages(twoMessages);
-        assertEquals(HubMessageType.INVOCATION, messages[0].getMessageType());
-
-        //We ignore the Handshake response for now and we can cast because we know we have in invocation message.
-        InvocationMessage message = (InvocationMessage) messages[0];
-        assertEquals("test", message.target);
-        JsonArray messageResult = (JsonArray) message.arguments[0];
-        assertEquals(42, messageResult.getAsInt());
     }
 
     @Test
