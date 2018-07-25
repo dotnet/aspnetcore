@@ -107,6 +107,13 @@ namespace Microsoft.AspNetCore.Routing
             var endpoints = _endpointDataSource.Endpoints.OfType<MatcherEndpoint>();
             foreach (var endpoint in endpoints)
             {
+                // Do not consider an endpoint for link generation if the following marker metadata is on it
+                var suppressLinkGeneration = endpoint.Metadata.GetMetadata<ISuppressLinkGenerationMetadata>();
+                if (suppressLinkGeneration != null)
+                {
+                    continue;
+                }
+
                 var entry = CreateOutboundRouteEntry(endpoint);
 
                 var outboundMatch = new OutboundMatch() { Entry = entry };

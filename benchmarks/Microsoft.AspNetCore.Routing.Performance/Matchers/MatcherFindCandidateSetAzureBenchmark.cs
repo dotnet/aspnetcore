@@ -7,7 +7,7 @@ using BenchmarkDotNet.Attributes;
 namespace Microsoft.AspNetCore.Routing.Matchers
 {
     // Generated from https://github.com/Azure/azure-rest-api-specs
-    public partial class MatcherSelectCandidatesAzureBenchmark : MatcherBenchmarkBase
+    public partial class MatcherFindCandidateSetAzureBenchmark : MatcherBenchmarkBase
     {
         private const int SampleCount = 100;
 
@@ -42,9 +42,9 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                 var path = httpContext.Request.Path.Value;
                 var segments = new ReadOnlySpan<PathSegment>(Array.Empty<PathSegment>());
 
-                var candidates = _baseline.Matchers[sample].SelectCandidates(path, segments);
+                var candidates = _baseline.Matchers[sample].FindCandidateSet(path, segments);
 
-                var endpoint = candidates.Candidates[0].Endpoint;
+                var endpoint = candidates[0].Endpoint;
                 Validate(httpContext, Endpoints[sample], endpoint);
             }
         }
@@ -61,9 +61,9 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                 Span<PathSegment> segments = stackalloc PathSegment[FastPathTokenizer.DefaultSegmentCount];
                 var count = FastPathTokenizer.Tokenize(path, segments);
 
-                var candidates = _dfa.SelectCandidates(path, segments.Slice(0, count));
+                var candidates = _dfa.FindCandidateSet(httpContext, path, segments.Slice(0, count));
 
-                var endpoint = candidates.Candidates[0].Endpoint;
+                var endpoint = candidates[0].Endpoint;
                 Validate(httpContext, Endpoints[sample], endpoint);
             }
         }

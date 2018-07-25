@@ -1,10 +1,9 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
-using System.Text;
+using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Routing.EndpointConstraints
 {
@@ -28,9 +27,13 @@ namespace Microsoft.AspNetCore.Routing.EndpointConstraints
     {
     }
 
-    public struct EndpointSelectorCandidate
+    public readonly struct EndpointSelectorCandidate
     {
-        public EndpointSelectorCandidate(Endpoint endpoint, IReadOnlyList<IEndpointConstraint> constraints)
+        public EndpointSelectorCandidate(
+            Endpoint endpoint,
+            int score,
+            RouteValueDictionary values,
+            IReadOnlyList<IEndpointConstraint> constraints)
         {
             if (endpoint == null)
             {
@@ -38,10 +41,32 @@ namespace Microsoft.AspNetCore.Routing.EndpointConstraints
             }
 
             Endpoint = endpoint;
+            Score = score;
+            Values = values;
+            Constraints = constraints;
+        }
+
+        // Temporarily added to not break MVC build
+        public EndpointSelectorCandidate(
+            Endpoint endpoint,
+            IReadOnlyList<IEndpointConstraint> constraints)
+        {
+            if (endpoint == null)
+            {
+                throw new ArgumentNullException(nameof(endpoint));
+            }
+
+            Endpoint = endpoint;
+            Score = 0;
+            Values = null;
             Constraints = constraints;
         }
 
         public Endpoint Endpoint { get; }
+
+        public int Score { get; }
+
+        public RouteValueDictionary Values { get; }
 
         public IReadOnlyList<IEndpointConstraint> Constraints { get; }
     }

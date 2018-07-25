@@ -13,17 +13,13 @@ namespace Microsoft.AspNetCore.Routing.Matchers
     internal sealed class TrivialMatcher : Matcher
     {
         private readonly MatcherEndpoint _endpoint;
-        private readonly CandidateSet _candidates;
+        private readonly Candidate[] _candidates;
 
         public TrivialMatcher(MatcherEndpoint endpoint)
         {
             _endpoint = endpoint;
 
-            _candidates = new CandidateSet(
-                new Candidate[] { new Candidate(endpoint), },
-
-                // Single candidate group that contains one entry.
-                CandidateSet.MakeGroups(new[] { 1 }));
+            _candidates = new Candidate[] { new Candidate(endpoint), };
         }
 
         public sealed override Task MatchAsync(HttpContext httpContext, IEndpointFeature feature)
@@ -49,14 +45,14 @@ namespace Microsoft.AspNetCore.Routing.Matchers
         }
 
         // This is here so this can be tested alongside DFA matcher.
-        internal CandidateSet SelectCandidates(string path, ReadOnlySpan<PathSegment> segments)
+        internal Candidate[] FindCandidateSet(string path, ReadOnlySpan<PathSegment> segments)
         {
             if (string.Equals(_endpoint.RoutePattern.RawText, path, StringComparison.OrdinalIgnoreCase))
             {
                 return _candidates;
             }
 
-            return CandidateSet.Empty;
+            return Array.Empty<Candidate>();
         }
     }
 }

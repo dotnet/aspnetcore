@@ -23,7 +23,9 @@ namespace Microsoft.AspNetCore.Routing
             _endpoints.AddRange(endpoints);
         }
 
-        public override IChangeToken ChangeToken { get; } = NullChangeToken.Singleton;
+        public override IChangeToken ChangeToken => GetChangeToken();
+
+        public override IChangeToken GetChangeToken() => NullChangeToken.Singleton;
 
         public override IReadOnlyList<Endpoint> Endpoints => _endpoints;
     }

@@ -4,10 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using Microsoft.AspNetCore.Routing.Metadata;
 
 namespace Microsoft.AspNetCore.Routing.EndpointConstraints
 {
-    public class HttpMethodEndpointConstraint : IEndpointConstraint
+    public class HttpMethodEndpointConstraint : IEndpointConstraint, IHttpMethodMetadata
     {
         public static readonly int HttpMethodConstraintOrder = 100;
 
@@ -39,6 +40,8 @@ namespace Microsoft.AspNetCore.Routing.EndpointConstraints
         public IEnumerable<string> HttpMethods => _httpMethods;
 
         public int Order => HttpMethodConstraintOrder;
+
+        IReadOnlyList<string> IHttpMethodMetadata.HttpMethods => _httpMethods;
 
         public virtual bool Accept(EndpointConstraintContext context)
         {

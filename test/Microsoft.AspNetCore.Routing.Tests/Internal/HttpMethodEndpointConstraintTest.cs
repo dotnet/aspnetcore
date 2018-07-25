@@ -63,6 +63,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
             var endpointSelectorCandidate = new EndpointSelectorCandidate(
                 new TestEndpoint(EndpointMetadataCollection.Empty, string.Empty),
+                0,
+                new RouteValueDictionary(),
                 new List<IEndpointConstraint> { constraint });
 
             context.Candidates = new List<EndpointSelectorCandidate> { endpointSelectorCandidate };

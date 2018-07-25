@@ -3,12 +3,17 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using System.Threading;
+using Microsoft.AspNetCore.Routing.EndpointConstraints;
+using Microsoft.AspNetCore.Routing.Matchers;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Routing
 {
+    [DebuggerDisplay("{DebuggerDisplayString,nq}")]
     public class CompositeEndpointDataSource : EndpointDataSource
     {
         private readonly EndpointDataSource[] _dataSources;
@@ -29,13 +34,12 @@ namespace Microsoft.AspNetCore.Routing
             _lock = new object();
         }
 
-        public override IChangeToken ChangeToken
+        public override IChangeToken ChangeToken => GetChangeToken();
+
+        public override IChangeToken GetChangeToken()
         {
-            get
-            {
-                EnsureInitialized();
-                return _consumerChangeToken;
-            }
+            EnsureInitialized();
+            return _consumerChangeToken;
         }
 
         public override IReadOnlyList<Endpoint> Endpoints
@@ -105,6 +109,52 @@ namespace Microsoft.AspNetCore.Routing
         {
             _cts = new CancellationTokenSource();
             _consumerChangeToken = new CancellationChangeToken(_cts.Token);
+        }
+
+        private string DebuggerDisplayString
+        {
+            get
+            {
+                // Try using private variable '_endpoints' to avoid initialization
+                if (_endpoints == null)
+                {
+                    return "No endpoints";
+                }
+
+                var sb = new StringBuilder();
+                foreach (var endpoint in _endpoints)
+                {
+                    if (endpoint is MatcherEndpoint matcherEndpoint)
+                    {
+                        var template = matcherEndpoint.RoutePattern.RawText;
+                        template = string.IsNullOrEmpty(template) ? "\"\"" : template;
+                        sb.Append(template);
+                        var requiredValues = matcherEndpoint.RequiredValues.Select(kvp => $"{kvp.Key} = \"{kvp.Value ?? "null"}\"");
+                        sb.Append(", Required Values: new { ");
+                        sb.Append(string.Join(", ", requiredValues));
+                        sb.Append(" }");
+                        sb.Append(", Order:");
+                        sb.Append(matcherEndpoint.Order);
+
+                        var httpEndpointConstraints = matcherEndpoint.Metadata.GetOrderedMetadata<IEndpointConstraintMetadata>()
+                            .OfType<HttpMethodEndpointConstraint>();
+                        foreach (var constraint in httpEndpointConstraints)
+                        {
+                            sb.Append(", Http Methods: ");
+                            sb.Append(string.Join(", ", constraint.HttpMethods));
+                            sb.Append(", Constraint Order:");
+                            sb.Append(constraint.Order);
+                        }
+                        sb.AppendLine();
+                    }
+                    else
+                    {
+                        sb.Append("Non-MatcherEndpoint. DisplayName:");
+                        sb.AppendLine(endpoint.DisplayName);
+                    }
+                }
+                return sb.ToString();
+            }
         }
     }
 }

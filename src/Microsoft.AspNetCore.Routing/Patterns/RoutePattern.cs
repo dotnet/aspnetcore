@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Microsoft.AspNetCore.Routing.Template;
 
 namespace Microsoft.AspNetCore.Routing.Patterns
 {
@@ -30,11 +31,18 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             Constraints = constraints;
             Parameters = parameters;
             PathSegments = pathSegments;
+
+            InboundPrecedence = RoutePrecedence.ComputeInbound(this);
+            OutboundPrecedence = RoutePrecedence.ComputeOutbound(this);
         }
 
         public IReadOnlyDictionary<string, object> Defaults { get; }
 
         public IReadOnlyDictionary<string, IReadOnlyList<RoutePatternConstraintReference>> Constraints { get; }
+
+        public decimal InboundPrecedence { get; }
+
+        public decimal OutboundPrecedence { get; }
 
         public string RawText { get; }
 

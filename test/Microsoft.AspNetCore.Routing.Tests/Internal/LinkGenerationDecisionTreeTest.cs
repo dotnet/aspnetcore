@@ -1,9 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.AspNetCore.Routing.Tree;
 using Xunit;
@@ -318,11 +320,45 @@ namespace Microsoft.AspNetCore.Routing.Internal.Routing
             Assert.Equal(entries, matches);
         }
 
-        private OutboundMatch CreateMatch(object requiredValues)
+        [Fact]
+        public void ToDebuggerDisplayString_GivesAFlattenedTree()
+        {
+            // Arrange
+            var entries = new List<OutboundMatch>();
+            entries.Add(CreateMatch(new { action = "Buy", controller = "Store", version = "V1" }, "Store/Buy/V1"));
+            entries.Add(CreateMatch(new { action = "Buy", controller = "Store", area = "Admin" }, "Admin/Store/Buy"));
+            entries.Add(CreateMatch(new { action = "Buy", controller = "Products" }, "Products/Buy"));
+            entries.Add(CreateMatch(new { action = "Buy", controller = "Store", version = "V2" }, "Store/Buy/V2"));
+            entries.Add(CreateMatch(new { action = "Cart", controller = "Store" }, "Store/Cart"));
+            entries.Add(CreateMatch(new { action = "Index", controller = "Home" }, "Home/Index/{id?}"));
+            var tree = new LinkGenerationDecisionTree(entries);
+            var newLine = Environment.NewLine;
+            var expected =
+                " => action: Buy => controller: Store => version: V1 (Matches: Store/Buy/V1)" + newLine +
+                " => action: Buy => controller: Store => version: V2 (Matches: Store/Buy/V2)" + newLine +
+                " => action: Buy => controller: Store => area: Admin (Matches: Admin/Store/Buy)" + newLine +
+                " => action: Buy => controller: Products (Matches: Products/Buy)" + newLine +
+                " => action: Cart => controller: Store (Matches: Store/Cart)" + newLine +
+                " => action: Index => controller: Home (Matches: Home/Index/{id?})" + newLine;
+
+            // Act
+            var flattenedTree = tree.DebuggerDisplayString;
+
+            // Assert
+            Assert.Equal(expected, flattenedTree);
+        }
+
+        private OutboundMatch CreateMatch(object requiredValues, string routeTemplate = null)
         {
             var match = new OutboundMatch();
             match.Entry = new OutboundRouteEntry();
             match.Entry.RequiredLinkValues = new RouteValueDictionary(requiredValues);
+
+            if (!string.IsNullOrEmpty(routeTemplate))
+            {
+                match.Entry.RouteTemplate = new RouteTemplate(RoutePatternFactory.Parse(routeTemplate));
+            }
+
             return match;
         }
 

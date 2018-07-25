@@ -34,6 +34,19 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 
         public readonly MatchProcessor[] MatchProcessors;
 
+        // Score is a sequential integer value that in determines the priority of an Endpoint.
+        // Scores are computed within the context of candidate set, and are meaningless when
+        // applied to endpoints not in the set.
+        //
+        // The score concept boils down the system of comparisons done when ordering Endpoints
+        // to a single value that can be compared easily. This can be defeated by having 
+        // int32.MaxValue + 1 endpoints in a single set, but you would have other problems by 
+        // that point.
+        //
+        // Score is not part of the Endpoint itself, because it's contextual based on where
+        // the endpoint appears. An Endpoint is often be a member of multiple candiate sets.
+        public readonly int Score;
+
         // Used in tests.
         public Candidate(MatcherEndpoint endpoint)
         {
@@ -44,12 +57,14 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             CatchAll = default;
             ComplexSegments = Array.Empty<(RoutePatternPathSegment pathSegment, int segmentIndex)>();
             MatchProcessors = Array.Empty<MatchProcessor>();
+            Score = 0;
 
             Flags = CandidateFlags.None;
         }
 
         public Candidate(
             MatcherEndpoint endpoint,
+            int score,
             KeyValuePair<string, object>[] slots,
             (string parameterName, int segmentIndex, int slotIndex)[] captures,
             (string parameterName, int segmentIndex, int slotIndex) catchAll,
@@ -57,6 +72,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             MatchProcessor[] matchProcessors)
         {
             Endpoint = endpoint;
+            Score = score;
             Slots = slots;
             Captures = captures;
             CatchAll = catchAll;

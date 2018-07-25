@@ -1,20 +1,17 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing.Matchers;
-using Microsoft.Extensions.Internal;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing.Matchers;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Routing.EndpointConstraints
 {
-    internal class EndpointSelector
+    internal class EndpointConstraintEndpointSelector : EndpointSelector
     {
         private static readonly IReadOnlyList<Endpoint> EmptyEndpoints = Array.Empty<Endpoint>();
 
@@ -22,7 +19,7 @@ namespace Microsoft.AspNetCore.Routing.EndpointConstraints
         private readonly EndpointConstraintCache _endpointConstraintCache;
         private readonly ILogger _logger;
 
-        public EndpointSelector(
+        public EndpointConstraintEndpointSelector(
             CompositeEndpointDataSource dataSource,
             EndpointConstraintCache endpointConstraintCache,
             ILoggerFactory loggerFactory)
@@ -32,11 +29,19 @@ namespace Microsoft.AspNetCore.Routing.EndpointConstraints
             _endpointConstraintCache = endpointConstraintCache;
         }
 
-        public Endpoint SelectBestCandidate(HttpContext context, IReadOnlyList<Endpoint> candidates)
+        public override Task SelectAsync(
+            HttpContext httpContext,
+            IEndpointFeature feature,
+            CandidateSet candidates)
         {
-            if (context == null)
+            if (httpContext == null)
             {
-                throw new ArgumentNullException(nameof(context));
+                throw new ArgumentNullException(nameof(httpContext));
+            }
+
+            if (feature == null)
+            {
+                throw new ArgumentNullException(nameof(feature));
             }
 
             if (candidates == null)
@@ -44,25 +49,30 @@ namespace Microsoft.AspNetCore.Routing.EndpointConstraints
                 throw new ArgumentNullException(nameof(candidates));
             }
 
-            var finalMatches = EvaluateEndpointConstraints(context, candidates);
+            var finalMatches = EvaluateEndpointConstraints(httpContext, candidates);
 
             if (finalMatches == null || finalMatches.Count == 0)
             {
-                return null;
+                return Task.CompletedTask;
             }
             else if (finalMatches.Count == 1)
             {
-                var selectedEndpoint = finalMatches[0];
+                var endpoint = finalMatches[0].Endpoint;
+                var values = finalMatches[0].Values;
 
-                return selectedEndpoint;
+                feature.Endpoint = endpoint;
+                feature.Invoker = (endpoint as MatcherEndpoint)?.Invoker;
+                feature.Values = values;
+
+                return Task.CompletedTask;
             }
             else
             {
                 var endpointNames = string.Join(
                     Environment.NewLine,
-                    finalMatches.Select(a => a.DisplayName));
+                    finalMatches.Select(a => a.Endpoint.DisplayName));
 
-                Log.MatchAmbiguous(_logger, context, finalMatches);
+                Log.MatchAmbiguous(_logger, httpContext, finalMatches);
 
                 var message = Resources.FormatAmbiguousEndpoints(
                     Environment.NewLine,
@@ -72,31 +82,61 @@ namespace Microsoft.AspNetCore.Routing.EndpointConstraints
             }
         }
 
-        private IReadOnlyList<Endpoint> EvaluateEndpointConstraints(
+        private IReadOnlyList<EndpointSelectorCandidate> EvaluateEndpointConstraints(
             HttpContext context,
-            IReadOnlyList<Endpoint> endpoints)
+            CandidateSet candidateSet)
         {
             var candidates = new List<EndpointSelectorCandidate>();
 
             // Perf: Avoid allocations
-            for (var i = 0; i < endpoints.Count; i++)
+            for (var i = 0; i < candidateSet.Count; i++)
             {
-                var endpoint = endpoints[i];
-                var constraints = _endpointConstraintCache.GetEndpointConstraints(context, endpoint);
-                candidates.Add(new EndpointSelectorCandidate(endpoint, constraints));
+                ref var candidate = ref candidateSet[i];
+                if (candidate.IsValidCandidate)
+                {
+                    var endpoint = candidate.Endpoint;
+                    var constraints = _endpointConstraintCache.GetEndpointConstraints(context, endpoint);
+                    candidates.Add(new EndpointSelectorCandidate(
+                        endpoint,
+                        candidate.Score,
+                        candidate.Values,
+                        constraints));
+                }
             }
 
             var matches = EvaluateEndpointConstraintsCore(context, candidates, startingOrder: null);
 
-            List<Endpoint> results = null;
+            List<EndpointSelectorCandidate> results = null;
             if (matches != null)
             {
-                results = new List<Endpoint>(matches.Count);
-                // Perf: Avoid allocations
-                for (var i = 0; i < matches.Count; i++)
+                results = new List<EndpointSelectorCandidate>(matches.Count);
+
+                // We need to disambiguate based on 'score' - take the first value of 'score'
+                // and then we only copy matches while they have the same score. This accounts
+                // for a difference in behavior between new routing and old.
+                switch (matches.Count)
                 {
-                    var candidate = matches[i];
-                    results.Add(candidate.Endpoint);
+                    case 0:
+                        break;
+
+                    case 1:
+                        results.Add(matches[0]);
+                        break;
+
+                    default:
+                        var score = matches[0].Score;
+                        for (var i = 0; i < matches.Count; i++)
+                        {
+                            if (matches[i].Score != score)
+                            {
+                                break;
+                            }
+
+                            results.Add(matches[i]);
+                        }
+
+                        break;
+
                 }
             }
 
@@ -213,11 +253,11 @@ namespace Microsoft.AspNetCore.Routing.EndpointConstraints
                 new EventId(1, "MatchAmbiguous"),
                 "Request matched multiple endpoints for request path '{Path}'. Matching endpoints: {AmbiguousEndpoints}");
 
-            public static void MatchAmbiguous(ILogger logger, HttpContext httpContext, IEnumerable<Endpoint> endpoints)
+            public static void MatchAmbiguous(ILogger logger, HttpContext httpContext, IEnumerable<EndpointSelectorCandidate> endpoints)
             {
                 if (logger.IsEnabled(LogLevel.Error))
                 {
-                    _matchAmbiguous(logger, httpContext.Request.Path, endpoints.Select(e => e.DisplayName), null);
+                    _matchAmbiguous(logger, httpContext.Request.Path, endpoints.Select(e => e.Endpoint.DisplayName), null);
                 }
             }
         }
