@@ -93,6 +93,12 @@ namespace Common
                     {
                         return "Performance";
                     }
+                    else if (name.StartsWith("System.Buffers.Tests", StringComparison.OrdinalIgnoreCase) ||
+                             name.StartsWith("System.IO.Pipelines.Tests", StringComparison.OrdinalIgnoreCase) ||
+                             name.StartsWith("Microsoft.Extensions.Internal.Test", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return "Home";
+                    }
                 }
 
                 reporter.Error($"Don't know how to find the repo of tests like {testName}, defaulting to aspnet/Home");
