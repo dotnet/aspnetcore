@@ -147,12 +147,12 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         public void SupportsSelfClosingElementsAsStaticBlock()
         {
             // Arrange/Act
-            var component = CompileToComponent("Some text so elem isn't at position 0 <myelem />");
+            var component = CompileToComponent("Some text so elem isn't at position 0 <input attr='123' />");
 
             // Assert
             Assert.Collection(GetRenderTree(component),
                 frame => AssertFrame.Text(frame, "Some text so elem isn't at position 0 ", 0),
-                frame => AssertFrame.Markup(frame, "<myelem/>", 1));
+                frame => AssertFrame.Markup(frame, "<input attr=\"123\">", 1));
         }
 
         [Fact]

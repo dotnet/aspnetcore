@@ -200,7 +200,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 }
 
                 // If for some reason a void element contains body, then treat it as a
-                // start/end tag. Treat non-void elements without body content as self-closing.
+                // start/end tag.
                 if (!hasBodyContent && isVoid)
                 {
                     // void
@@ -209,8 +209,11 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 }
                 else if (!hasBodyContent)
                 {
-                    // self-closing
-                    Builder.Append("/>");
+                    // In HTML5, we can't have self-closing non-void elements, so explicitly
+                    // add a close tag
+                    Builder.Append("></");
+                    Builder.Append(node.TagName);
+                    Builder.Append(">");
                     return;
                 }
 

@@ -109,12 +109,12 @@ namespace Microsoft.AspNetCore.Blazor.Razor
         }
 
         [Fact]
-        public void Execute_RewritesHtml_SelfClosing()
+        public void Execute_RewritesHtml_EmptyNonvoid()
         {
             // Arrange
             var document = CreateDocument(@"<a href=""...""></a>");
 
-            var expected = NormalizeContent(@"<a href=""...""/>");
+            var expected = NormalizeContent(@"<a href=""...""></a>");
 
             var documentNode = Lower(document);
 
