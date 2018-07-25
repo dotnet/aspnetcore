@@ -46,9 +46,12 @@ namespace TriageBuildFailures.Handlers
             }
             else{
                 var body = $@"{build.BuildName} failed with the following errors:
+```
 {string.Join(Environment.NewLine, errMsgs)}
+```
 {build.WebURL}
-CC ${string.Join( ", ", _Notifiers)}";
+
+CC {string.Join( ", ", _Notifiers)}";
                 var tags = new List<string>{ _BrokenBuildLabel };
 
                 await GHClient.CreateIssue(owner, repo, subject, body, tags);
