@@ -43,6 +43,30 @@ namespace TriageBuildFailures.Handlers
             return result;
         }
 
+        private IEnumerable<string> Managers = new string[]{ "@Eilon", "@muratg", "@mkArtakMSFT" };
+
+        private const string WorkFlowComment = @"Please use this workflow to address this flaky test issue, including checking applicable checkboxes and filling in the applicable ""TODO"" entries:
+
+* Is this test failure caused by product code flakiness? (Either this product, or another product this test depends on.)
+  * [ ] File a bug against the product (TODO: Link to other bug)
+  * Is it possible to change the test to avoid the flakiness?
+    * Yes? Go to the ""Change the test!"" section.
+    * No?
+      * [ ] Disable the test (TODO: Link to PR/commit)
+      * [ ] Wait for other bug to be resolved
+      * [ ] Wait for us to get build that has the fix
+      * [ ] Re-enable our test (TODO: Link to PR/commit)
+      * [ ] Close this bug
+
+* Is it that the test itself is flaky? This includes external transient problems (e.g. remote server problems, file system race condition, etc.)
+  * Is there is a way to change our test to avoid this flakiness?
+    * Yes? Change the test!
+      * [ ] Change the test to avoid the flakiness, for example by using a different test strategy, or by adding retries w/ timeouts (TODO: Link to PR/commit)
+      * [ ] Run the test 100 times locally as a sanity check.
+      * [ ] Close this bug
+    * No?
+      * [ ] Delete the test because flaky tests are not useful (TODO: Link to PR/commit)";
+
         public override async Task HandleFailure(TeamCityBuild build)
         {
             var tests = TCClient.GetTests(build);
@@ -68,12 +92,14 @@ namespace TriageBuildFailures.Handlers
 ```
 {TrimTestFailureText(errors)}
 ```
-";
+
+CC { String.Join(',', Managers) }";
                     //TODO: We'd like to link the test history here but TC api doens't make it easy
                     var tags = new List<string> { "Flaky" };
 
                     var issue = await GHClient.CreateIssue(owner, repo, subject, body, tags);
                     await GHClient.AddIssueToProject(issue, GHClient.Config.FlakyProjectColumn);
+                    await GHClient.CreateComment(issue, WorkFlowComment);
                 }
                 // The issue already exists, comment on it if we haven't already done so for this build.
                 else

@@ -8,5 +8,6 @@ namespace TriageBuildFailures.GitHub
     {
         public string AccessToken { get; set; }
         public int FlakyProjectColumn { get; set; }
+        public string BuildBuddyUsername { get; set; }
     }
 }
