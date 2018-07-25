@@ -27,6 +27,12 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         static RequiresIISAttribute()
         {
+            if (Environment.GetEnvironmentVariable("ASPNETCORE_TEST_SKIP_IIS") == "true")
+            {
+                _skipReasonStatic = "Test skipped using ASPNETCORE_TEST_SKIP_IIS environment variable";
+                return;
+            }
+
             if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 _skipReasonStatic = "IIS tests can only be run on Windows";
