@@ -36,6 +36,7 @@ namespace Microsoft.AspNetCore.SignalR
         private bool _receivedMessageThisInterval = false;
         private ReadOnlyMemory<byte> _cachedPingMessage;
         private bool _clientTimeoutActive;
+        private bool _connectedAborted;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HubConnectionContext"/> class.
@@ -105,6 +106,11 @@ namespace Microsoft.AspNetCore.SignalR
 
         public virtual ValueTask WriteAsync(HubMessage message, CancellationToken cancellationToken = default)
         {
+            if (_connectedAborted)
+            {
+                return default;
+            }
+
             // Try to grab the lock synchronously, if we fail, go to the slower path
             if (!_writeLock.Wait(0))
             {
@@ -135,6 +141,11 @@ namespace Microsoft.AspNetCore.SignalR
         /// <returns></returns>
         public virtual ValueTask WriteAsync(SerializedHubMessage message, CancellationToken cancellationToken = default)
         {
+            if (_connectedAborted)
+            {
+                return default;
+            }
+
             // Try to grab the lock synchronously, if we fail, go to the slower path
             if (!_writeLock.Wait(0))
             {
@@ -170,6 +181,8 @@ namespace Microsoft.AspNetCore.SignalR
             {
                 Log.FailedWritingMessage(_logger, ex);
 
+                Abort();
+
                 return new ValueTask<FlushResult>(new FlushResult(isCanceled: false, isCompleted: true));
             }
         }
@@ -187,6 +200,8 @@ namespace Microsoft.AspNetCore.SignalR
             {
                 Log.FailedWritingMessage(_logger, ex);
 
+                Abort();
+
                 return new ValueTask<FlushResult>(new FlushResult(isCanceled: false, isCompleted: true));
             }
         }
@@ -200,6 +215,8 @@ namespace Microsoft.AspNetCore.SignalR
             catch (Exception ex)
             {
                 Log.FailedWritingMessage(_logger, ex);
+
+                Abort();
             }
             finally
             {
@@ -220,6 +237,7 @@ namespace Microsoft.AspNetCore.SignalR
             catch (Exception ex)
             {
                 Log.FailedWritingMessage(_logger, ex);
+                Abort();
             }
             finally
             {
@@ -239,6 +257,7 @@ namespace Microsoft.AspNetCore.SignalR
             catch (Exception ex)
             {
                 Log.FailedWritingMessage(_logger, ex);
+                Abort();
             }
             finally
             {
@@ -310,6 +329,8 @@ namespace Microsoft.AspNetCore.SignalR
             {
                 return;
             }
+
+            _connectedAborted = true;
 
             Input.CancelPendingRead();
 
@@ -531,7 +552,7 @@ namespace Microsoft.AspNetCore.SignalR
                 LoggerMessage.Define(LogLevel.Error, new EventId(5, "HandshakeFailed"), "Failed connection handshake.");
 
             private static readonly Action<ILogger, Exception> _failedWritingMessage =
-                LoggerMessage.Define(LogLevel.Debug, new EventId(6, "FailedWritingMessage"), "Failed writing message.");
+                LoggerMessage.Define(LogLevel.Error, new EventId(6, "FailedWritingMessage"), "Failed writing message. Aborting connection.");
 
             private static readonly Action<ILogger, string, int, Exception> _protocolVersionFailed =
                 LoggerMessage.Define<string, int>(LogLevel.Warning, new EventId(7, "ProtocolVersionFailed"), "Server does not support version {Version} of the {Protocol} protocol.");

@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Http.Connections.Features;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using Moq;
 using Newtonsoft.Json;
@@ -102,9 +103,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             {
                 var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
 
-                await client.InvokeAsync(nameof(AbortHub.Kill));
+                await client.SendInvocationAsync(nameof(AbortHub.Kill)).OrTimeout();
 
                 await connectionHandlerTask.OrTimeout();
+
+                Assert.Null(client.TryRead());
             }
         }
 
@@ -371,6 +374,32 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 client.Dispose();
 
                 await connectionHandlerTask.OrTimeout();
+            }
+        }
+
+        [Fact]
+        public async Task ConnectionClosesOnServerWithPartialHandshakeMessageAndCompletedPipe()
+        {
+            var connectionHandler = HubConnectionHandlerTestUtils.GetHubConnectionHandler(typeof(HubT));
+
+            using (var client = new TestClient())
+            {
+                // partial handshake
+                var payload = Encoding.UTF8.GetBytes("{\"protocol\": \"json\",\"ver");
+                await client.Connection.Application.Output.WriteAsync(payload).OrTimeout();
+
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler, sendHandshakeRequestMessage: false, expectedHandshakeResponseMessage: false);
+                // Complete the pipe to 'close' the connection
+                client.Connection.Application.Output.Complete();
+
+                // This will never complete as the pipe was completed and nothing can be written to it
+                var handshakeReadTask =  client.ReadAsync(true);
+
+                // Check that the connection was closed on the server
+                await connectionHandlerTask.OrTimeout();
+                Assert.False(handshakeReadTask.IsCompleted);
+
+                client.Dispose();
             }
         }
 
@@ -2328,6 +2357,26 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 // Shut down
                 client.Dispose();
 
+                await connectionHandlerTask.OrTimeout();
+            }
+        }
+
+        [Fact]
+        public async Task ConnectionAbortedIfSendFailsWithProtocolError()
+        {
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+            {
+                services.AddSignalR(options => options.EnableDetailedErrors = true);
+            });
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+
+            using (var client = new TestClient())
+            {
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler).OrTimeout();
+
+                await client.SendInvocationAsync(nameof(MethodHub.ProtocolError)).OrTimeout();
+
+                await client.Connected.OrTimeout();
                 await connectionHandlerTask.OrTimeout();
             }
         }
