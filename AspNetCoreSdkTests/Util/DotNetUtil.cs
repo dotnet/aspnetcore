@@ -59,7 +59,9 @@ namespace AspNetCoreSdkTests.Util
             // Clear all packages sources by default.  May be overridden by NuGetPackageSource parameter.
             File.WriteAllText(Path.Combine(workingDirectory, "NuGet.config"), _clearPackageSourcesNuGetConfig);
 
-            return RunDotNet($"new {template} --name {template} --output . --no-restore", workingDirectory);
+            // Pass "--debug:ephemeral-hive" to build template contents in-memory, rather than using the default
+            // "%UserProfile%\.templateengine" cache, which may be out-of-date when testing newer builds with the same version.
+            return RunDotNet($"new {template} --name {template} --output . --no-restore --debug:ephemeral-hive", workingDirectory);
         }
 
         public static string Restore(string workingDirectory, NuGetPackageSource packageSource, RuntimeIdentifier runtimeIdentifier)
