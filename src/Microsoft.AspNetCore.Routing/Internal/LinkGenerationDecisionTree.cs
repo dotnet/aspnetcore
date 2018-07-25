@@ -179,22 +179,22 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 var sb = new StringBuilder();
                 var branchStack = new Stack<string>();
                 branchStack.Push(string.Empty);
-                FlattenTree(_root, branchStack, sb);
+                FlattenTree(branchStack, sb, _root);
                 return sb.ToString();
             }
         }
 
-        private void FlattenTree(DecisionTreeNode<OutboundMatch> node, Stack<string> branchStack, StringBuilder sb)
+        private void FlattenTree(Stack<string> branchStack, StringBuilder sb, DecisionTreeNode<OutboundMatch> node)
         {
             // leaf node
             if (node.Criteria.Count == 0)
             {
-                var temp = new StringBuilder();
+                var matchesSb = new StringBuilder();
                 foreach (var branch in branchStack)
                 {
-                    temp.Insert(0, branch);
+                    matchesSb.Insert(0, branch);
                 }
-                sb.Append(temp.ToString());
+                sb.Append(matchesSb.ToString());
                 sb.Append(" (Matches: ");
                 sb.Append(string.Join(", ", node.Matches.Select(m => m.Entry.RouteTemplate.TemplateText)));
                 sb.AppendLine(")");
@@ -205,7 +205,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 foreach (var branch in criterion.Branches)
                 {
                     branchStack.Push($" => {criterion.Key}: {branch.Key}");
-                    FlattenTree(branch.Value, branchStack, sb);
+                    FlattenTree(branchStack, sb, branch.Value);
                     branchStack.Pop();
                 }
             }
