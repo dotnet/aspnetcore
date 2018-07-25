@@ -51,7 +51,15 @@ namespace Microsoft.AspNetCore.Routing.EndpointConstraints
             Endpoint endpoint,
             IReadOnlyList<IEndpointConstraint> constraints)
         {
-            throw new NotSupportedException();
+            if (endpoint == null)
+            {
+                throw new ArgumentNullException(nameof(endpoint));
+            }
+
+            Endpoint = endpoint;
+            Score = 0;
+            Values = null;
+            Constraints = constraints;
         }
 
         public Endpoint Endpoint { get; }
