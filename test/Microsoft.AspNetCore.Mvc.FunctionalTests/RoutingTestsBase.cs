@@ -254,7 +254,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         [InlineData("Patch", "/Friends")]
         [InlineData("Options", "/Friends")]
         [InlineData("Head", "/Friends")]
-        public async Task AttributeRoutedAction_RejectsRequestsWithWrongMethods_InRoutesWithoutExtraTemplateSegmentsOnTheAction(
+        public virtual async Task AttributeRoutedAction_RejectsRequestsWithWrongMethods_InRoutesWithoutExtraTemplateSegmentsOnTheAction(
             string method,
             string url)
         {
@@ -321,7 +321,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task AttributeRoutedAction_MultipleRouteAttributes_RouteAttributeTemplatesIgnoredForOverrideActions()
+        public virtual async Task AttributeRoutedAction_MultipleRouteAttributes_RouteAttributeTemplatesIgnoredForOverrideActions()
         {
             // Arrange
             var url = "http://localhost/api/v1/Maps";
@@ -395,7 +395,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         [InlineData("http://localhost/api/v2/Maps/5", "PATCH")]
         [InlineData("http://localhost/api/v1/Maps/PartialUpdate/5", "PUT")]
         [InlineData("http://localhost/api/v2/Maps/PartialUpdate/5", "PUT")]
-        public async Task AttributeRoutedAction_MultipleRouteAttributes_WithMultipleHttpAttributes_RespectsConstraints(
+        public virtual async Task AttributeRoutedAction_MultipleRouteAttributes_WithMultipleHttpAttributes_RespectsConstraints(
             string url,
             string method)
         {
@@ -1212,7 +1212,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         [InlineData("/Bank/Deposit", "GET")]
         [InlineData("/Bank/Deposit/5", "DELETE")]
         [InlineData("/Bank/Withdraw/5", "GET")]
-        public async Task AttributeRouting_MixedAcceptVerbsAndRoute_Unreachable(string path, string verb)
+        public virtual async Task AttributeRouting_MixedAcceptVerbsAndRoute_Unreachable(string path, string verb)
         {
             // Arrange
             var request = new HttpRequestMessage(new HttpMethod(verb), "http://localhost" + path);

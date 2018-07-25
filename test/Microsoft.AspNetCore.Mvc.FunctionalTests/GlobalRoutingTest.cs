@@ -3,6 +3,7 @@
 
 using System;
 using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Xunit;
@@ -75,6 +76,89 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(
                 Array.Empty<string>(),
                 result.Routers);
+        }
+
+        // Global routing exposes HTTP 405s for HTTP method mismatches
+        [Fact]
+        public override async Task ConventionalRoutedController_InArea_ActionBlockedByHttpMethod()
+        {
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/Travel/Flight/BuyTickets");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.MethodNotAllowed, response.StatusCode);
+        }
+
+        // Global routing exposes HTTP 405s for HTTP method mismatches
+        [Fact]
+        public override async Task AttributeRoutedAction_MultipleRouteAttributes_RouteAttributeTemplatesIgnoredForOverrideActions()
+        {
+            // Arrange
+            var url = "http://localhost/api/v1/Maps";
+
+            // Act
+            var response = await Client.SendAsync(new HttpRequestMessage(new HttpMethod("POST"), url));
+
+            // Assert
+            Assert.Equal(HttpStatusCode.MethodNotAllowed, response.StatusCode);
+        }
+
+        // Global routing exposes HTTP 405s for HTTP method mismatches
+        [Theory]
+        [InlineData("http://localhost/api/v1/Maps/5", "PATCH")]
+        [InlineData("http://localhost/api/v2/Maps/5", "PATCH")]
+        [InlineData("http://localhost/api/v1/Maps/PartialUpdate/5", "PUT")]
+        [InlineData("http://localhost/api/v2/Maps/PartialUpdate/5", "PUT")]
+        public override async Task AttributeRoutedAction_MultipleRouteAttributes_WithMultipleHttpAttributes_RespectsConstraints(
+            string url,
+            string method)
+        {
+            // Arrange
+            var expectedUrl = new Uri(url).AbsolutePath;
+
+            // Act
+            var response = await Client.SendAsync(new HttpRequestMessage(new HttpMethod(method), url));
+
+            // Assert
+            Assert.Equal(HttpStatusCode.MethodNotAllowed, response.StatusCode);
+        }
+
+        // Global routing exposes HTTP 405s for HTTP method mismatches
+        [Theory]
+        [InlineData("Post", "/Friends")]
+        [InlineData("Put", "/Friends")]
+        [InlineData("Patch", "/Friends")]
+        [InlineData("Options", "/Friends")]
+        [InlineData("Head", "/Friends")]
+        public override async Task AttributeRoutedAction_RejectsRequestsWithWrongMethods_InRoutesWithoutExtraTemplateSegmentsOnTheAction(
+            string method,
+            string url)
+        {
+            // Arrange
+            var request = new HttpRequestMessage(new HttpMethod(method), $"http://localhost{url}");
+
+            // Assert
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.MethodNotAllowed, response.StatusCode);
+        }
+
+        // These verbs don't match
+        [Theory]
+        [InlineData("/Bank/Deposit", "GET")]
+        [InlineData("/Bank/Deposit/5", "DELETE")]
+        [InlineData("/Bank/Withdraw/5", "GET")]
+        public override async Task AttributeRouting_MixedAcceptVerbsAndRoute_Unreachable(string path, string verb)
+        {
+            // Arrange
+            var request = new HttpRequestMessage(new HttpMethod(verb), "http://localhost" + path);
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.MethodNotAllowed, response.StatusCode);
         }
     }
 }
