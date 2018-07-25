@@ -130,7 +130,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
-        public void ChangeToken_MultipleChangeTokenProviders_ComposedResult()
+        public void GetChangeToken_MultipleChangeTokenProviders_ComposedResult()
         {
             // Arrange
             var featureCollection = new FeatureCollection();
@@ -163,7 +163,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 new[] { changeProvider1Mock.Object, changeProvider2Mock.Object });
 
             // Act
-            var changeToken = dataSource.ChangeToken;
+            var changeToken = dataSource.GetChangeToken();
 
             // Assert
             var compositeChangeToken = Assert.IsType<CompositeChangeToken>(changeToken);

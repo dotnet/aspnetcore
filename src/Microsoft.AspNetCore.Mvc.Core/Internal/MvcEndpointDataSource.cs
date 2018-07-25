@@ -396,7 +396,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             return new CompositeChangeToken(changeTokens);
         }
 
-        public override IChangeToken ChangeToken => GetCompositeChangeToken();
+        public override IChangeToken GetChangeToken() => GetCompositeChangeToken();
 
         public override IReadOnlyList<Endpoint> Endpoints
         {
