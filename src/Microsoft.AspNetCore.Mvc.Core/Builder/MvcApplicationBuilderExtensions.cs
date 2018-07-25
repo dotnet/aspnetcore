@@ -4,10 +4,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Builder
 {
@@ -16,6 +18,9 @@ namespace Microsoft.AspNetCore.Builder
     /// </summary>
     public static class MvcApplicationBuilderExtensions
     {
+        // Property key set in routing package by UseGlobalRouting to indicate middleware is registered
+        private const string GlobalRoutingRegisteredKey = "__GlobalRoutingMiddlewareRegistered";
+
         /// <summary>
         /// Adds MVC to the <see cref="IApplicationBuilder"/> request execution pipeline.
         /// </summary>
@@ -79,16 +84,91 @@ namespace Microsoft.AspNetCore.Builder
 
             VerifyMvcIsRegistered(app);
 
-            var routes = new RouteBuilder(app)
+            var options = app.ApplicationServices.GetRequiredService<IOptions<MvcOptions>>();
+
+            if (options.Value.EnableGlobalRouting)
             {
-                DefaultHandler = app.ApplicationServices.GetRequiredService<MvcRouteHandler>(),
-            };
+                var mvcEndpointDataSource = app.ApplicationServices
+                    .GetRequiredService<IEnumerable<EndpointDataSource>>()
+                    .OfType<MvcEndpointDataSource>()
+                    .First();
+                var constraintResolver = app.ApplicationServices
+                    .GetRequiredService<IInlineConstraintResolver>();
 
-            configureRoutes(routes);
+                var endpointRouteBuilder = new EndpointRouteBuilder(app);
 
-            routes.Routes.Insert(0, AttributeRouting.CreateAttributeMegaRoute(app.ApplicationServices));
+                configureRoutes(endpointRouteBuilder);
 
-            return app.UseRouter(routes.Build());
+                foreach (var router in endpointRouteBuilder.Routes)
+                {
+                    // Only accept Microsoft.AspNetCore.Routing.Route when converting to endpoint
+                    // Sub-types could have additional customization that we can't knowingly convert
+                    if (router is Route route && router.GetType() == typeof(Route))
+                    {
+                        var endpointInfo = new MvcEndpointInfo(
+                            route.Name,
+                            route.RouteTemplate,
+                            route.Defaults,
+                            route.Constraints.ToDictionary(kvp => kvp.Key, kvp => (object)kvp.Value),
+                            route.DataTokens,
+                            constraintResolver);
+
+                        mvcEndpointDataSource.ConventionalEndpointInfos.Add(endpointInfo);
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException($"Cannot use '{router.GetType().FullName}' with Global Routing.");
+                    }
+                }
+
+                if (!app.Properties.TryGetValue(GlobalRoutingRegisteredKey, out _))
+                {
+                    // Matching middleware has not been registered yet
+                    // For back-compat register middleware so an endpoint is matched and then immediately used
+                    app.UseGlobalRouting();
+                }
+
+                return app.UseEndpoint();
+            }
+            else
+            {
+                var routes = new RouteBuilder(app)
+                {
+                    DefaultHandler = app.ApplicationServices.GetRequiredService<MvcRouteHandler>(),
+                };
+
+                configureRoutes(routes);
+
+                routes.Routes.Insert(0, AttributeRouting.CreateAttributeMegaRoute(app.ApplicationServices));
+
+                return app.UseRouter(routes.Build());
+            }
+        }
+
+        private class EndpointRouteBuilder : IRouteBuilder
+        {
+            public EndpointRouteBuilder(IApplicationBuilder applicationBuilder)
+            {
+                ApplicationBuilder = applicationBuilder;
+                Routes = new List<IRouter>();
+                DefaultHandler = NullRouter.Instance;
+            }
+
+            public IApplicationBuilder ApplicationBuilder { get; }
+
+            public IRouter DefaultHandler { get; set; }
+
+            public IServiceProvider ServiceProvider
+            {
+                get { return ApplicationBuilder.ApplicationServices; }
+            }
+
+            public IList<IRouter> Routes { get; }
+
+            public IRouter Build()
+            {
+                throw new NotSupportedException();
+            }
         }
 
         public static IApplicationBuilder UseMvcWithEndpoint(

@@ -30,6 +30,7 @@ namespace Microsoft.AspNetCore.Mvc
         private readonly CompatibilitySwitch<bool> _allowValidatingTopLevelNodes;
         private readonly CompatibilitySwitch<InputFormatterExceptionPolicy> _inputFormatterExceptionPolicy;
         private readonly CompatibilitySwitch<bool> _suppressBindingUndefinedValueToEnumType;
+        private readonly CompatibilitySwitch<bool> _enableGlobalRouting;
         private readonly ICompatibilitySwitch[] _switches;
 
         /// <summary>
@@ -54,6 +55,7 @@ namespace Microsoft.AspNetCore.Mvc
             _allowValidatingTopLevelNodes = new CompatibilitySwitch<bool>(nameof(AllowValidatingTopLevelNodes));
             _inputFormatterExceptionPolicy = new CompatibilitySwitch<InputFormatterExceptionPolicy>(nameof(InputFormatterExceptionPolicy), InputFormatterExceptionPolicy.AllExceptions);
             _suppressBindingUndefinedValueToEnumType = new CompatibilitySwitch<bool>(nameof(SuppressBindingUndefinedValueToEnumType));
+            _enableGlobalRouting = new CompatibilitySwitch<bool>(nameof(EnableGlobalRouting));
 
             _switches = new ICompatibilitySwitch[]
             {
@@ -62,7 +64,15 @@ namespace Microsoft.AspNetCore.Mvc
                 _allowValidatingTopLevelNodes,
                 _inputFormatterExceptionPolicy,
                 _suppressBindingUndefinedValueToEnumType,
+                _enableGlobalRouting,
             };
+        }
+
+        // REVIEW: Add documentation
+        public bool EnableGlobalRouting
+        {
+            get => _enableGlobalRouting.Value;
+            set => _enableGlobalRouting.Value = value;
         }
 
         /// <summary>

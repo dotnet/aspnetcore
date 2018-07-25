@@ -29,6 +29,9 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public HttpClient Client { get; }
 
         [Fact]
+        public abstract Task HasEndpointMatch();
+
+        [Fact]
         public async Task NoRequestContentType_SelectsActionWithoutConstraint()
         {
             // Arrange

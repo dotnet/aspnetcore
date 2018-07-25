@@ -16,6 +16,21 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         {
         }
 
+        [Fact]
+        public async override Task HasEndpointMatch()
+        {
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/Routing/HasEndpointMatch");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            var body = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<bool>(body);
+
+            Assert.True(result);
+        }
+
         [Fact(Skip = "Link generation issue in global routing. Need to fix - https://github.com/aspnet/Routing/issues/590")]
         public override Task AttributeRoutedAction_InArea_StaysInArea_ActionDoesntExist()
         {

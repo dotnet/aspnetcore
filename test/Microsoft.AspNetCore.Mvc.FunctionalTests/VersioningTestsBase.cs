@@ -25,6 +25,9 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
         public HttpClient Client { get; }
 
+        [Fact]
+        public abstract Task HasEndpointMatch();
+
         [Theory]
         [InlineData("1")]
         [InlineData("2")]

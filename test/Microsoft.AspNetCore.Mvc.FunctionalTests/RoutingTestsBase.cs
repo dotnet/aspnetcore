@@ -29,6 +29,9 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public HttpClient Client { get; }
 
         [Fact]
+        public abstract Task HasEndpointMatch();
+
+        [Fact]
         public abstract Task RouteData_Routers_ConventionalRoute();
 
         [Fact]
