@@ -93,6 +93,24 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             Assert.Equal("/api/orders/10", url);
         }
 
+        [Fact]
+        public void RouteUrl_DoesNotGenerateLink_ToEndpointsWithSuppressLinkGeneration()
+        {
+            // Arrange
+            var endpoint = CreateEndpoint(
+                "Home/Index",
+                defaults: new { controller = "Home", action = "Index" },
+                requiredValues: new { controller = "Home", action = "Index" },
+                metadataCollection: new EndpointMetadataCollection(new[] { new SuppressLinkGenerationMetadata() }));
+            var urlHelper = CreateUrlHelper(new[] { endpoint });
+
+            // Act
+            var url = urlHelper.RouteUrl(new { controller = "Home", action = "Index" });
+
+            // Assert
+            Assert.Null(url);
+        }
+
         protected override IUrlHelper CreateUrlHelper(string appRoot, string host, string protocol)
         {
             return CreateUrlHelper(Enumerable.Empty<MatcherEndpoint>(), appRoot, host, protocol);
@@ -313,5 +331,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 
             public string Name { get; }
         }
+
+        private class SuppressLinkGenerationMetadata : ISuppressLinkGenerationMetadata { }
     }
 }

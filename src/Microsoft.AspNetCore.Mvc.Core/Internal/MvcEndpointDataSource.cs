@@ -120,7 +120,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                                         subTemplate,
                                         endpointInfo.Defaults,
                                         ++conventionalRouteOrder,
-                                        endpointInfo);
+                                        endpointInfo,
+                                        suppressLinkGeneration: false);
                                     endpoints.Add(subEndpoint);
                                 }
 
@@ -145,7 +146,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                                 newTemplate,
                                 endpointInfo.Defaults,
                                 ++conventionalRouteOrder,
-                                endpointInfo);
+                                endpointInfo,
+                                suppressLinkGeneration: false);
                             endpoints.Add(endpoint);
                         }
                     }
@@ -158,7 +160,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                         action.AttributeRouteInfo.Template,
                         nonInlineDefaults: null,
                         action.AttributeRouteInfo.Order,
-                        action.AttributeRouteInfo);
+                        action.AttributeRouteInfo,
+                        suppressLinkGeneration: action.AttributeRouteInfo.SuppressLinkGeneration);
                     endpoints.Add(endpoint);
                 }
             }
@@ -266,7 +269,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             string template,
             object nonInlineDefaults,
             int order,
-            object source)
+            object source,
+            bool suppressLinkGeneration)
         {
             RequestDelegate invokerDelegate = (context) =>
             {
@@ -289,7 +293,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var defaults = new RouteValueDictionary(nonInlineDefaults);
             EnsureRequiredValuesInDefaults(action.RouteValues, defaults);
 
-            var metadataCollection = BuildEndpointMetadata(action, routeName, source);
+            var metadataCollection = BuildEndpointMetadata(action, routeName, source, suppressLinkGeneration);
             var endpoint = new MatcherEndpoint(
                 next => invokerDelegate,
                 RoutePatternFactory.Parse(template, defaults, constraints: null),
@@ -301,7 +305,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             return endpoint;
         }
 
-        private static EndpointMetadataCollection BuildEndpointMetadata(ActionDescriptor action, string routeName, object source)
+        private static EndpointMetadataCollection BuildEndpointMetadata(
+            ActionDescriptor action,
+            string routeName,
+            object source,
+            bool suppressLinkGeneration)
         {
             var metadata = new List<object>();
             // REVIEW: Used for debugging. Consider removing before release
@@ -339,6 +347,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                         }
                     }
                 }
+            }
+
+            if (suppressLinkGeneration)
+            {
+                metadata.Add(new SuppressLinkGenerationMetadata());
             }
 
             var metadataCollection = new EndpointMetadataCollection(metadata);
@@ -428,5 +441,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             public string Name { get; }
         }
+
+        private class SuppressLinkGenerationMetadata : ISuppressLinkGenerationMetadata { }
     }
 }
