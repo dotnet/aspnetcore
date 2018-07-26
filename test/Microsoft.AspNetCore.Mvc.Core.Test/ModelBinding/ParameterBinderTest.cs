@@ -836,6 +836,60 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 });
         }
 
+        // Regression test for aspnet/Mvc#8078. Later parameter should not mark entry as valid.
+        [Fact]
+        public async Task BindModelAsync_ForOverlappingParameters_InValid_WithInValidFirstParameterAndSecondNull()
+        {
+            // Arrange
+            var parameterDescriptor = new ParameterDescriptor
+            {
+                BindingInfo = new BindingInfo
+                {
+                    BinderModelName = "id",
+                },
+                Name = "identifier",
+                ParameterType = typeof(string),
+            };
+
+            var actionContext = GetControllerContext();
+            var modelState = actionContext.ModelState;
+
+            // Mimic ModelStateEntry when first parameter is [FromRoute] int id and request URI is /api/values/notAnInt
+            modelState.SetModelValue("id", "notAnInt", "notAnInt");
+            modelState.AddModelError("id", "This is not valid.");
+
+            var modelMetadataProvider = new TestModelMetadataProvider();
+            var modelMetadata = modelMetadataProvider.GetMetadataForType(typeof(string));
+            var parameterBinder = new ParameterBinder(
+                modelMetadataProvider,
+                Mock.Of<IModelBinderFactory>(),
+                new DefaultObjectValidator(
+                    modelMetadataProvider,
+                    new[] { TestModelValidatorProvider.CreateDefaultProvider() }),
+                _optionsAccessor,
+                NullLoggerFactory.Instance);
+
+            // Mimic result when second parameter is [FromQuery(Name = "id")] string identifier and query is ?id
+            var modelBindingResult = ModelBindingResult.Success(null);
+            var modelBinder = CreateMockModelBinder(modelBindingResult);
+
+            // Act
+            var result = await parameterBinder.BindModelAsync(
+                actionContext,
+                modelBinder,
+                new SimpleValueProvider(),
+                parameterDescriptor,
+                modelMetadata,
+                value: null);
+
+            // Assert
+            Assert.True(result.IsModelSet);
+            Assert.False(modelState.IsValid);
+            var keyValuePair = Assert.Single(modelState);
+            Assert.Equal("id", keyValuePair.Key);
+            Assert.Equal(ModelValidationState.Invalid, keyValuePair.Value.ValidationState);
+        }
+
         private static ControllerContext GetControllerContext()
         {
             var services = new ServiceCollection();

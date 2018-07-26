@@ -80,6 +80,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
         /// Indicates whether validation of a complex type should be performed if validation fails for any of its children. The default behavior is false.
         /// </summary>
         public bool ValidateComplexTypesIfChildValidationFails { get; set; }
+
         /// <summary>
         /// Validates a object.
         /// </summary>
@@ -105,7 +106,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
             if (model == null && key != null && !alwaysValidateAtTopLevel)
             {
                 var entry = ModelState[key];
-                if (entry != null && entry.ValidationState != ModelValidationState.Valid)
+
+                // Rationale: We might see the same model state key for two different objects and want to preserve any
+                // known invalidity.
+                if (entry != null && entry.ValidationState != ModelValidationState.Invalid)
                 {
                     entry.ValidationState = ModelValidationState.Valid;
                 }
