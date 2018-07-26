@@ -451,4 +451,10 @@
   <data name="ApiConvention_UnsupportedAttributesOnConvention" xml:space="preserve">
     <value>Method {0} is decorated with the following attributes that are not allowed on an API convention method:{1}The following attributes are allowed on API convention methods: {2}.</value>
   </data>
+  <data name="ApiConventionMethod_AmbigiousMethodName" xml:space="preserve">
+    <value>Method name '{0}' is ambigous for convention type '{1}'. More than one method found with the name '{0}'.</value>
+  </data>
+  <data name="ApiConventionMethod_NoMethodFound" xml:space="preserve">
+    <value>A method named '{0}' was not found on convention type '{1}'.</value>
+  </data>
 </root>

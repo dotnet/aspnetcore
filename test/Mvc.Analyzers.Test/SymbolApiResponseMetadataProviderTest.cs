@@ -183,6 +183,55 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
         }
 
         [Fact]
+        public async Task GetResponseMetadata_ReturnsValuesFromApiConventionMethodAttribute()
+        {
+            // Arrange
+            var compilation = await GetResponseMetadataCompilation();
+            var controller = compilation.GetTypeByMetadataName($"{Namespace}.{nameof(GetResponseMetadata_ControllerActionWithAttributes)}");
+            var method = (IMethodSymbol)controller.GetMembers(nameof(GetResponseMetadata_ControllerActionWithAttributes.GetResponseMetadata_ReturnsValuesFromApiConventionMethodAttribute)).First();
+            var symbolCache = new ApiControllerSymbolCache(compilation);
+
+            // Act
+            var result = SymbolApiResponseMetadataProvider.GetDeclaredResponseMetadata(symbolCache, method, Array.Empty<AttributeData>());
+
+            // Assert
+            Assert.Collection(
+                result,
+                metadata =>
+                {
+                    Assert.Equal(200, metadata.StatusCode);
+                    Assert.NotNull(metadata.Attribute);
+                },
+                metadata =>
+                {
+                    Assert.Equal(404, metadata.StatusCode);
+                    Assert.NotNull(metadata.Attribute);
+                });
+        }
+
+        [Fact]
+        public async Task GetResponseMetadata_WIthProducesResponseTypeAndApiConventionMethod()
+        {
+            // Arrange
+            var compilation = await GetResponseMetadataCompilation();
+            var controller = compilation.GetTypeByMetadataName($"{Namespace}.{nameof(GetResponseMetadata_ControllerActionWithAttributes)}");
+            var method = (IMethodSymbol)controller.GetMembers(nameof(GetResponseMetadata_ControllerActionWithAttributes.GetResponseMetadata_WIthProducesResponseTypeAndApiConventionMethod)).First();
+            var symbolCache = new ApiControllerSymbolCache(compilation);
+
+            // Act
+            var result = SymbolApiResponseMetadataProvider.GetDeclaredResponseMetadata(symbolCache, method, Array.Empty<AttributeData>());
+
+            // Assert
+            Assert.Collection(
+                result,
+                metadata =>
+                {
+                    Assert.Equal(204, metadata.StatusCode);
+                    Assert.NotNull(metadata.Attribute);
+                });
+        }
+
+        [Fact]
         public async Task GetResponseMetadata_IgnoresCustomResponseTypeMetadataProvider()
         {
             // Arrange

@@ -11,6 +11,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
         public ApiControllerSymbolCache(Compilation compilation)
         {
             ActionResultOfT = compilation.GetTypeByMetadataName(SymbolNames.ActionResultOfT);
+            ApiConventionMethodAttribute = compilation.GetTypeByMetadataName(SymbolNames.ApiConventionMethodAttribute);
             ApiConventionNameMatchAttribute = compilation.GetTypeByMetadataName(SymbolNames.ApiConventionNameMatchAttribute);
             ApiConventionTypeAttribute = compilation.GetTypeByMetadataName(SymbolNames.ApiConventionTypeAttribute);
             ApiConventionTypeMatchAttribute = compilation.GetTypeByMetadataName(SymbolNames.ApiConventionTypeMatchAttribute);
@@ -29,6 +30,8 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
         }
 
         public INamedTypeSymbol ActionResultOfT { get; }
+
+        public INamedTypeSymbol ApiConventionMethodAttribute { get; }
 
         public INamedTypeSymbol ApiConventionNameMatchAttribute { get; }
 

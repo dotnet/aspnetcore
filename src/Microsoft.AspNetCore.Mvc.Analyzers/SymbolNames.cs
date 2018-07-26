@@ -7,6 +7,8 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
     {
         public const string AllowAnonymousAttribute = "Microsoft.AspNetCore.Authorization.AllowAnonymousAttribute";
 
+        public const string ApiConventionMethodAttribute = "Microsoft.AspNetCore.Mvc.ApiConventionMethodAttribute";
+
         public const string ApiConventionNameMatchAttribute = "Microsoft.AspNetCore.Mvc.ApiExplorer.ApiConventionNameMatchAttribute";
 
         public const string ApiConventionTypeMatchAttribute = "Microsoft.AspNetCore.Mvc.ApiExplorer.ApiConventionTypeMatchAttribute";

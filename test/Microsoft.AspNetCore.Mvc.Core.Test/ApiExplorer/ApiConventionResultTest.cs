@@ -182,6 +182,29 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 r => Assert.Equal(404, r.StatusCode));
         }
 
+        [Fact]
+        public void GetApiConvention_UsesApiConventionMethod()
+        {
+            // Arrange
+            var method = typeof(DefaultConventionController)
+                .GetMethod(nameof(DefaultConventionController.EditUser));
+            var conventions = new[]
+            {
+                new ApiConventionTypeAttribute(typeof(DefaultApiConventions)),
+            };
+
+            // Act
+            var result = ApiConventionResult.TryGetApiConvention(method, conventions, out var conventionResult);
+
+            // Assert
+            Assert.True(result);
+            Assert.Collection(
+                conventionResult.ResponseMetadataProviders.OrderBy(o => o.StatusCode),
+                r => Assert.IsAssignableFrom<IApiDefaultResponseMetadataProvider>(r),
+                r => Assert.Equal(201, r.StatusCode),
+                r => Assert.Equal(400, r.StatusCode));
+        }
+
         public class DefaultConventionController
         {
             public IActionResult GetUser(Guid id) => null;
@@ -191,6 +214,9 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             public IActionResult PutUser(Guid userId, User user) => null;
 
             public IActionResult Delete(Guid userId) => null;
+
+            [ApiConventionMethod(typeof(DefaultApiConventions), nameof(DefaultApiConventions.Post))]
+            public IActionResult EditUser(int id, User user) => null;
         }
 
         public class User { }
