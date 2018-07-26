@@ -128,7 +128,8 @@ public class HubConnection {
         return new Subscription(handlers, action, target);
     }
 
-    public <T1, T2, T3> Subscription on(String target, Action3<T1, T2, T3> callback, Class<T1> param1, Class<T2> param2, Class<T3> param3) {
+    public <T1, T2, T3> Subscription on(String target, Action3<T1, T2, T3> callback,
+                                        Class<T1> param1, Class<T2> param2, Class<T3> param3) {
         ActionBase action = params -> {
             callback.invoke(param1.cast(params[0]), param2.cast(params[1]), param3.cast(params[2]));
         };
@@ -136,7 +137,8 @@ public class HubConnection {
         return new Subscription(handlers, action, target);
     }
 
-    public <T1, T2, T3, T4> Subscription on(String target, Action4<T1, T2, T3, T4> callback, Class<T1> param1, Class<T2> param2, Class<T3> param3, Class<T4> param4) {
+    public <T1, T2, T3, T4> Subscription on(String target, Action4<T1, T2, T3, T4> callback,
+                                            Class<T1> param1, Class<T2> param2, Class<T3> param3, Class<T4> param4) {
         ActionBase action = params -> {
             callback.invoke(param1.cast(params[0]), param2.cast(params[1]), param3.cast(params[2]), param4.cast(params[3]));
         };
@@ -144,10 +146,41 @@ public class HubConnection {
         return new Subscription(handlers, action, target);
     }
 
-    public <T1, T2, T3, T4, T5> Subscription on(String target, Action5<T1, T2, T3, T4, T5> callback, Class<T1> param1, Class<T2> param2, Class<T3> param3, Class<T4> param4, Class<T5> param5) {
+    public <T1, T2, T3, T4, T5> Subscription on(String target, Action5<T1, T2, T3, T4, T5> callback,
+                                                Class<T1> param1, Class<T2> param2, Class<T3> param3, Class<T4> param4, Class<T5> param5) {
         ActionBase action = params -> {
             callback.invoke(param1.cast(params[0]), param2.cast(params[1]), param3.cast(params[2]), param4.cast(params[3]),
                     param5.cast(params[4]));
+        };
+        handlers.put(target, action);
+        return new Subscription(handlers, action, target);
+    }
+
+    public <T1, T2, T3, T4, T5, T6> Subscription on(String target, Action6<T1, T2, T3, T4, T5, T6> callback,
+                                                    Class<T1> param1, Class<T2> param2, Class<T3> param3, Class<T4> param4, Class<T5> param5, Class<T6> param6) {
+        ActionBase action = params -> {
+            callback.invoke(param1.cast(params[0]), param2.cast(params[1]), param3.cast(params[2]), param4.cast(params[3]),
+                    param5.cast(params[4]) ,param6.cast(params[5]));
+        };
+        handlers.put(target, action);
+        return new Subscription(handlers, action, target);
+    }
+
+    public <T1, T2, T3, T4, T5, T6, T7> Subscription on(String target, Action7<T1, T2, T3, T4, T5, T6, T7> callback,
+                                                        Class<T1> param1, Class<T2> param2, Class<T3> param3, Class<T4> param4, Class<T5> param5, Class<T6> param6, Class<T7> param7) {
+        ActionBase action = params -> {
+            callback.invoke(param1.cast(params[0]), param2.cast(params[1]), param3.cast(params[2]), param4.cast(params[3]),
+                    param5.cast(params[4]) ,param6.cast(params[5]), param7.cast(params[6]));
+        };
+        handlers.put(target, action);
+        return new Subscription(handlers, action, target);
+    }
+
+    public <T1, T2, T3, T4, T5, T6, T7, T8> Subscription on(String target, Action8<T1, T2, T3, T4, T5, T6, T7, T8> callback,
+                                                        Class<T1> param1, Class<T2> param2, Class<T3> param3, Class<T4> param4, Class<T5> param5, Class<T6> param6, Class<T7> param7, Class<T8> param8) {
+        ActionBase action = params -> {
+            callback.invoke(param1.cast(params[0]), param2.cast(params[1]), param3.cast(params[2]), param4.cast(params[3]),
+                    param5.cast(params[4]) ,param6.cast(params[5]), param7.cast(params[6]), param8.cast(params[7]));
         };
         handlers.put(target, action);
         return new Subscription(handlers, action, target);
