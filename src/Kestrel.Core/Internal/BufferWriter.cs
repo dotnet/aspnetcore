@@ -1,4 +1,3 @@
-﻿
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
@@ -6,16 +5,14 @@ using System.Runtime.CompilerServices;
 
 namespace System.Buffers
 {
-    // TODO: Once this is public, update the actual CountingBufferWriter in the Common repo,
-    // and go back to using that.
-    internal ref struct CountingBufferWriter<T> where T: IBufferWriter<byte>
+    internal ref struct BufferWriter<T> where T : IBufferWriter<byte>
     {
         private T _output;
         private Span<byte> _span;
         private int _buffered;
         private long _bytesCommitted;
 
-        public CountingBufferWriter(T output)
+        public BufferWriter(T output)
         {
             _buffered = 0;
             _bytesCommitted = 0;

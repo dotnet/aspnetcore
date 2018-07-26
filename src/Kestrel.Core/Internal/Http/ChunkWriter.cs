@@ -48,14 +48,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return new ArraySegment<byte>(bytes, offset, 10 - offset);
         }
 
-        internal static int WriteBeginChunkBytes(ref CountingBufferWriter<PipeWriter> start, int dataCount)
+        internal static int WriteBeginChunkBytes(ref BufferWriter<PipeWriter> start, int dataCount)
         {
             var chunkSegment = BeginChunkBytes(dataCount);
             start.Write(new ReadOnlySpan<byte>(chunkSegment.Array, chunkSegment.Offset, chunkSegment.Count));
             return chunkSegment.Count;
         }
 
-        internal static void WriteEndChunkBytes(ref CountingBufferWriter<PipeWriter> start)
+        internal static void WriteEndChunkBytes(ref BufferWriter<PipeWriter> start)
         {
             start.Write(new ReadOnlySpan<byte>(_endChunkBytes.Array, _endChunkBytes.Offset, _endChunkBytes.Count));
         }
