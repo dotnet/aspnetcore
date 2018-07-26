@@ -8,7 +8,6 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Routing;
 using Newtonsoft.Json;
 using Xunit;
@@ -248,12 +247,23 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             }
         }
 
+        public static TheoryData<string, string> AttributeRoutedAction_RejectsRequestsWithWrongMethods_InRoutesWithoutExtraTemplateSegmentsOnTheActionData
+        {
+            get
+            {
+                return new TheoryData<string, string>
+                {
+                    { "Post", "/Friends" },
+                    { "Put", "/Friends" },
+                    { "Patch", "/Friends" },
+                    { "Options", "/Friends" },
+                    { "Head", "/Friends" },
+                };
+            }
+        }
+
         [Theory]
-        [InlineData("Post", "/Friends")]
-        [InlineData("Put", "/Friends")]
-        [InlineData("Patch", "/Friends")]
-        [InlineData("Options", "/Friends")]
-        [InlineData("Head", "/Friends")]
+        [MemberData(nameof(AttributeRoutedAction_RejectsRequestsWithWrongMethods_InRoutesWithoutExtraTemplateSegmentsOnTheActionData))]
         public virtual async Task AttributeRoutedAction_RejectsRequestsWithWrongMethods_InRoutesWithoutExtraTemplateSegmentsOnTheAction(
             string method,
             string url)
@@ -390,11 +400,22 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             result.ExpectedUrls);
         }
 
+        public static TheoryData<string, string> AttributeRoutedAction_MultipleRouteAttributes_WithMultipleHttpAttributes_RespectsConstraintsData
+        {
+            get
+            {
+                return new TheoryData<string, string>
+                {
+                    { "http://localhost/api/v1/Maps/5", "PATCH" },
+                    { "http://localhost/api/v2/Maps/5", "PATCH" },
+                    { "http://localhost/api/v1/Maps/PartialUpdate/5", "PUT" },
+                    { "http://localhost/api/v2/Maps/PartialUpdate/5", "PUT" },
+                };
+            }
+        }
+
         [Theory]
-        [InlineData("http://localhost/api/v1/Maps/5", "PATCH")]
-        [InlineData("http://localhost/api/v2/Maps/5", "PATCH")]
-        [InlineData("http://localhost/api/v1/Maps/PartialUpdate/5", "PUT")]
-        [InlineData("http://localhost/api/v2/Maps/PartialUpdate/5", "PUT")]
+        [MemberData(nameof(AttributeRoutedAction_MultipleRouteAttributes_WithMultipleHttpAttributes_RespectsConstraintsData))]
         public virtual async Task AttributeRoutedAction_MultipleRouteAttributes_WithMultipleHttpAttributes_RespectsConstraints(
             string url,
             string method)
@@ -1208,10 +1229,21 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         // These verbs don't match
+        public static TheoryData<string, string> AttributeRouting_MixedAcceptVerbsAndRoute_UnreachableData
+        {
+            get
+            {
+                return new TheoryData<string, string>
+                {
+                    { "/Bank/Deposit", "GET" },
+                    { "/Bank/Deposit/5", "DELETE" },
+                    { "/Bank/Withdraw/5", "GET" },
+                };
+            }
+        }
+
         [Theory]
-        [InlineData("/Bank/Deposit", "GET")]
-        [InlineData("/Bank/Deposit/5", "DELETE")]
-        [InlineData("/Bank/Withdraw/5", "GET")]
+        [MemberData(nameof(AttributeRouting_MixedAcceptVerbsAndRoute_UnreachableData))]
         public virtual async Task AttributeRouting_MixedAcceptVerbsAndRoute_Unreachable(string path, string verb)
         {
             // Arrange
@@ -1277,8 +1309,10 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             {
                 Url = url;
 
-                Values = new Dictionary<string, object>();
-                Values.Add("link", string.Empty);
+                Values = new Dictionary<string, object>
+                {
+                    { "link", string.Empty }
+                };
             }
 
             public string Url { get; set; }

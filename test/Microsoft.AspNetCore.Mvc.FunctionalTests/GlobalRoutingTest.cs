@@ -105,10 +105,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
         // Global routing exposes HTTP 405s for HTTP method mismatches
         [Theory]
-        [InlineData("http://localhost/api/v1/Maps/5", "PATCH")]
-        [InlineData("http://localhost/api/v2/Maps/5", "PATCH")]
-        [InlineData("http://localhost/api/v1/Maps/PartialUpdate/5", "PUT")]
-        [InlineData("http://localhost/api/v2/Maps/PartialUpdate/5", "PUT")]
+        [MemberData(nameof(AttributeRoutedAction_MultipleRouteAttributes_WithMultipleHttpAttributes_RespectsConstraintsData))]
         public override async Task AttributeRoutedAction_MultipleRouteAttributes_WithMultipleHttpAttributes_RespectsConstraints(
             string url,
             string method)
@@ -125,11 +122,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
         // Global routing exposes HTTP 405s for HTTP method mismatches
         [Theory]
-        [InlineData("Post", "/Friends")]
-        [InlineData("Put", "/Friends")]
-        [InlineData("Patch", "/Friends")]
-        [InlineData("Options", "/Friends")]
-        [InlineData("Head", "/Friends")]
+        [MemberData(nameof(AttributeRoutedAction_RejectsRequestsWithWrongMethods_InRoutesWithoutExtraTemplateSegmentsOnTheActionData))]
         public override async Task AttributeRoutedAction_RejectsRequestsWithWrongMethods_InRoutesWithoutExtraTemplateSegmentsOnTheAction(
             string method,
             string url)
@@ -144,11 +137,8 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(HttpStatusCode.MethodNotAllowed, response.StatusCode);
         }
 
-        // These verbs don't match
         [Theory]
-        [InlineData("/Bank/Deposit", "GET")]
-        [InlineData("/Bank/Deposit/5", "DELETE")]
-        [InlineData("/Bank/Withdraw/5", "GET")]
+        [MemberData(nameof(AttributeRouting_MixedAcceptVerbsAndRoute_UnreachableData))]
         public override async Task AttributeRouting_MixedAcceptVerbsAndRoute_Unreachable(string path, string verb)
         {
             // Arrange
