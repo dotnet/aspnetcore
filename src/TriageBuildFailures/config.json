@@ -30,14 +30,17 @@
     // Release 21 Public
     "Releases_21Public_UbuntuUniverse",
     "Releases_21Public_OsxUniverse",
+    "Releases_21Public_HighSierraOsxUniverse",
     "Releases_21Public_Publish",
     "Releases_21Public_Win2012",
     // Release 22 Public
     "Releases_22xPublic_OsxUniverse",
+    "Releases_22xPublic_HighSierraOsxUniverse",
     "Releases_22xPublic_UbuntuUniverse",
     "Releases_22xPublic_Win2012",
     "Releases_22xPublic_UpdateUniverse",
-    "Releases_22xPublic_Signed"
+    "Releases_22xPublic_Signed",
+    "Releases_22xPublic_Publish"
   ],
   "Email": {
     "QuietEmail": "rybrande@microsoft.com",
@@ -51,7 +54,7 @@
   },
   "GitHub": {
     "FlakyProjectColumn": 2260926,
-    "BuildBuddyUsername":  "ryanbrandenburg"
+    "BuildBuddyUsername": "ryanbrandenburg"
   },
   "TeamCity": {
     "Server": "aspnetci"
