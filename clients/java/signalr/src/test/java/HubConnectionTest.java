@@ -427,6 +427,140 @@ public class HubConnectionTest {
     }
 
     @Test
+    public void SendWithSixParamsTriggersOnHandler() throws Exception {
+        AtomicReference<String> value1 = new AtomicReference<>();
+        AtomicReference<String> value2 = new AtomicReference<>();
+        AtomicReference<String> value3 = new AtomicReference<>();
+        AtomicReference<Boolean> value4 = new AtomicReference<>();
+        AtomicReference<Double> value5 = new AtomicReference<>();
+        AtomicReference<String> value6 = new AtomicReference<>();
+
+        MockTransport mockTransport = new MockTransport();
+        HubConnection hubConnection = new HubConnection("http://example.com", mockTransport);
+
+        hubConnection.on("inc", (param1, param2, param3, param4, param5, param6) -> {
+            assertNull(value1.get());
+            assertNull(value2.get());
+            assertNull(value3.get());
+            assertNull(value4.get());
+            assertNull(value5.get());
+            assertNull(value6.get());
+
+            value1.set(param1);
+            value2.set(param2);
+            value3.set(param3);
+            value4.set(param4);
+            value5.set(param5);
+            value6.set(param6);
+        }, String.class, String.class, String.class, Boolean.class, Double.class, String.class);
+
+        hubConnection.start();
+        mockTransport.receiveMessage("{}" + RECORD_SEPARATOR);
+        mockTransport.receiveMessage("{\"type\":1,\"target\":\"inc\",\"arguments\":[\"A\", \"B\", \"C\",true,12,\"D\"]}" + RECORD_SEPARATOR);
+
+        // Confirming that our handler was called and the correct message was passed in.
+        assertEquals("A", value1.get());
+        assertEquals("B", value2.get());
+        assertEquals("C", value3.get());
+        assertTrue(value4.get());
+        assertEquals(12, value5.get(), 0);
+        assertEquals("D", value6.get());
+    }
+
+    @Test
+    public void SendWithSevenParamsTriggersOnHandler() throws Exception {
+        AtomicReference<String> value1 = new AtomicReference<>();
+        AtomicReference<String> value2 = new AtomicReference<>();
+        AtomicReference<String> value3 = new AtomicReference<>();
+        AtomicReference<Boolean> value4 = new AtomicReference<>();
+        AtomicReference<Double> value5 = new AtomicReference<>();
+        AtomicReference<String> value6 = new AtomicReference<>();
+        AtomicReference<String> value7 = new AtomicReference<>();
+
+        MockTransport mockTransport = new MockTransport();
+        HubConnection hubConnection = new HubConnection("http://example.com", mockTransport);
+
+        hubConnection.on("inc", (param1, param2, param3, param4, param5, param6, param7) -> {
+            assertNull(value1.get());
+            assertNull(value2.get());
+            assertNull(value3.get());
+            assertNull(value4.get());
+            assertNull(value5.get());
+            assertNull(value6.get());
+            assertNull(value7.get());
+
+            value1.set(param1);
+            value2.set(param2);
+            value3.set(param3);
+            value4.set(param4);
+            value5.set(param5);
+            value6.set(param6);
+            value7.set(param7);
+        }, String.class, String.class, String.class, Boolean.class, Double.class, String.class, String.class);
+
+        hubConnection.start();
+        mockTransport.receiveMessage("{}" + RECORD_SEPARATOR);
+        mockTransport.receiveMessage("{\"type\":1,\"target\":\"inc\",\"arguments\":[\"A\", \"B\", \"C\",true,12,\"D\",\"E\"]}" + RECORD_SEPARATOR);
+
+        // Confirming that our handler was called and the correct message was passed in.
+        assertEquals("A", value1.get());
+        assertEquals("B", value2.get());
+        assertEquals("C", value3.get());
+        assertTrue(value4.get());
+        assertEquals(12, value5.get(), 0);
+        assertEquals("D", value6.get());
+        assertEquals("E", value7.get());
+    }
+
+    @Test
+    public void SendWithEightParamsTriggersOnHandler() throws Exception {
+        AtomicReference<String> value1 = new AtomicReference<>();
+        AtomicReference<String> value2 = new AtomicReference<>();
+        AtomicReference<String> value3 = new AtomicReference<>();
+        AtomicReference<Boolean> value4 = new AtomicReference<>();
+        AtomicReference<Double> value5 = new AtomicReference<>();
+        AtomicReference<String> value6 = new AtomicReference<>();
+        AtomicReference<String> value7 = new AtomicReference<>();
+        AtomicReference<String> value8 = new AtomicReference<>();
+
+        MockTransport mockTransport = new MockTransport();
+        HubConnection hubConnection = new HubConnection("http://example.com", mockTransport);
+
+        hubConnection.on("inc", (param1, param2, param3, param4, param5, param6, param7, param8) -> {
+            assertNull(value1.get());
+            assertNull(value2.get());
+            assertNull(value3.get());
+            assertNull(value4.get());
+            assertNull(value5.get());
+            assertNull(value6.get());
+            assertNull(value7.get());
+            assertNull(value8.get());
+
+            value1.set(param1);
+            value2.set(param2);
+            value3.set(param3);
+            value4.set(param4);
+            value5.set(param5);
+            value6.set(param6);
+            value7.set(param7);
+            value8.set(param8);
+        }, String.class, String.class, String.class, Boolean.class, Double.class, String.class, String.class, String.class);
+
+        hubConnection.start();
+        mockTransport.receiveMessage("{}" + RECORD_SEPARATOR);
+        mockTransport.receiveMessage("{\"type\":1,\"target\":\"inc\",\"arguments\":[\"A\", \"B\", \"C\",true,12,\"D\",\"E\",\"F\"]}" + RECORD_SEPARATOR);
+        // Confirming that our handler was called and the correct message was passed in.
+        assertEquals("A", value1.get());
+        assertEquals("B", value2.get());
+        assertEquals("C", value3.get());
+        assertTrue(value4.get());
+        assertEquals(12, value5.get(), 0);
+        assertEquals("D", value6.get());
+        assertEquals("E", value7.get());
+        assertEquals("F", value8.get());
+    }
+
+    @Test
     public void ReceiveHandshakeResponseAndMessage() throws Exception {
         AtomicReference<Double> value = new AtomicReference<Double>(0.0);
         MockTransport transport = new MockTransport();
@@ -447,6 +581,7 @@ public class HubConnectionTest {
         // Confirming that our handler was called and that the counter property was incremented.
         assertEquals(1, value.get(), 0);
     }
+
 
     private class MockTransport implements Transport {
         private OnReceiveCallBack onReceiveCallBack;
