@@ -63,20 +63,15 @@ OUT_OF_PROCESS_APPLICATION::GetProcess(
 
 __override
 VOID
-OUT_OF_PROCESS_APPLICATION::ShutDown()
+OUT_OF_PROCESS_APPLICATION::Stop(bool fServerInitiated)
 {   
+    UNREFERENCED_PARAMETER(fServerInitiated);
+
     SRWExclusiveLock lock(m_srwLock);
     if (m_pProcessManager != NULL)
     {
         m_pProcessManager->Shutdown();
     }
-}
-
-__override
-VOID
-OUT_OF_PROCESS_APPLICATION::Recycle()
-{
-    ShutDown();
 }
 
 HRESULT

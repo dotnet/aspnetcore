@@ -44,7 +44,6 @@ public:
 
     ~StartupExceptionApplication() = default;
 
-    VOID ShutDown() override;
     HRESULT CreateHandler(IHttpContext * pHttpContext, IREQUEST_HANDLER ** pRequestHandler) override;
 
     std::string&

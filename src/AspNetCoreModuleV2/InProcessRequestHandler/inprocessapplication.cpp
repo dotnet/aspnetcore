@@ -50,7 +50,7 @@ IN_PROCESS_APPLICATION::~IN_PROCESS_APPLICATION()
 }
 
 //static
-DWORD
+DWORD WINAPI
 IN_PROCESS_APPLICATION::DoShutDown(
     LPVOID lpParam
 )
@@ -63,10 +63,9 @@ IN_PROCESS_APPLICATION::DoShutDown(
 
 __override
 VOID
-IN_PROCESS_APPLICATION::ShutDown(
-    VOID
-)
+IN_PROCESS_APPLICATION::Stop(bool fServerInitiated)
 {
+    UNREFERENCED_PARAMETER(fServerInitiated);
     HRESULT hr = S_OK;
     CHandle  hThread;
     DWORD    dwThreadStatus = 0;
@@ -118,15 +117,8 @@ Finished:
             ASPNETCORE_EVENT_GRACEFUL_SHUTDOWN_FAILURE,
             ASPNETCORE_EVENT_APP_SHUTDOWN_FAILURE_MSG,
             m_pConfig->QueryConfigPath()->QueryStr());
-
-        //
-        // Managed layer may block the shutdown and lead to shutdown timeout
-        // Assumption: only one inprocess application is hosted.
-        // Call process exit to force shutdown
-        //
-        exit(hr);
     }
-    else
+	else
     {
         UTILITY::LogEventF(g_hEventLog,
             EVENTLOG_INFORMATION_TYPE,
@@ -134,6 +126,8 @@ Finished:
             ASPNETCORE_EVENT_APP_SHUTDOWN_SUCCESSFUL_MSG,
             m_pConfig->QueryConfigPath()->QueryStr());
     }
+
+    InProcessApplicationBase::Stop(fServerInitiated);
 }
 
 VOID
@@ -169,7 +163,7 @@ IN_PROCESS_APPLICATION::ShutDownInternal()
         // managed. We still need to wait on main exiting no matter what. m_fShutdownCalledFromNative
         // is used for detecting redundant calls and blocking more requests to OnExecuteRequestHandler.
         m_fShutdownCalledFromNative = TRUE;
-        m_status = APPLICATION_STATUS::SHUTDOWN;
+        m_status = APPLICATION_STATUS::RECYCLED;
 
         if (!m_fShutdownCalledFromManaged)
         {
@@ -515,7 +509,7 @@ Finished:
             //
             // If the inprocess server was initialized, we need to cause recycle to be called on the worker process.
             //
-            Recycle();
+            Stop(/*fServerInitiated*/ false);
         }
     }
 

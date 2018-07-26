@@ -19,17 +19,17 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             var helloWorld = "Hello World";
             var expectedPath = "/Path";
 
-            string path = null;
-            using (var testServer = await TestServer.Create(ctx =>
-            {
-                path = ctx.Request.Path.ToString();
-                return ctx.Response.WriteAsync(helloWorld);
-            }, LoggerFactory))
-            {
-                var result = await testServer.HttpClient.GetAsync(expectedPath);
-                Assert.Equal(helloWorld, await result.Content.ReadAsStringAsync());
-                Assert.Equal(expectedPath, path);
+                string path = null;
+                using (var testServer = await TestServer.Create(ctx =>
+                {
+                    path = ctx.Request.Path.ToString();
+                    return ctx.Response.WriteAsync(helloWorld);
+                }, LoggerFactory))
+                {
+                    var result = await testServer.HttpClient.GetAsync(expectedPath);
+                    Assert.Equal(helloWorld, await result.Content.ReadAsStringAsync());
+                    Assert.Equal(expectedPath, path);
+                }
             }
         }
-    }
 }

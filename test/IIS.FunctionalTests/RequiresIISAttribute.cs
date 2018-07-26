@@ -130,6 +130,12 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                     _skipReason += "The machine does allow for setting environment variables on application pools.";
                 }
             }
+
+            if (capabilities.HasFlag(IISCapability.ShutdownToken))
+            {
+                _isMet = false;
+                _skipReason += "https://github.com/aspnet/IISIntegration/issues/1074";
+            }
         }
 
         public bool IsMet => _isMet;

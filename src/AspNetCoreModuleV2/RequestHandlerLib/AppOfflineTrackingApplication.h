@@ -17,7 +17,13 @@ public:
     {
     }
 
-    ~AppOfflineTrackingApplication() override = default;
+    ~AppOfflineTrackingApplication() override
+    {
+        if (m_fileWatcherEntry)
+        {
+            m_fileWatcherEntry->StopMonitor();
+        }   
+    };
 
     HRESULT
     StartMonitoringAppOffline();

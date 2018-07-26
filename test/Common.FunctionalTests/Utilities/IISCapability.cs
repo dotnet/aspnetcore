@@ -11,6 +11,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         None = 0,
         Websockets = 1,
         WindowsAuthentication = 2,
-        PoolEnvironmentVariables = 4
+        PoolEnvironmentVariables = 4,
+        ShutdownToken = 8
     }
 }

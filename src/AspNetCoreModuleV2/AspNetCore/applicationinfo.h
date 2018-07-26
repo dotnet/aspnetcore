@@ -32,11 +32,10 @@ public:
         m_pServer(pServer),
         m_cRefs(1),
         m_fValid(FALSE),
-        m_fAppCreationAttempted(FALSE),
-        m_pConfiguration(NULL),
+        m_pConfiguration(nullptr),
         m_pfnAspNetCoreCreateApplication(NULL)
     {
-        InitializeSRWLock(&m_srwLock);
+        InitializeSRWLock(&m_applicationLock);
     }
 
     PCWSTR
@@ -90,19 +89,7 @@ public:
     ASPNETCORE_SHIM_CONFIG*
     QueryConfig()
     {
-        return m_pConfiguration;
-    }
-
-    //
-    // ExtractApplication will increase the reference counter of the application
-    // Caller is responsible for dereference the application.
-    // Otherwise memory leak
-    //
-    std::unique_ptr<IAPPLICATION, IAPPLICATION_DELETER>
-    ExtractApplication() const
-    {
-        SRWSharedLock lock(m_srwLock);
-        return ReferenceApplication(m_pApplication);
+        return m_pConfiguration.get();
     }
 
     VOID
@@ -112,8 +99,9 @@ public:
     ShutDownApplication();
 
     HRESULT
-    EnsureApplicationCreated(
-        IHttpContext *pHttpContext
+    GetOrCreateApplication(
+        IHttpContext *pHttpContext,
+        std::unique_ptr<IAPPLICATION, IAPPLICATION_DELETER>& pApplication
     );
 
 private:
@@ -121,17 +109,18 @@ private:
     HRESULT FindNativeAssemblyFromGlobalLocation(PCWSTR libraryName, STRU* location);
     HRESULT FindNativeAssemblyFromHostfxr(HOSTFXR_OPTIONS* hostfxrOptions, PCWSTR libraryName, STRU* location);
 
-    static VOID DoRecycleApplication(LPVOID lpParam);
+    static DWORD WINAPI DoRecycleApplication(LPVOID lpParam);
 
     mutable LONG            m_cRefs;
     STRU                    m_struInfoKey;
     BOOL                    m_fValid;
-    BOOL                    m_fAppCreationAttempted;
-    ASPNETCORE_SHIM_CONFIG *m_pConfiguration;
-    IAPPLICATION           *m_pApplication;
-    SRWLOCK                 m_srwLock;
+    SRWLOCK                 m_applicationLock;
     IHttpServer            &m_pServer;
     PFN_ASPNETCORE_CREATE_APPLICATION      m_pfnAspNetCoreCreateApplication;
+    
+    std::unique_ptr<ASPNETCORE_SHIM_CONFIG> m_pConfiguration;
+    std::unique_ptr<IAPPLICATION, IAPPLICATION_DELETER> m_pApplication;
+    
 
     static const PCWSTR          s_pwzAspnetcoreInProcessRequestHandlerName;
     static const PCWSTR          s_pwzAspnetcoreOutOfProcessRequestHandlerName;

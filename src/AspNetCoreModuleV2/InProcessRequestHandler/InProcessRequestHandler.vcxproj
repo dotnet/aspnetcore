@@ -226,6 +226,7 @@
     <ClInclude Include="inprocessapplication.h" />
     <ClInclude Include="InProcessApplicationBase.h" />
     <ClInclude Include="inprocesshandler.h" />
+    <ClInclude Include="ShuttingDownApplication.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="StartupExceptionApplication.h" />
     <ClInclude Include="StartupExceptionHandler.h" />

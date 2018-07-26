@@ -12,6 +12,7 @@
 #include "debugutil.h"
 #include "resources.h"
 #include "exceptions.h"
+#include "ShuttingDownApplication.h"
 
 DECLARE_DEBUG_PRINT_OBJECT("aspnetcorev2_inprocess.dll");
 
@@ -22,6 +23,7 @@ IHttpServer *       g_pHttpServer = NULL;
 HINSTANCE           g_hWinHttpModule;
 HINSTANCE           g_hAspNetCoreModule;
 HANDLE              g_hEventLog = NULL;
+bool                g_fInProcessApplicationCreated = false;
 
 HRESULT
 InitializeGlobalConfiguration(
@@ -93,7 +95,15 @@ CreateApplication(
     try
     {
         RETURN_IF_FAILED(InitializeGlobalConfiguration(pServer, pHttpApplication));
-        
+
+        // In process application was already created so another call to CreateApplication
+        // means that server is shutting does and request arrived in the meantime
+        if (g_fInProcessApplicationCreated)
+        {
+            *ppApplication = new ShuttingDownApplication(*pServer, *pHttpApplication);
+            return S_OK;
+        }
+
         REQUESTHANDLER_CONFIG *pConfig = nullptr;
         RETURN_IF_FAILED(REQUESTHANDLER_CONFIG::CreateRequestHandlerConfig(pServer, pHttpApplication, &pConfig));
         std::unique_ptr<REQUESTHANDLER_CONFIG> pRequestHandlerConfig(pConfig);
@@ -102,6 +112,8 @@ CreateApplication(
 
         auto pApplication = std::make_unique<IN_PROCESS_APPLICATION>(*pServer, *pHttpApplication, std::move(pRequestHandlerConfig), pParameters, nParameters);
         
+        // never create two inprocess applications in one process
+        g_fInProcessApplicationCreated = true;
         if (FAILED_LOG(pApplication->LoadManagedApplication()))
         {
             // Set the currently running application to a fake application that returns startup exceptions.

@@ -3,10 +3,6 @@
 
 #include "StartupExceptionApplication.h"
 
-VOID StartupExceptionApplication::ShutDown()
-{
-}
-
 HRESULT StartupExceptionApplication::CreateHandler(IHttpContext *pHttpContext, IREQUEST_HANDLER ** pRequestHandler)
 {
     *pRequestHandler = new StartupExceptionHandler(pHttpContext, m_disableLogs, this);

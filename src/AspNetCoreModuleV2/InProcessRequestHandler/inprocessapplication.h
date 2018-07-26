@@ -26,7 +26,7 @@ public:
 
     __override
     VOID
-    ShutDown();
+    Stop(bool fServerInitiated) override;
 
     VOID
     SetCallbackHandles(
@@ -167,7 +167,7 @@ private:
     );
 
     static
-    DWORD
+    DWORD WINAPI
     DoShutDown(
         LPVOID lpParam
     );

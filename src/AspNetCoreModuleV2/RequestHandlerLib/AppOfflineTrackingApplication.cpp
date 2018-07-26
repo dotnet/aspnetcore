@@ -51,6 +51,7 @@ void AppOfflineTrackingApplication::OnAppOffline()
 {
     LOG_INFOF("Received app_offline notification in application %S", m_applicationPath.c_str());
     m_fileWatcherEntry->StopMonitor();
+    m_fileWatcherEntry.reset(nullptr);
     m_status = APPLICATION_STATUS::RECYCLED;
     UTILITY::LogEventF(g_hEventLog,
                        EVENTLOG_INFORMATION_TYPE,
@@ -58,5 +59,5 @@ void AppOfflineTrackingApplication::OnAppOffline()
                        ASPNETCORE_EVENT_RECYCLE_APPOFFLINE_MSG,
                        m_applicationPath.c_str());
 
-    Recycle();
+    Stop(/*fServerInitiated*/ false);
 }

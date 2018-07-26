@@ -32,12 +32,7 @@ public:
 
     __override
     VOID
-    ShutDown()
-    override;
-
-    __override
-    VOID
-    Recycle()
+    Stop(bool fServerInitiated)
     override;
 
     __override

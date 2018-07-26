@@ -31,13 +31,15 @@ public:
     VOID
     ReferenceApplication() override
     {
+        DBG_ASSERT(m_cRefs > 0);
+
         InterlockedIncrement(&m_cRefs);
     }
 
     VOID
     DereferenceApplication() override
     {
-        DBG_ASSERT(m_cRefs != 0);
+        DBG_ASSERT(m_cRefs > 0);
 
         if (InterlockedDecrement(&m_cRefs) == 0)
         {

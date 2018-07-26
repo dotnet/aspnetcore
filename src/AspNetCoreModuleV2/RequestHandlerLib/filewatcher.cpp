@@ -227,7 +227,7 @@ FILE_WATCHER_ENTRY::FILE_WATCHER_ENTRY(FILE_WATCHER *   pFileMonitor) :
 
 FILE_WATCHER_ENTRY::~FILE_WATCHER_ENTRY()
 {
-    StopMonitor();
+    DBG_ASSERT(_cRefs == 0);
 
     _dwSignature = FILE_WATCHER_ENTRY_SIGNATURE_FREE;
 
@@ -354,7 +354,6 @@ FILE_WATCHER_ENTRY::Monitor(VOID)
 {
     HRESULT hr = S_OK;
     DWORD   cbRead;
-
     AcquireSRWLockExclusive(&_srwLock);
     ReferenceFileWatcherEntry();
     ZeroMemory(&_overlapped, sizeof(_overlapped));
@@ -372,6 +371,12 @@ FILE_WATCHER_ENTRY::Monitor(VOID)
         DereferenceFileWatcherEntry();
     }
 
+    // Check if file exist because ReadDirectoryChangesW would not fire events for existing files
+    if (GetFileAttributes(_strFullName.QueryStr()) != INVALID_FILE_ATTRIBUTES)
+    {
+        PostQueuedCompletionStatus(_pFileMonitor->QueryCompletionPort(), 0, 0, &_overlapped);
+    }
+    
     ReleaseSRWLockExclusive(&_srwLock);
     return hr;
 }
@@ -385,7 +390,7 @@ FILE_WATCHER_ENTRY::StopMonitor(VOID)
     // can be ignored
     //
     InterlockedExchange(&_lStopMonitorCalled, 1);
-
+    MarkEntryInValid();
     if (_hDirectory != INVALID_HANDLE_VALUE)
     {
         AcquireSRWLockExclusive(&_srwLock);
@@ -427,6 +432,12 @@ FILE_WATCHER_ENTRY::Create(
     }
 
     if (FAILED(hr = _strDirectoryName.Copy(pszDirectoryToMonitor)))
+    {
+        goto Finished;
+    }
+
+    if (FAILED(hr = _strFullName.Append(_strDirectoryName)) ||
+        FAILED(hr = _strFullName.Append(_strFileName)))
     {
         goto Finished;
     }

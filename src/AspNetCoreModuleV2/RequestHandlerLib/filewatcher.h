@@ -111,6 +111,7 @@ private:
     FILE_WATCHER*           _pFileMonitor;
     STRU                    _strFileName;
     STRU                    _strDirectoryName;
+    STRU                    _strFullName;
     LONG                    _lStopMonitorCalled;
     mutable LONG            _cRefs;
     BOOL                    _fIsValid;

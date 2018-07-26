@@ -97,7 +97,6 @@ APPLICATION_MANAGER::GetOrCreateApplicationInfo(
         *ppApplicationInfo = pApplicationInfo;
         pApplicationInfo = NULL;
     }
-
 Finished:
 
     // log the error
