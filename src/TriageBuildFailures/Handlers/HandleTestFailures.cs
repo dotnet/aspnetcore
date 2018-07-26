@@ -92,6 +92,7 @@ namespace TriageBuildFailures.Handlers
 ```
 {TrimTestFailureText(errors)}
 ```
+Other tests within that build may have failed with a similar message, but they are not listed here. Check the link above for more info.
 
 CC { String.Join(',', Managers) }";
                     //TODO: We'd like to link the test history here but TC api doens't make it easy
