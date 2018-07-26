@@ -9,9 +9,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\shared\Microsoft.AspNetCore.Hosting.WebHostBuilderFactory.Sources\FactoryResolutionResult.cs" />
-    <Compile Include="..\..\shared\Microsoft.AspNetCore.Hosting.WebHostBuilderFactory.Sources\FactoryResolutionResultKind.cs" />
-    <Compile Include="..\..\shared\Microsoft.AspNetCore.Hosting.WebHostBuilderFactory.Sources\WebHostFactoryResolver.cs" />
+    <Compile Include="..\..\shared\Internal.WebHostBuilderFactory.Sources\FactoryResolutionResult.cs" />
+    <Compile Include="..\..\shared\Internal.WebHostBuilderFactory.Sources\FactoryResolutionResultKind.cs" />
+    <Compile Include="..\..\shared\Internal.WebHostBuilderFactory.Sources\WebHostFactoryResolver.cs" />
   </ItemGroup>
 
   <ItemGroup>

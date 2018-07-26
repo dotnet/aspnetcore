@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\shared\Microsoft.AspNetCore.Hosting.WebHostBuilderFactory.Sources\**\*.cs" />
+    <Compile Include="..\..\shared\Internal.WebHostBuilderFactory.Sources\**\*.cs" />
   </ItemGroup>
 
   <ItemGroup>
