@@ -43,6 +43,15 @@ namespace IISTestSite
             });
         }
 
+        private async Task HostingEnvironment(HttpContext context)
+        {
+            var hostingEnv = context.RequestServices.GetService<IHostingEnvironment>();
+            
+            await context.Response.WriteAsync("ContentRootPath "+hostingEnv.ContentRootPath + Environment.NewLine);
+            await context.Response.WriteAsync("WebRootPath "+hostingEnv.WebRootPath + Environment.NewLine);
+            await context.Response.WriteAsync("CurrentDirectory "+Environment.CurrentDirectory);
+        }
+
         private void AuthenticationRestricted(IApplicationBuilder app)
         {
             app.Run(async ctx =>

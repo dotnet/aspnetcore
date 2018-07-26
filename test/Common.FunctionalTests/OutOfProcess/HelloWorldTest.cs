@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
@@ -58,6 +59,12 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             responseText = await response.Content.ReadAsStringAsync();
 
             Assert.True("backcompat;Windows".Equals(responseText) || "latest;null".Equals(responseText), "Auth");
+
+            Assert.Equal(
+                $"ContentRootPath {deploymentResult.ContentRoot}" + Environment.NewLine +
+                $"WebRootPath {deploymentResult.ContentRoot}\\wwwroot" + Environment.NewLine +
+                $"CurrentDirectory {deploymentResult.ContentRoot}",
+                await deploymentResult.HttpClient.GetStringAsync("/HostingEnvironment"));
         }
     }
 }

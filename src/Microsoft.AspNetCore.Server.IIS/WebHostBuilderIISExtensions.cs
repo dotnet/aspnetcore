@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
@@ -32,7 +33,9 @@ namespace Microsoft.AspNetCore.Hosting
                 hostBuilder.CaptureStartupErrors(true);
 
                 var iisConfigData = NativeMethods.HttpGetApplicationProperties();
-                hostBuilder.UseContentRoot(iisConfigData.pwzFullApplicationPath);
+                // Trim trailing slash to be consistent with other servers
+                var contentRoot = iisConfigData.pwzFullApplicationPath.TrimEnd(Path.DirectorySeparatorChar);
+                hostBuilder.UseContentRoot(contentRoot);
                 return hostBuilder.ConfigureServices(
                     services => {
                         services.AddSingleton(new IISNativeApplication(iisConfigData.pNativeApplication));

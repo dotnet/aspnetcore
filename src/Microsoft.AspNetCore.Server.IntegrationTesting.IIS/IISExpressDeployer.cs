@@ -175,7 +175,9 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                         UseShellExecute = false,
                         CreateNoWindow = true,
                         RedirectStandardError = true,
-                        RedirectStandardOutput = true
+                        RedirectStandardOutput = true,
+                        // VS sets current directory to C:\Program Files\IIS Express
+                        WorkingDirectory = Path.GetDirectoryName(iisExpressPath)
                     };
 
                     AddEnvironmentVariablesToProcess(startInfo, DeploymentParameters.EnvironmentVariables);
