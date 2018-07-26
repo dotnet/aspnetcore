@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
                 frame => AssertFrame.Text(frame, "there", 2));
         }
 
-        [Fact]
+        [Fact(Skip = "Temporarily disable compiling markup frames in 0.5.1")]
         public void SupportsElementsAsStaticBlock()
         {
             // Arrange/Act
@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
                 frame => AssertFrame.Markup(frame, "<myelem>Hello</myelem>", 0));
         }
 
-        [Fact]
+        [Fact(Skip = "Temporarily disable compiling markup frames in 0.5.1")]
         public void CreatesSeparateMarkupFrameForEachTopLevelStaticElement()
         {
             // The JavaScript-side rendering code does not rely on this behavior. It supports
@@ -143,7 +143,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
                 frame => AssertFrame.Attribute(frame, "myattr", "val", 2));
         }
 
-        [Fact]
+        [Fact(Skip = "Temporarily disable compiling markup frames in 0.5.1")]
         public void SupportsSelfClosingElementsAsStaticBlock()
         {
             // Arrange/Act
@@ -155,7 +155,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
                 frame => AssertFrame.Markup(frame, "<input attr=\"123\">", 1));
         }
 
-        [Fact]
+        [Fact(Skip = "Temporarily disable compiling markup frames in 0.5.1")]
         public void SupportsVoidHtmlElements()
         {
             // Arrange/Act

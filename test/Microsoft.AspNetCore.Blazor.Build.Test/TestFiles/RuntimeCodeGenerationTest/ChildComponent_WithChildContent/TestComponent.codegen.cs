@@ -19,7 +19,10 @@ namespace Test
             builder.AddAttribute(1, "MyAttr", "abc");
             builder.AddAttribute(2, "ChildContent", (Microsoft.AspNetCore.Blazor.RenderFragment)((builder2) => {
                 builder2.AddContent(3, "Some text");
-                builder2.AddMarkupContent(4, "<some-child a=\"1\">Nested text</some-child>");
+                builder2.OpenElement(4, "some-child");
+                builder2.AddAttribute(5, "a", "1");
+                builder2.AddContent(6, "Nested text");
+                builder2.CloseElement();
             }
             ));
             builder.CloseComponent();

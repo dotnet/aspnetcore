@@ -16,7 +16,12 @@ namespace Test
         {
             base.BuildRenderTree(builder);
             builder.OpenComponent<Test.MyComponent>(0);
-            builder.AddMarkupContent(1, "<child>hello</child>");
+            builder.AddAttribute(1, "ChildContent", (Microsoft.AspNetCore.Blazor.RenderFragment)((builder2) => {
+                builder2.OpenElement(2, "child");
+                builder2.AddContent(3, "hello");
+                builder2.CloseElement();
+            }
+            ));
             builder.CloseComponent();
         }
         #pragma warning restore 1998

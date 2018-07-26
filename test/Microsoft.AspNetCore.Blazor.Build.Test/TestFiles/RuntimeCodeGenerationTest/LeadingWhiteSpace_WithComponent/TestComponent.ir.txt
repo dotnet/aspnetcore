@@ -13,4 +13,6 @@ Document -
                 ComponentExtensionNode - (36:2,0 [22] x:\dir\subdir\Test\TestComponent.cshtml) - SomeOtherComponent - Test.SomeOtherComponent
                 HtmlContent - (58:2,22 [4] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (58:2,22 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n\n
-                HtmlBlock -  - <h1>Hello</h1>
+                HtmlElement - (62:4,0 [14] x:\dir\subdir\Test\TestComponent.cshtml) - h1
+                    HtmlContent - (66:4,4 [5] x:\dir\subdir\Test\TestComponent.cshtml)
+                        IntermediateToken - (66:4,4 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Html - Hello
