@@ -396,7 +396,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     Name="_RazorPrepareForPublish"
     AfterTargets="PrepareForPublish"
     DependsOnTargets="RazorCompile"
-    Condition="'$(ResolvedRazorCompileToolset)'=='RazorSdk' and '$(RazorCompileOnPublish)'=='true'">
+    Condition="'$(ResolvedRazorCompileToolset)'=='RazorSdk' and '$(RazorCompileOnPublish)'=='true' and '$(NoBuild)'!='true'">
   </Target>
 
   <!--
