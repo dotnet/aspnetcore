@@ -4,12 +4,16 @@
   </PropertyGroup>
   <PropertyGroup Label="Package Versions">
     <InternalAspNetCoreSdkPackageVersion>2.2.0-preview1-17099</InternalAspNetCoreSdkPackageVersion>
+    <MicrosoftAspNetCoreAspNetCoreModulePackageVersion>2.2.0-a-preview1-croot-17070</MicrosoftAspNetCoreAspNetCoreModulePackageVersion>
+    <MicrosoftAspNetCoreAspNetCoreModuleV2PackageVersion>2.2.0-a-preview1-croot-17070</MicrosoftAspNetCoreAspNetCoreModuleV2PackageVersion>
     <MicrosoftAspNetCoreDiagnosticsPackageVersion>2.2.0-preview1-34755</MicrosoftAspNetCoreDiagnosticsPackageVersion>
     <MicrosoftAspNetCoreHostFilteringPackageVersion>2.2.0-preview1-34755</MicrosoftAspNetCoreHostFilteringPackageVersion>
     <MicrosoftAspNetCoreHostingPackageVersion>2.2.0-preview1-34755</MicrosoftAspNetCoreHostingPackageVersion>
     <MicrosoftAspNetCoreRoutingPackageVersion>2.2.0-preview1-34755</MicrosoftAspNetCoreRoutingPackageVersion>
-    <MicrosoftAspNetCoreServerIISIntegrationPackageVersion>2.2.0-preview1-34755</MicrosoftAspNetCoreServerIISIntegrationPackageVersion>
+    <MicrosoftAspNetCoreServerIISPackageVersion>2.2.0-a-preview1-croot-17070</MicrosoftAspNetCoreServerIISPackageVersion>
+    <MicrosoftAspNetCoreServerIISIntegrationPackageVersion>2.2.0-a-preview1-croot-17070</MicrosoftAspNetCoreServerIISIntegrationPackageVersion>
     <MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>0.6.0-preview1-34755</MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>
+    <MicrosoftAspNetCoreServerIntegrationTestingIISPackageVersion>2.2.0-preview1-34755</MicrosoftAspNetCoreServerIntegrationTestingIISPackageVersion>
     <MicrosoftAspNetCoreServerKestrelHttpsPackageVersion>2.2.0-preview1-34755</MicrosoftAspNetCoreServerKestrelHttpsPackageVersion>
     <MicrosoftAspNetCoreServerKestrelPackageVersion>2.2.0-preview1-34755</MicrosoftAspNetCoreServerKestrelPackageVersion>
     <MicrosoftAspNetCoreStaticFilesPackageVersion>2.2.0-preview1-34755</MicrosoftAspNetCoreStaticFilesPackageVersion>

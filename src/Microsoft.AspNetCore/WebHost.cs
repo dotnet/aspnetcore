@@ -210,6 +210,7 @@ namespace Microsoft.AspNetCore
 
                     services.AddTransient<IStartupFilter, HostFilteringStartupFilter>();
                 })
+                .UseIIS()
                 .UseIISIntegration()
                 .UseDefaultServiceProvider((context, options) =>
                 {
