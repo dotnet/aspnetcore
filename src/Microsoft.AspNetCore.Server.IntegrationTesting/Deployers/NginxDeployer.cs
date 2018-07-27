@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting.Common;
 using Microsoft.Extensions.Logging;
@@ -77,16 +78,48 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
             }
         }
 
+        private string GetUserName()
+        {
+            var retVal = Environment.GetEnvironmentVariable("LOGNAME")
+                ?? Environment.GetEnvironmentVariable("USER")
+                ?? Environment.GetEnvironmentVariable("USERNAME");
+
+            if (!string.IsNullOrEmpty(retVal))
+            {
+                return retVal;
+            }
+
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                using (var process = new Process
+                {
+                    StartInfo =
+                    {
+                        FileName = "whoami",
+                        RedirectStandardOutput = true,
+                    }
+                })
+                {
+                    process.Start();
+                    process.WaitForExit(10_000);
+                    return process.StandardOutput.ReadToEnd();
+                }
+            }
+
+            return null;
+        }
+
         private void SetupNginx(string redirectUri, Uri originalUri)
         {
             using (Logger.BeginScope("SetupNginx"))
             {
+                var userName = GetUserName() ?? throw new InvalidOperationException("Could not identify the current username");
                 // copy nginx.conf template and replace pertinent information
                 var pidFile = Path.Combine(DeploymentParameters.ApplicationPath, $"{Guid.NewGuid()}.nginx.pid");
                 var errorLog = Path.Combine(DeploymentParameters.ApplicationPath, "nginx.error.log");
                 var accessLog = Path.Combine(DeploymentParameters.ApplicationPath, "nginx.access.log");
                 DeploymentParameters.ServerConfigTemplateContent = DeploymentParameters.ServerConfigTemplateContent
-                    .Replace("[user]", Environment.GetEnvironmentVariable("LOGNAME"))
+                    .Replace("[user]", userName)
                     .Replace("[errorlog]", errorLog)
                     .Replace("[accesslog]", accessLog)
                     .Replace("[listenPort]", originalUri.Port.ToString())
@@ -117,13 +150,14 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 {
                     runNginx.StartAndCaptureOutAndErrToLogger("nginx start", Logger);
                     runNginx.WaitForExit(_waitTime);
+
                     if (runNginx.ExitCode != 0)
                     {
-                        throw new Exception("Failed to start nginx");
+                        throw new InvalidOperationException("Failed to start nginx");
                     }
 
                     // Read the PID file
-                    if(!File.Exists(pidFile))
+                    if (!File.Exists(pidFile))
                     {
                         Logger.LogWarning("Unable to find nginx PID file: {pidFile}", pidFile);
                     }
