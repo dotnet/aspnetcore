@@ -47,6 +47,10 @@ namespace TriageBuildFailures.Handlers
 
         private const string WorkFlowComment = @"Please use this workflow to address this flaky test issue, including checking applicable checkboxes and filling in the applicable ""TODO"" entries:
 
+* Is this actually a flaky test?
+  * No, this is a regular test failure, fix the test/product (TODO: Link to commit/PR)
+  * Yes, proceed below...
+
 * Is this test failure caused by product code flakiness? (Either this product, or another product this test depends on.)
   * [ ] File a bug against the product (TODO: Link to other bug)
   * Is it possible to change the test to avoid the flakiness?
