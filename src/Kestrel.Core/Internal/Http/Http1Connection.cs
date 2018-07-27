@@ -44,6 +44,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _keepAliveTicks = ServerOptions.Limits.KeepAliveTimeout.Ticks;
             _requestHeadersTimeoutTicks = ServerOptions.Limits.RequestHeadersTimeout.Ticks;
 
+            RequestBodyPipe = CreateRequestBodyPipe();
             Output = new Http1OutputProducer(
                 _context.Transport.Output,
                 _context.ConnectionId,
@@ -470,5 +471,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 return false;
             }
         }
+
+        private Pipe CreateRequestBodyPipe()
+            => new Pipe(new PipeOptions
+            (
+                pool: _context.MemoryPool,
+                readerScheduler: ServiceContext.Scheduler,
+                writerScheduler: PipeScheduler.Inline,
+                pauseWriterThreshold: 1,
+                resumeWriterThreshold: 1,
+                useSynchronizationContext: false,
+                minimumSegmentSize: KestrelMemoryPool.MinimumSegmentSize
+            ));
     }
 }

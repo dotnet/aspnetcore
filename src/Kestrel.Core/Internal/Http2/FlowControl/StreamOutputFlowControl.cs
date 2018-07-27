@@ -5,19 +5,19 @@ using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl
 {
-    public class Http2StreamOutputFlowControl
+    public class StreamOutputFlowControl
     {
-        private readonly Http2OutputFlowControl _connectionLevelFlowControl;
-        private readonly Http2OutputFlowControl _streamLevelFlowControl;
+        private readonly OutputFlowControl _connectionLevelFlowControl;
+        private readonly OutputFlowControl _streamLevelFlowControl;
 
-        private Http2OutputFlowControlAwaitable _currentConnectionLevelAwaitable;
+        private OutputFlowControlAwaitable _currentConnectionLevelAwaitable;
 
-        public Http2StreamOutputFlowControl(Http2OutputFlowControl connectionLevelFlowControl, uint initialWindowSize)
+        public StreamOutputFlowControl(OutputFlowControl connectionLevelFlowControl, uint initialWindowSize)
         {
             _connectionLevelFlowControl = connectionLevelFlowControl;
-            _streamLevelFlowControl = new Http2OutputFlowControl(initialWindowSize);
+            _streamLevelFlowControl = new OutputFlowControl(initialWindowSize);
         }
 
         public int Available => Math.Min(_connectionLevelFlowControl.Available, _streamLevelFlowControl.Available);
@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             _streamLevelFlowControl.Advance(bytes);
         }
 
-        public int AdvanceUpToAndWait(long bytes, out Http2OutputFlowControlAwaitable awaitable)
+        public int AdvanceUpToAndWait(long bytes, out OutputFlowControlAwaitable awaitable)
         {
             var leastAvailableFlow = _connectionLevelFlowControl.Available < _streamLevelFlowControl.Available
                 ? _connectionLevelFlowControl : _streamLevelFlowControl;

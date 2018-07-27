@@ -2003,6 +2003,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             => GetString("Http2StreamAborted");
 
         /// <summary>
+        /// The client sent more data than what was available in the flow-control window.
+        /// </summary>
+        internal static string Http2ErrorFlowControlWindowExceeded
+        {
+            get => GetString("Http2ErrorFlowControlWindowExceeded");
+        }
+
+        /// <summary>
+        /// The client sent more data than what was available in the flow-control window.
+        /// </summary>
+        internal static string FormatHttp2ErrorFlowControlWindowExceeded()
+            => GetString("Http2ErrorFlowControlWindowExceeded");
+
+        /// <summary>
         /// CONNECT requests must not send :scheme or :path headers.
         /// </summary>
         internal static string Http2ErrorConnectMustNotSendSchemeOrPath

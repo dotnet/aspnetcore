@@ -5,6 +5,7 @@ using System.Buffers;
 using System.Net;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
@@ -21,7 +22,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         public IHttp2StreamLifetimeHandler StreamLifetimeHandler { get; set; }
         public Http2PeerSettings ClientPeerSettings { get; set; }
         public Http2FrameWriter FrameWriter { get; set; }
-        public Http2OutputFlowControl ConnectionOutputFlowControl { get; set; }
+        public InputFlowControl ConnectionInputFlowControl { get; set; }
+        public OutputFlowControl ConnectionOutputFlowControl { get; set; }
         public ITimeoutControl TimeoutControl { get; set; }
     }
 }

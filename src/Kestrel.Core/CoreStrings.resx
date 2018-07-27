@@ -545,6 +545,9 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
   <data name="Http2StreamAborted" xml:space="preserve">
     <value>The request stream was aborted.</value>
   </data>
+  <data name="Http2ErrorFlowControlWindowExceeded" xml:space="preserve">
+    <value>The client sent more data than what was available in the flow-control window.</value>
+  </data>
   <data name="Http2ErrorConnectMustNotSendSchemeOrPath" xml:space="preserve">
     <value>CONNECT requests must not send :scheme or :path headers.</value>
   </data>

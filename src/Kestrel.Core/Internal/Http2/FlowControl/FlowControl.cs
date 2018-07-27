@@ -1,37 +1,22 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl
 {
-    public class Http2OutputFlowControl
+    public struct FlowControl
     {
-        private readonly Queue<Http2OutputFlowControlAwaitable> _awaitableQueue = new Queue<Http2OutputFlowControlAwaitable>();
-
-        public Http2OutputFlowControl(uint initialWindowSize)
+        public FlowControl(uint initialWindowSize)
         {
             Debug.Assert(initialWindowSize <= Http2PeerSettings.MaxWindowSize, $"{nameof(initialWindowSize)} too large.");
 
             Available = (int)initialWindowSize;
+            IsAborted = false;
         }
 
         public int Available { get; private set; }
         public bool IsAborted { get; private set; }
-
-        public Http2OutputFlowControlAwaitable AvailabilityAwaitable
-        {
-            get
-            {
-                Debug.Assert(!IsAborted, $"({nameof(AvailabilityAwaitable)} accessed after abort.");
-                Debug.Assert(Available <= 0, $"({nameof(AvailabilityAwaitable)} accessed with {Available} bytes available.");
-
-                var awaitable = new Http2OutputFlowControlAwaitable();
-                _awaitableQueue.Enqueue(awaitable);
-                return awaitable;
-            }
-        }
 
         public void Advance(int bytes)
         {
@@ -55,23 +40,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
             Available += bytes;
 
-            while (Available > 0 && _awaitableQueue.Count > 0)
-            {
-                var awaitable = _awaitableQueue.Dequeue();
-                awaitable.Complete();
-            }
-
             return true;
         }
 
         public void Abort()
         {
             IsAborted = true;
-
-            while (_awaitableQueue.Count > 0)
-            {
-                _awaitableQueue.Dequeue().Complete();
-            }
         }
     }
 }
