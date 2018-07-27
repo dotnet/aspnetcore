@@ -24,7 +24,8 @@ namespace Http2SampleApp
                     factory.SetMinimumLevel(LogLevel.Trace);
                     factory.AddConsole();
                 })
-                .UseKestrel((context, options) =>
+                .UseKestrel()
+                .ConfigureKestrel((context, options) =>
                 {
                     var basePort = context.Configuration.GetValue<int?>("BASE_PORT") ?? 5000;
 
