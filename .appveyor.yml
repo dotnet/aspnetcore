@@ -9,6 +9,9 @@ environment:
   global:
     DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
     DOTNET_CLI_TELEMETRY_OPTOUT: 1
+install:
+  - ps: .\test\update_schema.ps1
+  - net start w3svc
 build_script:
 - ps: .\run.ps1 default-build
 clone_depth: 1
