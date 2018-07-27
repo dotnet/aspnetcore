@@ -11,17 +11,34 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 {
     internal class DefaultEndpointSelector : EndpointSelector
     {
+        private readonly IEndpointSelectorPolicy[] _selectorPolicies;
+        
+        public DefaultEndpointSelector(IEnumerable<MatcherPolicy> matcherPolicies)
+        {
+            if (matcherPolicies == null)
+            {
+                throw new ArgumentNullException(nameof(matcherPolicies));
+            }
+
+            _selectorPolicies = matcherPolicies.OrderBy(p => p.Order).OfType<IEndpointSelectorPolicy>().ToArray();
+        }
+
         public override Task SelectAsync(
             HttpContext httpContext,
             IEndpointFeature feature,
-            CandidateSet candidates)
+            CandidateSet candidateSet)
         {
+            for (var i = 0; i < _selectorPolicies.Length; i++)
+            {
+                _selectorPolicies[i].Apply(httpContext, candidateSet);
+            }
+
             MatcherEndpoint endpoint = null;
             RouteValueDictionary values = null;
             int? foundScore = null;
-            for (var i = 0; i < candidates.Count; i++)
+            for (var i = 0; i < candidateSet.Count; i++)
             {
-                ref var state = ref candidates[i];
+                ref var state = ref candidateSet[i];
 
                 var isValid = state.IsValidCandidate;
                 if (isValid && foundScore == null)
@@ -46,7 +63,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                     //
                     // Don't worry about the 'null == state.Score' case, it returns false.
 
-                    ReportAmbiguity(candidates);
+                    ReportAmbiguity(candidateSet);
 
                     // Unreachable, ReportAmbiguity always throws.
                     throw new NotSupportedException();

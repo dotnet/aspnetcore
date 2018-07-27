@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Routing.EndpointConstraints;
 using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.AspNetCore.Routing.Tree;
@@ -36,10 +35,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                 new DefaultObjectPool<UriBuildingContext>(new UriBuilderContextPooledObjectPolicy()),
                 new DefaultInlineConstraintResolver(Options.Create(new RouteOptions())));
 
-            var cache = new EndpointConstraintCache(
-                new CompositeEndpointDataSource(Array.Empty<EndpointDataSource>()),
-                new[] { new DefaultEndpointConstraintProvider(), });
-            var selector = new EndpointConstraintEndpointSelector(null, cache, NullLoggerFactory.Instance);
+            var selector = new DefaultEndpointSelector(Array.Empty<MatcherPolicy>());
 
             var groups = _endpoints
                 .GroupBy(e => (e.Order, e.RoutePattern.InboundPrecedence, e.RoutePattern.RawText))

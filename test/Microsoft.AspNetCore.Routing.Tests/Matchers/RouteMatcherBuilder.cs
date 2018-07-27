@@ -5,9 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Routing.EndpointConstraints;
 using Microsoft.AspNetCore.Routing.Patterns;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Routing.Matchers
@@ -30,10 +28,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 
         public override Matcher Build()
         {
-            var cache = new EndpointConstraintCache(
-                new CompositeEndpointDataSource(Array.Empty<EndpointDataSource>()),
-                new[] { new DefaultEndpointConstraintProvider(), });
-            var selector = new EndpointConstraintEndpointSelector(null, cache, NullLoggerFactory.Instance);
+            var selector = new DefaultEndpointSelector(Array.Empty<MatcherPolicy>());
 
             var groups = _endpoints
                 .GroupBy(e => (e.Order, e.RoutePattern.InboundPrecedence, e.RoutePattern.RawText))
