@@ -252,7 +252,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 }
                 var archSkip = skip ?? SkipIfArchitectureNotSupportedOnCurrentSystem(arch);
 
-                if (server == ServerType.IISExpress)
+                if (server == ServerType.IISExpress || server == ServerType.IIS)
                 {
                     VaryByAncmVersion(variants, server, tfm, type, arch, archSkip);
                 }
