@@ -4,6 +4,9 @@
 #include "inprocessapplication.h"
 #include "inprocesshandler.h"
 #include "requesthandler_config.h"
+
+extern bool g_fInProcessApplicationCreated;
+
 //
 // Initialization export
 //
@@ -469,6 +472,8 @@ EXTERN_C __MIDL_DECLSPEC_DLLEXPORT
 VOID
 set_main_handler(_In_ hostfxr_main_fn main)
 {
+    // Allow inprocess application to be recreated as we reuse the same CLR
+    g_fInProcessApplicationCreated = false;
     IN_PROCESS_APPLICATION::SetMainCallback(main);
 }
 

@@ -193,6 +193,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="application.h" />
+    <ClInclude Include="AppOfflineApplication.h" />
+    <ClInclude Include="AppOfflineHandler.h" />
     <ClInclude Include="config_utility.h" />
     <ClInclude Include="Environment.h" />
     <ClInclude Include="EventLog.h" />
@@ -216,6 +218,8 @@
     <ClInclude Include="utility.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AppOfflineApplication.cpp" />
+    <ClCompile Include="AppOfflineHandler.cpp" />
     <ClCompile Include="debugutil.cpp" />
     <ClCompile Include="Environment.cpp" />
     <ClCompile Include="fx_ver.cpp" />

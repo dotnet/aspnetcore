@@ -43,25 +43,11 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [ConditionalFact]
         public async Task GetServerVariableDoesNotCrash()
         {
-            async Task RunRequests()
-            {
-                var client = new HttpClient() { BaseAddress = _fixture.Client.BaseAddress };
-
-                for (int j = 0; j < 10; j++)
-                {
-                    var response = await client.GetStringAsync("/GetServerVariableStress");
-                    Assert.StartsWith("Response Begin", response);
-                    Assert.EndsWith("Response End", response);
-                }
-            }
-
-            List<Task> tasks = new List<Task>();
-            for (int i = 0; i < 10; i++)
-            {
-                tasks.Add(Task.Run(RunRequests));
-            }
-
-            await Task.WhenAll(tasks);
+            await Helpers.StressLoad(_fixture.Client, "/GetServerVariableStress", response => {
+                    var text = response.Content.ReadAsStringAsync().Result;
+                    Assert.StartsWith("Response Begin", text);
+                    Assert.EndsWith("Response End", text);
+                });
         }
     }
 }

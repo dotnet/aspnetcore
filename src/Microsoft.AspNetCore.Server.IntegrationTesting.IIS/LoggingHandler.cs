@@ -44,6 +44,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                     offset += count;
                 } while (count != 0 && offset != buffer.Length);
 
+                readAsStreamAsync.Position = 0;
                 _logger.Log(logLevel, Encoding.ASCII.GetString(buffer, 0, offset));
             }
         }

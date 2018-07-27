@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
@@ -50,6 +51,28 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             var responseText = await response.Content.ReadAsStringAsync();
 
             Assert.Equal("Hello World", responseText);
+        }
+
+        public static async Task StressLoad(HttpClient httpClient, string path, Action<HttpResponseMessage> action)
+        {
+            async Task RunRequests()
+            {
+                var connection = new HttpClient() { BaseAddress = httpClient.BaseAddress };
+
+                for (int j = 0; j < 10; j++)
+                {
+                    var response = await connection.GetAsync(path);
+                    action(response);
+                }
+            }
+
+            List<Task> tasks = new List<Task>();
+            for (int i = 0; i < 10; i++)
+            {
+                tasks.Add(Task.Run(RunRequests));
+            }
+
+            await Task.WhenAll(tasks);
         }
     }
 }

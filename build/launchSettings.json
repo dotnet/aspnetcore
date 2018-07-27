@@ -15,7 +15,8 @@
       "nativeDebugging": true,
       "environmentVariables": {
         "IIS_SITE_PATH": "$(MSBuildThisFileDirectory)",
-        "ANCM_PATH": "$(TargetDir)$(AncmV2Path)",
+        "ANCM_PATH": "$(TargetDir)$(AncmPath)",
+        "ANCMV2_PATH": "$(TargetDir)$(AncmV2Path)",
         "LAUNCHER_ARGS": "$(TargetPath)",
         "ASPNETCORE_ENVIRONMENT": "Development",
         "LAUNCHER_PATH": "$(DotNetPath)",
@@ -28,7 +29,8 @@
       "commandLineArgs": "$(IISArguments)",
       "environmentVariables": {
         "IIS_SITE_PATH": "$(MSBuildThisFileDirectory)",
-        "ANCM_PATH": "$(TargetDir)$(AncmV2Path)",
+        "ANCM_PATH": "$(TargetDir)$(AncmPath)",
+        "ANCMV2_PATH": "$(TargetDir)$(AncmV2Path)",
         "LAUNCHER_ARGS": "$(TargetPath)",
         "ASPNETCORE_ENVIRONMENT": "Development",
         "LAUNCHER_PATH": "$(DotNetPath)",

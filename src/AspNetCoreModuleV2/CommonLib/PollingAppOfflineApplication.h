@@ -4,54 +4,40 @@
 #pragma once
 #include <filesystem>
 #include "application.h"
-#include "requesthandler.h"
+
+enum PollingAppOfflineApplicationMode
+{
+    StopWhenAdded,
+    StopWhenRemoved
+};
 
 class PollingAppOfflineApplication: public APPLICATION
 {
 public:
-    PollingAppOfflineApplication(IHttpApplication& pApplication)
+    PollingAppOfflineApplication(IHttpApplication& pApplication, PollingAppOfflineApplicationMode mode)
         :
         m_ulLastCheckTime(0),
         m_appOfflineLocation(GetAppOfflineLocation(pApplication)),
-        m_fAppOfflineFound(false)
+        m_fAppOfflineFound(false),
+        m_mode(mode)
     {
         InitializeSRWLock(&m_statusLock);
     }
 
-    HRESULT CreateHandler(IHttpContext* pHttpContext, IREQUEST_HANDLER** pRequestHandler) override;
-    
     APPLICATION_STATUS QueryStatus() override;
     bool AppOfflineExists();
-    HRESULT LoadAppOfflineContent();
-    static bool ShouldBeStarted(IHttpApplication& pApplication);
-    void ShutDown() override;
-    void Recycle() override;
+    virtual HRESULT OnAppOfflineFound() = 0;
+    void Stop(bool fServerInitiated) override { UNREFERENCED_PARAMETER(fServerInitiated); }
+
+protected:
+    std::experimental::filesystem::path m_appOfflineLocation;
+    static std::experimental::filesystem::path GetAppOfflineLocation(IHttpApplication& pApplication);
 
 private:
     static const int c_appOfflineRefreshIntervalMS = 200;
-    static std::experimental::filesystem::path GetAppOfflineLocation(IHttpApplication& pApplication);
     std::string m_strAppOfflineContent;
-    ULONGLONG m_ulLastCheckTime;
-    std::experimental::filesystem::path m_appOfflineLocation;
+    ULONGLONG m_ulLastCheckTime;    
     bool m_fAppOfflineFound;
     SRWLOCK m_statusLock {};
+    PollingAppOfflineApplicationMode m_mode;
 };
-
-
-class PollingAppOfflineHandler: public REQUEST_HANDLER
-{
-public:
-    PollingAppOfflineHandler(IHttpContext* pContext, const std::string appOfflineContent)
-        : m_pContext(pContext),
-          m_strAppOfflineContent(appOfflineContent)
-    {    
-    }
-
-    REQUEST_NOTIFICATION_STATUS OnExecuteRequestHandler() override;
-
-private:
-    IHttpContext* m_pContext;
-    std::string m_strAppOfflineContent;
-};
-
-

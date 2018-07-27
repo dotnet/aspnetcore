@@ -25,14 +25,9 @@ struct APPLICATION_PARAMETER
 class IAPPLICATION
 {
 public:
-
     virtual
     VOID
-    ShutDown() = 0;
-
-    virtual
-    VOID
-    Recycle() = 0;
+    Stop(bool fServerInitiated) = 0;
 
     virtual
     ~IAPPLICATION() = 0 { };

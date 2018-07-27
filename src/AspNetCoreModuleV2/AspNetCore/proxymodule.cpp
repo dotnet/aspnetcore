@@ -95,20 +95,18 @@ ASPNET_CORE_PROXY_MODULE::OnExecuteRequestHandler(
             // the error should already been logged to window event log for the first request
             FINISHED(E_APPLICATION_ACTIVATION_EXEC_FAILURE);
         }
-
-        // make sure assmebly is loaded and application is created
-        FINISHED_IF_FAILED(m_pApplicationInfo->EnsureApplicationCreated(pHttpContext));
-
-        auto pApplication = m_pApplicationInfo->ExtractApplication();
-
-        DBG_ASSERT(pHttpContext);
         
-        // We allow OFFLINE application to serve pages
+        DBG_ASSERT(pHttpContext);
+
+        std::unique_ptr<IAPPLICATION, IAPPLICATION_DELETER> pApplication;
+        FINISHED_IF_FAILED(m_pApplicationInfo->GetOrCreateApplication(pHttpContext, pApplication));
+
+        // We allow RECYCLED application to serve pages
         if (pApplication->QueryStatus() != APPLICATION_STATUS::RUNNING &&
-            pApplication->QueryStatus() != APPLICATION_STATUS::STARTING)
+            pApplication->QueryStatus() != APPLICATION_STATUS::STARTING &&
+            pApplication->QueryStatus() != APPLICATION_STATUS::RECYCLED)
         {
-            hr = HRESULT_FROM_WIN32(ERROR_SERVER_DISABLED);
-            goto Finished;
+            FINISHED(HRESULT_FROM_WIN32(ERROR_SERVER_DISABLED));
         }
 
         IREQUEST_HANDLER* pHandler;
@@ -124,7 +122,7 @@ ASPNET_CORE_PROXY_MODULE::OnExecuteRequestHandler(
     }
 
 Finished:
-    if (FAILED(hr))
+    if (LOG_IF_FAILED(hr))
     {
         retVal = RQ_NOTIFICATION_FINISH_REQUEST;
         if (hr == HRESULT_FROM_WIN32(ERROR_SERVER_SHUTDOWN_IN_PROGRESS))

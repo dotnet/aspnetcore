@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             _deployer = IISApplicationDeployerFactory.Create(deploymentParameters, loggerFactory);
 
-            DeploymentResult = _deployer.DeployAsync().Result;
+            DeploymentResult = (IISDeploymentResult)_deployer.DeployAsync().Result;
             Client = DeploymentResult.HttpClient;
             BaseUri = DeploymentResult.ApplicationBaseUri;
             ShutdownToken = DeploymentResult.HostShutdownToken;
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         public string BaseUri { get; }
         public HttpClient Client { get; }
         public CancellationToken ShutdownToken { get; }
-        public DeploymentResult DeploymentResult { get; }
+        public IISDeploymentResult DeploymentResult { get; }
 
         public TestConnection CreateTestConnection()
         {

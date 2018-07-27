@@ -5,6 +5,7 @@
 #include "inprocessapplication.h"
 #include "aspnetcore_event.h"
 #include "IOutputManager.h"
+#include "ShuttingDownApplication.h"
 
 ALLOC_CACHE_HANDLER * IN_PROCESS_HANDLER::sm_pAlloc = NULL;
 
@@ -93,9 +94,7 @@ IN_PROCESS_HANDLER::OnAsyncCompletion(
 
 REQUEST_NOTIFICATION_STATUS IN_PROCESS_HANDLER::ServerShutdownMessage() const
 {
-    m_pW3Context->GetResponse()->SetStatus(503, "Server has been shutdown", 0,
-                                           (ULONG)HRESULT_FROM_WIN32(ERROR_SHUTDOWN_IN_PROGRESS));
-    return RQ_NOTIFICATION_FINISH_REQUEST;
+    return ShuttingDownHandler::ServerShutdownMessage(m_pW3Context);
 }
 
 VOID

@@ -18,9 +18,7 @@ InProcessApplicationBase::InProcessApplicationBase(
 }
 
 VOID
-InProcessApplicationBase::Recycle(
-    VOID
-)
+InProcessApplicationBase::Stop(bool fServerInitiated)
 {
     // We need to guarantee that recycle is only called once, as calling pHttpServer->RecycleProcess
     // multiple times can lead to AVs.
@@ -40,6 +38,12 @@ InProcessApplicationBase::Recycle(
         m_fRecycleCalled = true;
     }
 
+    // Stop was initiated by server no need to do anything, server would stop on it's own
+    if (fServerInitiated)
+    {
+        return;
+    }
+
     if (!m_pHttpServer.IsCommandLineLaunch())
     {
         // IIS scenario.
@@ -50,13 +54,7 @@ InProcessApplicationBase::Recycle(
     }
     else
     {
-        // If we set a static callback, we don't want to kill the current process as
-        // that will kill the test process and means we are running in hostable webcore mode.
-        if (m_pHttpServer.IsCommandLineLaunch()
-            && s_fMainCallback == NULL)
-        {
-            exit(0);
-        }
+        exit(0);
     }
 }
 
