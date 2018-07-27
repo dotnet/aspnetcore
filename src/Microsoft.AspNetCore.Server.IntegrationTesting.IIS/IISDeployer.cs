@@ -61,7 +61,6 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                 // For now, only support using published output
                 DeploymentParameters.PublishApplicationBeforeDeployment = true;
 
-
                 if (DeploymentParameters.ApplicationType == ApplicationType.Portable)
                 {
                     DefaultWebConfigActions.Add(
@@ -75,6 +74,9 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                     DotnetPublish();
                     contentRoot = DeploymentParameters.PublishedApplicationRootPath;
                     IISDeploymentParameters.AddDebugLogToWebConfig(Path.Combine(contentRoot, $"{_application.WebSiteName}.txt"));
+                    DefaultWebConfigActions.Add(WebConfigHelpers.AddOrModifyHandlerSection(
+                        key: "modules",
+                        value: DeploymentParameters.AncmVersion.ToString()));
                     RunWebConfigActions();
                 }
 
