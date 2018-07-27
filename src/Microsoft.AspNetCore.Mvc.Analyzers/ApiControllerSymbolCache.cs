@@ -20,6 +20,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
             IActionResult = compilation.GetTypeByMetadataName(SymbolNames.IActionResult);
             IApiBehaviorMetadata = compilation.GetTypeByMetadataName(SymbolNames.IApiBehaviorMetadata);
             IConvertToActionResult = compilation.GetTypeByMetadataName(SymbolNames.IConvertToActionResult);
+            ModelStateDictionary = compilation.GetTypeByMetadataName(SymbolNames.ModelStateDictionary);
             NonActionAttribute = compilation.GetTypeByMetadataName(SymbolNames.NonActionAttribute);
             NonControllerAttribute = compilation.GetTypeByMetadataName(SymbolNames.NonControllerAttribute);
             ProducesResponseTypeAttribute = compilation.GetTypeByMetadataName(SymbolNames.ProducesResponseTypeAttribute);
@@ -50,6 +51,8 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
         public INamedTypeSymbol IConvertToActionResult { get; }
 
         public IMethodSymbol IDisposableDispose { get; }
+
+        public ITypeSymbol ModelStateDictionary { get; }
 
         public INamedTypeSymbol NonActionAttribute { get; }
 

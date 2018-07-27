@@ -10,10 +10,10 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Analyzers
 {
-    public class ApiConventionAnalyzerTest
+    public class ApiControllerFactsTest
     {
         [Fact]
-        public async Task ShouldEvaluateMethod_ReturnsFalse_IfMethodReturnTypeIsInvalid()
+        public async Task IsApiControllerAction_ReturnsFalse_IfMethodReturnTypeIsInvalid()
         {
             // Arrange
             var source = @"
@@ -41,14 +41,14 @@ namespace TestNamespace
             var method = (IMethodSymbol)compilation.GetTypeByMetadataName("TestNamespace.TestController").GetMembers("Get").First();
 
             // Act
-            var result = ApiConventionAnalyzer.ShouldEvaluateMethod(symbolCache, method);
+            var result = ApiControllerFacts.IsApiControllerAction(symbolCache, method);
 
             // Assert
             Assert.False(result);
         }
 
         [Fact]
-        public async Task ShouldEvaluateMethod_ReturnsFalse_IfContainingTypeIsNotController()
+        public async Task IsApiControllerAction_ReturnsFalse_IfContainingTypeIsNotController()
         {
             // Arrange
             var compilation = await GetCompilation();
@@ -57,14 +57,14 @@ namespace TestNamespace
             var method = (IMethodSymbol)type.GetMembers(nameof(ApiConventionAnalyzerTest_IndexModel.OnGet)).First();
 
             // Act
-            var result = ApiConventionAnalyzer.ShouldEvaluateMethod(symbolCache, method);
+            var result = ApiControllerFacts.IsApiControllerAction(symbolCache, method);
 
             // Assert
             Assert.False(result);
         }
 
         [Fact]
-        public async Task ShouldEvaluateMethod_ReturnsFalse_IfContainingTypeIsNotApiController()
+        public async Task IsApiControllerAction_ReturnsFalse_IfContainingTypeIsNotApiController()
         {
             // Arrange
             var compilation = await GetCompilation();
@@ -73,14 +73,14 @@ namespace TestNamespace
             var method = (IMethodSymbol)type.GetMembers(nameof(ApiConventionAnalyzerTest_NotApiController.Index)).First();
 
             // Act
-            var result = ApiConventionAnalyzer.ShouldEvaluateMethod(symbolCache, method);
+            var result = ApiControllerFacts.IsApiControllerAction(symbolCache, method);
 
             // Assert
             Assert.False(result);
         }
 
         [Fact]
-        public async Task ShouldEvaluateMethod_ReturnsFalse_IfContainingTypeIsNotAction()
+        public async Task IsApiControllerAction_ReturnsFalse_IfContainingTypeIsNotAction()
         {
             // Arrange
             var compilation = await GetCompilation();
@@ -89,14 +89,14 @@ namespace TestNamespace
             var method = (IMethodSymbol)type.GetMembers(nameof(ApiConventionAnalyzerTest_NotAction.Index)).First();
 
             // Act
-            var result = ApiConventionAnalyzer.ShouldEvaluateMethod(symbolCache, method);
+            var result = ApiControllerFacts.IsApiControllerAction(symbolCache, method);
 
             // Assert
             Assert.False(result);
         }
 
         [Fact]
-        public async Task ShouldEvaluateMethod_ReturnsTrue_ForValidActionMethods()
+        public async Task IsApiControllerAction_ReturnsTrue_ForValidActionMethods()
         {
             // Arrange
             var compilation = await GetCompilation();
@@ -105,7 +105,7 @@ namespace TestNamespace
             var method = (IMethodSymbol)type.GetMembers(nameof(ApiConventionAnalyzerTest_Valid.Index)).First();
 
             // Act
-            var result = ApiConventionAnalyzer.ShouldEvaluateMethod(symbolCache, method);
+            var result = ApiControllerFacts.IsApiControllerAction(symbolCache, method);
 
             // Assert
             Assert.True(result);
@@ -113,7 +113,7 @@ namespace TestNamespace
 
         private Task<Compilation> GetCompilation()
         {
-            var testSource = MvcTestSource.Read(GetType().Name, "ApiConventionAnalyzerTestFile");
+            var testSource = MvcTestSource.Read(GetType().Name, "TestFile");
             var project = DiagnosticProject.Create(GetType().Assembly, new[] { testSource.Source });
 
             return project.GetCompilationAsync();

@@ -69,5 +69,16 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
                 "Usage",
                 DiagnosticSeverity.Info,
                 isEnabledByDefault: false);
+
+        public static readonly DiagnosticDescriptor MVC1007_ApiActionsDoNotRequireExplicitModelValidationCheck =
+            new DiagnosticDescriptor(
+                "MVC1007",
+                "Action methods on ApiController instances do not require explicit model validation check.",
+                "Action methods on ApiController instances do not require explicit model validation check.",
+                "Usage",
+                DiagnosticSeverity.Info,
+                isEnabledByDefault: true,
+                customTags: new[] { WellKnownDiagnosticTags.Unnecessary });
+
     }
 }

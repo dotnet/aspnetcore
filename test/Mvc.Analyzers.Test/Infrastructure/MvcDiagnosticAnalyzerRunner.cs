@@ -22,5 +22,10 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers.Infrastructure
         {
             return GetDiagnosticsAsync(sources: new[] { source }, Analyzer, Array.Empty<string>());
         }
+
+        public Task<Diagnostic[]> GetDiagnosticsAsync(Project project)
+        {
+            return GetDiagnosticsAsync(new[] { project }, Analyzer, Array.Empty<string>());
+        }
     }
 }

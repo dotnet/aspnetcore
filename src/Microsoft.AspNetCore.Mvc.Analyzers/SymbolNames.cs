@@ -23,6 +23,8 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
 
         public const string DefaultStatusCodeAttribute = "Microsoft.AspNetCore.Mvc.Infrastructure.DefaultStatusCodeAttribute";
 
+        public const string HtmlHelperPartialExtensionsType = "Microsoft.AspNetCore.Mvc.Rendering.HtmlHelperPartialExtensions";
+
         public const string IApiBehaviorMetadata = "Microsoft.AspNetCore.Mvc.Internal.IApiBehaviorMetadata";
 
         public const string IActionResult = "Microsoft.AspNetCore.Mvc.IActionResult";
@@ -31,11 +33,11 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
 
         public const string IFilterMetadataType = "Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata";
 
-        public const string HtmlHelperPartialExtensionsType = "Microsoft.AspNetCore.Mvc.Rendering.HtmlHelperPartialExtensions";
-
         public const string IHtmlHelperType = "Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper";
 
         public const string IRouteTemplateProvider = "Microsoft.AspNetCore.Mvc.Routing.IRouteTemplateProvider";
+
+        public const string ModelStateDictionary = "Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary";
 
         public const string NonActionAttribute = "Microsoft.AspNetCore.Mvc.NonActionAttribute";
 
