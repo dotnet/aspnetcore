@@ -56,6 +56,9 @@ namespace Microsoft.CodeAnalysis.Razor
         // Used in unit tests to ensure we can know when background work finishes.
         public ManualResetEventSlim NotifyBackgroundWorkStarting { get; set; }
 
+        // Used in unit tests to ensure we can know when background has captured its current workload.
+        public ManualResetEventSlim NotifyBackgroundCapturedWorkload { get; set; }
+
         // Used in unit tests to ensure we can control when background work completes.
         public ManualResetEventSlim BlockBackgroundWorkCompleting { get; set; }
 
@@ -90,6 +93,14 @@ namespace Microsoft.CodeAnalysis.Razor
             if (NotifyBackgroundWorkCompleted != null)
             {
                 NotifyBackgroundWorkCompleted.Set();
+            }
+        }
+
+        private void OnBackgroundCapturedWorkload()
+        {
+            if (NotifyBackgroundCapturedWorkload != null)
+            {
+                NotifyBackgroundCapturedWorkload.Set();
             }
         }
 
@@ -160,6 +171,8 @@ namespace Microsoft.CodeAnalysis.Razor
                     work = _files.Values.ToArray();
                     _files.Clear();
                 }
+
+                OnBackgroundCapturedWorkload();
 
                 for (var i = 0; i < work.Length; i++)
                 {
