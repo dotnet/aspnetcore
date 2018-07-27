@@ -186,6 +186,18 @@ function returnPrimitiveAsync() {
   });
 }
 
+function returnArray() {
+  return [{ source: 'first' }, { source: 'second' }];
+}
+
+function returnArrayAsync() {
+  return new Promise((resolve, reject) => {
+    setTimeout(function () {
+      resolve(returnArray());
+    }, 100);
+  });
+}
+
 function functionThrowsException() {
   throw new Error('Function threw an exception!');
 }

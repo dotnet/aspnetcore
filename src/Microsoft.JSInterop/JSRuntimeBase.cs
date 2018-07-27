@@ -100,10 +100,12 @@ namespace Microsoft.JSInterop
             if (succeeded)
             {
                 var resultType = TaskGenericsUtil.GetTaskCompletionSourceResultType(tcs);
-                var resultValue = resultOrException is SimpleJson.JsonObject
-                    ? ArgSerializerStrategy.DeserializeObject(resultOrException, resultType)
-                    : resultOrException;
-                TaskGenericsUtil.SetTaskCompletionSourceResult(tcs, resultValue);
+                if (resultOrException is SimpleJson.JsonObject || resultOrException is SimpleJson.JsonArray)
+                {
+                    resultOrException = ArgSerializerStrategy.DeserializeObject(resultOrException, resultType);
+                }
+
+                TaskGenericsUtil.SetTaskCompletionSourceResult(tcs, resultOrException);
             }
             else
             {

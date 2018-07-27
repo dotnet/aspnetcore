@@ -59,6 +59,7 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
                 ["testDtoNonSerializedValueAsync"] = "99999",
                 ["testDtoAsync"] = "Same",
                 ["returnPrimitiveAsync"] = "123",
+                ["returnArrayAsync"] = "first,second",
             };
 
             var expectedSyncValues = new Dictionary<string, string>
@@ -92,6 +93,7 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
                 ["testDtoNonSerializedValueSync"] = "99999",
                 ["testDtoSync"] = "Same",
                 ["returnPrimitive"] = "123",
+                ["returnArray"] = "first,second",
             };
 
             // Include the sync assertions only when running under WebAssembly

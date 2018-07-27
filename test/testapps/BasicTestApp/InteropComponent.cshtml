@@ -122,9 +122,11 @@
         ReceiveDotNetObjectByRefAsyncResult["testDto"] = ReceiveDotNetObjectByRefAsyncResult["testDto"] == passDotNetObjectByRef ? "Same" : "Different";
 
         ReturnValues["returnPrimitiveAsync"] = (await JSRuntime.Current.InvokeAsync<int>("returnPrimitiveAsync")).ToString();
+        ReturnValues["returnArrayAsync"] = string.Join(",", (await JSRuntime.Current.InvokeAsync<Segment[]>("returnArrayAsync")).Select(x => x.Source).ToArray());
         if (shouldSupportSyncInterop)
         {
             ReturnValues["returnPrimitive"] = ((IJSInProcessRuntime)JSRuntime.Current).Invoke<int>("returnPrimitive").ToString();
+            ReturnValues["returnArray"] = string.Join(",", ((IJSInProcessRuntime)JSRuntime.Current).Invoke<Segment[]>("returnArray").Select(x => x.Source).ToArray());
         }
 
         Invocations = invocations;
