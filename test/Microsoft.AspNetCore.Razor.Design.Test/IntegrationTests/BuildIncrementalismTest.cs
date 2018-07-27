@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
@@ -18,7 +19,8 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         {
         }
 
-        [Fact]
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Linux, SkipReason = "See https://github.com/aspnet/Razor/issues/2219")]
         [InitializeTestProject("SimpleMvc")]
         public async Task BuildIncremental_SimpleMvc_PersistsTargetInputFile()
         {
@@ -29,20 +31,12 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             var result = await DotnetMSBuild("Build");
 
             var directoryPath = Path.Combine(result.Project.DirectoryPath, IntermediateOutputPath);
-            var filesToIgnore = new List<string>()
+            var filesToIgnore = new[]
             {
                 // These files are generated on every build.
                 Path.Combine(directoryPath, "SimpleMvc.csproj.CopyComplete"),
                 Path.Combine(directoryPath, "SimpleMvc.csproj.FileListAbsolute.txt"),
             };
-
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) || RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            {
-                // There is some quirkiness with MsBuild in unix where it regenerates this file
-                // even though it shouldn't. This is tracked here https://github.com/aspnet/Razor/issues/2219.
-                filesToIgnore.Add(Path.Combine(directoryPath, "SimpleMvc.TagHelpers.input.cache"));
-                filesToIgnore.Add(Path.Combine(directoryPath, "SimpleMvc.AssemblyInfo.cs"));
-            }
 
             var files = Directory.GetFiles(directoryPath).Where(p => !filesToIgnore.Contains(p));
             foreach (var file in files)
