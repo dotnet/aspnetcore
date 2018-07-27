@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace Microsoft.AspNetCore.Routing.Metadata
 {
-    [DebuggerDisplay("{DebuggerToString,nq}")]
+    [DebuggerDisplay("{DebuggerToString(),nq}")]
     public sealed class HttpMethodMetadata : IHttpMethodMetadata
     {
         public HttpMethodMetadata(IEnumerable<string> httpMethods)
