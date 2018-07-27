@@ -135,7 +135,7 @@
     </Microsoft.Build.OOB.ESRP.CreateSignManifests>
 
     <Exec
-      Command="$(ESRPClientToolPath) sign -a $(AuthJson) -p $(PolicyJson) -i $(InputJson) -o $(OutputJson) -l progress -f $(LogOutputDir)sign-packages.log"
+      Command="$(ESRPClientToolPath) sign -c $(ESRPClientConfigFile) -a $(AuthJson) -p $(PolicyJson) -i $(InputJson) -o $(OutputJson) -l progress -f $(LogOutputDir)sign-packages.log"
       Condition="'$(SignType)'=='real' AND '$(LocalBuild)'!='true'" />
 
     <Copy Condition="'$(SignType)'!='real' OR '$(LocalBuild)'=='true'"
@@ -260,7 +260,7 @@
     </Microsoft.Build.OOB.ESRP.CreateSignManifests>
 
     <Exec
-      Command="$(ESRPClientToolPath) sign -a $(AuthJson) -p $(PolicyJson) -i $(InputJson) -o $(OutputJson) -l progress -f $(LogOutputDir)sign-$(JobName).log"
+      Command="$(ESRPClientToolPath) sign -c $(ESRPClientConfigFile) -a $(AuthJson) -p $(PolicyJson) -i $(InputJson) -o $(OutputJson) -l progress -f $(LogOutputDir)sign-$(JobName).log"
       Condition="'$(SignType)'=='real' AND '$(LocalBuild)'!='true'" />
 
     <Message Text="Finished code sign job $(JobName)" Importance="High" />
