@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Text.Encodings.Web;
@@ -65,156 +66,70 @@ namespace Microsoft.AspNetCore.Routing.Template
         // Step 1: Get the list of values we're going to try to use to match and generate this URI
         public TemplateValuesResult GetValues(RouteValueDictionary ambientValues, RouteValueDictionary values)
         {
+            return GetValues(ambientValues: ambientValues, explicitValues: values, requiredKeys: null);
+        }
+
+        internal TemplateValuesResult GetValues(
+            RouteValueDictionary ambientValues,
+            RouteValueDictionary explicitValues,
+            IEnumerable<string> requiredKeys)
+        {
             var context = new TemplateBindingContext(_defaults);
 
-            // Find out which entries in the URI are valid for the URI we want to generate.
-            // If the URI had ordered parameters a="1", b="2", c="3" and the new values
-            // specified that b="9", then we need to invalidate everything after it. The new
-            // values should then be a="1", b="9", c=<no value>.
-            //
-            // We also handle the case where a parameter is optional but has no value - we shouldn't
-            // accept additional parameters that appear *after* that parameter.
-            for (var i = 0; i < _template.Parameters.Count; i++)
+            var canCopyParameterAmbientValues = true;
+
+            // In case a route template is not parameterized, we do not know what the required parameters are, so look
+            // at required values of an endpoint to get the key names and then use them to decide if ambient values
+            // should be used.
+            // For example, in case of MVC it flattens out a route template like below
+            //  {controller}/{action}/{id?}
+            // to
+            //  Products/Index/{id?},
+            //  defaults: new { controller = "Products", action = "Index" },
+            //  requiredValues: new { controller = "Products", action = "Index" }
+            // In the above example, "controller" and "action" are no longer parameters.
+            if (requiredKeys != null)
             {
-                var parameter = _template.Parameters[i];
+                canCopyParameterAmbientValues = CanCopyParameterAmbientValues(
+                    ambientValues: ambientValues,
+                    explicitValues: explicitValues,
+                    requiredKeys);
+            }
 
-                // If it's a parameter subsegment, examine the current value to see if it matches the new value
-                var parameterName = parameter.Name;
-
-                object newParameterValue;
-                var hasNewParameterValue = values.TryGetValue(parameterName, out newParameterValue);
-
-                object currentParameterValue = null;
-                var hasCurrentParameterValue = ambientValues != null &&
-                                               ambientValues.TryGetValue(parameterName, out currentParameterValue);
-
-                if (hasNewParameterValue && hasCurrentParameterValue)
-                {
-                    if (!RoutePartsEqual(currentParameterValue, newParameterValue))
-                    {
-                        // Stop copying current values when we find one that doesn't match
-                        break;
-                    }
-                }
-
-                if (!hasNewParameterValue &&
-                    !hasCurrentParameterValue &&
-                    _defaults?.ContainsKey(parameter.Name) != true)
-                {
-                    // This is an unsatisfied parameter value and there are no defaults. We might still
-                    // be able to generate a URL but we should stop 'accepting' ambient values.
-                    //
-                    // This might be a case like:
-                    //  template: a/{b?}/{c?}
-                    //  ambient: { c = 17 }
-                    //  values: { }
-                    //
-                    // We can still generate a URL from this ("/a") but we shouldn't accept 'c' because
-                    // we can't use it.
-                    // 
-                    // In the example above we should fall into this block for 'b'.
-                    break;
-                }
-
-                // If the parameter is a match, add it to the list of values we will use for URI generation
-                if (hasNewParameterValue)
-                {
-                    if (IsRoutePartNonEmpty(newParameterValue))
-                    {
-                        context.Accept(parameterName, newParameterValue);
-                    }
-                }
-                else
-                {
-                    if (hasCurrentParameterValue)
-                    {
-                        context.Accept(parameterName, currentParameterValue);
-                    }
-                }
+            if (canCopyParameterAmbientValues)
+            {
+                // Copy ambient values when no explicit values are provided
+                CopyParameterAmbientValues(
+                    ambientValues: ambientValues,
+                    explicitValues: explicitValues,
+                    context);
             }
 
             // Add all remaining new values to the list of values we will use for URI generation
-            foreach (var kvp in values)
-            {
-                if (IsRoutePartNonEmpty(kvp.Value))
-                {
-                    context.Accept(kvp.Key, kvp.Value);
-                }
-            }
+            CopyNonParamaterExplicitValues(explicitValues, context);
 
             // Accept all remaining default values if they match a required parameter
-            for (var i = 0; i < _template.Parameters.Count; i++)
+            CopyParameterDefaultValues(context);
+
+            if (!AllRequiredParametersHaveValue(context))
             {
-                var parameter = _template.Parameters[i];
-                if (parameter.IsOptional || parameter.IsCatchAll)
-                {
-                    continue;
-                }
-
-                if (context.NeedsValue(parameter.Name))
-                {
-                    // Add the default value only if there isn't already a new value for it and
-                    // only if it actually has a default value, which we determine based on whether
-                    // the parameter value is required.
-                    context.AcceptDefault(parameter.Name);
-                }
-            }
-
-            // Validate that all required parameters have a value.
-            for (var i = 0; i < _template.Parameters.Count; i++)
-            {
-                var parameter = _template.Parameters[i];
-                if (parameter.IsOptional || parameter.IsCatchAll)
-                {
-                    continue;
-                }
-
-                if (!context.AcceptedValues.ContainsKey(parameter.Name))
-                {
-                    // We don't have a value for this parameter, so we can't generate a url.
-                    return null;
-                }
+                return null;
             }
 
             // Any default values that don't appear as parameters are treated like filters. Any new values
             // provided must match these defaults.
-            foreach (var filter in _filters)
+            if (!FiltersMatch(explicitValues))
             {
-                var parameter = GetParameter(filter.Key);
-                if (parameter != null)
-                {
-                    continue;
-                }
-
-                object value;
-                if (values.TryGetValue(filter.Key, out value))
-                {
-                    if (!RoutePartsEqual(value, filter.Value))
-                    {
-                        // If there is a non-parameterized value in the route and there is a
-                        // new value for it and it doesn't match, this route won't match.
-                        return null;
-                    }
-                }
+                return null;
             }
 
             // Add any ambient values that don't match parameters - they need to be visible to constraints
             // but they will ignored by link generation.
             var combinedValues = new RouteValueDictionary(context.AcceptedValues);
-            if (ambientValues != null)
-            {
-                foreach (var kvp in ambientValues)
-                {
-                    if (IsRoutePartNonEmpty(kvp.Value))
-                    {
-                        var parameter = GetParameter(kvp.Key);
-                        if (parameter == null && !context.AcceptedValues.ContainsKey(kvp.Key))
-                        {
-                            combinedValues.Add(kvp.Key, kvp.Value);
-                        }
-                    }
-                }
-            }
+            CopyNonParameterAmbientValues(
+               ambientValues: ambientValues,
+               combinedValues: combinedValues,
+               context);
 
             return new TemplateValuesResult()
             {
@@ -255,21 +170,18 @@ namespace Microsoft.AspNetCore.Routing.Template
                     else if (part.IsParameter)
                     {
                         // If it's a parameter, get its value
-                        object value;
-                        var hasValue = acceptedValues.TryGetValue(part.Name, out value);
+                        var hasValue = acceptedValues.TryGetValue(part.Name, out var value);
                         if (hasValue)
                         {
                             acceptedValues.Remove(part.Name);
                         }
 
                         var isSameAsDefault = false;
-                        object defaultValue;
-                        if (_defaults != null && _defaults.TryGetValue(part.Name, out defaultValue))
+                        if (_defaults != null &&
+                            _defaults.TryGetValue(part.Name, out var defaultValue) &&
+                            RoutePartsEqual(value, defaultValue))
                         {
-                            if (RoutePartsEqual(value, defaultValue))
-                            {
-                                isSameAsDefault = true;
-                            }
+                            isSameAsDefault = true;
                         }
 
                         var converted = Convert.ToString(value, CultureInfo.InvariantCulture);
@@ -414,6 +326,196 @@ namespace Microsoft.AspNetCore.Routing.Template
             }
         }
 
+        private bool CanCopyParameterAmbientValues(
+            RouteValueDictionary ambientValues,
+            RouteValueDictionary explicitValues,
+            IEnumerable<string> requiredKeys)
+        {
+            foreach (var keyName in requiredKeys)
+            {
+                if (!explicitValues.TryGetValue(keyName, out var explicitValue))
+                {
+                    continue;
+                }
+
+                object ambientValue = null;
+                var hasAmbientValue = ambientValues != null &&
+                    ambientValues.TryGetValue(keyName, out ambientValue);
+
+                // This indicates an explicit value was provided whose key does not exist in ambient values
+                // Example: Link from controller-action to a page or vice versa.
+                if (!hasAmbientValue)
+                {
+                    return false;
+                }
+
+                if (!RoutePartsEqual(ambientValue, explicitValue))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        private void CopyParameterAmbientValues(
+            RouteValueDictionary ambientValues,
+            RouteValueDictionary explicitValues,
+            TemplateBindingContext context)
+        {
+            // Find out which entries in the URI are valid for the URI we want to generate.
+            // If the URI had ordered parameters a="1", b="2", c="3" and the new values
+            // specified that b="9", then we need to invalidate everything after it. The new
+            // values should then be a="1", b="9", c=<no value>.
+            //
+            // We also handle the case where a parameter is optional but has no value - we shouldn't
+            // accept additional parameters that appear *after* that parameter.
+
+            for (var i = 0; i < _template.Parameters.Count; i++)
+            {
+                var parameter = _template.Parameters[i];
+
+                // If it's a parameter subsegment, examine the current value to see if it matches the new value
+                var parameterName = parameter.Name;
+
+                var hasExplicitValue = explicitValues.TryGetValue(parameterName, out var explicitValue);
+
+                object ambientValue = null;
+                var hasAmbientValue = ambientValues != null &&
+                    ambientValues.TryGetValue(parameterName, out ambientValue);
+
+                if (hasExplicitValue && hasAmbientValue && !RoutePartsEqual(ambientValue, explicitValue))
+                {
+                    // Stop copying current values when we find one that doesn't match
+                    break;
+                }
+
+                if (!hasExplicitValue &&
+                    !hasAmbientValue &&
+                    _defaults?.ContainsKey(parameter.Name) != true)
+                {
+                    // This is an unsatisfied parameter value and there are no defaults. We might still
+                    // be able to generate a URL but we should stop 'accepting' ambient values.
+                    //
+                    // This might be a case like:
+                    //  template: a/{b?}/{c?}
+                    //  ambient: { c = 17 }
+                    //  values: { }
+                    //
+                    // We can still generate a URL from this ("/a") but we shouldn't accept 'c' because
+                    // we can't use it.
+                    // 
+                    // In the example above we should fall into this block for 'b'.
+                    break;
+                }
+
+                // If the parameter is a match, add it to the list of values we will use for URI generation
+                if (hasExplicitValue)
+                {
+                    if (IsRoutePartNonEmpty(explicitValue))
+                    {
+                        context.Accept(parameterName, explicitValue);
+                    }
+                }
+                else if (hasAmbientValue)
+                {
+                    context.Accept(parameterName, ambientValue);
+                }
+            }
+        }
+
+        private void CopyNonParamaterExplicitValues(RouteValueDictionary explicitValues, TemplateBindingContext context)
+        {
+            foreach (var kvp in explicitValues)
+            {
+                if (IsRoutePartNonEmpty(kvp.Value))
+                {
+                    context.Accept(kvp.Key, kvp.Value);
+                }
+            }
+        }
+
+        private void CopyParameterDefaultValues(TemplateBindingContext context)
+        {
+            for (var i = 0; i < _template.Parameters.Count; i++)
+            {
+                var parameter = _template.Parameters[i];
+                if (parameter.IsOptional || parameter.IsCatchAll)
+                {
+                    continue;
+                }
+
+                if (context.NeedsValue(parameter.Name))
+                {
+                    // Add the default value only if there isn't already a new value for it and
+                    // only if it actually has a default value, which we determine based on whether
+                    // the parameter value is required.
+                    context.AcceptDefault(parameter.Name);
+                }
+            }
+        }
+
+        private bool AllRequiredParametersHaveValue(TemplateBindingContext context)
+        {
+            for (var i = 0; i < _template.Parameters.Count; i++)
+            {
+                var parameter = _template.Parameters[i];
+                if (parameter.IsOptional || parameter.IsCatchAll)
+                {
+                    continue;
+                }
+
+                if (!context.AcceptedValues.ContainsKey(parameter.Name))
+                {
+                    // We don't have a value for this parameter, so we can't generate a url.
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        private bool FiltersMatch(RouteValueDictionary explicitValues)
+        {
+            foreach (var filter in _filters)
+            {
+                var parameter = GetParameter(filter.Key);
+                if (parameter != null)
+                {
+                    continue;
+                }
+
+                if (explicitValues.TryGetValue(filter.Key, out var value) && !RoutePartsEqual(value, filter.Value))
+                {
+                    // If there is a non-parameterized value in the route and there is a
+                    // new value for it and it doesn't match, this route won't match.
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        private void CopyNonParameterAmbientValues(
+            RouteValueDictionary ambientValues,
+            RouteValueDictionary combinedValues,
+            TemplateBindingContext context)
+        {
+            if (ambientValues == null)
+            {
+                return;
+            }
+
+            foreach (var kvp in ambientValues)
+            {
+                if (IsRoutePartNonEmpty(kvp.Value))
+                {
+                    var parameter = GetParameter(kvp.Key);
+                    if (parameter == null && !context.AcceptedValues.ContainsKey(kvp.Key))
+                    {
+                        combinedValues.Add(kvp.Key, kvp.Value);
+                    }
+                }
+            }
+        }
+
         [DebuggerDisplay("{DebuggerToString(),nq}")]
         private struct TemplateBindingContext
         {
@@ -444,8 +546,7 @@ namespace Microsoft.AspNetCore.Routing.Template
             {
                 Debug.Assert(!_acceptedValues.ContainsKey(key));
 
-                object value;
-                if (_defaults != null && _defaults.TryGetValue(key, out value))
+                if (_defaults != null && _defaults.TryGetValue(key, out var value))
                 {
                     _acceptedValues.Add(key, value);
                 }

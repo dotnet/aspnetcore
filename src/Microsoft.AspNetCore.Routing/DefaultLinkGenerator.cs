@@ -92,7 +92,9 @@ namespace Microsoft.AspNetCore.Routing
 
             var templateValuesResult = templateBinder.GetValues(
                 ambientValues: context.AmbientValues,
-                values: context.ExplicitValues);
+                explicitValues: context.ExplicitValues,
+                endpoint.RequiredValues.Keys);
+
             if (templateValuesResult == null)
             {
                 // We're missing one of the required values for this route.
