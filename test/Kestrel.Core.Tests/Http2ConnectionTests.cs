@@ -100,11 +100,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         private static readonly byte[] _noData = new byte[0];
         private static readonly byte[] _maxData = Encoding.ASCII.GetBytes(new string('a', Http2Frame.MinAllowedMaxFrameSize));
 
-        private readonly MemoryPool<byte> _memoryPool = KestrelMemoryPool.Create();
-        private readonly DuplexPipe.DuplexPipePair _pair;
         private readonly TestApplicationErrorLogger _logger;
-        private readonly Http2ConnectionContext _connectionContext;
-        private readonly Http2Connection _connection;
         private readonly Http2PeerSettings _clientSettings = new Http2PeerSettings();
         private readonly HPackEncoder _hpackEncoder = new HPackEncoder();
         private readonly HPackDecoder _hpackDecoder;
@@ -126,28 +122,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         private readonly RequestDelegate _waitForAbortFlushingApplication;
         private readonly RequestDelegate _waitForAbortWithDataApplication;
 
+        private MemoryPool<byte> _memoryPool;
+        private DuplexPipe.DuplexPipePair _pair;
+        private Http2ConnectionContext _connectionContext;
+        private Http2Connection _connection;
+
         private Task _connectionTask;
 
         public Http2ConnectionTests()
         {
-            // Always dispatch test code back to the ThreadPool. This prevents deadlocks caused by continuing
-            // Http2Connection.ProcessRequestsAsync() loop with writer locks acquired. Run product code inline to make
-            // it easier to verify request frames are processed correctly immediately after sending the them.
-            var inputPipeOptions = new PipeOptions(
-                pool: _memoryPool,
-                readerScheduler: PipeScheduler.Inline,
-                writerScheduler: PipeScheduler.ThreadPool,
-                useSynchronizationContext: false
-            );
-            var outputPipeOptions = new PipeOptions(
-                pool: _memoryPool,
-                readerScheduler: PipeScheduler.ThreadPool,
-                writerScheduler: PipeScheduler.Inline,
-                useSynchronizationContext: false
-            );
-
-            _pair = DuplexPipe.CreateConnectionPair(inputPipeOptions, outputPipeOptions);
-
             _noopApplication = context => Task.CompletedTask;
 
             _readHeadersApplication = context =>
@@ -297,6 +280,31 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             _logger = new TestApplicationErrorLogger();
 
+            InitializeConnectionFields(KestrelMemoryPool.Create());
+        }
+
+        private void InitializeConnectionFields(MemoryPool<byte> memoryPool)
+        {
+            _memoryPool = memoryPool;
+
+            // Always dispatch test code back to the ThreadPool. This prevents deadlocks caused by continuing
+            // Http2Connection.ProcessRequestsAsync() loop with writer locks acquired. Run product code inline to make
+            // it easier to verify request frames are processed correctly immediately after sending the them.
+            var inputPipeOptions = new PipeOptions(
+                pool: _memoryPool,
+                readerScheduler: PipeScheduler.Inline,
+                writerScheduler: PipeScheduler.ThreadPool,
+                useSynchronizationContext: false
+            );
+            var outputPipeOptions = new PipeOptions(
+                pool: _memoryPool,
+                readerScheduler: PipeScheduler.ThreadPool,
+                writerScheduler: PipeScheduler.Inline,
+                useSynchronizationContext: false
+            );
+
+            _pair = DuplexPipe.CreateConnectionPair(inputPipeOptions, outputPipeOptions);
+
             _connectionContext = new Http2ConnectionContext
             {
                 ConnectionFeatures = new FeatureCollection(),
@@ -308,6 +316,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 Application = _pair.Application,
                 Transport = _pair.Transport
             };
+
             _connection = new Http2Connection(_connectionContext);
         }
 
@@ -370,7 +379,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
-            Assert.Equal(dataFrame.DataPayload, _helloWorldBytes);
+            Assert.Equal(_helloWorldBytes, dataFrame.DataPayload);
         }
 
         [Fact]
@@ -385,6 +394,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 withLength: 37,
                 withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
                 withStreamId: 1);
+
             var dataFrame = await ExpectAsync(Http2FrameType.DATA,
                 withLength: _maxData.Length,
                 withFlags: (byte)Http2DataFrameFlags.NONE,
@@ -396,7 +406,85 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
-            Assert.Equal(dataFrame.DataPayload, _maxData);
+            Assert.Equal(_maxData, dataFrame.DataPayload);
+        }
+
+        [Fact]
+        public async Task DATA_Received_GreaterThanDefaultInitialWindowSize_ReadByStream()
+        {
+            // _maxData should be 1/4th of the default initial window size + 1.
+            Assert.Equal(Http2PeerSettings.DefaultInitialWindowSize + 1, (uint)_maxData.Length * 4);
+
+            // Double the client stream windows to 128KiB so no stream WINDOW_UPDATEs need to be sent.
+            _clientSettings.InitialWindowSize = Http2PeerSettings.DefaultInitialWindowSize * 2;
+
+            await InitializeConnectionAsync(_echoApplication);
+
+            // Double the client connection window to 128KiB.
+            await SendWindowUpdateAsync(0, (int)Http2PeerSettings.DefaultInitialWindowSize);
+
+            await StartStreamAsync(1, _browserRequestHeaders, endStream: false);
+            await SendDataAsync(1, _maxData, endStream: false);
+
+            await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 37,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1);
+
+            var dataFrame1 = await ExpectAsync(Http2FrameType.DATA,
+                withLength: _maxData.Length,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 1);
+
+            // Writing over half the initial window size induces both a connection-level and stream-level window update.
+            await SendDataAsync(1, _maxData, endStream: false);
+
+            var streamWindowUpdateFrame1 = await ExpectAsync(Http2FrameType.WINDOW_UPDATE,
+                withLength: 4,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 1);
+            var connectionWindowUpdateFrame1 = await ExpectAsync(Http2FrameType.WINDOW_UPDATE,
+                withLength: 4,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 0);
+
+            var dataFrame2 = await ExpectAsync(Http2FrameType.DATA,
+                withLength: _maxData.Length,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 1);
+
+            await SendDataAsync(1, _maxData, endStream: false);
+
+            var dataFrame3 = await ExpectAsync(Http2FrameType.DATA,
+                withLength: _maxData.Length,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 1);
+
+            await SendDataAsync(1, _maxData, endStream: true);
+
+            var connectionWindowUpdateFrame2 = await ExpectAsync(Http2FrameType.WINDOW_UPDATE,
+                withLength: 4,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 0);
+
+            var dataFrame4 = await ExpectAsync(Http2FrameType.DATA,
+                withLength: _maxData.Length,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 1);
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 0,
+                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withStreamId: 1);
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+
+            Assert.Equal(_maxData, dataFrame1.DataPayload);
+            Assert.Equal(_maxData, dataFrame2.DataPayload);
+            Assert.Equal(_maxData, dataFrame3.DataPayload);
+            Assert.Equal(_maxData, dataFrame4.DataPayload);
+            Assert.Equal(_maxData.Length * 2, streamWindowUpdateFrame1.WindowUpdateSizeIncrement);
+            Assert.Equal(_maxData.Length * 2, connectionWindowUpdateFrame1.WindowUpdateSizeIncrement);
+            Assert.Equal(_maxData.Length * 2, connectionWindowUpdateFrame2.WindowUpdateSizeIncrement);
         }
 
         [Fact]
@@ -428,7 +516,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
-            Assert.Equal(dataFrame.DataPayload, _helloWorldBytes);
+            Assert.Equal(_helloWorldBytes, dataFrame.DataPayload);
         }
 
         [Fact]
@@ -498,6 +586,105 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
+        public async Task DATA_Received_Multiplexed_GreaterThanDefaultInitialWindowSize_ReadByStream()
+        {
+            // _maxData should be 1/4th of the default initial window size + 1.
+            Assert.Equal(Http2PeerSettings.DefaultInitialWindowSize + 1, (uint)_maxData.Length * 4);
+
+            // Double the client stream windows to 128KiB so no stream WINDOW_UPDATEs need to be sent.
+            _clientSettings.InitialWindowSize = Http2PeerSettings.DefaultInitialWindowSize * 2;
+
+            await InitializeConnectionAsync(_echoApplication);
+
+            // Double the client connection window to 128KiB.
+            await SendWindowUpdateAsync(0, (int)Http2PeerSettings.DefaultInitialWindowSize);
+
+            await StartStreamAsync(1, _browserRequestHeaders, endStream: false);
+            await SendDataAsync(1, _maxData, endStream: false);
+
+            await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 37,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1);
+
+            var dataFrame1 = await ExpectAsync(Http2FrameType.DATA,
+                withLength: _maxData.Length,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 1);
+
+            // Writing over half the initial window size induces both a connection-level and stream-level window update.
+            await SendDataAsync(1, _maxData, endStream: false);
+
+            var streamWindowUpdateFrame = await ExpectAsync(Http2FrameType.WINDOW_UPDATE,
+                withLength: 4,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 1);
+            var connectionWindowUpdateFrame1 = await ExpectAsync(Http2FrameType.WINDOW_UPDATE,
+                withLength: 4,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 0);
+
+            var dataFrame2 = await ExpectAsync(Http2FrameType.DATA,
+                withLength: _maxData.Length,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 1);
+
+            await SendDataAsync(1, _maxData, endStream: false);
+
+            var dataFrame3 = await ExpectAsync(Http2FrameType.DATA,
+                withLength: _maxData.Length,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 1);
+
+            // Uploading data to a new stream induces a second connection-level but not stream-level window update.
+            await StartStreamAsync(3, _browserRequestHeaders, endStream: false);
+            await SendDataAsync(3, _maxData, endStream: true);
+
+            var connectionWindowUpdateFrame2 = await ExpectAsync(Http2FrameType.WINDOW_UPDATE,
+                withLength: 4,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 0);
+
+            await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 37,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 3);
+
+            var dataFrame4 = await ExpectAsync(Http2FrameType.DATA,
+                withLength: _maxData.Length,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 3);
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 0,
+                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withStreamId: 3);
+
+            await SendDataAsync(1, _maxData, endStream: true);
+
+            var dataFrame5 = await ExpectAsync(Http2FrameType.DATA,
+                withLength: _maxData.Length,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 1);
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 0,
+                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withStreamId: 1);
+
+            await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
+
+            Assert.Equal(_maxData, dataFrame1.DataPayload);
+            Assert.Equal(_maxData, dataFrame2.DataPayload);
+            Assert.Equal(_maxData, dataFrame3.DataPayload);
+            Assert.Equal(_maxData.Length * 2, streamWindowUpdateFrame.WindowUpdateSizeIncrement);
+            Assert.Equal(_maxData.Length * 2, connectionWindowUpdateFrame1.WindowUpdateSizeIncrement);
+
+            Assert.Equal(_maxData, dataFrame4.DataPayload);
+            Assert.Equal(_maxData.Length * 2, connectionWindowUpdateFrame2.WindowUpdateSizeIncrement);
+
+            Assert.Equal(_maxData, dataFrame5.DataPayload);
+        }
+
+        [Fact]
         public async Task DATA_Received_Multiplexed_AppMustNotBlockOtherFrames()
         {
             var stream1Read = new ManualResetEvent(false);
@@ -536,7 +723,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 withLength: 37,
                 withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
                 withStreamId: 3);
-           await ExpectAsync(Http2FrameType.DATA,
+            await ExpectAsync(Http2FrameType.DATA,
                 withLength: 5,
                 withFlags: (byte)Http2DataFrameFlags.NONE,
                 withStreamId: 3);
@@ -589,7 +776,91 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
-            Assert.Equal(dataFrame.DataPayload, _helloWorldBytes);
+            Assert.Equal(_helloWorldBytes, dataFrame.DataPayload);
+        }
+
+        [Theory]
+        [InlineData(0)]
+        [InlineData(1)]
+        [InlineData(255)]
+        public async Task DATA_Received_WithPadding_CountsTowardsInputFlowControl(byte padLength)
+        {
+            // _maxData should be 1/4th of the default initial window size + 1.
+            Assert.Equal(Http2PeerSettings.DefaultInitialWindowSize + 1, (uint)_maxData.Length * 4);
+
+            var maxDataMinusPadding = new ArraySegment<byte>(_maxData, 0, _maxData.Length - padLength - 1);
+
+            await InitializeConnectionAsync(_echoApplication);
+
+            await StartStreamAsync(1, _browserRequestHeaders, endStream: false);
+            await SendDataWithPaddingAsync(1, maxDataMinusPadding, padLength, endStream: false);
+
+            await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 37,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1);
+
+            var dataFrame1 = await ExpectAsync(Http2FrameType.DATA,
+                withLength: maxDataMinusPadding.Count,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 1);
+
+            // Writing over half the initial window size induces both a connection-level and stream-level window update.
+            await SendDataAsync(1, _maxData, endStream: true);
+
+            var connectionWindowUpdateFrame = await ExpectAsync(Http2FrameType.WINDOW_UPDATE,
+                withLength: 4,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 0);
+
+            var dataFrame2 = await ExpectAsync(Http2FrameType.DATA,
+                withLength: _maxData.Length,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 1);
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 0,
+                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withStreamId: 1);
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+
+            Assert.Equal(maxDataMinusPadding, dataFrame1.DataPayload);
+            Assert.Equal(_maxData, dataFrame2.DataPayload);
+
+            Assert.Equal(_maxData.Length * 2, connectionWindowUpdateFrame.WindowUpdateSizeIncrement);
+        }
+
+        [Fact]
+        public async Task DATA_Received_ButNotConsumedByApp_CountsTowardsInputFlowControl()
+        {
+            // _maxData should be 1/4th of the default initial window size + 1.
+            Assert.Equal(Http2PeerSettings.DefaultInitialWindowSize + 1, (uint)_maxData.Length * 4);
+
+            await InitializeConnectionAsync(_noopApplication);
+
+            await StartStreamAsync(1, _browserRequestHeaders, endStream: false);
+            await SendDataAsync(1, _maxData, endStream: false);
+
+            await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 55,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1);
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 0,
+                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withStreamId: 1);
+
+            // Writing over half the initial window size induces both a connection-level window update.
+            await SendDataAsync(1, _maxData, endStream: true);
+
+            var connectionWindowUpdateFrame = await ExpectAsync(Http2FrameType.WINDOW_UPDATE,
+                withLength: 4,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 0);
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+
+            Assert.Equal(_maxData.Length * 2, connectionWindowUpdateFrame.WindowUpdateSizeIncrement);
         }
 
         [Fact]
@@ -777,7 +1048,64 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public async Task DATA_Sent_DespiteConnectionBackpressure_IfEmptyAndEndsStream()
+        public async Task DATA_Received_NoStreamWindowSpace_ConnectionError()
+        {
+            // I hate doing this, but it avoids exceptions from MemoryPool.Dipose() in debug mode. The problem is since
+            // the stream's ProcessRequestsAsync loop is never awaited by the connection, it's not really possible to
+            // observe when all the blocks are returned. This can be removed after we implement graceful shutdown.
+            Dispose();
+            InitializeConnectionFields(new DiagnosticMemoryPool(KestrelMemoryPool.CreateSlabMemoryPool(), allowLateReturn: true));
+
+            // _maxData should be 1/4th of the default initial window size + 1.
+            Assert.Equal(Http2PeerSettings.DefaultInitialWindowSize + 1, (uint)_maxData.Length * 4);
+
+            await InitializeConnectionAsync(_waitForAbortApplication);
+
+            await StartStreamAsync(1, _browserRequestHeaders, endStream: false);
+
+            await SendDataAsync(1, _maxData, endStream: false);
+            await SendDataAsync(1, _maxData, endStream: false);
+            await SendDataAsync(1, _maxData, endStream: false);
+            await SendDataAsync(1, _maxData, endStream: false);
+
+            await WaitForConnectionErrorAsync<Http2ConnectionErrorException>(
+                ignoreNonGoAwayFrames: false,
+                expectedLastStreamId: 1,
+                expectedErrorCode: Http2ErrorCode.FLOW_CONTROL_ERROR,
+                expectedErrorMessage: CoreStrings.Http2ErrorFlowControlWindowExceeded);
+        }
+
+        [Fact]
+        public async Task DATA_Received_NoConnectionWindowSpace_ConnectionError()
+        {
+            // I hate doing this, but it avoids exceptions from MemoryPool.Dipose() in debug mode. The problem is since
+            // the stream's ProcessRequestsAsync loop is never awaited by the connection, it's not really possible to
+            // observe when all the blocks are returned. This can be removed after we implement graceful shutdown.
+            Dispose();
+            InitializeConnectionFields(new DiagnosticMemoryPool(KestrelMemoryPool.CreateSlabMemoryPool(), allowLateReturn: true));
+
+            // _maxData should be 1/4th of the default initial window size + 1.
+            Assert.Equal(Http2PeerSettings.DefaultInitialWindowSize + 1, (uint)_maxData.Length * 4);
+
+            await InitializeConnectionAsync(_waitForAbortApplication);
+
+            await StartStreamAsync(1, _browserRequestHeaders, endStream: false);
+            await SendDataAsync(1, _maxData, endStream: false);
+            await SendDataAsync(1, _maxData, endStream: false);
+
+            await StartStreamAsync(3, _browserRequestHeaders, endStream: false);
+            await SendDataAsync(3, _maxData, endStream: false);
+            await SendDataAsync(3, _maxData, endStream: false);
+
+            await WaitForConnectionErrorAsync<Http2ConnectionErrorException>(
+                ignoreNonGoAwayFrames: false,
+                expectedLastStreamId: 3,
+                expectedErrorCode: Http2ErrorCode.FLOW_CONTROL_ERROR,
+                expectedErrorMessage: CoreStrings.Http2ErrorFlowControlWindowExceeded);
+        }
+
+        [Fact]
+        public async Task DATA_Sent_DespiteConnectionOutputFlowControl_IfEmptyAndEndsStream()
         {
             // Zero-length data frames are allowed to be sent even if there is no space available in the flow control window.
             // https://httpwg.org/specs/rfc7540.html#rfc.section.6.9.1
@@ -862,7 +1190,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public async Task DATA_Sent_DespiteStreamBackpressure_IfEmptyAndEndsStream()
+        public async Task DATA_Sent_DespiteStreamOutputFlowControl_IfEmptyAndEndsStream()
         {
             // Zero-length data frames are allowed to be sent even if there is no space available in the flow control window.
             // https://httpwg.org/specs/rfc7540.html#rfc.section.6.9.1
@@ -1561,7 +1889,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public async Task RST_STREAM_Received_RelievesConnectionBackpressure()
+        public async Task RST_STREAM_Received_ContinuesAppsAwaitingConnectionOutputFlowControl()
         {
             var writeTasks = new Task[4];
 
@@ -1681,7 +2009,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public async Task RST_STREAM_Received_RelievesStreamBackpressure()
+        public async Task RST_STREAM_Received_ContinuesAppsAwaitingStreamOutputFlowControl()
         {
             var writeTasks = new Task[6];
             var initialWindowSize = _helloWorldBytes.Length / 2;
@@ -1736,7 +2064,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                     withFlags: (byte)Http2DataFrameFlags.NONE,
                     withStreamId: streamId);
 
-                Assert.Equal(dataFrame.DataPayload, new ArraySegment<byte>(_helloWorldBytes, 0, initialWindowSize));
+                Assert.Equal(new ArraySegment<byte>(_helloWorldBytes, 0, initialWindowSize), dataFrame.DataPayload);
                 Assert.False(writeTasks[streamId].IsCompleted);
             }
 
@@ -1762,6 +2090,33 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Contains(1, _abortedStreamIds);
             Assert.Contains(3, _abortedStreamIds);
             Assert.Contains(5, _abortedStreamIds);
+        }
+
+        [Fact]
+        public async Task RST_STREAM_Received_ReturnsSpaceToConnectionInputFlowControlWindow()
+        {
+            // _maxData should be 1/4th of the default initial window size + 1.
+            Assert.Equal(Http2PeerSettings.DefaultInitialWindowSize + 1, (uint)_maxData.Length * 4);
+
+            await InitializeConnectionAsync(_waitForAbortApplication);
+
+            await StartStreamAsync(1, _browserRequestHeaders, endStream: false);
+            await SendDataAsync(1, _maxData, endStream: false);
+            await SendDataAsync(1, _maxData, endStream: false);
+            await SendDataAsync(1, _maxData, endStream: false);
+
+            await SendRstStreamAsync(1);
+            await WaitForAllStreamsAsync();
+
+            var connectionWindowUpdateFrame = await ExpectAsync(Http2FrameType.WINDOW_UPDATE,
+                withLength: 4,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 0);
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+
+            Assert.Contains(1, _abortedStreamIds);
+            Assert.Equal(_maxData.Length * 3, connectionWindowUpdateFrame.WindowUpdateSizeIncrement);
         }
 
         [Fact]
@@ -2070,7 +2425,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public async Task GOAWAY_Received_RelievesConnectionBackpressure()
+        public async Task GOAWAY_Received_ContinuesAppsAwaitingConnectionOutputFlowControl()
         {
             var writeTasks = new Task[6];
             var expectedFullFrameCountBeforeBackpressure = Http2PeerSettings.DefaultInitialWindowSize / _maxData.Length;
@@ -2170,7 +2525,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public async Task GOAWAY_Received_RelievesStreamBackpressure()
+        public async Task GOAWAY_Received_ContinuesAppsAwaitingStreamOutputFlowControle()
         {
             var writeTasks = new Task[6];
             var initialWindowSize = _helloWorldBytes.Length / 2;
@@ -2225,7 +2580,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                     withFlags: (byte)Http2DataFrameFlags.NONE,
                     withStreamId: streamId);
 
-                Assert.Equal(dataFrame.DataPayload, new ArraySegment<byte>(_helloWorldBytes, 0, initialWindowSize));
+                Assert.Equal(new ArraySegment<byte>(_helloWorldBytes, 0, initialWindowSize), dataFrame.DataPayload);
                 Assert.False(writeTasks[streamId].IsCompleted);
             }
 
@@ -2526,8 +2881,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
-            Assert.Equal(dataFrame1.DataPayload, new ArraySegment<byte>(_helloWorldBytes, 0, initialWindowSize));
-            Assert.Equal(dataFrame2.DataPayload, new ArraySegment<byte>(_helloWorldBytes, initialWindowSize, initialWindowSize));
+            Assert.Equal(new ArraySegment<byte>(_helloWorldBytes, 0, initialWindowSize), dataFrame1.DataPayload);
+            Assert.Equal(new ArraySegment<byte>(_helloWorldBytes, initialWindowSize, initialWindowSize), dataFrame2.DataPayload);
         }
 
         [Fact]
@@ -2581,9 +2936,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
-            Assert.Equal(dataFrame1.DataPayload, new ArraySegment<byte>(_helloWorldBytes, 0, 6));
-            Assert.Equal(dataFrame2.DataPayload, new ArraySegment<byte>(_helloWorldBytes, 6, 3));
-            Assert.Equal(dataFrame3.DataPayload, new ArraySegment<byte>(_helloWorldBytes, 9, 3));
+            Assert.Equal(new ArraySegment<byte>(_helloWorldBytes, 0, 6), dataFrame1.DataPayload);
+            Assert.Equal(new ArraySegment<byte>(_helloWorldBytes, 6, 3), dataFrame2.DataPayload);
+            Assert.Equal(new ArraySegment<byte>(_helloWorldBytes, 9, 3), dataFrame3.DataPayload);
         }
 
         [Fact]

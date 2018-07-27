@@ -73,12 +73,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             ServerOptions = ServiceContext.ServerOptions;
             HttpResponseControl = this;
-            RequestBodyPipe = CreateRequestBodyPipe();
         }
 
         public IHttpResponseControl HttpResponseControl { get; set; }
 
-        public Pipe RequestBodyPipe { get; }
+        public Pipe RequestBodyPipe { get; protected set; }
 
         public ServiceContext ServiceContext => _context.ServiceContext;
         private IPEndPoint LocalEndPoint => _context.LocalEndPoint;
@@ -1332,17 +1331,5 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             Log.ApplicationError(ConnectionId, TraceIdentifier, ex);
         }
-
-        private Pipe CreateRequestBodyPipe()
-            => new Pipe(new PipeOptions
-            (
-                pool: _context.MemoryPool,
-                readerScheduler: ServiceContext.Scheduler,
-                writerScheduler: PipeScheduler.Inline,
-                pauseWriterThreshold: 1,
-                resumeWriterThreshold: 1,
-                useSynchronizationContext: false,
-                minimumSegmentSize: KestrelMemoryPool.MinimumSegmentSize
-            ));
     }
 }

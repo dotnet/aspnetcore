@@ -354,9 +354,6 @@
   <data name="EndPointRequiresAtLeastOneProtocol" xml:space="preserve">
     <value>An endpoint must be configured to serve at least one protocol.</value>
   </data>
-  <data name="EndPointRequiresTlsForHttp1AndHttp2" xml:space="preserve">
-    <value>Using both HTTP/1.x and HTTP/2 on the same endpoint requires the use of TLS.</value>
-  </data>
   <data name="EndPointHttp2NotNegotiated" xml:space="preserve">
     <value>HTTP/2 over TLS was not negotiated on an HTTP/2-only endpoint.</value>
   </data>
@@ -544,6 +541,9 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
   </data>
   <data name="Http2StreamAborted" xml:space="preserve">
     <value>The request stream was aborted.</value>
+  </data>
+  <data name="Http2ErrorFlowControlWindowExceeded" xml:space="preserve">
+    <value>The client sent more data than what was available in the flow-control window.</value>
   </data>
   <data name="Http2ErrorConnectMustNotSendSchemeOrPath" xml:space="preserve">
     <value>CONNECT requests must not send :scheme or :path headers.</value>

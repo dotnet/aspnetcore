@@ -6,14 +6,12 @@ using System.Buffers;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Pipelines;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Connections.Abstractions;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
@@ -23,24 +21,35 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
     {
         private readonly Http2StreamContext _context;
         private readonly Http2OutputProducer _http2Output;
-        private readonly Http2StreamOutputFlowControl _outputFlowControl;
-        private int _requestAborted;
+        private readonly StreamInputFlowControl _inputFlowControl;
+        private readonly StreamOutputFlowControl _outputFlowControl;
+
+        private StreamCompletionFlags _completionState;
+        private readonly object _completionLock = new object();
 
         public Http2Stream(Http2StreamContext context)
             : base(context)
         {
             _context = context;
-            _outputFlowControl = new Http2StreamOutputFlowControl(context.ConnectionOutputFlowControl, context.ClientPeerSettings.InitialWindowSize);
+
+            _inputFlowControl = new StreamInputFlowControl(
+                _context.StreamId,
+                _context.FrameWriter,
+                context.ConnectionInputFlowControl,
+                Http2PeerSettings.DefaultInitialWindowSize,
+                Http2PeerSettings.DefaultInitialWindowSize / 2);
+
+            _outputFlowControl = new StreamOutputFlowControl(context.ConnectionOutputFlowControl, context.ClientPeerSettings.InitialWindowSize);
             _http2Output = new Http2OutputProducer(context.StreamId, context.FrameWriter, _outputFlowControl, context.TimeoutControl, context.MemoryPool);
+
+            RequestBodyPipe = CreateRequestBodyPipe();
             Output = _http2Output;
         }
 
         public int StreamId => _context.StreamId;
 
         public bool RequestBodyStarted { get; private set; }
-        public bool EndStreamReceived { get; private set; }
-
-        protected IHttp2StreamLifetimeHandler StreamLifetimeHandler => _context.StreamLifetimeHandler;
+        public bool EndStreamReceived => (_completionState & StreamCompletionFlags.EndStreamReceived) == StreamCompletionFlags.EndStreamReceived;
 
         public override bool IsUpgradableRequest => false;
 
@@ -51,7 +60,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         protected override void OnRequestProcessingEnded()
         {
-            StreamLifetimeHandler.OnStreamCompleted(StreamId);
+            TryApplyCompletionFlag(StreamCompletionFlags.RequestProcessingEnded);
+
+            RequestBodyPipe.Reader.Complete();
+
+            // The app can no longer read any more of the request body, so return any bytes that weren't read to the
+            // connection's flow-control window.
+            _inputFlowControl.Abort();
         }
 
         protected override string CreateRequestId()
@@ -246,31 +261,61 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
         }
 
-        public async Task OnDataAsync(ArraySegment<byte> data, bool endStream)
+        public Task OnDataAsync(Http2Frame dataFrame)
         {
             // TODO: content-length accounting
-            // TODO: flow-control
 
-            try
+            // Since padding isn't buffered, immediately count padding bytes as read for flow control purposes.
+            if (dataFrame.DataHasPadding)
             {
-                if (data.Count > 0)
-                {
-                    RequestBodyPipe.Writer.Write(data);
+                // Add 1 byte for the padding length prefix.
+                OnDataRead(dataFrame.DataPadLength + 1);
+            }
 
-                    RequestBodyStarted = true;
-                    await RequestBodyPipe.Writer.FlushAsync();
-                }
+            var payload = dataFrame.DataPayload;
+            var endStream = (dataFrame.DataFlags & Http2DataFrameFlags.END_STREAM) == Http2DataFrameFlags.END_STREAM;
+
+            if (payload.Count > 0)
+            {
+                RequestBodyStarted = true;
 
                 if (endStream)
                 {
-                    EndStreamReceived = true;
-                    RequestBodyPipe.Writer.Complete();
+                    // No need to send any more window updates for this stream now that we've received all the data.
+                    // Call before flushing the request body pipe, because that might induce a window update.
+                    _inputFlowControl.StopWindowUpdates();
                 }
+
+                _inputFlowControl.Advance(payload.Count);
+
+                RequestBodyPipe.Writer.Write(payload);
+                var flushTask = RequestBodyPipe.Writer.FlushAsync();
+
+                // It shouldn't be possible for the RequestBodyPipe to fill up an return an incomplete task if
+                // _inputFlowControl.Advance() didn't throw.
+                Debug.Assert(flushTask.IsCompleted);
             }
-            catch (Exception ex)
+
+            if (endStream)
             {
-                RequestBodyPipe.Writer.Complete(ex);
+                OnEndStreamReceived();
             }
+
+            return Task.CompletedTask;
+        }
+
+        public void OnEndStreamReceived()
+        {
+            TryApplyCompletionFlag(StreamCompletionFlags.EndStreamReceived);
+
+            RequestBodyPipe.Writer.Complete();
+
+            _inputFlowControl.StopWindowUpdates();
+        }
+
+        public void OnDataRead(int bytesRead)
+        {
+            _inputFlowControl.UpdateWindows(bytesRead);
         }
 
         public bool TryUpdateOutputWindow(int bytes)
@@ -280,7 +325,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public override void Abort(ConnectionAbortedException abortReason)
         {
-            if (Interlocked.Exchange(ref _requestAborted, 1) != 0)
+            if (!TryApplyCompletionFlag(StreamCompletionFlags.Aborted))
             {
                 return;
             }
@@ -296,7 +341,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         private void ResetAndAbort(ConnectionAbortedException abortReason, Http2ErrorCode error)
         {
-            if (Interlocked.Exchange(ref _requestAborted, 1) != 0)
+            if (!TryApplyCompletionFlag(StreamCompletionFlags.Aborted))
             {
                 return;
             }
@@ -315,6 +360,60 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
             // Unblock the request body.
             RequestBodyPipe.Writer.Complete(new IOException(CoreStrings.Http2StreamAborted, abortReason));
+
+            _inputFlowControl.Abort();
+        }
+
+        private Pipe CreateRequestBodyPipe()
+            => new Pipe(new PipeOptions
+            (
+                pool: _context.MemoryPool,
+                readerScheduler: ServiceContext.Scheduler,
+                writerScheduler: PipeScheduler.Inline,
+                pauseWriterThreshold: Http2PeerSettings.DefaultInitialWindowSize,
+                resumeWriterThreshold: Http2PeerSettings.DefaultInitialWindowSize,
+                useSynchronizationContext: false,
+                minimumSegmentSize: KestrelMemoryPool.MinimumSegmentSize
+            ));
+
+        private bool TryApplyCompletionFlag(StreamCompletionFlags completionState)
+        {
+            lock (_completionLock)
+            {
+                var lastCompletionState = _completionState;
+                _completionState |= completionState;
+
+                if (ShoulStopTrackingStream(_completionState) && !ShoulStopTrackingStream(lastCompletionState))
+                {
+                    _context.StreamLifetimeHandler.OnStreamCompleted(StreamId);
+                }
+
+                return _completionState != lastCompletionState;
+            }
+        }
+
+        private static bool ShoulStopTrackingStream(StreamCompletionFlags completionState)
+        {
+            // This could be a single condition, but I think it reads better as two if's.
+            if ((completionState & StreamCompletionFlags.RequestProcessingEnded) == StreamCompletionFlags.RequestProcessingEnded)
+            {
+                if ((completionState & StreamCompletionFlags.EndStreamReceived) == StreamCompletionFlags.EndStreamReceived ||
+                    (completionState & StreamCompletionFlags.Aborted) == StreamCompletionFlags.Aborted)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        [Flags]
+        private enum StreamCompletionFlags
+        {
+            None = 0,
+            RequestProcessingEnded = 1,
+            EndStreamReceived = 2,
+            Aborted = 4,
         }
     }
 }

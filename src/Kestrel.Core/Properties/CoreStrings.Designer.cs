@@ -1117,20 +1117,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             => GetString("EndPointRequiresAtLeastOneProtocol");
 
         /// <summary>
-        /// Using both HTTP/1.x and HTTP/2 on the same endpoint requires the use of TLS.
-        /// </summary>
-        internal static string EndPointRequiresTlsForHttp1AndHttp2
-        {
-            get => GetString("EndPointRequiresTlsForHttp1AndHttp2");
-        }
-
-        /// <summary>
-        /// Using both HTTP/1.x and HTTP/2 on the same endpoint requires the use of TLS.
-        /// </summary>
-        internal static string FormatEndPointRequiresTlsForHttp1AndHttp2()
-            => GetString("EndPointRequiresTlsForHttp1AndHttp2");
-
-        /// <summary>
         /// HTTP/2 over TLS was not negotiated on an HTTP/2-only endpoint.
         /// </summary>
         internal static string EndPointHttp2NotNegotiated
@@ -2001,6 +1987,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// </summary>
         internal static string FormatHttp2StreamAborted()
             => GetString("Http2StreamAborted");
+
+        /// <summary>
+        /// The client sent more data than what was available in the flow-control window.
+        /// </summary>
+        internal static string Http2ErrorFlowControlWindowExceeded
+        {
+            get => GetString("Http2ErrorFlowControlWindowExceeded");
+        }
+
+        /// <summary>
+        /// The client sent more data than what was available in the flow-control window.
+        /// </summary>
+        internal static string FormatHttp2ErrorFlowControlWindowExceeded()
+            => GetString("Http2ErrorFlowControlWindowExceeded");
 
         /// <summary>
         /// CONNECT requests must not send :scheme or :path headers.
