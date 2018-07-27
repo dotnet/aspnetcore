@@ -95,7 +95,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             queue.BlockBackgroundWorkStart.Set();
             queue.BlockBackgroundWorkCompleting.Set();
 
-            await Task.Run(() => queue.NotifyBackgroundWorkCompleted.Wait(TimeSpan.FromSeconds(1)));
+            await Task.Run(() => queue.NotifyBackgroundWorkCompleted.Wait(TimeSpan.FromSeconds(3)));
 
             Assert.False(queue.IsScheduledOrRunning, "Queue should not have restarted");
             Assert.False(queue.HasPendingNotifications, "Queue should have processed all notifications");
@@ -120,6 +120,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 Delay = TimeSpan.FromMilliseconds(1),
                 BlockBackgroundWorkStart = new ManualResetEventSlim(initialState: false),
                 NotifyBackgroundWorkStarting = new ManualResetEventSlim(initialState: false),
+                NotifyBackgroundCapturedWorkload = new ManualResetEventSlim(initialState: false),
                 BlockBackgroundWorkCompleting = new ManualResetEventSlim(initialState: false),
                 NotifyBackgroundWorkCompleted = new ManualResetEventSlim(initialState: false),
             };
@@ -136,6 +137,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             await Task.Run(() => queue.NotifyBackgroundWorkStarting.Wait(TimeSpan.FromSeconds(1)));
 
             Assert.True(queue.IsScheduledOrRunning, "Worker should be processing now");
+
+            await Task.Run(() => queue.NotifyBackgroundCapturedWorkload.Wait(TimeSpan.FromSeconds(1)));
             Assert.False(queue.HasPendingNotifications, "Worker should have taken all notifications");
 
             queue.Enqueue(project, project.GetDocument(Documents[1].FilePath));
@@ -144,7 +147,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             // Allow work to complete, which should restart the timer.
             queue.BlockBackgroundWorkCompleting.Set();
 
-            await Task.Run(() => queue.NotifyBackgroundWorkCompleted.Wait(TimeSpan.FromSeconds(1)));
+            await Task.Run(() => queue.NotifyBackgroundWorkCompleted.Wait(TimeSpan.FromSeconds(3)));
             queue.NotifyBackgroundWorkCompleted.Reset();
 
             // It should start running again right away.
@@ -155,7 +158,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             queue.BlockBackgroundWorkStart.Set();
 
             queue.BlockBackgroundWorkCompleting.Set();
-            await Task.Run(() => queue.NotifyBackgroundWorkCompleted.Wait(TimeSpan.FromSeconds(1)));
+            await Task.Run(() => queue.NotifyBackgroundWorkCompleted.Wait(TimeSpan.FromSeconds(3)));
 
             Assert.False(queue.IsScheduledOrRunning, "Queue should not have restarted");
             Assert.False(queue.HasPendingNotifications, "Queue should have processed all notifications");
