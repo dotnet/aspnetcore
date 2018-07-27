@@ -4,9 +4,9 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing.EndpointConstraints;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.DependencyInjection;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Routing.Matchers
@@ -26,13 +26,19 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                 template);
         }
 
-        private Matcher CreateDfaMatcher(EndpointDataSource dataSource)
+        private Matcher CreateDfaMatcher(EndpointDataSource dataSource, EndpointSelector endpointSelector = null)
         {
-            var services = new ServiceCollection()
+            var serviceCollection = new ServiceCollection()
                 .AddLogging()
                 .AddOptions()
-                .AddRouting()
-                .BuildServiceProvider();
+                .AddRouting();
+
+            if (endpointSelector != null)
+            {
+                serviceCollection.AddSingleton<EndpointSelector>(endpointSelector);
+            }
+
+            var services = serviceCollection.BuildServiceProvider();
 
             var factory = services.GetRequiredService<MatcherFactory>();
             return Assert.IsType<DataSourceDependentMatcher>(factory.CreateMatcher(dataSource));
@@ -115,22 +121,39 @@ namespace Microsoft.AspNetCore.Routing.Matchers
         public async Task MatchAsync_MultipleMatches_EndpointSelectorCalled()
         {
             // Arrange
-            var endpointWithoutConstraint = CreateEndpoint("/Teams", 0);
-            var endpointWithConstraint = CreateEndpoint(
-                "/Teams",
-                0,
-                metadata: new EndpointMetadataCollection(new object[] { new HttpMethodEndpointConstraint(new[] { "POST" }) }));
+            var endpoint1 = CreateEndpoint("/Teams", 0);
+            var endpoint2 = CreateEndpoint("/Teams", 1);
+
+            var endpointSelector = new Mock<EndpointSelector>();
+            endpointSelector
+                .Setup(s => s.SelectAsync(It.IsAny<HttpContext>(), It.IsAny<IEndpointFeature>(), It.IsAny<CandidateSet>()))
+                .Callback<HttpContext, IEndpointFeature, CandidateSet>((c, f, cs) =>
+                {
+                    Assert.Equal(2, cs.Count);
+
+                    Assert.Same(endpoint1, cs[0].Endpoint);
+                    Assert.True(cs[0].IsValidCandidate);
+                    Assert.Equal(0, cs[0].Score);
+                    Assert.Empty(cs[0].Values);
+
+                    Assert.Same(endpoint2, cs[1].Endpoint);
+                    Assert.True(cs[1].IsValidCandidate);
+                    Assert.Equal(1, cs[1].Score);
+                    Assert.Empty(cs[1].Values);
+
+                    f.Endpoint = endpoint2;
+                })
+                .Returns(Task.CompletedTask);
 
             var endpointDataSource = new DefaultEndpointDataSource(new List<Endpoint>
             {
-                endpointWithoutConstraint,
-                endpointWithConstraint
+                endpoint1,
+                endpoint2
             });
 
-            var matcher = CreateDfaMatcher(endpointDataSource);
+            var matcher = CreateDfaMatcher(endpointDataSource, endpointSelector.Object);
 
             var httpContext = new DefaultHttpContext();
-            httpContext.Request.Method = "POST";
             httpContext.Request.Path = "/Teams";
 
             var endpointFeature = new EndpointFeature();
@@ -139,7 +162,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             await matcher.MatchAsync(httpContext, endpointFeature);
 
             // Assert
-            Assert.Equal(endpointWithConstraint, endpointFeature.Endpoint);
+            Assert.Equal(endpoint2, endpointFeature.Endpoint);
         }
     }
 }

@@ -43,6 +43,8 @@ namespace Microsoft.AspNetCore.Routing.EndpointConstraints
 
         IReadOnlyList<string> IHttpMethodMetadata.HttpMethods => _httpMethods;
 
+        bool IHttpMethodMetadata.AcceptCorsPreflight => false;
+
         public virtual bool Accept(EndpointConstraintContext context)
         {
             if (context == null)

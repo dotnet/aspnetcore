@@ -13,7 +13,6 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 
         private BarebonesMatcher _baseline;
         private Matcher _dfa;
-        private Matcher _tree;
 
         private int[] _samples;
         private EndpointFeature _feature;
@@ -31,7 +30,6 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 
             _baseline = (BarebonesMatcher)SetupMatcher(new BarebonesMatcherBuilder());
             _dfa = SetupMatcher(CreateDfaMatcherBuilder());
-            _tree = SetupMatcher(new TreeRouterMatcherBuilder());
 
             _feature = new EndpointFeature();
         }
@@ -58,23 +56,6 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                 var sample = _samples[i];
                 var httpContext = Requests[sample];
                 await _dfa.MatchAsync(httpContext, feature);
-                Validate(httpContext, Endpoints[sample], feature.Endpoint);
-            }
-        }
-
-        [Benchmark(OperationsPerInvoke = SampleCount)]
-        public async Task LegacyTreeRouter()
-        {
-            var feature = _feature;
-            for (var i = 0; i < SampleCount; i++)
-            {
-                var sample = _samples[i];
-                var httpContext = Requests[sample];
-
-                // This is required to make the legacy router implementation work with global routing.
-                httpContext.Features.Set<IEndpointFeature>(feature);
-
-                await _tree.MatchAsync(httpContext, feature);
                 Validate(httpContext, Endpoints[sample], feature.Endpoint);
             }
         }

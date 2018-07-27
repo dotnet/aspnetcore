@@ -3,13 +3,20 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace Microsoft.AspNetCore.Routing.Metadata
 {
+    [DebuggerDisplay("{DebuggerToString,nq}")]
     public sealed class HttpMethodMetadata : IHttpMethodMetadata
     {
         public HttpMethodMetadata(IEnumerable<string> httpMethods)
+            : this(httpMethods, acceptCorsPreflight: false)
+        {
+        }
+
+        public HttpMethodMetadata(IEnumerable<string> httpMethods, bool acceptCorsPreflight)
         {
             if (httpMethods == null)
             {
@@ -17,8 +24,16 @@ namespace Microsoft.AspNetCore.Routing.Metadata
             }
 
             HttpMethods = httpMethods.ToArray();
+            AcceptCorsPreflight = acceptCorsPreflight;
         }
 
+        public bool AcceptCorsPreflight { get; }
+
         public IReadOnlyList<string> HttpMethods { get; }
+
+        private string DebuggerToString()
+        {
+            return $"HttpMethods: {string.Join(",", HttpMethods)} - Cors: {AcceptCorsPreflight}";
+        }
     }
 }

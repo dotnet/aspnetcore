@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading;
 using Microsoft.AspNetCore.Routing.EndpointConstraints;
 using Microsoft.AspNetCore.Routing.Matchers;
+using Microsoft.AspNetCore.Routing.Metadata;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Routing
@@ -134,15 +135,16 @@ namespace Microsoft.AspNetCore.Routing
                         sb.Append(", Order:");
                         sb.Append(matcherEndpoint.Order);
 
-                        var httpEndpointConstraints = matcherEndpoint.Metadata.GetOrderedMetadata<IEndpointConstraintMetadata>()
-                            .OfType<HttpMethodEndpointConstraint>();
-                        foreach (var constraint in httpEndpointConstraints)
+                        var httpMethodMetadata = matcherEndpoint.Metadata.GetMetadata<IHttpMethodMetadata>();
+                        if (httpMethodMetadata != null)
                         {
-                            sb.Append(", Http Methods: ");
-                            sb.Append(string.Join(", ", constraint.HttpMethods));
-                            sb.Append(", Constraint Order:");
-                            sb.Append(constraint.Order);
+                            foreach (var httpMethod in httpMethodMetadata.HttpMethods)
+                            {
+                                sb.Append(", Http Methods: ");
+                                sb.Append(string.Join(", ", httpMethod));
+                            }
                         }
+
                         sb.AppendLine();
                     }
                     else

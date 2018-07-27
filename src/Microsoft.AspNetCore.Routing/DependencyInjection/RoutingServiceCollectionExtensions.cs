@@ -79,7 +79,7 @@ namespace Microsoft.Extensions.DependencyInjection
             //
             services.TryAddSingleton<EndpointSelector, EndpointConstraintEndpointSelector>();
             services.TryAddSingleton<EndpointConstraintCache>();
-            services.TryAddEnumerable(ServiceDescriptor.Singleton<MatcherPolicy, HttpMethodEndpointSelectorPolicy>());
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<MatcherPolicy, HttpMethodMatcherPolicy>());
 
             // Will be cached by the EndpointSelector
             services.TryAddEnumerable(
