@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                         _logger.LogInformation($"Tried to start site, state: {state.ToString()}");
                     }
                 }
-                catch (COMException comException)
+                catch (Exception ex) when (ex is DllNotFoundException || (ex is COMException && (uint)ex.HResult == 0x800710D8) )
                 {
                     // Accessing the site.State property while the site
                     // is starting up returns the COMException
@@ -107,7 +107,6 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                     // (Exception from HRESULT: 0x800710D8)
                     // This also means the site is not started yet, so catch and retry
                     // after waiting.
-                    _logger.LogWarning($"ComException: {comException.Message}");
                 }
 
                 await Task.Delay(_retryDelay);
