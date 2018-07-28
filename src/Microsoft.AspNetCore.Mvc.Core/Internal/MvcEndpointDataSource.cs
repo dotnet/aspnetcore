@@ -3,15 +3,18 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.EndpointConstraints;
 using Microsoft.AspNetCore.Routing.Matchers;
+using Microsoft.AspNetCore.Routing.Metadata;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.Extensions.Primitives;
@@ -316,6 +319,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             metadata.Add(source);
             metadata.Add(action);
 
+            if (action.EndpointMetadata != null)
+            {
+                metadata.AddRange(action.EndpointMetadata);
+            }
+
             if (!string.IsNullOrEmpty(routeName))
             {
                 metadata.Add(new RouteNameMetadata(routeName));
@@ -334,11 +342,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 // Currently they need to implement IActionConstraintMetadata
                 foreach (var actionConstraint in action.ActionConstraints)
                 {
-                    if (actionConstraint is HttpMethodActionConstraint httpMethodActionConstraint)
-                    {
-                        metadata.Add(new HttpMethodEndpointConstraint(httpMethodActionConstraint.HttpMethods));
-                    }
-                    else if (actionConstraint is IEndpointConstraintMetadata)
+                    if (actionConstraint is IEndpointConstraintMetadata)
                     {
                         // The constraint might have been added earlier, e.g. it is also a filter descriptor
                         if (!metadata.Contains(actionConstraint))

@@ -508,7 +508,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task VersionedApi_CanUseConstraintOrder_ToChangeSelectedAction()
+        public virtual async Task VersionedApi_CanUseConstraintOrder_ToChangeSelectedAction()
         {
             // Arrange
             var message = new HttpRequestMessage(HttpMethod.Delete, "http://localhost/" + "Customers/5?version=2");
@@ -551,7 +551,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(path, actualUrl);
         }
 
-        private class RoutingResult
+        protected class RoutingResult
         {
             public string[] ExpectedUrls { get; set; }
 

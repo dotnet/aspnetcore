@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.AspNetCore.Routing.Metadata;
 using Resources = Microsoft.AspNetCore.Mvc.Core.Resources;
 
 namespace Microsoft.AspNetCore.Mvc.Internal
@@ -163,6 +164,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 }
 
                 AddActionConstraints(actionDescriptor, actionSelector, controllerConstraints);
+
+                // REVIEW: Need to get metadata from controller
+                actionDescriptor.EndpointMetadata = actionSelector.EndpointMetadata.ToList();
             }
 
             return actionDescriptors;
