@@ -489,7 +489,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task VersionedApi_ConstraintOrder_IsRespected()
+        public virtual async Task VersionedApi_ConstraintOrder_IsRespected()
         {
             // Arrange
             var message = new HttpRequestMessage(HttpMethod.Post, "http://localhost/" + "Customers?version=2");

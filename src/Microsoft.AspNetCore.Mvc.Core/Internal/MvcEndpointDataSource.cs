@@ -5,14 +5,12 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.AspNetCore.Routing.EndpointConstraints;
 using Microsoft.AspNetCore.Routing.Matchers;
 using Microsoft.AspNetCore.Routing.Metadata;
 using Microsoft.AspNetCore.Routing.Patterns;
@@ -338,17 +336,22 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             if (action.ActionConstraints != null && action.ActionConstraints.Count > 0)
             {
-                // REVIEW: What is the best way to pick up endpoint constraints of an ActionDescriptor?
-                // Currently they need to implement IActionConstraintMetadata
+                // We explicitly convert a few types of action constraints into MatcherPolicy+Metadata
+                // to better integrate with the DFA matcher.
+                //
+                // Other IActionConstraint data will trigger a back-compat path that can execute
+                // action constraints.
                 foreach (var actionConstraint in action.ActionConstraints)
                 {
-                    if (actionConstraint is IEndpointConstraintMetadata)
+                    if (actionConstraint is HttpMethodActionConstraint httpMethodActionConstraint &&
+                        !metadata.OfType<HttpMethodMetadata>().Any())
+                    {
+                        metadata.Add(new HttpMethodMetadata(httpMethodActionConstraint.HttpMethods));
+                    }
+                    else if (!metadata.Contains(actionConstraint))
                     {
                         // The constraint might have been added earlier, e.g. it is also a filter descriptor
-                        if (!metadata.Contains(actionConstraint))
-                        {
-                            metadata.Add(actionConstraint);
-                        }
+                        metadata.Add(actionConstraint);
                     }
                 }
             }

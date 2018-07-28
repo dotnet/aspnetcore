@@ -3,11 +3,10 @@
 
 using System;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
-using Microsoft.AspNetCore.Routing.EndpointConstraints;
 
 namespace VersioningWebSite
 {
-    public class VersionAttribute : Attribute, IActionConstraintFactory, IEndpointConstraintFactory
+    public class VersionAttribute : Attribute, IActionConstraintFactory
     {
         private int? _maxVersion;
         private int? _minVersion;
@@ -34,11 +33,6 @@ namespace VersioningWebSite
         public bool IsReusable => true;
 
         IActionConstraint IActionConstraintFactory.CreateInstance(IServiceProvider services)
-        {
-            return new VersionRangeValidator(_minVersion, _maxVersion) { Order = _order ?? 0 };
-        }
-
-        IEndpointConstraint IEndpointConstraintFactory.CreateInstance(IServiceProvider services)
         {
             return new VersionRangeValidator(_minVersion, _maxVersion) { Order = _order ?? 0 };
         }

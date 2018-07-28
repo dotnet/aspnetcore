@@ -5,11 +5,10 @@ using System;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
-using Microsoft.AspNetCore.Routing.EndpointConstraints;
 
 namespace VersioningWebSite
 {
-    public class VersionRouteAttribute : RouteAttribute, IActionConstraintFactory, IEndpointConstraintFactory
+    public class VersionRouteAttribute : RouteAttribute, IActionConstraintFactory
     {
         private readonly IActionConstraint _actionConstraint;
 
@@ -126,11 +125,6 @@ namespace VersioningWebSite
         IActionConstraint IActionConstraintFactory.CreateInstance(IServiceProvider services)
         {
             return _actionConstraint;
-        }
-
-        IEndpointConstraint IEndpointConstraintFactory.CreateInstance(IServiceProvider services)
-        {
-            return (IEndpointConstraint)_actionConstraint;
         }
     }
 }

@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
-using Microsoft.AspNetCore.Routing.EndpointConstraints;
 
 namespace Microsoft.AspNetCore.Mvc.Internal
 {
@@ -11,14 +10,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
     /// based on incoming request.
     /// </summary>
     public interface IConsumesActionConstraint : IActionConstraint
-    {
-    }
-
-    /// <summary>
-    /// An <see cref="IEndpointConstraint"/> constraint that identifies a type which can be used to select an action
-    /// based on incoming request.
-    /// </summary>
-    public interface IConsumesEndpointConstraint : IEndpointConstraint
     {
     }
 }
