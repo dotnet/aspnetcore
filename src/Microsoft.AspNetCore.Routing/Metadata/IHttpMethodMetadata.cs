@@ -7,6 +7,8 @@ namespace Microsoft.AspNetCore.Routing.Metadata
 {
     public interface IHttpMethodMetadata
     {
+        bool AcceptCorsPreflight { get; }
+
         IReadOnlyList<string> HttpMethods { get; }
     }
 }
