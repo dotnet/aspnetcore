@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.AspNetCore.Routing.Metadata;
 using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
@@ -249,6 +250,62 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             var actionConstraint = Assert.Single(action.RouteValues, kvp => kvp.Key.Equals("action"));
             Assert.Equal(nameof(ConventionallyRoutedController.ConventionalAction), actionConstraint.Value);
+        }
+
+        [Fact]
+        public void GetDescriptors_ActionWithHttpMethods_AddedToEndpointMetadata()
+        {
+            // Arrange & Act
+            var descriptors = GetDescriptors(
+                typeof(AttributeRoutedController).GetTypeInfo());
+
+            // Assert
+            var action = Assert.Single(descriptors);
+
+            Assert.NotNull(action.EndpointMetadata);
+
+            Assert.Collection(action.EndpointMetadata,
+                metadata => Assert.IsType<HttpGetAttribute>(metadata),
+                metadata =>
+                {
+                    var httpMethodMetadata = Assert.IsType<HttpMethodMetadata>(metadata);
+
+                    Assert.False(httpMethodMetadata.AcceptCorsPreflight);
+                    Assert.Equal("GET", Assert.Single(httpMethodMetadata.HttpMethods));
+                });
+        }
+
+        [Fact]
+        public void GetDescriptors_ActionWithMultipleHttpMethods_SingleHttpMethodMetadata()
+        {
+            // Arrange & Act
+            var descriptors = GetDescriptors(
+                typeof(NonDuplicatedAttributeRouteController).GetTypeInfo());
+
+            // Assert
+            var actions = descriptors
+                .OfType<ControllerActionDescriptor>()
+                .Where(d => d.ActionName == nameof(NonDuplicatedAttributeRouteController.DifferentHttpMethods));
+
+            Assert.Collection(actions,
+                InspectElement("GET"),
+                InspectElement("POST"),
+                InspectElement("PUT"),
+                InspectElement("PATCH"),
+                InspectElement("DELETE"));
+
+            Action<ControllerActionDescriptor> InspectElement(string httpMethod)
+            {
+                return (descriptor) =>
+                {
+                    var httpMethodAttribute = Assert.Single(descriptor.EndpointMetadata.OfType<HttpMethodAttribute>());
+                    Assert.Equal(httpMethod, httpMethodAttribute.HttpMethods.Single(), ignoreCase: true);
+
+                    var httpMethodMetadata = Assert.Single(descriptor.EndpointMetadata.OfType<IHttpMethodMetadata>());
+                    Assert.Equal(httpMethod, httpMethodMetadata.HttpMethods.Single(), ignoreCase: true);
+                    Assert.False(httpMethodMetadata.AcceptCorsPreflight);
+                };
+            }
         }
 
         [Fact]

@@ -3,11 +3,10 @@
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
-using Microsoft.AspNetCore.Routing.EndpointConstraints;
 
 namespace VersioningWebSite
 {
-    public class VersionRangeValidator : IActionConstraint, IEndpointConstraint
+    public class VersionRangeValidator : IActionConstraint
     {
         private readonly int? _minVersion;
         private readonly int? _maxVersion;
@@ -28,11 +27,6 @@ namespace VersioningWebSite
         public bool Accept(ActionConstraintContext context)
         {
             return ProcessRequest(context.RouteContext.HttpContext.Request);
-        }
-
-        public bool Accept(EndpointConstraintContext context)
-        {
-            return ProcessRequest(context.HttpContext.Request);
         }
 
         private bool ProcessRequest(HttpRequest request)

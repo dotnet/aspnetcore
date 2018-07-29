@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             _actionConstraintProviders = actionConstraintProviders.OrderBy(item => item.Order).ToArray();
         }
 
-        private InnerCache CurrentCache
+        internal InnerCache CurrentCache
         {
             get
             {
@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
                 if (current == null || current.Version != actionDescriptors.Version)
                 {
-                    current = new InnerCache(actionDescriptors.Version);
+                    current = new InnerCache(actionDescriptors);
                     _currentCache = current;
                 }
 
@@ -165,20 +165,49 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             return actionConstraints;
         }
 
-        private class InnerCache
+        internal class InnerCache
         {
-            public InnerCache(int version)
+            private readonly ActionDescriptorCollection _actions;
+            private bool? _hasActionConstraints;
+
+            public InnerCache(ActionDescriptorCollection actions)
             {
-                Version = version;
+                _actions = actions;
             }
 
             public ConcurrentDictionary<ActionDescriptor, CacheEntry> Entries { get; } =
                 new ConcurrentDictionary<ActionDescriptor, CacheEntry>();
 
-            public int Version { get; }
+            public int Version => _actions.Version;
+
+            public bool HasActionConstraints
+            {
+                get
+                {
+                    // This is a safe race-condition, since it always transitions from null to non-null.
+                    // All writers will always get the same result.
+                    if (_hasActionConstraints == null)
+                    {
+                        var found = false;
+                        for (var i = 0; i < _actions.Items.Count; i++)
+                        {
+                            var action = _actions.Items[i];
+                            if (action.ActionConstraints?.Count > 0)
+                            {
+                                found = true;
+                                break;
+                            }
+                        }
+
+                        _hasActionConstraints = found;
+                    }
+
+                    return _hasActionConstraints.Value;
+                }
+            }
         }
 
-        private struct CacheEntry
+        internal readonly struct CacheEntry
         {
             public CacheEntry(IReadOnlyList<IActionConstraint> actionConstraints)
             {

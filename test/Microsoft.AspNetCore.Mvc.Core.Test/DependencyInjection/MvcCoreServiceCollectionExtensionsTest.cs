@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Internal;
+using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -318,6 +319,13 @@ namespace Microsoft.AspNetCore.Mvc
                         new Type[]
                         {
                             typeof(MiddlewareFilterBuilderStartupFilter)
+                        }
+                    },
+                    {
+                        typeof(MatcherPolicy),
+                        new Type[]
+                        {
+                            typeof(ActionConstraintMatcherPolicy),
                         }
                     },
                 };
