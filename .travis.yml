@@ -12,7 +12,7 @@ os:
 osx_image: xcode8.2
 branches:
   only:
-  - dev
+  - master
   - /^release\/.*$/
   - /^(.*\/)?ci-.*$/
 before_install:

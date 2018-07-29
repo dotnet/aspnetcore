@@ -2,7 +2,7 @@ init:
 - git config --global core.autocrlf true
 branches:
   only:
-  - dev
+  - master
   - /^release\/.*$/
   - /^(.*\/)?ci-.*$/
 build_script:
