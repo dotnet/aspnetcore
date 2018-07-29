@@ -7,7 +7,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
-using Microsoft.AspNetCore.Routing.EndpointConstraints;
 using Microsoft.AspNetCore.Routing.Matchers;
 using Microsoft.AspNetCore.Routing.Metadata;
 using Microsoft.Extensions.Primitives;
@@ -138,11 +137,8 @@ namespace Microsoft.AspNetCore.Routing
                         var httpMethodMetadata = matcherEndpoint.Metadata.GetMetadata<IHttpMethodMetadata>();
                         if (httpMethodMetadata != null)
                         {
-                            foreach (var httpMethod in httpMethodMetadata.HttpMethods)
-                            {
-                                sb.Append(", Http Methods: ");
-                                sb.Append(string.Join(", ", httpMethod));
-                            }
+                            sb.Append(", Http Methods: ");
+                            sb.Append(string.Join(", ", httpMethodMetadata.HttpMethods));
                         }
 
                         sb.AppendLine();

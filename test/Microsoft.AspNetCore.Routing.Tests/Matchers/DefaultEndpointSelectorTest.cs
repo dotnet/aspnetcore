@@ -4,6 +4,7 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Patterns;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Routing.Matchers
@@ -174,6 +175,37 @@ test: /test3", ex.Message);
             Assert.Null(feature.Endpoint);
         }
 
+        [Fact]
+        public async Task SelectAsync_RunsEndpointSelectorPolicies()
+        {
+            // Arrange
+            var endpoints = new MatcherEndpoint[] { CreateEndpoint("/test1"), CreateEndpoint("/test2"), CreateEndpoint("/test3"), };
+            var scores = new int[] { 0, 0, 1 };
+            var candidateSet = CreateCandidateSet(endpoints, scores);
+
+            var policy = new Mock<MatcherPolicy>();
+            policy
+                .As<IEndpointSelectorPolicy>()
+                .Setup(p => p.Apply(It.IsAny<HttpContext>(), It.IsAny<CandidateSet>()))
+                .Callback<HttpContext, CandidateSet>((c, cs) =>
+                {
+                    cs[1].IsValidCandidate = false;
+                });
+
+            candidateSet[0].IsValidCandidate = false;
+            candidateSet[1].IsValidCandidate = true;
+            candidateSet[2].IsValidCandidate = true;
+
+            var (httpContext, feature) = CreateContext();
+            var selector = CreateSelector(policy.Object);
+
+            // Act
+            await selector.SelectAsync(httpContext, feature, candidateSet);
+
+            // Assert
+            Assert.Same(endpoints[2], feature.Endpoint);
+        }
+
         private static (HttpContext httpContext, IEndpointFeature feature) CreateContext()
         {
             return (new DefaultHttpContext(), new EndpointFeature());
@@ -195,9 +227,9 @@ test: /test3", ex.Message);
             return new CandidateSet(endpoints, scores);
         }
 
-        private static DefaultEndpointSelector CreateSelector()
+        private static DefaultEndpointSelector CreateSelector(params MatcherPolicy[] policies)
         {
-            return new DefaultEndpointSelector();
+            return new DefaultEndpointSelector(policies);
         }
     }
 }

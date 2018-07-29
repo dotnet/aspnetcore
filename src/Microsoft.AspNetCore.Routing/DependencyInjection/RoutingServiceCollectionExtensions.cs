@@ -4,7 +4,6 @@
 using System;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Constraints;
-using Microsoft.AspNetCore.Routing.EndpointConstraints;
 using Microsoft.AspNetCore.Routing.EndpointFinders;
 using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.AspNetCore.Routing.Matchers;
@@ -73,17 +72,12 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<IEndpointFinder<string>, NameBasedEndpointFinder>();
             services.TryAddSingleton<IEndpointFinder<RouteValuesBasedEndpointFinderContext>, RouteValuesBasedEndpointFinder>();
             services.TryAddSingleton<LinkGenerator, DefaultLinkGenerator>();
-            
+
             //
             // Endpoint Selection
             //
-            services.TryAddSingleton<EndpointSelector, EndpointConstraintEndpointSelector>();
-            services.TryAddSingleton<EndpointConstraintCache>();
+            services.TryAddSingleton<EndpointSelector, DefaultEndpointSelector>();
             services.TryAddEnumerable(ServiceDescriptor.Singleton<MatcherPolicy, HttpMethodMatcherPolicy>());
-
-            // Will be cached by the EndpointSelector
-            services.TryAddEnumerable(
-                ServiceDescriptor.Transient<IEndpointConstraintProvider, DefaultEndpointConstraintProvider>());
 
             return services;
         }
