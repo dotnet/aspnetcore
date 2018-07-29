@@ -3,35 +3,35 @@
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
   <PropertyGroup Label="Package Versions">
-    <InternalAspNetCoreSdkPackageVersion>2.2.0-preview1-17099</InternalAspNetCoreSdkPackageVersion>
-    <InternalAspNetCoreSiteExtensionSdkPackageVersion>2.2.0-preview1-17099</InternalAspNetCoreSiteExtensionSdkPackageVersion>
+    <InternalAspNetCoreSdkPackageVersion>2.2.0-preview1-17102</InternalAspNetCoreSdkPackageVersion>
+    <InternalAspNetCoreSiteExtensionSdkPackageVersion>2.2.0-preview1-17102</InternalAspNetCoreSiteExtensionSdkPackageVersion>
     <MicrosoftApplicationInsightsAspNetCorePackageVersion>2.1.1</MicrosoftApplicationInsightsAspNetCorePackageVersion>
-    <MicrosoftAspNetCoreAspNetCoreModulePackageVersion>2.2.0-preview1-34755</MicrosoftAspNetCoreAspNetCoreModulePackageVersion>
-    <MicrosoftAspNetCoreAspNetCoreModuleV2PackageVersion>2.2.0-preview1-34755</MicrosoftAspNetCoreAspNetCoreModuleV2PackageVersion>
-    <MicrosoftAspNetCoreAzureAppServicesHostingStartupPackageVersion>2.2.0-preview1-34755</MicrosoftAspNetCoreAzureAppServicesHostingStartupPackageVersion>
+    <MicrosoftAspNetCoreAspNetCoreModulePackageVersion>2.2.0-preview1-34823</MicrosoftAspNetCoreAspNetCoreModulePackageVersion>
+    <MicrosoftAspNetCoreAspNetCoreModuleV2PackageVersion>2.2.0-preview1-34823</MicrosoftAspNetCoreAspNetCoreModuleV2PackageVersion>
+    <MicrosoftAspNetCoreAzureAppServicesHostingStartupPackageVersion>2.2.0-preview1-34823</MicrosoftAspNetCoreAzureAppServicesHostingStartupPackageVersion>
     <MicrosoftAspNetCoreAzureKeyVaultHostingStartupPackageVersion>2.1.0-preview2-30187</MicrosoftAspNetCoreAzureKeyVaultHostingStartupPackageVersion>
-    <MicrosoftAspNetCoreDataProtectionAzureKeyVaultPackageVersion>2.2.0-preview1-34755</MicrosoftAspNetCoreDataProtectionAzureKeyVaultPackageVersion>
-    <MicrosoftAspNetCoreHostingAbstractionsPackageVersion>2.2.0-preview1-34755</MicrosoftAspNetCoreHostingAbstractionsPackageVersion>
-    <MicrosoftAspNetCoreHostingPackageVersion>2.2.0-preview1-34755</MicrosoftAspNetCoreHostingPackageVersion>
-    <MicrosoftAspNetCoreMvcPackageVersion>2.2.0-preview1-34755</MicrosoftAspNetCoreMvcPackageVersion>
-    <MicrosoftAspNetCoreRazorRuntimePackageVersion>2.2.0-preview1-34755</MicrosoftAspNetCoreRazorRuntimePackageVersion>
-    <MicrosoftAspNetCoreServerIISIntegrationPackageVersion>2.2.0-preview1-34755</MicrosoftAspNetCoreServerIISIntegrationPackageVersion>
-    <MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>0.6.0-preview1-34755</MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>
-    <MicrosoftAspNetCoreServerKestrelPackageVersion>2.2.0-preview1-34755</MicrosoftAspNetCoreServerKestrelPackageVersion>
-    <MicrosoftAspNetCoreTestHostPackageVersion>2.2.0-preview1-34755</MicrosoftAspNetCoreTestHostPackageVersion>
+    <MicrosoftAspNetCoreDataProtectionAzureKeyVaultPackageVersion>2.2.0-preview1-34823</MicrosoftAspNetCoreDataProtectionAzureKeyVaultPackageVersion>
+    <MicrosoftAspNetCoreHostingAbstractionsPackageVersion>2.2.0-preview1-34823</MicrosoftAspNetCoreHostingAbstractionsPackageVersion>
+    <MicrosoftAspNetCoreHostingPackageVersion>2.2.0-preview1-34823</MicrosoftAspNetCoreHostingPackageVersion>
+    <MicrosoftAspNetCoreMvcPackageVersion>2.2.0-preview1-34823</MicrosoftAspNetCoreMvcPackageVersion>
+    <MicrosoftAspNetCoreRazorRuntimePackageVersion>2.2.0-preview1-34823</MicrosoftAspNetCoreRazorRuntimePackageVersion>
+    <MicrosoftAspNetCoreServerIISIntegrationPackageVersion>2.2.0-preview1-34823</MicrosoftAspNetCoreServerIISIntegrationPackageVersion>
+    <MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>0.6.0-preview1-34823</MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>
+    <MicrosoftAspNetCoreServerKestrelPackageVersion>2.2.0-preview1-34823</MicrosoftAspNetCoreServerKestrelPackageVersion>
+    <MicrosoftAspNetCoreTestHostPackageVersion>2.2.0-preview1-34823</MicrosoftAspNetCoreTestHostPackageVersion>
     <MicrosoftAzureManagementFluentPackageVersion>1.1.3</MicrosoftAzureManagementFluentPackageVersion>
     <MicrosoftAzureServicesAppAuthenticationPackageVersion>1.0.1</MicrosoftAzureServicesAppAuthenticationPackageVersion>
-    <MicrosoftExtensionsConfigurationAzureKeyVaultPackageVersion>2.2.0-preview1-34755</MicrosoftExtensionsConfigurationAzureKeyVaultPackageVersion>
-    <MicrosoftExtensionsConfigurationCommandLinePackageVersion>2.2.0-preview1-34755</MicrosoftExtensionsConfigurationCommandLinePackageVersion>
-    <MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion>2.2.0-preview1-34755</MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion>
-    <MicrosoftExtensionsConfigurationJsonPackageVersion>2.2.0-preview1-34755</MicrosoftExtensionsConfigurationJsonPackageVersion>
-    <MicrosoftExtensionsDiagnosticAdapterPackageVersion>2.2.0-preview1-34755</MicrosoftExtensionsDiagnosticAdapterPackageVersion>
-    <MicrosoftExtensionsLoggingAzureAppServicesPackageVersion>2.2.0-preview1-34755</MicrosoftExtensionsLoggingAzureAppServicesPackageVersion>
-    <MicrosoftExtensionsLoggingConfigurationPackageVersion>2.2.0-preview1-34755</MicrosoftExtensionsLoggingConfigurationPackageVersion>
-    <MicrosoftExtensionsLoggingConsolePackageVersion>2.2.0-preview1-34755</MicrosoftExtensionsLoggingConsolePackageVersion>
-    <MicrosoftExtensionsLoggingPackageVersion>2.2.0-preview1-34755</MicrosoftExtensionsLoggingPackageVersion>
-    <MicrosoftExtensionsLoggingTestingPackageVersion>2.2.0-preview1-34755</MicrosoftExtensionsLoggingTestingPackageVersion>
-    <MicrosoftExtensionsProcessSourcesPackageVersion>2.2.0-preview1-34755</MicrosoftExtensionsProcessSourcesPackageVersion>
+    <MicrosoftExtensionsConfigurationAzureKeyVaultPackageVersion>2.2.0-preview1-34823</MicrosoftExtensionsConfigurationAzureKeyVaultPackageVersion>
+    <MicrosoftExtensionsConfigurationCommandLinePackageVersion>2.2.0-preview1-34823</MicrosoftExtensionsConfigurationCommandLinePackageVersion>
+    <MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion>2.2.0-preview1-34823</MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion>
+    <MicrosoftExtensionsConfigurationJsonPackageVersion>2.2.0-preview1-34823</MicrosoftExtensionsConfigurationJsonPackageVersion>
+    <MicrosoftExtensionsDiagnosticAdapterPackageVersion>2.2.0-preview1-34823</MicrosoftExtensionsDiagnosticAdapterPackageVersion>
+    <MicrosoftExtensionsLoggingAzureAppServicesPackageVersion>2.2.0-preview1-34823</MicrosoftExtensionsLoggingAzureAppServicesPackageVersion>
+    <MicrosoftExtensionsLoggingConfigurationPackageVersion>2.2.0-preview1-34823</MicrosoftExtensionsLoggingConfigurationPackageVersion>
+    <MicrosoftExtensionsLoggingConsolePackageVersion>2.2.0-preview1-34823</MicrosoftExtensionsLoggingConsolePackageVersion>
+    <MicrosoftExtensionsLoggingPackageVersion>2.2.0-preview1-34823</MicrosoftExtensionsLoggingPackageVersion>
+    <MicrosoftExtensionsLoggingTestingPackageVersion>2.2.0-preview1-34823</MicrosoftExtensionsLoggingTestingPackageVersion>
+    <MicrosoftExtensionsProcessSourcesPackageVersion>2.2.0-preview1-34823</MicrosoftExtensionsProcessSourcesPackageVersion>
     <MicrosoftNETCoreApp20PackageVersion>2.0.9</MicrosoftNETCoreApp20PackageVersion>
     <MicrosoftNETCoreApp21PackageVersion>2.1.2</MicrosoftNETCoreApp21PackageVersion>
     <MicrosoftNETCoreApp22PackageVersion>2.2.0-preview1-26618-02</MicrosoftNETCoreApp22PackageVersion>
@@ -43,7 +43,8 @@
     <SystemReflectionMetadataPackageVersion>1.6.0</SystemReflectionMetadataPackageVersion>
     <WindowsAzureStoragePackageVersion>8.1.4</WindowsAzureStoragePackageVersion>
     <XunitPackageVersion>2.3.1</XunitPackageVersion>
-    <XunitRunnerVisualStudioPackageVersion>2.4.0-rc.1.build4038</XunitRunnerVisualStudioPackageVersion>
+    <XunitRunnerVisualStudioPackageVersion>2.4.0</XunitRunnerVisualStudioPackageVersion>
   </PropertyGroup>
+  <PropertyGroup Label="Package Versions: Pinned" />
   <Import Project="$(DotNetPackageVersionPropsPath)" Condition=" '$(DotNetPackageVersionPropsPath)' != '' " />
 </Project>
