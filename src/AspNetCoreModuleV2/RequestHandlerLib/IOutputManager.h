@@ -15,11 +15,11 @@ public:
     ~IOutputManager() {};
 
     virtual
-    void
-    NotifyStartupComplete() = 0;
-
-    virtual
     bool
     GetStdOutContent(STRA* struStdOutput) = 0;
+
+    virtual
+    HRESULT
+    Stop() = 0;
 };
 

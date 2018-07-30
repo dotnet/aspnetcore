@@ -14,7 +14,7 @@ PipeOutputManager::PipeOutputManager() :
     m_hErrReadPipe(INVALID_HANDLE_VALUE),
     m_hErrWritePipe(INVALID_HANDLE_VALUE),
     m_hErrThread(NULL),
-    m_fDisposed(FALSE),
+    m_disposed(FALSE),
     m_fdPreviousStdOut(-1),
     m_fdPreviousStdErr(-1)
 {
@@ -23,26 +23,61 @@ PipeOutputManager::PipeOutputManager() :
 
 PipeOutputManager::~PipeOutputManager()
 {
-    StopOutputRedirection();
+    Stop();
 }
 
-VOID
-PipeOutputManager::StopOutputRedirection()
+HRESULT PipeOutputManager::Start()
+{
+    SECURITY_ATTRIBUTES     saAttr = { 0 };
+    HANDLE                  hStdErrReadPipe;
+    HANDLE                  hStdErrWritePipe;
+
+    m_fdPreviousStdOut = _dup(_fileno(stdout));
+    LOG_IF_DUPFAIL(m_fdPreviousStdOut);
+
+    m_fdPreviousStdErr = _dup(_fileno(stderr));
+    LOG_IF_DUPFAIL(m_fdPreviousStdErr);
+
+    RETURN_LAST_ERROR_IF(!CreatePipe(&hStdErrReadPipe, &hStdErrWritePipe, &saAttr, 0 /*nSize*/));
+
+    // TODO this still doesn't redirect calls in native, like wprintf
+    RETURN_LAST_ERROR_IF(!SetStdHandle(STD_ERROR_HANDLE, hStdErrWritePipe));
+
+    RETURN_LAST_ERROR_IF(!SetStdHandle(STD_OUTPUT_HANDLE, hStdErrWritePipe));
+
+    m_hErrReadPipe = hStdErrReadPipe;
+    m_hErrWritePipe = hStdErrWritePipe;
+
+    // Read the stderr handle on a separate thread until we get 4096 bytes.
+    m_hErrThread = CreateThread(
+        NULL,       // default security attributes
+        0,          // default stack size
+        (LPTHREAD_START_ROUTINE)ReadStdErrHandle,
+        this,       // thread function arguments
+        0,          // default creation flags
+        NULL);      // receive thread identifier
+
+    RETURN_LAST_ERROR_IF_NULL(m_hErrThread);
+
+    return S_OK;
+}
+
+HRESULT PipeOutputManager::Stop()
 {
     DWORD    dwThreadStatus = 0;
     STRA     straStdOutput;
 
-    if (m_fDisposed)
+    if (m_disposed)
     {
-        return;
+        return S_OK;
     }
     SRWExclusiveLock lock(m_srwLock);
 
-    if (m_fDisposed)
+    if (m_disposed)
     {
-        return;
+        return S_OK;
     }
-    m_fDisposed = true;
+    m_disposed = true;
 
     fflush(stdout);
     fflush(stderr);
@@ -115,40 +150,6 @@ PipeOutputManager::StopOutputRedirection()
         // Need to flush contents for the new stdout and stderr
         _flushall();
     }
-}
-
-HRESULT PipeOutputManager::Start()
-{
-    SECURITY_ATTRIBUTES     saAttr = { 0 };
-    HANDLE                  hStdErrReadPipe;
-    HANDLE                  hStdErrWritePipe;
-
-    m_fdPreviousStdOut = _dup(_fileno(stdout));
-    LOG_IF_DUPFAIL(m_fdPreviousStdOut);
-
-    m_fdPreviousStdErr = _dup(_fileno(stderr));
-    LOG_IF_DUPFAIL(m_fdPreviousStdErr);
-
-    RETURN_LAST_ERROR_IF(!CreatePipe(&hStdErrReadPipe, &hStdErrWritePipe, &saAttr, 0 /*nSize*/));
-
-    // TODO this still doesn't redirect calls in native, like wprintf
-    RETURN_LAST_ERROR_IF(!SetStdHandle(STD_ERROR_HANDLE, hStdErrWritePipe));
-
-    RETURN_LAST_ERROR_IF(!SetStdHandle(STD_OUTPUT_HANDLE, hStdErrWritePipe));
-
-    m_hErrReadPipe = hStdErrReadPipe;
-    m_hErrWritePipe = hStdErrWritePipe;
-
-    // Read the stderr handle on a separate thread until we get 4096 bytes.
-    m_hErrThread = CreateThread(
-        NULL,       // default security attributes
-        0,          // default stack size
-        (LPTHREAD_START_ROUTINE)ReadStdErrHandle,
-        this,       // thread function arguments
-        0,          // default creation flags
-        NULL);      // receive thread identifier
-
-    RETURN_LAST_ERROR_IF_NULL(m_hErrThread);
 
     return S_OK;
 }
@@ -163,16 +164,17 @@ PipeOutputManager::ReadStdErrHandle(
     pLoggingProvider->ReadStdErrHandleInternal();
 }
 
-bool PipeOutputManager::GetStdOutContent(STRA* struStdOutput)
+bool PipeOutputManager::GetStdOutContent(STRA* straStdOutput)
 {
     bool fLogged = false;
     if (m_dwStdErrReadTotal > 0)
     {
-        if (SUCCEEDED(struStdOutput->Copy(m_pzFileContents, m_dwStdErrReadTotal)))
+        if (SUCCEEDED(straStdOutput->Copy(m_pzFileContents, m_dwStdErrReadTotal)))
         {
             fLogged = TRUE;
         }
     }
+
     return fLogged;
 }
 
@@ -194,13 +196,19 @@ PipeOutputManager::ReadStdErrHandleInternal(
         }
         else if (GetLastError() == ERROR_BROKEN_PIPE)
         {
-            break;
+            return;
         }
     }
-}
 
-VOID
-PipeOutputManager::NotifyStartupComplete()
-{
-    StopOutputRedirection();
+    char tempBuffer[MAX_PIPE_READ_SIZE];
+    while (true)
+    {
+        if (ReadFile(m_hErrReadPipe, tempBuffer, MAX_PIPE_READ_SIZE, &dwNumBytesRead, NULL))
+        {
+        }
+        else if (GetLastError() == ERROR_BROKEN_PIPE)
+        {
+            return;
+        }
+    }
 }

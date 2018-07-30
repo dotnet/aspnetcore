@@ -59,8 +59,7 @@ namespace Microsoft.AspNetCore.Server.IIS
             PFN_SHUTDOWN_HANDLER shutdownCallback,
             PFN_ASYNC_COMPLETION asyncCallback,
             IntPtr pvRequestContext,
-            IntPtr pvShutdownContext,
-            out bool resetStandardStreams);
+            IntPtr pvShutdownContext);
 
         [DllImport(AspNetCoreModuleDll)]
         private static extern unsafe int http_write_response_bytes(IntPtr pInProcessHandler, HttpApiTypes.HTTP_DATA_CHUNK* pDataChunks, int nChunks, out bool fCompletionExpected);
@@ -147,10 +146,9 @@ namespace Microsoft.AspNetCore.Server.IIS
             PFN_SHUTDOWN_HANDLER shutdownCallback,
             PFN_ASYNC_COMPLETION asyncCallback,
             IntPtr pvRequestContext,
-            IntPtr pvShutdownContext,
-            out bool resetStandardStreams)
+            IntPtr pvShutdownContext)
         {
-            Validate(register_callbacks(pInProcessApplication, requestCallback, shutdownCallback, asyncCallback, pvRequestContext, pvShutdownContext, out resetStandardStreams));
+            Validate(register_callbacks(pInProcessApplication, requestCallback, shutdownCallback, asyncCallback, pvRequestContext, pvShutdownContext));
         }
 
         public static unsafe int HttpWriteResponseBytes(IntPtr pInProcessHandler, HttpApiTypes.HTTP_DATA_CHUNK* pDataChunks, int nChunks, out bool fCompletionExpected)
