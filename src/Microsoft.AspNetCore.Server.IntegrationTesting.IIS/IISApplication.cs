@@ -18,6 +18,8 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
     /// </summary>
     internal class IISApplication
     {
+        internal const int ERROR_OBJECT_NOT_FOUND = unchecked((int)0x800710D8);
+
         private static readonly TimeSpan _timeout = TimeSpan.FromSeconds(10);
         private static readonly TimeSpan _retryDelay = TimeSpan.FromMilliseconds(200);
         private readonly ServerManager _serverManager = new ServerManager();
@@ -106,7 +108,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                         _logger.LogInformation($"Tried to start site, state: {state.ToString()}");
                     }
                 }
-                catch (Exception ex) when (ex is DllNotFoundException || (ex is COMException && (uint)ex.HResult == 0x800710D8) )
+                catch (Exception ex) when (ex is DllNotFoundException || (ex is COMException && ex.HResult == ERROR_OBJECT_NOT_FOUND) )
                 {
                     // Accessing the site.State property while the site
                     // is starting up returns the COMException

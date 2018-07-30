@@ -22,7 +22,6 @@ public:
 
 protected:
     BOOL m_fRecycleCalled;
-    SRWLOCK m_srwLock;
     IHttpServer& m_pHttpServer;
     // Allows to override call to hostfxr_main with custome callback
     // used in testing

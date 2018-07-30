@@ -77,7 +77,6 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.Inprocess
 
             for (int i = 0; i < 10; i++)
             {
-                
                 // send first request and add app_offline while app is starting
                 var runningTask = AssertAppOffline(deploymentResult);
 
@@ -220,14 +219,10 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.Inprocess
         {
             HttpResponseMessage response = null;
 
-            for (var i = 0; i < 5; i++)
+            for (var i = 0; i < 5 && response?.StatusCode != HttpStatusCode.ServiceUnavailable; i++)
             {
                 // Keep retrying until app_offline is present.
                 response = await deploymentResult.HttpClient.GetAsync("HelloWorld");
-                if (!response.IsSuccessStatusCode)
-                {
-                    break;
-                }
             }
 
             Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);

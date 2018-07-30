@@ -26,7 +26,18 @@ public:
     APPLICATION()
         : m_cRefs(1)
     {
+        InitializeSRWLock(&m_stateLock);
     }
+
+    
+    VOID
+    Stop(bool fServerInitiated) override
+    {
+        UNREFERENCED_PARAMETER(fServerInitiated);
+
+        m_fStopCalled = true;
+    }
+    
 
     VOID
     ReferenceApplication() override
@@ -49,6 +60,9 @@ public:
 
 protected:
     volatile APPLICATION_STATUS     m_status = APPLICATION_STATUS::UNKNOWN;
+    SRWLOCK m_stateLock;
+    bool m_fStopCalled;
+
 private:
 
     mutable LONG                    m_cRefs;

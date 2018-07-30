@@ -69,6 +69,16 @@ IN_PROCESS_APPLICATION::Stop(bool fServerInitiated)
     HRESULT hr = S_OK;
     CHandle  hThread;
     DWORD    dwThreadStatus = 0;
+
+    SRWExclusiveLock stopLock(m_stateLock);
+
+    if (m_fStopCalled)
+    {
+        return;
+    }
+
+    AppOfflineTrackingApplication::Stop(fServerInitiated);
+
     DWORD    dwTimeout = m_pConfig->QueryShutdownTimeLimitInMS();
 
     if (IsDebuggerPresent())
@@ -149,8 +159,6 @@ IN_PROCESS_APPLICATION::ShutDownInternal()
     }
 
     {
-        SRWExclusiveLock lock(m_srwLock);
-
         if (m_fShutdownCalledFromNative ||
             m_status == APPLICATION_STATUS::STARTING ||
             m_status == APPLICATION_STATUS::FAIL)
@@ -241,7 +249,7 @@ IN_PROCESS_APPLICATION::LoadManagedApplication
     HRESULT    hr = S_OK;
     DWORD      dwTimeout;
     DWORD      dwResult;
-
+    
     ReferenceApplication();
 
     if (m_status != APPLICATION_STATUS::STARTING)
@@ -263,7 +271,7 @@ IN_PROCESS_APPLICATION::LoadManagedApplication
     {
         // Set up stdout redirect
 
-        SRWExclusiveLock lock(m_srwLock);
+        SRWExclusiveLock lock(m_stateLock);
 
         if (m_pLoggerProvider == NULL)
         {
