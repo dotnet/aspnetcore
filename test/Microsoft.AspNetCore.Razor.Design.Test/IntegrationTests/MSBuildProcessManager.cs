@@ -51,6 +51,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             };
 
             var output = new StringBuilder();
+            var outputLock = new object();
 
             process.ErrorDataReceived += Process_ErrorDataReceived;
             process.OutputDataReceived += Process_OutputDataReceived;
@@ -93,7 +94,14 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 }
 
                 process.WaitForExit();
-                var result = new MSBuildResult(project, process.StartInfo.FileName, process.StartInfo.Arguments, process.ExitCode, output.ToString());
+
+                string outputString;
+                lock (outputLock)
+                {
+                    outputString = output.ToString();
+                }
+
+                var result = new MSBuildResult(project, process.StartInfo.FileName, process.StartInfo.Arguments, process.ExitCode, outputString);
                 return result;
             });
 
@@ -101,12 +109,18 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
             void Process_ErrorDataReceived(object sender, DataReceivedEventArgs e)
             {
-                output.AppendLine(e.Data);
+                lock (outputLock)
+                {
+                    output.AppendLine(e.Data);
+                }
             }
 
             void Process_OutputDataReceived(object sender, DataReceivedEventArgs e)
             {
-                output.AppendLine(e.Data);
+                lock (outputLock)
+                {
+                    output.AppendLine(e.Data);
+                }
             }
         }
     }
