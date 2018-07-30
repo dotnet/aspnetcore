@@ -30,7 +30,6 @@
     <None Include="$(MSBuildThisFileDirectory)..\..\src\AspNetCoreModuleV2\AspNetCore\bin\$(Configuration)\x64\aspnetcorev2.pdb" CopyToOutputDirectory="PreserveNewest" Visible="true" Link="%(FileName)%(Extension)" />
   </ItemGroup>
 
-
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Server.IntegrationTesting" Version="$(MicrosoftAspNetCoreServerIntegrationTestingPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="$(MicrosoftAspNetCoreHostingPackageVersion)" />

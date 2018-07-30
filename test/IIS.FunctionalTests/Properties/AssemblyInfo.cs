@@ -7,5 +7,4 @@ using Xunit;
 
 [assembly: CollectionBehavior(DisableTestParallelization = true)]
 [assembly: RequiresIIS]
-[assembly: OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, SkipReason = "https://github.com/aspnet/IISIntegration/issues/1069")]
 

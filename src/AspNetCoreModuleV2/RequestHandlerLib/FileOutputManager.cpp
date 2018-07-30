@@ -7,48 +7,20 @@
 #include "utility.h"
 #include "exceptions.h"
 #include "debugutil.h"
+#include "SRWExclusiveLock.h"
 
 FileOutputManager::FileOutputManager() :
     m_hLogFileHandle(INVALID_HANDLE_VALUE),
     m_fdPreviousStdOut(-1),
-    m_fdPreviousStdErr(-1)
+    m_fdPreviousStdErr(-1),
+    m_disposed(false)
 {
+    InitializeSRWLock(&m_srwLock);
 }
 
 FileOutputManager::~FileOutputManager()
 {
-    HANDLE   handle = NULL;
-    WIN32_FIND_DATA fileData;
-
-    if (m_hLogFileHandle != INVALID_HANDLE_VALUE)
-    {
-        m_Timer.CancelTimer();
-    }
-
-    // delete empty log file
-    handle = FindFirstFile(m_struLogFilePath.QueryStr(), &fileData);
-    if (handle != INVALID_HANDLE_VALUE &&
-        handle != NULL &&
-        fileData.nFileSizeHigh == 0 &&
-        fileData.nFileSizeLow == 0) // skip check of nFileSizeHigh
-    {
-        FindClose(handle);
-        // no need to check whether the deletion succeeds
-        // as nothing can be done
-        DeleteFile(m_struLogFilePath.QueryStr());
-    }
-
-    if (m_fdPreviousStdOut >= 0)
-    {
-        LOG_LAST_ERROR_IF(SetStdHandle(STD_OUTPUT_HANDLE, (HANDLE)_get_osfhandle(m_fdPreviousStdOut)));
-        LOG_INFOF("Restoring original stdout: %d", m_fdPreviousStdOut);
-    }
-
-    if (m_fdPreviousStdErr >= 0)
-    {
-        LOG_LAST_ERROR_IF(SetStdHandle(STD_ERROR_HANDLE, (HANDLE)_get_osfhandle(m_fdPreviousStdErr)));
-        LOG_INFOF("Restoring original stderr: %d", m_fdPreviousStdOut);
-    }
+    Stop();
 }
 
 HRESULT
@@ -99,8 +71,6 @@ bool FileOutputManager::GetStdOutContent(STRA* struStdOutput)
             }
         }
     }
-
-    LOG_INFOF("First 4KB captured by stdout: %s", pzFileContents);
 
     return fLogged;
 }
@@ -171,6 +141,55 @@ FileOutputManager::Start()
 
     WLOG_INFOF(L"Created log file for inprocess application: %s",
         m_struLogFilePath.QueryStr());
+
+    return S_OK;
+}
+
+
+HRESULT
+FileOutputManager::Stop()
+{
+    if (m_disposed)
+    {
+        return S_OK;
+    }
+    SRWExclusiveLock lock(m_srwLock);
+    if (m_disposed)
+    {
+        return S_OK;
+    }
+    m_disposed = true;
+
+    HANDLE   handle = NULL;
+    WIN32_FIND_DATA fileData;
+
+    if (m_hLogFileHandle != INVALID_HANDLE_VALUE)
+    {
+        m_Timer.CancelTimer();
+    }
+
+    // delete empty log file
+    handle = FindFirstFile(m_struLogFilePath.QueryStr(), &fileData);
+    if (handle != INVALID_HANDLE_VALUE &&
+        handle != NULL &&
+        fileData.nFileSizeHigh == 0 &&
+        fileData.nFileSizeLow == 0) // skip check of nFileSizeHigh
+    {
+        FindClose(handle);
+       LOG_LAST_ERROR_IF(!DeleteFile(m_struLogFilePath.QueryStr()));
+    }
+
+    if (m_fdPreviousStdOut >= 0)
+    {
+        LOG_LAST_ERROR_IF(!SetStdHandle(STD_OUTPUT_HANDLE, (HANDLE)_get_osfhandle(m_fdPreviousStdOut)));
+        LOG_INFOF("Restoring original stdout: %d", m_fdPreviousStdOut);
+    }
+
+    if (m_fdPreviousStdErr >= 0)
+    {
+        LOG_LAST_ERROR_IF(!SetStdHandle(STD_ERROR_HANDLE, (HANDLE)_get_osfhandle(m_fdPreviousStdErr)));
+        LOG_INFOF("Restoring original stderr: %d", m_fdPreviousStdOut);
+    }
 
     return S_OK;
 }

@@ -15,12 +15,12 @@ public:
 
     HRESULT Start()
     {
-        // The process has console, e.g., IIS Express scenario
         return S_OK;
     }
 
-    void NotifyStartupComplete()
+    HRESULT Stop()
     {
+        return S_OK;
     }
 
     bool GetStdOutContent(STRA*)

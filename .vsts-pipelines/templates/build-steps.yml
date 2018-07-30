@@ -3,6 +3,8 @@ phases:
   parameters:
     agentOs: Windows
     beforeBuild:
+      - powershell: "git submodule update --init"
+        displayName: Update submodules
       - powershell: "& ./tools/update_schema.ps1"
         displayName: Update ANCM schema
       - powershell: Restart-Service w3svc

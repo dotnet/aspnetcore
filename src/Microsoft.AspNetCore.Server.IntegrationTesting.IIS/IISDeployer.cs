@@ -106,7 +106,11 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                             5,
                             200);
 
-            Logger.LogInformation($"Found debug log file: {file}");
+            if (arr.Length == 0)
+            {
+                Logger.LogWarning($"{file} is empty.");
+            }
+
             foreach (var line in arr)
             {
                 Logger.LogInformation(line);

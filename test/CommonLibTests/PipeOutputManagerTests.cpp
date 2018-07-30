@@ -29,9 +29,6 @@ namespace PipeOutputManagerTests
 
         PipeOutputManager* pManager = new PipeOutputManager();
         ASSERT_EQ(S_OK, pManager->Start());
-
-        pManager->NotifyStartupComplete();
-
     }
 
     TEST(PipeManagerOutputTest, SetInvalidHandlesForErrAndOut)
@@ -46,8 +43,6 @@ namespace PipeOutputManagerTests
 
         PipeOutputManager* pManager = new PipeOutputManager();
         ASSERT_EQ(S_OK, pManager->Start());
-
-        pManager->NotifyStartupComplete();
 
         _dup2(m_fdPreviousStdOut, _fileno(stdout));
         _dup2(m_fdPreviousStdErr, _fileno(stderr));
