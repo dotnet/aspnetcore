@@ -1,6 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.IO;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
@@ -22,8 +25,14 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         {
             var parameters = Helpers.GetBaseDeploymentParameters(publish: true);
             var result = await DeployAsync(parameters);
-
-            var response = await result.RetryingHttpClient.GetAsync("/Shutdown");
+            try
+            {
+                await result.HttpClient.GetAsync("/Shutdown");
+            }
+            catch (HttpRequestException ex) when (ex.InnerException is IOException)
+            {
+                // Server might close a connection before request completes
+            }
             Assert.True(result.HostShutdownToken.WaitHandle.WaitOne(TimeoutExtensions.DefaultTimeout));
         }
 
