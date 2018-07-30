@@ -26,7 +26,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
         [MemberData(nameof(H2SpecTestCases))]
         public async Task RunIndividualTestCase(H2SpecTestCase testCase)
         {
-            var hostBuilder = TransportSelector.GetWebHostBuilder()
+            var memoryPoolFactory = new DiagnosticMemoryPoolFactory(allowLateReturn: true);
+
+            var hostBuilder = TransportSelector.GetWebHostBuilder(memoryPoolFactory.Create)
                 .UseKestrel(options =>
                 {
                     options.Listen(IPAddress.Loopback, 0, listenOptions =>
