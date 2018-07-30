@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 }
                 AddTemporaryAppHostConfig();
 
-                var apppool = ConfigureAppPool(contentRoot);
+                ConfigureAppPool(contentRoot);
 
                 ConfigureSite(contentRoot, port);
 
@@ -73,11 +73,11 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
 
                 _serverManager.CommitChanges();
 
-                await WaitUntilSiteStarted(apppool);
+                await WaitUntilSiteStarted();
             }
         }
 
-        private async Task WaitUntilSiteStarted(ApplicationPool appPool)
+        private async Task WaitUntilSiteStarted()
         {
             var sw = Stopwatch.StartNew();
 
@@ -85,12 +85,19 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
             {
                 try
                 {
-                    var site = _serverManager.Sites.FirstOrDefault(s => s.Name.Equals(WebSiteName));
+                    var serverManager = new ServerManager();
+                    var appPool = serverManager.ApplicationPools.FirstOrDefault(s => s.Name.Equals(AppPoolName));
+                    var site = serverManager.Sites.FirstOrDefault(s => s.Name.Equals(WebSiteName));
 
                     if (site.State == ObjectState.Started)
                     {
-                        _logger.LogInformation($"Site {WebSiteName} has started.");
-                        return;
+                        var workerProcess = appPool.WorkerProcesses.SingleOrDefault();
+                        if (workerProcess != null)
+                        {
+                            HostProcess = Process.GetProcessById(workerProcess.ProcessId);
+                            _logger.LogInformation($"Site {WebSiteName} has started.");
+                            return;
+                        }
                     }
                     else if (site.State != ObjectState.Starting)
                     {
@@ -122,11 +129,15 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 return;
             }
 
-            RestoreAppHostConfig();
+            StopSite();
+
+            StopAppPool();
 
             _serverManager.CommitChanges();
 
             await WaitUntilSiteStopped();
+
+            RestoreAppHostConfig();
         }
 
         private async Task WaitUntilSiteStopped()
@@ -145,8 +156,11 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 {
                     if (site.State == ObjectState.Stopped)
                     {
-                        _logger.LogInformation($"Site {WebSiteName} has stopped successfully.");
-                        return;
+                        if (HostProcess.HasExited)
+                        {
+                            _logger.LogInformation($"Site {WebSiteName} has stopped successfully.");
+                            return;
+                        }
                     }
                 }
                 catch (COMException)
@@ -273,6 +287,20 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
             SetModulesSection(config);
 
             return config;
+        }
+
+        private void StopSite()
+        {
+            var site = _serverManager.Sites.Where(sites => sites.Name == WebSiteName).SingleOrDefault();
+
+            site.Stop();
+        }
+
+        private void StopAppPool()
+        {
+            var appPool = _serverManager.ApplicationPools.Where(pool => pool.Name == AppPoolName).SingleOrDefault();
+
+            appPool.Stop();
         }
 
         private void SetGlobalModuleSection(Configuration config, string dllRoot)
