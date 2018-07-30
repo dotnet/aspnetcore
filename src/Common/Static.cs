@@ -65,6 +65,10 @@ namespace Common
                     {
                         return name.Split('.')[0];
                     }
+                    else if (name.StartsWith("Microsoft.Extensions.Configuration", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return "Configuration";
+                    }
                     else if (name.StartsWith("ServerComparison", StringComparison.OrdinalIgnoreCase))
                     {
                         return "ServerTests";
@@ -92,6 +96,10 @@ namespace Common
                     else if (name.StartsWith("MvcBenchmarks", StringComparison.OrdinalIgnoreCase))
                     {
                         return "Performance";
+                    }
+                    else if (name.StartsWith("Microsoft.VisualStudio.Web.CodeGeneration", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return "Scaffolding";
                     }
                     else if (name.StartsWith("System.Buffers.Tests", StringComparison.OrdinalIgnoreCase) ||
                              name.StartsWith("System.IO.Pipelines.Tests", StringComparison.OrdinalIgnoreCase) ||
