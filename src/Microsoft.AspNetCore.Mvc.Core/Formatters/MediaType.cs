@@ -488,9 +488,10 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             }
             else
             {
-                // The set has no suffix, so we're just looking for an exact match (which means that if 'this'
-                // has a suffix, it won't match).
-                return set.SubType.Equals(SubType, StringComparison.OrdinalIgnoreCase);
+                // If this subtype or suffix matches the subtype of the set,
+                // it is considered a subtype.
+                // Ex: application/json > application/val+json
+                return MatchesEitherSubtypeOrSuffix(set);
             }
         }
 
@@ -505,6 +506,12 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             // We don't have support for wildcards on suffixes alone (e.g., "application/entity+*")
             // because there's no clear use case for it.
             return set.SubTypeSuffix.Equals(SubTypeSuffix, StringComparison.OrdinalIgnoreCase);
+        }
+
+        private bool MatchesEitherSubtypeOrSuffix(MediaType set)
+        {
+            return set.SubType.Equals(SubType, StringComparison.OrdinalIgnoreCase) ||
+                set.SubType.Equals(SubTypeSuffix, StringComparison.OrdinalIgnoreCase);
         }
 
         private bool ContainsAllParameters(MediaTypeParameterParser setParameters)

@@ -254,7 +254,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         [InlineData("application/some.entity+json;v=2", true)]
         [InlineData("application/some.entity+xml", false)]
         [InlineData("application/some.entity+*", false)]
-        [InlineData("text/some.entity+json", false)]
+        [InlineData("text/some.entity+json", true)]
         [InlineData("", false)]
         [InlineData(null, false)]
         [InlineData("invalid", false)]

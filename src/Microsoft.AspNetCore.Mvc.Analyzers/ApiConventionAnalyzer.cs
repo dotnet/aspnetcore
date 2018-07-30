@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
                 var semanticModel = syntaxNodeContext.SemanticModel;
                 var method = semanticModel.GetDeclaredSymbol(methodSyntax, syntaxNodeContext.CancellationToken);
 
-                if (!ShouldEvaluateMethod(symbolCache, method))
+                if (!ApiControllerFacts.IsApiControllerAction(symbolCache, method))
                 {
                     return;
                 }
@@ -111,36 +111,6 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
             }
 
             return attributes;
-        }
-
-        internal static bool ShouldEvaluateMethod(ApiControllerSymbolCache symbolCache, IMethodSymbol method)
-        {
-            if (method == null)
-            {
-                return false;
-            }
-
-            if (method.ReturnsVoid || method.ReturnType.TypeKind == TypeKind.Error)
-            {
-                return false;
-            }
-
-            if (!MvcFacts.IsController(method.ContainingType, symbolCache.ControllerAttribute, symbolCache.NonControllerAttribute))
-            {
-                return false;
-            }
-
-            if (!method.ContainingType.HasAttribute(symbolCache.IApiBehaviorMetadata, inherit: true))
-            {
-                return false;
-            }
-
-            if (!MvcFacts.IsControllerAction(method, symbolCache.NonActionAttribute, symbolCache.IDisposableDispose))
-            {
-                return false;
-            }
-
-            return true;
         }
 
         internal static bool HasStatusCode(IList<DeclaredApiResponseMetadata> declaredApiResponseMetadata, int statusCode)
