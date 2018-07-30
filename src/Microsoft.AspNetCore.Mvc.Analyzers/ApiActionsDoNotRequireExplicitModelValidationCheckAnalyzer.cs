@@ -74,7 +74,11 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
                     return;
                 }
 
-                var methodSyntax = (MethodDeclarationSyntax)parent.Syntax;
+                if (!(parent.Syntax is MethodDeclarationSyntax methodSyntax))
+                {
+                    return;
+                }
+
                 var semanticModel = operationAnalysisContext.Compilation.GetSemanticModel(methodSyntax.SyntaxTree);
                 var methodSymbol = semanticModel.GetDeclaredSymbol(methodSyntax, operationAnalysisContext.CancellationToken);
 
