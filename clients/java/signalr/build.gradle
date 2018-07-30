@@ -1,9 +1,10 @@
 plugins {
     id 'java'
+    id 'maven'
 }
 
 group 'com.microsoft.aspnetcore'
-version '0.1.0'
+version '0.1.0-preview1'
 
 sourceCompatibility = 1.8
 
@@ -15,4 +16,33 @@ dependencies {
     testImplementation group: 'junit', name: 'junit', version: '4.12'
     implementation "org.java-websocket:Java-WebSocket:1.3.8"
     implementation 'com.google.code.gson:gson:2.8.5'
+}
+
+task sourceJar(type: Jar) {
+    classifier "sources"
+    from sourceSets.main.allJava
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier "javadoc"
+    from javadoc.destinationDir
+}
+
+task generatePOM {
+    pom {
+        project {
+            groupId 'com.microsoft.aspnetcore'
+            artifactId 'signalr'
+            version '0.1.0-preview1'
+
+            inceptionYear '2018'
+            licenses {
+                license {
+                    name 'The Apache Software License, Version 2.0'
+                    url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    distribution 'repo'
+                }
+            }
+        }
+    }.writeTo("signalr-client-0.1.0-preview1.pom")
 }
