@@ -261,6 +261,54 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 });
         }
 
+        public class GetApiResponseTypes_WithApiConventionMethodAndProducesResponseType : ControllerBase
+        {
+            [ApiConventionMethod(typeof(DefaultApiConventions), nameof(DefaultApiConventions.Get))]
+            [ProducesResponseType(201)]
+            [ProducesResponseType(404)]
+            public Task<ActionResult<BaseModel>> Put(int id, BaseModel model) => null;
+        }
+
+        [Fact]
+        public void GetApiResponseTypes_ReturnsValuesFromProducesResponseType_IfApiConventionMethodAndAttributesAreSpecified()
+        {
+            // Arrange
+            var actionDescriptor = GetControllerActionDescriptor(
+                typeof(GetApiResponseTypes_WithApiConventionMethodAndProducesResponseType),
+                nameof(GetApiResponseTypes_WithApiConventionMethodAndProducesResponseType.Put));
+            actionDescriptor.Properties[typeof(ApiConventionResult)] = new ApiConventionResult(new IApiResponseMetadataProvider[]
+            {
+                new ProducesResponseTypeAttribute(200),
+                new ProducesResponseTypeAttribute(404),
+                new ProducesDefaultResponseTypeAttribute(),
+            });
+
+            var provider = GetProvider();
+
+            // Act
+            var result = provider.GetApiResponseTypes(actionDescriptor);
+
+            // Assert
+            Assert.Collection(
+                result.OrderBy(r => r.StatusCode),
+                responseType =>
+                {
+                    Assert.Equal(201, responseType.StatusCode);
+                    Assert.Equal(typeof(BaseModel), responseType.Type);
+                    Assert.False(responseType.IsDefaultResponse);
+                    Assert.Collection(
+                        responseType.ApiResponseFormats,
+                        format => Assert.Equal("application/json", format.MediaType));
+                },
+                responseType =>
+                {
+                    Assert.Equal(404, responseType.StatusCode);
+                    Assert.Equal(typeof(void), responseType.Type);
+                    Assert.False(responseType.IsDefaultResponse);
+                    Assert.Empty(responseType.ApiResponseFormats);
+                });
+        }
+
         private static ApiResponseTypeProvider GetProvider()
         {
             var mvcOptions = new MvcOptions

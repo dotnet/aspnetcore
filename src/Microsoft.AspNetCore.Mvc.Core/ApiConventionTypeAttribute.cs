@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// </summary>
         public Type ConventionType { get; }
 
-        private static void EnsureValid(Type conventionType)
+        internal static void EnsureValid(Type conventionType)
         {
             if (!conventionType.IsSealed || !conventionType.IsAbstract)
             {

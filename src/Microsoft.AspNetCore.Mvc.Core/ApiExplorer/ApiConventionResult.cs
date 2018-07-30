@@ -26,31 +26,38 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             ApiConventionTypeAttribute[] apiConventionAttributes,
             out ApiConventionResult result)
         {
-            foreach (var attribute in apiConventionAttributes)
+            var apiConventionMethodAttribute = method.GetCustomAttribute<ApiConventionMethodAttribute>(inherit: true);
+            var conventionMethod = apiConventionMethodAttribute?.Method;
+            if (conventionMethod == null)
             {
-                var conventionMethod = GetConventionMethod(method, attribute.ConventionType);
-                if (conventionMethod != null)
-                {
-                    var metadataProviders = conventionMethod.GetCustomAttributes(inherit: false)
-                        .OfType<IApiResponseMetadataProvider>()
-                        .ToArray();
+                conventionMethod = GetConventionMethod(method, apiConventionAttributes);
+            }
 
-                    result = new ApiConventionResult(metadataProviders);
-                    return true;
-                }
+            if (conventionMethod != null)
+            {
+                var metadataProviders = conventionMethod.GetCustomAttributes(inherit: false)
+                    .OfType<IApiResponseMetadataProvider>()
+                    .ToArray();
+
+                result = new ApiConventionResult(metadataProviders);
+                return true;
             }
 
             result = null;
             return false;
         }
 
-        private static MethodInfo GetConventionMethod(MethodInfo method, Type conventionType)
+        private static MethodInfo GetConventionMethod(MethodInfo method, ApiConventionTypeAttribute[] apiConventionAttributes)
         {
-            foreach (var conventionMethod in conventionType.GetMethods(BindingFlags.Public | BindingFlags.Static))
+            foreach (var attribute in apiConventionAttributes)
             {
-                if (ApiConventionMatcher.IsMatch(method, conventionMethod))
+                var conventionMethods = attribute.ConventionType.GetMethods(BindingFlags.Public | BindingFlags.Static);
+                foreach (var conventionMethod in conventionMethods)
                 {
-                    return conventionMethod;
+                    if (ApiConventionMatcher.IsMatch(method, conventionMethod))
+                    {
+                        return conventionMethod;
+                    }
                 }
             }
 

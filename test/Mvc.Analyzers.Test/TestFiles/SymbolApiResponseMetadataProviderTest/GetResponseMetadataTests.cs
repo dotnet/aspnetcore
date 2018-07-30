@@ -42,6 +42,13 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
 
         [CustomInvalidProducesResponseType(Type = typeof(Person), StatusCode = "204")]
         public IActionResult ActionWithProducesResponseTypeWithIncorrectStatusCodeType() => null;
+
+        [ApiConventionMethod(typeof(DefaultApiConventions), nameof(DefaultApiConventions.Find))]
+        public IActionResult GetResponseMetadata_ReturnsValuesFromApiConventionMethodAttribute() => null;
+
+        [ProducesResponseType(204)]
+        [ApiConventionMethod(typeof(DefaultApiConventions), nameof(DefaultApiConventions.Find))]
+        public IActionResult GetResponseMetadata_WIthProducesResponseTypeAndApiConventionMethod() => null;
     }
 
     public class Person { }

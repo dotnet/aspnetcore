@@ -64,6 +64,10 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
             => RunTest(DiagnosticDescriptors.MVC1004_ActionReturnsUndocumentedStatusCode, 400);
 
         [Fact]
+        public Task DiagnosticsAreReturned_IfMethodWithApiConventionMethod_ReturnsUndocumentedStatusCode()
+            => RunTest(DiagnosticDescriptors.MVC1004_ActionReturnsUndocumentedStatusCode, 202);
+
+        [Fact]
         public Task DiagnosticsAreReturned_IfMethodWithAttributeReturnsValue_WithoutDocumentation()
             => RunTest(DiagnosticDescriptors.MVC1005_ActionReturnsUndocumentedSuccessResult);
 

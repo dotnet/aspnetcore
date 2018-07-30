@@ -37,6 +37,58 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
             IMethodSymbol method,
             IReadOnlyList<AttributeData> attributes)
         {
+            var conventionMethod = GetMethodFromConventionMethodAttribute(symbolCache, method);
+            if (conventionMethod == null)
+            {
+                conventionMethod = MatchConventionMethod(symbolCache, method, attributes);
+            }
+
+            if (conventionMethod != null)
+            {
+                return GetResponseMetadataFromMethodAttributes(symbolCache, conventionMethod);
+            }
+
+            return Array.Empty<DeclaredApiResponseMetadata>();
+        }
+
+        private static IMethodSymbol GetMethodFromConventionMethodAttribute(ApiControllerSymbolCache symbolCache, IMethodSymbol method)
+        {
+            var attribute = method.GetAttributes(symbolCache.ApiConventionMethodAttribute, inherit: true)
+                .FirstOrDefault();
+
+            if (attribute == null)
+            {
+                return null;
+            }
+
+            if (attribute.ConstructorArguments.Length != 2)
+            {
+                return null;
+            }
+
+            if (attribute.ConstructorArguments[0].Kind != TypedConstantKind.Type ||
+                !(attribute.ConstructorArguments[0].Value is ITypeSymbol conventionType))
+            {
+                return null;
+            }
+
+            if (attribute.ConstructorArguments[1].Kind != TypedConstantKind.Primitive ||
+                !(attribute.ConstructorArguments[1].Value is string conventionMethodName))
+            {
+                return null;
+            }
+
+            var conventionMethod = conventionType.GetMembers(conventionMethodName)
+                .FirstOrDefault(m => m.Kind == SymbolKind.Method && m.IsStatic && m.DeclaredAccessibility == Accessibility.Public);
+
+            return (IMethodSymbol)conventionMethod;
+        }
+
+        private static IMethodSymbol MatchConventionMethod(
+            ApiControllerSymbolCache symbolCache,
+            IMethodSymbol method,
+            IReadOnlyList<AttributeData> attributes)
+        {
             foreach (var attribute in attributes)
             {
                 if (attribute.ConstructorArguments.Length != 1 ||
@@ -53,16 +105,14 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
                         continue;
                     }
 
-                    if (!SymbolApiConventionMatcher.IsMatch(symbolCache, method, conventionMethod))
+                    if (SymbolApiConventionMatcher.IsMatch(symbolCache, method, conventionMethod))
                     {
-                        continue;
+                        return conventionMethod;
                     }
-
-                    return GetResponseMetadataFromMethodAttributes(symbolCache, conventionMethod);
                 }
             }
 
-            return Array.Empty<DeclaredApiResponseMetadata>();
+            return null;
         }
 
         private static IList<DeclaredApiResponseMetadata> GetResponseMetadataFromMethodAttributes(ApiControllerSymbolCache symbolCache, IMethodSymbol methodSymbol)

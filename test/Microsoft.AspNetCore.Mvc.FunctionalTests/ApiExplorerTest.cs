@@ -1349,6 +1349,34 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                 });
         }
 
+        [Fact]
+        public async Task ApiConvention_ForActionWtihApiConventionMethod()
+        {
+            // Act
+            var response = await Client.PostAsync(
+                "ApiExplorerResponseTypeWithApiConventionController/PostItem",
+                new StringContent(string.Empty));
+            var responseBody = await response.EnsureSuccessStatusCode().Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<List<ApiExplorerData>>(responseBody);
+
+            // Assert
+            var description = Assert.Single(result);
+            Assert.Collection(
+                description.SupportedResponseTypes.OrderBy(r => r.StatusCode),
+                responseType =>
+                {
+                    Assert.Equal(typeof(void).FullName, responseType.ResponseType);
+                    Assert.Equal(302, responseType.StatusCode);
+                    Assert.Empty(responseType.ResponseFormats);
+                },
+                responseType =>
+                {
+                    Assert.Equal(typeof(void).FullName, responseType.ResponseType);
+                    Assert.Equal(409, responseType.StatusCode);
+                    Assert.Empty(responseType.ResponseFormats);
+                });
+        }
+
         private IEnumerable<string> GetSortedMediaTypes(ApiExplorerResponseType apiResponseType)
         {
             return apiResponseType.ResponseFormats

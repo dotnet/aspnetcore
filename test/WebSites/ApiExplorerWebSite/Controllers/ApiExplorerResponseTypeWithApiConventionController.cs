@@ -35,5 +35,16 @@ namespace ApiExplorerWebSite
 
         [HttpDelete]
         public Task<IActionResult> DeleteProductAsync(object id) => null;
+
+        [HttpPost]
+        [ApiConventionMethod(typeof(CustomConventions), nameof(CustomConventions.CustomConventionMethod))]
+        public Task<IActionResult> PostItem(Product p) => null;
+    }
+
+    public static class CustomConventions
+    {
+        [ProducesResponseType(302)]
+        [ProducesResponseType(409)]
+        public static void CustomConventionMethod() { }
     }
 }

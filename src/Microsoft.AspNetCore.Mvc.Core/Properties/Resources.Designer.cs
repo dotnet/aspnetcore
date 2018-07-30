@@ -1508,6 +1508,34 @@ namespace Microsoft.AspNetCore.Mvc.Core
         internal static string FormatApiConvention_UnsupportedAttributesOnConvention(object p0, object p1, object p2)
             => string.Format(CultureInfo.CurrentCulture, GetString("ApiConvention_UnsupportedAttributesOnConvention"), p0, p1, p2);
 
+        /// <summary>
+        /// Method name '{0}' is ambigous for convention type '{1}'. More than one method found with the name '{0}'.
+        /// </summary>
+        internal static string ApiConventionMethod_AmbigiousMethodName
+        {
+            get => GetString("ApiConventionMethod_AmbigiousMethodName");
+        }
+
+        /// <summary>
+        /// Method name '{0}' is ambigous for convention type '{1}'. More than one method found with the name '{0}'.
+        /// </summary>
+        internal static string FormatApiConventionMethod_AmbigiousMethodName(object p0, object p1)
+            => string.Format(CultureInfo.CurrentCulture, GetString("ApiConventionMethod_AmbigiousMethodName"), p0, p1);
+
+        /// <summary>
+        /// A method named '{0}' was not found on convention type '{1}'.
+        /// </summary>
+        internal static string ApiConventionMethod_NoMethodFound
+        {
+            get => GetString("ApiConventionMethod_NoMethodFound");
+        }
+
+        /// <summary>
+        /// A method named '{0}' was not found on convention type '{1}'.
+        /// </summary>
+        internal static string FormatApiConventionMethod_NoMethodFound(object p0, object p1)
+            => string.Format(CultureInfo.CurrentCulture, GetString("ApiConventionMethod_NoMethodFound"), p0, p1);
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);
