@@ -27,7 +27,10 @@
   <ItemGroup>
     <!-- Don't publish the SPA source files, but do show them in the project files list -->
     <Content Remove="$(SpaRoot)**" />
-    <None Include="$(SpaRoot)**" Exclude="$(SpaRoot)node_modules\**" />
+    <None Include="$(SpaRoot)**"
+          Exclude="$(SpaRoot)node_modules\**"
+          CopyToPublishDirectory="PreserveNewest"
+          CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 <!--/-:cnd:noEmit -->

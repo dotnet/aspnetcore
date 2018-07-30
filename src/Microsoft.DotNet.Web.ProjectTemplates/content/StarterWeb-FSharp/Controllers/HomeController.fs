@@ -20,5 +20,8 @@ type HomeController () =
         this.ViewData.["Message"] <- "Your contact page."
         this.View()
 
+    member this.Privacy () =
+        this.View()
+
     member this.Error () =
         this.View();

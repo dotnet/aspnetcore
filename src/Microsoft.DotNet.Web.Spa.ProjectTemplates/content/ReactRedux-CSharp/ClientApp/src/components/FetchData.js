@@ -59,8 +59,8 @@ function renderPagination(props) {
   const nextStartDateIndex = (props.startDateIndex || 0) + 5;
 
   return <p className='clearfix text-center'>
-    <Link className='btn btn-default pull-left' to={`/fetchdata/${prevStartDateIndex}`}>Previous</Link>
-    <Link className='btn btn-default pull-right' to={`/fetchdata/${nextStartDateIndex}`}>Next</Link>
+    <Link className='btn btn-default pull-left' to={`/fetch-data/${prevStartDateIndex}`}>Previous</Link>
+    <Link className='btn btn-default pull-right' to={`/fetch-data/${nextStartDateIndex}`}>Next</Link>
     {props.isLoading ? <span>Loading...</span> : []}
   </p>;
 }

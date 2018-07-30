@@ -54,6 +54,10 @@ namespace Templates.Test.Helpers
                     .Run(output, workingDirectory, DotNetMuxer.MuxerPathOrDefault(), $"publish -c Release {extraArgs}")
                     .WaitForExit(assertSuccess: true);
                 workingDirectory = Path.Combine(workingDirectory, "bin", "Release", framework, "publish");
+                if (File.Exists(Path.Combine(workingDirectory, "ClientApp", "package.json")))
+                {
+                    Npm.RestoreWithRetry(output, Path.Combine(workingDirectory, "ClientApp"));
+                }
             }
             else
             {
@@ -92,6 +96,35 @@ namespace Templates.Test.Helpers
                 }
             }
 
+        }
+
+        public void VisitInBrowser(IWebDriver driver)
+        {
+            _output.WriteLine($"Opening browser at {_listeningUri}...");
+            driver.Navigate().GoToUrl(_listeningUri);
+
+            if (driver is EdgeDriver)
+            {
+                // Workaround for untrusted ASP.NET Core development certificates.
+                // The edge driver doesn't supported skipping the SSL warning page.
+
+                if (driver.Title.Contains("Certificate error", StringComparison.OrdinalIgnoreCase))
+                {
+                    _output.WriteLine("Page contains certificate error. Attempting to get around this...");
+                    driver.Click(By.Id("moreInformationDropdownSpan"));
+                    var continueLink = driver.FindElement(By.Id("invalidcert_continue"));
+                    if (continueLink != null)
+                    {
+                        _output.WriteLine($"Clicking on link '{continueLink.Text}' to skip invalid certificate error page.");
+                        continueLink.Click();
+                        driver.Navigate().GoToUrl(_listeningUri);
+                    }
+                    else
+                    {
+                        _output.WriteLine("Could not find link to skip certificate error page.");
+                    }
+                }
+            }
         }
 
         private Uri GetListeningUri(ITestOutputHelper output)
@@ -134,38 +167,6 @@ namespace Templates.Test.Helpers
 
             var response = _httpClient.SendAsync(request).Result;
             Assert.Equal(statusCode, response.StatusCode);
-        }
-
-        public IWebDriver VisitInBrowser()
-        {
-            _output.WriteLine($"Opening browser at {_listeningUri}...");
-            var driver = WebDriverFactory.CreateWebDriver();
-            driver.Navigate().GoToUrl(_listeningUri);
-
-            if (driver is EdgeDriver)
-            {
-                // Workaround for untrusted ASP.NET Core development certificates.
-                // The edge driver doesn't supported skipping the SSL warning page.
-
-                if (driver.Title.Contains("Certificate error", StringComparison.OrdinalIgnoreCase))
-                {
-                    _output.WriteLine("Page contains certificate error. Attempting to get around this...");
-                    driver.Click(By.Id("moreInformationDropdownSpan"));
-                    var continueLink = driver.FindElement(By.Id("invalidcert_continue"));
-                    if (continueLink != null)
-                    {
-                        _output.WriteLine($"Clicking on link '{continueLink.Text}' to skip invalid certificate error page.");
-                        continueLink.Click();
-                        driver.Navigate().GoToUrl(_listeningUri);
-                    }
-                    else
-                    {
-                        _output.WriteLine("Could not find link to skip certificate error page.");
-                    }
-                }
-            }
-
-            return driver;
         }
 
         public void Dispose()
