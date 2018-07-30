@@ -25,11 +25,11 @@ namespace RoutingSample.Web
             {
                 options.ConstraintMap.Add("endsWith", typeof(EndsWithStringMatchProcessor));
             });
-            
+
             services.Configure<EndpointOptions>(options =>
             {
-             options.DataSources.Add(new DefaultEndpointDataSource(new[]
-             {
+                options.DataSources.Add(new DefaultEndpointDataSource(new[]
+                {
                     new MatcherEndpoint((next) => (httpContext) =>
                         {
                             var response = httpContext.Response;
@@ -83,7 +83,7 @@ namespace RoutingSample.Web
                         EndpointMetadataCollection.Empty,
                         "withoptionalconstraints"),
              }));
-         });
+            });
         }
 
         public void Configure(Microsoft.AspNetCore.Builder.IApplicationBuilder app)
