@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Internal
         [BindProperty]
         public InputModel Input { get; set; }
 
-        public string LoginProvider { get; set; }
+        public string ProviderDisplayName { get; set; }
 
         public string ReturnUrl { get; set; }
 
@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Internal
             {
                 // If the user does not have an account, then ask the user to create an account.
                 ReturnUrl = returnUrl;
-                LoginProvider = info.LoginProvider;
+                ProviderDisplayName = info.ProviderDisplayName;
                 if (info.Principal.HasClaim(c => c.Type == ClaimTypes.Email))
                 {
                     Input = new InputModel
@@ -154,7 +154,7 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Internal
                 }
             }
 
-            LoginProvider = info.LoginProvider;
+            ProviderDisplayName = info.ProviderDisplayName;
             ReturnUrl = returnUrl;
             return Page();
         }

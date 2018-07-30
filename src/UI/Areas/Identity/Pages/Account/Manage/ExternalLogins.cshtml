@@ -14,7 +14,7 @@
             @foreach (var login in Model.CurrentLogins)
             {
                 <tr>
-                    <td>@login.LoginProvider</td>
+                    <td>@login.ProviderDisplayName</td>
                     <td>
                         @if (Model.ShowRemoveButton)
                         {
@@ -22,7 +22,7 @@
                                 <div>
                                     <input asp-for="@login.LoginProvider" name="LoginProvider" type="hidden" />
                                     <input asp-for="@login.ProviderKey" name="ProviderKey" type="hidden" />
-                                    <button type="submit" class="btn btn-primary" title="Remove this @login.LoginProvider login from your account">Remove</button>
+                                    <button type="submit" class="btn btn-primary" title="Remove this @login.ProviderDisplayName login from your account">Remove</button>
                                 </div>
                             </form>
                         }
