@@ -2218,6 +2218,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
+        public async Task SETTINGS_ACK_Received_DoesNotSend_ACK()
+        {
+            await InitializeConnectionAsync(_noopApplication);
+
+            var frame = new Http2Frame();
+            frame.PrepareSettings(Http2SettingsFrameFlags.ACK);
+            await SendAsync(frame.Raw);
+
+            await StopConnectionAsync(expectedLastStreamId: 0, ignoreNonGoAwayFrames: false);
+        }
+
+        [Fact]
         public async Task SETTINGS_Received_StreamIdNotZero_ConnectionError()
         {
             await InitializeConnectionAsync(_noopApplication);
