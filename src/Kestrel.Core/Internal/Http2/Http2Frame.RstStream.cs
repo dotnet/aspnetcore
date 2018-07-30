@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
     {
         public Http2ErrorCode RstStreamErrorCode
         {
-            get => (Http2ErrorCode)((Payload[0] << 24) | (Payload[1] << 16) | (Payload[2] << 16) | Payload[3]);
+            get => (Http2ErrorCode)((Payload[0] << 24) | (Payload[1] << 16) | (Payload[2] << 8) | Payload[3]);
             set
             {
                 Payload[0] = (byte)(((uint)value >> 24) & 0xff);

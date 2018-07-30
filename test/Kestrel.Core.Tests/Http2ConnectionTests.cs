@@ -11,8 +11,9 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
@@ -21,8 +22,8 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Net.Http.Headers;
+using Moq;
 using Xunit;
-using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 {
@@ -110,6 +111,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         private readonly Dictionary<string, string> _decodedHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         private readonly HashSet<int> _abortedStreamIds = new HashSet<int>();
         private readonly object _abortedStreamIdsLock = new object();
+        private readonly TaskCompletionSource<object> _closingStateReached = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource<object> _closedStateReached = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
         private readonly RequestDelegate _noopApplication;
         private readonly RequestDelegate _readHeadersApplication;
@@ -305,12 +308,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             _pair = DuplexPipe.CreateConnectionPair(inputPipeOptions, outputPipeOptions);
 
+            var mockKestrelTrace = new Mock<TestKestrelTrace>(_logger)
+            {
+                CallBase = true
+            };
+            mockKestrelTrace
+                .Setup(m => m.Http2ConnectionClosing(It.IsAny<string>()))
+                .Callback(() => _closingStateReached.SetResult(null));
+            mockKestrelTrace
+                .Setup(m => m.Http2ConnectionClosed(It.IsAny<string>(), It.IsAny<int>()))
+                .Callback(() => _closedStateReached.SetResult(null));
+
             _connectionContext = new Http2ConnectionContext
             {
                 ConnectionFeatures = new FeatureCollection(),
                 ServiceContext = new TestServiceContext()
                 {
-                    Log = new TestKestrelTrace(_logger)
+                    Log = mockKestrelTrace.Object
                 },
                 MemoryPool = _memoryPool,
                 Application = _pair.Application,
@@ -946,7 +960,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await WaitForConnectionErrorAsync<Http2ConnectionErrorException>(
                 ignoreNonGoAwayFrames: false,
-                expectedLastStreamId: 0,
+                expectedLastStreamId: 1,
                 expectedErrorCode: Http2ErrorCode.PROTOCOL_ERROR,
                 expectedErrorMessage: CoreStrings.FormatHttp2ErrorHeadersInterleaved(Http2FrameType.DATA, streamId: 1, headersStreamId: 1));
         }
@@ -1585,7 +1599,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await WaitForConnectionErrorAsync<Http2ConnectionErrorException>(
                 ignoreNonGoAwayFrames: false,
-                expectedLastStreamId: 0,
+                expectedLastStreamId: 1,
                 expectedErrorCode: Http2ErrorCode.PROTOCOL_ERROR,
                 expectedErrorMessage: CoreStrings.FormatHttp2ErrorHeadersInterleaved(Http2FrameType.HEADERS, streamId: 3, headersStreamId: 1));
         }
@@ -1613,7 +1627,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await WaitForConnectionErrorAsync<HPackDecodingException>(
                 ignoreNonGoAwayFrames: false,
-                expectedLastStreamId: 0,
+                expectedLastStreamId: 1,
                 expectedErrorCode: Http2ErrorCode.COMPRESSION_ERROR,
                 expectedErrorMessage: CoreStrings.HPackErrorIncompleteHeaderBlock);
         }
@@ -1869,7 +1883,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await WaitForConnectionErrorAsync<Http2ConnectionErrorException>(
                 ignoreNonGoAwayFrames: false,
-                expectedLastStreamId: 0,
+                expectedLastStreamId: 1,
                 expectedErrorCode: Http2ErrorCode.PROTOCOL_ERROR,
                 expectedErrorMessage: CoreStrings.FormatHttp2ErrorHeadersInterleaved(Http2FrameType.PRIORITY, streamId: 1, headersStreamId: 1));
         }
@@ -2190,7 +2204,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await WaitForConnectionErrorAsync<Http2ConnectionErrorException>(
                 ignoreNonGoAwayFrames: false,
-                expectedLastStreamId: 0,
+                expectedLastStreamId: 1,
                 expectedErrorCode: Http2ErrorCode.PROTOCOL_ERROR,
                 expectedErrorMessage: CoreStrings.FormatHttp2ErrorHeadersInterleaved(Http2FrameType.RST_STREAM, streamId: 1, headersStreamId: 1));
         }
@@ -2262,7 +2276,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await WaitForConnectionErrorAsync<Http2ConnectionErrorException>(
                 ignoreNonGoAwayFrames: false,
-                expectedLastStreamId: 0,
+                expectedLastStreamId: 1,
                 expectedErrorCode: Http2ErrorCode.PROTOCOL_ERROR,
                 expectedErrorMessage: CoreStrings.FormatHttp2ErrorHeadersInterleaved(Http2FrameType.SETTINGS, streamId: 0, headersStreamId: 1));
         }
@@ -2369,7 +2383,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await WaitForConnectionErrorAsync<Http2ConnectionErrorException>(
                 ignoreNonGoAwayFrames: false,
-                expectedLastStreamId: 0,
+                expectedLastStreamId: 1,
                 expectedErrorCode: Http2ErrorCode.PROTOCOL_ERROR,
                 expectedErrorMessage: CoreStrings.FormatHttp2ErrorHeadersInterleaved(Http2FrameType.PING, streamId: 0, headersStreamId: 1));
         }
@@ -2417,23 +2431,47 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public async Task GOAWAY_Received_AbortsAllStreams()
+        public async Task GOAWAY_Received_SetsConnectionStateToClosingAndWaitForAllStreamsToComplete()
         {
-            await InitializeConnectionAsync(_waitForAbortApplication);
+            await InitializeConnectionAsync(_echoApplication);
 
             // Start some streams
-            await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
-            await StartStreamAsync(3, _browserRequestHeaders, endStream: true);
-            await StartStreamAsync(5, _browserRequestHeaders, endStream: true);
+            await StartStreamAsync(1, _browserRequestHeaders, endStream: false);
+            await StartStreamAsync(3, _browserRequestHeaders, endStream: false);
 
             await SendGoAwayAsync();
 
-            await WaitForConnectionStopAsync(expectedLastStreamId: 5, ignoreNonGoAwayFrames: true);
+            await _closingStateReached.Task.DefaultTimeout();
 
-            await WaitForAllStreamsAsync();
-            Assert.Contains(1, _abortedStreamIds);
-            Assert.Contains(3, _abortedStreamIds);
-            Assert.Contains(5, _abortedStreamIds);
+            await SendDataAsync(1, _helloBytes, true);
+            await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 37,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1);
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 5,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 1);
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 0,
+                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withStreamId: 1);
+            await SendDataAsync(3, _helloBytes, true);
+            await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 37,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 3);
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 5,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 3);
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 0,
+                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withStreamId: 3);
+
+            await WaitForConnectionStopAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
+            await _closedStateReached.Task.DefaultTimeout();
         }
 
         [Fact]
@@ -2526,7 +2564,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
                 withStreamId: 5);
 
-            await SendGoAwayAsync();
+            // Close all pipes and wait for response to drain
+            _pair.Application.Output.Complete();
+            _pair.Transport.Input.Complete();
+            _pair.Transport.Output.Complete();
 
             await WaitForConnectionStopAsync(expectedLastStreamId: 5, ignoreNonGoAwayFrames: false);
 
@@ -2600,7 +2641,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await VerifyStreamBackpressure(3);
             await VerifyStreamBackpressure(5);
 
-            await SendGoAwayAsync();
+            // Close all pipes and wait for response to drain
+            _pair.Application.Output.Complete();
+            _pair.Transport.Input.Complete();
+            _pair.Transport.Output.Complete();
 
             await WaitForConnectionStopAsync(expectedLastStreamId: 5, ignoreNonGoAwayFrames: false);
 
@@ -2634,7 +2678,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await WaitForConnectionErrorAsync<Http2ConnectionErrorException>(
                 ignoreNonGoAwayFrames: false,
-                expectedLastStreamId: 0,
+                expectedLastStreamId: 1,
                 expectedErrorCode: Http2ErrorCode.PROTOCOL_ERROR,
                 expectedErrorMessage: CoreStrings.FormatHttp2ErrorHeadersInterleaved(Http2FrameType.GOAWAY, streamId: 0, headersStreamId: 1));
         }
@@ -2663,7 +2707,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await WaitForConnectionErrorAsync<Http2ConnectionErrorException>(
                 ignoreNonGoAwayFrames: false,
-                expectedLastStreamId: 0,
+                expectedLastStreamId: 1,
                 expectedErrorCode: Http2ErrorCode.PROTOCOL_ERROR,
                 expectedErrorMessage: CoreStrings.FormatHttp2ErrorHeadersInterleaved(Http2FrameType.WINDOW_UPDATE, streamId: 1, headersStreamId: 1));
         }
@@ -2784,7 +2828,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             {
                 try
                 {
-                    // Flush the headers so expectingDataSem is released. 
+                    // Flush the headers so expectingDataSem is released.
                     await context.Response.Body.FlushAsync();
 
                     for (var i = 0; i < expectedFullFrameCountBeforeBackpressure; i++)
@@ -3045,7 +3089,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await WaitForConnectionErrorAsync<Http2ConnectionErrorException>(
                 ignoreNonGoAwayFrames: false,
-                expectedLastStreamId: 0,
+                expectedLastStreamId: 1,
                 expectedErrorCode: Http2ErrorCode.PROTOCOL_ERROR,
                 expectedErrorMessage: CoreStrings.FormatHttp2ErrorHeadersInterleaved(Http2FrameType.CONTINUATION, streamId: 3, headersStreamId: 1));
         }
@@ -3060,7 +3104,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await WaitForConnectionErrorAsync<HPackDecodingException>(
                 ignoreNonGoAwayFrames: false,
-                expectedLastStreamId: 0,
+                expectedLastStreamId: 1,
                 expectedErrorCode: Http2ErrorCode.COMPRESSION_ERROR,
                 expectedErrorMessage: CoreStrings.HPackErrorIncompleteHeaderBlock);
         }
@@ -3197,7 +3241,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await WaitForConnectionErrorAsync<Http2ConnectionErrorException>(
                 ignoreNonGoAwayFrames: false,
-                expectedLastStreamId: 0,
+                expectedLastStreamId: 1,
                 expectedErrorCode: Http2ErrorCode.PROTOCOL_ERROR,
                 expectedErrorMessage: CoreStrings.FormatHttp2ErrorHeadersInterleaved(frameType: 42, streamId: 1, headersStreamId: 1));
         }
@@ -3251,6 +3295,129 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var result = await _pair.Application.Input.ReadAsync();
             Assert.True(result.IsCompleted);
             Assert.DoesNotContain(_logger.Messages, m => m.Exception is ConnectionResetException);
+        }
+
+        [Fact]
+        public async Task OnInputOrOutputCompletedSendsFinalGOAWAY()
+        {
+            await InitializeConnectionAsync(_noopApplication);
+
+            _connection.OnInputOrOutputCompleted();
+            await _closedStateReached.Task.DefaultTimeout();
+
+            VerifyGoAway(await ReceiveFrameAsync(), 0, Http2ErrorCode.NO_ERROR);
+        }
+
+        [Fact]
+        public async Task AbortSendsFinalGOAWAY()
+        {
+            await InitializeConnectionAsync(_noopApplication);
+
+            _connection.Abort(new ConnectionAbortedException());
+            await _closedStateReached.Task.DefaultTimeout();
+
+            VerifyGoAway(await ReceiveFrameAsync(), 0, Http2ErrorCode.INTERNAL_ERROR);
+        }
+
+        [Fact]
+        public async Task CompletionSendsFinalGOAWAY()
+        {
+            await InitializeConnectionAsync(_noopApplication);
+
+            // Completes ProcessRequestsAsync
+            _pair.Application.Output.Complete();
+            await _closedStateReached.Task.DefaultTimeout();
+
+            VerifyGoAway(await ReceiveFrameAsync(), 0, Http2ErrorCode.NO_ERROR);
+        }
+
+        [Fact]
+        public async Task StopProcessingNextRequestSendsGracefulGOAWAYThenFinalGOAWAYWhenAllStreamsComplete()
+        {
+            await InitializeConnectionAsync(_echoApplication);
+
+            await StartStreamAsync(1, _browserRequestHeaders, endStream: false);
+
+            _connection.StopProcessingNextRequest();
+            await _closingStateReached.Task.DefaultTimeout();
+
+            VerifyGoAway(await ReceiveFrameAsync(), Int32.MaxValue, Http2ErrorCode.NO_ERROR);
+
+            await SendDataAsync(1, _helloBytes, true);
+            await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 37,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1);
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 5,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 1);
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 0,
+                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withStreamId: 1);
+
+            await _closedStateReached.Task.DefaultTimeout();
+            VerifyGoAway(await ReceiveFrameAsync(), 1, Http2ErrorCode.NO_ERROR);
+        }
+
+        [Fact]
+        public async Task AcceptNewStreamsDuringClosingConnection()
+        {
+            await InitializeConnectionAsync(_echoApplication);
+
+            await StartStreamAsync(1, _browserRequestHeaders, endStream: false);
+
+            _connection.StopProcessingNextRequest();
+            VerifyGoAway(await ReceiveFrameAsync(), Int32.MaxValue, Http2ErrorCode.NO_ERROR);
+
+            await _closingStateReached.Task.DefaultTimeout();
+
+            await StartStreamAsync(3, _browserRequestHeaders, endStream: false);
+
+            await SendDataAsync(1, _helloBytes, true);
+            await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 37,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1);
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 5,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 1);
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 0,
+                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withStreamId: 1);
+            await SendDataAsync(3, _helloBytes, true);
+            await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 37,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 3);
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 5,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 3);
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 0,
+                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withStreamId: 3);
+
+            await WaitForConnectionStopAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
+        }
+
+        [Fact]
+        public async Task IgnoreNewStreamsDuringClosedConnection()
+        {
+            await InitializeConnectionAsync(_echoApplication);
+
+            await StartStreamAsync(1, _browserRequestHeaders, endStream: false);
+
+            _connection.OnInputOrOutputCompleted();
+            await _closedStateReached.Task.DefaultTimeout();
+
+            await StartStreamAsync(3, _browserRequestHeaders, endStream: false);
+
+            await WaitForConnectionStopAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
         }
 
         private async Task InitializeConnectionAsync(RequestDelegate application)
@@ -3751,6 +3918,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             return WaitForConnectionErrorAsync<Exception>(ignoreNonGoAwayFrames, expectedLastStreamId, Http2ErrorCode.NO_ERROR, expectedErrorMessage: null);
         }
 
+        private void VerifyGoAway(Http2Frame frame, int expectedLastStreamId, Http2ErrorCode expectedErrorCode)
+        {
+            Assert.Equal(Http2FrameType.GOAWAY, frame.Type);
+            Assert.Equal(8, frame.Length);
+            Assert.Equal(0, frame.Flags);
+            Assert.Equal(0, frame.StreamId);
+            Assert.Equal(expectedLastStreamId, frame.GoAwayLastStreamId);
+            Assert.Equal(expectedErrorCode, frame.GoAwayErrorCode);
+        }
+
         private async Task WaitForConnectionErrorAsync<TException>(bool ignoreNonGoAwayFrames, int expectedLastStreamId, Http2ErrorCode expectedErrorCode, string expectedErrorMessage)
             where TException : Exception
         {
@@ -3764,12 +3941,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 }
             }
 
-            Assert.Equal(Http2FrameType.GOAWAY, frame.Type);
-            Assert.Equal(8, frame.Length);
-            Assert.Equal(0, frame.Flags);
-            Assert.Equal(0, frame.StreamId);
-            Assert.Equal(expectedLastStreamId, frame.GoAwayLastStreamId);
-            Assert.Equal(expectedErrorCode, frame.GoAwayErrorCode);
+            VerifyGoAway(frame, expectedLastStreamId, expectedErrorCode);
 
             if (expectedErrorMessage != null)
             {

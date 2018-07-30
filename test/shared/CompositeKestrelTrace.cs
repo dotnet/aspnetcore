@@ -2,11 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO.Pipelines;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
@@ -195,6 +193,18 @@ namespace Microsoft.AspNetCore.Testing
         {
             _trace1.Http2StreamResetAbort(traceIdentifier, error, abortReason);
             _trace2.Http2StreamResetAbort(traceIdentifier, error, abortReason);
+        }
+
+        public void Http2ConnectionClosing(string connectionId)
+        {
+            _trace1.Http2ConnectionClosing(connectionId);
+            _trace2.Http2ConnectionClosing(connectionId);
+        }
+
+        public void Http2ConnectionClosed(string connectionId, int highestOpenedStreamId)
+        {
+            _trace1.Http2ConnectionClosed(connectionId, highestOpenedStreamId);
+            _trace2.Http2ConnectionClosed(connectionId, highestOpenedStreamId);
         }
     }
 }

@@ -57,6 +57,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
         void Http2ConnectionError(string connectionId, Http2ConnectionErrorException ex);
 
+        void Http2ConnectionClosing(string connectionId);
+
+        void Http2ConnectionClosed(string connectionId, int highestOpenedStreamId);
+
         void Http2StreamError(string connectionId, Http2StreamErrorException ex);
 
         void Http2StreamResetAbort(string traceIdentifier, Http2ErrorCode error, ConnectionAbortedException abortReason);
