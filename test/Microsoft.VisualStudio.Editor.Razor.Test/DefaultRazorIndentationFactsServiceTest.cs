@@ -167,6 +167,33 @@ namespace Microsoft.VisualStudio.Editor.Razor
             Assert.Equal(0, indentLevel);
         }
 
+        // This test verifies that we still operate on SyntaxTree's that have gaps in them. The gaps are temporary
+        // until our work with the parser has been completed.
+        [Fact]
+        public void GetDesiredIndentation_ReturnsNull_IfOwningSpanDoesNotExist()
+        {
+            // Arrange
+            var source = new StringTextSnapshot($@"
+<div>
+    <div>
+    </div>
+</div>
+");
+            var syntaxTree = GetSyntaxTree(new StringTextSnapshot("something else"));
+            var service = new DefaultRazorIndentationFactsService();
+
+            // Act
+            var indentation = service.GetDesiredIndentation(
+                syntaxTree,
+                source,
+                source.GetLineFromLineNumber(3),
+                indentSize: 4,
+                tabSize: 1);
+
+            // Assert
+            Assert.Null(indentation);
+        }
+
         [Fact]
         public void GetDesiredIndentation_ReturnsNull_IfOwningSpanIsCode()
         {
