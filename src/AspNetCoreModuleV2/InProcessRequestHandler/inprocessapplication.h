@@ -134,11 +134,9 @@ private:
     // The exit code of the .NET Core process
     INT                             m_ProcessExitCode;
 
-    BOOL                            m_fIsWebSocketsConnection;
     volatile BOOL                   m_fBlockCallbacksIntoManaged;
     volatile BOOL                   m_fShutdownCalledFromNative;
     volatile BOOL                   m_fShutdownCalledFromManaged;
-    BOOL                            m_fRecycleCalled;
     BOOL                            m_fInitialized;
     std::unique_ptr<REQUESTHANDLER_CONFIG> m_pConfig;
 

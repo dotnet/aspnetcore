@@ -14,12 +14,11 @@ OUT_OF_PROCESS_APPLICATION::OUT_OF_PROCESS_APPLICATION(
 {
     m_status = APPLICATION_STATUS::RUNNING;
     m_pProcessManager = NULL;
-    InitializeSRWLock(&m_srwLock);
 }
 
 OUT_OF_PROCESS_APPLICATION::~OUT_OF_PROCESS_APPLICATION()
 {
-    SRWExclusiveLock lock(m_srwLock);
+    SRWExclusiveLock lock(m_stateLock);
     if (m_pProcessManager != NULL)
     {
         m_pProcessManager->Shutdown();
@@ -65,9 +64,15 @@ __override
 VOID
 OUT_OF_PROCESS_APPLICATION::Stop(bool fServerInitiated)
 {   
-    UNREFERENCED_PARAMETER(fServerInitiated);
+    SRWExclusiveLock lock(m_stateLock);
 
-    SRWExclusiveLock lock(m_srwLock);
+    if (m_fStopCalled)
+    {
+        return;
+    }
+
+    AppOfflineTrackingApplication::Stop(fServerInitiated);
+
     if (m_pProcessManager != NULL)
     {
         m_pProcessManager->Shutdown();

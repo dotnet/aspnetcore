@@ -56,7 +56,6 @@ private:
     VOID SetWebsocketStatus(IHttpContext *pHttpContext);
 
     PROCESS_MANAGER * m_pProcessManager;
-    SRWLOCK           m_srwLock;
     IHttpServer      *m_pHttpServer;
 
     WEBSOCKET_STATUS              m_fWebSocketSupported;

@@ -64,8 +64,9 @@ APPLICATION_INFO::GetOrCreateApplication(
         if (m_pApplication->QueryStatus() == RECYCLED)
         {
             LOG_INFO("Application went offline");
-            // Application that went offline
-            // are supposed to recycle themselves
+
+            // Call to wait for application to complete stopping
+            m_pApplication->Stop(/* fServerInitiated */ false);
             m_pApplication = nullptr;
         }
         else

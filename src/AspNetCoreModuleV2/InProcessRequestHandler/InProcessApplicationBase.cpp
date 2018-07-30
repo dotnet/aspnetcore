@@ -2,7 +2,6 @@
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
 #include "InProcessApplicationBase.h"
-#include "SRWExclusiveLock.h"
 
 hostfxr_main_fn InProcessApplicationBase::s_fMainCallback = NULL;
 
@@ -11,32 +10,14 @@ InProcessApplicationBase::InProcessApplicationBase(
     IHttpApplication& pHttpApplication)
     : AppOfflineTrackingApplication(pHttpApplication),
       m_fRecycleCalled(FALSE),
-      m_srwLock(),
       m_pHttpServer(pHttpServer)
 {
-    InitializeSRWLock(&m_srwLock);
 }
 
 VOID
 InProcessApplicationBase::Stop(bool fServerInitiated)
 {
-    // We need to guarantee that recycle is only called once, as calling pHttpServer->RecycleProcess
-    // multiple times can lead to AVs.
-    if (m_fRecycleCalled)
-    {
-        return;
-    }
-
-    {
-        SRWExclusiveLock lock(m_srwLock);
-
-        if (m_fRecycleCalled)
-        {
-            return;
-        }
-
-        m_fRecycleCalled = true;
-    }
+    AppOfflineTrackingApplication::Stop(fServerInitiated);
 
     // Stop was initiated by server no need to do anything, server would stop on it's own
     if (fServerInitiated)

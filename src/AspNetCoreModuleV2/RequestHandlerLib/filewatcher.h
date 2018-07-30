@@ -6,12 +6,14 @@
 
 #include <Windows.h>
 #include <functional>
+#include "iapplication.h"
+#include "HandleWrapper.h"
 
 #define FILE_WATCHER_SHUTDOWN_KEY           (ULONG_PTR)(-1)
 #define FILE_WATCHER_ENTRY_BUFFER_SIZE      4096
 #define FILE_NOTIFY_VALID_MASK              0x00000fff
-#define FILE_WATCHER_ENTRY_SIGNATURE       ((DWORD) 'FWES')
-#define FILE_WATCHER_ENTRY_SIGNATURE_FREE  ((DWORD) 'sewf')
+
+class AppOfflineTrackingApplication;
 
 class FILE_WATCHER{
 public:
@@ -20,110 +22,36 @@ public:
 
     ~FILE_WATCHER();
 
-    HRESULT Create();
-
-    HANDLE
-    QueryCompletionPort(
-        VOID
-    ) const
-    {
-        return m_hCompletionPort;
-    }
+    HRESULT Create(
+        _In_ PCWSTR                  pszDirectoryToMonitor,
+        _In_ PCWSTR                  pszFileNameToMonitor,
+        _In_ AppOfflineTrackingApplication *pApplication
+    );
 
     static
     DWORD
     WINAPI ChangeNotificationThread(LPVOID);
 
     static
-    void
-    WINAPI FileWatcherCompletionRoutine
-    (
-        DWORD                   dwCompletionStatus,
-        DWORD                   cbCompletion,
-        OVERLAPPED *            pOverlapped
-    );
+    DWORD
+    WINAPI RunNotificationCallback(LPVOID);
 
-private:
-    HANDLE               m_hCompletionPort;
-    HANDLE               m_hChangeNotificationThread;
-    volatile   BOOL      m_fThreadExit;
-};
-
-class FILE_WATCHER_ENTRY
-{
-public:
-    FILE_WATCHER_ENTRY(FILE_WATCHER *   pFileMonitor);
-
-    OVERLAPPED    _overlapped;
-
-    HRESULT
-    Create(
-        _In_ PCWSTR                  pszDirectoryToMonitor,
-        _In_ PCWSTR                  pszFileNameToMonitor,
-        _In_ std::function<void()>   pCallback,
-        _In_ HANDLE                  hImpersonationToken
-        );
-
-    VOID
-    ReferenceFileWatcherEntry() const
-    {
-        InterlockedIncrement(&_cRefs);
-    }
-
-    VOID
-    DereferenceFileWatcherEntry() const
-    {
-        if (InterlockedDecrement(&_cRefs) == 0)
-        {
-            delete this;
-        }
-    }
-
-    BOOL
-    QueryIsValid() const
-    {
-        return _fIsValid;
-    }
-
-    VOID
-    MarkEntryInValid()
-    {
-        _fIsValid = FALSE;
-    }
+    HRESULT HandleChangeCompletion(DWORD cbCompletion);
 
     HRESULT Monitor();
-
-    VOID StopMonitor();
-
-    HRESULT
-    HandleChangeCompletion(
-        _In_ DWORD          dwCompletionStatus,
-        _In_ DWORD          cbCompletion
-        );
+    void StopMonitor();
 
 private:
-    virtual ~FILE_WATCHER_ENTRY();
+    HandleWrapper<NullHandleTraits>               m_hCompletionPort;
+    HandleWrapper<NullHandleTraits>               m_hChangeNotificationThread;
+    HandleWrapper<NullHandleTraits>               _hDirectory;
+    volatile   BOOL      m_fThreadExit;
 
-    DWORD                   _dwSignature;
     BUFFER                  _buffDirectoryChanges;
-    HANDLE                  _hImpersonationToken;
-    HANDLE                  _hDirectory;
-    FILE_WATCHER*           _pFileMonitor;
     STRU                    _strFileName;
     STRU                    _strDirectoryName;
     STRU                    _strFullName;
-    LONG                    _lStopMonitorCalled;
-    mutable LONG            _cRefs;
-    BOOL                    _fIsValid;
-    SRWLOCK                 _srwLock;
-    std::function<void()>   _pCallback;
-};
-
-
-struct FILE_WATCHER_ENTRY_DELETER
-{
-    void operator()(FILE_WATCHER_ENTRY* entry) const
-    {
-        entry->DereferenceFileWatcherEntry();
-    }
+    LONG                    _lStopMonitorCalled {};
+    OVERLAPPED              _overlapped;
+    std::unique_ptr<AppOfflineTrackingApplication, IAPPLICATION_DELETER> _pApplication;
 };

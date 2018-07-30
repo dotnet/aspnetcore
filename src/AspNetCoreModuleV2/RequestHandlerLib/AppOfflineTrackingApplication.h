@@ -6,6 +6,7 @@
 #include <Windows.h>
 #include "application.h"
 #include "filewatcher.h"
+#include <atomic>
 
 class AppOfflineTrackingApplication: public APPLICATION
 {
@@ -13,20 +14,23 @@ public:
     AppOfflineTrackingApplication(const IHttpApplication& application)
         : m_applicationPath(application.GetApplicationPhysicalPath()),
         m_fileWatcher(nullptr),
-        m_fileWatcherEntry(nullptr)
+        m_fAppOfflineProcessed(false)
     {
     }
 
     ~AppOfflineTrackingApplication() override
     {
-        if (m_fileWatcherEntry)
+        if (m_fileWatcher)
         {
-            m_fileWatcherEntry->StopMonitor();
+            m_fileWatcher->StopMonitor();
         }   
     };
 
     HRESULT
     StartMonitoringAppOffline();
+
+    VOID
+    Stop(bool fServerInitiated) override;
     
     virtual
     VOID
@@ -38,5 +42,5 @@ private:
 
     std::wstring                                 m_applicationPath;
     std::unique_ptr<FILE_WATCHER>                m_fileWatcher;
-    std::unique_ptr<FILE_WATCHER_ENTRY, FILE_WATCHER_ENTRY_DELETER>  m_fileWatcherEntry;
+    std::atomic_bool                             m_fAppOfflineProcessed;
 };
