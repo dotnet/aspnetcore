@@ -750,6 +750,8 @@ namespace Microsoft.Net.Http.Headers
         [InlineData("application/entity+json", "application/entity+json")]
         [InlineData("application/*+json", "application/entity+json")]
         [InlineData("application/*+json", "application/*+json")]
+        [InlineData("application/json", "application/problem+json")]
+        [InlineData("application/json", "application/vnd.restful+json")]
         [InlineData("application/*", "application/*+JSON")]
         [InlineData("application/vnd.github+json", "application/vnd.github+json")]
         [InlineData("application/*", "application/entity+JSON")]
@@ -774,6 +776,7 @@ namespace Microsoft.Net.Http.Headers
         [InlineData("application/*+*", "application/json")]
         [InlineData("application/entity+*", "application/entity+json")] // We don't allow suffixes to be wildcards
         [InlineData("application/*+*", "application/entity+json")] // We don't allow suffixes to be wildcards
+        [InlineData("application/entity+json", "application/entity")]
         public void IsSubSetOfWithSuffixes_NegativeCases(string set, string subset)
         {
             // Arrange
