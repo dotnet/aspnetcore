@@ -1,3 +1,5 @@
+### If you believe you have an issue that affects the security of the platform please do NOT create an issue and instead email your issue details to secure@microsoft.com. Your report may be eligible for our [bug bounty](https://technet.microsoft.com/en-us/mt764065.aspx).
+
 ### Please consider the following before filing an issue
 
 * If you are using NuGet Packages that start with `Microsoft.AspNet.SignalR`, use the issue tracker at https://github.com/SignalR/SignalR to report the issue. This 
