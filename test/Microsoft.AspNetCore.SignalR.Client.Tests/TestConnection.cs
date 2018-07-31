@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             return this;
         }
 
-        public async Task<string> ReadHandshakeAndSendResponseAsync(int minorVersion = 0)
+        public async Task<string> ReadHandshakeAndSendResponseAsync()
         {
             var s = await ReadSentTextMessageAsync();
 
@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             var output = MemoryBufferWriter.Get();
             try
             {
-                HandshakeProtocol.WriteResponseMessage(new HandshakeResponseMessage(minorVersion), output);
+                HandshakeProtocol.WriteResponseMessage(HandshakeResponseMessage.Empty, output);
                 response = output.ToArray();
             }
             finally

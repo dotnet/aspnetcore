@@ -126,7 +126,6 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             public string Name { get; }
 
             public int Version => 1;
-            public int MinorVersion => 0;
 
             public TransferFormat TransferFormat => TransferFormat.Text;
 

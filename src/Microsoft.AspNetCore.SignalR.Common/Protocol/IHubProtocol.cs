@@ -18,14 +18,9 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         string Name { get; }
 
         /// <summary>
-        /// Gets the major version of the protocol.
+        /// Gets the version of the protocol.
         /// </summary>
         int Version { get; }
-
-        /// <summary>
-        /// Gets the minor version of the protocol.
-        /// </summary>
-        int MinorVersion { get; }
 
         /// <summary>
         /// Gets the transfer format of the protocol.

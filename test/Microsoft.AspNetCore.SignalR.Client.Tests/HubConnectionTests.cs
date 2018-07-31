@@ -169,7 +169,6 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
             public string Name => "MockHubProtocol";
             public int Version => 1;
-            public int MinorVersion => 1;
 
             public TransferFormat TransferFormat => TransferFormat.Binary;
 

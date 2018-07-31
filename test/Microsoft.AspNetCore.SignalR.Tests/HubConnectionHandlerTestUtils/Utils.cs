@@ -64,9 +64,9 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             return services.BuildServiceProvider();
         }
 
-        public static Connections.ConnectionHandler GetHubConnectionHandler(Type hubType, Action<ServiceCollection> addServices = null)
+        public static Connections.ConnectionHandler GetHubConnectionHandler(Type hubType)
         {
-            var serviceProvider = CreateServiceProvider(addServices);
+            var serviceProvider = CreateServiceProvider();
             return (Connections.ConnectionHandler)serviceProvider.GetService(GetConnectionHandlerType(hubType));
         }
     }
