@@ -14,6 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\samples\HealthChecksSample\HealthChecksSample.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Diagnostics.HealthChecks\Microsoft.AspNetCore.Diagnostics.HealthChecks.csproj" />
   </ItemGroup>
 

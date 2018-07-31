@@ -17,10 +17,8 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
 {
     public class HealthCheckMiddlewareTests
     {
-        [Theory]
-        [InlineData("/frob")]  
-        [InlineData("/health/")] // Match is exact, for now at least
-        public async Task IgnoresRequestThatDoesNotMatchPath(string requestPath)
+        [Fact] // Matches based on '.Map'
+        public async Task IgnoresRequestThatDoesNotMatchPath()
         {
             var builder = new WebHostBuilder()
                 .Configure(app =>
@@ -34,26 +32,190 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
             var server = new TestServer(builder);
             var client = server.CreateClient();
 
-            var response = await client.GetAsync(requestPath);
+            var response = await client.GetAsync("/frob");
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
 
-        [Theory]
-        [InlineData("/health")]
-        [InlineData("/Health")]
-        [InlineData("/HEALTH")]
-        public async Task ReturnsEmptyHealthyRequestIfNoHealthChecksRegistered(string requestPath)
+        [Fact] // Matches based on '.Map'
+        public async Task MatchIsCaseInsensitive()
+        {
+            var builder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.UseHealthChecks("/health");
+                })
+                .ConfigureServices(services =>
+                {
+                    services.AddHealthChecks();
+                });
+            var server = new TestServer(builder);
+            var client = server.CreateClient();
+
+            var response = await client.GetAsync("/HEALTH");
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task ReturnsPlainTextStatus()
+        {
+            var builder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.UseHealthChecks("/health");
+                })
+                .ConfigureServices(services =>
+                {
+                    services.AddHealthChecks();
+                });
+            var server = new TestServer(builder);
+            var client = server.CreateClient();
+
+            var response = await client.GetAsync("/health");
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            Assert.Equal("text/plain", response.Content.Headers.ContentType.ToString());
+            Assert.Equal("Healthy", await response.Content.ReadAsStringAsync());
+        }
+
+        [Fact]
+        public async Task StatusCodeIs200IfNoChecks()
+        {
+            var builder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.UseHealthChecks("/health");
+                })
+                .ConfigureServices(services =>
+                {
+                    services.AddHealthChecks();
+                });
+            var server = new TestServer(builder);
+            var client = server.CreateClient();
+
+            var response = await client.GetAsync("/health");
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("text/plain", response.Content.Headers.ContentType.ToString());
+            Assert.Equal("Healthy", await response.Content.ReadAsStringAsync());
+        }
+
+
+        [Fact]
+        public async Task StatusCodeIs200IfAllChecksHealthy()
+        {
+            var builder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.UseHealthChecks("/health");
+                })
+                .ConfigureServices(services =>
+                {
+                    services.AddHealthChecks()
+                        .AddCheck("Foo", () => Task.FromResult(HealthCheckResult.Healthy("A-ok!")))
+                        .AddCheck("Bar", () => Task.FromResult(HealthCheckResult.Healthy("A-ok!")))
+                        .AddCheck("Baz", () => Task.FromResult(HealthCheckResult.Healthy("A-ok!")));
+                });
+            var server = new TestServer(builder);
+            var client = server.CreateClient();
+
+            var response = await client.GetAsync("/health");
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("text/plain", response.Content.Headers.ContentType.ToString());
+            Assert.Equal("Healthy", await response.Content.ReadAsStringAsync());
+        }
+
+        [Fact]
+        public async Task StatusCodeIs200IfCheckIsDegraded()
+        {
+            var builder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.UseHealthChecks("/health");
+                })
+                .ConfigureServices(services =>
+                {
+                    services.AddHealthChecks()
+                        .AddCheck("Foo", () => Task.FromResult(HealthCheckResult.Healthy("A-ok!")))
+                        .AddCheck("Bar", () => Task.FromResult(HealthCheckResult.Degraded("Not so great.")))
+                        .AddCheck("Baz", () => Task.FromResult(HealthCheckResult.Healthy("A-ok!")));
+                });
+            var server = new TestServer(builder);
+            var client = server.CreateClient();
+
+            var response = await client.GetAsync("/health");
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("text/plain", response.Content.Headers.ContentType.ToString());
+            Assert.Equal("Degraded", await response.Content.ReadAsStringAsync());
+        }
+
+        [Fact]
+        public async Task StatusCodeIs503IfCheckIsUnhealthy()
+        {
+            var builder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.UseHealthChecks("/health");
+                })
+                .ConfigureServices(services =>
+                {
+                    services.AddHealthChecks()
+                        .AddCheck("Foo", () => Task.FromResult(HealthCheckResult.Healthy("A-ok!")))
+                        .AddCheck("Bar", () => Task.FromResult(HealthCheckResult.Unhealthy("Pretty bad.")))
+                        .AddCheck("Baz", () => Task.FromResult(HealthCheckResult.Healthy("A-ok!")));
+                });
+            var server = new TestServer(builder);
+            var client = server.CreateClient();
+
+            var response = await client.GetAsync("/health");
+
+            Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
+            Assert.Equal("text/plain", response.Content.Headers.ContentType.ToString());
+            Assert.Equal("Unhealthy", await response.Content.ReadAsStringAsync());
+        }
+
+        [Fact]
+        public async Task StatusCodeIs500IfCheckIsFailed()
+        {
+            var builder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.UseHealthChecks("/health");
+                })
+                .ConfigureServices(services =>
+                {
+                    services.AddHealthChecks()
+                        .AddCheck("Foo", () => Task.FromResult(HealthCheckResult.Healthy("A-ok!")))
+                        .AddCheck("Bar", () => Task.FromResult(new HealthCheckResult(HealthCheckStatus.Failed, null, null, null)))
+                        .AddCheck("Baz", () => Task.FromResult(HealthCheckResult.Healthy("A-ok!")));
+                });
+            var server = new TestServer(builder);
+            var client = server.CreateClient();
+
+            var response = await client.GetAsync("/health");
+
+            Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+            Assert.Equal("text/plain", response.Content.Headers.ContentType.ToString());
+            Assert.Equal("Failed", await response.Content.ReadAsStringAsync());
+        }
+
+        [Fact]
+        public async Task DetailedJsonReturnsEmptyHealthyResponseIfNoHealthChecksRegistered()
         {
             var expectedJson = JsonConvert.SerializeObject(new
             {
                 status = "Healthy",
                 results = new { }
-            }, Formatting.None);
+            }, Formatting.Indented);
 
             var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
-                    app.UseHealthChecks("/health");
+                    app.UseHealthChecks("/health", new HealthCheckOptions()
+                    {
+                        ResponseWriter = HealthCheckResponseWriters.WriteDetailedJson,
+                    });
                 })
                 .ConfigureServices(services =>
                 {
@@ -62,14 +224,14 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
             var server = new TestServer(builder);
             var client = server.CreateClient();
 
-            var response = await client.GetAsync(requestPath);
+            var response = await client.GetAsync("/health");
 
             var result = await response.Content.ReadAsStringAsync();
             Assert.Equal(expectedJson, result);
         }
 
         [Fact]
-        public async Task ReturnsResultsFromHealthChecks()
+        public async Task DetailedJsonReturnsResultsFromHealthChecks()
         {
             var expectedJson = JsonConvert.SerializeObject(new
             {
@@ -101,12 +263,15 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
                         data = new { }
                     },
                 },
-            }, Formatting.None);
+            }, Formatting.Indented);
 
             var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
-                    app.UseHealthChecks("/health");
+                    app.UseHealthChecks("/health", new HealthCheckOptions()
+                    {
+                        ResponseWriter = HealthCheckResponseWriters.WriteDetailedJson,
+                    });
                 })
                 .ConfigureServices(services =>
                 {
@@ -129,78 +294,15 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
         }
 
         [Fact]
-        public async Task StatusCodeIs200IfNoChecks()
+        public async Task NoResponseWriterReturnsEmptyBody()
         {
             var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
-                    app.UseHealthChecks("/health");
-                })
-                .ConfigureServices(services =>
-                {
-                    services.AddHealthChecks();
-                });
-            var server = new TestServer(builder);
-            var client = server.CreateClient();
-
-            var response = await client.GetAsync("/health");
-
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        }
-
-        [Fact]
-        public async Task StatusCodeIs200IfAllChecksHealthy()
-        {
-            var builder = new WebHostBuilder()
-                .Configure(app =>
-                {
-                    app.UseHealthChecks("/health");
-                })
-                .ConfigureServices(services =>
-                {
-                    services.AddHealthChecks()
-                        .AddCheck("Foo", () => Task.FromResult(HealthCheckResult.Healthy("A-ok!")))
-                        .AddCheck("Bar", () => Task.FromResult(HealthCheckResult.Healthy("A-ok!")))
-                        .AddCheck("Baz", () => Task.FromResult(HealthCheckResult.Healthy("A-ok!")));
-                });
-            var server = new TestServer(builder);
-            var client = server.CreateClient();
-
-            var response = await client.GetAsync("/health");
-
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        }
-
-        [Fact]
-        public async Task StatusCodeIs200IfCheckIsDegraded()
-        {
-            var builder = new WebHostBuilder()
-                .Configure(app =>
-                {
-                    app.UseHealthChecks("/health");
-                })
-                .ConfigureServices(services =>
-                {
-                    services.AddHealthChecks()
-                        .AddCheck("Foo", () => Task.FromResult(HealthCheckResult.Healthy("A-ok!")))
-                        .AddCheck("Bar", () => Task.FromResult(HealthCheckResult.Degraded("Not so great.")))
-                        .AddCheck("Baz", () => Task.FromResult(HealthCheckResult.Healthy("A-ok!")));
-                });
-            var server = new TestServer(builder);
-            var client = server.CreateClient();
-
-            var response = await client.GetAsync("/health");
-
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        }
-
-        [Fact]
-        public async Task StatusCodeIs503IfCheckIsUnhealthy()
-        {
-            var builder = new WebHostBuilder()
-                .Configure(app =>
-                {
-                    app.UseHealthChecks("/health");
+                    app.UseHealthChecks("/health", new HealthCheckOptions()
+                    {
+                        ResponseWriter = null,
+                    });
                 })
                 .ConfigureServices(services =>
                 {
@@ -215,29 +317,34 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
             var response = await client.GetAsync("/health");
 
             Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
+            Assert.Equal(string.Empty, await response.Content.ReadAsStringAsync());
         }
 
         [Fact]
-        public async Task StatusCodeIs500IfCheckIsFailed()
+        public async Task CanSetCustomStatusCodes()
         {
             var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
-                    app.UseHealthChecks("/health");
+                    app.UseHealthChecks("/health", new HealthCheckOptions()
+                    {
+                        ResultStatusCodes =
+                        {
+                            [HealthCheckStatus.Healthy] = 201,
+                        }
+                    });
                 })
                 .ConfigureServices(services =>
                 {
-                    services.AddHealthChecks()
-                        .AddCheck("Foo", () => Task.FromResult(HealthCheckResult.Healthy("A-ok!")))
-                        .AddCheck("Bar", () => Task.FromResult(new HealthCheckResult(HealthCheckStatus.Failed, null, null, null)))
-                        .AddCheck("Baz", () => Task.FromResult(HealthCheckResult.Healthy("A-ok!")));
+                    services.AddHealthChecks();
                 });
             var server = new TestServer(builder);
             var client = server.CreateClient();
 
             var response = await client.GetAsync("/health");
 
-            Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+            Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+            Assert.Equal("Healthy", await response.Content.ReadAsStringAsync());
         }
     }
 }

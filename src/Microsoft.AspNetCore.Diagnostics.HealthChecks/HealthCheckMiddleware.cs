@@ -2,14 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
 {
@@ -19,60 +15,62 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
         private readonly HealthCheckOptions _healthCheckOptions;
         private readonly IHealthCheckService _healthCheckService;
 
-        public HealthCheckMiddleware(RequestDelegate next, IOptions<HealthCheckOptions> healthCheckOptions, IHealthCheckService healthCheckService)
+        public HealthCheckMiddleware(
+            RequestDelegate next,
+            IOptions<HealthCheckOptions> healthCheckOptions,
+            IHealthCheckService healthCheckService)
         {
+            if (next == null)
+            {
+                throw new ArgumentNullException(nameof(next));
+            }
+
+            if (healthCheckOptions == null)
+            {
+                throw new ArgumentNullException(nameof(healthCheckOptions));
+            }
+
+            if (healthCheckService == null)
+            {
+                throw new ArgumentNullException(nameof(healthCheckService));
+            }
+
             _next = next;
             _healthCheckOptions = healthCheckOptions.Value;
             _healthCheckService = healthCheckService;
         }
 
         /// <summary>
-        /// Process an individual request.
+        /// Processes a request.
         /// </summary>
-        /// <param name="context"></param>
+        /// <param name="httpContext"></param>
         /// <returns></returns>
-        public async Task InvokeAsync(HttpContext context)
+        public async Task InvokeAsync(HttpContext httpContext)
         {
-            if (context.Request.Path == _healthCheckOptions.Path)
+            if (httpContext == null)
             {
-                // Get results
-                var result = await _healthCheckService.CheckHealthAsync(context.RequestAborted);
-
-                // Map status to response code
-                switch (result.Status)
-                {
-                    case HealthCheckStatus.Failed:
-                        context.Response.StatusCode = StatusCodes.Status500InternalServerError;
-                        break;
-                    case HealthCheckStatus.Unhealthy:
-                        context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
-                        break;
-                    case HealthCheckStatus.Degraded:
-                        // Degraded doesn't mean unhealthy so we return 200, but the content will contain more details
-                        context.Response.StatusCode = StatusCodes.Status200OK;
-                        break;
-                    case HealthCheckStatus.Healthy:
-                        context.Response.StatusCode = StatusCodes.Status200OK;
-                        break;
-                    default:
-                        // This will only happen when we change HealthCheckStatus and we don't update this.
-                        Debug.Fail($"Unrecognized HealthCheckStatus value: {result.Status}");
-                        throw new InvalidOperationException($"Unrecognized HealthCheckStatus value: {result.Status}");
-                }
-
-                // Render results to JSON
-                var json = new JObject(
-                    new JProperty("status", result.Status.ToString()),
-                    new JProperty("results", new JObject(result.Results.Select(pair =>
-                        new JProperty(pair.Key, new JObject(
-                            new JProperty("status", pair.Value.Status.ToString()),
-                            new JProperty("description", pair.Value.Description),
-                            new JProperty("data", new JObject(pair.Value.Data.Select(p => new JProperty(p.Key, p.Value))))))))));
-                await context.Response.WriteAsync(json.ToString(Formatting.None));
+                throw new ArgumentNullException(nameof(httpContext));
             }
-            else
+
+            // Get results
+            var result = await _healthCheckService.CheckHealthAsync(httpContext.RequestAborted);
+
+            // Map status to response code - this is customizable via options. 
+            if (!_healthCheckOptions.ResultStatusCodes.TryGetValue(result.Status, out var statusCode))
             {
-                await _next(context);
+                var message =
+                    $"No status code mapping found for {nameof(HealthCheckStatus)} value: {result.Status}." +
+                    $"{nameof(HealthCheckOptions)}.{nameof(HealthCheckOptions.ResultStatusCodes)} must contain" +
+                    $"an entry for {result.Status}.";
+
+                throw new InvalidOperationException(message);
+            }
+
+            httpContext.Response.StatusCode = statusCode;
+
+            if (_healthCheckOptions.ResponseWriter != null)
+            {
+                await _healthCheckOptions.ResponseWriter(httpContext, result);
             }
         }
     }
