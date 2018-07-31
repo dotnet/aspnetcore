@@ -128,10 +128,10 @@ namespace Microsoft.AspNetCore.Routing
                         template = string.IsNullOrEmpty(template) ? "\"\"" : template;
                         sb.Append(template);
                         sb.Append(", Required Values: new { ");
-                        sb.Append(string.Join(", ", GetValues(matcherEndpoint.RequiredValues)));
+                        sb.Append(string.Join(", ", FormatValues(matcherEndpoint.RequiredValues)));
                         sb.Append(" }");
                         sb.Append(", Defaults: new { ");
-                        sb.Append(string.Join(", ", GetValues(matcherEndpoint.RoutePattern.Defaults)));
+                        sb.Append(string.Join(", ", FormatValues(matcherEndpoint.RoutePattern.Defaults)));
                         sb.Append(" }");
                         var routeNameMetadata = matcherEndpoint.Metadata.GetMetadata<IRouteNameMetadata>();
                         sb.Append(", Route Name: ");
@@ -157,7 +157,7 @@ namespace Microsoft.AspNetCore.Routing
                 }
                 return sb.ToString();
 
-                IEnumerable<string> GetValues(IEnumerable<KeyValuePair<string, object>> values)
+                IEnumerable<string> FormatValues(IEnumerable<KeyValuePair<string, object>> values)
                 {
                     return values.Select(
                         kvp =>
