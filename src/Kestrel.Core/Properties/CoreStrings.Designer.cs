@@ -2072,6 +2072,34 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         internal static string FormatHttp2StreamErrorAfterHeaders()
             => GetString("Http2StreamErrorAfterHeaders");
 
+        /// <summary>
+        /// Less data received than specified in the Content-Length header.
+        /// </summary>
+        internal static string Http2StreamErrorLessDataThanLength
+        {
+            get => GetString("Http2StreamErrorLessDataThanLength");
+        }
+
+        /// <summary>
+        /// Less data received than specified in the Content-Length header.
+        /// </summary>
+        internal static string FormatHttp2StreamErrorLessDataThanLength()
+            => GetString("Http2StreamErrorLessDataThanLength");
+
+        /// <summary>
+        /// More data received than specified in the Content-Length header.
+        /// </summary>
+        internal static string Http2StreamErrorMoreDataThanLength
+        {
+            get => GetString("Http2StreamErrorMoreDataThanLength");
+        }
+
+        /// <summary>
+        /// More data received than specified in the Content-Length header.
+        /// </summary>
+        internal static string FormatHttp2StreamErrorMoreDataThanLength()
+            => GetString("Http2StreamErrorMoreDataThanLength");
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

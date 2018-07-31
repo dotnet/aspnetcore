@@ -560,4 +560,10 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
   <data name="Http2StreamErrorAfterHeaders" xml:space="preserve">
     <value>An error occured after the response headers were sent, a reset is being sent.</value>
   </data>
+  <data name="Http2StreamErrorLessDataThanLength" xml:space="preserve">
+    <value>Less data received than specified in the Content-Length header.</value>
+  </data>
+  <data name="Http2StreamErrorMoreDataThanLength" xml:space="preserve">
+    <value>More data received than specified in the Content-Length header.</value>
+  </data>
 </root>

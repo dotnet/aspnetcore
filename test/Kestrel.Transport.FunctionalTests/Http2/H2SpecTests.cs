@@ -3,6 +3,7 @@
 
 #if NETCOREAPP2_2
 
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -56,7 +57,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
             get
             {
                 var dataset = new TheoryData<H2SpecTestCase>();
-                var toSkip = new[] { "hpack/4.2/1", "http2/5.1/8", "http2/8.1.2.6/1", "http2/8.1.2.6/2" };
+                var toSkip = new[] { "hpack/4.2/1", "http2/5.1/8" };
 
                 foreach (var testcase in H2SpecCommands.EnumerateTestCases())
                 {
@@ -123,9 +124,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
 
         private void ConfigureHelloWorld(IApplicationBuilder app)
         {
-            app.Run(context =>
+            app.Run(async context =>
             {
-                return context.Request.Body.CopyToAsync(context.Response.Body);
+                // Read the whole request body to check for errors.
+                await context.Request.Body.CopyToAsync(Stream.Null);
+                await context.Response.WriteAsync("Hello World");
             });
         }
     }
