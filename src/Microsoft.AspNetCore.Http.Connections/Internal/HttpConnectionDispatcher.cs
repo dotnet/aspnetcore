@@ -188,6 +188,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                     return;
                 }
 
+                // Create a new Tcs every poll to keep track of the poll finishing, so we can properly wait on previous polls
+                var currentRequestTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+
                 await connection.StateLock.WaitAsync();
                 try
                 {
@@ -205,17 +208,17 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                     {
                         var existing = connection.GetHttpContext();
                         Log.ConnectionAlreadyActive(_logger, connection.ConnectionId, existing.TraceIdentifier);
+                    }
 
-                        using (connection.Cancellation)
-                        {
-                            // Cancel the previous request
-                            connection.Cancellation?.Cancel();
+                    using (connection.Cancellation)
+                    {
+                        // Cancel the previous request
+                        connection.Cancellation?.Cancel();
 
-                            // Wait for the previous request to drain
-                            await connection.TransportTask;
+                        // Always wait for the previous request to drain
+                        await connection.PreviousPollTask;
 
-                            Log.PollCanceled(_logger, connection.ConnectionId, existing.TraceIdentifier);
-                        }
+                        connection.PreviousPollTask = currentRequestTcs.Task;
                     }
 
                     // Mark the connection as active
@@ -267,64 +270,61 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
                 var resultTask = await Task.WhenAny(connection.ApplicationTask, connection.TransportTask);
 
-                var pollAgain = true;
-
-                // If the application ended before the transport task then we potentially need to end the connection
-                if (resultTask == connection.ApplicationTask)
+                try
                 {
-                    // Complete the transport (notifying it of the application error if there is one)
-                    connection.Transport.Output.Complete(connection.ApplicationTask.Exception);
+                    var pollAgain = true;
 
-                    // Wait for the transport to run
-                    await connection.TransportTask;
-
-                    // If the status code is a 204 it means the connection is done
-                    if (context.Response.StatusCode == StatusCodes.Status204NoContent)
+                    // If the application ended before the transport task then we potentially need to end the connection
+                    if (resultTask == connection.ApplicationTask)
                     {
-                        // We should be able to safely dispose because there's no more data being written
-                        // We don't need to wait for close here since we've already waited for both sides
-                        await _manager.DisposeAndRemoveAsync(connection, closeGracefully: false);
+                        // Complete the transport (notifying it of the application error if there is one)
+                        connection.Transport.Output.Complete(connection.ApplicationTask.Exception);
 
-                        // Don't poll again if we've removed the connection completely
-                        pollAgain = false;
-                    }
-                }
-                else if (resultTask.IsFaulted)
-                {
-                    // transport task was faulted, we should remove the connection
-                    await _manager.DisposeAndRemoveAsync(connection, closeGracefully: false);
+                        // Wait for the transport to run
+                        await connection.TransportTask;
 
-                    pollAgain = false;
-                }
-                else if (context.Response.StatusCode == StatusCodes.Status204NoContent)
-                {
-                    // Don't poll if the transport task was canceled
-                    pollAgain = false;
-                }
-
-                if (pollAgain)
-                {
-                    // Otherwise, we update the state to inactive again and wait for the next poll
-                    await connection.StateLock.WaitAsync();
-                    try
-                    {
-                        if (connection.Status == HttpConnectionStatus.Active)
+                        // If the status code is a 204 it means the connection is done
+                        if (context.Response.StatusCode == StatusCodes.Status204NoContent)
                         {
-                            // Mark the connection as inactive
-                            connection.LastSeenUtc = DateTime.UtcNow;
+                            // We should be able to safely dispose because there's no more data being written
+                            // We don't need to wait for close here since we've already waited for both sides
+                            await _manager.DisposeAndRemoveAsync(connection, closeGracefully: false);
 
-                            connection.Status = HttpConnectionStatus.Inactive;
-
-                            // Dispose the cancellation token
-                            connection.Cancellation?.Dispose();
-
-                            connection.Cancellation = null;
+                            // Don't poll again if we've removed the connection completely
+                            pollAgain = false;
                         }
                     }
-                    finally
+                    else if (resultTask.IsFaulted)
                     {
-                        connection.StateLock.Release();
+                        // transport task was faulted, we should remove the connection
+                        await _manager.DisposeAndRemoveAsync(connection, closeGracefully: false);
+
+                        pollAgain = false;
                     }
+                    else if (context.Response.StatusCode == StatusCodes.Status204NoContent)
+                    {
+                        // Don't poll if the transport task was canceled
+                        pollAgain = false;
+                    }
+
+                    if (pollAgain)
+                    {
+                        // Mark the connection as inactive
+                        connection.LastSeenUtc = DateTime.UtcNow;
+
+                        connection.Status = HttpConnectionStatus.Inactive;
+
+                        // Dispose the cancellation token
+                        connection.Cancellation?.Dispose();
+
+                        connection.Cancellation = null;
+                    }
+                }
+                finally
+                {
+                    // Artificial task queue
+                    // This will cause incoming polls to wait until the previous poll has finished updating internal state info
+                    currentRequestTcs.TrySetResult(null);
                 }
             }
         }
