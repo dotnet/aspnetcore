@@ -289,6 +289,13 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                         pollAgain = false;
                     }
                 }
+                else if (resultTask.IsFaulted)
+                {
+                    // transport task was faulted, we should remove the connection
+                    await _manager.DisposeAndRemoveAsync(connection, closeGracefully: false);
+
+                    pollAgain = false;
+                }
                 else if (context.Response.StatusCode == StatusCodes.Status204NoContent)
                 {
                     // Don't poll if the transport task was canceled

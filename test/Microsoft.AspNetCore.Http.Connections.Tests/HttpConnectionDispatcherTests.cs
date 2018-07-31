@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Connections.Internal;
+using Microsoft.AspNetCore.Http.Connections.Internal.Transports;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.SignalR.Tests;
@@ -2013,6 +2014,48 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
                     await sendTask.OrTimeout();
                 }
+            }
+        }
+
+        [Fact]
+        public async Task ErrorDuringPollWillCloseConnection()
+        {
+            bool ExpectedErrors(WriteContext writeContext)
+            {
+                return (writeContext.LoggerName == typeof(LongPollingTransport).FullName &&
+                       writeContext.EventId.Name == "LongPollingTerminated") ||
+                       (writeContext.LoggerName == typeof(HttpConnectionManager).FullName &&
+                       writeContext.EventId.Name == "FailedDispose");
+            }
+
+            using (StartVerifiableLog(out var loggerFactory, LogLevel.Debug, expectedErrorsFilter: ExpectedErrors))
+            {
+                var manager = CreateConnectionManager(loggerFactory);
+                var connection = manager.CreateConnection();
+                connection.TransportType = HttpTransportType.LongPolling;
+
+                var dispatcher = new HttpConnectionDispatcher(manager, loggerFactory);
+
+                var services = new ServiceCollection();
+                services.AddSingleton<TestConnectionHandler>();
+                var builder = new ConnectionBuilder(services.BuildServiceProvider());
+                builder.UseConnectionHandler<TestConnectionHandler>();
+                var app = builder.Build();
+                var options = new HttpConnectionDispatcherOptions();
+
+                var context = MakeRequest("/foo", connection);
+
+                // Initial poll will complete immediately
+                await dispatcher.ExecuteAsync(context, options, app).OrTimeout();
+
+                var pollContext = MakeRequest("/foo", connection);
+                var pollTask = dispatcher.ExecuteAsync(pollContext, options, app);
+                // fail LongPollingTransport ReadAsync
+                connection.Transport.Output.Complete(new InvalidOperationException());
+                await pollTask.OrTimeout();
+
+                Assert.Equal(StatusCodes.Status500InternalServerError, pollContext.Response.StatusCode);
+                Assert.False(manager.TryGetConnection(connection.ConnectionId, out var _));
             }
         }
 
