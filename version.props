@@ -1,7 +1,7 @@
 <Project>
   <PropertyGroup>
     <VersionPrefix>1.1.0</VersionPrefix>
-    <JavaClientVersion>0.1.0</JavaClientVersion>
+    <JavaClientVersion>0.1.0-preview1</JavaClientVersion>
     <VersionSuffix>preview1</VersionSuffix>
     <PackageVersion Condition="'$(IsFinalBuild)' == 'true' AND '$(VersionSuffix)' == 'rtm' ">$(VersionPrefix)</PackageVersion>
     <PackageVersion Condition="'$(IsFinalBuild)' == 'true' AND '$(VersionSuffix)' != 'rtm' ">$(VersionPrefix)-$(VersionSuffix)-final</PackageVersion>

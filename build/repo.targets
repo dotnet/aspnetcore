@@ -115,21 +115,21 @@
   </Target>
 
   <ItemGroup>
-    <JavaBuildFiles Include="signalr-client-$(JavaClientVersion)-preview1.jar;signalr-client-$(JavaClientVersion)-preview1-javadoc.jar;signalr-client-$(JavaClientVersion)-preview1-sources.jar;signalr-client-$(JavaClientVersion)-preview1.pom"/>
+    <JavaBuildFiles Include="signalr-client-$(JavaClientVersion).jar;signalr-client-$(JavaClientVersion)-javadoc.jar;signalr-client-$(JavaClientVersion)-sources.jar;signalr-client-$(JavaClientVersion).pom"/>
   </ItemGroup>
   
   <ItemGroup>
-    <Jars Include="signalr-client-$(JavaClientVersion)-preview1.jar;signalr-client-$(JavaClientVersion)-preview1-javadoc.jar;signalr-client-$(JavaClientVersion)-preview1-sources.jar;" />
+    <Jars Include="signalr-client-$(JavaClientVersion).jar;signalr-client-$(JavaClientVersion)-javadoc.jar;signalr-client-$(JavaClientVersion)-sources.jar;" />
   </ItemGroup>
 
   <ItemGroup>
-    <PomFile Include="signalr-client-$(JavaClientVersion)-preview1.pom" />
+    <PomFile Include="signalr-client-$(JavaClientVersion).pom" />
   </ItemGroup>
 
   <Target Name="PackJavaClient" Condition="'$(JAVA_HOME)' != '' And Exists('$(JAVA_HOME)/lib/tools.jar')">
     <Message Text="Packing Java client" Importance="high" />
     <Exec Command="./gradlew jar sourceJar javadocJar generatePOM" WorkingDirectory="$(RepositoryRoot)clients/java/signalr" />
-    <Move SourceFiles="$(RepositoryRoot)clients/java/signalr/signalr-client-$(JavaClientVersion)-preview1.pom" DestinationFolder="$(RepositoryRoot)clients/java/signalr\build\libs" />
+    <Move SourceFiles="$(RepositoryRoot)clients/java/signalr/signalr-client-$(JavaClientVersion).pom" DestinationFolder="$(RepositoryRoot)clients/java/signalr\build\libs" />
     <Copy SourceFiles="$(RepositoryRoot)clients/java/signalr\build\libs\%(JavaBuildFiles.Identity)" DestinationFolder="$(BuildDir)" />
   </Target>
 
