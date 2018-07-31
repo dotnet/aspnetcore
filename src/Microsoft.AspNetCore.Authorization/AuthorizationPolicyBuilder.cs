@@ -147,7 +147,7 @@ namespace Microsoft.AspNetCore.Authorization
         /// Adds a <see cref="RolesAuthorizationRequirement"/>
         /// to the current instance.
         /// </summary>
-        /// <param name="roles">The roles required.</param>
+        /// <param name="roles">The allowed roles.</param>
         /// <returns>A reference to this instance after the operation has completed.</returns>
         public AuthorizationPolicyBuilder RequireRole(params string[] roles)
         {
@@ -163,7 +163,7 @@ namespace Microsoft.AspNetCore.Authorization
         /// Adds a <see cref="RolesAuthorizationRequirement"/>
         /// to the current instance.
         /// </summary>
-        /// <param name="roles">The roles required.</param>
+        /// <param name="roles">The allowed roles.</param>
         /// <returns>A reference to this instance after the operation has completed.</returns>
         public AuthorizationPolicyBuilder RequireRole(IEnumerable<string> roles)
         {
