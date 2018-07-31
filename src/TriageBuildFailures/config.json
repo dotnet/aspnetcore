@@ -66,7 +66,8 @@
   },
   "GitHub": {
     "FlakyProjectColumn": 2260926,
-    "BuildBuddyUsername": "ryanbrandenburg"
+    "BuildBuddyUsername": "ryanbrandenburg",
+    "BotUsername":  "ryanbrandenburg"
   },
   "TeamCity": {
     "Server": "aspnetci"

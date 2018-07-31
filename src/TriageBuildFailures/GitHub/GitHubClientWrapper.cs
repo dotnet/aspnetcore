@@ -118,6 +118,11 @@ namespace TriageBuildFailures.GitHub
             await Client.Issue.Comment.Create(issue.RepositoryOwner, issue.RepositoryName, issue.Number, comment);
         }
 
+        public async Task EditComment(GithubIssue issue, IssueComment comment, string newBody)
+        {
+            await Client.Issue.Comment.Update(issue.RepositoryOwner, issue.RepositoryName, comment.Id, newBody);
+        }
+
         public async Task<GithubIssue> CreateIssue(string owner, string repo, string subject, string body, IEnumerable<string> labels)
         {
             body += $"\n\nThis issue was made automatically. If there is a problem contact @{Config.BuildBuddyUsername}.";

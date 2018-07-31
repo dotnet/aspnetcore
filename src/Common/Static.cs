@@ -47,6 +47,8 @@ namespace Common
                                 return "KestrelHttpServer";
                             case "HttpSys":
                                 return "HttpSysServer";
+                            case "IIS":
+                                return "IISIntegration";
                             default:
                                 return parts[3];
                         }

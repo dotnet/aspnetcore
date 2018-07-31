@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Net.Http;
@@ -193,6 +194,15 @@ namespace TriageBuildFailures.TeamCity
                     throw new HttpRequestException(response.StatusCode.ToString());
                 }
             }
+        }
+
+        public static DateTimeOffset ParseTCDateTime(string date)
+        {
+            return DateTimeOffset.ParseExact(
+                date,
+                "yyyyMMdd'T'HHmmsszzz",
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.RoundtripKind);
         }
 
         public static string TCDateTime(DateTime date)

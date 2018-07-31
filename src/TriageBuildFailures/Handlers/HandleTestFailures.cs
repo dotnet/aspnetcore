@@ -109,19 +109,37 @@ CC { String.Join(',', Managers) }";
                 // The issue already exists, comment on it if we haven't already done so for this build.
                 else
                 {
-                    var issue = applicableIssues.First();
-
-                    var comments = await GHClient.GetIssueComments(issue);
-
-                    var commentsAboutThisBuild = comments.Where(c => c.Body.Contains(build.WebURL.ToString()));
-
-                    if(commentsAboutThisBuild.Count() == 0)
-                    {
-                        var comment = $"{shortTestName} [failed again]({build.WebURL}).";
-                        await GHClient.CreateComment(applicableIssues.First(), comment);
-                    }
+                    await CommentOnIssue(build, applicableIssues, shortTestName);
                 }
-            }                
+            }
+        }
+
+        private async Task CommentOnIssue(TeamCityBuild build, IEnumerable<GithubIssue> applicableIssues, string shortTestName)
+        {
+            var issue = applicableIssues.First();
+
+            var comments = await GHClient.GetIssueComments(issue);
+
+            var commentsFromToday = comments.Where(c => 
+                c.CreatedAt.Date == build.StartDate.Date
+                && c.User.Login == Config.GitHub.BotUsername
+                && c.Body.Contains("This comment was made automatically")
+                && c.Body.Contains("failed again"));
+            var commentsAboutThisBuild = comments.Where(c => c.Body.Contains(build.WebURL.ToString()));
+            if(commentsAboutThisBuild.Count() == 0)
+            {
+                var comment = $"{shortTestName} [failed again]({build.WebURL}).";
+                if (commentsFromToday.Count() == 0)
+                {
+                    await GHClient.CreateComment(issue, comment);
+                }
+                else
+                {
+                    var todaysComment = commentsFromToday.First();
+                    var newBody = $"{comment}\n{todaysComment.Body}";
+                    await GHClient.EditComment(issue, todaysComment, newBody);
+                }
+            }
         }
 
         private static string GetTestName(TestOccurrence testOccurrence)
