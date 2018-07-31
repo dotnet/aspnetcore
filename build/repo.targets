@@ -22,7 +22,7 @@
   </Target>
 
   <PropertyGroup>
-    <TestDependsOn>$(TestDependsOn);RunTSClientNodeTests;RunBrowserTests</TestDependsOn>
+    <TestDependsOn>$(TestDependsOn);RunTSClientNodeTests;RunBrowserTests;RunJavaTests</TestDependsOn>
   </PropertyGroup>
 
   <Target Name="RunTSClientNodeTests">
@@ -35,9 +35,14 @@
     <Exec Command="npm run test:inner -- --no-color --configuration $(Configuration)" WorkingDirectory="$(RepositoryRoot)clients/ts/FunctionalTests" IgnoreStandardErrorWarningFormat="true" />
   </Target>
 
+  <Target Name="RunJavaTests" Condition="'$(JAVA_HOME)' != '' And Exists('$(JAVA_HOME)/lib/tools.jar')">
+    <Message Text="Running Java client tests" Importance="high" />
+    <Exec Command="./gradlew test" WorkingDirectory="$(RepositoryRoot)clients/java/signalr" IgnoreStandardErrorWarningFormat="true" />
+  </Target> 
+
   <PropertyGroup>
-    <GetArtifactInfoDependsOn>$(GetArtifactInfoDependsOn);GetNpmArtifactInfo</GetArtifactInfoDependsOn>
-    <PrepareDependsOn>$(PrepareDependsOn);GetNpmArtifactInfo</PrepareDependsOn>
+    <GetArtifactInfoDependsOn>$(GetArtifactInfoDependsOn);GetNpmArtifactInfo;GetJavaArtifactInfo</GetArtifactInfoDependsOn>
+    <PrepareDependsOn>$(PrepareDependsOn);GetNpmArtifactInfo;GetJavaArtifactInfo</PrepareDependsOn>
   </PropertyGroup>
 
   <Target Name="GetNpmArtifactInfo">
@@ -57,12 +62,32 @@
     </ItemGroup>
 
     <ItemGroup>
-      <FilesToExcludeFromSigning Include="%(NPMPackage.ArtifactPath)" />
+      <FilesToExcludeFromSigning Include="%(NPMPackage.ArtifactPath);" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="GetJavaArtifactInfo" Condition="'$(JAVA_HOME)' != '' And Exists('$(JAVA_HOME)/lib/tools.jar')">
+    <ItemGroup>
+      <ArtifactInfo Include="$(BuildDir)\%(Jars.Identity)">
+        <ArtifactType>JavaJar</ArtifactType>
+        <Version>$(JavaClientVersion)</Version>
+        <Category>ship</Category>
+      </ArtifactInfo>
+      <ArtifactInfo Include="$(BuildDir)\%(PomFile.Identity)">
+        <ArtifactType>MavenPOM</ArtifactType>
+        <Version>$(JavaClientVersion)</Version>
+        <Category>ship</Category>
+      </ArtifactInfo>
+    </ItemGroup>
+
+    <ItemGroup>
+      <FilesToExcludeFromSigning Include="$(BuildDir)\%(Jars.Identity)" />
+      <FilesToExcludeFromSigning Include="$(BuildDir)\%(PomFile.Identity)" />
     </ItemGroup>
   </Target>
 
   <PropertyGroup>
-    <CompileDependsOn>Restore;BuildNPMPackages;$(CompileDependsOn)</CompileDependsOn>
+    <CompileDependsOn>Restore;BuildNPMPackages;$(CompileDependsOn);BuildJavaClient</CompileDependsOn>
   </PropertyGroup>
   <Target Name="BuildNPMPackages" DependsOnTargets="RestoreNpm;GetNpmArtifactInfo">
     <Message Text="Building %(NPMPackage.PackageId)..." Importance="high" />
@@ -71,8 +96,13 @@
     <Exec Command="npm run build" WorkingDirectory="$(RepositoryRoot)clients/ts/FunctionalTests" IgnoreStandardErrorWarningFormat="true" />
   </Target>
 
+  <Target Name="BuildJavaClient" Condition="'$(JAVA_HOME)' != '' And Exists('$(JAVA_HOME)/lib/tools.jar')" DependsOnTargets="GetJavaArtifactInfo">
+    <Message Text="Building Java client" Importance="high" />
+    <Exec Command="./gradlew compileJava" WorkingDirectory="$(RepositoryRoot)clients/java/signalr" />
+  </Target>
+
   <PropertyGroup>
-    <PackageDependsOn>Compile;PackNPMPackages;$(PackageDependsOn)</PackageDependsOn>
+    <PackageDependsOn>Compile;PackNPMPackages;$(PackageDependsOn);PackJavaClient</PackageDependsOn>
   </PropertyGroup>
   <Target Name="PackNPMPackages" DependsOnTargets="BuildNPMPackages">
     <Message Text="Packing %(NPMPackage.PackageId)..." Importance="high" />
@@ -83,4 +113,24 @@
     <Move SourceFiles="%(NPMPackage.OutputTar)" DestinationFiles="%(NPMPackage.ArtifactPath)" />
     <Move SourceFiles="%(NPMPackage.PackageJson).bak" DestinationFiles="%(NPMPackage.PackageJson)" />
   </Target>
+
+  <ItemGroup>
+    <JavaBuildFiles Include="signalr-client-$(JavaClientVersion).jar;signalr-client-$(JavaClientVersion)-javadoc.jar;signalr-client-$(JavaClientVersion)-sources.jar;signalr-client-$(JavaClientVersion).pom"/>
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Jars Include="signalr-client-$(JavaClientVersion).jar;signalr-client-$(JavaClientVersion)-javadoc.jar;signalr-client-$(JavaClientVersion)-sources.jar;" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PomFile Include="signalr-client-$(JavaClientVersion).pom" />
+  </ItemGroup>
+
+  <Target Name="PackJavaClient" Condition="'$(JAVA_HOME)' != '' And Exists('$(JAVA_HOME)/lib/tools.jar')">
+    <Message Text="Packing Java client" Importance="high" />
+    <Exec Command="./gradlew jar sourceJar javadocJar generatePOM" WorkingDirectory="$(RepositoryRoot)clients/java/signalr" />
+    <Move SourceFiles="$(RepositoryRoot)clients/java/signalr/signalr-client-$(JavaClientVersion).pom" DestinationFolder="$(RepositoryRoot)clients/java/signalr\build\libs" />
+    <Copy SourceFiles="$(RepositoryRoot)clients/java/signalr\build\libs\%(JavaBuildFiles.Identity)" DestinationFolder="$(BuildDir)" />
+  </Target>
+
 </Project>

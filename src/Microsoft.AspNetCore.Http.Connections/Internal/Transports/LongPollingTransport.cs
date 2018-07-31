@@ -90,6 +90,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal.Transports
             catch (Exception ex)
             {
                 Log.LongPollingTerminated(_logger, ex);
+                context.Response.ContentType = "text/plain";
+                context.Response.StatusCode = StatusCodes.Status500InternalServerError;
                 throw;
             }
         }
