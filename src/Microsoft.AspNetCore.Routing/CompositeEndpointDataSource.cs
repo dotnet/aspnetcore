@@ -127,11 +127,16 @@ namespace Microsoft.AspNetCore.Routing
                         var template = matcherEndpoint.RoutePattern.RawText;
                         template = string.IsNullOrEmpty(template) ? "\"\"" : template;
                         sb.Append(template);
-                        var requiredValues = matcherEndpoint.RequiredValues.Select(kvp => $"{kvp.Key} = \"{kvp.Value ?? "null"}\"");
                         sb.Append(", Required Values: new { ");
-                        sb.Append(string.Join(", ", requiredValues));
+                        sb.Append(string.Join(", ", FormatValues(matcherEndpoint.RequiredValues)));
                         sb.Append(" }");
-                        sb.Append(", Order:");
+                        sb.Append(", Defaults: new { ");
+                        sb.Append(string.Join(", ", FormatValues(matcherEndpoint.RoutePattern.Defaults)));
+                        sb.Append(" }");
+                        var routeNameMetadata = matcherEndpoint.Metadata.GetMetadata<IRouteNameMetadata>();
+                        sb.Append(", Route Name: ");
+                        sb.Append(routeNameMetadata?.Name);
+                        sb.Append(", Order: ");
                         sb.Append(matcherEndpoint.Order);
 
                         var httpMethodMetadata = matcherEndpoint.Metadata.GetMetadata<IHttpMethodMetadata>();
@@ -140,7 +145,8 @@ namespace Microsoft.AspNetCore.Routing
                             sb.Append(", Http Methods: ");
                             sb.Append(string.Join(", ", httpMethodMetadata.HttpMethods));
                         }
-
+                        sb.Append(", Display Name: ");
+                        sb.Append(matcherEndpoint.DisplayName);
                         sb.AppendLine();
                     }
                     else
@@ -150,6 +156,20 @@ namespace Microsoft.AspNetCore.Routing
                     }
                 }
                 return sb.ToString();
+
+                IEnumerable<string> FormatValues(IEnumerable<KeyValuePair<string, object>> values)
+                {
+                    return values.Select(
+                        kvp =>
+                        {
+                            var value = "null";
+                            if (kvp.Value != null)
+                            {
+                                value = "\"" + kvp.Value.ToString() + "\"";
+                            }
+                            return kvp.Key + " = " + value;
+                        });
+                }
             }
         }
     }
