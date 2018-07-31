@@ -2381,6 +2381,30 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
         }
 
+        [Fact]
+        public async Task ServerReportsProtocolMinorVersion()
+        {
+            var testProtocol = new Mock<IHubProtocol>();
+            testProtocol.Setup(m => m.Name).Returns("CustomProtocol");
+            testProtocol.Setup(m => m.MinorVersion).Returns(112);
+            testProtocol.Setup(m => m.IsVersionSupported(It.IsAny<int>())).Returns(true);
+            testProtocol.Setup(m => m.TransferFormat).Returns(TransferFormat.Binary);
+            
+            var connectionHandler = HubConnectionHandlerTestUtils.GetHubConnectionHandler(typeof(HubT),
+                (services) => services.AddSingleton<IHubProtocol>(testProtocol.Object));
+
+            using (var client = new TestClient(protocol: testProtocol.Object))
+            {
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+                Assert.NotNull(client.HandshakeResponseMessage);
+                Assert.Equal(112, client.HandshakeResponseMessage.MinorVersion);
+
+                client.Dispose();
+                await connectionHandlerTask.OrTimeout();
+            }
+        }
+
         private class CustomHubActivator<THub> : IHubActivator<THub> where THub : Hub
         {
             public int ReleaseCount;
