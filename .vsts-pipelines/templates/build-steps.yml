@@ -3,12 +3,8 @@ phases:
   parameters:
     agentOs: Windows
     beforeBuild:
-      - powershell: "git submodule update --init"
-        displayName: Update submodules
-      - powershell: "& ./tools/update_schema.ps1"
-        displayName: Update ANCM schema
-      - powershell: Restart-Service w3svc
-        displayName: Restart IIS
+      - powershell: "& ./tools/UpdateIISExpressCertificate.ps1; & ./tools/update_schema.ps1; Restart-Service w3svc"
+        displayName: Prepare repo
 
 - template: .vsts-pipelines/templates/phases/default-build.yml@buildtools
   parameters:
