@@ -221,8 +221,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             // not function properly.
             Src = output.Attributes[SrcAttributeName]?.Value as string;
 
-            Mode mode;
-            if (!AttributeMatcher.TryDetermineMode(context, ModeDetails, Compare, out mode))
+            if (!AttributeMatcher.TryDetermineMode(context, ModeDetails, Compare, out var mode))
             {
                 // No attributes matched so we have nothing to do
                 return;
@@ -259,8 +258,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
             if (mode == Mode.Fallback)
             {
-                string resolvedUrl;
-                if (TryResolveUrl(FallbackSrc, resolvedUrl: out resolvedUrl))
+                if (TryResolveUrl(FallbackSrc, resolvedUrl: out string resolvedUrl))
                 {
                     FallbackSrc = resolvedUrl;
                 }

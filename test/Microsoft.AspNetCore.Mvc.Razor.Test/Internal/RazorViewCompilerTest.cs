@@ -824,7 +824,9 @@ this should fail";
         private static TestRazorViewCompiler GetViewCompiler(
             TestFileProvider fileProvider = null,
             Action<RoslynCompilationContext> compilationCallback = null,
+#pragma warning disable CS0618 // Type or member is obsolete
             RazorReferenceManager referenceManager = null,
+#pragma warning restore CS0618 // Type or member is obsolete
             IList<CompiledViewDescriptor> precompiledViews = null,
             CSharpCompiler csharpCompiler = null)
         {
@@ -858,6 +860,7 @@ this should fail";
             return viewCompiler;
         }
 
+#pragma warning disable CS0618 // Type or member is obsolete
         private static RazorReferenceManager CreateReferenceManager(IOptions<RazorViewEngineOptions> options)
         {
             var applicationPartManager = new ApplicationPartManager();
@@ -867,6 +870,7 @@ this should fail";
 
             return new DefaultRazorReferenceManager(applicationPartManager, options);
         }
+#pragma warning restore CS0618 // Type or member is obsolete
 
         private class TestRazorViewCompiler : RazorViewCompiler
         {
@@ -900,7 +904,9 @@ this should fail";
 
         private class TestCSharpCompiler : CSharpCompiler
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             public TestCSharpCompiler(RazorReferenceManager manager, IHostingEnvironment hostingEnvironment)
+#pragma warning restore CS0618 // Type or member is obsolete
                 : base(manager, hostingEnvironment)
             {
             }

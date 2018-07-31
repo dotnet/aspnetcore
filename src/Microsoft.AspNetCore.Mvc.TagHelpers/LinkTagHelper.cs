@@ -257,8 +257,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             // not function properly.
             Href = output.Attributes[HrefAttributeName]?.Value as string;
 
-            Mode mode;
-            if (!AttributeMatcher.TryDetermineMode(context, ModeDetails, Compare, out mode))
+            if (!AttributeMatcher.TryDetermineMode(context, ModeDetails, Compare, out var mode))
             {
                 // No attributes matched so we have nothing to do
                 return;
@@ -295,8 +294,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
             if (mode == Mode.Fallback && HasStyleSheetLinkType(output.Attributes))
             {
-                string resolvedUrl;
-                if (TryResolveUrl(FallbackHref, resolvedUrl: out resolvedUrl))
+                if (TryResolveUrl(FallbackHref, resolvedUrl: out string resolvedUrl))
                 {
                     FallbackHref = resolvedUrl;
                 }
@@ -395,17 +393,15 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
         private bool HasStyleSheetLinkType(TagHelperAttributeList attributes)
         {
-            TagHelperAttribute relAttribute;
-            if (!attributes.TryGetAttribute(RelAttributeName, out relAttribute) ||
+            if (!attributes.TryGetAttribute(RelAttributeName, out var relAttribute) ||
                 relAttribute.Value == null)
             {
                 return false;
             }
 
             var attributeValue = relAttribute.Value;
-            var contentValue = attributeValue as IHtmlContent;
             var stringValue = attributeValue as string;
-            if (contentValue != null)
+            if (attributeValue is IHtmlContent contentValue)
             {
                 contentValue.WriteTo(StringWriter, HtmlEncoder);
                 stringValue = StringWriter.ToString();

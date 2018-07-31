@@ -8,6 +8,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
 {
+#pragma warning disable CS0618 // Type or member is obsolete
     public class MetadataReferenceFeatureProviderTest
     {
         [Fact]
@@ -48,4 +49,5 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
                 reference => reference.Display.Equals(currentAssembly.Location));
         }
     }
+#pragma warning restore CS0618 // Type or member is obsolete
 }

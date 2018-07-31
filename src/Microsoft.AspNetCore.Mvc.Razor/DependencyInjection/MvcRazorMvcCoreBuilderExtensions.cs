@@ -65,10 +65,12 @@ namespace Microsoft.Extensions.DependencyInjection
 
         private static void AddRazorViewEngineFeatureProviders(IMvcCoreBuilder builder)
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             if (!builder.PartManager.FeatureProviders.OfType<MetadataReferenceFeatureProvider>().Any())
             {
                 builder.PartManager.FeatureProviders.Add(new MetadataReferenceFeatureProvider());
             }
+#pragma warning restore CS0618 // Type or member is obsolete
 
             if (!builder.PartManager.FeatureProviders.OfType<TagHelperFeatureProvider>().Any())
             {
@@ -146,7 +148,9 @@ namespace Microsoft.Extensions.DependencyInjection
         internal static void AddRazorViewEngineServices(IServiceCollection services)
         {
             services.TryAddSingleton<CSharpCompiler>();
+#pragma warning disable CS0618 // Type or member is obsolete
             services.TryAddSingleton<RazorReferenceManager, DefaultRazorReferenceManager>();
+#pragma warning restore CS0618 // Type or member is obsolete
 
             services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IConfigureOptions<MvcViewOptions>, MvcRazorMvcViewOptionsSetup>());
