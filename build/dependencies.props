@@ -6,8 +6,8 @@
     <InternalAspNetCoreSdkPackageVersion>2.2.0-preview1-17102</InternalAspNetCoreSdkPackageVersion>
     <MicrosoftAspNetCoreAuthenticationCookiesPackageVersion>2.2.0-preview1-34823</MicrosoftAspNetCoreAuthenticationCookiesPackageVersion>
     <MicrosoftAspNetCoreHostingPackageVersion>2.2.0-preview1-34823</MicrosoftAspNetCoreHostingPackageVersion>
-    <MicrosoftAspNetCoreMvcPackageVersion>2.2.0-preview1-34823</MicrosoftAspNetCoreMvcPackageVersion>
-    <MicrosoftAspNetCoreMvcRazorPagesPackageVersion>2.2.0-preview1-34823</MicrosoftAspNetCoreMvcRazorPagesPackageVersion>
+    <MicrosoftAspNetCoreMvcPackageVersion>2.2.0-a-preview1-obs-18917</MicrosoftAspNetCoreMvcPackageVersion>
+    <MicrosoftAspNetCoreMvcRazorPagesPackageVersion>2.2.0-a-preview1-obs-18917</MicrosoftAspNetCoreMvcRazorPagesPackageVersion>
     <MicrosoftAspNetCoreRazorDesignPackageVersion>2.2.0-preview1-34823</MicrosoftAspNetCoreRazorDesignPackageVersion>
     <MicrosoftAspNetCoreRazorRuntimePackageVersion>2.2.0-preview1-34823</MicrosoftAspNetCoreRazorRuntimePackageVersion>
     <MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>0.6.0-preview1-34823</MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>

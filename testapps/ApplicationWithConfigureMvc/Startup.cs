@@ -29,8 +29,10 @@ namespace ApplicationWithConfigureStartup
         {
             builder.AddRazorOptions(options =>
             {
+#pragma warning disable CS0618 // Type or member is obsolete
                 var callback = options.CompilationCallback;
                 options.CompilationCallback = context =>
+#pragma warning restore CS0618 // Type or member is obsolete
                 {
                     callback(context);
                     foreach (var tree in context.Compilation.SyntaxTrees)
