@@ -8,11 +8,13 @@ using System.IO;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Html;
+using Microsoft.AspNetCore.Mvc.Razor.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Razor.TagHelpers;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Mvc.TagHelpers.Internal;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Mvc.TagHelpers
 {
@@ -33,7 +35,6 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
     [HtmlTargetElement("link", Attributes = AppendVersionAttributeName, TagStructure = TagStructure.WithoutEndTag)]
     public class LinkTagHelper : UrlResolutionTagHelper
     {
-
         private static readonly string FallbackJavaScriptResourceName =
             typeof(LinkTagHelper).Namespace + ".compiler.resources.LinkTagHelper_FallbackJavaScript.js";
 
@@ -103,6 +104,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         /// <param name="htmlEncoder">The <see cref="HtmlEncoder"/>.</param>
         /// <param name="javaScriptEncoder">The <see cref="JavaScriptEncoder"/>.</param>
         /// <param name="urlHelperFactory">The <see cref="IUrlHelperFactory"/>.</param>
+        [Obsolete("This constructor is obsolete and will be removed in a future version.")]
         public LinkTagHelper(
             IHostingEnvironment hostingEnvironment,
             IMemoryCache cache,
@@ -112,8 +114,32 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             : base(urlHelperFactory, htmlEncoder)
         {
             HostingEnvironment = hostingEnvironment;
-            Cache = cache;
             JavaScriptEncoder = javaScriptEncoder;
+            Cache = cache;
+        }
+
+        /// <summary>
+        /// Creates a new <see cref="LinkTagHelper"/>.
+        /// </summary>
+        /// <param name="hostingEnvironment">The <see cref="IHostingEnvironment"/>.</param>
+        /// <param name="cacheProvider"></param>
+        /// <param name="htmlEncoder">The <see cref="HtmlEncoder"/>.</param>
+        /// <param name="javaScriptEncoder">The <see cref="JavaScriptEncoder"/>.</param>
+        /// <param name="urlHelperFactory">The <see cref="IUrlHelperFactory"/>.</param>
+        // Decorated with ActivatorUtilitiesConstructor since we want to influence tag helper activation
+        // to use this constructor in the default case.
+        [ActivatorUtilitiesConstructor]
+        public LinkTagHelper(
+            IHostingEnvironment hostingEnvironment,
+            TagHelperMemoryCacheProvider cacheProvider,
+            HtmlEncoder htmlEncoder,
+            JavaScriptEncoder javaScriptEncoder,
+            IUrlHelperFactory urlHelperFactory)
+            : base(urlHelperFactory, htmlEncoder)
+        {
+            HostingEnvironment = hostingEnvironment;
+            JavaScriptEncoder = javaScriptEncoder;
+            Cache = cacheProvider.Cache;
         }
 
         /// <inheritdoc />
@@ -205,9 +231,9 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         [HtmlAttributeName(FallbackTestValueAttributeName)]
         public string FallbackTestValue { get; set; }
 
-        protected IHostingEnvironment HostingEnvironment { get; }
+        protected internal IHostingEnvironment HostingEnvironment { get; }
 
-        protected IMemoryCache Cache { get; }
+        protected internal IMemoryCache Cache { get; }
 
         protected JavaScriptEncoder JavaScriptEncoder { get; }
 

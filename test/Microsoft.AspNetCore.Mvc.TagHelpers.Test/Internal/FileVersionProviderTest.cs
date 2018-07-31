@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Primitives;
@@ -267,29 +266,30 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Internal
             Assert.Equal("FromCache", result);
         }
 
-        [Theory]
-        [InlineData("/hello/world", "/hello/world", null)]
-        [InlineData("/testApp/hello/world", "/hello/world", "/testApp")]
-        public void SetsValueInCache(string filePath, string watchPath, string requestPathBase)
+        [Fact]
+        public void AddFileVersionToPath_CachesEntry() => AddFileVersionToPath("/hello/world", "/hello/world", null);
+
+        [Fact]
+        public void AddFileVersionToPath_WithRequestPathBase_CachesEntry() => AddFileVersionToPath("/testApp/hello/world", "/hello/world", "/testApp");
+
+        private static void AddFileVersionToPath(string filePath, string watchPath, string requestPathBase)
         {
             // Arrange
-            var changeToken = new Mock<IChangeToken>();
+            var expected = filePath + "?v=f4OxZX_x_FO5LcGBSKHWXfwtSx-j1ncoSt3SABJtkGk";
+            var expectedSize = expected.Length * sizeof(char);
+            var changeToken = Mock.Of<IChangeToken>();
+
             var fileProvider = GetMockFileProvider(filePath, requestPathBase != null);
             Mock.Get(fileProvider)
-                .Setup(f => f.Watch(watchPath)).Returns(changeToken.Object);
+                .Setup(f => f.Watch(watchPath)).Returns(changeToken);
 
-            object cacheValue = null;
-            var value = new Mock<ICacheEntry>();
-            value.Setup(c => c.Value).Returns(cacheValue);
-            value.Setup(c => c.ExpirationTokens).Returns(new List<IChangeToken>());
+            var cacheEntry = Mock.Of<ICacheEntry>(c => c.ExpirationTokens == new List<IChangeToken>());
             var cache = new Mock<IMemoryCache>();
-            cache.CallBase = true;
-            cache.Setup(c => c.TryGetValue(It.IsAny<string>(), out cacheValue))
-                .Returns(cacheValue != null);
-            cache.Setup(c => c.CreateEntry(
-                /*key*/ filePath))
-                .Returns((object key) => value.Object)
+
+            cache.Setup(c => c.CreateEntry(filePath))
+                .Returns(cacheEntry)
                 .Verifiable();
+
             var fileVersionProvider = new FileVersionProvider(
                 fileProvider,
                 cache.Object,
@@ -299,7 +299,9 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Internal
             var result = fileVersionProvider.AddFileVersionToPath(filePath);
 
             // Assert
-            Assert.Equal(filePath + "?v=f4OxZX_x_FO5LcGBSKHWXfwtSx-j1ncoSt3SABJtkGk", result);
+            Assert.Equal(expected, result);
+            Assert.Equal(expected, cacheEntry.Value);
+            Assert.Equal(expectedSize, cacheEntry.Size);
             cache.VerifyAll();
         }
 
