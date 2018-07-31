@@ -99,6 +99,8 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
             }
         }
 
+        public ApplicationPublisher ApplicationPublisher { get; set; }
+
         public ServerType ServerType { get; set;  }
 
         public RuntimeFlavor RuntimeFlavor { get; set;  }
