@@ -127,9 +127,11 @@ namespace Microsoft.AspNetCore.Routing
                         var template = matcherEndpoint.RoutePattern.RawText;
                         template = string.IsNullOrEmpty(template) ? "\"\"" : template;
                         sb.Append(template);
-                        var requiredValues = matcherEndpoint.RequiredValues.Select(kvp => $"{kvp.Key} = \"{kvp.Value ?? "null"}\"");
                         sb.Append(", Required Values: new { ");
-                        sb.Append(string.Join(", ", requiredValues));
+                        sb.Append(string.Join(", ", GetValues(matcherEndpoint.RequiredValues)));
+                        sb.Append(" }");
+                        sb.Append(", Defaults: new { ");
+                        sb.Append(string.Join(", ", GetValues(matcherEndpoint.RoutePattern.Defaults)));
                         sb.Append(" }");
                         sb.Append(", Order:");
                         sb.Append(matcherEndpoint.Order);
@@ -150,6 +152,20 @@ namespace Microsoft.AspNetCore.Routing
                     }
                 }
                 return sb.ToString();
+
+                IEnumerable<string> GetValues(IEnumerable<KeyValuePair<string, object>> values)
+                {
+                    return values.Select(
+                        kvp =>
+                        {
+                            var value = "null";
+                            if (kvp.Value != null)
+                            {
+                                value = "\"" + kvp.Value.ToString() + "\"";
+                            }
+                            return kvp.Key + " = " + value;
+                        });
+                }
             }
         }
     }
