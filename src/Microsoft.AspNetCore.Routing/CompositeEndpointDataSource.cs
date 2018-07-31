@@ -133,7 +133,10 @@ namespace Microsoft.AspNetCore.Routing
                         sb.Append(", Defaults: new { ");
                         sb.Append(string.Join(", ", GetValues(matcherEndpoint.RoutePattern.Defaults)));
                         sb.Append(" }");
-                        sb.Append(", Order:");
+                        var routeNameMetadata = matcherEndpoint.Metadata.GetMetadata<IRouteNameMetadata>();
+                        sb.Append(", Route Name: ");
+                        sb.Append(routeNameMetadata?.Name);
+                        sb.Append(", Order: ");
                         sb.Append(matcherEndpoint.Order);
 
                         var httpMethodMetadata = matcherEndpoint.Metadata.GetMetadata<IHttpMethodMetadata>();
@@ -142,7 +145,8 @@ namespace Microsoft.AspNetCore.Routing
                             sb.Append(", Http Methods: ");
                             sb.Append(string.Join(", ", httpMethodMetadata.HttpMethods));
                         }
-
+                        sb.Append(", Display Name: ");
+                        sb.Append(matcherEndpoint.DisplayName);
                         sb.AppendLine();
                     }
                     else
