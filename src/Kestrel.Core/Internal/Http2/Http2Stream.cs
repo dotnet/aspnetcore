@@ -48,8 +48,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public int StreamId => _context.StreamId;
 
+        public long? InputRemaining { get; internal set; }
+
         public bool RequestBodyStarted { get; private set; }
         public bool EndStreamReceived => (_completionState & StreamCompletionFlags.EndStreamReceived) == StreamCompletionFlags.EndStreamReceived;
+        private bool IsAborted => (_completionState & StreamCompletionFlags.Aborted) == StreamCompletionFlags.Aborted;
 
         public override bool IsUpgradableRequest => false;
 
@@ -263,8 +266,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public Task OnDataAsync(Http2Frame dataFrame)
         {
-            // TODO: content-length accounting
-
             // Since padding isn't buffered, immediately count padding bytes as read for flow control purposes.
             if (dataFrame.DataHasPadding)
             {
@@ -288,6 +289,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
                 _inputFlowControl.Advance(payload.Count);
 
+                if (IsAborted)
+                {
+                    // Ignore data frames for aborted streams, but only after counting them for purposes of connection level flow control.
+                    return Task.CompletedTask;
+                }
+
+                // This check happens after flow control so that when we throw and abort, the byte count is returned to the connection
+                // level accounting.
+                if (InputRemaining.HasValue)
+                {
+                    // https://tools.ietf.org/html/rfc7540#section-8.1.2.6
+                    if (payload.Count > InputRemaining.Value)
+                    {
+                        throw new Http2StreamErrorException(StreamId, CoreStrings.Http2StreamErrorMoreDataThanLength, Http2ErrorCode.PROTOCOL_ERROR);
+                    }
+
+                    InputRemaining -= payload.Count;
+                }
+
                 RequestBodyPipe.Writer.Write(payload);
                 var flushTask = RequestBodyPipe.Writer.FlushAsync();
 
@@ -306,6 +326,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public void OnEndStreamReceived()
         {
+            if (InputRemaining.HasValue)
+            {
+                // https://tools.ietf.org/html/rfc7540#section-8.1.2.6
+                if (InputRemaining.Value != 0)
+                {
+                    throw new Http2StreamErrorException(StreamId, CoreStrings.Http2StreamErrorLessDataThanLength, Http2ErrorCode.PROTOCOL_ERROR);
+                }
+            }
+
             TryApplyCompletionFlag(StreamCompletionFlags.EndStreamReceived);
 
             RequestBodyPipe.Writer.Complete();

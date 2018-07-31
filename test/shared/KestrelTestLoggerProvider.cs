@@ -27,7 +27,6 @@ namespace Microsoft.AspNetCore.Testing
 
         public void Dispose()
         {
-            throw new NotImplementedException();
         }
     }
 }

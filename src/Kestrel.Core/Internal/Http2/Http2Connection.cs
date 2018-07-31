@@ -73,6 +73,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private Http2Stream _currentHeadersStream;
         private RequestHeaderParsingState _requestHeaderParsingState;
         private PseudoHeaderFields _parsedPseudoHeaderFields;
+        private Http2HeadersFrameFlags _headerFlags;
         private bool _isMethodConnect;
         private int _highestOpenedStreamId;
 
@@ -469,12 +470,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     TimeoutControl = this,
                 });
 
-                if ((_incomingFrame.HeadersFlags & Http2HeadersFrameFlags.END_STREAM) == Http2HeadersFrameFlags.END_STREAM)
-                {
-                    _currentHeadersStream.OnEndStreamReceived();
-                }
-
                 _currentHeadersStream.Reset();
+                _headerFlags = _incomingFrame.HeadersFlags;
 
                 var endHeaders = (_incomingFrame.HeadersFlags & Http2HeadersFrameFlags.END_HEADERS) == Http2HeadersFrameFlags.END_HEADERS;
                 await DecodeHeadersAsync(application, endHeaders, _incomingFrame.HeadersPayload);
@@ -768,6 +765,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 throw new Http2StreamErrorException(_currentHeadersStream.StreamId, CoreStrings.Http2ErrorMissingMandatoryPseudoHeaderFields, Http2ErrorCode.PROTOCOL_ERROR);
             }
 
+            // This must be initialized before we offload the request or else we may start processing request body frames without it.
+            _currentHeadersStream.InputRemaining = _currentHeadersStream.RequestHeaders.ContentLength;
+
+            // This must wait until we've received all of the headers so we can verify the content-length.
+            if ((_headerFlags & Http2HeadersFrameFlags.END_STREAM) == Http2HeadersFrameFlags.END_STREAM)
+            {
+                _currentHeadersStream.OnEndStreamReceived();
+            }
+
             _streams[_incomingFrame.StreamId] = _currentHeadersStream;
             // Must not allow app code to block the connection handling loop.
             ThreadPool.UnsafeQueueUserWorkItem(state =>
@@ -788,6 +794,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             _currentHeadersStream = null;
             _requestHeaderParsingState = RequestHeaderParsingState.Ready;
             _parsedPseudoHeaderFields = PseudoHeaderFields.None;
+            _headerFlags = Http2HeadersFrameFlags.NONE;
             _isMethodConnect = false;
         }
 

@@ -42,11 +42,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             new KeyValuePair<string, string>("upgrade-insecure-requests", "1"),
         };
 
-        private readonly MemoryPool<byte> _memoryPool = KestrelMemoryPool.Create();
-        private readonly DuplexPipe.DuplexPipePair _pair;
+        private MemoryPool<byte> _memoryPool = KestrelMemoryPool.Create();
+        private DuplexPipe.DuplexPipePair _pair;
         private readonly TestApplicationErrorLogger _logger;
-        private readonly Http2ConnectionContext _connectionContext;
-        private readonly Http2Connection _connection;
+        private Http2ConnectionContext _connectionContext;
+        private Http2Connection _connection;
         private readonly Http2PeerSettings _clientSettings = new Http2PeerSettings();
         private readonly HPackEncoder _hpackEncoder = new HPackEncoder();
         private readonly HPackDecoder _hpackDecoder;
@@ -68,24 +68,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         public Http2StreamTests()
         {
-            // Always dispatch test code back to the ThreadPool. This prevents deadlocks caused by continuing
-            // Http2Connection.ProcessRequestsAsync() loop with writer locks acquired. Run product code inline to make
-            // it easier to verify request frames are processed correctly immediately after sending the them.
-            var inputPipeOptions = new PipeOptions(
-                pool: _memoryPool,
-                readerScheduler: PipeScheduler.Inline,
-                writerScheduler: PipeScheduler.ThreadPool,
-                useSynchronizationContext: false
-            );
-            var outputPipeOptions = new PipeOptions(
-                pool: _memoryPool,
-                readerScheduler: PipeScheduler.ThreadPool,
-                writerScheduler: PipeScheduler.Inline,
-                useSynchronizationContext: false
-            );
-
-            _pair = DuplexPipe.CreateConnectionPair(inputPipeOptions, outputPipeOptions);
-
             _noopApplication = context => Task.CompletedTask;
 
             _echoMethod = context =>
@@ -177,6 +159,31 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _hpackDecoder = new HPackDecoder((int)_clientSettings.HeaderTableSize);
 
             _logger = new TestApplicationErrorLogger();
+
+            InitializeConnectionFields(KestrelMemoryPool.Create());
+        }
+
+        private void InitializeConnectionFields(MemoryPool<byte> memoryPool)
+        {
+            _memoryPool = memoryPool;
+
+            // Always dispatch test code back to the ThreadPool. This prevents deadlocks caused by continuing
+            // Http2Connection.ProcessRequestsAsync() loop with writer locks acquired. Run product code inline to make
+            // it easier to verify request frames are processed correctly immediately after sending the them.
+            var inputPipeOptions = new PipeOptions(
+                pool: _memoryPool,
+                readerScheduler: PipeScheduler.Inline,
+                writerScheduler: PipeScheduler.ThreadPool,
+                useSynchronizationContext: false
+            );
+            var outputPipeOptions = new PipeOptions(
+                pool: _memoryPool,
+                readerScheduler: PipeScheduler.ThreadPool,
+                writerScheduler: PipeScheduler.Inline,
+                useSynchronizationContext: false
+            );
+
+            _pair = DuplexPipe.CreateConnectionPair(inputPipeOptions, outputPipeOptions);
 
             _connectionContext = new Http2ConnectionContext
             {
@@ -755,6 +762,308 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
+        public async Task ContentLength_Received_SingleDataFrame_Verified()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(HeaderNames.ContentLength, "12"),
+            };
+            await InitializeConnectionAsync(async context =>
+            {
+                var buffer = new byte[100];
+                var read = await context.Request.Body.ReadAsync(buffer, 0, buffer.Length);
+                Assert.Equal(12, read);
+            });
+
+            await StartStreamAsync(1, headers, endStream: false);
+            await SendDataAsync(1, new byte[12].AsSpan(), endStream: true);
+
+            var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 55,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1);
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 0,
+                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withStreamId: 1);
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+
+            _hpackDecoder.Decode(headersFrame.HeadersPayload, endHeaders: false, handler: this);
+
+            Assert.Equal(3, _decodedHeaders.Count);
+            Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+            Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
+        }
+
+        [Fact]
+        public async Task ContentLength_ReceivedInContinuation_SingleDataFrame_Verified()
+        {
+            await InitializeConnectionAsync(async context =>
+            {
+                var buffer = new byte[100];
+                var read = await context.Request.Body.ReadAsync(buffer, 0, buffer.Length);
+                Assert.Equal(12, read);
+            });
+
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>("a", _largeHeaderValue),
+                new KeyValuePair<string, string>("b", _largeHeaderValue),
+                new KeyValuePair<string, string>("c", _largeHeaderValue),
+                new KeyValuePair<string, string>("d", _largeHeaderValue),
+                new KeyValuePair<string, string>(HeaderNames.ContentLength, "12"),
+            };
+            await StartStreamAsync(1, headers, endStream: false);
+            await SendDataAsync(1, new byte[12].AsSpan(), endStream: true);
+
+            var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 55,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1);
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 0,
+                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withStreamId: 1);
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+
+            _hpackDecoder.Decode(headersFrame.HeadersPayload, endHeaders: false, handler: this);
+
+            Assert.Equal(3, _decodedHeaders.Count);
+            Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+            Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
+        }
+
+        [Fact]
+        public async Task ContentLength_Received_MultipleDataFrame_Verified()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(HeaderNames.ContentLength, "12"),
+            };
+            await InitializeConnectionAsync(async context =>
+            {
+                var buffer = new byte[100];
+                var read = await context.Request.Body.ReadAsync(buffer, 0, buffer.Length);
+                var total = read;
+                while (read > 0)
+                {
+                    read = await context.Request.Body.ReadAsync(buffer, total, buffer.Length - total);
+                    total += read;
+                }
+                Assert.Equal(12, total);
+            });
+
+
+            await StartStreamAsync(1, headers, endStream: false);
+            await SendDataAsync(1, new byte[1].AsSpan(), endStream: false);
+            await SendDataAsync(1, new byte[3].AsSpan(), endStream: false);
+            await SendDataAsync(1, new byte[8].AsSpan(), endStream: true);
+
+            var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 55,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1);
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 0,
+                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withStreamId: 1);
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+
+            _hpackDecoder.Decode(headersFrame.HeadersPayload, endHeaders: false, handler: this);
+
+            Assert.Equal(3, _decodedHeaders.Count);
+            Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+            Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
+        }
+
+        [Fact]
+        public async Task ContentLength_Received_NoDataFrames_Reset()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(HeaderNames.ContentLength, "12"),
+            };
+            await InitializeConnectionAsync(_noopApplication);
+
+            await StartStreamAsync(1, headers, endStream: true);
+
+            await WaitForStreamErrorAsync(1, Http2ErrorCode.PROTOCOL_ERROR, CoreStrings.Http2StreamErrorLessDataThanLength);
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+        }
+
+        [Fact]
+        public async Task ContentLength_ReceivedInContinuation_NoDataFrames_Reset()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>("a", _largeHeaderValue),
+                new KeyValuePair<string, string>("b", _largeHeaderValue),
+                new KeyValuePair<string, string>("c", _largeHeaderValue),
+                new KeyValuePair<string, string>("d", _largeHeaderValue),
+                new KeyValuePair<string, string>(HeaderNames.ContentLength, "12"),
+            };
+            await InitializeConnectionAsync(_noopApplication);
+
+            await StartStreamAsync(1, headers, endStream: true);
+
+            await WaitForStreamErrorAsync(1, Http2ErrorCode.PROTOCOL_ERROR, CoreStrings.Http2StreamErrorLessDataThanLength);
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+        }
+
+        [Fact]
+        public async Task ContentLength_Received_SingleDataFrameOverSize_Reset()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(HeaderNames.ContentLength, "12"),
+            };
+            await InitializeConnectionAsync(async context =>
+            {
+                await Assert.ThrowsAsync<ConnectionAbortedException>(async () =>
+                {
+                    var buffer = new byte[100];
+                    while (await context.Request.Body.ReadAsync(buffer, 0, buffer.Length) > 0) { }
+                });
+            });
+
+            await StartStreamAsync(1, headers, endStream: false);
+            await SendDataAsync(1, new byte[13].AsSpan(), endStream: true);
+
+            await WaitForStreamErrorAsync(1, Http2ErrorCode.PROTOCOL_ERROR, CoreStrings.Http2StreamErrorMoreDataThanLength);
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+        }
+
+        [Fact]
+        public async Task ContentLength_Received_SingleDataFrameUnderSize_Reset()
+        {
+            // I hate doing this, but it avoids exceptions from MemoryPool.Dipose() in debug mode. The problem is since
+            // the stream's ProcessRequestsAsync loop is never awaited by the connection, it's not really possible to
+            // observe when all the blocks are returned. This can be removed after we implement graceful shutdown.
+            Dispose();
+            InitializeConnectionFields(new DiagnosticMemoryPool(KestrelMemoryPool.CreateSlabMemoryPool(), allowLateReturn: true));
+
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(HeaderNames.ContentLength, "12"),
+            };
+            await InitializeConnectionAsync(async context =>
+            {
+                await Assert.ThrowsAsync<ConnectionAbortedException>(async () =>
+                {
+                    var buffer = new byte[100];
+                    while (await context.Request.Body.ReadAsync(buffer, 0, buffer.Length) > 0) { }
+                });
+            });
+
+            await StartStreamAsync(1, headers, endStream: false);
+            await SendDataAsync(1, new byte[11].AsSpan(), endStream: true);
+
+            await WaitForStreamErrorAsync(1, Http2ErrorCode.PROTOCOL_ERROR, CoreStrings.Http2StreamErrorLessDataThanLength);
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+        }
+
+        [Fact]
+        public async Task ContentLength_Received_MultipleDataFramesOverSize_Reset()
+        {
+            // I hate doing this, but it avoids exceptions from MemoryPool.Dipose() in debug mode. The problem is since
+            // the stream's ProcessRequestsAsync loop is never awaited by the connection, it's not really possible to
+            // observe when all the blocks are returned. This can be removed after we implement graceful shutdown.
+            Dispose();
+            InitializeConnectionFields(new DiagnosticMemoryPool(KestrelMemoryPool.CreateSlabMemoryPool(), allowLateReturn: true));
+
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(HeaderNames.ContentLength, "12"),
+            };
+            await InitializeConnectionAsync(async context =>
+            {
+                await Assert.ThrowsAsync<ConnectionAbortedException>(async () =>
+                {
+                    var buffer = new byte[100];
+                    while (await context.Request.Body.ReadAsync(buffer, 0, buffer.Length) > 0) { }
+                });
+            });
+
+            await StartStreamAsync(1, headers, endStream: false);
+            await SendDataAsync(1, new byte[1].AsSpan(), endStream: false);
+            await SendDataAsync(1, new byte[2].AsSpan(), endStream: false);
+            await SendDataAsync(1, new byte[10].AsSpan(), endStream: false);
+            await SendDataAsync(1, new byte[2].AsSpan(), endStream: true);
+
+            await WaitForStreamErrorAsync(1, Http2ErrorCode.PROTOCOL_ERROR, CoreStrings.Http2StreamErrorMoreDataThanLength);
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+        }
+
+        [Fact]
+        public async Task ContentLength_Received_MultipleDataFramesUnderSize_Reset()
+        {
+            // I hate doing this, but it avoids exceptions from MemoryPool.Dipose() in debug mode. The problem is since
+            // the stream's ProcessRequestsAsync loop is never awaited by the connection, it's not really possible to
+            // observe when all the blocks are returned. This can be removed after we implement graceful shutdown.
+            Dispose();
+            InitializeConnectionFields(new DiagnosticMemoryPool(KestrelMemoryPool.CreateSlabMemoryPool(), allowLateReturn: true));
+
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(HeaderNames.ContentLength, "12"),
+            };
+            await InitializeConnectionAsync(async context =>
+            {
+                await Assert.ThrowsAsync<ConnectionAbortedException>(async () =>
+                {
+                    var buffer = new byte[100];
+                    while (await context.Request.Body.ReadAsync(buffer, 0, buffer.Length) > 0) { }
+                });
+            });
+
+            await StartStreamAsync(1, headers, endStream: false);
+            await SendDataAsync(1, new byte[1].AsSpan(), endStream: false);
+            await SendDataAsync(1, new byte[2].AsSpan(), endStream: true);
+
+            await WaitForStreamErrorAsync(1, Http2ErrorCode.PROTOCOL_ERROR, CoreStrings.Http2StreamErrorLessDataThanLength);
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+        }
+
+        [Fact]
         public async Task RST_STREAM_Received_AbortsStream()
         {
             await InitializeConnectionAsync(_waitForAbortApplication);
@@ -1182,8 +1491,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             if (expectedErrorMessage != null)
             {
-                var message = Assert.Single(_logger.Messages, m => m.Exception is ConnectionAbortedException);
-                Assert.Contains(expectedErrorMessage, message.Exception.Message);
+                Assert.Contains(_logger.Messages, m => m.Exception?.Message.Contains(expectedErrorMessage) ?? false);
             }
         }
     }
