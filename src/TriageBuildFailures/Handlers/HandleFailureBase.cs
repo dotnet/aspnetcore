@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Linq;
 using System.Threading.Tasks;
 using McMaster.Extensions.CommandLineUtils;
 using TriageBuildFailures.Email;
@@ -22,5 +23,30 @@ namespace TriageBuildFailures.Handlers
 
         public abstract bool CanHandleFailure(TeamCityBuild build);
         public abstract Task HandleFailure(TeamCityBuild build);
+
+        protected async Task CommentOnIssue(TeamCityBuild build, GithubIssue issue, string shortTestName)
+        {
+            var comments = await GHClient.GetIssueComments(issue);
+
+            var commentsFromToday = comments.Where(c =>
+                c.CreatedAt.Date == build.StartDate.Date
+                && c.User.Login == Config.GitHub.BotUsername
+                && c.Body.Contains("This comment was made automatically"));
+            var commentsAboutThisBuild = comments.Where(c => c.Body.Contains(build.WebURL.ToString()));
+            if (commentsAboutThisBuild.Count() == 0)
+            {
+                var comment = $"{shortTestName} [failed with about the same error]({build.WebURL}).";
+                if (commentsFromToday.Count() == 0)
+                {
+                    await GHClient.CreateComment(issue, comment);
+                }
+                else
+                {
+                    var todaysComment = commentsFromToday.First();
+                    var newBody = $"{comment}\n{todaysComment.Body}";
+                    await GHClient.EditComment(issue, todaysComment, newBody);
+                }
+            }
+        }
     }
 }

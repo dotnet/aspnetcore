@@ -41,8 +41,7 @@ namespace TriageBuildFailures.Handlers
 
             if(applicableIssues.Count() > 0)
             {
-                var comment = $"{build.BuildName} [failed again]({build.WebURL}).";
-                await GHClient.CreateComment(applicableIssues.First(), comment);
+                await CommentOnIssue(build, applicableIssues.First(), build.BuildName);
             }
             else{
                 var body = $@"{build.BuildName} failed with the following errors:
@@ -59,7 +58,7 @@ CC {string.Join( ", ", _Notifiers)}";
         }
 
         public IEnumerable<GithubIssue> GetApplicableIssues(IEnumerable<GithubIssue> issues, string issueTitle)
-        {    
+        {
             return issues.Where(i =>
                 i.Title.Equals(issueTitle, StringComparison.OrdinalIgnoreCase) &&
                 i.Labels.Any(l => l.Name.Equals(_BrokenBuildLabel, StringComparison.OrdinalIgnoreCase)));
