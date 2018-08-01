@@ -32,15 +32,23 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.True(result);
         }
 
-        [Fact(Skip = "Link generation issue in global routing. Need to fix - https://github.com/aspnet/Routing/issues/590")]
+        [Fact]
         public override Task AttributeRoutedAction_InArea_StaysInArea_ActionDoesntExist()
         {
+            // By design, this test cannot work in EndpointRouting world. This is because in case of old routing test
+            // when a link generation to an attribute routed controller with a non-existing action does not succeeed,
+            // the next route in the route collection is considered and since the next route in the route collection is
+            // a conventional area route, the old routing test succeeds. But this cannot happen in case of endpoint
+            // routing as the action does not exist to begin with.
             return Task.CompletedTask;
         }
 
-        [Fact(Skip = "Link generation issue in global routing. Need to fix - https://github.com/aspnet/Routing/issues/590")]
+        [Fact]
         public override Task ConventionalRoutedAction_InArea_StaysInArea()
         {
+            // By design, this test cannot work in EndpointRouting world. In old routing test a link is being generated
+            // to a non-existing action on a controller which is in an area. In case of endpoint routing, we cannot
+            // generate links as the action does not exist to begin with.
             return Task.CompletedTask;
         }
 

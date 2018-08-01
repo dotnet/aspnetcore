@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Formatters.Json;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
@@ -37,7 +38,8 @@ namespace Microsoft.Extensions.DependencyInjection
         public void UseCamelCasing_WillNot_OverrideSpecifiedNames()
         {
             // Arrange
-            var options = new MvcJsonOptions().UseCamelCasing(processDictionaryKeys: true);
+            var options = CreateDefaultMvcJsonOptions().UseCamelCasing(processDictionaryKeys: true);
+
             var annotatedFoo = new AnnotatedFoo()
             {
                 HelloWorld = "Hello"
@@ -55,7 +57,7 @@ namespace Microsoft.Extensions.DependencyInjection
         public void UseCamelCasing_WillChange_PropertyNames()
         {
             // Arrange
-            var options = new MvcJsonOptions().UseCamelCasing(processDictionaryKeys: true);
+            var options = CreateDefaultMvcJsonOptions().UseCamelCasing(processDictionaryKeys: true);
             var foo = new { TestName = "TestFoo", TestValue = 10 };
             var expected = "{\"testName\":\"TestFoo\",\"testValue\":10}";
 
@@ -70,7 +72,7 @@ namespace Microsoft.Extensions.DependencyInjection
         public void UseCamelCasing_WillChangeFirstPartBeforeSeparator_InPropertyName()
         {
             // Arrange
-            var options = new MvcJsonOptions().UseCamelCasing(processDictionaryKeys: true);
+            var options = CreateDefaultMvcJsonOptions().UseCamelCasing(processDictionaryKeys: true);
             var foo = new { TestFoo_TestValue = "Test" };
             var expected = "{\"testFoo_TestValue\":\"Test\"}";
 
@@ -85,7 +87,7 @@ namespace Microsoft.Extensions.DependencyInjection
         public void UseCamelCasing_ProcessDictionaryKeys_WillChange_DictionaryKeys_IfTrue()
         {
             // Arrange
-            var options = new MvcJsonOptions().UseCamelCasing(processDictionaryKeys: true);
+            var options = CreateDefaultMvcJsonOptions().UseCamelCasing(processDictionaryKeys: true);
             var dictionary = new Dictionary<string, int>
             {
                 ["HelloWorld"] = 1,
@@ -104,7 +106,7 @@ namespace Microsoft.Extensions.DependencyInjection
         public void UseCamelCasing_ProcessDictionaryKeys_WillChangeFirstPartBeforeSeparator_InDictionaryKey_IfTrue()
         {
             // Arrange
-            var options = new MvcJsonOptions().UseCamelCasing(processDictionaryKeys: true);
+            var options = CreateDefaultMvcJsonOptions().UseCamelCasing(processDictionaryKeys: true);
             var dictionary = new Dictionary<string, int>()
             {
                 ["HelloWorld_HelloWorld"] = 1
@@ -123,7 +125,7 @@ namespace Microsoft.Extensions.DependencyInjection
         public void UseCamelCasing_ProcessDictionaryKeys_WillNotChangeDictionaryKeys_IfFalse()
         {
             // Arrange
-            var options = new MvcJsonOptions().UseCamelCasing(processDictionaryKeys: false);
+            var options = CreateDefaultMvcJsonOptions().UseCamelCasing(processDictionaryKeys: false);
             var dictionary = new Dictionary<string, int>
             {
                 ["HelloWorld"] = 1,
@@ -142,7 +144,7 @@ namespace Microsoft.Extensions.DependencyInjection
         public void UseMemberCasing_WillNotChange_OverrideSpecifiedNames()
         {
             // Arrange
-            var options = new MvcJsonOptions().UseMemberCasing();
+            var options = CreateDefaultMvcJsonOptions().UseMemberCasing();
             var annotatedFoo = new AnnotatedFoo()
             {
                 HelloWorld = "Hello"
@@ -180,8 +182,8 @@ namespace Microsoft.Extensions.DependencyInjection
         public void UseMemberCasing_WillNotChange_PropertyNames()
         {
             // Arrange
-            var options = new MvcJsonOptions().UseMemberCasing();
-            var foo = new { fooName = "Test", FooValue = "Value"};
+            var options = CreateDefaultMvcJsonOptions().UseMemberCasing();
+            var foo = new { fooName = "Test", FooValue = "Value" };
             var expected = "{\"fooName\":\"Test\",\"FooValue\":\"Value\"}";
 
             // Act
@@ -195,7 +197,7 @@ namespace Microsoft.Extensions.DependencyInjection
         public void UseMemberCasing_WillNotChange_DictionaryKeys()
         {
             // Arrange
-            var options = new MvcJsonOptions().UseMemberCasing();
+            var options = CreateDefaultMvcJsonOptions().UseMemberCasing();
             var dictionary = new Dictionary<string, int>()
             {
                 ["HelloWorld"] = 1,
@@ -237,6 +239,15 @@ namespace Microsoft.Extensions.DependencyInjection
             var exception = Assert.Throws<InvalidOperationException>(
                 () => options.UseMemberCasing());
             Assert.Equal(expectedMessage, actual: exception.Message);
+        }
+
+        // NOTE: This method was created to make sure to create a different instance of contract resolver as by default
+        // MvcJsonOptions uses a static shared instance of resolver which when changed causes other tests to fail.
+        private MvcJsonOptions CreateDefaultMvcJsonOptions()
+        {
+            var options = new MvcJsonOptions();
+            options.SerializerSettings.ContractResolver = JsonSerializerSettingsProvider.CreateContractResolver();
+            return options;
         }
 
         private static string SerializeToJson(MvcJsonOptions options, object value)
