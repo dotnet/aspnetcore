@@ -325,6 +325,7 @@ namespace Microsoft.AspNetCore.Mvc
                         typeof(MatcherPolicy),
                         new Type[]
                         {
+                            typeof(ConsumesMatcherPolicy),
                             typeof(ActionConstraintMatcherPolicy),
                         }
                     },

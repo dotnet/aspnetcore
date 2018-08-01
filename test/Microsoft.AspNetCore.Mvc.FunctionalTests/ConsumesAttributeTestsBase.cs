@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task NoRequestContentType_Selects_IfASingleActionWithConstraintIsPresent()
+        public virtual async Task NoRequestContentType_Selects_IfASingleActionWithConstraintIsPresent()
         {
             // Arrange
             var request = new HttpRequestMessage(
