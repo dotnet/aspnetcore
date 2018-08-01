@@ -45,4 +45,7 @@ task generatePOM {
             }
         }
     }.writeTo("signalr-client-0.1.0-preview1.pom")
+
+    ant.move file: "signalr-client-0.1.0-preview1.pom",
+            todir: "${buildDir}/libs"
 }
