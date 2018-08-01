@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
         {
             // For debug and test explorer view
             var description = $"Server: {Server}, TFM: {Tfm}, Type: {ApplicationType}, Arch: {Architecture}";
-            if (Server == ServerType.IISExpress)
+            if (Server == ServerType.IISExpress || Server == ServerType.IIS)
             {
                 var version = AncmVersion == AncmVersion.AspNetCoreModule ? "V1" : "V2";
                 description += $", ANCM: {version}, Host: {HostingModel}";

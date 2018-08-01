@@ -20,11 +20,9 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
     {
         public static readonly string DotnetCommandName = "dotnet";
 
-        // This is the argument that separates the dotnet arguments for the args being passed to the
-        // app being run when running dotnet run
-        public static readonly string DotnetArgumentSeparator = "--";
-
         private readonly Stopwatch _stopwatch = new Stopwatch();
+
+        private PublishedApplication _publishedApplication;
 
         public ApplicationDeployer(DeploymentParameters deploymentParameters, ILoggerFactory loggerFactory)
         {
@@ -82,78 +80,9 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
 
         protected void DotnetPublish(string publishRoot = null)
         {
-            using (Logger.BeginScope("dotnet-publish"))
-            {
-                if (string.IsNullOrEmpty(DeploymentParameters.TargetFramework))
-                {
-                    throw new Exception($"A target framework must be specified in the deployment parameters for applications that require publishing before deployment");
-                }
-
-                DeploymentParameters.PublishedApplicationRootPath = publishRoot ?? Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-
-                var parameters = $"publish "
-                    + $" --output \"{DeploymentParameters.PublishedApplicationRootPath}\""
-                    + $" --framework {DeploymentParameters.TargetFramework}"
-                    + $" --configuration {DeploymentParameters.Configuration}"
-                    + (DeploymentParameters.RestoreOnPublish 
-                        ? string.Empty
-                        : " --no-restore -p:VerifyMatchingImplicitPackageVersion=false");
-                        // Set VerifyMatchingImplicitPackageVersion to disable errors when Microsoft.NETCore.App's version is overridden externally
-                        // This verification doesn't matter if we are skipping restore during tests.
-
-                if (DeploymentParameters.ApplicationType == ApplicationType.Standalone)
-                {
-                    parameters += $" --runtime {GetRuntimeIdentifier()}";
-                }
-
-                parameters += $" {DeploymentParameters.AdditionalPublishParameters}";
-
-                var startInfo = new ProcessStartInfo
-                {
-                    FileName = DotnetCommandName,
-                    Arguments = parameters,
-                    UseShellExecute = false,
-                    CreateNoWindow = true,
-                    RedirectStandardError = true,
-                    RedirectStandardOutput = true,
-                    WorkingDirectory = DeploymentParameters.ApplicationPath,
-                };
-
-                AddEnvironmentVariablesToProcess(startInfo, DeploymentParameters.PublishEnvironmentVariables);
-
-                var hostProcess = new Process() { StartInfo = startInfo };
-
-                Logger.LogInformation($"Executing command {DotnetCommandName} {parameters}");
-
-                hostProcess.StartAndCaptureOutAndErrToLogger("dotnet-publish", Logger);
-
-                // A timeout is passed to Process.WaitForExit() for two reasons:
-                // 
-                // 1. When process output is read asynchronously, WaitForExit() without a timeout blocks until child processes
-                //    are killed, which can cause hangs due to MSBuild NodeReuse child processes started by dotnet.exe.
-                //    With a timeout, WaitForExit() returns when the parent process is killed and ignores child processes.
-                //    https://stackoverflow.com/a/37983587/102052
-                // 
-                // 2. If "dotnet publish" does hang indefinitely for some reason, tests should fail fast with an error message.
-                const int timeoutMinutes = 5;
-                if (hostProcess.WaitForExit(milliseconds: timeoutMinutes * 60 * 1000))
-                {
-                    if (hostProcess.ExitCode != 0)
-                    {
-                        var message = $"{DotnetCommandName} publish exited with exit code : {hostProcess.ExitCode}";
-                        Logger.LogError(message);
-                        throw new Exception(message);
-                    }
-                }
-                else
-                {
-                    var message = $"{DotnetCommandName} publish failed to exit after {timeoutMinutes} minutes";
-                    Logger.LogError(message);
-                    throw new Exception(message);
-                }
-
-                Logger.LogInformation($"{DotnetCommandName} publish finished with exit code : {hostProcess.ExitCode}");
-            }
+            var publisher = DeploymentParameters.ApplicationPublisher ?? new ApplicationPublisher(DeploymentParameters.ApplicationPath);
+            _publishedApplication = publisher.Publish(DeploymentParameters, Logger).GetAwaiter().GetResult();
+            DeploymentParameters.PublishedApplicationRootPath = _publishedApplication.Path;
         }
 
         protected void CleanPublishedOutput()
@@ -168,11 +97,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 }
                 else
                 {
-                    RetryHelper.RetryOperation(
-                        () => Directory.Delete(DeploymentParameters.PublishedApplicationRootPath, true),
-                        e => Logger.LogWarning($"Failed to delete directory : {e.Message}"),
-                        retryCount: 3,
-                        retryDelayMilliseconds: 100);
+                    _publishedApplication.Dispose();
                 }
             }
         }
@@ -219,26 +144,8 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
         protected void AddEnvironmentVariablesToProcess(ProcessStartInfo startInfo, IDictionary<string, string> environmentVariables)
         {
             var environment = startInfo.Environment;
-            SetEnvironmentVariable(environment, "ASPNETCORE_ENVIRONMENT", DeploymentParameters.EnvironmentName);
-
-            foreach (var environmentVariable in environmentVariables)
-            {
-                SetEnvironmentVariable(environment, environmentVariable.Key, environmentVariable.Value);
-            }
-        }
-
-        protected void SetEnvironmentVariable(IDictionary<string, string> environment, string name, string value)
-        {
-            if (value == null)
-            {
-                Logger.LogInformation("Removing environment variable {name}", name);
-                environment.Remove(name);
-            }
-            else
-            {
-                Logger.LogInformation("SET {name}={value}", name, value);
-                environment[name] = value;
-            }
+            ProcessHelpers.SetEnvironmentVariable(environment, "ASPNETCORE_ENVIRONMENT", DeploymentParameters.EnvironmentName, Logger);
+            ProcessHelpers.AddEnvironmentVariablesToProcess(startInfo, environmentVariables, Logger);
         }
 
         protected void InvokeUserApplicationCleanup()
@@ -286,26 +193,5 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
         }
 
         public abstract void Dispose();
-
-        private string GetRuntimeIdentifier()
-        {
-            var architecture = DeploymentParameters.RuntimeArchitecture;
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                return "win7-" + architecture;
-            }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            {
-                return "linux-" + architecture;
-            }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                return "osx-" + architecture;
-            }
-            else
-            {
-                throw new InvalidOperationException("Unrecognized operation system platform");
-            }
-        }
     }
 }
