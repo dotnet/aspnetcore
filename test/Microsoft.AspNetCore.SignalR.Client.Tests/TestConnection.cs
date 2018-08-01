@@ -163,6 +163,11 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             }
         }
 
+        public async Task<JObject> ReadSentJsonAsync()
+        {
+            return JObject.Parse(await ReadSentTextMessageAsync());
+        }
+
         public async Task<IList<string>> ReadAllSentMessagesAsync(bool ignorePings = true)
         {
             if (!Disposed.IsCompleted)

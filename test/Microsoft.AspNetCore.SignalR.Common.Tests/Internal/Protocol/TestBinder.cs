@@ -58,5 +58,13 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             }
             throw new InvalidOperationException("Unexpected binder call");
         }
+
+        public Type GetStreamItemType(string streamId)
+        {
+            // In v1, stream items were only sent from server -> client
+            // and so they had items typed based on what the hub method returned.
+            // We just forward here for backwards compatibility.
+            return GetReturnType(streamId);
+        }
     }
 }

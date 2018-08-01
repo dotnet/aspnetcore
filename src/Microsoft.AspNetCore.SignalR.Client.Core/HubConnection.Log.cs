@@ -186,6 +186,18 @@ namespace Microsoft.AspNetCore.SignalR.Client
             private static readonly Action<ILogger, Exception> _unableToAcquireConnectionLockForPing =
                 LoggerMessage.Define(LogLevel.Trace, new EventId(62, "UnableToAcquireConnectionLockForPing"), "Skipping ping because a send is already in progress.");
 
+            private static readonly Action<ILogger, string, Exception> _startingStream =
+                LoggerMessage.Define<string>(LogLevel.Trace, new EventId(63, "StartingStream"), "Initiating stream '{StreamId}'.");
+
+            private static readonly Action<ILogger, string, Exception> _sendingStreamItem =
+                LoggerMessage.Define<string>(LogLevel.Trace, new EventId(64, "StreamItemSent"), "Sending item for stream '{StreamId}'.");
+
+            private static readonly Action<ILogger, string, Exception> _cancelingStream =
+                LoggerMessage.Define<string>(LogLevel.Trace, new EventId(65, "CancelingStream"), "Stream '{StreamId}' has been canceled by client.");
+
+            private static readonly Action<ILogger, string, Exception> _completingStream =
+                LoggerMessage.Define<string>(LogLevel.Trace, new EventId(66, "CompletingStream"), "Sending completion message for stream '{StreamId}'.");
+
             public static void PreparingNonBlockingInvocation(ILogger logger, string target, int count)
             {
                 _preparingNonBlockingInvocation(logger, target, count, null);
@@ -495,6 +507,26 @@ namespace Microsoft.AspNetCore.SignalR.Client
             public static void UnableToAcquireConnectionLockForPing(ILogger logger)
             {
                 _unableToAcquireConnectionLockForPing(logger, null);
+            }
+            
+            public static void StartingStream(ILogger logger, string streamId)
+            {
+                _startingStream(logger, streamId, null);
+            }
+
+            public static void SendingStreamItem(ILogger logger, string streamId)
+            {
+                _sendingStreamItem(logger, streamId, null);
+            }
+
+            public static void CancelingStream(ILogger logger, string streamId)
+            {
+                _cancelingStream(logger, streamId, null);
+            }
+
+            public static void CompletingStream(ILogger logger, string streamId)
+            {
+                _completingStream(logger, streamId, null);
             }
         }
     }

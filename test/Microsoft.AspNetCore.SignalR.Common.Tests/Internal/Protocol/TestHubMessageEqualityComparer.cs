@@ -34,11 +34,13 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
                     return StreamInvocationMessagesEqual(streamInvocationMessage, (StreamInvocationMessage)y);
                 case CancelInvocationMessage cancelItemMessage:
                     return string.Equals(cancelItemMessage.InvocationId, ((CancelInvocationMessage)y).InvocationId, StringComparison.Ordinal);
-                case PingMessage pingMessage:
+                case PingMessage _:
                     // If the types are equal (above), then we're done.
                     return true;
                 case CloseMessage closeMessage:
                     return string.Equals(closeMessage.Error, ((CloseMessage) y).Error);
+                case StreamCompleteMessage streamCompleteMessage:
+                    return StreamCompleteMessagesEqual(streamCompleteMessage, (StreamCompleteMessage)y);
                 default:
                     throw new InvalidOperationException($"Unknown message type: {x.GetType().FullName}");
             }
@@ -46,34 +48,40 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
 
         private bool CompletionMessagesEqual(CompletionMessage x, CompletionMessage y)
         {
-            return SequenceEqual(x.Headers, y.Headers) &&
-                string.Equals(x.InvocationId, y.InvocationId, StringComparison.Ordinal) &&
-                string.Equals(x.Error, y.Error, StringComparison.Ordinal) &&
-                x.HasResult == y.HasResult &&
-                (Equals(x.Result, y.Result) || SequenceEqual(x.Result, y.Result));
+            return SequenceEqual(x.Headers, y.Headers)
+                && string.Equals(x.InvocationId, y.InvocationId, StringComparison.Ordinal)
+                && string.Equals(x.Error, y.Error, StringComparison.Ordinal)
+                && x.HasResult == y.HasResult
+                && (Equals(x.Result, y.Result) || SequenceEqual(x.Result, y.Result));
         }
 
         private bool StreamItemMessagesEqual(StreamItemMessage x, StreamItemMessage y)
         {
-            return SequenceEqual(x.Headers, y.Headers) &&
-                string.Equals(x.InvocationId, y.InvocationId, StringComparison.Ordinal) &&
-                (Equals(x.Item, y.Item) || SequenceEqual(x.Item, y.Item));
+            return SequenceEqual(x.Headers, y.Headers)
+                && string.Equals(x.InvocationId, y.InvocationId, StringComparison.Ordinal)
+                && (Equals(x.Item, y.Item) || SequenceEqual(x.Item, y.Item));
         }
 
         private bool InvocationMessagesEqual(InvocationMessage x, InvocationMessage y)
         {
-            return SequenceEqual(x.Headers, y.Headers) &&
-                string.Equals(x.InvocationId, y.InvocationId, StringComparison.Ordinal) &&
-                string.Equals(x.Target, y.Target, StringComparison.Ordinal) &&
-                ArgumentListsEqual(x.Arguments, y.Arguments);
+            return SequenceEqual(x.Headers, y.Headers)
+                && string.Equals(x.InvocationId, y.InvocationId, StringComparison.Ordinal)
+                && string.Equals(x.Target, y.Target, StringComparison.Ordinal)
+                && ArgumentListsEqual(x.Arguments, y.Arguments);
         }
 
         private bool StreamInvocationMessagesEqual(StreamInvocationMessage x, StreamInvocationMessage y)
         {
-            return SequenceEqual(x.Headers, y.Headers) &&
-                string.Equals(x.InvocationId, y.InvocationId, StringComparison.Ordinal) &&
-                string.Equals(x.Target, y.Target, StringComparison.Ordinal) &&
-                ArgumentListsEqual(x.Arguments, y.Arguments);
+            return SequenceEqual(x.Headers, y.Headers)
+                && string.Equals(x.InvocationId, y.InvocationId, StringComparison.Ordinal)
+                && string.Equals(x.Target, y.Target, StringComparison.Ordinal)
+                && ArgumentListsEqual(x.Arguments, y.Arguments);
+        }
+
+        private bool StreamCompleteMessagesEqual(StreamCompleteMessage x, StreamCompleteMessage y)
+        {
+            return x.StreamId == y.StreamId
+                && y.Error == y.Error;
         }
 
         private bool ArgumentListsEqual(object[] left, object[] right)
@@ -90,12 +98,27 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
 
             for (var i = 0; i < left.Length; i++)
             {
-                if (!(Equals(left[i], right[i]) || SequenceEqual(left[i], right[i])))
+                if (!(Equals(left[i], right[i]) || SequenceEqual(left[i], right[i]) || PlaceholdersEqual(left[i], right[i])))
                 {
                     return false;
                 }
             }
             return true;
+        }
+
+        private bool PlaceholdersEqual(object left, object right)
+        {
+            if (left.GetType() != right.GetType())
+            {
+                return false;
+            }
+            switch(left)
+            {
+                case StreamPlaceholder leftPlaceholder:
+                    return leftPlaceholder.StreamId == (right as StreamPlaceholder).StreamId;
+                default:
+                    return false;
+            }
         }
 
         private bool SequenceEqual(object left, object right)

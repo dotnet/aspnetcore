@@ -60,6 +60,7 @@ namespace SignalRSamples
                 routes.MapHub<DynamicChat>("/dynamic");
                 routes.MapHub<Chat>("/default");
                 routes.MapHub<Streaming>("/streaming");
+                routes.MapHub<UploadHub>("/uploading");
                 routes.MapHub<HubTChat>("/hubT");
             });
 

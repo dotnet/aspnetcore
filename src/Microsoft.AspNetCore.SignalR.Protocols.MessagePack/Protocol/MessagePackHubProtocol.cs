@@ -121,7 +121,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
 
         private static HubMessage ParseMessage(byte[] input, int startOffset, IInvocationBinder binder, IFormatterResolver resolver)
         {
-            _ = MessagePackBinary.ReadArrayHeader(input, startOffset, out var readSize);
+            MessagePackBinary.ReadArrayHeader(input, startOffset, out var readSize);
             startOffset += readSize;
 
             var messageType = ReadInt32(input, ref startOffset, "messageType");
@@ -142,6 +142,8 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                     return PingMessage.Instance;
                 case HubProtocolConstants.CloseMessageType:
                     return CreateCloseMessage(input, ref startOffset);
+                case HubProtocolConstants.StreamCompleteMessageType:
+                    return CreateStreamCompleteMessage(input, ref startOffset);
                 default:
                     // Future protocol changes can add message types, old clients can ignore them
                     return null;
@@ -179,6 +181,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             var headers = ReadHeaders(input, ref offset);
             var invocationId = ReadInvocationId(input, ref offset);
             var target = ReadString(input, ref offset, "target");
+
             var parameterTypes = binder.GetParameterTypes(target);
 
             try
@@ -196,7 +199,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         {
             var headers = ReadHeaders(input, ref offset);
             var invocationId = ReadInvocationId(input, ref offset);
-            var itemType = binder.GetReturnType(invocationId);
+            var itemType = binder.GetStreamItemType(invocationId);
             var value = DeserializeObject(input, ref offset, itemType, "item", resolver);
             return ApplyHeaders(headers, new StreamItemMessage(invocationId, value));
         }
@@ -242,6 +245,17 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         {
             var error = ReadString(input, ref offset, "error");
             return new CloseMessage(error);
+        }
+
+        private static StreamCompleteMessage CreateStreamCompleteMessage(byte[] input, ref int offset)
+        {
+            var streamId = ReadString(input, ref offset, "streamId");
+            var error = ReadString(input, ref offset, "error");
+            if (string.IsNullOrEmpty(error))
+            {
+                error = null;
+            }
+            return new StreamCompleteMessage(streamId, error);
         }
 
         private static Dictionary<string, string> ReadHeaders(byte[] input, ref int offset)
@@ -376,6 +390,9 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                 case CloseMessage closeMessage:
                     WriteCloseMessage(closeMessage, packer);
                     break;
+                case StreamCompleteMessage m:
+                    WriteStreamCompleteMessage(m, packer);
+                    break;
                 default:
                     throw new InvalidDataException($"Unexpected message type: {message.GetType().Name}");
             }
@@ -467,6 +484,21 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             MessagePackBinary.WriteInt16(packer, HubProtocolConstants.CancelInvocationMessageType);
             PackHeaders(packer, message.Headers);
             MessagePackBinary.WriteString(packer, message.InvocationId);
+        }
+
+        private void WriteStreamCompleteMessage(StreamCompleteMessage message, Stream packer)
+        {
+            MessagePackBinary.WriteArrayHeader(packer, 3);
+            MessagePackBinary.WriteInt16(packer, HubProtocolConstants.StreamCompleteMessageType);
+            MessagePackBinary.WriteString(packer, message.StreamId);
+            if (message.HasError)
+            {
+                MessagePackBinary.WriteString(packer, message.Error);
+            }
+            else
+            {
+                MessagePackBinary.WriteNil(packer);
+            }
         }
 
         private void WriteCloseMessage(CloseMessage message, Stream packer)

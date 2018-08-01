@@ -21,6 +21,7 @@ namespace Microsoft.AspNetCore.SignalR
 {
     public class HubConnectionContext
     {
+        private StreamTracker _streamTracker;
         private static readonly WaitCallback _abortedCallback = AbortConnection;
 
         private readonly ConnectionContext _connectionContext;
@@ -54,6 +55,18 @@ namespace Microsoft.AspNetCore.SignalR
             _clientTimeoutInterval = clientTimeoutInterval.Ticks;
         }
 
+        internal StreamTracker StreamTracker
+        {
+            get
+            {
+                // lazy for performance reasons
+                if (_streamTracker == null)
+                {
+                    _streamTracker = new StreamTracker();
+                }
+                return _streamTracker;
+            }
+        }
         /// <summary>
         /// Initializes a new instance of the <see cref="HubConnectionContext"/> class.
         /// </summary>

@@ -3,6 +3,9 @@
 
 using System;
 using System.Buffers;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.SignalR.Protocol;
@@ -144,6 +147,227 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 Assert.Equal($"Server timeout ({hubConnection.ServerTimeout.TotalMilliseconds:0.00}ms) elapsed without receiving a message from the server.", exception.Message);
             }
         }
+
+        [Fact]
+        public async Task StreamIntsToServer()
+        {
+            using (StartVerifiableLog(out var loggerFactory, LogLevel.Trace))
+            {
+                var connection = new TestConnection();
+                var hubConnection = CreateHubConnection(connection, loggerFactory: loggerFactory);
+                await hubConnection.StartAsync().OrTimeout();
+
+                var channel = Channel.CreateUnbounded<int>();
+                var invokeTask = hubConnection.InvokeAsync<int>("SomeMethod", channel.Reader);
+
+                var invocation = await connection.ReadSentJsonAsync().OrTimeout();
+                Assert.Equal(HubProtocolConstants.InvocationMessageType, invocation["type"]);
+                Assert.Equal("SomeMethod", invocation["target"]);
+                var streamId = invocation["arguments"][0]["streamId"];
+
+                foreach (var number in new[] { 42, 43, 322, 3145, -1234 })
+                {
+                    await channel.Writer.WriteAsync(number).AsTask().OrTimeout();
+
+                    var item = await connection.ReadSentJsonAsync().OrTimeout();
+                    Assert.Equal(HubProtocolConstants.StreamDataMessageType, item["type"]);
+                    Assert.Equal(number, item["item"]);
+                    Assert.Equal(streamId, item["streamId"]);
+                }
+
+                channel.Writer.TryComplete();
+                var completion = await connection.ReadSentJsonAsync().OrTimeout();
+                Assert.Equal(HubProtocolConstants.StreamCompleteMessageType, completion["type"]);
+                
+                await connection.ReceiveJsonMessage(
+                    new { type = HubProtocolConstants.CompletionMessageType, invocationId = invocation["invocationId"], result = 42 }
+                    ).OrTimeout();
+                var result = await invokeTask.OrTimeout();
+                Assert.Equal(42, result);
+            }
+        }
+
+        [Fact]
+        public async Task StreamIntsToServerViaSend()
+        {
+            using (StartVerifiableLog(out var loggerFactory, LogLevel.Trace))
+            {
+                var connection = new TestConnection();
+                var hubConnection = CreateHubConnection(connection, loggerFactory: loggerFactory);
+                await hubConnection.StartAsync().OrTimeout();
+
+                var channel = Channel.CreateUnbounded<int>();
+                var sendTask = hubConnection.SendAsync("SomeMethod", channel.Reader);
+
+                var invocation = await connection.ReadSentJsonAsync().OrTimeout();
+                Assert.Equal(HubProtocolConstants.InvocationMessageType, invocation["type"]);
+                Assert.Equal("SomeMethod", invocation["target"]);
+                Assert.Null(invocation["invocationId"]);
+                var streamId = invocation["arguments"][0]["streamId"];
+
+                foreach (var item in new[] { 2, 3, 10, 5 })
+                {
+                    await channel.Writer.WriteAsync(item);
+
+                    var received = await connection.ReadSentJsonAsync().OrTimeout();
+                    Assert.Equal(HubProtocolConstants.StreamDataMessageType, received["type"]);
+                    Assert.Equal(item, received["item"]);
+                    Assert.Equal(streamId, received["streamId"]);
+                }
+            }
+        }
+
+        [Fact]
+        public async Task StreamsObjectsToServer()
+        {
+            using (StartVerifiableLog(out var loggerFactory, LogLevel.Trace))
+            {
+                var connection = new TestConnection();
+                var hubConnection = CreateHubConnection(connection, loggerFactory: loggerFactory);
+                await hubConnection.StartAsync().OrTimeout();
+
+                var channel = Channel.CreateUnbounded<object>();
+                var invokeTask = hubConnection.InvokeAsync<SampleObject>("UploadMethod", channel.Reader);
+
+                var invocation = await connection.ReadSentJsonAsync().OrTimeout();
+                Assert.Equal(HubProtocolConstants.InvocationMessageType, invocation["type"]);
+                Assert.Equal("UploadMethod", invocation["target"]);
+                var id = invocation["invocationId"];
+
+                var items = new[] { new SampleObject("ab", 12), new SampleObject("ef", 23) };
+                foreach (var item in items)
+                {
+                    await channel.Writer.WriteAsync(item);
+
+                    var received = await connection.ReadSentJsonAsync().OrTimeout();
+                    Assert.Equal(HubProtocolConstants.StreamDataMessageType, received["type"]);
+                    Assert.Equal(item.Foo, received["item"]["foo"]);
+                    Assert.Equal(item.Bar, received["item"]["bar"]);
+                }
+
+                channel.Writer.TryComplete();
+                var completion = await connection.ReadSentJsonAsync().OrTimeout();
+                Assert.Equal(HubProtocolConstants.StreamCompleteMessageType, completion["type"]);
+
+                var expected = new SampleObject("oof", 14);
+                await connection.ReceiveJsonMessage(
+                    new { type = HubProtocolConstants.CompletionMessageType, invocationId = id, result = expected }
+                    ).OrTimeout();
+                var result = await invokeTask.OrTimeout();
+
+                Assert.Equal(expected.Foo, result.Foo);
+                Assert.Equal(expected.Bar, result.Bar);
+            }
+        }
+
+        [Fact]
+        public async Task UploadStreamCancelationSendsStreamComplete()
+        {
+            using (StartVerifiableLog(out var loggerFactory, LogLevel.Trace))
+            {
+                var connection = new TestConnection();
+                var hubConnection = CreateHubConnection(connection, loggerFactory: loggerFactory);
+                await hubConnection.StartAsync().OrTimeout();
+
+                var cts = new CancellationTokenSource();
+                var channel = Channel.CreateUnbounded<int>();
+                var invokeTask = hubConnection.InvokeAsync<object>("UploadMethod", channel.Reader, cts.Token);
+
+                var invokeMessage = await connection.ReadSentJsonAsync().OrTimeout();
+                Assert.Equal(HubProtocolConstants.InvocationMessageType, invokeMessage["type"]);
+
+                cts.Cancel();
+
+                // after cancellation, don't send from the pipe
+                foreach (var number in new[] { 42, 43, 322, 3145, -1234 })
+                {
+
+                    await channel.Writer.WriteAsync(number);
+                }
+
+                // the next sent message should be a completion message
+                var complete = await connection.ReadSentJsonAsync().OrTimeout();
+                Assert.Equal(HubProtocolConstants.StreamCompleteMessageType, complete["type"]);
+                Assert.EndsWith("canceled by client.", ((string)complete["error"]));
+            } 
+        }
+
+        [Fact]
+        public async Task InvocationCanCompleteBeforeStreamCompletes()
+        {
+            using (StartVerifiableLog(out var loggerFactory, LogLevel.Trace))
+            {
+                var connection = new TestConnection();
+                var hubConnection = CreateHubConnection(connection, loggerFactory: loggerFactory);
+                await hubConnection.StartAsync().OrTimeout();
+
+                var channel = Channel.CreateUnbounded<int>();
+                var invokeTask = hubConnection.InvokeAsync<object>("UploadMethod", channel.Reader);
+                var invocation = await connection.ReadSentJsonAsync().OrTimeout();
+                Assert.Equal(HubProtocolConstants.InvocationMessageType, invocation["type"]);
+                var id = invocation["invocationId"];
+
+                await connection.ReceiveJsonMessage(new { type = HubProtocolConstants.CompletionMessageType, invocationId = id, result = 10 });
+
+                var result = await invokeTask.OrTimeout();
+                Assert.Equal(10L, result);
+
+                // after the server returns, with whatever response
+                // the client's behavior is undefined, and the server is responsible for ignoring stray messages
+            }
+        }
+
+        [Fact]
+        public async Task WrongTypeOnServerResponse()
+        {
+            bool ExpectedErrors(WriteContext writeContext)
+            {
+                return writeContext.LoggerName == typeof(HubConnection).FullName &&
+                       (writeContext.EventId.Name == "ServerDisconnectedWithError"
+                        || writeContext.EventId.Name == "ShutdownWithError");
+            }
+            using (StartVerifiableLog(out var loggerFactory, LogLevel.Trace, expectedErrorsFilter: ExpectedErrors))
+            {
+                var connection = new TestConnection();
+                var hubConnection = CreateHubConnection(connection, loggerFactory: loggerFactory);
+                await hubConnection.StartAsync().OrTimeout();
+
+                // we expect to get sent ints, and receive an int back
+                var channel = Channel.CreateUnbounded<int>();
+                var invokeTask = hubConnection.InvokeAsync<int>("SumInts", channel.Reader);
+
+                var invocation = await connection.ReadSentJsonAsync();
+                Assert.Equal(HubProtocolConstants.InvocationMessageType, invocation["type"]);
+                var id = invocation["invocationId"];
+
+                await channel.Writer.WriteAsync(5);
+                await channel.Writer.WriteAsync(10);
+
+                await connection.ReceiveJsonMessage(new { type = HubProtocolConstants.CompletionMessageType, invocationId = id, result = "humbug" });
+
+                try
+                {
+                    await invokeTask;
+                }
+                catch (Exception ex)
+                {
+                    Assert.Equal(typeof(Newtonsoft.Json.JsonSerializationException), ex.GetType());
+                }
+            }
+        }
+
+        private class SampleObject
+        {
+            public SampleObject(string foo, int bar)
+            {
+                Foo = foo;
+                Bar = bar;
+            }
+
+            public string Foo { get; private set; }
+            public int Bar { get; private set; }
+        }
+
 
         // Moq really doesn't handle out parameters well, so to make these tests work I added a manual mock -anurse
         private class MockHubProtocol : IHubProtocol
