@@ -68,7 +68,7 @@ namespace BasicApi
                 case "MYSQL":
                     services
                         .AddEntityFrameworkMySql()
-                        .AddDbContext<BasicApiContext>(options => options.UseMySql(connectionString));
+                        .AddDbContextPool<BasicApiContext>(options => options.UseMySql(connectionString));
                     break;
 #endif
 
