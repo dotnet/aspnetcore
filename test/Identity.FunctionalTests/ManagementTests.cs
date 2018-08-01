@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using AngleSharp.Dom.Html;
 using Identity.DefaultUI.WebSite;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.TestHost;
@@ -191,6 +192,31 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
 
             // RefreshSignIn generates a new security stamp claim
             AssertClaimsNotEqual(principals[0], principals[1], "AspNet.Identity.SecurityStamp");
+        }
+
+        [Fact]
+        public async Task CanSeeExternalLoginProviderDisplayName()
+        {
+            // Arrange
+            void ConfigureTestServices(IServiceCollection services) => services.SetupTestThirdPartyLogin();
+
+            var server = ServerFactory
+                .WithWebHostBuilder(whb => whb.ConfigureTestServices(ConfigureTestServices));
+
+            var client = server.CreateClient();
+
+            // Act
+            var userName = Guid.NewGuid().ToString();
+            var email = $"{userName}@example.com";
+            var index = await UserStories.RegisterNewUserWithSocialLoginAsync(client, userName, email);
+            var manage = await index.ClickManageLinkWithExternalLoginAsync();
+            var externalLogins = await manage.ClickExternalLoginsAsync();
+
+            // Assert
+            var title = externalLogins.Document.GetElementsByTagName("h4").FirstOrDefault(e => e.TextContent == "Registered Logins");
+            var table = title?.NextElementSibling as IHtmlTableElement;
+            var firstCell = table?.Bodies?.FirstOrDefault()?.Rows.FirstOrDefault()?.Cells?.FirstOrDefault();
+            Assert.Equal("Contoso auth", firstCell?.TextContent);
         }
 
         [Fact]
