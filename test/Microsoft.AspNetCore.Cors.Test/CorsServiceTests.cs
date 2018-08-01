@@ -598,32 +598,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             Assert.Contains("foo", result.AllowedHeaders);
             Assert.Contains("bar", result.AllowedHeaders);
         }
-
-        [Fact]
-        public void EvaluatePolicy_PreflightRequest_HeadersRequested_AllowSomeHeaders_ReturnsSubsetOfListedHeaders()
-        {
-            // Arrange
-            var corsService = new CorsService(new TestCorsOptions());
-            var requestContext = GetHttpContext(
-                method: "OPTIONS",
-                origin: "http://example.com",
-                accessControlRequestMethod: "PUT",
-                accessControlRequestHeaders: new[] { "content-type", "accept" });
-            var policy = new CorsPolicy();
-            policy.Origins.Add(CorsConstants.AnyOrigin);
-            policy.Methods.Add("*");
-            policy.Headers.Add("foo");
-            policy.Headers.Add("bar");
-            policy.Headers.Add("Content-Type");
-
-            // Act
-            var result = corsService.EvaluatePolicy(requestContext, policy);
-
-            // Assert
-            Assert.Equal(2, result.AllowedHeaders.Count);
-            Assert.Contains("Content-Type", result.AllowedHeaders, StringComparer.OrdinalIgnoreCase);
-        }
-
+        
         [Fact]
         public void EvaluatePolicy_PreflightRequest_HeadersRequested_NotAllHeaderMatches_ReturnsInvalidResult()
         {
@@ -690,6 +665,31 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             Assert.Null(result.AllowedOrigin);
         }
 
+        [Fact]
+        public void ApplyResult_SimpleRequests_IgnoresFiltering()
+        {
+            // Arrange
+            var result = new CorsResult();
+            result.AllowedHeaders.Add("Content-Type");
+            result.AllowedHeaders.Add("Date");
+            result.AllowedMethods.Add("GET");
+            result.AllowedMethods.Add("PUT");
+
+            var httpContext = new DefaultHttpContext();
+            var service = new CorsService(new TestCorsOptions());
+
+
+            // Act
+            service.ApplyResult(result, httpContext.Response);
+
+            // Assert
+            string[] arMethods = httpContext.Response.Headers.GetCommaSeparatedValues(CorsConstants.AccessControlAllowMethods);
+            Assert.Contains("GET", arMethods);
+            Assert.Contains("PUT", arMethods);
+            string[] arHeaders = httpContext.Response.Headers.GetCommaSeparatedValues(CorsConstants.AccessControlAllowHeaders);
+            Assert.Contains("Content-Type", arHeaders);
+            Assert.Contains("Date", arHeaders);
+        }
 
         [Fact]
         public void ApplyResult_ReturnsNoHeaders_ByDefault()
@@ -836,52 +836,6 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             // Assert
             Assert.Equal("PUT", httpContext.Response.Headers["Access-Control-Allow-Methods"]);
         }
-
-        [Fact]
-        public void ApplyResult_SomeSimpleAllowMethods_AllowMethodsHeaderAddedForNonSimpleMethods()
-        {
-            // Arrange
-            var result = new CorsResult();
-            result.AllowedMethods.Add("PUT");
-            result.AllowedMethods.Add("get");
-            result.AllowedMethods.Add("DELETE");
-            result.AllowedMethods.Add("POST");
-
-            var httpContext = new DefaultHttpContext();
-            var service = new CorsService(new TestCorsOptions());
-
-            // Act
-            service.ApplyResult(result, httpContext.Response);
-
-            // Assert
-            Assert.Contains("Access-Control-Allow-Methods", httpContext.Response.Headers.Keys);
-            var value = Assert.Single(httpContext.Response.Headers.Values);
-            Assert.Equal(new[] { "PUT,DELETE" }, value);
-            string[] methods = httpContext.Response.Headers.GetCommaSeparatedValues("Access-Control-Allow-Methods");
-            Assert.Equal(2, methods.Length);
-            Assert.Contains("PUT", methods);
-            Assert.Contains("DELETE", methods);
-        }
-
-        [Fact]
-        public void ApplyResult_SimpleAllowMethods_AllowMethodsHeaderNotAdded()
-        {
-            // Arrange
-            var result = new CorsResult();
-            result.AllowedMethods.Add("GET");
-            result.AllowedMethods.Add("HEAD");
-            result.AllowedMethods.Add("POST");
-
-            var httpContext = new DefaultHttpContext();
-            var service = new CorsService(new TestCorsOptions());
-
-            // Act
-            service.ApplyResult(result, httpContext.Response);
-
-            // Assert
-            Assert.DoesNotContain("Access-Control-Allow-Methods", httpContext.Response.Headers.Keys);
-        }
-
         [Fact]
         public void ApplyResult_NoAllowHeaders_AllowHeadersHeaderNotAdded()
         {
@@ -943,50 +897,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             Assert.Contains("bar", headerValues);
             Assert.Contains("baz", headerValues);
         }
-
-        [Fact]
-        public void ApplyResult_SomeSimpleAllowHeaders_AllowHeadersHeaderAddedForNonSimpleHeaders()
-        {
-            // Arrange
-            var result = new CorsResult();
-            result.AllowedHeaders.Add("Content-Language");
-            result.AllowedHeaders.Add("foo");
-            result.AllowedHeaders.Add("bar");
-            result.AllowedHeaders.Add("Accept");
-
-            var httpContext = new DefaultHttpContext();
-            var service = new CorsService(new TestCorsOptions());
-
-            // Act
-            service.ApplyResult(result, httpContext.Response);
-
-            // Assert
-            Assert.Contains("Access-Control-Allow-Headers", httpContext.Response.Headers.Keys);
-            string[] headerValues = httpContext.Response.Headers.GetCommaSeparatedValues("Access-Control-Allow-Headers");
-            Assert.Equal(2, headerValues.Length);
-            Assert.Contains("foo", headerValues);
-            Assert.Contains("bar", headerValues);
-        }
-
-        [Fact]
-        public void ApplyResult_SimpleAllowHeaders_AllowHeadersHeaderNotAdded()
-        {
-            // Arrange
-            var result = new CorsResult();
-            result.AllowedHeaders.Add("Accept");
-            result.AllowedHeaders.Add("Accept-Language");
-            result.AllowedHeaders.Add("Content-Language");
-
-            var httpContext = new DefaultHttpContext();
-            var service = new CorsService(new TestCorsOptions());
-
-            // Act
-            service.ApplyResult(result, httpContext.Response);
-
-            // Assert
-            Assert.DoesNotContain("Access-Control-Allow-Headers", httpContext.Response.Headers.Keys);
-        }
-
+        
         [Fact]
         public void ApplyResult_NoAllowExposedHeaders_ExposedHeadersHeaderNotAdded()
         {

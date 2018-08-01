@@ -151,8 +151,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             {
                 foreach (var requestHeader in requestHeaders)
                 {
-                    if (!CorsConstants.SimpleRequestHeaders.Contains(requestHeader, StringComparer.OrdinalIgnoreCase) &&
-                                                  !policy.Headers.Contains(requestHeader, StringComparer.OrdinalIgnoreCase))
+                    if (!policy.Headers.Contains(requestHeader, StringComparer.OrdinalIgnoreCase))
                     {
                         _logger?.PolicyFailure();
                         _logger?.RequestHeaderNotAllowed(requestHeader);
@@ -201,50 +200,23 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
 
             if (result.AllowedMethods.Count > 0)
             {
-                // Filter out simple methods
-                var nonSimpleAllowMethods = result.AllowedMethods
-                    .Where(m =>
-                        !CorsConstants.SimpleMethods.Contains(m, StringComparer.OrdinalIgnoreCase))
-                    .ToArray();
-
-                if (nonSimpleAllowMethods.Length > 0)
-                {
-                    headers.SetCommaSeparatedValues(
-                        CorsConstants.AccessControlAllowMethods,
-                        nonSimpleAllowMethods);
-                }
+                headers.SetCommaSeparatedValues(
+                    CorsConstants.AccessControlAllowMethods,
+                    result.AllowedMethods.ToArray());
             }
 
             if (result.AllowedHeaders.Count > 0)
             {
-                // Filter out simple request headers
-                var nonSimpleAllowRequestHeaders = result.AllowedHeaders
-                    .Where(header =>
-                        !CorsConstants.SimpleRequestHeaders.Contains(header, StringComparer.OrdinalIgnoreCase))
-                    .ToArray();
-
-                if (nonSimpleAllowRequestHeaders.Length > 0)
-                {
-                    headers.SetCommaSeparatedValues(
-                        CorsConstants.AccessControlAllowHeaders,
-                        nonSimpleAllowRequestHeaders);
-                }
+                headers.SetCommaSeparatedValues(
+                    CorsConstants.AccessControlAllowHeaders,
+                    result.AllowedHeaders.ToArray());
             }
 
             if (result.AllowedExposedHeaders.Count > 0)
             {
-                // Filter out simple response headers
-                var nonSimpleAllowResponseHeaders = result.AllowedExposedHeaders
-                    .Where(header =>
-                        !CorsConstants.SimpleResponseHeaders.Contains(header, StringComparer.OrdinalIgnoreCase))
-                    .ToArray();
-
-                if (nonSimpleAllowResponseHeaders.Length > 0)
-                {
-                    headers.SetCommaSeparatedValues(
-                        CorsConstants.AccessControlExposeHeaders,
-                        nonSimpleAllowResponseHeaders);
-                }
+                headers.SetCommaSeparatedValues(
+                    CorsConstants.AccessControlExposeHeaders,
+                    result.AllowedExposedHeaders.ToArray());
             }
 
             if (result.PreflightMaxAge.HasValue)
