@@ -26,6 +26,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         private readonly MvcOptions _mvcOptions;
         private readonly IActionResultTypeMapper _mapper;
         private readonly ApiResponseTypeProvider _responseTypeProvider;
+        private readonly RouteOptions _routeOptions;
         private readonly IInlineConstraintResolver _constraintResolver;
         private readonly IModelMetadataProvider _modelMetadataProvider;
 
@@ -53,6 +54,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         /// constraints.</param>
         /// <param name="modelMetadataProvider">The <see cref="IModelMetadataProvider"/>.</param>
         /// <param name="mapper"> The <see cref="IActionResultTypeMapper"/>.</param>
+        [Obsolete("This constructor is obsolete and will be removed in a future release.")]
         public DefaultApiDescriptionProvider(
             IOptions<MvcOptions> optionsAccessor,
             IInlineConstraintResolver constraintResolver,
@@ -64,6 +66,30 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             _modelMetadataProvider = modelMetadataProvider;
             _mapper = mapper;
             _responseTypeProvider = new ApiResponseTypeProvider(modelMetadataProvider, mapper, _mvcOptions);
+        }
+
+        /// <summary>
+        /// Creates a new instance of <see cref="DefaultApiDescriptionProvider"/>.
+        /// </summary>
+        /// <param name="optionsAccessor">The accessor for <see cref="MvcOptions"/>.</param>
+        /// <param name="constraintResolver">The <see cref="IInlineConstraintResolver"/> used for resolving inline
+        /// constraints.</param>
+        /// <param name="modelMetadataProvider">The <see cref="IModelMetadataProvider"/>.</param>
+        /// <param name="mapper"> The <see cref="IActionResultTypeMapper"/>.</param>
+        /// <param name="routeOptions">The accessor for <see cref="RouteOptions"/>.</param>
+        public DefaultApiDescriptionProvider(
+            IOptions<MvcOptions> optionsAccessor,
+            IInlineConstraintResolver constraintResolver,
+            IModelMetadataProvider modelMetadataProvider,
+            IActionResultTypeMapper mapper,
+            IOptions<RouteOptions> routeOptions)
+        {
+            _mvcOptions = optionsAccessor.Value;
+            _constraintResolver = constraintResolver;
+            _modelMetadataProvider = modelMetadataProvider;
+            _mapper = mapper;
+            _responseTypeProvider = new ApiResponseTypeProvider(modelMetadataProvider, mapper, _mvcOptions);
+            _routeOptions = routeOptions.Value;
         }
 
         /// <inheritdoc />
@@ -383,7 +409,9 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 {
                     if (part.IsLiteral)
                     {
-                        currentSegment += part.Text;
+                        currentSegment += _routeOptions.LowercaseUrls ?
+                            part.Text.ToLowerInvariant() :
+                            part.Text;
                     }
                     else if (part.IsParameter)
                     {
