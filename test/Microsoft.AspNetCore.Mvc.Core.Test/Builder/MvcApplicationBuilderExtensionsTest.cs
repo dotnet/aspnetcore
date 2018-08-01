@@ -58,13 +58,13 @@ namespace Microsoft.AspNetCore.Mvc.Core.Builder
         }
 
         [Fact]
-        public void UseMvc_GlobalRoutingDisabled_NoEndpointInfos()
+        public void UseMvc_EndpointRoutingDisabled_NoEndpointInfos()
         {
             // Arrange
             var services = new ServiceCollection();
             services.AddSingleton<DiagnosticSource>(new DiagnosticListener("Microsoft.AspNetCore"));
             services.AddLogging();
-            services.AddMvcCore(o => o.EnableGlobalRouting = false);
+            services.AddMvcCore(o => o.EnableEndpointRouting = false);
             var serviceProvider = services.BuildServiceProvider();
             var appBuilder = new ApplicationBuilder(serviceProvider);
 
@@ -85,13 +85,13 @@ namespace Microsoft.AspNetCore.Mvc.Core.Builder
         }
 
         [Fact]
-        public void UseMvc_GlobalRoutingEnabled_NoEndpointInfos()
+        public void UseMvc_EndpointRoutingEnabled_NoEndpointInfos()
         {
             // Arrange
             var services = new ServiceCollection();
             services.AddSingleton<DiagnosticSource>(new DiagnosticListener("Microsoft.AspNetCore"));
             services.AddLogging();
-            services.AddMvcCore(o => o.EnableGlobalRouting = true);
+            services.AddMvcCore(o => o.EnableEndpointRouting = true);
             var serviceProvider = services.BuildServiceProvider();
             var appBuilder = new ApplicationBuilder(serviceProvider);
 

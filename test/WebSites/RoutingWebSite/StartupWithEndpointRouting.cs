@@ -7,13 +7,13 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace RoutingWebSite
 {
-    public class StartupWithGlobalRouting
+    public class StartupWithEndpointRouting
     {
         // Set up application services
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc()
-                .AddMvcOptions(options => options.EnableGlobalRouting = true);
+                .AddMvcOptions(options => options.EnableEndpointRouting = true);
 
             services.AddScoped<TestResponseGenerator>();
             services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();

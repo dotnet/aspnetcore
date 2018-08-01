@@ -7,7 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace BasicWebSite
 {
-    public class StartupWithGlobalRouting
+    public class StartupWithEndpointRouting
     {
         // Set up application services
         public void ConfigureServices(IServiceCollection services)
@@ -28,8 +28,6 @@ namespace BasicWebSite
         {
             // Initializes the RequestId service for each request
             app.UseMiddleware<RequestIdMiddleware>();
-
-            app.UseGlobalRouting();
 
             app.UseMvc(routes =>
             {

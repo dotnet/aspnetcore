@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Mvc
         private readonly CompatibilitySwitch<bool> _allowValidatingTopLevelNodes;
         private readonly CompatibilitySwitch<InputFormatterExceptionPolicy> _inputFormatterExceptionPolicy;
         private readonly CompatibilitySwitch<bool> _suppressBindingUndefinedValueToEnumType;
-        private readonly CompatibilitySwitch<bool> _enableGlobalRouting;
+        private readonly CompatibilitySwitch<bool> _enableEndpointRouting;
         private readonly ICompatibilitySwitch[] _switches;
 
         /// <summary>
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Mvc
             _allowValidatingTopLevelNodes = new CompatibilitySwitch<bool>(nameof(AllowValidatingTopLevelNodes));
             _inputFormatterExceptionPolicy = new CompatibilitySwitch<InputFormatterExceptionPolicy>(nameof(InputFormatterExceptionPolicy), InputFormatterExceptionPolicy.AllExceptions);
             _suppressBindingUndefinedValueToEnumType = new CompatibilitySwitch<bool>(nameof(SuppressBindingUndefinedValueToEnumType));
-            _enableGlobalRouting = new CompatibilitySwitch<bool>(nameof(EnableGlobalRouting));
+            _enableEndpointRouting = new CompatibilitySwitch<bool>(nameof(EnableEndpointRouting));
 
             _switches = new ICompatibilitySwitch[]
             {
@@ -64,15 +64,22 @@ namespace Microsoft.AspNetCore.Mvc
                 _allowValidatingTopLevelNodes,
                 _inputFormatterExceptionPolicy,
                 _suppressBindingUndefinedValueToEnumType,
-                _enableGlobalRouting,
+                _enableEndpointRouting,
             };
         }
 
-        // REVIEW: Add documentation
+        // REVIEW: Remove once web hooks is using EnableEndpointRouting
         public bool EnableGlobalRouting
         {
-            get => _enableGlobalRouting.Value;
-            set => _enableGlobalRouting.Value = value;
+            get => EnableEndpointRouting;
+            set => EnableEndpointRouting = value;
+        }
+
+        // REVIEW: Add documentation
+        public bool EnableEndpointRouting
+        {
+            get => _enableEndpointRouting.Value;
+            set => _enableEndpointRouting.Value = value;
         }
 
         /// <summary>

@@ -9,13 +9,13 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace VersioningWebSite
 {
-    public class StartupWithGlobalRouting
+    public class StartupWithEndpointRouting
     {
         public void ConfigureServices(IServiceCollection services)
         {
             // Add MVC services to the services container
             services.AddMvc()
-                .AddMvcOptions(options => options.EnableGlobalRouting = true);
+                .AddMvcOptions(options => options.EnableEndpointRouting = true);
 
             services.AddScoped<TestResponseGenerator>();
             services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();

@@ -28,7 +28,7 @@ namespace BasicWebSite
                     options.Filters.Add(new TraceResourceFilter());
 
                     // Remove when all URL generation tests are passing - https://github.com/aspnet/Routing/issues/590
-                    options.EnableGlobalRouting = false;
+                    options.EnableEndpointRouting = false;
                 })
                 .SetCompatibilityVersion(CompatibilityVersion.Latest)
                 .AddXmlDataContractSerializerFormatters();

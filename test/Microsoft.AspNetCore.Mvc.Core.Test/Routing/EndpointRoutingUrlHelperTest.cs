@@ -14,7 +14,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Routing
 {
-    public class GlobalRoutingUrlHelperTest : UrlHelperTestBase
+    public class EndpointRoutingUrlHelperTest : UrlHelperTestBase
     {
         [Fact]
         public void RouteUrl_WithRouteName_GeneratesUrl_UsingDefaults()
@@ -155,7 +155,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 
             var urlHelperFactory = httpContext.RequestServices.GetRequiredService<IUrlHelperFactory>();
             var urlHelper = urlHelperFactory.GetUrlHelper(actionContext);
-            Assert.IsType<GlobalRoutingUrlHelper>(urlHelper);
+            Assert.IsType<EndpointRoutingUrlHelper>(urlHelper);
             return urlHelper;
         }
 
