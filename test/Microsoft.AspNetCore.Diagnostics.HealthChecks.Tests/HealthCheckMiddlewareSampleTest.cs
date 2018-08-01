@@ -6,6 +6,7 @@ using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
+using Newtonsoft.Json;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
@@ -57,6 +58,70 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
             Assert.Equal("application/json", response.Content.Headers.ContentType.ToString());
 
             // Ignoring the body since it contains a bunch of statistics
+        }
+
+        [Fact]
+        public async Task LivenessProbeStartup_Liveness()
+        {
+            var expectedJson = JsonConvert.SerializeObject(new
+            {
+                status = "Healthy",
+                results = new
+                {
+                    identity = new
+                    {
+                        status = "Healthy",
+                        description = "",
+                        data = new { }
+                    },
+                },
+            }, Formatting.Indented);
+
+            var builder = new WebHostBuilder()
+                .UseStartup<HealthChecksSample.LivenessProbeStartup>();
+
+            var server = new TestServer(builder);
+            var client = server.CreateClient();
+
+            var response = await client.GetAsync("/health/live");
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("application/json", response.Content.Headers.ContentType.ToString());
+            Assert.Equal(expectedJson, await response.Content.ReadAsStringAsync());
+        }
+
+        [Fact]
+        public async Task LivenessProbeStartup_Readiness()
+        {
+            var expectedJson = JsonConvert.SerializeObject(new
+            {
+                status = "Unhealthy",
+                results = new
+                {
+                    identity = new
+                    {
+                        status = "Healthy",
+                        description = "",
+                        data = new { }
+                    },
+                    slow_dependency = new
+                    {
+                        status = "Unhealthy",
+                        description = "Dependency is still initializing",
+                        data = new { }
+                    },
+                },
+            }, Formatting.Indented);
+
+            var builder = new WebHostBuilder()
+                .UseStartup<HealthChecksSample.LivenessProbeStartup>();
+
+            var server = new TestServer(builder);
+            var client = server.CreateClient();
+
+            var response = await client.GetAsync("/health/ready");
+            Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
+            Assert.Equal("application/json", response.Content.Headers.ContentType.ToString());
+            Assert.Equal(expectedJson, await response.Content.ReadAsStringAsync());
         }
     }
 }

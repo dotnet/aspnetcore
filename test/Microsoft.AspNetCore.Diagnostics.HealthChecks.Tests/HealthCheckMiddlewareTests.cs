@@ -346,5 +346,67 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
             Assert.Equal(HttpStatusCode.Created, response.StatusCode);
             Assert.Equal("Healthy", await response.Content.ReadAsStringAsync());
         }
+
+        [Fact]
+        public async Task CanFilterChecks()
+        {
+            var builder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.UseHealthChecks("/health", new HealthCheckOptions()
+                    {
+                        HealthCheckNames =
+                        {
+                            "Baz",
+                            "FOO",
+                        },
+                    });
+                })
+                .ConfigureServices(services =>
+                {
+                    services.AddHealthChecks()
+                        .AddCheck("Foo", () => Task.FromResult(HealthCheckResult.Healthy("A-ok!")))
+                        // Will get filtered out
+                        .AddCheck("Bar", () => Task.FromResult(HealthCheckResult.Unhealthy("A-ok!")))
+                        .AddCheck("Baz", () => Task.FromResult(HealthCheckResult.Healthy("A-ok!")));
+                });
+            var server = new TestServer(builder);
+            var client = server.CreateClient();
+
+            var response = await client.GetAsync("/health");
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("text/plain", response.Content.Headers.ContentType.ToString());
+            Assert.Equal("Healthy", await response.Content.ReadAsStringAsync());
+        }
+
+        [Fact]
+        public void CanFilterChecks_ThrowsForMissingCheck()
+        {
+            var builder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.UseHealthChecks("/health", new HealthCheckOptions()
+                    {
+                        HealthCheckNames =
+                        {
+                            "Bazzzzzz",
+                            "FOO",
+                        },
+                    });
+                })
+                .ConfigureServices(services =>
+                {
+                    services.AddHealthChecks()
+                        .AddCheck("Foo", () => Task.FromResult(HealthCheckResult.Healthy("A-ok!")))
+                        .AddCheck("Bar", () => Task.FromResult(HealthCheckResult.Unhealthy("A-ok!")))
+                        .AddCheck("Baz", () => Task.FromResult(HealthCheckResult.Healthy("A-ok!")));
+                });
+
+            var ex = Assert.Throws<InvalidOperationException>(() => new TestServer(builder));
+            Assert.Equal(
+                "The following health checks were not found: 'Bazzzzzz'. Registered health checks: 'Foo, Bar, Baz'.",
+                ex.Message);
+        }
     }
 }

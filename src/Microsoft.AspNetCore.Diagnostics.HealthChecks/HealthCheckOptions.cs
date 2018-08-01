@@ -14,6 +14,16 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
     /// </summary>
     public class HealthCheckOptions
     {
+        /// <summary>
+        /// Gets a set of health check names used to filter the set of health checks run.
+        /// </summary>
+        /// <remarks>
+        /// If <see cref="HealthCheckNames"/> is empty, the <see cref="HealthCheckMiddleware"/> will run all
+        /// registered health checks - this is the default behavior. To run a subset of health checks,
+        /// add the names of the desired health checks.
+        /// </remarks>
+        public ISet<string> HealthCheckNames { get; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
         public IDictionary<HealthCheckStatus, int> ResultStatusCodes { get; } = new Dictionary<HealthCheckStatus, int>()
         {
             { HealthCheckStatus.Healthy, StatusCodes.Status200OK },
