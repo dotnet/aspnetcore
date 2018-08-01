@@ -47,11 +47,11 @@
 
   <Target Name="BuildNativeAssets" DependsOnTargets="Prepare;GetToolsets" >
     <PropertyGroup>
-      <BuildArgs>-p:Configuration=$(Configuration) -v:m -nologo -clp:NoSummary -p:CommitHash=$(CommitHash)</BuildArgs>
+      <BuildArgs>-p:Configuration=Native$(Configuration) -v:m -nologo -clp:NoSummary -p:CommitHash=$(CommitHash) -m</BuildArgs>
     </PropertyGroup>
 
     <ItemGroup>
-      <ANCMProject Include="%(Components.Identity) $(BuildArgs) -p:Platform=%(Components.VCPlatform) -bl:$(LogOutputDir)native.%(Components.VCPlatform)%(Components.FileName).binlog"/>
+      <ANCMProject Include="$(MSBuildThisFileDirectory)..\IISIntegration.sln $(BuildArgs)  -p:Platform=%(Platforms.Identity) -bl:$(LogOutputDir)native.%(Platforms.Identity).binlog"/>
     </ItemGroup>
 
     <Error
@@ -132,6 +132,9 @@
   </Target>
 
   <Target Name="RunNativeTest" DependsOnTargets="GetToolsets">
+    <PropertyGroup>
+      <BuildArgs>-p:Configuration=$(Configuration) -v:m -nologo -clp:NoSummary</BuildArgs>
+    </PropertyGroup>
     <Exec Command="&quot;$(VisualStudioMSBuildx86Path)&quot; &quot;$(RepositoryRoot)test\CommonLibTests\CommonLibTests.vcxproj&quot; /t:Test $(BuildArgs) -p:Platform=%(Platforms.VCPlatform)"
       Condition="'$(VisualStudioMSBuildx86Path)' != ''" />
   </Target>
