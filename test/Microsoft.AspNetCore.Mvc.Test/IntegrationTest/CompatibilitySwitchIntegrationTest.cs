@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTest
             Assert.Equal(InputFormatterExceptionPolicy.AllExceptions, mvcOptions.InputFormatterExceptionPolicy);
             Assert.False(jsonOptions.AllowInputFormatterExceptionMessages);
             Assert.False(razorPagesOptions.AllowAreas);
-            Assert.False(mvcOptions.EnableGlobalRouting);
+            Assert.False(mvcOptions.EnableEndpointRouting);
         }
 
         [Fact]
@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTest
             Assert.Equal(InputFormatterExceptionPolicy.MalformedInputExceptions, mvcOptions.InputFormatterExceptionPolicy);
             Assert.True(jsonOptions.AllowInputFormatterExceptionMessages);
             Assert.True(razorPagesOptions.AllowAreas);
-            Assert.False(mvcOptions.EnableGlobalRouting);
+            Assert.False(mvcOptions.EnableEndpointRouting);
         }
 
         [Fact]
@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTest
             Assert.Equal(InputFormatterExceptionPolicy.MalformedInputExceptions, mvcOptions.InputFormatterExceptionPolicy);
             Assert.True(jsonOptions.AllowInputFormatterExceptionMessages);
             Assert.True(razorPagesOptions.AllowAreas);
-            Assert.True(mvcOptions.EnableGlobalRouting);
+            Assert.True(mvcOptions.EnableEndpointRouting);
         }
 
         [Fact]
@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTest
             Assert.Equal(InputFormatterExceptionPolicy.MalformedInputExceptions, mvcOptions.InputFormatterExceptionPolicy);
             Assert.True(jsonOptions.AllowInputFormatterExceptionMessages);
             Assert.True(razorPagesOptions.AllowAreas);
-            Assert.True(mvcOptions.EnableGlobalRouting);
+            Assert.True(mvcOptions.EnableEndpointRouting);
         }
 
         // This just does the minimum needed to be able to resolve these options.

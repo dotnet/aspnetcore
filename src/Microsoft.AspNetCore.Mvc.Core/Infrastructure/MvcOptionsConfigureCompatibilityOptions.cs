@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
                 if (Version >= CompatibilityVersion.Version_2_2)
                 {
-                    values[nameof(MvcOptions.EnableGlobalRouting)] = true;
+                    values[nameof(MvcOptions.EnableEndpointRouting)] = true;
                 }
 
                 return values;

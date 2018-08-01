@@ -9,11 +9,11 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace CorsWebSite
 {
-    public class StartupWithGlobalRouting
+    public class StartupWithEndpointRouting
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc(options => options.EnableGlobalRouting = true);
+            services.AddMvc(options => options.EnableEndpointRouting = true);
             services.Configure<CorsOptions>(options =>
             {
                 options.AddPolicy(
