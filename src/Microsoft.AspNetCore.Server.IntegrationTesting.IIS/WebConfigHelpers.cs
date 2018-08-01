@@ -9,20 +9,20 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
 {
     public static class WebConfigHelpers
     {
-        public static Action<XElement> AddOrModifyAspNetCoreSection(string key, string value)
+        public static Action<XElement, string> AddOrModifyAspNetCoreSection(string key, string value)
             => AddAction(key, value, section: "aspNetCore");
 
-        public static Action<XElement> AddAction(string key, string value, string section)
+        public static Action<XElement, string> AddAction(string key, string value, string section)
         {
-            return (element) =>
+            return (element, _) =>
             {
                 element.Descendants(section).SingleOrDefault().SetAttributeValue(key, value);
             };
         }
 
-        public static Action<XElement> AddOrModifyHandlerSection(string key, string value)
+        public static Action<XElement, string> AddOrModifyHandlerSection(string key, string value)
         {
-            return element =>
+            return (element, _) =>
             {
                 element.Descendants("handlers")
                         .FirstOrDefault()

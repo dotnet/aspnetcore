@@ -12,6 +12,8 @@
     <NativeAssetsTargetFramework>netcoreapp2.2</NativeAssetsTargetFramework>
   </PropertyGroup>
 
+  <Import Project="..\..\build\assets.props" />
+
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.HttpSys.Sources" PrivateAssets="All" Version="$(MicrosoftAspNetCoreHttpSysSourcesPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.Buffers.MemoryPool.Sources" Version="$(MicrosoftExtensionsBuffersMemoryPoolSourcesPackageVersion)" PrivateAssets="All" />
@@ -23,12 +25,40 @@
     <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="$(MicrosoftAspNetCoreHostingAbstractionsPackageVersion)" />
   </ItemGroup>
 
-  <ItemGroup Condition="$(PackNativeAssets) == 'true'">
-    <SignedPackageFile Include="aspnetcorev2_inprocess_x86" PackagePath="runtimes/win-x86/nativeassets/$(NativeAssetsTargetFramework)/aspnetcorev2_inprocess.dll" Certificate="Microsoft" />
-    <SignedPackageFile Include="aspnetcorev2_inprocess_x64" PackagePath="runtimes/win-x64/nativeassets/$(NativeAssetsTargetFramework)/aspnetcorev2_inprocess.dll" Certificate="Microsoft" />
-
+  <ItemGroup>
     <Content Include="$(PackageId).targets" PackagePath="build/$(TargetFramework)/" />
-    <Content Include="..\AspNetCoreModuleV2\InProcessRequestHandler\bin\$(Configuration)\Win32\aspnetcorev2_inprocess.dll" PackagePath="runtimes/win-x86/nativeassets/$(NativeAssetsTargetFramework)/aspnetcorev2_inprocess.dll" />
-    <Content Include="..\AspNetCoreModuleV2\InProcessRequestHandler\bin\$(Configuration)\x64\aspnetcorev2_inprocess.dll" PackagePath="runtimes/win-x64/nativeassets/$(NativeAssetsTargetFramework)/aspnetcorev2_inprocess.dll" />
   </ItemGroup>
+
+  <Target Name="AddPackNativeComponents" BeforeTargets="_GetPackageFiles;GetSignedPackageFiles"  Condition="$(PackNativeAssets) == 'true'">
+    <ItemGroup>
+      <None Include="%(InProcessComponents.DllLocation)"
+            Pack="true"
+            PackagePath="runtimes/win-%(InProcessComponents.Platform)/nativeassets/$(NativeAssetsTargetFramework)" />
+      <None Include="%(InProcessComponents.PdbLocation)"
+            Pack="true"
+            PackagePath="runtimes/win-%(InProcessComponents.Platform)/nativeassets/$(NativeAssetsTargetFramework)" />
+      <SignedPackageFile Include="%(InProcessComponents.NativeAsset)_%(InProcessComponents.Platform)"
+                         PackagePath="runtimes/win-%(InProcessComponents.Platform)/nativeassets/$(NativeAssetsTargetFramework)/%(InProcessComponents.NativeAsset).dll"
+                         Certificate="Microsoft" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="AddRunNativeComponents" BeforeTargets="AssignTargetPaths"  Condition="$(PackNativeAssets) == 'true'">
+    <ItemGroup>
+      <None Include="%(RunInProcessComponents.DllLocation)"
+               CopyToOutputDirectory="PreserveNewest"
+               Link="%(RunInProcessComponents.Platform)\%(RunInProcessComponents.NativeAsset).dll"/>
+      <None Include="%(RunInProcessComponents.PdbLocation)"
+               CopyToOutputDirectory="PreserveNewest"
+               Link="%(RunInProcessComponents.Platform)\%(RunInProcessComponents.NativeAsset).pdb"/>
+
+      <!-- Copy to platform specific and app local directory for standalone publish -->
+      <None Include="%(RunInProcessComponents.DllLocation)"
+               CopyToOutputDirectory="PreserveNewest"
+               Link="%(RunInProcessComponents.NativeAsset).dll"/>
+      <None Include="%(RunInProcessComponents.PdbLocation)"
+               CopyToOutputDirectory="PreserveNewest"
+               Link="%(RunInProcessComponents.NativeAsset).pdb"/>
+    </ItemGroup>
+  </Target>
 </Project>
