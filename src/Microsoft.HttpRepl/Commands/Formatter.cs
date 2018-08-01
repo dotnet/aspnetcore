@@ -1,18 +1,15 @@
-﻿namespace Microsoft.HttpRepl.Commands
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+namespace Microsoft.HttpRepl.Commands
 {
     public class Formatter
     {
-        //private readonly List<int> _prefix = new List<int>();
         private int _prefix;
         private int _maxDepth;
 
         public void RegisterEntry(int prefixLength, int depth)
         {
-            //while (_prefix.Count < depth + 1)
-            //{
-            //    _prefix.Add(0);
-            //}
-
             if (depth > _maxDepth)
             {
                 _maxDepth = depth;

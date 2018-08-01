@@ -5,14 +5,12 @@ using System.Collections.Generic;
 
 namespace Microsoft.HttpRepl
 {
-    public interface IDirectoryStructure
+    public interface IRequestInfo
     {
-        IEnumerable<string> DirectoryNames { get; }
+        IReadOnlyDictionary<string, IReadOnlyList<string>> ContentTypesByMethod { get; }
 
-        IDirectoryStructure Parent { get; }
+        IReadOnlyList<string> Methods { get; }
 
-        IDirectoryStructure GetChildDirectory(string name);
-
-        IRequestInfo RequestInfo { get; }
+        string GetRequestBodyForContentType(string contentType, string method);
     }
 }

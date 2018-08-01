@@ -1,4 +1,4 @@
-﻿<Project>
+<Project>
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
@@ -17,7 +17,7 @@
     <NETStandardLibrary20PackageVersion>2.0.3</NETStandardLibrary20PackageVersion>
     <SystemDataSqlClientPackageVersion>4.5.1</SystemDataSqlClientPackageVersion>
     <SystemSecurityCryptographyCngPackageVersion>4.5.0</SystemSecurityCryptographyCngPackageVersion>
-    <CommandLine_NewtonsoftJsonPackageVersion>10.0.1</CommandLine_NewtonsoftJsonPackageVersion>
+    <CommandLine_NewtonsoftJsonPackageVersion>11.0.2</CommandLine_NewtonsoftJsonPackageVersion>
     <VisualStudio_NewtonsoftJsonPackageVersion>9.0.1</VisualStudio_NewtonsoftJsonPackageVersion>
     <XunitPackageVersion>2.3.1</XunitPackageVersion>
     <XunitRunnerVisualStudioPackageVersion>2.4.0</XunitRunnerVisualStudioPackageVersion>
