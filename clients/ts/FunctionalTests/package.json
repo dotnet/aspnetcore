@@ -21,10 +21,9 @@
   },
   "scripts": {
     "clean": "node ../node_modules/rimraf/bin.js ./wwwroot/dist ./obj/js",
-    "build": "npm run clean && npm run build:lint && npm run build:tsc && npm run build:rollup",
+    "build": "npm run clean && npm run build:lint && npm run build:webpack",
     "build:lint": "node ../node_modules/tslint/bin/tslint -c ../tslint.json -p ./tsconfig.json",
-    "build:tsc": "node ../node_modules/typescript/bin/tsc --project ./tsconfig.json",
-    "build:rollup": "node ../node_modules/rollup/bin/rollup -c",
+    "build:webpack": "node ../node_modules/webpack-cli/bin/cli.js",
     "pretest": "npm run build",
     "test": "dotnet build && npm run test-only",
     "test-only": "ts-node --project ./selenium/tsconfig-selenium.json ./selenium/run-tests.ts",

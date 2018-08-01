@@ -20,7 +20,7 @@ export class HubConnection {
     private methods: { [name: string]: Array<(...args: any[]) => void> };
     private id: number;
     private closedCallbacks: Array<(error?: Error) => void>;
-    private timeoutHandle: NodeJS.Timer;
+    private timeoutHandle?: any;
     private receivedHandshakeResponse: boolean;
 
     /** The server timeout in milliseconds.
