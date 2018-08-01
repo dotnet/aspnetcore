@@ -129,7 +129,6 @@
   <Target Name="PackJavaClient" Condition="'$(JAVA_HOME)' != '' And Exists('$(JAVA_HOME)/lib/tools.jar')">
     <Message Text="Packing Java client" Importance="high" />
     <Exec Command="./gradlew jar sourceJar javadocJar generatePOM" WorkingDirectory="$(RepositoryRoot)clients/java/signalr" />
-    <Move SourceFiles="$(RepositoryRoot)clients/java/signalr/signalr-client-$(JavaClientVersion).pom" DestinationFolder="$(RepositoryRoot)clients/java/signalr\build\libs" />
     <Copy SourceFiles="$(RepositoryRoot)clients/java/signalr\build\libs\%(JavaBuildFiles.Identity)" DestinationFolder="$(BuildDir)" />
   </Target>
 
