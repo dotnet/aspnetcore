@@ -23,8 +23,8 @@
   
   <ItemGroup>
     <SignedPackageFile Include="tools/$(TargetFramework)/any/Microsoft.Repl.dll" Certificate="$(AssemblySigningCertName)" />
-    <SignedPackageFile Include="tools/$(TargetFramework)/any/Newtonsoft.Json.dll" Certificate="$(AssemblySigningCertName)" />
-    <SignedPackageFile Include="tools/$(TargetFramework)/any/Newtonsoft.Json.Bson.dll" Certificate="$(AssemblySigningCertName)" />
+    <SignedPackageFile Include="tools/$(TargetFramework)/any/Newtonsoft.Json.dll" Certificate="$(Microsoft3rdPartyAppComponentDual)" />
+    <SignedPackageFile Include="tools/$(TargetFramework)/any/Newtonsoft.Json.Bson.dll" Certificate="$(Microsoft3rdPartyAppComponentDual)" />
     <SignedPackageFile Include="tools/$(TargetFramework)/any/System.Net.Http.Formatting.dll" Certificate="$(AssemblySigningCertName)" />
   </ItemGroup>
 
