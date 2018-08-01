@@ -25,24 +25,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         public static string GetInProcessTestSitesPath() => GetTestWebSitePath("InProcessWebSite");
 
         public static string GetOutOfProcessTestSitesPath() => GetTestWebSitePath("OutOfProcessWebSite");
-        
-        // Defaults to inprocess specific deployment parameters
-        public static IISDeploymentParameters GetBaseDeploymentParameters(string site = null, HostingModel hostingModel = HostingModel.InProcess, bool publish = false)
-        {
-            if (site == null)
-            {
-                site = hostingModel == HostingModel.InProcess ? "InProcessWebSite" : "OutOfProcessWebSite";
-            }
-
-            return new IISDeploymentParameters(GetTestWebSitePath(site), DeployerSelector.ServerType, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64)
-            {
-                TargetFramework = Tfm.NetCoreApp22,
-                ApplicationType = ApplicationType.Portable,
-                AncmVersion = AncmVersion.AspNetCoreModuleV2,
-                HostingModel = hostingModel,
-                PublishApplicationBeforeDeployment = publish,
-            };
-        }
+  
 
         public static async Task AssertStarts(IISDeploymentResult deploymentResult, string path = "/HelloWorld")
         {

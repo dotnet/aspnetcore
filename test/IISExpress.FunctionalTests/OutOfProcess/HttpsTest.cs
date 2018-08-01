@@ -18,10 +18,14 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
     // So these tests always have to use ports in this range, and we can't rely on OS-allocated ports without a whole lot of ceremony around
     // creating self-signed certificates and registering SSL bindings with HTTP.sys
     // Test specific to IISExpress
+    [Collection(PublishedSitesCollection.Name)]
     public class HttpsTest : IISFunctionalTestBase
     {
-        public HttpsTest(ITestOutputHelper output) : base(output)
+        private readonly PublishedSitesFixture _fixture;
+
+        public HttpsTest(PublishedSitesFixture fixture)
         {
+            _fixture = fixture;
         }
 
         public static TestMatrix TestVariants
@@ -34,12 +38,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         public async Task HttpsHelloWorld(TestVariant variant)
         {
             var port = TestPortHelper.GetNextSSLPort();
-            var deploymentParameters = new IISDeploymentParameters(variant)
-            {
-                ApplicationPath = Helpers.GetOutOfProcessTestSitesPath(),
-                ApplicationBaseUriHint = $"https://localhost:{port}/"
-            };
-
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(variant);
+            deploymentParameters.ApplicationBaseUriHint = $"https://localhost:{port}/";
             deploymentParameters.AddHttpsToServerConfig();
 
             var deploymentResult = await DeployAsync(deploymentParameters);
@@ -73,12 +73,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         private async Task HttpsHelloWorldCerts(TestVariant variant, bool sendClientCert)
         {
             var port = TestPortHelper.GetNextSSLPort();
-            var deploymentParameters = new IISDeploymentParameters(variant)
-            {
-                ApplicationPath = Helpers.GetOutOfProcessTestSitesPath(),
-                ApplicationBaseUriHint = $"https://localhost:{port}/",
-            };
-
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(variant);
+            deploymentParameters.ApplicationBaseUriHint = $"https://localhost:{port}/";
             deploymentParameters.AddHttpsToServerConfig();
 
             var deploymentResult = await DeployAsync(deploymentParameters);

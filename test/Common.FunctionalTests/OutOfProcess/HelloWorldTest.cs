@@ -2,21 +2,22 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
-using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 {
+    [Collection(PublishedSitesCollection.Name)]
     public class HelloWorldTests : IISFunctionalTestBase
     {
-        public HelloWorldTests(ITestOutputHelper output = null) : base(output)
+        private readonly PublishedSitesFixture _fixture;
+
+        public HelloWorldTests(PublishedSitesFixture fixture)
         {
+            _fixture = fixture;
         }
 
         public static TestMatrix TestVariants
@@ -31,10 +32,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         {
             // The default in hosting sets windows auth to true.
             // Set it to the IISExpress.config file
-            var deploymentParameters = new IISDeploymentParameters(variant)
-            {
-                ApplicationPath = Helpers.GetOutOfProcessTestSitesPath()
-            };
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(variant);
 
             var deploymentResult = await DeployAsync(deploymentParameters);
 

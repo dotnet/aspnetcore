@@ -11,17 +11,20 @@ using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 {
+    [Collection(PublishedSitesCollection.Name)]
     public class StartupTests : IISFunctionalTestBase
     {
-        private readonly string _dotnetLocation = DotNetCommands.GetDotNetExecutable(RuntimeArchitecture.x64);
+        private readonly PublishedSitesFixture _fixture;
 
-        public StartupTests(ITestOutputHelper output) : base(output)
+        public StartupTests(PublishedSitesFixture fixture)
         {
+            _fixture = fixture;
         }
+
+        private readonly string _dotnetLocation = DotNetCommands.GetDotNetExecutable(RuntimeArchitecture.x64);
 
         [ConditionalFact]
         public async Task ExpandEnvironmentVariableInWebConfig()
@@ -42,7 +45,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [InlineData(".\\dotnet.exe")]
         public async Task InvalidProcessPath_ExpectServerError(string path)
         {
-            var deploymentParameters = GetBaseDeploymentParameters();
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(publish: true);
             deploymentParameters.WebConfigActionList.Add(WebConfigHelpers.AddOrModifyAspNetCoreSection("processPath", path));
 
 
@@ -99,7 +102,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         private async Task AssertStarts(Action<IISDeploymentParameters> preDeploy = null)
         {
-            var deploymentParameters = GetBaseDeploymentParameters();
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(publish: true);
 
             preDeploy?.Invoke(deploymentParameters);
 
@@ -121,11 +124,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [MemberData(nameof(TestVariants))]
         public async Task HelloWorld(TestVariant variant)
         {
-            var deploymentParameters = new IISDeploymentParameters(variant)
-            {
-                ApplicationPath = Helpers.GetInProcessTestSitesPath(),
-                PublishApplicationBeforeDeployment = true
-            };
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(variant, publish: true);
 
             var deploymentResult = await DeployAsync(deploymentParameters);
 
@@ -138,7 +137,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [ConditionalFact]
         public async Task DetectsOveriddenServer()
         {
-            var deploymentResult = await DeployAsync(GetBaseDeploymentParameters("OverriddenServerWebSite"));
+            var deploymentResult = await DeployAsync(_fixture.GetBaseDeploymentParameters(_fixture.OverriddenServerWebSite, publish: true));
             var response = await deploymentResult.HttpClient.GetAsync("/");
             Assert.False(response.IsSuccessStatusCode);
 
@@ -150,7 +149,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [ConditionalFact]
         public async Task CheckInvalidHostingModelParameter()
         {
-            var deploymentParameters = GetBaseDeploymentParameters();
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(publish: true);
             deploymentParameters.WebConfigActionList.Add(WebConfigHelpers.AddOrModifyAspNetCoreSection("hostingModel", "bogus"));
 
             var deploymentResult = await DeployAsync(deploymentParameters);
@@ -160,19 +159,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
 
             EventLogHelpers.VerifyEventLogEvent(TestSink, "Unknown hosting model 'bogus'. Please specify either hostingModel=\"inprocess\" or hostingModel=\"outofprocess\" in the web.config file.");
-        }
-
-        // Defaults to inprocess specific deployment parameters
-        public static IISDeploymentParameters GetBaseDeploymentParameters(string site = "InProcessWebSite")
-        {
-            return new IISDeploymentParameters(Helpers.GetTestWebSitePath(site), DeployerSelector.ServerType, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64)
-            {
-                TargetFramework = Tfm.NetCoreApp22,
-                ApplicationType = ApplicationType.Portable,
-                AncmVersion = AncmVersion.AspNetCoreModuleV2,
-                HostingModel = HostingModel.InProcess,
-                PublishApplicationBeforeDeployment = site == "InProcessWebSite",
-            };
         }
     }
 }

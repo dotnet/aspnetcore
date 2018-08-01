@@ -13,13 +13,20 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 {
+    [Collection(PublishedSitesCollection.Name)]
     public class GlobalVersionTests : IISFunctionalTestBase
     {
+        private readonly PublishedSitesFixture _fixture;
+
+        public GlobalVersionTests(PublishedSitesFixture fixture)
+        {
+            _fixture = fixture;
+        }
+
         private const string _aspNetCoreDll = "aspnetcorev2_outofprocess.dll";
         private const string _handlerVersion20 = "2.0.0";
         private const string _helloWorldRequest = "HelloWorld";
         private const string _helloWorldResponse = "Hello World";
-        private const string _outOfProcessVersionVariable = "/p:AspNetCoreModuleOutOfProcessVersion=";
 
         [ConditionalFact]
         public async Task GlobalVersion_DefaultWorks()
@@ -65,10 +72,13 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         public async Task GlobalVersion_NewVersionNumber(string version)
         {
             var deploymentParameters = GetGlobalVersionBaseDeploymentParameters();
-            deploymentParameters.AdditionalPublishParameters = $"{_outOfProcessVersionVariable}{version}";
             deploymentParameters.HandlerSettings["handlerVersion"] = version;
 
             var deploymentResult = await DeployAsync(deploymentParameters);
+
+            var originalANCMPath = GetANCMRequestHandlerPath(deploymentResult, _handlerVersion20);
+            var newANCMPath = GetANCMRequestHandlerPath(deploymentResult, version);
+            Directory.Move(originalANCMPath, newANCMPath);
 
             var response = await deploymentResult.RetryingHttpClient.GetAsync(_helloWorldRequest);
             var responseText = await response.Content.ReadAsStringAsync();
@@ -89,9 +99,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             var newANCMPath = GetANCMRequestHandlerPath(deploymentResult, version);
 
-            var di = Directory.CreateDirectory(Path.GetDirectoryName(newANCMPath));
-
-            File.Copy(originalANCMPath, newANCMPath, true);
+            CopyDirectory(originalANCMPath, newANCMPath);
 
             deploymentResult.RetryingHttpClient.DefaultRequestHeaders.Add("ANCMRHPath", newANCMPath);
             var response = await deploymentResult.RetryingHttpClient.GetAsync("CheckRequestHandlerVersion");
@@ -125,9 +133,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             var newANCMPath = GetANCMRequestHandlerPath(deploymentResult, version);
 
-            var di = Directory.CreateDirectory(Path.GetDirectoryName(newANCMPath));
-
-            File.Copy(originalANCMPath, newANCMPath, true);
+            CopyDirectory(originalANCMPath, newANCMPath);
 
             deploymentResult.RetryingHttpClient.DefaultRequestHeaders.Add("ANCMRHPath", newANCMPath);
             response = await deploymentResult.RetryingHttpClient.GetAsync("CheckRequestHandlerVersion");
@@ -139,23 +145,25 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         private IISDeploymentParameters GetGlobalVersionBaseDeploymentParameters()
         {
-            return new IISDeploymentParameters(Helpers.GetOutOfProcessTestSitesPath(), DeployerSelector.ServerType, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64)
+            return _fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess, publish: true);
+        }
+
+        private void CopyDirectory(string from, string to)
+        {
+            var toInfo = new DirectoryInfo(to);
+            toInfo.Create();
+
+            foreach (var file in new DirectoryInfo(from).GetFiles())
             {
-                TargetFramework = Tfm.NetCoreApp22,
-                ApplicationType = ApplicationType.Portable,
-                AncmVersion = AncmVersion.AspNetCoreModuleV2,
-                HostingModel = HostingModel.OutOfProcess,
-                PublishApplicationBeforeDeployment = true,
-                AdditionalPublishParameters = $"{_outOfProcessVersionVariable}{_handlerVersion20}"
-            };
+                file.CopyTo(Path.Combine(toInfo.FullName, file.Name));
+            }
         }
 
         private string GetANCMRequestHandlerPath(IISDeploymentResult deploymentResult, string version)
         {
             return Path.Combine(deploymentResult.ContentRoot,
                deploymentResult.DeploymentParameters.RuntimeArchitecture.ToString(),
-               version,
-               _aspNetCoreDll);
+               version);
         }
 
         private void AssertLoadedVersion(string version)

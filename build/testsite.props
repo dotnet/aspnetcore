@@ -7,6 +7,7 @@
     <IISAppHostConfig>$(MSBuildThisFileDirectory)applicationhost.iis.config</IISAppHostConfig>
     <NativePlatform Condition="'$(Platform)' == 'AnyCPU'">x64</NativePlatform>
     <NativePlatform Condition="'$(NativePlatform)' == ''">$(Platform)</NativePlatform>
+    <PreserveCompilationContext>false</PreserveCompilationContext>
   </PropertyGroup>
   
   <PropertyGroup Condition="'$(NativePlatform)' == 'x86'">
@@ -51,7 +52,7 @@
 
   <Target Name="CopyLaunchSettings" AfterTargets="CoreBuild">
     <!-- This would always override launch settings files in test projects by the default one -->
-    <Copy SourceFiles="$(MSBuildThisFileDirectory)launchSettings.json" DestinationFolder="$(MSBuildProjectDirectory)\Properties" />
+    <Copy SourceFiles="$(MSBuildThisFileDirectory)launchSettings.json" DestinationFolder="$(MSBuildProjectDirectory)\Properties" SkipUnchangedFiles="true" />
   </Target>
 
   <!-- Deps file injection-->

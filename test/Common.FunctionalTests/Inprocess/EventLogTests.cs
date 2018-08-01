@@ -9,12 +9,20 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 {
+    [Collection(PublishedSitesCollection.Name)]
     public class EventLogTests : IISFunctionalTestBase
     {
+        private readonly PublishedSitesFixture _fixture;
+
+        public EventLogTests(PublishedSitesFixture fixture)
+        {
+            _fixture = fixture;
+        }
+
         [ConditionalFact]
         public async Task CheckStartupEventLogMessage()
         {
-            var deploymentParameters = Helpers.GetBaseDeploymentParameters(publish: true);
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(publish: true);
             var deploymentResult = await DeployAsync(deploymentParameters);
             await Helpers.AssertStarts(deploymentResult);
 
@@ -26,7 +34,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [ConditionalFact]
         public async Task CheckShutdownEventLogMessage()
         {
-            var deploymentParameters = Helpers.GetBaseDeploymentParameters(publish: true);
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(publish: true);
             deploymentParameters.GracefulShutdown = true;
             var deploymentResult = await DeployAsync(deploymentParameters);
             await Helpers.AssertStarts(deploymentResult);

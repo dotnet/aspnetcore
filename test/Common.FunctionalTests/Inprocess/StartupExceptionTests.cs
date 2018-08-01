@@ -10,8 +10,16 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 {
+    [Collection(PublishedSitesCollection.Name)]
     public class StartupExceptionTests : IISFunctionalTestBase
     {
+        private readonly PublishedSitesFixture _fixture;
+
+        public StartupExceptionTests(PublishedSitesFixture fixture)
+        {
+            _fixture = fixture;
+        }
+
         [ConditionalTheory]
         [InlineData("CheckLogFile")]
         [InlineData("CheckErrLogFile")]
@@ -21,7 +29,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             // Reason is because by default for IISExpress, we expect there to not be a web.config file.
             // However, for IIS, we need a web.config file because the default on generated on publish
             // doesn't include V2. We can remove the publish flag once IIS supports non-publish running
-            var deploymentParameters = Helpers.GetBaseDeploymentParameters("StartupExceptionWebsite", publish: true);
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.StartupExceptionWebsite, publish: true);
 
             var randomNumberString = new Random(Guid.NewGuid().GetHashCode()).Next(10000000).ToString();
             deploymentParameters.WebConfigBasedEnvironmentVariables["ASPNETCORE_INPROCESS_STARTUP_VALUE"] = path;
@@ -45,7 +53,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [InlineData("CheckOversizedStdOutWrites")]
         public async Task CheckStdoutWithLargeWrites(string path)
         {
-            var deploymentParameters = Helpers.GetBaseDeploymentParameters("StartupExceptionWebsite", publish: true);
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.StartupExceptionWebsite, publish: true);
             deploymentParameters.WebConfigBasedEnvironmentVariables["ASPNETCORE_INPROCESS_STARTUP_VALUE"] = path;
 
             var deploymentResult = await DeployAsync(deploymentParameters);
@@ -62,7 +70,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [ConditionalFact]
         public async Task Gets500_30_ErrorPage()
         {
-            var deploymentParameters = Helpers.GetBaseDeploymentParameters("StartupExceptionWebsite", publish: true);
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.StartupExceptionWebsite, publish: true);
 
             var deploymentResult = await DeployAsync(deploymentParameters);
 
