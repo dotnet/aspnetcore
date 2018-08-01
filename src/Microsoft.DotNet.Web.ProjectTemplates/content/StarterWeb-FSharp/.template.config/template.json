@@ -131,7 +131,7 @@
       "type": "parameter",
       "datatype": "bool",
       "defaultValue": "false",
-      "description": "Whether to turn off HTTPS. This option only applies if IndividualAuth or OrganizationalAuth are not being used."
+      "description": "Whether to turn off HTTPS. This option only applies if Individual, IndividualB2C, SingleOrg, or MultiOrg aren't used for --auth."
     }
   },
   "primaryOutputs": [
