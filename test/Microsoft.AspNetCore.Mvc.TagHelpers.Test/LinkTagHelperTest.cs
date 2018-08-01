@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.Razor.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Mvc.TagHelpers.Internal;
@@ -70,7 +71,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
             var helper = new LinkTagHelper(
                 hostingEnvironment,
-                MakeCache(),
+                new TagHelperMemoryCacheProvider(),
                 new HtmlTestEncoder(),
                 new JavaScriptTestEncoder(),
                 urlHelperFactory.Object)
@@ -167,7 +168,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
             var helper = new LinkTagHelper(
                 hostingEnvironment,
-                MakeCache(),
+                new TagHelperMemoryCacheProvider(),
                 new HtmlTestEncoder(),
                 new JavaScriptTestEncoder(),
                 MakeUrlHelperFactory())
@@ -330,7 +331,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
             var helper = new LinkTagHelper(
                 hostingEnvironment,
-                MakeCache(),
+                new TagHelperMemoryCacheProvider(),
                 new HtmlTestEncoder(),
                 new JavaScriptTestEncoder(),
                 MakeUrlHelperFactory())
@@ -427,7 +428,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
             var helper = new LinkTagHelper(
                 hostingEnvironment,
-                MakeCache(),
+                new TagHelperMemoryCacheProvider(),
                 new HtmlTestEncoder(),
                 new JavaScriptTestEncoder(),
                 MakeUrlHelperFactory())
@@ -473,7 +474,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
             var helper = new LinkTagHelper(
                 hostingEnvironment,
-                MakeCache(),
+                new TagHelperMemoryCacheProvider(),
                 new HtmlTestEncoder(),
                 new JavaScriptTestEncoder(),
                 MakeUrlHelperFactory())
@@ -584,7 +585,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
             var helper = new LinkTagHelper(
                 hostingEnvironment,
-                MakeCache(),
+                new TagHelperMemoryCacheProvider(),
                 new HtmlTestEncoder(),
                 new JavaScriptTestEncoder(),
                 MakeUrlHelperFactory())
@@ -614,7 +615,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
             var helper = new LinkTagHelper(
                 hostingEnvironment,
-                MakeCache(),
+                new TagHelperMemoryCacheProvider(),
                 new HtmlTestEncoder(),
                 new JavaScriptTestEncoder(),
                 MakeUrlHelperFactory())
@@ -660,7 +661,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
             var helper = new LinkTagHelper(
                 hostingEnvironment,
-                MakeCache(),
+                new TagHelperMemoryCacheProvider(),
                 new HtmlTestEncoder(),
                 new JavaScriptTestEncoder(),
                 MakeUrlHelperFactory())
@@ -723,7 +724,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
             var helper = new LinkTagHelper(
                 hostingEnvironment,
-                MakeCache(),
+                new TagHelperMemoryCacheProvider(),
                 new HtmlTestEncoder(),
                 new JavaScriptTestEncoder(),
                 MakeUrlHelperFactory())
@@ -764,7 +765,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
             var helper = new LinkTagHelper(
                 hostingEnvironment,
-                MakeCache(),
+                new TagHelperMemoryCacheProvider(),
                 new HtmlTestEncoder(),
                 new JavaScriptTestEncoder(),
                 MakeUrlHelperFactory())
@@ -802,7 +803,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
             var helper = new LinkTagHelper(
                 hostingEnvironment,
-                MakeCache(),
+                new TagHelperMemoryCacheProvider(),
                 new HtmlTestEncoder(),
                 new JavaScriptTestEncoder(),
                 MakeUrlHelperFactory())
@@ -860,7 +861,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
             var helper = new LinkTagHelper(
                 MakeHostingEnvironment(),
-                MakeCache(),
+                new TagHelperMemoryCacheProvider(),
                 new HtmlTestEncoder(),
                 new JavaScriptTestEncoder(),
                 MakeUrlHelperFactory())
@@ -939,7 +940,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
             var helper = new LinkTagHelper(
                 MakeHostingEnvironment(),
-                MakeCache(),
+                new TagHelperMemoryCacheProvider(),
                 new HtmlTestEncoder(),
                 new JavaScriptTestEncoder(),
                 MakeUrlHelperFactory())
@@ -991,7 +992,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
             var helper = new LinkTagHelper(
                 hostingEnvironment,
-                MakeCache(),
+                new TagHelperMemoryCacheProvider(),
                 new HtmlTestEncoder(),
                 new JavaScriptTestEncoder(),
                 MakeUrlHelperFactory())
@@ -1083,8 +1084,6 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
             return hostingEnvironment.Object;
         }
-
-        private static IMemoryCache MakeCache() => new MemoryCache(new MemoryCacheOptions());
 
         private static IUrlHelperFactory MakeUrlHelperFactory()
         {

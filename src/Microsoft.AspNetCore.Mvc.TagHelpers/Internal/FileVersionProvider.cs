@@ -69,42 +69,42 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Internal
                 resolvedPath = path.Substring(0, queryStringOrFragmentStartIndex);
             }
 
-            Uri uri;
-            if (Uri.TryCreate(resolvedPath, UriKind.Absolute, out uri) && !uri.IsFile)
+            if (Uri.TryCreate(resolvedPath, UriKind.Absolute, out var uri) && !uri.IsFile)
             {
                 // Don't append version if the path is absolute.
                 return path;
             }
 
-            string value;
-            if (!_cache.TryGetValue(path, out value))
+            if (_cache.TryGetValue(path, out string value))
             {
-                var cacheEntryOptions = new MemoryCacheEntryOptions();
-                cacheEntryOptions.AddExpirationToken(_fileProvider.Watch(resolvedPath));
-                var fileInfo = _fileProvider.GetFileInfo(resolvedPath);
-
-                if (!fileInfo.Exists &&
-                    _requestPathBase.HasValue &&
-                    resolvedPath.StartsWith(_requestPathBase.Value, StringComparison.OrdinalIgnoreCase))
-                {
-                    var requestPathBaseRelativePath = resolvedPath.Substring(_requestPathBase.Value.Length);
-                    cacheEntryOptions.AddExpirationToken(_fileProvider.Watch(requestPathBaseRelativePath));
-                    fileInfo = _fileProvider.GetFileInfo(requestPathBaseRelativePath);
-                }
-
-                if (fileInfo.Exists)
-                {
-                    value = QueryHelpers.AddQueryString(path, VersionKey, GetHashForFile(fileInfo));
-                }
-                else
-                {
-                    // if the file is not in the current server.
-                    value = path;
-                }
-
-                value = _cache.Set(path, value, cacheEntryOptions);
+                return value;
             }
 
+            var cacheEntryOptions = new MemoryCacheEntryOptions();
+            cacheEntryOptions.AddExpirationToken(_fileProvider.Watch(resolvedPath));
+            var fileInfo = _fileProvider.GetFileInfo(resolvedPath);
+
+            if (!fileInfo.Exists &&
+                _requestPathBase.HasValue &&
+                resolvedPath.StartsWith(_requestPathBase.Value, StringComparison.OrdinalIgnoreCase))
+            {
+                var requestPathBaseRelativePath = resolvedPath.Substring(_requestPathBase.Value.Length);
+                cacheEntryOptions.AddExpirationToken(_fileProvider.Watch(requestPathBaseRelativePath));
+                fileInfo = _fileProvider.GetFileInfo(requestPathBaseRelativePath);
+            }
+
+            if (fileInfo.Exists)
+            {
+                value = QueryHelpers.AddQueryString(path, VersionKey, GetHashForFile(fileInfo));
+            }
+            else
+            {
+                // if the file is not in the current server.
+                value = path;
+            }
+
+            cacheEntryOptions.SetSize(value.Length * sizeof(char));
+            value = _cache.Set(path, value, cacheEntryOptions);
             return value;
         }
 

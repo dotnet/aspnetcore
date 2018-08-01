@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.Razor.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
@@ -73,7 +74,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
             var helper = new ImageTagHelper(
                 hostingEnvironment,
-                MakeCache(),
+                new TagHelperMemoryCacheProvider(),
                 new HtmlTestEncoder(),
                 urlHelperFactory.Object)
             {
@@ -127,7 +128,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
             var helper = new ImageTagHelper(
                 hostingEnvironment,
-                MakeCache(),
+                new TagHelperMemoryCacheProvider(),
                 new HtmlTestEncoder(),
                 MakeUrlHelperFactory())
             {
@@ -170,7 +171,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var hostingEnvironment = MakeHostingEnvironment();
             var viewContext = MakeViewContext();
 
-            var helper = new ImageTagHelper(hostingEnvironment, MakeCache(), new HtmlTestEncoder(), MakeUrlHelperFactory())
+            var helper = new ImageTagHelper(hostingEnvironment, new TagHelperMemoryCacheProvider(), new HtmlTestEncoder(), MakeUrlHelperFactory())
             {
                 ViewContext = viewContext,
                 Src = "/images/test-image.png",
@@ -206,7 +207,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var hostingEnvironment = MakeHostingEnvironment();
             var viewContext = MakeViewContext();
 
-            var helper = new ImageTagHelper(hostingEnvironment, MakeCache(), new HtmlTestEncoder(), MakeUrlHelperFactory())
+            var helper = new ImageTagHelper(hostingEnvironment, new TagHelperMemoryCacheProvider(), new HtmlTestEncoder(), MakeUrlHelperFactory())
             {
                 ViewContext = viewContext,
                 Src = "/images/test-image.png",
@@ -242,7 +243,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var hostingEnvironment = MakeHostingEnvironment();
             var viewContext = MakeViewContext("/bar");
 
-            var helper = new ImageTagHelper(hostingEnvironment, MakeCache(), new HtmlTestEncoder(), MakeUrlHelperFactory())
+            var helper = new ImageTagHelper(hostingEnvironment, new TagHelperMemoryCacheProvider(), new HtmlTestEncoder(), MakeUrlHelperFactory())
             {
                 ViewContext = viewContext,
                 Src = "/bar/images/image.jpg",
@@ -327,8 +328,6 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
             return hostingEnvironment.Object;
         }
-
-        private static IMemoryCache MakeCache() => new MemoryCache(new MemoryCacheOptions());
 
         private static IUrlHelperFactory MakeUrlHelperFactory()
         {
