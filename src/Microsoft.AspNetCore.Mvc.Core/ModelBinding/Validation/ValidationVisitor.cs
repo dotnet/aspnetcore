@@ -318,7 +318,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
             return entry;
         }
 
-        protected struct StateManager : IDisposable
+        protected readonly struct StateManager : IDisposable
         {
             private readonly ValidationVisitor _visitor;
             private readonly object _container;

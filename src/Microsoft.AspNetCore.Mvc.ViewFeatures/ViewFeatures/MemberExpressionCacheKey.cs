@@ -8,7 +8,7 @@ using System.Reflection;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 {
-    internal struct MemberExpressionCacheKey
+    internal readonly struct MemberExpressionCacheKey
     {
         public MemberExpressionCacheKey(Type modelType, MemberExpression memberExpression)
         {
@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
         public MemberInfo[] Members { get; }
 
-        public Enumerator GetEnumerator() => new Enumerator(ref this);
+        public Enumerator GetEnumerator() => new Enumerator(this);
 
         public struct Enumerator
         {
@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             private int _index;
             private MemberExpression _memberExpression;
 
-            public Enumerator(ref MemberExpressionCacheKey key)
+            public Enumerator(in MemberExpressionCacheKey key)
             {
                 Current = null;
                 _members = key.Members;

@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
     /// <summary>
     /// A media type value.
     /// </summary>
-    public struct MediaType
+    public readonly struct MediaType
     {
         private static readonly StringSegment QualityParameter = new StringSegment("q");
 
@@ -683,7 +683,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             }
         }
 
-        private struct MediaTypeParameter : IEquatable<MediaTypeParameter>
+        private readonly struct MediaTypeParameter : IEquatable<MediaTypeParameter>
         {
             public MediaTypeParameter(StringSegment name, StringSegment value)
             {

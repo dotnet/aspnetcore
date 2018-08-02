@@ -345,7 +345,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         {
         }
 
-        private struct ModelMetadataCacheEntry
+        private readonly struct ModelMetadataCacheEntry
         {
             public ModelMetadataCacheEntry(ModelMetadata metadata, DefaultMetadataDetails details)
             {

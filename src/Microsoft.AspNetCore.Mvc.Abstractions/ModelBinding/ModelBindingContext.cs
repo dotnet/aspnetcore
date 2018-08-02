@@ -156,7 +156,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// by caller when child binding context state should be popped off of
         /// the <see cref="ModelBindingContext"/>.
         /// </summary>
-        public struct NestedScope : IDisposable
+        public readonly struct NestedScope : IDisposable
         {
             private readonly ModelBindingContext _context;
 

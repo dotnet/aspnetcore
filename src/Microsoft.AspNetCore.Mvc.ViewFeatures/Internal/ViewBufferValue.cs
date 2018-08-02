@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
     /// Encapsulates a string or <see cref="IHtmlContent"/> value.
     /// </summary>
     [DebuggerDisplay("{DebuggerToString()}")]
-    public struct ViewBufferValue
+    public readonly struct ViewBufferValue
     {
         /// <summary>
         /// Initializes a new instance of <see cref="ViewBufferValue"/> with a <c>string</c> value.
@@ -41,15 +41,13 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
         {
             using (var writer = new StringWriter())
             {
-                var valueAsString = Value as string;
-                if (valueAsString != null)
+                if (Value is string valueAsString)
                 {
                     writer.Write(valueAsString);
                     return writer.ToString();
                 }
 
-                var valueAsContent = Value as IHtmlContent;
-                if (valueAsContent != null)
+                if (Value is IHtmlContent valueAsContent)
                 {
                     valueAsContent.WriteTo(writer, HtmlEncoder.Default);
                     return writer.ToString();
