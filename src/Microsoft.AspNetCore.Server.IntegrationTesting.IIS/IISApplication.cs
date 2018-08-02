@@ -20,6 +20,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
     internal class IISApplication
     {
         internal const int ERROR_OBJECT_NOT_FOUND = unchecked((int)0x800710D8);
+        internal const int ERROR_SHARING_VIOLATION = unchecked((int)0x80070020);
 
         private static readonly TimeSpan _timeout = TimeSpan.FromSeconds(10);
         private static readonly TimeSpan _retryDelay = TimeSpan.FromMilliseconds(200);
@@ -109,7 +110,10 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                         _logger.LogInformation($"Tried to start site, state: {state.ToString()}");
                     }
                 }
-                catch (Exception ex) when (ex is DllNotFoundException || (ex is COMException && ex.HResult == ERROR_OBJECT_NOT_FOUND) )
+                catch (Exception ex) when (
+                    ex is DllNotFoundException ||
+                    ex is COMException &&
+                    (ex.HResult == ERROR_OBJECT_NOT_FOUND || ex.HResult == ERROR_SHARING_VIOLATION))
                 {
                     // Accessing the site.State property while the site
                     // is starting up returns the COMException
