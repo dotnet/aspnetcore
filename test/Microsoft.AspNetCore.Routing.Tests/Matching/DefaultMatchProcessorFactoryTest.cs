@@ -61,8 +61,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var factory = GetMatchProcessorFactory();
 
             var parameter = RoutePatternFactory.ParameterPart(
-                "id", 
-                @default: null, 
+                "id",
+                @default: null,
                 parameterKind: RoutePatternParameterKind.Standard,
                 constraints: new[] { RoutePatternFactory.Constraint("int"), });
 
@@ -282,12 +282,38 @@ namespace Microsoft.AspNetCore.Routing.Matching
             }
         }
 
-        private class EndsWithStringMatchProcessor : MatchProcessorBase
+        private class EndsWithStringMatchProcessor : MatchProcessor
         {
-            public override bool Process(object value)
+            public string ParameterName { get; private set; }
+
+            public string ConstraintArgument { get; private set; }
+
+            public override void Initialize(string parameterName, string constraintArgument)
             {
+                ParameterName = parameterName;
+                ConstraintArgument = constraintArgument;
+            }
+
+            public override bool ProcessInbound(HttpContext httpContext, RouteValueDictionary values)
+            {
+                return Process(values);
+            }
+
+            public override bool ProcessOutbound(HttpContext httpContext, RouteValueDictionary values)
+            {
+                return Process(values);
+            }
+
+            private bool Process(RouteValueDictionary values)
+            {
+                if (!values.TryGetValue(ParameterName, out var value) || value == null)
+                {
+                    return false;
+                }
+                
                 var valueString = Convert.ToString(value, CultureInfo.InvariantCulture);
-                return valueString.EndsWith(ConstraintArgument);
+                var endsWith = valueString.EndsWith(ConstraintArgument, StringComparison.OrdinalIgnoreCase);
+                return endsWith;
             }
         }
     }

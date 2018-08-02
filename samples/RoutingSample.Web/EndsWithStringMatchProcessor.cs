@@ -3,12 +3,14 @@
 
 using System;
 using System.Globalization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Matching;
 using Microsoft.Extensions.Logging;
 
 namespace RoutingSample.Web
 {
-    internal class EndsWithStringMatchProcessor : MatchProcessorBase
+    internal class EndsWithStringMatchProcessor : MatchProcessor
     {
         private readonly ILogger<EndsWithStringMatchProcessor> _logger;
 
@@ -17,15 +19,34 @@ namespace RoutingSample.Web
             _logger = logger;
         }
 
-        public override bool Process(object value)
+        public string ParameterName { get; private set; }
+
+        public string ConstraintArgument { get; private set; }
+
+        public override void Initialize(string parameterName, string constraintArgument)
         {
-            if (value == null)
+            ParameterName = parameterName;
+            ConstraintArgument = constraintArgument;
+        }
+
+        public override bool ProcessInbound(HttpContext httpContext, RouteValueDictionary values)
+        {
+            return Process(values);
+        }
+
+        public override bool ProcessOutbound(HttpContext httpContext, RouteValueDictionary values)
+        {
+            return Process(values);
+        }
+
+        private bool Process(RouteValueDictionary values)
+        {
+            if (!values.TryGetValue(ParameterName, out var value) || value == null)
             {
                 return false;
             }
 
             var valueString = Convert.ToString(value, CultureInfo.InvariantCulture);
-
             var endsWith = valueString.EndsWith(ConstraintArgument, StringComparison.OrdinalIgnoreCase);
 
             if (!endsWith)
