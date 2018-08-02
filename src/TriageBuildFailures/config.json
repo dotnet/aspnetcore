@@ -11,6 +11,7 @@
     "Coherence_RuntimeStoreInstallers",
     "Coherence_CoherencePackageCacheWin",
     "Lite_Infrastructure_WindowsHostingBundle",
+    "Lite_Infrastructure_SetupSharedFramework",
     "Coherence_UpdateUniverse",
     "Lite_Public_DnxTools",
     "CoherenceSigned",
@@ -67,7 +68,7 @@
   "GitHub": {
     "FlakyProjectColumn": 2260926,
     "BuildBuddyUsername": "ryanbrandenburg",
-    "BotUsername":  "ryanbrandenburg"
+    "BotUsername": "ryanbrandenburg"
   },
   "TeamCity": {
     "Server": "aspnetci"
