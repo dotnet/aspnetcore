@@ -4,9 +4,8 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Microsoft.CodeAnalysis;
 
-namespace Microsoft.AspNetCore.Mvc.Analyzers
+namespace Microsoft.CodeAnalysis
 {
     internal static class CodeAnalysisExtensions
     {
