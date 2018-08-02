@@ -388,6 +388,25 @@ namespace Microsoft.AspNetCore.Mvc.Description
         }
 
         [Fact]
+        public void GetApiDescription_ProducesLowerCaseRelativePaths()
+        {
+            // Arrange
+            var action = CreateActionDescriptor();
+            action.AttributeRouteInfo = new AttributeRouteInfo
+            {
+                Template = "api/Products/UpdateProduct/{productId}"
+            };
+            var routeOptions = new RouteOptions { LowercaseUrls = true };
+
+            // Act
+            var descriptions = GetApiDescriptions(action, routeOptions: routeOptions);
+
+            // Assert
+            var description = Assert.Single(descriptions);
+            Assert.Equal("api/products/updateproduct/{productId}", description.RelativePath);
+        }
+
+        [Fact]
         public void GetApiDescription_PopulatesResponseType_WithProduct()
         {
             // Arrange
@@ -1797,7 +1816,8 @@ namespace Microsoft.AspNetCore.Mvc.Description
             ActionDescriptor action,
             List<MockInputFormatter> inputFormatters = null,
             List<MockOutputFormatter> outputFormatters = null,
-            bool allowValidatingTopLevelNodes = true)
+            bool allowValidatingTopLevelNodes = true,
+            RouteOptions routeOptions = null)
         {
             var context = new ApiDescriptionProviderContext(new ActionDescriptor[] { action });
 
@@ -1827,7 +1847,8 @@ namespace Microsoft.AspNetCore.Mvc.Description
                 optionsAccessor,
                 constraintResolver.Object,
                 modelMetadataProvider,
-                new ActionResultTypeMapper());
+                new ActionResultTypeMapper(),
+                Options.Create(routeOptions ?? new RouteOptions()));
 
             provider.OnProvidersExecuting(context);
             provider.OnProvidersExecuted(context);
