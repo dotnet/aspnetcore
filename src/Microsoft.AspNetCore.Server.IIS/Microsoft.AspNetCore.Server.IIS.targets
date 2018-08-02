@@ -7,7 +7,7 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <AspNetCoreModuleVersion Condition=" '$(AspNetCoreModuleVersion)' == '' ">V2</AspNetCoreModuleVersion>
+    <AspNetCoreModuleName Condition=" '$(AspNetCoreModuleName)' == '' ">AspNetCoreModuleV2</AspNetCoreModuleName>
   </PropertyGroup>
 
 </Project>
