@@ -5,7 +5,6 @@ using System;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.AspNetCore.Routing.EndpointFinders;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -52,7 +51,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             {
                 var services = httpContext.RequestServices;
                 var linkGenerator = services.GetRequiredService<LinkGenerator>();
-                var routeValuesBasedEndpointFinder = services.GetRequiredService<IEndpointFinder<RouteValuesBasedEndpointFinderContext>>();
+                var routeValuesBasedEndpointFinder = services.GetRequiredService<IEndpointFinder<RouteValuesAddress>>();
                 var logger = services.GetRequiredService<ILogger<EndpointRoutingUrlHelper>>();
 
                 urlHelper = new EndpointRoutingUrlHelper(
