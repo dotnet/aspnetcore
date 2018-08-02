@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
 using System.Net;
 using System.Net.Http;
@@ -19,6 +20,8 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
     [Collection(PublishedSitesCollection.Name)]
     public class AppOfflineTests : IISFunctionalTestBase
     {
+        private static readonly TimeSpan RetryDelay = TimeSpan.FromMilliseconds(100);
+
         private readonly PublishedSitesFixture _fixture;
 
         public AppOfflineTests(PublishedSitesFixture fixture)
@@ -94,7 +97,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
                 //    1. ANCM detects app_offline before it starts the request - if AssertAppOffline succeeds we've hit it
                 //    2. Intended scenario where app starts and then shuts down
                 // In first case we remove app_offline and try again
-                await Task.Delay(100);
+                await Task.Delay(RetryDelay);
 
                 AddAppOffline(deploymentResult.ContentRoot);
 
@@ -182,7 +185,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
                     () => AddAppOffline(deploymentResult.ContentRoot),
                     e => Logger.LogError($"Failed to create app_offline : {e.Message}"),
                     retryCount: 3,
-                    retryDelayMilliseconds: 100);
+                    retryDelayMilliseconds: RetryDelay.Milliseconds);
                 RemoveAppOffline(deploymentResult.ContentRoot);
             }
 
@@ -218,7 +221,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
                 () => File.Delete(Path.Combine(appPath, "app_offline.htm")),
                 e => Logger.LogError($"Failed to remove app_offline : {e.Message}"),
                 retryCount: 3,
-                retryDelayMilliseconds: 100);
+                retryDelayMilliseconds: RetryDelay.Milliseconds);
         }
 
         private async Task AssertAppOffline(IISDeploymentResult deploymentResult, string expectedResponse = "The app is offline.")
@@ -229,6 +232,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             {
                 // Keep retrying until app_offline is present.
                 response = await deploymentResult.HttpClient.GetAsync("HelloWorld");
+                await Task.Delay(RetryDelay);
             }
 
             Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
