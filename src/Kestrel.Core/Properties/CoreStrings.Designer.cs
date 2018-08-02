@@ -2086,6 +2086,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         internal static string FormatHttp2StreamErrorMoreDataThanLength()
             => GetString("Http2StreamErrorMoreDataThanLength");
 
+        /// <summary>
+        /// An error occured after the response headers were sent, a reset is being sent.
+        /// </summary>
+        internal static string Http2StreamErrorAfterHeaders
+        {
+            get => GetString("Http2StreamErrorAfterHeaders");
+        }
+
+        /// <summary>
+        /// An error occured after the response headers were sent, a reset is being sent.
+        /// </summary>
+        internal static string FormatHttp2StreamErrorAfterHeaders()
+            => GetString("Http2StreamErrorAfterHeaders");
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

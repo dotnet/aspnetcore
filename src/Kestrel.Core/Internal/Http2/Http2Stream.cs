@@ -362,10 +362,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             AbortCore(abortReason);
         }
 
+        protected override void ErrorAfterResponseStarted()
+        {
+            // We can no longer change the response, send a Reset instead.
+            base.ErrorAfterResponseStarted();
+            var abortReason = new ConnectionAbortedException(CoreStrings.Http2StreamErrorAfterHeaders);
+            ResetAndAbort(abortReason, Http2ErrorCode.INTERNAL_ERROR);
+        }
+
         protected override void ApplicationAbort()
         {
             var abortReason = new ConnectionAbortedException(CoreStrings.ConnectionAbortedByApplication);
-            ResetAndAbort(abortReason, Http2ErrorCode.CANCEL);
+            ResetAndAbort(abortReason, Http2ErrorCode.INTERNAL_ERROR);
         }
 
         private void ResetAndAbort(ConnectionAbortedException abortReason, Http2ErrorCode error)
