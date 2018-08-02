@@ -2,11 +2,15 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Net;
+using System.Net.Http;
 using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.WebSockets.Internal;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 using Xunit.Abstractions;
@@ -554,6 +558,86 @@ namespace Microsoft.AspNetCore.WebSockets.Test
                         await client.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
 
                         Assert.Equal(WebSocketState.Closed, client.State);
+                    }
+                }
+            }
+        }
+
+        [Theory]
+        [InlineData(HttpStatusCode.OK, null)]
+        [InlineData(HttpStatusCode.Forbidden, "")]
+        [InlineData(HttpStatusCode.Forbidden, "http://e.com")]
+        [InlineData(HttpStatusCode.OK, "http://e.com", "http://example.com")]
+        [InlineData(HttpStatusCode.OK, "*")]
+        [InlineData(HttpStatusCode.OK, "http://e.com", "*")]
+        [InlineData(HttpStatusCode.OK, "http://ExAmPLE.cOm")]
+        public async Task OriginIsValidatedForWebSocketRequests(HttpStatusCode expectedCode, params string[] origins)
+        {
+            using (StartLog(out var loggerFactory))
+            {
+                using (var server = KestrelWebSocketHelpers.CreateServer(loggerFactory, context =>
+                {
+                    Assert.True(context.WebSockets.IsWebSocketRequest);
+                    return Task.CompletedTask;
+                }, o =>
+                {
+                    if (origins != null)
+                    {
+                        foreach (var origin in origins)
+                        {
+                            o.AllowedOrigins.Add(origin);
+                        }
+                    }
+                }))
+                {
+                    using (var client = new HttpClient())
+                    {
+                        var uri = new UriBuilder(ClientAddress);
+                        uri.Scheme = "http";
+
+                        // Craft a valid WebSocket Upgrade request
+                        using (var request = new HttpRequestMessage(HttpMethod.Get, uri.ToString()))
+                        {
+                            request.Headers.Connection.Clear();
+                            request.Headers.Connection.Add("Upgrade");
+                            request.Headers.Upgrade.Add(new System.Net.Http.Headers.ProductHeaderValue("websocket"));
+                            request.Headers.Add(Constants.Headers.SecWebSocketVersion, Constants.Headers.SupportedVersion);
+                            // SecWebSocketKey required to be 16 bytes
+                            request.Headers.Add(Constants.Headers.SecWebSocketKey, Convert.ToBase64String(new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 }, Base64FormattingOptions.None));
+
+                            request.Headers.Add("Origin", "http://example.com");
+
+                            var response = await client.SendAsync(request);
+                            Assert.Equal(expectedCode, response.StatusCode);
+                        }
+                    }
+                }
+            }
+        }
+
+        [Fact]
+        public async Task OriginIsNotValidatedForNonWebSocketRequests()
+        {
+            using (StartLog(out var loggerFactory))
+            {
+                using (var server = KestrelWebSocketHelpers.CreateServer(loggerFactory, context =>
+                {
+                    Assert.False(context.WebSockets.IsWebSocketRequest);
+                    return Task.CompletedTask;
+                }, o => o.AllowedOrigins.Add("http://example.com")))
+                {
+                    using (var client = new HttpClient())
+                    {
+                        var uri = new UriBuilder(ClientAddress);
+                        uri.Scheme = "http";
+
+                        using (var request = new HttpRequestMessage(HttpMethod.Get, uri.ToString()))
+                        {
+                            request.Headers.Add("Origin", "http://notexample.com");
+
+                            var response = await client.SendAsync(request);
+                            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                        }
                     }
                 }
             }
