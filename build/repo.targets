@@ -1,7 +1,7 @@
 <Project>
 
   <PropertyGroup>
-    <PrepareDependsOn>InitializeComponents;$(PrepareDependsOn)</PrepareDependsOn>
+    <PrepareDependsOn>$(PrepareDependsOn)</PrepareDependsOn>
     <GetArtifactInfoDependsOn>$(GetArtifactInfoDependsOn);GetNativeArtifactsInfo</GetArtifactInfoDependsOn>
     <CompileDependsOn Condition="'$(OS)'=='Windows_NT'">BuildNativeAssets;$(CompileDependsOn)</CompileDependsOn>
     <PackageDependsOn Condition="'$(OS)'=='Windows_NT'">$(PackageDependsOn);PackageNativeProjects</PackageDependsOn>
@@ -14,44 +14,16 @@
   <ItemGroup>
     <Platforms Include="x86" VCPlatform="Win32" />
     <Platforms Include="x64" VCPlatform="x64" />
-
-    <NativeProjects
-        Include="$(SourceBase)AspNetCoreModuleV1\AspNetCore\AspNetCore.vcxproj"
-        NativeAsset="aspnetcore"
-        BaseOutputPath="AspNetCoreModuleV1" />
-
-    <NativeProjects
-        Include="$(SourceBase)AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj"
-        NativeAsset="aspnetcorev2"
-        BaseOutputPath="AspNetCoreModuleV2" />
-
-    <NativeProjects
-        Include="$(SourceBase)AspNetCoreModuleV2\InProcessRequestHandler\InProcessRequestHandler.vcxproj"
-        NativeAsset="aspnetcorev2_inprocess"
-        BaseOutputPath="AspNetCoreModuleV2" />
-
-    <NativeProjects
-        Include="$(SourceBase)AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj"
-        NativeAsset="aspnetcorev2_outofprocess"
-        BaseOutputPath="AspNetCoreModuleV2" />
-  </ItemGroup>
-
-  <Target Name="InitializeComponents">
-    <ItemGroup>
-      <Components
-          Include="@(NativeProjects)"
-          Platform="%(Platforms.Identity)"
-          VCPlatform="%(Platforms.VCPlatform)" />
-    </ItemGroup>
-  </Target>
+  </ItemGroup>    
+  <Import Project="assets.props" />
 
   <Target Name="BuildNativeAssets" DependsOnTargets="Prepare;GetToolsets" >
     <PropertyGroup>
-      <BuildArgs>-p:Configuration=$(Configuration) -v:m -nologo -clp:NoSummary -p:CommitHash=$(CommitHash)</BuildArgs>
+      <BuildArgs>-p:Configuration=Native$(Configuration) -v:m -nologo -clp:NoSummary -p:CommitHash=$(CommitHash) -m</BuildArgs>
     </PropertyGroup>
 
     <ItemGroup>
-      <ANCMProject Include="%(Components.Identity) $(BuildArgs) -p:Platform=%(Components.VCPlatform) -bl:$(LogOutputDir)native.%(Components.VCPlatform)%(Components.FileName).binlog"/>
+      <ANCMProject Include="$(MSBuildThisFileDirectory)..\IISIntegration.sln $(BuildArgs)  -p:Platform=%(Platforms.Identity) -bl:$(LogOutputDir)native.%(Platforms.Identity).binlog"/>
     </ItemGroup>
 
     <Error
@@ -62,7 +34,7 @@
       Condition="'$(VisualStudioMSBuildx86Path)' != ''" />
   </Target>
 
-  <Target Name="GetNativeArtifactsInfo" DependsOnTargets="InitializeComponents">
+  <Target Name="GetNativeArtifactsInfo">
     <ItemGroup Condition=" '$(OS)' == 'Windows_NT' ">
       <ArtifactInfo Include="$(BuildDir)Microsoft.AspNetCore.AspNetCoreModule.$(PackageVersion).nupkg">
         <ArtifactType>NuGetPackage</ArtifactType>
@@ -116,8 +88,8 @@
       BasePath="$(RepositoryRoot)" />
 
     <ItemGroup>
-      <AncmFiles Include="%(Components.RootDir)%(Components.Directory)$(NativeOutput)%(Components.VCPlatform)\%(Components.NativeAsset).dll" Link="%(Components.BaseOutputPath)\%(Components.Platform)\%(Components.NativeAsset).dll" />
-      <AncmFiles Include="%(Components.RootDir)%(Components.Directory)$(NativeOutput)%(Components.VCPlatform)\%(Components.NativeAsset).pdb" Link="%(Components.BaseOutputPath)\%(Components.Platform)\%(Components.NativeAsset).pdb" />
+      <AncmFiles Include="%(Components.DllLocation)" Link="%(Components.BaseOutputPath)\%(Components.Platform)\%(Components.NativeAsset).dll" />
+      <AncmFiles Include="%(Components.PdbLocation)" Link="%(Components.BaseOutputPath)\%(Components.Platform)\%(Components.NativeAsset).pdb" />
 
       <!-- Schema-->
       <AncmFiles Include="$(SourceBase)AspNetCoreModuleV1\AspNetCore\aspnetcore_schema.xml" Link="AspNetCoreModuleV1\aspnetcore_schema.xml" />
@@ -132,6 +104,9 @@
   </Target>
 
   <Target Name="RunNativeTest" DependsOnTargets="GetToolsets">
+    <PropertyGroup>
+      <BuildArgs>-p:Configuration=$(Configuration) -v:m -nologo -clp:NoSummary</BuildArgs>
+    </PropertyGroup>
     <Exec Command="&quot;$(VisualStudioMSBuildx86Path)&quot; &quot;$(RepositoryRoot)test\CommonLibTests\CommonLibTests.vcxproj&quot; /t:Test $(BuildArgs) -p:Platform=%(Platforms.VCPlatform)"
       Condition="'$(VisualStudioMSBuildx86Path)' != ''" />
   </Target>

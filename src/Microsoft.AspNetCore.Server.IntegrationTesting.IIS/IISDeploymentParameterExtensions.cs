@@ -17,12 +17,17 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
 
         public static void AddServerConfigAction(this IISDeploymentParameters parameters, Action<XElement> action)
         {
+            parameters.ServerConfigActionList.Add((config, _) => action(config));
+        }
+
+        public static void AddServerConfigAction(this IISDeploymentParameters parameters, Action<XElement, string> action)
+        {
             parameters.ServerConfigActionList.Add(action);
         }
 
         public static void AddHttpsToServerConfig(this IISDeploymentParameters parameters)
         {
-            parameters.ServerConfigActionList.Add(
+            parameters.AddServerConfigAction(
                 element =>
                 {
                     element.Descendants("binding")
@@ -37,7 +42,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
 
         public static void AddWindowsAuthToServerConfig(this IISDeploymentParameters parameters)
         {
-            parameters.ServerConfigActionList.Add(
+            parameters.AddServerConfigAction(
                 element =>
                 {
                     element.Descendants("windowsAuthentication")

@@ -14,14 +14,22 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 {
+    [Collection(PublishedSitesCollection.Name)]
     public class LoggingTests : IISFunctionalTestBase
     {
+        private readonly PublishedSitesFixture _fixture;
+
+        public LoggingTests(PublishedSitesFixture fixture)
+        {
+            _fixture = fixture;
+        }
+
         [ConditionalTheory]
         [InlineData("CheckErrLogFile")]
         [InlineData("CheckLogFile")]
         public async Task CheckStdoutLoggingToFile(string path)
         {
-            var deploymentParameters = Helpers.GetBaseDeploymentParameters(publish: true);
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(publish: true);
 
             deploymentParameters.WebConfigActionList.Add(
                 WebConfigHelpers.AddOrModifyAspNetCoreSection("stdoutLogEnabled", "true"));
@@ -63,7 +71,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [ConditionalFact]
         public async Task InvalidFilePathForLogs_ServerStillRuns()
         {
-            var deploymentParameters = Helpers.GetBaseDeploymentParameters(publish: true);
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(publish: true);
 
             deploymentParameters.WebConfigActionList.Add(
                 WebConfigHelpers.AddOrModifyAspNetCoreSection("stdoutLogEnabled", "true"));
@@ -82,7 +90,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             var tempFile = Path.GetTempFileName();
             try
             {
-                var deploymentParameters = Helpers.GetBaseDeploymentParameters(publish: true);
+                var deploymentParameters = _fixture.GetBaseDeploymentParameters(publish: true);
                 deploymentParameters.EnvironmentVariables["ASPNETCORE_MODULE_DEBUG_FILE"] = tempFile;
                 deploymentParameters.AddDebugLogToWebConfig(tempFile);
 
@@ -107,7 +115,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [InlineData("CheckLogFile")]
         public async Task CheckStdoutLoggingToPipe_DoesNotCrashProcess(string path)
         {
-            var deploymentParameters = Helpers.GetBaseDeploymentParameters(publish: true);
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(publish: true);
             deploymentParameters.GracefulShutdown = true;
             var deploymentResult = await DeployAsync(deploymentParameters);
 
@@ -126,7 +134,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [InlineData("CheckLogFile")]
         public async Task CheckStdoutLoggingToPipeWithFirstWrite(string path)
         {
-            var deploymentParameters = Helpers.GetBaseDeploymentParameters(publish: true);
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(publish: true);
             deploymentParameters.GracefulShutdown = true;
 
             var firstWriteString = path + path;
@@ -156,7 +164,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             try
             {
-                var deploymentParameters = Helpers.GetBaseDeploymentParameters(publish: true);
+                var deploymentParameters = _fixture.GetBaseDeploymentParameters(publish: true);
                 deploymentParameters.EnvironmentVariables["ASPNETCORE_MODULE_DEBUG_FILE"] = firstTempFile;
                 deploymentParameters.AddDebugLogToWebConfig(secondTempFile);
 

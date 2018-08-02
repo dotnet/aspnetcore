@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                     DefaultWebConfigActions.Add(WebConfigHelpers.AddOrModifyHandlerSection(
                         key: "modules",
                         value: DeploymentParameters.AncmVersion.ToString()));
-                    RunWebConfigActions();
+                    RunWebConfigActions(contentRoot);
                 }
 
                 var uri = TestUriHelper.BuildTestUri(ServerType.IIS, DeploymentParameters.ApplicationBaseUriHint);

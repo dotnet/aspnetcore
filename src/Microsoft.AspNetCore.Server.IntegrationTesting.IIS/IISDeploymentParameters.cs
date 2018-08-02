@@ -48,14 +48,14 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
             }
         }
 
-        private IList<Action<XElement>> CreateDefaultWebConfigActionList()
+        private IList<Action<XElement, string>> CreateDefaultWebConfigActionList()
         {
-            return new List<Action<XElement>>() { AddWebConfigEnvironmentVariables(), AddHandlerSettings() };
+            return new List<Action<XElement, string>>() { AddWebConfigEnvironmentVariables(), AddHandlerSettings() };
         }
 
-        public IList<Action<XElement>> WebConfigActionList { get; }
+        public IList<Action<XElement, string>> WebConfigActionList { get; }
 
-        public IList<Action<XElement>> ServerConfigActionList { get; } = new List<Action<XElement>>();
+        public IList<Action<XElement, string>> ServerConfigActionList { get; } = new List<Action<XElement, string>>();
 
         public IDictionary<string, string> WebConfigBasedEnvironmentVariables { get; set; } = new Dictionary<string, string>();
 
@@ -63,9 +63,9 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
 
         public bool GracefulShutdown { get; set; }
 
-        private Action<XElement> AddWebConfigEnvironmentVariables()
+        private Action<XElement, string> AddWebConfigEnvironmentVariables()
         {
-            return xElement =>
+            return (xElement, _) =>
             {
                 if (WebConfigBasedEnvironmentVariables.Count == 0)
                 {
@@ -86,9 +86,9 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
             };
         }
 
-        private Action<XElement> AddHandlerSettings()
+        private Action<XElement, string> AddHandlerSettings()
         {
-            return xElement =>
+            return (xElement, _) =>
             {
                 if (HandlerSettings.Count == 0)
                 {

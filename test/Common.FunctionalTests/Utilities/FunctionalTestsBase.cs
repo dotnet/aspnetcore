@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
@@ -31,6 +32,10 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 parameters.ServerConfigTemplateContent = parameters.ServerConfigTemplateContent ?? File.ReadAllText("IISExpress.config");
             }
 
+            if (parameters.ApplicationPublisher == null)
+            {
+                throw new InvalidOperationException("All tests should use ApplicationPublisher");
+            }
 
             _deployer = IISApplicationDeployerFactory.Create(parameters, LoggerFactory);
 

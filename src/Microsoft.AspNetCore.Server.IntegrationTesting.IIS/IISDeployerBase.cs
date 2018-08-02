@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
     {
         public IISDeploymentParameters IISDeploymentParameters { get; }
 
-        protected List<Action<XElement>> DefaultWebConfigActions { get; } = new List<Action<XElement>>();
+        protected List<Action<XElement, string>> DefaultWebConfigActions { get; } = new List<Action<XElement, string>>();
 
         public IISDeployerBase(IISDeploymentParameters deploymentParameters, ILoggerFactory loggerFactory)
             : base(deploymentParameters, loggerFactory)
@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
             IISDeploymentParameters = deploymentParameters;
         }
 
-        public void RunWebConfigActions()
+        public void RunWebConfigActions(string contentRoot)
         {
             if (IISDeploymentParameters == null)
             {
@@ -42,19 +42,19 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
 
             foreach (var action in DefaultWebConfigActions)
             {
-                action.Invoke(xElement);
+                action.Invoke(xElement, contentRoot);
             }
 
             foreach (var action in IISDeploymentParameters.WebConfigActionList)
             {
-                action.Invoke(xElement);
+                action.Invoke(xElement, contentRoot);
             }
 
             webconfig.Save(path);
         }
 
 
-        public string RunServerConfigActions(string serverConfigString)
+        public string RunServerConfigActions(string serverConfigString, string contentRoot)
         {
             if (IISDeploymentParameters == null)
             {
@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
 
             foreach (var action in IISDeploymentParameters.ServerConfigActionList)
             {
-                action.Invoke(xElement);
+                action.Invoke(xElement, contentRoot);
             }
             return xElement.ToString();
         }

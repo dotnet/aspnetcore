@@ -11,13 +11,20 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 {
+    [Collection(PublishedSitesCollection.Name)]
     public class AuthenticationTests : IISFunctionalTestBase
     {
+        private readonly PublishedSitesFixture _fixture;
+
+        public AuthenticationTests(PublishedSitesFixture fixture)
+        {
+            _fixture = fixture;
+        }
 
         [ConditionalFact]
         public async Task Authentication_InProcess()
         {
-            var deploymentParameters = Helpers.GetBaseDeploymentParameters(publish: true);
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(publish: true);
             deploymentParameters.AddWindowsAuthToServerConfig();
 
             var deploymentResult = await DeployAsync(deploymentParameters);

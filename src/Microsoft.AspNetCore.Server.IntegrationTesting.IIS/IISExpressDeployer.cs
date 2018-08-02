@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -57,7 +58,6 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                 {
                     DotnetPublish();
                     contentRoot = DeploymentParameters.PublishedApplicationRootPath;
-                    dllRoot = contentRoot;
                 }
                 else
                 {
@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                 var testUri = TestUriHelper.BuildTestUri(ServerType.IISExpress, DeploymentParameters.ApplicationBaseUriHint);
 
                 // Launch the host process.
-                var (actualUri, hostExitToken) = await StartIISExpressAsync(testUri, contentRoot, dllRoot);
+                var (actualUri, hostExitToken) = await StartIISExpressAsync(testUri, contentRoot);
 
                 Logger.LogInformation("Application ready at URL: {appUrl}", actualUri);
 
@@ -145,7 +145,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
             return dllRoot;
         }
 
-        private async Task<(Uri url, CancellationToken hostExitToken)> StartIISExpressAsync(Uri uri, string contentRoot, string dllRoot)
+        private async Task<(Uri url, CancellationToken hostExitToken)> StartIISExpressAsync(Uri uri, string contentRoot)
         {
             using (Logger.BeginScope("StartIISExpress"))
             {
@@ -156,7 +156,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                 }
 
                 Logger.LogInformation("Attempting to start IIS Express on port: {port}", port);
-                PrepareConfig(contentRoot, dllRoot, port);
+                PrepareConfig(contentRoot, port);
 
                 var parameters = string.IsNullOrEmpty(DeploymentParameters.ServerConfigLocation) ?
                                 string.Format("/port:{0} /path:\"{1}\" /trace:error /systray:false", uri.Port, contentRoot) :
@@ -257,7 +257,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
             }
         }
 
-        private void PrepareConfig(string contentRoot, string dllRoot, int port)
+        private void PrepareConfig(string contentRoot, int port)
         {
             // Config is required. If not present then fall back to one we carry with us.
             if (string.IsNullOrEmpty(DeploymentParameters.ServerConfigTemplateContent))
@@ -273,8 +273,8 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
 
             // Pass on the applicationhost.config to iis express. With this don't need to pass in the /path /port switches as they are in the applicationHost.config
             // We take a copy of the original specified applicationHost.Config to prevent modifying the one in the repo.
-            serverConfig = ModifyANCMPathInConfig(replaceFlag: "[ANCMPath]", dllName: "aspnetcore.dll", serverConfig, dllRoot);
-            serverConfig = ModifyANCMPathInConfig(replaceFlag: "[ANCMV2Path]", dllName: "aspnetcorev2.dll", serverConfig, dllRoot);
+            serverConfig = ModifyANCMPathInConfig(replaceFlag: "[ANCMPath]", dllName: "aspnetcore.dll", serverConfig);
+            serverConfig = ModifyANCMPathInConfig(replaceFlag: "[ANCMV2Path]", dllName: "aspnetcorev2.dll", serverConfig);
 
             serverConfig = ReplacePlaceholder(serverConfig, "[PORT]", port.ToString(CultureInfo.InvariantCulture));
             serverConfig = ReplacePlaceholder(serverConfig, "[ApplicationPhysicalPath]", contentRoot);
@@ -291,7 +291,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                     value: DeploymentParameters.AncmVersion.ToString()));
                 ModifyDotNetExePathInWebConfig();
                 serverConfig = RemoveRedundantElements(serverConfig);
-                RunWebConfigActions();
+                RunWebConfigActions(contentRoot);
             }
             else
             {
@@ -299,7 +299,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                 serverConfig = ReplacePlaceholder(serverConfig, "[HostingModel]", DeploymentParameters.HostingModel.ToString());
                 serverConfig = ReplacePlaceholder(serverConfig, "[AspNetCoreModule]", DeploymentParameters.AncmVersion.ToString());
             }
-            serverConfig = RunServerConfigActions(serverConfig);
+            serverConfig = RunServerConfigActions(serverConfig, contentRoot);
 
             DeploymentParameters.ServerConfigLocation = Path.GetTempFileName();
             Logger.LogDebug("Saving Config to {configPath}", DeploymentParameters.ServerConfigLocation);
@@ -317,8 +317,9 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
             return content;
         }
 
-        private string ModifyANCMPathInConfig(string replaceFlag, string dllName, string serverConfig, string dllRoot)
+        private string ModifyANCMPathInConfig(string replaceFlag, string dllName, string serverConfig)
         {
+            var dllRoot = AppContext.BaseDirectory;
             if (serverConfig.Contains(replaceFlag))
             {
                 var arch = DeploymentParameters.RuntimeArchitecture == RuntimeArchitecture.x64 ? $@"x64\{dllName}" : $@"x86\{dllName}";

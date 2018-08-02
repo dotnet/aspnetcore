@@ -5,10 +5,11 @@
     <Platforms>x64;x86</Platforms>
     <IISExpressAppHostConfig>$(MSBuildThisFileDirectory)applicationhost.config</IISExpressAppHostConfig>
     <IISAppHostConfig>$(MSBuildThisFileDirectory)applicationhost.iis.config</IISAppHostConfig>
-    <NativePlatform Condition="'$(Platform)' == 'AnyCPU'">x64</NativePlatform>
-    <NativePlatform Condition="'$(NativePlatform)' == ''">$(Platform)</NativePlatform>
+    <PreserveCompilationContext>false</PreserveCompilationContext>
   </PropertyGroup>
-  
+
+  <Import Project="assets.props" />
+
   <PropertyGroup Condition="'$(NativePlatform)' == 'x86'">
     <IISExpressPath>$(MSBuildProgramFiles32)\IIS Express\iisexpress.exe</IISExpressPath>
     <IISPath>$(SystemRoot)\SysWOW64\inetsrv\w3wp.exe</IISPath>
@@ -21,37 +22,28 @@
     <NativeFolder>x64</NativeFolder>
   </PropertyGroup>
 
+
   <PropertyGroup>
-    <!-- For standalone publish, all dlls are flattened to the same folder. 
-         Set the base path to the request handler 
+    <!-- For standalone publish, all dlls are flattened to the same folder.
+         Set the base path to the request handler
     -->
     <BasePathForRequestHandler Condition="'$(RuntimeIdentifier)' == ''">$(NativePlatform)\</BasePathForRequestHandler>
-    
+
   </PropertyGroup>
-  <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
-    <None Include="$(MSBuildThisFileDirectory)..\src\AspNetCoreModuleV2\OutOfProcessRequestHandler\bin\$(Configuration)\$(NativeFolder)\aspnetcorev2_outofprocess.dll" CopyToOutputDirectory="PreserveNewest" Visible="true" Link="$(BasePathForRequestHandler)\$(AspNetCoreModuleOutOfProcessVersion)\%(FileName)%(Extension)" />
-    <None Include="$(MSBuildThisFileDirectory)..\src\AspNetCoreModuleV2\OutOfProcessRequestHandler\bin\$(Configuration)\$(NativeFolder)\aspnetcorev2_outofprocess.pdb" CopyToOutputDirectory="PreserveNewest" Visible="true" Link="$(BasePathForRequestHandler)\$(AspNetCoreModuleOutOfProcessVersion)\%(FileName)%(Extension)" />
-    <None Include="$(MSBuildThisFileDirectory)..\src\AspNetCoreModuleV2\InProcessRequestHandler\bin\$(Configuration)\$(NativeFolder)\aspnetcorev2_inprocess.dll" CopyToOutputDirectory="PreserveNewest" Visible="true" Link="$(BasePathForRequestHandler)%(FileName)%(Extension)" />
-    <None Include="$(MSBuildThisFileDirectory)..\src\AspNetCoreModuleV2\InProcessRequestHandler\bin\$(Configuration)\$(NativeFolder)\aspnetcorev2_inprocess.pdb" CopyToOutputDirectory="PreserveNewest" Visible="true" Link="$(BasePathForRequestHandler)%(FileName)%(Extension)" />
-    <None Include="$(MSBuildThisFileDirectory)..\src\AspNetCoreModuleV2\AspNetCore\bin\$(Configuration)\$(NativeFolder)\aspnetcorev2.dll" CopyToOutputDirectory="PreserveNewest" Visible="true" Link="$(BasePathForRequestHandler)%(FileName)%(Extension)" />
-    <None Include="$(MSBuildThisFileDirectory)..\src\AspNetCoreModuleV2\AspNetCore\bin\$(Configuration)\$(NativeFolder)\aspnetcorev2.pdb" CopyToOutputDirectory="PreserveNewest" Visible="true" Link="$(BasePathForRequestHandler)%(FileName)%(Extension)" />
-    <None Include="$(MSBuildThisFileDirectory)..\src\AspNetCoreModuleV1\AspNetCore\bin\$(Configuration)\$(NativeFolder)\aspnetcore.dll" CopyToOutputDirectory="PreserveNewest" Visible="true" Link="$(BasePathForRequestHandler)%(FileName)%(Extension)" />
-    <None Include="$(MSBuildThisFileDirectory)..\src\AspNetCoreModuleV1\AspNetCore\bin\$(Configuration)\$(NativeFolder)\aspnetcore.pdb" CopyToOutputDirectory="PreserveNewest" Visible="true" Link="$(BasePathForRequestHandler)%(FileName)%(Extension)" />
-  </ItemGroup>
-   
+
   <PropertyGroup>
     <IISExpressArguments>/config:"$(IISExpressAppHostConfig)" /systray:false</IISExpressArguments>
     <IISArguments>-h "$(IISAppHostConfig)"</IISArguments>
 
-    <AncmPath>$(NativePlatform)\aspnetcore.dll</AncmPath>
-    <AncmV2Path>$(NativePlatform)\aspnetcorev2.dll</AncmV2Path>
+    <AncmPath>$(AspNetCoreModuleV1ShimDll)</AncmPath>
+    <AncmV2Path>$(AspNetCoreModuleV2ShimDll)</AncmV2Path>
     <AncmInProcessRHPath>$(NativePlatform)\aspnetcorev2_inprocess.dll</AncmInProcessRHPath>
     <DotNetPath>$(userprofile)\.dotnet\$(NativePlatform)\dotnet.exe</DotNetPath>
   </PropertyGroup>
 
   <Target Name="CopyLaunchSettings" AfterTargets="CoreBuild">
     <!-- This would always override launch settings files in test projects by the default one -->
-    <Copy SourceFiles="$(MSBuildThisFileDirectory)launchSettings.json" DestinationFolder="$(MSBuildProjectDirectory)\Properties" />
+    <Copy SourceFiles="$(MSBuildThisFileDirectory)launchSettings.json" DestinationFolder="$(MSBuildProjectDirectory)\Properties" SkipUnchangedFiles="true" />
   </Target>
 
   <!-- Deps file injection-->
@@ -61,8 +53,7 @@
     </ProjectReference>
   </ItemGroup>
 
-  
-  <Target Name="PrepareInjectionApp">
+  <Target Name="PrepareInjectionApp" Condition="'$(InProcessTestSite)' == 'true'">
     <PropertyGroup>
       <InjectDepsAssembly>$(MSBuildThisFileDirectory)..\test\TestTasks\bin\$(Configuration)\$(TargetFramework)\TestTasks</InjectDepsAssembly>
       <InjectDepsApp Condition="'$(TargetFramework)' == 'net461'">$(InjectDepsAssembly)</InjectDepsApp>
@@ -81,11 +72,11 @@
     </PropertyGroup>
   </Target>
 
-  <Target Name="InjectRequestHandler" AfterTargets="GenerateBuildDependencyFile" DependsOnTargets="PrepareInjectionApp">
+  <Target Name="InjectRequestHandler" AfterTargets="GenerateBuildDependencyFile" DependsOnTargets="PrepareInjectionApp" Condition="'$(InProcessTestSite)' == 'true'">
     <Exec Command="$(InjectDepsApp) $(InjectDepsArguments) &quot;$(ProjectDepsFilePath)&quot;" />
   </Target>
 
-  <Target Name="InjectRequestHandlerOnPublish" AfterTargets="GeneratePublishDependencyFile" DependsOnTargets="PrepareInjectionApp">
+  <Target Name="InjectRequestHandlerOnPublish" AfterTargets="GeneratePublishDependencyFile" DependsOnTargets="PrepareInjectionApp" Condition="'$(InProcessTestSite)' == 'true'">
     <Exec Command="$(InjectDepsApp) $(InjectDepsArguments) &quot;$(PublishDepsFilePath)&quot;" />
   </Target>
 

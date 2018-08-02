@@ -9,14 +9,44 @@
     <PackageTags>aspnetcore;iis</PackageTags>
   </PropertyGroup>
 
+  <Import Project="..\..\build\assets.props" />
+
   <ItemGroup>
     <EmbeddedResource Include="Http.config" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Server.IntegrationTesting" PrivateAssets="None" Version="$(MicrosoftAspNetCoreServerIntegrationTestingPackageVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Server.IntegrationTesting" ExcludeAssets="contentfiles" PrivateAssets="None" Version="$(MicrosoftAspNetCoreServerIntegrationTestingPackageVersion)" />
     <PackageReference Include="Microsoft.NETCore.Windows.ApiSets" Version="$(MicrosoftNETCoreWindowsApiSetsPackageVersion)" />
     <PackageReference Include="Microsoft.Web.Administration" Version="$(MicrosoftWebAdministrationPackageVersion)" />
   </ItemGroup>
 
+  <Target Name="AddPackNativeComponents" BeforeTargets="_GetPackageFiles;GetSignedPackageFiles" Condition="$(PackNativeAssets) == 'true'">
+    <ItemGroup>
+      <Content Include="%(ShimComponents.DllLocation)"
+            PackageCopyToOutput="true"
+            PackagePath="contentFiles/any/any/%(ShimComponents.Platform)/%(ShimComponents.PackageSubPath)"/>
+
+      <Content Include="%(ShimComponents.PdbLocation)"
+            PackageCopyToOutput="true"
+            PackagePath="contentFiles/any/any/%(ShimComponents.Platform)/%(ShimComponents.PackageSubPath)" />
+
+      <SignedPackageFile Include="%(ShimComponents.NativeAsset)_%(ShimComponents.Platform)"
+                         PackagePath="contentFiles/any/any/%(ShimComponents.Platform)/%(ShimComponents.PackageSubPath)%(ShimComponents.NativeAsset).dll"
+                         Certificate="Microsoft" />
+
+    </ItemGroup>
+  </Target>
+
+  <Target Name="AddRunNativeComponents" BeforeTargets="AssignTargetPaths" Condition="$(PackNativeAssets) == 'true'">
+    <ItemGroup>
+      <None Include="%(RunShimComponents.DllLocation)"
+            CopyToOutputDirectory="PreserveNewest"
+            Link="%(RunShimComponents.Platform)\%(RunShimComponents.PackageSubPath)%(RunShimComponents.NativeAsset).dll" />
+
+      <None Include="%(RunShimComponents.PdbLocation)"
+            CopyToOutputDirectory="PreserveNewest"
+            Link="%(RunShimComponents.Platform)\%(RunShimComponents.PackageSubPath)%(RunShimComponents.NativeAsset).pdb" />
+    </ItemGroup>
+  </Target>
 </Project>

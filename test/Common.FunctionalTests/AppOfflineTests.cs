@@ -14,10 +14,18 @@ using Microsoft.Extensions.Logging;
 using Xunit;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 
-namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.Inprocess
+namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 {
+    [Collection(PublishedSitesCollection.Name)]
     public class AppOfflineTests : IISFunctionalTestBase
     {
+        private readonly PublishedSitesFixture _fixture;
+
+        public AppOfflineTests(PublishedSitesFixture fixture)
+        {
+            _fixture = fixture;
+        }
+
         [ConditionalTheory]
         [InlineData(HostingModel.InProcess)]
         [InlineData(HostingModel.OutOfProcess)]
@@ -36,8 +44,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.Inprocess
         [InlineData(HostingModel.OutOfProcess, 502, "502.5")]
         public async Task AppOfflineDroppedWhileSiteFailedToStartInShim_AppOfflineServed(HostingModel hostingModel, int statusCode, string content)
         {
-
-            var deploymentParameters = Helpers.GetBaseDeploymentParameters(hostingModel: hostingModel, publish: true);
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(hostingModel: hostingModel, publish: true);
             deploymentParameters.WebConfigActionList.Add(WebConfigHelpers.AddOrModifyAspNetCoreSection("processPath", "nonexistent"));
 
             var deploymentResult = await DeployAsync(deploymentParameters);
@@ -193,10 +200,9 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.Inprocess
             }
         }
 
-
         private async Task<IISDeploymentResult> DeployApp(HostingModel hostingModel = HostingModel.InProcess)
         {
-            var deploymentParameters = Helpers.GetBaseDeploymentParameters(hostingModel: hostingModel, publish: true);
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(hostingModel: hostingModel, publish: true);
 
             return await DeployAsync(deploymentParameters);
         }

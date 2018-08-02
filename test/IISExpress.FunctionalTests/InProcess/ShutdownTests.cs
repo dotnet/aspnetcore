@@ -9,21 +9,23 @@ using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 {
+    [Collection(PublishedSitesCollection.Name)]
     public class ShutdownTests : IISFunctionalTestBase
     {
+        private readonly PublishedSitesFixture _fixture;
 
-        public ShutdownTests(ITestOutputHelper output) : base(output)
+        public ShutdownTests(PublishedSitesFixture fixture)
         {
+            _fixture = fixture;
         }
 
         [ConditionalFact]
         public async Task ServerShutsDownWhenMainExits()
         {
-            var parameters = Helpers.GetBaseDeploymentParameters(publish: true);
+            var parameters = _fixture.GetBaseDeploymentParameters(publish: true);
             var result = await DeployAsync(parameters);
             try
             {
@@ -39,7 +41,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [ConditionalFact]
         public async Task GracefulShutdown_DoesNotCrashProcess()
         {
-            var parameters = Helpers.GetBaseDeploymentParameters(publish: true);
+            var parameters = _fixture.GetBaseDeploymentParameters(publish: true);
             parameters.GracefulShutdown = true;
             var result = await DeployAsync(parameters);
 
@@ -51,7 +53,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [ConditionalFact]
         public async Task ForcefulShutdown_DoesrashProcess()
         {
-            var parameters = Helpers.GetBaseDeploymentParameters(publish: true);
+            var parameters = _fixture.GetBaseDeploymentParameters(publish: true);
             var result = await DeployAsync(parameters);
 
             var response = await result.RetryingHttpClient.GetAsync("/HelloWorld");

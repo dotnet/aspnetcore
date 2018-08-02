@@ -12,10 +12,14 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 {
+    [Collection(PublishedSitesCollection.Name)]
     public class WindowsAuthTests : IISFunctionalTestBase
     {
-        public WindowsAuthTests(ITestOutputHelper output = null) : base(output)
+        private readonly PublishedSitesFixture _fixture;
+
+        public WindowsAuthTests(PublishedSitesFixture fixture)
         {
+            _fixture = fixture;
         }
 
         public static TestMatrix TestVariants
@@ -28,10 +32,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [MemberData(nameof(TestVariants))]
         public async Task WindowsAuthTest(TestVariant variant)
         {
-            var deploymentParameters = new IISDeploymentParameters(variant)
-            {
-                ApplicationPath = Helpers.GetOutOfProcessTestSitesPath(),
-            };
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(variant);
             deploymentParameters.AddWindowsAuthToServerConfig();
 
             // The default in hosting sets windows auth to true.

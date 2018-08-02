@@ -4,6 +4,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(StandardTestTfms)</TargetFrameworks>
+    <InProcessTestSite>true</InProcessTestSite>
   </PropertyGroup>
 
   <ItemGroup>

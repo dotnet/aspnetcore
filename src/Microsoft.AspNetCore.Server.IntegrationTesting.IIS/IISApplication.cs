@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -71,7 +72,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
 
                 ConfigureSite(contentRoot, port);
 
-                ConfigureAppHostConfig(contentRoot);
+                ConfigureAppHostConfig();
 
                 _serverManager.CommitChanges();
 
@@ -280,11 +281,11 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
             return site;
         }
 
-        private Configuration ConfigureAppHostConfig(string dllRoot)
+        private Configuration ConfigureAppHostConfig()
         {
             var config = _serverManager.GetApplicationHostConfiguration();
 
-            SetGlobalModuleSection(config, dllRoot);
+            SetGlobalModuleSection(config);
 
             SetModulesSection(config);
 
@@ -305,9 +306,9 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
             appPool.Stop();
         }
 
-        private void SetGlobalModuleSection(Configuration config, string dllRoot)
+        private void SetGlobalModuleSection(Configuration config)
         {
-            var ancmFile = GetAncmLocation(dllRoot);
+            var ancmFile = GetAncmLocation();
 
             var globalModulesSection = config.GetSection("system.webServer/globalModules");
             var globalConfigElement = globalModulesSection
@@ -355,8 +356,9 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
             }
         }
 
-        private string GetAncmLocation(string dllRoot)
+        private string GetAncmLocation()
         {
+            var dllRoot = AppContext.BaseDirectory;
             var arch = _deploymentParameters.RuntimeArchitecture == RuntimeArchitecture.x64 ? $@"x64\{_ancmDllName}" : $@"x86\{_ancmDllName}";
             var ancmFile = Path.Combine(dllRoot, arch);
             if (!File.Exists(Environment.ExpandEnvironmentVariables(ancmFile)))
