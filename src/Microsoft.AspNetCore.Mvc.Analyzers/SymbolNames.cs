@@ -47,6 +47,8 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
 
         public const string PartialMethod = "Partial";
 
+        public const string ProducesDefaultResponseTypeAttribute = "Microsoft.AspNetCore.Mvc.ProducesDefaultResponseTypeAttribute";
+
         public const string ProducesResponseTypeAttribute = "Microsoft.AspNetCore.Mvc.ProducesResponseTypeAttribute";
 
         public const string RenderPartialMethod = "RenderPartial";
