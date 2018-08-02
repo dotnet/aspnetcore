@@ -90,7 +90,7 @@ namespace TriageBuildFailures.Handlers
                 var shortTestName = GetTestName(failure);
                 if (applicableIssues.Count() == 0)
                 {
-                    var subject = $"Flaky test: {shortTestName}";
+                    var subject = $"Test failure: {shortTestName}";
                     // TODO: CC area experts
                     var body = $@"This test [fails]({build.WebURL}) occasionally with the following error:
 ```
@@ -100,7 +100,7 @@ Other tests within that build may have failed with a similar message, but they a
 
 CC { String.Join(',', Managers) }";
                     //TODO: We'd like to link the test history here but TC api doens't make it easy
-                    var tags = new List<string> { "Flaky" };
+                    var tags = new List<string> { "test-failure" };
 
                     var issue = await GHClient.CreateIssue(owner, repo, subject, body, tags);
                     await GHClient.AddIssueToProject(issue, GHClient.Config.FlakyProjectColumn);

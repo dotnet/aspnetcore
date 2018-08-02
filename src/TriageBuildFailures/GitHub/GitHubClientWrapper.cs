@@ -92,7 +92,10 @@ namespace TriageBuildFailures.GitHub
             return issues.Where(i =>
             i.Title.StartsWith("Flaky", StringComparison.OrdinalIgnoreCase)
             || i.Title.StartsWith("flakey", StringComparison.OrdinalIgnoreCase)
-            || i.Labels.Any(l => l.Name.Contains("Flaky", StringComparison.OrdinalIgnoreCase)));
+            || i.Title.StartsWith("Test failure:", StringComparison.OrdinalIgnoreCase)
+            || i.Labels.Any(l => 
+                l.Name.Contains("Flaky", StringComparison.OrdinalIgnoreCase) 
+                || l.Name.Contains("test-failure", StringComparison.OrdinalIgnoreCase)));
         }
 
         private static bool IssuesOnHomeRepo(string repo)
