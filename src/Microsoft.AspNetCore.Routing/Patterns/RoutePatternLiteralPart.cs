@@ -5,6 +5,10 @@ using System.Diagnostics;
 
 namespace Microsoft.AspNetCore.Routing.Patterns
 {
+    /// <summary>
+    /// Resprents a literal text part of a route pattern. Instances of <see cref="RoutePatternLiteralPart"/>
+    /// are immutable.
+    /// </summary>
     [DebuggerDisplay("{DebuggerToString()}")]
     public sealed class RoutePatternLiteralPart : RoutePatternPart
     {
@@ -15,6 +19,9 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             Content = content;
         }
 
+        /// <summary>
+        /// Gets the text content.
+        /// </summary>
         public string Content { get; }
 
         internal override string DebuggerToString()

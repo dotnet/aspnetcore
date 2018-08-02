@@ -7,6 +7,10 @@ using System.Text;
 
 namespace Microsoft.AspNetCore.Routing.Patterns
 {
+    /// <summary>
+    /// Represents a parameter part in a route pattern. Instances of <see cref="RoutePatternParameterPart"/>
+    /// are immutable.
+    /// </summary>
     [DebuggerDisplay("{DebuggerToString()}")]
     public sealed class RoutePatternParameterPart : RoutePatternPart
     {
@@ -25,16 +29,36 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             Constraints = constraints;
         }
 
+        /// <summary>
+        /// Gets the list of constraints associated with this parameter.
+        /// </summary>
         public IReadOnlyList<RoutePatternConstraintReference> Constraints { get; }
 
+        /// <summary>
+        /// Gets the default value of this route parameter. May be null.
+        /// </summary>
         public object Default { get; }
 
+        /// <summary>
+        /// Returns <c>true</c> if this part is a catch-all parameter.
+        /// Otherwise returns <c>false</c>.
+        /// </summary>
         public bool IsCatchAll => ParameterKind == RoutePatternParameterKind.CatchAll;
 
+        /// <summary>
+        /// Returns <c>true</c> if this part is an optional parameter.
+        /// Otherwise returns <c>false</c>.
+        /// </summary>
         public bool IsOptional => ParameterKind == RoutePatternParameterKind.Optional;
 
+        /// <summary>
+        /// Gets the <see cref="RoutePatternParameterKind"/> of this parameter.
+        /// </summary>
         public RoutePatternParameterKind ParameterKind { get; }
 
+        /// <summary>
+        /// Gets the parameter name.
+        /// </summary>
         public string Name { get; }
 
         internal override string DebuggerToString()

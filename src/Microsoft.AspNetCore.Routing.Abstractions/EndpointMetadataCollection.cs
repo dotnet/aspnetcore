@@ -8,12 +8,27 @@ using System.Linq;
 
 namespace Microsoft.AspNetCore.Routing
 {
+    /// <summary>
+    /// A collection of arbitrary metadata associated with an endpoint.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="EndpointMetadataCollection"/> instances contain a list of metadata items
+    /// of arbitrary types. The metadata items are stored as an ordered collection with
+    /// items arranged in ascending order of precedence.
+    /// </remarks>
     public sealed class EndpointMetadataCollection : IReadOnlyList<object>
     {
+        /// <summary>
+        /// An empty <see cref="EndpointMetadataCollection"/>.
+        /// </summary>
         public static readonly EndpointMetadataCollection Empty = new EndpointMetadataCollection(Array.Empty<object>());
 
         private readonly object[] _items;
 
+        /// <summary>
+        /// Creates a new <see cref="EndpointMetadataCollection"/>.
+        /// </summary>
+        /// <param name="items">The metadata items.</param>
         public EndpointMetadataCollection(IEnumerable<object> items)
         {
             if (items == null)
@@ -24,15 +39,34 @@ namespace Microsoft.AspNetCore.Routing
             _items = items.ToArray();
         }
 
+        /// <summary>
+        /// Creates a new <see cref="EndpointMetadataCollection"/>.
+        /// </summary>
+        /// <param name="items">The metadata items.</param>
         public EndpointMetadataCollection(params object[] items)
             : this((IEnumerable<object>)items)
         {
         }
 
+        /// <summary>
+        /// Gets the item at <paramref name="index"/>.
+        /// </summary>
+        /// <param name="index">The index of the item to retrieve.</param>
+        /// <returns>The item at <paramref name="index"/>.</returns>
         public object this[int index] => _items[index];
 
+        /// <summary>
+        /// Gets the count of metadata items.
+        /// </summary>
         public int Count => _items.Length;
 
+        /// <summary>
+        /// Gets the most significant metadata item of type <typeparamref name="T"/>.
+        /// </summary>
+        /// <typeparam name="T">The type of metadata to retrieve.</typeparam>
+        /// <returns>
+        /// The most significant metadata of type <typeparamref name="T"/> or <c>null</c>.
+        /// </returns>
         public T GetMetadata<T>() where T : class
         {
             for (var i = _items.Length - 1; i >= 0; i--)
@@ -47,6 +81,12 @@ namespace Microsoft.AspNetCore.Routing
             return default;
         }
 
+        /// <summary>
+        /// Gets the metadata items of type <typeparamref name="T"/> in ascending
+        /// order of precedence.
+        /// </summary>
+        /// <typeparam name="T">The type of metadata.</typeparam>
+        /// <returns>A sequence of metadata items of <typeparamref name="T"/>.</returns>
         public IEnumerable<T> GetOrderedMetadata<T>() where T : class
         {
             for (var i = 0; i < _items.Length; i++)
@@ -59,12 +99,27 @@ namespace Microsoft.AspNetCore.Routing
             }
         }
 
+        /// <summary>
+        /// Gets an <see cref="IEnumerator"/> of all metadata items.
+        /// </summary>
+        /// <returns>An <see cref="IEnumerator"/> of all metadata items.</returns>
         public Enumerator GetEnumerator() => new Enumerator(this);
 
+        /// <summary>
+        /// Gets an <see cref="IEnumerator{Object}"/> of all metadata items.
+        /// </summary>
+        /// <returns>An <see cref="IEnumerator{Object}"/> of all metadata items.</returns>
         IEnumerator<object> IEnumerable<object>.GetEnumerator() => GetEnumerator();
 
+        /// <summary>
+        /// Gets an <see cref="IEnumerator"/> of all metadata items.
+        /// </summary>
+        /// <returns>An <see cref="IEnumerator"/> of all metadata items.</returns>
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
+        /// <summary>
+        /// Enumerates the elements of an <see cref="EndpointMetadataCollection"/>.
+        /// </summary>
         public struct Enumerator : IEnumerator<object>
         {
             // Intentionally not readonly to prevent defensive struct copies
@@ -79,12 +134,25 @@ namespace Microsoft.AspNetCore.Routing
                 _current = null;
             }
 
+            /// <summary>
+            /// Gets the element at the current position of the enumerator
+            /// </summary>
             public object Current => _current;
 
+            /// <summary>
+            /// Releases all resources used by the <see cref="Enumerator"/>.
+            /// </summary>
             public void Dispose()
             {
             }
 
+            /// <summary>
+            /// Advances the enumerator to the next element of the <see cref="Enumerator"/>.
+            /// </summary>
+            /// <returns>
+            /// <c>true</c> if the enumerator was successfully advanced to the next element;
+            /// <c>false</c> if the enumerator has passed the end of the collection.
+            /// </returns>
             public bool MoveNext()
             {
                 if (_index < _items.Length)
@@ -97,6 +165,9 @@ namespace Microsoft.AspNetCore.Routing
                 return false;
             }
 
+            /// <summary>
+            /// Sets the enumerator to its initial position, which is before the first element in the collection.
+            /// </summary>
             public void Reset()
             {
                 _index = 0;
