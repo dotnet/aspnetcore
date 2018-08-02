@@ -11,7 +11,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Routing
 {
-    public class RoutePatternMatcher
+    internal class RoutePatternMatcher
     {
         private const string SeparatorString = "/";
         private const char SeparatorChar = '/';

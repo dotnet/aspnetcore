@@ -8,7 +8,7 @@ using System.Text;
 namespace Microsoft.AspNetCore.Routing.Patterns
 {
     [DebuggerDisplay("{DebuggerToString()}")]
-    public class RoutePatternParameterPart : RoutePatternPart
+    public sealed class RoutePatternParameterPart : RoutePatternPart
     {
         internal RoutePatternParameterPart(
             string parameterName,

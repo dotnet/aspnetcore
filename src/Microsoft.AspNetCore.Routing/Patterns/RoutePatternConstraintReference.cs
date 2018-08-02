@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Diagnostics;
-using Microsoft.AspNetCore.Routing.Matchers;
+using Microsoft.AspNetCore.Routing.Matching;
 
 namespace Microsoft.AspNetCore.Routing.Patterns
 {
@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
         public IRouteConstraint Constraint { get; }
 
         /// <summary>
-        /// Gets a pre-existing <see cref="Matchers.MatchProcessor"/> that was used to construct this reference.
+        /// Gets a pre-existing <see cref="Matching.MatchProcessor"/> that was used to construct this reference.
         /// </summary>
         public MatchProcessor MatchProcessor { get; }
 

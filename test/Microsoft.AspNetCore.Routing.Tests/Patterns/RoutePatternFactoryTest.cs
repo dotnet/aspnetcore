@@ -4,7 +4,7 @@
 using System;
 using System.Linq;
 using Microsoft.AspNetCore.Routing.Constraints;
-using Microsoft.AspNetCore.Routing.Matchers;
+using Microsoft.AspNetCore.Routing.Matching;
 using Moq;
 using Xunit;
 

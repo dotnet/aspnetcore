@@ -7,14 +7,14 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
-using Microsoft.AspNetCore.Routing.Matchers;
+using Microsoft.AspNetCore.Routing.Matching;
 using Microsoft.AspNetCore.Routing.Metadata;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Routing
 {
     [DebuggerDisplay("{DebuggerDisplayString,nq}")]
-    public class CompositeEndpointDataSource : EndpointDataSource
+    public sealed class CompositeEndpointDataSource : EndpointDataSource
     {
         private readonly EndpointDataSource[] _dataSources;
         private readonly object _lock;

@@ -35,8 +35,8 @@ namespace Microsoft.AspNetCore.Routing
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () => await invokeTask);
 
             Assert.Equal(
-                "Unable to execute an endpoint because the GlobalRoutingMiddleware was not run for this request. " +
-                "Ensure GlobalRoutingMiddleware is added to the request execution pipeline before EndpointMiddleware " +
+                "Unable to execute an endpoint because the EndpointRoutingMiddleware was not run for this request. " +
+                "Ensure EndpointRoutingMiddleware is added to the request execution pipeline before EndpointMiddleware " +
                 "in application startup code.",
                 ex.Message);
         }

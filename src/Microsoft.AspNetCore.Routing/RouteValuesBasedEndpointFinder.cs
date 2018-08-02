@@ -4,16 +4,15 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNetCore.Routing.EndpointFinders;
 using Microsoft.AspNetCore.Routing.Internal;
-using Microsoft.AspNetCore.Routing.Matchers;
+using Microsoft.AspNetCore.Routing.Matching;
 using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.AspNetCore.Routing.Tree;
 using Microsoft.Extensions.ObjectPool;
 
 namespace Microsoft.AspNetCore.Routing
 {
-    internal class RouteValuesBasedEndpointFinder : IEndpointFinder<RouteValuesBasedEndpointFinderContext>
+    internal class RouteValuesBasedEndpointFinder : IEndpointFinder<RouteValuesAddress>
     {
         private readonly CompositeEndpointDataSource _endpointDataSource;
         private readonly ObjectPool<UriBuildingContext> _objectPool;
@@ -36,16 +35,16 @@ namespace Microsoft.AspNetCore.Routing
                 HandleChange);
         }
 
-        public IEnumerable<Endpoint> FindEndpoints(RouteValuesBasedEndpointFinderContext context)
+        public IEnumerable<Endpoint> FindEndpoints(RouteValuesAddress address)
         {
             IEnumerable<OutboundMatchResult> matchResults = null;
-            if (string.IsNullOrEmpty(context.RouteName))
+            if (string.IsNullOrEmpty(address.RouteName))
             {
                 matchResults = _allMatchesLinkGenerationTree.GetMatches(
-                    context.ExplicitValues,
-                    context.AmbientValues);
+                    address.ExplicitValues,
+                    address.AmbientValues);
             }
-            else if (_namedMatchResults.TryGetValue(context.RouteName, out var namedMatchResults))
+            else if (_namedMatchResults.TryGetValue(address.RouteName, out var namedMatchResults))
             {
                 matchResults = namedMatchResults;
             }
