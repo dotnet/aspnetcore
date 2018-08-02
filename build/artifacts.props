@@ -112,6 +112,7 @@
     <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Abstractions" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Analyzers.Experimental" Category="shipoob" Analyzer="true" />
     <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Analyzers" Category="ship" Analyzer="true" AppMetapackage="true" AllMetapackage="true" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Api.Analyzers" Category="ship" Analyzer="true" />
     <PackageArtifact Include="Microsoft.AspNetCore.Mvc.ApiExplorer" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Core" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Cors" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
