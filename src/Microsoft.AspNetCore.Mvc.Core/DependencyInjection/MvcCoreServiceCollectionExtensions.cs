@@ -175,6 +175,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddEnumerable(ServiceDescriptor.Transient<IActionConstraintProvider, DefaultActionConstraintProvider>());
 
             // Policies for Endpoints
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<MatcherPolicy, ConsumesMatcherPolicy>());
             services.TryAddEnumerable(ServiceDescriptor.Singleton<MatcherPolicy, ActionConstraintMatcherPolicy>());
 
             //

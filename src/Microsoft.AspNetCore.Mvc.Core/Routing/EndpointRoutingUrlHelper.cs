@@ -3,7 +3,6 @@
 
 using System;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.AspNetCore.Routing.EndpointFinders;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc.Routing
@@ -16,7 +15,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
     {
         private readonly ILogger<EndpointRoutingUrlHelper> _logger;
         private readonly LinkGenerator _linkGenerator;
-        private readonly IEndpointFinder<RouteValuesBasedEndpointFinderContext> _routeValuesBasedEndpointFinder;
+        private readonly IEndpointFinder<RouteValuesAddress> _routeValuesBasedEndpointFinder;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="EndpointRoutingUrlHelper"/> class using the specified
@@ -30,7 +29,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         /// <param name="logger">The <see cref="ILogger"/>.</param>
         public EndpointRoutingUrlHelper(
             ActionContext actionContext,
-            IEndpointFinder<RouteValuesBasedEndpointFinderContext> routeValuesBasedEndpointFinder,
+            IEndpointFinder<RouteValuesAddress> routeValuesBasedEndpointFinder,
             LinkGenerator linkGenerator,
             ILogger<EndpointRoutingUrlHelper> logger)
             : base(actionContext)
@@ -87,7 +86,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             }
 
             var endpoints = _routeValuesBasedEndpointFinder.FindEndpoints(
-                new RouteValuesBasedEndpointFinderContext()
+                new RouteValuesAddress()
                 {
                     ExplicitValues = valuesDictionary,
                     AmbientValues = AmbientValues
@@ -124,7 +123,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             var valuesDictionary = routeContext.Values as RouteValueDictionary ?? GetValuesDictionary(routeContext.Values);
 
             var endpoints = _routeValuesBasedEndpointFinder.FindEndpoints(
-                new RouteValuesBasedEndpointFinderContext()
+                new RouteValuesAddress()
                 {
                     RouteName = routeContext.RouteName,
                     ExplicitValues = valuesDictionary,

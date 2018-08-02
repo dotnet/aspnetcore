@@ -10,8 +10,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.AspNetCore.Routing.Matchers;
+using Microsoft.AspNetCore.Routing.Matching;
 using Microsoft.AspNetCore.Routing.Metadata;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.AspNetCore.Routing.Template;
@@ -347,6 +348,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                         !metadata.OfType<HttpMethodMetadata>().Any())
                     {
                         metadata.Add(new HttpMethodMetadata(httpMethodActionConstraint.HttpMethods));
+                    }
+                    else if (actionConstraint is ConsumesAttribute consumesAttribute && 
+                        !metadata.OfType<ConsumesMetadata>().Any())
+                    {
+                        metadata.Add(new ConsumesMetadata(consumesAttribute.ContentTypes.ToArray()));
                     }
                     else if (!metadata.Contains(actionConstraint))
                     {
