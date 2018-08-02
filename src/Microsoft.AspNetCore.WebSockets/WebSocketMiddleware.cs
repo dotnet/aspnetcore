@@ -155,11 +155,7 @@ namespace Microsoft.AspNetCore.WebSockets
 
                 string key = string.Join(", ", _context.Request.Headers[Constants.Headers.SecWebSocketKey]);
 
-                var responseHeaders = HandshakeHelpers.GenerateResponseHeaders(key, subProtocol);
-                foreach (var headerPair in responseHeaders)
-                {
-                    _context.Response.Headers[headerPair.Key] = headerPair.Value;
-                }
+                HandshakeHelpers.GenerateResponseHeaders(key, subProtocol, _context.Response.Headers);
 
                 Stream opaqueTransport = await _upgradeFeature.UpgradeAsync(); // Sets status code to 101
 
