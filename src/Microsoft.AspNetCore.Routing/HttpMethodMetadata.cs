@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
-namespace Microsoft.AspNetCore.Routing.Metadata
+namespace Microsoft.AspNetCore.Routing
 {
     [DebuggerDisplay("{DebuggerToString(),nq}")]
     public sealed class HttpMethodMetadata : IHttpMethodMetadata

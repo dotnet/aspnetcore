@@ -19,7 +19,6 @@ namespace Microsoft.AspNetCore.Routing.Matching
         public MatcherEndpoint(
             Func<RequestDelegate, RequestDelegate> invoker,
             RoutePattern routePattern,
-            RouteValueDictionary requiredValues,
             int order,
             EndpointMetadataCollection metadata,
             string displayName)
@@ -37,7 +36,6 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             Invoker = invoker;
             RoutePattern = routePattern;
-            RequiredValues = requiredValues;
             Order = order;
         }
 
@@ -45,9 +43,6 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
         public int Order { get; }
         
-        // Values required by an endpoint for it to be successfully matched on link generation
-        public IReadOnlyDictionary<string, object> RequiredValues { get; }
-
         public RoutePattern RoutePattern { get; }
     }
 }

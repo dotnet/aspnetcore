@@ -43,7 +43,6 @@ namespace Microsoft.AspNetCore.Routing.Matching
             return new MatcherEndpoint(
                 MatcherEndpoint.EmptyInvoker,
                 RoutePatternFactory.Parse(template, defaults, constraints),
-                new RouteValueDictionary(),
                 order ?? 0,
                 EndpointMetadataCollection.Empty,
                 "endpoint: " + template);

@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing.Metadata;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
@@ -343,7 +342,6 @@ namespace Microsoft.AspNetCore.Routing.Matching
             return new MatcherEndpoint(
                 MatcherEndpoint.EmptyInvoker,
                 RoutePatternFactory.Parse(template, defaults, constraints),
-                new RouteValueDictionary(),
                 order,
                 new EndpointMetadataCollection(metadata),
                 displayName);

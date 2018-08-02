@@ -149,14 +149,12 @@ namespace Microsoft.AspNetCore.Routing
         private MatcherEndpoint CreateEndpoint(
             string template,
             object defaults = null,
-            object requiredValues = null,
             int order = 0,
             string routeName = null)
         {
             return new MatcherEndpoint(
                 MatcherEndpoint.EmptyInvoker,
                 RoutePatternFactory.Parse(template, defaults, constraints: null),
-                new RouteValueDictionary(requiredValues),
                 order,
                 EndpointMetadataCollection.Empty,
                 null);

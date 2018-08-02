@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing.Metadata;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Primitives;
@@ -232,7 +231,6 @@ namespace Microsoft.AspNetCore.Routing.Matching
                     return Task.CompletedTask;
                 },
                 RoutePatternFactory.Parse("/"),
-                new RouteValueDictionary(),
                 0,
                 EndpointMetadataCollection.Empty,
                 Http405EndpointDisplayName);

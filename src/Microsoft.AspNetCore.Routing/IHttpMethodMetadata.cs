@@ -3,7 +3,7 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.AspNetCore.Routing.Metadata
+namespace Microsoft.AspNetCore.Routing
 {
     public interface IHttpMethodMetadata
     {

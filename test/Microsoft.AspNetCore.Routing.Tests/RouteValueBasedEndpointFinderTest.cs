@@ -263,29 +263,20 @@ namespace Microsoft.AspNetCore.Routing
         {
             if (metadataCollection == null)
             {
-                metadataCollection = EndpointMetadataCollection.Empty;
-                if (!string.IsNullOrEmpty(routeName))
+                var metadata = new List<object>();
+                if (!string.IsNullOrEmpty(routeName) || requiredValues != null)
                 {
-                    metadataCollection = new EndpointMetadataCollection(new[] { new RouteNameMetadata(routeName) });
+                    metadata.Add(new RouteValuesAddressMetadata(routeName, new RouteValueDictionary(requiredValues)));
                 }
+                metadataCollection = new EndpointMetadataCollection(metadata);
             }
 
             return new MatcherEndpoint(
                 MatcherEndpoint.EmptyInvoker,
                 RoutePatternFactory.Parse(template, defaults, constraints: null),
-                new RouteValueDictionary(requiredValues),
                 order,
                 metadataCollection,
                 null);
-        }
-
-        private class RouteNameMetadata : IRouteNameMetadata
-        {
-            public RouteNameMetadata(string name)
-            {
-                Name = name;
-            }
-            public string Name { get; }
         }
 
         private class NameMetadata : INameMetadata
@@ -294,6 +285,7 @@ namespace Microsoft.AspNetCore.Routing
             {
                 Name = name;
             }
+
             public string Name { get; }
         }
 
@@ -318,7 +310,5 @@ namespace Microsoft.AspNetCore.Routing
                 return matches;
             }
         }
-
-        private class SuppressLinkGenerationMetadata : ISuppressLinkGenerationMetadata { }
     }
 }
