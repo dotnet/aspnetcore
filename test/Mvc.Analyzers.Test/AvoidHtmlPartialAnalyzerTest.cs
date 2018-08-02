@@ -4,7 +4,6 @@
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Analyzer.Testing;
-using Microsoft.AspNetCore.Mvc.Analyzers.Infrastructure;
 using Microsoft.CodeAnalysis;
 using Xunit;
 

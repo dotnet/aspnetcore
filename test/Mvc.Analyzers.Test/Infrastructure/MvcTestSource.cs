@@ -5,7 +5,7 @@ using System.IO;
 using Microsoft.AspNetCore.Analyzer.Testing;
 using Microsoft.AspNetCore.Testing;
 
-namespace Microsoft.AspNetCore.Mvc.Analyzers.Infrastructure
+namespace Microsoft.AspNetCore.Mvc
 {
     public static class MvcTestSource
     {
