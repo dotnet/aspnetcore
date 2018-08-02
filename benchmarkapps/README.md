@@ -10,6 +10,6 @@ They makes it easier to test local changes than having the App in the Benchmarks
 3. If cloned go to the BenchmarksDriver project
 4. Use the following command as a guideline for running a test using your changes
 
-`benchmarks --server <server-endpoint> --client <client-endpoint>  -j https://raw.githubusercontent.com/aspnet/MVC/dev/benchmarkaps/BasicApi/BasicApi.json`
+`benchmarks --server <server-endpoint> --client <client-endpoint>  -j https://raw.githubusercontent.com/aspnet/MVC/{your branch}/benchmarkaps/BasicApi/BasicApi.json`
 
-5. For more info/commands see https://github.com/aspnet/benchmarks/blob/dev/src/BenchmarksDriver/README.md
+5. For more info/commands see https://github.com/aspnet/benchmarks/blob/master/src/BenchmarksDriver/README.md
