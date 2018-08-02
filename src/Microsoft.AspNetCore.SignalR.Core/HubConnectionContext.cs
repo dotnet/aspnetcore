@@ -502,6 +502,7 @@ namespace Microsoft.AspNetCore.SignalR
             {
                 if (!_receivedMessageThisInterval)
                 {
+                    Log.ClientTimeout(_logger, TimeSpan.FromTicks(_clientTimeoutInterval));
                     Abort();
                 }
 
@@ -560,6 +561,9 @@ namespace Microsoft.AspNetCore.SignalR
             private static readonly Action<ILogger, Exception> _abortFailed =
                 LoggerMessage.Define(LogLevel.Trace, new EventId(8, "AbortFailed"), "Abort callback failed.");
 
+            private static readonly Action<ILogger, int, Exception> _clientTimeout =
+                LoggerMessage.Define<int>(LogLevel.Debug, new EventId(9, "ClientTimeout"), "Client timeout ({ClientTimeout}ms) elapsed without receiving a message from the client. Closing connection.");
+
             public static void HandshakeComplete(ILogger logger, string hubProtocol)
             {
                 _handshakeComplete(logger, hubProtocol, null);
@@ -598,6 +602,11 @@ namespace Microsoft.AspNetCore.SignalR
             public static void AbortFailed(ILogger logger, Exception exception)
             {
                 _abortFailed(logger, exception);
+            }
+
+            public static void ClientTimeout(ILogger logger, TimeSpan timeout)
+            {
+                _clientTimeout(logger, (int)timeout.TotalMilliseconds, null);
             }
         }
     }
