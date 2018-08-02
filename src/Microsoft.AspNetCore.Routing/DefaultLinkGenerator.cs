@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Http;
@@ -54,19 +55,76 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         public override bool TryGetLinkByAddress<TAddress>(
-            TAddress address,
             HttpContext httpContext,
+            TAddress address,
             object values,
             LinkOptions options,
             out string link)
         {
             return TryGetLinkByAddressInternal(
-                address,
                 httpContext,
+                address,
                 explicitValues: values,
                 ambientValues: GetAmbientValues(httpContext),
                 options,
                 out link);
+        }
+
+        public override LinkGenerationTemplate GetTemplate(HttpContext httpContext, string routeName, object values)
+        {
+            var ambientValues = GetAmbientValues(httpContext);
+            var explicitValues = new RouteValueDictionary(values);
+
+            return GetTemplateInternal(
+                httpContext,
+                new RouteValuesAddress
+                {
+                    RouteName = routeName,
+                    ExplicitValues = explicitValues,
+                    AmbientValues = ambientValues
+                },
+                ambientValues,
+                explicitValues,
+                values);
+        }
+
+        public override LinkGenerationTemplate GetTemplateByAddress<TAddress>(
+            HttpContext httpContext,
+            TAddress address)
+        {
+            return GetTemplateInternal(httpContext, address, values: null);
+        }
+
+        internal string MakeLink(
+            HttpContext httpContext,
+            MatcherEndpoint endpoint,
+            RouteValueDictionary ambientValues,
+            RouteValueDictionary explicitValues,
+            LinkOptions options)
+        {
+            var templateBinder = new TemplateBinder(
+                UrlEncoder.Default,
+                _uriBuildingContextPool,
+                new RouteTemplate(endpoint.RoutePattern),
+                new RouteValueDictionary(endpoint.RoutePattern.Defaults));
+
+            var templateValuesResult = templateBinder.GetValues(
+                ambientValues: ambientValues,
+                explicitValues: explicitValues,
+                requiredKeys: endpoint.RequiredValues.Keys);
+            if (templateValuesResult == null)
+            {
+                // We're missing one of the required values for this route.
+                return null;
+            }
+
+            if (!MatchesConstraints(httpContext, endpoint, templateValuesResult.CombinedValues))
+            {
+                return null;
+            }
+
+            var url = templateBinder.BindValues(templateValuesResult.AcceptedValues);
+            return Normalize(url, options);
         }
 
         private bool TryGetLinkByRouteValues(
@@ -86,8 +144,8 @@ namespace Microsoft.AspNetCore.Routing
             };
 
             return TryGetLinkByAddressInternal(
-                address,
                 httpContext,
+                address,
                 explicitValues: values,
                 ambientValues: ambientValues,
                 options,
@@ -95,8 +153,8 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         private bool TryGetLinkByAddressInternal<TAddress>(
-            TAddress address,
             HttpContext httpContext,
+            TAddress address,
             object explicitValues,
             RouteValueDictionary ambientValues,
             LinkOptions options,
@@ -104,22 +162,21 @@ namespace Microsoft.AspNetCore.Routing
         {
             link = null;
 
-            var endpointFinder = _serviceProvider.GetRequiredService<IEndpointFinder<TAddress>>();
-            var endpoints = endpointFinder.FindEndpoints(address);
+            var endpoints = FindEndpoints(address);
             if (endpoints == null)
             {
                 return false;
             }
 
-            var matcherEndpoints = endpoints.OfType<MatcherEndpoint>();
-            if (!matcherEndpoints.Any())
+            foreach (var endpoint in endpoints)
             {
-                return false;
-            }
+                link = MakeLink(
+                    httpContext,
+                    endpoint,
+                    ambientValues,
+                    new RouteValueDictionary(explicitValues),
+                    options);
 
-            foreach (var endpoint in matcherEndpoints)
-            {
-                link = GetLink(endpoint);
                 if (link != null)
                 {
                     return true;
@@ -127,33 +184,49 @@ namespace Microsoft.AspNetCore.Routing
             }
 
             return false;
+        }
 
-            string GetLink(MatcherEndpoint endpoint)
+        private LinkGenerationTemplate GetTemplateInternal<TAddress>(
+            HttpContext httpContext,
+            TAddress address,
+            object values)
+        {
+            var endpoints = FindEndpoints(address);
+            if (endpoints == null)
             {
-                var templateBinder = new TemplateBinder(
-                    UrlEncoder.Default,
-                    _uriBuildingContextPool,
-                    new RouteTemplate(endpoint.RoutePattern),
-                    new RouteValueDictionary(endpoint.RoutePattern.Defaults));
-
-                var templateValuesResult = templateBinder.GetValues(
-                    ambientValues: ambientValues,
-                    explicitValues: new RouteValueDictionary(explicitValues),
-                    requiredKeys: endpoint.RequiredValues.Keys);
-                if (templateValuesResult == null)
-                {
-                    // We're missing one of the required values for this route.
-                    return null;
-                }
-
-                if (!MatchesConstraints(httpContext, endpoint, templateValuesResult.CombinedValues))
-                {
-                    return null;
-                }
-
-                var url = templateBinder.BindValues(templateValuesResult.AcceptedValues);
-                return Normalize(url, options);
+                return null;
             }
+
+            var ambientValues = GetAmbientValues(httpContext);
+            var explicitValues = new RouteValueDictionary(values);
+
+            return new DefaultLinkGenerationTemplate(
+                this,
+                endpoints,
+                httpContext,
+                explicitValues,
+                ambientValues);
+        }
+
+        private LinkGenerationTemplate GetTemplateInternal<TAddress>(
+            HttpContext httpContext,
+            TAddress address,
+            RouteValueDictionary ambientValues,
+            RouteValueDictionary explicitValues,
+            object values)
+        {
+            var endpoints = FindEndpoints(address);
+            if (endpoints == null)
+            {
+                return null;
+            }
+
+            return new DefaultLinkGenerationTemplate(
+                this,
+                endpoints,
+                httpContext,
+                explicitValues,
+                ambientValues);
         }
 
         private bool MatchesConstraints(
@@ -234,7 +307,25 @@ namespace Microsoft.AspNetCore.Routing
                     return feature.Values;
                 }
             }
-            return null;
+            return new RouteValueDictionary();
+        }
+
+        private IEnumerable<MatcherEndpoint> FindEndpoints<TAddress>(TAddress address)
+        {
+            var finder = _serviceProvider.GetRequiredService<IEndpointFinder<TAddress>>();
+            var endpoints = finder.FindEndpoints(address);
+            if (endpoints == null)
+            {
+                return null;
+            }
+
+            var matcherEndpoints = endpoints.OfType<MatcherEndpoint>();
+            if (!matcherEndpoints.Any())
+            {
+                return null;
+            }
+
+            return matcherEndpoints;
         }
     }
 }
