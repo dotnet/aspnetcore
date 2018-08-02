@@ -314,8 +314,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
                         connection.Status = HttpConnectionStatus.Inactive;
 
-                        // Dispose the cancellation token
-                        connection.Cancellation?.Dispose();
+                        connection.Cancellation?.Cancel();
 
                         connection.Cancellation = null;
                     }
