@@ -3,7 +3,7 @@
 
 using System;
 using System.Globalization;
-using Microsoft.AspNetCore.Routing.Matchers;
+using Microsoft.AspNetCore.Routing.Matching;
 using Microsoft.Extensions.Logging;
 
 namespace RoutingSample.Web

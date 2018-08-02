@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace Microsoft.AspNetCore.Routing
 {
-    public class EndpointMetadataCollection : IReadOnlyList<object>
+    public sealed class EndpointMetadataCollection : IReadOnlyList<object>
     {
         public static readonly EndpointMetadataCollection Empty = new EndpointMetadataCollection(Array.Empty<object>());
 
@@ -22,6 +22,11 @@ namespace Microsoft.AspNetCore.Routing
             }
 
             _items = items.ToArray();
+        }
+
+        public EndpointMetadataCollection(params object[] items)
+            : this((IEnumerable<object>)items)
+        {
         }
 
         public object this[int index] => _items[index];

@@ -4,9 +4,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Routing.EndpointFinders;
 using Microsoft.AspNetCore.Routing.Internal;
-using Microsoft.AspNetCore.Routing.Matchers;
+using Microsoft.AspNetCore.Routing.Matching;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.AspNetCore.Routing.TestObjects;
 using Microsoft.AspNetCore.Routing.Tree;
@@ -183,7 +182,7 @@ namespace Microsoft.AspNetCore.Routing
 
             // Act
             var foundEndpoints = finder.FindEndpoints(
-                new RouteValuesBasedEndpointFinderContext
+                new RouteValuesAddress
                 {
                     ExplicitValues = new RouteValueDictionary(new { id = 10 }),
                     AmbientValues = new RouteValueDictionary(new { controller = "Home", action = "Index" }),
@@ -212,7 +211,7 @@ namespace Microsoft.AspNetCore.Routing
 
             // Act
             var foundEndpoints = finder.FindEndpoints(
-                new RouteValuesBasedEndpointFinderContext
+                new RouteValuesAddress
                 {
                     ExplicitValues = new RouteValueDictionary(),
                     AmbientValues = new RouteValueDictionary(),
