@@ -442,7 +442,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             }
         }
 
-        // REVIEW: Infos added after endpoints are initialized will not be used
         public List<MvcEndpointInfo> ConventionalEndpointInfos { get; }
 
         private class RouteNameMetadata : IRouteNameMetadata

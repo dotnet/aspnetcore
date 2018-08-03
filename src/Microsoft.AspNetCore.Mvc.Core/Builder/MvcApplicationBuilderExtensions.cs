@@ -171,38 +171,6 @@ namespace Microsoft.AspNetCore.Builder
             }
         }
 
-        public static IApplicationBuilder UseMvcWithEndpoint(
-            this IApplicationBuilder app,
-            Action<MvcEndpointInfoBuilder> configureRoutes)
-        {
-            if (app == null)
-            {
-                throw new ArgumentNullException(nameof(app));
-            }
-
-            if (configureRoutes == null)
-            {
-                throw new ArgumentNullException(nameof(configureRoutes));
-            }
-
-            VerifyMvcIsRegistered(app);
-
-            var mvcEndpointDataSource = app.ApplicationServices
-                .GetRequiredService<IEnumerable<EndpointDataSource>>()
-                .OfType<MvcEndpointDataSource>()
-                .First();
-
-            var constraintResolver = app.ApplicationServices.GetRequiredService<IInlineConstraintResolver>();
-
-            MvcEndpointInfoBuilder routeBuilder = new MvcEndpointInfoBuilder(constraintResolver);
-
-            configureRoutes(routeBuilder);
-
-            mvcEndpointDataSource.ConventionalEndpointInfos.AddRange(routeBuilder.EndpointInfos);
-
-            return app.UseEndpoint();
-        }
-
         private static void VerifyMvcIsRegistered(IApplicationBuilder app)
         {
             // Verify if AddMvc was done before calling UseMvc
