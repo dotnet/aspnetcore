@@ -168,7 +168,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
             return false;
         }
 
-        private struct RouteAttributeInfo
+        private readonly struct RouteAttributeInfo
         {
             public RouteAttributeInfo(string name, string type, string[] keywords)
             {

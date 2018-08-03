@@ -10,8 +10,6 @@ using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Internal;
-using Microsoft.AspNetCore.Mvc.Routing;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.Net.Http.Headers;
 using Resources = Microsoft.AspNetCore.Mvc.Core.Resources;
 
@@ -79,7 +77,7 @@ namespace Microsoft.AspNetCore.Mvc
 
                 // Confirm the request's content type is more specific than a media type this action supports e.g. OK
                 // if client sent "text/plain" data and this action supports "text/*".
-                if (requestContentType != null && !IsSubsetOfAnyContentType(requestContentType))
+                if (requestContentType == null || !IsSubsetOfAnyContentType(requestContentType))
                 {
                     context.Result = new UnsupportedMediaTypeResult();
                 }

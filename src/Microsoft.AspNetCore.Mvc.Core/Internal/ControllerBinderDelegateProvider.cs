@@ -194,7 +194,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             return propertyBindingInfo;
         }
 
-        private struct BinderItem
+        private readonly struct BinderItem
         {
             public BinderItem(IModelBinder modelBinder, ModelMetadata modelMetadata)
             {

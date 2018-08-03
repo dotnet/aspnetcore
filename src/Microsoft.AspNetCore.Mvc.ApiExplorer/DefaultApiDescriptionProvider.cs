@@ -659,7 +659,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 }
             }
 
-            private struct PropertyKey
+            private readonly struct PropertyKey
             {
                 public readonly Type ContainerType;
 

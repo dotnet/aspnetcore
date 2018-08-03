@@ -352,7 +352,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Internal
             return new StringSegment(value.Buffer, offset, trimmedEnd - offset + 1);
         }
 
-        private struct GlobbingUrlKey : IEquatable<GlobbingUrlKey>
+        private readonly struct GlobbingUrlKey : IEquatable<GlobbingUrlKey>
         {
             public GlobbingUrlKey(string include, string exclude)
             {

@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
-        public virtual async Task NoRequestContentType_Selects_IfASingleActionWithConstraintIsPresent()
+        public async Task NoRequestContentType_Selects_IfASingleActionWithConstraintIsPresent_ReturnsUnsupported()
         {
             // Arrange
             var request = new HttpRequestMessage(
@@ -58,11 +58,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             // Act
             var response = await Client.SendAsync(request);
-            var body = await response.Content.ReadAsStringAsync();
-
-            // Assert
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.Equal("ConsumesAttribute_PassThrough_Product_Json", body);
+            await response.AssertStatusCodeAsync(HttpStatusCode.UnsupportedMediaType);
         }
 
         [Theory]

@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
     /// <summary>
     /// An abstraction used when grouping enum values for <see cref="ModelMetadata.EnumGroupedDisplayNamesAndValues"/>.
     /// </summary>
-    public struct EnumGroupAndName
+    public readonly struct EnumGroupAndName
     {
         private readonly Func<string> _name;
 
