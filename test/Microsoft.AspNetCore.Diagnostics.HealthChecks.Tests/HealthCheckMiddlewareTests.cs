@@ -7,6 +7,7 @@ using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -201,93 +202,39 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
         }
 
         [Fact]
-        public async Task DetailedJsonReturnsEmptyHealthyResponseIfNoHealthChecksRegistered()
-        {
-            var expectedJson = JsonConvert.SerializeObject(new
-            {
-                status = "Healthy",
-                results = new { }
-            }, Formatting.Indented);
-
-            var builder = new WebHostBuilder()
-                .Configure(app =>
-                {
-                    app.UseHealthChecks("/health", new HealthCheckOptions()
-                    {
-                        ResponseWriter = HealthCheckResponseWriters.WriteDetailedJson,
-                    });
-                })
-                .ConfigureServices(services =>
-                {
-                    services.AddHealthChecks();
-                });
-            var server = new TestServer(builder);
-            var client = server.CreateClient();
-
-            var response = await client.GetAsync("/health");
-
-            var result = await response.Content.ReadAsStringAsync();
-            Assert.Equal(expectedJson, result);
-        }
-
-        [Fact]
-        public async Task DetailedJsonReturnsResultsFromHealthChecks()
+        public async Task CanUseCustomWriter()
         {
             var expectedJson = JsonConvert.SerializeObject(new
             {
                 status = "Unhealthy",
-                results = new
-                {
-                    Foo = new
-                    {
-                        status = "Healthy",
-                        description = "Good to go!",
-                        data = new { }
-                    },
-                    Bar = new
-                    {
-                        status = "Degraded",
-                        description = "Feeling a bit off.",
-                        data = new { someUsefulAttribute = 42 }
-                    },
-                    Baz = new
-                    {
-                        status = "Unhealthy",
-                        description = "Not feeling good at all",
-                        data = new { }
-                    },
-                    Boz = new
-                    {
-                        status = "Unhealthy",
-                        description = string.Empty,
-                        data = new { }
-                    },
-                },
-            }, Formatting.Indented);
+            });
 
             var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     app.UseHealthChecks("/health", new HealthCheckOptions()
                     {
-                        ResponseWriter = HealthCheckResponseWriters.WriteDetailedJson,
+                        ResponseWriter = (c, r) =>
+                        {
+                            var json = JsonConvert.SerializeObject(new { status = r.Status.ToString(), });
+                            c.Response.ContentType = "application/json";
+                            return c.Response.WriteAsync(json);
+                        },
                     });
                 })
                 .ConfigureServices(services =>
                 {
                     services.AddHealthChecks()
-                        .AddCheck("Foo", () => Task.FromResult(HealthCheckResult.Healthy("Good to go!")))
-                        .AddCheck("Bar", () => Task.FromResult(HealthCheckResult.Degraded("Feeling a bit off.", new Dictionary<string, object>()
-                        {
-                            { "someUsefulAttribute", 42 }
-                        })))
-                        .AddCheck("Baz", () => Task.FromResult(HealthCheckResult.Unhealthy("Not feeling good at all", new Exception("Bad times"))))
-                        .AddCheck("Boz", () => Task.FromResult(HealthCheckResult.Unhealthy(new Exception("Very bad times"))));
+                        .AddCheck("Foo", () => Task.FromResult(HealthCheckResult.Healthy("A-ok!")))
+                        .AddCheck("Bar", () => Task.FromResult(HealthCheckResult.Unhealthy("Pretty bad.")))
+                        .AddCheck("Baz", () => Task.FromResult(HealthCheckResult.Healthy("A-ok!")));
                 });
             var server = new TestServer(builder);
             var client = server.CreateClient();
 
             var response = await client.GetAsync("/health");
+
+            Assert.Equal("application/json", response.Content.Headers.ContentType.ToString());
 
             var result = await response.Content.ReadAsStringAsync();
             Assert.Equal(expectedJson, result);
