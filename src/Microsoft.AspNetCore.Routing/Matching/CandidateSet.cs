@@ -6,6 +6,11 @@ using System.Runtime.CompilerServices;
 
 namespace Microsoft.AspNetCore.Routing.Matching
 {
+    /// <summary>
+    /// Represents a set of <see cref="Endpoint"/> candidates that have been matched
+    /// by the routing system. Used by implementations of <see cref="EndpointSelector"/>
+    /// and <see cref="IEndpointSelectorPolicy"/>.
+    /// </summary>
     public sealed class CandidateSet
     {
         // We inline storage for 4 candidates here to avoid allocations in common
@@ -18,8 +23,18 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
         private CandidateState[] _additionalCandidates;
 
-        // Provided to make testing possible/easy for someone implementing
-        // an EndpointSelector.
+        /// <summary>
+        /// <para>
+        /// Initializes a new instances of the candidate set structure with the provided list of endpoints 
+        /// and associated scores.
+        /// </para>
+        /// <para>
+        /// The constructor is provided to enable unit tests of implementations of <see cref="EndpointSelector"/>
+        /// and <see cref="IEndpointSelectorPolicy"/>.
+        /// </para>
+        /// </summary>
+        /// <param name="endpoints">The list of endpoints, sorted in descending priority order.</param>
+        /// <param name="scores">The list of endpoint scores. <see cref="CandidateState.Score"/>.</param>
         public CandidateSet(MatcherEndpoint[] endpoints, int[] scores)
         {
             Count = endpoints.Length;
@@ -112,12 +127,25 @@ namespace Microsoft.AspNetCore.Routing.Matching
             }
         }
 
+        /// <summary>
+        /// Gets the count of candidates in the set.
+        /// </summary>
         public int Count { get; }
 
-        // Note that this is a ref-return because of both mutability and performance.
-        // We don't want to copy these fat structs if it can be avoided.
+        /// <summary>
+        /// Gets the <see cref="CandidateState"/> associated with the candidate <see cref="Endpoint"/>
+        /// at <paramref name="index"/>.
+        /// </summary>
+        /// <param name="index">The candidate index.</param>
+        /// <returns>
+        /// A reference to the <see cref="CandidateState"/>. The result is returned by reference
+        /// and intended to be mutated.
+        /// </returns>
         public ref CandidateState this[int index]
         {
+            // Note that this is a ref-return because of both mutability and performance.
+            // We don't want to copy these fat structs if it can be avoided.
+
             // PERF: Force inlining
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
