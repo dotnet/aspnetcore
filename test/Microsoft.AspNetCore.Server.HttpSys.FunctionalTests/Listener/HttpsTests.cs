@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             {
                 Task<string> responseTask = SendRequestAsync(Address);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 context.Dispose();
 
                 string response = await responseTask;
@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             {
                 Task<string> responseTask = SendRequestAsync(Address);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 byte[] body = Encoding.UTF8.GetBytes("Hello World");
                 context.Response.ContentLength = body.Length;
                 await context.Response.Body.WriteAsync(body, 0, body.Length);
@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             {
                 Task<string> responseTask = SendRequestAsync(Address, "Hello World");
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 string input = new StreamReader(context.Request.Body).ReadToEnd();
                 Assert.Equal("Hello World", input);
                 context.Response.ContentLength = 11;
@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             {
                 Task<string> responseTask = SendRequestAsync(Address);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 var cert = await context.Request.GetClientCertificateAsync();
                 Assert.Null(cert);
                 context.Dispose();
@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 Assert.NotNull(clientCert);
                 Task<string> responseTask = SendRequestAsync(Address, clientCert);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 var cert = await context.Request.GetClientCertificateAsync();
                 Assert.NotNull(cert);
                 context.Dispose();

@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             {
                 Task<string> responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 var requestHeaders = context.Request.Headers;
                 // NOTE: The System.Net client only sends the Connection: keep-alive header on the first connection per service-point.
                 // Assert.Equal(2, requestHeaders.Count);

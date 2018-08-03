@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 Assert.NotNull(context.User);
                 Assert.False(context.User.Identity.IsAuthenticated);
                 Assert.Equal(authType, context.Response.AuthenticationChallenges);
@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 Assert.NotNull(context.User);
                 Assert.False(context.User.Identity.IsAuthenticated);
                 Assert.Equal(authType, context.Response.AuthenticationChallenges);
@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 Assert.NotNull(context.User);
                 Assert.False(context.User.Identity.IsAuthenticated);
                 Assert.Equal(authType, context.Response.AuthenticationChallenges);
@@ -124,14 +124,14 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address, useDefaultCredentials: true);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 Assert.NotNull(context.User);
                 Assert.False(context.User.Identity.IsAuthenticated);
                 Assert.Equal(authType, context.Response.AuthenticationChallenges);
                 context.Response.StatusCode = 401;
                 context.Dispose();
 
-                context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 Assert.NotNull(context.User);
                 Assert.True(context.User.Identity.IsAuthenticated);
                 Assert.Equal(authType, context.Response.AuthenticationChallenges);
@@ -155,7 +155,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address, useDefaultCredentials: true);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 Assert.NotNull(context.User);
                 Assert.True(context.User.Identity.IsAuthenticated);
                 Assert.Equal(authType, context.Response.AuthenticationChallenges);
@@ -174,7 +174,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address, useDefaultCredentials: true);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 Assert.NotNull(context.User);
                 Assert.True(context.User.Identity.IsAuthenticated);
                 Assert.Equal(AuthenticationSchemes.Kerberos, context.Response.AuthenticationChallenges);
@@ -193,7 +193,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 Assert.NotNull(context.User);
                 Assert.False(context.User.Identity.IsAuthenticated);
                 Assert.Equal(AuthenticationSchemes.Kerberos, context.Response.AuthenticationChallenges);
