@@ -1,8 +1,8 @@
-<Project Sdk="Microsoft.NET.Sdk;Microsoft.DotNet.GlobalTools.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk;Microsoft.DotNet.GlobalTools.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
     <PackAsTool>true</PackAsTool>
     <AssemblyName>dotnet-httprepl</AssemblyName>
     <LangVersion>latest</LangVersion>
