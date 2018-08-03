@@ -34,9 +34,7 @@
       <None Include="%(InProcessComponents.DllLocation)"
             Pack="true"
             PackagePath="runtimes/win-%(InProcessComponents.Platform)/nativeassets/$(NativeAssetsTargetFramework)" />
-      <None Include="%(InProcessComponents.PdbLocation)"
-            Pack="true"
-            PackagePath="runtimes/win-%(InProcessComponents.Platform)/nativeassets/$(NativeAssetsTargetFramework)" />
+
       <SignedPackageFile Include="%(InProcessComponents.NativeAsset)_%(InProcessComponents.Platform)"
                          PackagePath="runtimes/win-%(InProcessComponents.Platform)/nativeassets/$(NativeAssetsTargetFramework)/%(InProcessComponents.NativeAsset).dll"
                          Certificate="Microsoft" />

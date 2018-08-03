@@ -13,7 +13,7 @@
 #include "HandleWrapper.h"
 #include "Environment.h"
 
-namespace fs = std::experimental::filesystem;
+namespace fs = std::filesystem;
 
 //
 // Runs a standalone appliction.
@@ -98,7 +98,7 @@ HOSTFXR_UTILITY::GetStandaloneHostfxrParameters(
 }
 
 BOOL
-HOSTFXR_UTILITY::IsDotnetExecutable(const std::experimental::filesystem::path & dotnetPath)
+HOSTFXR_UTILITY::IsDotnetExecutable(const std::filesystem::path & dotnetPath)
 {
     auto name = dotnetPath.filename();
     name.replace_extension("");

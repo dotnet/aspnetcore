@@ -44,24 +44,40 @@ APPLICATION_MANAGER::GetOrCreateApplicationInfo(
     // key in the applicationInfoHash.
     pszApplicationId = pApplication.GetApplicationId();
 
-    // When accessing the m_pApplicationInfoHash, we need to acquire the application manager
-    // lock to avoid races on setting state.
-    SRWSharedLock lock(m_srwLock);
-    if (!m_fDebugInitialize)
     {
-        DebugInitializeFromConfig(m_pHttpServer, pApplication);
-        m_fDebugInitialize = TRUE;
-    }
+        // When accessing the m_pApplicationInfoHash, we need to acquire the application manager
+        // lock to avoid races on setting state.
+        SRWSharedLock readLock(m_srwLock);
+        if (!m_fDebugInitialize)
+        {
+            DebugInitializeFromConfig(m_pHttpServer, pApplication);
+            m_fDebugInitialize = TRUE;
+        }
 
-    if (g_fInShutdown)
-    {
-        FINISHED(HRESULT_FROM_WIN32(ERROR_SERVER_SHUTDOWN_IN_PROGRESS));
-    }
+        if (g_fInShutdown)
+        {
+            FINISHED(HRESULT_FROM_WIN32(ERROR_SERVER_SHUTDOWN_IN_PROGRESS));
+        }
 
-    m_pApplicationInfoHash->FindKey(pszApplicationId, ppApplicationInfo);
+        m_pApplicationInfoHash->FindKey(pszApplicationId, ppApplicationInfo);
+
+        // It's important to release read lock here so exclusive lock
+        // can be reacquired later as SRW lock doesn't allow upgrades
+    }
 
     if (*ppApplicationInfo == NULL)
     {
+        // Take exclusive lock before creating the application
+        SRWExclusiveLock writeLock(m_srwLock);
+
+        // Check if other thread created the application
+
+        m_pApplicationInfoHash->FindKey(pszApplicationId, ppApplicationInfo);
+        if (*ppApplicationInfo != NULL)
+        {
+            FINISHED(S_OK);
+        }
+
         pApplicationInfo = new APPLICATION_INFO(m_pHttpServer);
 
         FINISHED_IF_FAILED(pApplicationInfo->Initialize(pApplication));
@@ -187,7 +203,7 @@ APPLICATION_MANAGER::RecycleApplicationFromManager(
     DWORD                   dwPreviousCounter = 0;
     APPLICATION_INFO_HASH*  table = NULL;
     CONFIG_CHANGE_CONTEXT   context;
- 
+
     if (g_fInShutdown)
     {
         // We are already shutting down, ignore this event as a global configuration change event

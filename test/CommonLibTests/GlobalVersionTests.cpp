@@ -7,7 +7,7 @@
 namespace GlobalVersionTests
 {
     using ::testing::Test;
-    namespace fs = std::experimental::filesystem;
+    namespace fs = std::filesystem;
 
     class GlobalVersionTest : public Test
     {

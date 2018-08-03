@@ -15,10 +15,7 @@ $ancmSchemaFiles = @(
     "aspnetcore_schema_v2.xml"
 )
 
-$ancmSchemaFileLocations = @(
-    @(Resolve-Path "$PSScriptRoot\..\src\AspNetCoreModuleV1\AspNetCore\aspnetcore_schema.xml"),
-    @(Resolve-Path "$PSScriptRoot\..\src\AspNetCoreModuleV2\AspNetCore\aspnetcore_schema_v2.xml")
-)
+$ancmSchemaFileLocation = Resolve-Path "$PSScriptRoot\..\src\AspNetCoreModuleV2\AspNetCore\aspnetcore_schema_v2.xml";
 
 [bool]$isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")
 
@@ -46,7 +43,7 @@ if (-not $isAdmin -and -not $WhatIfPreference) {
 for ($i=0; $i -lt $ancmSchemaFiles.Length; $i++)
 {
     $schemaFile = $ancmSchemaFiles[$i]
-    $schemaSource = $ancmSchemaFileLocations[$i]
+    $schemaSource = $ancmSchemaFileLocation
 
     $destinations = @(
         "${env:ProgramFiles(x86)}\IIS Express\config\schema\",

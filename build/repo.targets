@@ -92,7 +92,7 @@
       <AncmFiles Include="%(Components.PdbLocation)" Link="%(Components.BaseOutputPath)\%(Components.Platform)\%(Components.NativeAsset).pdb" />
 
       <!-- Schema-->
-      <AncmFiles Include="$(SourceBase)AspNetCoreModuleV1\AspNetCore\aspnetcore_schema.xml" Link="AspNetCoreModuleV1\aspnetcore_schema.xml" />
+      <AncmFiles Include="$(SourceBase)AspNetCoreModuleV2\AspNetCore\aspnetcore_schema_v2.xml" Link="AspNetCoreModuleV1\aspnetcore_schema.xml" />
       <AncmFiles Include="$(SourceBase)AspNetCoreModuleV2\AspNetCore\aspnetcore_schema_v2.xml" Link="AspNetCoreModuleV2\aspnetcore_schema_v2.xml" />
       <AncmFiles Include="$(SourceBase)AspNetCoreModuleV2\AspNetCore\ancm.mof" Link="AspNetCoreModuleV2\ancm.mof" />
     </ItemGroup>

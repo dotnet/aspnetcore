@@ -5,6 +5,14 @@ phases:
     beforeBuild:
       - powershell: "& ./tools/UpdateIISExpressCertificate.ps1; & ./tools/update_schema.ps1; Restart-Service w3svc"
         displayName: Prepare repo
+    afterBuild:
+      - task: PublishBuildArtifacts@1
+        displayName: Upload binlog
+        condition: always()
+        inputs:
+          artifactName: logs
+          artifactType: Container
+          pathtoPublish: artifacts/logs/
 
 - template: .vsts-pipelines/templates/phases/default-build.yml@buildtools
   parameters:
