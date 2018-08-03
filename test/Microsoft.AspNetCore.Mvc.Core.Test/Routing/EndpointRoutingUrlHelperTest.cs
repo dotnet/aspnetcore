@@ -56,7 +56,17 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 requiredValues: new { controller = "Orders", action = "GetAll" },
                 routeName: "OrdersApi");
             var urlHelper = CreateUrlHelper(new[] { endpoint1, endpoint2 });
-            urlHelper.ActionContext.RouteData.Values["id"] = "500";
+
+            // Set the endpoint feature and current context just as a normal request to MVC app would be
+            var endpointFeature = new EndpointFeature();
+            urlHelper.ActionContext.HttpContext.Features.Set<IEndpointFeature>(endpointFeature);
+            endpointFeature.Endpoint = endpoint1;
+            endpointFeature.Values = new RouteValueDictionary
+            {
+                ["controller"] = "Orders",
+                ["action"] = "GetById",
+                ["id"] = "500"
+            };
 
             // Act
             var url = urlHelper.RouteUrl(
@@ -132,7 +142,6 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             endpoints.Add(new MatcherEndpoint(
                 next => httpContext => Task.CompletedTask,
                 RoutePatternFactory.Parse(template),
-                new RouteValueDictionary(),
                 0,
                 EndpointMetadataCollection.Empty,
                 null));
@@ -147,7 +156,6 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 Endpoint = new MatcherEndpoint(
                     next => cntxt => Task.CompletedTask,
                     RoutePatternFactory.Parse("/"),
-                    new RouteValueDictionary(),
                     0,
                     EndpointMetadataCollection.Empty,
                     null)
@@ -280,17 +288,13 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         {
             if (metadataCollection == null)
             {
-                metadataCollection = EndpointMetadataCollection.Empty;
-                if (!string.IsNullOrEmpty(routeName))
-                {
-                    metadataCollection = new EndpointMetadataCollection(new[] { new RouteNameMetadata(routeName) });
-                }
+                metadataCollection = new EndpointMetadataCollection(
+                    new RouteValuesAddressMetadata(routeName, new RouteValueDictionary(requiredValues)));
             }
 
             return new MatcherEndpoint(
                 next => (httpContext) => Task.CompletedTask,
                 RoutePatternFactory.Parse(template, defaults, constraints: null),
-                new RouteValueDictionary(requiredValues),
                 order,
                 metadataCollection,
                 null);
@@ -316,20 +320,9 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             return new MatcherEndpoint(
                 next => c => Task.CompletedTask,
                 RoutePatternFactory.Parse(template, defaults, constraints: null),
-                new RouteValueDictionary(),
                 0,
                 EndpointMetadataCollection.Empty,
                 null);
-        }
-
-        private class RouteNameMetadata : IRouteNameMetadata
-        {
-            public RouteNameMetadata(string routeName)
-            {
-                Name = routeName;
-            }
-
-            public string Name { get; }
         }
 
         private class SuppressLinkGenerationMetadata : ISuppressLinkGenerationMetadata { }

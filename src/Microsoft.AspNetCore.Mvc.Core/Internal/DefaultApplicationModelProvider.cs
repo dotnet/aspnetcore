@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Routing;
-using Microsoft.AspNetCore.Routing.Metadata;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Options;
 

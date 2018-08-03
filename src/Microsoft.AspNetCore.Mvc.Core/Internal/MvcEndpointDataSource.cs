@@ -3,17 +3,14 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
-using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Matching;
-using Microsoft.AspNetCore.Routing.Metadata;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.Extensions.Primitives;
@@ -295,11 +292,16 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var defaults = new RouteValueDictionary(nonInlineDefaults);
             EnsureRequiredValuesInDefaults(action.RouteValues, defaults);
 
-            var metadataCollection = BuildEndpointMetadata(action, routeName, source, suppressLinkGeneration);
+            var metadataCollection = BuildEndpointMetadata(
+                action,
+                routeName,
+                new RouteValueDictionary(action.RouteValues),
+                source,
+                suppressLinkGeneration);
+
             var endpoint = new MatcherEndpoint(
                 next => invokerDelegate,
                 RoutePatternFactory.Parse(template, defaults, constraints: null),
-                new RouteValueDictionary(action.RouteValues),
                 order,
                 metadataCollection,
                 action.DisplayName);
@@ -310,6 +312,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         private static EndpointMetadataCollection BuildEndpointMetadata(
             ActionDescriptor action,
             string routeName,
+            RouteValueDictionary requiredValues,
             object source,
             bool suppressLinkGeneration)
         {
@@ -323,10 +326,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 metadata.AddRange(action.EndpointMetadata);
             }
 
-            if (!string.IsNullOrEmpty(routeName))
-            {
-                metadata.Add(new RouteNameMetadata(routeName));
-            }
+            metadata.Add(new RouteValuesAddressMetadata(routeName, requiredValues));
 
             // Add filter descriptors to endpoint metadata
             if (action.FilterDescriptors != null && action.FilterDescriptors.Count > 0)
@@ -349,7 +349,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     {
                         metadata.Add(new HttpMethodMetadata(httpMethodActionConstraint.HttpMethods));
                     }
-                    else if (actionConstraint is ConsumesAttribute consumesAttribute && 
+                    else if (actionConstraint is ConsumesAttribute consumesAttribute &&
                         !metadata.OfType<ConsumesMetadata>().Any())
                     {
                         metadata.Add(new ConsumesMetadata(consumesAttribute.ContentTypes.ToArray()));
@@ -443,16 +443,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         public List<MvcEndpointInfo> ConventionalEndpointInfos { get; }
-
-        private class RouteNameMetadata : IRouteNameMetadata
-        {
-            public RouteNameMetadata(string routeName)
-            {
-                Name = routeName;
-            }
-
-            public string Name { get; }
-        }
 
         private class SuppressLinkGenerationMetadata : ISuppressLinkGenerationMetadata { }
     }

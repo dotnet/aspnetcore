@@ -223,7 +223,6 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             return new MatcherEndpoint(
                 (next) => null,
                 RoutePatternFactory.Parse(template),
-                new RouteValueDictionary(),
                 0,
                 new EndpointMetadataCollection(metadata),
                 $"test: {template} - {string.Join(", ", consumesMetadata?.ContentTypes ?? Array.Empty<string>())}");
