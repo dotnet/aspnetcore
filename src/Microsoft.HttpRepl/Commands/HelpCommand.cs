@@ -30,15 +30,7 @@ namespace Microsoft.HttpRepl.Commands
             {
                 if (parseResult.Sections.Count == 1)
                 {
-                    foreach (ICommand<HttpState, ICoreParseResult> command in dispatcher.Commands)
-                    {
-                        string help = command.GetHelpSummary(shellState, programState);
-
-                        if (!string.IsNullOrEmpty(help))
-                        {
-                            shellState.ConsoleManager.WriteLine(help);
-                        }
-                    }
+                    CoreGetHelp(shellState, dispatcher, programState);
                 }
                 else
                 {
@@ -170,6 +162,19 @@ namespace Microsoft.HttpRepl.Commands
             }
 
             return null;
+        }
+
+        public void CoreGetHelp(IShellState shellState, ICommandDispatcher<HttpState, ICoreParseResult> dispatcher, HttpState programState)
+        {
+            foreach (ICommand<HttpState, ICoreParseResult> command in dispatcher.Commands)
+            {
+                string help = command.GetHelpSummary(shellState, programState);
+
+                if (!string.IsNullOrEmpty(help))
+                {
+                    shellState.ConsoleManager.WriteLine(help);
+                }
+            }
         }
     }
 }

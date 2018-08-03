@@ -13,6 +13,8 @@ namespace Microsoft.Repl.Input
 
         IInputManager RegisterKeyHandler(ConsoleKey key, AsyncKeyPressHandler handler);
 
+        IInputManager RegisterKeyHandler(ConsoleKey key, ConsoleModifiers modifiers, AsyncKeyPressHandler handler);
+
         void ResetInput();
 
         Task StartAsync(IShellState state, CancellationToken cancellationToken);

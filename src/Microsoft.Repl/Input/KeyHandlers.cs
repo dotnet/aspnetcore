@@ -14,9 +14,13 @@ namespace Microsoft.Repl.Input
         {
             //Navigation in line
             inputManager.RegisterKeyHandler(ConsoleKey.LeftArrow, LeftArrow);
+            inputManager.RegisterKeyHandler(ConsoleKey.LeftArrow, ConsoleModifiers.Control, LeftArrow);
             inputManager.RegisterKeyHandler(ConsoleKey.RightArrow, RightArrow);
+            inputManager.RegisterKeyHandler(ConsoleKey.RightArrow, ConsoleModifiers.Control, RightArrow);
             inputManager.RegisterKeyHandler(ConsoleKey.Home, Home);
+            inputManager.RegisterKeyHandler(ConsoleKey.A, ConsoleModifiers.Control, Home);
             inputManager.RegisterKeyHandler(ConsoleKey.End, End);
+            inputManager.RegisterKeyHandler(ConsoleKey.E, ConsoleModifiers.Control, End);
 
             //Command history
             inputManager.RegisterKeyHandler(ConsoleKey.UpArrow, UpArrow);
@@ -24,9 +28,11 @@ namespace Microsoft.Repl.Input
 
             //Completion
             inputManager.RegisterKeyHandler(ConsoleKey.Tab, Tab);
+            inputManager.RegisterKeyHandler(ConsoleKey.Tab, ConsoleModifiers.Shift, Tab);
 
             //Input manipulation
             inputManager.RegisterKeyHandler(ConsoleKey.Escape, Escape);
+            inputManager.RegisterKeyHandler(ConsoleKey.U, ConsoleModifiers.Control, Escape);
             inputManager.RegisterKeyHandler(ConsoleKey.Delete, Delete);
             inputManager.RegisterKeyHandler(ConsoleKey.Backspace, Backspace);
 

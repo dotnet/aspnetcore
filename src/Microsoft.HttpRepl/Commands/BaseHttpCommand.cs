@@ -31,6 +31,8 @@ namespace Microsoft.HttpRepl.Commands
         private const string ResponseFileOption = nameof(ResponseFileOption);
         private const string BodyFileOption = nameof(BodyFileOption);
         private const string NoBodyOption = nameof(NoBodyOption);
+        private const string NoFormattingOption = nameof(NoFormattingOption);
+        private const string NoStreamingOption = nameof(NoStreamingOption);
         private const string BodyContentOption = nameof(BodyContentOption);
         private static readonly char[] HeaderSeparatorChars = new[] { '=', ':' };
 
@@ -54,7 +56,9 @@ namespace Microsoft.HttpRepl.Commands
                     .WithOption(new CommandOptionSpecification(HeaderOption, requiresValue: true, forms: new[] {"--header", "-h"}))
                     .WithOption(new CommandOptionSpecification(ResponseFileOption, requiresValue: true, maximumOccurrences: 1, forms: new[] { "--response", }))
                     .WithOption(new CommandOptionSpecification(ResponseHeadersFileOption, requiresValue: true, maximumOccurrences: 1, forms: new[] { "--response:headers", }))
-                    .WithOption(new CommandOptionSpecification(ResponseBodyFileOption, requiresValue: true, maximumOccurrences: 1, forms: new[] { "--response:body", }));
+                    .WithOption(new CommandOptionSpecification(ResponseBodyFileOption, requiresValue: true, maximumOccurrences: 1, forms: new[] { "--response:body", }))
+                    .WithOption(new CommandOptionSpecification(NoFormattingOption, maximumOccurrences: 1, forms: new[] { "--no-formatting", "-F" }))
+                    .WithOption(new CommandOptionSpecification(NoStreamingOption, maximumOccurrences: 1, forms: new[] { "--no-streaming", "-S" }));
 
                 if (RequiresBody)
                 {
@@ -70,9 +74,9 @@ namespace Microsoft.HttpRepl.Commands
 
         protected override async Task ExecuteAsync(IShellState shellState, HttpState programState, DefaultCommandInput<ICoreParseResult> commandInput, ICoreParseResult parseResult, CancellationToken cancellationToken)
         {
-            if (programState.BaseAddress == null)
+            if (programState.BaseAddress == null && (commandInput.Arguments.Count == 0 || !Uri.TryCreate(commandInput.Arguments[0].Text, UriKind.Absolute, out Uri _)))
             {
-                shellState.ConsoleManager.Error.WriteLine("'set base {url}' must be called before issuing requests".Bold().Red());
+                shellState.ConsoleManager.Error.WriteLine("'set base {url}' must be called before issuing requests to a relative path".Bold().Red());
                 return;
             }
 
@@ -203,10 +207,10 @@ namespace Microsoft.HttpRepl.Commands
             string bodyTarget = commandInput.Options[ResponseBodyFileOption].FirstOrDefault()?.Text ?? commandInput.Options[ResponseFileOption].FirstOrDefault()?.Text;
 
             HttpResponseMessage response = await programState.Client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
-            await HandleResponseAsync(programState, shellState.ConsoleManager, response, programState.EchoRequest, headersTarget, bodyTarget, cancellationToken).ConfigureAwait(false);
+            await HandleResponseAsync(programState, commandInput, shellState.ConsoleManager, response, programState.EchoRequest, headersTarget, bodyTarget, cancellationToken).ConfigureAwait(false);
         }
 
-        private static async Task HandleResponseAsync(HttpState programState, IConsoleManager consoleManager, HttpResponseMessage response, bool echoRequest, string headersTargetFile, string bodyTargetFile, CancellationToken cancellationToken)
+        private static async Task HandleResponseAsync(HttpState programState, DefaultCommandInput<ICoreParseResult> commandInput, IConsoleManager consoleManager, HttpResponseMessage response, bool echoRequest, string headersTargetFile, string bodyTargetFile, CancellationToken cancellationToken)
         {
             RequestConfig requestConfig = new RequestConfig(programState);
             ResponseConfig responseConfig = new ResponseConfig(programState);
@@ -244,7 +248,7 @@ namespace Microsoft.HttpRepl.Commands
                 {
                     using (StreamWriter writer = new StreamWriter(new MemoryStream()))
                     {
-                        await FormatBodyAsync(programState, consoleManager, response.RequestMessage.Content, writer, cancellationToken).ConfigureAwait(false);
+                        await FormatBodyAsync(commandInput, programState, consoleManager, response.RequestMessage.Content, writer, cancellationToken).ConfigureAwait(false);
                     }
                 }
 
@@ -311,7 +315,7 @@ namespace Microsoft.HttpRepl.Commands
 
             if (response.Content != null)
             {
-                await FormatBodyAsync(programState, consoleManager, response.Content, bodyFileWriter, cancellationToken).ConfigureAwait(false);
+                await FormatBodyAsync(commandInput, programState, consoleManager, response.Content, bodyFileWriter, cancellationToken).ConfigureAwait(false);
             }
 
             bodyFileWriter.Flush();
@@ -321,7 +325,7 @@ namespace Microsoft.HttpRepl.Commands
             consoleManager.WriteLine();
         }
 
-        private static async Task FormatBodyAsync(HttpState programState, IConsoleManager consoleManager, HttpContent content, StreamWriter bodyFileWriter, CancellationToken cancellationToken)
+        private static async Task FormatBodyAsync(DefaultCommandInput<ICoreParseResult> commandInput, HttpState programState, IConsoleManager consoleManager, HttpContent content, StreamWriter bodyFileWriter, CancellationToken cancellationToken)
         {
             string contentType = null;
             if (content.Headers.TryGetValues("Content-Type", out IEnumerable<string> contentTypeValues))
@@ -331,33 +335,36 @@ namespace Microsoft.HttpRepl.Commands
 
             contentType = contentType?.ToUpperInvariant() ?? "text/plain";
 
-            if (contentType.EndsWith("/JSON", StringComparison.OrdinalIgnoreCase)
-                || contentType.EndsWith("-JSON", StringComparison.OrdinalIgnoreCase)
-                || contentType.EndsWith("+JSON", StringComparison.OrdinalIgnoreCase)
-                || contentType.EndsWith("/JAVASCRIPT", StringComparison.OrdinalIgnoreCase)
-                || contentType.EndsWith("-JAVASCRIPT", StringComparison.OrdinalIgnoreCase)
-                || contentType.EndsWith("+JAVASCRIPT", StringComparison.OrdinalIgnoreCase))
+            if (commandInput.Options[NoFormattingOption].Count == 0)
             {
-                if (await FormatJsonAsync(programState, consoleManager, content, bodyFileWriter))
+                if (contentType.EndsWith("/JSON", StringComparison.OrdinalIgnoreCase)
+                    || contentType.EndsWith("-JSON", StringComparison.OrdinalIgnoreCase)
+                    || contentType.EndsWith("+JSON", StringComparison.OrdinalIgnoreCase)
+                    || contentType.EndsWith("/JAVASCRIPT", StringComparison.OrdinalIgnoreCase)
+                    || contentType.EndsWith("-JAVASCRIPT", StringComparison.OrdinalIgnoreCase)
+                    || contentType.EndsWith("+JAVASCRIPT", StringComparison.OrdinalIgnoreCase))
                 {
-                    return;
+                    if (await FormatJsonAsync(programState, consoleManager, content, bodyFileWriter))
+                    {
+                        return;
+                    }
                 }
-            }
-            else if (contentType.EndsWith("/HTML", StringComparison.OrdinalIgnoreCase)
-                || contentType.EndsWith("-HTML", StringComparison.OrdinalIgnoreCase)
-                || contentType.EndsWith("+HTML", StringComparison.OrdinalIgnoreCase)
-                || contentType.EndsWith("/XML", StringComparison.OrdinalIgnoreCase)
-                || contentType.EndsWith("-XML", StringComparison.OrdinalIgnoreCase)
-                || contentType.EndsWith("+XML", StringComparison.OrdinalIgnoreCase))
-            {
-                if (await FormatXmlAsync(consoleManager, content, bodyFileWriter))
+                else if (contentType.EndsWith("/HTML", StringComparison.OrdinalIgnoreCase)
+                    || contentType.EndsWith("-HTML", StringComparison.OrdinalIgnoreCase)
+                    || contentType.EndsWith("+HTML", StringComparison.OrdinalIgnoreCase)
+                    || contentType.EndsWith("/XML", StringComparison.OrdinalIgnoreCase)
+                    || contentType.EndsWith("-XML", StringComparison.OrdinalIgnoreCase)
+                    || contentType.EndsWith("+XML", StringComparison.OrdinalIgnoreCase))
                 {
-                    return;
+                    if (await FormatXmlAsync(consoleManager, content, bodyFileWriter))
+                    {
+                        return;
+                    }
                 }
             }
 
-            //If we don't have content length, assume streaming
-            if (!content.Headers.TryGetValues("Content-Length", out IEnumerable<string> _))
+            //Unless the user has explicitly specified to not stream the response, if we don't have content length, assume streaming
+            if (commandInput.Options[NoStreamingOption].Count == 0 && !content.Headers.TryGetValues("Content-Length", out IEnumerable<string> _))
             {
                 Memory<char> buffer = new Memory<char>(new char[2048]);
                 Stream s = await content.ReadAsStreamAsync().ConfigureAwait(false);

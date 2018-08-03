@@ -38,7 +38,6 @@ namespace Microsoft.HttpRepl.Preferences
             }
         }
 
-        #region JSON
         public static string JsonArrayBraceColor { get; } = "colors.json.arrayBrace";
 
         public static string JsonObjectBraceColor { get; } = "colors.json.objectBrace";
@@ -66,7 +65,6 @@ namespace Microsoft.HttpRepl.Preferences
         public static string JsonSyntaxColor { get; } = "colors.json.syntax";
 
         public static string JsonBraceColor { get; } = "colors.json.brace";
-        #endregion JSON
 
         public static string RequestColor { get; } = "colors.request";
 

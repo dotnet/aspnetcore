@@ -1,10 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Repl;
 using Microsoft.Repl.Commanding;
+using Microsoft.Repl.ConsoleHandling;
 using Microsoft.Repl.Parsing;
 using Microsoft.HttpRepl.Commands;
 
@@ -14,6 +16,12 @@ namespace Microsoft.HttpRepl
     {
         static async Task Main(string[] args)
         {
+            if(Console.IsOutputRedirected)
+            {
+                Reporter.Error.WriteLine("Cannot start the REPL when output is being redirected".Bold().Red());
+                return;
+            }
+
             var state = new HttpState();
             var dispatcher = DefaultCommandDispatcher.Create(state.GetPrompt, state);
 
@@ -44,6 +52,22 @@ namespace Microsoft.HttpRepl
             shell.ShellState.ConsoleManager.AddBreakHandler(() => source.Cancel());
             if (args.Length > 0)
             {
+                if (string.Equals(args[0], "--help", StringComparison.OrdinalIgnoreCase))
+                {
+                    shell.ShellState.ConsoleManager.WriteLine("Usage: dotnet httprepl [<BASE_ADDRESS>] [options]");
+                    shell.ShellState.ConsoleManager.WriteLine();
+                    shell.ShellState.ConsoleManager.WriteLine("Arguments:");
+                    shell.ShellState.ConsoleManager.WriteLine("  <BASE_ADDRESS> - The initial base address for the REPL.");
+                    shell.ShellState.ConsoleManager.WriteLine();
+                    shell.ShellState.ConsoleManager.WriteLine("Options:");
+                    shell.ShellState.ConsoleManager.WriteLine("  --help - Show help information.");
+
+                    shell.ShellState.ConsoleManager.WriteLine();
+                    shell.ShellState.ConsoleManager.WriteLine("REPL Commands:");
+                    new HelpCommand().CoreGetHelp(shell.ShellState, (ICommandDispatcher<HttpState, ICoreParseResult>)shell.ShellState.CommandDispatcher, state);
+                    return;
+                }
+
                 shell.ShellState.CommandDispatcher.OnReady(shell.ShellState);
                 shell.ShellState.InputManager.SetInput(shell.ShellState, $"set base \"{args[0]}\"");
                 await shell.ShellState.CommandDispatcher.ExecuteCommandAsync(shell.ShellState, CancellationToken.None).ConfigureAwait(false);

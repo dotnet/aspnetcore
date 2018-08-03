@@ -4,6 +4,7 @@
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <Description>A framework for creating REPLs in .NET Core.</Description>
     <PackageTags>dotnet;repl</PackageTags>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
 </Project>

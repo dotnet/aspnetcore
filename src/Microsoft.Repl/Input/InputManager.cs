@@ -12,7 +12,7 @@ namespace Microsoft.Repl.Input
 {
     public class InputManager : IInputManager
     {
-        private readonly Dictionary<ConsoleKey, AsyncKeyPressHandler> _handlers = new Dictionary<ConsoleKey, AsyncKeyPressHandler>();
+        private readonly Dictionary<ConsoleKey, Dictionary<ConsoleModifiers, AsyncKeyPressHandler>> _handlers = new Dictionary<ConsoleKey, Dictionary<ConsoleModifiers, AsyncKeyPressHandler>>();
         private readonly List<char> _inputBuffer = new List<char>();
 
         public bool IsOverwriteMode { get; set; }
@@ -29,13 +29,37 @@ namespace Microsoft.Repl.Input
 
         public IInputManager RegisterKeyHandler(ConsoleKey key, AsyncKeyPressHandler handler)
         {
+            if (!_handlers.TryGetValue(key, out Dictionary<ConsoleModifiers, AsyncKeyPressHandler> handlers))
+            {
+                _handlers[key] = handlers = new Dictionary<ConsoleModifiers, AsyncKeyPressHandler>();
+            }
+
             if (handler == null)
             {
-                _handlers.Remove(key);
+                handlers.Remove(default(ConsoleModifiers));
             }
             else
             {
-                _handlers[key] = handler;
+                handlers[default(ConsoleModifiers)] = handler;
+            }
+
+            return this;
+        }
+
+        public IInputManager RegisterKeyHandler(ConsoleKey key, ConsoleModifiers modifiers, AsyncKeyPressHandler handler)
+        {
+            if (!_handlers.TryGetValue(key, out Dictionary<ConsoleModifiers, AsyncKeyPressHandler> handlers))
+            {
+                _handlers[key] = handlers = new Dictionary<ConsoleModifiers, AsyncKeyPressHandler>();
+            }
+
+            if (handler == null)
+            {
+                handlers.Remove(modifiers);
+            }
+            else
+            {
+                handlers[modifiers] = handler;
             }
 
             return this;
@@ -169,7 +193,7 @@ namespace Microsoft.Repl.Input
                 {
                     ConsoleKeyInfo keyPress = state.ConsoleManager.ReadKey(cancellationToken);
 
-                    if (_handlers.TryGetValue(keyPress.Key, out AsyncKeyPressHandler handler))
+                    if (_handlers.TryGetValue(keyPress.Key, out Dictionary<ConsoleModifiers, AsyncKeyPressHandler> handlerLookup) && handlerLookup.TryGetValue(keyPress.Modifiers, out AsyncKeyPressHandler handler))
                     {
                         using (CancellationTokenSource source = new CancellationTokenSource())
                         using (state.ConsoleManager.AddBreakHandler(() => source.Cancel()))
@@ -189,6 +213,7 @@ namespace Microsoft.Repl.Input
                             FlushInput(state, ref presses);
                         }
 
+                        //TODO: Verify on a mac whether these are still needed
                         if (keyPress.Key == ConsoleKey.A)
                         {
                             state.ConsoleManager.MoveCaret(-state.ConsoleManager.CaretPosition);
@@ -198,6 +223,7 @@ namespace Microsoft.Repl.Input
                             state.ConsoleManager.MoveCaret(_inputBuffer.Count - state.ConsoleManager.CaretPosition);
                         }
                     }
+                    //TODO: Register these like regular commands
                     else if (!string.IsNullOrEmpty(_ttyState) && keyPress.Modifiers == ConsoleModifiers.Alt)
                     {
                         if (presses != null)
