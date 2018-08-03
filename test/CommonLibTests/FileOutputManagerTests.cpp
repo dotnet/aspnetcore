@@ -41,7 +41,7 @@ namespace FileOutManagerStartupTests
                 wprintf(expected, out);
             }
 
-            for (auto & p : std::filesystem::directory_iterator(tempDirectory.path()))
+            for (auto & p : std::experimental::filesystem::directory_iterator(tempDirectory.path()))
             {
                 std::wstring filename(p.path().filename());
                 ASSERT_EQ(filename.substr(0, fileNamePrefix.size()), fileNamePrefix);

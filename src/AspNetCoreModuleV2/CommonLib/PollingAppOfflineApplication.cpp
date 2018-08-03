@@ -38,7 +38,7 @@ PollingAppOfflineApplication::AppOfflineExists()
 }
 
 
-std::filesystem::path PollingAppOfflineApplication::GetAppOfflineLocation(IHttpApplication& pApplication)
+std::experimental::filesystem::path PollingAppOfflineApplication::GetAppOfflineLocation(IHttpApplication& pApplication)
 {
-    return std::filesystem::path(pApplication.GetApplicationPhysicalPath()) / "app_offline.htm";
+    return std::experimental::filesystem::path(pApplication.GetApplicationPhysicalPath()) / "app_offline.htm";
 }
