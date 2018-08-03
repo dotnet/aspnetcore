@@ -30,8 +30,8 @@ public:
     void Stop(bool fServerInitiated) override { UNREFERENCED_PARAMETER(fServerInitiated); }
 
 protected:
-    std::experimental::filesystem::path m_appOfflineLocation;
-    static std::experimental::filesystem::path GetAppOfflineLocation(IHttpApplication& pApplication);
+    std::filesystem::path m_appOfflineLocation;
+    static std::filesystem::path GetAppOfflineLocation(IHttpApplication& pApplication);
 
 private:
     static const int c_appOfflineRefreshIntervalMS = 200;
