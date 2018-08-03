@@ -1,0 +1,31 @@
+trigger:
+- master
+- release/*
+phases:
+- phase: Windows
+  queue:
+    name: Hosted VS2017
+    parallel: 2
+    matrix:
+      Debug:
+        BuildConfiguration: Debug
+      Release:
+        BuildConfiguration: Release
+  steps:
+  - checkout: self
+    clean: true
+  - script: .\build.cmd -ci /p:Configuration=$(BuildConfiguration)
+    displayName: Run build.cmd
+  - task: PublishTestResults@2
+    displayName: Publish test results
+    condition: always()
+    inputs:
+      testRunner: vstest
+      testResultsFiles: 'artifacts/logs/**/*.trx'
+  - task: PublishBuildArtifacts@1
+    displayName: Upload artifacts
+    condition: and(succeeded(), eq(variables['system.pullrequest.isfork'], false))
+    inputs:
+      pathtoPublish: artifacts/
+      artifactName: artifacts-$(BuildConfiguration)
+      artifactType: Container
