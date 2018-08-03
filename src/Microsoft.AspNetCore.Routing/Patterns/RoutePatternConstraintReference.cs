@@ -7,7 +7,8 @@ using Microsoft.AspNetCore.Routing.Matching;
 namespace Microsoft.AspNetCore.Routing.Patterns
 {
     /// <summary>
-    /// The parsed representation of a constraint in a <see cref="RoutePattern"/> parameter.
+    /// The parsed representation of a constraint in a <see cref="RoutePattern"/> parameter. Instances
+    /// of <see cref="RoutePatternConstraintReference"/> are immutable.
     /// </summary>
     [DebuggerDisplay("{DebuggerToString()}")]
     public sealed class RoutePatternConstraintReference

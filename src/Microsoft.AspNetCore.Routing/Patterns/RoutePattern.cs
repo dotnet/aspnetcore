@@ -9,6 +9,11 @@ using Microsoft.AspNetCore.Routing.Template;
 
 namespace Microsoft.AspNetCore.Routing.Patterns
 {
+    /// <summary>
+    /// Represents a parsed route template with default values and constraints.
+    /// Use <see cref="RoutePatternFactory"/> to create <see cref="RoutePattern"/>
+    /// instances. Instances of <see cref="RoutePattern"/> are immutable.
+    /// </summary>
     [DebuggerDisplay("{DebuggerToString()}")]
     public sealed class RoutePattern
     {
@@ -36,18 +41,49 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             OutboundPrecedence = RoutePrecedence.ComputeOutbound(this);
         }
 
+        /// <summary>
+        /// Gets the set of default values for the route pattern.
+        /// The keys of <see cref="Defaults"/> are the route parameter names.
+        /// </summary>
         public IReadOnlyDictionary<string, object> Defaults { get; }
 
+        /// <summary>
+        /// Gets the set of constraint references for the route pattern.
+        /// The keys of <see cref="Constraints"/> are the route parameter names.
+        /// </summary>
         public IReadOnlyDictionary<string, IReadOnlyList<RoutePatternConstraintReference>> Constraints { get; }
 
+        /// <summary>
+        /// Gets the precedence value of the route pattern for URL matching.
+        /// </summary>
+        /// <remarks>
+        /// Precedence is a computed value based on the structure of the route pattern
+        /// used for building URL matching data structures.
+        /// </remarks>
         public decimal InboundPrecedence { get; }
 
+        /// <summary>
+        /// Gets the precedence value of the route pattern for URL generation.
+        /// </summary>
+        /// <remarks>
+        /// Precedence is a computed value based on the structure of the route pattern
+        /// used for building URL generation data structures.
+        /// </remarks>
         public decimal OutboundPrecedence { get; }
 
+        /// <summary>
+        /// Gets the raw text supplied when parsing the route pattern. May be null.
+        /// </summary>
         public string RawText { get; }
 
+        /// <summary>
+        /// Gets the list of route parameters.
+        /// </summary>
         public IReadOnlyList<RoutePatternParameterPart> Parameters { get; }
 
+        /// <summary>
+        /// Gets the list of path segments.
+        /// </summary>
         public IReadOnlyList<RoutePatternPathSegment> PathSegments { get; }
 
         /// <summary>

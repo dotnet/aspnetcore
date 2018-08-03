@@ -6,15 +6,30 @@ using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Routing
 {
+    /// <summary>
+    /// A default implementation of <see cref="IEndpointFeature"/> and <see cref="IRoutingFeature"/>.
+    /// </summary>
     public sealed class EndpointFeature : IEndpointFeature, IRoutingFeature
     {
         private RouteData _routeData;
         private RouteValueDictionary _values;
 
+        /// <summary>
+        /// Gets or sets the selected <see cref="Routing.Endpoint"/> for the current
+        /// request.
+        /// </summary>
         public Endpoint Endpoint { get; set; }
 
+        /// <summary>
+        /// Gets or sets a delegate that can be used to invoke the current
+        /// <see cref="Routing.Endpoint"/>.
+        /// </summary>
         public Func<RequestDelegate, RequestDelegate> Invoker { get; set; }
 
+        /// <summary>
+        /// Gets or sets the <see cref="RouteValueDictionary"/> associated with the currrent
+        /// request.
+        /// </summary>
         public RouteValueDictionary Values
         {
             get => _values;
@@ -27,6 +42,12 @@ namespace Microsoft.AspNetCore.Routing
             }
         }
 
+        /// <summary>
+        /// Gets or sets the <see cref="RouteData"/> for the current request.
+        /// </summary>
+        /// <remarks>
+        /// The setter is not implemented. Use <see cref="Values"/> to set the route values.
+        /// </remarks>
         RouteData IRoutingFeature.RouteData
         {
             get
