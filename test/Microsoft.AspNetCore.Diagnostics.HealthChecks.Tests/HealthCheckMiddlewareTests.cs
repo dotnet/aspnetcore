@@ -355,5 +355,65 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
                 "The following health checks were not found: 'Bazzzzzz'. Registered health checks: 'Foo, Bar, Baz'.",
                 ex.Message);
         }
+
+        [Fact]
+        public async Task CanListenOnPort_AcceptsRequest_OnSpecifiedPort()
+        {
+            var builder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.Use(next => async (context) =>
+                    {
+                        // Need to fake setting the connection info. TestServer doesn't
+                        // do that, because it doesn't have a connection.
+                        context.Connection.LocalPort = context.Request.Host.Port.Value;
+                        await next(context);
+                    });
+
+                    app.UseHealthChecks("/health", port: 5001);
+                })
+                .ConfigureServices(services =>
+                {
+                    services.AddHealthChecks();
+                });
+            
+            var server = new TestServer(builder);
+            var client = server.CreateClient();
+
+            var response = await client.GetAsync("http://localhost:5001/health");
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("text/plain", response.Content.Headers.ContentType.ToString());
+            Assert.Equal("Healthy", await response.Content.ReadAsStringAsync());
+        }
+
+        [Fact]
+        public async Task CanListenOnPort_RejectsRequest_OnOtherPort()
+        {
+            var builder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.Use(next => async (context) =>
+                    {
+                        // Need to fake setting the connection info. TestServer doesn't
+                        // do that, because it doesn't have a connection.
+                        context.Connection.LocalPort = context.Request.Host.Port.Value;
+                        await next(context);
+                    });
+
+                    app.UseHealthChecks("/health", port: 5001);
+                })
+                .ConfigureServices(services =>
+                {
+                    services.AddHealthChecks();
+                });
+
+            var server = new TestServer(builder);
+            var client = server.CreateClient();
+
+            var response = await client.GetAsync("http://localhost:5000/health");
+
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
     }
 }
