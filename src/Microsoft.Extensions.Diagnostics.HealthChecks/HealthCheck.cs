@@ -11,14 +11,9 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
     /// A simple implementation of <see cref="IHealthCheck"/> which uses a provided delegate to
     /// implement the check.
     /// </summary>
-    public class HealthCheck : IHealthCheck
+    public sealed class HealthCheck : IHealthCheck
     {
         private readonly Func<CancellationToken, Task<HealthCheckResult>> _check;
-
-        /// <summary>
-        /// Gets the name of the health check, which should indicate the component being checked.
-        /// </summary>
-        public string Name { get; }
 
         /// <summary>
         /// Create an instance of <see cref="HealthCheck"/> from the specified <paramref name="name"/> and <paramref name="check"/>.
@@ -27,9 +22,14 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
         /// <param name="check">A delegate which provides the code to execute when the health check is run.</param>
         public HealthCheck(string name, Func<CancellationToken, Task<HealthCheckResult>> check)
         {
-            Name = name;
-            _check = check;
+            Name = name ?? throw new ArgumentNullException(nameof(name));
+            _check = check ?? throw new ArgumentNullException(nameof(check));
         }
+
+        /// <summary>
+        /// Gets the name of the health check, which should indicate the component being checked.
+        /// </summary>
+        public string Name { get; }
 
         /// <summary>
         /// Runs the health check, returning the status of the component being checked.
