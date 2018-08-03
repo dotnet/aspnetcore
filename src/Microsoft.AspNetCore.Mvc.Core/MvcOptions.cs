@@ -68,13 +68,6 @@ namespace Microsoft.AspNetCore.Mvc
             };
         }
 
-        // REVIEW: Remove once web hooks is using EnableEndpointRouting
-        public bool EnableGlobalRouting
-        {
-            get => EnableEndpointRouting;
-            set => EnableEndpointRouting = value;
-        }
-
         // REVIEW: Add documentation
         public bool EnableEndpointRouting
         {
