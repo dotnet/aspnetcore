@@ -108,10 +108,11 @@ namespace Microsoft.AspNetCore.Routing
                 new RouteTemplate(endpoint.RoutePattern),
                 new RouteValueDictionary(endpoint.RoutePattern.Defaults));
 
+            var routeValuesAddressMetadata = endpoint.Metadata.GetMetadata<IRouteValuesAddressMetadata>();
             var templateValuesResult = templateBinder.GetValues(
                 ambientValues: ambientValues,
                 explicitValues: explicitValues,
-                requiredKeys: endpoint.RequiredValues.Keys);
+                requiredKeys: routeValuesAddressMetadata?.RequiredValues.Keys);
             if (templateValuesResult == null)
             {
                 // We're missing one of the required values for this route.

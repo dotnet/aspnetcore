@@ -1311,9 +1311,10 @@ namespace Microsoft.AspNetCore.Routing
             // Arrange
             var endpoint1 = EndpointFactory.CreateMatcherEndpoint(
                 "Product/Edit/{id}",
-                requiredValues: new { controller = "Product", action = "Edit", area = (string)null, page = (string)null },
                 defaults: new { controller = "Product", action = "Edit", area = (string)null, page = (string)null },
-                metadata: new RouteNameMetadata("EditProduct"));
+                metadata: new RouteValuesAddressMetadata(
+                    "EditProduct",
+                    new RouteValueDictionary(new { controller = "Product", action = "Edit", area = (string)null, page = (string)null })));
             var linkGenerator = CreateLinkGenerator(endpoint1);
 
             // Act
@@ -1334,14 +1335,16 @@ namespace Microsoft.AspNetCore.Routing
             // Arrange
             var endpoint1 = EndpointFactory.CreateMatcherEndpoint(
                 "Product/Edit/{id}",
-                requiredValues: new { controller = "Product", action = "Edit", area = (string)null, page = (string)null },
                 defaults: new { controller = "Product", action = "Edit", area = (string)null, page = (string)null },
-                metadata: new RouteNameMetadata("default"));
+                metadata: new RouteValuesAddressMetadata(
+                    "default",
+                    new RouteValueDictionary(new { controller = "Product", action = "Edit", area = (string)null, page = (string)null })));
             var endpoint2 = EndpointFactory.CreateMatcherEndpoint(
                 "Product/Details/{id}",
-                requiredValues: new { controller = "Product", action = "Edit", area = (string)null, page = (string)null },
                 defaults: new { controller = "Product", action = "Edit", area = (string)null, page = (string)null },
-                metadata: new RouteNameMetadata("default"));
+                metadata: new RouteValuesAddressMetadata(
+                    "default",
+                    new RouteValueDictionary(new { controller = "Product", action = "Edit", area = (string)null, page = (string)null })));
             var linkGenerator = CreateLinkGenerator(endpoint1, endpoint2);
 
             // Act
@@ -1528,18 +1531,14 @@ namespace Microsoft.AspNetCore.Routing
             }
         }
 
+        private interface INameMetadata
+        {
+            string Name { get; }
+        }
+
         private class NameMetadata : INameMetadata
         {
             public NameMetadata(string name)
-            {
-                Name = name;
-            }
-            public string Name { get; }
-        }
-
-        private class RouteNameMetadata : IRouteNameMetadata
-        {
-            public RouteNameMetadata(string name)
             {
                 Name = name;
             }
