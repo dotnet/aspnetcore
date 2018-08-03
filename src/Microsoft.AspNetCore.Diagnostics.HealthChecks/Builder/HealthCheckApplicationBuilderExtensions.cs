@@ -20,7 +20,13 @@ namespace Microsoft.AspNetCore.Builder
         /// <param name="path">The path on which to provide health check status.</param>
         /// <returns>A reference to the <paramref name="app"/> after the operation has completed.</returns>
         /// <remarks>
-        /// The health check middleware will use default settings other than the provided <paramref name="path"/>.
+        /// <para>
+        /// This method will use <see cref="MapExtensions.Map(IApplicationBuilder, PathString, Action{IApplicationBuilder})"/> to
+        /// listen to health checks requests on the specified URL path.
+        /// </para>
+        /// <para>
+        /// The health check middleware will use default settings from <see cref="IOptions{HealthCheckOptions}"/>.
+        /// </para>
         /// </remarks>
         public static IApplicationBuilder UseHealthChecks(this IApplicationBuilder app, PathString path)
         {
@@ -44,6 +50,12 @@ namespace Microsoft.AspNetCore.Builder
         /// <param name="path">The path on which to provide health check status.</param>
         /// <param name="options">A <see cref="HealthCheckOptions"/> used to configure the middleware.</param>
         /// <returns>A reference to the <paramref name="app"/> after the operation has completed.</returns>
+        /// <remarks>
+        /// <para>
+        /// This method will use <see cref="MapExtensions.Map(IApplicationBuilder, PathString, Action{IApplicationBuilder})"/> to
+        /// listen to health checks requests on the specified URL path.
+        /// </para>
+        /// </remarks>
         public static IApplicationBuilder UseHealthChecks(this IApplicationBuilder app, PathString path, HealthCheckOptions options)
         {
             if (app == null)

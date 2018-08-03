@@ -48,12 +48,7 @@ namespace HealthChecksSample
 
 
             // The readiness check uses all of the registered health checks (default)
-            app.UseHealthChecks("/health/ready", new HealthCheckOptions()
-            {
-                // This sample is using detailed status to make more apparent which checks are being run - any
-                // output format will work with liveness and readiness checks.
-                ResponseWriter = HealthCheckResponseWriters.WriteDetailedJson,
-            });
+            app.UseHealthChecks("/health/ready");
 
             // The liveness check uses an 'identity' health check that always returns healty
             app.UseHealthChecks("/health/live", new HealthCheckOptions()
@@ -63,10 +58,6 @@ namespace HealthChecksSample
                 {
                     "identity",
                 },
-
-                // This sample is using detailed status to make more apparent which checks are being run - any
-                // output format will work with liveness and readiness checks.
-                ResponseWriter = HealthCheckResponseWriters.WriteDetailedJson,
             });
 
             app.Run(async (context) =>

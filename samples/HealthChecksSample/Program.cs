@@ -16,7 +16,6 @@ namespace HealthChecksSample
             {
                 { "", typeof(BasicStartup) },
                 { "basic", typeof(BasicStartup) },
-                { "detailed", typeof(DetailedStatusStartup) },
                 { "writer", typeof(CustomWriterStartup) },
                 { "liveness", typeof(LivenessProbeStartup) },
             };

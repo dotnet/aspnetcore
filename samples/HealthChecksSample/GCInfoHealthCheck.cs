@@ -7,7 +7,7 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 namespace HealthChecksSample
 {
     // This is an example of a custom health check that implements IHealthCheck.
-    // This is the same core logic as the DetailedStatusStartup example.
+    //
     // See CustomWriterStartup to see how this is registered.
     public class GCInfoHealthCheck : IHealthCheck
     {

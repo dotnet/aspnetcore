@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace HealthChecksSample
 {
@@ -45,23 +47,16 @@ namespace HealthChecksSample
 
         private static Task WriteResponse(HttpContext httpContext, CompositeHealthCheckResult result)
         {
-            httpContext.Response.ContentType = "text/html";
-            return httpContext.Response.WriteAsync($@"
-<html>
-  <body>
-    <h1>
-      Everything is {result.Status}
-    </h1>
-    <table>
-      <thead>
-        <tr><td>Name</td><td>Status</td></tr>
-      </thead>
-      <tbody>
-        {string.Join("", result.Results.Select(kvp => $"<tr><td>{kvp.Key}</td><td>{kvp.Value.Status}</td></tr>"))}
-      </tbody>
-    </table>
-  </body>
-</html>");
+            httpContext.Response.ContentType = "application/json";
+
+            var json = new JObject(
+                new JProperty("status", result.Status.ToString()),
+                new JProperty("results", new JObject(result.Results.Select(pair =>
+                    new JProperty(pair.Key, new JObject(
+                        new JProperty("status", pair.Value.Status.ToString()),
+                        new JProperty("description", pair.Value.Description),
+                        new JProperty("data", new JObject(pair.Value.Data.Select(p => new JProperty(p.Key, p.Value))))))))));
+            return httpContext.Response.WriteAsync(json.ToString(Formatting.Indented));
         }
     }
 }
