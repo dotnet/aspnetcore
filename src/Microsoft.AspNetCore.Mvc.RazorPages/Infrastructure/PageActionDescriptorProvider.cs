@@ -75,6 +75,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             {
                 var descriptor = new PageActionDescriptor
                 {
+                    ActionConstraints = selector.ActionConstraints.ToList(),
+                    AreaName = model.AreaName,
                     AttributeRouteInfo = new AttributeRouteInfo
                     {
                         Name = selector.AttributeRouteModel.Name,
@@ -84,11 +86,11 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                         SuppressPathMatching = selector.AttributeRouteModel.SuppressPathMatching,
                     },
                     DisplayName = $"Page: {model.ViewEnginePath}",
+                    EndpointMetadata = selector.EndpointMetadata.ToList(),
                     FilterDescriptors = Array.Empty<FilterDescriptor>(),
                     Properties = new Dictionary<object, object>(model.Properties),
                     RelativePath = model.RelativePath,
                     ViewEnginePath = model.ViewEnginePath,
-                    AreaName = model.AreaName,
                 };
 
                 foreach (var kvp in model.RouteValues)
