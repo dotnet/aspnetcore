@@ -25,7 +25,7 @@
     <file src="src\AspNetCoreModuleV1\AspNetCore\bin\$Configuration$\Win32\aspnetcore.pdb" target="contentFiles\any\any\x86\" />
     <file src="src\AspNetCoreModuleV1\AspNetCore\bin\$Configuration$\x64\aspnetcore.pdb" target="contentFiles\any\any\x64\" />
 
-    <file src="src\AspNetCoreModuleV1\AspNetCore\aspnetcore_schema.xml"/>
+    <file src="src\AspNetCoreModuleV2\AspNetCore\aspnetcore_schema_v2.xml" target="aspnetcore_schema.xml"/>
     <file src="tools\installancm.ps1"/>
     <file src="LICENSE.txt"/>
     <file src="nuget\Microsoft.AspNetCore.AspNetCoreModule.props" target="build\" />

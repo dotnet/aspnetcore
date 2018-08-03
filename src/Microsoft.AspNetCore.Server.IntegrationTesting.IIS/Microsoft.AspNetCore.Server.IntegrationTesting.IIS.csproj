@@ -27,10 +27,6 @@
             PackageCopyToOutput="true"
             PackagePath="contentFiles/any/any/%(ShimComponents.Platform)/%(ShimComponents.PackageSubPath)"/>
 
-      <Content Include="%(ShimComponents.PdbLocation)"
-            PackageCopyToOutput="true"
-            PackagePath="contentFiles/any/any/%(ShimComponents.Platform)/%(ShimComponents.PackageSubPath)" />
-
       <SignedPackageFile Include="%(ShimComponents.NativeAsset)_%(ShimComponents.Platform)"
                          PackagePath="contentFiles/any/any/%(ShimComponents.Platform)/%(ShimComponents.PackageSubPath)%(ShimComponents.NativeAsset).dll"
                          Certificate="Microsoft" />
