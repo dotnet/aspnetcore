@@ -21,26 +21,19 @@ namespace Microsoft.Repl.Commanding
 
         public static bool TryProcess(CommandInputSpecification spec, TParseResult parseResult, out DefaultCommandInput<TParseResult> result, out IReadOnlyList<CommandInputProcessingIssue> processingIssues)
         {
-            List<CommandInputProcessingIssue> issues = new List<CommandInputProcessingIssue>();
-            List<InputElement> commandNameElements = new List<InputElement>();
+            List<CommandInputProcessingIssue> issues = null;
+            List<InputElement> commandNameElements = null;
 
-            if (spec.CommandName.Count > parseResult.Sections.Count)
+            foreach (IReadOnlyList<string> commandName in spec.CommandName)
             {
-                issues.Add(new CommandInputProcessingIssue(CommandInputProcessingIssueKind.CommandMismatch, spec.CommandName[parseResult.Sections.Count]));
-            }
-
-            for (int i = 0; i < spec.CommandName.Count && i < parseResult.Sections.Count; ++i)
-            {
-                if (!string.Equals(spec.CommandName[i], parseResult.Sections[i], StringComparison.OrdinalIgnoreCase))
+                if (TryProcessCommandName(commandName, parseResult, out List<InputElement> nameElements, out issues))
                 {
-                    issues.Add(new CommandInputProcessingIssue(CommandInputProcessingIssueKind.CommandMismatch, parseResult.Sections[i]));
+                    commandNameElements = nameElements;
+                    break;
                 }
-
-                commandNameElements.Add(new InputElement(CommandInputLocation.CommandName, parseResult.Sections[i], spec.CommandName[i], i));
             }
 
-            //If we have a command name mismatch, no point in continuing
-            if (issues.Count > 0)
+            if (commandNameElements is null)
             {
                 result = null;
                 processingIssues = issues;
@@ -183,6 +176,39 @@ namespace Microsoft.Repl.Commanding
             result = new DefaultCommandInput<TParseResult>(commandNameElements, arguments, optionsByNormalForm, selectedElement);
             processingIssues = issues;
             return issues.Count == 0;
+        }
+
+        private static bool TryProcessCommandName(IReadOnlyList<string> commandName, TParseResult parseResult, out List<InputElement> nameElements, out List<CommandInputProcessingIssue> processingIssues)
+        {
+            List<CommandInputProcessingIssue> issues = new List<CommandInputProcessingIssue>();
+            List<InputElement> commandNameElements = new List<InputElement>();
+
+            if (commandName.Count > parseResult.Sections.Count)
+            {
+                issues.Add(new CommandInputProcessingIssue(CommandInputProcessingIssueKind.CommandMismatch, commandName[parseResult.Sections.Count]));
+            }
+
+            for (int i = 0; i < commandName.Count && i < parseResult.Sections.Count; ++i)
+            {
+                if (!string.Equals(commandName[i], parseResult.Sections[i], StringComparison.OrdinalIgnoreCase))
+                {
+                    issues.Add(new CommandInputProcessingIssue(CommandInputProcessingIssueKind.CommandMismatch, parseResult.Sections[i]));
+                }
+
+                commandNameElements.Add(new InputElement(CommandInputLocation.CommandName, parseResult.Sections[i], commandName[i], i));
+            }
+
+            processingIssues = issues;
+
+            //If we have a command name mismatch, no point in continuing
+            if (issues.Count > 0)
+            {
+                nameElements = null;
+                return false;
+            }
+
+            nameElements = commandNameElements;
+            return true;
         }
 
         public InputElement SelectedElement { get; }

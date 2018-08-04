@@ -41,7 +41,7 @@ namespace Microsoft.HttpRepl.Commands
 
             if (parseResult.Sections.Count != 3 || string.IsNullOrEmpty(parseResult.Sections[2]) || !Uri.TryCreate(parseResult.Sections[2], UriKind.Relative, out Uri _))
             {
-                shellState.ConsoleManager.Error.WriteLine("Must specify a relative path".Bold().Red());
+                shellState.ConsoleManager.Error.WriteLine("Must specify a relative path".SetColor(programState.ErrorColor));
             }
             else
             {
@@ -50,7 +50,7 @@ namespace Microsoft.HttpRepl.Commands
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    shellState.ConsoleManager.Error.WriteLine("Unable to access diagnostics endpoint".Bold().Red());
+                    shellState.ConsoleManager.Error.WriteLine("Unable to access diagnostics endpoint".SetColor(programState.ErrorColor));
                     programState.DiagnosticsState.DiagnosticsEndpoint = null;
                     programState.DiagnosticsState.DiagnosticItems = null;
                 }
@@ -66,7 +66,7 @@ namespace Microsoft.HttpRepl.Commands
 
                         if (!endpointsResponse.IsSuccessStatusCode)
                         {
-                            shellState.ConsoleManager.Error.WriteLine("Unable to get endpoints information from diagnostics endpoint".Bold().Red());
+                            shellState.ConsoleManager.Error.WriteLine("Unable to get endpoints information from diagnostics endpoint".SetColor(programState.ErrorColor));
                             return;
                         }
 

@@ -48,7 +48,13 @@ namespace Microsoft.HttpRepl.Commands
                     }
                 }
 
-                shellState.ConsoleManager.WriteLine($"/{string.Join("/", programState.PathSections.Reverse())}");
+                IDirectoryStructure s = programState.Structure.TraverseTo(programState.PathSections.Reverse());
+
+                string thisDirMethod = s.RequestInfo != null && s.RequestInfo.Methods.Count > 0
+                    ? "[" + string.Join("|", s.RequestInfo.Methods) + "]"
+                    : "[]";
+
+                shellState.ConsoleManager.WriteLine($"/{string.Join("/", programState.PathSections.Reverse())}    {thisDirMethod}");
             }
 
             return Task.CompletedTask;

@@ -40,17 +40,34 @@ namespace Microsoft.Repl.Commanding
             //If we're completing in a name position, offer completion for the command name
             if (parseResult.SelectedSection < InputSpec.CommandName.Count)
             {
-                for (int i = 0; i < parseResult.SelectedSection; ++i)
+                IReadOnlyList<string> commandName = null;
+                for (int j = 0; j < InputSpec.CommandName.Count; ++j)
                 {
-                    if (!string.Equals(InputSpec.CommandName[i], parseResult.Sections[i], StringComparison.OrdinalIgnoreCase))
+                    bool success = true;
+                    for (int i = 0; i < parseResult.SelectedSection; ++i)
                     {
-                        return null;
+                        if (!string.Equals(InputSpec.CommandName[j][i], parseResult.Sections[i], StringComparison.OrdinalIgnoreCase))
+                        {
+                            success = false;
+                            break;
+                        }
+                    }
+
+                    if (success)
+                    {
+                        commandName = InputSpec.CommandName[j];
+                        break;
                     }
                 }
 
-                if (InputSpec.CommandName[parseResult.SelectedSection].StartsWith(normalCompletionString, StringComparison.OrdinalIgnoreCase))
+                if (commandName is null)
                 {
-                    return new[] {InputSpec.CommandName[parseResult.SelectedSection]};
+                    return null;
+                }
+
+                if (commandName[parseResult.SelectedSection].StartsWith(normalCompletionString, StringComparison.OrdinalIgnoreCase))
+                {
+                    return new[] {commandName[parseResult.SelectedSection]};
                 }
             }
 

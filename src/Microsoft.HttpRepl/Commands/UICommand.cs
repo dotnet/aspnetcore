@@ -29,13 +29,13 @@ namespace Microsoft.HttpRepl.Commands
         {
             if (programState.BaseAddress == null)
             {
-                shellState.ConsoleManager.Error.WriteLine("Must be connected to a server to launch Swagger UI".Bold().Red());
+                shellState.ConsoleManager.Error.WriteLine("Must be connected to a server to launch Swagger UI".SetColor(programState.ErrorColor));
                 return Task.CompletedTask;
             }
 
             Uri uri = new Uri(programState.BaseAddress, "swagger");
             string agent = "cmd";
-            string agentParam = $"/c {uri.AbsoluteUri}";
+            string agentParam = $"/c start {uri.AbsoluteUri}";
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {

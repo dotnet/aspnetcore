@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.HttpRepl.Preferences;
 using Microsoft.Repl;
 using Microsoft.Repl.Commanding;
 using Microsoft.Repl.Parsing;
@@ -17,11 +18,21 @@ namespace Microsoft.HttpRepl.Commands
     {
         private const string RecursiveOption = nameof(RecursiveOption);
 
-        protected override Task ExecuteAsync(IShellState shellState, HttpState programState, DefaultCommandInput<ICoreParseResult> commandInput, ICoreParseResult parseResult, CancellationToken cancellationToken)
+        protected override async Task ExecuteAsync(IShellState shellState, HttpState programState, DefaultCommandInput<ICoreParseResult> commandInput, ICoreParseResult parseResult, CancellationToken cancellationToken)
         {
+            if (programState.SwaggerEndpoint != null)
+            {
+                string swaggerRequeryBehaviorSetting = programState.GetStringPreference(WellKnownPreference.SwaggerRequeryBehavior, "auto");
+
+                if (swaggerRequeryBehaviorSetting.StartsWith("auto", StringComparison.OrdinalIgnoreCase))
+                {
+                    await SetSwaggerCommand.CreateDirectoryStructureForSwaggerEndpointAsync(shellState, programState, programState.SwaggerEndpoint, cancellationToken).ConfigureAwait(false);
+                }
+            }
+
             if (programState.Structure == null || programState.BaseAddress == null)
             {
-                return Task.CompletedTask;
+                return;
             }
 
             string path = commandInput.Arguments.Count > 0 ? commandInput.Arguments[0].Text : string.Empty;
@@ -29,19 +40,27 @@ namespace Microsoft.HttpRepl.Commands
             //If it's an absolute URI, nothing to suggest
             if (Uri.TryCreate(path, UriKind.Absolute, out Uri _))
             {
-                return Task.CompletedTask;
+                return;
             }
 
             IDirectoryStructure s = programState.Structure.TraverseTo(programState.PathSections.Reverse()).TraverseTo(path);
 
+            string thisDirMethod = s.RequestInfo != null && s.RequestInfo.Methods.Count > 0
+                ? "[" + string.Join("|", s.RequestInfo.Methods) + "]"
+                : "[]";
+
             List<TreeNode> roots = new List<TreeNode>();
             Formatter formatter = new Formatter();
 
-            roots.Add(new TreeNode(formatter, ".", string.Empty));
+            roots.Add(new TreeNode(formatter, ".", thisDirMethod));
 
             if (s.Parent != null)
             {
-                roots.Add(new TreeNode(formatter, "..", string.Empty));
+                string parentDirMethod = s.Parent.RequestInfo != null && s.Parent.RequestInfo.Methods.Count > 0
+                    ? "[" + string.Join("|", s.Parent.RequestInfo.Methods) + "]"
+                    : "[]";
+
+                roots.Add(new TreeNode(formatter, "..", parentDirMethod));
             }
 
             int recursionDepth = 1;
@@ -75,8 +94,6 @@ namespace Microsoft.HttpRepl.Commands
             {
                 shellState.ConsoleManager.WriteLine(node.ToString());
             }
-
-            return Task.CompletedTask;
         }
 
         private static void Recurse(TreeNode parentNode, IDirectoryStructure parent, int remainingDepth)
@@ -101,7 +118,7 @@ namespace Microsoft.HttpRepl.Commands
 
 
 
-        protected override CommandInputSpecification InputSpec { get; } = CommandInputSpecification.Create("ls")
+        protected override CommandInputSpecification InputSpec { get; } = CommandInputSpecification.Create("ls").AlternateName("dir")
             .MaximumArgCount(1)
             .WithOption(new CommandOptionSpecification(RecursiveOption, maximumOccurrences: 1, acceptsValue: true, forms: new[] {"-r", "--recursive"}))
             .Finish();

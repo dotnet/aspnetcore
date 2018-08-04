@@ -9,6 +9,7 @@ using System.Net.Http;
 using System.Runtime.InteropServices;
 using Microsoft.HttpRepl.Diagnostics;
 using Microsoft.HttpRepl.Preferences;
+using Microsoft.Repl.ConsoleHandling;
 
 namespace Microsoft.HttpRepl
 {
@@ -18,6 +19,10 @@ namespace Microsoft.HttpRepl
         private string _prefsFilePath;
 
         public HttpClient Client { get; }
+
+        public AllowedColors ErrorColor => this.GetColorPreference(WellKnownPreference.ErrorColor, AllowedColors.BoldRed);
+
+        public AllowedColors WarningColor => this.GetColorPreference(WellKnownPreference.WarningColor, AllowedColors.BoldYellow);
 
         public Stack<string> PathSections { get; }
 
@@ -61,6 +66,8 @@ namespace Microsoft.HttpRepl
         public Dictionary<string, IEnumerable<string>> Headers { get; }
 
         public DiagnosticsState DiagnosticsState { get; }
+
+        public Uri SwaggerEndpoint { get; set; }
 
         public HttpState()
         {

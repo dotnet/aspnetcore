@@ -243,7 +243,7 @@ namespace Microsoft.HttpRepl.Commands
 
             if (parseResult.Sections.Count != 3 || string.IsNullOrEmpty(parseResult.Sections[2]) || !Uri.TryCreate(parseResult.Sections[2], UriKind.Absolute, out Uri serverUri))
             {
-                shellState.ConsoleManager.Error.WriteLine("Must specify a swagger document".Bold().Red());
+                shellState.ConsoleManager.Error.WriteLine("Must specify a swagger document".SetColor(programState.ErrorColor));
             }
             else
             {
@@ -253,6 +253,8 @@ namespace Microsoft.HttpRepl.Commands
 
         internal static async Task CreateDirectoryStructureForSwaggerEndpointAsync(IShellState shellState, HttpState programState, Uri serverUri, CancellationToken cancellationToken)
         {
+            programState.SwaggerEndpoint = serverUri;
+
             try
             {
                 IEnumerable<EndpointMetadata> doc = await GetSwaggerDocAsync(programState.Client, serverUri).ConfigureAwait(false);

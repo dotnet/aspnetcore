@@ -7,7 +7,7 @@ namespace Microsoft.Repl.Commanding
 {
     public class CommandInputSpecification
     {
-        public IReadOnlyList<string> CommandName { get; }
+        public IReadOnlyList<IReadOnlyList<string>> CommandName { get; }
 
         public char OptionPreamble { get; }
 
@@ -17,7 +17,7 @@ namespace Microsoft.Repl.Commanding
 
         public IReadOnlyList<CommandOptionSpecification> Options { get; }
 
-        public CommandInputSpecification(IReadOnlyList<string> name, char optionPreamble, IReadOnlyList<CommandOptionSpecification> options, int minimumArgs, int maximumArgs)
+        public CommandInputSpecification(IReadOnlyList<IReadOnlyList<string>> name, char optionPreamble, IReadOnlyList<CommandOptionSpecification> options, int minimumArgs, int maximumArgs)
         {
             CommandName = name;
             OptionPreamble = optionPreamble;

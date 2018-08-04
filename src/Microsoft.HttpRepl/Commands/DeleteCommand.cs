@@ -7,6 +7,6 @@ namespace Microsoft.HttpRepl.Commands
     {
         protected override string Verb => "delete";
 
-        protected override bool RequiresBody => true;
+        protected override bool RequiresBody => false;
     }
 }

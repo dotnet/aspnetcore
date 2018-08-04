@@ -16,15 +16,15 @@ namespace Microsoft.HttpRepl
     {
         static async Task Main(string[] args)
         {
-            if(Console.IsOutputRedirected)
+            var state = new HttpState();
+
+            if (Console.IsOutputRedirected)
             {
-                Reporter.Error.WriteLine("Cannot start the REPL when output is being redirected".Bold().Red());
+                Reporter.Error.WriteLine("Cannot start the REPL when output is being redirected".SetColor(state.ErrorColor));
                 return;
             }
 
-            var state = new HttpState();
             var dispatcher = DefaultCommandDispatcher.Create(state.GetPrompt, state);
-
             dispatcher.AddCommand(new ChangeDirectoryCommand());
             dispatcher.AddCommand(new ClearCommand());
             //dispatcher.AddCommand(new ConfigCommand());

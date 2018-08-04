@@ -32,7 +32,7 @@ namespace Microsoft.HttpRepl.Commands
         private const string BodyFileOption = nameof(BodyFileOption);
         private const string NoBodyOption = nameof(NoBodyOption);
         private const string NoFormattingOption = nameof(NoFormattingOption);
-        private const string NoStreamingOption = nameof(NoStreamingOption);
+        private const string StreamingOption = nameof(StreamingOption);
         private const string BodyContentOption = nameof(BodyContentOption);
         private static readonly char[] HeaderSeparatorChars = new[] { '=', ':' };
 
@@ -58,7 +58,7 @@ namespace Microsoft.HttpRepl.Commands
                     .WithOption(new CommandOptionSpecification(ResponseHeadersFileOption, requiresValue: true, maximumOccurrences: 1, forms: new[] { "--response:headers", }))
                     .WithOption(new CommandOptionSpecification(ResponseBodyFileOption, requiresValue: true, maximumOccurrences: 1, forms: new[] { "--response:body", }))
                     .WithOption(new CommandOptionSpecification(NoFormattingOption, maximumOccurrences: 1, forms: new[] { "--no-formatting", "-F" }))
-                    .WithOption(new CommandOptionSpecification(NoStreamingOption, maximumOccurrences: 1, forms: new[] { "--no-streaming", "-S" }));
+                    .WithOption(new CommandOptionSpecification(StreamingOption, maximumOccurrences: 1, forms: new[] { "--streaming", "-s" }));
 
                 if (RequiresBody)
                 {
@@ -76,8 +76,18 @@ namespace Microsoft.HttpRepl.Commands
         {
             if (programState.BaseAddress == null && (commandInput.Arguments.Count == 0 || !Uri.TryCreate(commandInput.Arguments[0].Text, UriKind.Absolute, out Uri _)))
             {
-                shellState.ConsoleManager.Error.WriteLine("'set base {url}' must be called before issuing requests to a relative path".Bold().Red());
+                shellState.ConsoleManager.Error.WriteLine("'set base {url}' must be called before issuing requests to a relative path".SetColor(programState.ErrorColor));
                 return;
+            }
+
+            if (programState.SwaggerEndpoint != null)
+            {
+                string swaggerRequeryBehaviorSetting = programState.GetStringPreference(WellKnownPreference.SwaggerRequeryBehavior, "auto");
+
+                if (swaggerRequeryBehaviorSetting.StartsWith("auto", StringComparison.OrdinalIgnoreCase))
+                {
+                    await SetSwaggerCommand.CreateDirectoryStructureForSwaggerEndpointAsync(shellState, programState, programState.SwaggerEndpoint, cancellationToken).ConfigureAwait(false);
+                }
             }
 
             Dictionary<string, string> thisRequestHeaders = new Dictionary<string, string>();
@@ -88,7 +98,7 @@ namespace Microsoft.HttpRepl.Commands
 
                 if (equalsIndex < 0)
                 {
-                    shellState.ConsoleManager.Error.WriteLine("Headers must be formatted as {header}={value} or {header}:{value}".Bold().Red());
+                    shellState.ConsoleManager.Error.WriteLine("Headers must be formatted as {header}={value} or {header}:{value}".SetColor(programState.ErrorColor));
                     return;
                 }
 
@@ -114,7 +124,7 @@ namespace Microsoft.HttpRepl.Commands
 
                         if (!File.Exists(filePath))
                         {
-                            shellState.ConsoleManager.Error.WriteLine($"Content file {filePath} does not exist".Bold().Red());
+                            shellState.ConsoleManager.Error.WriteLine($"Content file {filePath} does not exist".SetColor(programState.ErrorColor));
                             return;
                         }
                     }
@@ -127,7 +137,7 @@ namespace Microsoft.HttpRepl.Commands
                         string defaultEditorCommand = programState.GetStringPreference(WellKnownPreference.DefaultEditorCommand);
                         if (defaultEditorCommand == null)
                         {
-                            shellState.ConsoleManager.Error.WriteLine($"The default editor must be configured using the command `pref set {WellKnownPreference.DefaultEditorCommand} \"{{commandline}}\"`".Bold().Red());
+                            shellState.ConsoleManager.Error.WriteLine($"The default editor must be configured using the command `pref set {WellKnownPreference.DefaultEditorCommand} \"{{commandline}}\"`".SetColor(programState.ErrorColor));
                             return;
                         }
 
@@ -145,6 +155,7 @@ namespace Microsoft.HttpRepl.Commands
                         }
 
                         string exampleBody = programState.GetExampleBody(commandInput.Arguments.Count > 0 ? commandInput.Arguments[0].Text : string.Empty, contentType, Verb);
+                        request.Headers.TryAddWithoutValidation("Content-Type", contentType);
 
                         if (!string.IsNullOrEmpty(exampleBody))
                         {
@@ -224,7 +235,7 @@ namespace Microsoft.HttpRepl.Commands
 
                 string method = response.RequestMessage.Method.ToString().ToUpperInvariant().SetColor(requestConfig.MethodColor);
                 string pathAndQuery = response.RequestMessage.RequestUri.PathAndQuery.SetColor(requestConfig.AddressColor);
-                protocolInfo = $"{"HTTP".SetColor(requestConfig.ProtocolNameColor)}{"/".SetColor(requestConfig.ProtocolSeparatorColor)}{response.RequestMessage.Version.ToString().SetColor(requestConfig.ProtocolVersionColor)}";
+                protocolInfo = $"{"HTTP".SetColor(requestConfig.ProtocolNameColor)}{"/".SetColor(requestConfig.ProtocolSeparatorColor)}{response.Version.ToString().SetColor(requestConfig.ProtocolVersionColor)}";
 
                 consoleManager.WriteLine($"{method} {pathAndQuery} {protocolInfo}");
                 IEnumerable<KeyValuePair<string, IEnumerable<string>>> requestHeaders = response.RequestMessage.Headers;
@@ -327,6 +338,42 @@ namespace Microsoft.HttpRepl.Commands
 
         private static async Task FormatBodyAsync(DefaultCommandInput<ICoreParseResult> commandInput, HttpState programState, IConsoleManager consoleManager, HttpContent content, StreamWriter bodyFileWriter, CancellationToken cancellationToken)
         {
+            if (commandInput.Options[StreamingOption].Count > 0)
+            {
+                Memory<char> buffer = new Memory<char>(new char[2048]);
+                Stream s = await content.ReadAsStreamAsync().ConfigureAwait(false);
+                StreamReader reader = new StreamReader(s);
+                consoleManager.WriteLine("Streaming the response, press any key to stop...".SetColor(programState.WarningColor));
+
+                while (!cancellationToken.IsCancellationRequested)
+                {
+                    try
+                    {
+                        ValueTask<int> readTask = reader.ReadAsync(buffer, cancellationToken);
+                        if (await WaitForCompletionAsync(readTask, cancellationToken).ConfigureAwait(false))
+                        {
+                            if (readTask.Result == 0)
+                            {
+                                break;
+                            }
+
+                            string str = new string(buffer.Span.Slice(0, readTask.Result));
+                            consoleManager.Write(str);
+                            bodyFileWriter.Write(str);
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+                    catch (OperationCanceledException)
+                    {
+                    }
+                }
+
+                return;
+            }
+
             string contentType = null;
             if (content.Headers.TryGetValues("Content-Type", out IEnumerable<string> contentTypeValues))
             {
@@ -361,43 +408,6 @@ namespace Microsoft.HttpRepl.Commands
                         return;
                     }
                 }
-            }
-
-            //Unless the user has explicitly specified to not stream the response, if we don't have content length, assume streaming
-            if (commandInput.Options[NoStreamingOption].Count == 0 && !content.Headers.TryGetValues("Content-Length", out IEnumerable<string> _))
-            {
-                Memory<char> buffer = new Memory<char>(new char[2048]);
-                Stream s = await content.ReadAsStreamAsync().ConfigureAwait(false);
-                StreamReader reader = new StreamReader(s);
-                consoleManager.WriteLine("Streaming the response, press any key to stop...".Bold().Yellow());
-
-                while (!cancellationToken.IsCancellationRequested)
-                {
-                    try
-                    {
-                        ValueTask<int> readTask = reader.ReadAsync(buffer, cancellationToken);
-                        if (await WaitForCompletionAsync(readTask, cancellationToken).ConfigureAwait(false))
-                        {
-                            if (readTask.Result == 0)
-                            {
-                                break;
-                            }
-
-                            string str = new string(buffer.Span.Slice(0, readTask.Result));
-                            consoleManager.Write(str);
-                            bodyFileWriter.Write(str);
-                        }
-                        else
-                        {
-                            break;
-                        }
-                    }
-                    catch (OperationCanceledException)
-                    {
-                    }
-                }
-
-                return;
             }
 
             string responseContent = await content.ReadAsStringAsync().ConfigureAwait(false);

@@ -21,7 +21,7 @@ namespace Microsoft.HttpRepl.Commands
         {
             if (commandInput.Arguments.Count == 0 || !_allowedModes.Contains(commandInput.Arguments[0]?.Text))
             {
-                shellState.ConsoleManager.Error.WriteLine("Allowed echo modes are 'on' and 'off'".Bold().Red());
+                shellState.ConsoleManager.Error.WriteLine("Allowed echo modes are 'on' and 'off'".SetColor(programState.ErrorColor));
                 return false;
             }
 

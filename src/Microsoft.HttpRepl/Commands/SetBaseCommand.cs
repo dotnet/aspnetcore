@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Net.Http;
+using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Repl;
@@ -34,11 +36,20 @@ namespace Microsoft.HttpRepl.Commands
             }
             else if (parseResult.Sections.Count != 3 || string.IsNullOrEmpty(parseResult.Sections[2]) || !Uri.TryCreate(EnsureTrailingSlash(parseResult.Sections[2]), UriKind.Absolute, out Uri serverUri))
             {
-                shellState.ConsoleManager.Error.WriteLine("Must specify a server".Bold().Red());
+                shellState.ConsoleManager.Error.WriteLine("Must specify a server".SetColor(state.ErrorColor));
             }
             else
             {
                 state.BaseAddress = serverUri;
+                try
+                {
+                    await state.Client.SendAsync(new HttpRequestMessage(HttpMethod.Head, serverUri)).ConfigureAwait(false);
+                }
+                catch (Exception ex) when (ex.InnerException is SocketException se)
+                {
+                    shellState.ConsoleManager.Error.WriteLine($"Warning: HEAD request to the specified address was unsuccessful ({se.Message})".SetColor(state.WarningColor));
+                }
+                catch { }
             }
 
             if (state.BaseAddress == null || !Uri.TryCreate(state.BaseAddress, "/swagger/v1/swagger.json", out Uri result))

@@ -90,7 +90,7 @@ namespace Microsoft.HttpRepl.Commands
 
             if (!programState.SavePreferences())
             {
-                shellState.ConsoleManager.Error.WriteLine("Error saving preferences".Bold().Red());
+                shellState.ConsoleManager.Error.WriteLine("Error saving preferences".SetColor(programState.ErrorColor));
             }
 
             return Task.CompletedTask;
@@ -109,7 +109,7 @@ namespace Microsoft.HttpRepl.Commands
                 }
                 else
                 {
-                    shellState.ConsoleManager.Error.WriteLine((commandInput.Arguments[1].Text + " does not have a configured value").Bold().Red());
+                    shellState.ConsoleManager.Error.WriteLine((commandInput.Arguments[1].Text + " does not have a configured value").SetColor(programState.ErrorColor));
                 }
             }
             else

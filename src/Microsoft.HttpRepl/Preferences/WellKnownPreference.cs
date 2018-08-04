@@ -131,8 +131,11 @@ namespace Microsoft.HttpRepl.Preferences
 
         public static string ResponseStatusReaseonPhraseColor { get; } = "colors.response.status.reasonPhrase";
 
-
         public static string RequestOrResponseColor { get; } = "colors.requestOrResponse";
+
+        public static string ErrorColor { get; } = "colors.error";
+
+        public static string WarningColor { get; } = "colors.warning";
 
         public static string BodyColor { get; } = "colors.body";
 
@@ -166,6 +169,8 @@ namespace Microsoft.HttpRepl.Preferences
         public static string DefaultEditorCommand { get; } = "editor.command.default";
 
         public static string DefaultEditorArguments { get; } = "editor.command.default.arguments";
+
+        public static string SwaggerRequeryBehavior { get; } = "swagger.requery";
 
 
         public static AllowedColors GetColorPreference(this HttpState programState, string preference, AllowedColors defaultvalue = AllowedColors.None)

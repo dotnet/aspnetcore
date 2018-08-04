@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.HttpRepl.Preferences;
 using Microsoft.HttpRepl.Suggestions;
 using Microsoft.Repl;
 using Microsoft.Repl.Commanding;
@@ -24,7 +25,7 @@ namespace Microsoft.HttpRepl.Commands
                 : null;
         }
 
-        public Task ExecuteAsync(IShellState shellState, HttpState programState, ICoreParseResult parseResult, CancellationToken cancellationToken)
+        public async Task ExecuteAsync(IShellState shellState, HttpState programState, ICoreParseResult parseResult, CancellationToken cancellationToken)
         {
             if (shellState.CommandDispatcher is ICommandDispatcher<HttpState, ICoreParseResult> dispatcher)
             {
@@ -55,6 +56,17 @@ namespace Microsoft.HttpRepl.Commands
                         //Maybe the input is an URL
                         if (parseResult.Sections.Count == 2)
                         {
+
+                            if (programState.SwaggerEndpoint != null)
+                            {
+                                string swaggerRequeryBehaviorSetting = programState.GetStringPreference(WellKnownPreference.SwaggerRequeryBehavior, "auto");
+
+                                if (swaggerRequeryBehaviorSetting.StartsWith("auto", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    await SetSwaggerCommand.CreateDirectoryStructureForSwaggerEndpointAsync(shellState, programState, programState.SwaggerEndpoint, cancellationToken).ConfigureAwait(false);
+                                }
+                            }
+
                             IDirectoryStructure structure = programState.Structure.TraverseTo(parseResult.Sections[1]);
                             if (structure.DirectoryNames.Any())
                             {
@@ -101,8 +113,6 @@ namespace Microsoft.HttpRepl.Commands
                     }
                 }
             }
-
-            return Task.CompletedTask;
         }
 
         public string GetHelpDetails(IShellState shellState, HttpState programState, ICoreParseResult parseResult)

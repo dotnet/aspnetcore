@@ -21,13 +21,13 @@ namespace Microsoft.HttpRepl.Commands
         {
             if (programState.BaseAddress == null)
             {
-                shellState.ConsoleManager.Error.WriteLine("Must be connected to a server to query configuration".Bold().Red());
+                shellState.ConsoleManager.Error.WriteLine("Must be connected to a server to query configuration".SetColor(programState.ErrorColor));
                 return;
             }
 
             if (string.IsNullOrEmpty(programState.DiagnosticsState.DiagnosticsEndpoint))
             {
-                shellState.ConsoleManager.Error.WriteLine("Diagnostics endpoint must be set to query configuration (see set diag)".Bold().Red());
+                shellState.ConsoleManager.Error.WriteLine("Diagnostics endpoint must be set to query configuration (see set diag)".SetColor(programState.ErrorColor));
                 return;
             }
 
@@ -35,7 +35,7 @@ namespace Microsoft.HttpRepl.Commands
 
             if (configUrl == null)
             {
-                shellState.ConsoleManager.Error.WriteLine("Diagnostics endpoint does not expose configuration information".Bold().Red());
+                shellState.ConsoleManager.Error.WriteLine("Diagnostics endpoint does not expose configuration information".SetColor(programState.ErrorColor));
                 return;
             }
 
@@ -43,7 +43,7 @@ namespace Microsoft.HttpRepl.Commands
 
             if (!response.IsSuccessStatusCode)
             {
-                shellState.ConsoleManager.Error.WriteLine("Unable to get configuration information from diagnostics endpoint".Bold().Red());
+                shellState.ConsoleManager.Error.WriteLine("Unable to get configuration information from diagnostics endpoint".SetColor(programState.ErrorColor));
                 return;
             }
 

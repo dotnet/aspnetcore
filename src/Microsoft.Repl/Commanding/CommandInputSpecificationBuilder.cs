@@ -1,13 +1,14 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 
 namespace Microsoft.Repl.Commanding
 {
     public class CommandInputSpecificationBuilder
     {
-        private readonly IReadOnlyList<string> _name;
+        private readonly List<IReadOnlyList<string>> _name;
         private char _optionPreamble;
         private int _minimumArgs;
         private int _maximumArgs;
@@ -15,7 +16,7 @@ namespace Microsoft.Repl.Commanding
 
         public CommandInputSpecificationBuilder(IReadOnlyList<string> name)
         {
-            _name = name;
+            _name = new List<IReadOnlyList<string>> { name };
             _optionPreamble = '-';
         }
 
@@ -64,6 +65,14 @@ namespace Microsoft.Repl.Commanding
         public CommandInputSpecification Finish()
         {
             return new CommandInputSpecification(_name, _optionPreamble, _options, _minimumArgs, _maximumArgs);
+        }
+
+        public CommandInputSpecificationBuilder AlternateName(string baseName, params string[] additionalNameParts)
+        {
+            List<string> nameParts = new List<string> { baseName };
+            nameParts.AddRange(additionalNameParts);
+            _name.Add(nameParts);
+            return this;
         }
     }
 }
