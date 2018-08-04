@@ -3,6 +3,10 @@
 
 namespace Microsoft.AspNetCore.Routing
 {
+    /// <summary>
+    /// Represents metadata used during link generation.
+    /// The associated endpoint will not be considered for link generation.
+    /// </summary>
     public interface ISuppressLinkGenerationMetadata
     {
     }

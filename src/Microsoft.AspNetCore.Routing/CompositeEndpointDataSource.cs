@@ -12,6 +12,9 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Routing
 {
+    /// <summary>
+    /// Represents an <see cref="EndpointDataSource"/> whose values come from a collection of <see cref="EndpointDataSource"/> instances.
+    /// </summary>
     [DebuggerDisplay("{DebuggerDisplayString,nq}")]
     public sealed class CompositeEndpointDataSource : EndpointDataSource
     {
@@ -33,12 +36,20 @@ namespace Microsoft.AspNetCore.Routing
             _lock = new object();
         }
 
+        /// <summary>
+        /// Gets a <see cref="IChangeToken"/> used to signal invalidation of cached <see cref="Endpoint"/>
+        /// instances.
+        /// </summary>
+        /// <returns>The <see cref="IChangeToken"/>.</returns>
         public override IChangeToken GetChangeToken()
         {
             EnsureInitialized();
             return _consumerChangeToken;
         }
 
+        /// <summary>
+        /// Returns a read-only collection of <see cref="Endpoint"/> instances.
+        /// </summary>
         public override IReadOnlyList<Endpoint> Endpoints
         {
             get
