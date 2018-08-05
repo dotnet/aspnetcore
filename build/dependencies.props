@@ -3,36 +3,36 @@
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
   <PropertyGroup Label="Package Versions">
-    <InternalAspNetCoreSdkPackageVersion>3.0.0-alpha1-10015</InternalAspNetCoreSdkPackageVersion>
-    <InternalAspNetCoreSiteExtensionSdkPackageVersion>3.0.0-alpha1-10015</InternalAspNetCoreSiteExtensionSdkPackageVersion>
+    <InternalAspNetCoreSdkPackageVersion>3.0.0-alpha1-20180731.2</InternalAspNetCoreSdkPackageVersion>
+    <InternalAspNetCoreSiteExtensionSdkPackageVersion>3.0.0-alpha1-20180731.2</InternalAspNetCoreSiteExtensionSdkPackageVersion>
     <MicrosoftApplicationInsightsAspNetCorePackageVersion>2.1.1</MicrosoftApplicationInsightsAspNetCorePackageVersion>
-    <MicrosoftAspNetCoreAppPackageVersion>3.0.0-alpha1-10173</MicrosoftAspNetCoreAppPackageVersion>
-    <MicrosoftAspNetCoreAspNetCoreModulePackageVersion>3.0.0-alpha1-10173</MicrosoftAspNetCoreAspNetCoreModulePackageVersion>
-    <MicrosoftAspNetCoreAspNetCoreModuleV2PackageVersion>3.0.0-alpha1-10173</MicrosoftAspNetCoreAspNetCoreModuleV2PackageVersion>
-    <MicrosoftAspNetCoreAzureAppServicesHostingStartupPackageVersion>3.0.0-alpha1-10173</MicrosoftAspNetCoreAzureAppServicesHostingStartupPackageVersion>
+    <MicrosoftAspNetCoreAppPackageVersion>3.0.0-alpha1-10221</MicrosoftAspNetCoreAppPackageVersion>
+    <MicrosoftAspNetCoreAspNetCoreModulePackageVersion>3.0.0-alpha1-10221</MicrosoftAspNetCoreAspNetCoreModulePackageVersion>
+    <MicrosoftAspNetCoreAspNetCoreModuleV2PackageVersion>3.0.0-alpha1-10221</MicrosoftAspNetCoreAspNetCoreModuleV2PackageVersion>
+    <MicrosoftAspNetCoreAzureAppServicesHostingStartupPackageVersion>3.0.0-alpha1-10221</MicrosoftAspNetCoreAzureAppServicesHostingStartupPackageVersion>
     <MicrosoftAspNetCoreAzureKeyVaultHostingStartupPackageVersion>2.1.0-preview2-30187</MicrosoftAspNetCoreAzureKeyVaultHostingStartupPackageVersion>
-    <MicrosoftAspNetCoreDataProtectionAzureKeyVaultPackageVersion>3.0.0-alpha1-10173</MicrosoftAspNetCoreDataProtectionAzureKeyVaultPackageVersion>
-    <MicrosoftAspNetCoreHostingAbstractionsPackageVersion>3.0.0-alpha1-10173</MicrosoftAspNetCoreHostingAbstractionsPackageVersion>
-    <MicrosoftAspNetCoreHostingPackageVersion>3.0.0-alpha1-10173</MicrosoftAspNetCoreHostingPackageVersion>
-    <MicrosoftAspNetCoreMvcPackageVersion>3.0.0-alpha1-10173</MicrosoftAspNetCoreMvcPackageVersion>
-    <MicrosoftAspNetCoreRazorRuntimePackageVersion>3.0.0-alpha1-10173</MicrosoftAspNetCoreRazorRuntimePackageVersion>
-    <MicrosoftAspNetCoreServerIISIntegrationPackageVersion>3.0.0-alpha1-10173</MicrosoftAspNetCoreServerIISIntegrationPackageVersion>
-    <MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>0.7.0-alpha1-10173</MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>
-    <MicrosoftAspNetCoreServerKestrelPackageVersion>3.0.0-alpha1-10173</MicrosoftAspNetCoreServerKestrelPackageVersion>
-    <MicrosoftAspNetCoreTestHostPackageVersion>3.0.0-alpha1-10173</MicrosoftAspNetCoreTestHostPackageVersion>
+    <MicrosoftAspNetCoreDataProtectionAzureKeyVaultPackageVersion>3.0.0-alpha1-10221</MicrosoftAspNetCoreDataProtectionAzureKeyVaultPackageVersion>
+    <MicrosoftAspNetCoreHostingAbstractionsPackageVersion>3.0.0-alpha1-10221</MicrosoftAspNetCoreHostingAbstractionsPackageVersion>
+    <MicrosoftAspNetCoreHostingPackageVersion>3.0.0-alpha1-10221</MicrosoftAspNetCoreHostingPackageVersion>
+    <MicrosoftAspNetCoreMvcPackageVersion>3.0.0-alpha1-10221</MicrosoftAspNetCoreMvcPackageVersion>
+    <MicrosoftAspNetCoreRazorRuntimePackageVersion>3.0.0-alpha1-10221</MicrosoftAspNetCoreRazorRuntimePackageVersion>
+    <MicrosoftAspNetCoreServerIISIntegrationPackageVersion>3.0.0-alpha1-10221</MicrosoftAspNetCoreServerIISIntegrationPackageVersion>
+    <MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>0.7.0-alpha1-10221</MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>
+    <MicrosoftAspNetCoreServerKestrelPackageVersion>3.0.0-alpha1-10221</MicrosoftAspNetCoreServerKestrelPackageVersion>
+    <MicrosoftAspNetCoreTestHostPackageVersion>3.0.0-alpha1-10221</MicrosoftAspNetCoreTestHostPackageVersion>
     <MicrosoftAzureManagementFluentPackageVersion>1.1.3</MicrosoftAzureManagementFluentPackageVersion>
     <MicrosoftAzureServicesAppAuthenticationPackageVersion>1.0.1</MicrosoftAzureServicesAppAuthenticationPackageVersion>
-    <MicrosoftExtensionsConfigurationAzureKeyVaultPackageVersion>3.0.0-alpha1-10173</MicrosoftExtensionsConfigurationAzureKeyVaultPackageVersion>
-    <MicrosoftExtensionsConfigurationCommandLinePackageVersion>3.0.0-alpha1-10173</MicrosoftExtensionsConfigurationCommandLinePackageVersion>
-    <MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion>3.0.0-alpha1-10173</MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion>
-    <MicrosoftExtensionsConfigurationJsonPackageVersion>3.0.0-alpha1-10173</MicrosoftExtensionsConfigurationJsonPackageVersion>
-    <MicrosoftExtensionsDiagnosticAdapterPackageVersion>3.0.0-alpha1-10173</MicrosoftExtensionsDiagnosticAdapterPackageVersion>
-    <MicrosoftExtensionsLoggingAzureAppServicesPackageVersion>3.0.0-alpha1-10173</MicrosoftExtensionsLoggingAzureAppServicesPackageVersion>
-    <MicrosoftExtensionsLoggingConfigurationPackageVersion>3.0.0-alpha1-10173</MicrosoftExtensionsLoggingConfigurationPackageVersion>
-    <MicrosoftExtensionsLoggingConsolePackageVersion>3.0.0-alpha1-10173</MicrosoftExtensionsLoggingConsolePackageVersion>
-    <MicrosoftExtensionsLoggingPackageVersion>3.0.0-alpha1-10173</MicrosoftExtensionsLoggingPackageVersion>
-    <MicrosoftExtensionsLoggingTestingPackageVersion>3.0.0-alpha1-10173</MicrosoftExtensionsLoggingTestingPackageVersion>
-    <MicrosoftExtensionsProcessSourcesPackageVersion>3.0.0-alpha1-10173</MicrosoftExtensionsProcessSourcesPackageVersion>
+    <MicrosoftExtensionsConfigurationAzureKeyVaultPackageVersion>3.0.0-alpha1-10221</MicrosoftExtensionsConfigurationAzureKeyVaultPackageVersion>
+    <MicrosoftExtensionsConfigurationCommandLinePackageVersion>3.0.0-alpha1-10221</MicrosoftExtensionsConfigurationCommandLinePackageVersion>
+    <MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion>3.0.0-alpha1-10221</MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion>
+    <MicrosoftExtensionsConfigurationJsonPackageVersion>3.0.0-alpha1-10221</MicrosoftExtensionsConfigurationJsonPackageVersion>
+    <MicrosoftExtensionsDiagnosticAdapterPackageVersion>3.0.0-alpha1-10221</MicrosoftExtensionsDiagnosticAdapterPackageVersion>
+    <MicrosoftExtensionsLoggingAzureAppServicesPackageVersion>3.0.0-alpha1-10221</MicrosoftExtensionsLoggingAzureAppServicesPackageVersion>
+    <MicrosoftExtensionsLoggingConfigurationPackageVersion>3.0.0-alpha1-10221</MicrosoftExtensionsLoggingConfigurationPackageVersion>
+    <MicrosoftExtensionsLoggingConsolePackageVersion>3.0.0-alpha1-10221</MicrosoftExtensionsLoggingConsolePackageVersion>
+    <MicrosoftExtensionsLoggingPackageVersion>3.0.0-alpha1-10221</MicrosoftExtensionsLoggingPackageVersion>
+    <MicrosoftExtensionsLoggingTestingPackageVersion>3.0.0-alpha1-10221</MicrosoftExtensionsLoggingTestingPackageVersion>
+    <MicrosoftExtensionsProcessSourcesPackageVersion>3.0.0-alpha1-10221</MicrosoftExtensionsProcessSourcesPackageVersion>
     <MicrosoftNETCoreApp20PackageVersion>2.0.9</MicrosoftNETCoreApp20PackageVersion>
     <MicrosoftNETCoreApp21PackageVersion>2.1.2</MicrosoftNETCoreApp21PackageVersion>
     <MicrosoftNETCoreApp22PackageVersion>2.2.0-preview1-26618-02</MicrosoftNETCoreApp22PackageVersion>
