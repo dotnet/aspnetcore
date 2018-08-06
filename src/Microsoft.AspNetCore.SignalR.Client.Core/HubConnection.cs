@@ -14,6 +14,7 @@ using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Client.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
@@ -52,6 +53,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         private long _nextActivationServerTimeout;
         private long _nextActivationSendPing;
         private bool _disposed;
+        private bool _hasInherentKeepAlive;
 
         private CancellationToken _uploadStreamToken;
 
@@ -310,6 +312,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 // Start the connection
                 var connection = await _connectionFactory.ConnectAsync(_protocol.TransferFormat);
                 var startingConnectionState = new ConnectionState(connection, this);
+                _hasInherentKeepAlive = connection.Features.Get<IConnectionInherentKeepAliveFeature>()?.HasInherentKeepAlive ?? false;
 
                 // From here on, if an error occurs we need to shut down the connection because
                 // we still own it.
@@ -991,16 +994,22 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 // await returns True until `timer.Stop()` is called in the `finally` block of `ReceiveLoop`
                 while (await timer)
                 {
-                    if (DateTime.UtcNow.Ticks > Volatile.Read(ref _nextActivationServerTimeout))
-                    {
-                        OnServerTimeout();
-                    }
-
-                    if (DateTime.UtcNow.Ticks > Volatile.Read(ref _nextActivationSendPing))
-                    {
-                        await PingServer();
-                    }
+                    await RunTimerActions();
                 }
+            }
+        }
+
+        // Internal for testing
+        internal async Task RunTimerActions()
+        {
+            if (!_hasInherentKeepAlive && DateTime.UtcNow.Ticks > Volatile.Read(ref _nextActivationServerTimeout))
+            {
+                OnServerTimeout();
+            }
+
+            if (DateTime.UtcNow.Ticks > Volatile.Read(ref _nextActivationSendPing))
+            {
+                await PingServer();
             }
         }
 

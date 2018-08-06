@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.AspNetCore.SignalR.Tests;
 using Microsoft.Extensions.DependencyInjection;
@@ -120,6 +121,33 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
             // We use an interpolated string so the tests are accurate on non-US machines.
             Assert.Equal($"Server timeout ({hubConnection.ServerTimeout.TotalMilliseconds:0.00}ms) elapsed without receiving a message from the server.", exception.Message);
+        }
+
+        [Fact]
+        public async Task ServerTimeoutIsDisabledWhenUsingTransportWithInherentKeepAlive()
+        {
+            using (StartVerifiableLog(out var loggerFactory))
+            {
+                var testConnection = new TestConnection();
+                testConnection.Features.Set<IConnectionInherentKeepAliveFeature>(new TestKeepAliveFeature() { HasInherentKeepAlive = true });
+                var hubConnection = CreateHubConnection(testConnection, loggerFactory: loggerFactory);
+                hubConnection.ServerTimeout = TimeSpan.FromMilliseconds(1);
+
+                await hubConnection.StartAsync().OrTimeout();
+
+                var closeTcs = new TaskCompletionSource<Exception>();
+                hubConnection.Closed += ex =>
+                {
+                    closeTcs.TrySetResult(ex);
+                    return Task.CompletedTask;
+                };
+
+                await hubConnection.RunTimerActions().OrTimeout();
+
+                Assert.False(closeTcs.Task.IsCompleted);
+
+                await hubConnection.DisposeAsync().OrTimeout();
+            }
         }
 
         [Fact]
@@ -368,6 +396,10 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             public int Bar { get; private set; }
         }
 
+        private struct TestKeepAliveFeature : IConnectionInherentKeepAliveFeature
+        {
+            public bool HasInherentKeepAlive { get; set; }
+        }
 
         // Moq really doesn't handle out parameters well, so to make these tests work I added a manual mock -anurse
         private class MockHubProtocol : IHubProtocol

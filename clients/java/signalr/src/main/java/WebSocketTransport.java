@@ -11,14 +11,16 @@ public class WebSocketTransport implements Transport {
     private WebSocketClient webSocketClient;
     private OnReceiveCallBack onReceiveCallBack;
     private URI url;
+    private Logger logger;
 
     private static final String HTTP = "http";
     private static final String HTTPS = "https";
     private static final String WS = "ws";
     private static final String WSS = "wss";
 
-    public WebSocketTransport(String url) throws URISyntaxException {
+    public WebSocketTransport(String url, Logger logger) throws URISyntaxException {
         this.url = formatUrl(url);
+        this.logger = logger;
     }
 
     public URI getUrl(){
@@ -37,8 +39,10 @@ public class WebSocketTransport implements Transport {
 
     @Override
     public void start() throws InterruptedException {
+        logger.log(LogLevel.Debug, "Starting Websocket connection");
         webSocketClient = createWebSocket();
         webSocketClient.connectBlocking();
+        logger.log(LogLevel.Information, "WebSocket transport connected to: %s", webSocketClient.getURI());
     }
 
     @Override
@@ -49,6 +53,7 @@ public class WebSocketTransport implements Transport {
     @Override
     public void setOnReceive(OnReceiveCallBack callback) {
         this.onReceiveCallBack = callback;
+        logger.log(LogLevel.Debug, "OnReceived callback has been set");
     }
 
     @Override
@@ -59,6 +64,7 @@ public class WebSocketTransport implements Transport {
     @Override
     public void stop() {
         webSocketClient.closeConnection(0, "HubConnection Stopped");
+        logger.log(LogLevel.Information, "WebSocket connection stopped");
     }
 
     private WebSocketClient createWebSocket() {
