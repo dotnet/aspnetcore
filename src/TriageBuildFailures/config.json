@@ -4,6 +4,7 @@
     "Coherence_SiteExtension",
     "Lite_UniverseTest",
     "Lite_KestrelStressTest",
+    "Lite_Entropy",
     // Main Build
     "Coherence_UpdateRepos",
     "UniverseCoherence",
