@@ -33,7 +33,7 @@ function Test-Template($templateName, $templateNupkg, $isSPA)
 
 function Create-Hive {
     Write-Host "Creating custom hive"
-    Remove-Item -Path $customHive -Force -Recurse
+    Remove-Item -Path $customHive -Force -Recurse -ErrorAction Ignore
     New-Item -Path $customHive -ItemType Directory | out-null
     Clean-Hive
 }
