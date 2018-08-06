@@ -35,7 +35,7 @@ namespace HealthChecksSample
             // check result in a totally custom way.
             app.UseHealthChecks("/health", new HealthCheckOptions()
             {
-                // This custom writer formats the detailed status as an HTML table.
+                // This custom writer formats the detailed status as JSON.
                 ResponseWriter = WriteResponse,
             });
 
