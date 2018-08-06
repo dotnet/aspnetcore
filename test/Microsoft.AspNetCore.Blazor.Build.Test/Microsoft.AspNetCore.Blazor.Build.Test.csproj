@@ -36,7 +36,7 @@
 
   <!-- A bit of msbuild magic to support reference resolver tests -->
   <Target Name="CreateReferenceHintPathsList" AfterTargets="Build">
-    <WriteLinesToFile Lines="@(ReferencePath)" File="$(ProjectDir)$(OutputPath)referenceHints.txt" WriteOnlyWhenDifferent="true" Overwrite="true" />
+    <WriteLinesToFile Lines="@(ReferencePath)" File="$(TargetDir)referenceHints.txt" WriteOnlyWhenDifferent="true" Overwrite="true" />
   </Target>
 
   <ItemGroup>

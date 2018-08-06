@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+    <None Include="$(TargetPath)" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
   </ItemGroup>
 
   <ItemGroup>
@@ -32,5 +32,5 @@
   <ItemGroup>
     <Compile Include="..\shared\BlazorApi.cs" Link="shared\%(Filename)%(Extension)" />
   </ItemGroup>
-  
+
 </Project>

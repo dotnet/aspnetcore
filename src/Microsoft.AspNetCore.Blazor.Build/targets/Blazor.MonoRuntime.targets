@@ -44,7 +44,7 @@
       <_BlazorStatisticsReportImportance Condition="'$(BlazorOutputStatistics)' != ''">high</_BlazorStatisticsReportImportance>
     </PropertyGroup>
 
-    <Message Importance="high" Text="Blazor Build result -> @(_BlazorStatisticsOutput->Distinct()->Count()) files in $(ProjectDir)$(OutputPath)dist" />
+    <Message Importance="high" Text="Blazor Build result -> @(_BlazorStatisticsOutput->Distinct()->Count()) files in $(TargetDir)dist" />
     <Message Importance="$(_BlazorStatisticsReportImportance)" Text="%(_BlazorStatisticsOutput.Identity)" />
   </Target>
 
@@ -158,17 +158,17 @@
 
     <ItemGroup Label="Static content to copy to the output folder">
       <BlazorItemOutput Include="@(MonoAsmjsFile)">
-        <TargetOutputPath>$(ProjectDir)$(OutputPath)$(BaseBlazorRuntimeAsmjsOutputPath)%(FileName)%(Extension)</TargetOutputPath>
+        <TargetOutputPath>$(TargetDir)$(BaseBlazorRuntimeAsmjsOutputPath)%(FileName)%(Extension)</TargetOutputPath>
         <Type>AsmJs</Type>
         <IsStatic>true</IsStatic>
       </BlazorItemOutput>
       <BlazorItemOutput Include="@(MonoWasmFile)">
-        <TargetOutputPath>$(ProjectDir)$(OutputPath)$(BaseBlazorRuntimeWasmOutputPath)%(FileName)%(Extension)</TargetOutputPath>
+        <TargetOutputPath>$(TargetDir)$(BaseBlazorRuntimeWasmOutputPath)%(FileName)%(Extension)</TargetOutputPath>
         <Type>WebAssembly</Type>
         <IsStatic>true</IsStatic>
       </BlazorItemOutput>
       <BlazorItemOutput Include="@(BlazorJsFile)">
-        <TargetOutputPath>$(ProjectDir)$(OutputPath)$(BaseBlazorJsOutputPath)%(FileName)%(Extension)</TargetOutputPath>
+        <TargetOutputPath>$(TargetDir)$(BaseBlazorJsOutputPath)%(FileName)%(Extension)</TargetOutputPath>
         <Type>BlazorRuntime</Type>
         <IsStatic>true</IsStatic>
       </BlazorItemOutput>
@@ -176,7 +176,7 @@
 
     <ItemGroup Label="Static content supplied by NuGet packages">
       <_BlazorPackageContentOutput Include="@(BlazorPackageContentFile)" Condition="%(SourcePackage) != ''">
-        <TargetOutputPath>$(ProjectDir)$(OutputPath)$(BaseBlazorPackageContentOutputPath)%(SourcePackage)\%(RecursiveDir)\%(Filename)%(Extension)</TargetOutputPath>
+        <TargetOutputPath>$(TargetDir)$(BaseBlazorPackageContentOutputPath)%(SourcePackage)\%(RecursiveDir)\%(Filename)%(Extension)</TargetOutputPath>
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </_BlazorPackageContentOutput>
       <BlazorItemOutput Include="@(_BlazorPackageContentOutput)" />
@@ -243,7 +243,7 @@
     </PropertyGroup>
 
     <PropertyGroup Label="Final output paths">
-      <BlazorRuntimeBinOutputPath>$(ProjectDir)$(OutputPath)$(BaseBlazorRuntimeBinOutputPath)</BlazorRuntimeBinOutputPath>
+      <BlazorRuntimeBinOutputPath>$(TargetDir)$(BaseBlazorRuntimeBinOutputPath)</BlazorRuntimeBinOutputPath>
     </PropertyGroup>
 
     <MakeDir Directories="$(BlazorIntermediateOutputPath)" />
@@ -638,11 +638,11 @@
       <_BlazorBootJson Include="$(BlazorBootJsonIntermediateOutputPath)" />
       <_BlazorBootJsonEmbeddedContentFile Include="$(BlazorBootJsonIntermediateOutputDir)_content\**\*.*" />
       <BlazorItemOutput Include="@(_BlazorBootJson)">
-        <TargetOutputPath>$(ProjectDir)$(OutputPath)$(BlazorBootJsonOutputPath)</TargetOutputPath>
+        <TargetOutputPath>$(TargetDir)$(BlazorBootJsonOutputPath)</TargetOutputPath>
         <Type>BootJson</Type>
       </BlazorItemOutput>
       <BlazorItemOutput Include="@(_BlazorBootJsonEmbeddedContentFile)">
-        <TargetOutputPath>$(ProjectDir)$(OutputPath)dist/_content/%(RecursiveDir)%(FileName)%(Extension)</TargetOutputPath>
+        <TargetOutputPath>$(TargetDir)dist/_content/%(RecursiveDir)%(FileName)%(Extension)</TargetOutputPath>
       </BlazorItemOutput>
       <FileWrites Include="$(BlazorBootJsonIntermediateOutputPath)" />
       <FileWrites Include="@(_BlazorBootJsonEmbeddedContentFile)" />
