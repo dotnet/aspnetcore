@@ -8,12 +8,8 @@
 
 enum APPLICATION_STATUS
 {
-    UNKNOWN = 0,
-    STARTING,
     RUNNING,
-    SHUTDOWN,
     RECYCLED,
-    FAIL
 };
 
 struct APPLICATION_PARAMETER

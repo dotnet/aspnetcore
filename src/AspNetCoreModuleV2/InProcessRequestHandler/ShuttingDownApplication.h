@@ -32,7 +32,6 @@ public:
     ShuttingDownApplication(IHttpServer& pHttpServer, IHttpApplication& pHttpApplication)
         : InProcessApplicationBase(pHttpServer, pHttpApplication)
     {
-        m_status = APPLICATION_STATUS::RUNNING;
     }
 
     ~ShuttingDownApplication() = default;

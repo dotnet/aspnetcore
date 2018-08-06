@@ -25,9 +25,9 @@ public:
     }
 
     APPLICATION_STATUS QueryStatus() override;
-    bool AppOfflineExists();
+    void CheckAppOffline();
     virtual HRESULT OnAppOfflineFound() = 0;
-    void Stop(bool fServerInitiated) override { UNREFERENCED_PARAMETER(fServerInitiated); }
+    void StopInternal(bool fServerInitiated) override { UNREFERENCED_PARAMETER(fServerInitiated); }
 
 protected:
     std::experimental::filesystem::path m_appOfflineLocation;
@@ -36,7 +36,7 @@ protected:
 private:
     static const int c_appOfflineRefreshIntervalMS = 200;
     std::string m_strAppOfflineContent;
-    ULONGLONG m_ulLastCheckTime;    
+    ULONGLONG m_ulLastCheckTime;
     bool m_fAppOfflineFound;
     SRWLOCK m_statusLock {};
     PollingAppOfflineApplicationMode m_mode;

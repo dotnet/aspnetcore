@@ -15,9 +15,9 @@ InProcessApplicationBase::InProcessApplicationBase(
 }
 
 VOID
-InProcessApplicationBase::Stop(bool fServerInitiated)
+InProcessApplicationBase::StopInternal(bool fServerInitiated)
 {
-    AppOfflineTrackingApplication::Stop(fServerInitiated);
+    AppOfflineTrackingApplication::StopInternal(fServerInitiated);
 
     // Stop was initiated by server no need to do anything, server would stop on it's own
     if (fServerInitiated)

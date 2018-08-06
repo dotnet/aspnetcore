@@ -54,7 +54,7 @@ APPLICATION_INFO::GetOrCreateApplication(
 )
 {
     HRESULT             hr = S_OK;
-    
+
     SRWExclusiveLock lock(m_applicationLock);
 
     auto& httpApplication = *pHttpContext->GetApplication();
@@ -72,7 +72,7 @@ APPLICATION_INFO::GetOrCreateApplication(
         else
         {
             // another thread created the application
-            FINISHED(S_OK);   
+            FINISHED(S_OK);
         }
     }
 
@@ -124,7 +124,7 @@ Finished:
 
     if (m_pApplication)
     {
-        pApplication = ReferenceApplication(m_pApplication.get());   
+        pApplication = ReferenceApplication(m_pApplication.get());
     }
 
     return hr;
@@ -410,7 +410,7 @@ APPLICATION_INFO::RecycleApplication()
 }
 
 
-DWORD WINAPI 
+DWORD WINAPI
 APPLICATION_INFO::DoRecycleApplication(
     LPVOID lpParam)
 {

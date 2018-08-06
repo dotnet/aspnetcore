@@ -18,7 +18,7 @@ public:
 
     ~InProcessApplicationBase() = default;
 
-    VOID Stop(bool fServerInitiated) override;
+    VOID StopInternal(bool fServerInitiated) override;
 
 protected:
     BOOL m_fRecycleCalled;

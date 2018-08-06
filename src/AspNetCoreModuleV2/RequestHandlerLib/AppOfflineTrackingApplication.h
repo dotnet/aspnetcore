@@ -12,7 +12,8 @@ class AppOfflineTrackingApplication: public APPLICATION
 {
 public:
     AppOfflineTrackingApplication(const IHttpApplication& application)
-        : m_applicationPath(application.GetApplicationPhysicalPath()),
+        : APPLICATION(),
+        m_applicationPath(application.GetApplicationPhysicalPath()),
         m_fileWatcher(nullptr),
         m_fAppOfflineProcessed(false)
     {
@@ -23,15 +24,15 @@ public:
         if (m_fileWatcher)
         {
             m_fileWatcher->StopMonitor();
-        }   
+        }
     };
 
     HRESULT
     StartMonitoringAppOffline();
 
     VOID
-    Stop(bool fServerInitiated) override;
-    
+    StopInternal(bool fServerInitiated) override;
+
     virtual
     VOID
     OnAppOffline();

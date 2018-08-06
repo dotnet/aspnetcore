@@ -26,7 +26,7 @@ public:
 
     __override
     VOID
-    Stop(bool fServerInitiated) override;
+    StopInternal(bool fServerInitiated) override;
 
     VOID
     SetCallbackHandles(
@@ -111,7 +111,14 @@ public:
 
 private:
 
-    IHttpServer &                   m_pHttpServer;
+    enum MANAGED_APPLICATION_STATUS
+    {
+        UNKNOWN = 0,
+        STARTING,
+        RUNNING_MANAGED,
+        SHUTDOWN,
+        FAIL
+    };
 
     // Thread executing the .NET Core process
     HANDLE                          m_hThread;
@@ -138,6 +145,7 @@ private:
     volatile BOOL                   m_fShutdownCalledFromNative;
     volatile BOOL                   m_fShutdownCalledFromManaged;
     BOOL                            m_fInitialized;
+    MANAGED_APPLICATION_STATUS      m_status;
     std::unique_ptr<REQUESTHANDLER_CONFIG> m_pConfig;
 
     static IN_PROCESS_APPLICATION*  s_Application;

@@ -6,8 +6,6 @@
 #include "EventLog.h"
 #include "exceptions.h"
 
-extern HANDLE g_hEventLog;
-
 HRESULT AppOfflineTrackingApplication::StartMonitoringAppOffline()
 {
     LOG_INFOF("Starting app_offline monitoring in application %S", m_applicationPath.c_str());
@@ -26,11 +24,9 @@ HRESULT AppOfflineTrackingApplication::StartMonitoringAppOffline()
     return hr;
 }
 
-void AppOfflineTrackingApplication::Stop(bool fServerInitiated)
+void AppOfflineTrackingApplication::StopInternal(bool fServerInitiated)
 {
-    APPLICATION::Stop(fServerInitiated);
-
-    m_status = APPLICATION_STATUS::RECYCLED;
+    APPLICATION::StopInternal(fServerInitiated);
 
     if (m_fileWatcher)
     {
