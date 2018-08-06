@@ -12,10 +12,10 @@
   <Import Project="..\..\version.props" />
   <!--
     Since the VSSDK doeesn't support SDK-based projects, we have to use the long/verbose version.
-    
+
     This section has all of the things we need to customize to the VSIX correctly. Everything outside
     this section is just standard "old-csproj" boilerplate.
-    
+
     BEGIN INTERESTING STUFF
   -->
   <PropertyGroup>
@@ -24,14 +24,15 @@
     <AssemblyOriginatorKeyFile>..\..\build\Key.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <PropertyGroup>
-    <!-- 
+    <!--
       Following VS convention of using the VS release # as a convention for the vsix version.
 
       VS needs this build number to be parsable by System.Version, so it can't have any letters.
     -->
     <VsixVersion>15.7</VsixVersion>
     <VsixVersion Condition="'$(BuildNumber)'!='' AND '$(BuildNumber)'!='t000'">$(VsixVersion).$(BuildNumber)</VsixVersion>
-    <VsixVersion Condition="'$(BuildNumber)'=='' OR '$(BuildNumber)'=='t000'">$(VsixVersion).999999</VsixVersion>
+    <VsixVersion Condition="'$(BuildNumber)'=='' AND '$(CI)'!='true'">$(VsixVersion).999999</VsixVersion>
+    <VsixVersion Condition="'$(BuildNumber)'=='' AND '$(CI)'=='true'">$(VsixVersion).ERROR-MISSING_BUILD_NUMBER</VsixVersion>
   </PropertyGroup>
   <!--
     Used by the .vsixmanifest to insert the the VSIX version based on $(VsixVersion)
@@ -45,7 +46,7 @@
     <VSSDKTargetPlatformRegRootSuffix>RoslynDev</VSSDKTargetPlatformRegRootSuffix>
   </PropertyGroup>
   <PropertyGroup>
-    <!-- 
+    <!--
       Mark the VSIX as a per-computer install (not-per-user). Putting a component "in the box"
       requires this, and trying to change it after doing a release has lot of problems.
     -->
@@ -78,7 +79,7 @@
   </Target>
   <!--
     This is needed to support our infrastructure's automatic upload of symbols to the symbol server
-    for debugging. 
+    for debugging.
 
     The official build will set $(SymbolsPublishDir) and provide an additional place where the symbols
     ought to be copied for publishing. This will noop otherwise.
@@ -89,10 +90,10 @@
   <!--
     We should be really careful about what goes into the VSIX and what doesn't. Since we're using
     P2P references and packages, there are some things we need to exclude.
-    
+
     We want everything that *we* don't own to be excluded, those dependencies need to be satisfied
     by other VS components (Razor, Roslyn).
-    
+
     Ideally we could use an allow-list here, but I don't know how to do that.
   -->
   <ItemDefinitionGroup>
@@ -107,8 +108,8 @@
   </ItemGroup>
   <ItemGroup>
     <!--
-      Let's continue our parade of gross workarounds. 
-      
+      Let's continue our parade of gross workarounds.
+
       Referencing a cross-targeting project using a P2P from a VSIX project doesn't work well. To work around
       this problem, we're only using the P2P references to force build ordering. Then we include the build
       output of those projects as content.
@@ -157,8 +158,8 @@
       <Visible>false</Visible>
     </Content>
     <!--
-      This is built as a P2P by Microsoft.VisualStudio.LanguageServices.Blazor. This is required, adding the P2P	
-      to this project will cause a NU1201 error that doesn't have a workaround.	
+      This is built as a P2P by Microsoft.VisualStudio.LanguageServices.Blazor. This is required, adding the P2P
+      to this project will cause a NU1201 error that doesn't have a workaround.
     -->
     <Content Include="bin\$(Configuration)\AngleSharp.dll">
       <Link>AngleSharp.dll</Link>
@@ -168,7 +169,7 @@
     </Content>
   </ItemGroup>
   <!--
-    We need to generate the assembly attributes for our assembly using the version from the build, so 
+    We need to generate the assembly attributes for our assembly using the version from the build, so
     we can flow it to the about dialog.
   -->
   <ItemGroup>
@@ -198,9 +199,9 @@
     </ItemGroup>
   </Target>
   <!--
-  
-    END INTERESTING STUFF 
-    
+
+    END INTERESTING STUFF
+
   -->
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
