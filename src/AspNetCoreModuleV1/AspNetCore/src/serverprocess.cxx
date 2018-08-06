@@ -89,13 +89,15 @@ SERVER_PROCESS::GetRandomPort
     BOOL    fPortInUse = FALSE;
     DWORD   dwActualProcessId = 0;
 
+    std::uniform_int_distribution<> dist(MIN_PORT, MAX_PORT);
+
     if (g_fNsiApiNotSupported)
     {
         //
         // the default value for optional parameter dwExcludedPort is 0 which is reserved
         // a random number between MIN_PORT and MAX_PORT
         //
-        while ((*pdwPickedPort = (rand() % (MAX_PORT - MIN_PORT)) + MIN_PORT + 1) == dwExcludedPort);
+        while ((*pdwPickedPort = dist(m_randomGenerator)) == dwExcludedPort);
     }
     else
     {
@@ -107,7 +109,7 @@ SERVER_PROCESS::GetRandomPort
             // determing whether the randomly generated port is
             // in use by any other process.
             //
-            while ((*pdwPickedPort = (rand() % (MAX_PORT - MIN_PORT)) + MIN_PORT + 1) == dwExcludedPort);
+            while ((*pdwPickedPort = dist(m_randomGenerator)) == dwExcludedPort);
             hr = CheckIfServerIsUp(*pdwPickedPort, &dwActualProcessId, &fPortInUse);
         } while (fPortInUse && ++cRetry < MAX_RETRY);
 
@@ -1909,10 +1911,10 @@ SERVER_PROCESS::SERVER_PROCESS() :
     m_pForwarderConnection( NULL ),
     m_dwListeningProcessId( 0 ),
     m_hListeningProcessHandle( NULL ),
-    m_hShutdownHandle( NULL )
+    m_hShutdownHandle( NULL ),
+    m_randomGenerator( std::random_device()() )
 {
     InterlockedIncrement(&g_dwActiveServerProcesses);
-    srand(GetTickCount());
 
     for(INT i=0;i<MAX_ACTIVE_CHILD_PROCESSES; ++i)
     {

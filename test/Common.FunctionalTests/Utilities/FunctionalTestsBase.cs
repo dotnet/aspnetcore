@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
 
         protected ApplicationDeployer _deployer;
 
-        protected virtual async Task<IISDeploymentResult> DeployAsync(IISDeploymentParameters parameters)
+        protected ApplicationDeployer CreateDeployer(IISDeploymentParameters parameters)
         {
             if (!parameters.EnvironmentVariables.ContainsKey(DebugEnvironmentVariable))
             {
@@ -37,8 +37,12 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 throw new InvalidOperationException("All tests should use ApplicationPublisher");
             }
 
-            _deployer = IISApplicationDeployerFactory.Create(parameters, LoggerFactory);
+            return IISApplicationDeployerFactory.Create(parameters, LoggerFactory);
+        }
 
+        protected virtual async Task<IISDeploymentResult> DeployAsync(IISDeploymentParameters parameters)
+        {
+            _deployer = CreateDeployer(parameters);
             return (IISDeploymentResult)await _deployer.DeployAsync();
         }
 
