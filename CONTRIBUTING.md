@@ -58,7 +58,7 @@ If you would like to contribute to one of our repositories, first identify the s
 
 ### Obtaining the source code
 
-If you are an outside contributer, please fork the ASP.NET repository you would like to contribute to your account. See the GitHub documentation for [forking a repo](https://help.github.com/articles/fork-a-repo/) if you have any questions about this. 
+If you are an outside contributor, please fork the ASP.NET repository you would like to contribute to your account. See the GitHub documentation for [forking a repo](https://help.github.com/articles/fork-a-repo/) if you have any questions about this. 
 
 ### Building our Repositories
 
