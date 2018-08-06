@@ -68,7 +68,34 @@ namespace Microsoft.AspNetCore.Mvc
             };
         }
 
-        // REVIEW: Add documentation
+        /// <summary>
+        /// Gets or sets a value that determines if routing should use endpoints internally, or if legacy routing
+        /// logic should be used. Endpoint routing is used to match HTTP requests to MVC actions, and to generate
+        /// URLs with <see cref="IUrlHelper"/>.
+        /// </summary>
+        /// <value>
+        /// The default value is <see langword="true"/> if the version is
+        /// <see cref="CompatibilityVersion.Version_2_2"/> or later; <see langword="false"/> otherwise.
+        /// </value>
+        /// <remarks>
+        /// <para>
+        /// This property is associated with a compatibility switch and can provide a different behavior depending on
+        /// the configured compatibility version for the application. See <see cref="CompatibilityVersion"/> for
+        /// guidance and examples of setting the application's compatibility version.
+        /// </para>
+        /// <para>
+        /// Configuring the desired value of the compatibility switch by calling this property's setter will take
+        /// precedence over the value implied by the application's <see cref="CompatibilityVersion"/>.
+        /// </para>
+        /// <para>
+        /// If the application's compatibility version is set to <see cref="CompatibilityVersion.Version_2_1"/> or
+        /// lower then this setting will have the value <see langword="false"/> unless explicitly configured.
+        /// </para>
+        /// <para>
+        /// If the application's compatibility version is set to <see cref="CompatibilityVersion.Version_2_1"/> or
+        /// higher then this setting will have the value <see langword="true"/> unless explicitly configured.
+        /// </para>
+        /// </remarks>
         public bool EnableEndpointRouting
         {
             get => _enableEndpointRouting.Value;
