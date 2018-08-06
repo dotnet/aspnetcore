@@ -860,7 +860,6 @@ namespace Microsoft.AspNetCore.Routing.Matching
             return new MatcherEndpoint(
                 MatcherEndpoint.EmptyInvoker,
                 RoutePatternFactory.Parse(template, new RouteValueDictionary(defaults), new RouteValueDictionary(constraints)),
-                new RouteValueDictionary(),
                 0,
                 new EndpointMetadataCollection(metadata),
                 "test");

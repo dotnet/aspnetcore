@@ -216,7 +216,6 @@ test: /test3", ex.Message);
             return new MatcherEndpoint(
                 MatcherEndpoint.EmptyInvoker,
                 RoutePatternFactory.Parse(template),
-                new RouteValueDictionary(),
                 0,
                 EndpointMetadataCollection.Empty,
                 $"test: {template}");

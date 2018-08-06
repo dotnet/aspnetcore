@@ -6,13 +6,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing.Metadata;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Routing.Matching
 {
+    /// <summary>
+    /// An <see cref="MatcherPolicy"/> that implements filtering and selection by
+    /// the HTTP method of a request.
+    /// </summary>
     public sealed class HttpMethodMatcherPolicy : MatcherPolicy, IEndpointComparerPolicy, INodeBuilderPolicy
     {
         // Used in tests
@@ -26,12 +29,23 @@ namespace Microsoft.AspNetCore.Routing.Matching
         // Used in tests
         internal const string AnyMethod = "*";
 
+        /// <summary>
+        /// For framework use only.
+        /// </summary>
         public IComparer<Endpoint> Comparer => new HttpMethodMetadataEndpointComparer();
 
         // The order value is chosen to be less than 0, so that it comes before naively
         // written policies.
+        /// <summary>
+        /// For framework use only.
+        /// </summary>
         public override int Order => -1000;
 
+        /// <summary>
+        /// For framework use only.
+        /// </summary>
+        /// <param name="endpoints"></param>
+        /// <returns></returns>
         public bool AppliesToNode(IReadOnlyList<Endpoint> endpoints)
         {
             if (endpoints == null)
@@ -50,6 +64,11 @@ namespace Microsoft.AspNetCore.Routing.Matching
             return false;
         }
 
+        /// <summary>
+        /// For framework use only.
+        /// </summary>
+        /// <param name="endpoints"></param>
+        /// <returns></returns>
         public IReadOnlyList<PolicyNodeEdge> GetEdges(IReadOnlyList<Endpoint> endpoints)
         {
             // The algorithm here is designed to be preserve the order of the endpoints
@@ -181,6 +200,12 @@ namespace Microsoft.AspNetCore.Routing.Matching
             }
         }
 
+        /// <summary>
+        /// For framework use only.
+        /// </summary>
+        /// <param name="exitDestination"></param>
+        /// <param name="edges"></param>
+        /// <returns></returns>
         public PolicyJumpTable BuildJumpTable(int exitDestination, IReadOnlyList<PolicyJumpTableEdge> edges)
         {
             var destinations = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
@@ -232,7 +257,6 @@ namespace Microsoft.AspNetCore.Routing.Matching
                     return Task.CompletedTask;
                 },
                 RoutePatternFactory.Parse("/"),
-                new RouteValueDictionary(),
                 0,
                 EndpointMetadataCollection.Empty,
                 Http405EndpointDisplayName);

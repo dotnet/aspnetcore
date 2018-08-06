@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -77,29 +78,6 @@ namespace Microsoft.AspNetCore.Routing
             Assert.Equal(2, namedMatches.Count);
             Assert.Same(endpoint2, Assert.IsType<MatcherEndpoint>(namedMatches[0].Match.Entry.Data));
             Assert.Same(endpoint3, Assert.IsType<MatcherEndpoint>(namedMatches[1].Match.Entry.Data));
-        }
-
-        [Fact]
-        public void GetOutboundMatches_DoesNotGetNamedMatchesFor_EndpointsHaving_INameMetadata()
-        {
-            // Arrange
-            var endpoint1 = CreateEndpoint("/a");
-            var endpoint2 = CreateEndpoint("/a", routeName: "named");
-            var endpoint3 = CreateEndpoint(
-                "/b",
-                metadataCollection: new EndpointMetadataCollection(new[] { new NameMetadata("named") }));
-
-            // Act
-            var finder = CreateEndpointFinder(endpoint1, endpoint2);
-
-            // Assert
-            Assert.NotNull(finder.AllMatches);
-            Assert.Equal(2, finder.AllMatches.Count());
-            Assert.NotNull(finder.NamedMatches);
-            Assert.True(finder.NamedMatches.TryGetValue("named", out var namedMatches));
-            var namedMatch = Assert.Single(namedMatches);
-            var actual = Assert.IsType<MatcherEndpoint>(namedMatch.Match.Entry.Data);
-            Assert.Same(endpoint2, actual);
         }
 
         [Fact]
@@ -263,38 +241,20 @@ namespace Microsoft.AspNetCore.Routing
         {
             if (metadataCollection == null)
             {
-                metadataCollection = EndpointMetadataCollection.Empty;
-                if (!string.IsNullOrEmpty(routeName))
+                var metadata = new List<object>();
+                if (!string.IsNullOrEmpty(routeName) || requiredValues != null)
                 {
-                    metadataCollection = new EndpointMetadataCollection(new[] { new RouteNameMetadata(routeName) });
+                    metadata.Add(new RouteValuesAddressMetadata(routeName, new RouteValueDictionary(requiredValues)));
                 }
+                metadataCollection = new EndpointMetadataCollection(metadata);
             }
 
             return new MatcherEndpoint(
                 MatcherEndpoint.EmptyInvoker,
                 RoutePatternFactory.Parse(template, defaults, constraints: null),
-                new RouteValueDictionary(requiredValues),
                 order,
                 metadataCollection,
                 null);
-        }
-
-        private class RouteNameMetadata : IRouteNameMetadata
-        {
-            public RouteNameMetadata(string name)
-            {
-                Name = name;
-            }
-            public string Name { get; }
-        }
-
-        private class NameMetadata : INameMetadata
-        {
-            public NameMetadata(string name)
-            {
-                Name = name;
-            }
-            public string Name { get; }
         }
 
         private class CustomRouteValuesBasedEndpointFinder : RouteValuesBasedEndpointFinder
@@ -318,7 +278,5 @@ namespace Microsoft.AspNetCore.Routing
                 return matches;
             }
         }
-
-        private class SuppressLinkGenerationMetadata : ISuppressLinkGenerationMetadata { }
     }
 }

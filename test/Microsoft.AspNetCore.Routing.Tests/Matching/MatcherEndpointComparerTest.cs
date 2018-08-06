@@ -222,7 +222,6 @@ namespace Microsoft.AspNetCore.Routing.Matching
             return new MatcherEndpoint(
                 MatcherEndpoint.EmptyInvoker,
                 RoutePatternFactory.Parse(template),
-                new RouteValueDictionary(),
                 order,
                 new EndpointMetadataCollection(metadata),
                 "test: " + template);

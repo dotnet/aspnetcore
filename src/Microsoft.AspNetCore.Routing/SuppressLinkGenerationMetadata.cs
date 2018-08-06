@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Routing
     /// Represents metadata used during link generation.
     /// The associated endpoint will not be considered for link generation.
     /// </summary>
-    public interface ISuppressLinkGenerationMetadata
+    public sealed class SuppressLinkGenerationMetadata : ISuppressLinkGenerationMetadata
     {
     }
 }

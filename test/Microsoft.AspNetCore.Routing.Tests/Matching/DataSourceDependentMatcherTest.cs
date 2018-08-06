@@ -37,7 +37,6 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var endpoint = new MatcherEndpoint(
                 MatcherEndpoint.EmptyInvoker,
                 RoutePatternFactory.Parse("a/b/c"),
-                new RouteValueDictionary(),
                 0,
                 EndpointMetadataCollection.Empty,
                 "test");

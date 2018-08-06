@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNetCore.Routing.Metadata;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Xunit;
 using static Microsoft.AspNetCore.Routing.Matching.HttpMethodMatcherPolicy;
@@ -288,7 +287,6 @@ namespace Microsoft.AspNetCore.Routing.Matching
             return new MatcherEndpoint(
                 MatcherEndpoint.EmptyInvoker,
                 RoutePatternFactory.Parse(template),
-                new RouteValueDictionary(),
                 0,
                 new EndpointMetadataCollection(metadata),
                 $"test: {template}");

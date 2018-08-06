@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Matching;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Benchmarks
 {
@@ -18,9 +19,7 @@ namespace Benchmarks
         {
             services.AddRouting();
 
-            services.Configure<EndpointOptions>(options =>
-            {
-                options.DataSources.Add(new DefaultEndpointDataSource(new[]
+            var endpointDataSource = new DefaultEndpointDataSource(new[]
                 {
                     new MatcherEndpoint(
                         invoker: (next) => (httpContext) =>
@@ -33,12 +32,12 @@ namespace Benchmarks
                             return response.Body.WriteAsync(_helloWorldPayload, 0, payloadLength);
                         },
                         routePattern: RoutePatternFactory.Parse("/plaintext"),
-                        requiredValues: new RouteValueDictionary(),
                         order: 0,
                         metadata: EndpointMetadataCollection.Empty,
                         displayName: "Plaintext"),
-                }));
-            });
+                });
+
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<EndpointDataSource>(endpointDataSource));
         }
 
         public void Configure(Microsoft.AspNetCore.Builder.IApplicationBuilder app)

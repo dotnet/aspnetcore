@@ -67,7 +67,6 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddTransient<DfaMatcherBuilder>();
 
             // Link generation related services
-            services.TryAddSingleton<IEndpointFinder<string>, NameBasedEndpointFinder>();
             services.TryAddSingleton<IEndpointFinder<RouteValuesAddress>, RouteValuesBasedEndpointFinder>();
             services.TryAddSingleton<LinkGenerator, DefaultLinkGenerator>();
 

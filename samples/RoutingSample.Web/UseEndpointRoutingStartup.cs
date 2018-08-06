@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Matching;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace RoutingSample.Web
 {
@@ -25,11 +26,9 @@ namespace RoutingSample.Web
             {
                 options.ConstraintMap.Add("endsWith", typeof(EndsWithStringMatchProcessor));
             });
-            
-            services.Configure<EndpointOptions>(options =>
-            {
-             options.DataSources.Add(new DefaultEndpointDataSource(new[]
-             {
+
+            var endpointDataSource = new DefaultEndpointDataSource(new[]
+                {
                     new MatcherEndpoint((next) => (httpContext) =>
                         {
                             var response = httpContext.Response;
@@ -40,7 +39,6 @@ namespace RoutingSample.Web
                             return response.Body.WriteAsync(_homePayload, 0, payloadLength);
                         },
                         RoutePatternFactory.Parse("/"),
-                        new RouteValueDictionary(),
                         0,
                         EndpointMetadataCollection.Empty,
                         "Home"),
@@ -54,7 +52,6 @@ namespace RoutingSample.Web
                             return response.Body.WriteAsync(_helloWorldPayload, 0, payloadLength);
                         },
                          RoutePatternFactory.Parse("/plaintext"),
-                         new RouteValueDictionary(),
                         0,
                         EndpointMetadataCollection.Empty,
                         "Plaintext"),
@@ -66,7 +63,6 @@ namespace RoutingSample.Web
                             return response.WriteAsync("WithConstraints");
                         },
                         RoutePatternFactory.Parse("/withconstraints/{id:endsWith(_001)}"),
-                        new RouteValueDictionary(),
                         0,
                         EndpointMetadataCollection.Empty,
                         "withconstraints"),
@@ -78,12 +74,12 @@ namespace RoutingSample.Web
                             return response.WriteAsync("withoptionalconstraints");
                         },
                         RoutePatternFactory.Parse("/withoptionalconstraints/{id:endsWith(_001)?}"),
-                        new RouteValueDictionary(),
                         0,
                         EndpointMetadataCollection.Empty,
                         "withoptionalconstraints"),
-             }));
-         });
+                });
+
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<EndpointDataSource>(endpointDataSource));
         }
 
         public void Configure(Microsoft.AspNetCore.Builder.IApplicationBuilder app)

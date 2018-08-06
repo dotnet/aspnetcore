@@ -8,11 +8,13 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using Microsoft.AspNetCore.Routing.Matching;
-using Microsoft.AspNetCore.Routing.Metadata;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Routing
 {
+    /// <summary>
+    /// Represents an <see cref="EndpointDataSource"/> whose values come from a collection of <see cref="EndpointDataSource"/> instances.
+    /// </summary>
     [DebuggerDisplay("{DebuggerDisplayString,nq}")]
     public sealed class CompositeEndpointDataSource : EndpointDataSource
     {
@@ -34,12 +36,20 @@ namespace Microsoft.AspNetCore.Routing
             _lock = new object();
         }
 
+        /// <summary>
+        /// Gets a <see cref="IChangeToken"/> used to signal invalidation of cached <see cref="Endpoint"/>
+        /// instances.
+        /// </summary>
+        /// <returns>The <see cref="IChangeToken"/>.</returns>
         public override IChangeToken GetChangeToken()
         {
             EnsureInitialized();
             return _consumerChangeToken;
         }
 
+        /// <summary>
+        /// Returns a read-only collection of <see cref="Endpoint"/> instances.
+        /// </summary>
         public override IReadOnlyList<Endpoint> Endpoints
         {
             get
@@ -127,15 +137,18 @@ namespace Microsoft.AspNetCore.Routing
                         var template = matcherEndpoint.RoutePattern.RawText;
                         template = string.IsNullOrEmpty(template) ? "\"\"" : template;
                         sb.Append(template);
-                        sb.Append(", Required Values: new { ");
-                        sb.Append(string.Join(", ", FormatValues(matcherEndpoint.RequiredValues)));
-                        sb.Append(" }");
                         sb.Append(", Defaults: new { ");
                         sb.Append(string.Join(", ", FormatValues(matcherEndpoint.RoutePattern.Defaults)));
                         sb.Append(" }");
-                        var routeNameMetadata = matcherEndpoint.Metadata.GetMetadata<IRouteNameMetadata>();
+                        var routeValuesAddressMetadata = matcherEndpoint.Metadata.GetMetadata<IRouteValuesAddressMetadata>();
                         sb.Append(", Route Name: ");
-                        sb.Append(routeNameMetadata?.Name);
+                        sb.Append(routeValuesAddressMetadata?.Name);
+                        if (routeValuesAddressMetadata?.RequiredValues != null)
+                        {
+                            sb.Append(", Required Values: new { ");
+                            sb.Append(string.Join(", ", FormatValues(routeValuesAddressMetadata.RequiredValues)));
+                            sb.Append(" }");
+                        }
                         sb.Append(", Order: ");
                         sb.Append(matcherEndpoint.Order);
 

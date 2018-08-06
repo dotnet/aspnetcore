@@ -137,16 +137,16 @@ namespace Microsoft.AspNetCore.Routing
 
         private OutboundRouteEntry CreateOutboundRouteEntry(MatcherEndpoint endpoint)
         {
-            var routeNameMetadata = endpoint.Metadata.GetMetadata<IRouteNameMetadata>();
+            var routeValuesAddressMetadata = endpoint.Metadata.GetMetadata<IRouteValuesAddressMetadata>();
             var entry = new OutboundRouteEntry()
             {
                 Handler = NullRouter.Instance,
                 Order = endpoint.Order,
                 Precedence = RoutePrecedence.ComputeOutbound(endpoint.RoutePattern),
-                RequiredLinkValues = new RouteValueDictionary(endpoint.RequiredValues),
+                RequiredLinkValues = new RouteValueDictionary(routeValuesAddressMetadata?.RequiredValues),
                 RouteTemplate = new RouteTemplate(endpoint.RoutePattern),
                 Data = endpoint,
-                RouteName = routeNameMetadata?.Name,
+                RouteName = routeValuesAddressMetadata?.Name,
             };
             entry.Defaults = new RouteValueDictionary(endpoint.RoutePattern.Defaults);
             return entry;
