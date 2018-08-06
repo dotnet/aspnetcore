@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             {
                 Task<HttpResponseMessage> clientTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(clientTask);
                 byte[] body = Encoding.UTF8.GetBytes("Hello World");
                 await context.Response.Body.WriteAsync(body, 0, body.Length);
 

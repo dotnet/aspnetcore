@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 Assert.Equal(200, context.Response.StatusCode);
                 context.Dispose();
 
@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 context.Response.StatusCode = 201;
                 // TODO: env["owin.ResponseProtocol"] = "HTTP/1.0"; // Http.Sys ignores this value
                 context.Dispose();
@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 context.Response.StatusCode = 201;
                 context.Response.ReasonPhrase = "CustomReasonPhrase";
                 // TODO: env["owin.ResponseProtocol"] = "HTTP/1.0"; // Http.Sys ignores this value
@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 context.Response.StatusCode = 901;
                 context.Dispose();
 
@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 Assert.Throws<ArgumentOutOfRangeException>(() => { context.Response.StatusCode = 100; });
                 context.Dispose();
 
@@ -118,7 +118,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 Assert.Throws<ArgumentOutOfRangeException>(() => { context.Response.StatusCode = 0; });
                 context.Dispose();
 

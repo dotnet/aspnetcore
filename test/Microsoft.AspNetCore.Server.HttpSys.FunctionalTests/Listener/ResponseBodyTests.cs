@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             {
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
 
                 Assert.True(context.AllowSynchronousIO);
 
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 var responseTask = SendRequestAsync(address);
 
                 server.Options.AllowSynchronousIO = true;
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 context.Response.Body.Write(new byte[10], 0, 10);
                 await context.Response.Body.WriteAsync(new byte[10], 0, 10);
                 context.Dispose();
@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 server.Options.AllowSynchronousIO = true;
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 context.Response.Body.Write(new byte[10], 0, 10);
                 context.Response.Body.Flush();
                 await context.Response.Body.WriteAsync(new byte[10], 0, 10);
@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             {
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 context.Response.Headers["transfeR-Encoding"] = "CHunked";
                 Stream stream = context.Response.Body;
                 var responseBytes = Encoding.ASCII.GetBytes("10\r\nManually Chunked\r\n0\r\n\r\n");
@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 var responseTask = SendRequestAsync(address);
 
                 server.Options.AllowSynchronousIO = true;
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 context.Response.Headers["Content-lenGth"] = " 30 ";
                 var stream = context.Response.Body;
                 stream.EndWrite(stream.BeginWrite(new byte[10], 0, 10, null, null));
@@ -160,12 +160,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             {
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 context.Response.Headers["Content-lenGth"] = " 20 ";
                 context.Dispose();
 #if NET461
                 // HttpClient retries the request because it didn't get a response.
-                context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 context.Response.Headers["Content-lenGth"] = " 20 ";
                 context.Dispose();
 #elif NETCOREAPP2_2
@@ -184,7 +184,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             {
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 context.Response.Headers["Content-lenGth"] = " 20 ";
                 context.Response.Body.Write(new byte[5], 0, 5);
                 context.Dispose();
@@ -201,7 +201,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             {
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 context.Response.Headers["Content-lenGth"] = " 10 ";
                 context.Response.Body.Write(new byte[5], 0, 5);
                 Assert.Throws<InvalidOperationException>(() => context.Response.Body.Write(new byte[6], 0, 6));
@@ -220,7 +220,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 var responseTask = SendRequestAsync(address);
 
                 server.Options.AllowSynchronousIO = true;
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 context.Response.Headers["Content-lenGth"] = " 10 ";
                 context.Response.Body.Write(new byte[10], 0, 10);
                 Assert.Throws<ObjectDisposedException>(() => context.Response.Body.Write(new byte[6], 0, 6));
@@ -246,7 +246,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 var responseTask = SendRequestAsync(address);
 
                 server.Options.AllowSynchronousIO = true;
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 context.Response.Body.Write(new byte[10], 0, 0);
                 Assert.True(context.Response.HasStarted);
                 await context.Response.Body.WriteAsync(new byte[10], 0, 0);
@@ -270,7 +270,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             {
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 var cts = new CancellationTokenSource();
                 // First write sends headers
                 await context.Response.Body.WriteAsync(new byte[10], 0, 10, cts.Token);
@@ -291,7 +291,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             {
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 var cts = new CancellationTokenSource();
                 cts.CancelAfter(TimeSpan.FromSeconds(10));
                 // First write sends headers
@@ -314,7 +314,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 server.Options.ThrowWriteExceptions = true;
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 var cts = new CancellationTokenSource();
                 cts.Cancel();
                 // First write sends headers
@@ -323,7 +323,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 context.Dispose();
 #if NET461
                 // HttpClient retries the request because it didn't get a response.
-                context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 cts = new CancellationTokenSource();
                 cts.Cancel();
                 // First write sends headers
@@ -346,7 +346,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             {
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 var cts = new CancellationTokenSource();
                 cts.Cancel();
                 // First write sends headers
@@ -355,7 +355,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 context.Dispose();
 #if NET461
                 // HttpClient retries the request because it didn't get a response.
-                context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 cts = new CancellationTokenSource();
                 cts.Cancel();
                 // First write sends headers
@@ -379,7 +379,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 server.Options.ThrowWriteExceptions = true;
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 var cts = new CancellationTokenSource();
                 // First write sends headers
                 await context.Response.Body.WriteAsync(new byte[10], 0, 10, cts.Token);
@@ -400,7 +400,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             {
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 var cts = new CancellationTokenSource();
                 // First write sends headers
                 await context.Response.Body.WriteAsync(new byte[10], 0, 10, cts.Token);
@@ -424,7 +424,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 var cts = new CancellationTokenSource();
                 var responseTask = SendRequestAsync(address, cts.Token);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 // First write sends headers
                 cts.Cancel();
                 await Assert.ThrowsAnyAsync<OperationCanceledException>(() => responseTask);
@@ -454,7 +454,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 var cts = new CancellationTokenSource();
                 var responseTask = SendRequestAsync(address, cts.Token);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
 
                 // First write sends headers
                 cts.Cancel();
@@ -486,7 +486,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 var responseTask = SendRequestAsync(address, cts.Token);
 
                 server.Options.AllowSynchronousIO = true;
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 // First write sends headers
                 cts.Cancel();
                 await Assert.ThrowsAnyAsync<OperationCanceledException>(() => responseTask);
@@ -509,7 +509,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 var cts = new CancellationTokenSource();
                 var responseTask = SendRequestAsync(address, cts.Token);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 // First write sends headers
                 cts.Cancel();
                 await Assert.ThrowsAnyAsync<OperationCanceledException>(() => responseTask);
@@ -535,7 +535,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 {
                     var responseTask = client.GetAsync(address, HttpCompletionOption.ResponseHeadersRead);
 
-                    context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                    context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                     // First write sends headers
                     context.Response.Body.Write(new byte[10], 0, 10);
 
@@ -569,7 +569,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 {
                     var responseTask = client.GetAsync(address, HttpCompletionOption.ResponseHeadersRead);
 
-                    context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                    context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                     // First write sends headers
                     await context.Response.Body.WriteAsync(new byte[10], 0, 10);
 
@@ -603,7 +603,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 {
                     var responseTask = client.GetAsync(address, HttpCompletionOption.ResponseHeadersRead);
 
-                    context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                    context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                     // First write sends headers
                     context.Response.Body.Write(new byte[10], 0, 10);
 
@@ -633,7 +633,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 {
                     var responseTask = client.GetAsync(address, HttpCompletionOption.ResponseHeadersRead);
 
-                    context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                    context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                     // First write sends headers
                     await context.Response.Body.WriteAsync(new byte[10], 0, 10);
 

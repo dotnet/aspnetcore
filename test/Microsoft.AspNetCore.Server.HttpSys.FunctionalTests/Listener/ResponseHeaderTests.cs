@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 context.Dispose();
 
                 HttpResponseMessage response = await responseTask;
@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address, usehttp11: false);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 context.Dispose();
 
                 HttpResponseMessage response = await responseTask;
@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             {
                 Task<HttpResponseMessage> responseTask = SendHeadRequestAsync(address);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 context.Dispose();
 
                 HttpResponseMessage response = await responseTask;
@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             {
                 Task<HttpResponseMessage> responseTask = SendHeadRequestAsync(address, usehttp11: false);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 context.Dispose();
 
                 HttpResponseMessage response = await responseTask;
@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
 
                 // Send a second request to check that the connection wasn't corrupted.
                 responseTask = SendHeadRequestAsync(address);
-                context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 context.Dispose();
                 response = await responseTask;
             }
@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             {
                 Task<HttpResponseMessage> responseTask = SendHeadRequestAsync(address);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 context.Response.ContentLength = 20;
                 context.Dispose();
 
@@ -148,7 +148,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
 
                 // Send a second request to check that the connection wasn't corrupted.
                 responseTask = SendHeadRequestAsync(address);
-                context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 context.Dispose();
                 response = await responseTask;
             }
@@ -162,7 +162,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 context.Response.StatusCode = 204; // No Content
                 context.Dispose();
 
@@ -185,7 +185,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             {
                 Task<HttpResponseMessage> responseTask = SendHeadRequestAsync(address);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 context.Response.StatusCode = 204; // No Content
                 context.Dispose();
 
@@ -200,7 +200,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
 
                 // Send a second request to check that the connection wasn't corrupted.
                 responseTask = SendHeadRequestAsync(address);
-                context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 context.Dispose();
                 response = await responseTask;
             }
@@ -215,7 +215,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 WebRequest request = WebRequest.Create(address);
                 Task<WebResponse> responseTask = request.GetResponseAsync();
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 var responseHeaders = context.Response.Headers;
                 responseHeaders["WWW-Authenticate"] = "custom1";
                 context.Dispose();
@@ -240,7 +240,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 WebRequest request = WebRequest.Create(address);
                 Task<WebResponse> responseTask = request.GetResponseAsync();
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 var responseHeaders = context.Response.Headers;
                 responseHeaders["WWW-Authenticate"] = new[] { "custom1, and custom2", "custom3" };
                 context.Dispose();
@@ -271,7 +271,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 WebRequest request = WebRequest.Create(address);
                 Task<WebResponse> responseTask = request.GetResponseAsync();
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 var responseHeaders = context.Response.Headers;
                 responseHeaders["Custom-Header1"] = new[] { "custom1, and custom2", "custom3" };
                 context.Dispose();
@@ -301,7 +301,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 var responseHeaders = context.Response.Headers;
                 responseHeaders["Connection"] = "Close";
                 context.Dispose();
@@ -321,7 +321,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address, usehttp11: false);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 context.Dispose();
 
                 HttpResponseMessage response = await responseTask;
@@ -344,7 +344,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                     request.Version = new Version(1, 0);
                     Task<HttpResponseMessage> responseTask = client.SendAsync(request);
 
-                    var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                    var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                     var responseHeaders = context.Response.Headers;
                     responseHeaders["Transfer-Encoding"] = "chunked";
                     var responseBytes = Encoding.ASCII.GetBytes("10\r\nManually Chunked\r\n0\r\n\r\n");
@@ -372,7 +372,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 // Http.Sys does not support 1.0 keep-alives.
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address, usehttp11: false, sendKeepAlive: true);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 context.Dispose();
 
                 HttpResponseMessage response = await responseTask;
@@ -391,7 +391,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
                 server.Options.AllowSynchronousIO = true;
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 var responseHeaders = context.Response.Headers;
 
                 responseHeaders["Custom1"] = new[] { "value1a", "value1b" };
@@ -427,7 +427,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 var responseHeaders = context.Response.Headers;
 
                 responseHeaders["Custom1"] = new[] { "value1a", "value1b" };
@@ -481,7 +481,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
 
                 var responseHeaders = context.Response.Headers;
 
