@@ -15,21 +15,16 @@ namespace Microsoft.AspNetCore.Mvc.Routing
     {
         private readonly ILogger<EndpointRoutingUrlHelper> _logger;
         private readonly LinkGenerator _linkGenerator;
-        private readonly IEndpointFinder<RouteValuesAddress> _routeValuesBasedEndpointFinder;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="EndpointRoutingUrlHelper"/> class using the specified
         /// <paramref name="actionContext"/>.
         /// </summary>
         /// <param name="actionContext">The <see cref="Mvc.ActionContext"/> for the current request.</param>
-        /// <param name="routeValuesBasedEndpointFinder">
-        /// The <see cref="IEndpointFinder{T}"/> which finds endpoints by required route values.
-        /// </param>
         /// <param name="linkGenerator">The <see cref="LinkGenerator"/> used to generate the link.</param>
         /// <param name="logger">The <see cref="ILogger"/>.</param>
         public EndpointRoutingUrlHelper(
             ActionContext actionContext,
-            IEndpointFinder<RouteValuesAddress> routeValuesBasedEndpointFinder,
             LinkGenerator linkGenerator,
             ILogger<EndpointRoutingUrlHelper> logger)
             : base(actionContext)
@@ -45,7 +40,6 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             }
 
             _linkGenerator = linkGenerator;
-            _routeValuesBasedEndpointFinder = routeValuesBasedEndpointFinder;
             _logger = logger;
         }
 
@@ -85,23 +79,10 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 valuesDictionary["controller"] = urlActionContext.Controller;
             }
 
-            var endpoints = _routeValuesBasedEndpointFinder.FindEndpoints(
-                new RouteValuesAddress()
-                {
-                    ExplicitValues = valuesDictionary,
-                    AmbientValues = AmbientValues
-                });
-
             var successfullyGeneratedLink = _linkGenerator.TryGetLink(
-                new LinkGeneratorContext
-                {
-                    HttpContext = ActionContext.HttpContext,
-                    Endpoints = endpoints,
-                    ExplicitValues = valuesDictionary,
-                    AmbientValues = AmbientValues
-                },
+                ActionContext.HttpContext,
+                valuesDictionary,
                 out var link);
-
             if (!successfullyGeneratedLink)
             {
                 //TODO: log here
@@ -122,22 +103,10 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 
             var valuesDictionary = routeContext.Values as RouteValueDictionary ?? GetValuesDictionary(routeContext.Values);
 
-            var endpoints = _routeValuesBasedEndpointFinder.FindEndpoints(
-                new RouteValuesAddress()
-                {
-                    RouteName = routeContext.RouteName,
-                    ExplicitValues = valuesDictionary,
-                    AmbientValues = AmbientValues
-                });
-
             var successfullyGeneratedLink = _linkGenerator.TryGetLink(
-                new LinkGeneratorContext
-                {
-                    HttpContext = ActionContext.HttpContext,
-                    Endpoints = endpoints,
-                    ExplicitValues = valuesDictionary,
-                    AmbientValues = AmbientValues
-                },
+                ActionContext.HttpContext,
+                routeContext.RouteName,
+                valuesDictionary,
                 out var link);
 
             if (!successfullyGeneratedLink)

@@ -51,12 +51,10 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             {
                 var services = httpContext.RequestServices;
                 var linkGenerator = services.GetRequiredService<LinkGenerator>();
-                var routeValuesBasedEndpointFinder = services.GetRequiredService<IEndpointFinder<RouteValuesAddress>>();
                 var logger = services.GetRequiredService<ILogger<EndpointRoutingUrlHelper>>();
 
                 urlHelper = new EndpointRoutingUrlHelper(
                     context,
-                    routeValuesBasedEndpointFinder,
                     linkGenerator,
                     logger);
             }

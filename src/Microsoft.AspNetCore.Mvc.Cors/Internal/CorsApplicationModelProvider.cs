@@ -6,7 +6,7 @@ using System.Linq;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Internal;
-using Microsoft.AspNetCore.Routing.Metadata;
+using Microsoft.AspNetCore.Routing;
 
 namespace Microsoft.AspNetCore.Mvc.Cors.Internal
 {

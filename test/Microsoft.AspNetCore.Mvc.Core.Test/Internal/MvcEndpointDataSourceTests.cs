@@ -66,7 +66,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var endpoint = Assert.Single(endpoints);
             var matcherEndpoint = Assert.IsType<MatcherEndpoint>(endpoint);
 
-            var endpointValue = matcherEndpoint.RequiredValues["Name"];
+            var routeValuesAddressMetadata = matcherEndpoint.Metadata.GetMetadata<RouteValuesAddressMetadata>();
+            Assert.NotNull(routeValuesAddressMetadata);
+            var endpointValue = routeValuesAddressMetadata.RequiredValues["Name"];
             Assert.Equal(routeValue, endpointValue);
 
             Assert.Equal(displayName, matcherEndpoint.DisplayName);
@@ -389,7 +391,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
-        public void Endpoints_ConventionalRoute_WithNoRouteName_DoesNotAddRouteNameMetadata()
+        public void Endpoints_ConventionalRoute_WithEmptyRouteName_CreatesMetadataWithEmptyRouteName()
         {
             // Arrange
             var actionDescriptorCollection = GetActionDescriptorCollection(
@@ -404,8 +406,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             // Assert
             var endpoint = Assert.Single(endpoints);
             var matcherEndpoint = Assert.IsType<MatcherEndpoint>(endpoint);
-            var routeNameMetadata = matcherEndpoint.Metadata.GetMetadata<IRouteNameMetadata>();
-            Assert.Null(routeNameMetadata);
+            var routeValuesAddressNameMetadata = matcherEndpoint.Metadata.GetMetadata<IRouteValuesAddressMetadata>();
+            Assert.NotNull(routeValuesAddressNameMetadata);
+            Assert.Equal(string.Empty, routeValuesAddressNameMetadata.Name);
         }
 
         [Fact]
@@ -428,17 +431,17 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 (ep) =>
                 {
                     var matcherEndpoint = Assert.IsType<MatcherEndpoint>(ep);
-                    var routeNameMetadata = matcherEndpoint.Metadata.GetMetadata<IRouteNameMetadata>();
-                    Assert.NotNull(routeNameMetadata);
-                    Assert.Equal("namedRoute", routeNameMetadata.Name);
+                    var routeValuesAddressMetadata = matcherEndpoint.Metadata.GetMetadata<IRouteValuesAddressMetadata>();
+                    Assert.NotNull(routeValuesAddressMetadata);
+                    Assert.Equal("namedRoute", routeValuesAddressMetadata.Name);
                     Assert.Equal("named/Home/Index/{id?}", matcherEndpoint.RoutePattern.RawText);
                 },
                 (ep) =>
                 {
                     var matcherEndpoint = Assert.IsType<MatcherEndpoint>(ep);
-                    var routeNameMetadata = matcherEndpoint.Metadata.GetMetadata<IRouteNameMetadata>();
-                    Assert.NotNull(routeNameMetadata);
-                    Assert.Equal("namedRoute", routeNameMetadata.Name);
+                    var routeValuesAddressMetadata = matcherEndpoint.Metadata.GetMetadata<IRouteValuesAddressMetadata>();
+                    Assert.NotNull(routeValuesAddressMetadata);
+                    Assert.Equal("namedRoute", routeValuesAddressMetadata.Name);
                     Assert.Equal("named/Products/Details/{id?}", matcherEndpoint.RoutePattern.RawText);
                 });
         }

@@ -142,7 +142,6 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                     return Task.CompletedTask;
                 },
                 RoutePatternFactory.Parse("/"),
-                new RouteValueDictionary(),
                 0,
                 EndpointMetadataCollection.Empty,
                 Http415EndpointDisplayName);
