@@ -7,11 +7,10 @@
 #include "exceptions.h"
 #include "utility.h"
 #include "ntassert.h"
-
+#include "SRWExclusiveLock.h"
 
 class APPLICATION : public IAPPLICATION
 {
-
 public:
     // Non-copyable
     APPLICATION(const APPLICATION&) = delete;
@@ -20,24 +19,38 @@ public:
     APPLICATION_STATUS
     QueryStatus() override
     {
-        return m_status;
+        return m_fStopCalled ? APPLICATION_STATUS::RECYCLED : APPLICATION_STATUS::RUNNING;
     }
 
     APPLICATION()
-        : m_cRefs(1)
+        : m_fStopCalled(false),
+          m_cRefs(1)
     {
         InitializeSRWLock(&m_stateLock);
     }
 
-    
+
     VOID
     Stop(bool fServerInitiated) override
     {
-        UNREFERENCED_PARAMETER(fServerInitiated);
+        SRWExclusiveLock stopLock(m_stateLock);
+
+        if (m_fStopCalled)
+        {
+            return;
+        }
 
         m_fStopCalled = true;
+
+        StopInternal(fServerInitiated);
     }
-    
+
+    virtual
+    VOID
+    StopInternal(bool fServerInitiated)
+    {
+        UNREFERENCED_PARAMETER(fServerInitiated);
+    }
 
     VOID
     ReferenceApplication() override
@@ -59,11 +72,9 @@ public:
     }
 
 protected:
-    volatile APPLICATION_STATUS     m_status = APPLICATION_STATUS::UNKNOWN;
     SRWLOCK m_stateLock;
-    bool m_fStopCalled;
+    bool m_fStopCalled; 
 
 private:
-
-    mutable LONG                    m_cRefs;
+    mutable LONG           m_cRefs;
 };

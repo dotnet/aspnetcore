@@ -44,7 +44,7 @@ public:
     static
     BOOL
     IsDotnetExecutable(
-        _In_ const std::filesystem::path & dotnetPath
+        _In_ const std::experimental::filesystem::path & dotnetPath
     );
 
     static
@@ -74,25 +74,25 @@ public:
     );
 
     static
-    std::optional<std::filesystem::path>
+    std::optional<std::experimental::filesystem::path>
     GetAbsolutePathToHostFxr(
-        _In_ const std::filesystem::path & dotnetPath,
+        _In_ const std::experimental::filesystem::path & dotnetPath,
         _In_ HANDLE hEventLog
     );
 
     static
-    std::optional<std::filesystem::path>
+    std::optional<std::experimental::filesystem::path>
     GetAbsolutePathToDotnetFromProgramFiles();
 
     static
-    std::optional<std::filesystem::path>
+    std::optional<std::experimental::filesystem::path>
     InvokeWhereToFindDotnet();
 
     static
-    std::optional<std::filesystem::path>
+    std::optional<std::experimental::filesystem::path>
     GetAbsolutePathToDotnet(
-        _In_ const std::filesystem::path & applicationPath,
-        _In_ const std::filesystem::path & requestedPath
+        _In_ const std::experimental::filesystem::path & applicationPath,
+        _In_ const std::experimental::filesystem::path & requestedPath
     );
 };
 

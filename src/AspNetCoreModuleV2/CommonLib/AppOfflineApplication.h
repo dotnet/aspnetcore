@@ -13,6 +13,7 @@ public:
     AppOfflineApplication(IHttpApplication& pApplication)
         : PollingAppOfflineApplication(pApplication, PollingAppOfflineApplicationMode::StopWhenRemoved)
     {
+        CheckAppOffline();
     }
 
     HRESULT CreateHandler(IHttpContext* pHttpContext, IREQUEST_HANDLER** pRequestHandler) override;

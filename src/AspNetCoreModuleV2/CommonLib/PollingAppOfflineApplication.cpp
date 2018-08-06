@@ -9,11 +9,12 @@
 
 APPLICATION_STATUS PollingAppOfflineApplication::QueryStatus()
 {
-    return (AppOfflineExists() == (m_mode == StopWhenRemoved)) ? APPLICATION_STATUS::RUNNING : APPLICATION_STATUS::RECYCLED;
+    CheckAppOffline();
+    return APPLICATION::QueryStatus();
 }
 
-bool
-PollingAppOfflineApplication::AppOfflineExists()
+void
+PollingAppOfflineApplication::CheckAppOffline()
 {
     const auto ulCurrentTime = GetTickCount64();
     //
@@ -29,16 +30,20 @@ PollingAppOfflineApplication::AppOfflineExists()
             m_fAppOfflineFound = is_regular_file(m_appOfflineLocation);
             if(m_fAppOfflineFound)
             {
-                LOG_IF_FAILED(OnAppOfflineFound());    
+                LOG_IF_FAILED(OnAppOfflineFound());
             }
             m_ulLastCheckTime = ulCurrentTime;
         }
     }
-    return m_fAppOfflineFound;
+
+    if (m_fAppOfflineFound != (m_mode == StopWhenRemoved))
+    {
+        Stop(/* fServerInitiated */ false);
+    }
 }
 
 
-std::filesystem::path PollingAppOfflineApplication::GetAppOfflineLocation(IHttpApplication& pApplication)
+std::experimental::filesystem::path PollingAppOfflineApplication::GetAppOfflineLocation(IHttpApplication& pApplication)
 {
-    return std::filesystem::path(pApplication.GetApplicationPhysicalPath()) / "app_offline.htm";
+    return std::experimental::filesystem::path(pApplication.GetApplicationPhysicalPath()) / "app_offline.htm";
 }

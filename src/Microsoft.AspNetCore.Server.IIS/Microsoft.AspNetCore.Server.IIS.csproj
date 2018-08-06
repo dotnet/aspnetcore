@@ -10,6 +10,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <PackNativeAssets Condition="'$(OS)' == 'Windows_NT'">true</PackNativeAssets>
     <NativeAssetsTargetFramework>netcoreapp2.2</NativeAssetsTargetFramework>
+    <DisableFastUpToDateCheck>True</DisableFastUpToDateCheck>
   </PropertyGroup>
 
   <Import Project="..\..\build\assets.props" />
@@ -23,6 +24,12 @@
 
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Core" Version="$(MicrosoftAspNetCoreAuthenticationCorePackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="$(MicrosoftAspNetCoreHostingAbstractionsPackageVersion)" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(VCTargetsPath)' != ''">
+    <ProjectReference Include="..\AspNetCoreModuleV2\InProcessRequestHandler\InProcessRequestHandler.vcxproj" >
+      <ReferenceOutputAssembly>False</ReferenceOutputAssembly>
+    </ProjectReference>
   </ItemGroup>
 
   <ItemGroup>
@@ -43,14 +50,6 @@
 
   <Target Name="AddRunNativeComponents" BeforeTargets="AssignTargetPaths"  Condition="$(PackNativeAssets) == 'true'">
     <ItemGroup>
-      <None Include="%(RunInProcessComponents.DllLocation)"
-               CopyToOutputDirectory="PreserveNewest"
-               Link="%(RunInProcessComponents.Platform)\%(RunInProcessComponents.NativeAsset).dll"/>
-      <None Include="%(RunInProcessComponents.PdbLocation)"
-               CopyToOutputDirectory="PreserveNewest"
-               Link="%(RunInProcessComponents.Platform)\%(RunInProcessComponents.NativeAsset).pdb"/>
-
-      <!-- Copy to platform specific and app local directory for standalone publish -->
       <None Include="%(RunInProcessComponents.DllLocation)"
                CopyToOutputDirectory="PreserveNewest"
                Link="%(RunInProcessComponents.NativeAsset).dll"/>

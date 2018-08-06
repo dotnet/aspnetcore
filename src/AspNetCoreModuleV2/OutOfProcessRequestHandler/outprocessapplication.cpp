@@ -12,7 +12,6 @@ OUT_OF_PROCESS_APPLICATION::OUT_OF_PROCESS_APPLICATION(
     m_fWebSocketSupported(WEBSOCKET_STATUS::WEBSOCKET_UNKNOWN),
     m_pConfig(std::move(pConfig))
 {
-    m_status = APPLICATION_STATUS::RUNNING;
     m_pProcessManager = NULL;
 }
 
@@ -62,16 +61,9 @@ OUT_OF_PROCESS_APPLICATION::GetProcess(
 
 __override
 VOID
-OUT_OF_PROCESS_APPLICATION::Stop(bool fServerInitiated)
-{   
-    SRWExclusiveLock lock(m_stateLock);
-
-    if (m_fStopCalled)
-    {
-        return;
-    }
-
-    AppOfflineTrackingApplication::Stop(fServerInitiated);
+OUT_OF_PROCESS_APPLICATION::StopInternal(bool fServerInitiated)
+{
+    AppOfflineTrackingApplication::StopInternal(fServerInitiated);
 
     if (m_pProcessManager != NULL)
     {

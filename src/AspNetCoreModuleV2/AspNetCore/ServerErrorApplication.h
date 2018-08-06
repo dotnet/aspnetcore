@@ -13,7 +13,6 @@ public:
         : m_HR(hr),
         PollingAppOfflineApplication(pApplication, PollingAppOfflineApplicationMode::StopWhenAdded)
     {
-        m_status = APPLICATION_STATUS::RUNNING;
     }
 
     ~ServerErrorApplication() = default;

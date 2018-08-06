@@ -37,7 +37,7 @@
 
     <AncmPath>$(AspNetCoreModuleV1ShimDll)</AncmPath>
     <AncmV2Path>$(AspNetCoreModuleV2ShimDll)</AncmV2Path>
-    <AncmInProcessRHPath>$(NativePlatform)\aspnetcorev2_inprocess.dll</AncmInProcessRHPath>
+    <AncmInProcessRHPath>aspnetcorev2_inprocess.dll</AncmInProcessRHPath>
     <DotNetPath>$(userprofile)\.dotnet\$(NativePlatform)\dotnet.exe</DotNetPath>
   </PropertyGroup>
 
