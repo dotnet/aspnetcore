@@ -30,7 +30,10 @@
   <ItemGroup>
     <!-- Don't publish the SPA source files, but do show them in the project files list -->
     <Content Remove="$(SpaRoot)**" />
-    <None Include="$(SpaRoot)**" Exclude="$(SpaRoot)node_modules\**" />
+    <None Include="$(SpaRoot)**"
+          Exclude="$(SpaRoot)node_modules\**"
+          CopyToPublishDirectory="PreserveNewest"
+          CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 <!--/-:cnd:noEmit -->
@@ -53,7 +56,7 @@
 
     <!-- Include the newly-built files in the publish output -->
     <ItemGroup>
-      <DistFiles Include="$(SpaRoot)dist\**; $(SpaRoot)dist-server\**" />
+      <DistFiles Include="$(SpaRoot)dist\**; $(SpaRoot)dist-server\**; $(SpaRoot)package.json" />
       <DistFiles Include="$(SpaRoot)node_modules\**" Condition="'$(BuildServerSideRenderer)' == 'true'" />
       <ResolvedFileToPublish Include="@(DistFiles->'%(FullPath)')" Exclude="@(ResolvedFileToPublish)">
         <RelativePath>%(DistFiles.Identity)</RelativePath>

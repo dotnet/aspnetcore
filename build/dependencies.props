@@ -38,8 +38,7 @@
     <MicrosoftVisualStudioWebBrowserLinkPackageVersion>3.0.0-alpha1-10123</MicrosoftVisualStudioWebBrowserLinkPackageVersion>
     <MicrosoftVisualStudioWebCodeGenerationDesignPackageVersion>3.0.0-alpha1-10123</MicrosoftVisualStudioWebCodeGenerationDesignPackageVersion>
     <NETStandardLibrary20PackageVersion>2.0.3</NETStandardLibrary20PackageVersion>
-    <SeleniumFirefoxWebDriverPackageVersion>0.20.0</SeleniumFirefoxWebDriverPackageVersion>
-    <SeleniumSupportPackageVersion>3.12.1</SeleniumSupportPackageVersion>
+    <SeleniumSupportPackageVersion>3.12.0</SeleniumSupportPackageVersion>
     <SeleniumWebDriverMicrosoftDriverPackageVersion>17.17134.0</SeleniumWebDriverMicrosoftDriverPackageVersion>
     <SeleniumWebDriverPackageVersion>3.12.1</SeleniumWebDriverPackageVersion>
     <SystemSecurityPermissionsPackageVersion>4.6.0-preview1-26708-04</SystemSecurityPermissionsPackageVersion>

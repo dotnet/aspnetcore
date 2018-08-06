@@ -1,35 +1,40 @@
 ﻿import React from 'react';
-import { Link } from 'react-router-dom';
-import { Glyphicon, Nav, Navbar, NavItem } from 'react-bootstrap';
-import { LinkContainer } from 'react-router-bootstrap';
+import { Collapse, Nav, Navbar, NavbarBrand, NavbarToggler, NavItem, NavLink } from 'reactstrap';
 import './NavMenu.css';
 
-export default props => (
-  <Navbar inverse fixedTop fluid collapseOnSelect>
-    <Navbar.Header>
-      <Navbar.Brand>
-        <Link to={'/'}>Company.WebApplication1</Link>
-      </Navbar.Brand>
-      <Navbar.Toggle />
-    </Navbar.Header>
-    <Navbar.Collapse>
-      <Nav>
-        <LinkContainer to={'/'} exact>
-          <NavItem>
-            <Glyphicon glyph='home' /> Home
-          </NavItem>
-        </LinkContainer>
-        <LinkContainer to={'/counter'}>
-          <NavItem>
-            <Glyphicon glyph='education' /> Counter
-          </NavItem>
-        </LinkContainer>
-        <LinkContainer to={'/fetchdata'}>
-          <NavItem>
-            <Glyphicon glyph='th-list' /> Fetch data
-          </NavItem>
-        </LinkContainer>
-      </Nav>
-    </Navbar.Collapse>
-  </Navbar>
-);
+export default class NavMenu extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.toggle = this.toggle.bind(this);
+    this.state = {
+      isOpen: true
+    };
+  }
+  toggle() {
+    this.setState({
+      isOpen: !this.state.isOpen
+    });
+  }
+  render() {
+    return (
+      <Navbar fixed="top" className="navbar-fixed-top navbar-dark" expand color="dark" >
+        <NavbarBrand href="/">Company.WebApplication1</NavbarBrand>
+        <NavbarToggler onClick={this.toggle} className="mr-2" />
+        <Collapse isOpen={this.state.isOpen} navbar>
+          <Nav className="ml-auto" navbar>
+            <NavItem>
+              <NavLink href="/">Home</NavLink>
+            </NavItem>
+            <NavItem>
+              <NavLink href="/counter">Counter</NavLink>
+            </NavItem>
+            <NavItem>
+              <NavLink href="/fetch-data">Fetch data</NavLink>
+            </NavItem>
+          </Nav>
+        </Collapse>
+      </Navbar >
+    );
+  }
+}
