@@ -15,6 +15,7 @@
     <MicrosoftAspNetCoreStaticFilesPackageVersion>3.0.0-alpha1-10221</MicrosoftAspNetCoreStaticFilesPackageVersion>
     <MicrosoftAspNetCoreTestingPackageVersion>3.0.0-alpha1-10221</MicrosoftAspNetCoreTestingPackageVersion>
     <MicrosoftExtensionsConfigurationCommandLinePackageVersion>3.0.0-alpha1-10221</MicrosoftExtensionsConfigurationCommandLinePackageVersion>
+    <MicrosoftExtensionsLoggingAbstractionsPackageVersion>3.0.0-alpha1-10221</MicrosoftExtensionsLoggingAbstractionsPackageVersion>
     <MicrosoftExtensionsLoggingConsolePackageVersion>3.0.0-alpha1-10221</MicrosoftExtensionsLoggingConsolePackageVersion>
     <MicrosoftExtensionsLoggingPackageVersion>3.0.0-alpha1-10221</MicrosoftExtensionsLoggingPackageVersion>
     <MicrosoftExtensionsLoggingTestingPackageVersion>3.0.0-alpha1-10221</MicrosoftExtensionsLoggingTestingPackageVersion>
