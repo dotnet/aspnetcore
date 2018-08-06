@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <random>
+
 #define MIN_PORT                                    1025
 #define MAX_PORT                                    48000
 #define MAX_RETRY                                   10
@@ -302,6 +304,8 @@ private:
     volatile LONG           m_lStopping;
     volatile BOOL           m_fReady;
     mutable LONG            m_cRefs;
+
+    std::mt19937            m_randomGenerator;
 
     DWORD                   m_dwPort;
     DWORD                   m_dwStartupTimeLimitInMS;

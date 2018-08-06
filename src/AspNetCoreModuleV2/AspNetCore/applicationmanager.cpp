@@ -48,11 +48,6 @@ APPLICATION_MANAGER::GetOrCreateApplicationInfo(
         // When accessing the m_pApplicationInfoHash, we need to acquire the application manager
         // lock to avoid races on setting state.
         SRWSharedLock readLock(m_srwLock);
-        if (!m_fDebugInitialize)
-        {
-            DebugInitializeFromConfig(m_pHttpServer, pApplication);
-            m_fDebugInitialize = TRUE;
-        }
 
         if (g_fInShutdown)
         {
@@ -70,8 +65,13 @@ APPLICATION_MANAGER::GetOrCreateApplicationInfo(
         // Take exclusive lock before creating the application
         SRWExclusiveLock writeLock(m_srwLock);
 
-        // Check if other thread created the application
+        if (!m_fDebugInitialize)
+        {
+            DebugInitializeFromConfig(m_pHttpServer, pApplication);
+            m_fDebugInitialize = TRUE;
+        }
 
+        // Check if other thread created the application
         m_pApplicationInfoHash->FindKey(pszApplicationId, ppApplicationInfo);
         if (*ppApplicationInfo != NULL)
         {
