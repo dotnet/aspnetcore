@@ -18,10 +18,12 @@ public class HubConnection {
     private Boolean handshakeReceived = false;
     private static final String RECORD_SEPARATOR = "\u001e";
     private HubConnectionState connectionState = HubConnectionState.DISCONNECTED;
+    private Logger logger;
 
-    public HubConnection(String url, Transport transport) {
+    public HubConnection(String url, Transport transport, Logger logger){
         this.url = url;
         this.protocol = new JsonHubProtocol();
+        this.logger = logger;
         this.callback = (payload) -> {
 
             if (!handshakeReceived) {
@@ -29,7 +31,9 @@ public class HubConnection {
                 String handshakeResponseString = payload.substring(0, handshakeLength - 1);
                 HandshakeResponseMessage handshakeResponse = HandshakeProtocol.parseHandshakeResponse(handshakeResponseString);
                 if (handshakeResponse.error != null) {
-                    throw new Exception("Error in handshake " + handshakeResponse.error);
+                    String errorMessage = "Error in handshake " + handshakeResponse.error;
+                    logger.log(LogLevel.Error, errorMessage);
+                    throw new Exception(errorMessage);
                 }
                 handshakeReceived = true;
 
@@ -43,17 +47,21 @@ public class HubConnection {
             HubMessage[] messages = protocol.parseMessages(payload);
 
             for (HubMessage message : messages) {
+                logger.log(LogLevel.Debug,"Received message of type %s", message.getMessageType());
                 switch (message.getMessageType()) {
                     case INVOCATION:
                         InvocationMessage invocationMessage = (InvocationMessage)message;
-                        if (message != null && handlers.containsKey(invocationMessage.target)) {
+                        if (handlers.containsKey(invocationMessage.target)) {
                             ArrayList<Object> args = gson.fromJson((JsonArray)invocationMessage.arguments[0], (new ArrayList<>()).getClass());
                             List<ActionBase> actions = handlers.get(invocationMessage.target);
                             if (actions != null) {
+                                logger.log(LogLevel.Debug, "Invoking handlers for target %s", invocationMessage.target);
                                 for (ActionBase action: actions) {
                                     action.invoke(args.toArray());
                                 }
                             }
+                        } else {
+                            logger.log(LogLevel.Warning, "Failed to find handler for %s method", invocationMessage.target);
                         }
                         break;
                     case STREAM_INVOCATION:
@@ -61,10 +69,11 @@ public class HubConnection {
                     case CLOSE:
                     case CANCEL_INVOCATION:
                     case COMPLETION:
-                        throw new UnsupportedOperationException("The message type " + message.getMessageType() + " is not supported yet.");
+                        logger.log(LogLevel.Error, "This client does not support %s messages", message.getMessageType());
+
+                        throw new UnsupportedOperationException(String.format("The message type %s is not supported yet.", message.getMessageType()));
                     case PING:
                         // We don't need to do anything in the case of a ping message.
-                        // The other message types aren't supported
                         break;
                 }
             }
@@ -72,7 +81,7 @@ public class HubConnection {
 
         if (transport == null){
             try {
-                this.transport = new WebSocketTransport(this.url);
+                this.transport = new WebSocketTransport(this.url, this.logger);
             } catch (URISyntaxException e) {
                 e.printStackTrace();
             }
@@ -81,8 +90,16 @@ public class HubConnection {
         }
     }
 
+    public HubConnection(String url, Transport transport) {
+        this(url, transport, new NullLogger());
+    }
+
     public HubConnection(String url) {
-        this(url, null);
+        this(url, null, new NullLogger());
+    }
+
+    public HubConnection(String url, LogLevel logLevel){
+        this(url, null, new ConsoleLogger(logLevel));
     }
 
     public HubConnectionState getConnectionState() {
@@ -90,33 +107,40 @@ public class HubConnection {
     }
 
     public void start() throws Exception {
+        logger.log(LogLevel.Debug, "Starting HubConnection");
         transport.setOnReceive(this.callback);
         transport.start();
         String handshake = HandshakeProtocol.createHandshakeRequestMessage(new HandshakeRequestMessage(protocol.getName(), protocol.getVersion()));
         transport.send(handshake);
         connectionState = HubConnectionState.CONNECTED;
+        logger.log(LogLevel.Information, "HubConnected started");
     }
 
     public void stop(){
+        logger.log(LogLevel.Debug, "Stopping HubConnection");
         transport.stop();
         connectionState = HubConnectionState.DISCONNECTED;
+        logger.log(LogLevel.Information, "HubConnection stopped");
     }
 
     public void send(String method, Object... args) throws Exception {
         InvocationMessage invocationMessage = new InvocationMessage(method, args);
         String message = protocol.writeMessage(invocationMessage);
+        logger.log(LogLevel.Debug, "Sending message");
         transport.send(message);
     }
 
     public Subscription on(String target, Action callback) {
         ActionBase action = args -> callback.invoke();
         handlers.put(target, action);
+        logger.log(LogLevel.Trace, "Registering handler for client method: %s", target);
         return new Subscription(handlers, action, target);
     }
 
     public <T1> Subscription on(String target, Action1<T1> callback, Class<T1> param1) {
         ActionBase action = params -> callback.invoke(param1.cast(params[0]));
         handlers.put(target, action);
+        logger.log(LogLevel.Trace, "Registering handler for client method: %s", target);
         return new Subscription(handlers, action, target);
     }
 
@@ -125,6 +149,7 @@ public class HubConnection {
             callback.invoke(param1.cast(params[0]), param2.cast(params[1]));
         };
         handlers.put(target, action);
+        logger.log(LogLevel.Trace, "Registering handler for client method: %s", target);
         return new Subscription(handlers, action, target);
     }
 
@@ -134,6 +159,7 @@ public class HubConnection {
             callback.invoke(param1.cast(params[0]), param2.cast(params[1]), param3.cast(params[2]));
         };
         handlers.put(target, action);
+        logger.log(LogLevel.Trace, "Registering handler for client method: %s", target);
         return new Subscription(handlers, action, target);
     }
 
@@ -143,6 +169,7 @@ public class HubConnection {
             callback.invoke(param1.cast(params[0]), param2.cast(params[1]), param3.cast(params[2]), param4.cast(params[3]));
         };
         handlers.put(target, action);
+        logger.log(LogLevel.Trace, "Registering handler for client method: %s", target);
         return new Subscription(handlers, action, target);
     }
 
@@ -153,6 +180,7 @@ public class HubConnection {
                     param5.cast(params[4]));
         };
         handlers.put(target, action);
+        logger.log(LogLevel.Trace, "Registering handler for client method: %s", target);
         return new Subscription(handlers, action, target);
     }
 
@@ -163,6 +191,7 @@ public class HubConnection {
                     param5.cast(params[4]) ,param6.cast(params[5]));
         };
         handlers.put(target, action);
+        logger.log(LogLevel.Trace, "Registering handler for client method: %s", target);
         return new Subscription(handlers, action, target);
     }
 
@@ -173,6 +202,7 @@ public class HubConnection {
                     param5.cast(params[4]) ,param6.cast(params[5]), param7.cast(params[6]));
         };
         handlers.put(target, action);
+        logger.log(LogLevel.Trace, "Registering handler for client method: %s", target);
         return new Subscription(handlers, action, target);
     }
 
@@ -183,10 +213,12 @@ public class HubConnection {
                     param5.cast(params[4]) ,param6.cast(params[5]), param7.cast(params[6]), param8.cast(params[7]));
         };
         handlers.put(target, action);
+        logger.log(LogLevel.Trace, "Registering handler for client method: %s", target);
         return new Subscription(handlers, action, target);
     }
 
     public void remove(String name) {
         handlers.remove(name);
+        logger.log(LogLevel.Trace, "Removing handlers for client method %s" , name);
     }
 }

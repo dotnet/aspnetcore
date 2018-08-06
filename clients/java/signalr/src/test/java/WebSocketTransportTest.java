@@ -32,7 +32,7 @@ public class WebSocketTransportTest {
 
     @Test
     public void checkWebsocketUrlProtocol() throws URISyntaxException {
-        WebSocketTransport webSocketTransport = new WebSocketTransport(this.url);
+        WebSocketTransport webSocketTransport = new WebSocketTransport(this.url, new NullLogger());
         assertEquals(this.expectedUrl, webSocketTransport.getUrl().toString());
     }
 }
