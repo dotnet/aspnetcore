@@ -103,6 +103,10 @@ namespace Common
                     {
                         return "Scaffolding";
                     }
+                    else if (name.StartsWith("Microsoft.Data.Sqlite"))
+                    {
+                        return "Microsoft.Data.Sqlite";
+                    }
                     else if (name.StartsWith("System.Buffers.Tests", StringComparison.OrdinalIgnoreCase) ||
                              name.StartsWith("System.IO.Pipelines.Tests", StringComparison.OrdinalIgnoreCase) ||
                              name.StartsWith("Microsoft.Extensions.Internal.Test", StringComparison.OrdinalIgnoreCase))
