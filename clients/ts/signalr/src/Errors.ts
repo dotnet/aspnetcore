@@ -3,6 +3,7 @@
 
 /** Error thrown when an HTTP request fails. */
 export class HttpError extends Error {
+    // @ts-ignore: Intentionally unused.
     // tslint:disable-next-line:variable-name
     private __proto__: Error;
 
@@ -27,6 +28,7 @@ export class HttpError extends Error {
 
 /** Error thrown when a timeout elapses. */
 export class TimeoutError extends Error {
+    // @ts-ignore: Intentionally unused.
     // tslint:disable-next-line:variable-name
     private __proto__: Error;
 
@@ -46,6 +48,7 @@ export class TimeoutError extends Error {
 
 /** Error thrown when an action is aborted. */
 export class AbortError extends Error {
+    // @ts-ignore: Intentionally unused.
     // tslint:disable-next-line:variable-name
     private __proto__: Error;
 

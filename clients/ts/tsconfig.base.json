@@ -10,6 +10,8 @@
         "experimentalDecorators": true,
         "removeComments": false,
         "noImplicitAny": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
         "suppressImplicitAnyIndexErrors": true,
         "noEmitOnError": true,
         "stripInternal": true,

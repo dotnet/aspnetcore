@@ -1,6 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+// This code uses a lot of `.then` instead of `await` and TSLint doesn't like it.
+// tslint:disable:no-floating-promises
+
 import { AbortError, DefaultHttpClient, HttpClient, HttpRequest, HttpResponse, HttpTransportType, HubConnectionBuilder, IHttpConnectionOptions, JsonHubProtocol } from "@aspnet/signalr";
 import { MessagePackHubProtocol } from "@aspnet/signalr-protocol-msgpack";
 
@@ -221,7 +224,7 @@ describe("hubConnection", () => {
                             hubConnection.stop();
                             done();
                         },
-                        next(item) {
+                        next() {
                             hubConnection.stop();
                             fail();
                         },
@@ -248,7 +251,7 @@ describe("hubConnection", () => {
                             hubConnection.stop();
                             done();
                         },
-                        next(item) {
+                        next() {
                             hubConnection.stop();
                             fail();
                         },

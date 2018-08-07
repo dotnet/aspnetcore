@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 const path = require("path");
-const webpack = require("webpack");
+const webpack = require("../common/node_modules/webpack");
 
 module.exports = {
     entry: path.resolve(__dirname, "ts", "index.ts"),
@@ -23,6 +23,10 @@ module.exports = {
                 exclude: /node_modules/,
             }
         ]
+    },
+    resolveLoader: {
+        // Special resolution rules for loaders (which are in the 'common' directory)
+        modules: [ path.resolve(__dirname, "..", "common", "node_modules") ],
     },
     resolve: {
         extensions: [".ts", ".js"]

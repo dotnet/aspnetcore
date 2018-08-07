@@ -406,7 +406,11 @@ export class HubConnection {
 
     private resetKeepAliveInterval() {
         this.cleanupPingTimer();
-        this.pingServerHandle = setTimeout(() => this.sendMessage(this.cachedPingMessage), this.keepAliveIntervalInMilliseconds);
+        this.pingServerHandle = setTimeout(async () => {
+            if (this.connectionState === HubConnectionState.Connected) {
+                await this.sendMessage(this.cachedPingMessage);
+            }
+        }, this.keepAliveIntervalInMilliseconds);
     }
 
     private resetTimeoutPeriod() {
