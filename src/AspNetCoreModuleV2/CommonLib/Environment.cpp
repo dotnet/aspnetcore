@@ -56,5 +56,7 @@ Environment::GetEnvironmentVariableValue(const std::wstring & str)
         }
     } while (expandedStr.size() != requestedSize + 1);
 
+    expandedStr.resize(requestedSize);
+
     return expandedStr;
 }

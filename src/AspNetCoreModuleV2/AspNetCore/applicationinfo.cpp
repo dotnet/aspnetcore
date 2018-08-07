@@ -206,7 +206,7 @@ APPLICATION_INFO::FindRequestHandlerAssembly(STRU& location)
                 }
             }
 
-            WLOG_INFOF(L"Loading request handler: %s", struFileName.QueryStr());
+            LOG_INFOF("Loading request handler: %S", struFileName.QueryStr());
 
             s_hAspnetCoreRH = LoadLibraryW(struFileName.QueryStr());
 

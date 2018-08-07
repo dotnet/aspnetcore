@@ -15,7 +15,6 @@ DECLARE_DEBUG_PRINT_OBJECT("aspnetcorev2.dll");
 
 HANDLE              g_hEventLog = NULL;
 BOOL                g_fRecycleProcessCalled = FALSE;
-HINSTANCE           g_hModule;
 BOOL                g_fInShutdown = FALSE;
 
 VOID
@@ -41,9 +40,8 @@ BOOL WINAPI DllMain(HMODULE hModule,
     switch (ul_reason_for_call)
     {
     case DLL_PROCESS_ATTACH:
-        g_hModule = hModule;
         DisableThreadLibraryCalls(hModule);
-        DebugInitialize();
+        DebugInitialize(hModule);
         break;
     case DLL_PROCESS_DETACH:
         // IIS can cause dll detach to occur before we receive global notifications

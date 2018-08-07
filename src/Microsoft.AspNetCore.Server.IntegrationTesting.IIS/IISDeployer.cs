@@ -73,7 +73,15 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                 {
                     DotnetPublish();
                     contentRoot = DeploymentParameters.PublishedApplicationRootPath;
-                    IISDeploymentParameters.AddDebugLogToWebConfig(Path.Combine(contentRoot, $"{_application.WebSiteName}.txt"));
+                    // Do not override settings set on parameters
+                    if (!IISDeploymentParameters.HandlerSettings.ContainsKey("debugLevel") &&
+                        !IISDeploymentParameters.HandlerSettings.ContainsKey("debugFile"))
+                    {
+                        var logFile = Path.Combine(contentRoot, $"{_application.WebSiteName}.txt");
+                        IISDeploymentParameters.HandlerSettings["debugLevel"] = "4";
+                        IISDeploymentParameters.HandlerSettings["debugFile"] = logFile;
+                    }
+
                     DefaultWebConfigActions.Add(WebConfigHelpers.AddOrModifyHandlerSection(
                         key: "modules",
                         value: DeploymentParameters.AncmVersion.ToString()));

@@ -88,8 +88,6 @@ InitializeGlobalConfiguration(
             }
         }
 
-        DebugInitialize();
-
         dwResult = GetExtendedTcpTable(NULL,
             &dwSize,
             FALSE,
@@ -257,6 +255,7 @@ BOOL APIENTRY DllMain(HMODULE hModule,
     case DLL_PROCESS_ATTACH:
         DisableThreadLibraryCalls(hModule);
         InitializeSRWLock(&g_srwLockRH);
+        DebugInitialize(hModule);
         break;
     case DLL_PROCESS_DETACH:
         g_fProcessDetach = TRUE;
@@ -279,7 +278,7 @@ CreateApplication(
 {
     UNREFERENCED_PARAMETER(pParameters);
     UNREFERENCED_PARAMETER(nParameters);
-    
+
     InitializeGlobalConfiguration(pServer);
 
     REQUESTHANDLER_CONFIG *pConfig = nullptr;

@@ -56,7 +56,7 @@ extern DWORD DEBUG_FLAGS_VAR;
 
 #define DECLARE_DEBUG_PRINT_OBJECT( _pszLabel_ )                \
     PCSTR DEBUG_LABEL_VAR = _pszLabel_;                 \
-    DWORD DEBUG_FLAGS_VAR = DEBUG_FLAGS_WARN;            \
+    DWORD DEBUG_FLAGS_VAR = 0;            \
 
 #define DECLARE_DEBUG_PRINT_OBJECT2( _pszLabel_, _dwLevel_ )    \
     PCSTR DEBUG_LABEL_VAR = _pszLabel_;                 \

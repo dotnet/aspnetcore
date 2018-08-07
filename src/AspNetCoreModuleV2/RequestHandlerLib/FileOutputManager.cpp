@@ -139,7 +139,7 @@ FileOutputManager::Start()
     // Periodically flush the log content to file
     m_Timer.InitializeTimer(STTIMER::TimerCallback, &m_struLogFilePath, 3000, 3000);
 
-    WLOG_INFOF(L"Created log file for inprocess application: %s",
+    LOG_INFOF("Created log file for inprocess application: %S",
         m_struLogFilePath.QueryStr());
 
     return S_OK;

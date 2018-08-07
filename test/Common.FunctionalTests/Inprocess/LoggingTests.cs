@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -84,30 +85,45 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
 
         [ConditionalFact]
-        [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
         public async Task StartupMessagesAreLoggedIntoDebugLogFile()
         {
-            var tempFile = Path.GetTempFileName();
-            try
-            {
-                var deploymentParameters = _fixture.GetBaseDeploymentParameters(publish: true);
-                deploymentParameters.EnvironmentVariables["ASPNETCORE_MODULE_DEBUG_FILE"] = tempFile;
-                deploymentParameters.AddDebugLogToWebConfig(tempFile);
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(publish: true);
+            deploymentParameters.HandlerSettings["debugLevel"] = "file";
+            deploymentParameters.HandlerSettings["debugFile"] = "debug.txt";
 
-                var deploymentResult = await DeployAsync(deploymentParameters);
+            var deploymentResult = await DeployAsync(deploymentParameters);
 
-                var response = await deploymentResult.RetryingHttpClient.GetAsync("/");
+            await deploymentResult.RetryingHttpClient.GetAsync("/");
 
-                StopServer();
+            AssertLogs(Path.Combine(deploymentResult.ContentRoot, "debug.txt"));
+        }
 
-                var logContents = File.ReadAllText(tempFile);
-                Assert.Contains("[aspnetcorev2.dll]", logContents);
-                Assert.Contains("[aspnetcorev2_inprocess.dll]", logContents);
-            }
-            finally
-            {
-                File.Delete(tempFile);
-            }
+        [ConditionalFact]
+        public async Task StartupMessagesAreLoggedIntoDefaultDebugLogFile()
+        {
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(publish: true);
+            deploymentParameters.HandlerSettings["debugLevel"] = "file";
+
+            var deploymentResult = await DeployAsync(deploymentParameters);
+
+            await deploymentResult.RetryingHttpClient.GetAsync("/");
+
+            AssertLogs(Path.Combine(deploymentResult.ContentRoot, "aspnetcore-debug.log"));
+        }
+
+        [ConditionalFact]
+        [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
+        public async Task StartupMessagesAreLoggedIntoDefaultDebugLogFileWhenEnabledWithEnvVar()
+        {
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(publish: true);
+            deploymentParameters.EnvironmentVariables["ASPNETCORE_MODULE_DEBUG"] = "file";
+            // Add empty debugFile handler setting to prevent IIS deployer from overriding debug settings
+            deploymentParameters.HandlerSettings["debugFile"] = "";
+            var deploymentResult = await DeployAsync(deploymentParameters);
+
+            await deploymentResult.RetryingHttpClient.GetAsync("/");
+
+            AssertLogs(Path.Combine(deploymentResult.ContentRoot, "aspnetcore-debug.log"));
         }
 
         [ConditionalTheory]
@@ -176,14 +192,25 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 var logContents = File.ReadAllText(firstTempFile);
                 Assert.Contains("Switching debug log files to", logContents);
 
-                var secondLogContents = File.ReadAllText(secondTempFile);
-                Assert.Contains("[aspnetcorev2.dll]", logContents);
-                Assert.Contains("[aspnetcorev2_inprocess.dll]", logContents);
+                AssertLogs(secondTempFile);
             }
             finally
             {
                 File.Delete(firstTempFile);
                 File.Delete(secondTempFile);
+            }
+        }
+
+        private static void AssertLogs(string logPath)
+        {
+            using (var stream = File.Open(logPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            using (var streamReader = new StreamReader(stream))
+            {
+                var logContents = streamReader.ReadToEnd();
+                Assert.Contains("[aspnetcorev2.dll]", logContents);
+                Assert.Contains("[aspnetcorev2_inprocess.dll]", logContents);
+                Assert.Contains("Description: IIS AspNetCore Module V2. Commit:", logContents);
+                Assert.Contains("Description: IIS ASP.NET Core Module Request Handler. Commit:", logContents);
             }
         }
     }

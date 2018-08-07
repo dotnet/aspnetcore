@@ -20,7 +20,7 @@
         "LAUNCHER_ARGS": "$(TargetPath)",
         "ASPNETCORE_ENVIRONMENT": "Development",
         "LAUNCHER_PATH": "$(DotNetPath)",
-        "ASPNETCORE_MODULE_DEBUG": "4"
+        "ASPNETCORE_MODULE_DEBUG": "console"
       }
     },
     "ANCM IIS": {
@@ -34,7 +34,7 @@
         "LAUNCHER_ARGS": "$(TargetPath)",
         "ASPNETCORE_ENVIRONMENT": "Development",
         "LAUNCHER_PATH": "$(DotNetPath)",
-        "ASPNETCORE_MODULE_DEBUG": "4"
+        "ASPNETCORE_MODULE_DEBUG": "console"
       }
     }
   }
