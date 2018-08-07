@@ -45,8 +45,7 @@ export interface IStreamResult<T> {
  *
  * @typeparam T The type of the items being sent by the server.
  */
-// We can't remove this, it's a breaking change, but it's not used.
-// tslint:disable-next-line:no-unused-variable
+// @ts-ignore: We can't remove this, it's a breaking change, but it's not used.
 export interface ISubscription<T> {
     /** Disconnects the {@link IStreamSubscriber} associated with this subscription from the stream. */
     dispose(): void;

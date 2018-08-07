@@ -1,6 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+// This code uses a lot of `.then` instead of `await` and TSLint doesn't like it.
+// tslint:disable:no-floating-promises
+
 import { HttpTransportType, IHttpConnectionOptions, TransferFormat } from "@aspnet/signalr";
 import { eachTransport, ECHOENDPOINT_URL } from "./Common";
 import { TestLogger } from "./TestLogger";
@@ -23,13 +26,13 @@ describe("connection", () => {
             ...commonOptions,
         });
 
-        connection.onreceive = (data) => {
+        connection.onreceive = async (data: any) => {
             if (data === message) {
                 connection.stop();
             }
         };
 
-        connection.onclose = (error) => {
+        connection.onclose = (error: any) => {
             expect(error).toBeUndefined();
             done();
         };
@@ -53,20 +56,20 @@ describe("connection", () => {
                     transport: transportType,
                 });
 
-                connection.onreceive = (data) => {
+                connection.onreceive = (data: any) => {
                     if (data === message) {
                         connection.stop();
                     }
                 };
 
-                connection.onclose = (error) => {
+                connection.onclose = (error: any) => {
                     expect(error).toBeUndefined();
                     done();
                 };
 
                 connection.start(TransferFormat.Text).then(() => {
                     connection.send(message);
-                }).catch((e) => {
+                }).catch((e: any) => {
                     fail(e);
                     done();
                 });
@@ -82,15 +85,17 @@ describe("connection", () => {
                     transport: transportType,
                 });
 
-                connection.onreceive = (data) => {
+                connection.onreceive = (data: any) => {
                     if (data === message) {
                         connection.stop();
                     }
                 };
 
+                // @ts-ignore: We don't use the error parameter intentionally.
                 connection.onclose = (error) => {
                     // Search the logs for the message content
                     expect(TestLogger.instance.currentLog.messages.length).toBeGreaterThan(0);
+                    // @ts-ignore: We don't use the _ or __ parameters intentionally.
                     for (const [_, __, logMessage] of TestLogger.instance.currentLog.messages) {
                         expect(logMessage).not.toContain(message);
                     }
@@ -116,16 +121,18 @@ describe("connection", () => {
                     transport: transportType,
                 });
 
-                connection.onreceive = (data) => {
+                connection.onreceive = (data: any) => {
                     if (data === message) {
                         connection.stop();
                     }
                 };
 
+                // @ts-ignore: We don't use the error parameter intentionally.
                 connection.onclose = (error) => {
                     // Search the logs for the message content
                     let matches = 0;
                     expect(TestLogger.instance.currentLog.messages.length).toBeGreaterThan(0);
+                    // @ts-ignore: We don't use the _ or __ parameters intentionally.
                     for (const [_, __, logMessage] of TestLogger.instance.currentLog.messages) {
                         if (logMessage.indexOf(message) !== -1) {
                             matches += 1;
@@ -139,7 +146,7 @@ describe("connection", () => {
 
                 connection.start(TransferFormat.Text).then(() => {
                     connection.send(message);
-                }).catch((e) => {
+                }).catch((e: any) => {
                     fail(e);
                     done();
                 });

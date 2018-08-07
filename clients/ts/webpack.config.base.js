@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 const path = require("path");
-const webpack = require("webpack");
+const webpack = require("./common/node_modules/webpack");
 
 module.exports = function (modulePath, browserBaseName, options) {
     const pkg = require(path.resolve(modulePath, "package.json"));
@@ -16,6 +16,10 @@ module.exports = function (modulePath, browserBaseName, options) {
             global: true,
             process: false,
             Buffer: false,
+        },
+        resolveLoader: {
+            // Special resolution rules for loaders (which are in the 'common' directory)
+            modules: [ path.resolve(__dirname, "common", "node_modules") ],
         },
         module: {
             rules: [

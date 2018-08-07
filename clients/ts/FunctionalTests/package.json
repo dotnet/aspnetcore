@@ -29,13 +29,14 @@
     "karma-sauce-launcher": "^1.2.0",
     "karma-sourcemap-loader": "^0.3.7",
     "karma-summary-reporter": "^1.5.0",
-    "ts-node": "^4.1.0"
+    "ts-node": "^4.1.0",
+    "typescript": "^3.0.1"
   },
   "scripts": {
-    "clean": "node ../node_modules/rimraf/bin.js ./wwwroot/dist ./obj/js",
+    "clean": "node ../common/node_modules/rimraf/bin.js ./wwwroot/dist ./obj/js",
     "build": "npm run clean && npm run build:lint && npm run build:webpack",
-    "build:lint": "node ../node_modules/tslint/bin/tslint -c ../tslint.json -p ./tsconfig.json",
-    "build:webpack": "node ../node_modules/webpack-cli/bin/cli.js",
+    "build:lint": "node ../common/node_modules/tslint/bin/tslint -c ../tslint.json -p ./tsconfig.json",
+    "build:webpack": "node ../common/node_modules/webpack-cli/bin/cli.js",
     "build:parent": "cd .. && npm run build",
     "pretest": "npm run build:parent && npm run build && dotnet build",
     "test": "npm run test:local --",

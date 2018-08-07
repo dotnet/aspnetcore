@@ -1,9 +1,9 @@
 export class LogBannerReporter implements jasmine.CustomReporter {
-    public jasmineStarted(suiteInfo: jasmine.SuiteInfo): void {
+    public jasmineStarted(): void {
         console.log("*** JASMINE SUITE STARTED ***");
     }
 
-    public jasmineDone(runDetails: jasmine.RunDetails): void {
+    public jasmineDone(): void {
         console.log("*** JASMINE SUITE FINISHED ***");
     }
 
