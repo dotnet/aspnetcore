@@ -34,7 +34,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\testapps\ApplicationUsingRelativePaths\ApplicationUsingRelativePaths.csproj" />
     <ProjectReference Include="..\..\testapps\ApplicationWithConfigureMvc\ApplicationWithConfigureMvc.csproj" />
     <ProjectReference Include="..\..\testapps\ApplicationWithCustomInputFiles\ApplicationWithCustomInputFiles.csproj" />
     <ProjectReference Include="..\..\testapps\ApplicationWithParseErrors\ApplicationWithParseErrors.csproj" />
