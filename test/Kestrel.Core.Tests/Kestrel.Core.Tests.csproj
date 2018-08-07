@@ -8,9 +8,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\shared\**\*.cs" />
+    <Compile Include="..\shared\*.cs" LinkBase="shared" />
+    <Content Include="..\shared\TestCertificates\*.pfx" LinkBase="shared\TestCertificates" CopyToOutputDirectory="PreserveNewest" />
     <Compile Include="..\..\shared\Microsoft.Extensions.Buffers.Testing.Sources\*.cs" />
-    <Content Include="..\shared\TestCertificates\*.pfx" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>
