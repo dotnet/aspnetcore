@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// lower then this setting will have the value <see langword="false"/> unless explicitly configured.
         /// </para>
         /// <para>
-        /// If the application's compatibility version is set to <see cref="CompatibilityVersion.Version_2_1"/> or
+        /// If the application's compatibility version is set to <see cref="CompatibilityVersion.Version_2_2"/> or
         /// higher then this setting will have the value <see langword="true"/> unless explicitly configured.
         /// </para>
         /// </remarks>

@@ -1578,6 +1578,118 @@ namespace Microsoft.AspNetCore.Mvc.Core
         internal static string FormatValidationVisitor_ExceededMaxPropertyDepth(object p0, object p1, object p2, object p3)
             => string.Format(CultureInfo.CurrentCulture, GetString("ValidationVisitor_ExceededMaxPropertyDepth"), p0, p1, p2, p3);
 
+        /// <summary>
+        /// Bad Request
+        /// </summary>
+        internal static string ApiConventions_Title_400
+        {
+            get => GetString("ApiConventions_Title_400");
+        }
+
+        /// <summary>
+        /// Bad Request
+        /// </summary>
+        internal static string FormatApiConventions_Title_400()
+            => GetString("ApiConventions_Title_400");
+
+        /// <summary>
+        /// Unauthorized
+        /// </summary>
+        internal static string ApiConventions_Title_401
+        {
+            get => GetString("ApiConventions_Title_401");
+        }
+
+        /// <summary>
+        /// Unauthorized
+        /// </summary>
+        internal static string FormatApiConventions_Title_401()
+            => GetString("ApiConventions_Title_401");
+
+        /// <summary>
+        /// Forbidden
+        /// </summary>
+        internal static string ApiConventions_Title_403
+        {
+            get => GetString("ApiConventions_Title_403");
+        }
+
+        /// <summary>
+        /// Forbidden
+        /// </summary>
+        internal static string FormatApiConventions_Title_403()
+            => GetString("ApiConventions_Title_403");
+
+        /// <summary>
+        /// Not Found
+        /// </summary>
+        internal static string ApiConventions_Title_404
+        {
+            get => GetString("ApiConventions_Title_404");
+        }
+
+        /// <summary>
+        /// Not Found
+        /// </summary>
+        internal static string FormatApiConventions_Title_404()
+            => GetString("ApiConventions_Title_404");
+
+        /// <summary>
+        /// Not Acceptable
+        /// </summary>
+        internal static string ApiConventions_Title_406
+        {
+            get => GetString("ApiConventions_Title_406");
+        }
+
+        /// <summary>
+        /// Not Acceptable
+        /// </summary>
+        internal static string FormatApiConventions_Title_406()
+            => GetString("ApiConventions_Title_406");
+
+        /// <summary>
+        /// Conflict
+        /// </summary>
+        internal static string ApiConventions_Title_409
+        {
+            get => GetString("ApiConventions_Title_409");
+        }
+
+        /// <summary>
+        /// Conflict
+        /// </summary>
+        internal static string FormatApiConventions_Title_409()
+            => GetString("ApiConventions_Title_409");
+
+        /// <summary>
+        /// Unsupported Media Type
+        /// </summary>
+        internal static string ApiConventions_Title_415
+        {
+            get => GetString("ApiConventions_Title_415");
+        }
+
+        /// <summary>
+        /// Unsupported Media Type
+        /// </summary>
+        internal static string FormatApiConventions_Title_415()
+            => GetString("ApiConventions_Title_415");
+
+        /// <summary>
+        /// Unprocessable Entity
+        /// </summary>
+        internal static string ApiConventions_Title_422
+        {
+            get => GetString("ApiConventions_Title_422");
+        }
+
+        /// <summary>
+        /// Unprocessable Entity
+        /// </summary>
+        internal static string FormatApiConventions_Title_422()
+            => GetString("ApiConventions_Title_422");
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

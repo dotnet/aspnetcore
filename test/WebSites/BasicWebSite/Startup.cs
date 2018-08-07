@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Linq;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
@@ -32,22 +31,6 @@ namespace BasicWebSite
                 })
                 .SetCompatibilityVersion(CompatibilityVersion.Latest)
                 .AddXmlDataContractSerializerFormatters();
-
-            services.Configure<ApiBehaviorOptions>(options =>
-            {
-                var previous = options.InvalidModelStateResponseFactory;
-                options.InvalidModelStateResponseFactory = context =>
-                {
-                    var result = (BadRequestObjectResult)previous(context);
-                    if (context.ActionDescriptor.FilterDescriptors.Any(f => f.Filter is VndErrorAttribute))
-                    {
-                        result.ContentTypes.Clear();
-                        result.ContentTypes.Add("application/vnd.error+json");
-                    }
-
-                    return result;
-                };
-            });
 
             services.ConfigureBaseWebSiteAuthPolicies();
 

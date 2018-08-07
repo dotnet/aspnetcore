@@ -8,6 +8,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using BasicWebSite.Models;
+using Microsoft.AspNetCore.Hosting;
 using Newtonsoft.Json;
 using Xunit;
 
@@ -18,9 +19,16 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public ApiBehaviorTest(MvcTestFixture<BasicWebSite.Startup> fixture)
         {
             Client = fixture.CreateDefaultClient();
+
+            var factory = fixture.WithWebHostBuilder(ConfigureWebHostBuilder);
+            CustomInvalidModelStateClient = factory.CreateDefaultClient();
         }
 
+        private static void ConfigureWebHostBuilder(IWebHostBuilder builder) =>
+            builder.UseStartup<BasicWebSite.StartupWithCustomInvalidModelStateFactory>();
+
         public HttpClient Client { get; }
+        public HttpClient CustomInvalidModelStateClient { get; }
 
         [Fact]
         public async Task ActionsReturnBadRequest_WhenModelStateIsInvalid()
@@ -39,11 +47,11 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var response = await Client.PostAsJsonAsync("/contact", contactModel);
 
             // Assert
-            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-            Assert.Equal("application/json", response.Content.Headers.ContentType.MediaType);
-            var actual = JsonConvert.DeserializeObject<Dictionary<string, string[]>>(await response.Content.ReadAsStringAsync());
+            await response.AssertStatusCodeAsync(HttpStatusCode.BadRequest);
+            Assert.Equal("application/problem+json", response.Content.Headers.ContentType.MediaType);
+            var problemDetails = JsonConvert.DeserializeObject<ValidationProblemDetails>(await response.Content.ReadAsStringAsync());
             Assert.Collection(
-                actual.OrderBy(kvp => kvp.Key),
+                problemDetails.Errors.OrderBy(kvp => kvp.Key),
                 kvp =>
                 {
                     Assert.Equal("Name", kvp.Key);
@@ -110,10 +118,10 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var contactString = JsonConvert.SerializeObject(contactModel);
 
             // Act
-            var response = await Client.PostAsJsonAsync("/contact/PostWithVnd", contactModel);
+            var response = await CustomInvalidModelStateClient.PostAsJsonAsync("/contact/PostWithVnd", contactModel);
 
             // Assert
-            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+            await response.AssertStatusCodeAsync(HttpStatusCode.BadRequest);
             Assert.Equal("application/vnd.error+json", response.Content.Headers.ContentType.MediaType);
             var content = await response.Content.ReadAsStringAsync();
             var actual = JsonConvert.DeserializeObject<Dictionary<string, string[]>>(content);
@@ -235,6 +243,19 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var result = await response.Content.ReadAsStringAsync();
             Assert.Equal(expected, result);
+        }
+
+        [Fact]
+        public async Task ClientErrorResultFilterExecutesForStatusCodeResults()
+        {
+            // Act
+            var response = await Client.GetAsync("/contact/ActionReturningStatusCodeResult");
+
+            // Assert
+            await response.AssertStatusCodeAsync(HttpStatusCode.NotFound);
+            var content = await response.Content.ReadAsStringAsync();
+            var problemDetails = JsonConvert.DeserializeObject<ProblemDetails>(content);
+            Assert.Equal(404, problemDetails.Status);
         }
     }
 }

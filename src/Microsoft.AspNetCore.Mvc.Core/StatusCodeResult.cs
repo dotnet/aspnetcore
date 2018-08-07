@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Mvc
     /// Represents an <see cref="ActionResult"/> that when executed will
     /// produce an HTTP response with the given response status code.
     /// </summary>
-    public class StatusCodeResult : ActionResult, IStatusCodeActionResult
+    public class StatusCodeResult : ActionResult, IClientErrorActionResult
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="StatusCodeResult"/> class
