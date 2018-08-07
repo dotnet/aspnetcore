@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -81,7 +82,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     configureServices(services);
                 })
                 .UseSetting(WebHostDefaults.ApplicationKey, typeof(TestServer).GetTypeInfo().Assembly.FullName)
-                .UseSetting(WebHostDefaults.ShutdownTimeoutKey, "1")
                 .Build();
 
             _host.Start();
@@ -110,9 +110,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             return new TestConnection(Port, AddressFamily);
         }
 
-        public Task StopAsync()
+        public Task StopAsync(CancellationToken token = default)
         {
-            return _host.StopAsync();
+            return _host.StopAsync(token);
         }
 
         public void Dispose()

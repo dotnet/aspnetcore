@@ -3,18 +3,22 @@
 
 #if NETCOREAPP2_2
 
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
@@ -46,13 +50,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
         {
             var requestStarted = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             var requestUnblocked = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var requestStopping = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var mockKestrelTrace = new Mock<KestrelTrace>(TestApplicationErrorLogger)
+            {
+                CallBase = true
+            };
+            mockKestrelTrace
+                .Setup(m => m.Http2ConnectionClosing(It.IsAny<string>()))
+                .Callback(() => requestStopping.SetResult(null));
+
             using (var server = new TestServer(async context =>
             {
                 requestStarted.SetResult(null);
                 await requestUnblocked.Task.DefaultTimeout();
                 await context.Response.WriteAsync("hello world " + context.Request.Protocol);
             },
-            new TestServiceContext(LoggerFactory),
+            new TestServiceContext(LoggerFactory, mockKestrelTrace.Object),
             kestrelOptions =>
             {
                 kestrelOptions.Listen(IPAddress.Loopback, 0, listenOptions =>
@@ -68,6 +81,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
                 await requestStarted.Task.DefaultTimeout();
 
                 var stopTask = server.StopAsync();
+
+                await requestStopping.Task.DefaultTimeout();
 
                 // Unblock the request
                 requestUnblocked.SetResult(null);
@@ -116,7 +131,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
                 Assert.False(requestTask.IsCompleted);
                 await requestStarted.Task.DefaultTimeout();
 
-                await server.StopAsync().DefaultTimeout();
+                await server.StopAsync(new CancellationToken(true)).DefaultTimeout();
             }
 
             Assert.Contains(TestApplicationErrorLogger.Messages, m => m.Message.Contains("is closing."));
