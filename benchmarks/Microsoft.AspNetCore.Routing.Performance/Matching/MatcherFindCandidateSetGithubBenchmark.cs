@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
 {
     // Generated from https://github.com/APIs-guru/openapi-directory
     // Use https://editor2.swagger.io/ to convert from yaml to json-
-    public partial class MatcherFindCandidateSetGithubBenchmark : MatcherBenchmarkBase
+    public partial class MatcherFindCandidateSetGithubBenchmark : EndpointRoutingBenchmarkBase
     {
         // SegmentCount should be max-segments + 1, but we don't have a good way to compute
         // it here, so using 16 as a safe guess.
