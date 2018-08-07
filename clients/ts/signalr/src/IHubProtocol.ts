@@ -6,19 +6,19 @@ import { TransferFormat } from "./ITransport";
 
 /** Defines the type of a Hub Message. */
 export enum MessageType {
-    /** Indicates the message is an Invocation message and implements the {@link InvocationMessage} interface. */
+    /** Indicates the message is an Invocation message and implements the {@link @aspnet/signalr.InvocationMessage} interface. */
     Invocation = 1,
-    /** Indicates the message is a StreamItem message and implements the {@link StreamItemMessage} interface. */
+    /** Indicates the message is a StreamItem message and implements the {@link @aspnet/signalr.StreamItemMessage} interface. */
     StreamItem = 2,
-    /** Indicates the message is a Completion message and implements the {@link CompletionMessage} interface. */
+    /** Indicates the message is a Completion message and implements the {@link @aspnet/signalr.CompletionMessage} interface. */
     Completion = 3,
-    /** Indicates the message is a Stream Invocation message and implements the {@link StreamInvocationMessage} interface. */
+    /** Indicates the message is a Stream Invocation message and implements the {@link @aspnet/signalr.StreamInvocationMessage} interface. */
     StreamInvocation = 4,
-    /** Indicates the message is a Cancel Invocation message and implements the {@link CancelInvocationMessage} interface. */
+    /** Indicates the message is a Cancel Invocation message and implements the {@link @aspnet/signalr.CancelInvocationMessage} interface. */
     CancelInvocation = 5,
-    /** Indicates the message is a Ping message and implements the {@link PingMessage} interface. */
+    /** Indicates the message is a Ping message and implements the {@link @aspnet/signalr.PingMessage} interface. */
     Ping = 6,
-    /** Indicates the message is a Close message and implements the {@link CloseMessage} interface. */
+    /** Indicates the message is a Close message and implements the {@link @aspnet/signalr.CloseMessage} interface. */
     Close = 7,
 }
 
@@ -40,24 +40,25 @@ export type HubMessage =
 
 /** Defines properties common to all Hub messages. */
 export interface HubMessageBase {
-    /** A {@link MessageType} value indicating the type of this message. */
+    /** A {@link @aspnet/signalr.MessageType} value indicating the type of this message. */
     readonly type: MessageType;
 }
 
 /** Defines properties common to all Hub messages relating to a specific invocation. */
 export interface HubInvocationMessage extends HubMessageBase {
-    /** A {@link MessageHeaders} dictionary containing headers attached to the message. */
+    /** A {@link @aspnet/signalr.MessageHeaders} dictionary containing headers attached to the message. */
     readonly headers?: MessageHeaders;
     /** The ID of the invocation relating to this message.
      *
-     * This is expected to be present for {@link StreamInvocationMessage} and {@link CompletionMessage}. It may
-     * be 'undefined' for an {@link InvocationMessage} if the sender does not expect a response.
+     * This is expected to be present for {@link @aspnet/signalr.StreamInvocationMessage} and {@link @aspnet/signalr.CompletionMessage}. It may
+     * be 'undefined' for an {@link @aspnet/signalr.InvocationMessage} if the sender does not expect a response.
      */
     readonly invocationId?: string;
 }
 
 /** A hub message representing a non-streaming invocation. */
 export interface InvocationMessage extends HubInvocationMessage {
+    /** @inheritDoc */
     readonly type: MessageType.Invocation;
     /** The target method name. */
     readonly target: string;
@@ -98,12 +99,12 @@ export interface CompletionMessage extends HubInvocationMessage {
     readonly invocationId: string;
     /** The error produced by the invocation, if any.
      *
-     * Either {@link error} or {@link result} must be defined, but not both.
+     * Either {@link @aspnet/signalr.CompletionMessage.error} or {@link @aspnet/signalr.CompletionMessage.result} must be defined, but not both.
      */
     readonly error?: string;
     /** The result produced by the invocation, if any.
      *
-     * Either {@link error} or {@link result} must be defined, but not both.
+     * Either {@link @aspnet/signalr.CompletionMessage.error} or {@link @aspnet/signalr.CompletionMessage.result} must be defined, but not both.
      */
     readonly result?: any;
 }
@@ -116,7 +117,7 @@ export interface PingMessage extends HubMessageBase {
 
 /** A hub message indicating that the sender is closing the connection.
  *
- * If {@link error} is defined, the sender is closing the connection due to an error.
+ * If {@link @aspnet/signalr.CloseMessage.error} is defined, the sender is closing the connection due to an error.
  */
 export interface CloseMessage extends HubMessageBase {
     /** @inheritDoc */
@@ -142,21 +143,21 @@ export interface IHubProtocol {
     readonly name: string;
     /** The version of the protocol. */
     readonly version: number;
-    /** The {@link TransferFormat} of the protocol. */
+    /** The {@link @aspnet/signalr.TransferFormat} of the protocol. */
     readonly transferFormat: TransferFormat;
 
-    /** Creates an array of {@link HubMessage} objects from the specified serialized representation.
+    /** Creates an array of {@link @aspnet/signalr.HubMessage} objects from the specified serialized representation.
      *
-     * If {@link transferFormat} is 'Text', the {@link input} parameter must be a string, otherwise it must be an ArrayBuffer.
+     * If {@link @aspnet/signalr.IHubProtocol.transferFormat} is 'Text', the `input` parameter must be a string, otherwise it must be an ArrayBuffer.
      *
      * @param {string | ArrayBuffer} input A string, or ArrayBuffer containing the serialized representation.
      * @param {ILogger} logger A logger that will be used to log messages that occur during parsing.
      */
     parseMessages(input: string | ArrayBuffer, logger: ILogger): HubMessage[];
 
-    /** Writes the specified {@link HubMessage} to a string or ArrayBuffer and returns it.
+    /** Writes the specified {@link @aspnet/signalr.HubMessage} to a string or ArrayBuffer and returns it.
      *
-     * If {@link transferFormat} is 'Text', the result of this method will be a string, otherwise it will be an ArrayBuffer.
+     * If {@link @aspnet/signalr.IHubProtocol.transferFormat} is 'Text', the result of this method will be a string, otherwise it will be an ArrayBuffer.
      *
      * @param {HubMessage} message The message to write.
      * @returns {string | ArrayBuffer} A string or ArrayBuffer containing the serialized representation of the message.

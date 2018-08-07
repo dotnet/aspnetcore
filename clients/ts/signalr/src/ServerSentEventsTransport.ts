@@ -7,6 +7,7 @@ import { ITransport, TransferFormat } from "./ITransport";
 import { EventSourceConstructor } from "./Polyfills";
 import { Arg, getDataDetail, sendMessage } from "./Utils";
 
+/** @private */
 export class ServerSentEventsTransport implements ITransport {
     private readonly httpClient: HttpClient;
     private readonly accessTokenFactory: (() => string | Promise<string>) | undefined;

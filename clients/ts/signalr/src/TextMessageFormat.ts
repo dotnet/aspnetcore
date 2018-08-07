@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 // Not exported from index
+/** @private */
 export class TextMessageFormat {
     public static RecordSeparatorCode = 0x1e;
     public static RecordSeparator = String.fromCharCode(TextMessageFormat.RecordSeparatorCode);

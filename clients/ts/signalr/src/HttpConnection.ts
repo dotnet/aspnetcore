@@ -11,12 +11,14 @@ import { ServerSentEventsTransport } from "./ServerSentEventsTransport";
 import { Arg, createLogger } from "./Utils";
 import { WebSocketTransport } from "./WebSocketTransport";
 
+/** @private */
 const enum ConnectionState {
     Connecting,
     Connected,
     Disconnected,
 }
 
+/** @private */
 export interface INegotiateResponse {
     connectionId?: string;
     availableTransports?: IAvailableTransport[];
@@ -24,6 +26,7 @@ export interface INegotiateResponse {
     accessToken?: string;
 }
 
+/** @private */
 export interface IAvailableTransport {
     transport: keyof typeof HttpTransportType;
     transferFormats: Array<keyof typeof TransferFormat>;
@@ -31,6 +34,7 @@ export interface IAvailableTransport {
 
 const MAX_REDIRECTS = 100;
 
+/** @private */
 export class HttpConnection implements IConnection {
     private connectionState: ConnectionState;
     private baseUrl: string;

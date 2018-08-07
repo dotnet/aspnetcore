@@ -9,6 +9,7 @@ import { ITransport, TransferFormat } from "./ITransport";
 import { Arg, getDataDetail, sendMessage } from "./Utils";
 
 // Not exported from 'index', this type is internal.
+/** @private */
 export class LongPollingTransport implements ITransport {
     private readonly httpClient: HttpClient;
     private readonly accessTokenFactory: (() => string | Promise<string>) | undefined;
