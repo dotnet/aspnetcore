@@ -48,8 +48,8 @@
     <MicrosoftAspNetCoreRazorTagHelpersTestingSourcesPackageVersion>3.0.0-alpha1-10223</MicrosoftAspNetCoreRazorTagHelpersTestingSourcesPackageVersion>
     <MicrosoftAspNetCoreResponseCachingAbstractionsPackageVersion>3.0.0-alpha1-10223</MicrosoftAspNetCoreResponseCachingAbstractionsPackageVersion>
     <MicrosoftAspNetCoreResponseCachingPackageVersion>3.0.0-alpha1-10223</MicrosoftAspNetCoreResponseCachingPackageVersion>
-    <MicrosoftAspNetCoreRoutingAbstractionsPackageVersion>3.0.0-alpha1-10223</MicrosoftAspNetCoreRoutingAbstractionsPackageVersion>
-    <MicrosoftAspNetCoreRoutingPackageVersion>3.0.0-alpha1-10223</MicrosoftAspNetCoreRoutingPackageVersion>
+    <MicrosoftAspNetCoreRoutingAbstractionsPackageVersion>3.0.0-a-alpha1-remove-useglobalrouting-16859</MicrosoftAspNetCoreRoutingAbstractionsPackageVersion>
+    <MicrosoftAspNetCoreRoutingPackageVersion>3.0.0-a-alpha1-remove-useglobalrouting-16859</MicrosoftAspNetCoreRoutingPackageVersion>
     <MicrosoftAspNetCoreServerIISIntegrationPackageVersion>3.0.0-alpha1-10223</MicrosoftAspNetCoreServerIISIntegrationPackageVersion>
     <MicrosoftAspNetCoreServerKestrelPackageVersion>3.0.0-alpha1-10223</MicrosoftAspNetCoreServerKestrelPackageVersion>
     <MicrosoftAspNetCoreSessionPackageVersion>3.0.0-alpha1-10223</MicrosoftAspNetCoreSessionPackageVersion>
