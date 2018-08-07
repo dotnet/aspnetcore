@@ -398,8 +398,15 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
         public async Task StreamDoesNotStartIfTokenAlreadyCanceled(string protocolName, HttpTransportType transportType, string path)
         {
+            bool ExpectedErrors(WriteContext writeContext)
+            {
+                return (writeContext.LoggerName == nameof(Http.Connections.Client.Internal.ServerSentEventsTransport) ||
+                       writeContext.LoggerName == nameof(Http.Connections.Client.Internal.LongPollingTransport)) &&
+                       writeContext.EventId.Name == "ErrorSending";
+            }
+
             var protocol = HubProtocols[protocolName];
-            using (StartVerifiableLog(out var loggerFactory, LogLevel.Trace, $"{nameof(StreamDoesNotStartIfTokenAlreadyCanceled)}_{protocol.Name}_{transportType}_{path.TrimStart('/')}"))
+            using (StartVerifiableLog(out var loggerFactory, LogLevel.Trace, $"{nameof(StreamDoesNotStartIfTokenAlreadyCanceled)}_{protocol.Name}_{transportType}_{path.TrimStart('/')}", expectedErrorsFilter: ExpectedErrors))
             {
                 var connection = CreateHubConnection(path, transportType, protocol, loggerFactory);
                 try
