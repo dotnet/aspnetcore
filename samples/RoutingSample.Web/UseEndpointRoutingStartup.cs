@@ -2,10 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.AspNetCore.Routing.Matching;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.DependencyInjection;
@@ -77,6 +80,21 @@ namespace RoutingSample.Web
                         0,
                         EndpointMetadataCollection.Empty,
                         "withoptionalconstraints"),
+                    new MatcherEndpoint((next) => (httpContext) =>
+                    {
+                        using (var writer = new StreamWriter(httpContext.Response.Body, Encoding.UTF8, 1024, leaveOpen: true))
+                        {
+                            var graphWriter = httpContext.RequestServices.GetRequiredService<DfaGraphWriter>();
+                            var dataSource = httpContext.RequestServices.GetRequiredService<CompositeEndpointDataSource>();
+                            graphWriter.Write(dataSource, writer);
+                        }
+
+                        return Task.CompletedTask;
+                    },
+                    RoutePatternFactory.Parse("/graph"),
+                    0,
+                    new EndpointMetadataCollection(new HttpMethodMetadata(new[]{ "GET", })),
+                    "DFA Graph"),
                 });
 
             services.TryAddEnumerable(ServiceDescriptor.Singleton<EndpointDataSource>(endpointDataSource));

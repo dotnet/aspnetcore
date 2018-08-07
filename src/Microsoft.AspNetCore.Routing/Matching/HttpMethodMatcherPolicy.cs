@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -366,6 +367,12 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 hash.Add(IsCorsPreflightRequest);
                 hash.Add(HttpMethod, StringComparer.Ordinal);
                 return hash;
+            }
+
+            // Used in GraphViz output.
+            public override string ToString()
+            {
+                return IsCorsPreflightRequest ? $"CORS: {HttpMethod}" : $"HTTP: {HttpMethod}";
             }
         }
     }

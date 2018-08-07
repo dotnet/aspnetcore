@@ -65,6 +65,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<MatchProcessorFactory, DefaultMatchProcessorFactory>();
             services.TryAddSingleton<MatcherFactory, DfaMatcherFactory>();
             services.TryAddTransient<DfaMatcherBuilder>();
+            services.TryAddSingleton<DfaGraphWriter>();
 
             // Link generation related services
             services.TryAddSingleton<IEndpointFinder<RouteValuesAddress>, RouteValuesBasedEndpointFinder>();

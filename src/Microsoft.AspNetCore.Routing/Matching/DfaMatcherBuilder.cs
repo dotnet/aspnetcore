@@ -534,7 +534,10 @@ namespace Microsoft.AspNetCore.Routing.Matching
                     {
                         var edge = edges[k];
 
-                        var next = new DfaNode();
+                        var next = new DfaNode()
+                        {
+                            Label = parent.Label + " " + edge.State.ToString(),
+                        };
 
                         // TODO: https://github.com/aspnet/Routing/issues/648
                         next.Matches.AddRange(edge.Endpoints.Cast<MatcherEndpoint>().ToArray());
