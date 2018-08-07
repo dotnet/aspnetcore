@@ -6,6 +6,7 @@ import { ITransport, TransferFormat } from "./ITransport";
 import { WebSocketConstructor } from "./Polyfills";
 import { Arg, getDataDetail } from "./Utils";
 
+/** @private */
 export class WebSocketTransport implements ITransport {
     private readonly logger: ILogger;
     private readonly accessTokenFactory: (() => string | Promise<string>) | undefined;

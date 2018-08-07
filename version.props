@@ -1,4 +1,4 @@
-<Project>
+﻿<Project>
   <PropertyGroup>
     <VersionPrefix>1.1.0</VersionPrefix>
     <JavaClientVersion>0.1.0-preview1</JavaClientVersion>
