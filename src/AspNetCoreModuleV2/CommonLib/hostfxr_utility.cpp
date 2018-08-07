@@ -38,7 +38,7 @@ HOSTFXR_UTILITY::GetStandaloneHostfxrParameters(
         _Out_ BSTR**		ppwzArgv
 )
 {
-    WLOG_INFOF(L"Resolving standalone hostfxr parameters for application: %s arguments: %s path: %s",
+    LOG_INFOF("Resolving standalone hostfxr parameters for application: %S arguments: %S path: %S",
         pwzExeAbsolutePath,
         pcwzArguments,
         pwzExeAbsolutePath);
@@ -47,7 +47,7 @@ HOSTFXR_UTILITY::GetStandaloneHostfxrParameters(
 
     if (!exePath.has_extension())
     {
-        WLOG_INFOF(L"Exe path has not extension, returning");
+        LOG_INFOF("Exe path has not extension, returning");
 
         return false;
     }
@@ -55,14 +55,14 @@ HOSTFXR_UTILITY::GetStandaloneHostfxrParameters(
     const fs::path physicalPath(pcwzApplicationPhysicalPath);
     const fs::path hostFxrLocation = physicalPath / "hostfxr.dll";
 
-    WLOG_INFOF(L"Checking hostfxr.dll at %s", hostFxrLocation.c_str());
+    LOG_INFOF("Checking hostfxr.dll at %S", hostFxrLocation.c_str());
 
     if (!is_regular_file(hostFxrLocation))
     {
         fs::path runtimeConfigLocation = exePath;
         runtimeConfigLocation.replace_extension(L".runtimeconfig.json");
 
-        WLOG_INFOF(L"Checking runtimeconfig.json at %s", runtimeConfigLocation.c_str());
+        LOG_INFOF("Checking runtimeconfig.json at %S", runtimeConfigLocation.c_str());
         if (!is_regular_file(runtimeConfigLocation))
         {
             EVENTLOG(hEventLog, INPROCESS_FULL_FRAMEWORK_APP, pcwzApplicationPhysicalPath, 0);
@@ -78,7 +78,7 @@ HOSTFXR_UTILITY::GetStandaloneHostfxrParameters(
 
     if (!is_regular_file(dllPath))
     {
-        WLOG_INFOF(L"Application dll at %s was not found", dllPath.c_str());
+        LOG_INFOF("Application dll at %S was not found", dllPath.c_str());
         return E_FAIL;
     }
 
@@ -119,7 +119,7 @@ HOSTFXR_UTILITY::GetHostFxrParameters(
 {
     HRESULT                     hr = S_OK;
 
-    WLOG_INFOF(L"Resolving hostfxr parameters for application: %s arguments: %s path: %s",
+    LOG_INFOF("Resolving hostfxr parameters for application: %S arguments: %S path: %S",
         pcwzProcessPath,
         pcwzArguments,
         pcwzApplicationPhysicalPath);
@@ -131,7 +131,7 @@ HOSTFXR_UTILITY::GetHostFxrParameters(
     // Check if the absolute path is to dotnet or not.
     if (IsDotnetExecutable(processPath))
     {
-        WLOG_INFOF(L"Process path %s is dotnet, treating application as portable", processPath.c_str());
+        LOG_INFOF("Process path %S is dotnet, treating application as portable", processPath.c_str());
         //
         // The processPath ends with dotnet.exe or dotnet
         // like: C:\Program Files\dotnet\dotnet.exe, C:\Program Files\dotnet\dotnet, dotnet.exe, or dotnet.
@@ -168,7 +168,7 @@ HOSTFXR_UTILITY::GetHostFxrParameters(
     }
     else
     {
-        WLOG_INFOF(L"Process path %s is not dotnet, treating application as standalone", processPath.c_str());
+        LOG_INFOF("Process path %S is not dotnet, treating application as standalone", processPath.c_str());
 
         if (processPath.is_relative())
         {
@@ -239,7 +239,7 @@ HOSTFXR_UTILITY::ParseHostfxrArguments(
     STRU        struTempPath;
     INT         intArgsProcessed = 0;
 
-    WLOG_INFOF(L"Resolving hostfxr_main arguments application: %s arguments: %s path: %s",
+    LOG_INFOF("Resolving hostfxr_main arguments application: %S arguments: %S path: %S",
         pwzExePath,
         pwzArgumentsFromConfig,
         pcwzApplicationPhysicalPath);
@@ -300,7 +300,7 @@ HOSTFXR_UTILITY::ParseHostfxrArguments(
             }
         }
 
-        WLOG_INFOF(L"Argument[%d] = %s",
+        LOG_INFOF("Argument[%d] = %S",
             intArgsProcessed + 1,
             argv[intArgsProcessed + 1]);
     }
@@ -337,7 +337,7 @@ HOSTFXR_UTILITY::GetAbsolutePathToDotnet(
      const fs::path & requestedPath
 )
 {
-    WLOG_INFOF(L"Resolving absolute path to dotnet.exe from %s", requestedPath.c_str());
+    LOG_INFOF("Resolving absolute path to dotnet.exe from %S", requestedPath.c_str());
 
     auto processPath = requestedPath;
     if (processPath.is_relative())
@@ -350,7 +350,7 @@ HOSTFXR_UTILITY::GetAbsolutePathToDotnet(
     //
     if (is_regular_file(requestedPath))
     {
-        WLOG_INFOF(L"Found dotnet.exe at %s", requestedPath.c_str());
+        LOG_INFOF("Found dotnet.exe at %S", requestedPath.c_str());
 
         return std::make_optional(requestedPath);
     }
@@ -360,7 +360,7 @@ HOSTFXR_UTILITY::GetAbsolutePathToDotnet(
 
     if (is_regular_file(pathWithExe))
     {
-        WLOG_INFOF(L"Found dotnet.exe at %s", pathWithExe.c_str());
+        LOG_INFOF("Found dotnet.exe at %S", pathWithExe.c_str());
 
         return std::make_optional(pathWithExe);
     }
@@ -371,7 +371,7 @@ HOSTFXR_UTILITY::GetAbsolutePathToDotnet(
     // Only do it if no path is specified
     if (requestedPath.has_parent_path())
     {
-        WLOG_INFOF(L"Absolute path to dotnet.exe was not found at %s", requestedPath.c_str());
+        LOG_INFOF("Absolute path to dotnet.exe was not found at %S", requestedPath.c_str());
 
         return std::nullopt;
     }
@@ -379,7 +379,7 @@ HOSTFXR_UTILITY::GetAbsolutePathToDotnet(
     const auto dotnetViaWhere = InvokeWhereToFindDotnet();
     if (dotnetViaWhere.has_value())
     {
-        WLOG_INFOF(L"Found dotnet.exe via where.exe invocation at %s", dotnetViaWhere.value().c_str());
+        LOG_INFOF("Found dotnet.exe via where.exe invocation at %S", dotnetViaWhere.value().c_str());
 
         return dotnetViaWhere;
     }
@@ -387,12 +387,12 @@ HOSTFXR_UTILITY::GetAbsolutePathToDotnet(
     const auto programFilesLocation = GetAbsolutePathToDotnetFromProgramFiles();
     if (programFilesLocation.has_value())
     {
-        WLOG_INFOF(L"Found dotnet.exe in Program Files at %s", programFilesLocation.value().c_str());
+        LOG_INFOF("Found dotnet.exe in Program Files at %S", programFilesLocation.value().c_str());
 
         return programFilesLocation;
     }
 
-    WLOG_INFOF(L"dotnet.exe not found");
+    LOG_INFOF("dotnet.exe not found");
     return std::nullopt;
 }
 
@@ -405,7 +405,7 @@ HOSTFXR_UTILITY::GetAbsolutePathToHostFxr(
     std::vector<std::wstring> versionFolders;
     const auto hostFxrBase = dotnetPath.parent_path() / "host" / "fxr";
 
-    WLOG_INFOF(L"Resolving absolute path to hostfxr.dll from %s", dotnetPath.c_str());
+    LOG_INFOF("Resolving absolute path to hostfxr.dll from %S", dotnetPath.c_str());
 
     if (!is_directory(hostFxrBase))
     {
@@ -434,7 +434,7 @@ HOSTFXR_UTILITY::GetAbsolutePathToHostFxr(
         return std::nullopt;
     }
 
-    WLOG_INFOF(L"hostfxr.dll located at %s", hostFxrPath.c_str());
+    LOG_INFOF("hostfxr.dll located at %S", hostFxrPath.c_str());
     return std::make_optional(hostFxrPath);
 }
 
@@ -551,7 +551,7 @@ HOSTFXR_UTILITY::InvokeWhereToFindDotnet()
 
     FINISHED_IF_FAILED(struDotnetLocationsString.CopyA(pzFileContents, dwNumBytesRead));
 
-    WLOG_INFOF(L"where.exe invocation returned: %s", struDotnetLocationsString.QueryStr());
+    LOG_INFOF("where.exe invocation returned: %S", struDotnetLocationsString.QueryStr());
 
     // Check the bitness of the currently running process
     // matches the dotnet.exe found.
@@ -570,7 +570,7 @@ HOSTFXR_UTILITY::InvokeWhereToFindDotnet()
         fIsCurrentProcess64Bit = systemInfo.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_AMD64;
     }
 
-    WLOG_INFOF(L"Current process bitness type detected as isX64=%d", fIsCurrentProcess64Bit);
+    LOG_INFOF("Current process bitness type detected as isX64=%d", fIsCurrentProcess64Bit);
 
     while (TRUE)
     {
@@ -584,14 +584,14 @@ HOSTFXR_UTILITY::InvokeWhereToFindDotnet()
         // \r\n is two wchars, so add 2 here.
         prevIndex = index + 2;
 
-        WLOG_INFOF(L"Processing entry %s", struDotnetSubstring.QueryStr());
+        LOG_INFOF("Processing entry %S", struDotnetSubstring.QueryStr());
 
         if (LOG_LAST_ERROR_IF(!GetBinaryTypeW(struDotnetSubstring.QueryStr(), &dwBinaryType)))
         {
             continue;
         }
 
-        WLOG_INFOF(L"Binary type %d", dwBinaryType);
+        LOG_INFOF("Binary type %d", dwBinaryType);
 
         if (fIsCurrentProcess64Bit == (dwBinaryType == SCS_64BIT_BINARY))
         {

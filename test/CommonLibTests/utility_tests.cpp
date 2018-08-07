@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 #include "stdafx.h"
+#include "Environment.h"
 
 TEST(PassUnexpandedEnvString, ExpandsResult)
 {
@@ -38,4 +39,22 @@ TEST(PassUnexpandedEnvString, LongStringExpandsResults)
     // The values are exactly the same, however EXPECT_EQ is returning false.
     //EXPECT_EQ(struStringValue.QueryStr(), struExpandedString.QueryStr());
     EXPECT_STREQ(struStringValue.QueryStr(), struExpandedString.QueryStr());
+}
+
+
+TEST(GetEnvironmentVariableValue, ReturnsCorrectLenght)
+{
+    SetEnvironmentVariable(L"RANDOM_ENV_VAR_1", L"test");
+
+    auto result = Environment::GetEnvironmentVariableValue(L"RANDOM_ENV_VAR_1");
+    EXPECT_TRUE(result.has_value());
+    EXPECT_EQ(result.value().length(), 4);
+    EXPECT_STREQ(result.value().c_str(), L"test");
+}
+
+
+TEST(GetEnvironmentVariableValue, ReturnsNulloptWhenNotFound)
+{
+    auto result = Environment::GetEnvironmentVariableValue(L"RANDOM_ENV_VAR_2");
+    EXPECT_FALSE(result.has_value());
 }

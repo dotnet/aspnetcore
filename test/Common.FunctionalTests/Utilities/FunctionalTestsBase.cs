@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
         {
             if (!parameters.EnvironmentVariables.ContainsKey(DebugEnvironmentVariable))
             {
-                parameters.EnvironmentVariables[DebugEnvironmentVariable] = "4";
+                parameters.EnvironmentVariables[DebugEnvironmentVariable] = "console";
             }
 
             if (parameters.ServerType == ServerType.IISExpress)
