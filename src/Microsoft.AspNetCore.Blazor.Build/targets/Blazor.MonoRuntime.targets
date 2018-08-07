@@ -632,7 +632,7 @@
       Lines="@(_UnlinkedAppReferencesPaths)"
       Overwrite="true" />
 
-    <Exec Command="$(BlazorBuildExe) write-boot-json @(IntermediateAssembly) $(_ReferencesArg) $(_EmbeddedResourcesArg) $(_LinkerEnabledFlag) --output &quot;$(BlazorBootJsonIntermediateOutputPath)&quot;" />
+    <Exec Command="$(BlazorBuildExe) write-boot-json &quot;@(IntermediateAssembly)&quot; $(_ReferencesArg) $(_EmbeddedResourcesArg) $(_LinkerEnabledFlag) --output &quot;$(BlazorBootJsonIntermediateOutputPath)&quot;" />
 
     <ItemGroup Condition="Exists('$(BlazorBootJsonIntermediateOutputPath)')">
       <_BlazorBootJson Include="$(BlazorBootJsonIntermediateOutputPath)" />
