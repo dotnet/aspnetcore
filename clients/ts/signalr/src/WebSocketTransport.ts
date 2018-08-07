@@ -5,6 +5,7 @@ import { ILogger, LogLevel } from "./ILogger";
 import { ITransport, TransferFormat } from "./ITransport";
 import { Arg, getDataDetail } from "./Utils";
 
+/** @private */
 export class WebSocketTransport implements ITransport {
     private readonly logger: ILogger;
     private readonly accessTokenFactory: () => string | Promise<string>;

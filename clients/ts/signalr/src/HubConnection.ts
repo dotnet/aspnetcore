@@ -237,11 +237,11 @@ export class HubConnection {
 
     /** Removes the specified handler for the specified hub method.
      *
-     * You must pass the exact same Function instance as was previously passed to {@link on}. Passing a different instance (even if the function
+     * You must pass the exact same Function instance as was previously passed to {@link @aspnet/signalr.HubConnection.on}. Passing a different instance (even if the function
      * body is the same) will not remove the handler.
      *
      * @param {string} methodName The name of the method to remove handlers for.
-     * @param {Function} method The handler to remove. This must be the same Function instance as the one passed to {@link on}.
+     * @param {Function} method The handler to remove. This must be the same Function instance as the one passed to {@link @aspnet/signalr.HubConnection.on}.
      */
     public off(methodName: string, method: (...args: any[]) => void): void;
     public off(methodName: string, method?: (...args: any[]) => void): void {

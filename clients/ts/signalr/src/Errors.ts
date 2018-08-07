@@ -9,7 +9,7 @@ export class HttpError extends Error {
     /** The HTTP status code represented by this error. */
     public statusCode: number;
 
-    /** Constructs a new instance of {@link HttpError}.
+    /** Constructs a new instance of {@link @aspnet/signalr.HttpError}.
      *
      * @param {string} errorMessage A descriptive error message.
      * @param {number} statusCode The HTTP status code represented by this error.
@@ -30,7 +30,7 @@ export class TimeoutError extends Error {
     // tslint:disable-next-line:variable-name
     private __proto__: Error;
 
-    /** Constructs a new instance of {@link TimeoutError}.
+    /** Constructs a new instance of {@link @aspnet/signalr.TimeoutError}.
      *
      * @param {string} errorMessage A descriptive error message.
      */

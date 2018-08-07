@@ -6,6 +6,7 @@ import { ILogger, LogLevel } from "./ILogger";
 import { NullLogger } from "./Loggers";
 import { IStreamResult, IStreamSubscriber, ISubscription } from "./Stream";
 
+/** @private */
 export class Arg {
     public static isRequired(val: any, name: string): void {
         if (val === null || val === undefined) {
@@ -21,6 +22,7 @@ export class Arg {
     }
 }
 
+/** @private */
 export function getDataDetail(data: any, includeContent: boolean): string {
     let length: string = null;
     if (data instanceof ArrayBuffer) {
@@ -37,6 +39,7 @@ export function getDataDetail(data: any, includeContent: boolean): string {
     return length;
 }
 
+/** @private */
 export function formatArrayBuffer(data: ArrayBuffer): string {
     const view = new Uint8Array(data);
 
@@ -51,6 +54,7 @@ export function formatArrayBuffer(data: ArrayBuffer): string {
     return str.substr(0, str.length - 1);
 }
 
+/** @private */
 export async function sendMessage(logger: ILogger, transportName: string, httpClient: HttpClient, url: string, accessTokenFactory: () => string | Promise<string>, content: string | ArrayBuffer, logMessageContent: boolean): Promise<void> {
     let headers;
     const token = await accessTokenFactory();
@@ -70,6 +74,7 @@ export async function sendMessage(logger: ILogger, transportName: string, httpCl
     logger.log(LogLevel.Trace, `(${transportName} transport) request complete. Response status: ${response.statusCode}.`);
 }
 
+/** @private */
 export function createLogger(logger?: ILogger | LogLevel) {
     if (logger === undefined) {
         return new ConsoleLogger(LogLevel.Information);
@@ -86,6 +91,7 @@ export function createLogger(logger?: ILogger | LogLevel) {
     return new ConsoleLogger(logger as LogLevel);
 }
 
+/** @private */
 export class Subject<T> implements IStreamResult<T> {
     public observers: Array<IStreamSubscriber<T>>;
     public cancelCallback: () => Promise<void>;
@@ -123,6 +129,7 @@ export class Subject<T> implements IStreamResult<T> {
     }
 }
 
+/** @private */
 export class SubjectSubscription<T> implements ISubscription<T> {
     private subject: Subject<T>;
     private observer: IStreamSubscriber<T>;
@@ -144,6 +151,7 @@ export class SubjectSubscription<T> implements ISubscription<T> {
     }
 }
 
+/** @private */
 export class ConsoleLogger implements ILogger {
     private readonly minimumLogLevel: LogLevel;
 

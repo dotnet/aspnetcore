@@ -6,6 +6,7 @@
 // it's a very new API right now.
 
 // Not exported from index.
+/** @private */
 export class AbortController implements AbortSignal {
     private isAborted: boolean = false;
     public onabort: () => void;

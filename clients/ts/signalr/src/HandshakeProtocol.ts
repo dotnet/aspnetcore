@@ -3,15 +3,18 @@
 
 import { TextMessageFormat } from "./TextMessageFormat";
 
+/** @private */
 export interface HandshakeRequestMessage {
     readonly protocol: string;
     readonly version: number;
 }
 
+/** @private */
 export interface HandshakeResponseMessage {
     readonly error: string;
 }
 
+/** @private */
 export class HandshakeProtocol {
     // Handshake request is always JSON
     public writeHandshakeRequest(handshakeRequest: HandshakeRequestMessage): string {

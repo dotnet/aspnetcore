@@ -5,18 +5,18 @@ import { HttpClient } from "./HttpClient";
 import { ILogger, LogLevel } from "./ILogger";
 import { HttpTransportType, ITransport } from "./ITransport";
 
-/** Options provided to the 'withUrl' method on {@link HubConnectionBuilder} to configure options for the HTTP-based transports. */
+/** Options provided to the 'withUrl' method on {@link @aspnet/signalr.HubConnectionBuilder} to configure options for the HTTP-based transports. */
 export interface IHttpConnectionOptions {
-    /** An {@link HttpClient} that will be used to make HTTP requests. */
+    /** An {@link @aspnet/signalr.HttpClient} that will be used to make HTTP requests. */
     httpClient?: HttpClient;
 
-    /** An {@link HttpTransportType} value specifying the transport to use for the connection. */
+    /** An {@link @aspnet/signalr.HttpTransportType} value specifying the transport to use for the connection. */
     transport?: HttpTransportType | ITransport;
 
     /** Configures the logger used for logging.
      *
-     * Provide an {@link ILogger} instance, and log messages will be logged via that instance. Alternatively, provide a value from
-     * the {@link LogLevel} enumeration and a default logger which logs to the Console will be configured to log messages of the specified
+     * Provide an {@link @aspnet/signalr.ILogger} instance, and log messages will be logged via that instance. Alternatively, provide a value from
+     * the {@link @aspnet/signalr.LogLevel} enumeration and a default logger which logs to the Console will be configured to log messages of the specified
      * level (or higher).
      */
     logger?: ILogger | LogLevel;
@@ -35,7 +35,7 @@ export interface IHttpConnectionOptions {
 
     /** A boolean indicating if negotiation should be skipped.
      *
-     * Negotiation can only be skipped when the {@link transport} property is set to 'HttpTransportType.WebSockets'.
+     * Negotiation can only be skipped when the {@link @aspnet/signalr.IHttpConnectionOptions.transport} property is set to 'HttpTransportType.WebSockets'.
      */
     skipNegotiation?: boolean;
 }

@@ -11,6 +11,7 @@ import { Arg, getDataDetail, sendMessage } from "./Utils";
 const SHUTDOWN_TIMEOUT = 5 * 1000;
 
 // Not exported from 'index', this type is internal.
+/** @private */
 export class LongPollingTransport implements ITransport {
     private readonly httpClient: HttpClient;
     private readonly accessTokenFactory: () => string | Promise<string>;

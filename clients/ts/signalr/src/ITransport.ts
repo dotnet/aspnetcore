@@ -19,7 +19,7 @@ export enum TransferFormat {
     /** Specifies that only text data will be transmitted over the connection. */
     Text = 1,
     /** Specifies that binary data will be transmitted over the connection. */
-    Binary,
+    Binary = 2,
 }
 
 /** An abstraction over the behavior of transports. This is designed to support the framework and not intended for use by applications. */
