@@ -1,0 +1,22 @@
+trigger:
+- master
+- release/*
+
+phases:
+- template: ../templates/blazor-build.yml
+  parameters:
+    queueName: VSEng-MicroBuildVS2017
+    variables:
+      SignType: real
+      TeamName: AspNetCore
+    beforeBuild:
+    - task: ms-vseng.MicroBuildTasks.30666190-6959-11e5-9f96-f56098202fef.MicroBuildSigningPlugin@1
+      displayName: Install CodeSigning plugin
+      inputs:
+        signType: $(SignType)
+      condition: and(succeeded(), in(variables['SignType'], 'test', 'real'))
+
+    afterBuild:
+    - task: ms-vseng.MicroBuildTasks.521a94ea-9e68-468a-8167-6dcf361ea776.MicroBuildCleanup@1
+      displayName: Perform Cleanup Tasks
+      condition: succeededOrFailed()

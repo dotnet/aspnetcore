@@ -5,7 +5,7 @@
     <PackageDependency Include="Microsoft.AspNetCore.Blazor.Build" />
   ... except it's much more convenient when working in this repo, because it consumes the
   Blazor.Build targets/exe directly without needing this project to be packed into a .nupkg.
-  
+
   This is only intended for use by other projects in this repo.
   -->
   <PropertyGroup>
@@ -29,13 +29,13 @@
     <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="$(RazorPackageVersion)"/>
   </ItemGroup>
 
-  <Target 
+  <Target
     Name="BuildBlazorBuildBinary"
     BeforeTargets="BlazorGenerateDeclaration">
     <!-- Ensures this project is built before the consuming project, but without
          adding a runtime dependency on the .dll (to be equivalent to a <PackageDependency>
          given that the packed version of this project wouldn't add a .dll reference) -->
-    <MSBuild Projects="$(MSBuildThisFileDirectory)Microsoft.AspNetCore.Blazor.Build.csproj" Targets="Restore;Build" />
+    <MSBuild Projects="$(MSBuildThisFileDirectory)Microsoft.AspNetCore.Blazor.Build.csproj" Targets="Build" />
   </Target>
 
   <PropertyGroup>

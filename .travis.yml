@@ -31,10 +31,9 @@ install:
   - npm install -g selenium-standalone
   - selenium-standalone install
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then export TEST_CHROME_BINARY=`which google-chrome-stable`; fi
-  - export DOTNET_INSTALL_DIR="$PWD/.dotnetcli"
-  - curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel Current --version latest --install-dir "$DOTNET_INSTALL_DIR"
+  - export DOTNET_INSTALL_DIR="$PWD/.dotnet"
   - export PATH="$DOTNET_INSTALL_DIR:$PATH"
 script:
-  - ./build.sh /p:SkipTests=true /p:BlazorOutputStatistics=true
+  - ./build.sh --ci /p:SkipTests=true /p:BlazorOutputStatistics=true
   - selenium-standalone start &
-  - ./build.sh /t:Test /p:BlazorAllTests=true
+  - ./build.sh --ci /t:Test /p:BlazorAllTests=true

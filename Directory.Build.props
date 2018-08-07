@@ -6,7 +6,7 @@
   <Import Project="version.props" />
   <Import Project="build\dependencies.props" />
   <Import Project="build\sources.props" />
-  
+
   <PropertyGroup>
     <Product>Microsoft ASP.NET Core Blazor</Product>
     <RepositoryUrl>https://github.com/aspnet/blazor</RepositoryUrl>
@@ -23,11 +23,14 @@
     <PublicSign>false</PublicSign>
   </PropertyGroup>
 
+  <Import Project="build\arcade.props" />
+
+  <PropertyGroup>
+    <!-- So we can use the tool from source within the repo without having to pack -->
+    <BlazorToolsDir>$(ArtifactsBinDir)Microsoft.AspNetCore.Blazor.Build\netcoreapp2.1\</BlazorToolsDir>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Internal.AspNetCore.Sdk" PrivateAssets="All" Version="$(InternalAspNetCoreSdkPackageVersion)" />
   </ItemGroup>
-
-  <PropertyGroup>
-    <RazorPackageVersion>2.1.0</RazorPackageVersion>
-  </PropertyGroup>
 </Project>

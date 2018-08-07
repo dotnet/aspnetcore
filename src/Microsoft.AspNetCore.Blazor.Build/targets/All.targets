@@ -6,7 +6,8 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <BlazorBuildExe>dotnet &quot;$(MSBuildThisFileDirectory)../tools/Microsoft.AspNetCore.Blazor.Build.dll&quot;</BlazorBuildExe>
+    <BlazorToolsDir Condition="'$(BlazorToolsDir)' == ''">$(MSBuildThisFileDirectory)../tools/</BlazorToolsDir>
+    <BlazorBuildExe>dotnet &quot;$(BlazorToolsDir)Microsoft.AspNetCore.Blazor.Build.dll&quot;</BlazorBuildExe>
 
     <!-- The Blazor build code can only find your referenced assemblies if they are in the output directory -->
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
@@ -15,7 +16,7 @@
   <Import Project="RazorCompilation.targets" />
   <Import Project="Blazor.MonoRuntime.targets" />
   <Import Project="Publish.targets" />
-  
+
   <Target Name="GenerateBlazorMetadataFile" BeforeTargets="GetCopyToOutputDirectoryItems">
     <PropertyGroup>
       <BlazorMetadataFileName>$(AssemblyName).blazor.config</BlazorMetadataFileName>

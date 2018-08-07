@@ -3,51 +3,13 @@
     <BuildVSIX Condition="'$(BuildVSIX)' ==''">true</BuildVSIX>
     <RestoreDependsOn Condition="'$(OS)'=='Windows_NT' AND '$(BuildVSIX)' == 'true'">$(RestoreDependsOn);RestoreVSIX</RestoreDependsOn>
     <PackageDependsOn Condition="'$(OS)'=='Windows_NT' AND '$(BuildVSIX)' == 'true'">$(PackageDependsOn);PackageVSIX</PackageDependsOn>
-    <GetArtifactInfoDependsOn Condition="'$(OS)'=='Windows_NT' AND '$(BuildVSIX)' == 'true'">$(GetArtifactInfoDependsOn);GetVSIXArtifactInfo</GetArtifactInfoDependsOn>
-    <VSIXName>Microsoft.VisualStudio.BlazorExtension</VSIXName>
-    <VSIXOutputPath>$(BuildDir)$(VSIXName).vsix</VSIXOutputPath>
-    <VSIXManifestOutputPath>$(BuildDir)$(VSIXName).json</VSIXManifestOutputPath>
-    <VSIXProject>$(RepositoryRoot)tooling\$(VSIXName)\$(VSIXName).csproj</VSIXProject>
-    <VSIXSymbolsOutputPath>$(BuildDir)$(VSIXName).pdb</VSIXSymbolsOutputPath>
-    <VSIXArtifactCategory>shipoob</VSIXArtifactCategory>
+    <VSIXProject>$(RepositoryRoot)tooling\Microsoft.VisualStudio.BlazorExtension\Microsoft.VisualStudio.BlazorExtension.csproj</VSIXProject>
   </PropertyGroup>
 
   <Target
     Name="GenerateVSIX"
     DependsOnTargets="RestoreVSIX;PackageVSIX"
     Condition="'$(OS)'=='Windows_NT'" />
-
-  <!-- This target is required so KoreBuild can generate a bill of materials with relevant information about the VSIX. -->
-  <Target Name="GetVSIXArtifactInfo">
-    <ItemGroup>
-
-      <ArtifactInfo Include="$(VSIXOutputPath)">
-        <ArtifactType>VsixPackage</ArtifactType>
-        <Version>$(PackageVersion)</Version>
-        <Category>$(VSIXArtifactCategory)</Category>
-        <PackageId>$(VSIXName)</PackageId>
-      </ArtifactInfo>
-
-      <ArtifactInfo Include="$(VSIXSymbolsOutputPath)">
-        <ArtifactType>SymbolsFile</ArtifactType>
-        <Category>$(VSIXArtifactCategory)</Category>
-        <Dependencies>$(VSIXName).vsix</Dependencies>
-        <DebugType>full</DebugType>
-      </ArtifactInfo>
-
-      <ArtifactInfo Include="$(VSIXManifestOutputPath)" Condition="'$(IsProductComponent)'=='true'">
-        <ArtifactType>VsixPackageManifestFile</ArtifactType>
-        <Category>$(VSIXArtifactCategory)</Category>
-        <Dependencies>$(VSIXName).vsix</Dependencies>
-        <PackageId>$(VSIXName)</PackageId>
-      </ArtifactInfo>
-
-      <FilesToSign Include="$(VSIXOutputPath)" Certificate="Vsix" />
-      <FilesToExcludeFromSigning Include="$(VSIXManifestOutputPath)" />
-      <FilesToExcludeFromSigning Include="$(VSIXSymbolsOutputPath)" />
-
-    </ItemGroup>
-  </Target>
 
   <!--
     VisualStudioMSBuildx86Path is set by the GetToolsets target in KoreBuild if a version of VS matching the requirements in korebuild.json is found.
@@ -98,8 +60,8 @@
         /v:M;
         /fl;
         &quot;/flp:LogFile=$(VSIXLogFilePath)&quot;;
+        /p:BuildProjectReferences=false;
         /p:DeployExtension=false;
-        &quot;/p:TargetVSIXContainer=$(VSIXOutputPath)&quot;;
         &quot;/p:SymbolsPublishDir=$(BuildDir)&quot;;
         &quot;/p:Configuration=$(Configuration)&quot;;" />
     </ItemGroup>

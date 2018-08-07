@@ -1,0 +1,10 @@
+trigger:
+- master
+- release/*
+
+phases:
+- template: ../templates/blazor-build.yml
+  parameters:
+    queueName: Hosted VS2017
+    variables:
+      SkipCodeSign: true

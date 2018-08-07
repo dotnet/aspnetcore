@@ -8,15 +8,15 @@
 
   <PropertyGroup>
     <!-- Passed to Razor tasks and loaded as a plugin -->
-    <_AngleSharpAssemblyPath>$(MSBuildThisFileDirectory)../tools/AngleSharp.dll</_AngleSharpAssemblyPath>
-    <_BlazorExtensionAssemblyPath>$(MSBuildThisFileDirectory)../tools/Microsoft.AspNetCore.Blazor.Razor.Extensions.dll</_BlazorExtensionAssemblyPath>
+    <_AngleSharpAssemblyPath>$(BlazorToolsDir)AngleSharp.dll</_AngleSharpAssemblyPath>
+    <_BlazorExtensionAssemblyPath>$(BlazorToolsDir)Microsoft.AspNetCore.Blazor.Razor.Extensions.dll</_BlazorExtensionAssemblyPath>
 
     <!-- Deactivates the Razor SDK's build-time compilation. We do our own -->
     <RazorCompileOnBuild>false</RazorCompileOnBuild>
 
     <RazorLangVersion>Experimental</RazorLangVersion>
 
-    <!-- 
+    <!--
       This version is used to build our RazorConfiguration, and is hardcoded into the tools in VS. If you change
       This to a value that doesn't match VS, then the Blazor Razor experience won't work for those documents.
     -->
@@ -24,7 +24,7 @@
     <BlazorDefinitionConfiguration>Blazor-$(BlazorLanguageVersion)</BlazorDefinitionConfiguration>
     <BlazorDeclarationConfiguration>BlazorDeclaration-$(BlazorLanguageVersion)</BlazorDeclarationConfiguration>
     <RazorDefaultConfiguration>$(BlazorDefinitionConfiguration)</RazorDefaultConfiguration>
-    
+
   </PropertyGroup>
 
   <!-- Something quick for input/output tracking - the assumptions here should match what the CLI does -->
@@ -37,7 +37,7 @@
 
     <ProjectCapability Include="Blazor" />
     <ProjectCapability Include="DotNetCoreRazorConfiguration" />
-    
+
     <RazorConfiguration Include="$(BlazorDefinitionConfiguration)">
       <Extensions>Blazor-$(BlazorLanguageVersion);Blazor.AngleSharp-$(BlazorLanguageVersion);$(CustomRazorExtension)</Extensions>
     </RazorConfiguration>
@@ -81,7 +81,7 @@
   <!-- Defining properties that depend on import order in a target for resilience -->
   <Target Name="_DefineBlazorPaths">
     <PropertyGroup>
-      <!-- 
+      <!--
         The Razor tasks require you to pass a tag helper manifest file. We don't need tag helpers for declarations
         so that one is just a placeholder.
       -->
@@ -104,7 +104,7 @@
 
     This step also assigns each item an output path for both stages of code generation.
   -->
-  <Target Name="_AssignBlazorGenerateTargetPaths"> 
+  <Target Name="_AssignBlazorGenerateTargetPaths">
     <AssignTargetPath Files="@(BlazorGenerate)" RootFolder="$(MSBuildProjectDirectory)">
       <Output TaskParameter="AssignedFiles" ItemName="BlazorGenerateWithTargetPath" />
     </AssignTargetPath>
@@ -118,9 +118,9 @@
       </BlazorGenerateWithTargetPath>
     </ItemGroup>
 
-    <!-- 
+    <!--
       Instruct VS to re-run the target when input files change. Other IDEs may not honor this
-      and therefore developers may need to rebuild after changing cshtml files. 
+      and therefore developers may need to rebuild after changing cshtml files.
     -->
     <ItemGroup>
       <BlazorDeclaration Include="@(BlazorGenerateWithTargetPath->'%(GeneratedDeclaration)')">
@@ -204,7 +204,7 @@
     </ItemGroup>
   </Target>
 
-  <Target 
+  <Target
     Name="BlazorResolveComponents"
     Inputs="$(MSBuildAllProjects);$(_BlazorExtensionAssemblyPath);@(ReferencePathWithRefAssemblies);@(_BlazorTempAssembly)"
     Outputs="$(_RazorTagHelperInputCache)"
@@ -220,7 +220,7 @@
       <_BlazorDeclarationConfiguration Include="@(RazorConfiguration->WithMetadataValue('Identity', '$(BlazorDeclarationConfiguration)'))" />
     </ItemGroup>
 
-    <!-- 
+    <!--
       We're manipulating our output directly here because we want to separate the actual up-to-date check
       of BlazorGenerateDefinition from the output of this target. Many times the set of components doesn't change
       so we don't need to regenerate the code.
@@ -258,9 +258,9 @@
 
     These files are used in the real build and don't participate in design time builds.
   -->
-  <Target 
-    Name="BlazorGenerateDefinition" 
-    BeforeTargets="CoreCompile" 
+  <Target
+    Name="BlazorGenerateDefinition"
+    BeforeTargets="CoreCompile"
     DependsOnTargets="$(BlazorGenerateDefinitionDependsOn)"
     Inputs="$(MSBuildAllProjects);$(_BlazorExtensionAssemblyPath);$(_BlazorGenerateInputsHashFile);$(_BlazorGenerateDefinitionComponentManifest);@(BlazorGenerate)"
     Outputs="@(BlazorDefinition)"
@@ -301,7 +301,7 @@
   <!--
     Taken from the Razor SDK targets
   -->
- <Target 
+ <Target
     Name="_BlazorTempCompile"
     DependsOnTargets="BlazorGenerateDeclaration;FindReferenceAssembliesForReferences"
     Inputs="

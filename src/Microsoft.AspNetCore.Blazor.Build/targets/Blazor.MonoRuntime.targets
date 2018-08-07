@@ -185,7 +185,8 @@
     <PropertyGroup Label="Intermediate output paths">
 
       <!-- /obj/<<configuration>>/<<targetframework>>/blazor -->
-      <BlazorIntermediateOutputPath>$(ProjectDir)$(IntermediateOutputPath)$(BaseBlazorIntermediateOutputPath)</BlazorIntermediateOutputPath>
+      <BlazorIntermediateOutputPath>$(IntermediateOutputPath)$(BaseBlazorIntermediateOutputPath)</BlazorIntermediateOutputPath>
+      <BlazorIntermediateOutputPath Condition="! $([System.IO.Path]::IsPathRooted($(BlazorIntermediateOutputPath)))">$([MSBuild]::Escape($([System.IO.Path]::GetFullPath('$([System.IO.Path]::Combine('$(MSBuildProjectDirectory)', '$(BlazorIntermediateOutputPath)'))'))))</BlazorIntermediateOutputPath>
 
       <!-- Common marker files paths -->
 

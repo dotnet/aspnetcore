@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <MinimumVisualStudioVersion>15.0</MinimumVisualStudioVersion>
@@ -7,7 +7,9 @@
     <!-- Don't import the directory props and targets, they aren't compatible with an old-style csproj -->
     <ImportDirectoryBuildProps>false</ImportDirectoryBuildProps>
     <ImportDirectoryBuildTargets>false</ImportDirectoryBuildTargets>
+    <RepositoryRoot>$(MSBuildThisFileDirectory)..\..\</RepositoryRoot>
   </PropertyGroup>
+  <Import Project="..\..\build\arcade.props" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <Import Project="..\..\version.props" />
   <!--
@@ -136,7 +138,7 @@
       <IncludeOutputGroupsInVSIXLocalOnly>
       </IncludeOutputGroupsInVSIXLocalOnly>
     </ProjectReference>
-    <Content Include="..\..\src\Microsoft.AspNetCore.Blazor.Razor.Extensions\bin\$(Configuration)\net461\Microsoft.AspNetCore.Blazor.Razor.Extensions.dll">
+    <Content Include="$(ArtifactsBinDir)Microsoft.AspNetCore.Blazor.Razor.Extensions\net461\Microsoft.AspNetCore.Blazor.Razor.Extensions.dll">
       <Link>Microsoft.AspNetCore.Blazor.Razor.Extensions.dll</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -151,7 +153,7 @@
       <IncludeOutputGroupsInVSIXLocalOnly>
       </IncludeOutputGroupsInVSIXLocalOnly>
     </ProjectReference>
-    <Content Include="..\Microsoft.VisualStudio.LanguageServices.Blazor\bin\$(Configuration)\net461\Microsoft.VisualStudio.LanguageServices.Blazor.dll">
+    <Content Include="$(ArtifactsBinDir)Microsoft.VisualStudio.LanguageServices.Blazor\net461\Microsoft.VisualStudio.LanguageServices.Blazor.dll">
       <Link>Microsoft.VisualStudio.LanguageServices.Blazor.dll</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -161,7 +163,7 @@
       This is built as a P2P by Microsoft.VisualStudio.LanguageServices.Blazor. This is required, adding the P2P
       to this project will cause a NU1201 error that doesn't have a workaround.
     -->
-    <Content Include="bin\$(Configuration)\AngleSharp.dll">
+    <Content Include="$(TargetDir)AngleSharp.dll">
       <Link>AngleSharp.dll</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -204,8 +206,6 @@
 
   -->
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectTypeGuids>{82b43b9b-a64c-4715-b499-d71e9ca2bd60};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <ProjectGuid>{9088E4E4-B855-457F-AE9E-D86709A5E1F4}</ProjectGuid>
@@ -220,7 +220,6 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -228,7 +227,6 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>

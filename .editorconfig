@@ -20,5 +20,8 @@ trim_trailing_whitespace = false
 insert_final_newline = true
 indent_size = 2
 
-[*.yml]
+[*.{yml,json}]
+indent_size = 2
+
+[*.{xml,csproj,config,*proj,targets,props}]
 indent_size = 2

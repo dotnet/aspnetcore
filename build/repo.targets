@@ -5,5 +5,11 @@
       <!-- the 'DebugNoVSIX' and 'ReleaseNoVSIX' configurations exclude the VSIX project, which doesn't build with Microsoft.NET.Sdk yet. -->
       <AdditionalProperties>Configuration=$(Configuration)NoVSIX</AdditionalProperties>
     </Solutions>
-  </ItemGroup> 
+  </ItemGroup>
+
+  <Target Name="CodeSign" AfterTargets="Package" DependsOnTargets="GetToolsets" Condition=" '$(OS)' == 'Windows_NT' ">
+    <MSBuild Projects="$(MSBuildThisFileDirectory)sign.proj"
+             Targets="Restore;CodeSign"
+             Properties="VisualStudioMSBuildx86Path=$(VisualStudioMSBuildx86Path);Configuration=$(Configuration)" />
+  </Target>
 </Project>

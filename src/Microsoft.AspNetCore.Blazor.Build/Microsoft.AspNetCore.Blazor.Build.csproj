@@ -3,7 +3,6 @@
   <PropertyGroup>
     <TargetFrameworks>netcoreapp2.1</TargetFrameworks>
     <OutputType>Exe</OutputType>
-    <OutDir>tools</OutDir> <!-- So we can use the tool from source within the repo without having to pack -->
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>
 
@@ -11,7 +10,7 @@
   <PropertyGroup>
     <NoPackageAnalysis>true</NoPackageAnalysis>
     <NuspecFile>Microsoft.AspNetCore.Blazor.Build.nuspec</NuspecFile>
-    <IntermediatePackDir>$(MSBuildProjectDirectory)/bin/$(Configuration)/publish/</IntermediatePackDir>
+    <IntermediatePackDir>$(OutputPath)publish\</IntermediatePackDir>
     <PublishDir>$(IntermediatePackDir)$(TargetFramework)/</PublishDir>
   </PropertyGroup>
 
@@ -31,12 +30,8 @@
   </Target>
 
   <ItemGroup>
-    <None Remove="tools\**" />
-  </ItemGroup>
-
-  <ItemGroup>
     <!-- This is a newer version than is in the shared framework, so copy it -->
-    <Content Include="..\Microsoft.AspNetCore.Blazor.Razor.Extensions\bin\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Razor.Language.dll">
+    <Content Include="$(ArtifactsBinDir)Microsoft.AspNetCore.Blazor.Razor.Extensions\netstandard2.0\Microsoft.AspNetCore.Razor.Language.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Visible>false</Visible>
     </Content>
