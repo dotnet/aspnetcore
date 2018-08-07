@@ -1,11 +1,14 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Buffers;
 using System.IO.Pipelines;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Testing
@@ -36,13 +39,28 @@ namespace Microsoft.AspNetCore.Testing
             return new KestrelTrace(loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel"));
         }
 
+        public void InitializeHeartbeat()
+        {
+            MockSystemClock = null;
+            SystemClock = new SystemClock();
+            DateHeaderValueManager = new DateHeaderValueManager(SystemClock);
+
+            var heartbeatManager = new HttpHeartbeatManager(ConnectionManager);
+            Heartbeat = new Heartbeat(
+                new IHeartbeatHandler[] { DateHeaderValueManager, heartbeatManager },
+                SystemClock,
+                DebuggerWrapper.Singleton,
+                Log);
+        }
+
         private void Initialize(ILoggerFactory loggerFactory, IKestrelTrace kestrelTrace)
         {
             LoggerFactory = loggerFactory;
             Log = kestrelTrace;
             Scheduler = PipeScheduler.ThreadPool;
-            SystemClock = new MockSystemClock();
-            DateHeaderValueManager = new DateHeaderValueManager(SystemClock);
+            MockSystemClock = new MockSystemClock();
+            SystemClock = MockSystemClock;
+            DateHeaderValueManager = new DateHeaderValueManager(MockSystemClock);
             ConnectionManager = new HttpConnectionManager(Log, ResourceCounter.Unlimited);
             HttpParser = new HttpParser<Http1ParsingHandler>(Log.IsEnabled(LogLevel.Information));
             ServerOptions = new KestrelServerOptions
@@ -52,6 +70,10 @@ namespace Microsoft.AspNetCore.Testing
         }
 
         public ILoggerFactory LoggerFactory { get; set; }
+
+        public MockSystemClock MockSystemClock { get; set; }
+
+        public Func<MemoryPool<byte>> MemoryPoolFactory { get; set; } = KestrelMemoryPool.Create;
 
         public string DateHeaderValue => DateHeaderValueManager.GetDateHeaderValues().String;
     }

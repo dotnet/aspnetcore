@@ -49,7 +49,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         public async Task OnConnectionCompletesTransportPipesAfterReturning()
         {
             var serviceContext = new TestServiceContext();
-            var tcs = new TaskCompletionSource<object>();
             var dispatcher = new ConnectionDispatcher(serviceContext, _ => Task.CompletedTask);
 
             var mockConnection = new Mock<TransportConnection>();

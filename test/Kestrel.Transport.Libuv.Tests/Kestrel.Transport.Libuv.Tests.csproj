@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\shared\**\*.cs" />
+    <Compile Include="..\shared\*.cs" LinkBase="shared" />
   </ItemGroup>
 
   <ItemGroup>
