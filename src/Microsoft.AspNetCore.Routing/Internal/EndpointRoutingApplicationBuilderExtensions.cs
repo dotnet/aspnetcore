@@ -11,9 +11,6 @@ namespace Microsoft.AspNetCore.Internal
 {
     public static class EndpointRoutingApplicationBuilderExtensions
     {
-        // TODO: Remove once MVC is updated
-        private const string GlobalRoutingRegisteredKey = "__GlobalRoutingMiddlewareRegistered";
-
         private const string EndpointRoutingRegisteredKey = "__EndpointRoutingMiddlewareRegistered";
 
         public static IApplicationBuilder UseEndpointRouting(this IApplicationBuilder builder)
@@ -21,7 +18,6 @@ namespace Microsoft.AspNetCore.Internal
             VerifyRoutingIsRegistered(builder);
 
             builder.Properties[EndpointRoutingRegisteredKey] = true;
-            builder.Properties[GlobalRoutingRegisteredKey] = true;
 
             return builder.UseMiddleware<EndpointRoutingMiddleware>();
         }
