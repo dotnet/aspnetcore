@@ -59,7 +59,7 @@ export class LongPollingTransport implements ITransport {
         const pollOptions: HttpRequest = {
             abortSignal: this.pollAbort.signal,
             headers: {},
-            timeout: 90000,
+            timeout: 100000,
         };
 
         if (transferFormat === TransferFormat.Binary) {
