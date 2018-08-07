@@ -68,7 +68,7 @@
       </FileExclusions>
 
       <FileExclusions Include="
-        $(PoliCheckPath)**\bootstrap\dist\*;
+        $(PoliCheckPath)**\bootstrap\dist\js\bootstrap.bundle.js;
         $(PoliCheckPath)**\jquery\dist\jquery.js;
         $(PoliCheckPath)**\jquery-validation\dist\additional-methods*.js">
         <Justification>Third party code shipping in our packages</Justification>
