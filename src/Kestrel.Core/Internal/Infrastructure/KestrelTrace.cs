@@ -91,6 +91,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             LoggerMessage.Define<string, Http2ErrorCode>(LogLevel.Debug, new EventId(35, nameof(Http2StreamResetAbort)),
                 @"Trace id ""{TraceIdentifier}"": HTTP/2 stream error ""{error}"". A Reset is being sent to the stream.");
 
+        private static readonly Action<ILogger, string, Exception> _http2ConnectionClosing =
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(36, nameof(Http2ConnectionClosing)),
+                @"Connection id ""{ConnectionId}"" is closing.");
+
+        private static readonly Action<ILogger, string, int, Exception> _http2ConnectionClosed =
+            LoggerMessage.Define<string, int>(LogLevel.Debug, new EventId(36, nameof(Http2ConnectionClosed)),
+                @"Connection id ""{ConnectionId}"" is closed. The last processed stream ID was {HighestOpenedStreamId}.");
+
         protected readonly ILogger _logger;
 
         public KestrelTrace(ILogger logger)
@@ -211,6 +219,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         public virtual void Http2ConnectionError(string connectionId, Http2ConnectionErrorException ex)
         {
             _http2ConnectionError(_logger, connectionId, ex);
+        }
+
+        public virtual void Http2ConnectionClosing(string connectionId)
+        {
+            _http2ConnectionClosing(_logger, connectionId, null);
+        }
+
+        public virtual void Http2ConnectionClosed(string connectionId, int highestOpenedStreamId)
+        {
+            _http2ConnectionClosed(_logger, connectionId, highestOpenedStreamId, null);
         }
 
         public virtual void Http2StreamError(string connectionId, Http2StreamErrorException ex)

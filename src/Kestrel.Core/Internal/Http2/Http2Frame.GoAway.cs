@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
     {
         public int GoAwayLastStreamId
         {
-            get => (Payload[0] << 24) | (Payload[1] << 16) | (Payload[2] << 16) | Payload[3];
+            get => (Payload[0] << 24) | (Payload[1] << 16) | (Payload[2] << 8) | Payload[3];
             set
             {
                 Payload[0] = (byte)((value >> 24) & 0xff);
@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public Http2ErrorCode GoAwayErrorCode
         {
-            get => (Http2ErrorCode)((Payload[4] << 24) | (Payload[5] << 16) | (Payload[6] << 16) | Payload[7]);
+            get => (Http2ErrorCode)((Payload[4] << 24) | (Payload[5] << 16) | (Payload[6] << 8) | Payload[7]);
             set
             {
                 Payload[4] = (byte)(((uint)value >> 24) & 0xff);

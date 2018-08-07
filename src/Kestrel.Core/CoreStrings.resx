@@ -557,4 +557,7 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
   <data name="Http2StreamErrorSchemeMismatch" xml:space="preserve">
     <value>The request :scheme header '{requestScheme}' does not match the transport scheme '{transportScheme}'.</value>
   </data>
+  <data name="Http2StreamErrorAfterHeaders" xml:space="preserve">
+    <value>An error occured after the response headers were sent, a reset is being sent.</value>
+  </data>
 </root>

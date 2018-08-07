@@ -1032,8 +1032,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 if (HasResponseStarted)
                 {
-                    // We can no longer change the response, so we simply close the connection.
-                    _keepAlive = false;
+                    ErrorAfterResponseStarted();
                     return Task.CompletedTask;
                 }
 
@@ -1056,6 +1055,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
 
             return WriteSuffix();
+        }
+
+        protected virtual void ErrorAfterResponseStarted()
+        {
+            // We can no longer change the response, so we simply close the connection.
+            _keepAlive = false;
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
