@@ -182,6 +182,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         {
             Task disposeTask;
 
+            Cancellation?.Dispose();
+
             await StateLock.WaitAsync();
             try
             {

@@ -313,10 +313,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                         connection.LastSeenUtc = DateTime.UtcNow;
 
                         connection.Status = HttpConnectionStatus.Inactive;
-
-                        connection.Cancellation?.Cancel();
-
-                        connection.Cancellation = null;
                     }
                 }
                 finally
