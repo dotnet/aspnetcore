@@ -50,6 +50,13 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
 
         private static string GetDockerLocation()
         {
+            // OSX + Docker + Redis don't play well together for some reason. We already have these tests covered on Linux and Windows
+            // So we are happy ignoring them on OSX
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                return null;
+            }
+
             foreach (var dir in Environment.GetEnvironmentVariable("PATH").Split(Path.PathSeparator))
             {
                 var candidate = Path.Combine(dir, "docker" + _exeSuffix);
