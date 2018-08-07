@@ -19,6 +19,8 @@ namespace Microsoft.HttpRepl.OpenApi
 
         private static async Task<JToken> ResolvePointersAsync(Uri loadLocation, JToken root, JToken toResolve, HttpClient client)
         {
+            JToken cursor = root;
+
             if (toResolve is JArray arr)
             {
                 for (int i = 0; i < arr.Count; ++i)
@@ -69,7 +71,7 @@ namespace Microsoft.HttpRepl.OpenApi
                             return new JValue((object)null);
                         }
 
-                        return await ResolvePointersAsync(loadTarget, newRoot, newRoot, client).ConfigureAwait(false);
+                        cursor = await ResolvePointersAsync(loadTarget, newRoot, newRoot, client).ConfigureAwait(false);
                     }
 
                     //We're in the right document, grab the bookmark (fragment) of the URI and get the element at that path
@@ -81,7 +83,6 @@ namespace Microsoft.HttpRepl.OpenApi
                     }
 
                     string[] parts = fragment.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
-                    JToken cursor = root;
 
                     for (int i = 0; i < parts.Length; ++i)
                     {
