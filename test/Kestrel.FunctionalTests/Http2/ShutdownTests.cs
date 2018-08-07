@@ -44,8 +44,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
         [ConditionalFact]
         public async Task GracefulShutdownWaitsForRequestsToFinish()
         {
-            var requestStarted = new TaskCompletionSource<object>();
-            var requestUnblocked = new TaskCompletionSource<object>();
+            var requestStarted = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var requestUnblocked = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             using (var server = new TestServer(async context =>
             {
                 requestStarted.SetResult(null);
@@ -84,8 +84,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
         [ConditionalFact]
         public async Task GracefulTurnsAbortiveIfRequestsDoNotFinish()
         {
-            var requestStarted = new TaskCompletionSource<object>();
-            var requestUnblocked = new TaskCompletionSource<object>();
+            var requestStarted = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var requestUnblocked = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             // Abortive shutdown leaves one request hanging
             using (var server = new TestServer(TransportSelector.GetWebHostBuilder(new DiagnosticMemoryPoolFactory(allowLateReturn: true).Create), async context =>
             {
