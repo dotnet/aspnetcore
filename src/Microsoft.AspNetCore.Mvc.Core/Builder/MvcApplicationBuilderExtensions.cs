@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Internal;
@@ -125,7 +126,7 @@ namespace Microsoft.AspNetCore.Builder
                 {
                     // Matching middleware has not been registered yet
                     // For back-compat register middleware so an endpoint is matched and then immediately used
-                    app.UseGlobalRouting();
+                    app.UseEndpointRouting();
                 }
 
                 return app.UseEndpoint();
