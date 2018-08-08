@@ -166,17 +166,17 @@ export class ConsoleLogger implements ILogger {
             switch (logLevel) {
                 case LogLevel.Critical:
                 case LogLevel.Error:
-                    console.error(`${LogLevel[logLevel]}: ${message}`);
+                    console.error(`[${new Date().toISOString()}] ${LogLevel[logLevel]}: ${message}`);
                     break;
                 case LogLevel.Warning:
-                    console.warn(`${LogLevel[logLevel]}: ${message}`);
+                    console.warn(`[${new Date().toISOString()}] ${LogLevel[logLevel]}: ${message}`);
                     break;
                 case LogLevel.Information:
-                    console.info(`${LogLevel[logLevel]}: ${message}`);
+                    console.info(`[${new Date().toISOString()}] ${LogLevel[logLevel]}: ${message}`);
                     break;
                 default:
                     // console.debug only goes to attached debuggers in Node, so we use console.log for Trace and Debug
-                    console.log(`${LogLevel[logLevel]}: ${message}`);
+                    console.log(`[${new Date().toISOString()}] ${LogLevel[logLevel]}: ${message}`);
                     break;
             }
         }
