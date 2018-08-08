@@ -2328,6 +2328,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _clientSettings.InitialWindowSize += 1;
             await SendSettingsAsync();
 
+            await ExpectAsync(Http2FrameType.SETTINGS,
+                withLength: 0,
+                withFlags: (byte)Http2SettingsFrameFlags.ACK,
+                withStreamId: 0);
+
             await WaitForConnectionErrorAsync<Http2ConnectionErrorException>(
                 ignoreNonGoAwayFrames: false,
                 expectedLastStreamId: 1,

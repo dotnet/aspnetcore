@@ -36,7 +36,6 @@ namespace Http2SampleApp
                     options.Listen(IPAddress.Any, basePort, listenOptions =>
                     {
                         listenOptions.Protocols = HttpProtocols.Http1;
-                        listenOptions.UseConnectionLogging();
                     });
 
                     // TLS Http/1.1 or HTTP/2 endpoint negotiated via ALPN
@@ -44,7 +43,6 @@ namespace Http2SampleApp
                     {
                         listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
                         listenOptions.UseHttps("testCert.pfx", "testPassword");
-                        // listenOptions.UseConnectionLogging();
                         listenOptions.ConnectionAdapters.Add(new TlsFilterAdapter());
                     });
 
@@ -53,7 +51,6 @@ namespace Http2SampleApp
                     options.Listen(IPAddress.Any, basePort + 5, listenOptions =>
                     {
                         listenOptions.Protocols = HttpProtocols.Http2;
-                        // listenOptions.UseConnectionLogging();
                     });
                 })
                 .UseContentRoot(Directory.GetCurrentDirectory())

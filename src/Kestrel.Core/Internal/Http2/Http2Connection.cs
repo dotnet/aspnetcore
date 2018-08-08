@@ -608,6 +608,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
                 _clientSettings.ParseFrame(_incomingFrame);
 
+                var ackTask = _frameWriter.WriteSettingsAckAsync(); // Ack before we update the windows, they could send data immediately.
+
                 // This difference can be negative.
                 var windowSizeDifference = (int)_clientSettings.InitialWindowSize - previousInitialWindowSize;
 
@@ -625,7 +627,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     }
                 }
 
-                return _frameWriter.WriteSettingsAckAsync();
+                return ackTask;
             }
             catch (Http2SettingsParameterOutOfRangeException ex)
             {
