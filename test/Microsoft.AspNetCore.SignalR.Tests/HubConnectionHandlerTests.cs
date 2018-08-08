@@ -799,7 +799,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                 var result = await client.InvokeAsync(nameof(MethodHub.OnDisconnectedAsync)).OrTimeout();
 
-                Assert.Equal("Unknown hub method 'OnDisconnectedAsync'", result.Error);
+                Assert.Equal("Failed to invoke 'OnDisconnectedAsync' due to an error on the server. HubException: Method does not exist.", result.Error);
 
                 // kill the connection
                 client.Dispose();
@@ -837,7 +837,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                 var result = await client.InvokeAsync(nameof(MethodHub.StaticMethod)).OrTimeout();
 
-                Assert.Equal("Unknown hub method 'StaticMethod'", result.Error);
+                Assert.Equal("Failed to invoke 'StaticMethod' due to an error on the server. HubException: Method does not exist.", result.Error);
 
                 // kill the connection
                 client.Dispose();
@@ -858,16 +858,16 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
 
                 var result = await client.InvokeAsync(nameof(MethodHub.ToString)).OrTimeout();
-                Assert.Equal("Unknown hub method 'ToString'", result.Error);
+                Assert.Equal("Failed to invoke 'ToString' due to an error on the server. HubException: Method does not exist.", result.Error);
 
                 result = await client.InvokeAsync(nameof(MethodHub.GetHashCode)).OrTimeout();
-                Assert.Equal("Unknown hub method 'GetHashCode'", result.Error);
+                Assert.Equal("Failed to invoke 'GetHashCode' due to an error on the server. HubException: Method does not exist.", result.Error);
 
                 result = await client.InvokeAsync(nameof(MethodHub.Equals)).OrTimeout();
-                Assert.Equal("Unknown hub method 'Equals'", result.Error);
+                Assert.Equal("Failed to invoke 'Equals' due to an error on the server. HubException: Method does not exist.", result.Error);
 
                 result = await client.InvokeAsync(nameof(MethodHub.ReferenceEquals)).OrTimeout();
-                Assert.Equal("Unknown hub method 'ReferenceEquals'", result.Error);
+                Assert.Equal("Failed to invoke 'ReferenceEquals' due to an error on the server. HubException: Method does not exist.", result.Error);
 
                 // kill the connection
                 client.Dispose();
@@ -889,7 +889,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                 var result = await client.InvokeAsync(nameof(MethodHub.Dispose)).OrTimeout();
 
-                Assert.Equal("Unknown hub method 'Dispose'", result.Error);
+                Assert.Equal("Failed to invoke 'Dispose' due to an error on the server. HubException: Method does not exist.", result.Error);
 
                 // kill the connection
                 client.Dispose();
