@@ -420,6 +420,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             {
                 CheckDisposed();
                 CheckConnectionActive(nameof(StreamAsChannelCoreAsync));
+                cancellationToken.ThrowIfCancellationRequested();
 
                 var irq = InvocationRequest.Stream(cancellationToken, returnType, _connectionState.GetNextId(), _loggerFactory, this, out channel);
                 await InvokeStreamCore(methodName, irq, args, cancellationToken);
