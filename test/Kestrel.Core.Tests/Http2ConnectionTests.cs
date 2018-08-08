@@ -21,6 +21,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit;
@@ -3423,6 +3424,36 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await StartStreamAsync(3, _browserRequestHeaders, endStream: false);
 
             await WaitForConnectionStopAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+        }
+
+        [Fact]
+        public void IOExceptionDuringFrameProcessingLoggedAsInfo()
+        {
+            var ioException = new IOException();
+            _pair.Application.Output.Complete(ioException);
+
+            Assert.Equal(TaskStatus.RanToCompletion, _connection.ProcessRequestsAsync(new DummyApplication(_noopApplication)).Status);
+
+            var logMessage = _logger.Messages.Single();
+
+            Assert.Equal(LogLevel.Information, logMessage.LogLevel);
+            Assert.Equal("Connection id \"(null)\" request processing ended abnormally.", logMessage.Message);
+            Assert.Same(ioException, logMessage.Exception);
+        }
+
+        [Fact]
+        public void UnexpectedExceptionDuringFrameProcessingLoggedAWarning()
+        {
+            var exception = new Exception();
+            _pair.Application.Output.Complete(exception);
+
+            Assert.Equal(TaskStatus.RanToCompletion, _connection.ProcessRequestsAsync(new DummyApplication(_noopApplication)).Status);
+
+            var logMessage = _logger.Messages.Single();
+
+            Assert.Equal(LogLevel.Warning, logMessage.LogLevel);
+            Assert.Equal(CoreStrings.RequestProcessingEndError, logMessage.Message);
+            Assert.Same(exception, logMessage.Exception);
         }
 
         private async Task InitializeConnectionAsync(RequestDelegate application)
