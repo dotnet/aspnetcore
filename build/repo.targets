@@ -10,6 +10,14 @@
     </NPMPackage>
   </ItemGroup>
 
+  <PropertyGroup Condition="'$(JAVA_HOME)' != ''">
+    <!-- Determine the path we need to search to find javac.exe -->
+    <JavacPath Condition="'$(OS)' == 'Windows_NT'">$(JAVA_HOME)\bin\javac.exe</JavacPath>
+    <JavacPath Condition="'$(OS)' != 'Windows_NT'">$(JAVA_HOME)/bin/javac</JavacPath>
+
+    <HasJdk Condition="Exists('$(JavacPath)')">true</HasJdk>
+  </PropertyGroup>
+
   <PropertyGroup>
     <RestoreDependsOn>$(RestoreDependsOn);RestoreNpm</RestoreDependsOn>
   </PropertyGroup>
@@ -35,7 +43,7 @@
     <Exec Command="npm run test:inner -- --no-color --configuration $(Configuration)" WorkingDirectory="$(RepositoryRoot)clients/ts/FunctionalTests" IgnoreStandardErrorWarningFormat="true" />
   </Target>
 
-  <Target Name="RunJavaTests" Condition="'$(JAVA_HOME)' != '' And Exists('$(JAVA_HOME)/lib/tools.jar')">
+  <Target Name="RunJavaTests" Condition="'$(HasJdk)' == 'true'">
     <Message Text="Running Java client tests" Importance="high" />
     <Exec Command="./gradlew test" WorkingDirectory="$(RepositoryRoot)clients/java/signalr" IgnoreStandardErrorWarningFormat="true" />
   </Target> 
@@ -66,7 +74,7 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="GetJavaArtifactInfo" Condition="'$(JAVA_HOME)' != '' And Exists('$(JAVA_HOME)/lib/tools.jar')">
+  <Target Name="GetJavaArtifactInfo" Condition="'$(HasJdk)' == 'true'">
     <ItemGroup>
       <ArtifactInfo Include="$(BuildDir)\%(Jars.Identity)">
         <ArtifactType>JavaJar</ArtifactType>
@@ -96,7 +104,7 @@
     <Exec Command="npm run build" WorkingDirectory="$(RepositoryRoot)clients/ts/FunctionalTests" IgnoreStandardErrorWarningFormat="true" />
   </Target>
 
-  <Target Name="BuildJavaClient" Condition="'$(JAVA_HOME)' != '' And Exists('$(JAVA_HOME)/lib/tools.jar')" DependsOnTargets="GetJavaArtifactInfo">
+  <Target Name="BuildJavaClient" Condition="'$(HasJdk)' == 'true'" DependsOnTargets="GetJavaArtifactInfo">
     <Message Text="Building Java client" Importance="high" />
     <Exec Command="./gradlew compileJava" WorkingDirectory="$(RepositoryRoot)clients/java/signalr" />
   </Target>
@@ -126,7 +134,7 @@
     <PomFile Include="signalr-client-$(JavaClientVersion).pom" />
   </ItemGroup>
 
-  <Target Name="PackJavaClient" Condition="'$(JAVA_HOME)' != '' And Exists('$(JAVA_HOME)/lib/tools.jar')">
+  <Target Name="PackJavaClient" Condition="'$(HasJdk)' == 'true'">
     <Message Text="Packing Java client" Importance="high" />
     <Exec Command="./gradlew jar sourceJar javadocJar generatePOM" WorkingDirectory="$(RepositoryRoot)clients/java/signalr" />
     <Copy SourceFiles="$(RepositoryRoot)clients/java/signalr\build\libs\%(JavaBuildFiles.Identity)" DestinationFolder="$(BuildDir)" />
