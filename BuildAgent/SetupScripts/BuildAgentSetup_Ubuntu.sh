@@ -17,14 +17,31 @@ ASPNETOSNAME=$3
 
 sudo apt-get update
 
-echo "Updating dhclient.conf..."
-echo 'supersede domain-name "redmond.corp.microsoft.com";' >> /etc/dhcp/dhclient.conf
-echo 'supersede domain-search "redmond.corp.microsoft.com";' >> /etc/dhcp/dhclient.conf
-echo 'supersede search "redmond.corp.microsoft.com";' >> /etc/dhcp/dhclient.conf
+echo "Installing curl and unzip..."
+sudo apt-get install -y curl unzip
 
-echo "Restarting dhclient..."
-sudo dhclient -r
-sudo dhclient
+if [[ `lsb_release -rs` == "14.04" ]] || [[ `lsb_release -rs` == "16.04" ]]
+then
+    echo "Updating dhclient.conf..."
+    echo 'supersede domain-name "redmond.corp.microsoft.com";' | sudo tee --append /etc/dhcp/dhclient.conf
+    echo 'supersede domain-search "redmond.corp.microsoft.com";' | sudo tee --append /etc/dhcp/dhclient.conf
+    echo 'supersede search "redmond.corp.microsoft.com";' | sudo tee --append /etc/dhcp/dhclient.conf
+
+    echo "Restarting dhclient..."
+    sudo dhclient -r
+    sudo dhclient
+elif [[ `lsb_release -rs` == "18.04" ]]
+then
+    echo "Updating /etc/netplan/50-cloud-init.yaml..."
+    echo '            nameservers:' | sudo tee --append /etc/netplan/50-cloud-init.yaml
+    echo '                search: [redmond.corp.microsoft.com]' | sudo tee --append /etc/netplan/50-cloud-init.yaml
+
+    echo "Applying netplan changes..."
+    sudo netplan apply
+else
+    echo "Unknown version: `lsb_release -rs`"
+    exit 1
+fi
 
 echo "Installing Git..."
 sudo apt-get install -y git
@@ -32,11 +49,38 @@ sudo apt-get install -y git
 # Sometimes git pull stalls, so this could fix it
 git config --global http.postBuffer 2M
 
+# https://docs.microsoft.com/en-us/dotnet/core/linux-prerequisites
 echo "Installing .NET Core Prereqs..."
-sudo apt-get install -y libunwind8 liblttng-ust0 libcurl3 libssl1.0.0 libuuid1 libkrb5-3 zlib1g libicu55
+
+sudo apt-get install -y libunwind8 liblttng-ust0 libcurl3 libssl1.0.0 libuuid1 libkrb5-3 zlib1g
+
+if [[ `lsb_release -rs` == "14.04" ]]
+then
+    sudo apt-get install -y libicu52
+elif [[ `lsb_release -rs` == "16.04" ]]
+then
+    sudo apt-get install -y libicu55
+elif [[ `lsb_release -rs` == "18.04" ]]
+then
+    sudo apt-get install -y libicu60
+else
+    echo "Unknown version: `lsb_release -rs`"
+    exit 1
+fi
 
 echo "Installing Java..."
-sudo apt-get install -y default-jre-headless unzip
+if [[ `lsb_release -rs` == "14.04" ]]
+then
+    sudo apt-get install -y openjdk-7-jre-headless
+elif [[ `lsb_release -rs` == "16.04" ]] || [[ `lsb_release -rs` == "18.04" ]]
+then
+    # On Ubuntu 18.04, default-jre-headless maps to openjdk-10, which is incompatible with TeamCity 2017.
+    # Safest to install openjdk-8 on both Ubuntu 16.04 and 18.04
+    sudo apt-get install -y openjdk-8-jre-headless
+else
+    echo "Unknown version: `lsb_release -rs`"
+    exit 1
+fi
 
 echo "Installing Node.js..."
 curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
@@ -49,10 +93,13 @@ echo "Installing Nginx..."
 sudo apt-get install -y nginx
 sudo update-rc.d nginx defaults
 
+echo "Installing components required for Autobahn test suite..."
+source Components/ensure-autobahn.sh
+
 echo "Installing Docker..."
 export CHANNEL=stable
 curl -fsSL https://get.docker.com | sudo sh
-sudo usermod -aG docker $SUDO_USER
+sudo usermod -aG docker $USER
 
 echo "Downloading build agent from $SERVERURL and updating the properties..."
 mkdir ~/BuildAgent
@@ -80,6 +127,14 @@ sed -i "s|^systemDir=.*|systemDir=/mnt/system|" buildAgent.properties
 echo >> buildAgent.properties # append a new line
 echo "system.aspnet.os.name=$ASPNETOSNAME" >> buildAgent.properties
 
+# Without this setting, git commands will fail with the following error:
+# 
+# There was a problem while connecting to github.com:22
+# fatal: Could not read from remote repository.
+# Please make sure you have the correct access rights and the repository exists.
+echo >> buildAgent.properties # append a new line
+echo "teamcity.git.use.native.ssh=true" >> buildAgent.properties
+
 echo >> ~/.profile
 echo '# Add /usr/sbin to path if not already present.  Required for TeamCity to execute /usr/sbin/nginx.' >> ~/.profile
 echo '[[ ":$PATH:" != *":/usr/sbin:"* ]] && PATH="/usr/sbin:${PATH}"' >> ~/.profile
@@ -100,14 +155,14 @@ sudo cat <<EOF >> buildAgent
 #Provide the correct user name:
 USER="aspnetagent"
 
-case "$1" in
+case "\$1" in
 start)
  # Grant all users write access to /mnt, since TeamCity uses /mnt for temp storage
  chmod a+w /mnt
- su - $USER -c "cd BuildAgent/bin ; ./agent.sh start"
+ su - \$USER -c "cd BuildAgent/bin ; ./agent.sh start"
 ;;
 stop)
- su - $USER -c "cd BuildAgent/bin ; ./agent.sh stop"
+ su - \$USER -c "cd BuildAgent/bin ; ./agent.sh stop"
 ;;
 *)
   echo "usage start/stop"

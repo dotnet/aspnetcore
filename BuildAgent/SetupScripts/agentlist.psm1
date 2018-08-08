@@ -34,9 +34,24 @@ function Get-Agents {
             OSVersion = 'Ubuntu14'
         },
         @{
+            Name      = 'asp-ubuntu1604-01'
+            OS        = 'Linux'
+            OSVersion = 'Ubuntu16'
+        },
+        @{
             Name      = 'aspnetci-a-111'
             OS        = 'Linux'
             OSVersion = 'Ubuntu16'
+        },
+        @{
+            Name      = 'asp-ubuntu1804-01'
+            OS        = 'Linux'
+            OSVersion = 'Ubuntu18'
+        },
+        @{
+            Name      = 'asp-ubuntu1804-02'
+            OS        = 'Linux'
+            OSVersion = 'Ubuntu18'
         },
         # Windows
         @{
