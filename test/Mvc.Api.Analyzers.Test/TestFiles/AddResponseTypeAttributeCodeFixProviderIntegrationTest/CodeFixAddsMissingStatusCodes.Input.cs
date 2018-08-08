@@ -1,10 +1,12 @@
-﻿namespace Microsoft.AspNetCore.Mvc.Api.Analyzers._INPUT_
+﻿using Microsoft.AspNetCore.Http;
+
+namespace Microsoft.AspNetCore.Mvc.Api.Analyzers._INPUT_
 {
     [ApiController]
     [Route("[controller]/[action]")]
     public class CodeFixAddsMissingStatusCodes : ControllerBase
     {
-        [ProducesResponseType(404)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public IActionResult GetItem(int id)
         {
             if (id == 0)

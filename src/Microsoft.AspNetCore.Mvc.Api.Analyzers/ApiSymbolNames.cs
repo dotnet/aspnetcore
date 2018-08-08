@@ -32,5 +32,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         public const string ProducesDefaultResponseTypeAttribute = "Microsoft.AspNetCore.Mvc.ProducesDefaultResponseTypeAttribute";
 
         public const string ProducesResponseTypeAttribute = "Microsoft.AspNetCore.Mvc.ProducesResponseTypeAttribute";
+
+        public const string HttpStatusCodes = "Microsoft.AspNetCore.Http.StatusCodes";
     }
 }

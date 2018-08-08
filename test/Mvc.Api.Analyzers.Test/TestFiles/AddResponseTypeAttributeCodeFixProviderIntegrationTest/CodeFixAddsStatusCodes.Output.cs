@@ -1,11 +1,13 @@
-﻿namespace Microsoft.AspNetCore.Mvc.Api.Analyzers._OUTPUT_
+﻿using Microsoft.AspNetCore.Http;
+
+namespace Microsoft.AspNetCore.Mvc.Api.Analyzers._OUTPUT_
 {
     [ApiController]
     [Route("[controller]/[action]")]
     public class CodeFixAddsStatusCodesController : ControllerBase
     {
-        [ProducesResponseType(200)]
-        [ProducesResponseType(404)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesDefaultResponseType]
         public IActionResult GetItem(int id)
         {
