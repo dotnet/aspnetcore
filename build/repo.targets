@@ -126,15 +126,9 @@
   </Target>
 
   <ItemGroup>
-    <JavaBuildFiles Include="signalr-client-$(JavaClientVersion).jar;signalr-client-$(JavaClientVersion)-javadoc.jar;signalr-client-$(JavaClientVersion)-sources.jar;signalr-client-$(JavaClientVersion).pom"/>
-  </ItemGroup>
-  
-  <ItemGroup>
-    <Jars Include="signalr-client-$(JavaClientVersion).jar;signalr-client-$(JavaClientVersion)-javadoc.jar;signalr-client-$(JavaClientVersion)-sources.jar;" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PomFile Include="signalr-client-$(JavaClientVersion).pom" />
+    <Jars Include="signalr-$(JavaClientVersion).jar;signalr-$(JavaClientVersion)-javadoc.jar;signalr-$(JavaClientVersion)-sources.jar;" />
+    <PomFile Include="signalr-$(JavaClientVersion).pom" />
+    <JavaBuildFiles Include="@(Jars);@(PomFile)"/>
   </ItemGroup>
 
   <Target Name="PackJavaClient" Condition="'$(HasJdk)' == 'true'">
