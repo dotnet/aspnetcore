@@ -7,7 +7,13 @@ param()
 Set-StrictMode -Version 2
 $ErrorActionPreference = 'Stop'
 
-npm install
+Push-Location $PSScriptRoot
+try {    
+    npm install
+}
+finally {
+    Pop-Location
+}
 
 $projectContentDir = "$PSScriptRoot/../src/Microsoft.DotNet.Web.ProjectTemplates/content"
 

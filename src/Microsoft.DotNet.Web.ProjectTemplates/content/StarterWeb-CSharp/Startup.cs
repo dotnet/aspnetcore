@@ -61,13 +61,13 @@ namespace Company.WebApplication1
 
 #if (IndividualLocalAuth)
             services.AddDbContext<ApplicationDbContext>(options =>
-    #if (UseLocalDB)
+#if (UseLocalDB)
                 options.UseSqlServer(
                     Configuration.GetConnectionString("DefaultConnection")));
-    #else
+#else
                 options.UseSqlite(
                     Configuration.GetConnectionString("DefaultConnection")));
-    #endif
+#endif
             services.AddDefaultIdentity<IdentityUser>()
                 .AddEntityFrameworkStores<ApplicationDbContext>();
 #elif (OrganizationalAuth)
@@ -115,7 +115,7 @@ namespace Company.WebApplication1
                 .AddAzureADB2C(options => Configuration.Bind("AzureAdB2C", options));
 #endif
 
-            #if (OrganizationalAuth)
+#if (OrganizationalAuth)
             services.AddMvc(options =>
             {
                 var policy = new AuthorizationPolicyBuilder()
@@ -123,9 +123,9 @@ namespace Company.WebApplication1
                     .Build();
                 options.Filters.Add(new AuthorizeFilter(policy));
             })
-            .SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+            .SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 #else
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 #endif
         }
 
