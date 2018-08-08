@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.IO.Pipelines;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
@@ -96,9 +97,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
             try
             {
-                await connection.DisposeAsync(closeGracefully);
+                await connection.DisposeAsync(closeGracefully).OrTimeout();
             }
-            catch
+            catch (Exception ex) when (!(ex is TimeoutException))
             {
                 // Ignore the exception that bubbles out of the failing task
             }
@@ -166,6 +167,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 try
                 {
                     Assert.True(result.IsCompleted);
+
+                    // We should be able to write
+                    await connection.Transport.Output.WriteAsync(new byte[] { 1 });
                 }
                 finally
                 {
@@ -176,6 +180,10 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             connection.TransportTask = Task.Run(async () =>
             {
                 var result = await connection.Application.Input.ReadAsync();
+                Assert.Equal(new byte[] { 1 }, result.Buffer.ToArray());
+                connection.Application.Input.AdvanceTo(result.Buffer.End);
+
+                result = await connection.Application.Input.ReadAsync();
                 try
                 {
                     Assert.True(result.IsCompleted);
