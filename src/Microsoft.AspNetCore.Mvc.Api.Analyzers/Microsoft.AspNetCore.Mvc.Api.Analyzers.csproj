@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <Compile Include="..\Microsoft.AspNetCore.Mvc.Analyzers\CodeAnalysisExtensions.cs" />
+    <Compile Include="..\Microsoft.AspNetCore.Mvc.Analyzers\MvcFacts.cs" />
   </ItemGroup>
 
   <ItemGroup>

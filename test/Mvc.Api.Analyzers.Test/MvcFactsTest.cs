@@ -5,6 +5,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Analyzer.Testing;
+using Microsoft.AspNetCore.Mvc.Analyzers;
 using Microsoft.CodeAnalysis;
 using Xunit;
 
