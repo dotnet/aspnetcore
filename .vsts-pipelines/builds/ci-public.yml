@@ -10,24 +10,6 @@ resources:
     endpoint: DotNet-Bot GitHub Connection
     name: aspnet/BuildTools
     ref: refs/heads/release/2.2
-    
-# Workaround https://dotnet.visualstudio.com/internal/_workitems/edit/28.
-# When this is fixed, we can simplify the build to just this
-#
-# phases:
-# - template: .vsts-pipelines/templates/project-ci.yml@buildtools
-#
 
 phases:
-- template: .vsts-pipelines/templates/phases/default-build.yml@buildtools
-  parameters:
-    agentOs: macOS
-- template: .vsts-pipelines/templates/phases/default-build.yml@buildtools
-  parameters:
-    agentOs: Windows
-- template: .vsts-pipelines/templates/phases/default-build.yml@buildtools
-  parameters:
-    agentOs: Linux
-    # Workaround https://dotnet.visualstudio.com/internal/_workitems/edit/28
-    # VSTS hangs indefinitely when running Razor tests.
-    buildArgs: "-p:SkipTests=true"
+- template: .vsts-pipelines/templates/project-ci.yml@buildtools
