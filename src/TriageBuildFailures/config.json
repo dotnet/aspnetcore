@@ -1,62 +1,4 @@
 {
-  "BuildIdAllowList": [
-    "Lite_Infrastructure_AspNetCoreModuleSetup",
-    "Coherence_SiteExtension",
-    "Lite_UniverseTest",
-    "Lite_KestrelStressTest",
-    "Lite_Entropy",
-    // Main Build
-    "Coherence_UpdateRepos",
-    "UniverseCoherence",
-    "Coherence_SharedFxLinuxMusl",
-    "Coherence_RuntimeStoreInstallers",
-    "Coherence_CoherencePackageCacheWin",
-    "Lite_Infrastructure_WindowsHostingBundle",
-    "Lite_Infrastructure_SetupSharedFramework",
-    "Coherence_UpdateUniverse",
-    "Lite_Public_DnxTools",
-    "CoherenceSigned",
-    "Coherence_BuildAndSignAncmInstallers",
-    "AspNetCore_Publish",
-    // Project builds
-    "Lite_DockerLogging",
-    "Lite_EntityFrameworkTest",
-    "Lite_EntityFramework",
-    "Lite_KestrelHttpServer",
-    "Lite_IISIntegration",
-    "Lite_MusicStore",
-    "Lite_MvcTest",
-    "Lite_SignalR",
-    "Lite_Templating",
-    // Universe tests
-    "Lite_MusicStoreTest",
-    "XPlat_Mac_MacUniverseCoreCLR",
-    "XPlat_HighSierraOsxUniverse",
-    "XPlat_Linux_UbuntuUniverseCoreCLR",
-    "XPlat_Windows_Win7_Universe",
-    "XPlat_Windows_Win8_Universe",
-    "XPlat_Windows_Win10Universe",
-    "XPlat_Windows_Win2008r2_Universe",
-    // Release 21 Public
-    "Releases_21Public_UbuntuUniverse",
-    "Releases_21Public_OsxUniverse",
-    "Releases_21Public_HighSierraOsxUniverse",
-    "Releases_21Public_Signed",
-    "Releases_21Public_Publish",
-    "Releases_21Public_Win2012",
-    // Release 22 Public
-    "Releases_22xPublic_UpdateRepos",
-    "Releases_22xPublic_BuildAndSignAncmInstallers",
-    "Releases_22xPublic_OsxUniverse",
-    "Releases_22xPublic_HighSierraOsxUniverse",
-    "Releases_22xPublic_UbuntuUniverse",
-    "Releases_22xPublic_Win2012",
-    "Releases_22xPublic_UpdateUniverse",
-    "Releases_22xPublic_Signed",
-    "Releases_22xPublic_SetupSharedFramework",
-    "Releases_22xPublic_SiteExtension",
-    "Releases_22xPublic_Publish"
-  ],
   "Email": {
     "QuietEmail": "rybrande@microsoft.com",
     "EngineeringAlias": "projectk-runtime-eng@microsoft.com",
@@ -70,9 +12,179 @@
   "GitHub": {
     "FlakyProjectColumn": 2260926,
     "BuildBuddyUsername": "ryanbrandenburg",
-    "BotUsername": "ryanbrandenburg"
+    "BotUsername": "ryanbrandenburg",
+    "Repos": [
+      {
+        "Name": "Antiforgery",
+        "IssuesOnHomeRepo": true
+      },
+      {
+        "Name": "Blazor",
+        "Manager": "mkArtakMSFT"
+      },
+      {
+        "Name": "Common",
+        "IssuesOnHomeRepo": true
+      },
+      {
+        "Name": "CORS",
+        "Manager": "mkArtakMSFT",
+        "IssuesOnHomeRepo": true
+      },
+      {
+        "Name": "DataProtection",
+        "IssuesOnHomeRepo": true
+      },
+      {
+        "Name": "DependencyInjection",
+        "IssuesOnHomeRepo": true
+      },
+      {
+        "Name": "Diagnostics",
+        "IssuesOnHomeRepo": true
+      },
+      {
+        "Name": "EntityFrameworkCore",
+        "Manager": "ajcvickers"
+      },
+      {
+        "Name": "EventNotification",
+        "IssuesOnHomeRepo": true
+      },
+      {
+        "Name": "FileSystem",
+        "IssuesOnHomeRepo": true
+      },
+      {
+        "Name": "HttpAbstractions",
+        "IssuesOnHomeRepo": true
+      },
+      {
+        "Name": "JsonPatch",
+        "IssuesOnHomeRepo": true
+      },
+      {
+        "Name": "KestrelHttpServer",
+        "Manager": "muratg"
+      },
+      {
+        "Name": "IISIntegration",
+        "Manager": "muratg"
+      },
+      {
+        "Name": "Mvc",
+        "Manager": "mkArtakMSFT"
+      },
+      {
+        "Name": "Localization",
+        "Manager": "mkArtakMSFT",
+        "IssuesOnHomeRepo": true
+      },
+      {
+        "Name": "Options",
+        "IssuesOnHomeRepo": true
+      },
+      {
+        "Name": "Proxy",
+        "IssuesOnHomeRepo": true
+      },
+      {
+        "Name": "Razor",
+        "Manager": "mkArtakMSFT"
+      },
+      {
+        "Name": "ResponseCaching",
+        "IssuesOnHomeRepo": true
+      },
+      {
+        "Name": "Routing",
+        "IssuesOnHomeRepo": true
+      },
+      {
+        "Name": "Session",
+        "IssuesOnHomeRepo": true
+      },
+      {
+        "Name": "SignalR",
+        "Manager": "muratg"
+      },
+      {
+        "Name": "StaticFiles",
+        "IssuesOnHomeRepo": true
+      },
+      {
+        "Name": "Templating",
+        "Manager": "mkArtakMSFT"
+      },
+      {
+        "Name": "Testing",
+        "IssuesOnHomeRepo": true
+      },
+      {
+        "Name": "WebSockets",
+        "IssuesOnHomeRepo": true
+      }
+    ]
   },
   "TeamCity": {
-    "Server": "aspnetci"
+    "Server": "aspnetci",
+    "BuildIdAllowList": [
+      "Lite_Infrastructure_AspNetCoreModuleSetup",
+      "Coherence_SiteExtension",
+      "Lite_UniverseTest",
+      "Lite_KestrelStressTest",
+      "Lite_Entropy",
+      // Main Build
+      "Coherence_UpdateRepos",
+      "UniverseCoherence",
+      "Coherence_SharedFxLinuxMusl",
+      "Coherence_RuntimeStoreInstallers",
+      "Coherence_CoherencePackageCacheWin",
+      "Lite_Infrastructure_WindowsHostingBundle",
+      "Lite_Infrastructure_SetupSharedFramework",
+      "Coherence_UpdateUniverse",
+      "Lite_Public_DnxTools",
+      "CoherenceSigned",
+      "Coherence_BuildAndSignAncmInstallers",
+      "AspNetCore_Publish",
+      // Project builds
+      "Lite_DockerLogging",
+      "Lite_EntityFrameworkTest",
+      "Lite_EntityFramework",
+      "Lite_KestrelHttpServer",
+      "Lite_IISIntegration",
+      "Lite_MusicStore",
+      "Lite_MvcTest",
+      "Lite_SignalR",
+      "Lite_Templating",
+      // Universe tests
+      "Lite_MusicStoreTest",
+      "XPlat_Mac_MacUniverseCoreCLR",
+      "XPlat_HighSierraOsxUniverse",
+      "XPlat_Linux_UbuntuUniverseCoreCLR",
+      "XPlat_Windows_Win7_Universe",
+      "XPlat_Windows_Win8_Universe",
+      "XPlat_Windows_Win10Universe",
+      "XPlat_Windows_Win2008r2_Universe",
+      // Release 21 Public
+      "Releases_21Public_UbuntuUniverse",
+      "Releases_21Public_OsxUniverse",
+      "Releases_21Public_HighSierraOsxUniverse",
+      "Releases_21Public_Signed",
+      "Releases_21Public_Publish",
+      "Releases_21Public_Win2012",
+      // Release 22 Public
+      "Releases_22xPublic_UpdateRepos",
+      "Releases_22xPublic_BuildAndSignAncmInstallers",
+      "Releases_22xPublic_OsxUniverse",
+      "Releases_22xPublic_HighSierraOsxUniverse",
+      "Releases_22xPublic_UbuntuUniverse",
+      "Releases_22xPublic_Win2012",
+      "Releases_22xPublic_UpdateUniverse",
+      "Releases_22xPublic_Signed",
+      "Releases_22xPublic_SetupSharedFramework",
+      "Releases_22xPublic_SiteExtension",
+      "Releases_22xPublic_Publish"
+    ]
   }
 }

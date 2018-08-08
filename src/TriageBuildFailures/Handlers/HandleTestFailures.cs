@@ -43,8 +43,6 @@ namespace TriageBuildFailures.Handlers
             return result;
         }
 
-        private IEnumerable<string> Managers = new string[]{ "@Eilon", "@muratg", "@mkArtakMSFT" };
-
         private const string WorkFlowComment = @"Please use this workflow to address this flaky test issue, including checking applicable checkboxes and filling in the applicable ""TODO"" entries:
 
 * Is this actually a flaky test?
@@ -69,7 +67,11 @@ namespace TriageBuildFailures.Handlers
       * [ ] Run the test 100 times locally as a sanity check.
       * [ ] Close this bug
     * No?
-      * [ ] Delete the test because flaky tests are not useful (TODO: Link to PR/commit)";
+      * Is there any logging or extra information that we could add to make this more diagnosable when it happens again?
+        * Yes?
+            * [ ] Add the logging (TODO: Link to PR/commit)
+        * No?
+            * [ ] Delete the test because flaky tests are not useful (TODO: Link to PR/commit)";
 
         public override async Task HandleFailure(TeamCityBuild build)
         {
@@ -98,7 +100,7 @@ namespace TriageBuildFailures.Handlers
 ```
 Other tests within that build may have failed with a similar message, but they are not listed here. Check the link above for more info.
 
-CC { String.Join(',', Managers) }";
+CC @{ GetManager(repo) }";
                     //TODO: We'd like to link the test history here but TC api doens't make it easy
                     var tags = new List<string> { "test-failure" };
 
@@ -111,6 +113,21 @@ CC { String.Join(',', Managers) }";
                 {
                     await CommentOnIssue(build, applicableIssues.First(), shortTestName);
                 }
+            }
+        }
+
+        private string GetManager(string repoName)
+        {
+            var repo = Config.GitHub.Repos.FirstOrDefault(r => r.Name.Equals(repoName, StringComparison.OrdinalIgnoreCase));
+
+            if(repo == null || string.IsNullOrEmpty(repo.Manager))
+            {
+                // Default to Eilon
+                return "Eilon (because the bot doesn't know who else to pick)";
+            }
+            else
+            {
+                return repo.Manager;
             }
         }
 

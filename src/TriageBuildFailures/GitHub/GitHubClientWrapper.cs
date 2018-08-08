@@ -18,27 +18,6 @@ namespace TriageBuildFailures.GitHub
         private static Random _random = new Random();
         private const string _tempFolder = "temp";
 
-        private static readonly IEnumerable<string> _issuesOnHomeRepo = new List<string> {
-            "Antiforgery",
-            "Common",
-            "CORS",
-            "DataProtection",
-            "DependencyInjection",
-            "Diagnostics",
-            "EventNotification",
-            "FileSystem",
-            "HttpAbstractions",
-            "JsonPatch",
-            "Localization",
-            "Options",
-            "Proxy",
-            "ResponseCaching",
-            "Routing",
-            "Session",
-            "StaticFiles",
-            "Testing",
-            "WebSockets"
-        };
         private static readonly ProductHeaderValue ProductHeader = new ProductHeaderValue("rybrandeRAAS");
 
         public GitHubClientWrapper(GitHubConfig config, IReporter reporter)
@@ -98,9 +77,11 @@ namespace TriageBuildFailures.GitHub
                 || l.Name.Contains("test-failure", StringComparison.OrdinalIgnoreCase)));
         }
 
-        private static bool IssuesOnHomeRepo(string repo)
+        private bool IssuesOnHomeRepo(string repoName)
         {
-            return _issuesOnHomeRepo.Contains(repo);
+            var repo = Config.Repos.FirstOrDefault(r => r.Name.Equals(repoName, StringComparison.OrdinalIgnoreCase));
+
+            return repo == null ? false : repo.IssuesOnHomeRepo;
         }
 
         public async Task AddIssueToProject(GithubIssue issue, int columnId)
