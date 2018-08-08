@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 import com.google.gson.JsonArray;
+import com.microsoft.aspnet.signalr.*;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -57,10 +58,10 @@ public class JsonHubProtocolTest {
         //We can safely cast here because we know that it's an invocation message.
         InvocationMessage invocationMessage = (InvocationMessage) messages[0];
 
-        assertEquals("test", invocationMessage.target);
-        assertEquals(null, invocationMessage.invocationId);
+        assertEquals("test", invocationMessage.getTarget());
+        assertEquals(null, invocationMessage.getInvocationId());
 
-        JsonArray messageResult = (JsonArray) invocationMessage.arguments[0];
+        JsonArray messageResult = (JsonArray) invocationMessage.getArguments()[0];
         assertEquals(42, messageResult.getAsInt());
     }
 
@@ -95,9 +96,9 @@ public class JsonHubProtocolTest {
         //Now that we know we have an invocation message we can cast the hubMessage.
         InvocationMessage invocationMessage = (InvocationMessage) messages[0];
 
-        assertEquals("one", invocationMessage.target);
-        assertEquals(null, invocationMessage.invocationId);
-        JsonArray messageResult = (JsonArray) invocationMessage.arguments[0];
+        assertEquals("one", invocationMessage.getTarget());
+        assertEquals(null, invocationMessage.getInvocationId());
+        JsonArray messageResult = (JsonArray) invocationMessage.getArguments()[0];
         assertEquals(42, messageResult.getAsInt());
 
         // Check the second message
@@ -106,9 +107,9 @@ public class JsonHubProtocolTest {
         //Now that we know we have an invocation message we can cast the hubMessage.
         InvocationMessage invocationMessage2 = (InvocationMessage) messages[1];
 
-        assertEquals("two", invocationMessage2.target);
-        assertEquals(null, invocationMessage2.invocationId);
-        JsonArray secondMessageResult = (JsonArray) invocationMessage2.arguments[0];
+        assertEquals("two", invocationMessage2.getTarget());
+        assertEquals(null, invocationMessage2.getInvocationId());
+        JsonArray secondMessageResult = (JsonArray) invocationMessage2.getArguments()[0];
         assertEquals(43, secondMessageResult.getAsInt());
     }
 
@@ -121,9 +122,9 @@ public class JsonHubProtocolTest {
         assertEquals(HubMessageType.INVOCATION, messages[0].getMessageType());
 
         InvocationMessage message = (InvocationMessage)messages[0];
-        assertEquals("test", message.target);
-        assertEquals(null, message.invocationId);
-        JsonArray messageResult = ((JsonArray) message.arguments[0]);
+        assertEquals("test", message.getTarget());
+        assertEquals(null, message.getInvocationId());
+        JsonArray messageResult = ((JsonArray) message.getArguments()[0]);
         assertEquals(42, messageResult.get(0).getAsInt());
         assertEquals(24, messageResult.get(1).getAsInt());
     }
