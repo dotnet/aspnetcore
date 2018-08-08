@@ -35,6 +35,12 @@ export class HubConnectionBuilder {
      * @returns The {@link @aspnet/signalr.HubConnectionBuilder} instance, for chaining.
      */
     public configureLogging(logger: ILogger): HubConnectionBuilder;
+    /** Configures custom logging for the {@link @aspnet/signalr.HubConnection}.
+     *
+     * @param {LogLevel | ILogger} logging An object implementing the {@link @aspnet/signalr.ILogger} interface or {@link @aspnet/signalr.LogLevel}.
+     * @returns The {@link @aspnet/signalr.HubConnectionBuilder} instance, for chaining.
+     */
+    public configureLogging(logging: LogLevel | ILogger): HubConnectionBuilder;
     public configureLogging(logging: LogLevel | ILogger): HubConnectionBuilder {
         Arg.isRequired(logging, "logging");
 
