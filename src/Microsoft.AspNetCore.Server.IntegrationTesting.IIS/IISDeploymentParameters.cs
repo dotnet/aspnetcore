@@ -3,9 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Xml.Linq;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
 {
@@ -65,63 +63,47 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
 
         private Action<XElement, string> AddWebConfigEnvironmentVariables()
         {
-            return (xElement, _) =>
+            return (element, _) =>
             {
                 if (WebConfigBasedEnvironmentVariables.Count == 0)
                 {
                     return;
                 }
 
-                var element = xElement.Descendants("environmentVariables").SingleOrDefault();
-                if (element == null)
-                {
-                    element = new XElement("environmentVariables");
-                    xElement.Descendants("aspNetCore").SingleOrDefault().Add(element);
-                }
+                var environmentVariables = element
+                    .RequiredElement("system.webServer")
+                    .RequiredElement("aspNetCore")
+                    .GetOrAdd("environmentVariables");
+
 
                 foreach (var envVar in WebConfigBasedEnvironmentVariables)
                 {
-                    CreateOrSetElement(element, envVar.Key, envVar.Value, "environmentVariable");
+                    environmentVariables.GetOrAdd("environmentVariable", "name", envVar.Key)
+                        .SetAttributeValue("value", envVar.Value);
                 }
             };
         }
 
         private Action<XElement, string> AddHandlerSettings()
         {
-            return (xElement, _) =>
+            return (element, _) =>
             {
                 if (HandlerSettings.Count == 0)
                 {
                     return;
                 }
 
-                var element = xElement.Descendants("handlerSettings").SingleOrDefault();
-                if (element == null)
-                {
-                    element = new XElement("handlerSettings");
-                    xElement.Descendants("aspNetCore").SingleOrDefault().Add(element);
-                }
+                var handlerSettings = element
+                    .RequiredElement("system.webServer")
+                    .RequiredElement("aspNetCore")
+                    .GetOrAdd("handlerSettings");
 
                 foreach (var handlerSetting in HandlerSettings)
                 {
-                    CreateOrSetElement(element, handlerSetting.Key, handlerSetting.Value, "handlerSetting");
+                    handlerSettings.GetOrAdd("handlerSetting", "name", handlerSetting.Key)
+                        .SetAttributeValue("value", handlerSetting.Value);
                 }
             };
-        }
-
-        private static void CreateOrSetElement(XElement rootElement, string name, string value, string elementName)
-        {
-            if (rootElement.Descendants()
-                .Attributes()
-                .Where(attribute => attribute.Value == name)
-                .Any())
-            {
-                return;
-            }
-            var element = new XElement(elementName);
-            element.SetAttributeValue("name", name);
-            element.SetAttributeValue("value", value);
-            rootElement.Add(element);
         }
     }
 }

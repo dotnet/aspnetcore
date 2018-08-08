@@ -273,8 +273,8 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
 
             // Pass on the applicationhost.config to iis express. With this don't need to pass in the /path /port switches as they are in the applicationHost.config
             // We take a copy of the original specified applicationHost.Config to prevent modifying the one in the repo.
-            serverConfig = ModifyANCMPathInConfig(replaceFlag: "[ANCMPath]", dllName: "aspnetcore.dll", serverConfig);
-            serverConfig = ModifyANCMPathInConfig(replaceFlag: "[ANCMV2Path]", dllName: "aspnetcorev2.dll", serverConfig);
+            serverConfig = ModifyANCMPathInConfig(replaceFlag: "[ANCMPath]", AncmVersion.AspNetCoreModule, serverConfig);
+            serverConfig = ModifyANCMPathInConfig(replaceFlag: "[ANCMV2Path]", AncmVersion.AspNetCoreModuleV2, serverConfig);
 
             serverConfig = ReplacePlaceholder(serverConfig, "[PORT]", port.ToString(CultureInfo.InvariantCulture));
             serverConfig = ReplacePlaceholder(serverConfig, "[ApplicationPhysicalPath]", contentRoot);
@@ -299,7 +299,10 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                 serverConfig = ReplacePlaceholder(serverConfig, "[HostingModel]", DeploymentParameters.HostingModel.ToString());
                 serverConfig = ReplacePlaceholder(serverConfig, "[AspNetCoreModule]", DeploymentParameters.AncmVersion.ToString());
             }
-            serverConfig = RunServerConfigActions(serverConfig, contentRoot);
+
+            var config = XDocument.Parse(serverConfig);
+            RunServerConfigActions(config.Root, contentRoot);
+            serverConfig = config.ToString();
 
             DeploymentParameters.ServerConfigLocation = Path.GetTempFileName();
             Logger.LogDebug("Saving Config to {configPath}", DeploymentParameters.ServerConfigLocation);
@@ -317,21 +320,11 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
             return content;
         }
 
-        private string ModifyANCMPathInConfig(string replaceFlag, string dllName, string serverConfig)
+        private string ModifyANCMPathInConfig(string replaceFlag, AncmVersion version, string serverConfig)
         {
-            var dllRoot = AppContext.BaseDirectory;
             if (serverConfig.Contains(replaceFlag))
             {
-                var arch = DeploymentParameters.RuntimeArchitecture == RuntimeArchitecture.x64 ? $@"x64\{dllName}" : $@"x86\{dllName}";
-                var ancmFile = Path.Combine(dllRoot, arch);
-                if (!File.Exists(Environment.ExpandEnvironmentVariables(ancmFile)))
-                {
-                    ancmFile = Path.Combine(dllRoot, dllName);
-                    if (!File.Exists(Environment.ExpandEnvironmentVariables(ancmFile)))
-                    {
-                        throw new FileNotFoundException("AspNetCoreModule could not be found.", ancmFile);
-                    }
-                }
+                var ancmFile = GetAncmLocation(version);
 
                 Logger.LogDebug($"Writing '{replaceFlag}' '{ancmFile}' to config");
                 return serverConfig.Replace(replaceFlag, ancmFile);
