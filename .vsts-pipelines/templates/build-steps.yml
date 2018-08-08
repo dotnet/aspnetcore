@@ -8,7 +8,7 @@ phases:
     afterBuild:
       - task: PublishBuildArtifacts@1
         displayName: Upload binlog
-        condition: always()
+        condition: eq(variables['system.pullrequest.isfork'], false)
         inputs:
           artifactName: logs
           artifactType: Container

@@ -18,11 +18,11 @@ public:
 
     ~TempDirectory();
 
-    std::experimental::filesystem::path path() const
+    std::filesystem::path path() const
     {
         return m_path;
     }
 
 private:
-    std::experimental::filesystem::path m_path;
+    std::filesystem::path m_path;
 };

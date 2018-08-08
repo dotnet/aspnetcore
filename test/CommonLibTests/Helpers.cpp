@@ -28,7 +28,7 @@ TempDirectory::TempDirectory()
     RPC_CSTR szUuid = NULL;
     if (UuidToStringA(&uuid, &szUuid) == RPC_S_OK)
     {
-        m_path = std::experimental::filesystem::temp_directory_path() / szUuid;
+        m_path = std::filesystem::temp_directory_path() / reinterpret_cast<PCHAR>(szUuid);
         RpcStringFreeA(&szUuid);
         return;
     }
@@ -37,5 +37,5 @@ TempDirectory::TempDirectory()
 
 TempDirectory::~TempDirectory()
 {
-    std::experimental::filesystem::remove_all(m_path);
+    std::filesystem::remove_all(m_path);
 }
