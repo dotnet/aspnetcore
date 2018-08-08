@@ -23,6 +23,8 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
 
         public const string IActionResult = "Microsoft.AspNetCore.Mvc.IActionResult";
 
+        public const string IStatusCodeActionResult = "Microsoft.AspNetCore.Mvc.Infrastructure.IStatusCodeActionResult";
+
         public const string ModelStateDictionary = "Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary";
 
         public const string NonActionAttribute = "Microsoft.AspNetCore.Mvc.NonActionAttribute";
@@ -34,5 +36,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         public const string ProducesResponseTypeAttribute = "Microsoft.AspNetCore.Mvc.ProducesResponseTypeAttribute";
 
         public const string HttpStatusCodes = "Microsoft.AspNetCore.Http.StatusCodes";
+
+        public const string StatusCodeValueAttribute = "Microsoft.AspNetCore.Mvc.Infrastructure.StatusCodeValueAttribute";
     }
 }

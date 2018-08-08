@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Core;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
@@ -200,7 +201,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="statusCode">The status code to set on the response.</param>
         /// <returns>The created <see cref="StatusCodeResult"/> object for the response.</returns>
         [NonAction]
-        public virtual StatusCodeResult StatusCode(int statusCode)
+        public virtual StatusCodeResult StatusCode([StatusCodeValue] int statusCode)
             => new StatusCodeResult(statusCode);
 
         /// <summary>
@@ -210,10 +211,12 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="value">The value to set on the <see cref="ObjectResult"/>.</param>
         /// <returns>The created <see cref="ObjectResult"/> object for the response.</returns>
         [NonAction]
-        public virtual ObjectResult StatusCode(int statusCode, object value)
+        public virtual ObjectResult StatusCode([StatusCodeValue] int statusCode, object value)
         {
-            var result = new ObjectResult(value);
-            result.StatusCode = statusCode;
+            var result = new ObjectResult(value)
+            {
+                StatusCode = statusCode
+            };
 
             return result;
         }

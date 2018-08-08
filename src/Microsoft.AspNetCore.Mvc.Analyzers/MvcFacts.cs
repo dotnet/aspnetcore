@@ -116,6 +116,11 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
                 return false;
             }
 
+            if (!method.ReturnsVoid)
+            {
+                return false;
+            }
+
             if (method.Parameters.Length != disposableDispose.Parameters.Length)
             {
                 return false;
