@@ -66,5 +66,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         void Http2StreamResetAbort(string traceIdentifier, Http2ErrorCode error, ConnectionAbortedException abortReason);
 
         void HPackDecodingError(string connectionId, int streamId, HPackDecodingException ex);
+
+        void Http2FrameReceived(string connectionId, Http2Frame frame);
+
+        void Http2FrameSending(string connectionId, Http2Frame frame);
     }
 }

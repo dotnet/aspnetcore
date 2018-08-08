@@ -52,5 +52,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         public void Http2StreamResetAbort(string traceIdentifier, Http2ErrorCode error, ConnectionAbortedException abortReason) { }
         public void Http2ConnectionClosing(string connectionId) { }
         public void Http2ConnectionClosed(string connectionId, int highestOpenedStreamId) { }
+        public void Http2FrameReceived(string connectionId, Http2Frame frame) { }
+        public void Http2FrameSending(string connectionId, Http2Frame frame) { }
     }
 }

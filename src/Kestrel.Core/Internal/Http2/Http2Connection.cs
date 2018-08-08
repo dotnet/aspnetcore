@@ -4,6 +4,7 @@
 using System;
 using System.Buffers;
 using System.Collections.Concurrent;
+using System.IO;
 using System.IO.Pipelines;
 using System.Security.Authentication;
 using System.Text;
@@ -14,8 +15,8 @@ using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
@@ -84,7 +85,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         public Http2Connection(Http2ConnectionContext context)
         {
             _context = context;
-            _frameWriter = new Http2FrameWriter(context.Transport.Output, context.Application.Input, _outputFlowControl, this);
+            _frameWriter = new Http2FrameWriter(context.Transport.Output, context.Application.Input, _outputFlowControl, this, context.ConnectionId, context.ServiceContext.Log);
             _hpackDecoder = new HPackDecoder((int)_serverSettings.HeaderTableSize);
         }
 
@@ -186,7 +187,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                         {
                             if (Http2FrameReader.ReadFrame(readableBuffer, _incomingFrame, _serverSettings.MaxFrameSize, out consumed, out examined))
                             {
-                                Log.LogTrace($"Connection id {ConnectionId} received {_incomingFrame.Type} frame with flags 0x{_incomingFrame.Flags:x} and length {_incomingFrame.Length} for stream ID {_incomingFrame.StreamId}");
+                                Log.Http2FrameReceived(ConnectionId, _incomingFrame);
                                 await ProcessFrameAsync(application);
                             }
                         }
@@ -218,6 +219,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
                 error = ex;
             }
+            catch (IOException ex)
+            {
+                Log.RequestProcessingError(ConnectionId, ex);
+                error = ex;
+            }
             catch (Http2ConnectionErrorException ex)
             {
                 Log.Http2ConnectionError(ConnectionId, ex);
@@ -232,9 +238,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
             catch (Exception ex)
             {
+                Log.LogWarning(0, ex, CoreStrings.RequestProcessingEndError);
                 error = ex;
                 errorCode = Http2ErrorCode.INTERNAL_ERROR;
-                throw;
             }
             finally
             {
@@ -608,6 +614,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
                 _clientSettings.ParseFrame(_incomingFrame);
 
+                var ackTask = _frameWriter.WriteSettingsAckAsync(); // Ack before we update the windows, they could send data immediately.
+
                 // This difference can be negative.
                 var windowSizeDifference = (int)_clientSettings.InitialWindowSize - previousInitialWindowSize;
 
@@ -625,7 +633,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     }
                 }
 
-                return _frameWriter.WriteSettingsAckAsync();
+                return ackTask;
             }
             catch (Http2SettingsParameterOutOfRangeException ex)
             {

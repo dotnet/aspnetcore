@@ -99,6 +99,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             LoggerMessage.Define<string, int>(LogLevel.Debug, new EventId(36, nameof(Http2ConnectionClosed)),
                 @"Connection id ""{ConnectionId}"" is closed. The last processed stream ID was {HighestOpenedStreamId}.");
 
+        private static readonly Action<ILogger, string, Http2FrameType, int, int, object, Exception> _http2FrameReceived =
+            LoggerMessage.Define<string, Http2FrameType, int, int, object>(LogLevel.Trace, new EventId(37, nameof(Http2FrameReceived)),
+                @"Connection id ""{ConnectionId}"" received {type} frame for stream ID {id} with length {length} and flags {flags}");
+
+        private static readonly Action<ILogger, string, Http2FrameType, int, int, object, Exception> _http2FrameSending =
+            LoggerMessage.Define<string, Http2FrameType, int, int, object>(LogLevel.Trace, new EventId(37, nameof(Http2FrameReceived)),
+                @"Connection id ""{ConnectionId}"" sending {type} frame for stream ID {id} with length {length} and flags {flags}");
+
         protected readonly ILogger _logger;
 
         public KestrelTrace(ILogger logger)
@@ -244,6 +252,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         public virtual void HPackDecodingError(string connectionId, int streamId, HPackDecodingException ex)
         {
             _hpackDecodingError(_logger, connectionId, streamId, ex);
+        }
+
+        public void Http2FrameReceived(string connectionId, Http2Frame frame)
+        {
+            _http2FrameReceived(_logger, connectionId, frame.Type, frame.StreamId, frame.Length, frame.ShowFlags(), null);
+        }
+
+        public void Http2FrameSending(string connectionId, Http2Frame frame)
+        {
+            _http2FrameSending(_logger, connectionId, frame.Type, frame.StreamId, frame.Length, frame.ShowFlags(), null);
         }
 
         public virtual void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)

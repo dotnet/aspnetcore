@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
@@ -27,6 +28,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private readonly PipeWriter _outputWriter;
         private readonly PipeReader _outputReader;
         private readonly OutputFlowControl _connectionOutputFlowControl;
+        private readonly string _connectionId;
+        private readonly IKestrelTrace _log;
         private readonly StreamSafePipeFlusher _flusher;
 
         private bool _completed;
@@ -35,12 +38,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             PipeWriter outputPipeWriter,
             PipeReader outputPipeReader,
             OutputFlowControl connectionOutputFlowControl,
-            ITimeoutControl timeoutControl)
+            ITimeoutControl timeoutControl,
+            string connectionId,
+            IKestrelTrace log)
         {
             _outputWriter = outputPipeWriter;
             _outputReader = outputPipeReader;
 
             _connectionOutputFlowControl = connectionOutputFlowControl;
+            _connectionId = connectionId;
+            _log = log;
             _flusher = new StreamSafePipeFlusher(_outputWriter, timeoutControl);
         }
 
@@ -110,6 +117,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     _outgoingFrame.HeadersFlags = Http2HeadersFrameFlags.END_HEADERS;
                 }
 
+                _log.Http2FrameSending(_connectionId, _outgoingFrame);
                 _outputWriter.Write(_outgoingFrame.Raw);
 
                 while (!done)
@@ -124,6 +132,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                         _outgoingFrame.ContinuationFlags = Http2ContinuationFrameFlags.END_HEADERS;
                     }
 
+                    _log.Http2FrameSending(_connectionId, _outgoingFrame);
                     _outputWriter.Write(_outgoingFrame.Raw);
                 }
             }
@@ -170,6 +179,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     current.Span.Slice(0, payload.Length).CopyTo(payload);
                     current = current.Slice(payload.Length);
 
+                    _log.Http2FrameSending(_connectionId, _outgoingFrame);
                     _outputWriter.Write(_outgoingFrame.Raw);
                     payload = _outgoingFrame.Payload;
                     unwrittenPayloadLength = 0;
@@ -189,6 +199,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
 
             _outgoingFrame.Length = unwrittenPayloadLength;
+
+            _log.Http2FrameSending(_connectionId, _outgoingFrame);
             _outputWriter.Write(_outgoingFrame.Raw);
 
             return _flusher.FlushAsync();
@@ -303,6 +315,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 return Task.CompletedTask;
             }
 
+            _log.Http2FrameSending(_connectionId, _outgoingFrame);
             _outputWriter.Write(_outgoingFrame.Raw);
             return _flusher.FlushAsync();
         }

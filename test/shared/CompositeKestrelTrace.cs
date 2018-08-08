@@ -206,5 +206,17 @@ namespace Microsoft.AspNetCore.Testing
             _trace1.Http2ConnectionClosed(connectionId, highestOpenedStreamId);
             _trace2.Http2ConnectionClosed(connectionId, highestOpenedStreamId);
         }
+
+        public void Http2FrameReceived(string connectionId, Http2Frame frame)
+        {
+            _trace1.Http2FrameReceived(connectionId, frame);
+            _trace2.Http2FrameReceived(connectionId, frame);
+        }
+
+        public void Http2FrameSending(string connectionId, Http2Frame frame)
+        {
+            _trace1.Http2FrameSending(connectionId, frame);
+            _trace2.Http2FrameSending(connectionId, frame);
+        }
     }
 }
