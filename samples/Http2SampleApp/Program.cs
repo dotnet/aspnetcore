@@ -44,7 +44,7 @@ namespace Http2SampleApp
                     {
                         listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
                         listenOptions.UseHttps("testCert.pfx", "testPassword");
-                        listenOptions.UseConnectionLogging();
+                        // listenOptions.UseConnectionLogging();
                         listenOptions.ConnectionAdapters.Add(new TlsFilterAdapter());
                     });
 
@@ -53,7 +53,7 @@ namespace Http2SampleApp
                     options.Listen(IPAddress.Any, basePort + 5, listenOptions =>
                     {
                         listenOptions.Protocols = HttpProtocols.Http2;
-                        listenOptions.UseConnectionLogging();
+                        // listenOptions.UseConnectionLogging();
                     });
                 })
                 .UseContentRoot(Directory.GetCurrentDirectory())
