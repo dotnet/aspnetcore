@@ -30,7 +30,7 @@ namespace TriageBuildFailures.Handlers
             var comments = await GHClient.GetIssueComments(issue);
 
             var commentsFromToday = comments.Where(c =>
-                c.CreatedAt.Date == build.StartDate.Date
+                c.CreatedAt.Date == DateTime.Now.Date
                 && c.User.Login == Config.GitHub.BotUsername
                 && c.Body.Contains("This comment was made automatically"));
             var commentsAboutThisBuild = comments.Where(c => c.Body.Contains(build.WebURL.ToString()));
