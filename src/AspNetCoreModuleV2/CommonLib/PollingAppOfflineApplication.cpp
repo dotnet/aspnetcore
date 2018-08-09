@@ -27,12 +27,20 @@ PollingAppOfflineApplication::CheckAppOffline()
         SRWExclusiveLock lock(m_statusLock);
         if (ulCurrentTime - m_ulLastCheckTime > c_appOfflineRefreshIntervalMS)
         {
-            m_fAppOfflineFound = is_regular_file(m_appOfflineLocation);
-            if(m_fAppOfflineFound)
+            try
             {
-                LOG_IF_FAILED(OnAppOfflineFound());
+                m_fAppOfflineFound = is_regular_file(m_appOfflineLocation);
+                if(m_fAppOfflineFound)
+                {
+                    LOG_IF_FAILED(OnAppOfflineFound());
+                }
+                m_ulLastCheckTime = ulCurrentTime;
             }
-            m_ulLastCheckTime = ulCurrentTime;
+            catch (...)
+            {
+                // is_regular_file might throw in very rare cases
+                OBSERVE_CAUGHT_EXCEPTION();
+            }
         }
     }
 
