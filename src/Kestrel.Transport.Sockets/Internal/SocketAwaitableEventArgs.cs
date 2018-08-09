@@ -11,22 +11,20 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 {
-    public class SocketAwaitable : ICriticalNotifyCompletion
+    public class SocketAwaitableEventArgs : SocketAsyncEventArgs, ICriticalNotifyCompletion
     {
         private static readonly Action _callbackCompleted = () => { };
 
         private readonly PipeScheduler _ioScheduler;
 
         private Action _callback;
-        private int _bytesTransferred;
-        private SocketError _error;
 
-        public SocketAwaitable(PipeScheduler ioScheduler)
+        public SocketAwaitableEventArgs(PipeScheduler ioScheduler)
         {
             _ioScheduler = ioScheduler;
         }
 
-        public SocketAwaitable GetAwaiter() => this;
+        public SocketAwaitableEventArgs GetAwaiter() => this;
         public bool IsCompleted => ReferenceEquals(_callback, _callbackCompleted);
 
         public int GetResult()
@@ -35,12 +33,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
             _callback = null;
 
-            if (_error != SocketError.Success)
+            if (SocketError != SocketError.Success)
             {
-                throw new SocketException((int)_error);
+                ThrowSocketException(SocketError);
             }
 
-            return _bytesTransferred;
+            return BytesTransferred;
+
+            void ThrowSocketException(SocketError e)
+            {
+                throw new SocketException((int)e);
+            }
         }
 
         public void OnCompleted(Action continuation)
@@ -57,10 +60,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             OnCompleted(continuation);
         }
 
-        public void Complete(int bytesTransferred, SocketError socketError)
+        public void Complete()
         {
-            _error = socketError;
-            _bytesTransferred = bytesTransferred;
+            OnCompleted(this);
+        }
+
+        protected override void OnCompleted(SocketAsyncEventArgs _)
+        {
             var continuation = Interlocked.Exchange(ref _callback, _callbackCompleted);
 
             if (continuation != null)
