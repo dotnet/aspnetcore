@@ -328,7 +328,7 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
         public void LogicalElementInsertionWorksHierarchically()
         {
             var appElement = MountTestComponent<LogicalElementInsertionCases>();
-            Assert.Equal("First Second Third", appElement.Text);
+            WaitAssert.Equal("First Second Third", () => appElement.Text);
         }
 
         [Fact]

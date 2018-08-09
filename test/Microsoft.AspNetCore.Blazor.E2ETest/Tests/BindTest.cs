@@ -115,12 +115,12 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
             // Modify target; verify value is updated
             target.Click();
             WaitAssert.True(() => target.Selected);
-            Assert.Equal("True", boundValue.Text);
+            WaitAssert.Equal("True", () => boundValue.Text);
 
             // Modify data; verify checkbox is updated
             invertButton.Click();
             WaitAssert.False(() => target.Selected);
-            Assert.Equal("False", boundValue.Text);
+            WaitAssert.Equal("False", () => boundValue.Text);
         }
 
         [Fact]
@@ -135,12 +135,12 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
             // Modify target; verify value is updated
             target.Click();
             WaitAssert.False(() => target.Selected);
-            Assert.Equal("False", boundValue.Text);
+            WaitAssert.Equal("False", () => boundValue.Text);
 
             // Modify data; verify checkbox is updated
             invertButton.Click();
             WaitAssert.True(() => target.Selected);
-            Assert.Equal("True", boundValue.Text);
+            WaitAssert.Equal("True", () => boundValue.Text);
         }
 
         [Fact]
