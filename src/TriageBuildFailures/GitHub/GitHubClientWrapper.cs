@@ -102,7 +102,7 @@ namespace TriageBuildFailures.GitHub
 
         public async Task CreateComment(GithubIssue issue, string comment)
         {
-            comment += $"\n\nThis comment was made automatically. If there is a problem contact @{Config.BuildBuddyUsername}.";
+            comment += $"\n\nThis comment was made automatically. If there is a problem contact {Config.BuildBuddyUsername}.";
 
             await Client.Issue.Comment.Create(issue.RepositoryOwner, issue.RepositoryName, issue.Number, comment);
         }
@@ -114,7 +114,7 @@ namespace TriageBuildFailures.GitHub
 
         public async Task<GithubIssue> CreateIssue(string owner, string repo, string subject, string body, IEnumerable<string> labels)
         {
-            body += $"\n\nThis issue was made automatically. If there is a problem contact @{Config.BuildBuddyUsername}.";
+            body += $"\n\nThis issue was made automatically. If there is a problem contact {Config.BuildBuddyUsername}.";
 
             if(body.Length > 64000 )
             {
