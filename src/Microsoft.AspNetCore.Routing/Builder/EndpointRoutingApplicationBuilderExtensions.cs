@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNetCore.Internal
+namespace Microsoft.AspNetCore.Builder
 {
     public static class EndpointRoutingApplicationBuilderExtensions
     {
@@ -15,7 +15,19 @@ namespace Microsoft.AspNetCore.Internal
 
         public static IApplicationBuilder UseEndpointRouting(this IApplicationBuilder builder)
         {
+            return builder.UseEndpointRouting(null);
+        }
+
+        public static IApplicationBuilder UseEndpointRouting(this IApplicationBuilder builder, Action<EndpointDataSourceBuilder> configure)
+        {
             VerifyRoutingIsRegistered(builder);
+
+            if (configure != null)
+            {
+                var dataSourceBuilder = (DefaultEndpointDataSourceBuilder)builder.ApplicationServices.GetRequiredService<EndpointDataSourceBuilder>();
+                dataSourceBuilder.ApplicationBuilder = builder;
+                configure(dataSourceBuilder);
+            }
 
             builder.Properties[EndpointRoutingRegisteredKey] = true;
 
