@@ -79,6 +79,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private readonly object _stateLock = new object();
         private int _highestOpenedStreamId;
         private Http2ConnectionState _state = Http2ConnectionState.Open;
+        private readonly TaskCompletionSource<object> _streamsCompleted = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
         private readonly ConcurrentDictionary<int, Http2Stream> _streams = new ConcurrentDictionary<int, Http2Stream>();
 
@@ -256,6 +257,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                             _frameWriter.WriteGoAwayAsync(_highestOpenedStreamId, errorCode);
                             UpdateState(Http2ConnectionState.Closed);
                         }
+
+                        if (_streams.IsEmpty)
+                        {
+                            _streamsCompleted.TrySetResult(null);
+                        }
                     }
 
                     // Ensure aborting each stream doesn't result in unnecessary WINDOW_UPDATE frames being sent.
@@ -265,6 +271,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     {
                         stream.Abort(connectionError);
                     }
+
+                    await _streamsCompleted.Task;
 
                     _frameWriter.Complete();
                 }
@@ -891,13 +899,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             {
                 _streams.TryRemove(streamId, out _);
 
-                if (_state == Http2ConnectionState.Closing && _streams.IsEmpty)
+                if (_streams.IsEmpty)
                 {
-                    _frameWriter.WriteGoAwayAsync(_highestOpenedStreamId, Http2ErrorCode.NO_ERROR);
-                    UpdateState(Http2ConnectionState.Closed);
+                    if (_state == Http2ConnectionState.Closing)
+                    {
+                        _frameWriter.WriteGoAwayAsync(_highestOpenedStreamId, Http2ErrorCode.NO_ERROR);
+                        UpdateState(Http2ConnectionState.Closed);
 
-                    // Wake up request processing loop so the connection can complete if there are no pending requests
-                    Input.CancelPendingRead();
+                        // Wake up request processing loop so the connection can complete if there are no pending requests
+                        Input.CancelPendingRead();
+                    }
+
+                    // Complete the task waiting on all streams to finish
+                    _streamsCompleted.TrySetResult(null);
                 }
             }
         }
