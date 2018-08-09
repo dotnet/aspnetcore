@@ -25,11 +25,11 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         public static string GetInProcessTestSitesPath() => GetTestWebSitePath("InProcessWebSite");
 
         public static string GetOutOfProcessTestSitesPath() => GetTestWebSitePath("OutOfProcessWebSite");
-  
+
 
         public static async Task AssertStarts(IISDeploymentResult deploymentResult, string path = "/HelloWorld")
         {
-            var response = await deploymentResult.RetryingHttpClient.GetAsync(path);
+            var response = await deploymentResult.HttpClient.GetAsync(path);
 
             var responseText = await response.Content.ReadAsStringAsync();
 

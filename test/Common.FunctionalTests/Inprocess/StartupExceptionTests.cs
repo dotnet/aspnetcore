@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             var deploymentResult = await DeployAsync(deploymentParameters);
 
-            var response = await deploymentResult.RetryingHttpClient.GetAsync(path);
+            var response = await deploymentResult.HttpClient.GetAsync(path);
 
             Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
 
@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             var deploymentResult = await DeployAsync(deploymentParameters);
 
-            var response = await deploymentResult.RetryingHttpClient.GetAsync(path);
+            var response = await deploymentResult.HttpClient.GetAsync(path);
 
             Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
 

@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             var deploymentResult = await DeployAsync(deploymentParameters);
 
-            await deploymentResult.RetryingHttpClient.GetAsync("/");
+            await deploymentResult.HttpClient.GetAsync("/");
 
             AssertLogs(Path.Combine(deploymentResult.ContentRoot, "debug.txt"));
         }
@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             var deploymentResult = await DeployAsync(deploymentParameters);
 
-            await deploymentResult.RetryingHttpClient.GetAsync("/");
+            await deploymentResult.HttpClient.GetAsync("/");
 
             AssertLogs(Path.Combine(deploymentResult.ContentRoot, "aspnetcore-debug.log"));
         }
@@ -121,7 +121,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             deploymentParameters.HandlerSettings["debugFile"] = "";
             var deploymentResult = await DeployAsync(deploymentParameters);
 
-            await deploymentResult.RetryingHttpClient.GetAsync("/");
+            await deploymentResult.HttpClient.GetAsync("/");
 
             AssertLogs(Path.Combine(deploymentResult.ContentRoot, "aspnetcore-debug.log"));
         }
@@ -186,7 +186,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
                 var deploymentResult = await DeployAsync(deploymentParameters);
 
-                var response = await deploymentResult.RetryingHttpClient.GetAsync("/");
+                var response = await deploymentResult.HttpClient.GetAsync("/");
 
                 StopServer();
                 var logContents = File.ReadAllText(firstTempFile);

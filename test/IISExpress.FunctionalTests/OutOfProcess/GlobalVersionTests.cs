@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             var deploymentResult = await DeployAsync(deploymentParameters);
 
-            var response = await deploymentResult.RetryingHttpClient.GetAsync(_helloWorldRequest);
+            var response = await deploymentResult.HttpClient.GetAsync(_helloWorldRequest);
             var responseText = await response.Content.ReadAsStringAsync();
             Assert.Equal(_helloWorldResponse, responseText);
         }
@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             var deploymentResult = await DeployAsync(deploymentParameters);
 
-            var response = await deploymentResult.RetryingHttpClient.GetAsync(_helloWorldRequest);
+            var response = await deploymentResult.HttpClient.GetAsync(_helloWorldRequest);
             Assert.False(response.IsSuccessStatusCode);
         }
 
@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             var newANCMPath = GetANCMRequestHandlerPath(deploymentResult, version);
             Directory.Move(originalANCMPath, newANCMPath);
 
-            var response = await deploymentResult.RetryingHttpClient.GetAsync(_helloWorldRequest);
+            var response = await deploymentResult.HttpClient.GetAsync(_helloWorldRequest);
             var responseText = await response.Content.ReadAsStringAsync();
             Assert.Equal(_helloWorldResponse, responseText);
             AssertLoadedVersion(version);
@@ -101,8 +101,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             CopyDirectory(originalANCMPath, newANCMPath);
 
-            deploymentResult.RetryingHttpClient.DefaultRequestHeaders.Add("ANCMRHPath", newANCMPath);
-            var response = await deploymentResult.RetryingHttpClient.GetAsync("CheckRequestHandlerVersion");
+            deploymentResult.HttpClient.DefaultRequestHeaders.Add("ANCMRHPath", newANCMPath);
+            var response = await deploymentResult.HttpClient.GetAsync("CheckRequestHandlerVersion");
             var responseText = await response.Content.ReadAsStringAsync();
 
             Assert.Equal(_helloWorldResponse, responseText);
@@ -120,8 +120,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             var originalANCMPath = GetANCMRequestHandlerPath(deploymentResult, _handlerVersion20);
 
-            deploymentResult.RetryingHttpClient.DefaultRequestHeaders.Add("ANCMRHPath", originalANCMPath);
-            var response = await deploymentResult.RetryingHttpClient.GetAsync("CheckRequestHandlerVersion");
+            deploymentResult.HttpClient.DefaultRequestHeaders.Add("ANCMRHPath", originalANCMPath);
+            var response = await deploymentResult.HttpClient.GetAsync("CheckRequestHandlerVersion");
             var responseText = await response.Content.ReadAsStringAsync();
 
             Assert.Equal(_helloWorldResponse, responseText);
@@ -136,8 +136,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             CopyDirectory(originalANCMPath, newANCMPath);
 
-            deploymentResult.RetryingHttpClient.DefaultRequestHeaders.Add("ANCMRHPath", newANCMPath);
-            response = await deploymentResult.RetryingHttpClient.GetAsync("CheckRequestHandlerVersion");
+            deploymentResult.HttpClient.DefaultRequestHeaders.Add("ANCMRHPath", newANCMPath);
+            response = await deploymentResult.HttpClient.GetAsync("CheckRequestHandlerVersion");
             responseText = await response.Content.ReadAsStringAsync();
 
             Assert.Equal(_helloWorldResponse, responseText);

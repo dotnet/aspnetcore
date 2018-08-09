@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             var deploymentResult = await DeployAsync(deploymentParameters);
 
-            var response = await deploymentResult.RetryingHttpClient.GetAsync("HelloWorld");
+            var response = await deploymentResult.HttpClient.GetAsync("HelloWorld");
 
             Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
 
@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             var deploymentResult = await DeployAsync(deploymentParameters);
 
-            var response = await deploymentResult.RetryingHttpClient.GetAsync("HelloWorld");
+            var response = await deploymentResult.HttpClient.GetAsync("HelloWorld");
 
             var responseText = await response.Content.ReadAsStringAsync();
             Assert.Equal("Hello World", responseText);
@@ -128,7 +128,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             var deploymentResult = await DeployAsync(deploymentParameters);
 
-            var response = await deploymentResult.RetryingHttpClient.GetAsync("/HelloWorld");
+            var response = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
             var responseText = await response.Content.ReadAsStringAsync();
 
             Assert.Equal("Hello World", responseText);
@@ -154,7 +154,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             var deploymentResult = await DeployAsync(deploymentParameters);
 
-            var response = await deploymentResult.RetryingHttpClient.GetAsync("HelloWorld");
+            var response = await deploymentResult.HttpClient.GetAsync("HelloWorld");
 
             Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
 
