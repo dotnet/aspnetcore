@@ -4,7 +4,9 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Net;
 using System.Net.Http;
+using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting.Common;
@@ -19,6 +21,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
     {
         private string _configFile;
         private readonly int _waitTime = (int)TimeSpan.FromSeconds(30).TotalMilliseconds;
+        private Socket _portSelector;
 
         public NginxDeployer(DeploymentParameters deploymentParameters, ILoggerFactory loggerFactory)
             : base(deploymentParameters, loggerFactory)
@@ -30,9 +33,28 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
             using (Logger.BeginScope("Deploy"))
             {
                 _configFile = Path.GetTempFileName();
+
                 var uri = string.IsNullOrEmpty(DeploymentParameters.ApplicationBaseUriHint) ?
-                    TestUriHelper.BuildTestUri(ServerType.Nginx) :
+                    new Uri("http://localhost:0") :
                     new Uri(DeploymentParameters.ApplicationBaseUriHint);
+
+                if (uri.Port == 0)
+                {
+                    var builder = new UriBuilder(uri);
+                    if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                    {
+                        // This works with nginx 1.9.1 and later using the reuseport flag, available on Ubuntu 16.04.
+                        // Keep it open so nobody else claims the port
+                        _portSelector = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                        _portSelector.Bind(new IPEndPoint(IPAddress.Loopback, 0));
+                        builder.Port = ((IPEndPoint)_portSelector.LocalEndPoint).Port;
+                    }
+                    else
+                    {
+                        builder.Port = TestPortHelper.GetNextPort();
+                    }
+                    uri = builder.Uri;
+                }
 
                 var redirectUri = TestUriHelper.BuildTestUri(ServerType.Nginx);
 
@@ -122,7 +144,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                     .Replace("[user]", userName)
                     .Replace("[errorlog]", errorLog)
                     .Replace("[accesslog]", accessLog)
-                    .Replace("[listenPort]", originalUri.Port.ToString())
+                    .Replace("[listenPort]", originalUri.Port.ToString() + (_portSelector != null ? " reuseport" : ""))
                     .Replace("[redirectUri]", redirectUri)
                     .Replace("[pidFile]", pidFile);
                 Logger.LogDebug("Using PID file: {pidFile}", pidFile);
@@ -198,6 +220,8 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                     Logger.LogDebug("Deleting config file: {configFile}", _configFile);
                     File.Delete(_configFile);
                 }
+
+                _portSelector?.Dispose();
 
                 base.Dispose();
             }
