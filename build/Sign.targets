@@ -6,6 +6,7 @@
       RebuildOobArchives;
       RebuildPackages;
       SignNupkgs;
+      SignJars;
       RebuildVSIXes;
       RebuildSharedFxs;
       RepackMPacks;
@@ -115,7 +116,7 @@
 
   <Target Name="SignNupkgs">
     <PropertyGroup>
-      <_ManifestOutputPath>$(IntermediateDir)esrp-package-sign.json</_ManifestOutputPath>
+      <_ManifestOutputPath>$(IntermediateDir)nupkg\</_ManifestOutputPath>
     </PropertyGroup>
 
     <ItemGroup>
@@ -140,6 +141,36 @@
 
     <Copy Condition="'$(SignType)'!='real' OR '$(LocalBuild)'=='true'"
       SourceFiles="@(_UnsignedNupkgs)"
+      DestinationFolder="$(PackagesOutputPath)" />
+  </Target>
+
+  <Target Name="SignJars">
+    <PropertyGroup>
+      <_ManifestOutputPath>$(IntermediateDir)jar\</_ManifestOutputPath>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <_UnsignedJars Include="$(UnsignedPackagesDir)**\*.jar" />
+    </ItemGroup>
+
+    <Microsoft.Build.OOB.ESRP.CreateSignManifests Condition="'@(_UnsignedJars)'!=''"
+       ApplicationId="$(ESRPApplicationId)"
+       DestinationRootDirectory="$(PackagesOutputPath)"
+       Files="@(_UnsignedJars)"
+       ManifestOutputPath="$(_ManifestOutputPath)"
+       KeyCodes="$(MicrosoftJava)">
+      <Output TaskParameter="AuthJson" PropertyName="AuthJson" />
+      <Output TaskParameter="PolicyJson" PropertyName="PolicyJson" />
+      <Output TaskParameter="InputJson" PropertyName="InputJson" />
+      <Output TaskParameter="OutputJson" PropertyName="OutputJson" />
+    </Microsoft.Build.OOB.ESRP.CreateSignManifests>
+
+    <Exec
+      Command="$(ESRPClientToolPath) sign -c $(ESRPClientConfigFile) -a $(AuthJson) -p $(PolicyJson) -i $(InputJson) -o $(OutputJson) -l progress -f $(LogOutputDir)sign-java.log"
+      Condition="'$(SignType)'=='real' AND '$(LocalBuild)'!='true'" />
+
+    <Copy Condition="'$(SignType)'!='real' OR '$(LocalBuild)'=='true'"
+      SourceFiles="@(_UnsignedJars)"
       DestinationFolder="$(PackagesOutputPath)" />
   </Target>
 

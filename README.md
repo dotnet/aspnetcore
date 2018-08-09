@@ -17,7 +17,7 @@ To run this repo, you need the following:
 
 ### Configure the ESRP package feed
 
-See https://microsoft.pkgs.visualstudio.com/_packaging/ESRP/nuget/v3/index.json
+See https://microsoft.visualstudio.com/Universal%20Store/_packaging?feed=esrp&_a=feed
 
 To consume the NuGet package:
 
