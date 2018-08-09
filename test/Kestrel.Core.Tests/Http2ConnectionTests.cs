@@ -3434,7 +3434,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             Assert.Equal(TaskStatus.RanToCompletion, _connection.ProcessRequestsAsync(new DummyApplication(_noopApplication)).Status);
 
-            var logMessage = _logger.Messages.Single();
+            var logMessage = _logger.Messages.Single(m => m.LogLevel >= LogLevel.Information);
 
             Assert.Equal(LogLevel.Information, logMessage.LogLevel);
             Assert.Equal("Connection id \"(null)\" request processing ended abnormally.", logMessage.Message);
@@ -3449,7 +3449,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             Assert.Equal(TaskStatus.RanToCompletion, _connection.ProcessRequestsAsync(new DummyApplication(_noopApplication)).Status);
 
-            var logMessage = _logger.Messages.Single();
+            var logMessage = _logger.Messages.Single(m => m.LogLevel >= LogLevel.Information);
 
             Assert.Equal(LogLevel.Warning, logMessage.LogLevel);
             Assert.Equal(CoreStrings.RequestProcessingEndError, logMessage.Message);
