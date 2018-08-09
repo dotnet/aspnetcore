@@ -24,6 +24,8 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
         internal const int ERROR_SHARING_VIOLATION = unchecked((int)0x80070020);
         internal const int ERROR_SERVICE_CANNOT_ACCEPT_CTRL = unchecked((int)0x80070425);
 
+        private const string DetailedErrorsEnvironmentVariable = "ASPNETCORE_DETAILEDERRORS";
+
         private static readonly TimeSpan _timeout = TimeSpan.FromSeconds(10);
         private static readonly TimeSpan _retryDelay = TimeSpan.FromMilliseconds(200);
 
@@ -71,7 +73,14 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
 
                 // For now, only support using published output
                 DeploymentParameters.PublishApplicationBeforeDeployment = true;
+                // Move ASPNETCORE_DETAILEDERRORS to web config env variables
+                if (IISDeploymentParameters.EnvironmentVariables.ContainsKey(DetailedErrorsEnvironmentVariable))
+                {
+                    IISDeploymentParameters.WebConfigBasedEnvironmentVariables[DetailedErrorsEnvironmentVariable] =
+                        IISDeploymentParameters.EnvironmentVariables[DetailedErrorsEnvironmentVariable];
 
+                    IISDeploymentParameters.EnvironmentVariables.Remove(DetailedErrorsEnvironmentVariable);
+                }
                 // Do not override settings set on parameters
                 if (!IISDeploymentParameters.HandlerSettings.ContainsKey("debugLevel") &&
                     !IISDeploymentParameters.HandlerSettings.ContainsKey("debugFile"))
