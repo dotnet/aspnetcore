@@ -1,7 +1,8 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>netcoreapp2.2</TargetFrameworks>
+    <DisableFastUpToDateCheck>True</DisableFastUpToDateCheck>
   </PropertyGroup>
 
   <ItemGroup>
