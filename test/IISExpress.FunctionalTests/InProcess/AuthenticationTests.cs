@@ -29,26 +29,26 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             var deploymentResult = await DeployAsync(deploymentParameters);
 
-            var response = await deploymentResult.RetryingHttpClient.GetAsync("/AuthenticationAnonymous");
+            var response = await deploymentResult.HttpClient.GetAsync("/AuthenticationAnonymous");
 
             var responseText = await response.Content.ReadAsStringAsync();
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal("Anonymous?True", responseText);
 
-            response = await deploymentResult.RetryingHttpClient.GetAsync("/AuthenticationRestricted");
+            response = await deploymentResult.HttpClient.GetAsync("/AuthenticationRestricted");
             responseText = await response.Content.ReadAsStringAsync();
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
             Assert.Contains("NTLM", response.Headers.WwwAuthenticate.ToString());
             Assert.Contains("Negotiate", response.Headers.WwwAuthenticate.ToString());
 
-            response = await deploymentResult.RetryingHttpClient.GetAsync("/AuthenticationRestrictedNTLM");
+            response = await deploymentResult.HttpClient.GetAsync("/AuthenticationRestrictedNTLM");
             responseText = await response.Content.ReadAsStringAsync();
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
             Assert.Contains("NTLM", response.Headers.WwwAuthenticate.ToString());
             // Note we can't restrict a challenge to a specific auth type, the native auth modules always add themselves.
             Assert.Contains("Negotiate", response.Headers.WwwAuthenticate.ToString());
 
-            response = await deploymentResult.RetryingHttpClient.GetAsync("/AuthenticationForbidden");
+            response = await deploymentResult.HttpClient.GetAsync("/AuthenticationForbidden");
             responseText = await response.Content.ReadAsStringAsync();
             Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
 

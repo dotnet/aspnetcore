@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             parameters.GracefulShutdown = true;
             var result = await DeployAsync(parameters);
 
-            var response = await result.RetryingHttpClient.GetAsync("/HelloWorld");
+            var response = await result.HttpClient.GetAsync("/HelloWorld");
             StopServer();
             Assert.True(result.HostProcess.ExitCode == 0);
         }
@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             var parameters = _fixture.GetBaseDeploymentParameters(publish: true);
             var result = await DeployAsync(parameters);
 
-            var response = await result.RetryingHttpClient.GetAsync("/HelloWorld");
+            var response = await result.HttpClient.GetAsync("/HelloWorld");
             StopServer();
             Assert.True(result.HostProcess.ExitCode == 1);
         }

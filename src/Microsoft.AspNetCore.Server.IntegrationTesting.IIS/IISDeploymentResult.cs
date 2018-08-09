@@ -27,19 +27,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
         {
             HostProcess = hostProcess;
             Logger = loggerFactory.CreateLogger(deploymentParameters.SiteName);
-            // SocketsHttpHandler isn't available in netstandard2.0
-            RetryingHttpClient = CreateRetryClient(new HttpClientHandler());
             HttpClient = CreateClient(new HttpClientHandler());
-        }
-
-        public HttpClient CreateRetryClient(HttpMessageHandler messageHandler)
-        {
-            var loggingHandler = new LoggingHandler(messageHandler, Logger);
-            var retryHandler = new RetryHandler(loggingHandler, Logger);
-            return new HttpClient(retryHandler)
-            {
-                BaseAddress = base.HttpClient.BaseAddress
-            };
         }
 
         public HttpClient CreateClient(HttpMessageHandler messageHandler)
@@ -49,8 +37,6 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                 BaseAddress = base.HttpClient.BaseAddress
             };
         }
-
-        public HttpClient RetryingHttpClient { get; set; }
 
         public new HttpClient HttpClient { get; set; }
     }

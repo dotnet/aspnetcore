@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             var deploymentResult = await DeployAsync(deploymentParameters);
 
-            var response = await deploymentResult.RetryingHttpClient.GetAsync("UpgradeFeatureDetection");
+            var response = await deploymentResult.HttpClient.GetAsync("UpgradeFeatureDetection");
             var responseText = await response.Content.ReadAsStringAsync();
             Assert.Equal(expected, responseText);
         }

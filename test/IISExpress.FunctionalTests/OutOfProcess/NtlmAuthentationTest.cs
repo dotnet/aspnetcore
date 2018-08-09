@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             deploymentParameters.AddWindowsAuthToServerConfig();
 
             var result = await DeployAsync(deploymentParameters);
-            var response = await result.RetryingHttpClient.GetAsync("/HelloWorld");
+            var response = await result.HttpClient.GetAsync("/HelloWorld");
 
             var responseText = await response.Content.ReadAsStringAsync();
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);

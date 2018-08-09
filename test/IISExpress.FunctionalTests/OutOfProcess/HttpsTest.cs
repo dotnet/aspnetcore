@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             {
                 ServerCertificateCustomValidationCallback = (a, b, c, d) => true
             };
-            var client = deploymentResult.CreateRetryClient(handler);
+            var client = deploymentResult.CreateClient(handler);
             var response = await client.GetAsync("HttpsHelloWorld");
             var responseText = await response.Content.ReadAsStringAsync();
             Assert.Equal("Scheme:https; Original:http", responseText);
@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 handler.ClientCertificates.Add(clientCert);
             }
 
-            var client = deploymentResult.CreateRetryClient(handler);
+            var client = deploymentResult.CreateClient(handler);
 
             // Request to base address and check if various parts of the body are rendered & measure the cold startup time.
             var response = await client.GetAsync("checkclientcert");

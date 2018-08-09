@@ -22,7 +22,8 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
 
         protected ApplicationDeployer CreateDeployer(IISDeploymentParameters parameters)
         {
-            if (!parameters.EnvironmentVariables.ContainsKey(DebugEnvironmentVariable))
+            if (parameters.ServerType == ServerType.IISExpress &&
+                !parameters.EnvironmentVariables.ContainsKey(DebugEnvironmentVariable))
             {
                 parameters.EnvironmentVariables[DebugEnvironmentVariable] = "console";
             }
