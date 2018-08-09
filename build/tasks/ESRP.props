@@ -20,6 +20,8 @@
     <MicrosoftSharedLibrariesSN>MicrosoftSharedLibrariesSN</MicrosoftSharedLibrariesSN>
     <!-- Legacy COPS: 25, 67 -->
     <MicrosoftSN>MicrosoftSN</MicrosoftSN>
+    <!-- CP-232612-Java -->
+    <MicrosoftJava>MicrosoftJava</MicrosoftJava>
 
     <!-- ESRP only key codes -->
     <MicrosoftNuGet>MicrosoftNuGet</MicrosoftNuGet>
