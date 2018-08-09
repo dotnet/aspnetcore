@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -109,10 +110,15 @@ namespace TestSites
         private async Task HostingEnvironment(HttpContext context)
         {
             var hostingEnv = context.RequestServices.GetService<IHostingEnvironment>();
-            
+
             await context.Response.WriteAsync("ContentRootPath "+hostingEnv.ContentRootPath + Environment.NewLine);
             await context.Response.WriteAsync("WebRootPath "+hostingEnv.WebRootPath + Environment.NewLine);
             await context.Response.WriteAsync("CurrentDirectory "+Environment.CurrentDirectory);
+        }
+
+        private async Task ProcessId(HttpContext context)
+        {
+            await context.Response.WriteAsync(Process.GetCurrentProcess().Id.ToString());
         }
     }
 }

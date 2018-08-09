@@ -89,13 +89,6 @@ ASPNET_CORE_PROXY_MODULE::OnExecuteRequestHandler(
             pHttpContext,
             &m_pApplicationInfo));
 
-        if (!m_pApplicationInfo->IsValid())
-        {
-            // Application cannot be started due to wrong hosting mode
-            // the error should already been logged to window event log for the first request
-            FINISHED(E_APPLICATION_ACTIVATION_EXEC_FAILURE);
-        }
-
         DBG_ASSERT(pHttpContext);
 
         std::unique_ptr<IAPPLICATION, IAPPLICATION_DELETER> pApplication;

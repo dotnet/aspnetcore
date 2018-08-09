@@ -85,10 +85,10 @@ public:
         }
     }
 
-    static HRESULT StaticInitialize(IHttpServer& pHttpServer)
+    static HRESULT StaticInitialize(HMODULE hModule, IHttpServer& pHttpServer)
     {
         assert(!sm_pApplicationManager);
-        sm_pApplicationManager = new APPLICATION_MANAGER(pHttpServer);
+        sm_pApplicationManager = new APPLICATION_MANAGER(hModule, pHttpServer);
         RETURN_IF_FAILED(sm_pApplicationManager->Initialize());
 
         APPLICATION_INFO::StaticInitialize();
@@ -110,19 +110,21 @@ public:
     }
 
 private:
-    APPLICATION_MANAGER(IHttpServer& pHttpServer) :
+    APPLICATION_MANAGER(HMODULE hModule, IHttpServer& pHttpServer) :
                             m_pApplicationInfoHash(NULL),
                             m_hostingModel(HOSTING_UNKNOWN),
                             m_fDebugInitialize(FALSE),
-                            m_pHttpServer(pHttpServer)
+                            m_pHttpServer(pHttpServer),
+                            m_handlerResolver(hModule, pHttpServer)
     {
         InitializeSRWLock(&m_srwLock);
     }
 
     APPLICATION_INFO_HASH      *m_pApplicationInfoHash;
     static APPLICATION_MANAGER *sm_pApplicationManager;
-    SRWLOCK                     m_srwLock;
+    SRWLOCK                     m_srwLock {};
     APP_HOSTING_MODEL           m_hostingModel;
     BOOL                        m_fDebugInitialize;
     IHttpServer                &m_pHttpServer;
+    HandlerResolver             m_handlerResolver;
 };

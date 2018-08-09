@@ -16,6 +16,7 @@ DECLARE_DEBUG_PRINT_OBJECT("aspnetcorev2.dll");
 HANDLE              g_hEventLog = NULL;
 BOOL                g_fRecycleProcessCalled = FALSE;
 BOOL                g_fInShutdown = FALSE;
+HINSTANCE           g_hServerModule;
 
 VOID
 StaticCleanup()
@@ -40,6 +41,7 @@ BOOL WINAPI DllMain(HMODULE hModule,
     switch (ul_reason_for_call)
     {
     case DLL_PROCESS_ATTACH:
+        g_hServerModule = hModule;
         DisableThreadLibraryCalls(hModule);
         DebugInitialize(hModule);
         break;
@@ -157,7 +159,7 @@ HRESULT
 
     pFactory = NULL;
 
-    FINISHED_IF_FAILED(APPLICATION_MANAGER::StaticInitialize(*pHttpServer));
+    FINISHED_IF_FAILED(APPLICATION_MANAGER::StaticInitialize(g_hServerModule, *pHttpServer));
 
     pGlobalModule = NULL;
 

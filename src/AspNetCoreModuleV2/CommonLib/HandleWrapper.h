@@ -19,6 +19,13 @@ struct NullHandleTraits
     static void Close(HANDLE handle) { CloseHandle(handle); }
 };
 
+struct ModuleHandleTraits
+{
+    using HandleType = HMODULE;
+    static constexpr HMODULE DefaultHandle = NULL;
+    static void Close(HMODULE handle) { FreeModule(handle); }
+};
+
 template<typename traits>
 class HandleWrapper
 {

@@ -9,18 +9,9 @@
 #include "aspnetcore_shim_config.h"
 #include "iapplication.h"
 #include "SRWSharedLock.h"
+#include "HandlerResolver.h"
 
 #define API_BUFFER_TOO_SMALL 0x80008098
-
-typedef
-HRESULT
-(WINAPI * PFN_ASPNETCORE_CREATE_APPLICATION)(
-    _In_  IHttpServer           *pServer,
-    _In_  IHttpApplication      *pHttpApplication,
-    _In_  APPLICATION_PARAMETER *pParameters,
-    _In_  DWORD                  nParameters,
-    _Out_ IAPPLICATION         **pApplication
-    );
 
 extern BOOL     g_fRecycleProcessCalled;
 
@@ -28,12 +19,10 @@ class APPLICATION_INFO
 {
 public:
 
-    APPLICATION_INFO(_In_ IHttpServer &pServer) :
+    APPLICATION_INFO(IHttpServer &pServer) :
         m_pServer(pServer),
         m_cRefs(1),
-        m_fValid(FALSE),
-        m_pConfiguration(nullptr),
-        m_pfnAspNetCoreCreateApplication(NULL)
+        m_handlerResolver(nullptr)
     {
         InitializeSRWLock(&m_applicationLock);
     }
@@ -44,19 +33,25 @@ public:
         return m_struInfoKey.QueryStr();
     }
 
+    STRU*
+    QueryConfigPath()
+    {
+        return &m_struConfigPath;
+    }
+
     virtual
     ~APPLICATION_INFO();
-    
-    static 
+
+    static
     void
     StaticInitialize()
     {
-        InitializeSRWLock(&s_requestHandlerLoadLock);
     }
 
     HRESULT
     Initialize(
-        _In_ IHttpApplication    &pApplication
+        IHttpApplication    &pApplication,
+        HandlerResolver     *pHandlerResolver
     );
 
     VOID
@@ -74,24 +69,6 @@ public:
         }
     }
 
-    BOOL
-    IsValid()
-    {
-        return m_fValid;
-    }
-
-    VOID
-    MarkValid()
-    {
-        m_fValid = TRUE;
-    }
-
-    ASPNETCORE_SHIM_CONFIG*
-    QueryConfig()
-    {
-        return m_pConfiguration.get();
-    }
-
     VOID
     RecycleApplication();
 
@@ -105,31 +82,17 @@ public:
     );
 
 private:
-    HRESULT FindRequestHandlerAssembly(STRU& location);
-    HRESULT FindNativeAssemblyFromGlobalLocation(PCWSTR libraryName, STRU* location);
-    HRESULT FindNativeAssemblyFromHostfxr(HOSTFXR_OPTIONS* hostfxrOptions, PCWSTR libraryName, STRU* location);
 
     static DWORD WINAPI DoRecycleApplication(LPVOID lpParam);
 
     mutable LONG            m_cRefs;
+    STRU                    m_struConfigPath;
     STRU                    m_struInfoKey;
-    BOOL                    m_fValid;
     SRWLOCK                 m_applicationLock;
     IHttpServer            &m_pServer;
-    PFN_ASPNETCORE_CREATE_APPLICATION      m_pfnAspNetCoreCreateApplication;
-    
-    std::unique_ptr<ASPNETCORE_SHIM_CONFIG> m_pConfiguration;
+    HandlerResolver        *m_handlerResolver;
+
     std::unique_ptr<IAPPLICATION, IAPPLICATION_DELETER> m_pApplication;
-    
-
-    static const PCWSTR          s_pwzAspnetcoreInProcessRequestHandlerName;
-    static const PCWSTR          s_pwzAspnetcoreOutOfProcessRequestHandlerName;
-
-    static SRWLOCK      s_requestHandlerLoadLock;
-    static bool         s_fAspnetcoreRHAssemblyLoaded;
-    static bool         s_fAspnetcoreRHLoadedError;
-    static HMODULE      s_hAspnetCoreRH;
-    static PFN_ASPNETCORE_CREATE_APPLICATION  s_pfnAspNetCoreCreateApplication;
 };
 
 class APPLICATION_INFO_HASH :
