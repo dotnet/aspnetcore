@@ -20,13 +20,14 @@ ASPNETCORE_SHIM_CONFIG::Populate(
     CComPtr<IAppHostElement>        pAspNetCoreElement;
 
     pAdminManager = pHttpServer->GetAdminManager();
-    RETURN_IF_FAILED(m_struConfigPath.Copy(pHttpApplication->GetAppConfigPath()));
     RETURN_IF_FAILED(m_struApplicationPhysicalPath.Copy(pHttpApplication->GetApplicationPhysicalPath()));
 
     const CComBSTR bstrAspNetCoreSection = CS_ASPNETCORE_SECTION;
 
+    const CComBSTR applicationConfigPath = pHttpApplication->GetAppConfigPath();
+
     RETURN_IF_FAILED(pAdminManager->GetAdminSection(bstrAspNetCoreSection,
-        m_struConfigPath.QueryStr(),
+        applicationConfigPath,
         &pAspNetCoreElement));
 
     RETURN_IF_FAILED(GetElementStringProperty(pAspNetCoreElement,

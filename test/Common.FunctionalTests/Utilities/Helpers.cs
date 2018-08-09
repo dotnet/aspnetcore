@@ -11,6 +11,7 @@ using System.Xml.Linq;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Logging;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
@@ -25,7 +26,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         public static string GetInProcessTestSitesPath() => GetTestWebSitePath("InProcessWebSite");
 
         public static string GetOutOfProcessTestSitesPath() => GetTestWebSitePath("OutOfProcessWebSite");
-
+  
 
         public static async Task AssertStarts(IISDeploymentResult deploymentResult, string path = "/HelloWorld")
         {
@@ -56,6 +57,21 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             }
 
             await Task.WhenAll(tasks);
+        }
+
+        public static void CopyFiles(DirectoryInfo source, DirectoryInfo target, ILogger logger)
+        {
+            foreach (DirectoryInfo directoryInfo in source.GetDirectories())
+            {
+                CopyFiles(directoryInfo, target.CreateSubdirectory(directoryInfo.Name), logger);
+            }
+            logger.LogDebug($"Processing {target.FullName}");
+            foreach (FileInfo fileInfo in source.GetFiles())
+            {
+                logger.LogDebug($"  Copying {fileInfo.Name}");
+                var destFileName = Path.Combine(target.FullName, fileInfo.Name);
+                fileInfo.CopyTo(destFileName);
+            }
         }
     }
 }

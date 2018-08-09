@@ -27,10 +27,7 @@ APPLICATION_MANAGER::GetOrCreateApplicationInfo(
 {
     HRESULT                 hr = S_OK;
     APPLICATION_INFO       *pApplicationInfo = NULL;
-    BOOL                    fMixedHostingModelError = FALSE;
-    BOOL                    fDuplicatedInProcessApp = FALSE;
     PCWSTR                  pszApplicationId = NULL;
-    APP_HOSTING_MODEL       hostingModel = HOSTING_UNKNOWN;
 
     STACK_STRU ( strEventMsg, 256 );
 
@@ -80,60 +77,13 @@ APPLICATION_MANAGER::GetOrCreateApplicationInfo(
 
         pApplicationInfo = new APPLICATION_INFO(m_pHttpServer);
 
-        FINISHED_IF_FAILED(pApplicationInfo->Initialize(pApplication));
-
-        hostingModel = pApplicationInfo->QueryConfig()->QueryHostingModel();
-
-        if (m_pApplicationInfoHash->Count() == 0)
-        {
-            m_hostingModel = hostingModel;
-            pApplicationInfo->MarkValid();
-        }
-        else
-        {
-            if (hostingModel == HOSTING_OUT_PROCESS &&  hostingModel == m_hostingModel)
-            {
-                pApplicationInfo->MarkValid();
-            }
-            else
-            {
-                if (hostingModel != m_hostingModel)
-                {
-                    fMixedHostingModelError = TRUE;
-                }
-                else
-                {
-                    fDuplicatedInProcessApp = TRUE;
-                }
-            }
-        }
-
+        FINISHED_IF_FAILED(pApplicationInfo->Initialize(pApplication, &m_handlerResolver));
         FINISHED_IF_FAILED(m_pApplicationInfoHash->InsertRecord(pApplicationInfo));
 
         *ppApplicationInfo = pApplicationInfo;
         pApplicationInfo = NULL;
     }
 Finished:
-
-    // log the error
-    if (fDuplicatedInProcessApp)
-    {
-        UTILITY::LogEventF(g_hEventLog,
-            EVENTLOG_ERROR_TYPE,
-            ASPNETCORE_EVENT_DUPLICATED_INPROCESS_APP,
-            ASPNETCORE_EVENT_DUPLICATED_INPROCESS_APP_MSG,
-            pszApplicationId);
-
-    }
-    else if (fMixedHostingModelError)
-    {
-        UTILITY::LogEventF(g_hEventLog,
-            EVENTLOG_ERROR_TYPE,
-            ASPNETCORE_EVENT_MIXED_HOSTING_MODEL_ERROR,
-            ASPNETCORE_EVENT_MIXED_HOSTING_MODEL_ERROR_MSG,
-            pszApplicationId,
-            hostingModel);
-    }
 
     if (pApplicationInfo != NULL)
     {
@@ -160,7 +110,7 @@ APPLICATION_MANAGER::FindConfigChangedApplication(
     // Config Change context contains the original config path that changed
     // and a multiStr containing
     CONFIG_CHANGE_CONTEXT* pContext = static_cast<CONFIG_CHANGE_CONTEXT*>(pvContext);
-    STRU* pstruConfigPath = pEntry->QueryConfig()->QueryConfigPath();
+    STRU* pstruConfigPath = pEntry->QueryConfigPath();
 
     // check if the application path contains our app/subapp by seeing if the config path
     // starts with the notification path.

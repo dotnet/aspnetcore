@@ -7,7 +7,7 @@ using System.Xml.Linq;
 
 namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
 {
-    internal static class XElementExtensions
+    public static class XElementExtensions
     {
         public static XElement RequiredElement(this XElement element, string name)
         {

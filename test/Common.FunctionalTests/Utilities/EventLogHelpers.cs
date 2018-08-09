@@ -12,7 +12,16 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         public static void VerifyEventLogEvent(ITestSink testSink, string expectedRegexMatchString)
         {
             var eventLogRegex = new Regex($"Event Log: {expectedRegexMatchString}");
-            Assert.Contains(testSink.Writes, context => eventLogRegex.IsMatch(context.Message));
+
+            int count = 0;
+            foreach (var context in testSink.Writes)
+            {
+                if (eventLogRegex.IsMatch(context.Message))
+                {
+                    count++;
+                }
+            }
+            Assert.Equal(1, count);
         }
     }
 }
