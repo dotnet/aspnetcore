@@ -3,20 +3,16 @@
 
 using System;
 using System.Text;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Internal;
-using Microsoft.AspNetCore.Routing;
-using Microsoft.AspNetCore.Routing.Matching;
-using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace RoutingSample.Web
 {
     public class UseEndpointRoutingStartup
     {
         private static readonly byte[] _homePayload = Encoding.UTF8.GetBytes("Endpoint Routing sample endpoints:" + Environment.NewLine + "/plaintext");
-        private static readonly byte[] _helloWorldPayload = Encoding.UTF8.GetBytes("Hello, World!");
+        private static readonly byte[] _plainTextPayload = Encoding.UTF8.GetBytes("Plain text!");
 
         public void ConfigureServices(IServiceCollection services)
         {
@@ -26,65 +22,59 @@ namespace RoutingSample.Web
             {
                 options.ConstraintMap.Add("endsWith", typeof(EndsWithStringMatchProcessor));
             });
-
-            var endpointDataSource = new DefaultEndpointDataSource(new[]
-                {
-                    new MatcherEndpoint((next) => (httpContext) =>
-                        {
-                            var response = httpContext.Response;
-                            var payloadLength = _homePayload.Length;
-                            response.StatusCode = 200;
-                            response.ContentType = "text/plain";
-                            response.ContentLength = payloadLength;
-                            return response.Body.WriteAsync(_homePayload, 0, payloadLength);
-                        },
-                        RoutePatternFactory.Parse("/"),
-                        0,
-                        EndpointMetadataCollection.Empty,
-                        "Home"),
-                    new MatcherEndpoint((next) => (httpContext) =>
-                        {
-                            var response = httpContext.Response;
-                            var payloadLength = _helloWorldPayload.Length;
-                            response.StatusCode = 200;
-                            response.ContentType = "text/plain";
-                            response.ContentLength = payloadLength;
-                            return response.Body.WriteAsync(_helloWorldPayload, 0, payloadLength);
-                        },
-                         RoutePatternFactory.Parse("/plaintext"),
-                        0,
-                        EndpointMetadataCollection.Empty,
-                        "Plaintext"),
-                    new MatcherEndpoint((next) => (httpContext) =>
-                        {
-                            var response = httpContext.Response;
-                            response.StatusCode = 200;
-                            response.ContentType = "text/plain";
-                            return response.WriteAsync("WithConstraints");
-                        },
-                        RoutePatternFactory.Parse("/withconstraints/{id:endsWith(_001)}"),
-                        0,
-                        EndpointMetadataCollection.Empty,
-                        "withconstraints"),
-                    new MatcherEndpoint((next) => (httpContext) =>
-                        {
-                            var response = httpContext.Response;
-                            response.StatusCode = 200;
-                            response.ContentType = "text/plain";
-                            return response.WriteAsync("withoptionalconstraints");
-                        },
-                        RoutePatternFactory.Parse("/withoptionalconstraints/{id:endsWith(_001)?}"),
-                        0,
-                        EndpointMetadataCollection.Empty,
-                        "withoptionalconstraints"),
-                });
-
-            services.TryAddEnumerable(ServiceDescriptor.Singleton<EndpointDataSource>(endpointDataSource));
         }
 
         public void Configure(Microsoft.AspNetCore.Builder.IApplicationBuilder app)
         {
-            app.UseEndpointRouting();
+            app.UseEndpointRouting(builder =>
+            {
+                builder.MapHello("/helloworld", "World");
+
+                builder.MapEndpoint(
+                    (next) => (httpContext) =>
+                    {
+                        var response = httpContext.Response;
+                        var payloadLength = _homePayload.Length;
+                        response.StatusCode = 200;
+                        response.ContentType = "text/plain";
+                        response.ContentLength = payloadLength;
+                        return response.Body.WriteAsync(_homePayload, 0, payloadLength);
+                    },
+                    "/",
+                    "Home");
+                builder.MapEndpoint(
+                    (next) => (httpContext) =>
+                    {
+                        var response = httpContext.Response;
+                        var payloadLength = _plainTextPayload.Length;
+                        response.StatusCode = 200;
+                        response.ContentType = "text/plain";
+                        response.ContentLength = payloadLength;
+                        return response.Body.WriteAsync(_plainTextPayload, 0, payloadLength);
+                    },
+                    "/plaintext",
+                    "Plaintext");
+                builder.MapEndpoint(
+                    (next) => (httpContext) =>
+                    {
+                        var response = httpContext.Response;
+                        response.StatusCode = 200;
+                        response.ContentType = "text/plain";
+                        return response.WriteAsync("WithConstraints");
+                    },
+                    "/withconstraints/{id:endsWith(_001)}",
+                    "withconstraints");
+                builder.MapEndpoint(
+                    (next) => (httpContext) =>
+                    {
+                        var response = httpContext.Response;
+                        response.StatusCode = 200;
+                        response.ContentType = "text/plain";
+                        return response.WriteAsync("withoptionalconstraints");
+                    },
+                    "/withoptionalconstraints/{id:endsWith(_001)?}",
+                    "withoptionalconstraints");
+            });
 
             // Imagine some more stuff here...
 
