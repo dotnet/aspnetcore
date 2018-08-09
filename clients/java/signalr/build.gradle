@@ -4,7 +4,9 @@ plugins {
 }
 
 group 'com.microsoft.aspnet'
-version '0.1.0-preview1'
+
+// If we're run from outside MSBuild, just assign a bogus dev version.
+version project.findProperty('packageVersion') ?: "99.99.99-dev"
 
 sourceCompatibility = 1.8
 
@@ -54,8 +56,7 @@ task generatePOM {
                 }
             }
         }
-    }.writeTo("signalr-0.1.0-preview1.pom")
-
-    ant.move file: "signalr-0.1.0-preview1.pom",
-            todir: "${buildDir}/libs"
+    }.writeTo("${buildDir}/libs/signalr-${project.version}.pom")
 }
+
+task createPackage(dependsOn: [jar,sourceJar,javadocJar,generatePOM])
