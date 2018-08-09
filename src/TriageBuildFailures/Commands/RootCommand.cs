@@ -47,8 +47,9 @@ namespace TriageBuildFailures.Commands
             {
                 await new Triage(GetConfig(), _reporter).TriageFailures();
             }
-            catch(Exception)
+            catch(Exception ex)
             {
+                _reporter.Error(ex.ToString());
                 return 1;
             }
             return 0;
