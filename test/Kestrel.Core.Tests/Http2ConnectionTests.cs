@@ -3274,8 +3274,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             _pair.Application.Output.Complete(new ConnectionResetException(string.Empty));
 
-            var result = await _pair.Application.Input.ReadAsync();
-            Assert.False(result.IsCompleted);
+            await StopConnectionAsync(1, ignoreNonGoAwayFrames: false);
             Assert.Single(_logger.Messages, m => m.Exception is ConnectionResetException);
         }
 
