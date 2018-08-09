@@ -345,14 +345,18 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                 .RequiredElement("applicationPools")
                 .RequiredElement("add");
 
-            var environmentVariables = pool
-                .GetOrAdd("environmentVariables");
-
-            foreach (var tuple in DeploymentParameters.EnvironmentVariables)
+            if (DeploymentParameters.EnvironmentVariables.Any())
             {
-                environmentVariables
-                    .GetOrAdd("add", "name", tuple.Key)
-                    .SetAttributeValue("value", tuple.Value);
+                var environmentVariables = pool
+                    .GetOrAdd("environmentVariables");
+
+                foreach (var tuple in DeploymentParameters.EnvironmentVariables)
+                {
+                    environmentVariables
+                        .GetOrAdd("add", "name", tuple.Key)
+                        .SetAttributeValue("value", tuple.Value);
+                }
+
             }
 
             RunServerConfigActions(config, contentRoot);
