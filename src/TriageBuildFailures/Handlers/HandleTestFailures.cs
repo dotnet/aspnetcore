@@ -100,7 +100,10 @@ namespace TriageBuildFailures.Handlers
 ```
 Other tests within that build may have failed with a similar message, but they are not listed here. Check the link above for more info.
 
+This test failed on {build.BranchName}.
+
 CC @{ GetManager(repo) }";
+
                     //TODO: We'd like to link the test history here but TC api doens't make it easy
                     var tags = new List<string> { "test-failure" };
 

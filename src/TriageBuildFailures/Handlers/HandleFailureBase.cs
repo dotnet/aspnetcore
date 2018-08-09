@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using McMaster.Extensions.CommandLineUtils;
@@ -35,7 +36,7 @@ namespace TriageBuildFailures.Handlers
             var commentsAboutThisBuild = comments.Where(c => c.Body.Contains(build.WebURL.ToString()));
             if (commentsAboutThisBuild.Count() == 0)
             {
-                var comment = $"{shortTestName} [failed with about the same error]({build.WebURL}).";
+                var comment = $"{shortTestName} [failed with about the same error]({build.WebURL}) on {build.BranchName}.";
                 if (commentsFromToday.Count() == 0)
                 {
                     await GHClient.CreateComment(issue, comment);
@@ -47,6 +48,16 @@ namespace TriageBuildFailures.Handlers
                     await GHClient.EditComment(issue, todaysComment, newBody);
                 }
             }
+            var branchLabel = BranchLabel(build.BranchName);
+            if(!issue.Labels.Any(l => l.Name.Equals(branchLabel, StringComparison.OrdinalIgnoreCase)))
+            {
+                await GHClient.AddLabel(issue, branchLabel);
+            }
+        }
+
+        private static string BranchLabel(string branchName)
+        {
+            return $"Branch:{branchName}";
         }
     }
 }

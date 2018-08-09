@@ -90,6 +90,11 @@ namespace TriageBuildFailures.GitHub
             await Client.Repository.Project.Card.Create(columnId, newCard);
         }
 
+        public async Task AddLabel(GithubIssue issue, string label)
+        {
+            await Client.Issue.Labels.AddToIssue(issue.RepositoryOwner, issue.RepositoryName, issue.Number, new string[] { label });
+        }
+
         public async Task<IEnumerable<IssueComment>> GetIssueComments(GithubIssue issue)
         {
             return await Client.Issue.Comment.GetAllForIssue(issue.RepositoryOwner, issue.RepositoryName, issue.Number);
