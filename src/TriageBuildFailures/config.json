@@ -145,6 +145,9 @@
       "Coherence_UpdateUniverse",
       "Lite_Public_DnxTools",
       "CoherenceSigned",
+      "Coherence_CoherencePackageCacheLinux",
+      "Coherence_CoherencePackageCacheOsx",
+      "Coherence_CoherencePackageCacheWin86",
       "Coherence_BuildAndSignAncmInstallers",
       "AspNetCore_Publish",
       // Project builds
