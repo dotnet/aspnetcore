@@ -398,15 +398,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
         public async Task StreamDoesNotStartIfTokenAlreadyCanceled(string protocolName, HttpTransportType transportType, string path)
         {
-            bool ExpectedErrors(WriteContext writeContext)
-            {
-                return (writeContext.LoggerName == nameof(Http.Connections.Client.Internal.ServerSentEventsTransport) ||
-                       writeContext.LoggerName == nameof(Http.Connections.Client.Internal.LongPollingTransport)) &&
-                       writeContext.EventId.Name == "ErrorSending";
-            }
-
             var protocol = HubProtocols[protocolName];
-            using (StartVerifiableLog(out var loggerFactory, LogLevel.Trace, $"{nameof(StreamDoesNotStartIfTokenAlreadyCanceled)}_{protocol.Name}_{transportType}_{path.TrimStart('/')}", expectedErrorsFilter: ExpectedErrors))
+            using (StartVerifiableLog(out var loggerFactory, LogLevel.Trace, $"{nameof(StreamDoesNotStartIfTokenAlreadyCanceled)}_{protocol.Name}_{transportType}_{path.TrimStart('/')}"))
             {
                 var connection = CreateHubConnection(path, transportType, protocol, loggerFactory);
                 try
@@ -416,10 +409,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                     var cts = new CancellationTokenSource();
                     cts.Cancel();
 
-                    var channel = await connection.StreamAsChannelAsync<int>("Stream", 5, cts.Token).OrTimeout();
-
-                    await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
-                        channel.WaitToReadAsync().AsTask().OrTimeout());
+                    await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>connection.StreamAsChannelAsync<int>("Stream", 5, cts.Token).OrTimeout());
                 }
                 catch (Exception ex)
                 {
@@ -474,7 +464,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             bool ExpectedErrors(WriteContext writeContext)
             {
                 return writeContext.LoggerName == DefaultHubDispatcherLoggerName &&
-                       writeContext.EventId.Name == "UnknownHubMethod";
+                       writeContext.EventId.Name == "FailedInvokingHubMethod";
             }
 
             var hubProtocol = HubProtocols[hubProtocolName];
@@ -486,7 +476,40 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                     await connection.StartAsync().OrTimeout();
 
                     var ex = await Assert.ThrowsAsync<HubException>(() => connection.InvokeAsync("!@#$%")).OrTimeout();
-                    Assert.Equal("Unknown hub method '!@#$%'", ex.Message);
+                    Assert.Equal("Failed to invoke '!@#$%' due to an error on the server. HubException: Method does not exist.", ex.Message);
+                }
+                catch (Exception ex)
+                {
+                    loggerFactory.CreateLogger<HubConnectionTests>().LogError(ex, "{ExceptionType} from test", ex.GetType().FullName);
+                    throw;
+                }
+                finally
+                {
+                    await connection.DisposeAsync().OrTimeout();
+                }
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
+        public async Task ServerThrowsHubExceptionIfHubMethodCannotBeResolvedAndArgumentsPassedIn(string hubProtocolName, HttpTransportType transportType, string hubPath)
+        {
+            bool ExpectedErrors(WriteContext writeContext)
+            {
+                return writeContext.LoggerName == DefaultHubDispatcherLoggerName &&
+                       writeContext.EventId.Name == "FailedInvokingHubMethod";
+            }
+
+            var hubProtocol = HubProtocols[hubProtocolName];
+            using (StartVerifiableLog(out var loggerFactory, $"{nameof(ServerThrowsHubExceptionIfHubMethodCannotBeResolvedAndArgumentsPassedIn)}_{hubProtocol.Name}_{transportType}_{hubPath.TrimStart('/')}", expectedErrorsFilter: ExpectedErrors))
+            {
+                var connection = CreateHubConnection(hubPath, transportType, hubProtocol, loggerFactory);
+                try
+                {
+                    await connection.StartAsync().OrTimeout();
+
+                    var ex = await Assert.ThrowsAsync<HubException>(() => connection.InvokeAsync("!@#$%", 10, "test")).OrTimeout();
+                    Assert.Equal("Failed to invoke '!@#$%' due to an error on the server. HubException: Method does not exist.", ex.Message);
                 }
                 catch (Exception ex)
                 {
@@ -573,7 +596,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             bool ExpectedErrors(WriteContext writeContext)
             {
                 return writeContext.LoggerName == DefaultHubDispatcherLoggerName &&
-                       writeContext.EventId.Name == "UnknownHubMethod";
+                       writeContext.EventId.Name == "FailedInvokingHubMethod";
             }
 
             var hubProtocol = HubProtocols[hubProtocolName];
@@ -586,7 +609,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
 
                     var channel = await connection.StreamAsChannelAsync<int>("!@#$%");
                     var ex = await Assert.ThrowsAsync<HubException>(() => channel.ReadAllAsync().OrTimeout());
-                    Assert.Equal("Unknown hub method '!@#$%'", ex.Message);
+                    Assert.Equal("Failed to invoke '!@#$%' due to an error on the server. HubException: Method does not exist.", ex.Message);
                 }
                 catch (Exception ex)
                 {

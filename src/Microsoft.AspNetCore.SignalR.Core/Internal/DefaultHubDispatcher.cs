@@ -160,6 +160,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
         {
             Log.ReceivedStreamItem(_logger, message);
             return connection.StreamTracker.ProcessItem(message);
+
         }
 
         private Task ProcessInvocation(HubConnectionContext connection,
@@ -496,9 +497,8 @@ namespace Microsoft.AspNetCore.SignalR.Internal
         {
             if (!_methods.TryGetValue(methodName, out var descriptor))
             {
-                return Type.EmptyTypes;
+                throw new HubException("Method does not exist.");
             }
-
             return descriptor.ParameterTypes;
         }
     }

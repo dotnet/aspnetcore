@@ -3,7 +3,7 @@ plugins {
     id 'maven'
 }
 
-group 'com.microsoft.aspnetcore'
+group 'com.microsoft.aspnet'
 version '0.1.0-preview1'
 
 sourceCompatibility = 1.8
@@ -31,11 +31,10 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
 task generatePOM {
     pom {
         project {
-            groupId 'com.microsoft.aspnetcore'
-            artifactId 'signalr'
-            version '0.1.0-preview1'
-
             inceptionYear '2018'
+            description 'ASP.NET Core SignalR Client for Java applications'
+            url 'https://github.com/aspnet/SignalR'
+            name groupId + ':' + artifactId
             licenses {
                 license {
                     name 'The Apache Software License, Version 2.0'
@@ -43,9 +42,20 @@ task generatePOM {
                     distribution 'repo'
                 }
             }
+            scm {
+                connection 'scm:git:git://github.com/aspnet/SignalR.git'
+                developerConnection 'scm:git:git://github.com/aspnet/SignalR.git'
+                url 'http://github.com/aspnet/SignalR/tree/master'
+            }
+            developers {
+                developer {
+                    id 'microsoft'
+                    name 'Microsoft'
+                }
+            }
         }
-    }.writeTo("signalr-client-0.1.0-preview1.pom")
+    }.writeTo("signalr-0.1.0-preview1.pom")
 
-    ant.move file: "signalr-client-0.1.0-preview1.pom",
+    ant.move file: "signalr-0.1.0-preview1.pom",
             todir: "${buildDir}/libs"
 }

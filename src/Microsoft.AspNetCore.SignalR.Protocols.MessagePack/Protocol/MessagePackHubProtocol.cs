@@ -163,10 +163,10 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             }
 
             var target = ReadString(input, ref offset, "target");
-            var parameterTypes = binder.GetParameterTypes(target);
 
             try
             {
+                var parameterTypes = binder.GetParameterTypes(target);
                 var arguments = BindArguments(input, ref offset, parameterTypes, resolver);
                 return ApplyHeaders(headers, new InvocationMessage(invocationId, target, arguments));
             }
@@ -182,10 +182,9 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             var invocationId = ReadInvocationId(input, ref offset);
             var target = ReadString(input, ref offset, "target");
 
-            var parameterTypes = binder.GetParameterTypes(target);
-
             try
             {
+                var parameterTypes = binder.GetParameterTypes(target);
                 var arguments = BindArguments(input, ref offset, parameterTypes, resolver);
                 return ApplyHeaders(headers, new StreamInvocationMessage(invocationId, target, arguments));
             }

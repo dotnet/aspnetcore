@@ -428,6 +428,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             {
                 CheckDisposed();
                 CheckConnectionActive(nameof(StreamAsChannelCoreAsync));
+                cancellationToken.ThrowIfCancellationRequested();
 
                 // I just want an excuse to use 'irq' as a variable name...
                 var irq = InvocationRequest.Stream(cancellationToken, returnType, _connectionState.GetNextId(), _loggerFactory, this, out channel);
