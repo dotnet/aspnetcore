@@ -910,8 +910,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                         Input.CancelPendingRead();
                     }
 
-                    // Complete the task waiting on all streams to finish
-                    _streamsCompleted.TrySetResult(null);
+
+                    if (_state != Http2ConnectionState.Open)
+                    {
+                        // Complete the task waiting on all streams to finish
+                        _streamsCompleted.TrySetResult(null);
+                    }
                 }
             }
         }

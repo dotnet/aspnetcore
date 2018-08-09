@@ -3325,6 +3325,54 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
+        public async Task StopProcessingNextRequestSendsGracefulGOAWAYAndWaitsForStreamsToComplete()
+        {
+            var task = Task.CompletedTask;
+            await InitializeConnectionAsync(context => task);
+
+            // Send and receive an unblocked request
+            await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
+
+            await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 55,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1);
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 0,
+                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withStreamId: 1);
+
+            // Send a blocked request
+            var tcs = new TaskCompletionSource<object>(TaskContinuationOptions.RunContinuationsAsynchronously);
+            task = tcs.Task;
+            await StartStreamAsync(3, _browserRequestHeaders, endStream: false);
+
+            // Close pipe
+            _pair.Application.Output.Complete();
+
+            // Assert connection closed
+            await _closedStateReached.Task.DefaultTimeout();
+            VerifyGoAway(await ReceiveFrameAsync(), 3, Http2ErrorCode.NO_ERROR);
+
+            // Assert connection shutdown is still blocked
+            // ProcessRequestsAsync completes the connection's Input pipe
+            var readTask = _pair.Application.Input.ReadAsync();
+            _pair.Application.Input.CancelPendingRead();
+            var result = await readTask;
+            Assert.False(result.IsCompleted);
+
+            // Unblock the request and ProcessRequestsAsync
+            tcs.TrySetResult(null);
+            await _connectionTask;
+
+            // Assert connection's Input pipe is completed
+            readTask = _pair.Application.Input.ReadAsync();
+            _pair.Application.Input.CancelPendingRead();
+            result = await readTask;
+            Assert.True(result.IsCompleted);
+        }
+
+        [Fact]
         public async Task StopProcessingNextRequestSendsGracefulGOAWAYThenFinalGOAWAYWhenAllStreamsComplete()
         {
             await InitializeConnectionAsync(_echoApplication);
