@@ -88,6 +88,7 @@
     <ExternalDependency Include="Microsoft.Owin.Testing" Version="$(MicrosoftOwinTestingPackageVersion)" />
     <ExternalDependency Include="Microsoft.VisualStudio.ComponentModelHost" Version="$(MicrosoftVisualStudioComponentModelHostPackageVersion)" />
     <ExternalDependency Include="Microsoft.VisualStudio.Editor" Version="$(MicrosoftVisualStudioEditorPackageVersion)" />
+    <ExternalDependency Include="Microsoft.VisualStudio.Language" Version="$(MicrosoftVisualStudioLanguagePackageVersion)" />
     <ExternalDependency Include="Microsoft.VisualStudio.Language.Intellisense" Version="$(MicrosoftVisualStudioLanguageIntellisensePackageVersion)" />
     <ExternalDependency Include="Microsoft.VisualStudio.LanguageServices" Version="$(VSIX_MicrosoftVisualStudioLanguageServicesPackageVersion)" VariableName="VSIX_MicrosoftVisualStudioLanguageServicesPackageVersion" />
     <ExternalDependency Include="Microsoft.VisualStudio.LanguageServices.Razor.RemoteClient" Version="$(VSIX_MicrosoftVisualStudioLanguageServicesRazorRemoteClientPackageVersion)" VariableName="VSIX_MicrosoftVisualStudioLanguageServicesRazorRemoteClientPackageVersion" />
