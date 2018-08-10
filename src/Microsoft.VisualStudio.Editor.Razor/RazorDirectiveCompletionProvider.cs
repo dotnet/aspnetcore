@@ -36,18 +36,25 @@ namespace Microsoft.VisualStudio.Editor.Razor
             CSharpCodeParser.TagHelperPrefixDirectiveDescriptor,
         };
         private readonly Lazy<RazorCodeDocumentProvider> _codeDocumentProvider;
+        private readonly Lazy<RazorCompletionFactsService> _completionFactsService;
         private readonly IAsyncCompletionBroker _asyncCompletionBroker;
         private readonly RazorTextBufferProvider _textBufferProvider;
 
         [ImportingConstructor]
         public RazorDirectiveCompletionProvider(
             [Import(typeof(RazorCodeDocumentProvider))] Lazy<RazorCodeDocumentProvider> codeDocumentProvider,
+            [Import(typeof(RazorCompletionFactsService))] Lazy<RazorCompletionFactsService> completionFactsService,
             IAsyncCompletionBroker asyncCompletionBroker,
             RazorTextBufferProvider textBufferProvider)
         {
             if (codeDocumentProvider == null)
             {
                 throw new ArgumentNullException(nameof(codeDocumentProvider));
+            }
+
+            if (completionFactsService == null)
+            {
+                throw new ArgumentNullException(nameof(completionFactsService));
             }
 
             if (asyncCompletionBroker == null)
@@ -61,6 +68,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             }
 
             _codeDocumentProvider = codeDocumentProvider;
+            _completionFactsService = completionFactsService;
             _asyncCompletionBroker = asyncCompletionBroker;
             _textBufferProvider = textBufferProvider;
         }
@@ -133,70 +141,41 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 return Task.CompletedTask;
             }
 
-            if (!AtDirectiveCompletionPoint(syntaxTree, context))
+            if (!TryGetRazorSnapshotPoint(context, out var razorSnapshotPoint))
             {
-                // Can't have a valid directive at the current location.
+                // Could not find associated Razor location.
                 return Task.CompletedTask;
             }
 
-            var completionItems = GetCompletionItems(syntaxTree);
-            context.AddItems(completionItems);
+            var location = new SourceSpan(razorSnapshotPoint.Position, 0);
+            var razorCompletionItems = _completionFactsService.Value.GetCompletionItems(syntaxTree, location);
 
-            return Task.CompletedTask;
-        }
-
-        // Internal virtual for testing
-        internal virtual IEnumerable<CompletionItem> GetCompletionItems(RazorSyntaxTree syntaxTree)
-        {
-            var directives = syntaxTree.Options.Directives.Concat(DefaultDirectives);
-            var completionItems = new List<CompletionItem>();
-            foreach (var directive in directives)
+            foreach (var razorCompletionItem in razorCompletionItems)
             {
-                var propertyDictionary = new Dictionary<string, string>(StringComparer.Ordinal);
-
-                if (!string.IsNullOrEmpty(directive.Description))
+                if (razorCompletionItem.Kind != RazorCompletionItemKind.Directive)
                 {
-                    propertyDictionary[DescriptionKey] = directive.Description;
+                    // Don't support any other types of completion kinds other than directives.
+                    continue;
+                }
+
+                var propertyDictionary = new Dictionary<string, string>(StringComparer.Ordinal);
+                if (!string.IsNullOrEmpty(razorCompletionItem.Description))
+                {
+                    propertyDictionary[DescriptionKey] = razorCompletionItem.Description;
                 }
 
                 var completionItem = CompletionItem.Create(
-                    directive.Directive,
+                    razorCompletionItem.InsertText,
                     // This groups all Razor directives together
                     sortText: "_RazorDirective_",
                     rules: CompletionItemRules.Create(formatOnCommit: false),
                     tags: ImmutableArray.Create(WellKnownTags.Intrinsic),
                     properties: propertyDictionary.ToImmutableDictionary());
-                completionItems.Add(completionItem);
+
+                context.AddItem(completionItem);
             }
 
-            return completionItems;
-        }
-
-        // Internal for testing
-        internal bool AtDirectiveCompletionPoint(RazorSyntaxTree syntaxTree, CompletionContext context)
-        {
-            if (TryGetRazorSnapshotPoint(context, out var razorSnapshotPoint))
-            {
-                var change = new SourceChange(razorSnapshotPoint.Position, 0, string.Empty);
-                var owner = syntaxTree.Root.LocateOwner(change);
-
-                if (owner == null)
-                {
-                    return false;
-                }
-
-                if (owner.ChunkGenerator is ExpressionChunkGenerator &&
-                    owner.Tokens.All(IsDirectiveCompletableSymbol) &&
-                    // Do not provide IntelliSense for explicit expressions. Explicit expressions will usually look like:
-                    // [@] [(] [DateTime.Now] [)]
-                    owner.Parent?.Children.Count > 1 &&
-                    owner.Parent.Children[1] == owner)
-                {
-                    return true;
-                }
-            }
-
-            return false;
+            return Task.CompletedTask;
         }
 
         protected virtual bool TryGetRazorSnapshotPoint(CompletionContext context, out SnapshotPoint snapshotPoint)

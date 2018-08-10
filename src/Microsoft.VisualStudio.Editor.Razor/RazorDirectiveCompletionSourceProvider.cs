@@ -19,16 +19,25 @@ namespace Microsoft.VisualStudio.Editor.Razor
     internal class RazorDirectiveCompletionSourceProvider : IAsyncCompletionSourceProvider
     {
         private readonly ForegroundDispatcher _foregroundDispatcher;
+        private readonly RazorCompletionFactsService _completionFactsService;
 
         [ImportingConstructor]
-        public RazorDirectiveCompletionSourceProvider(ForegroundDispatcher foregroundDispatcher)
+        public RazorDirectiveCompletionSourceProvider(
+            ForegroundDispatcher foregroundDispatcher, 
+            RazorCompletionFactsService completionFactsService)
         {
             if (foregroundDispatcher == null)
             {
                 throw new ArgumentNullException(nameof(foregroundDispatcher));
             }
 
+            if (completionFactsService == null)
+            {
+                throw new ArgumentNullException(nameof(completionFactsService));
+            }
+
             _foregroundDispatcher = foregroundDispatcher;
+            _completionFactsService = completionFactsService;
         }
 
         public IAsyncCompletionSource GetOrCreate(ITextView textView)
@@ -57,7 +66,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 return null;
             }
 
-            var completionSource = new RazorDirectiveCompletionSource(parser, _foregroundDispatcher);
+            var completionSource = new RazorDirectiveCompletionSource(_foregroundDispatcher, parser, _completionFactsService);
             return completionSource;
         }
     }

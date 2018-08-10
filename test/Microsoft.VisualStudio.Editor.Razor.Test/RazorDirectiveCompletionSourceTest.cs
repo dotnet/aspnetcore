@@ -25,16 +25,18 @@ namespace Microsoft.VisualStudio.Editor.Razor
             CSharpCodeParser.TagHelperPrefixDirectiveDescriptor,
         };
 
+        private RazorCompletionFactsService CompletionFactsService { get; } = new DefaultRazorCompletionFactsService();
+
         [ForegroundFact]
         public async Task GetCompletionContextAsync_DoesNotProvideCompletionsPriorToParseResults()
         {
             // Arrange
             var text = "@validCompletion";
             var parser = Mock.Of<VisualStudioRazorParser>(); // CodeDocument will be null faking a parser without a parse.
-            var completionSource = new RazorDirectiveCompletionSource(parser, Dispatcher);
+            var completionSource = new RazorDirectiveCompletionSource(Dispatcher, parser, CompletionFactsService);
             var documentSnapshot = new StringTextSnapshot(text);
             var triggerLocation = new SnapshotPoint(documentSnapshot, 4);
-            var applicableSpan = new SnapshotSpan(documentSnapshot, new Span(1, text.Length - 1 /* @ */));
+            var applicableSpan = new SnapshotSpan(documentSnapshot, new Span(1, text.Length - 1 /* validCompletion */));
 
             // Act
             var completionContext = await Task.Run(
@@ -50,7 +52,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             // Arrange
             var text = "@(NotValidCompletionLocation)";
             var parser = CreateParser(text);
-            var completionSource = new RazorDirectiveCompletionSource(parser, Dispatcher);
+            var completionSource = new RazorDirectiveCompletionSource(Dispatcher, parser, CompletionFactsService);
             var documentSnapshot = new StringTextSnapshot(text);
             var triggerLocation = new SnapshotPoint(documentSnapshot, 4);
             var applicableSpan = new SnapshotSpan(documentSnapshot, new Span(2, text.Length - 3 /* @() */));
@@ -70,10 +72,10 @@ namespace Microsoft.VisualStudio.Editor.Razor
             // Arrange
             var text = "@addTag";
             var parser = CreateParser(text, SectionDirective.Directive);
-            var completionSource = new RazorDirectiveCompletionSource(parser, Dispatcher);
+            var completionSource = new RazorDirectiveCompletionSource(Dispatcher, parser, CompletionFactsService);
             var documentSnapshot = new StringTextSnapshot(text);
             var triggerLocation = new SnapshotPoint(documentSnapshot, 4);
-            var applicableSpan = new SnapshotSpan(documentSnapshot, new Span(1, text.Length - 1 /* @ */));
+            var applicableSpan = new SnapshotSpan(documentSnapshot, new Span(1, 6 /* addTag */));
 
             // Act
             var completionContext = await Task.Run(
@@ -89,78 +91,13 @@ namespace Microsoft.VisualStudio.Editor.Razor
         }
 
         [Fact]
-        public void GetCompletionItems_ReturnsDefaultDirectivesAsCompletionItems()
-        {
-            // Arrange
-            var syntaxTree = CreateSyntaxTree("@addTag");
-            var completionSource = new RazorDirectiveCompletionSource(Mock.Of<VisualStudioRazorParser>(), Dispatcher);
-
-            // Act
-            var completionItems = completionSource.GetCompletionItems(syntaxTree);
-
-            // Assert
-            Assert.Collection(
-                completionItems,
-                item => AssertRazorCompletionItem(DefaultDirectives[0], item, completionSource),
-                item => AssertRazorCompletionItem(DefaultDirectives[1], item, completionSource),
-                item => AssertRazorCompletionItem(DefaultDirectives[2], item, completionSource));
-        }
-
-        [Fact]
-        public void GetCompletionItems_ReturnsCustomDirectivesAsCompletionItems()
-        {
-            // Arrange
-            var customDirective = DirectiveDescriptor.CreateSingleLineDirective("custom", builder =>
-            {
-                builder.Description = "My Custom Directive.";
-            });
-            var syntaxTree = CreateSyntaxTree("@addTag", customDirective);
-            var completionSource = new RazorDirectiveCompletionSource(Mock.Of<VisualStudioRazorParser>(), Dispatcher);
-
-            // Act
-            var completionItems = completionSource.GetCompletionItems(syntaxTree);
-
-            // Assert
-            Assert.Collection(
-                completionItems,
-                item => AssertRazorCompletionItem(customDirective, item, completionSource),
-                item => AssertRazorCompletionItem(DefaultDirectives[0], item, completionSource),
-                item => AssertRazorCompletionItem(DefaultDirectives[1], item, completionSource),
-                item => AssertRazorCompletionItem(DefaultDirectives[2], item, completionSource));
-        }
-
-        [Fact]
-        public void GetCompletionItems_UsesDisplayNamesWhenNotNull()
-        {
-            // Arrange
-            var customDirective = DirectiveDescriptor.CreateSingleLineDirective("custom", builder =>
-            {
-                builder.DisplayName = "different";
-                builder.Description = "My Custom Directive.";
-            });
-            var syntaxTree = CreateSyntaxTree("@addTag", customDirective);
-            var completionSource = new RazorDirectiveCompletionSource(Mock.Of<VisualStudioRazorParser>(), Dispatcher);
-
-            // Act
-            var completionItems = completionSource.GetCompletionItems(syntaxTree);
-
-            // Assert
-            Assert.Collection(
-                completionItems,
-                item => AssertRazorCompletionItem("different", customDirective, item, completionSource),
-                item => AssertRazorCompletionItem(DefaultDirectives[0], item, completionSource),
-                item => AssertRazorCompletionItem(DefaultDirectives[1], item, completionSource),
-                item => AssertRazorCompletionItem(DefaultDirectives[2], item, completionSource));
-        }
-
-        [Fact]
         public async Task GetDescriptionAsync_AddsDirectiveDescriptionIfPropertyExists()
         {
             // Arrange
             var completionItem = new CompletionItem("TestDirective", Mock.Of<IAsyncCompletionSource>());
             var expectedDescription = "The expected description";
             completionItem.Properties.AddProperty(RazorDirectiveCompletionSource.DescriptionKey, expectedDescription);
-            var completionSource = new RazorDirectiveCompletionSource(Mock.Of<VisualStudioRazorParser>(), Dispatcher);
+            var completionSource = new RazorDirectiveCompletionSource(Dispatcher, Mock.Of<VisualStudioRazorParser>(), CompletionFactsService);
 
             // Act
             var descriptionObject = await completionSource.GetDescriptionAsync(completionItem, CancellationToken.None);
@@ -175,7 +112,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         {
             // Arrange
             var completionItem = new CompletionItem("TestDirective", Mock.Of<IAsyncCompletionSource>());
-            var completionSource = new RazorDirectiveCompletionSource(Mock.Of<VisualStudioRazorParser>(), Dispatcher);
+            var completionSource = new RazorDirectiveCompletionSource(Dispatcher, Mock.Of<VisualStudioRazorParser>(), CompletionFactsService);
 
             // Act
             var descriptionObject = await completionSource.GetDescriptionAsync(completionItem, CancellationToken.None);
@@ -183,138 +120,6 @@ namespace Microsoft.VisualStudio.Editor.Razor
             // Assert
             var description = Assert.IsType<string>(descriptionObject);
             Assert.Equal(string.Empty, description);
-        }
-
-        [Fact]
-        public void AtDirectiveCompletionPoint_ReturnsFalseIfSyntaxTreeNull()
-        {
-            // Act
-            var result = RazorDirectiveCompletionSource.AtDirectiveCompletionPoint(syntaxTree: null, location: new SnapshotPoint());
-
-            // Assert
-            Assert.False(result);
-        }
-
-        [Fact]
-        public void AtDirectiveCompletionPoint_ReturnsFalseIfNoOwner()
-        {
-            // Arrange
-            var syntaxTree = CreateSyntaxTree("@");
-            var snapshotPoint = new SnapshotPoint(new StringTextSnapshot("@ text"), 2);
-
-            // Act
-            var result = RazorDirectiveCompletionSource.AtDirectiveCompletionPoint(syntaxTree, snapshotPoint);
-
-            // Assert
-            Assert.False(result);
-        }
-
-        [Fact]
-        public void AtDirectiveCompletionPoint_ReturnsFalseWhenOwnerIsNotExpression()
-        {
-            // Arrange
-            var syntaxTree = CreateSyntaxTree("@{");
-            var snapshotPoint = new SnapshotPoint(new StringTextSnapshot("@{"), 2);
-
-            // Act
-            var result = RazorDirectiveCompletionSource.AtDirectiveCompletionPoint(syntaxTree, snapshotPoint);
-
-            // Assert
-            Assert.False(result);
-        }
-
-        [Fact]
-        public void AtDirectiveCompletionPoint_ReturnsFalseWhenOwnerIsComplexExpression()
-        {
-            // Arrange
-            var syntaxTree = CreateSyntaxTree("@DateTime.Now");
-            var snapshotPoint = new SnapshotPoint(new StringTextSnapshot("@DateTime.Now"), 2);
-
-            // Act
-            var result = RazorDirectiveCompletionSource.AtDirectiveCompletionPoint(syntaxTree, snapshotPoint);
-
-            // Assert
-            Assert.False(result);
-        }
-
-        [Fact]
-        public void AtDirectiveCompletionPoint_ReturnsFalseWhenOwnerIsExplicitExpression()
-        {
-            // Arrange
-            var syntaxTree = CreateSyntaxTree("@(something)");
-            var snapshotPoint = new SnapshotPoint(new StringTextSnapshot("@(something)"), 4);
-
-            // Act
-            var result = RazorDirectiveCompletionSource.AtDirectiveCompletionPoint(syntaxTree, snapshotPoint);
-
-            // Assert
-            Assert.False(result);
-        }
-
-        [Fact]
-        public void AtDirectiveCompletionPoint_ReturnsTrueForSimpleImplicitExpressions()
-        {
-            // Arrange
-            var syntaxTree = CreateSyntaxTree("@mod");
-            var snapshotPoint = new SnapshotPoint(new StringTextSnapshot("@mod"), 2);
-
-            // Act
-            var result = RazorDirectiveCompletionSource.AtDirectiveCompletionPoint(syntaxTree, snapshotPoint);
-
-            // Assert
-            Assert.True(result);
-        }
-
-        [Fact]
-        public void IsDirectiveCompletableToken_ReturnsTrueForCSharpIdentifiers()
-        {
-            // Arrange
-            var csharpToken = new CSharpToken("model", CSharpTokenType.Identifier);
-
-            // Act
-            var result = RazorDirectiveCompletionSource.IsDirectiveCompletableToken(csharpToken);
-
-            // Assert
-            Assert.True(result);
-        }
-
-        [Fact]
-        public void IsDirectiveCompletableToken_ReturnsTrueForCSharpMarkerTokens()
-        {
-            // Arrange
-            var csharpToken = new CSharpToken(string.Empty, CSharpTokenType.Unknown);
-
-            // Act
-            var result = RazorDirectiveCompletionSource.IsDirectiveCompletableToken(csharpToken);
-
-            // Assert
-            Assert.True(result);
-        }
-
-        [Fact]
-        public void IsDirectiveCompletableToken_ReturnsFalseForNonCSharpTokens()
-        {
-            // Arrange
-            var token = Mock.Of<IToken>();
-
-            // Act
-            var result = RazorDirectiveCompletionSource.IsDirectiveCompletableToken(token);
-
-            // Assert
-            Assert.False(result);
-        }
-
-        [Fact]
-        public void IsDirectiveCompletableToken_ReturnsFalseForInvalidCSharpTokens()
-        {
-            // Arrange
-            var csharpToken = new CSharpToken("~", CSharpTokenType.Tilde);
-
-            // Act
-            var result = RazorDirectiveCompletionSource.IsDirectiveCompletableToken(csharpToken);
-
-            // Assert
-            Assert.False(result);
         }
 
         private static void AssertRazorCompletionItem(string completionDisplayText, DirectiveDescriptor directive, CompletionItem item, IAsyncCompletionSource source)

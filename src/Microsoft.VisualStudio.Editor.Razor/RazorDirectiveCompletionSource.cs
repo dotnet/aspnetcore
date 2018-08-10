@@ -4,11 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
-using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.VisualStudio.Core.Imaging;
 using Microsoft.VisualStudio.Imaging;
@@ -29,33 +27,35 @@ namespace Microsoft.VisualStudio.Editor.Razor
         internal static readonly ImmutableArray<CompletionFilter> DirectiveCompletionFilters = new[] {
             new CompletionFilter("Razor Directive", "r", DirectiveImageGlyph)
         }.ToImmutableArray();
-        private static readonly IEnumerable<DirectiveDescriptor> DefaultDirectives = new[]
-        {
-            CSharpCodeParser.AddTagHelperDirectiveDescriptor,
-            CSharpCodeParser.RemoveTagHelperDirectiveDescriptor,
-            CSharpCodeParser.TagHelperPrefixDirectiveDescriptor,
-        };
 
         // Internal for testing
         internal readonly VisualStudioRazorParser _parser;
+        private readonly RazorCompletionFactsService _completionFactsService;
         private readonly ForegroundDispatcher _foregroundDispatcher;
 
         public RazorDirectiveCompletionSource(
+            ForegroundDispatcher foregroundDispatcher,
             VisualStudioRazorParser parser,
-            ForegroundDispatcher foregroundDispatcher)
+            RazorCompletionFactsService completionFactsService)
         {
-            if (parser == null)
-            {
-                throw new ArgumentNullException(nameof(parser));
-            }
-
             if (foregroundDispatcher == null)
             {
                 throw new ArgumentNullException(nameof(foregroundDispatcher));
             }
 
-            _parser = parser;
+            if (parser == null)
+            {
+                throw new ArgumentNullException(nameof(parser));
+            }
+
+            if (completionFactsService == null)
+            {
+                throw new ArgumentNullException(nameof(completionFactsService));
+            }
+
             _foregroundDispatcher = foregroundDispatcher;
+            _parser = parser;
+            _completionFactsService = completionFactsService;
         }
 
         public Task<CompletionContext> GetCompletionContextAsync(
@@ -67,12 +67,31 @@ namespace Microsoft.VisualStudio.Editor.Razor
             _foregroundDispatcher.AssertBackgroundThread();
 
             var syntaxTree = _parser.CodeDocument?.GetSyntaxTree();
-            if (!AtDirectiveCompletionPoint(syntaxTree, triggerLocation))
-            {
-                return Task.FromResult(CompletionContext.Empty);
-            }
+            var location = new SourceSpan(applicableSpan.Start.Position, applicableSpan.Length);
+            var razorCompletionItems = _completionFactsService.GetCompletionItems(syntaxTree, location);
 
-            var completionItems = GetCompletionItems(syntaxTree);
+            var completionItems = new List<CompletionItem>();
+            foreach (var razorCompletionItem in razorCompletionItems)
+            {
+                if (razorCompletionItem.Kind != RazorCompletionItemKind.Directive)
+                {
+                    // Don't support any other types of completion kinds other than directives.
+                    continue;
+                }
+
+                var completionItem = new CompletionItem(
+                    displayText: razorCompletionItem.DisplayText,
+                    filterText: razorCompletionItem.DisplayText,
+                    insertText: razorCompletionItem.InsertText,
+                    source: this,
+                    icon: DirectiveImageGlyph,
+                    filters: DirectiveCompletionFilters,
+                    suffix: string.Empty,
+                    sortText: razorCompletionItem.DisplayText,
+                    attributeIcons: ImmutableArray<ImageElement>.Empty);
+                completionItem.Properties.AddProperty(DescriptionKey, razorCompletionItem.Description);
+                completionItems.Add(completionItem);
+            }
             var context = new CompletionContext(completionItems.ToImmutableArray());
             return Task.FromResult(context);
         }
@@ -95,73 +114,6 @@ namespace Microsoft.VisualStudio.Editor.Razor
             // doesn't know this information so we rely on Roslyn to define what the applicable span for a completion is.
             applicableToSpan = default(SnapshotSpan);
             return false;
-        }
-
-        // Internal for testing
-        internal List<CompletionItem> GetCompletionItems(RazorSyntaxTree syntaxTree)
-        {
-            var directives = syntaxTree.Options.Directives.Concat(DefaultDirectives);
-            var completionItems = new List<CompletionItem>();
-            foreach (var directive in directives)
-            {
-                var completionDisplayText = directive.DisplayName ?? directive.Directive;
-                var completionItem = new CompletionItem(
-                    displayText: completionDisplayText,
-                    filterText: completionDisplayText,
-                    insertText: directive.Directive,
-                    source: this,
-                    icon: DirectiveImageGlyph,
-                    filters: DirectiveCompletionFilters,
-                    suffix: string.Empty,
-                    sortText: completionDisplayText,
-                    attributeIcons: ImmutableArray<ImageElement>.Empty);
-                completionItem.Properties.AddProperty(DescriptionKey, directive.Description);
-                completionItems.Add(completionItem);
-            }
-
-            return completionItems;
-        }
-
-        // Internal for testing
-        internal static bool AtDirectiveCompletionPoint(RazorSyntaxTree syntaxTree, SnapshotPoint location)
-        {
-            if (syntaxTree == null)
-            {
-                return false;
-            }
-
-            var change = new SourceChange(location.Position, 0, string.Empty);
-            var owner = syntaxTree.Root.LocateOwner(change);
-
-            if (owner == null)
-            {
-                return false;
-            }
-
-            if (owner.ChunkGenerator is ExpressionChunkGenerator &&
-                owner.Tokens.All(IsDirectiveCompletableToken) &&
-                // Do not provide IntelliSense for explicit expressions. Explicit expressions will usually look like:
-                // [@] [(] [DateTime.Now] [)]
-                owner.Parent?.Children.Count > 1 &&
-                owner.Parent.Children[1] == owner)
-            {
-                return true;
-            }
-
-            return false;
-        }
-
-        // Internal for testing
-        internal static bool IsDirectiveCompletableToken(IToken token)
-        {
-            if (!(token is CSharpToken csharpToken))
-            {
-                return false;
-            }
-
-            return csharpToken.Type == CSharpTokenType.Identifier ||
-                // Marker symbol
-                csharpToken.Type == CSharpTokenType.Unknown;
         }
     }
 }
