@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Mvc.DataAnnotations.Internal;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -498,6 +499,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         }
 
         [Fact]
+        [ReplaceCulture]
         public async Task BindModelAsync_ForParameter_UsesValidationFromActualModel_WhenDerivedModelIsSet()
         {
             // Arrange
@@ -606,6 +608,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         }
 
         [Fact]
+        [ReplaceCulture]
         public async Task BindModelAsync_ForProperty_UsesValidationFromActualModel_WhenDerivedModelIsSet()
         {
             // Arrange
