@@ -38,8 +38,6 @@ namespace RepoTasks
         [Required]
         public string Properties { get; set; }
 
-        public string StartGraphAt { get; set; }
-
         /// <summary>
         /// The order in which to build repositories
         /// </summary>
@@ -270,14 +268,13 @@ namespace RepoTasks
                     return repo;
                 }).ToList();
 
-            var graph = GraphBuilder.Generate(repositories, StartGraphAt, Log);
+            var graph = GraphBuilder.Generate(repositories, Log);
             var repositoriesWithOrder = new List<(ITaskItem repository, int order)>();
             foreach (var repository in repositories)
             {
                 var graphNodeRepository = graph.FirstOrDefault(g => g.Repository.Name == repository.Name);
                 if (graphNodeRepository == null)
                 {
-                    // StartGraphAt was specified so the graph is incomplete.
                     continue;
                 }
 
