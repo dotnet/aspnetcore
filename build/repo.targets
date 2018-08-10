@@ -240,7 +240,6 @@
       Artifacts="@(ArtifactInfo);@(ShippedArtifactInfo)"
       Repositories="@(Repository);@(ShippedRepository)"
       Dependencies="@(ExternalDependency)"
-      StartGraphAt="$(BuildGraphOf)"
       Properties="Configuration=$(Configuration);BuildNumber=$(BuildNumber);DotNetPackageVersionPropsPath=$(GeneratedPackageVersionPropsPath);DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcesPropsPath)">
       <Output TaskParameter="RepositoryBuildOrder" ItemName="RepositoryBuildOrder" />
     </RepoTasks.AnalyzeBuildGraph>
