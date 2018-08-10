@@ -3,14 +3,7 @@
   <PropertyGroup>
     <TargetFramework Condition="'$(TargetFrameworkOverride)' == ''">netcoreapp3.0</TargetFramework>
     <TargetFramework Condition="'$(TargetFrameworkOverride)' != ''">TargetFrameworkOverride</TargetFramework>
-    <!-- aspnet/BuildTools#662 Don't police what version of NetCoreApp we use -->
-    <NETCoreAppMaximumVersion>99.9</NETCoreAppMaximumVersion>
-    <RuntimeFrameworkVersion>${MicrosoftNETCoreApp30PackageVersion}</RuntimeFrameworkVersion>
   </PropertyGroup>
-
-  <ItemGroup>
-    <DotNetCoreRuntime Include="${MicrosoftNETCoreApp30PackageVersion}" />
-  </ItemGroup>
 
   <ItemGroup>
     <Folder Include="wwwroot\" />
