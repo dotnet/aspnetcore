@@ -289,7 +289,7 @@ if [ ! -z "$product_build_id" ]; then
     msbuild_args[${#msbuild_args[*]}]="-p:DotNetProductBuildId=$product_build_id"
 fi
 
-[ -z "$channel" ] && channel='dev'
+[ -z "$channel" ] && channel='master'
 [ -z "$tools_source" ] && tools_source='https://aspnetcore.blob.core.windows.net/buildtools'
 
 get_korebuild
