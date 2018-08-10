@@ -1,9 +1,15 @@
 <Project>
+  <Target Name="CheckForPreviousReleaseArchiveBaseline" BeforeTargets="CheckUniverse">
+    <MSBuild Projects="@(ArchiveProjects)"
+             Targets="CheckForPreviousReleaseArchiveBaseline" />
+  </Target>
+
+  <ItemGroup>
+    <ArchiveProjects Include="$(RepositoryRoot)src\PackageArchive\Archive.*\*.*proj" />
+  </ItemGroup>
+
   <Target Name="BuildFallbackArchive" DependsOnTargets="ResolveRepoInfo;GeneratePropsFiles">
 
-    <ItemGroup>
-      <ArchiveProjects Include="$(RepositoryRoot)src\PackageArchive\Archive.*\*.*proj" />
-    </ItemGroup>
 
     <PropertyGroup>
       <ArchiveBuildProps>
