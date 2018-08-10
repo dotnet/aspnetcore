@@ -17,8 +17,10 @@
 
     <HasJdk Condition="Exists('$(JavacPath)')">true</HasJdk>
 
+    <!-- Pass the Java Package Version down to Gradle -->
+    <GradleOptions>-PpackageVersion="$(JavaPackageVersion)"</GradleOptions>
     <!-- Disable gradle daemon on CI since the CI seems to try to wait for the daemon to shut down, which it doesn't do :) -->
-    <GradleOptions Condition="'$(CI)' == 'true'">-Dorg.gradle.daemon=false</GradleOptions>
+    <GradleOptions Condition="'$(CI)' == 'true'">$(GradleOptions) -Dorg.gradle.daemon=false</GradleOptions>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -48,6 +50,7 @@
 
   <Target Name="RunJavaTests" Condition="'$(HasJdk)' == 'true'">
     <Message Text="Running Java client tests" Importance="high" />
+    <Message Text="> gradlew $(GradleOptions) test" Importance="high" />
     <Exec Command="./gradlew $(GradleOptions) test" WorkingDirectory="$(RepositoryRoot)clients/java/signalr" IgnoreStandardErrorWarningFormat="true" />
   </Target> 
 
@@ -109,6 +112,7 @@
 
   <Target Name="BuildJavaClient" Condition="'$(HasJdk)' == 'true'" DependsOnTargets="GetJavaArtifactInfo">
     <Message Text="Building Java client" Importance="high" />
+    <Message Text="> gradlew $(GradleOptions) compileJava" Importance="high" />
     <Exec Command="./gradlew $(GradleOptions) compileJava" WorkingDirectory="$(RepositoryRoot)clients/java/signalr" />
   </Target>
 
@@ -126,14 +130,15 @@
   </Target>
 
   <ItemGroup>
-    <Jars Include="signalr-$(JavaClientVersion).jar;signalr-$(JavaClientVersion)-javadoc.jar;signalr-$(JavaClientVersion)-sources.jar;" />
-    <PomFile Include="signalr-$(JavaClientVersion).pom" />
+    <Jars Include="signalr-$(JavaPackageVersion).jar;signalr-$(JavaPackageVersion)-javadoc.jar;signalr-$(JavaPackageVersion)-sources.jar;" />
+    <PomFile Include="signalr-$(JavaPackageVersion).pom" />
     <JavaBuildFiles Include="@(Jars);@(PomFile)"/>
   </ItemGroup>
 
   <Target Name="PackJavaClient" Condition="'$(HasJdk)' == 'true'">
     <Message Text="Packing Java client" Importance="high" />
-    <Exec Command="./gradlew $(GradleOptions) jar sourceJar javadocJar generatePOM" WorkingDirectory="$(RepositoryRoot)clients/java/signalr" />
+    <Message Text="> gradlew $(GradleOptions) createPackage" Importance="high" />
+    <Exec Command="./gradlew $(GradleOptions) createPackage" WorkingDirectory="$(RepositoryRoot)clients/java/signalr" />
     <Copy SourceFiles="$(RepositoryRoot)clients/java/signalr\build\libs\%(JavaBuildFiles.Identity)" DestinationFolder="$(BuildDir)" />
   </Target>
 
