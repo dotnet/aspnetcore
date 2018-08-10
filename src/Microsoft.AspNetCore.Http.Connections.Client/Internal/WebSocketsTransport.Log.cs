@@ -66,6 +66,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             private static readonly Action<ILogger, Exception> _cancelMessage =
                 LoggerMessage.Define(LogLevel.Debug, new EventId(18, "CancelMessage"), "Canceled passing message to application.");
 
+            private static readonly Action<ILogger, Exception> _startedTransport =
+                LoggerMessage.Define(LogLevel.Debug, new EventId(19, "StartedTransport"), "Started transport.");
+
             public static void StartTransport(ILogger logger, TransferFormat transferFormat, Uri webSocketUrl)
             {
                 _startTransport(logger, transferFormat, webSocketUrl, null);
@@ -154,6 +157,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             public static void CancelMessage(ILogger logger)
             {
                 _cancelMessage(logger, null);
+            }
+
+            public static void StartedTransport(ILogger logger)
+            {
+                _startedTransport(logger, null);
             }
         }
     }

@@ -107,8 +107,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 
             var resolvedUrl = ResolveWebSocketsUrl(url);
 
-            Log.StartTransport(_logger, transferFormat, resolvedUrl);
-
             // We don't need to capture to a local because we never change this delegate.
             if (_accessTokenProvider != null)
             {
@@ -119,7 +117,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                 }
             }
 
+            Log.StartTransport(_logger, transferFormat, resolvedUrl);
+
             await _webSocket.ConnectAsync(resolvedUrl, CancellationToken.None);
+
+            Log.StartedTransport(_logger);
 
             // Create the pipe pair (Application's writer is connected to Transport's reader, and vice versa)
             var options = ClientPipeOptions.DefaultOptions;
