@@ -3,7 +3,7 @@ phases:
   parameters:
     agentOs: Windows
     beforeBuild:
-      - powershell: "& ./tools/UpdateIISExpressCertificate.ps1; & ./tools/update_schema.ps1; Restart-Service w3svc"
+      - powershell: "& ./tools/UpdateIISExpressCertificate.ps1; & ./tools/update_schema.ps1"
         displayName: Prepare repo
     afterBuild:
       - task: PublishBuildArtifacts@1

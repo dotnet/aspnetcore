@@ -6,12 +6,14 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.ServiceProcess;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Server.IntegrationTesting.Common;
 using Microsoft.Extensions.Logging;
 using Microsoft.Web.Administration;
+using TimeoutException = System.TimeoutException;
 
 namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
 {
@@ -164,6 +166,18 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
 
         private async Task WaitUntilSiteStarted()
         {
+            ServiceController serviceController = new ServiceController("w3svc");
+            Logger.LogInformation("W3SVC status " + serviceController.Status);
+
+            if (serviceController.Status != ServiceControllerStatus.Running &&
+                serviceController.Status != ServiceControllerStatus.StartPending)
+            {
+                Logger.LogInformation("Starting W3SVC");
+
+                serviceController.Start();
+                serviceController.WaitForStatus(ServiceControllerStatus.Running, _timeout);
+            }
+
             var sw = Stopwatch.StartNew();
 
             while (sw.Elapsed < _timeout)

@@ -1,4 +1,4 @@
-﻿<Project>
+<Project>
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
@@ -47,6 +47,7 @@
     <SystemNumericsVectorsPackageVersion>4.5.0</SystemNumericsVectorsPackageVersion>
     <SystemRuntimeCompilerServicesUnsafePackageVersion>4.5.1</SystemRuntimeCompilerServicesUnsafePackageVersion>
     <SystemSecurityPrincipalWindowsPackageVersion>4.5.0</SystemSecurityPrincipalWindowsPackageVersion>
+    <SystemServiceProcessServiceControllerPackageVersion>4.5.0</SystemServiceProcessServiceControllerPackageVersion>
     <Tooling_NewtonsoftJsonPackageVersion>9.0.1</Tooling_NewtonsoftJsonPackageVersion>
     <XunitPackageVersion>2.3.1</XunitPackageVersion>
     <XunitRunnerVisualStudioPackageVersion>2.4.0</XunitRunnerVisualStudioPackageVersion>
