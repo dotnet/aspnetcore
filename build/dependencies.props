@@ -47,6 +47,7 @@
     <SystemNumericsVectorsPackageVersion>4.6.0-preview1-26727-04</SystemNumericsVectorsPackageVersion>
     <SystemRuntimeCompilerServicesUnsafePackageVersion>4.6.0-preview1-26727-04</SystemRuntimeCompilerServicesUnsafePackageVersion>
     <SystemSecurityPrincipalWindowsPackageVersion>4.6.0-preview1-26727-04</SystemSecurityPrincipalWindowsPackageVersion>
+    <SystemServiceProcessServiceControllerPackageVersion>4.6.0-preview1-26727-04</SystemServiceProcessServiceControllerPackageVersion>
     <Tooling_NewtonsoftJsonPackageVersion>9.0.1</Tooling_NewtonsoftJsonPackageVersion>
     <XunitPackageVersion>2.3.1</XunitPackageVersion>
     <XunitRunnerVisualStudioPackageVersion>2.4.0</XunitRunnerVisualStudioPackageVersion>
