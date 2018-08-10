@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using BasicWebSite.Models;
 using Newtonsoft.Json;
@@ -56,6 +57,38 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                     Assert.Equal("The field Zip must match the regular expression '\\d{5}'.", error);
                 }
             );
+        }
+
+        [Fact]
+        public async Task ActionsReturnUnsupportedMediaType_WhenMediaTypeIsNotSupported()
+        {
+            // Arrange
+            var requestMessage = new HttpRequestMessage(HttpMethod.Post, "/contact")
+            {
+                Content = new StringContent("some content", Encoding.UTF8, "text/css"),
+            };
+
+            // Act
+            var response = await Client.SendAsync(requestMessage);
+
+            // Assert
+            await response.AssertStatusCodeAsync(HttpStatusCode.UnsupportedMediaType);
+        }
+
+        [Fact]
+        public async Task ActionsReturnUnsupportedMediaType_WhenEncodingIsUnsupported()
+        {
+            // Arrange
+            var requestMessage = new HttpRequestMessage(HttpMethod.Post, "/contact")
+            {
+                Content = new StringContent("some content", Encoding.UTF7, "application/json"),
+            };
+
+            // Act
+            var response = await Client.SendAsync(requestMessage);
+
+            // Assert
+            await response.AssertStatusCodeAsync(HttpStatusCode.UnsupportedMediaType);
         }
 
         [Fact]

@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
 
 [assembly: ApiConventionType(typeof(DefaultApiConventions))]
 
@@ -8,9 +9,9 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers._OUTPUT_
     [Route("[controller]/[action]")]
     public class CodeFixAddsSuccessStatusCode : ControllerBase
     {
-        [ProducesResponseType(201)]
-        [ProducesResponseType(400)]
-        [ProducesResponseType(404)]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesDefaultResponseType]
         public ActionResult<object> GetItem(string id)
         {
