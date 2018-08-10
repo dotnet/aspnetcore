@@ -32,6 +32,9 @@ Re-installs KoreBuild
 .PARAMETER ConfigFile
 The path to the configuration file that stores values. Defaults to korebuild.json.
 
+.PARAMETER CI
+Sets up CI specific settings and variables.
+
 .PARAMETER PackageVersionPropsUrl
 (optional) the url of the package versions props path containing dependency versions.
 
@@ -61,8 +64,8 @@ in the file are overridden by command line parameters.
 Example config file:
 ```json
 {
-  "$schema": "https://raw.githubusercontent.com/aspnet/BuildTools/dev/tools/korebuild.schema.json",
-  "channel": "dev",
+  "$schema": "https://raw.githubusercontent.com/aspnet/BuildTools/master/tools/korebuild.schema.json",
+  "channel": "master",
   "toolsSource": "https://aspnetcore.blob.core.windows.net/buildtools"
 }
 ```
@@ -81,7 +84,8 @@ param(
     [Alias('u')]
     [switch]$Update,
     [switch]$Reinstall,
-    [string]$ConfigFile,
+    [string]$ConfigFile = $null,
+    [switch]$CI,
     [string]$PackageVersionPropsUrl = $null,
     [string]$AccessTokenSuffix = $null,
     [string]$RestoreSources = $null,
@@ -202,7 +206,7 @@ if (!$DotNetHome) {
         else { Join-Path $PSScriptRoot '.dotnet'}
 }
 
-if (!$Channel) { $Channel = 'dev' }
+if (!$Channel) { $Channel = 'master' }
 if (!$ToolsSource) { $ToolsSource = 'https://aspnetcore.blob.core.windows.net/buildtools' }
 
 if ($PackageVersionPropsUrl) {
@@ -235,7 +239,7 @@ $korebuildPath = Get-KoreBuild
 Import-Module -Force -Scope Local (Join-Path $korebuildPath 'KoreBuild.psd1')
 
 try {
-    Set-KoreBuildSettings -ToolsSource $ToolsSource -DotNetHome $DotNetHome -RepoPath $Path -ConfigFile $ConfigFile
+    Set-KoreBuildSettings -ToolsSource $ToolsSource -DotNetHome $DotNetHome -RepoPath $Path -ConfigFile $ConfigFile -CI:$CI
     Invoke-KoreBuildCommand $Command @MSBuildArguments
 }
 finally {
