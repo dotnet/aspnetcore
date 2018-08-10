@@ -8,6 +8,7 @@
     <MicrosoftAspNetCoreHostingPackageVersion>2.2.0-preview1-34896</MicrosoftAspNetCoreHostingPackageVersion>
     <MicrosoftAspNetCoreTestingPackageVersion>2.2.0-preview1-34896</MicrosoftAspNetCoreTestingPackageVersion>
     <MicrosoftAzureKeyVaultPackageVersion>2.3.2</MicrosoftAzureKeyVaultPackageVersion>
+    <MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion>2.2.0-preview1-34896</MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion>
     <MicrosoftExtensionsConfigurationJsonPackageVersion>2.2.0-preview1-34896</MicrosoftExtensionsConfigurationJsonPackageVersion>
     <MicrosoftExtensionsConfigurationPackageVersion>2.2.0-preview1-34896</MicrosoftExtensionsConfigurationPackageVersion>
     <MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>2.2.0-preview1-34896</MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>
