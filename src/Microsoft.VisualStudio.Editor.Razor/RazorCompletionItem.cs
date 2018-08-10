@@ -5,7 +5,7 @@ using System;
 
 namespace Microsoft.VisualStudio.Editor.Razor
 {
-    internal sealed class RazorCompletionItem
+    public sealed class RazorCompletionItem
     {
         public RazorCompletionItem(
             string displayText, 

@@ -3,7 +3,7 @@
 
 namespace Microsoft.VisualStudio.Editor.Razor
 {
-    internal enum RazorCompletionItemKind
+    public enum RazorCompletionItemKind
     {
         Directive
     }

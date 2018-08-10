@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Razor.Language;
 
 namespace Microsoft.VisualStudio.Editor.Razor
 {
-    internal abstract class RazorCompletionFactsService
+    public abstract class RazorCompletionFactsService
     {
         public abstract IReadOnlyList<RazorCompletionItem> GetCompletionItems(RazorSyntaxTree syntaxTree, SourceSpan location);
     }
