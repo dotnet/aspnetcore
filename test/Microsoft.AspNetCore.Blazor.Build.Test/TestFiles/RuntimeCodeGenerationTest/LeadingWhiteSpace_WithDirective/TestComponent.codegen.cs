@@ -15,9 +15,7 @@ namespace Test
         protected override void BuildRenderTree(Microsoft.AspNetCore.Blazor.RenderTree.RenderTreeBuilder builder)
         {
             base.BuildRenderTree(builder);
-            builder.OpenElement(0, "h1");
-            builder.AddContent(1, "Hello");
-            builder.CloseElement();
+            builder.AddMarkupContent(0, "<h1>Hello</h1>");
         }
         #pragma warning restore 1998
     }

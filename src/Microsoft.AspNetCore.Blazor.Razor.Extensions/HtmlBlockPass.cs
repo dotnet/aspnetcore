@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using AngleSharp.Html;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
@@ -166,11 +167,15 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             IntermediateNodeWalker,
             IExtensionIntermediateNodeVisitor<HtmlElementIntermediateNode>
         {
+            private readonly StringBuilder _encodingBuilder;
+
             private readonly List<IntermediateNodeReference> _trees;
 
             public RewriteVisitor(List<IntermediateNodeReference> trees)
             {
                 _trees = trees;
+
+                _encodingBuilder = new StringBuilder();
             }
 
             public StringBuilder Builder { get; } = new StringBuilder();
@@ -251,19 +256,28 @@ namespace Microsoft.AspNetCore.Blazor.Razor
 
             public override void VisitHtmlAttributeValue(HtmlAttributeValueIntermediateNode node)
             {
-                // Visit Children
-                base.VisitDefault(node);
+                Builder.Append(Encode(node.Children));
             }
 
             public override void VisitHtml(HtmlContentIntermediateNode node)
             {
-                // Visit Children
-                base.VisitDefault(node);
+                Builder.Append(Encode(node.Children));
             }
 
-            public override void VisitToken(IntermediateToken node)
+            private string Encode(IntermediateNodeCollection nodes)
             {
-                Builder.Append(node.Content);
+                // We need to HTML encode text content. We would have decoded HTML entities
+                // earlier when we parsed the text into a tree, but since we're folding
+                // this node into a block of pre-encoded HTML we need to be sure to
+                // re-encode.
+                _encodingBuilder.Clear();
+
+                for (var i = 0; i < nodes.Count; i++)
+                {
+                    _encodingBuilder.Append(((IntermediateToken)nodes[i]).Content);
+                }
+
+                return HtmlMarkupFormatter.Instance.Text(_encodingBuilder.ToString());
             }
         }
     }

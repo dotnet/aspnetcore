@@ -414,6 +414,13 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                     throw new InvalidOperationException("You need to call Push first.");
                 }
 
+                // This will decode any HTML entities into their textual equivalent.
+                //
+                // This is OK because an HtmlContent node is used with document.createTextNode
+                // in the DOM, which can accept content that has decoded entities.
+                //
+                // In the event that we merge HtmlContent into an HtmlBlock, we need to
+                // re-encode the entites. That's done in the HtmlBlock pass.
                 var tokens = _textSource.Tokenize(HtmlEntityService.Resolver);
                 return tokens;
             }

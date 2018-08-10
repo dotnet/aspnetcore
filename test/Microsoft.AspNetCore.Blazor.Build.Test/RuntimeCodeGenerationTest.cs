@@ -1256,7 +1256,6 @@ namespace Test
         [Fact] // We don't process <!DOCTYPE ...> - we just skip them
         public void Component_WithDocType()
         {
-            GenerateBaselines = true;
             // Arrange
 
             // Act

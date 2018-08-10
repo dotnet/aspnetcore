@@ -472,5 +472,21 @@ namespace Test
                 frame => AssertFrame.Attribute(frame, "onmouseover", 1),
                 frame => AssertFrame.Attribute(frame, "style", "background: #FFFFFF;", 2));
         }
+
+        // Text nodes decode HTML entities
+        [Fact]
+        public void Render_Component_HtmlEncoded()
+        {
+            // Arrange
+            var component = CompileToComponent(@"&lt;span&gt;Hi&lt/span&gt;");
+
+            // Act
+            var frames = GetRenderTree(component);
+
+            // Assert
+            Assert.Collection(
+                frames,
+                frame => AssertFrame.Text(frame, "<span>Hi</span>"));
+        }
     }
 }
