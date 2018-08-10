@@ -1065,12 +1065,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task DATA_Received_NoStreamWindowSpace_ConnectionError()
         {
-            // I hate doing this, but it avoids exceptions from MemoryPool.Dipose() in debug mode. The problem is since
-            // the stream's ProcessRequestsAsync loop is never awaited by the connection, it's not really possible to
-            // observe when all the blocks are returned. This can be removed after we implement graceful shutdown.
-            Dispose();
-            InitializeConnectionFields(new DiagnosticMemoryPool(KestrelMemoryPool.CreateSlabMemoryPool(), allowLateReturn: true));
-
             // _maxData should be 1/4th of the default initial window size + 1.
             Assert.Equal(Http2PeerSettings.DefaultInitialWindowSize + 1, (uint)_maxData.Length * 4);
 
@@ -1093,12 +1087,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task DATA_Received_NoConnectionWindowSpace_ConnectionError()
         {
-            // I hate doing this, but it avoids exceptions from MemoryPool.Dipose() in debug mode. The problem is since
-            // the stream's ProcessRequestsAsync loop is never awaited by the connection, it's not really possible to
-            // observe when all the blocks are returned. This can be removed after we implement graceful shutdown.
-            Dispose();
-            InitializeConnectionFields(new DiagnosticMemoryPool(KestrelMemoryPool.CreateSlabMemoryPool(), allowLateReturn: true));
-
             // _maxData should be 1/4th of the default initial window size + 1.
             Assert.Equal(Http2PeerSettings.DefaultInitialWindowSize + 1, (uint)_maxData.Length * 4);
 
@@ -3286,8 +3274,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             _pair.Application.Output.Complete(new ConnectionResetException(string.Empty));
 
-            var result = await _pair.Application.Input.ReadAsync();
-            Assert.True(result.IsCompleted);
+            await StopConnectionAsync(1, ignoreNonGoAwayFrames: false);
             Assert.Single(_logger.Messages, m => m.Exception is ConnectionResetException);
         }
 
@@ -3335,6 +3322,54 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await _closedStateReached.Task.DefaultTimeout();
 
             VerifyGoAway(await ReceiveFrameAsync(), 0, Http2ErrorCode.NO_ERROR);
+        }
+
+        [Fact]
+        public async Task StopProcessingNextRequestSendsGracefulGOAWAYAndWaitsForStreamsToComplete()
+        {
+            var task = Task.CompletedTask;
+            await InitializeConnectionAsync(context => task);
+
+            // Send and receive an unblocked request
+            await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
+
+            await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 55,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1);
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 0,
+                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withStreamId: 1);
+
+            // Send a blocked request
+            var tcs = new TaskCompletionSource<object>(TaskContinuationOptions.RunContinuationsAsynchronously);
+            task = tcs.Task;
+            await StartStreamAsync(3, _browserRequestHeaders, endStream: false);
+
+            // Close pipe
+            _pair.Application.Output.Complete();
+
+            // Assert connection closed
+            await _closedStateReached.Task.DefaultTimeout();
+            VerifyGoAway(await ReceiveFrameAsync(), 3, Http2ErrorCode.NO_ERROR);
+
+            // Assert connection shutdown is still blocked
+            // ProcessRequestsAsync completes the connection's Input pipe
+            var readTask = _pair.Application.Input.ReadAsync();
+            _pair.Application.Input.CancelPendingRead();
+            var result = await readTask;
+            Assert.False(result.IsCompleted);
+
+            // Unblock the request and ProcessRequestsAsync
+            tcs.TrySetResult(null);
+            await _connectionTask;
+
+            // Assert connection's Input pipe is completed
+            readTask = _pair.Application.Input.ReadAsync();
+            _pair.Application.Input.CancelPendingRead();
+            result = await readTask;
+            Assert.True(result.IsCompleted);
         }
 
         [Fact]

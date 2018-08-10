@@ -963,12 +963,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task ContentLength_Received_SingleDataFrameUnderSize_Reset()
         {
-            // I hate doing this, but it avoids exceptions from MemoryPool.Dipose() in debug mode. The problem is since
-            // the stream's ProcessRequestsAsync loop is never awaited by the connection, it's not really possible to
-            // observe when all the blocks are returned. This can be removed after we implement graceful shutdown.
-            Dispose();
-            InitializeConnectionFields(new DiagnosticMemoryPool(KestrelMemoryPool.CreateSlabMemoryPool(), allowLateReturn: true));
-
             var headers = new[]
             {
                 new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
@@ -996,12 +990,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task ContentLength_Received_MultipleDataFramesOverSize_Reset()
         {
-            // I hate doing this, but it avoids exceptions from MemoryPool.Dipose() in debug mode. The problem is since
-            // the stream's ProcessRequestsAsync loop is never awaited by the connection, it's not really possible to
-            // observe when all the blocks are returned. This can be removed after we implement graceful shutdown.
-            Dispose();
-            InitializeConnectionFields(new DiagnosticMemoryPool(KestrelMemoryPool.CreateSlabMemoryPool(), allowLateReturn: true));
-
             var headers = new[]
             {
                 new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
@@ -1032,12 +1020,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task ContentLength_Received_MultipleDataFramesUnderSize_Reset()
         {
-            // I hate doing this, but it avoids exceptions from MemoryPool.Dipose() in debug mode. The problem is since
-            // the stream's ProcessRequestsAsync loop is never awaited by the connection, it's not really possible to
-            // observe when all the blocks are returned. This can be removed after we implement graceful shutdown.
-            Dispose();
-            InitializeConnectionFields(new DiagnosticMemoryPool(KestrelMemoryPool.CreateSlabMemoryPool(), allowLateReturn: true));
-
             var headers = new[]
             {
                 new KeyValuePair<string, string>(HeaderNames.Method, "POST"),

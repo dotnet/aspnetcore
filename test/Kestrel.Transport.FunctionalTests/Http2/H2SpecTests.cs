@@ -27,9 +27,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
         [MemberData(nameof(H2SpecTestCases))]
         public async Task RunIndividualTestCase(H2SpecTestCase testCase)
         {
-            var memoryPoolFactory = new DiagnosticMemoryPoolFactory(allowLateReturn: true);
-
-            var hostBuilder = TransportSelector.GetWebHostBuilder(memoryPoolFactory.Create)
+            var hostBuilder = TransportSelector.GetWebHostBuilder()
                 .UseKestrel(options =>
                 {
                     options.Listen(IPAddress.Loopback, 0, listenOptions =>
@@ -66,7 +64,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
                     {
                         skip = "https://github.com/aspnet/KestrelHttpServer/issues/2154";
                     }
-                    
+
                     dataset.Add(new H2SpecTestCase()
                     {
                         Id = testcase.Item1,
@@ -74,7 +72,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
                         Https = false,
                         Skip = skip,
                     });
-                    
+
                     dataset.Add(new H2SpecTestCase()
                     {
                         Id = testcase.Item1,

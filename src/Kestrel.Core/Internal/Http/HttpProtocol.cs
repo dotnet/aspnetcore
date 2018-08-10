@@ -1131,7 +1131,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             // chunked is applied to a response payload body, the sender MUST either
             // apply chunked as the final transfer coding or terminate the message
             // by closing the connection.
-            if (hasTransferEncoding && 
+            if (hasTransferEncoding &&
                 HttpHeaders.GetFinalTransferCoding(responseHeaders.HeaderTransferEncoding) != TransferCoding.Chunked)
             {
                 _keepAlive = false;
