@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.ServiceProcess;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,7 +13,6 @@ using System.Xml.Linq;
 using Microsoft.AspNetCore.Server.IntegrationTesting.Common;
 using Microsoft.Extensions.Logging;
 using Microsoft.Web.Administration;
-using TimeoutException = System.TimeoutException;
 
 namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
 {
@@ -22,10 +21,6 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
     /// </summary>
     public class IISDeployer : IISDeployerBase
     {
-        internal const int ERROR_OBJECT_NOT_FOUND = unchecked((int)0x800710D8);
-        internal const int ERROR_SHARING_VIOLATION = unchecked((int)0x80070020);
-        internal const int ERROR_SERVICE_CANNOT_ACCEPT_CTRL = unchecked((int)0x80070425);
-
         private const string DetailedErrorsEnvironmentVariable = "ASPNETCORE_DETAILEDERRORS";
 
         private static readonly TimeSpan _timeout = TimeSpan.FromSeconds(10);
@@ -50,7 +45,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
 
         public override void Dispose()
         {
-            StopAndDeleteAppPool().GetAwaiter().GetResult();
+            Stop();
 
             TriggerHostShutdown(_hostShutdownToken);
 
@@ -62,7 +57,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
             StopTimer();
         }
 
-        public override async Task<DeploymentResult> DeployAsync()
+        public override Task<DeploymentResult> DeployAsync()
         {
             using (Logger.BeginScope("Deployment"))
             {
@@ -111,43 +106,67 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                 RunWebConfigActions(contentRoot);
 
                 var uri = TestUriHelper.BuildTestUri(ServerType.IIS, DeploymentParameters.ApplicationBaseUriHint);
-                // To prevent modifying the IIS setup concurrently.
-                await StartIIS(uri, contentRoot);
+                StartIIS(uri, contentRoot);
 
                 // Warm up time for IIS setup.
                 Logger.LogInformation("Successfully finished IIS application directory setup.");
-                return new IISDeploymentResult(
+                return Task.FromResult<DeploymentResult>(new IISDeploymentResult(
                     LoggerFactory,
                     IISDeploymentParameters,
                     applicationBaseUri: uri.ToString(),
                     contentRoot: contentRoot,
                     hostShutdownToken: _hostShutdownToken.Token,
                     hostProcess: HostProcess
-                );
+                ));
             }
         }
 
         private void GetLogsFromFile()
         {
-            var arr = new string[0];
-
-            RetryHelper.RetryOperation(() => arr = File.ReadAllLines(Path.Combine(DeploymentParameters.PublishedApplicationRootPath, _debugLogFile)),
-                            (ex) => Logger.LogWarning(ex, "Could not read log file"),
-                            5,
-                            200);
-
-            foreach (var line in arr)
+            // Handle cases where debug file is redirected by test
+            var debugLogLocations = new List<string>();
+            if (IISDeploymentParameters.HandlerSettings.ContainsKey("debugFile"))
             {
-                Logger.LogInformation(line);
+                debugLogLocations.Add(IISDeploymentParameters.HandlerSettings["debugFile"]);
             }
 
-            if (File.Exists(_debugLogFile))
+            if (DeploymentParameters.EnvironmentVariables.ContainsKey("ASPNETCORE_MODULE_DEBUG_FILE"))
             {
-                File.Delete(_debugLogFile);
+                debugLogLocations.Add(DeploymentParameters.EnvironmentVariables["ASPNETCORE_MODULE_DEBUG_FILE"]);
             }
+
+            // default debug file name
+            debugLogLocations.Add("aspnetcore-debug.log");
+
+            foreach (var debugLogLocation in debugLogLocations)
+            {
+                if (string.IsNullOrEmpty(debugLogLocation))
+                {
+                    continue;
+                }
+
+                var file = Path.Combine(DeploymentParameters.PublishedApplicationRootPath, debugLogLocation);
+                if (File.Exists(file))
+                {
+                    var lines = File.ReadAllLines(file);
+                    if (!lines.Any())
+                    {
+                        Logger.LogInformation("Debug log file found but was empty");
+                        continue;
+                    }
+
+                    foreach (var line in lines)
+                    {
+                        Logger.LogInformation(line);
+                    }
+                    return;
+                }
+            }
+
+            throw new InvalidOperationException($"Not able to find non-empty debug log files. Tried: {string.Join(", ", debugLogLocations)}");
         }
 
-        public async Task StartIIS(Uri uri, string contentRoot)
+        public void StartIIS(Uri uri, string contentRoot)
         {
             // Backup currently deployed apphost.config file
             using (Logger.BeginScope("StartIIS"))
@@ -160,11 +179,11 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
 
                 AddTemporaryAppHostConfig(contentRoot, port);
 
-                await WaitUntilSiteStarted();
+                WaitUntilSiteStarted();
             }
         }
 
-        private async Task WaitUntilSiteStarted()
+        private void WaitUntilSiteStarted()
         {
             ServiceController serviceController = new ServiceController("w3svc");
             Logger.LogInformation("W3SVC status " + serviceController.Status);
@@ -178,113 +197,37 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                 serviceController.WaitForStatus(ServiceControllerStatus.Running, _timeout);
             }
 
-            var sw = Stopwatch.StartNew();
-
-            while (sw.Elapsed < _timeout)
+            RetryServerManagerAction(serverManager =>
             {
-                try
-                {
-                    using (var serverManager = new ServerManager())
-                    {
-                        var site = serverManager.Sites.Single();
-                        var appPool = serverManager.ApplicationPools.Single();
+                var site = serverManager.Sites.Single();
+                var appPool = serverManager.ApplicationPools.Single();
 
-                        if (site.State == ObjectState.Started)
-                        {
-                            var workerProcess = appPool.WorkerProcesses.SingleOrDefault();
-                            if (workerProcess != null)
-                            {
-                                HostProcess = Process.GetProcessById(workerProcess.ProcessId);
-                                Logger.LogInformation("Site has started.");
-                                return;
-                            }
-                        }
-                        else
-                        {
-                            if (appPool.State != ObjectState.Started && appPool.State != ObjectState.Starting)
-                            {
-                                var state = appPool.Start();
-                                Logger.LogInformation($"Starting pool, state: {state.ToString()}");
-                            }
-                            if (site.State != ObjectState.Starting)
-                            {
-                                var state = site.Start();
-                                Logger.LogInformation($"Starting site, state: {state.ToString()}");
-                            }
-                        }
-                    }
-
-                }
-                catch (Exception ex) when (IsExpectedException(ex))
+                if (appPool.State != ObjectState.Started && appPool.State != ObjectState.Starting)
                 {
-                    // Accessing the site.State property while the site
-                    // is starting up returns the COMException
-                    // The object identifier does not represent a valid object.
-                    // (Exception from HRESULT: 0x800710D8)
-                    // This also means the site is not started yet, so catch and retry
-                    // after waiting.
+                    var state = appPool.Start();
+                    Logger.LogInformation($"Starting pool, state: {state.ToString()}");
                 }
 
-                await Task.Delay(_retryDelay);
-            }
-
-            throw new TimeoutException($"IIS failed to start site.");
-        }
-
-        public async Task StopAndDeleteAppPool()
-        {
-            Stop();
-
-            await WaitUntilSiteStopped();
-
-            RestoreAppHostConfig();
-        }
-
-        private async Task WaitUntilSiteStopped()
-        {
-            using (var serverManager = new ServerManager())
-            {
-                var site = serverManager.Sites.SingleOrDefault();
-                if (site == null)
+                if (site.State != ObjectState.Started && site.State != ObjectState.Starting)
                 {
-                    return;
+                    var state = site.Start();
+                    Logger.LogInformation($"Starting site, state: {state.ToString()}");
                 }
 
-                var sw = Stopwatch.StartNew();
-
-                while (sw.Elapsed < _timeout)
+                if (site.State != ObjectState.Started)
                 {
-                    try
-                    {
-                        if (site.State == ObjectState.Stopped)
-                        {
-                            if (HostProcess.HasExited)
-                            {
-                                Logger.LogInformation($"Site has stopped successfully.");
-                                return;
-                            }
-                        }
-                    }
-                    catch (Exception ex) when (IsExpectedException(ex))
-                    {
-                        // Accessing the site.State property while the site
-                        // is shutdown down returns the COMException
-                        return;
-                    }
-
-                    Logger.LogWarning($"IIS has not stopped after {sw.Elapsed.TotalMilliseconds}");
-                    await Task.Delay(_retryDelay);
+                    throw new InvalidOperationException("Site not started yet");
                 }
 
-                throw new TimeoutException($"IIS failed to stop site {site}.");
-            }
-        }
+                var workerProcess = appPool.WorkerProcesses.SingleOrDefault();
+                if (workerProcess == null)
+                {
+                    throw new InvalidOperationException("Site is started but no worked process found");
+                }
 
-        private static bool IsExpectedException(Exception ex)
-        {
-            return ex is DllNotFoundException ||
-                   ex is COMException &&
-                   (ex.HResult == ERROR_OBJECT_NOT_FOUND || ex.HResult == ERROR_SHARING_VIOLATION || ex.HResult == ERROR_SERVICE_CANNOT_ACCEPT_CTRL);
+                HostProcess = Process.GetProcessById(workerProcess.ProcessId);
+                Logger.LogInformation("Site has started.");
+            });
         }
 
         private void AddTemporaryAppHostConfig(string contentRoot, int port)
@@ -298,7 +241,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
 
             config.Save(appHostConfigPath);
 
-            using (var serverManager = new ServerManager())
+            RetryServerManagerAction(serverManager =>
             {
                 var redirectionConfiguration = serverManager.GetRedirectionConfiguration();
                 var redirectionSection = redirectionConfiguration.GetSection("configurationRedirection");
@@ -307,22 +250,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                 redirectionSection.Attributes["path"].Value = _configPath;
 
                 serverManager.CommitChanges();
-            }
-        }
-
-        private void RestoreAppHostConfig()
-        {
-            using (var serverManager = new ServerManager())
-            {
-                var redirectionConfiguration = serverManager.GetRedirectionConfiguration();
-                var redirectionSection = redirectionConfiguration.GetSection("configurationRedirection");
-
-                redirectionSection.Attributes["enabled"].Value = false;
-
-                serverManager.CommitChanges();
-
-                Directory.Delete(_configPath, true);
-            }
+            });
         }
 
         private void ConfigureAppHostConfig(XElement config, string contentRoot, int port)
@@ -378,14 +306,96 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
 
         private void Stop()
         {
-            using (var serverManager = new ServerManager())
+            try
             {
-                var site = serverManager.Sites.SingleOrDefault();
-                site.Stop();
-                var appPool = serverManager.ApplicationPools.SingleOrDefault();
-                appPool.Stop();
-                serverManager.CommitChanges();
+                RetryServerManagerAction(serverManager =>
+                {
+                    var site = serverManager.Sites.SingleOrDefault();
+                    if (site == null)
+                    {
+                        throw new InvalidOperationException("Site not found");
+                    }
+
+                    if (site.State != ObjectState.Stopped && site.State != ObjectState.Stopping)
+                    {
+                        var state = site.Stop();
+                        Logger.LogInformation($"Stopping site, state: {state.ToString()}");
+                    }
+
+                    var appPool = serverManager.ApplicationPools.SingleOrDefault();
+                    if (appPool == null)
+                    {
+                        throw new InvalidOperationException("Application pool not found");
+                    }
+
+                    if (appPool.State != ObjectState.Stopped && appPool.State != ObjectState.Stopping)
+                    {
+                        var state = appPool.Stop();
+                        Logger.LogInformation($"Stopping pool, state: {state.ToString()}");
+                    }
+
+                    if (site.State != ObjectState.Stopped)
+                    {
+                        throw new InvalidOperationException("Site not stopped yet");
+                    }
+
+                    if (!HostProcess.HasExited)
+                    {
+                        throw new InvalidOperationException("Site is stopped but host process is not");
+                    }
+
+                    Logger.LogInformation($"Site has stopped successfully.");
+                });
             }
+            finally
+            {
+                // Undo redirection.config changes unconditionally
+                RetryServerManagerAction(serverManager =>
+                {
+                    var redirectionConfiguration = serverManager.GetRedirectionConfiguration();
+                    var redirectionSection = redirectionConfiguration.GetSection("configurationRedirection");
+
+                    redirectionSection.Attributes["enabled"].Value = false;
+
+                    serverManager.CommitChanges();
+
+                    Directory.Delete(_configPath, true);
+                });
+            }
+        }
+
+        private void RetryServerManagerAction(Action<ServerManager> action)
+        {
+            List<Exception> exceptions = null;
+            var sw = Stopwatch.StartNew();
+            int retryCount = 0;
+
+            while (sw.Elapsed < _timeout)
+            {
+                try
+                {
+                    using (var serverManager = new ServerManager())
+                    {
+                        action(serverManager);
+                    }
+
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    if (exceptions == null)
+                    {
+                        exceptions = new List<Exception>();
+                    }
+
+                    exceptions.Add(ex);
+                }
+
+                retryCount++;
+                Thread.Sleep(_retryDelay);
+            }
+
+            throw new AggregateException($"Operation did not succeed after {retryCount} retries", exceptions.ToArray());
         }
     }
 }
