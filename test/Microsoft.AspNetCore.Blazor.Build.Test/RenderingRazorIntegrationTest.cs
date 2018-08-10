@@ -175,9 +175,9 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             var frames = GetRenderTree(component);
 
             // Assert
-            Assert.Collection(frames,
-                frame => AssertFrame.Text(frame, "Start", 0),
-                frame => AssertFrame.Text(frame, "End", 1));
+            Assert.Collection(
+                frames,
+                frame => AssertFrame.Markup(frame, "StartEnd", 0));
         }
 
         [Fact]

@@ -19,11 +19,10 @@ namespace Test
             builder.AddAttribute(1, "SomeProp", "val");
             builder.AddAttribute(2, "ChildContent", (Microsoft.AspNetCore.Blazor.RenderFragment)((builder2) => {
                 builder2.AddContent(3, "\n    Some ");
-                builder2.AddMarkupContent(4, "<el>further</el>");
-                builder2.AddContent(5, " content\n");
+                builder2.AddMarkupContent(4, "<el>further</el> content\n");
             }
             ));
-            builder.AddComponentReferenceCapture(6, (__value) => {
+            builder.AddComponentReferenceCapture(5, (__value) => {
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
                   myInstance = (Test.MyComponent)__value;
 

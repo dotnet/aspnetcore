@@ -334,6 +334,9 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
                 case RenderTreeFrameType.Text:
                     return $"Text: (seq={Sequence}, len=n/a) {EscapeNewlines(TextContent)}";
 
+                case RenderTreeFrameType.Markup:
+                    return $"Markup: (seq={Sequence}, len=n/a) {EscapeNewlines(TextContent)}";
+
                 case RenderTreeFrameType.ElementReferenceCapture:
                     return $"ElementReferenceCapture: (seq={Sequence}, len=n/a) {ElementReferenceCaptureAction}";
             }

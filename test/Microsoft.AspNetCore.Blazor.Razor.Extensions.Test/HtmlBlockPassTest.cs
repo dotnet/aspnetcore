@@ -65,6 +65,76 @@ namespace Microsoft.AspNetCore.Blazor.Razor
         }
 
         [Fact]
+        public void Execute_RewritesHtml_WithComment()
+        {
+            // Arrange
+            var document = CreateDocument(@"Start<!-- -->End");
+
+            var expected = NormalizeContent(@"StartEnd");
+
+            var documentNode = Lower(document);
+
+            // Act
+            Pass.Execute(document, documentNode);
+
+            // Assert
+            var block = documentNode.FindDescendantNodes<HtmlBlockIntermediateNode>().Single();
+            Assert.Equal(expected, block.Content, ignoreLineEndingDifferences: true);
+        }
+
+        [Fact]
+        public void Execute_RewritesHtml_MergesSiblings()
+        {
+            // Arrange
+            var document = CreateDocument(@"
+<html>
+  @(""Hi"")<div></div>
+  <div></div>
+  <div>@(""Hi"")</div>
+</html>");
+
+            var expected = NormalizeContent(@"
+<div></div>
+  <div></div>
+  ");
+
+            var documentNode = Lower(document);
+
+            // Act
+            Pass.Execute(document, documentNode);
+
+            // Assert
+            var block = documentNode.FindDescendantNodes<HtmlBlockIntermediateNode>().Single();
+            Assert.Equal(expected, block.Content, ignoreLineEndingDifferences: true);
+        }
+
+        [Fact]
+        public void Execute_RewritesHtml_MergesSiblings_LeftEdge()
+        {
+            // Arrange
+            var document = CreateDocument(@"
+<html><div></div>
+  <div></div>
+  <div>@(""Hi"")</div>
+</html>");
+
+            var expected = NormalizeContent(@"
+<div></div>
+  <div></div>
+  ");
+
+            var documentNode = Lower(document);
+
+            // Act
+            Pass.Execute(document, documentNode);
+
+            // Assert
+            var block = documentNode.FindDescendantNodes<HtmlBlockIntermediateNode>().Single();
+            Assert.Equal(expected, block.Content, ignoreLineEndingDifferences: true);
+        }
+
+
+        [Fact]
         public void Execute_RewritesHtml_CSharpInAttributes()
         {
             // Arrange
@@ -75,7 +145,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
   </head>
 </html>");
 
-            var expected = NormalizeContent(@"<div>foo</div>");
+            var expected = NormalizeContent("<div>foo</div>\n  ");
 
             var documentNode = Lower(document);
 
@@ -100,7 +170,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
   </head>
 </html>");
 
-            var expected = NormalizeContent(@"<div>rewriteme</div>");
+            var expected = NormalizeContent("<div>rewriteme</div>\n    ");
 
             var documentNode = Lower(document);
 
@@ -248,7 +318,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
   </span>
 </html>");
 
-            var expected = NormalizeContent(@"<div>rewriteme</div>");
+            var expected = NormalizeContent("<div>rewriteme</div>\n  ");
 
             var documentNode = Lower(document);
 

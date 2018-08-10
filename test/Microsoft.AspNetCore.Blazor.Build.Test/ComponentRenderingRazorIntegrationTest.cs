@@ -488,5 +488,71 @@ namespace Test
                 frames,
                 frame => AssertFrame.Text(frame, "<span>Hi</span>"));
         }
+
+        // Integration test for HTML block rewriting
+        [Fact]
+        public void Render_HtmlBlock_Integration()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using Microsoft.AspNetCore.Blazor;
+using Microsoft.AspNetCore.Blazor.Components;
+namespace Test
+{
+    public class MyComponent : BlazorComponent
+    {
+        [Parameter]
+        RenderFragment ChildContent { get; set; }
+    }
+}
+"));
+
+            var component = CompileToComponent(@"
+@addTagHelper *, TestAssembly
+
+<html>
+  <head><meta><meta></head>
+  <body>
+    <MyComponent>
+      <div><span></span><span></span></div>
+      <div>@(""hi"")</div>
+      <div><span></span><span></span></div>
+      <div></div>
+      <div>@(""hi"")</div>
+      <div></div>
+  </MyComponent>
+  </body>
+</html>");
+
+            // Act
+            var frames = GetRenderTree(component);
+
+            // Assert: component frames are correct
+            Assert.Collection(
+                frames,
+                frame => AssertFrame.Element(frame, "html", 9, 0),
+                frame => AssertFrame.Whitespace(frame, 1),
+                frame => AssertFrame.Markup(frame, "<head><meta><meta></head>\n  ", 2),
+                frame => AssertFrame.Element(frame, "body", 5, 3),
+                frame => AssertFrame.Whitespace(frame, 4),
+                frame => AssertFrame.Component(frame, "Test.MyComponent", 2, 5),
+                frame => AssertFrame.Attribute(frame, RenderTreeBuilder.ChildContent, 6),
+                frame => AssertFrame.Whitespace(frame, 16),
+                frame => AssertFrame.Whitespace(frame, 17));
+
+            // Assert: Captured ChildContent frames are correct
+            var childFrames = GetFrames((RenderFragment)frames[6].AttributeValue);
+            Assert.Collection(
+                childFrames,
+                frame => AssertFrame.Whitespace(frame, 7),
+                frame => AssertFrame.Markup(frame, "<div><span></span><span></span></div>\n      ", 8),
+                frame => AssertFrame.Element(frame, "div", 2, 9),
+                frame => AssertFrame.Text(frame, "hi", 10),
+                frame => AssertFrame.Whitespace(frame, 11),
+                frame => AssertFrame.Markup(frame, "<div><span></span><span></span></div>\n      <div></div>\n      ", 12),
+                frame => AssertFrame.Element(frame, "div", 2, 13),
+                frame => AssertFrame.Text(frame, "hi", 14),
+                frame => AssertFrame.Markup(frame, "\n      <div></div>\n  ", 15));
+        }
     }
 }
