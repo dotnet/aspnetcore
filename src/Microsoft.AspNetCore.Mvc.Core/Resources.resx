@@ -457,4 +457,13 @@
   <data name="ApiConventionMethod_NoMethodFound" xml:space="preserve">
     <value>A method named '{0}' was not found on convention type '{1}'.</value>
   </data>
+  <data name="ValidationVisitor_ExceededMaxDepth" xml:space="preserve">
+    <value>{0} exceeded the maximum configured validation depth '{1}' when validating type '{2}'.</value>
+  </data>
+  <data name="ValidationVisitor_ExceededMaxDepthFix" xml:space="preserve">
+    <value>This may indicate a very deep or infinitely recursive object graph. Consider modifying '{0}.{1}' or suppressing validation on the model type.</value>
+  </data>
+  <data name="ValidationVisitor_ExceededMaxPropertyDepth" xml:space="preserve">
+    <value>{0} exceeded the maximum configured validation depth '{1}' when validating property '{2}' on type '{3}'.</value>
+  </data>
 </root>

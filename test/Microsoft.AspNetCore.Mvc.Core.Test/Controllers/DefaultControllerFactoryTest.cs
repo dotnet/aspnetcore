@@ -215,7 +215,8 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
                 .Setup(s => s.GetService(typeof(IObjectModelValidator)))
                 .Returns(new DefaultObjectValidator(
                     metadataProvider,
-                    TestModelValidatorProvider.CreateDefaultProvider().ValidatorProviders));
+                    TestModelValidatorProvider.CreateDefaultProvider().ValidatorProviders,
+                    new MvcOptions()));
             return services.Object;
         }
 

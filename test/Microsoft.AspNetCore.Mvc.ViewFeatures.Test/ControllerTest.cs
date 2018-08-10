@@ -458,7 +458,7 @@ namespace Microsoft.AspNetCore.Mvc.Test
             {
                 ControllerContext = controllerContext,
                 MetadataProvider = metadataProvider,
-                ObjectValidator = new DefaultObjectValidator(metadataProvider, valiatorProviders),
+                ObjectValidator = new DefaultObjectValidator(metadataProvider, valiatorProviders, new MvcOptions()),
                 TempData = tempData,
                 ViewData = viewData,
             };

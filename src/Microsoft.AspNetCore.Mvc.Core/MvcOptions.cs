@@ -31,6 +31,7 @@ namespace Microsoft.AspNetCore.Mvc
         private readonly CompatibilitySwitch<InputFormatterExceptionPolicy> _inputFormatterExceptionPolicy;
         private readonly CompatibilitySwitch<bool> _suppressBindingUndefinedValueToEnumType;
         private readonly CompatibilitySwitch<bool> _enableEndpointRouting;
+        private readonly NullableCompatibilitySwitch<int> _maxValidationDepth;
         private readonly ICompatibilitySwitch[] _switches;
 
         /// <summary>
@@ -56,6 +57,7 @@ namespace Microsoft.AspNetCore.Mvc
             _inputFormatterExceptionPolicy = new CompatibilitySwitch<InputFormatterExceptionPolicy>(nameof(InputFormatterExceptionPolicy), InputFormatterExceptionPolicy.AllExceptions);
             _suppressBindingUndefinedValueToEnumType = new CompatibilitySwitch<bool>(nameof(SuppressBindingUndefinedValueToEnumType));
             _enableEndpointRouting = new CompatibilitySwitch<bool>(nameof(EnableEndpointRouting));
+            _maxValidationDepth = new NullableCompatibilitySwitch<int>(nameof(MaxValidationDepth));
 
             _switches = new ICompatibilitySwitch[]
             {
@@ -65,6 +67,7 @@ namespace Microsoft.AspNetCore.Mvc
                 _inputFormatterExceptionPolicy,
                 _suppressBindingUndefinedValueToEnumType,
                 _enableEndpointRouting,
+                _maxValidationDepth,
             };
         }
 
@@ -395,6 +398,49 @@ namespace Microsoft.AspNetCore.Mvc
         /// Gets or sets the default value for the Permanent property of <see cref="RequireHttpsAttribute"/>.
         /// </summary>
         public bool RequireHttpsPermanent { get; set; }
+
+        /// <summary>
+        /// Gets or sets the maximum depth to constrain the validation visitor when validating. Set to <see langword="null" />
+        /// to disable this feature.
+        /// <para>
+        /// <see cref="ValidationVisitor"/> traverses the object graph of the model being validated. For models
+        /// that are very deep or are infinitely recursive, validation may result in stack overflow.
+        /// </para>
+        /// <para>
+        /// When not <see langword="null"/>, <see cref="ValidationVisitor"/> will throw if
+        /// traversing an object exceeds the maximum allowed validation depth.
+        /// </para>
+        /// <para>
+        /// This property is associated with a compatibility switch and can provide a different behavior depending on
+        /// the configured compatibility version for the application. See <see cref="CompatibilityVersion"/> for
+        /// guidance and examples of setting the application's compatibility version.
+        /// </para>
+        /// <para>
+        /// Configuring the desired value of the compatibility switch by calling this property's setter will take precedence
+        /// over the value implied by the application's <see cref="CompatibilityVersion"/>.
+        /// </para>
+        /// <para>
+        /// If the application's compatibility version is set to <see cref="CompatibilityVersion.Version_2_2"/> then
+        /// this setting will have the value <c>200</c> unless explicitly configured.
+        /// </para>
+        /// <para>
+        /// If the application's compatibility version is set to <see cref="CompatibilityVersion.Version_2_1"/> or
+        /// earlier then this setting will have the value <see langword="null"/> unless explicitly configured.
+        /// </para>
+        /// </summary>
+        public int? MaxValidationDepth
+        {
+            get => _maxValidationDepth.Value;
+            set
+            {
+                if (value != null && value <= 0)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value));
+                }
+
+                _maxValidationDepth.Value = value;
+            }
+        }
 
         IEnumerator<ICompatibilitySwitch> IEnumerable<ICompatibilitySwitch>.GetEnumerator()
         {

@@ -1536,6 +1536,48 @@ namespace Microsoft.AspNetCore.Mvc.Core
         internal static string FormatApiConventionMethod_NoMethodFound(object p0, object p1)
             => string.Format(CultureInfo.CurrentCulture, GetString("ApiConventionMethod_NoMethodFound"), p0, p1);
 
+        /// <summary>
+        /// {0} exceeded the maximum configured validation depth '{1}' when validating type '{2}'.
+        /// </summary>
+        internal static string ValidationVisitor_ExceededMaxDepth
+        {
+            get => GetString("ValidationVisitor_ExceededMaxDepth");
+        }
+
+        /// <summary>
+        /// {0} exceeded the maximum configured validation depth '{1}' when validating type '{2}'.
+        /// </summary>
+        internal static string FormatValidationVisitor_ExceededMaxDepth(object p0, object p1, object p2)
+            => string.Format(CultureInfo.CurrentCulture, GetString("ValidationVisitor_ExceededMaxDepth"), p0, p1, p2);
+
+        /// <summary>
+        /// This may indicate a very deep or infinitely recursive object graph. Consider modifying '{0}.{1}' or suppressing validation on the model type.
+        /// </summary>
+        internal static string ValidationVisitor_ExceededMaxDepthFix
+        {
+            get => GetString("ValidationVisitor_ExceededMaxDepthFix");
+        }
+
+        /// <summary>
+        /// This may indicate a very deep or infinitely recursive object graph. Consider modifying '{0}.{1}' or suppressing validation on the model type.
+        /// </summary>
+        internal static string FormatValidationVisitor_ExceededMaxDepthFix(object p0, object p1)
+            => string.Format(CultureInfo.CurrentCulture, GetString("ValidationVisitor_ExceededMaxDepthFix"), p0, p1);
+
+        /// <summary>
+        /// {0} exceeded the maximum configured validation depth '{1}' when validating property '{2}' on type '{3}'.
+        /// </summary>
+        internal static string ValidationVisitor_ExceededMaxPropertyDepth
+        {
+            get => GetString("ValidationVisitor_ExceededMaxPropertyDepth");
+        }
+
+        /// <summary>
+        /// {0} exceeded the maximum configured validation depth '{1}' when validating property '{2}' on type '{3}'.
+        /// </summary>
+        internal static string FormatValidationVisitor_ExceededMaxPropertyDepth(object p0, object p1, object p2, object p3)
+            => string.Format(CultureInfo.CurrentCulture, GetString("ValidationVisitor_ExceededMaxPropertyDepth"), p0, p1, p2, p3);
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);
