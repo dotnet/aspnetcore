@@ -11,8 +11,6 @@
 
     <!-- Set this to true if you enable server-side prerendering -->
     <BuildServerSideRenderer>false</BuildServerSideRenderer>
-    <!-- aspnet/BuildTools#662 Don't police what version of NetCoreApp we use -->
-    <NETCoreAppMaximumVersion>99.9</NETCoreAppMaximumVersion>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(TargetFrameworkOverride)' == ''">

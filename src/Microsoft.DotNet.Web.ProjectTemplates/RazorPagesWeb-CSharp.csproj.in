@@ -7,14 +7,8 @@
     <DebugType Condition="'$(TargetFrameworkOverride)' != ''">full</DebugType>
     <WebProject_DirectoryAccessLevelKey Condition="'$(OrganizationalAuth)' == 'True' AND '$(OrgReadAccess)' != 'True'">0</WebProject_DirectoryAccessLevelKey>
     <WebProject_DirectoryAccessLevelKey Condition="'$(OrganizationalAuth)' == 'True' AND '$(OrgReadAccess)' == 'True'">1</WebProject_DirectoryAccessLevelKey>
-    <!-- aspnet/BuildTools#662 Don't police what version of NetCoreApp we use -->
-    <NETCoreAppMaximumVersion>99.9</NETCoreAppMaximumVersion>
-    <RuntimeFrameworkVersion>${MicrosoftNETCoreApp22PackageVersion}</RuntimeFrameworkVersion>
   </PropertyGroup>
 
-  <ItemGroup>
-    <DotNetCoreRuntime Include="${MicrosoftNETCoreApp22PackageVersion}" />
-  </ItemGroup>
   <!--#if (IndividualLocalAuth && !UseLocalDB) -->
 
   <!--#endif -->
