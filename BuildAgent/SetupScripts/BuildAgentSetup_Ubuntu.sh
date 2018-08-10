@@ -17,6 +17,16 @@ ASPNETOSNAME=$3
 
 sudo apt-get update
 
+if [[ `lsb_release -rs` == "14.04" ]]
+then
+    # Increase limit on 14.04 from default of 128 to 1024, to match default on 16.04 and 18.04
+    # With defaut limit of 128, some of our tests fail with:
+    #
+    # System.IO.IOException : The configured user limit (128) on the number of inotify instances has been reached.
+    #    at System.IO.FileSystemWatcher.StartRaisingEvents()
+    echo fs.inotify.max_user_instances=1024 | sudo tee -a /etc/sysctl.conf && sudo sysctl -p
+fi
+
 echo "Installing curl and unzip..."
 sudo apt-get install -y curl unzip
 

@@ -15,6 +15,12 @@ if [ ! -d ~/virtualenvs/autobahntestsuite ]; then
 	virtualenv ~/virtualenvs/autobahntestsuite
 fi
 
+# May be required for Ubuntu 14.04, verify when creating new agent
+# if [[ `lsb_release -rs` == "14.04" ]]
+# then
+# 	~/virtualenvs/autobahntestsuite/bin/pip install -U setuptools
+# fi
+
 ~/virtualenvs/autobahntestsuite/bin/pip install autobahntestsuite
 
 if [ -e /usr/local/bin/wstest ]; then
