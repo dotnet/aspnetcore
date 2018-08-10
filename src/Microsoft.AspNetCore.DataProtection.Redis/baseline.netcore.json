@@ -1,0 +1,140 @@
+{
+  "AssemblyIdentity": "Microsoft.AspNetCore.DataProtection.Redis, Version=2.2.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "Types": [
+    {
+      "Name": "Microsoft.AspNetCore.DataProtection.RedisDataProtectionBuilderExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "PersistKeysToRedis",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder"
+            },
+            {
+              "Name": "databaseFactory",
+              "Type": "System.Func<StackExchange.Redis.IDatabase>"
+            },
+            {
+              "Name": "key",
+              "Type": "StackExchange.Redis.RedisKey"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "PersistKeysToRedis",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder"
+            },
+            {
+              "Name": "connectionMultiplexer",
+              "Type": "StackExchange.Redis.IConnectionMultiplexer"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "PersistKeysToRedis",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder"
+            },
+            {
+              "Name": "connectionMultiplexer",
+              "Type": "StackExchange.Redis.IConnectionMultiplexer"
+            },
+            {
+              "Name": "key",
+              "Type": "StackExchange.Redis.RedisKey"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.DataProtection.RedisXmlRepository",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.DataProtection.Repositories.IXmlRepository"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "GetAllElements",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IReadOnlyCollection<System.Xml.Linq.XElement>",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.DataProtection.Repositories.IXmlRepository",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "StoreElement",
+          "Parameters": [
+            {
+              "Name": "element",
+              "Type": "System.Xml.Linq.XElement"
+            },
+            {
+              "Name": "friendlyName",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.DataProtection.Repositories.IXmlRepository",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "databaseFactory",
+              "Type": "System.Func<StackExchange.Redis.IDatabase>"
+            },
+            {
+              "Name": "key",
+              "Type": "StackExchange.Redis.RedisKey"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    }
+  ]
+}
