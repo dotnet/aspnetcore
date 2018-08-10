@@ -1,0 +1,36 @@
+# See https://github.com/aspnet/BuildTools
+
+phases:
+- template: .vsts-pipelines/templates/phases/default-build.yml@buildtools
+  parameters:
+    agentOs: Windows
+    beforeBuild:
+    - task: NodeTool@0
+      displayName: Use Node 8.x
+      inputs:
+        versionSpec: 8.x
+
+- template: .vsts-pipelines/templates/phases/default-build.yml@buildtools
+  parameters:
+    agentOs: macOS
+    beforeBuild:
+    - task: NodeTool@0
+      displayName: Use Node 8.x
+      inputs:
+        versionSpec: 8.x
+    - script: ./run.sh install-tools; $(Agent.WorkFolder)/.dotnet/dotnet dev-certs https
+      displayName: install certs
+      env:
+        DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+        DOTNET_CLI_TELEMETRY_OPTOUT: 1
+  
+- template: .vsts-pipelines/templates/phases/default-build.yml@buildtools
+  parameters:
+    agentOs: Linux
+    beforeBuild:
+    - task: NodeTool@0
+      displayName: Use Node 8.x
+      inputs:
+        versionSpec: 8.x
+    - script: ./run.sh install-tools; $(Agent.WorkFolder)/.dotnet/dotnet dev-certs https
+      displayName: install certs
