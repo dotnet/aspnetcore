@@ -330,7 +330,7 @@ Hello from page";
             var response = await Client.GetStringAsync("/Accounts/PageWithLinks");
 
             // Assert
-            Assert.Equal(expected, response.Trim());
+            Assert.Equal(expected, response.Trim(), ignoreLineEndingDifferences: true);
         }
 
         [Fact]
@@ -346,7 +346,7 @@ Hello from page";
             var response = await Client.GetStringAsync("/Accounts/RelativeLinks");
 
             // Assert
-            Assert.Equal(expected, response.Trim());
+            Assert.Equal(expected, response.Trim(), ignoreLineEndingDifferences: true);
         }
 
         [Fact]
@@ -369,7 +369,7 @@ Hello from /Pages/Shared/";
             var response = await Client.GetStringAsync("/Accounts/Manage/RenderPartials");
 
             // Assert
-            Assert.Equal(expected, response.Trim());
+            Assert.Equal(expected, response.Trim(), ignoreLineEndingDifferences: true);
         }
 
         [Fact]
