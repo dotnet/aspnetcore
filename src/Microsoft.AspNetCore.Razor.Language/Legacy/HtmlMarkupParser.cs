@@ -856,7 +856,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Capture whitespace
             var whitespace = ReadWhile(token => token.Type == HtmlTokenType.WhiteSpace || token.Type == HtmlTokenType.NewLine);
 
-            if (At(HtmlTokenType.Transition))
+            if (At(HtmlTokenType.Transition) || At(HtmlTokenType.RazorCommentTransition))
             {
                 // Transition outside of attribute value => Switch to recovery mode
                 Accept(whitespace);
@@ -931,7 +931,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             // First, determine if this is a 'data-' attribute (since those can't use conditional attributes)
             var name = string.Concat(nameTokens.Select(s => s.Content));
-            var attributeCanBeConditional = 
+            var attributeCanBeConditional =
                 Context.FeatureFlags.EXPERIMENTAL_AllowConditionalDataDashAttributes ||
                 !name.StartsWith("data-", StringComparison.OrdinalIgnoreCase);
 
