@@ -33,4 +33,9 @@
     <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp20PackageVersion)" />
     <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp21PackageVersion)" />
   </ItemGroup>
+
+  <ItemGroup> 
+   <AspNetCoreRuntime Include="$(AspNetCoreRuntimeVersion)" /> 
+ </ItemGroup> 
+ 
 </Project>

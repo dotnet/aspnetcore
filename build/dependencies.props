@@ -4,9 +4,12 @@
   </PropertyGroup>
   <PropertyGroup Label="Package Versions"><!-- Used only in development when running the template contents directly from source -->
     <AspNetCorePackageVersion>2.1.0</AspNetCorePackageVersion>
+    <AspNetCoreRuntimeVersion>2.1.2</AspNetCoreRuntimeVersion>
     <BenchmarkDotNetPackageVersion>0.10.13</BenchmarkDotNetPackageVersion>
     <InternalAspNetCoreSdkPackageVersion>2.1.3-rtm-15811</InternalAspNetCoreSdkPackageVersion>
     <MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>2.2.0-preview1-34576</MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>
+    <MicrosoftNETCoreApp20PackageVersion>2.0.9</MicrosoftNETCoreApp20PackageVersion>
+    <MicrosoftNETCoreApp21PackageVersion>2.1.2</MicrosoftNETCoreApp21PackageVersion>
     <SignalRPackageVersion>1.0.0</SignalRPackageVersion>
     <TemplateBlazorPackageVersion>0.6.0-preview1-20180807.1</TemplateBlazorPackageVersion>
     <RazorPackageVersion>2.1.0</RazorPackageVersion>
