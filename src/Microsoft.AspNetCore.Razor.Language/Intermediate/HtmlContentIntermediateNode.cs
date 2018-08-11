@@ -18,5 +18,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 
             visitor.VisitHtml(this);
         }
+
+        public override void FormatNode(IntermediateNodeFormatter formatter)
+        {
+            formatter.WriteChildren(Children);
+        }
     }
 }
