@@ -7,21 +7,19 @@ using Microsoft.AspNetCore.Cors.Internal;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Cors.Infrastructure
 {
     /// <summary>
-    /// An ASP.NET middleware for handling CORS.
+    /// A middleware for handling CORS.
     /// </summary>
     public class CorsMiddleware
     {
+        private readonly Func<object, Task> OnResponseStartingDelegate = OnResponseStarting;
         private readonly RequestDelegate _next;
-        private readonly ICorsService _corsService;
         private readonly ICorsPolicyProvider _corsPolicyProvider;
         private readonly CorsPolicy _policy;
         private readonly string _corsPolicyName;
-        private readonly ILogger _logger;
 
         /// <summary>
         /// Instantiates a new <see cref="CorsMiddleware"/>.
@@ -122,10 +120,10 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             }
 
             _next = next;
-            _corsService = corsService;
+            CorsService = corsService;
             _corsPolicyProvider = policyProvider;
             _corsPolicyName = policyName;
-            _logger = loggerFactory.CreateLogger<CorsMiddleware>();
+            Logger = loggerFactory.CreateLogger<CorsMiddleware>();
         }
 
         /// <summary>
@@ -162,60 +160,65 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             }
 
             _next = next;
-            _corsService = corsService;
+            CorsService = corsService;
             _policy = policy;
-            _logger = loggerFactory.CreateLogger<CorsMiddleware>();
+            Logger = loggerFactory.CreateLogger<CorsMiddleware>();
         }
+
+        private ICorsService CorsService { get; }
+
+        private ILogger Logger { get; }
 
         /// <inheritdoc />
-        public async Task Invoke(HttpContext context)
+        public Task Invoke(HttpContext context)
         {
-            if (context.Request.Headers.ContainsKey(CorsConstants.Origin))
+            if (!context.Request.Headers.ContainsKey(CorsConstants.Origin))
             {
-                var corsPolicy = _policy ?? await _corsPolicyProvider?.GetPolicyAsync(context, _corsPolicyName);
-                if (corsPolicy != null)
-                {
-                    var accessControlRequestMethod =
-                        context.Request.Headers[CorsConstants.AccessControlRequestMethod];
-                    if (string.Equals(
-                            context.Request.Method,
-                            CorsConstants.PreflightHttpMethod,
-                            StringComparison.OrdinalIgnoreCase) &&
-                            !StringValues.IsNullOrEmpty(accessControlRequestMethod))
-                    {
-                        ApplyCorsHeaders(context, corsPolicy);
-
-                        // Since there is a policy which was identified,
-                        // always respond to preflight requests.
-                        context.Response.StatusCode = StatusCodes.Status204NoContent;
-                        return;
-                    }
-                    else
-                    {
-                        context.Response.OnStarting(state =>
-                        {
-                            var (httpContext, policy) = (Tuple<HttpContext, CorsPolicy>)state;
-                            try
-                            {
-                                ApplyCorsHeaders(httpContext, policy);
-                            }
-                            catch (Exception exception)
-                            {
-                                _logger.FailedToSetCorsHeaders(exception);
-                            }
-                            return Task.CompletedTask;
-                        }, Tuple.Create(context, corsPolicy));
-                    }
-                }
+                return _next(context);
             }
 
-            await _next(context);
+            return InvokeCore(context);
         }
 
-        private void ApplyCorsHeaders(HttpContext context, CorsPolicy corsPolicy)
+        private async Task InvokeCore(HttpContext context)
         {
-            var corsResult = _corsService.EvaluatePolicy(context, corsPolicy);
-            _corsService.ApplyResult(corsResult, context.Response);
+            var corsPolicy = _policy ?? await _corsPolicyProvider?.GetPolicyAsync(context, _corsPolicyName);
+            if (corsPolicy == null)
+            {
+                Logger?.NoCorsPolicyFound();
+                await _next(context);
+                return;
+            }
+
+            var corsResult = CorsService.EvaluatePolicy(context, corsPolicy);
+            if (corsResult.IsPreflightRequest)
+            {
+                CorsService.ApplyResult(corsResult, context.Response);
+
+                // Since there is a policy which was identified,
+                // always respond to preflight requests.
+                context.Response.StatusCode = StatusCodes.Status204NoContent;
+                return;
+            }
+            else
+            {
+                context.Response.OnStarting(OnResponseStartingDelegate, Tuple.Create(this, context, corsResult));
+                await _next(context);
+            }
+        }
+
+        private static Task OnResponseStarting(object state)
+        {
+            var (middleware, context, result) = (Tuple<CorsMiddleware, HttpContext, CorsResult>)state;
+            try
+            {
+                middleware.CorsService.ApplyResult(result, context.Response);
+            }
+            catch (Exception exception)
+            {
+                middleware.Logger?.FailedToSetCorsHeaders(exception);
+            }
+            return Task.CompletedTask;
         }
     }
 }

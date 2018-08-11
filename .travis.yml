@@ -5,6 +5,9 @@ mono: none
 os:
 - linux
 - osx
+env:
+  global:
+  - TRAVIS_NODE_VERSION: 8.9.3
 osx_image: xcode8.2
 addons:
   apt:
@@ -16,6 +19,7 @@ branches:
   - /^release\/.*$/
   - /^(.*\/)?ci-.*$/
 before_install:
+- nvm install $TRAVIS_NODE_VERSION
 - if test "$TRAVIS_OS_NAME" == "osx"; then brew update; brew install openssl; ln -s
   /usr/local/opt/openssl/lib/libcrypto.1.0.0.dylib /usr/local/lib/; ln -s /usr/local/opt/openssl/lib/libssl.1.0.0.dylib
   /usr/local/lib/; fi

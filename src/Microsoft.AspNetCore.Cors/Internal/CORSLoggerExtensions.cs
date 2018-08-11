@@ -17,6 +17,8 @@ namespace Microsoft.AspNetCore.Cors.Internal
         private static readonly Action<ILogger, string, Exception> _accessControlMethodNotAllowed;
         private static readonly Action<ILogger, string, Exception> _requestHeaderNotAllowed;
         private static readonly Action<ILogger, Exception> _failedToSetCorsHeaders;
+        private static readonly Action<ILogger, Exception> _noCorsPolicyFound;
+        private static readonly Action<ILogger, Exception> _insecureConfiguration;
 
         static CORSLoggerExtensions()
         {
@@ -64,6 +66,16 @@ namespace Microsoft.AspNetCore.Cors.Internal
                 LogLevel.Warning,
                 9,
                 "Failed to apply CORS Response headers.");
+
+            _noCorsPolicyFound = LoggerMessage.Define(
+                LogLevel.Information,
+                new EventId(10, "NoCorsPolicyFound"),
+                "No CORS policy found for the specified request.");
+
+            _insecureConfiguration = LoggerMessage.Define(
+                LogLevel.Warning,
+                new EventId(11, "CorsInsecureConfiguration"),
+                "The CORS protocol does not allow specifying a wildcard (any) origin and credentials at the same time. Configure the policy by listing individual origins if credentials needs to be supported.");
         }
 
         public static void IsPreflightRequest(this ILogger logger)
@@ -109,6 +121,16 @@ namespace Microsoft.AspNetCore.Cors.Internal
         public static void FailedToSetCorsHeaders(this ILogger logger, Exception exception)
         {
             _failedToSetCorsHeaders(logger, exception);
+        }
+
+        public static void NoCorsPolicyFound(this ILogger logger)
+        {
+            _noCorsPolicyFound(logger, null);
+        }
+
+        public static void InsecureConfiguration(this ILogger logger)
+        {
+            _insecureConfiguration(logger, null);
         }
     }
 }
