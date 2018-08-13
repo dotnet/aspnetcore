@@ -24,7 +24,13 @@ public class HubConnection {
     public HubConnection(String url, Transport transport, Logger logger){
         this.url = url;
         this.protocol = new JsonHubProtocol();
-        this.logger = logger;
+
+        if (logger != null) {
+            this.logger = logger;
+        } else {
+            this.logger = new NullLogger();
+        }
+
         this.callback = (payload) -> {
 
             if (!handshakeReceived) {
