@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc
     /// <summary>
     /// Represents an <see cref="ActionResult"/> that renders a view to the response.
     /// </summary>
-    public class ViewResult : ActionResult
+    public class ViewResult : ActionResult, IStatusCodeActionResult
     {
         /// <summary>
         /// Gets or sets the HTTP status code.

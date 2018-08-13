@@ -9,7 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Mvc
 {
-    public class ObjectResult : ActionResult
+    public class ObjectResult : ActionResult, IStatusCodeActionResult
     {
         public ObjectResult(object value)
         {
