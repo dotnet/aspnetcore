@@ -112,13 +112,15 @@ namespace TriageBuildFailures.GitHub
             await Client.Issue.Comment.Update(issue.RepositoryOwner, issue.RepositoryName, comment.Id, newBody);
         }
 
+        public const int MaxBodyLength = 64000;
+
         public async Task<GithubIssue> CreateIssue(string owner, string repo, string subject, string body, IEnumerable<string> labels)
         {
             body += $"\n\nThis issue was made automatically. If there is a problem contact {Config.BuildBuddyUsername}.";
 
-            if(body.Length > 64000 )
+            if (body.Length > MaxBodyLength)
             {
-                throw new ArgumentOutOfRangeException("Body must be less than or equal to 64000 characters long.");
+                throw new ArgumentOutOfRangeException($"Body must be less than or equal to {MaxBodyLength} characters long.");
             }
 
             var newIssue = new NewIssue(subject)

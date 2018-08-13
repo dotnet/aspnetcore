@@ -31,7 +31,6 @@ namespace TriageBuildFailures.Handlers
         public override async Task HandleFailure(TeamCityBuild build)
         {
             var log = TCClient.GetBuildLog(build);
-            var errMsgs = GetErrorsFromLog(log);
             var owner = TestToRepoMapper.FindOwner(build.BuildName, Reporter);
             var repo = "Coherence-Signed";
             var issuesTask = GHClient.GetIssues(owner, repo);
@@ -46,7 +45,7 @@ namespace TriageBuildFailures.Handlers
             else{
                 var body = $@"{build.BuildName} failed with the following errors:
 ```
-{string.Join(Environment.NewLine, errMsgs)}
+{ConstructErrorSummary(log)}
 ```
 {build.WebURL}
 
@@ -68,6 +67,19 @@ CC {string.Join( ", ", _Notifiers)}";
         {
             var logLines = log.Split(new string[] { "\n", "\r" }, StringSplitOptions.RemoveEmptyEntries);
             return logLines.Where(l => BuildTimeErrors.Any(l.Contains));
+        }
+
+        private string ConstructErrorSummary(string log)
+        {
+            var errMsgs = GetErrorsFromLog(log);
+            var result = string.Join(Environment.NewLine, errMsgs);
+            var maxErrSize = GitHubClientWrapper.MaxBodyLength / 2;
+            if(result.Length > maxErrSize)
+            {
+                result = result.Substring(0, maxErrSize);
+            }
+
+            return result;
         }
     }
 }
