@@ -4,10 +4,10 @@
 #include "stdafx.h"
 #include "FileOutputManager.h"
 #include "sttimer.h"
-#include "utility.h"
 #include "exceptions.h"
 #include "debugutil.h"
 #include "SRWExclusiveLock.h"
+#include "file_utility.h"
 
 FileOutputManager::FileOutputManager() :
     m_hLogFileHandle(INVALID_HANDLE_VALUE),
@@ -82,12 +82,12 @@ FileOutputManager::Start()
     SECURITY_ATTRIBUTES saAttr = { 0 };
     STRU struPath;
 
-    RETURN_IF_FAILED(UTILITY::ConvertPathToFullPath(
+    RETURN_IF_FAILED(FILE_UTILITY::ConvertPathToFullPath(
         m_wsStdOutLogFileName.QueryStr(),
         m_wsApplicationPath.QueryStr(),
         &struPath));
 
-    RETURN_IF_FAILED(UTILITY::EnsureDirectoryPathExist(struPath.QueryStr()));
+    RETURN_IF_FAILED(FILE_UTILITY::EnsureDirectoryPathExist(struPath.QueryStr()));
 
     GetSystemTime(&systemTime);
 

@@ -193,12 +193,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="application.h" />
-    <ClInclude Include="AppOfflineApplication.h" />
-    <ClInclude Include="AppOfflineHandler.h" />
     <ClInclude Include="config_utility.h" />
     <ClInclude Include="Environment.h" />
     <ClInclude Include="EventLog.h" />
     <ClInclude Include="exceptions.h" />
+    <ClInclude Include="file_utility.h" />
     <ClInclude Include="GlobalVersionUtility.h" />
     <ClInclude Include="fx_ver.h" />
     <ClInclude Include="HandleWrapper.h" />
@@ -206,28 +205,24 @@
     <ClInclude Include="hostfxr_utility.h" />
     <ClInclude Include="iapplication.h" />
     <ClInclude Include="debugutil.h" />
-    <ClInclude Include="disconnectcontext.h" />
     <ClInclude Include="irequesthandler.h" />
-    <ClInclude Include="PollingAppOfflineApplication.h" />
     <ClInclude Include="requesthandler.h" />
     <ClInclude Include="resources.h" />
     <ClInclude Include="SRWExclusiveLock.h" />
     <ClInclude Include="SRWSharedLock.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="sttimer.h" />
-    <ClInclude Include="utility.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="AppOfflineApplication.cpp" />
-    <ClCompile Include="AppOfflineHandler.cpp" />
     <ClCompile Include="debugutil.cpp" />
     <ClCompile Include="Environment.cpp" />
+    <ClCompile Include="EventLog.cpp" />
+    <ClCompile Include="file_utility.cpp" />
     <ClCompile Include="fx_ver.cpp" />
     <ClCompile Include="GlobalVersionUtility.cpp" />
     <ClCompile Include="HandleWrapper.cpp" />
     <ClCompile Include="hostfxr_utility.cpp" />
     <ClCompile Include="hostfxroptions.cpp" />
-    <ClCompile Include="PollingAppOfflineApplication.cpp" />
     <ClCompile Include="SRWExclusiveLock.cpp" />
     <ClCompile Include="SRWSharedLock.cpp" />
     <ClCompile Include="stdafx.cpp">
@@ -236,7 +231,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="utility.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\IISLib\IISLib.vcxproj">

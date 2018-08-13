@@ -6,11 +6,9 @@
 #include <array>
 #include "proxymodule.h"
 #include "hostfxr_utility.h"
-#include "utility.h"
 #include "debugutil.h"
 #include "resources.h"
 #include "SRWExclusiveLock.h"
-#include "GlobalVersionUtility.h"
 #include "exceptions.h"
 #include "EventLog.h"
 #include "HandleWrapper.h"
@@ -95,8 +93,7 @@ Finished:
     if (FAILED(hr))
     {
         // Log the failure and update application info to not try again
-        UTILITY::LogEventF(g_hEventLog,
-            EVENTLOG_ERROR_TYPE,
+        EventLog::Error(
             ASPNETCORE_EVENT_ADD_APPLICATION_ERROR,
             ASPNETCORE_EVENT_ADD_APPLICATION_ERROR_MSG,
             httpApplication.GetApplicationId(),

@@ -48,7 +48,6 @@ public:
          _In_  PCWSTR pcwzProcessPath,
          _In_  PCWSTR pcwzApplicationPhysicalPath,
          _In_  PCWSTR pcwzArguments,
-         _In_  HANDLE hEventLog,
          _Out_ std::unique_ptr<HOSTFXR_OPTIONS>& ppWrapper);
 
 private:

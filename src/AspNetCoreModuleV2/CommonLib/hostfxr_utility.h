@@ -24,7 +24,6 @@ public:
         PCWSTR              pwzExeAbsolutePath, // includes .exe file extension.
         PCWSTR				pcwzApplicationPhysicalPath,
         PCWSTR              pcwzArguments,
-        HANDLE              hEventLog,
         _Inout_ STRU*		pStruHostFxrDllLocation,
         _Out_ DWORD*		pdwArgCount,
         _Out_ BSTR**		ppwzArgv
@@ -36,7 +35,6 @@ public:
         PCWSTR              pwzArgumentsFromConfig,
         PCWSTR              pwzExePath,
         PCWSTR              pcwzApplicationPhysicalPath,
-        HANDLE              hEventLog,
         _Out_ DWORD*        pdwArgCount,
         _Out_ BSTR**        pbstrArgv
     );
@@ -50,7 +48,6 @@ public:
     static
     HRESULT
     GetHostFxrParameters(
-        _In_ HANDLE         hEventLog,
         _In_ PCWSTR         pcwzProcessPath,
         _In_ PCWSTR         pcwzApplicationPhysicalPath,
         _In_ PCWSTR         pcwzArguments,
@@ -76,8 +73,7 @@ public:
     static
     std::optional<std::filesystem::path>
     GetAbsolutePathToHostFxr(
-        _In_ const std::filesystem::path & dotnetPath,
-        _In_ HANDLE hEventLog
+        _In_ const std::filesystem::path & dotnetPath
     );
 
     static

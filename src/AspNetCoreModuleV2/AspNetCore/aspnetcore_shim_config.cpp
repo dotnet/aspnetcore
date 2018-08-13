@@ -5,7 +5,6 @@
 
 #include "EventLog.h"
 #include "config_utility.h"
-#include "hostfxr_utility.h"
 #include "ahutil.h"
 
 HRESULT
@@ -16,14 +15,10 @@ ASPNETCORE_SHIM_CONFIG::Populate(
 {
     STACK_STRU(strHostingModel, 12);
     STRU                            strApplicationFullPath;
-    IAppHostAdminManager           *pAdminManager = NULL;
     CComPtr<IAppHostElement>        pAspNetCoreElement;
 
-    pAdminManager = pHttpServer->GetAdminManager();
-    RETURN_IF_FAILED(m_struApplicationPhysicalPath.Copy(pHttpApplication->GetApplicationPhysicalPath()));
-
+    IAppHostAdminManager *pAdminManager = pHttpServer->GetAdminManager();
     const CComBSTR bstrAspNetCoreSection = CS_ASPNETCORE_SECTION;
-
     const CComBSTR applicationConfigPath = pHttpApplication->GetAppConfigPath();
 
     RETURN_IF_FAILED(pAdminManager->GetAdminSection(bstrAspNetCoreSection,
@@ -51,7 +46,10 @@ ASPNETCORE_SHIM_CONFIG::Populate(
     else
     {
         // block unknown hosting value
-        EVENTLOG(g_hEventLog, UNKNOWN_HOSTING_MODEL_ERROR, strHostingModel.QueryStr());
+        EventLog::Error(
+            ASPNETCORE_EVENT_UNKNOWN_HOSTING_MODEL_ERROR,
+            ASPNETCORE_EVENT_UNKNOWN_HOSTING_MODEL_ERROR_MSG,
+            strHostingModel.QueryStr());
         RETURN_IF_FAILED(HRESULT_FROM_WIN32(ERROR_NOT_SUPPORTED));
     }
 

@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
 #include "processmanager.h"
+#include "EventLog.h"
 
 volatile BOOL               PROCESS_MANAGER::sm_fWSAStartupDone = FALSE;
 
@@ -194,8 +195,7 @@ PROCESS_MANAGER::GetProcess(
             //
             // rapid fails per minute exceeded, do not create new process.
             //
-            UTILITY::LogEventF(g_hEventLog,
-                EVENTLOG_INFORMATION_TYPE,
+            EventLog::Info(
                 ASPNETCORE_EVENT_RAPID_FAIL_COUNT_EXCEEDED,
                 ASPNETCORE_EVENT_RAPID_FAIL_COUNT_EXCEEDED_MSG,
                 pConfig->QueryRapidFailsPerMinute());

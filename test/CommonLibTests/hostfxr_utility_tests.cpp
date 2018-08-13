@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 #include "stdafx.h"
+#include "file_utility.h"
 
 TEST(ParseHostFxrArguments, BasicHostFxrArguments)
 {
@@ -12,7 +13,6 @@ TEST(ParseHostFxrArguments, BasicHostFxrArguments)
         L"exec \"test.dll\"", // args
         exeStr,  // exe path
         L"invalid",  // physical path to application
-        NULL, // event log
         &retVal, // arg count
         &bstrArray); // args array.
 
@@ -33,7 +33,6 @@ TEST(ParseHostFxrArguments, NoExecProvided)
         L"test.dll", // args
         exeStr,  // exe path
         L"ignored",  // physical path to application
-        NULL, // event log
         &retVal, // arg count
         &bstrArray); // args array.
 
@@ -53,7 +52,6 @@ TEST(ParseHostFxrArguments, ConvertDllToAbsolutePath)
         L"exec \"test.dll\"", // args
         exeStr,  // exe path
         L"C:/test",  // physical path to application
-        NULL, // event log
         &retVal, // arg count
         &bstrArray); // args array.
 
@@ -74,7 +72,6 @@ TEST(ParseHostFxrArguments, ProvideNoArgs_InvalidArgs)
         L"", // args
         exeStr,  // exe path
         L"ignored",  // physical path to application
-        NULL, // event log
         &retVal, // arg count
         &bstrArray); // args array.
 
@@ -101,11 +98,11 @@ TEST(GetAbsolutePathToDotnetFromProgramFiles, BackupWorks)
 
     if (is64Bit)
     {
-        fDotnetInProgramFiles = UTILITY::CheckIfFileExists(L"C:/Program Files/dotnet/dotnet.exe");
+        fDotnetInProgramFiles = FILE_UTILITY::CheckIfFileExists(L"C:/Program Files/dotnet/dotnet.exe");
     }
     else
     {
-        fDotnetInProgramFiles = UTILITY::CheckIfFileExists(L"C:/Program Files (x86)/dotnet/dotnet.exe");
+        fDotnetInProgramFiles = FILE_UTILITY::CheckIfFileExists(L"C:/Program Files (x86)/dotnet/dotnet.exe");
     }
 
     auto dotnetPath = HOSTFXR_UTILITY::GetAbsolutePathToDotnetFromProgramFiles();
@@ -127,11 +124,10 @@ TEST(GetHostFxrArguments, InvalidParams)
     STRU  struExeLocation;
 
     HRESULT hr = HOSTFXR_UTILITY::GetHostFxrParameters(
-        INVALID_HANDLE_VALUE,
         L"bogus", // processPath
         L"",  // application physical path, ignored.
         L"ignored",  //arguments
-        NULL, // event log
+        NULL,
         &struExeLocation,
         &retVal, // arg count
         &bstrArray); // args array.

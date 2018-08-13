@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "application.h"
+#include <string>
 #include "requesthandler.h"
 
 class AppOfflineHandler: public REQUEST_HANDLER

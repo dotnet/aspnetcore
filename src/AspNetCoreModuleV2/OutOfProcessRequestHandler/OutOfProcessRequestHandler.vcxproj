@@ -231,6 +231,7 @@
     <ClInclude Include="responseheaderhash.h" />
     <ClInclude Include="serverprocess.h" />
     <ClInclude Include="stdafx.h" />
+    <ClInclude Include="url_utility.h" />
     <ClInclude Include="websockethandler.h" />
     <ClInclude Include="winhttphelper.h" />
     <ClInclude Include="forwardinghandler.h" />
@@ -251,6 +252,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="url_utility.cpp" />
     <ClCompile Include="websockethandler.cpp" />
     <ClCompile Include="winhttphelper.cpp" />
   </ItemGroup>

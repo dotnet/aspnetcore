@@ -2,6 +2,7 @@
 
 #include <IPHlpApi.h>
 #include <VersionHelpers.h>
+#include "exceptions.h"
 
 DECLARE_DEBUG_PRINT_OBJECT("aspnetcorev2_outofprocess.dll");
 
