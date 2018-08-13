@@ -28,20 +28,12 @@ PollingAppOfflineApplication::CheckAppOffline()
         SRWExclusiveLock lock(m_statusLock);
         if (ulCurrentTime - m_ulLastCheckTime > c_appOfflineRefreshIntervalMS)
         {
-            try
+            m_fAppOfflineFound = FileExists(m_appOfflineLocation);
+            if(m_fAppOfflineFound)
             {
-                m_fAppOfflineFound = is_regular_file(m_appOfflineLocation);
-                if(m_fAppOfflineFound)
-                {
-                    LOG_IF_FAILED(OnAppOfflineFound());
-                }
-                m_ulLastCheckTime = ulCurrentTime;
+                LOG_IF_FAILED(OnAppOfflineFound());
             }
-            catch (...)
-            {
-                // is_regular_file might throw in very rare cases
-                OBSERVE_CAUGHT_EXCEPTION();
-            }
+            m_ulLastCheckTime = ulCurrentTime;
         }
     }
 
@@ -55,4 +47,10 @@ PollingAppOfflineApplication::CheckAppOffline()
 std::filesystem::path PollingAppOfflineApplication::GetAppOfflineLocation(IHttpApplication& pApplication)
 {
     return std::filesystem::path(pApplication.GetApplicationPhysicalPath()) / "app_offline.htm";
+}
+
+bool PollingAppOfflineApplication::FileExists(const std::filesystem::path& path)
+{
+    std::error_code ec;
+    return is_regular_file(path, ec) || ec.value() == ERROR_SHARING_VIOLATION;
 }

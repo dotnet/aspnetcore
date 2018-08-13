@@ -57,5 +57,5 @@ HRESULT AppOfflineApplication::OnAppOfflineFound()
 
 bool AppOfflineApplication::ShouldBeStarted(IHttpApplication& pApplication)
 {
-    return is_regular_file(GetAppOfflineLocation(pApplication));
+    return FileExists(GetAppOfflineLocation(pApplication));
 }
