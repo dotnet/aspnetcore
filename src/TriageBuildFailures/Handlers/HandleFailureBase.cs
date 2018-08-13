@@ -32,7 +32,8 @@ namespace TriageBuildFailures.Handlers
             var commentsFromToday = comments.Where(c =>
                 c.CreatedAt.Date == DateTime.Now.Date
                 && c.User.Login == Config.GitHub.BotUsername
-                && c.Body.Contains("This comment was made automatically"));
+                && c.Body.Contains("This comment was made automatically")
+                && !c.Body.StartsWith("Please use this workflow"));
             var commentsAboutThisBuild = comments.Where(c => c.Body.Contains(build.WebURL.ToString()));
             if (commentsAboutThisBuild.Count() == 0)
             {
