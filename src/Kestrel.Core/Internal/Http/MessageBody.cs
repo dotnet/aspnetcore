@@ -18,6 +18,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private readonly HttpProtocol _context;
 
         private bool _send100Continue = true;
+        private long _consumedBytes;
 
         protected MessageBody(HttpProtocol context)
         {
@@ -166,6 +167,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected virtual void OnDataRead(int bytesRead)
         {
+        }
+
+        protected void AddAndCheckConsumedBytes(long consumedBytes)
+        {
+            _consumedBytes += consumedBytes;
+
+            if (_consumedBytes > _context.MaxRequestBodySize)
+            {
+                BadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge);
+            }
         }
 
         private class ForZeroContentLength : MessageBody

@@ -16,6 +16,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             _context = context;
         }
 
+        protected override void OnReadStarting()
+        {
+            // Note ContentLength or MaxRequestBodySize may be null
+            if (_context.RequestHeaders.ContentLength > _context.MaxRequestBodySize)
+            {
+                BadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge);
+            }
+        }
+
         protected override void OnReadStarted()
         {
             // Produce 100-continue if no request body data for the stream has arrived yet.
@@ -28,6 +37,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         protected override void OnDataRead(int bytesRead)
         {
             _context.OnDataRead(bytesRead);
+            AddAndCheckConsumedBytes(bytesRead);
         }
 
         protected override Task OnConsumeAsync() => Task.CompletedTask;

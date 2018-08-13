@@ -399,7 +399,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             private const int MaxChunkPrefixBytes = 10;
 
             private long _inputLength;
-            private long _consumedBytes;
 
             private Mode _mode = Mode.Prefix;
 
@@ -488,16 +487,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 }
 
                 return _mode == Mode.Complete;
-            }
-
-            private void AddAndCheckConsumedBytes(long consumedBytes)
-            {
-                _consumedBytes += consumedBytes;
-
-                if (_consumedBytes > _context.MaxRequestBodySize)
-                {
-                    BadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge);
-                }
             }
 
             private void ParseChunkedPrefix(ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
