@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -18,6 +17,9 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 {
     public static class Helpers
     {
+        private static readonly TimeSpan RetryRequestDelay = TimeSpan.FromMilliseconds(100);
+        private static readonly int RetryRequestCount = 5;
+
         public static string GetTestWebSitePath(string name)
         {
             return Path.Combine(TestPathUtilities.GetSolutionRootDirectory("IISIntegration"),"test", "WebSites", name);
@@ -26,9 +28,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         public static string GetInProcessTestSitesPath() => GetTestWebSitePath("InProcessWebSite");
 
         public static string GetOutOfProcessTestSitesPath() => GetTestWebSitePath("OutOfProcessWebSite");
-  
 
-        public static async Task AssertStarts(IISDeploymentResult deploymentResult, string path = "/HelloWorld")
+        public static async Task AssertStarts(this IISDeploymentResult deploymentResult, string path = "/HelloWorld")
         {
             var response = await deploymentResult.HttpClient.GetAsync(path);
 
@@ -71,6 +72,65 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 logger.LogDebug($"  Copying {fileInfo.Name}");
                 var destFileName = Path.Combine(target.FullName, fileInfo.Name);
                 fileInfo.CopyTo(destFileName);
+            }
+        }
+
+        public static void ModifyWebConfig(this DeploymentResult deploymentResult, Action<XElement> action)
+        {
+            var webConfigPath = Path.Combine(deploymentResult.ContentRoot, "web.config");
+            var document = XDocument.Load(webConfigPath);
+
+            document.Save(webConfigPath);
+        }
+
+        public static Task<HttpResponseMessage> RetryRequestAsync(this HttpClient client, string uri, Func<HttpResponseMessage, bool> predicate)
+        {
+            return RetryRequestAsync(client, uri, message => Task.FromResult(predicate(message)));
+        }
+
+        public static async Task<HttpResponseMessage> RetryRequestAsync(this HttpClient client, string uri, Func<HttpResponseMessage, Task<bool>> predicate)
+        {
+            HttpResponseMessage response = await client.GetAsync(uri);
+
+            for (var i = 0; i < RetryRequestCount && !await predicate(response); i++)
+            {
+                // Keep retrying until app_offline is present.
+                response = await client.GetAsync(uri);
+                await Task.Delay(RetryRequestDelay);
+            }
+
+            if (!await predicate(response))
+            {
+                throw new InvalidOperationException($"Didn't get response that satisfies predicate after {RetryRequestCount} retries");
+            }
+
+            return response;
+        }
+
+        public static void AssertWorkerProcessStop(this IISDeploymentResult deploymentResult)
+        {
+            var hostProcess = deploymentResult.HostProcess;
+            Assert.True(hostProcess.WaitForExit((int)TimeoutExtensions.DefaultTimeout.TotalMilliseconds));
+
+            if (deploymentResult.DeploymentParameters.ServerType == ServerType.IISExpress)
+            {
+                Assert.Equal(0, hostProcess.ExitCode);
+            }
+        }
+
+
+        public static async Task AssertRecycledAsync(this IISDeploymentResult deploymentResult, Func<Task> verificationAction = null)
+        {
+            if (deploymentResult.DeploymentParameters.HostingModel != HostingModel.InProcess)
+            {
+                throw new NotSupportedException();
+            }
+
+            deploymentResult.AssertWorkerProcessStop();
+            if (deploymentResult.DeploymentParameters.ServerType == ServerType.IIS)
+            {
+                verificationAction = verificationAction ?? (() => deploymentResult.AssertStarts());
+                await verificationAction();
             }
         }
     }

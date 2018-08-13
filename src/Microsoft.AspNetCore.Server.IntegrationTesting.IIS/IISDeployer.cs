@@ -123,47 +123,61 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
 
         private void GetLogsFromFile()
         {
-            // Handle cases where debug file is redirected by test
-            var debugLogLocations = new List<string>();
-            if (IISDeploymentParameters.HandlerSettings.ContainsKey("debugFile"))
+            try
             {
-                debugLogLocations.Add(IISDeploymentParameters.HandlerSettings["debugFile"]);
-            }
 
-            if (DeploymentParameters.EnvironmentVariables.ContainsKey("ASPNETCORE_MODULE_DEBUG_FILE"))
-            {
-                debugLogLocations.Add(DeploymentParameters.EnvironmentVariables["ASPNETCORE_MODULE_DEBUG_FILE"]);
-            }
-
-            // default debug file name
-            debugLogLocations.Add("aspnetcore-debug.log");
-
-            foreach (var debugLogLocation in debugLogLocations)
-            {
-                if (string.IsNullOrEmpty(debugLogLocation))
+                // Handle cases where debug file is redirected by test
+                var debugLogLocations = new List<string>();
+                if (IISDeploymentParameters.HandlerSettings.ContainsKey("debugFile"))
                 {
-                    continue;
+                    debugLogLocations.Add(IISDeploymentParameters.HandlerSettings["debugFile"]);
                 }
 
-                var file = Path.Combine(DeploymentParameters.PublishedApplicationRootPath, debugLogLocation);
-                if (File.Exists(file))
+                if (DeploymentParameters.EnvironmentVariables.ContainsKey("ASPNETCORE_MODULE_DEBUG_FILE"))
                 {
-                    var lines = File.ReadAllLines(file);
-                    if (!lines.Any())
+                    debugLogLocations.Add(DeploymentParameters.EnvironmentVariables["ASPNETCORE_MODULE_DEBUG_FILE"]);
+                }
+
+                // default debug file name
+                debugLogLocations.Add("aspnetcore-debug.log");
+
+                foreach (var debugLogLocation in debugLogLocations)
+                {
+                    if (string.IsNullOrEmpty(debugLogLocation))
                     {
-                        Logger.LogInformation("Debug log file found but was empty");
                         continue;
                     }
 
-                    foreach (var line in lines)
+                    var file = Path.Combine(DeploymentParameters.PublishedApplicationRootPath, debugLogLocation);
+                    if (File.Exists(file))
                     {
-                        Logger.LogInformation(line);
+                        var lines = File.ReadAllLines(file);
+                        if (!lines.Any())
+                        {
+                            Logger.LogInformation($"Debug log file {file} found but was empty");
+                            continue;
+                        }
+
+                        foreach (var line in lines)
+                        {
+                            Logger.LogInformation(line);
+                        }
+                        return;
                     }
-                    return;
+                }
+                // ANCM V1 does not support logs
+                if (DeploymentParameters.AncmVersion == AncmVersion.AspNetCoreModuleV2)
+                {
+                    throw new InvalidOperationException($"Unable to find non-empty debug log files. Tried: {string.Join(", ", debugLogLocations)}");
                 }
             }
-
-            throw new InvalidOperationException($"Not able to find non-empty debug log files. Tried: {string.Join(", ", debugLogLocations)}");
+            finally
+            {
+                if (File.Exists(_debugLogFile))
+                {
+                    File.Delete(_debugLogFile);
+                }
+            }
         }
 
         public void StartIIS(Uri uri, string contentRoot)
@@ -337,6 +351,12 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                     if (site.State != ObjectState.Stopped)
                     {
                         throw new InvalidOperationException("Site not stopped yet");
+                    }
+
+                    if (appPool.WorkerProcesses.Any(wp => wp.State == WorkerProcessState.Running ||
+                                                          wp.State == WorkerProcessState.Stopping))
+                    {
+                        throw new InvalidOperationException("WorkerProcess not stopped yet");
                     }
 
                     if (!HostProcess.HasExited)

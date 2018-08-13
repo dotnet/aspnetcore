@@ -47,8 +47,9 @@ PrintDebugHeader()
         RETURN_LAST_ERROR_IF(!VerQueryValue(verData.data(), _T("\\StringFileInfo\\040904b0\\FileDescription"), &pvProductName, &iProductNameLen));
 
         // Major, minor are stored in dwFileVersionMS field and patch, build in dwFileVersionLS field as pair of 32 bit numbers
-        DebugPrintf(ASPNETCORE_DEBUG_FLAG_INFO, "Initializing logs for %S. File Version: %d.%d.%d.%d. Description: %S",
+        DebugPrintf(ASPNETCORE_DEBUG_FLAG_INFO, "Initializing logs for %S. ProcessId: %d. File Version: %d.%d.%d.%d. Description: %S",
             path,
+            GetCurrentProcessId(),
             ( verInfo->dwFileVersionMS >> 16 ) & 0xffff,
             ( verInfo->dwFileVersionMS >>  0 ) & 0xffff,
             ( verInfo->dwFileVersionLS >> 16 ) & 0xffff,
