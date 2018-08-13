@@ -55,7 +55,6 @@
 
 // Common lib
 #include "requesthandler.h"
-#include "utility.h"
 #include "application.h"
 #include "resources.h"
 #include "aspnetcore_event.h"

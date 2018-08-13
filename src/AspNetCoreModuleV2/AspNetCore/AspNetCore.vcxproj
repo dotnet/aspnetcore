@@ -226,10 +226,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="applicationinfo.h" />
+    <ClInclude Include="AppOfflineApplication.h" />
+    <ClInclude Include="AppOfflineHandler.h" />
     <ClInclude Include="aspnetcore_shim_config.h" />
     <ClInclude Include="globalmodule.h" />
     <ClInclude Include="applicationmanager.h" />
     <ClInclude Include="HandlerResolver.h" />
+    <ClInclude Include="PollingAppOfflineApplication.h" />
     <ClInclude Include="proxymodule.h" />
     <ClInclude Include="ServerErrorApplication.h" />
     <ClInclude Include="ServerErrorHandler.h" />
@@ -238,10 +241,13 @@
   <ItemGroup>
     <ClCompile Include="applicationinfo.cpp" />
     <ClCompile Include="applicationmanager.cpp" />
+    <ClCompile Include="AppOfflineApplication.cpp" />
+    <ClCompile Include="AppOfflineHandler.cpp" />
     <ClCompile Include="aspnetcore_shim_config.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="globalmodule.cpp" />
     <ClCompile Include="HandlerResolver.cpp" />
+    <ClCompile Include="PollingAppOfflineApplication.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>

@@ -4,8 +4,6 @@
 #pragma once
 
 #include "iapplication.h"
-#include "exceptions.h"
-#include "utility.h"
 #include "ntassert.h"
 #include "SRWExclusiveLock.h"
 
@@ -73,7 +71,7 @@ public:
 
 protected:
     SRWLOCK m_stateLock;
-    bool m_fStopCalled; 
+    bool m_fStopCalled;
 
 private:
     mutable LONG           m_cRefs;

@@ -12,6 +12,7 @@
 #include "exceptions.h"
 #include "HandleWrapper.h"
 #include "Environment.h"
+#include "file_utility.h"
 
 namespace fs = std::filesystem;
 
@@ -32,7 +33,6 @@ HOSTFXR_UTILITY::GetStandaloneHostfxrParameters(
         PCWSTR              pwzExeAbsolutePath, // includes .exe file extension.
         PCWSTR				pcwzApplicationPhysicalPath,
         PCWSTR              pcwzArguments,
-        HANDLE              hEventLog,
         _Inout_ STRU*		pStruHostFxrDllLocation,
         _Out_ DWORD*		pdwArgCount,
         _Out_ BSTR**		ppwzArgv
@@ -65,11 +65,19 @@ HOSTFXR_UTILITY::GetStandaloneHostfxrParameters(
         LOG_INFOF("Checking runtimeconfig.json at %S", runtimeConfigLocation.c_str());
         if (!is_regular_file(runtimeConfigLocation))
         {
-            EVENTLOG(hEventLog, INPROCESS_FULL_FRAMEWORK_APP, pcwzApplicationPhysicalPath, 0);
+            EventLog::Error(
+                ASPNETCORE_EVENT_INPROCESS_FULL_FRAMEWORK_APP,
+                ASPNETCORE_EVENT_INPROCESS_FULL_FRAMEWORK_APP_MSG,
+                pcwzApplicationPhysicalPath,
+                0);
             return E_FAIL;
         }
 
-        EVENTLOG(hEventLog, APPLICATION_EXE_NOT_FOUND, pcwzApplicationPhysicalPath, 0);
+        EventLog::Error(
+            ASPNETCORE_EVENT_APPLICATION_EXE_NOT_FOUND,
+            ASPNETCORE_EVENT_APPLICATION_EXE_NOT_FOUND_MSG,
+            pcwzApplicationPhysicalPath,
+            0);
         return E_FAIL;
     }
 
@@ -90,7 +98,6 @@ HOSTFXR_UTILITY::GetStandaloneHostfxrParameters(
         arguments.c_str(),
         pwzExeAbsolutePath,
         pcwzApplicationPhysicalPath,
-        hEventLog,
         pdwArgCount,
         ppwzArgv));
 
@@ -107,7 +114,6 @@ HOSTFXR_UTILITY::IsDotnetExecutable(const std::filesystem::path & dotnetPath)
 
 HRESULT
 HOSTFXR_UTILITY::GetHostFxrParameters(
-    _In_ HANDLE         hEventLog,
     _In_ PCWSTR         pcwzProcessPath,
     _In_ PCWSTR         pcwzApplicationPhysicalPath,
     _In_ PCWSTR         pcwzArguments,
@@ -142,13 +148,17 @@ HOSTFXR_UTILITY::GetHostFxrParameters(
         if (!fullProcessPath.has_value())
         {
             hr = HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND);
-            EVENTLOG(hEventLog, INVALID_PROCESS_PATH, processPath.c_str(), hr);
+            EventLog::Error(
+                ASPNETCORE_EVENT_INVALID_PROCESS_PATH,
+                ASPNETCORE_EVENT_INVALID_PROCESS_PATH_MSG,
+                processPath.c_str(),
+                hr);
             return hr;
         }
 
         processPath = fullProcessPath.value();
 
-        auto hostFxrPath = GetAbsolutePathToHostFxr(processPath, hEventLog);
+        auto hostFxrPath = GetAbsolutePathToHostFxr(processPath);
         if (!hostFxrPath.has_value())
         {
             hr = HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND);
@@ -159,7 +169,6 @@ HOSTFXR_UTILITY::GetHostFxrParameters(
             arguments.c_str(),
             processPath.c_str(),
             pcwzApplicationPhysicalPath,
-            hEventLog,
             pdwArgCount,
             pbstrArgv));
 
@@ -186,7 +195,6 @@ HOSTFXR_UTILITY::GetHostFxrParameters(
                 processPath.c_str(),
                 pcwzApplicationPhysicalPath,
                 arguments.c_str(),
-                hEventLog,
                 pStruHostFxrDllLocation,
                 pdwArgCount,
                 pbstrArgv));
@@ -200,7 +208,11 @@ HOSTFXR_UTILITY::GetHostFxrParameters(
             // then it is an invalid argument.
             //
             hr = HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND);
-            EVENTLOG(hEventLog, INVALID_PROCESS_PATH, processPath.c_str(), hr);
+            EventLog::Error(
+                ASPNETCORE_EVENT_INVALID_PROCESS_PATH,
+                ASPNETCORE_EVENT_INVALID_PROCESS_PATH_MSG,
+                processPath.c_str(),
+                hr);
             return hr;
         }
     }
@@ -221,13 +233,10 @@ HOSTFXR_UTILITY::ParseHostfxrArguments(
     PCWSTR              pwzArgumentsFromConfig,
     PCWSTR              pwzExePath,
     PCWSTR              pcwzApplicationPhysicalPath,
-    HANDLE              hEventLog,
     _Out_ DWORD*        pdwArgCount,
     _Out_ BSTR**        pbstrArgv
 )
 {
-    UNREFERENCED_PARAMETER(hEventLog); // TODO use event log to set errors.
-
     DBG_ASSERT(pdwArgCount != NULL);
     DBG_ASSERT(pbstrArgv != NULL);
     DBG_ASSERT(pwzExePath != NULL);
@@ -276,7 +285,7 @@ HOSTFXR_UTILITY::ParseHostfxrArguments(
         struTempPath.Copy(pwzArgs[intArgsProcessed]);
         if (struTempPath.EndsWith(L".dll"))
         {
-            if (SUCCEEDED(UTILITY::ConvertPathToFullPath(pwzArgs[intArgsProcessed], pcwzApplicationPhysicalPath, &struTempPath)))
+            if (SUCCEEDED(FILE_UTILITY::ConvertPathToFullPath(pwzArgs[intArgsProcessed], pcwzApplicationPhysicalPath, &struTempPath)))
             {
                 argv[intArgsProcessed + 1] = SysAllocString(struTempPath.QueryStr());
             }
@@ -398,8 +407,7 @@ HOSTFXR_UTILITY::GetAbsolutePathToDotnet(
 
 std::optional<fs::path>
 HOSTFXR_UTILITY::GetAbsolutePathToHostFxr(
-    const fs::path & dotnetPath,
-    HANDLE hEventLog
+    const fs::path & dotnetPath
 )
 {
     std::vector<std::wstring> versionFolders;
@@ -409,7 +417,7 @@ HOSTFXR_UTILITY::GetAbsolutePathToHostFxr(
 
     if (!is_directory(hostFxrBase))
     {
-        EVENTLOG(hEventLog, HOSTFXR_DIRECTORY_NOT_FOUND, hostFxrBase.c_str(), HRESULT_FROM_WIN32(ERROR_BAD_ENVIRONMENT));
+        EventLog::Error(ASPNETCORE_EVENT_HOSTFXR_DIRECTORY_NOT_FOUND, ASPNETCORE_EVENT_HOSTFXR_DIRECTORY_NOT_FOUND_MSG, hostFxrBase.c_str(), HRESULT_FROM_WIN32(ERROR_BAD_ENVIRONMENT));
 
         return std::nullopt;
     }
@@ -419,7 +427,11 @@ HOSTFXR_UTILITY::GetAbsolutePathToHostFxr(
 
     if (versionFolders.empty())
     {
-        EVENTLOG(hEventLog, HOSTFXR_DIRECTORY_NOT_FOUND, hostFxrBase.c_str(), HRESULT_FROM_WIN32(ERROR_BAD_ENVIRONMENT));
+        EventLog::Error(
+            ASPNETCORE_EVENT_HOSTFXR_DIRECTORY_NOT_FOUND,
+            ASPNETCORE_EVENT_HOSTFXR_DIRECTORY_NOT_FOUND_MSG,
+            hostFxrBase.c_str(),
+            HRESULT_FROM_WIN32(ERROR_BAD_ENVIRONMENT));
 
         return std::nullopt;
     }
@@ -429,7 +441,11 @@ HOSTFXR_UTILITY::GetAbsolutePathToHostFxr(
 
     if (!is_regular_file(hostFxrPath))
     {
-        EVENTLOG(hEventLog, HOSTFXR_DLL_NOT_FOUND, hostFxrPath.c_str(), HRESULT_FROM_WIN32(ERROR_FILE_INVALID));
+        EventLog::Error(
+            ASPNETCORE_EVENT_HOSTFXR_DLL_NOT_FOUND,
+            ASPNETCORE_EVENT_HOSTFXR_DLL_NOT_FOUND_MSG,
+            hostFxrPath.c_str(),
+            HRESULT_FROM_WIN32(ERROR_FILE_INVALID));
 
         return std::nullopt;
     }

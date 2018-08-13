@@ -26,7 +26,7 @@ public:
     HRESULT GetApplicationFactory(IHttpApplication &pApplication, STRU& location, PFN_ASPNETCORE_CREATE_APPLICATION *pfnCreateApplication);
 
 private:
-    HRESULT LoadRequestHandlerAssembly(STRU& location, ASPNETCORE_SHIM_CONFIG * pConfiguration);
+    HRESULT LoadRequestHandlerAssembly(IHttpApplication &pApplication,STRU& location, ASPNETCORE_SHIM_CONFIG * pConfiguration);
     HRESULT FindNativeAssemblyFromGlobalLocation(ASPNETCORE_SHIM_CONFIG * pConfiguration, PCWSTR libraryName, STRU* location);
     HRESULT FindNativeAssemblyFromHostfxr(HOSTFXR_OPTIONS* hostfxrOptions, PCWSTR libraryName, STRU* location);
 

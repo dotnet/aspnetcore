@@ -4,6 +4,8 @@
 #include "serverprocess.h"
 
 #include <IPHlpApi.h>
+#include "EventLog.h"
+#include "file_utility.h"
 //#include <share.h>
 
 //extern BOOL g_fNsiApiNotSupported;
@@ -212,8 +214,7 @@ Finished:
 
     if (FAILED(hr))
     {
-        UTILITY::LogEventF(g_hEventLog,
-            EVENTLOG_ERROR_TYPE,
+        EventLog::Error(
             ASPNETCORE_EVENT_PROCESS_START_SUCCESS,
             ASPNETCORE_EVENT_PROCESS_START_PORTSETUP_ERROR_MSG,
             m_struAppFullPath.QueryStr(),
@@ -735,9 +736,7 @@ Finished:
 
         if (!strEventMsg.IsEmpty())
         {
-            UTILITY::LogEvent(
-                g_hEventLog,
-                EVENTLOG_WARNING_TYPE,
+            EventLog::Warn(
                 ASPNETCORE_EVENT_PROCESS_START_ERROR,
                 strEventMsg.QueryStr());
         }
@@ -900,8 +899,7 @@ SERVER_PROCESS::StartProcess(
         // Backend process starts successfully. Set retry counter to 0
         dwRetryCount = 0;
 
-        UTILITY::LogEventF(g_hEventLog,
-            EVENTLOG_INFORMATION_TYPE,
+        EventLog::Info(
             ASPNETCORE_EVENT_PROCESS_START_SUCCESS,
             ASPNETCORE_EVENT_PROCESS_START_SUCCESS_MSG,
             m_struAppFullPath.QueryStr(),
@@ -918,8 +916,7 @@ SERVER_PROCESS::StartProcess(
             dwRetryCount = 0;
         }
 
-        UTILITY::LogEventF(g_hEventLog,
-            EVENTLOG_WARNING_TYPE,
+        EventLog::Warn(
             ASPNETCORE_EVENT_PROCESS_START_ERROR,
             ASPNETCORE_EVENT_PROCESS_START_ERROR_MSG,
             m_struAppFullPath.QueryStr(),
@@ -963,8 +960,7 @@ Finished:
             m_Timer.CancelTimer();
         }
 
-        UTILITY::LogEventF(g_hEventLog,
-            EVENTLOG_ERROR_TYPE,
+        EventLog::Error(
             ASPNETCORE_EVENT_PROCESS_START_FAILURE,
             ASPNETCORE_EVENT_PROCESS_START_FAILURE_MSG,
             m_struAppFullPath.QueryStr(),
@@ -1034,7 +1030,7 @@ SERVER_PROCESS::SetupStdHandles(
         m_hStdoutHandle = NULL;
     }
 
-    hr = UTILITY::ConvertPathToFullPath(
+    hr = FILE_UTILITY::ConvertPathToFullPath(
                  m_struLogFile.QueryStr(),
                  m_struPhysicalPath.QueryStr(),
                  &struPath);
@@ -1058,7 +1054,7 @@ SERVER_PROCESS::SetupStdHandles(
         goto Finished;
     }
 
-    hr = UTILITY::EnsureDirectoryPathExist(struPath.QueryStr());
+    hr = FILE_UTILITY::EnsureDirectoryPathExist(struPath.QueryStr());
     if (FAILED(hr))
     {
         goto Finished;
@@ -1100,8 +1096,7 @@ Finished:
         if (m_fStdoutLogEnabled)
         {
             // Log the error
-            UTILITY::LogEventF(g_hEventLog,
-                EVENTLOG_WARNING_TYPE,
+            EventLog::Warn(
                 ASPNETCORE_EVENT_CONFIG_ERROR,
                 ASPNETCORE_EVENT_INVALID_STDOUT_LOG_FILE_MSG,
                 m_struFullLogFile.IsEmpty()? m_struLogFile.QueryStr() : m_struFullLogFile.QueryStr(),
@@ -1900,9 +1895,7 @@ SERVER_PROCESS::HandleProcessExit( VOID )
 
         if (!fReady)
         {
-            UTILITY::LogEventF(
-                g_hEventLog,
-                EVENTLOG_INFORMATION_TYPE,
+            EventLog::Info(
                 ASPNETCORE_EVENT_PROCESS_SHUTDOWN,
                 ASPNETCORE_EVENT_PROCESS_SHUTDOWN_MSG,
                 m_struAppFullPath.QueryStr(),
@@ -2032,8 +2025,7 @@ SERVER_PROCESS::SendShutdownHttpMessage( VOID )
     }
 
     // log
-    UTILITY::LogEventF(g_hEventLog,
-        EVENTLOG_INFORMATION_TYPE,
+    EventLog::Info(
         ASPNETCORE_EVENT_SENT_SHUTDOWN_HTTP_REQUEST,
         ASPNETCORE_EVENT_SENT_SHUTDOWN_HTTP_REQUEST_MSG,
         m_dwProcessId,
@@ -2150,8 +2142,7 @@ SERVER_PROCESS::TerminateBackendProcess(
         }
 
         // log a warning for ungraceful shutdown
-        UTILITY::LogEventF(g_hEventLog,
-            EVENTLOG_WARNING_TYPE,
+        EventLog::Warn(
             ASPNETCORE_EVENT_GRACEFUL_SHUTDOWN_FAILURE,
             ASPNETCORE_EVENT_GRACEFUL_SHUTDOWN_FAILURE_MSG,
             m_dwProcessId);

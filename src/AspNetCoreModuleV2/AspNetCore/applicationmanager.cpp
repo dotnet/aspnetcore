@@ -4,7 +4,6 @@
 #include "applicationmanager.h"
 
 #include "proxymodule.h"
-#include "utility.h"
 #include "resources.h"
 #include "SRWExclusiveLock.h"
 #include "exceptions.h"
@@ -217,8 +216,7 @@ APPLICATION_MANAGER::RecycleApplicationFromManager(
                 ASPNETCORE_EVENT_RECYCLE_CONFIGURATION_MSG,
                 path)))
             {
-                UTILITY::LogEvent(g_hEventLog,
-                    EVENTLOG_INFORMATION_TYPE,
+                EventLog::Info(
                     ASPNETCORE_EVENT_RECYCLE_CONFIGURATION,
                     strEventMsg.QueryStr());
             }
@@ -248,8 +246,7 @@ Finished:
                 ASPNETCORE_EVENT_RECYCLE_FAILURE_CONFIGURATION_MSG,
                 pszApplicationId)))
         {
-            UTILITY::LogEvent(g_hEventLog,
-                EVENTLOG_ERROR_TYPE,
+            EventLog::Error(
                 ASPNETCORE_EVENT_RECYCLE_APP_FAILURE,
                 strEventMsg.QueryStr());
         }

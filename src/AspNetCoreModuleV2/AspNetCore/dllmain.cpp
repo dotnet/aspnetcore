@@ -6,10 +6,10 @@
 #include "proxymodule.h"
 #include "globalmodule.h"
 #include "acache.h"
-#include "utility.h"
 #include "debugutil.h"
 #include "resources.h"
 #include "exceptions.h"
+#include "EventLog.h"
 
 DECLARE_DEBUG_PRINT_OBJECT("aspnetcorev2.dll");
 
@@ -131,15 +131,9 @@ HRESULT
     if (fDisableANCM)
     {
         // Logging
-        STACK_STRU(strEventMsg, 256);
-        if (SUCCEEDED(strEventMsg.SafeSnwprintf(
-            ASPNETCORE_EVENT_MODULE_DISABLED_MSG)))
-        {
-            UTILITY::LogEvent(g_hEventLog,
-                              EVENTLOG_WARNING_TYPE,
-                              ASPNETCORE_EVENT_MODULE_DISABLED,
-                              strEventMsg.QueryStr());
-        }
+        EventLog::Warn(
+            ASPNETCORE_EVENT_MODULE_DISABLED,
+            ASPNETCORE_EVENT_MODULE_DISABLED_MSG);
         // this will return 500 error to client
         // as we did not register the module
         goto Finished;

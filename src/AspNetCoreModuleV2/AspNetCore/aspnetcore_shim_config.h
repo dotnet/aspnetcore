@@ -33,12 +33,6 @@ public:
     );
 
     STRU*
-    QueryApplicationPhysicalPath()
-    {
-        return &m_struApplicationPhysicalPath;
-    }
-
-    STRU*
     QueryProcessPath()
     {
         return &m_struProcessPath;
@@ -71,9 +65,7 @@ private:
 
     STRU                   m_struArguments;
     STRU                   m_struProcessPath;
-    STRU                   m_struApplicationPhysicalPath;
     APP_HOSTING_MODEL      m_hostingModel;
-    STRU                   m_struHostFxrLocation;
     STRU                   m_struHandlerVersion;
 };
 

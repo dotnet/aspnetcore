@@ -6,6 +6,7 @@
 #include <filesystem>
 #include "SRWExclusiveLock.h"
 #include "HandleWrapper.h"
+#include "exceptions.h"
 
 APPLICATION_STATUS PollingAppOfflineApplication::QueryStatus()
 {
