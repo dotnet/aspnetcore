@@ -17,11 +17,12 @@ Markup block - Gen<None> - 117 - (0:0,0)
         style - NoQuotes
             Markup span - Gen<Markup> - [color:red;] - SpanEditHandler;Accepts:Any - (41:0,41) - Tokens:1
                 HtmlTokenType.Text;[color:red;];
-        Markup span - Gen<Markup> - [Hello World ] - SpanEditHandler;Accepts:Any - (52:0,52) - Tokens:4
-            HtmlTokenType.Text;[Hello];
-            HtmlTokenType.WhiteSpace;[ ];
-            HtmlTokenType.Text;[World];
-            HtmlTokenType.WhiteSpace;[ ];
+        SyntaxKind.HtmlText - [Hello World ] - [52..64) - FullWidth: 12 - Slots: 1
+            SyntaxKind.List - [Hello World ] - [52..64) - FullWidth: 12 - Slots: 4
+                SyntaxKind.HtmlTextLiteralToken;[Hello];
+                SyntaxKind.Whitespace;[ ];
+                SyntaxKind.HtmlTextLiteralToken;[World];
+                SyntaxKind.Whitespace;[ ];
         Tag block - Gen<None> - 20 - (64:0,64)
             Markup span - Gen<Markup> - [<strong] - SpanEditHandler;Accepts:Any - (64:0,64) - Tokens:2
                 HtmlTokenType.OpenAngle;[<];
@@ -38,14 +39,15 @@ Markup block - Gen<None> - 117 - (0:0,0)
                     HtmlTokenType.DoubleQuote;["];
             Markup span - Gen<Markup> - [>] - SpanEditHandler;Accepts:Any - (83:0,83) - Tokens:1
                 HtmlTokenType.CloseAngle;[>];
-        Markup span - Gen<Markup> - [inside of strong tag] - SpanEditHandler;Accepts:Any - (84:0,84) - Tokens:7
-            HtmlTokenType.Text;[inside];
-            HtmlTokenType.WhiteSpace;[ ];
-            HtmlTokenType.Text;[of];
-            HtmlTokenType.WhiteSpace;[ ];
-            HtmlTokenType.Text;[strong];
-            HtmlTokenType.WhiteSpace;[ ];
-            HtmlTokenType.Text;[tag];
+        SyntaxKind.HtmlText - [inside of strong tag] - [84..104) - FullWidth: 20 - Slots: 1
+            SyntaxKind.List - [inside of strong tag] - [84..104) - FullWidth: 20 - Slots: 7
+                SyntaxKind.HtmlTextLiteralToken;[inside];
+                SyntaxKind.Whitespace;[ ];
+                SyntaxKind.HtmlTextLiteralToken;[of];
+                SyntaxKind.Whitespace;[ ];
+                SyntaxKind.HtmlTextLiteralToken;[strong];
+                SyntaxKind.Whitespace;[ ];
+                SyntaxKind.HtmlTextLiteralToken;[tag];
         Tag block - Gen<None> - 9 - (104:0,104)
             Markup span - Gen<Markup> - [</strong>] - SpanEditHandler;Accepts:Any - (104:0,104) - Tokens:4
                 HtmlTokenType.OpenAngle;[<];

@@ -21,7 +21,8 @@ Markup block - Gen<None> - 62 - (0:0,0)
                             CSharpTokenType.Identifier;[DateTime];
                             CSharpTokenType.Dot;[.];
                             CSharpTokenType.Identifier;[Now];
-        Markup span - Gen<Markup> - [Hello World] - SpanEditHandler;Accepts:Any - (47:0,47) - Tokens:3
-            HtmlTokenType.Text;[Hello];
-            HtmlTokenType.WhiteSpace;[ ];
-            HtmlTokenType.Text;[World];
+        SyntaxKind.HtmlText - [Hello World] - [47..58) - FullWidth: 11 - Slots: 1
+            SyntaxKind.List - [Hello World] - [47..58) - FullWidth: 11 - Slots: 3
+                SyntaxKind.HtmlTextLiteralToken;[Hello];
+                SyntaxKind.Whitespace;[ ];
+                SyntaxKind.HtmlTextLiteralToken;[World];

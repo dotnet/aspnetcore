@@ -51,12 +51,13 @@ Markup block - Gen<None> - 130 - (0:0,0)
             HtmlTokenType.OpenAngle;[<];
             HtmlTokenType.Text;[p];
             HtmlTokenType.CloseAngle;[>];
-    Markup span - Gen<Markup> - [This is extra] - SpanEditHandler;Accepts:Any - (113:5,3) - Tokens:5
-        HtmlTokenType.Text;[This];
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Text;[is];
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Text;[extra];
+    SyntaxKind.HtmlText - [This is extra] - [113..126) - FullWidth: 13 - Slots: 1
+        SyntaxKind.List - [This is extra] - [113..126) - FullWidth: 13 - Slots: 5
+            SyntaxKind.HtmlTextLiteralToken;[This];
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.HtmlTextLiteralToken;[is];
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.HtmlTextLiteralToken;[extra];
     Tag block - Gen<None> - 4 - (126:5,16)
         Markup span - Gen<Markup> - [</p>] - SpanEditHandler;Accepts:Any - (126:5,16) - Tokens:4
             HtmlTokenType.OpenAngle;[<];

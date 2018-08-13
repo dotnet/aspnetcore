@@ -52,10 +52,10 @@ Markup block - Gen<None> - 171 - (0:0,0)
                             CSharpTokenType.GreaterThan;[>];
                             CSharpTokenType.RightParenthesis;[)];
                             CSharpTokenType.Semicolon;[;];
-        Markup span - Gen<Markup> - [Hello] - SpanEditHandler;Accepts:Any - (76:0,76) - Tokens:1
-            HtmlTokenType.Text;[Hello];
-    Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:Any - (85:0,85) - Tokens:1
-        HtmlTokenType.WhiteSpace;[ ];
+        SyntaxKind.HtmlText - [Hello] - [76..81) - FullWidth: 5 - Slots: 1
+            SyntaxKind.HtmlTextLiteralToken;[Hello];
+    SyntaxKind.HtmlText - [ ] - [85..86) - FullWidth: 1 - Slots: 1
+        SyntaxKind.Whitespace;[ ];
     Tag block - Gen<TagHelper> - 85 - (86:0,86) - p - ptaghelper
         StartTagAndEndTag - <p style='@do { var foo = bar; <text>Foo</text> foo++; } while (foo<bar>);'> ... </p>
         style - SingleQuotes
@@ -109,5 +109,5 @@ Markup block - Gen<None> - 171 - (0:0,0)
                             CSharpTokenType.GreaterThan;[>];
                             CSharpTokenType.RightParenthesis;[)];
                             CSharpTokenType.Semicolon;[;];
-        Markup span - Gen<Markup> - [World] - SpanEditHandler;Accepts:Any - (162:0,162) - Tokens:1
-            HtmlTokenType.Text;[World];
+        SyntaxKind.HtmlText - [World] - [162..167) - FullWidth: 5 - Slots: 1
+            SyntaxKind.HtmlTextLiteralToken;[World];

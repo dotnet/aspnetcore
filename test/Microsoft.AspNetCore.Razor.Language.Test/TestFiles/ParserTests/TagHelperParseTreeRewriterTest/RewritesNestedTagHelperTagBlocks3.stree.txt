@@ -1,17 +1,17 @@
 Markup block - Gen<None> - 43 - (0:0,0)
     Tag block - Gen<TagHelper> - 19 - (0:0,0) - p - ptaghelper
         StartTagAndEndTag - <p> ... </p>
-        Markup span - Gen<Markup> - [Hel] - SpanEditHandler;Accepts:Any - (3:0,3) - Tokens:1
-            HtmlTokenType.Text;[Hel];
+        SyntaxKind.HtmlText - [Hel] - [3..6) - FullWidth: 3 - Slots: 1
+            SyntaxKind.HtmlTextLiteralToken;[Hel];
         Tag block - Gen<TagHelper> - 9 - (6:0,6) - p - ptaghelper
             StartTagAndEndTag - <p> ... </p>
-            Markup span - Gen<Markup> - [lo] - SpanEditHandler;Accepts:Any - (9:0,9) - Tokens:1
-                HtmlTokenType.Text;[lo];
-    Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:Any - (19:0,19) - Tokens:1
-        HtmlTokenType.WhiteSpace;[ ];
+            SyntaxKind.HtmlText - [lo] - [9..11) - FullWidth: 2 - Slots: 1
+                SyntaxKind.HtmlTextLiteralToken;[lo];
+    SyntaxKind.HtmlText - [ ] - [19..20) - FullWidth: 1 - Slots: 1
+        SyntaxKind.Whitespace;[ ];
     Tag block - Gen<TagHelper> - 23 - (20:0,20) - p - ptaghelper
         StartTagAndEndTag - <p> ... </p>
         Tag block - Gen<TagHelper> - 16 - (23:0,23) - div - divtaghelper
             StartTagAndEndTag - <div> ... </div>
-            Markup span - Gen<Markup> - [World] - SpanEditHandler;Accepts:Any - (28:0,28) - Tokens:1
-                HtmlTokenType.Text;[World];
+            SyntaxKind.HtmlText - [World] - [28..33) - FullWidth: 5 - Slots: 1
+                SyntaxKind.HtmlTextLiteralToken;[World];

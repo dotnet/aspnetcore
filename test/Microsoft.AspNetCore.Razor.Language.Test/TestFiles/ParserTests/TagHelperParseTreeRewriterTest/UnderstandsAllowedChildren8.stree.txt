@@ -3,9 +3,9 @@ Markup block - Gen<None> - 45 - (0:0,0)
         StartTagAndEndTag - <p> ... </p>
         Tag block - Gen<TagHelper> - 23 - (3:0,3) - strong - StrongTagHelper
             StartTagAndEndTag - <strong> ... </strong>
-            Markup span - Gen<Markup> - [Title:] - SpanEditHandler;Accepts:Any - (11:0,11) - Tokens:1
-                HtmlTokenType.Text;[Title:];
+            SyntaxKind.HtmlText - [Title:] - [11..17) - FullWidth: 6 - Slots: 1
+                SyntaxKind.HtmlTextLiteralToken;[Title:];
         Tag block - Gen<TagHelper> - 6 - (26:0,26) - br - BRTagHelper
             SelfClosing - <br />
-        Markup span - Gen<Markup> - [Something] - SpanEditHandler;Accepts:Any - (32:0,32) - Tokens:1
-            HtmlTokenType.Text;[Something];
+        SyntaxKind.HtmlText - [Something] - [32..41) - FullWidth: 9 - Slots: 1
+            SyntaxKind.HtmlTextLiteralToken;[Something];

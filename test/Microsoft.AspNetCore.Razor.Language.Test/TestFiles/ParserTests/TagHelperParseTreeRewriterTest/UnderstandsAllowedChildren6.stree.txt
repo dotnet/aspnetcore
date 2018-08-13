@@ -3,5 +3,5 @@ Markup block - Gen<None> - 16 - (0:0,0)
         StartTagAndEndTag - <p> ... </p>
         Tag block - Gen<TagHelper> - 4 - (3:0,3) - br - BRTagHelper
             StartTagOnly - <br>
-        Markup span - Gen<Markup> - [Hello] - SpanEditHandler;Accepts:Any - (7:0,7) - Tokens:1
-            HtmlTokenType.Text;[Hello];
+        SyntaxKind.HtmlText - [Hello] - [7..12) - FullWidth: 5 - Slots: 1
+            SyntaxKind.HtmlTextLiteralToken;[Hello];

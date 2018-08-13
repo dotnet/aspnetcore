@@ -6,8 +6,8 @@ Markup block - Gen<None> - 36 - (0:0,0)
                 HtmlTokenType.OpenAngle;[<];
                 HtmlTokenType.Text;[b];
                 HtmlTokenType.CloseAngle;[>];
-        Markup span - Gen<Markup> - [asdf] - SpanEditHandler;Accepts:Any - (6:0,6) - Tokens:1
-            HtmlTokenType.Text;[asdf];
+        SyntaxKind.HtmlText - [asdf] - [6..10) - FullWidth: 4 - Slots: 1
+            SyntaxKind.HtmlTextLiteralToken;[asdf];
         Tag block - Gen<None> - 4 - (10:0,10)
             Markup span - Gen<Markup> - [</b>] - SpanEditHandler;Accepts:Any - (10:0,10) - Tokens:4
                 HtmlTokenType.OpenAngle;[<];

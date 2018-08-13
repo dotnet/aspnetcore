@@ -7,7 +7,8 @@ Markup block - Gen<None> - 49 - (0:0,0)
         style - DoubleQuotes
             Markup span - Gen<Markup> - [color:red;] - SpanEditHandler;Accepts:Any - (22:0,22) - Tokens:1
                 HtmlTokenType.Text;[color:red;];
-        Markup span - Gen<Markup> - [Hello World] - SpanEditHandler;Accepts:Any - (34:0,34) - Tokens:3
-            HtmlTokenType.Text;[Hello];
-            HtmlTokenType.WhiteSpace;[ ];
-            HtmlTokenType.Text;[World];
+        SyntaxKind.HtmlText - [Hello World] - [34..45) - FullWidth: 11 - Slots: 1
+            SyntaxKind.List - [Hello World] - [34..45) - FullWidth: 11 - Slots: 3
+                SyntaxKind.HtmlTextLiteralToken;[Hello];
+                SyntaxKind.Whitespace;[ ];
+                SyntaxKind.HtmlTextLiteralToken;[World];

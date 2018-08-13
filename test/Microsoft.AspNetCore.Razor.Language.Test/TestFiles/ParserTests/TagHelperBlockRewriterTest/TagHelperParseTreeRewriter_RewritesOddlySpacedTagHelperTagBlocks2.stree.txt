@@ -21,7 +21,8 @@ Markup block - Gen<None> - 77 - (0:0,0)
                     HtmlTokenType.Text;[;];
                 Markup span - Gen<Markup> - [   ] - SpanEditHandler;Accepts:Any - (53:0,53) - Tokens:1
                     HtmlTokenType.WhiteSpace;[   ];
-        Markup span - Gen<Markup> - [Hello World] - SpanEditHandler;Accepts:Any - (62:0,62) - Tokens:3
-            HtmlTokenType.Text;[Hello];
-            HtmlTokenType.WhiteSpace;[ ];
-            HtmlTokenType.Text;[World];
+        SyntaxKind.HtmlText - [Hello World] - [62..73) - FullWidth: 11 - Slots: 1
+            SyntaxKind.List - [Hello World] - [62..73) - FullWidth: 11 - Slots: 3
+                SyntaxKind.HtmlTextLiteralToken;[Hello];
+                SyntaxKind.Whitespace;[ ];
+                SyntaxKind.HtmlTextLiteralToken;[World];

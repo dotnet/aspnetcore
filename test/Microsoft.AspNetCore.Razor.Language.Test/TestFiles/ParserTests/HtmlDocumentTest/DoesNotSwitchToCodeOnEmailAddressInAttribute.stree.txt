@@ -15,10 +15,11 @@ Markup block - Gen<None> - 51 - (0:0,0)
                 HtmlTokenType.DoubleQuote;["];
         Markup span - Gen<Markup> - [>] - SpanEditHandler;Accepts:Any - (38:0,38) - Tokens:1
             HtmlTokenType.CloseAngle;[>];
-    Markup span - Gen<Markup> - [Email me] - SpanEditHandler;Accepts:Any - (39:0,39) - Tokens:3
-        HtmlTokenType.Text;[Email];
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Text;[me];
+    SyntaxKind.HtmlText - [Email me] - [39..47) - FullWidth: 8 - Slots: 1
+        SyntaxKind.List - [Email me] - [39..47) - FullWidth: 8 - Slots: 3
+            SyntaxKind.HtmlTextLiteralToken;[Email];
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.HtmlTextLiteralToken;[me];
     Tag block - Gen<None> - 4 - (47:0,47)
         Markup span - Gen<Markup> - [</a>] - SpanEditHandler;Accepts:Any - (47:0,47) - Tokens:4
             HtmlTokenType.OpenAngle;[<];

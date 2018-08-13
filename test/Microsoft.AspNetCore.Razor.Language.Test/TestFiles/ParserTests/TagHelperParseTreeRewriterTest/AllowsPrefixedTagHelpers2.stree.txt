@@ -4,12 +4,13 @@ Markup block - Gen<None> - 27 - (0:0,0)
             HtmlTokenType.OpenAngle;[<];
             HtmlTokenType.Text;[th:];
             HtmlTokenType.CloseAngle;[>];
-    Markup span - Gen<Markup> - [words and spaces] - SpanEditHandler;Accepts:Any - (5:0,5) - Tokens:5
-        HtmlTokenType.Text;[words];
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Text;[and];
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Text;[spaces];
+    SyntaxKind.HtmlText - [words and spaces] - [5..21) - FullWidth: 16 - Slots: 1
+        SyntaxKind.List - [words and spaces] - [5..21) - FullWidth: 16 - Slots: 5
+            SyntaxKind.HtmlTextLiteralToken;[words];
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.HtmlTextLiteralToken;[and];
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.HtmlTextLiteralToken;[spaces];
     Tag block - Gen<None> - 6 - (21:0,21)
         Markup span - Gen<Markup> - [</th:>] - SpanEditHandler;Accepts:Any - (21:0,21) - Tokens:4
             HtmlTokenType.OpenAngle;[<];

@@ -32,8 +32,8 @@ Markup block - Gen<None> - 42 - (0:0,0)
             HtmlTokenType.RazorCommentStar;[*];
         Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (35:1,30) - Tokens:1
             HtmlTokenType.RazorCommentTransition;[@];
-    Markup span - Gen<Markup> - [LF] - SpanEditHandler;Accepts:Any - (36:1,31) - Tokens:1
-        HtmlTokenType.NewLine;[LF];
+    SyntaxKind.HtmlText - [LF] - [36..38) - FullWidth: 2 - Slots: 1
+        SyntaxKind.NewLine;[LF];
     Tag block - Gen<None> - 4 - (38:2,0)
         Markup span - Gen<Markup> - [</p>] - SpanEditHandler;Accepts:Any - (38:2,0) - Tokens:4
             HtmlTokenType.OpenAngle;[<];

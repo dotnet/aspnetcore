@@ -1,9 +1,10 @@
 Markup block - Gen<None> - 77 - (0:0,0)
     Tag block - Gen<TagHelper> - 77 - (0:0,0) - p - ptaghelper
         StartTagAndEndTag - <p> ... </p>
-        Markup span - Gen<Markup> - [Hello ] - SpanEditHandler;Accepts:Any - (3:0,3) - Tokens:2
-            HtmlTokenType.Text;[Hello];
-            HtmlTokenType.WhiteSpace;[ ];
+        SyntaxKind.HtmlText - [Hello ] - [3..9) - FullWidth: 6 - Slots: 1
+            SyntaxKind.List - [Hello ] - [3..9) - FullWidth: 6 - Slots: 2
+                SyntaxKind.HtmlTextLiteralToken;[Hello];
+                SyntaxKind.Whitespace;[ ];
         Tag block - Gen<TagHelper> - 58 - (9:0,9) - script - scripttaghelper
             StartTagAndEndTag - <script class="@@foo@bar.com" style="color:red;"> ... </script>
             class - DoubleQuotes
@@ -18,6 +19,7 @@ Markup block - Gen<None> - 77 - (0:0,0)
             style - DoubleQuotes
                 Markup span - Gen<Markup> - [color:red;] - SpanEditHandler;Accepts:Any - (46:0,46) - Tokens:1
                     HtmlTokenType.Text;[color:red;];
-        Markup span - Gen<Markup> - [ World] - SpanEditHandler;Accepts:Any - (67:0,67) - Tokens:2
-            HtmlTokenType.WhiteSpace;[ ];
-            HtmlTokenType.Text;[World];
+        SyntaxKind.HtmlText - [ World] - [67..73) - FullWidth: 6 - Slots: 1
+            SyntaxKind.List - [ World] - [67..73) - FullWidth: 6 - Slots: 2
+                SyntaxKind.Whitespace;[ ];
+                SyntaxKind.HtmlTextLiteralToken;[World];

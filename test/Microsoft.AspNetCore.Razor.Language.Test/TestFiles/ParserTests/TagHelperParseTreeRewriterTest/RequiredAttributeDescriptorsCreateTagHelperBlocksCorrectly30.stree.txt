@@ -9,20 +9,20 @@ Markup block - Gen<None> - 78 - (0:0,0)
         catchAll - DoubleQuotes
             Markup span - Gen<Markup> - [hi] - SpanEditHandler;Accepts:Any - (36:0,36) - Tokens:1
                 HtmlTokenType.Text;[hi];
-        Markup span - Gen<Markup> - [words] - SpanEditHandler;Accepts:Any - (41:0,41) - Tokens:1
-            HtmlTokenType.Text;[words];
+        SyntaxKind.HtmlText - [words] - [41..46) - FullWidth: 5 - Slots: 1
+            SyntaxKind.HtmlTextLiteralToken;[words];
         Tag block - Gen<None> - 8 - (46:0,46)
             Markup span - Gen<Markup> - [<strong>] - SpanEditHandler;Accepts:Any - (46:0,46) - Tokens:3
                 HtmlTokenType.OpenAngle;[<];
                 HtmlTokenType.Text;[strong];
                 HtmlTokenType.CloseAngle;[>];
-        Markup span - Gen<Markup> - [and] - SpanEditHandler;Accepts:Any - (54:0,54) - Tokens:1
-            HtmlTokenType.Text;[and];
+        SyntaxKind.HtmlText - [and] - [54..57) - FullWidth: 3 - Slots: 1
+            SyntaxKind.HtmlTextLiteralToken;[and];
         Tag block - Gen<None> - 9 - (57:0,57)
             Markup span - Gen<Markup> - [</strong>] - SpanEditHandler;Accepts:Any - (57:0,57) - Tokens:4
                 HtmlTokenType.OpenAngle;[<];
                 HtmlTokenType.ForwardSlash;[/];
                 HtmlTokenType.Text;[strong];
                 HtmlTokenType.CloseAngle;[>];
-        Markup span - Gen<Markup> - [spaces] - SpanEditHandler;Accepts:Any - (66:0,66) - Tokens:1
-            HtmlTokenType.Text;[spaces];
+        SyntaxKind.HtmlText - [spaces] - [66..72) - FullWidth: 6 - Slots: 1
+            SyntaxKind.HtmlTextLiteralToken;[spaces];

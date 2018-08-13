@@ -26,8 +26,8 @@ Markup block - Gen<None> - 165 - (0:0,0)
             HtmlTokenType.ForwardSlash;[/];
             HtmlTokenType.Text;[div];
             HtmlTokenType.CloseAngle;[>];
-    Markup span - Gen<Markup> - [LF] - SpanEditHandler;Accepts:Any - (33:0,33) - Tokens:1
-        HtmlTokenType.NewLine;[LF];
+    SyntaxKind.HtmlText - [LF] - [33..35) - FullWidth: 2 - Slots: 1
+        SyntaxKind.NewLine;[LF];
     Tag block - Gen<None> - 5 - (35:1,0)
         Markup span - Gen<Markup> - [<div>] - SpanEditHandler;Accepts:Any - (35:1,0) - Tokens:3
             HtmlTokenType.OpenAngle;[<];
@@ -55,8 +55,8 @@ Markup block - Gen<None> - 165 - (0:0,0)
             HtmlTokenType.ForwardSlash;[/];
             HtmlTokenType.Text;[div];
             HtmlTokenType.CloseAngle;[>];
-    Markup span - Gen<Markup> - [LF] - SpanEditHandler;Accepts:Any - (70:1,35) - Tokens:1
-        HtmlTokenType.NewLine;[LF];
+    SyntaxKind.HtmlText - [LF] - [70..72) - FullWidth: 2 - Slots: 1
+        SyntaxKind.NewLine;[LF];
     Tag block - Gen<None> - 5 - (72:2,0)
         Markup span - Gen<Markup> - [<div>] - SpanEditHandler;Accepts:Any - (72:2,0) - Tokens:3
             HtmlTokenType.OpenAngle;[<];
@@ -86,8 +86,8 @@ Markup block - Gen<None> - 165 - (0:0,0)
             HtmlTokenType.ForwardSlash;[/];
             HtmlTokenType.Text;[div];
             HtmlTokenType.CloseAngle;[>];
-    Markup span - Gen<Markup> - [LF] - SpanEditHandler;Accepts:Any - (109:2,37) - Tokens:1
-        HtmlTokenType.NewLine;[LF];
+    SyntaxKind.HtmlText - [LF] - [109..111) - FullWidth: 2 - Slots: 1
+        SyntaxKind.NewLine;[LF];
     Tag block - Gen<None> - 5 - (111:3,0)
         Markup span - Gen<Markup> - [<div>] - SpanEditHandler;Accepts:Any - (111:3,0) - Tokens:3
             HtmlTokenType.OpenAngle;[<];

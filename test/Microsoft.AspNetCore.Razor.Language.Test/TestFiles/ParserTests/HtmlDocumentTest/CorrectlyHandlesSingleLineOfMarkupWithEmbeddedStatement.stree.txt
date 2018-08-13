@@ -18,9 +18,10 @@ Markup block - Gen<None> - 31 - (0:0,0)
             CSharpTokenType.WhiteSpace;[ ];
             CSharpTokenType.LeftBrace;[{];
             CSharpTokenType.RightBrace;[}];
-    Markup span - Gen<Markup> - [ Bar] - SpanEditHandler;Accepts:Any - (21:0,21) - Tokens:2
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Text;[Bar];
+    SyntaxKind.HtmlText - [ Bar] - [21..25) - FullWidth: 4 - Slots: 1
+        SyntaxKind.List - [ Bar] - [21..25) - FullWidth: 4 - Slots: 2
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.HtmlTextLiteralToken;[Bar];
     Tag block - Gen<None> - 6 - (25:0,25)
         Markup span - Gen<Markup> - [</div>] - SpanEditHandler;Accepts:Any - (25:0,25) - Tokens:4
             HtmlTokenType.OpenAngle;[<];

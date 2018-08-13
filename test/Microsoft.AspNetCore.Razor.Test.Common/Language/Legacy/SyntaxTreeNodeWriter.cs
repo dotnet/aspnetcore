@@ -3,8 +3,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using Microsoft.AspNetCore.Razor.Language.Syntax;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
@@ -173,6 +175,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         protected void WriteSpan(Span span)
         {
+            if (span.SyntaxNode != null)
+            {
+                WriteSyntaxNode(span.SyntaxNode.CreateRed(null, span.Start.AbsoluteIndex));
+                return;
+            }
+
             WriteIndent();
             Write($"{span.Kind} span");
             WriteSeparator();
@@ -195,6 +203,49 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 WriteToken(token);
             }
             Depth--;
+        }
+
+        private void WriteSyntaxNode(SyntaxNode syntaxNode)
+        {
+            WriteIndent();
+            Write($"{typeof(SyntaxKind).Name}.{syntaxNode.Kind}");
+            WriteSeparator();
+            Write($"[{syntaxNode.ToFullString()}]");
+            WriteSeparator();
+            Write($"[{syntaxNode.Position}..{syntaxNode.EndPosition})");
+            WriteSeparator();
+            Write($"FullWidth: {syntaxNode.FullWidth}");
+            WriteSeparator();
+            Write($"Slots: {syntaxNode.SlotCount}");
+
+            // Write tokens
+            Depth++;
+            for (var i = 0; i < syntaxNode.SlotCount; i++)
+            {
+                var slot = syntaxNode.GetNodeSlot(i);
+                if (slot == null)
+                {
+                    continue;
+                }
+
+                WriteNewLine();
+                if (slot.IsList || !(slot is SyntaxToken syntaxToken))
+                {
+                    WriteSyntaxNode(slot);
+                    continue;
+                }
+
+                WriteSyntaxToken(syntaxToken);
+            }
+            Depth--;
+        }
+
+        protected void WriteSyntaxToken(SyntaxToken syntaxToken)
+        {
+            WriteIndent();
+            var diagnostics = syntaxToken.GetDiagnostics();
+            var tokenString = $"{typeof(SyntaxKind).Name}.{syntaxToken.Kind};[{syntaxToken.Text}];{string.Join(", ", diagnostics.Select(diagnostic => diagnostic.Id + diagnostic.Span))}";
+            Write(tokenString);
         }
 
         protected void WriteToken(IToken token)

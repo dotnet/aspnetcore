@@ -25,7 +25,8 @@ Markup block - Gen<None> - 69 - (0:0,0)
                         HtmlTokenType.Transition;[@];
                 Markup span - Gen<Markup> - [:red;] - SpanEditHandler;Accepts:Any - (48:0,48) - Tokens:1
                     HtmlTokenType.Text;[:red;];
-        Markup span - Gen<Markup> - [Hello World] - SpanEditHandler;Accepts:Any - (54:0,54) - Tokens:3
-            HtmlTokenType.Text;[Hello];
-            HtmlTokenType.WhiteSpace;[ ];
-            HtmlTokenType.Text;[World];
+        SyntaxKind.HtmlText - [Hello World] - [54..65) - FullWidth: 11 - Slots: 1
+            SyntaxKind.List - [Hello World] - [54..65) - FullWidth: 11 - Slots: 3
+                SyntaxKind.HtmlTextLiteralToken;[Hello];
+                SyntaxKind.Whitespace;[ ];
+                SyntaxKind.HtmlTextLiteralToken;[World];

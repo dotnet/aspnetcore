@@ -1,9 +1,10 @@
 Markup block - Gen<None> - 55 - (0:0,0)
     Tag block - Gen<TagHelper> - 55 - (0:0,0) - p - ptaghelper
         StartTagAndEndTag - <p> ... </p>
-        Markup span - Gen<Markup> - [Hello ] - SpanEditHandler;Accepts:Any - (3:0,3) - Tokens:2
-            HtmlTokenType.Text;[Hello];
-            HtmlTokenType.WhiteSpace;[ ];
+        SyntaxKind.HtmlText - [Hello ] - [3..9) - FullWidth: 6 - Slots: 1
+            SyntaxKind.List - [Hello ] - [3..9) - FullWidth: 6 - Slots: 2
+                SyntaxKind.HtmlTextLiteralToken;[Hello];
+                SyntaxKind.Whitespace;[ ];
         Tag block - Gen<TagHelper> - 36 - (9:0,9) - p - ptaghelper
             SelfClosing - <p class="foo" style="color:red;" />
             class - DoubleQuotes
@@ -12,6 +13,7 @@ Markup block - Gen<None> - 55 - (0:0,0)
             style - DoubleQuotes
                 Markup span - Gen<Markup> - [color:red;] - SpanEditHandler;Accepts:Any - (31:0,31) - Tokens:1
                     HtmlTokenType.Text;[color:red;];
-        Markup span - Gen<Markup> - [ World] - SpanEditHandler;Accepts:Any - (45:0,45) - Tokens:2
-            HtmlTokenType.WhiteSpace;[ ];
-            HtmlTokenType.Text;[World];
+        SyntaxKind.HtmlText - [ World] - [45..51) - FullWidth: 6 - Slots: 1
+            SyntaxKind.List - [ World] - [45..51) - FullWidth: 6 - Slots: 2
+                SyntaxKind.Whitespace;[ ];
+                SyntaxKind.HtmlTextLiteralToken;[World];

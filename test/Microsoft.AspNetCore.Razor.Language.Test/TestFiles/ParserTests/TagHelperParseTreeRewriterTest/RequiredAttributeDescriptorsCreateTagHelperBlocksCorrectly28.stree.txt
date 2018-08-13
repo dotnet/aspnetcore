@@ -15,9 +15,10 @@ Markup block - Gen<None> - 65 - (0:0,0)
                         HtmlTokenType.Transition;[@];
                 Markup span - Gen<Markup> - [hi] - SpanEditHandler;Accepts:Any - (38:0,38) - Tokens:1
                     HtmlTokenType.Text;[hi];
-        Markup span - Gen<Markup> - [words and spaces] - SpanEditHandler;Accepts:Any - (43:0,43) - Tokens:5
-            HtmlTokenType.Text;[words];
-            HtmlTokenType.WhiteSpace;[ ];
-            HtmlTokenType.Text;[and];
-            HtmlTokenType.WhiteSpace;[ ];
-            HtmlTokenType.Text;[spaces];
+        SyntaxKind.HtmlText - [words and spaces] - [43..59) - FullWidth: 16 - Slots: 1
+            SyntaxKind.List - [words and spaces] - [43..59) - FullWidth: 16 - Slots: 5
+                SyntaxKind.HtmlTextLiteralToken;[words];
+                SyntaxKind.Whitespace;[ ];
+                SyntaxKind.HtmlTextLiteralToken;[and];
+                SyntaxKind.Whitespace;[ ];
+                SyntaxKind.HtmlTextLiteralToken;[spaces];

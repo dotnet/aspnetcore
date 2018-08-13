@@ -14,9 +14,10 @@ Markup block - Gen<None> - 27 - (0:0,0)
             CSharpTokenType.Transition;[@];
         Code span - Gen<Expr> - [foo] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K14 - (16:0,16) - Tokens:1
             CSharpTokenType.Identifier;[foo];
-    Markup span - Gen<Markup> - [ >] - SpanEditHandler;Accepts:Any - (19:0,19) - Tokens:2
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.CloseAngle;[>];
+    SyntaxKind.HtmlText - [ >] - [19..21) - FullWidth: 2 - Slots: 1
+        SyntaxKind.List - [ >] - [19..21) - FullWidth: 2 - Slots: 2
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.CloseAngle;[>];
     Tag block - Gen<None> - 6 - (21:0,21)
         Markup span - Gen<Markup> - [</foo>] - SpanEditHandler;Accepts:Any - (21:0,21) - Tokens:4
             HtmlTokenType.OpenAngle;[<];
