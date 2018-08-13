@@ -937,6 +937,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task ContentLength_Received_SingleDataFrameOverSize_Reset()
         {
+            IOException thrownEx = null;
+
             var headers = new[]
             {
                 new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
@@ -946,7 +948,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             };
             await InitializeConnectionAsync(async context =>
             {
-                await Assert.ThrowsAsync<ConnectionAbortedException>(async () =>
+                thrownEx = await Assert.ThrowsAsync<IOException>(async () =>
                 {
                     var buffer = new byte[100];
                     while (await context.Request.Body.ReadAsync(buffer, 0, buffer.Length) > 0) { }
@@ -959,11 +961,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await WaitForStreamErrorAsync(1, Http2ErrorCode.PROTOCOL_ERROR, CoreStrings.Http2StreamErrorMoreDataThanLength);
 
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+
+            var expectedError = new Http2StreamErrorException(1, CoreStrings.Http2StreamErrorMoreDataThanLength, Http2ErrorCode.PROTOCOL_ERROR);
+
+            Assert.NotNull(thrownEx);
+            Assert.Equal(expectedError.Message, thrownEx.Message);
+            Assert.IsType<Http2StreamErrorException>(thrownEx.InnerException);
         }
 
         [Fact]
         public async Task ContentLength_Received_SingleDataFrameUnderSize_Reset()
         {
+            IOException thrownEx = null;
+
             var headers = new[]
             {
                 new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
@@ -973,7 +983,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             };
             await InitializeConnectionAsync(async context =>
             {
-                await Assert.ThrowsAsync<ConnectionAbortedException>(async () =>
+                thrownEx = await Assert.ThrowsAsync<IOException>(async () =>
                 {
                     var buffer = new byte[100];
                     while (await context.Request.Body.ReadAsync(buffer, 0, buffer.Length) > 0) { }
@@ -986,11 +996,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await WaitForStreamErrorAsync(1, Http2ErrorCode.PROTOCOL_ERROR, CoreStrings.Http2StreamErrorLessDataThanLength);
 
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+
+            var expectedError = new Http2StreamErrorException(1, CoreStrings.Http2StreamErrorLessDataThanLength, Http2ErrorCode.PROTOCOL_ERROR);
+
+            Assert.NotNull(thrownEx);
+            Assert.Equal(expectedError.Message, thrownEx.Message);
+            Assert.IsType<Http2StreamErrorException>(thrownEx.InnerException);
         }
 
         [Fact]
         public async Task ContentLength_Received_MultipleDataFramesOverSize_Reset()
         {
+            IOException thrownEx = null;
+
             var headers = new[]
             {
                 new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
@@ -1000,7 +1018,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             };
             await InitializeConnectionAsync(async context =>
             {
-                await Assert.ThrowsAsync<ConnectionAbortedException>(async () =>
+                thrownEx = await Assert.ThrowsAsync<IOException>(async () =>
                 {
                     var buffer = new byte[100];
                     while (await context.Request.Body.ReadAsync(buffer, 0, buffer.Length) > 0) { }
@@ -1016,11 +1034,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await WaitForStreamErrorAsync(1, Http2ErrorCode.PROTOCOL_ERROR, CoreStrings.Http2StreamErrorMoreDataThanLength);
 
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+
+            var expectedError = new Http2StreamErrorException(1, CoreStrings.Http2StreamErrorMoreDataThanLength, Http2ErrorCode.PROTOCOL_ERROR);
+
+            Assert.NotNull(thrownEx);
+            Assert.Equal(expectedError.Message, thrownEx.Message);
+            Assert.IsType<Http2StreamErrorException>(thrownEx.InnerException);
         }
 
         [Fact]
         public async Task ContentLength_Received_MultipleDataFramesUnderSize_Reset()
         {
+            IOException thrownEx = null;
+
             var headers = new[]
             {
                 new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
@@ -1030,7 +1056,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             };
             await InitializeConnectionAsync(async context =>
             {
-                await Assert.ThrowsAsync<ConnectionAbortedException>(async () =>
+                thrownEx = await Assert.ThrowsAsync<IOException>(async () =>
                 {
                     var buffer = new byte[100];
                     while (await context.Request.Body.ReadAsync(buffer, 0, buffer.Length) > 0) { }
@@ -1044,6 +1070,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await WaitForStreamErrorAsync(1, Http2ErrorCode.PROTOCOL_ERROR, CoreStrings.Http2StreamErrorLessDataThanLength);
 
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+
+            var expectedError = new Http2StreamErrorException(1, CoreStrings.Http2StreamErrorLessDataThanLength, Http2ErrorCode.PROTOCOL_ERROR);
+
+            Assert.NotNull(thrownEx);
+            Assert.Equal(expectedError.Message, thrownEx.Message);
+            Assert.IsType<Http2StreamErrorException>(thrownEx.InnerException);
         }
 
         [Fact]
@@ -1488,6 +1520,62 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Contains(1, _abortedStreamIds);
 
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+        }
+
+        [Fact]
+        public async Task RequestAbort_ThrowsOperationCanceledExceptionFromSubsequentRequestBodyStreamRead()
+        {
+            OperationCanceledException thrownEx = null;
+
+            await InitializeConnectionAsync(async context =>
+            {
+                context.Abort();
+
+                var buffer = new byte[100];
+                var thrownExTask = Assert.ThrowsAnyAsync<OperationCanceledException>(() => context.Request.Body.ReadAsync(buffer, 0, buffer.Length));
+
+                Assert.True(thrownExTask.IsCompleted);
+
+                thrownEx = await thrownExTask;
+            });
+
+            await StartStreamAsync(1, _browserRequestHeaders, endStream: false);
+            await WaitForStreamErrorAsync(expectedStreamId: 1, Http2ErrorCode.INTERNAL_ERROR, CoreStrings.ConnectionAbortedByApplication);
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+
+            Assert.NotNull(thrownEx);
+            Assert.IsType<ConnectionAbortedException>(thrownEx);
+            Assert.Equal(CoreStrings.ConnectionAbortedByApplication, thrownEx.Message);
+        }
+
+        [Fact]
+        public async Task RequestAbort_ThrowsOperationCanceledExceptionFromOngoingRequestBodyStreamRead()
+        {
+            OperationCanceledException thrownEx = null;
+
+            await InitializeConnectionAsync(async context =>
+            {
+                var buffer = new byte[100];
+                var thrownExTask = Assert.ThrowsAnyAsync<OperationCanceledException>(() => context.Request.Body.ReadAsync(buffer, 0, buffer.Length));
+
+                Assert.False(thrownExTask.IsCompleted);
+
+                context.Abort();
+
+                thrownEx = await thrownExTask.DefaultTimeout();
+            });
+
+            await StartStreamAsync(1, _browserRequestHeaders, endStream: false);
+            await WaitForStreamErrorAsync(expectedStreamId: 1, Http2ErrorCode.INTERNAL_ERROR, CoreStrings.ConnectionAbortedByApplication);
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+
+            Assert.NotNull(thrownEx);
+            Assert.IsType<TaskCanceledException>(thrownEx);
+            Assert.Equal("The request was aborted", thrownEx.Message);
+            Assert.IsType<ConnectionAbortedException>(thrownEx.InnerException);
+            Assert.Equal(CoreStrings.ConnectionAbortedByApplication, thrownEx.InnerException.Message);
         }
 
         private async Task InitializeConnectionAsync(RequestDelegate application)

@@ -6,13 +6,11 @@ using System.Buffers;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO.Pipelines;
-using System.Runtime.InteropServices;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Connections.Abstractions;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
-using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
@@ -28,6 +26,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         protected readonly long _keepAliveTicks;
         private readonly long _requestHeadersTimeoutTicks;
 
+        private int _requestAborted;
         private volatile bool _requestTimedOut;
         private uint _requestCount;
 
@@ -60,6 +59,31 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public bool RequestTimedOut => _requestTimedOut;
 
         public override bool IsUpgradableRequest => _upgradeAvailable;
+
+        /// <summary>
+        /// Immediately kill the connection and poison the request body stream with an error.
+        /// </summary>
+        public void Abort(ConnectionAbortedException abortReason)
+        {
+            if (Interlocked.Exchange(ref _requestAborted, 1) != 0)
+            {
+                return;
+            }
+
+            // Abort output prior to calling OnIOCompleted() to give the transport the chance to complete the input
+            // with the correct error and message. 
+            Output.Abort(abortReason);
+
+            OnInputOrOutputCompleted();
+
+            PoisonRequestBodyStream(abortReason);
+        }
+
+        protected override void ApplicationAbort()
+        {
+            Log.ApplicationAbortedConnection(ConnectionId, TraceIdentifier);
+            Abort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedByApplication));
+        }
 
         /// <summary>
         /// Stops the request processing loop between requests.

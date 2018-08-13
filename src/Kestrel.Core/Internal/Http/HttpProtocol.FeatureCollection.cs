@@ -6,7 +6,6 @@ using System.IO;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
@@ -230,10 +229,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             ApplicationAbort();
         }
 
-        protected virtual void ApplicationAbort()
-        {
-            Log.ApplicationAbortedConnection(ConnectionId, TraceIdentifier);
-            Abort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedByApplication));
-        }
+        protected abstract void ApplicationAbort();
     }
 }
