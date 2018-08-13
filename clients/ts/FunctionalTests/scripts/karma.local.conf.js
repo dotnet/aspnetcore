@@ -40,7 +40,7 @@ try {
     }
 
     // We use the launchers themselves to figure out if the browser exists. It's a bit sneaky, but it works.
-    tryAddBrowser("ChromeHeadless", new ChromeHeadlessBrowser(() => { }, {}));
+    tryAddBrowser("ChromeHeadlessNoSandbox", new ChromeHeadlessBrowser(() => { }, {}));
     tryAddBrowser("ChromiumHeadless", new ChromiumHeadlessBrowser(() => { }, {}));
     tryAddBrowser("FirefoxHeadless", new FirefoxHeadlessBrowser(0, () => { }, {}));
 
@@ -53,6 +53,12 @@ try {
 
     module.exports = createKarmaConfig({
       browsers,
+      customLaunchers: {
+        ChromeHeadlessNoSandbox: {
+          base: 'ChromeHeadless',
+          flags: ['--no-sandbox']
+        }
+      }
     });
 } catch (e) {
     console.error(e);
