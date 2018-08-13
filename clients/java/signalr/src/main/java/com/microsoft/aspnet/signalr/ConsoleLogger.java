@@ -3,8 +3,14 @@
 
 package com.microsoft.aspnet.signalr;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 public class ConsoleLogger implements Logger {
     private LogLevel logLevel;
+    private DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mmZ");
+
     public ConsoleLogger(LogLevel logLevel) {
             this.logLevel = logLevel;
     }
@@ -12,6 +18,8 @@ public class ConsoleLogger implements Logger {
     @Override
     public void log(LogLevel logLevel, String message) {
         if(logLevel.value >= this.logLevel.value){
+            String timeStamp = dateFormat.format(new Date());
+            message = String.format("[%s] [%s] %s", timeStamp, logLevel, message);
             switch (logLevel) {
                 case Debug:
                 case Information:
@@ -29,7 +37,8 @@ public class ConsoleLogger implements Logger {
     @Override
     public void log(LogLevel logLevel, String formattedMessage, Object... args) {
         if (logLevel.value >= this.logLevel.value) {
-            formattedMessage = formattedMessage + "%n";
+            String timeStamp = dateFormat.format(new Date());
+            formattedMessage = String.format("[%s] [%s] %s%n", timeStamp, logLevel, formattedMessage);
             switch (logLevel) {
                 case Debug:
                 case Information:
