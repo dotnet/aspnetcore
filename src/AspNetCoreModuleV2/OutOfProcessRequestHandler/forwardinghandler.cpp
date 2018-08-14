@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
 #include "forwardinghandler.h"
+#include "url_utility.h"
 
 // Just to be aware of the FORWARDING_HANDLER object size.
 C_ASSERT(sizeof(FORWARDING_HANDLER) <= 632);
@@ -164,7 +165,7 @@ FORWARDING_HANDLER::OnExecuteRequestHandler()
     //
     // parse original url
     //
-    if (FAILED(hr = UTILITY::SplitUrl(pRequest->GetRawHttpRequest()->CookedUrl.pFullUrl,
+    if (FAILED(hr = URL_UTILITY::SplitUrl(pRequest->GetRawHttpRequest()->CookedUrl.pFullUrl,
         &fSecure,
         &strDestination,
         &strUrl)))
@@ -172,7 +173,7 @@ FORWARDING_HANDLER::OnExecuteRequestHandler()
         goto Failure;
     }
 
-    if (FAILED(hr = UTILITY::EscapeAbsPath(pRequest, &struEscapedUrl)))
+    if (FAILED(hr = URL_UTILITY::EscapeAbsPath(pRequest, &struEscapedUrl)))
     {
         goto Failure;
     }
@@ -870,7 +871,7 @@ FORWARDING_HANDLER::GetHeaders(
     //
     if (!pProtocol->QueryPreserveHostHeader())
     {
-        if (FAILED(hr = UTILITY::SplitUrl(pRequest->GetRawHttpRequest()->CookedUrl.pFullUrl,
+        if (FAILED(hr = URL_UTILITY::SplitUrl(pRequest->GetRawHttpRequest()->CookedUrl.pFullUrl,
             &fSecure,
             &struDestination,
             &struUrl)) ||

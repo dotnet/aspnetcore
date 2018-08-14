@@ -3,9 +3,65 @@
 
 #pragma once
 
-#include "Utility.h"
 #include "resources.h"
 
-extern HANDLE       g_hEventLog;
+class EventLog
+{
+public:
+    static
+    VOID
+    Error(
+        _In_ DWORD   dwEventId,
+        _In_ PCWSTR  pstrMsg,
+        ...)
+    {
+       va_list args;
+       va_start(args, pstrMsg);
+       LogEventF(EVENTLOG_ERROR_TYPE, dwEventId, pstrMsg, args);
+       va_end(args);
+    }
 
-#define EVENTLOG(log, name, ...) UTILITY::LogEventF(log, ASPNETCORE_EVENT_ ## name ## _LEVEL, ASPNETCORE_EVENT_ ## name, ASPNETCORE_EVENT_ ## name ## _MSG, __VA_ARGS__)
+    static
+    VOID
+    Info(
+        _In_ DWORD   dwEventId,
+        _In_ PCWSTR  pstrMsg,
+        ...)
+    {
+       va_list args;
+       va_start(args, pstrMsg);
+       LogEventF(EVENTLOG_INFORMATION_TYPE, dwEventId, pstrMsg, args);
+       va_end(args);
+    }
+
+    static
+    VOID
+    Warn(
+        _In_ DWORD   dwEventId,
+        _In_ PCWSTR  pstrMsg,
+        ...)
+    {
+       va_list args;
+       va_start(args, pstrMsg);
+       LogEventF(EVENTLOG_WARNING_TYPE, dwEventId, pstrMsg, args);
+       va_end(args);
+    }
+
+private:
+    static
+    VOID
+    LogEvent(
+        _In_ WORD    dwEventInfoType,
+        _In_ DWORD   dwEventId,
+        _In_ LPCWSTR pstrMsg
+    );
+
+    static
+    VOID
+    LogEventF(
+        _In_ WORD    dwEventInfoType,
+        _In_ DWORD   dwEventId,
+        __in PCWSTR  pstrMsg,
+        va_list argsList
+    );
+};

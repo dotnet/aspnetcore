@@ -3,13 +3,13 @@
 
 #include "HandlerResolver.h"
 #include "exceptions.h"
-#include "utility.h"
 #include "SRWExclusiveLock.h"
 #include "applicationinfo.h"
 #include "EventLog.h"
 #include "hostfxr_utility.h"
 #include "GlobalVersionUtility.h"
 #include "HandleWrapper.h"
+#include "file_utility.h"
 
 const PCWSTR HandlerResolver::s_pwzAspnetcoreInProcessRequestHandlerName = L"aspnetcorev2_inprocess.dll";
 const PCWSTR HandlerResolver::s_pwzAspnetcoreOutOfProcessRequestHandlerName = L"aspnetcorev2_outofprocess.dll";
@@ -26,7 +26,7 @@ HandlerResolver::HandlerResolver(HMODULE hModule, IHttpServer &pServer)
 }
 
 HRESULT
-HandlerResolver::LoadRequestHandlerAssembly(STRU& location, ASPNETCORE_SHIM_CONFIG * pConfiguration)
+HandlerResolver::LoadRequestHandlerAssembly(IHttpApplication &pApplication, STRU& location, ASPNETCORE_SHIM_CONFIG * pConfiguration)
 {
     HRESULT hr;
     STACK_STRU(struFileName, MAX_PATH);
@@ -50,20 +50,18 @@ HandlerResolver::LoadRequestHandlerAssembly(STRU& location, ASPNETCORE_SHIM_CONF
             RETURN_IF_FAILED(HOSTFXR_OPTIONS::Create(
                 NULL,
                 pConfiguration->QueryProcessPath()->QueryStr(),
-                pConfiguration->QueryApplicationPhysicalPath()->QueryStr(),
+                pApplication.GetApplicationPhysicalPath(),
                 pConfiguration->QueryArguments()->QueryStr(),
-                g_hEventLog,
                 options));
 
             RETURN_IF_FAILED(location.Copy(options->GetExeLocation()));
 
             if (FAILED_LOG(hr = FindNativeAssemblyFromHostfxr(options.get(), pstrHandlerDllName, &struFileName)))
             {
-                UTILITY::LogEventF(g_hEventLog,
-                        EVENTLOG_ERROR_TYPE,
-                        ASPNETCORE_EVENT_INPROCESS_RH_MISSING,
-                        ASPNETCORE_EVENT_INPROCESS_RH_MISSING_MSG,
-                        struFileName.IsEmpty() ? s_pwzAspnetcoreInProcessRequestHandlerName : struFileName.QueryStr());
+                EventLog::Error(
+                    ASPNETCORE_EVENT_INPROCESS_RH_MISSING,
+                    ASPNETCORE_EVENT_INPROCESS_RH_MISSING_MSG,
+                    struFileName.IsEmpty() ? s_pwzAspnetcoreInProcessRequestHandlerName : struFileName.QueryStr());
 
                 return hr;
             }
@@ -72,8 +70,7 @@ HandlerResolver::LoadRequestHandlerAssembly(STRU& location, ASPNETCORE_SHIM_CONF
         {
             if (FAILED_LOG(hr = FindNativeAssemblyFromGlobalLocation(pConfiguration, pstrHandlerDllName, &struFileName)))
             {
-                UTILITY::LogEventF(g_hEventLog,
-                    EVENTLOG_ERROR_TYPE,
+                EventLog::Error(
                     ASPNETCORE_EVENT_OUT_OF_PROCESS_RH_MISSING,
                     ASPNETCORE_EVENT_OUT_OF_PROCESS_RH_MISSING_MSG,
                     struFileName.IsEmpty() ? s_pwzAspnetcoreOutOfProcessRequestHandlerName : struFileName.QueryStr());
@@ -108,15 +105,14 @@ HandlerResolver::GetApplicationFactory(IHttpApplication &pApplication, STRU& loc
         {
             m_loadedApplicationHostingModel = pConfiguration.QueryHostingModel();
             m_loadedApplicationId = pApplication.GetApplicationId();
-            LOG_IF_FAILED(m_fAspnetcoreRHLoadResult = LoadRequestHandlerAssembly(location, &pConfiguration));
+            LOG_IF_FAILED(m_fAspnetcoreRHLoadResult = LoadRequestHandlerAssembly(pApplication, location, &pConfiguration));
         }
     }
 
     // Mixed hosting models
     if (m_loadedApplicationHostingModel != pConfiguration.QueryHostingModel())
     {
-        UTILITY::LogEventF(g_hEventLog,
-            EVENTLOG_ERROR_TYPE,
+        EventLog::Error(
             ASPNETCORE_EVENT_MIXED_HOSTING_MODEL_ERROR,
             ASPNETCORE_EVENT_MIXED_HOSTING_MODEL_ERROR_MSG,
             pApplication.GetApplicationId(),
@@ -127,8 +123,7 @@ HandlerResolver::GetApplicationFactory(IHttpApplication &pApplication, STRU& loc
     // Multiple in-process apps
     else if (m_loadedApplicationHostingModel == HOSTING_IN_PROCESS && m_loadedApplicationId != pApplication.GetApplicationId())
     {
-        UTILITY::LogEventF(g_hEventLog,
-            EVENTLOG_ERROR_TYPE,
+        EventLog::Error(
             ASPNETCORE_EVENT_DUPLICATED_INPROCESS_APP,
             ASPNETCORE_EVENT_DUPLICATED_INPROCESS_APP_MSG,
             pApplication.GetApplicationId());
@@ -165,8 +160,7 @@ HandlerResolver::FindNativeAssemblyFromGlobalLocation(
         STRU struEvent;
         if (SUCCEEDED(struEvent.Copy(ASPNETCORE_EVENT_OUT_OF_PROCESS_RH_MISSING_MSG)))
         {
-            UTILITY::LogEvent(g_hEventLog,
-                EVENTLOG_INFORMATION_TYPE,
+            EventLog::Info(
                 ASPNETCORE_EVENT_OUT_OF_PROCESS_RH_MISSING,
                 struEvent.QueryStr());
         }
@@ -251,7 +245,7 @@ HandlerResolver::FindNativeAssemblyFromHostfxr(
 
         RETURN_IF_FAILED(struNativeDllLocation.Append(libraryName));
 
-        if (UTILITY::CheckIfFileExists(struNativeDllLocation.QueryStr()))
+        if (FILE_UTILITY::CheckIfFileExists(struNativeDllLocation.QueryStr()))
         {
             RETURN_IF_FAILED(struFilename->Copy(struNativeDllLocation));
             fFound = TRUE;

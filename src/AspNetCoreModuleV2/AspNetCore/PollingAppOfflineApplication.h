@@ -32,7 +32,7 @@ public:
 protected:
     std::filesystem::path m_appOfflineLocation;
     static std::filesystem::path GetAppOfflineLocation(IHttpApplication& pApplication);
-
+    static bool FileExists(const std::filesystem::path& path);
 private:
     static const int c_appOfflineRefreshIntervalMS = 200;
     std::string m_strAppOfflineContent;

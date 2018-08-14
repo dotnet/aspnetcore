@@ -6,11 +6,11 @@
 #include "hostfxroptions.h"
 #include "requesthandler_config.h"
 #include "environmentvariablehelpers.h"
-#include "utility.h"
 #include "SRWExclusiveLock.h"
 #include "exceptions.h"
 #include "LoggingHelpers.h"
 #include "resources.h"
+#include "EventLog.h"
 
 const LPCSTR IN_PROCESS_APPLICATION::s_exeLocationParameterName = "InProcessExeLocation";
 
@@ -112,16 +112,14 @@ Finished:
 
     if (FAILED(hr))
     {
-        UTILITY::LogEventF(g_hEventLog,
-            EVENTLOG_WARNING_TYPE,
+        EventLog::Warn(
             ASPNETCORE_EVENT_GRACEFUL_SHUTDOWN_FAILURE,
             ASPNETCORE_EVENT_APP_SHUTDOWN_FAILURE_MSG,
             m_pConfig->QueryConfigPath()->QueryStr());
     }
 	else
     {
-        UTILITY::LogEventF(g_hEventLog,
-            EVENTLOG_INFORMATION_TYPE,
+        EventLog::Info(
             ASPNETCORE_EVENT_APP_SHUTDOWN_SUCCESSFUL,
             ASPNETCORE_EVENT_APP_SHUTDOWN_SUCCESSFUL_MSG,
             m_pConfig->QueryConfigPath()->QueryStr());
@@ -220,8 +218,7 @@ IN_PROCESS_APPLICATION::SetCallbackHandles(
 
     // Can't check the std err handle as it isn't a critical error
     // Initialization complete
-    UTILITY::LogEventF(g_hEventLog,
-        EVENTLOG_INFORMATION_TYPE,
+    EventLog::Info(
         ASPNETCORE_EVENT_INPROCESS_START_SUCCESS,
         ASPNETCORE_EVENT_INPROCESS_START_SUCCESS_MSG,
         m_pConfig->QueryApplicationPhysicalPath()->QueryStr());
@@ -361,8 +358,7 @@ Finished:
     {
         m_status = MANAGED_APPLICATION_STATUS::FAIL;
 
-        UTILITY::LogEventF(g_hEventLog,
-            EVENTLOG_ERROR_TYPE,
+        EventLog::Error(
             ASPNETCORE_EVENT_LOAD_CLR_FALIURE,
             ASPNETCORE_EVENT_LOAD_CLR_FALIURE_MSG,
             m_pConfig->QueryApplicationPath()->QueryStr(),
@@ -463,7 +459,6 @@ IN_PROCESS_APPLICATION::ExecuteApplication(
             m_pConfig->QueryProcessPath()->QueryStr(),
             m_pConfig->QueryApplicationPhysicalPath()->QueryStr(),
             m_pConfig->QueryArguments()->QueryStr(),
-            g_hEventLog,
             hostFxrOptions
             ));
 
@@ -527,8 +522,7 @@ IN_PROCESS_APPLICATION::LogErrorsOnMainExit(
     if (m_pLoggerProvider->GetStdOutContent(&straStdErrOutput))
     {
         if (SUCCEEDED(struStdMsg.CopyA(straStdErrOutput.QueryStr()))) {
-            UTILITY::LogEventF(g_hEventLog,
-                EVENTLOG_ERROR_TYPE,
+            EventLog::Error(
                 ASPNETCORE_EVENT_INPROCESS_THREAD_EXIT_STDOUT,
                 ASPNETCORE_EVENT_INPROCESS_THREAD_EXIT_STDOUT_MSG,
                 m_pConfig->QueryApplicationPath()->QueryStr(),
@@ -539,8 +533,7 @@ IN_PROCESS_APPLICATION::LogErrorsOnMainExit(
     }
     else
     {
-        UTILITY::LogEventF(g_hEventLog,
-            EVENTLOG_ERROR_TYPE,
+        EventLog::Error(
             ASPNETCORE_EVENT_INPROCESS_THREAD_EXIT,
             ASPNETCORE_EVENT_INPROCESS_THREAD_EXIT_MSG,
             m_pConfig->QueryApplicationPath()->QueryStr(),

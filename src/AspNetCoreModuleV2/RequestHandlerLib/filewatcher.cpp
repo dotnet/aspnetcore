@@ -5,6 +5,7 @@
 #include "filewatcher.h"
 #include "debugutil.h"
 #include "AppOfflineTrackingApplication.h"
+#include "exceptions.h"
 
 FILE_WATCHER::FILE_WATCHER() :
     m_hCompletionPort(NULL),

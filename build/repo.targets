@@ -4,7 +4,7 @@
     <PrepareDependsOn>$(PrepareDependsOn)</PrepareDependsOn>
     <GetArtifactInfoDependsOn>$(GetArtifactInfoDependsOn);GetNativeArtifactsInfo</GetArtifactInfoDependsOn>
     <CompileDependsOn Condition="'$(OS)'=='Windows_NT'">BuildNativeAssets;$(CompileDependsOn)</CompileDependsOn>
-    <PackageDependsOn Condition="'$(OS)'=='Windows_NT'">$(PackageDependsOn);PackageNativeProjects</PackageDependsOn>
+    <PackageDependsOn Condition="'$(OS)'=='Windows_NT'">$(PackageDependsOn);PackageNativeProjects;PackageStressTestApp</PackageDependsOn>
     <TestDependsOn>$(TestDependsOn);RunNativeTest</TestDependsOn>
     <NuGetVerifierRuleFile Condition="'$(OS)' != 'Windows_NT'">$(RepositoryRoot)NuGetPackageVerifier.xplat.json</NuGetVerifierRuleFile>
     <SourceBase>$(RepositoryRoot)src\</SourceBase>
@@ -14,7 +14,7 @@
   <ItemGroup>
     <Platforms Include="x86" VCPlatform="Win32" />
     <Platforms Include="x64" VCPlatform="x64" />
-  </ItemGroup>    
+  </ItemGroup>
   <Import Project="assets.props" />
 
   <Target Name="BuildNativeAssets" DependsOnTargets="Prepare;GetToolsets" >
@@ -109,5 +109,27 @@
     </PropertyGroup>
     <Exec Command="&quot;$(VisualStudioMSBuildx86Path)&quot; &quot;$(RepositoryRoot)test\CommonLibTests\CommonLibTests.vcxproj&quot; /t:Test $(BuildArgs) -p:Platform=%(Platforms.VCPlatform)"
       Condition="'$(VisualStudioMSBuildx86Path)' != ''" />
+  </Target>
+
+  <Target Name="PackageStressTestApp">
+    <PropertyGroup>
+      <StressAppBasePath>$(MSBuildThisFileDirectory)..\test\WebSites\StressTestWebSite\</StressAppBasePath>
+      <StressAppPublishPath>$(StressAppBasePath)bin\published\</StressAppPublishPath>
+    </PropertyGroup>
+
+    <RemoveDir Directories="$(StressAppPublishPath)" />
+    <MSBuild
+      Projects="$(StressAppBasePath)\StressTestWebSite.csproj"
+      Targets="Publish"
+      Properties="TargetFramework=netcoreapp2.2;Configuration=$(Configuration);RuntimeIdentifier=win7-%(Platforms.Identity);PublishDir=$(StressAppPublishPath)\%(Identity)" />
+
+    <ItemGroup>
+      <StressAppFiles Include="$(StressAppPublishPath)\**\*" />
+    </ItemGroup>
+
+    <ZipArchive File="$(StressTestWebSiteZipOutputPath)"
+      Overwrite="true"
+      SourceFiles="@(StressAppFiles)"
+      WorkingDirectory="$(StressAppPublishPath)" />
   </Target>
 </Project>

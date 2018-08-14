@@ -3,9 +3,9 @@
 
 #include "AppOfflineApplication.h"
 
-#include <experimental/filesystem>
 #include "HandleWrapper.h"
 #include "AppOfflineHandler.h"
+#include "exceptions.h"
 
 HRESULT AppOfflineApplication::CreateHandler(IHttpContext* pHttpContext, IREQUEST_HANDLER** pRequestHandler)
 {
@@ -57,5 +57,5 @@ HRESULT AppOfflineApplication::OnAppOfflineFound()
 
 bool AppOfflineApplication::ShouldBeStarted(IHttpApplication& pApplication)
 {
-    return is_regular_file(GetAppOfflineLocation(pApplication));
+    return FileExists(GetAppOfflineLocation(pApplication));
 }

@@ -12,7 +12,6 @@ HRESULT HOSTFXR_OPTIONS::Create(
         _In_ PCWSTR         pcwzProcessPath,
         _In_ PCWSTR         pcwzApplicationPhysicalPath,
         _In_ PCWSTR         pcwzArguments,
-        _In_ HANDLE         hEventLog,
         _Out_ std::unique_ptr<HOSTFXR_OPTIONS>& ppWrapper)
 {
     STRU struHostFxrDllLocation;
@@ -30,7 +29,6 @@ HRESULT HOSTFXR_OPTIONS::Create(
     if (struExeLocation.IsEmpty())
     {
         RETURN_IF_FAILED(HOSTFXR_UTILITY::GetHostFxrParameters(
-            hEventLog,
             pcwzProcessPath,
             pcwzApplicationPhysicalPath,
             pcwzArguments,
@@ -45,7 +43,6 @@ HRESULT HOSTFXR_OPTIONS::Create(
             pcwzArguments,
             pcwzExeLocation,
             pcwzApplicationPhysicalPath,
-            hEventLog,
             &dwArgCount,
             &pwzArgv));
     }
@@ -55,7 +52,6 @@ HRESULT HOSTFXR_OPTIONS::Create(
             pcwzExeLocation,
             pcwzApplicationPhysicalPath,
             pcwzArguments,
-            hEventLog,
             &struHostFxrDllLocation,
             &dwArgCount,
             &pwzArgv));

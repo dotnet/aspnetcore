@@ -82,7 +82,6 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         }
 
         [ConditionalFact]
-        [RequiresIIS(IISCapability.ShutdownToken)]
         public async Task AppOfflineDroppedWhileSiteFailedToStartInRequestHandler_SiteStops_InProcess()
         {
             var deploymentResult = await DeployApp(HostingModel.InProcess);
@@ -95,7 +94,8 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             Assert.Contains("500.30", await result.Content.ReadAsStringAsync());
 
             AddAppOffline(deploymentResult.ContentRoot);
-            AssertStopsProcess(deploymentResult);
+
+            await deploymentResult.AssertRecycledAsync(() => AssertAppOffline(deploymentResult));
         }
 
         [ConditionalFact]
@@ -130,7 +130,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
                 }
                 catch
                 {
-                    AssertStopsProcess(deploymentResult);
+                    deploymentResult.AssertWorkerProcessStop();
                     return;
                 }
             }
@@ -139,18 +139,16 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         }
 
         [ConditionalFact]
-        [RequiresIIS(IISCapability.ShutdownToken)]
         public async Task AppOfflineDroppedWhileSiteRunning_SiteShutsDown_InProcess()
         {
             var deploymentResult = await AssertStarts(HostingModel.InProcess);
 
             AddAppOffline(deploymentResult.ContentRoot);
 
-            AssertStopsProcess(deploymentResult);
+            await deploymentResult.AssertRecycledAsync(() => AssertAppOffline(deploymentResult));
         }
 
         [ConditionalFact]
-        [RequiresIIS(IISCapability.ShutdownToken)]
         public async Task AppOfflineDroppedWhileSiteRunning_SiteShutsDown_OutOfProcess()
         {
             var deploymentResult = await AssertStarts(HostingModel.OutOfProcess);
@@ -245,26 +243,8 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
         private async Task AssertAppOffline(IISDeploymentResult deploymentResult, string expectedResponse = "The app is offline.")
         {
-            HttpResponseMessage response = null;
-
-            for (var i = 0; i < 5 && response?.StatusCode != HttpStatusCode.ServiceUnavailable; i++)
-            {
-                // Keep retrying until app_offline is present.
-                response = await deploymentResult.HttpClient.GetAsync("HelloWorld");
-                await Task.Delay(RetryDelay);
-            }
-
-            Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
-
+            var response = await deploymentResult.HttpClient.RetryRequestAsync("HelloWorld", r => r.StatusCode == HttpStatusCode.ServiceUnavailable);
             Assert.Equal(expectedResponse, await response.Content.ReadAsStringAsync());
-        }
-
-        private void AssertStopsProcess(IISDeploymentResult deploymentResult)
-        {
-            var hostShutdownToken = deploymentResult.HostShutdownToken;
-
-            Assert.True(hostShutdownToken.WaitHandle.WaitOne(TimeoutExtensions.DefaultTimeout));
-            Assert.True(hostShutdownToken.IsCancellationRequested);
         }
 
         private async Task<IISDeploymentResult> AssertStarts(HostingModel hostingModel)
@@ -278,14 +258,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
         private static async Task AssertRunning(IISDeploymentResult deploymentResult)
         {
-            HttpResponseMessage response = null;
-
-            for (var i = 0; i < 5 && response?.IsSuccessStatusCode != true; i++)
-            {
-                response = await deploymentResult.HttpClient.GetAsync("HelloWorld");
-                await Task.Delay(RetryDelay);
-            }
-
+            var response = await deploymentResult.HttpClient.RetryRequestAsync("HelloWorld", r => r.IsSuccessStatusCode);
             var responseText = await response.Content.ReadAsStringAsync();
             Assert.Equal("Hello World", responseText);
         }
