@@ -4,6 +4,7 @@
   <PropertyGroup>
     <AssemblySigningCertName>Microsoft</AssemblySigningCertName>
     <AncmZipOutputPath>$(BuildDir)AspNetCoreModule.zip</AncmZipOutputPath>
+    <StressTestWebSiteZipOutputPath>$(BuildDir)StressTestWebSite.zip</StressTestWebSiteZipOutputPath>
   </PropertyGroup>
 
   <ItemGroup>
