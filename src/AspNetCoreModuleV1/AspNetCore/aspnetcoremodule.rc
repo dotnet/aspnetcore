@@ -9,6 +9,8 @@
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 
+#define FileDescription "IIS AspNetCore Module. Commit: " CommitHash
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // 11
@@ -74,7 +76,7 @@ BEGIN
         BLOCK "040904b0"
         BEGIN
             VALUE "CompanyName", "Microsoft"
-            VALUE "FileDescription", "IIS ASP.NET Core Module"
+            VALUE "FileDescription", FileDescription
             VALUE "FileVersion", FileVersionStr
             VALUE "InternalName", "aspnetcore.dll"
             VALUE "LegalCopyright", "Copyright (C) Microsoft Corporation"
