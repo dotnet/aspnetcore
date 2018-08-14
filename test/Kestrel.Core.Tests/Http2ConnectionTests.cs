@@ -1440,6 +1440,34 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
+        public async Task HEADERS_OverMaxStreamLimit_Refused()
+        {
+            _connection.ServerSettings.MaxConcurrentStreams = 1;
+
+            var requestBlocker = new TaskCompletionSource<object>();
+            await InitializeConnectionAsync(context => requestBlocker.Task);
+
+            await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
+
+            await StartStreamAsync(3, _browserRequestHeaders, endStream: true);
+
+            await WaitForStreamErrorAsync(3, Http2ErrorCode.REFUSED_STREAM, CoreStrings.Http2ErrorMaxStreams);
+
+            requestBlocker.SetResult(0);
+
+            await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 55,
+                withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS),
+                withStreamId: 1);
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 0,
+                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withStreamId: 1);
+
+            await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
+        }
+
+        [Fact]
         public async Task HEADERS_Received_StreamIdZero_ConnectionError()
         {
             await InitializeConnectionAsync(_noopApplication);
@@ -2196,6 +2224,66 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedLastStreamId: 1,
                 expectedErrorCode: Http2ErrorCode.PROTOCOL_ERROR,
                 expectedErrorMessage: CoreStrings.FormatHttp2ErrorHeadersInterleaved(Http2FrameType.RST_STREAM, streamId: 1, headersStreamId: 1));
+        }
+
+        [Fact]
+        public async Task SETTINGS_KestrelDefaults_Sent()
+        {
+            _connectionTask = _connection.ProcessRequestsAsync(new DummyApplication(_noopApplication));
+
+            await SendPreambleAsync().ConfigureAwait(false);
+            await SendSettingsAsync();
+
+            var frame = await ExpectAsync(Http2FrameType.SETTINGS,
+                withLength: 6,
+                withFlags: 0,
+                withStreamId: 0);
+
+            // Only non protocol defaults are sent
+            Assert.Equal(1, frame.SettingsCount);
+            var settings = frame.GetSettings();
+            Assert.Equal(1, settings.Count);
+            var setting = settings[0];
+            Assert.Equal(Http2SettingsParameter.SETTINGS_MAX_CONCURRENT_STREAMS, setting.Parameter);
+            Assert.Equal(100u, setting.Value);
+
+            await ExpectAsync(Http2FrameType.SETTINGS,
+                withLength: 0,
+                withFlags: (byte)Http2SettingsFrameFlags.ACK,
+                withStreamId: 0);
+
+            await StopConnectionAsync(expectedLastStreamId: 0, ignoreNonGoAwayFrames: false);
+        }
+
+        [Fact]
+        public async Task SETTINGS_Custom_Sent()
+        {
+            _connection.ServerSettings.MaxConcurrentStreams = 1;
+
+            _connectionTask = _connection.ProcessRequestsAsync(new DummyApplication(_noopApplication));
+
+            await SendPreambleAsync().ConfigureAwait(false);
+            await SendSettingsAsync();
+
+            var frame = await ExpectAsync(Http2FrameType.SETTINGS,
+                withLength: 6,
+                withFlags: 0,
+                withStreamId: 0);
+
+            // Only non protocol defaults are sent
+            Assert.Equal(1, frame.SettingsCount);
+            var settings = frame.GetSettings();
+            Assert.Equal(1, settings.Count);
+            var setting = settings[0];
+            Assert.Equal(Http2SettingsParameter.SETTINGS_MAX_CONCURRENT_STREAMS, setting.Parameter);
+            Assert.Equal(1u, setting.Value);
+
+            await ExpectAsync(Http2FrameType.SETTINGS,
+                withLength: 0,
+                withFlags: (byte)Http2SettingsFrameFlags.ACK,
+                withStreamId: 0);
+
+            await StopConnectionAsync(expectedLastStreamId: 0, ignoreNonGoAwayFrames: false);
         }
 
         [Fact]
@@ -3499,7 +3587,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await SendSettingsAsync();
 
             await ExpectAsync(Http2FrameType.SETTINGS,
-                withLength: 0,
+                withLength: 6,
                 withFlags: 0,
                 withStreamId: 0);
 
@@ -3637,7 +3725,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         private Task SendSettingsAsync()
         {
             var frame = new Http2Frame();
-            frame.PrepareSettings(Http2SettingsFrameFlags.NONE, _clientSettings);
+            frame.PrepareSettings(Http2SettingsFrameFlags.NONE, _clientSettings.GetNonProtocolDefaults());
             return SendAsync(frame.Raw);
         }
 
@@ -3652,7 +3740,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         private Task SendSettingsWithInvalidStreamIdAsync(int streamId)
         {
             var frame = new Http2Frame();
-            frame.PrepareSettings(Http2SettingsFrameFlags.NONE, _clientSettings);
+            frame.PrepareSettings(Http2SettingsFrameFlags.NONE, _clientSettings.GetNonProtocolDefaults());
             frame.StreamId = streamId;
             return SendAsync(frame.Raw);
         }
@@ -3660,7 +3748,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         private Task SendSettingsWithInvalidLengthAsync(int length)
         {
             var frame = new Http2Frame();
-            frame.PrepareSettings(Http2SettingsFrameFlags.NONE, _clientSettings);
+            frame.PrepareSettings(Http2SettingsFrameFlags.NONE, _clientSettings.GetNonProtocolDefaults());
             frame.Length = length;
             return SendAsync(frame.Raw);
         }

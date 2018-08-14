@@ -88,6 +88,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             _context = context;
             _frameWriter = new Http2FrameWriter(context.Transport.Output, context.Application.Input, _outputFlowControl, this, context.ConnectionId, context.ServiceContext.Log);
             _hpackDecoder = new HPackDecoder((int)_serverSettings.HeaderTableSize);
+            _serverSettings.MaxConcurrentStreams = (uint)context.ServiceContext.ServerOptions.Limits.Http2.MaxStreamsPerConnection;
         }
 
         public string ConnectionId => _context.ConnectionId;
@@ -97,6 +98,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         public IKestrelTrace Log => _context.ServiceContext.Log;
 
         public IFeatureCollection ConnectionFeatures => _context.ConnectionFeatures;
+
+        internal Http2PeerSettings ServerSettings => _serverSettings;
 
         public void OnInputOrOutputCompleted()
         {
@@ -172,7 +175,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
                 if (_state != Http2ConnectionState.Closed)
                 {
-                    await _frameWriter.WriteSettingsAsync(_serverSettings);
+                    await _frameWriter.WriteSettingsAsync(_serverSettings.GetNonProtocolDefaults());
                 }
 
                 while (_state != Http2ConnectionState.Closed)
@@ -617,10 +620,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
             try
             {
-                // ParseFrame will not parse an InitialWindowSize > int.MaxValue.
+                // int.MaxValue is the largest allowed windows size.
                 var previousInitialWindowSize = (int)_clientSettings.InitialWindowSize;
 
-                _clientSettings.ParseFrame(_incomingFrame);
+                _clientSettings.Update(_incomingFrame.GetSettings());
 
                 var ackTask = _frameWriter.WriteSettingsAckAsync(); // Ack before we update the windows, they could send data immediately.
 
@@ -836,6 +839,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 // fields, unless it is a CONNECT request (Section 8.3). An HTTP request that omits mandatory pseudo-header
                 // fields is malformed (Section 8.1.2.6).
                 throw new Http2StreamErrorException(_currentHeadersStream.StreamId, CoreStrings.Http2ErrorMissingMandatoryPseudoHeaderFields, Http2ErrorCode.PROTOCOL_ERROR);
+            }
+
+            if (_streams.Count >= _serverSettings.MaxConcurrentStreams)
+            {
+                throw new Http2StreamErrorException(_currentHeadersStream.StreamId, CoreStrings.Http2ErrorMaxStreams, Http2ErrorCode.REFUSED_STREAM);
             }
 
             // This must be initialized before we offload the request or else we may start processing request body frames without it.

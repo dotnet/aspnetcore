@@ -37,8 +37,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         [Fact]
         public Task Server_Http2Only_Cleartext_Success()
         {
-            // Expect a SETTINGS frame (type 0x4) with no payload and no flags
-            return TestSuccess(HttpProtocols.Http2, Encoding.ASCII.GetString(Http2Connection.ClientPreface), "\x00\x00\x00\x04\x00\x00\x00\x00\x00");
+            // Expect a SETTINGS frame (type 0x4) with default settings
+            return TestSuccess(HttpProtocols.Http2, Encoding.ASCII.GetString(Http2Connection.ClientPreface),
+                "\x00\x00\x06\x04\x00\x00\x00\x00\x00\x00\x03\x00\x00\x00\x64");
         }
 
         private async Task TestSuccess(HttpProtocols serverProtocols, string request, string expectedResponse)

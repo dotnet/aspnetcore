@@ -2100,6 +2100,34 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         internal static string FormatHttp2StreamErrorAfterHeaders()
             => GetString("Http2StreamErrorAfterHeaders");
 
+        /// <summary>
+        /// A new stream was refused because this connection has reached its stream limit.
+        /// </summary>
+        internal static string Http2ErrorMaxStreams
+        {
+            get => GetString("Http2ErrorMaxStreams");
+        }
+
+        /// <summary>
+        /// A new stream was refused because this connection has reached its stream limit.
+        /// </summary>
+        internal static string FormatHttp2ErrorMaxStreams()
+            => GetString("Http2ErrorMaxStreams");
+
+        /// <summary>
+        /// A value greater than zero is required.
+        /// </summary>
+        internal static string GreaterThanZeroRequired
+        {
+            get => GetString("GreaterThanZeroRequired");
+        }
+
+        /// <summary>
+        /// A value greater than zero is required.
+        /// </summary>
+        internal static string FormatGreaterThanZeroRequired()
+            => GetString("GreaterThanZeroRequired");
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

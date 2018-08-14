@@ -1868,7 +1868,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await SendSettingsAsync();
 
             await ExpectAsync(Http2FrameType.SETTINGS,
-                withLength: 0,
+                withLength: 6,
                 withFlags: 0,
                 withStreamId: 0);
 
@@ -1937,7 +1937,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         private Task SendSettingsAsync()
         {
             var frame = new Http2Frame();
-            frame.PrepareSettings(Http2SettingsFrameFlags.NONE, _clientSettings);
+            frame.PrepareSettings(Http2SettingsFrameFlags.NONE, _clientSettings.GetNonProtocolDefaults());
             return SendAsync(frame.Raw);
         }
 

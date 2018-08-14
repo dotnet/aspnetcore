@@ -252,6 +252,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         }
 
         /// <summary>
+        /// Limits only applicable to HTTP/2 connections.
+        /// </summary>
+        public Http2Limits Http2 { get; } = new Http2Limits();
+
+        /// <summary>
         /// Gets or sets the request body minimum data rate in bytes/second.
         /// Setting this property to null indicates no minimum data rate should be enforced.
         /// This limit has no effect on upgraded connections which are always unlimited.

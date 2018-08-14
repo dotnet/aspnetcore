@@ -1,13 +1,13 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Collections;
 using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
-    public class Http2PeerSettings : IEnumerable<Http2PeerSetting>
+    public class Http2PeerSettings
     {
+        // Note these are protocol defaults, not Kestrel defaults.
         public const uint DefaultHeaderTableSize = 4096;
         public const bool DefaultEnablePush = true;
         public const uint DefaultMaxConcurrentStreams = uint.MaxValue;
@@ -28,20 +28,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public uint MaxHeaderListSize { get; set; } = DefaultMaxHeaderListSize;
 
-        public void ParseFrame(Http2Frame frame)
+        // TODO: Return the diff so we can react
+        public void Update(IList<Http2PeerSetting> settings)
         {
-            var settingsCount = frame.Length / 6;
-
-            for (var i = 0; i < settingsCount; i++)
+            foreach (var setting in settings)
             {
-                var offset = i * 6;
-                var id = (Http2SettingsParameter)((frame.Payload[offset] << 8) | frame.Payload[offset + 1]);
-                var value = (uint)((frame.Payload[offset + 2] << 24)
-                    | (frame.Payload[offset + 3] << 16)
-                    | (frame.Payload[offset + 4] << 8)
-                    | frame.Payload[offset + 5]);
+                var value = setting.Value;
 
-                switch (id)
+                switch (setting.Parameter)
                 {
                     case Http2SettingsParameter.SETTINGS_HEADER_TABLE_SIZE:
                         HeaderTableSize = value;
@@ -91,16 +85,42 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
         }
 
-        public IEnumerator<Http2PeerSetting> GetEnumerator()
+        // Gets the settings that are different from the protocol defaults (as opposed to the server defaults).
+        internal IList<Http2PeerSetting> GetNonProtocolDefaults()
         {
-            yield return new Http2PeerSetting(Http2SettingsParameter.SETTINGS_HEADER_TABLE_SIZE, HeaderTableSize);
-            yield return new Http2PeerSetting(Http2SettingsParameter.SETTINGS_ENABLE_PUSH, EnablePush ? 1u : 0);
-            yield return new Http2PeerSetting(Http2SettingsParameter.SETTINGS_MAX_CONCURRENT_STREAMS, MaxConcurrentStreams);
-            yield return new Http2PeerSetting(Http2SettingsParameter.SETTINGS_INITIAL_WINDOW_SIZE, InitialWindowSize);
-            yield return new Http2PeerSetting(Http2SettingsParameter.SETTINGS_MAX_FRAME_SIZE, MaxFrameSize);
-            yield return new Http2PeerSetting(Http2SettingsParameter.SETTINGS_MAX_HEADER_LIST_SIZE, MaxHeaderListSize);
-        }
+            var list = new List<Http2PeerSetting>(1);
 
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+            if (HeaderTableSize != DefaultHeaderTableSize)
+            {
+                list.Add(new Http2PeerSetting(Http2SettingsParameter.SETTINGS_HEADER_TABLE_SIZE, HeaderTableSize));
+            }
+
+            if (EnablePush != DefaultEnablePush)
+            {
+                list.Add(new Http2PeerSetting(Http2SettingsParameter.SETTINGS_ENABLE_PUSH, EnablePush ? 1u : 0));
+            }
+
+            if (MaxConcurrentStreams != DefaultMaxConcurrentStreams)
+            {
+                list.Add(new Http2PeerSetting(Http2SettingsParameter.SETTINGS_MAX_CONCURRENT_STREAMS, MaxConcurrentStreams));
+            }
+
+            if (InitialWindowSize != DefaultInitialWindowSize)
+            {
+                list.Add(new Http2PeerSetting(Http2SettingsParameter.SETTINGS_INITIAL_WINDOW_SIZE, InitialWindowSize));
+            }
+
+            if (MaxFrameSize != DefaultMaxFrameSize)
+            {
+                list.Add(new Http2PeerSetting(Http2SettingsParameter.SETTINGS_MAX_FRAME_SIZE, MaxFrameSize));
+            }
+
+            if (MaxHeaderListSize != DefaultMaxHeaderListSize)
+            {
+                list.Add(new Http2PeerSetting(Http2SettingsParameter.SETTINGS_MAX_HEADER_LIST_SIZE, MaxHeaderListSize));
+            }
+
+            return list;
+        }
     }
 }

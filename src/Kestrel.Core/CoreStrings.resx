@@ -566,4 +566,10 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
   <data name="Http2StreamErrorAfterHeaders" xml:space="preserve">
     <value>An error occured after the response headers were sent, a reset is being sent.</value>
   </data>
+  <data name="Http2ErrorMaxStreams" xml:space="preserve">
+    <value>A new stream was refused because this connection has reached its stream limit.</value>
+  </data>
+  <data name="GreaterThanZeroRequired" xml:space="preserve">
+    <value>A value greater than zero is required.</value>
+  </data>
 </root>
