@@ -132,7 +132,6 @@ SERVER_PROCESS::SetupListenPort(
     pEnvironmentVarTable->FindKey(ASPNETCORE_PORT_ENV_STR, &pEntry);
     if (pEntry != NULL)
     {
-        pEntry->Dereference();
         if (pEntry->QueryValue() != NULL || pEntry->QueryValue()[0] != L'\0')
         {
             m_dwPort = (DWORD)_wtoi(pEntry->QueryValue());
