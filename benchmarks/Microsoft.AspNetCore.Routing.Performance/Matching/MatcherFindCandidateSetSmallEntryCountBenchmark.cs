@@ -9,6 +9,9 @@ namespace Microsoft.AspNetCore.Routing.Matching
 {
     public class MatcherFindCandidateSetSmallEntryCountBenchmark : MatcherBenchmarkBase
     {
+        // SegmentCount should be max-segments + 1
+        private const int SegmentCount = 6;
+
         private TrivialMatcher _baseline;
         private DfaMatcher _dfa;
 
@@ -87,7 +90,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var httpContext = Requests[0];
             var path = httpContext.Request.Path.Value;
 
-            Span<PathSegment> segments = stackalloc PathSegment[FastPathTokenizer.DefaultSegmentCount];
+            Span<PathSegment> segments = stackalloc PathSegment[SegmentCount];
             var count = FastPathTokenizer.Tokenize(path, segments);
 
             var candidates = _dfa.FindCandidateSet(httpContext, path, segments.Slice(0, count));

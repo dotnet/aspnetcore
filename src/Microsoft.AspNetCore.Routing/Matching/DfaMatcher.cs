@@ -13,11 +13,13 @@ namespace Microsoft.AspNetCore.Routing.Matching
     {
         private readonly EndpointSelector _selector;
         private readonly DfaState[] _states;
-
-        public DfaMatcher(EndpointSelector selector, DfaState[] states)
+        private readonly int _maxSegmentCount;
+        
+        public DfaMatcher(EndpointSelector selector, DfaState[] states, int maxSegmentCount)
         {
             _selector = selector;
             _states = states;
+            _maxSegmentCount = maxSegmentCount;
         }
 
         public sealed override Task MatchAsync(HttpContext httpContext, IEndpointFeature feature)
@@ -38,7 +40,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var path = httpContext.Request.Path.Value;
 
             // First tokenize the path into series of segments.
-            Span<PathSegment> buffer = stackalloc PathSegment[FastPathTokenizer.DefaultSegmentCount];
+            Span<PathSegment> buffer = stackalloc PathSegment[_maxSegmentCount];
             var count = FastPathTokenizer.Tokenize(path, buffer);
             var segments = buffer.Slice(0, count);
 

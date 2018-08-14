@@ -22,7 +22,9 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
         // The depth of the node. The depth indicates the number of segments
         // that must be processed to arrive at this node.
-        public int Depth { get; set; }
+        //
+        // This value is not computed for Policy nodes and will be set to -1.
+        public int PathDepth { get; set; } = -1;
 
         // Just for diagnostics and debugging
         public string Label { get; set; }
@@ -71,7 +73,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var builder = new StringBuilder();
             builder.Append(Label);
             builder.Append(" d:");
-            builder.Append(Depth);
+            builder.Append(PathDepth);
             builder.Append(" m:");
             builder.Append(Matches.Count);
             builder.Append(" c: ");

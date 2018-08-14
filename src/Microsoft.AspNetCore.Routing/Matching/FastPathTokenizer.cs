@@ -9,16 +9,6 @@ namespace Microsoft.AspNetCore.Routing.Matching
     // to PathTokenizer.
     internal static class FastPathTokenizer
     {
-        // The default limit for the number of segments we tokenize.
-        //
-        // Historically the limit on the number of segments routing supports is 28.
-        // RoutePrecedence computes precedence based on a decimal, which supports 28
-        // or 29 digits.
-        //
-        // So setting this limit to 32 should work pretty well. We also expect the tokenizer
-        // to be used with stackalloc, so we want a small number.
-        public const int DefaultSegmentCount = 32;
-
         // This section tokenizes the path by marking the sequence of slashes, and their
         // and the length of the text between them.
         //
