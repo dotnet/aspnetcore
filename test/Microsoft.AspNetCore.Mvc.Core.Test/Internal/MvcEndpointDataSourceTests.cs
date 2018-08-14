@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             Assert.True(actionInvokerCalled);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/Routing/issues/722")]
         public void GetChangeToken_MultipleChangeTokenProviders_ComposedResult()
         {
             // Arrange
@@ -287,7 +287,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             actionDescriptorCollectionProviderMock.VerifyGet(m => m.ActionDescriptors, Times.Once);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/Routing/issues/722")]
         public void Endpoints_ChangeTokenTriggered_EndpointsRecreated()
         {
             // Arrange

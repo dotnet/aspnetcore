@@ -3,7 +3,6 @@
 
 using System.Globalization;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
@@ -26,9 +25,6 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                         var testSink = new TestSink();
                         var loggerFactory = new TestLoggerFactory(testSink, enabled: true);
                         services.AddSingleton<ILoggerFactory>(loggerFactory);
-
-                        services.Configure<MvcCompatibilityOptions>(
-                            options => options.CompatibilityVersion = CompatibilityVersion.Version_2_1);
                     });
         }
 

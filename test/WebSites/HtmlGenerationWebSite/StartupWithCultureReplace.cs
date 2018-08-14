@@ -5,7 +5,6 @@ using System.Globalization;
 using System.IO;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Localization;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace HtmlGenerationWebSite

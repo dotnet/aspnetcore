@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Routing;
@@ -10,9 +11,9 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
-    public class RoutingTests : RoutingTestsBase<RoutingWebSite.Startup>
+    public class RoutingTests : RoutingTestsBase<RoutingWebSite.StartupWith21Compat>
     {
-        public RoutingTests(MvcTestFixture<RoutingWebSite.Startup> fixture)
+        public RoutingTests(MvcTestFixture<RoutingWebSite.StartupWith21Compat> fixture)
             : base(fixture)
         {
         }
@@ -30,6 +31,62 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var result = JsonConvert.DeserializeObject<bool>(body);
 
             Assert.False(result);
+        }
+
+        // Legacy routing supports linking to actions that don't exist
+        [Fact]
+        public async Task AttributeRoutedAction_InArea_StaysInArea_ActionDoesntExist()
+        {
+            // Arrange
+            var url = LinkFrom("http://localhost/ContosoCorp/Trains")
+                .To(new { action = "Contact", controller = "Home", });
+
+            // Act
+            var response = await Client.GetAsync(url);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var body = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<RoutingResult>(body);
+
+            Assert.Equal("Rail", result.Controller);
+            Assert.Equal("Index", result.Action);
+
+            Assert.Equal("/Travel/Home/Contact", result.Link);
+        }
+
+        [Fact]
+        public async Task ConventionalRoutedAction_InArea_StaysInArea()
+        {
+            // Arrange
+            var url = LinkFrom("http://localhost/Travel/Flight").To(new { action = "Contact", controller = "Home", });
+
+            // Act
+            var response = await Client.GetAsync(url);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var body = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<RoutingResult>(body);
+
+            Assert.Equal("Flight", result.Controller);
+            Assert.Equal("Index", result.Action);
+
+            Assert.Equal("/Travel/Home/Contact", result.Link);
+        }
+
+        // Legacy routing returns 404 when an action does not support a HTTP method.
+        [Fact]
+        public override async Task AttributeRoutedAction_MultipleRouteAttributes_RouteAttributeTemplatesIgnoredForOverrideActions()
+        {
+            // Arrange
+            var url = "http://localhost/api/v1/Maps";
+
+            // Act
+            var response = await Client.SendAsync(new HttpRequestMessage(new HttpMethod("POST"), url));
+
+            // Assert
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
 
         [Fact]

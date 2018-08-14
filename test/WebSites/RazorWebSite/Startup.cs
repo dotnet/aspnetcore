@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Localization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.Extensions.DependencyInjection;
@@ -41,7 +42,8 @@ namespace RazorWebSite
                     options.HtmlHelperOptions.ValidationMessageElement = "validationMessageElement";
                     options.HtmlHelperOptions.ValidationSummaryMessageElement = "validationSummaryElement";
                 })
-                .AddMvcLocalization(LanguageViewLocationExpanderFormat.SubFolder);
+                .AddMvcLocalization(LanguageViewLocationExpanderFormat.SubFolder)
+                .SetCompatibilityVersion(CompatibilityVersion.Latest);
 
             services.AddTransient<InjectedHelper>();
             services.AddTransient<TaskReturningService>();

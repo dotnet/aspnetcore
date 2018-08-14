@@ -6,7 +6,6 @@ using System.Globalization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace RazorWebSite
@@ -25,8 +24,8 @@ namespace RazorWebSite
                 {
                     options.DataAnnotationLocalizerProvider =
                         (modelType, stringLocalizerFactory) => stringLocalizerFactory.Create(typeof(SingleType));
-                });
-            services.Configure<MvcCompatibilityOptions>(options => options.CompatibilityVersion = CompatibilityVersion.Latest);
+                })
+                .SetCompatibilityVersion(CompatibilityVersion.Latest);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

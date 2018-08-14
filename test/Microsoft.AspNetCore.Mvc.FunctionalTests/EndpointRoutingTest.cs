@@ -10,9 +10,9 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
-    public class EndpointRoutingTest : RoutingTestsBase<RoutingWebSite.StartupWithEndpointRouting>
+    public class EndpointRoutingTest : RoutingTestsBase<RoutingWebSite.Startup>
     {
-        public EndpointRoutingTest(MvcTestFixture<RoutingWebSite.StartupWithEndpointRouting> fixture)
+        public EndpointRoutingTest(MvcTestFixture<RoutingWebSite.Startup> fixture)
             : base(fixture)
         {
         }
@@ -30,26 +30,6 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var result = JsonConvert.DeserializeObject<bool>(body);
 
             Assert.True(result);
-        }
-
-        [Fact]
-        public override Task AttributeRoutedAction_InArea_StaysInArea_ActionDoesntExist()
-        {
-            // By design, this test cannot work in EndpointRouting world. This is because in case of old routing test
-            // when a link generation to an attribute routed controller with a non-existing action does not succeeed,
-            // the next route in the route collection is considered and since the next route in the route collection is
-            // a conventional area route, the old routing test succeeds. But this cannot happen in case of endpoint
-            // routing as the action does not exist to begin with.
-            return Task.CompletedTask;
-        }
-
-        [Fact]
-        public override Task ConventionalRoutedAction_InArea_StaysInArea()
-        {
-            // By design, this test cannot work in EndpointRouting world. In old routing test a link is being generated
-            // to a non-existing action on a controller which is in an area. In case of endpoint routing, we cannot
-            // generate links as the action does not exist to begin with.
-            return Task.CompletedTask;
         }
 
         [Fact]
@@ -97,21 +77,6 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(HttpStatusCode.MethodNotAllowed, response.StatusCode);
         }
 
-        // Endpoint routing exposes HTTP 405s for HTTP method mismatches
-        [Fact]
-        public override async Task AttributeRoutedAction_MultipleRouteAttributes_RouteAttributeTemplatesIgnoredForOverrideActions()
-        {
-            // Arrange
-            var url = "http://localhost/api/v1/Maps";
-
-            // Act
-            var response = await Client.SendAsync(new HttpRequestMessage(new HttpMethod("POST"), url));
-
-            // Assert
-            Assert.Equal(HttpStatusCode.MethodNotAllowed, response.StatusCode);
-        }
-
-        // Endpoint routing exposes HTTP 405s for HTTP method mismatches
         [Theory]
         [MemberData(nameof(AttributeRoutedAction_MultipleRouteAttributes_WithMultipleHttpAttributes_RespectsConstraintsData))]
         public override async Task AttributeRoutedAction_MultipleRouteAttributes_WithMultipleHttpAttributes_RespectsConstraints(
