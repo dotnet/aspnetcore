@@ -16,18 +16,20 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
     {
         public IISDeploymentParameters IISDeploymentParameters { get; }
 
-        protected List<Action<XElement, string>> DefaultWebConfigActions { get; } = new List<Action<XElement, string>>();
-
-        protected List<Action<XElement, string>> DefaultServerConfigActions { get; } = new List<Action<XElement, string>>();
-
         public IISDeployerBase(IISDeploymentParameters deploymentParameters, ILoggerFactory loggerFactory)
             : base(deploymentParameters, loggerFactory)
         {
             IISDeploymentParameters = deploymentParameters;
         }
 
-        public void RunWebConfigActions(string contentRoot)
+        protected void RunWebConfigActions(string contentRoot)
         {
+            var actions = GetWebConfigActions();
+            if (!actions.Any())
+            {
+                return;
+            }
+
             if (!DeploymentParameters.PublishApplicationBeforeDeployment)
             {
                 throw new InvalidOperationException("Cannot modify web.config file if no published output.");
@@ -36,36 +38,45 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
             var path = Path.Combine(DeploymentParameters.PublishedApplicationRootPath, "web.config");
             var webconfig = XDocument.Load(path);
 
-            foreach (var action in DefaultWebConfigActions)
+            foreach (var action in actions)
             {
                 action.Invoke(webconfig.Root, contentRoot);
-            }
-
-            if (IISDeploymentParameters != null)
-            {
-                foreach (var action in IISDeploymentParameters.WebConfigActionList)
-                {
-                    action.Invoke(webconfig.Root, contentRoot);
-                }
             }
 
             webconfig.Save(path);
         }
 
+        protected virtual IEnumerable<Action<XElement, string>> GetWebConfigActions()
+        {
+            if (IISDeploymentParameters.HandlerSettings.Any())
+            {
+                yield return AddHandlerSettings;
+            }
+
+            if (IISDeploymentParameters.WebConfigBasedEnvironmentVariables.Any())
+            {
+                yield return AddWebConfigEnvironmentVariables;
+            }
+
+            foreach (var action in IISDeploymentParameters.WebConfigActionList)
+            {
+                yield return action;
+            }
+        }
+
+        protected virtual IEnumerable<Action<XElement, string>> GetServerConfigActions()
+        {
+            foreach (var action in IISDeploymentParameters.ServerConfigActionList)
+            {
+                yield return action;
+            }
+        }
 
         public void RunServerConfigActions(XElement config, string contentRoot)
         {
-            foreach (var action in DefaultServerConfigActions)
+            foreach (var action in GetServerConfigActions())
             {
                 action.Invoke(config, contentRoot);
-            }
-
-            if (IISDeploymentParameters != null)
-            {
-                foreach (var action in IISDeploymentParameters.ServerConfigActionList)
-                {
-                    action.Invoke(config, contentRoot);
-                }
             }
         }
 
@@ -84,6 +95,34 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
             }
 
             return ancmFile;
+        }
+
+        private void AddWebConfigEnvironmentVariables(XElement element, string contentRoot)
+        {
+            var environmentVariables = element
+                .RequiredElement("system.webServer")
+                .RequiredElement("aspNetCore")
+                .GetOrAdd("environmentVariables");
+
+            foreach (var envVar in IISDeploymentParameters.WebConfigBasedEnvironmentVariables)
+            {
+                environmentVariables.GetOrAdd("environmentVariable", "name", envVar.Key)
+                    .SetAttributeValue("value", envVar.Value);
+            }
+        }
+
+        private void AddHandlerSettings(XElement element, string contentRoot)
+        {
+            var handlerSettings = element
+                .RequiredElement("system.webServer")
+                .RequiredElement("aspNetCore")
+                .GetOrAdd("handlerSettings");
+
+            foreach (var handlerSetting in IISDeploymentParameters.HandlerSettings)
+            {
+                handlerSettings.GetOrAdd("handlerSetting", "name", handlerSetting.Key)
+                    .SetAttributeValue("value", handlerSetting.Value);
+            }
         }
     }
 }
