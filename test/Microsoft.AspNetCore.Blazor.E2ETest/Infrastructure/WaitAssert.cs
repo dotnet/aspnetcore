@@ -23,6 +23,9 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Infrastructure
         public static void True(Func<bool> actual)
             => WaitAssertCore(() => Assert.True(actual()));
 
+        public static void True(Func<bool> actual, TimeSpan timeout)
+            => WaitAssertCore(() => Assert.True(actual()), timeout);
+
         public static void False(Func<bool> actual)
             => WaitAssertCore(() => Assert.False(actual()));
 

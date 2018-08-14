@@ -18,6 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\benchmarks\Microsoft.AspNetCore.Blazor.E2EPerformance\Microsoft.AspNetCore.Blazor.E2EPerformance.csproj" />
     <ProjectReference Include="..\..\samples\HostedInAspNet.Client\HostedInAspNet.Client.csproj" />
     <ProjectReference Include="..\..\samples\HostedInAspNet.Server\HostedInAspNet.Server.csproj" />
     <ProjectReference Include="..\..\samples\MonoSanityClient\MonoSanityClient.csproj" />

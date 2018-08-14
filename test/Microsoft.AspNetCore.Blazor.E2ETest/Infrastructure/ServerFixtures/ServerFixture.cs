@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -36,6 +36,7 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Infrastructure.ServerFixtures
             var solutionDir = FindSolutionDir();
             var possibleLocations = new[]
             {
+                Path.Combine(solutionDir, "benchmarks", projectName),
                 Path.Combine(solutionDir, "samples", projectName),
                 Path.Combine(solutionDir, "test", "testapps", projectName)
             };
