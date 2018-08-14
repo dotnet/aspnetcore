@@ -87,21 +87,8 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                     IISDeploymentParameters.HandlerSettings["debugFile"] = _debugLogFile;
                 }
 
-                if (DeploymentParameters.ApplicationType == ApplicationType.Portable)
-                {
-                    DefaultWebConfigActions.Add(
-                        WebConfigHelpers.AddOrModifyAspNetCoreSection(
-                            "processPath",
-                            DotNetCommands.GetDotNetExecutable(DeploymentParameters.RuntimeArchitecture)));
-                }
-
-
                 DotnetPublish();
                 var contentRoot = DeploymentParameters.PublishedApplicationRootPath;
-
-                DefaultWebConfigActions.Add(WebConfigHelpers.AddOrModifyHandlerSection(
-                    key: "modules",
-                    value: DeploymentParameters.AncmVersion.ToString()));
 
                 RunWebConfigActions(contentRoot);
 
@@ -118,6 +105,26 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                     hostShutdownToken: _hostShutdownToken.Token,
                     hostProcess: HostProcess
                 ));
+            }
+        }
+
+        protected override IEnumerable<Action<XElement, string>> GetWebConfigActions()
+        {
+            if (DeploymentParameters.ApplicationType == ApplicationType.Portable)
+            {
+                yield return WebConfigHelpers.AddOrModifyAspNetCoreSection(
+                    "processPath",
+                    DotNetCommands.GetDotNetExecutable(DeploymentParameters.RuntimeArchitecture));
+            }
+
+            yield return WebConfigHelpers.AddOrModifyHandlerSection(
+                key: "modules",
+                value: DeploymentParameters.AncmVersion.ToString());
+
+
+            foreach (var action in base.GetWebConfigActions())
+            {
+                yield return action;
             }
         }
 

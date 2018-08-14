@@ -11,13 +11,11 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
     {
         public IISDeploymentParameters() : base()
         {
-            WebConfigActionList = CreateDefaultWebConfigActionList();
         }
 
         public IISDeploymentParameters(TestVariant variant)
             : base(variant)
         {
-            WebConfigActionList = CreateDefaultWebConfigActionList();
         }
 
         public IISDeploymentParameters(
@@ -27,14 +25,11 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
            RuntimeArchitecture runtimeArchitecture)
             : base(applicationPath, serverType, runtimeFlavor, runtimeArchitecture)
         {
-            WebConfigActionList = CreateDefaultWebConfigActionList();
         }
 
         public IISDeploymentParameters(DeploymentParameters parameters)
             : base(parameters)
         {
-            WebConfigActionList = CreateDefaultWebConfigActionList();
-
             if (parameters is IISDeploymentParameters)
             {
                 var tempParameters = (IISDeploymentParameters)parameters;
@@ -46,12 +41,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
             }
         }
 
-        private IList<Action<XElement, string>> CreateDefaultWebConfigActionList()
-        {
-            return new List<Action<XElement, string>>() { AddWebConfigEnvironmentVariables(), AddHandlerSettings() };
-        }
-
-        public IList<Action<XElement, string>> WebConfigActionList { get; }
+        public IList<Action<XElement, string>> WebConfigActionList { get; } = new List<Action<XElement, string>>();
 
         public IList<Action<XElement, string>> ServerConfigActionList { get; } = new List<Action<XElement, string>>();
 
@@ -61,49 +51,5 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
 
         public bool GracefulShutdown { get; set; }
 
-        private Action<XElement, string> AddWebConfigEnvironmentVariables()
-        {
-            return (element, _) =>
-            {
-                if (WebConfigBasedEnvironmentVariables.Count == 0)
-                {
-                    return;
-                }
-
-                var environmentVariables = element
-                    .RequiredElement("system.webServer")
-                    .RequiredElement("aspNetCore")
-                    .GetOrAdd("environmentVariables");
-
-
-                foreach (var envVar in WebConfigBasedEnvironmentVariables)
-                {
-                    environmentVariables.GetOrAdd("environmentVariable", "name", envVar.Key)
-                        .SetAttributeValue("value", envVar.Value);
-                }
-            };
-        }
-
-        private Action<XElement, string> AddHandlerSettings()
-        {
-            return (element, _) =>
-            {
-                if (HandlerSettings.Count == 0)
-                {
-                    return;
-                }
-
-                var handlerSettings = element
-                    .RequiredElement("system.webServer")
-                    .RequiredElement("aspNetCore")
-                    .GetOrAdd("handlerSettings");
-
-                foreach (var handlerSetting in HandlerSettings)
-                {
-                    handlerSettings.GetOrAdd("handlerSetting", "name", handlerSetting.Key)
-                        .SetAttributeValue("value", handlerSetting.Value);
-                }
-            };
-        }
     }
 }

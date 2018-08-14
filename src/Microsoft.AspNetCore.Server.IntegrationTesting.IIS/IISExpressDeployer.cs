@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -281,17 +282,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
 
             if (DeploymentParameters.PublishApplicationBeforeDeployment)
             {
-                // For published apps, prefer the content in the web.config, but update it.
-                DefaultWebConfigActions.Add(WebConfigHelpers.AddOrModifyAspNetCoreSection(
-                    key: "hostingModel",
-                    value: DeploymentParameters.HostingModel == HostingModel.InProcess ? "inprocess" : ""));
-
-                DefaultWebConfigActions.Add(WebConfigHelpers.AddOrModifyHandlerSection(
-                    key: "modules",
-                    value: DeploymentParameters.AncmVersion.ToString()));
-                ModifyDotNetExePathInWebConfig();
                 serverConfig = RemoveRedundantElements(serverConfig);
-                RunWebConfigActions(contentRoot);
             }
             else
             {
@@ -299,6 +290,8 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                 serverConfig = ReplacePlaceholder(serverConfig, "[HostingModel]", DeploymentParameters.HostingModel.ToString());
                 serverConfig = ReplacePlaceholder(serverConfig, "[AspNetCoreModule]", DeploymentParameters.AncmVersion.ToString());
             }
+
+            RunWebConfigActions(contentRoot);
 
             var config = XDocument.Parse(serverConfig);
             RunServerConfigActions(config.Root, contentRoot);
@@ -318,6 +311,40 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                 Logger.LogDebug("Writing {field} '{value}' to config", field, value);
             }
             return content;
+        }
+
+        protected override IEnumerable<Action<XElement, string>> GetWebConfigActions()
+        {
+            if (IISDeploymentParameters.PublishApplicationBeforeDeployment)
+            {
+                // For published apps, prefer the content in the web.config, but update it.
+                yield return WebConfigHelpers.AddOrModifyAspNetCoreSection(
+                    key: "hostingModel",
+                    value: DeploymentParameters.HostingModel == HostingModel.InProcess ? "inprocess" : "");
+
+                yield return WebConfigHelpers.AddOrModifyHandlerSection(
+                    key: "modules",
+                    value: DeploymentParameters.AncmVersion.ToString());
+
+                // We assume the x64 dotnet.exe is on the path so we need to provide an absolute path for x86 scenarios.
+                // Only do it for scenarios that rely on dotnet.exe (Core, portable, etc.).
+                if (DeploymentParameters.RuntimeFlavor == RuntimeFlavor.CoreClr
+                    && DeploymentParameters.ApplicationType == ApplicationType.Portable
+                    && DotNetCommands.IsRunningX86OnX64(DeploymentParameters.RuntimeArchitecture))
+                {
+                    var executableName = DotNetCommands.GetDotNetExecutable(DeploymentParameters.RuntimeArchitecture);
+                    if (!File.Exists(executableName))
+                    {
+                        throw new Exception($"Unable to find '{executableName}'.'");
+                    }
+                    yield return WebConfigHelpers.AddOrModifyAspNetCoreSection("processPath", executableName);
+                }
+            }
+
+            foreach (var action in base.GetWebConfigActions())
+            {
+                yield return action;
+            }
         }
 
         private string ModifyANCMPathInConfig(string replaceFlag, AncmVersion version, string serverConfig)
@@ -448,24 +475,6 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
             else
             {
                 throw new InvalidOperationException($"iisexpress Process {hostProcess.Id} crashed before shutdown was triggered.");
-            }
-        }
-
-        private void ModifyDotNetExePathInWebConfig()
-        {
-            // We assume the x64 dotnet.exe is on the path so we need to provide an absolute path for x86 scenarios.
-            // Only do it for scenarios that rely on dotnet.exe (Core, portable, etc.).
-            if (DeploymentParameters.RuntimeFlavor == RuntimeFlavor.CoreClr
-                && DeploymentParameters.ApplicationType == ApplicationType.Portable
-                && DotNetCommands.IsRunningX86OnX64(DeploymentParameters.RuntimeArchitecture))
-            {
-                var executableName = DotNetCommands.GetDotNetExecutable(DeploymentParameters.RuntimeArchitecture);
-                if (!File.Exists(executableName))
-                {
-                    throw new Exception($"Unable to find '{executableName}'.'");
-                }
-                DefaultWebConfigActions.Add(
-                    WebConfigHelpers.AddOrModifyAspNetCoreSection("processPath", executableName));
             }
         }
 
