@@ -582,21 +582,18 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         protected bool IsHtmlCommentAhead()
         {
-            /*
-             * From HTML5 Specification, available at http://www.w3.org/TR/html52/syntax.html#comments
-             * 
-             * Comments must have the following format:
-             * 1. The string "<!--"
-             * 2. Optionally, text, with the additional restriction that the text
-             *      2.1 must not start with the string ">" nor start with the string "->"
-             *      2.2 nor contain the strings
-             *          2.2.1 "<!--"
-             *          2.2.2 "-->" // As we will be treating this as a comment ending, there is no need to handle this case at all.
-             *          2.2.3 "--!>"
-             *      2.3 nor end with the string "<!-".
-             * 3. The string "-->"
-             * 
-             * */
+            // From HTML5 Specification, available at http://www.w3.org/TR/html52/syntax.html#comments
+            
+            // Comments must have the following format:
+            // 1. The string "<!--"
+            // 2. Optionally, text, with the additional restriction that the text
+            //      2.1 must not start with the string ">" nor start with the string "->"
+            //      2.2 nor contain the strings
+            //          2.2.1 "<!--"
+            //          2.2.2 "-->" As we will be treating this as a comment ending, there is no need to handle this case at all.
+            //          2.2.3 "--!>"
+            //      2.3 nor end with the string "<!-".
+            // 3. The string "-->"
 
             if (CurrentToken.Type != HtmlTokenType.DoubleHyphen)
             {
