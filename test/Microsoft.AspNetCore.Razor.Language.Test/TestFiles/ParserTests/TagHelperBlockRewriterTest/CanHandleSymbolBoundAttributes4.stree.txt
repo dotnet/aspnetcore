@@ -5,7 +5,8 @@ Markup block - Gen<None> - 56 - (0:0,0)
         (^click) - SingleQuotes
             Code span - Gen<Expr> - [doSomething()] - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14 - (24:0,24) - Tokens:1
                 HtmlTokenType.Text;[doSomething()];
-        Markup span - Gen<Markup> - [Click Me] - SpanEditHandler;Accepts:Any - (39:0,39) - Tokens:3
-            HtmlTokenType.Text;[Click];
-            HtmlTokenType.WhiteSpace;[ ];
-            HtmlTokenType.Text;[Me];
+        SyntaxKind.HtmlText - [Click Me] - [39..47) - FullWidth: 8 - Slots: 1
+            SyntaxKind.List - [Click Me] - [39..47) - FullWidth: 8 - Slots: 3
+                SyntaxKind.HtmlTextLiteralToken;[Click];
+                SyntaxKind.Whitespace;[ ];
+                SyntaxKind.HtmlTextLiteralToken;[Me];

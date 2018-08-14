@@ -57,8 +57,8 @@ Markup block - Gen<None> - 95 - (0:0,0)
             CSharpTokenType.WhiteSpace;[    ];
             CSharpTokenType.RightBrace;[}];
             CSharpTokenType.NewLine;[LF];
-    Markup span - Gen<Markup> - [    ] - SpanEditHandler;Accepts:Any - (86:4,0) - Tokens:1
-        HtmlTokenType.WhiteSpace;[    ];
+    SyntaxKind.HtmlText - [    ] - [86..90) - FullWidth: 4 - Slots: 1
+        SyntaxKind.Whitespace;[    ];
     Tag block - Gen<None> - 5 - (90:4,4)
         Markup span - Gen<Markup> - [</ul>] - SpanEditHandler;Accepts:Any - (90:4,4) - Tokens:4
             HtmlTokenType.OpenAngle;[<];

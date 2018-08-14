@@ -23,10 +23,11 @@ Markup block - Gen<None> - 39 - (0:0,0)
                 HtmlTokenType.SingleQuote;['];
         Markup span - Gen<Markup> - [>] - SpanEditHandler;Accepts:Any - (22:0,22) - Tokens:1
             HtmlTokenType.CloseAngle;[>];
-    Markup span - Gen<Markup> - [ Foo ] - SpanEditHandler;Accepts:Any - (23:0,23) - Tokens:3
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Text;[Foo];
-        HtmlTokenType.WhiteSpace;[ ];
+    SyntaxKind.HtmlText - [ Foo ] - [23..28) - FullWidth: 5 - Slots: 1
+        SyntaxKind.List - [ Foo ] - [23..28) - FullWidth: 5 - Slots: 3
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.HtmlTextLiteralToken;[Foo];
+            SyntaxKind.Whitespace;[ ];
     Tag block - Gen<None> - 4 - (28:0,28)
         Markup span - Gen<Markup> - [</p>] - SpanEditHandler;Accepts:Any - (28:0,28) - Tokens:4
             HtmlTokenType.OpenAngle;[<];

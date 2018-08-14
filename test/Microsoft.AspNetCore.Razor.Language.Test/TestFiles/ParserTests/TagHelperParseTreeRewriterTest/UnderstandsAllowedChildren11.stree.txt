@@ -6,8 +6,8 @@ Markup block - Gen<None> - 69 - (0:0,0)
                 HtmlTokenType.OpenAngle;[<];
                 HtmlTokenType.Text;[custom];
                 HtmlTokenType.CloseAngle;[>];
-        Markup span - Gen<Markup> - [Title:] - SpanEditHandler;Accepts:Any - (11:0,11) - Tokens:1
-            HtmlTokenType.Text;[Title:];
+        SyntaxKind.HtmlText - [Title:] - [11..17) - FullWidth: 6 - Slots: 1
+            SyntaxKind.HtmlTextLiteralToken;[Title:];
         Tag block - Gen<TagHelper> - 4 - (17:0,17) - br - BRTagHelper
             StartTagOnly - <br>
         Tag block - Gen<None> - 4 - (21:0,21)
@@ -15,12 +15,13 @@ Markup block - Gen<None> - 69 - (0:0,0)
                 HtmlTokenType.OpenAngle;[<];
                 HtmlTokenType.Text;[em];
                 HtmlTokenType.CloseAngle;[>];
-        Markup span - Gen<Markup> - [A Very Cool] - SpanEditHandler;Accepts:Any - (25:0,25) - Tokens:5
-            HtmlTokenType.Text;[A];
-            HtmlTokenType.WhiteSpace;[ ];
-            HtmlTokenType.Text;[Very];
-            HtmlTokenType.WhiteSpace;[ ];
-            HtmlTokenType.Text;[Cool];
+        SyntaxKind.HtmlText - [A Very Cool] - [25..36) - FullWidth: 11 - Slots: 1
+            SyntaxKind.List - [A Very Cool] - [25..36) - FullWidth: 11 - Slots: 5
+                SyntaxKind.HtmlTextLiteralToken;[A];
+                SyntaxKind.Whitespace;[ ];
+                SyntaxKind.HtmlTextLiteralToken;[Very];
+                SyntaxKind.Whitespace;[ ];
+                SyntaxKind.HtmlTextLiteralToken;[Cool];
         Tag block - Gen<None> - 5 - (36:0,36)
             Markup span - Gen<Markup> - [</em>] - SpanEditHandler;Accepts:Any - (36:0,36) - Tokens:4
                 HtmlTokenType.OpenAngle;[<];
@@ -35,5 +36,5 @@ Markup block - Gen<None> - 69 - (0:0,0)
                 HtmlTokenType.CloseAngle;[>];
         Tag block - Gen<TagHelper> - 6 - (50:0,50) - br - BRTagHelper
             SelfClosing - <br />
-        Markup span - Gen<Markup> - [Something] - SpanEditHandler;Accepts:Any - (56:0,56) - Tokens:1
-            HtmlTokenType.Text;[Something];
+        SyntaxKind.HtmlText - [Something] - [56..65) - FullWidth: 9 - Slots: 1
+            SyntaxKind.HtmlTextLiteralToken;[Something];

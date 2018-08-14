@@ -11,8 +11,8 @@ Markup block - Gen<None> - 75 - (0:0,0)
             HtmlTokenType.ForwardSlash;[/];
             HtmlTokenType.Text;[strong];
             HtmlTokenType.CloseAngle;[>];
-    Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:Any - (39:0,39) - Tokens:1
-        HtmlTokenType.WhiteSpace;[ ];
+    SyntaxKind.HtmlText - [ ] - [39..40) - FullWidth: 1 - Slots: 1
+        SyntaxKind.Whitespace;[ ];
     Tag block - Gen<TagHelper> - 35 - (40:0,40) - script - scripttaghelper
         StartTagAndEndTag - <script> ... </script>
         Markup span - Gen<Markup> - [<span>World</span>] - SpanEditHandler;Accepts:Any - (48:0,48) - Tokens:8

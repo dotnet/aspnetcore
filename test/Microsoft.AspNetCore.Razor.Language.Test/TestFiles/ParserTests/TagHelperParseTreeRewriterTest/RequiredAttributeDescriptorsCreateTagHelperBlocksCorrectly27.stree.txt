@@ -9,9 +9,10 @@ Markup block - Gen<None> - 63 - (0:0,0)
         catchAll - DoubleQuotes
             Markup span - Gen<Markup> - [hi] - SpanEditHandler;Accepts:Any - (36:0,36) - Tokens:1
                 HtmlTokenType.Text;[hi];
-        Markup span - Gen<Markup> - [words and spaces] - SpanEditHandler;Accepts:Any - (41:0,41) - Tokens:5
-            HtmlTokenType.Text;[words];
-            HtmlTokenType.WhiteSpace;[ ];
-            HtmlTokenType.Text;[and];
-            HtmlTokenType.WhiteSpace;[ ];
-            HtmlTokenType.Text;[spaces];
+        SyntaxKind.HtmlText - [words and spaces] - [41..57) - FullWidth: 16 - Slots: 1
+            SyntaxKind.List - [words and spaces] - [41..57) - FullWidth: 16 - Slots: 5
+                SyntaxKind.HtmlTextLiteralToken;[words];
+                SyntaxKind.Whitespace;[ ];
+                SyntaxKind.HtmlTextLiteralToken;[and];
+                SyntaxKind.Whitespace;[ ];
+                SyntaxKind.HtmlTextLiteralToken;[spaces];

@@ -14,10 +14,10 @@ Markup block - Gen<None> - 96 - (0:0,0)
                             CSharpTokenType.Identifier;[DateTime];
                             CSharpTokenType.Dot;[.];
                             CSharpTokenType.Identifier;[Now];
-        Markup span - Gen<Markup> - [Hello] - SpanEditHandler;Accepts:Any - (35:0,35) - Tokens:1
-            HtmlTokenType.Text;[Hello];
-    Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:Any - (44:0,44) - Tokens:1
-        HtmlTokenType.WhiteSpace;[ ];
+        SyntaxKind.HtmlText - [Hello] - [35..40) - FullWidth: 5 - Slots: 1
+            SyntaxKind.HtmlTextLiteralToken;[Hello];
+    SyntaxKind.HtmlText - [ ] - [44..45) - FullWidth: 1 - Slots: 1
+        SyntaxKind.Whitespace;[ ];
     Tag block - Gen<TagHelper> - 51 - (45:0,45) - p - ptaghelper
         StartTagAndEndTag - <p style=color:red; dynamic=@DateTime.Now> ... </p>
         style - NoQuotes
@@ -33,5 +33,5 @@ Markup block - Gen<None> - 96 - (0:0,0)
                             CSharpTokenType.Identifier;[DateTime];
                             CSharpTokenType.Dot;[.];
                             CSharpTokenType.Identifier;[Now];
-        Markup span - Gen<Markup> - [World] - SpanEditHandler;Accepts:Any - (87:0,87) - Tokens:1
-            HtmlTokenType.Text;[World];
+        SyntaxKind.HtmlText - [World] - [87..92) - FullWidth: 5 - Slots: 1
+            SyntaxKind.HtmlTextLiteralToken;[World];

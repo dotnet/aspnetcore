@@ -856,7 +856,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Capture whitespace
             var whitespace = ReadWhile(token => token.Type == HtmlTokenType.WhiteSpace || token.Type == HtmlTokenType.NewLine);
 
-            if (At(HtmlTokenType.Transition))
+            if (At(HtmlTokenType.Transition) || At(HtmlTokenType.RazorCommentTransition))
             {
                 // Transition outside of attribute value => Switch to recovery mode
                 Accept(whitespace);
@@ -931,7 +931,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             // First, determine if this is a 'data-' attribute (since those can't use conditional attributes)
             var name = string.Concat(nameTokens.Select(s => s.Content));
-            var attributeCanBeConditional = 
+            var attributeCanBeConditional =
                 Context.FeatureFlags.EXPERIMENTAL_AllowConditionalDataDashAttributes ||
                 !name.StartsWith("data-", StringComparison.OrdinalIgnoreCase);
 
@@ -1590,6 +1590,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 {
                     Span.Start = CurrentLocation;
 
+                    ParserState = ParserState.Misc;
                     NextToken();
                     while (!EndOfFile)
                     {
@@ -1636,7 +1637,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     return;
                 }
 
-                Output(SpanKindInternal.Markup);
+                if (ParserState == ParserState.Content)
+                {
+                    Output(SpanKindInternal.Markup, SyntaxKind.HtmlText);
+                }
+                else
+                {
+                    Output(SpanKindInternal.Markup);
+                }
 
                 // Start tag block
                 var tagBlock = Context.Builder.StartBlock(BlockKindInternal.Tag);
@@ -1645,6 +1653,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
                 if (!At(HtmlTokenType.ForwardSlash))
                 {
+                    ParserState = ParserState.StartTag;
                     OptionalBangEscape();
 
                     // Parsing a start tag
@@ -1654,6 +1663,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     TagContent(); // Parse the tag, don't care about the content
                     Optional(HtmlTokenType.ForwardSlash);
                     Optional(HtmlTokenType.CloseAngle);
+
+                    ParserState = ParserState.Content;
 
                     // If the script tag expects javascript content then we should do minimal parsing until we reach
                     // the end script tag. Don't want to incorrectly parse a "var tag = '<input />';" as an HTML tag.
@@ -1670,6 +1681,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 {
                     // Parsing an end tag
                     // This section can accept things like: '</p  >' or '</p>' etc.
+                    ParserState = ParserState.EndTag;
                     Optional(HtmlTokenType.ForwardSlash);
 
                     // Whitespace here is invalid (according to the spec)
@@ -1677,6 +1689,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Optional(HtmlTokenType.Text);
                     Optional(HtmlTokenType.WhiteSpace);
                     Optional(HtmlTokenType.CloseAngle);
+                    ParserState = ParserState.Content;
                 }
 
                 Output(SpanKindInternal.Markup);

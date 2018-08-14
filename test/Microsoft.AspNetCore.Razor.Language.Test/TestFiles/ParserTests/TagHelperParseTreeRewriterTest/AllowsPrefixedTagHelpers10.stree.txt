@@ -4,9 +4,10 @@ Markup block - Gen<None> - 47 - (0:0,0)
         class - DoubleQuotes
             Markup span - Gen<Markup> - [btn] - SpanEditHandler;Accepts:Any - (16:0,16) - Tokens:1
                 HtmlTokenType.Text;[btn];
-        Markup span - Gen<Markup> - [words and spaces] - SpanEditHandler;Accepts:Any - (21:0,21) - Tokens:5
-            HtmlTokenType.Text;[words];
-            HtmlTokenType.WhiteSpace;[ ];
-            HtmlTokenType.Text;[and];
-            HtmlTokenType.WhiteSpace;[ ];
-            HtmlTokenType.Text;[spaces];
+        SyntaxKind.HtmlText - [words and spaces] - [21..37) - FullWidth: 16 - Slots: 1
+            SyntaxKind.List - [words and spaces] - [21..37) - FullWidth: 16 - Slots: 5
+                SyntaxKind.HtmlTextLiteralToken;[words];
+                SyntaxKind.Whitespace;[ ];
+                SyntaxKind.HtmlTextLiteralToken;[and];
+                SyntaxKind.Whitespace;[ ];
+                SyntaxKind.HtmlTextLiteralToken;[spaces];

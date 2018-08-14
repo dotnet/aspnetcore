@@ -27,6 +27,7 @@ Markup block - Gen<None> - 42 - (0:0,0)
                 CSharpTokenType.Identifier;[DateTime];
                 CSharpTokenType.Dot;[.];
                 CSharpTokenType.Identifier;[Now];
-        Markup span - Gen<Markup> - [ >] - SpanEditHandler;Accepts:Any - (36:0,36) - Tokens:2
-            HtmlTokenType.WhiteSpace;[ ];
-            HtmlTokenType.CloseAngle;[>];
+        SyntaxKind.HtmlText - [ >] - [36..38) - FullWidth: 2 - Slots: 1
+            SyntaxKind.List - [ >] - [36..38) - FullWidth: 2 - Slots: 2
+                SyntaxKind.Whitespace;[ ];
+                SyntaxKind.CloseAngle;[>];

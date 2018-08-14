@@ -1,7 +1,8 @@
 Markup block - Gen<None> - 24 - (0:0,0)
     Tag block - Gen<TagHelper> - 24 - (0:0,0) - text - texttaghelper
         StartTagAndEndTag - <text> ... </text>
-        Markup span - Gen<Markup> - [Hello World] - SpanEditHandler;Accepts:Any - (6:0,6) - Tokens:3
-            HtmlTokenType.Text;[Hello];
-            HtmlTokenType.WhiteSpace;[ ];
-            HtmlTokenType.Text;[World];
+        SyntaxKind.HtmlText - [Hello World] - [6..17) - FullWidth: 11 - Slots: 1
+            SyntaxKind.List - [Hello World] - [6..17) - FullWidth: 11 - Slots: 3
+                SyntaxKind.HtmlTextLiteralToken;[Hello];
+                SyntaxKind.Whitespace;[ ];
+                SyntaxKind.HtmlTextLiteralToken;[World];

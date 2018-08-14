@@ -6,9 +6,10 @@ Markup block - Gen<None> - 16 - (0:0,0)
             HtmlTokenType.CloseAngle;[>];
     Markup span - Gen<None> - [@] - SpanEditHandler;Accepts:Any - (5:0,5) - Tokens:1
         HtmlTokenType.Transition;[@];
-    Markup span - Gen<Markup> - [@bar] - SpanEditHandler;Accepts:Any - (6:0,6) - Tokens:2
-        HtmlTokenType.Transition;[@];
-        HtmlTokenType.Text;[bar];
+    SyntaxKind.HtmlText - [@bar] - [6..10) - FullWidth: 4 - Slots: 1
+        SyntaxKind.List - [@bar] - [6..10) - FullWidth: 4 - Slots: 2
+            SyntaxKind.Transition;[@];
+            SyntaxKind.HtmlTextLiteralToken;[bar];
     Tag block - Gen<None> - 6 - (10:0,10)
         Markup span - Gen<Markup> - [</foo>] - SpanEditHandler;Accepts:Any - (10:0,10) - Tokens:4
             HtmlTokenType.OpenAngle;[<];

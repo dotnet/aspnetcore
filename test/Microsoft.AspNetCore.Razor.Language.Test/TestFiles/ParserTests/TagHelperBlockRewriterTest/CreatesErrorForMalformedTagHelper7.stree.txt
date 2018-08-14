@@ -7,9 +7,10 @@ Markup block - Gen<None> - 16 - (0:0,0)
             HtmlTokenType.OpenAngle;[<];
     Tag block - Gen<TagHelper> - 14 - (2:0,2) - strong - strongtaghelper
         StartTagAndEndTag - <strong>
-        Markup span - Gen<Markup> - [> ] - SpanEditHandler;Accepts:Any - (10:0,10) - Tokens:2
-            HtmlTokenType.CloseAngle;[>];
-            HtmlTokenType.WhiteSpace;[ ];
+        SyntaxKind.HtmlText - [> ] - [10..12) - FullWidth: 2 - Slots: 1
+            SyntaxKind.List - [> ] - [10..12) - FullWidth: 2 - Slots: 2
+                SyntaxKind.CloseAngle;[>];
+                SyntaxKind.Whitespace;[ ];
         Tag block - Gen<None> - 1 - (12:0,12)
             Markup span - Gen<Markup> - [<] - SpanEditHandler;Accepts:Any - (12:0,12) - Tokens:1
                 HtmlTokenType.OpenAngle;[<];

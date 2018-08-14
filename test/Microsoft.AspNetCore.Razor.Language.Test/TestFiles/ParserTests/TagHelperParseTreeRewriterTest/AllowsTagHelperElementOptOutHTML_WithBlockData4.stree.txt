@@ -7,12 +7,13 @@ Markup block - Gen<None> - 25 - (0:0,0)
         Markup span - Gen<Markup> - [p>] - SpanEditHandler;Accepts:Any - (2:0,2) - Tokens:2
             HtmlTokenType.Text;[p];
             HtmlTokenType.CloseAngle;[>];
-    Markup span - Gen<Markup> - [words and spaces] - SpanEditHandler;Accepts:Any - (4:0,4) - Tokens:5
-        HtmlTokenType.Text;[words];
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Text;[and];
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Text;[spaces];
+    SyntaxKind.HtmlText - [words and spaces] - [4..20) - FullWidth: 16 - Slots: 1
+        SyntaxKind.List - [words and spaces] - [4..20) - FullWidth: 16 - Slots: 5
+            SyntaxKind.HtmlTextLiteralToken;[words];
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.HtmlTextLiteralToken;[and];
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.HtmlTextLiteralToken;[spaces];
     Tag block - Gen<None> - 5 - (20:0,20)
         Markup span - Gen<Markup> - [</] - SpanEditHandler;Accepts:Any - (20:0,20) - Tokens:2
             HtmlTokenType.OpenAngle;[<];

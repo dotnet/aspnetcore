@@ -8,16 +8,16 @@ Markup block - Gen<None> - 76 - (0:0,0)
                 HtmlTokenType.CloseAngle;[>];
         Tag block - Gen<TagHelper> - 4 - (11:0,11) - br - BRTagHelper
             StartTagOnly - <br>
-        Markup span - Gen<Markup> - [:] - SpanEditHandler;Accepts:Any - (15:0,15) - Tokens:1
-            HtmlTokenType.Text;[:];
+        SyntaxKind.HtmlText - [:] - [15..16) - FullWidth: 1 - Slots: 1
+            SyntaxKind.HtmlTextLiteralToken;[:];
         Tag block - Gen<TagHelper> - 39 - (16:0,16) - strong - StrongTagHelper
             StartTagAndEndTag - <strong> ... </strong>
             Tag block - Gen<TagHelper> - 22 - (24:0,24) - strong - StrongTagHelper
                 StartTagAndEndTag - <strong> ... </strong>
-                Markup span - Gen<Markup> - [Hello] - SpanEditHandler;Accepts:Any - (32:0,32) - Tokens:1
-                    HtmlTokenType.Text;[Hello];
-        Markup span - Gen<Markup> - [:] - SpanEditHandler;Accepts:Any - (55:0,55) - Tokens:1
-            HtmlTokenType.Text;[:];
+                SyntaxKind.HtmlText - [Hello] - [32..37) - FullWidth: 5 - Slots: 1
+                    SyntaxKind.HtmlTextLiteralToken;[Hello];
+        SyntaxKind.HtmlText - [:] - [55..56) - FullWidth: 1 - Slots: 1
+            SyntaxKind.HtmlTextLiteralToken;[:];
         Tag block - Gen<None> - 7 - (56:0,56)
             Markup span - Gen<Markup> - [<input>] - SpanEditHandler;Accepts:Any - (56:0,56) - Tokens:3
                 HtmlTokenType.OpenAngle;[<];

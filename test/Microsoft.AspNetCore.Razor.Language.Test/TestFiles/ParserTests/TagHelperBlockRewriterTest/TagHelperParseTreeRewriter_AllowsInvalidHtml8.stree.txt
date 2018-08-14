@@ -15,9 +15,10 @@ Markup block - Gen<None> - 34 - (0:0,0)
                 CSharpTokenType.Identifier;[DateTime];
                 CSharpTokenType.Dot;[.];
                 CSharpTokenType.Identifier;[Now];
-        Markup span - Gen<Markup> - [/>] - SpanEditHandler;Accepts:Any - (19:0,19) - Tokens:2
-            HtmlTokenType.ForwardSlash;[/];
-            HtmlTokenType.CloseAngle;[>];
+        SyntaxKind.HtmlText - [/>] - [19..21) - FullWidth: 2 - Slots: 1
+            SyntaxKind.List - [/>] - [19..21) - FullWidth: 2 - Slots: 2
+                SyntaxKind.ForwardSlash;[/];
+                SyntaxKind.CloseAngle;[>];
         Tag block - Gen<None> - 8 - (21:0,21)
             Markup span - Gen<Markup> - [<strong>] - SpanEditHandler;Accepts:Any - (21:0,21) - Tokens:3
                 HtmlTokenType.OpenAngle;[<];

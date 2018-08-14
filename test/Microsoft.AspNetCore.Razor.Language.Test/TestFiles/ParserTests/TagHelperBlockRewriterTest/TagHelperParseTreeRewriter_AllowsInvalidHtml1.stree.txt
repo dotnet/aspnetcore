@@ -7,6 +7,7 @@ Markup block - Gen<None> - 11 - (0:0,0)
             HtmlTokenType.OpenAngle;[<];
     Tag block - Gen<TagHelper> - 9 - (2:0,2) - p - ptaghelper
         StartTagAndEndTag - <p> ... </p>
-        Markup span - Gen<Markup> - [>>] - SpanEditHandler;Accepts:Any - (5:0,5) - Tokens:2
-            HtmlTokenType.CloseAngle;[>];
-            HtmlTokenType.CloseAngle;[>];
+        SyntaxKind.HtmlText - [>>] - [5..7) - FullWidth: 2 - Slots: 1
+            SyntaxKind.List - [>>] - [5..7) - FullWidth: 2 - Slots: 2
+                SyntaxKind.CloseAngle;[>];
+                SyntaxKind.CloseAngle;[>];

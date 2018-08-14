@@ -11,8 +11,8 @@ Markup block - Gen<None> - 16 - (0:0,0)
             HtmlTokenType.ForwardSlash;[/];
             HtmlTokenType.Text;[strong];
             HtmlTokenType.CloseAngle;[>];
-    Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:Any - (11:0,11) - Tokens:1
-        HtmlTokenType.WhiteSpace;[ ];
+    SyntaxKind.HtmlText - [ ] - [11..12) - FullWidth: 1 - Slots: 1
+        SyntaxKind.Whitespace;[ ];
     Tag block - Gen<None> - 1 - (12:0,12)
         Markup span - Gen<Markup> - [<] - SpanEditHandler;Accepts:Any - (12:0,12) - Tokens:1
             HtmlTokenType.OpenAngle;[<];

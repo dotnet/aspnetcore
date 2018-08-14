@@ -96,11 +96,12 @@ Markup block - Gen<None> - 167 - (0:0,0)
                 CSharpTokenType.GreaterThan;[>];
                 CSharpTokenType.RightParenthesis;[)];
                 CSharpTokenType.Semicolon;[;];
-        Markup span - Gen<Markup> - [ strong tag] - SpanEditHandler;Accepts:Any - (143:0,143) - Tokens:4
-            HtmlTokenType.WhiteSpace;[ ];
-            HtmlTokenType.Text;[strong];
-            HtmlTokenType.WhiteSpace;[ ];
-            HtmlTokenType.Text;[tag];
+        SyntaxKind.HtmlText - [ strong tag] - [143..154) - FullWidth: 11 - Slots: 1
+            SyntaxKind.List - [ strong tag] - [143..154) - FullWidth: 11 - Slots: 4
+                SyntaxKind.Whitespace;[ ];
+                SyntaxKind.HtmlTextLiteralToken;[strong];
+                SyntaxKind.Whitespace;[ ];
+                SyntaxKind.HtmlTextLiteralToken;[tag];
         Tag block - Gen<None> - 9 - (154:0,154)
             Markup span - Gen<Markup> - [</strong>] - SpanEditHandler;Accepts:Any - (154:0,154) - Tokens:4
                 HtmlTokenType.OpenAngle;[<];

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
@@ -25,6 +26,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             Span = new SpanBuilder(CurrentLocation);
         }
 
+        protected ParserState ParserState { get; set; }
+
         protected SpanBuilder Span { get; private set; }
 
         protected Action<SpanBuilder> SpanConfig { get; set; }
@@ -33,6 +36,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             get { return _tokenizer.Current; }
         }
+
+        protected SyntaxToken CurrentSyntaxToken => CurrentToken?.SyntaxToken;
 
         protected TToken PreviousToken { get; private set; }
 
@@ -388,31 +393,31 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
         }
 
-        protected internal void Output(SpanKindInternal kind)
+        protected internal void Output(SpanKindInternal kind, SyntaxKind syntaxKind = SyntaxKind.Unknown)
         {
             Configure(kind, null);
-            Output();
+            Output(syntaxKind);
         }
 
-        protected internal void Output(SpanKindInternal kind, AcceptedCharactersInternal accepts)
+        protected internal void Output(SpanKindInternal kind, AcceptedCharactersInternal accepts, SyntaxKind syntaxKind = SyntaxKind.Unknown)
         {
             Configure(kind, accepts);
-            Output();
+            Output(syntaxKind);
         }
 
-        protected internal void Output(AcceptedCharactersInternal accepts)
+        protected internal void Output(AcceptedCharactersInternal accepts, SyntaxKind syntaxKind = SyntaxKind.Unknown)
         {
             Configure(null, accepts);
-            Output();
+            Output(syntaxKind);
         }
 
-        private void Output()
+        private void Output(SyntaxKind syntaxKind)
         {
             if (Span.Tokens.Count > 0)
             {
                 var nextStart = Span.End;
 
-                var builtSpan = Span.Build();
+                var builtSpan = Span.Build(syntaxKind);
                 Context.Builder.Add(builtSpan);
                 Initialize(Span);
 

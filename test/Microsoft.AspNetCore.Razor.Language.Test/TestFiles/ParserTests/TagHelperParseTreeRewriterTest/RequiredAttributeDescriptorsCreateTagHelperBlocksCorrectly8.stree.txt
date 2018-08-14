@@ -11,9 +11,10 @@ Markup block - Gen<None> - 45 - (0:0,0)
                             CSharpTokenType.Identifier;[DateTime];
                             CSharpTokenType.Dot;[.];
                             CSharpTokenType.Identifier;[Now];
-        Markup span - Gen<Markup> - [words and spaces] - SpanEditHandler;Accepts:Any - (25:0,25) - Tokens:5
-            HtmlTokenType.Text;[words];
-            HtmlTokenType.WhiteSpace;[ ];
-            HtmlTokenType.Text;[and];
-            HtmlTokenType.WhiteSpace;[ ];
-            HtmlTokenType.Text;[spaces];
+        SyntaxKind.HtmlText - [words and spaces] - [25..41) - FullWidth: 16 - Slots: 1
+            SyntaxKind.List - [words and spaces] - [25..41) - FullWidth: 16 - Slots: 5
+                SyntaxKind.HtmlTextLiteralToken;[words];
+                SyntaxKind.Whitespace;[ ];
+                SyntaxKind.HtmlTextLiteralToken;[and];
+                SyntaxKind.Whitespace;[ ];
+                SyntaxKind.HtmlTextLiteralToken;[spaces];

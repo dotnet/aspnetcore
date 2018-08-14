@@ -19,8 +19,8 @@ Directive block - Gen<Directive:{section;RazorBlock;Unrestricted} [RZ1006(16:0,1
                 HtmlTokenType.OpenAngle;[<];
                 HtmlTokenType.Text;[p];
                 HtmlTokenType.CloseAngle;[>];
-        Markup span - Gen<Markup> - [Foo] - SpanEditHandler;Accepts:Any - (22:1,3) - Tokens:1
-            HtmlTokenType.Text;[Foo];
+        SyntaxKind.HtmlText - [Foo] - [22..25) - FullWidth: 3 - Slots: 1
+            SyntaxKind.HtmlTextLiteralToken;[Foo];
         Tag block - Gen<None> - 4 - (25:1,6)
             Markup span - Gen<Markup> - [</p>] - SpanEditHandler;Accepts:Any - (25:1,6) - Tokens:4
                 HtmlTokenType.OpenAngle;[<];

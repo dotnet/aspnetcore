@@ -20,8 +20,8 @@ Markup block - Gen<None> - 31 - (0:0,0)
             HtmlTokenType.OpenAngle;[<];
             HtmlTokenType.Text;[p];
             HtmlTokenType.CloseAngle;[>];
-    Markup span - Gen<Markup> - [Foo] - SpanEditHandler;Accepts:Any - (22:0,22) - Tokens:1
-        HtmlTokenType.Text;[Foo];
+    SyntaxKind.HtmlText - [Foo] - [22..25) - FullWidth: 3 - Slots: 1
+        SyntaxKind.HtmlTextLiteralToken;[Foo];
     Tag block - Gen<None> - 4 - (25:0,25)
         Markup span - Gen<Markup> - [</p>] - SpanEditHandler;Accepts:Any - (25:0,25) - Tokens:4
             HtmlTokenType.OpenAngle;[<];

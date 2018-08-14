@@ -103,7 +103,8 @@ Markup block - Gen<None> - 164 - (0:0,0)
                             CSharpTokenType.GreaterThan;[>];
                             CSharpTokenType.RightParenthesis;[)];
                             CSharpTokenType.Semicolon;[;];
-        Markup span - Gen<Markup> - [Hello World] - SpanEditHandler;Accepts:Any - (149:0,149) - Tokens:3
-            HtmlTokenType.Text;[Hello];
-            HtmlTokenType.WhiteSpace;[ ];
-            HtmlTokenType.Text;[World];
+        SyntaxKind.HtmlText - [Hello World] - [149..160) - FullWidth: 11 - Slots: 1
+            SyntaxKind.List - [Hello World] - [149..160) - FullWidth: 11 - Slots: 3
+                SyntaxKind.HtmlTextLiteralToken;[Hello];
+                SyntaxKind.Whitespace;[ ];
+                SyntaxKind.HtmlTextLiteralToken;[World];

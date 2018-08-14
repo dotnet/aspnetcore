@@ -28,11 +28,12 @@ Markup block - Gen<None> - 77 - (0:0,0)
                 CSharpTokenType.Identifier;[DateTime];
                 CSharpTokenType.Dot;[.];
                 CSharpTokenType.Identifier;[Now];
-        Markup span - Gen<Markup> - [ strong tag] - SpanEditHandler;Accepts:Any - (53:0,53) - Tokens:4
-            HtmlTokenType.WhiteSpace;[ ];
-            HtmlTokenType.Text;[strong];
-            HtmlTokenType.WhiteSpace;[ ];
-            HtmlTokenType.Text;[tag];
+        SyntaxKind.HtmlText - [ strong tag] - [53..64) - FullWidth: 11 - Slots: 1
+            SyntaxKind.List - [ strong tag] - [53..64) - FullWidth: 11 - Slots: 4
+                SyntaxKind.Whitespace;[ ];
+                SyntaxKind.HtmlTextLiteralToken;[strong];
+                SyntaxKind.Whitespace;[ ];
+                SyntaxKind.HtmlTextLiteralToken;[tag];
         Tag block - Gen<None> - 9 - (64:0,64)
             Markup span - Gen<Markup> - [</strong>] - SpanEditHandler;Accepts:Any - (64:0,64) - Tokens:4
                 HtmlTokenType.OpenAngle;[<];

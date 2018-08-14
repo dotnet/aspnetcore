@@ -12,20 +12,21 @@ Markup block - Gen<None> - 564 - (0:0,0)
             HtmlTokenType.OpenAngle;[<];
             HtmlTokenType.Text;[other];
             HtmlTokenType.CloseAngle;[>];
-    Markup span - Gen<Markup> - [ var x = true;LF}LF{LF] - SpanEditHandler;Accepts:Any - (16:1,13) - Tokens:13
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Text;[var];
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Text;[x];
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Equals;[=];
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Text;[true;];
-        HtmlTokenType.NewLine;[LF];
-        HtmlTokenType.Text;[}];
-        HtmlTokenType.NewLine;[LF];
-        HtmlTokenType.Text;[{];
-        HtmlTokenType.NewLine;[LF];
+    SyntaxKind.HtmlText - [ var x = true;LF}LF{LF] - [16..38) - FullWidth: 22 - Slots: 1
+        SyntaxKind.List - [ var x = true;LF}LF{LF] - [16..38) - FullWidth: 22 - Slots: 13
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.HtmlTextLiteralToken;[var];
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.HtmlTextLiteralToken;[x];
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.Equals;[=];
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.HtmlTextLiteralToken;[true;];
+            SyntaxKind.NewLine;[LF];
+            SyntaxKind.HtmlTextLiteralToken;[}];
+            SyntaxKind.NewLine;[LF];
+            SyntaxKind.HtmlTextLiteralToken;[{];
+            SyntaxKind.NewLine;[LF];
     Tag block - Gen<None> - 6 - (38:4,0)
         Markup span - Gen<Markup> - [<base>] - SpanEditHandler;Accepts:Any - (38:4,0) - Tokens:3
             HtmlTokenType.OpenAngle;[<];
@@ -36,20 +37,21 @@ Markup block - Gen<None> - 564 - (0:0,0)
             HtmlTokenType.OpenAngle;[<];
             HtmlTokenType.Text;[other];
             HtmlTokenType.CloseAngle;[>];
-    Markup span - Gen<Markup> - [ var x = true;LF}LF{LF] - SpanEditHandler;Accepts:Any - (51:4,13) - Tokens:13
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Text;[var];
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Text;[x];
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Equals;[=];
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Text;[true;];
-        HtmlTokenType.NewLine;[LF];
-        HtmlTokenType.Text;[}];
-        HtmlTokenType.NewLine;[LF];
-        HtmlTokenType.Text;[{];
-        HtmlTokenType.NewLine;[LF];
+    SyntaxKind.HtmlText - [ var x = true;LF}LF{LF] - [51..73) - FullWidth: 22 - Slots: 1
+        SyntaxKind.List - [ var x = true;LF}LF{LF] - [51..73) - FullWidth: 22 - Slots: 13
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.HtmlTextLiteralToken;[var];
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.HtmlTextLiteralToken;[x];
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.Equals;[=];
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.HtmlTextLiteralToken;[true;];
+            SyntaxKind.NewLine;[LF];
+            SyntaxKind.HtmlTextLiteralToken;[}];
+            SyntaxKind.NewLine;[LF];
+            SyntaxKind.HtmlTextLiteralToken;[{];
+            SyntaxKind.NewLine;[LF];
     Tag block - Gen<None> - 4 - (73:7,0)
         Markup span - Gen<Markup> - [<br>] - SpanEditHandler;Accepts:Any - (73:7,0) - Tokens:3
             HtmlTokenType.OpenAngle;[<];
@@ -60,20 +62,21 @@ Markup block - Gen<None> - 564 - (0:0,0)
             HtmlTokenType.OpenAngle;[<];
             HtmlTokenType.Text;[other];
             HtmlTokenType.CloseAngle;[>];
-    Markup span - Gen<Markup> - [ var x = true;LF}LF{LF] - SpanEditHandler;Accepts:Any - (84:7,11) - Tokens:13
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Text;[var];
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Text;[x];
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Equals;[=];
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Text;[true;];
-        HtmlTokenType.NewLine;[LF];
-        HtmlTokenType.Text;[}];
-        HtmlTokenType.NewLine;[LF];
-        HtmlTokenType.Text;[{];
-        HtmlTokenType.NewLine;[LF];
+    SyntaxKind.HtmlText - [ var x = true;LF}LF{LF] - [84..106) - FullWidth: 22 - Slots: 1
+        SyntaxKind.List - [ var x = true;LF}LF{LF] - [84..106) - FullWidth: 22 - Slots: 13
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.HtmlTextLiteralToken;[var];
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.HtmlTextLiteralToken;[x];
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.Equals;[=];
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.HtmlTextLiteralToken;[true;];
+            SyntaxKind.NewLine;[LF];
+            SyntaxKind.HtmlTextLiteralToken;[}];
+            SyntaxKind.NewLine;[LF];
+            SyntaxKind.HtmlTextLiteralToken;[{];
+            SyntaxKind.NewLine;[LF];
     Tag block - Gen<None> - 5 - (106:10,0)
         Markup span - Gen<Markup> - [<col>] - SpanEditHandler;Accepts:Any - (106:10,0) - Tokens:3
             HtmlTokenType.OpenAngle;[<];
@@ -84,20 +87,21 @@ Markup block - Gen<None> - 564 - (0:0,0)
             HtmlTokenType.OpenAngle;[<];
             HtmlTokenType.Text;[other];
             HtmlTokenType.CloseAngle;[>];
-    Markup span - Gen<Markup> - [ var x = true;LF}LF{LF] - SpanEditHandler;Accepts:Any - (118:10,12) - Tokens:13
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Text;[var];
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Text;[x];
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Equals;[=];
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Text;[true;];
-        HtmlTokenType.NewLine;[LF];
-        HtmlTokenType.Text;[}];
-        HtmlTokenType.NewLine;[LF];
-        HtmlTokenType.Text;[{];
-        HtmlTokenType.NewLine;[LF];
+    SyntaxKind.HtmlText - [ var x = true;LF}LF{LF] - [118..140) - FullWidth: 22 - Slots: 1
+        SyntaxKind.List - [ var x = true;LF}LF{LF] - [118..140) - FullWidth: 22 - Slots: 13
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.HtmlTextLiteralToken;[var];
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.HtmlTextLiteralToken;[x];
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.Equals;[=];
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.HtmlTextLiteralToken;[true;];
+            SyntaxKind.NewLine;[LF];
+            SyntaxKind.HtmlTextLiteralToken;[}];
+            SyntaxKind.NewLine;[LF];
+            SyntaxKind.HtmlTextLiteralToken;[{];
+            SyntaxKind.NewLine;[LF];
     Tag block - Gen<None> - 9 - (140:13,0)
         Markup span - Gen<Markup> - [<command>] - SpanEditHandler;Accepts:Any - (140:13,0) - Tokens:3
             HtmlTokenType.OpenAngle;[<];
@@ -108,20 +112,21 @@ Markup block - Gen<None> - 564 - (0:0,0)
             HtmlTokenType.OpenAngle;[<];
             HtmlTokenType.Text;[other];
             HtmlTokenType.CloseAngle;[>];
-    Markup span - Gen<Markup> - [ var x = true;LF}LF{LF] - SpanEditHandler;Accepts:Any - (156:13,16) - Tokens:13
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Text;[var];
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Text;[x];
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Equals;[=];
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Text;[true;];
-        HtmlTokenType.NewLine;[LF];
-        HtmlTokenType.Text;[}];
-        HtmlTokenType.NewLine;[LF];
-        HtmlTokenType.Text;[{];
-        HtmlTokenType.NewLine;[LF];
+    SyntaxKind.HtmlText - [ var x = true;LF}LF{LF] - [156..178) - FullWidth: 22 - Slots: 1
+        SyntaxKind.List - [ var x = true;LF}LF{LF] - [156..178) - FullWidth: 22 - Slots: 13
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.HtmlTextLiteralToken;[var];
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.HtmlTextLiteralToken;[x];
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.Equals;[=];
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.HtmlTextLiteralToken;[true;];
+            SyntaxKind.NewLine;[LF];
+            SyntaxKind.HtmlTextLiteralToken;[}];
+            SyntaxKind.NewLine;[LF];
+            SyntaxKind.HtmlTextLiteralToken;[{];
+            SyntaxKind.NewLine;[LF];
     Tag block - Gen<None> - 7 - (178:16,0)
         Markup span - Gen<Markup> - [<embed>] - SpanEditHandler;Accepts:Any - (178:16,0) - Tokens:3
             HtmlTokenType.OpenAngle;[<];
@@ -132,20 +137,21 @@ Markup block - Gen<None> - 564 - (0:0,0)
             HtmlTokenType.OpenAngle;[<];
             HtmlTokenType.Text;[other];
             HtmlTokenType.CloseAngle;[>];
-    Markup span - Gen<Markup> - [ var x = true;LF}LF{LF] - SpanEditHandler;Accepts:Any - (192:16,14) - Tokens:13
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Text;[var];
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Text;[x];
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Equals;[=];
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Text;[true;];
-        HtmlTokenType.NewLine;[LF];
-        HtmlTokenType.Text;[}];
-        HtmlTokenType.NewLine;[LF];
-        HtmlTokenType.Text;[{];
-        HtmlTokenType.NewLine;[LF];
+    SyntaxKind.HtmlText - [ var x = true;LF}LF{LF] - [192..214) - FullWidth: 22 - Slots: 1
+        SyntaxKind.List - [ var x = true;LF}LF{LF] - [192..214) - FullWidth: 22 - Slots: 13
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.HtmlTextLiteralToken;[var];
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.HtmlTextLiteralToken;[x];
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.Equals;[=];
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.HtmlTextLiteralToken;[true;];
+            SyntaxKind.NewLine;[LF];
+            SyntaxKind.HtmlTextLiteralToken;[}];
+            SyntaxKind.NewLine;[LF];
+            SyntaxKind.HtmlTextLiteralToken;[{];
+            SyntaxKind.NewLine;[LF];
     Tag block - Gen<None> - 4 - (214:19,0)
         Markup span - Gen<Markup> - [<hr>] - SpanEditHandler;Accepts:Any - (214:19,0) - Tokens:3
             HtmlTokenType.OpenAngle;[<];
@@ -156,20 +162,21 @@ Markup block - Gen<None> - 564 - (0:0,0)
             HtmlTokenType.OpenAngle;[<];
             HtmlTokenType.Text;[other];
             HtmlTokenType.CloseAngle;[>];
-    Markup span - Gen<Markup> - [ var x = true;LF}LF{LF] - SpanEditHandler;Accepts:Any - (225:19,11) - Tokens:13
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Text;[var];
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Text;[x];
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Equals;[=];
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Text;[true;];
-        HtmlTokenType.NewLine;[LF];
-        HtmlTokenType.Text;[}];
-        HtmlTokenType.NewLine;[LF];
-        HtmlTokenType.Text;[{];
-        HtmlTokenType.NewLine;[LF];
+    SyntaxKind.HtmlText - [ var x = true;LF}LF{LF] - [225..247) - FullWidth: 22 - Slots: 1
+        SyntaxKind.List - [ var x = true;LF}LF{LF] - [225..247) - FullWidth: 22 - Slots: 13
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.HtmlTextLiteralToken;[var];
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.HtmlTextLiteralToken;[x];
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.Equals;[=];
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.HtmlTextLiteralToken;[true;];
+            SyntaxKind.NewLine;[LF];
+            SyntaxKind.HtmlTextLiteralToken;[}];
+            SyntaxKind.NewLine;[LF];
+            SyntaxKind.HtmlTextLiteralToken;[{];
+            SyntaxKind.NewLine;[LF];
     Tag block - Gen<None> - 5 - (247:22,0)
         Markup span - Gen<Markup> - [<img>] - SpanEditHandler;Accepts:Any - (247:22,0) - Tokens:3
             HtmlTokenType.OpenAngle;[<];
@@ -180,20 +187,21 @@ Markup block - Gen<None> - 564 - (0:0,0)
             HtmlTokenType.OpenAngle;[<];
             HtmlTokenType.Text;[other];
             HtmlTokenType.CloseAngle;[>];
-    Markup span - Gen<Markup> - [ var x = true;LF}LF{LF] - SpanEditHandler;Accepts:Any - (259:22,12) - Tokens:13
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Text;[var];
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Text;[x];
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Equals;[=];
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Text;[true;];
-        HtmlTokenType.NewLine;[LF];
-        HtmlTokenType.Text;[}];
-        HtmlTokenType.NewLine;[LF];
-        HtmlTokenType.Text;[{];
-        HtmlTokenType.NewLine;[LF];
+    SyntaxKind.HtmlText - [ var x = true;LF}LF{LF] - [259..281) - FullWidth: 22 - Slots: 1
+        SyntaxKind.List - [ var x = true;LF}LF{LF] - [259..281) - FullWidth: 22 - Slots: 13
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.HtmlTextLiteralToken;[var];
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.HtmlTextLiteralToken;[x];
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.Equals;[=];
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.HtmlTextLiteralToken;[true;];
+            SyntaxKind.NewLine;[LF];
+            SyntaxKind.HtmlTextLiteralToken;[}];
+            SyntaxKind.NewLine;[LF];
+            SyntaxKind.HtmlTextLiteralToken;[{];
+            SyntaxKind.NewLine;[LF];
     Tag block - Gen<None> - 7 - (281:25,0)
         Markup span - Gen<Markup> - [<input>] - SpanEditHandler;Accepts:Any - (281:25,0) - Tokens:3
             HtmlTokenType.OpenAngle;[<];
@@ -204,20 +212,21 @@ Markup block - Gen<None> - 564 - (0:0,0)
             HtmlTokenType.OpenAngle;[<];
             HtmlTokenType.Text;[other];
             HtmlTokenType.CloseAngle;[>];
-    Markup span - Gen<Markup> - [ var x = true;LF}LF{LF] - SpanEditHandler;Accepts:Any - (295:25,14) - Tokens:13
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Text;[var];
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Text;[x];
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Equals;[=];
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Text;[true;];
-        HtmlTokenType.NewLine;[LF];
-        HtmlTokenType.Text;[}];
-        HtmlTokenType.NewLine;[LF];
-        HtmlTokenType.Text;[{];
-        HtmlTokenType.NewLine;[LF];
+    SyntaxKind.HtmlText - [ var x = true;LF}LF{LF] - [295..317) - FullWidth: 22 - Slots: 1
+        SyntaxKind.List - [ var x = true;LF}LF{LF] - [295..317) - FullWidth: 22 - Slots: 13
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.HtmlTextLiteralToken;[var];
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.HtmlTextLiteralToken;[x];
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.Equals;[=];
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.HtmlTextLiteralToken;[true;];
+            SyntaxKind.NewLine;[LF];
+            SyntaxKind.HtmlTextLiteralToken;[}];
+            SyntaxKind.NewLine;[LF];
+            SyntaxKind.HtmlTextLiteralToken;[{];
+            SyntaxKind.NewLine;[LF];
     Tag block - Gen<None> - 8 - (317:28,0)
         Markup span - Gen<Markup> - [<keygen>] - SpanEditHandler;Accepts:Any - (317:28,0) - Tokens:3
             HtmlTokenType.OpenAngle;[<];
@@ -228,20 +237,21 @@ Markup block - Gen<None> - 564 - (0:0,0)
             HtmlTokenType.OpenAngle;[<];
             HtmlTokenType.Text;[other];
             HtmlTokenType.CloseAngle;[>];
-    Markup span - Gen<Markup> - [ var x = true;LF}LF{LF] - SpanEditHandler;Accepts:Any - (332:28,15) - Tokens:13
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Text;[var];
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Text;[x];
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Equals;[=];
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Text;[true;];
-        HtmlTokenType.NewLine;[LF];
-        HtmlTokenType.Text;[}];
-        HtmlTokenType.NewLine;[LF];
-        HtmlTokenType.Text;[{];
-        HtmlTokenType.NewLine;[LF];
+    SyntaxKind.HtmlText - [ var x = true;LF}LF{LF] - [332..354) - FullWidth: 22 - Slots: 1
+        SyntaxKind.List - [ var x = true;LF}LF{LF] - [332..354) - FullWidth: 22 - Slots: 13
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.HtmlTextLiteralToken;[var];
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.HtmlTextLiteralToken;[x];
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.Equals;[=];
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.HtmlTextLiteralToken;[true;];
+            SyntaxKind.NewLine;[LF];
+            SyntaxKind.HtmlTextLiteralToken;[}];
+            SyntaxKind.NewLine;[LF];
+            SyntaxKind.HtmlTextLiteralToken;[{];
+            SyntaxKind.NewLine;[LF];
     Tag block - Gen<None> - 6 - (354:31,0)
         Markup span - Gen<Markup> - [<link>] - SpanEditHandler;Accepts:Any - (354:31,0) - Tokens:3
             HtmlTokenType.OpenAngle;[<];
@@ -252,20 +262,21 @@ Markup block - Gen<None> - 564 - (0:0,0)
             HtmlTokenType.OpenAngle;[<];
             HtmlTokenType.Text;[other];
             HtmlTokenType.CloseAngle;[>];
-    Markup span - Gen<Markup> - [ var x = true;LF}LF{LF] - SpanEditHandler;Accepts:Any - (367:31,13) - Tokens:13
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Text;[var];
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Text;[x];
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Equals;[=];
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Text;[true;];
-        HtmlTokenType.NewLine;[LF];
-        HtmlTokenType.Text;[}];
-        HtmlTokenType.NewLine;[LF];
-        HtmlTokenType.Text;[{];
-        HtmlTokenType.NewLine;[LF];
+    SyntaxKind.HtmlText - [ var x = true;LF}LF{LF] - [367..389) - FullWidth: 22 - Slots: 1
+        SyntaxKind.List - [ var x = true;LF}LF{LF] - [367..389) - FullWidth: 22 - Slots: 13
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.HtmlTextLiteralToken;[var];
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.HtmlTextLiteralToken;[x];
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.Equals;[=];
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.HtmlTextLiteralToken;[true;];
+            SyntaxKind.NewLine;[LF];
+            SyntaxKind.HtmlTextLiteralToken;[}];
+            SyntaxKind.NewLine;[LF];
+            SyntaxKind.HtmlTextLiteralToken;[{];
+            SyntaxKind.NewLine;[LF];
     Tag block - Gen<None> - 6 - (389:34,0)
         Markup span - Gen<Markup> - [<meta>] - SpanEditHandler;Accepts:Any - (389:34,0) - Tokens:3
             HtmlTokenType.OpenAngle;[<];
@@ -276,20 +287,21 @@ Markup block - Gen<None> - 564 - (0:0,0)
             HtmlTokenType.OpenAngle;[<];
             HtmlTokenType.Text;[other];
             HtmlTokenType.CloseAngle;[>];
-    Markup span - Gen<Markup> - [ var x = true;LF}LF{LF] - SpanEditHandler;Accepts:Any - (402:34,13) - Tokens:13
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Text;[var];
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Text;[x];
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Equals;[=];
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Text;[true;];
-        HtmlTokenType.NewLine;[LF];
-        HtmlTokenType.Text;[}];
-        HtmlTokenType.NewLine;[LF];
-        HtmlTokenType.Text;[{];
-        HtmlTokenType.NewLine;[LF];
+    SyntaxKind.HtmlText - [ var x = true;LF}LF{LF] - [402..424) - FullWidth: 22 - Slots: 1
+        SyntaxKind.List - [ var x = true;LF}LF{LF] - [402..424) - FullWidth: 22 - Slots: 13
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.HtmlTextLiteralToken;[var];
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.HtmlTextLiteralToken;[x];
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.Equals;[=];
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.HtmlTextLiteralToken;[true;];
+            SyntaxKind.NewLine;[LF];
+            SyntaxKind.HtmlTextLiteralToken;[}];
+            SyntaxKind.NewLine;[LF];
+            SyntaxKind.HtmlTextLiteralToken;[{];
+            SyntaxKind.NewLine;[LF];
     Tag block - Gen<None> - 7 - (424:37,0)
         Markup span - Gen<Markup> - [<param>] - SpanEditHandler;Accepts:Any - (424:37,0) - Tokens:3
             HtmlTokenType.OpenAngle;[<];
@@ -300,20 +312,21 @@ Markup block - Gen<None> - 564 - (0:0,0)
             HtmlTokenType.OpenAngle;[<];
             HtmlTokenType.Text;[other];
             HtmlTokenType.CloseAngle;[>];
-    Markup span - Gen<Markup> - [ var x = true;LF}LF{LF] - SpanEditHandler;Accepts:Any - (438:37,14) - Tokens:13
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Text;[var];
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Text;[x];
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Equals;[=];
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Text;[true;];
-        HtmlTokenType.NewLine;[LF];
-        HtmlTokenType.Text;[}];
-        HtmlTokenType.NewLine;[LF];
-        HtmlTokenType.Text;[{];
-        HtmlTokenType.NewLine;[LF];
+    SyntaxKind.HtmlText - [ var x = true;LF}LF{LF] - [438..460) - FullWidth: 22 - Slots: 1
+        SyntaxKind.List - [ var x = true;LF}LF{LF] - [438..460) - FullWidth: 22 - Slots: 13
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.HtmlTextLiteralToken;[var];
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.HtmlTextLiteralToken;[x];
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.Equals;[=];
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.HtmlTextLiteralToken;[true;];
+            SyntaxKind.NewLine;[LF];
+            SyntaxKind.HtmlTextLiteralToken;[}];
+            SyntaxKind.NewLine;[LF];
+            SyntaxKind.HtmlTextLiteralToken;[{];
+            SyntaxKind.NewLine;[LF];
     Tag block - Gen<None> - 8 - (460:40,0)
         Markup span - Gen<Markup> - [<source>] - SpanEditHandler;Accepts:Any - (460:40,0) - Tokens:3
             HtmlTokenType.OpenAngle;[<];
@@ -324,20 +337,21 @@ Markup block - Gen<None> - 564 - (0:0,0)
             HtmlTokenType.OpenAngle;[<];
             HtmlTokenType.Text;[other];
             HtmlTokenType.CloseAngle;[>];
-    Markup span - Gen<Markup> - [ var x = true;LF}LF{LF] - SpanEditHandler;Accepts:Any - (475:40,15) - Tokens:13
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Text;[var];
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Text;[x];
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Equals;[=];
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Text;[true;];
-        HtmlTokenType.NewLine;[LF];
-        HtmlTokenType.Text;[}];
-        HtmlTokenType.NewLine;[LF];
-        HtmlTokenType.Text;[{];
-        HtmlTokenType.NewLine;[LF];
+    SyntaxKind.HtmlText - [ var x = true;LF}LF{LF] - [475..497) - FullWidth: 22 - Slots: 1
+        SyntaxKind.List - [ var x = true;LF}LF{LF] - [475..497) - FullWidth: 22 - Slots: 13
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.HtmlTextLiteralToken;[var];
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.HtmlTextLiteralToken;[x];
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.Equals;[=];
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.HtmlTextLiteralToken;[true;];
+            SyntaxKind.NewLine;[LF];
+            SyntaxKind.HtmlTextLiteralToken;[}];
+            SyntaxKind.NewLine;[LF];
+            SyntaxKind.HtmlTextLiteralToken;[{];
+            SyntaxKind.NewLine;[LF];
     Tag block - Gen<None> - 7 - (497:43,0)
         Markup span - Gen<Markup> - [<track>] - SpanEditHandler;Accepts:Any - (497:43,0) - Tokens:3
             HtmlTokenType.OpenAngle;[<];
@@ -348,20 +362,21 @@ Markup block - Gen<None> - 564 - (0:0,0)
             HtmlTokenType.OpenAngle;[<];
             HtmlTokenType.Text;[other];
             HtmlTokenType.CloseAngle;[>];
-    Markup span - Gen<Markup> - [ var x = true;LF}LF{LF] - SpanEditHandler;Accepts:Any - (511:43,14) - Tokens:13
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Text;[var];
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Text;[x];
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Equals;[=];
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Text;[true;];
-        HtmlTokenType.NewLine;[LF];
-        HtmlTokenType.Text;[}];
-        HtmlTokenType.NewLine;[LF];
-        HtmlTokenType.Text;[{];
-        HtmlTokenType.NewLine;[LF];
+    SyntaxKind.HtmlText - [ var x = true;LF}LF{LF] - [511..533) - FullWidth: 22 - Slots: 1
+        SyntaxKind.List - [ var x = true;LF}LF{LF] - [511..533) - FullWidth: 22 - Slots: 13
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.HtmlTextLiteralToken;[var];
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.HtmlTextLiteralToken;[x];
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.Equals;[=];
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.HtmlTextLiteralToken;[true;];
+            SyntaxKind.NewLine;[LF];
+            SyntaxKind.HtmlTextLiteralToken;[}];
+            SyntaxKind.NewLine;[LF];
+            SyntaxKind.HtmlTextLiteralToken;[{];
+            SyntaxKind.NewLine;[LF];
     Tag block - Gen<None> - 5 - (533:46,0)
         Markup span - Gen<Markup> - [<wbr>] - SpanEditHandler;Accepts:Any - (533:46,0) - Tokens:3
             HtmlTokenType.OpenAngle;[<];

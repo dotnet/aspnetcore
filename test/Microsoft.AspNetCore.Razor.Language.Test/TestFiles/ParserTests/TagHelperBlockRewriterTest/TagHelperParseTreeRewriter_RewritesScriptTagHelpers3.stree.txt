@@ -11,11 +11,11 @@ Markup block - Gen<None> - 53 - (0:0,0)
             HtmlTokenType.ForwardSlash;[/];
             HtmlTokenType.Text;[p];
             HtmlTokenType.CloseAngle;[>];
-    Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:Any - (29:0,29) - Tokens:1
-        HtmlTokenType.WhiteSpace;[ ];
+    SyntaxKind.HtmlText - [ ] - [29..30) - FullWidth: 1 - Slots: 1
+        SyntaxKind.Whitespace;[ ];
     Tag block - Gen<TagHelper> - 23 - (30:0,30) - p - ptaghelper
         StartTagAndEndTag - <p> ... </p>
         Tag block - Gen<TagHelper> - 16 - (33:0,33) - div - divtaghelper
             StartTagAndEndTag - <div> ... </div>
-            Markup span - Gen<Markup> - [World] - SpanEditHandler;Accepts:Any - (38:0,38) - Tokens:1
-                HtmlTokenType.Text;[World];
+            SyntaxKind.HtmlText - [World] - [38..43) - FullWidth: 5 - Slots: 1
+                SyntaxKind.HtmlTextLiteralToken;[World];

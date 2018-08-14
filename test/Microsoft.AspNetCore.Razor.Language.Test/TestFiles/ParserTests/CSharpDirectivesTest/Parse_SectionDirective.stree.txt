@@ -19,12 +19,13 @@ Directive block - Gen<Directive:{section;RazorBlock;Unrestricted}> - 32 - (0:0,0
                 HtmlTokenType.OpenAngle;[<];
                 HtmlTokenType.Text;[p];
                 HtmlTokenType.CloseAngle;[>];
-        Markup span - Gen<Markup> - [F{o}o] - SpanEditHandler;Accepts:Any - (21:0,21) - Tokens:5
-            HtmlTokenType.Text;[F];
-            HtmlTokenType.Text;[{];
-            HtmlTokenType.Text;[o];
-            HtmlTokenType.Text;[}];
-            HtmlTokenType.Text;[o];
+        SyntaxKind.HtmlText - [F{o}o] - [21..26) - FullWidth: 5 - Slots: 1
+            SyntaxKind.List - [F{o}o] - [21..26) - FullWidth: 5 - Slots: 5
+                SyntaxKind.HtmlTextLiteralToken;[F];
+                SyntaxKind.HtmlTextLiteralToken;[{];
+                SyntaxKind.HtmlTextLiteralToken;[o];
+                SyntaxKind.HtmlTextLiteralToken;[}];
+                SyntaxKind.HtmlTextLiteralToken;[o];
         Tag block - Gen<None> - 4 - (26:0,26)
             Markup span - Gen<Markup> - [</p>] - SpanEditHandler;Accepts:Any - (26:0,26) - Tokens:4
                 HtmlTokenType.OpenAngle;[<];

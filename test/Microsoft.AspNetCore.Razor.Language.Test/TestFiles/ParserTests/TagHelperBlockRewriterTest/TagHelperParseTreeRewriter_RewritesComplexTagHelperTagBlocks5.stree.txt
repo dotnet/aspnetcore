@@ -8,8 +8,8 @@ Markup block - Gen<None> - 41 - (0:0,0)
                 CSharpTokenType.Identifier;[DateTime];
                 CSharpTokenType.Dot;[.];
                 CSharpTokenType.Identifier;[Now];
-    Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:Any - (20:0,20) - Tokens:1
-        HtmlTokenType.WhiteSpace;[ ];
+    SyntaxKind.HtmlText - [ ] - [20..21) - FullWidth: 1 - Slots: 1
+        SyntaxKind.Whitespace;[ ];
     Tag block - Gen<TagHelper> - 20 - (21:0,21) - p - ptaghelper
         StartTagAndEndTag - <p> ... </p>
         Expression block - Gen<Expr> - 13 - (24:0,24)
