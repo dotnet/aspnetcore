@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             // stage.
             var work = new List<(MatcherEndpoint endpoint, List<DfaNode> parents)>();
 
-            var root = new DfaNode() { Depth = 0, Label = "/" };
+            var root = new DfaNode() { PathDepth = 0, Label = "/" };
 
             // To prepare for this we need to compute the max depth, as well as
             // a seed list of items to process (entry, root).
@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                             {
                                 next = new DfaNode()
                                 {
-                                    Depth = parent.Depth + 1,
+                                    PathDepth = parent.PathDepth + 1,
                                     Label = parent.Label + literal + "/",
                                 };
                                 parent.Literals.Add(literal, next);
@@ -129,7 +129,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                             {
                                 parent.CatchAll = new DfaNode()
                                 {
-                                    Depth = parent.Depth + 1,
+                                    PathDepth = parent.PathDepth + 1,
                                     Label = parent.Label + "{*...}/",
                                 };
 
@@ -146,7 +146,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                             {
                                 parent.Parameters = new DfaNode()
                                 {
-                                    Depth = parent.Depth + 1,
+                                    PathDepth = parent.PathDepth + 1,
                                     Label = parent.Label + "{...}/",
                                 };
                             }
@@ -165,7 +165,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                             {
                                 parent.Parameters = new DfaNode()
                                 {
-                                    Depth = parent.Depth + 1,
+                                    PathDepth = parent.PathDepth + 1,
                                     Label = parent.Label + "{...}/",
                                 };
                             }
@@ -217,6 +217,13 @@ namespace Microsoft.AspNetCore.Routing.Matching
         {
             var root = BuildDfaTree();
 
+            var maxSegmentCount = 0;
+            root.Visit((node) => maxSegmentCount = Math.Max(maxSegmentCount, node.PathDepth));
+
+            // The max segment count is the maximum path-node-depth +1. We need
+            // the +1 to capture any additional content after the 'last' segment.
+            maxSegmentCount++;
+
             var states = new List<DfaState>();
             var tableBuilders = new List<(JumpTableBuilder pathBuilder, PolicyJumpTableBuilder policyBuilder)>();
             AddNode(root, states, tableBuilders);
@@ -251,7 +258,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                     tableBuilders[i].policyBuilder?.Build());
             }
 
-            return new DfaMatcher(_selector, states.ToArray());
+            return new DfaMatcher(_selector, states.ToArray(), maxSegmentCount);
         }
 
         private int AddNode(

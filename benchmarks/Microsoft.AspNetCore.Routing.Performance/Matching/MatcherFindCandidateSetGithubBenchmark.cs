@@ -11,6 +11,10 @@ namespace Microsoft.AspNetCore.Routing.Matching
     // Use https://editor2.swagger.io/ to convert from yaml to json-
     public partial class MatcherFindCandidateSetGithubBenchmark : MatcherBenchmarkBase
     {
+        // SegmentCount should be max-segments + 1, but we don't have a good way to compute
+        // it here, so using 16 as a safe guess.
+        private const int SegmentCount = 16;
+
         private BarebonesMatcher _baseline;
         private DfaMatcher _dfa;
 
@@ -50,7 +54,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 var httpContext = Requests[i];
 
                 var path = httpContext.Request.Path.Value;
-                Span<PathSegment> segments = stackalloc PathSegment[FastPathTokenizer.DefaultSegmentCount];
+                Span<PathSegment> segments = stackalloc PathSegment[SegmentCount];
                 var count = FastPathTokenizer.Tokenize(path, segments);
 
                 var candidates = _dfa.FindCandidateSet(httpContext, path, segments.Slice(0, count));
