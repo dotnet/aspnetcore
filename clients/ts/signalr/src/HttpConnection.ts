@@ -317,7 +317,7 @@ export class HttpConnection implements IConnection {
         return false;
     }
 
-    private async stopConnection(error?: Error): Promise<void> {
+    private stopConnection(error?: Error): void {
         this.transport = undefined;
 
         // If we have a stopError, it takes precedence over the error from the transport
