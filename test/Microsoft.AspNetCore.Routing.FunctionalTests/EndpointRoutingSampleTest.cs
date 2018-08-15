@@ -130,6 +130,54 @@ namespace Microsoft.AspNetCore.Routing.FunctionalTests
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
 
+        [Theory]
+        [InlineData("/WithSingleAsteriskCatchAll/a/b/c", "Link: /WithSingleAsteriskCatchAll/a%2Fb%2Fc")]
+        [InlineData("/WithSingleAsteriskCatchAll/a/b b1/c c1", "Link: /WithSingleAsteriskCatchAll/a%2Fb%20b1%2Fc%20c1")]
+        public async Task GeneratesLink_ToEndpointWithSingleAsteriskCatchAllParameter_EncodesValue(
+            string url,
+            string expected)
+        {
+            // Arrange & Act
+            var response = await _client.GetAsync(url);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.NotNull(response.Content);
+            var actualContent = await response.Content.ReadAsStringAsync();
+            Assert.Equal(expected, actualContent);
+        }
+
+        [Theory]
+        [InlineData("/WithDoubleAsteriskCatchAll/a/b/c", "Link: /WithDoubleAsteriskCatchAll/a/b/c")]
+        [InlineData("/WithDoubleAsteriskCatchAll/a/b/c/", "Link: /WithDoubleAsteriskCatchAll/a/b/c/")]
+        [InlineData("/WithDoubleAsteriskCatchAll/a//b/c", "Link: /WithDoubleAsteriskCatchAll/a//b/c")]
+        public async Task GeneratesLink_ToEndpointWithDoubleAsteriskCatchAllParameter_DoesNotEncodeSlashes(
+            string url,
+            string expected)
+        {
+            // Arrange & Act
+            var response = await _client.GetAsync(url);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.NotNull(response.Content);
+            var actualContent = await response.Content.ReadAsStringAsync();
+            Assert.Equal(expected, actualContent);
+        }
+
+        [Fact]
+        public async Task GeneratesLink_ToEndpointWithDoubleAsteriskCatchAllParameter_EncodesContentOtherThanSlashes()
+        {
+            // Arrange & Act
+            var response = await _client.GetAsync("/WithDoubleAsteriskCatchAll/a/b b1/c c1");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.NotNull(response.Content);
+            var actualContent = await response.Content.ReadAsStringAsync();
+            Assert.Equal("Link: /WithDoubleAsteriskCatchAll/a/b%20b1/c%20c1", actualContent);
+        }
+
         public void Dispose()
         {
             _testServer.Dispose();

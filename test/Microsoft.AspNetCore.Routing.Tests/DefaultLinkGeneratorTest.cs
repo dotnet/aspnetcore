@@ -99,6 +99,76 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         [Fact]
+        public void GetLink_EncodesIntermediate_DefaultValues()
+        {
+            // Arrange
+            var endpoint = EndpointFactory.CreateMatcherEndpoint("{p1}/{p2=a b}/{p3=foo}");
+            var linkGenerator = CreateLinkGenerator(endpoint);
+
+            // Act
+            var link = linkGenerator.GetLink(new { p1 = "Home", p3 = "bar" });
+
+            // Assert
+            Assert.Equal("/Home/a%20b/bar", link);
+        }
+
+        [Theory]
+        [InlineData("a/b/c", "/Home/Index/a%2Fb%2Fc")]
+        [InlineData("a/b b1/c c1", "/Home/Index/a%2Fb%20b1%2Fc%20c1")]
+        public void GetLink_EncodesValue_OfSingleAsteriskCatchAllParameter(string routeValue, string expected)
+        {
+            // Arrange
+            var endpoint = EndpointFactory.CreateMatcherEndpoint("{controller}/{action}/{*path}");
+            var linkGenerator = CreateLinkGenerator(endpoint);
+            var httpContext = CreateHttpContext(ambientValues: new { controller = "Home", action = "Index" });
+
+            // Act
+            var link = linkGenerator.GetLink(httpContext, new { path = routeValue });
+
+            // Assert
+            Assert.Equal(expected, link);
+        }
+
+        [Theory]
+        [InlineData("/", "/Home/Index//")]
+        [InlineData("a", "/Home/Index/a")]
+        [InlineData("a/", "/Home/Index/a/")]
+        [InlineData("a/b", "/Home/Index/a/b")]
+        [InlineData("a/b/c", "/Home/Index/a/b/c")]
+        [InlineData("a/b/cc", "/Home/Index/a/b/cc")]
+        [InlineData("a/b/c/", "/Home/Index/a/b/c/")]
+        [InlineData("a/b/c//", "/Home/Index/a/b/c//")]
+        [InlineData("a//b//c", "/Home/Index/a//b//c")]
+        public void GetLink_DoesNotEncodeSlashes_OfDoubleAsteriskCatchAllParameter(string routeValue, string expected)
+        {
+            // Arrange
+            var endpoint = EndpointFactory.CreateMatcherEndpoint("{controller}/{action}/{**path}");
+            var linkGenerator = CreateLinkGenerator(endpoint);
+            var httpContext = CreateHttpContext(ambientValues: new { controller = "Home", action = "Index" });
+
+            // Act
+            var link = linkGenerator.GetLink(httpContext, new { path = routeValue });
+
+            // Assert
+            Assert.Equal(expected, link);
+        }
+
+        [Fact]
+        public void GetLink_EncodesContentOtherThanSlashes_OfDoubleAsteriskCatchAllParameter()
+        {
+            // Arrange
+            var endpoint = EndpointFactory.CreateMatcherEndpoint("{controller}/{action}/{**path}");
+            var linkGenerator = CreateLinkGenerator(endpoint);
+            var httpContext = CreateHttpContext(ambientValues: new { controller = "Home", action = "Index" });
+
+            // Act
+            var link = linkGenerator.GetLink(httpContext, new { path = "a/b b1/c c1" });
+
+            // Assert
+            Assert.Equal("/Home/Index/a/b%20b1/c%20c1", link);
+        }
+
+        [Fact]
         public void GetLink_EncodesValues()
         {
             // Arrange

@@ -44,6 +44,11 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
         public bool Accept(string value)
         {
+            return Accept(value, encodeSlashes: true);
+        }
+
+        public bool Accept(string value, bool encodeSlashes)
+        {
             if (string.IsNullOrEmpty(value))
             {
                 if (UriState == SegmentState.Inside || BufferState == SegmentState.Inside)
@@ -67,7 +72,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             {
                 if (_buffer[i].RequiresEncoding)
                 {
-                    _urlEncoder.Encode(Writer, _buffer[i].Value);
+                    EncodeValue(_buffer[i].Value);
                 }
                 else
                 {
@@ -88,16 +93,17 @@ namespace Microsoft.AspNetCore.Routing.Internal
             UriState = SegmentState.Inside;
 
             _lastValueOffset = _uri.Length;
+
             // Allow the first segment to have a leading slash.
             // This prevents the leading slash from PathString segments from being encoded.
             if (_uri.Length == 0 && value.Length > 0 && value[0] == '/')
             {
                 _uri.Append("/");
-                _urlEncoder.Encode(Writer, value, 1, value.Length - 1);
+                EncodeValue(value, 1, value.Length - 1, encodeSlashes);
             }
             else
             {
-                _urlEncoder.Encode(Writer, value);
+                EncodeValue(value, encodeSlashes);
             }
 
             return true;
@@ -195,6 +201,44 @@ namespace Microsoft.AspNetCore.Routing.Internal
             }
 
             return _uri.ToString();
+        }
+
+        private void EncodeValue(string value)
+        {
+            EncodeValue(value, encodeSlashes: true);
+        }
+
+        private void EncodeValue(string value, bool encodeSlashes)
+        {
+            EncodeValue(value, start: 0, characterCount: value.Length, encodeSlashes);
+        }
+
+        // For testing
+        internal void EncodeValue(string value, int start, int characterCount, bool encodeSlashes)
+        {
+            // Just encode everything if its ok to encode slashes
+            if (encodeSlashes)
+            {
+                _urlEncoder.Encode(Writer, value, start, characterCount);
+            }
+            else
+            {
+                int end;
+                int length = start + characterCount;
+                while ((end = value.IndexOf('/', start, characterCount)) >= 0)
+                {
+                    _urlEncoder.Encode(Writer, value, start, end - start);
+                    _uri.Append("/");
+
+                    start = end + 1;
+                    characterCount = length - start;
+                }
+
+                if (end < 0 && characterCount >= 0)
+                {
+                    _urlEncoder.Encode(Writer, value, start, length - start);
+                }
+            }
         }
 
         private string DebuggerToString()

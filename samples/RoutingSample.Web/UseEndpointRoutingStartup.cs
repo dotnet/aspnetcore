@@ -81,20 +81,54 @@ namespace RoutingSample.Web
                         EndpointMetadataCollection.Empty,
                         "withoptionalconstraints"),
                     new MatcherEndpoint((next) => (httpContext) =>
-                    {
-                        using (var writer = new StreamWriter(httpContext.Response.Body, Encoding.UTF8, 1024, leaveOpen: true))
                         {
-                            var graphWriter = httpContext.RequestServices.GetRequiredService<DfaGraphWriter>();
-                            var dataSource = httpContext.RequestServices.GetRequiredService<CompositeEndpointDataSource>();
-                            graphWriter.Write(dataSource, writer);
-                        }
+                            using (var writer = new StreamWriter(httpContext.Response.Body, Encoding.UTF8, 1024, leaveOpen: true))
+                            {
+                                var graphWriter = httpContext.RequestServices.GetRequiredService<DfaGraphWriter>();
+                                var dataSource = httpContext.RequestServices.GetRequiredService<CompositeEndpointDataSource>();
+                                graphWriter.Write(dataSource, writer);
+                            }
 
-                        return Task.CompletedTask;
-                    },
-                    RoutePatternFactory.Parse("/graph"),
-                    0,
-                    new EndpointMetadataCollection(new HttpMethodMetadata(new[]{ "GET", })),
-                    "DFA Graph"),
+                            return Task.CompletedTask;
+                        },
+                        RoutePatternFactory.Parse("/graph"),
+                        0,
+                        new EndpointMetadataCollection(new HttpMethodMetadata(new[]{ "GET", })),
+                        "DFA Graph"),
+                    new MatcherEndpoint((next) => (httpContext) =>
+                        {
+                            var linkGenerator = httpContext.RequestServices.GetRequiredService<LinkGenerator>();
+
+                            var response = httpContext.Response;
+                            response.StatusCode = 200;
+                            response.ContentType = "text/plain";
+                            return response.WriteAsync(
+                                "Link: " + linkGenerator.GetLink(httpContext, "WithSingleAsteriskCatchAll", new { }));
+                        },
+                        RoutePatternFactory.Parse("/WithSingleAsteriskCatchAll/{*path}"),
+                        0,
+                        new EndpointMetadataCollection(
+                            new RouteValuesAddressMetadata(
+                                name: "WithSingleAsteriskCatchAll",
+                                requiredValues: new RouteValueDictionary())),
+                        "WithSingleAsteriskCatchAll"),
+                    new MatcherEndpoint((next) => (httpContext) =>
+                        {
+                            var linkGenerator = httpContext.RequestServices.GetRequiredService<LinkGenerator>();
+
+                            var response = httpContext.Response;
+                            response.StatusCode = 200;
+                            response.ContentType = "text/plain";
+                            return response.WriteAsync(
+                                "Link: " + linkGenerator.GetLink(httpContext, "WithDoubleAsteriskCatchAll", new { }));
+                        },
+                        RoutePatternFactory.Parse("/WithDoubleAsteriskCatchAll/{**path}"),
+                        0,
+                        new EndpointMetadataCollection(
+                            new RouteValuesAddressMetadata(
+                                name: "WithDoubleAsteriskCatchAll",
+                                requiredValues: new RouteValueDictionary())),
+                        "WithDoubleAsteriskCatchAll"),
                 });
 
             services.TryAddEnumerable(ServiceDescriptor.Singleton<EndpointDataSource>(endpointDataSource));

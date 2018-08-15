@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Linq;
+using Microsoft.AspNetCore.Routing.Constraints;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Routing.Patterns
@@ -919,6 +920,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
         [InlineData("", "")]
         [InlineData("?", "")]
         [InlineData("*", "")]
+        [InlineData("**", "")]
         [InlineData(" ", " ")]
         [InlineData("\t", "\t")]
         [InlineData("#!@#$%Q@#@%", "#!@#$%Q@#@%")]
@@ -934,6 +936,134 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             Assert.Equal(expectedParameterName, templatePart.Name);
             Assert.Empty(templatePart.Constraints);
             Assert.Null(templatePart.Default);
+        }
+
+        [Fact]
+        public void ParseRouteParameter_WithSingleAsteriskCatchAll_IsParsedCorrectly()
+        {
+            // Arrange & Act
+            var parameterPart = ParseParameter("*path");
+
+            // Assert
+            Assert.Equal("path", parameterPart.Name);
+            Assert.True(parameterPart.IsCatchAll);
+            Assert.Equal(RoutePatternParameterKind.CatchAll, parameterPart.ParameterKind);
+            Assert.True(parameterPart.EncodeSlashes);
+        }
+
+        [Fact]
+        public void ParseRouteParameter_WithSingleAsteriskCatchAll_AndDefaultValue_IsParsedCorrectly()
+        {
+            // Arrange & Act
+            var parameterPart = ParseParameter("*path=a/b/c");
+
+            // Assert
+            Assert.Equal("path", parameterPart.Name);
+            Assert.True(parameterPart.IsCatchAll);
+            Assert.NotNull(parameterPart.Default);
+            Assert.Equal("a/b/c", parameterPart.Default.ToString());
+            Assert.Equal(RoutePatternParameterKind.CatchAll, parameterPart.ParameterKind);
+            Assert.True(parameterPart.EncodeSlashes);
+        }
+
+        [Fact]
+        public void ParseRouteParameter_WithSingleAsteriskCatchAll_AndConstraints_IsParsedCorrectly()
+        {
+            // Arrange
+            var constraintContent = "regex(^(/[^/ ]*)+/?$)";
+
+            // Act
+            var parameterPart = ParseParameter($"*path:{constraintContent}");
+
+            // Assert
+            Assert.Equal("path", parameterPart.Name);
+            Assert.True(parameterPart.IsCatchAll);
+            Assert.Equal(RoutePatternParameterKind.CatchAll, parameterPart.ParameterKind);
+            var constraintReference = Assert.Single(parameterPart.Constraints);
+            Assert.Equal(constraintContent, constraintReference.Content);
+            Assert.True(parameterPart.EncodeSlashes);
+        }
+
+        [Fact]
+        public void ParseRouteParameter_WithSingleAsteriskCatchAll_AndConstraints_AndDefaultValue_IsParsedCorrectly()
+        {
+            // Arrange
+            var constraintContent = "regex(^(/[^/ ]*)+/?$)";
+
+            // Act
+            var parameterPart = ParseParameter($"*path:{constraintContent}=a/b/c");
+
+            // Assert
+            Assert.Equal("path", parameterPart.Name);
+            Assert.True(parameterPart.IsCatchAll);
+            Assert.Equal(RoutePatternParameterKind.CatchAll, parameterPart.ParameterKind);
+            var constraintReference = Assert.Single(parameterPart.Constraints);
+            Assert.Equal(constraintContent, constraintReference.Content);
+            Assert.NotNull(parameterPart.Default);
+            Assert.Equal("a/b/c", parameterPart.Default.ToString());
+            Assert.True(parameterPart.EncodeSlashes);
+        }
+
+        [Fact]
+        public void ParseRouteParameter_WithDoubleAsteriskCatchAll_IsParsedCorrectly()
+        {
+            // Arrange & Act
+            var parameterPart = ParseParameter("**path");
+
+            // Assert
+            Assert.Equal("path", parameterPart.Name);
+            Assert.True(parameterPart.IsCatchAll);
+            Assert.False(parameterPart.EncodeSlashes);
+        }
+
+        [Fact]
+        public void ParseRouteParameter_WithDoubleAsteriskCatchAll_AndDefaultValue_IsParsedCorrectly()
+        {
+            // Arrange & Act
+            var parameterPart = ParseParameter("**path=a/b/c");
+
+            // Assert
+            Assert.Equal("path", parameterPart.Name);
+            Assert.True(parameterPart.IsCatchAll);
+            Assert.NotNull(parameterPart.Default);
+            Assert.Equal("a/b/c", parameterPart.Default.ToString());
+            Assert.False(parameterPart.EncodeSlashes);
+        }
+
+        [Fact]
+        public void ParseRouteParameter_WithDoubleAsteriskCatchAll_AndConstraints_IsParsedCorrectly()
+        {
+            // Arrange
+            var constraintContent = "regex(^(/[^/ ]*)+/?$)";
+
+            // Act
+            var parameterPart = ParseParameter($"**path:{constraintContent}");
+
+            // Assert
+            Assert.Equal("path", parameterPart.Name);
+            Assert.True(parameterPart.IsCatchAll);
+            Assert.False(parameterPart.EncodeSlashes);
+            var constraintReference = Assert.Single(parameterPart.Constraints);
+            Assert.Equal(constraintContent, constraintReference.Content);
+        }
+
+        [Fact]
+        public void ParseRouteParameter_WithDoubleAsteriskCatchAll_AndConstraints_AndDefaultValue_IsParsedCorrectly()
+        {
+            // Arrange
+            var constraintContent = "regex(^(/[^/ ]*)+/?$)";
+
+            // Act
+            var parameterPart = ParseParameter($"**path:{constraintContent}=a/b/c");
+
+            // Assert
+            Assert.Equal("path", parameterPart.Name);
+            Assert.True(parameterPart.IsCatchAll);
+            Assert.False(parameterPart.EncodeSlashes);
+            var constraintReference = Assert.Single(parameterPart.Constraints);
+            Assert.Equal(constraintContent, constraintReference.Content);
+            Assert.NotNull(parameterPart.Default);
+            Assert.Equal("a/b/c", parameterPart.Default.ToString());
         }
 
         private RoutePatternParameterPart ParseParameter(string routeParameter)
