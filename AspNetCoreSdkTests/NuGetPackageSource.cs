@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 
 namespace AspNetCoreSdkTests
 {
@@ -25,7 +26,7 @@ namespace AspNetCoreSdkTests
         public static NuGetPackageSource EnvironmentVariable { get; } = new NuGetPackageSource
         {
             Name = nameof(EnvironmentVariable),
-            SourceArgumentLazy = new Lazy<string>(() => $"--source {GetPackageSourceFromEnvironment()}"),
+            SourceArgumentLazy = new Lazy<string>(() => GetSourceArgumentFromEnvironment()),
         };
 
         public static NuGetPackageSource EnvironmentVariableAndNuGetOrg { get; } = new NuGetPackageSource
@@ -42,10 +43,12 @@ namespace AspNetCoreSdkTests
 
         public override string ToString() => Name;
 
-        private static string GetPackageSourceFromEnvironment()
+        private static string GetSourceArgumentFromEnvironment()
         {
-            return Environment.GetEnvironmentVariable("NUGET_PACKAGE_SOURCE") ??
+            var sourceString = Environment.GetEnvironmentVariable("NUGET_PACKAGE_SOURCE") ??
                 throw new InvalidOperationException("Environment variable NUGET_PACKAGE_SOURCE is required but not set");
+
+            return string.Join(" ", sourceString.Split(',').Select(s => $"--source {s}"));
         }
     }
 }
