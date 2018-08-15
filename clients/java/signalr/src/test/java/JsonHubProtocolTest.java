@@ -46,6 +46,38 @@ public class JsonHubProtocolTest {
     }
 
     @Test
+    public void ParseCloseMessage() {
+        String stringifiedMessage = "{\"type\":7}\u001E";
+        HubMessage[] messages = jsonHubProtocol.parseMessages(stringifiedMessage);
+
+        //We know it's only one message
+        assertEquals(1, messages.length);
+
+        assertEquals(HubMessageType.CLOSE, messages[0].getMessageType());
+
+        //We can safely cast here because we know that it's a close message.
+        CloseMessage closeMessage = (CloseMessage) messages[0];
+
+        assertEquals(null, closeMessage.getError());
+    }
+
+    @Test
+    public void ParseCloseMessageWithError() {
+        String stringifiedMessage = "{\"type\":7,\"error\": \"There was an error\"}\u001E";
+        HubMessage[] messages = jsonHubProtocol.parseMessages(stringifiedMessage);
+
+        //We know it's only one message
+        assertEquals(1, messages.length);
+
+        assertEquals(HubMessageType.CLOSE, messages[0].getMessageType());
+
+        //We can safely cast here because we know that it's a close message.
+        CloseMessage closeMessage = (CloseMessage) messages[0];
+
+        assertEquals("There was an error", closeMessage.getError());
+    }
+
+    @Test
     public void ParseSingleMessage() {
         String stringifiedMessage = "{\"type\":1,\"target\":\"test\",\"arguments\":[42]}\u001E";
         HubMessage[] messages = jsonHubProtocol.parseMessages(stringifiedMessage);

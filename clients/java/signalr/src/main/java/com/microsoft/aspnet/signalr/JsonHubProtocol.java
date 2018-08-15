@@ -62,7 +62,14 @@ public class JsonHubProtocol implements HubProtocol {
                     hubMessages.add(new PingMessage());
                     break;
                 case CLOSE:
-                    //Don't care yet;
+                    CloseMessage closeMessage;
+                    if (jsonMessage.has("error")){
+                        String error = jsonMessage.get("error").getAsString();
+                        closeMessage = new CloseMessage(error);
+                    } else {
+                        closeMessage = new CloseMessage();
+                    }
+                    hubMessages.add(closeMessage);
                     break;
             }
         }
