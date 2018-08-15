@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.IISIntegration.FunctionalTests;
@@ -22,9 +23,13 @@ namespace TestSites
 {
     public class Startup
     {
+        private IServerAddressesFeature _serverAddresses;
+
         public void Configure(IApplicationBuilder app)
         {
             TestStartup.Register(app, this);
+
+            _serverAddresses = app.ServerFeatures.Get<IServerAddressesFeature>();
         }
 
         public Task Path(HttpContext ctx) => ctx.Response.WriteAsync(ctx.Request.Path.Value);
@@ -119,6 +124,11 @@ namespace TestSites
         private async Task ProcessId(HttpContext context)
         {
             await context.Response.WriteAsync(Process.GetCurrentProcess().Id.ToString());
+        }
+
+        private async Task ServerAddresses(HttpContext context)
+        {
+            await context.Response.WriteAsync(string.Join(",", _serverAddresses.Addresses));
         }
     }
 }

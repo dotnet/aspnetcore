@@ -91,6 +91,8 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                     DeploymentParameters.EnvironmentVariables["ASPNETCORE_CONTENTROOT"] = DeploymentParameters.ApplicationPath;
                 }
 
+                RunWebConfigActions(contentRoot);
+
                 var testUri = TestUriHelper.BuildTestUri(ServerType.IISExpress, DeploymentParameters.ApplicationBaseUriHint);
 
                 // Launch the host process.
@@ -260,40 +262,35 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
 
         private void PrepareConfig(string contentRoot, int port)
         {
+            var serverConfig = DeploymentParameters.ServerConfigTemplateContent;;
             // Config is required. If not present then fall back to one we carry with us.
-            if (string.IsNullOrEmpty(DeploymentParameters.ServerConfigTemplateContent))
+            if (string.IsNullOrEmpty(serverConfig))
             {
                 using (var stream = GetType().Assembly.GetManifestResourceStream("Microsoft.AspNetCore.Server.IntegrationTesting.IIS.Http.config"))
                 using (var reader = new StreamReader(stream))
                 {
-                    DeploymentParameters.ServerConfigTemplateContent = reader.ReadToEnd();
+                    serverConfig = reader.ReadToEnd();
                 }
             }
 
-            var serverConfig = DeploymentParameters.ServerConfigTemplateContent;
-
+            XDocument config = XDocument.Parse(serverConfig);
             // Pass on the applicationhost.config to iis express. With this don't need to pass in the /path /port switches as they are in the applicationHost.config
             // We take a copy of the original specified applicationHost.Config to prevent modifying the one in the repo.
-            serverConfig = ModifyANCMPathInConfig(replaceFlag: "[ANCMPath]", AncmVersion.AspNetCoreModule, serverConfig);
-            serverConfig = ModifyANCMPathInConfig(replaceFlag: "[ANCMV2Path]", AncmVersion.AspNetCoreModuleV2, serverConfig);
 
-            serverConfig = ReplacePlaceholder(serverConfig, "[PORT]", port.ToString(CultureInfo.InvariantCulture));
-            serverConfig = ReplacePlaceholder(serverConfig, "[ApplicationPhysicalPath]", contentRoot);
+            config.Root
+                .RequiredElement("location")
+                .RequiredElement("system.webServer")
+                .RequiredElement("modules")
+                .GetOrAdd("add", "name", DeploymentParameters.AncmVersion.ToString());
 
-            if (DeploymentParameters.PublishApplicationBeforeDeployment)
-            {
-                serverConfig = RemoveRedundantElements(serverConfig);
-            }
-            else
+            ConfigureModuleAndBinding(config.Root, contentRoot, port);
+
+            if (!DeploymentParameters.PublishApplicationBeforeDeployment)
             {
                 // The elements normally in the web.config are in the applicationhost.config for unpublished apps.
-                serverConfig = ReplacePlaceholder(serverConfig, "[HostingModel]", DeploymentParameters.HostingModel.ToString());
-                serverConfig = ReplacePlaceholder(serverConfig, "[AspNetCoreModule]", DeploymentParameters.AncmVersion.ToString());
+                AddAspNetCoreElement(config.Root);
             }
 
-            RunWebConfigActions(contentRoot);
-
-            var config = XDocument.Parse(serverConfig);
             RunServerConfigActions(config.Root, contentRoot);
             serverConfig = config.ToString();
 
@@ -303,14 +300,31 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
             File.WriteAllText(DeploymentParameters.ServerConfigLocation, serverConfig);
         }
 
-        private string ReplacePlaceholder(string content, string field, string value)
+        private void AddAspNetCoreElement(XElement config)
         {
-            if (content.Contains(field))
-            {
-                content = content.Replace(field, value);
-                Logger.LogDebug("Writing {field} '{value}' to config", field, value);
-            }
-            return content;
+            var aspNetCore = config
+                .RequiredElement("system.webServer")
+                .GetOrAdd("aspNetCore");
+
+            aspNetCore.SetAttributeValue("hostingModel", DeploymentParameters.HostingModel.ToString());
+            aspNetCore.SetAttributeValue("arguments", "%LAUNCHER_ARGS%");
+            aspNetCore.SetAttributeValue("processPath", "%LAUNCHER_PATH%");
+
+            var handlers = config
+                .RequiredElement("location")
+                .RequiredElement("system.webServer")
+                .RequiredElement("handlers");
+
+            var aspNetCoreHandler = handlers
+                .GetOrAdd("add", "name", "aspNetCore");
+
+            aspNetCoreHandler.SetAttributeValue("path", "*");
+            aspNetCoreHandler.SetAttributeValue("verb", "*");
+            aspNetCoreHandler.SetAttributeValue("modules", DeploymentParameters.AncmVersion.ToString());
+            aspNetCoreHandler.SetAttributeValue("resourceType", "Unspecified");
+            // Make aspNetCore handler first
+            aspNetCoreHandler.Remove();
+            handlers.AddFirst(aspNetCoreHandler);
         }
 
         protected override IEnumerable<Action<XElement, string>> GetWebConfigActions()
@@ -345,18 +359,6 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
             {
                 yield return action;
             }
-        }
-
-        private string ModifyANCMPathInConfig(string replaceFlag, AncmVersion version, string serverConfig)
-        {
-            if (serverConfig.Contains(replaceFlag))
-            {
-                var ancmFile = GetAncmLocation(version);
-
-                Logger.LogDebug($"Writing '{replaceFlag}' '{ancmFile}' to config");
-                return serverConfig.Replace(replaceFlag, ancmFile);
-            }
-            return serverConfig;
         }
 
         private string GetIISExpressPath()
@@ -476,22 +478,6 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
             {
                 throw new InvalidOperationException($"iisexpress Process {hostProcess.Id} crashed before shutdown was triggered.");
             }
-        }
-
-        // These elements are duplicated in the web.config if you publish. Remove them from the host.config.
-        private string RemoveRedundantElements(string serverConfig)
-        {
-            var hostConfig = XDocument.Parse(serverConfig);
-
-            var coreElement = hostConfig.Descendants("aspNetCore").FirstOrDefault();
-            coreElement?.Remove();
-
-            var handlersElement = hostConfig.Descendants("handlers").First();
-            var handlerElement = handlersElement.Descendants("add")
-                .Where(x => x.Attribute("name").Value == "aspNetCore").FirstOrDefault();
-            handlerElement?.Remove();
-
-            return hostConfig.ToString();
         }
     }
 }

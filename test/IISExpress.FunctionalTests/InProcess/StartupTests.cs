@@ -55,7 +55,9 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
 
-            EventLogHelpers.VerifyEventLogEvent(TestSink, @"Invalid or unknown processPath provided in web\.config: processPath = '.+', ErrorCode = '0x80070002'\.");
+            StopServer();
+
+            EventLogHelpers.VerifyEventLogEvent(deploymentResult, TestSink, @"Invalid or unknown processPath provided in web\.config: processPath = '.+', ErrorCode = '0x80070002'\.");
         }
 
         [ConditionalFact]
@@ -158,7 +160,9 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
 
-            EventLogHelpers.VerifyEventLogEvent(TestSink, "Unknown hosting model 'bogus'. Please specify either hostingModel=\"inprocess\" or hostingModel=\"outofprocess\" in the web.config file.");
+            StopServer();
+
+            EventLogHelpers.VerifyEventLogEvent(deploymentResult, TestSink, "Unknown hosting model 'bogus'. Please specify either hostingModel=\"inprocess\" or hostingModel=\"outofprocess\" in the web.config file.");
         }
     }
 }

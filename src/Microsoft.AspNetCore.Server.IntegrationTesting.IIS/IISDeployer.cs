@@ -276,32 +276,13 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
 
         private void ConfigureAppHostConfig(XElement config, string contentRoot, int port)
         {
-            var siteElement = config
-                .RequiredElement("system.applicationHost")
-                .RequiredElement("sites")
-                .RequiredElement("site");
+            ConfigureModuleAndBinding(config, contentRoot, port);
 
-            siteElement
-                .RequiredElement("application")
-                .RequiredElement("virtualDirectory")
-                .SetAttributeValue("physicalPath", contentRoot);
-
-            siteElement
-                .RequiredElement("bindings")
-                .RequiredElement("binding")
-                .SetAttributeValue("bindingInformation", $"*:{port}:");
-
-            var ancmVersion = DeploymentParameters.AncmVersion.ToString();
-            config
-                .RequiredElement("system.webServer")
-                .RequiredElement("globalModules")
-                .GetOrAdd("add", "name", ancmVersion)
-                .SetAttributeValue("image", GetAncmLocation(DeploymentParameters.AncmVersion));
-
+            // In IISExpress system.webServer/modules in under location element
             config
                 .RequiredElement("system.webServer")
                 .RequiredElement("modules")
-                .GetOrAdd("add", "name", ancmVersion);
+                .GetOrAdd("add", "name", DeploymentParameters.AncmVersion.ToString());
 
             var pool = config
                 .RequiredElement("system.applicationHost")

@@ -124,5 +124,30 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                     .SetAttributeValue("value", handlerSetting.Value);
             }
         }
+
+        protected void ConfigureModuleAndBinding(XElement config, string contentRoot, int port)
+        {
+            var siteElement = config
+                .RequiredElement("system.applicationHost")
+                .RequiredElement("sites")
+                .RequiredElement("site");
+
+            siteElement
+                .RequiredElement("application")
+                .RequiredElement("virtualDirectory")
+                .SetAttributeValue("physicalPath", contentRoot);
+
+            siteElement
+                .RequiredElement("bindings")
+                .RequiredElement("binding")
+                .SetAttributeValue("bindingInformation", $":{port}:localhost");
+
+            var ancmVersion = DeploymentParameters.AncmVersion.ToString();
+            config
+                .RequiredElement("system.webServer")
+                .RequiredElement("globalModules")
+                .GetOrAdd("add", "name", ancmVersion)
+                .SetAttributeValue("image", GetAncmLocation(DeploymentParameters.AncmVersion));
+        }
     }
 }

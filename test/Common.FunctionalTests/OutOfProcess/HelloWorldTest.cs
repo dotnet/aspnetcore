@@ -2,9 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
+using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
@@ -30,9 +33,16 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [MemberData(nameof(TestVariants))]
         public async Task HelloWorld(TestVariant variant)
         {
-            // The default in hosting sets windows auth to true.
-            // Set it to the IISExpress.config file
             var deploymentParameters = _fixture.GetBaseDeploymentParameters(variant);
+            deploymentParameters.ServerConfigActionList.Add(
+                (element, _) => {
+                    element
+                        .RequiredElement("system.webServer")
+                        .RequiredElement("security")
+                        .RequiredElement("authentication")
+                        .Element("windowsAuthentication")
+                        ?.SetAttributeValue("enabled", "false");
+                });
 
             var deploymentResult = await DeployAsync(deploymentParameters);
 
@@ -63,6 +73,9 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 $"WebRootPath {deploymentResult.ContentRoot}\\wwwroot" + Environment.NewLine +
                 $"CurrentDirectory {deploymentResult.ContentRoot}",
                 await deploymentResult.HttpClient.GetStringAsync("/HostingEnvironment"));
+
+            var expectedDll = variant.AncmVersion == AncmVersion.AspNetCoreModule ? "aspnetcore.dll" : "aspnetcorev2.dll";
+            Assert.Contains(deploymentResult.HostProcess.Modules.OfType<ProcessModule>(), m=> m.FileName.Contains(expectedDll));
         }
     }
 }
