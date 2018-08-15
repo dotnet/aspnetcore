@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             lock (_writeLock)
             {
                 _outgoingFrame.PrepareHeaders(Http2HeadersFrameFlags.END_HEADERS, streamId);
-                _outgoingFrame.Length = _continueBytes.Length;
+                _outgoingFrame.PayloadLength = _continueBytes.Length;
                 _continueBytes.CopyTo(_outgoingFrame.HeadersPayload);
 
                 return WriteFrameUnsynchronizedAsync();
@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 _outgoingFrame.PrepareHeaders(Http2HeadersFrameFlags.NONE, streamId);
 
                 var done = _hpackEncoder.BeginEncode(statusCode, EnumerateHeaders(headers), _outgoingFrame.Payload, out var payloadLength);
-                _outgoingFrame.Length = payloadLength;
+                _outgoingFrame.PayloadLength = payloadLength;
 
                 if (done)
                 {
@@ -134,7 +134,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     _outgoingFrame.PrepareContinuation(Http2ContinuationFrameFlags.NONE, streamId);
 
                     done = _hpackEncoder.Encode(_outgoingFrame.Payload, out var length);
-                    _outgoingFrame.Length = length;
+                    _outgoingFrame.PayloadLength = length;
 
                     if (done)
                     {
@@ -207,7 +207,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 _outgoingFrame.DataFlags = Http2DataFrameFlags.END_STREAM;
             }
 
-            _outgoingFrame.Length = unwrittenPayloadLength;
+            _outgoingFrame.PayloadLength = unwrittenPayloadLength;
 
             _log.Http2FrameSending(_connectionId, _outgoingFrame);
             _outputWriter.Write(_outgoingFrame.Raw);

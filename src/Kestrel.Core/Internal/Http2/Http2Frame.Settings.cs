@@ -3,10 +3,17 @@
 
 using System.Buffers.Binary;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
+    /* https://tools.ietf.org/html/rfc7540#section-6.5.1
+        List of:
+        +-------------------------------+
+        |       Identifier (16)         |
+        +-------------------------------+-------------------------------+
+        |                        Value (32)                             |
+        +---------------------------------------------------------------+
+    */
     public partial class Http2Frame
     {
         private const int SettingSize = 6; // 2 bytes for the id, 4 bytes for the value.
@@ -17,10 +24,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             set => Flags = (byte)value;
         }
 
+        public bool SettingsAck => (SettingsFlags & Http2SettingsFrameFlags.ACK) == Http2SettingsFrameFlags.ACK;
+
         public int SettingsCount
         {
-            get => Length / SettingSize;
-            set => Length = value * SettingSize;
+            get => PayloadLength / SettingSize;
+            set => PayloadLength = value * SettingSize;
         }
 
         public IList<Http2PeerSetting> GetSettings()

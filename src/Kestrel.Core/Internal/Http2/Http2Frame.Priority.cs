@@ -3,50 +3,49 @@
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
+    /* https://tools.ietf.org/html/rfc7540#section-6.3
+        +-+-------------------------------------------------------------+
+        |E|                  Stream Dependency (31)                     |
+        +-+-------------+-----------------------------------------------+
+        |   Weight (8)  |
+        +-+-------------+
+    */
     public partial class Http2Frame
     {
+        private const int PriorityWeightOffset = 4;
+
         public int PriorityStreamDependency
         {
-            get => ((_data[PayloadOffset] << 24)
-                | (_data[PayloadOffset + 1] << 16)
-                | (_data[PayloadOffset + 2] << 8)
-                | _data[PayloadOffset + 3]) & 0x7fffffff;
-            set
-            {
-                _data[PayloadOffset] = (byte)((value & 0x7f000000) >> 24);
-                _data[PayloadOffset + 1] = (byte)((value & 0x00ff0000) >> 16);
-                _data[PayloadOffset + 2] = (byte)((value & 0x0000ff00) >> 8);
-                _data[PayloadOffset + 3] = (byte)(value & 0x000000ff);
-            }
+            get => (int)Bitshifter.ReadUInt31BigEndian(Payload);
+            set => Bitshifter.WriteUInt31BigEndian(Payload, (uint)value);
         }
-
 
         public bool PriorityIsExclusive
         {
-            get => (_data[PayloadOffset] & 0x80000000) != 0;
+            get => (Payload[0] & 0x80) != 0;
             set
             {
                 if (value)
                 {
-                    _data[PayloadOffset] |= 0x80;
+                    Payload[0] |= 0x80;
                 }
                 else
                 {
-                    _data[PayloadOffset] &= 0x7f;
+                    Payload[0] &= 0x7f;
                 }
             }
         }
 
         public byte PriorityWeight
         {
-            get => _data[PayloadOffset + 4];
-            set => _data[PayloadOffset] = value;
+            get => Payload[PriorityWeightOffset];
+            set => Payload[PriorityWeightOffset] = value;
         }
 
 
         public void PreparePriority(int streamId, int streamDependency, bool exclusive, byte weight)
         {
-            Length = 5;
+            PayloadLength = 5;
             Type = Http2FrameType.PRIORITY;
             StreamId = streamId;
             PriorityStreamDependency = streamDependency;

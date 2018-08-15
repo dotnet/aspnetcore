@@ -274,9 +274,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
 
             var payload = dataFrame.DataPayload;
-            var endStream = (dataFrame.DataFlags & Http2DataFrameFlags.END_STREAM) == Http2DataFrameFlags.END_STREAM;
+            var endStream = dataFrame.DataEndStream;
 
-            if (payload.Count > 0)
+            if (payload.Length > 0)
             {
                 RequestBodyStarted = true;
 
@@ -287,7 +287,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     _inputFlowControl.StopWindowUpdates();
                 }
 
-                _inputFlowControl.Advance(payload.Count);
+                _inputFlowControl.Advance(payload.Length);
 
                 if (IsAborted)
                 {
@@ -300,12 +300,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 if (InputRemaining.HasValue)
                 {
                     // https://tools.ietf.org/html/rfc7540#section-8.1.2.6
-                    if (payload.Count > InputRemaining.Value)
+                    if (payload.Length > InputRemaining.Value)
                     {
                         throw new Http2StreamErrorException(StreamId, CoreStrings.Http2StreamErrorMoreDataThanLength, Http2ErrorCode.PROTOCOL_ERROR);
                     }
 
-                    InputRemaining -= payload.Count;
+                    InputRemaining -= payload.Length;
                 }
 
                 RequestBodyPipe.Writer.Write(payload);

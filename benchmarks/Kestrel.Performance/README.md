@@ -1,5 +1,7 @@
 ﻿Compile the solution in Release mode (so Kestrel is available in release)
-
+```
+build /t:compile /p:Configuration=Release
+```
 To run a specific benchmark add it as parameter
 ```
 dotnet run -f netcoreapp2.0 -c Release RequestParsing

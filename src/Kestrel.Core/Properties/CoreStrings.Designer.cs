@@ -2087,7 +2087,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             => GetString("Http2StreamErrorMoreDataThanLength");
 
         /// <summary>
-        /// An error occured after the response headers were sent, a reset is being sent.
+        /// An error occurred after the response headers were sent, a reset is being sent.
         /// </summary>
         internal static string Http2StreamErrorAfterHeaders
         {
@@ -2095,7 +2095,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         }
 
         /// <summary>
-        /// An error occured after the response headers were sent, a reset is being sent.
+        /// An error occurred after the response headers were sent, a reset is being sent.
         /// </summary>
         internal static string FormatHttp2StreamErrorAfterHeaders()
             => GetString("Http2StreamErrorAfterHeaders");
@@ -2127,6 +2127,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// </summary>
         internal static string FormatGreaterThanZeroRequired()
             => GetString("GreaterThanZeroRequired");
+
+        /// <summary>
+        /// The frame is too short to contain the fields indicated by the given flags.
+        /// </summary>
+        internal static string Http2FrameMissingFields
+        {
+            get => GetString("Http2FrameMissingFields");
+        }
+
+        /// <summary>
+        /// The frame is too short to contain the fields indicated by the given flags.
+        /// </summary>
+        internal static string FormatHttp2FrameMissingFields()
+            => GetString("Http2FrameMissingFields");
 
         private static string GetString(string name, params string[] formatterNames)
         {
