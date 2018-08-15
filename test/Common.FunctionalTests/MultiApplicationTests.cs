@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             Assert.Equal(200, (int)result1.StatusCode);
             Assert.Equal(500, (int)result2.StatusCode);
             StopServer();
-            EventLogHelpers.VerifyEventLogEvent(TestSink, "Only one inprocess application is allowed per IIS application pool");
+            EventLogHelpers.VerifyEventLogEvent(result, TestSink, "Only one inprocess application is allowed per IIS application pool");
         }
 
         [ConditionalTheory]
@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             Assert.Equal(200, (int)result1.StatusCode);
             Assert.Equal(500, (int)result2.StatusCode);
             StopServer();
-            EventLogHelpers.VerifyEventLogEvent(TestSink, "Mixed hosting model is not supported.");
+            EventLogHelpers.VerifyEventLogEvent(result, TestSink, "Mixed hosting model is not supported.");
         }
 
         private void SetHostingModel(string directory, HostingModel model)
