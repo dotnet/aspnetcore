@@ -4,7 +4,7 @@
 package com.microsoft.aspnet.signalr;
 
 public interface Transport {
-    void start() throws InterruptedException;
+    void start() throws Exception;
     void send(String message) throws Exception;
     void setOnReceive(OnReceiveCallBack callback);
     void onReceive(String message) throws Exception;
