@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Internal;
+using NuGet.Versioning;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -22,26 +23,36 @@ namespace AspNetCoreSdkTests.Util
         // Bind to dynamic port 0 to avoid port conflicts during parallel tests
         private const string _urls = "--urls http://127.0.0.1:0;https://127.0.0.1:0";
 
-        public static string PublishOutput => "pub";
+        // Must publish to folder under "bin" or "obj" to prevent double-copying publish output during incremental publish
+        public static string PublishOutput => Path.Combine("bin", "pub");
 
-        private static readonly Lazy<Version> _sdkVersion = new Lazy<Version>(GetSdkVersion, LazyThreadSafetyMode.PublicationOnly);
+        private static readonly Lazy<(SemanticVersion SdkVersion, SemanticVersion RuntimeVersion)> _versions =
+            new Lazy<(SemanticVersion SdkVersion, SemanticVersion RuntimeVersion)>(GetVersions, LazyThreadSafetyMode.PublicationOnly);
 
-        public static Version SdkVersion => _sdkVersion.Value;
+        public static SemanticVersion SdkVersion => _versions.Value.SdkVersion;
 
-        private static Version GetSdkVersion()
+        public static SemanticVersion RuntimeVersion => _versions.Value.RuntimeVersion;
+
+        public static string TargetFrameworkMoniker => $"netcoreapp{RuntimeVersion.Major}.{RuntimeVersion.Minor}";
+
+        private static (SemanticVersion SdkVersion, SemanticVersion RuntimeVersion) GetVersions()
         {
             var info = RunDotNet("--info", workingDirectory: null);
-            var versionString = Regex.Match(info, @"Version:\W*([0-9.]+)").Groups[1].Value;
-            var version = new Version(versionString);
 
-            // Supported version range is [2.1.300,2.1.401] (inclusive)
-            if (version >= new Version(2, 1, 300) && version <= new Version(2, 1, 401))
+            var sdkVersionString = Regex.Match(info, @"Version:\s*(\S+)").Groups[1].Value;
+            var sdkVersion = SemanticVersion.Parse(sdkVersionString);
+
+            var runtimeVersionString = Regex.Match(info, @"Microsoft.NETCore.App\s*(\S+)").Groups[1].Value;
+            var runtimeVersion = SemanticVersion.Parse(runtimeVersionString);
+
+            // Supported version range is [2.1.300,2.2.100] (inclusive)
+            if (sdkVersion >= new SemanticVersion(2, 1, 300) && sdkVersion <= new SemanticVersion(2, 2, 100))
             {
-                return version;
+                return (sdkVersion, runtimeVersion);
             }
             else
             {
-                throw new InvalidOperationException($"Unsupported SDK version: {version}");
+                throw new InvalidOperationException($"Unsupported SDK version: {sdkVersion}");
             }
         }
 
@@ -74,7 +85,7 @@ namespace AspNetCoreSdkTests.Util
         {
             // "dotnet build" cannot use "--no-restore" if the app is self-contained and the SDK contains a patched runtime
             // https://github.com/dotnet/sdk/issues/2312, https://github.com/dotnet/cli/issues/9514
-            bool restoreRequired = (runtimeIdentifier != RuntimeIdentifier.None) && (DotNetUtil.SdkVersion >= new Version(2, 1, 301));
+            bool restoreRequired = (runtimeIdentifier != RuntimeIdentifier.None) && (DotNetUtil.RuntimeVersion.Patch > 0);
 
             var restoreArgument = restoreRequired ? $"--no-cache {packageSource.SourceArgument}" : "--no-restore";
 

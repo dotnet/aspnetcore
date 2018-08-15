@@ -15,18 +15,21 @@ namespace AspNetCoreSdkTests
         public static RuntimeIdentifier Linux_x64 = new RuntimeIdentifier() {
             Name = "linux-x64",
             OSPlatforms = new[] { OSPlatform.Linux, },
+            ExecutableFileExtension = string.Empty,
         };
 
         public static RuntimeIdentifier OSX_x64 = new RuntimeIdentifier()
         {
             Name = "osx-x64",
             OSPlatforms = new[] { OSPlatform.OSX, },
+            ExecutableFileExtension = string.Empty,
         };
 
         public static RuntimeIdentifier Win_x64 = new RuntimeIdentifier()
         {
             Name = "win-x64",
             OSPlatforms = new[] { OSPlatform.Windows, },
+            ExecutableFileExtension = ".exe",
         };
 
         public static IEnumerable<RuntimeIdentifier> All = new[]
@@ -43,6 +46,7 @@ namespace AspNetCoreSdkTests
         public string RuntimeArgument => (this == None) ? string.Empty : $"--runtime {Name}";
         public string Path => (this == None) ? string.Empty : Name;
         public IEnumerable<OSPlatform> OSPlatforms { get; private set; }
+        public string ExecutableFileExtension { get; private set; }
 
         public override string ToString() => Name;
     }

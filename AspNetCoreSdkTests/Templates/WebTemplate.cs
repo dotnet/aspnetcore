@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AspNetCoreSdkTests.Util;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -22,25 +23,18 @@ namespace AspNetCoreSdkTests.Templates
                 $"{Name}.RazorTargetAssemblyInfo.cache",
             }.Select(p => Path.Combine(OutputPath, p)));
 
-        private IDictionary<RuntimeIdentifier, Func<IEnumerable<string>>> _additionalFilesAfterPublish =>
-            new Dictionary<RuntimeIdentifier, Func<IEnumerable<string>>>()
+        private IDictionary<(string TargetFrameworkMoniker, RuntimeIdentifier), Func<IEnumerable<string>>> _additionalFilesAfterPublish =>
+            new Dictionary<(string TargetFrameworkMoniker, RuntimeIdentifier), Func<IEnumerable<string>>>()
             {
-                { RuntimeIdentifier.None, () => new[]
+                { ("netcoreapp2.1", RuntimeIdentifier.None), () => new[]
                     {
                         // Publish includes all *.config and *.json files (https://github.com/aspnet/websdk/issues/334)
                         "NuGet.config",
                         "web.config",
                     }
                 },
-                { RuntimeIdentifier.Win_x64, () =>
-                    _additionalFilesAfterPublish[RuntimeIdentifier.Linux_x64]()
-                    .Concat(new[]
-                    {
-                        "sni.dll",
-                    })
-                },
-                { RuntimeIdentifier.Linux_x64, () =>
-                    _additionalFilesAfterPublish[RuntimeIdentifier.None]()
+                { ("netcoreapp2.1", RuntimeIdentifier.Linux_x64), () =>
+                    _additionalFilesAfterPublish[("netcoreapp2.1", RuntimeIdentifier.None)]()
                     .Concat(new[]
                     {
                         "Microsoft.AspNetCore.Antiforgery.dll",
@@ -211,11 +205,44 @@ namespace AspNetCoreSdkTests.Templates
                         "System.Threading.Channels.dll",
                     })
                 },
-                { RuntimeIdentifier.OSX_x64, () => _additionalFilesAfterPublish[RuntimeIdentifier.Linux_x64]() },
+                { ("netcoreapp2.1", RuntimeIdentifier.OSX_x64), () =>
+                    _additionalFilesAfterPublish[("netcoreapp2.1", RuntimeIdentifier.Linux_x64)]()
+                },
+                { ("netcoreapp2.1", RuntimeIdentifier.Win_x64), () =>
+                    _additionalFilesAfterPublish[("netcoreapp2.1", RuntimeIdentifier.Linux_x64)]()
+                    .Concat(new[]
+                    {
+                        "sni.dll",
+                    })
+                },
+                { ("netcoreapp2.2", RuntimeIdentifier.None), () =>
+                    _additionalFilesAfterPublish[("netcoreapp2.1", RuntimeIdentifier.None)]()
+                },
+                { ("netcoreapp2.2", RuntimeIdentifier.Linux_x64), () =>
+                    _additionalFilesAfterPublish[("netcoreapp2.1", RuntimeIdentifier.Linux_x64)]()
+                    .Concat(new[]
+                    {
+                        "Microsoft.AspNetCore.Diagnostics.HealthChecks.dll",
+                        "Microsoft.AspNetCore.Server.IIS.dll",
+                        "Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions.dll",
+                        "Microsoft.Extensions.Diagnostics.HealthChecks.dll",
+                    })
+                },
+                { ("netcoreapp2.2", RuntimeIdentifier.OSX_x64), () =>
+                    _additionalFilesAfterPublish[("netcoreapp2.2", RuntimeIdentifier.Linux_x64)]()
+                },
+                { ("netcoreapp2.2", RuntimeIdentifier.Win_x64), () =>
+                    _additionalFilesAfterPublish[("netcoreapp2.2", RuntimeIdentifier.Linux_x64)]()
+                    .Concat(new[]
+                    {
+                        "aspnetcorev2_inprocess.dll",
+                        "sni.dll",
+                    })
+                },
             };
 
         public override IEnumerable<string> ExpectedFilesAfterPublish =>
             base.ExpectedFilesAfterPublish
-            .Concat(_additionalFilesAfterPublish[RuntimeIdentifier]());
+            .Concat(_additionalFilesAfterPublish[(DotNetUtil.TargetFrameworkMoniker, RuntimeIdentifier)]());
     }
 }

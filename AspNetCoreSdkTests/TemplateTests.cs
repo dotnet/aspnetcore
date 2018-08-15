@@ -1,5 +1,6 @@
 ﻿using AspNetCoreSdkTests.Templates;
 using AspNetCoreSdkTests.Util;
+using NuGet.Versioning;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
@@ -20,6 +21,13 @@ namespace AspNetCoreSdkTests
         }
 
         [Test]
+        [TestCaseSource(nameof(RestoreData))]
+        public void RestoreIncremental(Template template)
+        {
+            CollectionAssert.AreEquivalent(template.ExpectedObjFilesAfterRestore, template.ObjFilesAfterRestoreIncremental);
+        }
+
+        [Test]
         [TestCaseSource(nameof(BuildData))]
         public void Build(Template template)
         {
@@ -28,10 +36,29 @@ namespace AspNetCoreSdkTests
         }
 
         [Test]
+        [TestCaseSource(nameof(BuildData))]
+        public void BuildIncremental(Template template)
+        {
+            CollectionAssert.AreEquivalent(template.ExpectedObjFilesAfterBuild, template.ObjFilesAfterBuildIncremental);
+            CollectionAssert.AreEquivalent(template.ExpectedBinFilesAfterBuild, template.BinFilesAfterBuildIncremental);
+        }
+
+        [Test]
         [TestCaseSource(nameof(PublishData))]
         public void Publish(Template template)
         {
-            CollectionAssert.AreEquivalent(template.ExpectedFilesAfterPublish, template.FilesAfterPublish);
+            var expected = template.ExpectedFilesAfterPublish;
+            var actual = template.FilesAfterPublish;
+            CollectionAssert.AreEquivalent(expected, actual);
+        }
+
+        [Test]
+        [TestCaseSource(nameof(PublishData))]
+        public void PublishIncremental(Template template)
+        {
+            var expected = template.ExpectedFilesAfterPublish;
+            var actual = template.FilesAfterPublishIncremental;
+            CollectionAssert.AreEquivalent(expected, actual);
         }
 
         [Test]
@@ -85,11 +112,11 @@ namespace AspNetCoreSdkTests
         private static IEnumerable<Template> GetTemplates(RuntimeIdentifier runtimeIdentifier)
         {
             // Offline restore is broken in SDK 2.1.301 (https://github.com/aspnet/Universe/issues/1220)
-            var offlinePackageSource = (DotNetUtil.SdkVersion == new Version(2, 1, 301)) ?
+            var offlinePackageSource = (DotNetUtil.SdkVersion == new SemanticVersion(2, 1, 301)) ?
                 NuGetPackageSource.NuGetOrg : NuGetPackageSource.None;
 
             // Pre-release SDKs require a private nuget feed
-            var onlinePackageSource = (DotNetUtil.SdkVersion == new Version(2, 1, 401)) ?
+            var onlinePackageSource = (DotNetUtil.SdkVersion.IsPrerelease) ?
                 NuGetPackageSource.EnvironmentVariableAndNuGetOrg : NuGetPackageSource.NuGetOrg;
 
             if (runtimeIdentifier == RuntimeIdentifier.None)

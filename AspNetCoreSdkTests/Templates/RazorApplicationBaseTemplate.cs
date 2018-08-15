@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AspNetCoreSdkTests.Util;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -21,14 +22,14 @@ namespace AspNetCoreSdkTests.Templates
                     _additionalObjFilesAfterBuild[RuntimeIdentifier.None]()
                     .Concat(new[]
                     {
-                        Path.Combine("netcoreapp2.1", RuntimeIdentifier.Path, "host", $"{Name}.exe"),
+                        Path.Combine(DotNetUtil.TargetFrameworkMoniker, RuntimeIdentifier.Path, "host", $"{Name}.exe"),
                     })
                 },
                 { RuntimeIdentifier.Linux_x64, () =>
                     _additionalObjFilesAfterBuild[RuntimeIdentifier.None]()
                     .Concat(new[]
                     {
-                        Path.Combine("netcoreapp2.1", RuntimeIdentifier.Path, "host", $"{Name}"),
+                        Path.Combine(DotNetUtil.TargetFrameworkMoniker, RuntimeIdentifier.Path, "host", $"{Name}"),
                     })
                 },
                 { RuntimeIdentifier.OSX_x64, () => _additionalObjFilesAfterBuild[RuntimeIdentifier.Linux_x64]() },
