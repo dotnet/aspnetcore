@@ -3,6 +3,7 @@
 
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
@@ -142,6 +143,20 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             Assert.Equal(_helloWorldResponse, responseText);
             AssertLoadedVersion(version);
+        }
+
+        [ConditionalFact]
+        public async Task DoesNotCrashWhenNoVersionsAvailable()
+        {
+            var deploymentParameters = GetGlobalVersionBaseDeploymentParameters();
+            CopyShimToOutput(deploymentParameters);
+            var deploymentResult = await DeployAsync(deploymentParameters);
+
+            var originalANCMPath = GetANCMRequestHandlerPath(deploymentResult, _handlerVersion20);
+            Directory.Delete(originalANCMPath, true);
+            var response = await deploymentResult.HttpClient.GetAsync("HelloWorld");
+
+            Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
         }
 
         private IISDeploymentParameters GetGlobalVersionBaseDeploymentParameters()

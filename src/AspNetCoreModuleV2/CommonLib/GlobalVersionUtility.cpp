@@ -76,13 +76,13 @@ GlobalVersionUtility::FindHighestGlobalVersion(PCWSTR pwzAspNetCoreFolderPath)
 {
     if (pwzAspNetCoreFolderPath == NULL)
     {
-        throw new std::invalid_argument("pwzAspNetCoreFolderPath is NULL");
+        throw std::invalid_argument("pwzAspNetCoreFolderPath is NULL");
     }
 
     std::vector<fx_ver_t> versionsInDirectory = GetRequestHandlerVersions(pwzAspNetCoreFolderPath);
     if (versionsInDirectory.empty())
     {
-        throw new std::runtime_error("Cannot find request handler next to aspnetcorev2.dll. Verify a version of the request handler is installed in a version folder.");
+        throw std::runtime_error("Cannot find request handler next to aspnetcorev2.dll. Verify a version of the request handler is installed in a version folder.");
     }
     std::sort(versionsInDirectory.begin(), versionsInDirectory.end());
 

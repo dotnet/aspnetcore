@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         {
             var webConfigPath = Path.Combine(deploymentResult.ContentRoot, "web.config");
             var document = XDocument.Load(webConfigPath);
-
+            action(document.Root);
             document.Save(webConfigPath);
         }
 

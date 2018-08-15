@@ -157,13 +157,10 @@ HandlerResolver::FindNativeAssemblyFromGlobalLocation(
     }
     catch (...)
     {
-        STRU struEvent;
-        if (SUCCEEDED(struEvent.Copy(ASPNETCORE_EVENT_OUT_OF_PROCESS_RH_MISSING_MSG)))
-        {
-            EventLog::Info(
+       EventLog::Info(
                 ASPNETCORE_EVENT_OUT_OF_PROCESS_RH_MISSING,
-                struEvent.QueryStr());
-        }
+                ASPNETCORE_EVENT_OUT_OF_PROCESS_RH_MISSING_MSG,
+                pstrHandlerDllName);
 
         return OBSERVE_CAUGHT_EXCEPTION();
     }
