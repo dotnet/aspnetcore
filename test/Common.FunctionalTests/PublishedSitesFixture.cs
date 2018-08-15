@@ -49,7 +49,9 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 publisher,
                 new DeploymentParameters(publisher.ApplicationPath, DeployerSelector.ServerType, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64)
                 {
-                    HostingModel = hostingModel
+                    HostingModel = hostingModel,
+                    TargetFramework = "netcoreapp2.2",
+                    AncmVersion = AncmVersion.AspNetCoreModuleV2
                 },
                 publish);
         }
@@ -60,10 +62,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             {
                 ApplicationPublisher = publisher,
                 ApplicationPath =  publisher.ApplicationPath,
-                TargetFramework = Tfm.NetCoreApp22,
-                ApplicationType = ApplicationType.Portable,
-                AncmVersion = AncmVersion.AspNetCoreModuleV2,
-                PublishApplicationBeforeDeployment = publish,
+                PublishApplicationBeforeDeployment = publish
             };
         }
     }

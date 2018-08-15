@@ -37,11 +37,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         {
             // Must publish to set env vars in web.config
             var deploymentParameters = _fixture.GetBaseDeploymentParameters(variant, publish: true);
-
-            // Workaround "PublishedSitesFixture.GetBaseDeploymentParameters() overrides too many properties of baseParameters"
-            // https://github.com/aspnet/IISIntegration/issues/1237
-            deploymentParameters.AncmVersion = variant.AncmVersion;
-
             var port = GetUnusedRandomPort();
             deploymentParameters.WebConfigBasedEnvironmentVariables["ASPNETCORE_PORT"] = port.ToString();
 

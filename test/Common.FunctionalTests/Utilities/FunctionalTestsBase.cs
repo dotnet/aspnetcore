@@ -28,11 +28,6 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 parameters.EnvironmentVariables[DebugEnvironmentVariable] = "console";
             }
 
-            if (parameters.ServerType == ServerType.IISExpress)
-            {
-                parameters.ServerConfigTemplateContent = parameters.ServerConfigTemplateContent ?? File.ReadAllText("IISExpress.config");
-            }
-
             if (parameters.ApplicationPublisher == null)
             {
                 throw new InvalidOperationException("All tests should use ApplicationPublisher");
