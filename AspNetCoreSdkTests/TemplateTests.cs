@@ -15,21 +15,21 @@ namespace AspNetCoreSdkTests
     {
         [Test]
         [TestCaseSource(nameof(RestoreData))]
-        public void Restore(Template template)
+        public void _1_Restore(Template template)
         {
             CollectionAssert.AreEquivalent(template.ExpectedObjFilesAfterRestore, template.ObjFilesAfterRestore);
         }
 
         [Test]
         [TestCaseSource(nameof(RestoreData))]
-        public void RestoreIncremental(Template template)
+        public void _2_RestoreIncremental(Template template)
         {
             CollectionAssert.AreEquivalent(template.ExpectedObjFilesAfterRestore, template.ObjFilesAfterRestoreIncremental);
         }
 
         [Test]
         [TestCaseSource(nameof(BuildData))]
-        public void Build(Template template)
+        public void _3_Build(Template template)
         {
             CollectionAssert.AreEquivalent(template.ExpectedObjFilesAfterBuild, template.ObjFilesAfterBuild);
             CollectionAssert.AreEquivalent(template.ExpectedBinFilesAfterBuild, template.BinFilesAfterBuild);
@@ -37,33 +37,15 @@ namespace AspNetCoreSdkTests
 
         [Test]
         [TestCaseSource(nameof(BuildData))]
-        public void BuildIncremental(Template template)
+        public void _4_BuildIncremental(Template template)
         {
             CollectionAssert.AreEquivalent(template.ExpectedObjFilesAfterBuild, template.ObjFilesAfterBuildIncremental);
             CollectionAssert.AreEquivalent(template.ExpectedBinFilesAfterBuild, template.BinFilesAfterBuildIncremental);
         }
 
         [Test]
-        [TestCaseSource(nameof(PublishData))]
-        public void Publish(Template template)
-        {
-            var expected = template.ExpectedFilesAfterPublish;
-            var actual = template.FilesAfterPublish;
-            CollectionAssert.AreEquivalent(expected, actual);
-        }
-
-        [Test]
-        [TestCaseSource(nameof(PublishData))]
-        public void PublishIncremental(Template template)
-        {
-            var expected = template.ExpectedFilesAfterPublish;
-            var actual = template.FilesAfterPublishIncremental;
-            CollectionAssert.AreEquivalent(expected, actual);
-        }
-
-        [Test]
         [TestCaseSource(nameof(RunData))]
-        public void Run(Template template)
+        public void _5_Run(Template template)
         {
             var statusCode = template.HttpResponseAfterRun.StatusCode;
             Assert.AreEqual(HttpStatusCode.OK, statusCode,
@@ -77,14 +59,32 @@ namespace AspNetCoreSdkTests
         [NonParallelizable]
         [Test]
         [TestCaseSource(nameof(RunNonParallelizableData))]
-        public void RunNonParallelizable(Template template)
+        public void _5_RunNonParallelizable(Template template)
         {
-            Run(template);
+            _5_Run(template);
+        }
+
+        [Test]
+        [TestCaseSource(nameof(PublishData))]
+        public void _6_Publish(Template template)
+        {
+            var expected = template.ExpectedFilesAfterPublish;
+            var actual = template.FilesAfterPublish;
+            CollectionAssert.AreEquivalent(expected, actual);
+        }
+
+        [Test]
+        [TestCaseSource(nameof(PublishData))]
+        public void _7_PublishIncremental(Template template)
+        {
+            var expected = template.ExpectedFilesAfterPublish;
+            var actual = template.FilesAfterPublishIncremental;
+            CollectionAssert.AreEquivalent(expected, actual);
         }
 
         [Test]
         [TestCaseSource(nameof(ExecData))]
-        public void Exec(Template template)
+        public void _8_Exec(Template template)
         {
             var statusCode = template.HttpResponseAfterExec.StatusCode;
             Assert.AreEqual(HttpStatusCode.OK, statusCode,
