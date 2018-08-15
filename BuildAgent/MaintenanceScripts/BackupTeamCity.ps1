@@ -1,15 +1,14 @@
 [CmdletBinding()]
 param(
-    [Parameter(Mandatory=$true)][string]$ciServer,
-    [Parameter(Mandatory=$true)][string]$ciUsername,
-    [Parameter(Mandatory=$true)][string]$ciPassword,
-    [Parameter(Mandatory=$true)][string]$azureAccount,
-    [Parameter(Mandatory=$true)][string]$azureKey,
-    [Parameter(Mandatory=$true)][string]$azureShare
+    [Parameter(Mandatory = $true)][string]$ciServer,
+    [Parameter(Mandatory = $true)][string]$ciUsername,
+    [Parameter(Mandatory = $true)][string]$ciPassword,
+    [Parameter(Mandatory = $true)][string]$azureAccount,
+    [Parameter(Mandatory = $true)][string]$azureKey,
+    [Parameter(Mandatory = $true)][string]$azureShare
 )
 
-function Save-TeamCityBackup() 
-{
+function Save-TeamCityBackup() {
     param(
         [string] $server,
         [string] $fileName,
@@ -30,10 +29,10 @@ function Save-TeamCityBackup()
     $webClient = new-object System.Net.WebClient
     $webClient.Headers["Authorization"] = "Basic $authInfo"
 
-    $webClient.DownloadFile($TeamCityURL, $targetFolder+$fileName)
+    $webClient.DownloadFile($TeamCityURL, $targetFolder + $fileName)
 }
 
-function Invoke-TeamCityRequest(){
+function Invoke-TeamCityRequest() {
     param(
         [string] $server,
         [string] $url,
@@ -54,8 +53,7 @@ function Invoke-TeamCityRequest(){
     $webRequest.PreAuthenticate = $true
     $webRequest.Method = $verb
  
-    if($verb -eq "POST")
-    {
+    if ($verb -eq "POST") {
         $requestStream = $webRequest.GetRequestStream()
         $requestStream.Write($PostStr, 0, $PostStr.length)
         $requestStream.Close()
@@ -78,40 +76,40 @@ function Invoke-TeamCityBackup() {
         [string] $includeBuildLogs,
         [string] $includePersonalChanges,
         [string] $fileName,
-  	    [string] $userName,
-		[string] $password
+        [string] $userName,
+        [string] $password
     )
     $api = [System.String]::Format("server/backup?addTimestamp={0}&includeConfigs={1}&includeDatabase={2}&includeBuildLogs={3}&includePersonalChanges={4}&fileName={5}",
-                                            $addTimestamp,
-                                            $includeConfigs,
-                                            $includeDatabase,
-                                            $includeBuildLogs,
-                                            $includePersonalChanges,
-                                            $fileName);
+        $addTimestamp,
+        $includeConfigs,
+        $includeDatabase,
+        $includeBuildLogs,
+        $includePersonalChanges,
+        $fileName);
 
     return Invoke-TeamCityRequest $server $api $userName $password "POST"
 }
 
 function Get-BackupStatus {
     param(
-        [Parameter(Mandatory=$true)][string]$server,
-        [Parameter(Mandatory=$true)][string]$username,
-        [Parameter(Mandatory=$true)][string]$password
+        [Parameter(Mandatory = $true)][string]$server,
+        [Parameter(Mandatory = $true)][string]$username,
+        [Parameter(Mandatory = $true)][string]$password
     )
     $api = "server/backup"
     return Invoke-TeamCityRequest $server $api $username $password "GET"
 }
 
-function Start-Backup{
+function Start-Backup {
     param(
-        [Parameter(Mandatory=$true)][string]$server,
-        [Parameter(Mandatory=$true)][string]$username,
-        [Parameter(Mandatory=$true)][string]$password
+        [Parameter(Mandatory = $true)][string]$server,
+        [Parameter(Mandatory = $true)][string]$username,
+        [Parameter(Mandatory = $true)][string]$password
     )
     $addTimestamp = $true
     $includeConfigs = $true
     $includeDatabase = $true
-    $includeBuildLogs = $true
+    $includeBuildLogs = $false
     $includePersonalChanges = $true
     $fileName = "TeamCity_Backup_"
     
