@@ -28,9 +28,8 @@ namespace TriageBuildFailures.Handlers
         protected async Task CommentOnIssue(TeamCityBuild build, GithubIssue issue, string shortTestName)
         {
             var comments = await GHClient.GetIssueComments(issue);
-
             var commentsFromToday = comments.Where(c =>
-                c.CreatedAt.Date == DateTime.Now.Date
+                c.CreatedAt.Date == DateTime.UtcNow.Date
                 && c.User.Login == Config.GitHub.BotUsername
                 && c.Body.Contains("This comment was made automatically")
                 && !c.Body.StartsWith("Please use this workflow"));
