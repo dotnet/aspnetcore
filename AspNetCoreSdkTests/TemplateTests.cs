@@ -17,30 +17,44 @@ namespace AspNetCoreSdkTests
         [TestCaseSource(nameof(RestoreData))]
         public void _1_Restore(Template template)
         {
-            CollectionAssert.AreEquivalent(template.ExpectedObjFilesAfterRestore, template.ObjFilesAfterRestore);
+            var expected = template.ExpectedObjFilesAfterRestore;
+            var actual = template.ObjFilesAfterRestore;
+            CollectionAssert.AreEquivalent(expected, actual);
         }
 
         [Test]
         [TestCaseSource(nameof(RestoreData))]
         public void _2_RestoreIncremental(Template template)
         {
-            CollectionAssert.AreEquivalent(template.ExpectedObjFilesAfterRestore, template.ObjFilesAfterRestoreIncremental);
+            var expected = template.ExpectedObjFilesAfterRestore;
+            var actual = template.ObjFilesAfterRestoreIncremental;
+            CollectionAssert.AreEquivalent(expected, actual);
         }
 
         [Test]
         [TestCaseSource(nameof(BuildData))]
         public void _3_Build(Template template)
         {
-            CollectionAssert.AreEquivalent(template.ExpectedObjFilesAfterBuild, template.ObjFilesAfterBuild);
-            CollectionAssert.AreEquivalent(template.ExpectedBinFilesAfterBuild, template.BinFilesAfterBuild);
+            var expectedObj = template.ExpectedObjFilesAfterBuild;
+            var actualObj = template.ObjFilesAfterBuild;
+            CollectionAssert.AreEquivalent(expectedObj, actualObj);
+
+            var expectedBin = template.ExpectedBinFilesAfterBuild;
+            var actualBin = template.BinFilesAfterBuild;
+            CollectionAssert.AreEquivalent(expectedBin, actualBin);
         }
 
         [Test]
         [TestCaseSource(nameof(BuildData))]
         public void _4_BuildIncremental(Template template)
         {
-            CollectionAssert.AreEquivalent(template.ExpectedObjFilesAfterBuild, template.ObjFilesAfterBuildIncremental);
-            CollectionAssert.AreEquivalent(template.ExpectedBinFilesAfterBuild, template.BinFilesAfterBuildIncremental);
+            var expectedObj = template.ExpectedObjFilesAfterBuild;
+            var actualObj = template.ObjFilesAfterBuildIncremental;
+            CollectionAssert.AreEquivalent(expectedObj, actualObj);
+
+            var expectedBin = template.ExpectedBinFilesAfterBuild;
+            var actualBin = template.BinFilesAfterBuildIncremental;
+            CollectionAssert.AreEquivalent(expectedBin, actualBin);
         }
 
         [Test]
