@@ -18,7 +18,11 @@ namespace AspNetCoreSdkTests.Templates
         {
             // Allow self-signed certs
             ServerCertificateCustomValidationCallback = (m, c, ch, p) => true
-        });
+        })
+        {
+            // Prevent failures due to slow requests when running many tests in parallel
+            Timeout = Timeout.InfiniteTimeSpan,
+        };
 
         private static ConcurrentDictionary<(Type Type, NuGetPackageSource NuGetPackageSource, RuntimeIdentifier RuntimeIdentifier), Template> _templates =
             new ConcurrentDictionary<(Type Type, NuGetPackageSource NuGetPackageSource, RuntimeIdentifier RuntimeIdentifier), Template>();
