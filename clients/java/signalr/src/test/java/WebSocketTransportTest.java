@@ -2,38 +2,22 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 import com.microsoft.aspnet.signalr.NullLogger;
+import com.microsoft.aspnet.signalr.Transport;
 import com.microsoft.aspnet.signalr.WebSocketTransport;
-import java.net.URISyntaxException;
-import java.util.Arrays;
-import java.util.Collection;
+import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.rules.ExpectedException;
 
-import static org.junit.Assert.*;
-
-@RunWith(Parameterized.class)
 public class WebSocketTransportTest {
-    private String url;
-    private String expectedUrl;
 
-    public WebSocketTransportTest(String url, String expectedProtocol){
-        this.url = url;
-        this.expectedUrl = expectedProtocol;
-    }
-
-    @Parameterized.Parameters
-    public static Collection protocols(){
-        return Arrays.asList(new String[][] {
-                {"http://example.com", "ws://example.com"},
-                {"https://example.com", "wss://example.com"},
-                {"ws://example.com", "ws://example.com"},
-                {"wss://example.com", "wss://example.com"}});
-    }
+    @Rule
+    public ExpectedException expectedEx = ExpectedException.none();
 
     @Test
-    public void checkWebsocketUrlProtocol() throws URISyntaxException {
-        WebSocketTransport webSocketTransport = new WebSocketTransport(this.url, new NullLogger());
-        assertEquals(this.expectedUrl, webSocketTransport.getUrl().toString());
+    public void WebsocketThrowsIfItCantConnect() throws Exception {
+        expectedEx.expect(Exception.class);
+        expectedEx.expectMessage("There was an error starting the Websockets transport");
+        Transport transport = new WebSocketTransport("www.notarealurl12345.fake", new NullLogger());
+        transport.start();
     }
 }

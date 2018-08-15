@@ -39,10 +39,14 @@ public class WebSocketTransport implements Transport {
     }
 
     @Override
-    public void start() throws InterruptedException {
-        logger.log(LogLevel.Debug, "Starting Websocket connection");
+    public void start() throws Exception {
+        logger.log(LogLevel.Debug, "Starting Websocket connection.");
         webSocketClient = createWebSocket();
-        webSocketClient.connectBlocking();
+        if (!webSocketClient.connectBlocking()) {
+            String errorMessage = "There was an error starting the Websockets transport.";
+            logger.log(LogLevel.Debug, errorMessage);
+            throw new Exception(errorMessage);
+        }
         logger.log(LogLevel.Information, "WebSocket transport connected to: %s", webSocketClient.getURI());
     }
 

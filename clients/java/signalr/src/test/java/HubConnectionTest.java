@@ -23,6 +23,21 @@ public class HubConnectionTest {
     }
 
     @Test
+    public void HubConnectionClosesAfterCloseMessage() throws Exception {
+        MockTransport mockTransport = new MockTransport();
+        HubConnection hubConnection = new HubConnection("http://example.com", mockTransport);
+
+        hubConnection.start();
+        mockTransport.receiveMessage("{}" + RECORD_SEPARATOR);
+
+        assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
+
+        mockTransport.receiveMessage("{\"type\":7,\"error\": \"There was an error\"}" + RECORD_SEPARATOR);
+
+        assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
+    }
+
+    @Test
     public void RegisteringMultipleHandlersAndBothGetTriggered() throws Exception {
         AtomicReference<Double> value = new AtomicReference<>(0.0);
         MockTransport mockTransport = new MockTransport();
