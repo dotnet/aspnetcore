@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Routing.Internal;
+using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.ObjectPool;
 
 namespace Microsoft.AspNetCore.Routing.Template
@@ -19,7 +20,7 @@ namespace Microsoft.AspNetCore.Routing.Template
 
         private readonly RouteValueDictionary _defaults;
         private readonly RouteValueDictionary _filters;
-        private readonly RouteTemplate _template;
+        private readonly RoutePattern _pattern;
 
         /// <summary>
         /// Creates a new instance of <see cref="TemplateBinder"/>.
@@ -33,6 +34,22 @@ namespace Microsoft.AspNetCore.Routing.Template
             ObjectPool<UriBuildingContext> pool,
             RouteTemplate template,
             RouteValueDictionary defaults)
+            : this(urlEncoder, pool, template?.ToRoutePattern(), defaults)
+        {
+        }
+
+        /// <summary>
+        /// Creates a new instance of <see cref="TemplateBinder"/>.
+        /// </summary>
+        /// <param name="urlEncoder">The <see cref="UrlEncoder"/>.</param>
+        /// <param name="pool">The <see cref="ObjectPool{T}"/>.</param>
+        /// <param name="pattern">The <see cref="RoutePattern"/> to bind values to.</param>
+        /// <param name="defaults">The default values for <paramref name="pattern"/>.</param>
+        public TemplateBinder(
+            UrlEncoder urlEncoder,
+            ObjectPool<UriBuildingContext> pool,
+            RoutePattern pattern,
+            RouteValueDictionary defaults)
         {
             if (urlEncoder == null)
             {
@@ -44,20 +61,20 @@ namespace Microsoft.AspNetCore.Routing.Template
                 throw new ArgumentNullException(nameof(pool));
             }
 
-            if (template == null)
+            if (pattern == null)
             {
-                throw new ArgumentNullException(nameof(template));
+                throw new ArgumentNullException(nameof(pattern));
             }
 
             _urlEncoder = urlEncoder;
             _pool = pool;
-            _template = template;
+            _pattern = pattern;
             _defaults = defaults;
 
             // Any default that doesn't have a corresponding parameter is a 'filter' and if a value
             // is provided for that 'filter' it must match the value in defaults.
             _filters = new RouteValueDictionary(_defaults);
-            foreach (var parameter in _template.Parameters)
+            foreach (var parameter in _pattern.Parameters)
             {
                 _filters.Remove(parameter.Name);
             }
@@ -149,36 +166,43 @@ namespace Microsoft.AspNetCore.Routing.Template
 
         private string BindValues(UriBuildingContext context, RouteValueDictionary acceptedValues)
         {
-            for (var i = 0; i < _template.Segments.Count; i++)
+            for (var i = 0; i < _pattern.PathSegments.Count; i++)
             {
                 Debug.Assert(context.BufferState == SegmentState.Beginning);
                 Debug.Assert(context.UriState == SegmentState.Beginning);
 
-                var segment = _template.Segments[i];
+                var segment = _pattern.PathSegments[i];
 
                 for (var j = 0; j < segment.Parts.Count; j++)
                 {
                     var part = segment.Parts[j];
 
-                    if (part.IsLiteral)
+                    if (part is RoutePatternLiteralPart literalPart)
                     {
-                        if (!context.Accept(part.Text))
+                        if (!context.Accept(literalPart.Content))
                         {
                             return null;
                         }
                     }
-                    else if (part.IsParameter)
+                    else if (part is RoutePatternSeparatorPart separatorPart)
+                    {
+                        if (!context.Accept(separatorPart.Content))
+                        {
+                            return null;
+                        }
+                    }
+                    else if (part is RoutePatternParameterPart parameterPart)
                     {
                         // If it's a parameter, get its value
-                        var hasValue = acceptedValues.TryGetValue(part.Name, out var value);
+                        var hasValue = acceptedValues.TryGetValue(parameterPart.Name, out var value);
                         if (hasValue)
                         {
-                            acceptedValues.Remove(part.Name);
+                            acceptedValues.Remove(parameterPart.Name);
                         }
 
                         var isSameAsDefault = false;
                         if (_defaults != null &&
-                            _defaults.TryGetValue(part.Name, out var defaultValue) &&
+                            _defaults.TryGetValue(parameterPart.Name, out var defaultValue) &&
                             RoutePartsEqual(value, defaultValue))
                         {
                             isSameAsDefault = true;
@@ -206,9 +230,9 @@ namespace Microsoft.AspNetCore.Routing.Template
                             // for format, so we remove '.' and generate 5.
                             if (!context.Accept(converted))
                             {
-                                if (j != 0 && part.IsOptional && segment.Parts[j - 1].IsOptionalSeperator)
+                                if (j != 0 && parameterPart.IsOptional && (separatorPart = segment.Parts[j - 1] as RoutePatternSeparatorPart) != null)
                                 {
-                                    context.Remove(segment.Parts[j - 1].Text);
+                                    context.Remove(separatorPart.Content);
                                 }
                                 else
                                 {
@@ -260,20 +284,6 @@ namespace Microsoft.AspNetCore.Routing.Template
                 return true;
             }
             return false;
-        }
-
-        private TemplatePart GetParameter(string name)
-        {
-            for (var i = 0; i < _template.Parameters.Count; i++)
-            {
-                var parameter = _template.Parameters[i];
-                if (string.Equals(parameter.Name, name, StringComparison.OrdinalIgnoreCase))
-                {
-                    return parameter;
-                }
-            }
-
-            return null;
         }
 
         /// <summary>
@@ -370,9 +380,9 @@ namespace Microsoft.AspNetCore.Routing.Template
             // We also handle the case where a parameter is optional but has no value - we shouldn't
             // accept additional parameters that appear *after* that parameter.
 
-            for (var i = 0; i < _template.Parameters.Count; i++)
+            for (var i = 0; i < _pattern.Parameters.Count; i++)
             {
-                var parameter = _template.Parameters[i];
+                var parameter = _pattern.Parameters[i];
 
                 // If it's a parameter subsegment, examine the current value to see if it matches the new value
                 var parameterName = parameter.Name;
@@ -436,9 +446,9 @@ namespace Microsoft.AspNetCore.Routing.Template
 
         private void CopyParameterDefaultValues(TemplateBindingContext context)
         {
-            for (var i = 0; i < _template.Parameters.Count; i++)
+            for (var i = 0; i < _pattern.Parameters.Count; i++)
             {
-                var parameter = _template.Parameters[i];
+                var parameter = _pattern.Parameters[i];
                 if (parameter.IsOptional || parameter.IsCatchAll)
                 {
                     continue;
@@ -456,9 +466,9 @@ namespace Microsoft.AspNetCore.Routing.Template
 
         private bool AllRequiredParametersHaveValue(TemplateBindingContext context)
         {
-            for (var i = 0; i < _template.Parameters.Count; i++)
+            for (var i = 0; i < _pattern.Parameters.Count; i++)
             {
-                var parameter = _template.Parameters[i];
+                var parameter = _pattern.Parameters[i];
                 if (parameter.IsOptional || parameter.IsCatchAll)
                 {
                     continue;
@@ -477,7 +487,7 @@ namespace Microsoft.AspNetCore.Routing.Template
         {
             foreach (var filter in _filters)
             {
-                var parameter = GetParameter(filter.Key);
+                var parameter = _pattern.GetParameter(filter.Key);
                 if (parameter != null)
                 {
                     continue;
@@ -507,7 +517,7 @@ namespace Microsoft.AspNetCore.Routing.Template
             {
                 if (IsRoutePartNonEmpty(kvp.Value))
                 {
-                    var parameter = GetParameter(kvp.Key);
+                    var parameter = _pattern.GetParameter(kvp.Key);
                     if (parameter == null && !context.AcceptedValues.ContainsKey(kvp.Key))
                     {
                         combinedValues.Add(kvp.Key, kvp.Value);

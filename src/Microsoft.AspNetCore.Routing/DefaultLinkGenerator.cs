@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.Routing
             var templateBinder = new TemplateBinder(
                 UrlEncoder.Default,
                 _uriBuildingContextPool,
-                new RouteTemplate(endpoint.RoutePattern),
+                endpoint.RoutePattern,
                 new RouteValueDictionary(endpoint.RoutePattern.Defaults));
 
             var routeValuesAddressMetadata = endpoint.Metadata.GetMetadata<IRouteValuesAddressMetadata>();
