@@ -58,9 +58,17 @@
         <Category>shipoob</Category>
       </ArtifactInfo>
 
+      <ArtifactInfo Include="$(StressTestWebSiteZipOutputPath)">
+        <ArtifactType>ZipArchive</ArtifactType>
+        <RepositoryRoot>$(RepositoryRoot)</RepositoryRoot>
+        <Category>noship</Category>
+      </ArtifactInfo>
+
       <FilesToSign Include="$(AncmZipOutputPath)" IsContainer="true" />
 
       <FilesToSign Include="@(Components->'%(BaseOutputPath)/%(Platform)/%(NativeAsset).dll')" Container="$(AncmZipOutputPath)" Certificate="$(AssemblySigningCertName)" />
+
+      <FilesToExcludeFromSigning Include="$(StressTestWebSiteZipOutputPath)" />
     </ItemGroup>
   </Target>
 
