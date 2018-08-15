@@ -91,6 +91,12 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
                 return false;
             }
 
+            if (SpecifiesModelType(symbolCache, parameter))
+            {
+                // Ignore parameters that specify a model type.
+                return false;
+            }
+
             var parameterName = GetName(symbolCache, parameter);
 
             var type = parameter.Type;
@@ -144,6 +150,39 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
             return symbol.Name;
         }
 
+        internal static bool SpecifiesModelType(in SymbolCache symbolCache, IParameterSymbol parameterSymbol)
+        {
+            foreach (var attribute in parameterSymbol.GetAttributes(symbolCache.IBinderTypeProviderMetadata))
+            {
+                // Look for a attribute property named BinderType being assigned. This would match
+                // [ModelBinder(BinderType = typeof(SomeBinder))]
+                for (var i = 0; i < attribute.NamedArguments.Length; i++)
+                {
+                    var namedArgument = attribute.NamedArguments[i];
+                    var namedArgumentValue = namedArgument.Value;
+                    if (string.Equals(namedArgument.Key, "BinderType", StringComparison.Ordinal) &&
+                        namedArgumentValue.Kind == TypedConstantKind.Type)
+                    {
+                        return true;
+                    }
+                }
+
+                // Look for the binder type being specified in the constructor. This would match
+                // [ModelBinder(typeof(SomeBinder))]
+                var constructorParameters = attribute.AttributeConstructor?.Parameters ?? ImmutableArray<IParameterSymbol>.Empty;
+                for (var i = 0; i < constructorParameters.Length; i++)
+                {
+                    if (string.Equals(constructorParameters[i].Name, "binderType", StringComparison.Ordinal))
+                    {
+                        // A constructor that requires binderType was used.
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
         internal readonly struct SymbolCache
         {
             public SymbolCache(Compilation compilation)
@@ -152,6 +191,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
                 ControllerAttribute = compilation.GetTypeByMetadataName(SymbolNames.ControllerAttribute);
                 FromBodyAttribute = compilation.GetTypeByMetadataName(SymbolNames.FromBodyAttribute);
                 IApiBehaviorMetadata = compilation.GetTypeByMetadataName(SymbolNames.IApiBehaviorMetadata);
+                IBinderTypeProviderMetadata = compilation.GetTypeByMetadataName(SymbolNames.IBinderTypeProviderMetadata);
                 IModelNameProvider = compilation.GetTypeByMetadataName(SymbolNames.IModelNameProvider);
                 NonControllerAttribute = compilation.GetTypeByMetadataName(SymbolNames.NonControllerAttribute);
                 NonActionAttribute = compilation.GetTypeByMetadataName(SymbolNames.NonActionAttribute);
@@ -165,6 +205,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
             public INamedTypeSymbol ControllerAttribute { get; }
             public INamedTypeSymbol FromBodyAttribute { get; }
             public INamedTypeSymbol IApiBehaviorMetadata { get; }
+            public INamedTypeSymbol IBinderTypeProviderMetadata { get; }
             public INamedTypeSymbol IModelNameProvider { get; }
             public INamedTypeSymbol NonControllerAttribute { get; }
             public INamedTypeSymbol NonActionAttribute { get; }

@@ -31,6 +31,8 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
 
         public const string IApiBehaviorMetadata = "Microsoft.AspNetCore.Mvc.Internal.IApiBehaviorMetadata";
 
+        public const string IBinderTypeProviderMetadata = "Microsoft.AspNetCore.Mvc.ModelBinding.IBinderTypeProviderMetadata";
+
         public const string IActionResult = "Microsoft.AspNetCore.Mvc.IActionResult";
 
         public const string IConvertToActionResult = "Microsoft.AspNetCore.Mvc.IConvertToActionResult";

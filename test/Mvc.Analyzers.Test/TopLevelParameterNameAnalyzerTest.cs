@@ -61,14 +61,21 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
         }
 
         [Fact]
-        public async Task IsProblematicParameter_ReturnsFalse_IfModelBinderAttributeIsUsedToRenameParameter()
+        public async Task IsProblematicParameter_ReturnsTrue_IfModelBinderAttributeIsUsedToRenameParameter()
+        {
+            var result = await IsProblematicParameterTest();
+            Assert.True(result);
+        }
+
+        [Fact]
+        public async Task IsProblematicParameter_ReturnsFalse_IfBindingSourceAttributeIsUsedToRenameProperty()
         {
             var result = await IsProblematicParameterTest();
             Assert.False(result);
         }
 
         [Fact]
-        public async Task IsProblematicParameter_ReturnsFalse_IfModelBinderAttributeIsUsedToRenameProperty()
+        public async Task IsProblematicParameter_ReturnsFalse_IfBindingSourceAttributeIsUsedToRenameParameter()
         {
             var result = await IsProblematicParameterTest();
             Assert.False(result);
@@ -76,6 +83,13 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
 
         [Fact]
         public async Task IsProblematicParameter_ReturnsFalse_ForFromBodyParameter()
+        {
+            var result = await IsProblematicParameterTest();
+            Assert.False(result);
+        }
+
+        [Fact]
+        public async Task IsProblematicParameter_ReturnsFalse_ForParametersWithCustomModelBinder()
         {
             var result = await IsProblematicParameterTest();
             Assert.False(result);
@@ -197,6 +211,60 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
 
             var compilation = await project.GetCompilationAsync();
             return compilation;
+        }
+
+        [Fact]
+        public async Task SpecifiesModelType_ReturnsFalse_IfModelBinderDoesNotSpecifyType()
+        {
+            var testMethod = nameof(SpecifiesModelType_ReturnsFalse_IfModelBinderDoesNotSpecifyType);
+            var testSource = MvcTestSource.Read(GetType().Name, "SpecifiesModelTypeTests");
+            var project = DiagnosticProject.Create(GetType().Assembly, new[] { testSource.Source });
+
+            var compilation = await project.GetCompilationAsync();
+            var symbolCache = new TopLevelParameterNameAnalyzer.SymbolCache(compilation);
+
+            var type = compilation.GetTypeByMetadataName(typeof(SpecifiesModelTypeTests).FullName);
+            var method = (IMethodSymbol)type.GetMembers(testMethod).First();
+
+            var parameter = method.Parameters[0];
+            var result = TopLevelParameterNameAnalyzer.SpecifiesModelType(symbolCache, parameter);
+            Assert.False(result);
+        }
+
+        [Fact]
+        public async Task SpecifiesModelType_ReturnsTrue_IfModelBinderSpecifiesTypeFromConstructor()
+        {
+            var testMethod = nameof(SpecifiesModelType_ReturnsTrue_IfModelBinderSpecifiesTypeFromConstructor);
+            var testSource = MvcTestSource.Read(GetType().Name, "SpecifiesModelTypeTests");
+            var project = DiagnosticProject.Create(GetType().Assembly, new[] { testSource.Source });
+
+            var compilation = await project.GetCompilationAsync();
+            var symbolCache = new TopLevelParameterNameAnalyzer.SymbolCache(compilation);
+
+            var type = compilation.GetTypeByMetadataName(typeof(SpecifiesModelTypeTests).FullName);
+            var method = (IMethodSymbol)type.GetMembers(testMethod).First();
+
+            var parameter = method.Parameters[0];
+            var result = TopLevelParameterNameAnalyzer.SpecifiesModelType(symbolCache, parameter);
+            Assert.True(result);
+        }
+
+        [Fact]
+        public async Task SpecifiesModelType_ReturnsTrue_IfModelBinderSpecifiesTypeFromProperty()
+        {
+            var testMethod = nameof(SpecifiesModelType_ReturnsTrue_IfModelBinderSpecifiesTypeFromProperty);
+            var testSource = MvcTestSource.Read(GetType().Name, "SpecifiesModelTypeTests");
+            var project = DiagnosticProject.Create(GetType().Assembly, new[] { testSource.Source });
+
+            var compilation = await project.GetCompilationAsync();
+            var symbolCache = new TopLevelParameterNameAnalyzer.SymbolCache(compilation);
+
+            var type = compilation.GetTypeByMetadataName(typeof(SpecifiesModelTypeTests).FullName);
+            var method = (IMethodSymbol)type.GetMembers(testMethod).First();
+
+            var parameter = method.Parameters[0];
+            var result = TopLevelParameterNameAnalyzer.SpecifiesModelType(symbolCache, parameter);
+            Assert.True(result);
         }
 
         private async Task RunNoDiagnosticsAreReturned([CallerMemberName] string testMethod = "")
