@@ -12,11 +12,13 @@ import { IStreamSubscriber } from "../src/Stream";
 import { TextMessageFormat } from "../src/TextMessageFormat";
 
 import { VerifyLogger } from "./Common";
-import { delay, PromiseSource } from "./Utils";
+import { delay, PromiseSource, registerUnhandledRejectionHandler } from "./Utils";
 
 function createHubConnection(connection: IConnection, logger?: ILogger | null, protocol?: IHubProtocol | null) {
     return HubConnection.create(connection, logger || NullLogger.instance, protocol || new JsonHubProtocol());
 }
+
+registerUnhandledRejectionHandler();
 
 describe("HubConnection", () => {
 

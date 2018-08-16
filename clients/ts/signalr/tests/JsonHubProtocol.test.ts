@@ -5,6 +5,9 @@ import { CompletionMessage, InvocationMessage, MessageType, StreamItemMessage } 
 import { JsonHubProtocol } from "../src/JsonHubProtocol";
 import { TextMessageFormat } from "../src/TextMessageFormat";
 import { VerifyLogger } from "./Common";
+import { registerUnhandledRejectionHandler } from "./Utils";
+
+registerUnhandledRejectionHandler();
 
 describe("JsonHubProtocol", () => {
     it("can write/read non-blocking Invocation message", async () => {

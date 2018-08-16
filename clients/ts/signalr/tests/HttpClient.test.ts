@@ -3,6 +3,9 @@
 
 import { HttpRequest } from "../src/HttpClient";
 import { TestHttpClient } from "./TestHttpClient";
+import { registerUnhandledRejectionHandler } from "./Utils";
+
+registerUnhandledRejectionHandler();
 
 describe("HttpClient", () => {
     describe("get", () => {

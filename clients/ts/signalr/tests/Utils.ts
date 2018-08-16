@@ -3,6 +3,16 @@
 
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 20000;
 
+export function registerUnhandledRejectionHandler(): void {
+    process.on("unhandledRejection", (error) => {
+        if (error && error.stack) {
+            console.error(error.stack);
+        } else {
+            console.error(error);
+        }
+    });
+}
+
 export function delay(durationInMilliseconds: number): Promise<void> {
     const source = new PromiseSource<void>();
     setTimeout(() => source.resolve(), durationInMilliseconds);
