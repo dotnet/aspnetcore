@@ -178,6 +178,7 @@
       "Releases_21Public_Win2012",
       // Release 22 Public
       "Releases_22xPublic_UpdateRepos",
+      "Releases_22xPublic_UniverseCoherence",
       "Releases_22xPublic_BuildAndSignAncmInstallers",
       "Releases_22xPublic_OsxUniverse",
       "Releases_22xPublic_HighSierraOsxUniverse",
