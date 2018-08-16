@@ -122,5 +122,13 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests.Account.Manage
 
             return new LinkExternalLogin(Client, externalLoginDocument, Context);
         }
+
+        public async Task<ExternalLogins> ClickExternalLoginsAsync()
+        {
+            var goToExternalLogin = await Client.GetAsync(_externalLoginLink.Href);
+            var externalLoginDocument = await ResponseAssert.IsHtmlDocumentAsync(goToExternalLogin);
+
+            return new ExternalLogins(Client, externalLoginDocument, Context);
+        }
     }
 }
