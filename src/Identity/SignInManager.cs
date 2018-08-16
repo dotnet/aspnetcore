@@ -613,8 +613,10 @@ namespace Microsoft.AspNetCore.Identity
             {
                 return null;
             }
-            // TODO: display name gone?.  Add [] indexer for Authproperties
-            return new ExternalLoginInfo(auth.Principal, provider, providerKey, provider)
+
+            var providerDisplayName = (await GetExternalAuthenticationSchemesAsync()).FirstOrDefault(p => p.Name == provider)?.DisplayName
+                                      ?? provider;
+            return new ExternalLoginInfo(auth.Principal, provider, providerKey, providerDisplayName)
             {
                 AuthenticationTokens = auth.Properties.GetTokens()
             };

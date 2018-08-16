@@ -15,7 +15,7 @@
             @for (var index = 0; index < Model.CurrentLogins.Count; index++)
             {
                 <tr>
-                    <td>@Model.CurrentLogins[index].LoginProvider</td>
+                    <td>@Model.CurrentLogins[index].ProviderDisplayName²</td>
                     <td>
                         @if ((bool)ViewData["ShowRemoveButton"])
                         {
@@ -23,7 +23,7 @@
                                 <div>
                                     <input asp-for="@Model.CurrentLogins[index].LoginProvider" name="LoginProvider" type="hidden" />
                                     <input asp-for="@Model.CurrentLogins[index].ProviderKey" name="ProviderKey" type="hidden" />
-                                    <input type="submit" class="btn btn-default" value="Remove" title="Remove this @Model.CurrentLogins[index].LoginProvider login from your account" />
+                                    <input type="submit" class="btn btn-default" value="Remove" title="Remove this @Model.CurrentLogins[index].ProviderDisplayName login from your account" />
                                 </div>
                             </form>
                         }
