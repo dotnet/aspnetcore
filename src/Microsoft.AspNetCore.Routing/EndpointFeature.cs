@@ -54,7 +54,20 @@ namespace Microsoft.AspNetCore.Routing
             {
                 if (_routeData == null)
                 {
-                    _routeData = new RouteData(_values);
+                    _routeData = _values == null ? new RouteData() : new RouteData(_values);
+
+                    // Note: DataTokens won't update if someone else overwrites the Endpoint
+                    // after route values has been set. This seems find since endpoints are a new
+                    // feature and DataTokens are for back-compat.
+                    var dataTokensMetadata = Endpoint?.Metadata.GetMetadata<IDataTokensMetadata>();
+                    if (dataTokensMetadata != null)
+                    {
+                        var dataTokens = _routeData.DataTokens;
+                        foreach (var kvp in dataTokensMetadata.DataTokens)
+                        {
+                            _routeData.DataTokens.Add(kvp.Key, kvp.Value);
+                        }
+                    }
                 }
 
                 return _routeData;
