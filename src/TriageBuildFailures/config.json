@@ -170,6 +170,7 @@
       "XPlat_Windows_Win10Universe",
       "XPlat_Windows_Win2008r2_Universe",
       // Release 21 Public
+      "Releases_21Public_RuntimeStoreInstallers",
       "Releases_21Public_UbuntuUniverse",
       "Releases_21Public_OsxUniverse",
       "Releases_21Public_HighSierraOsxUniverse",
