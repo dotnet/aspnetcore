@@ -38,9 +38,13 @@ namespace ServerComparison.FunctionalTests
 
                 var deploymentParameters = new DeploymentParameters(variant)
                 {
-                    ApplicationPath = Helpers.GetApplicationPath(),
-                    ServerConfigTemplateContent = Helpers.GetNginxConfigContent(variant.Server, "nginx.conf"),
+                    ApplicationPath = Helpers.GetApplicationPath()
                 };
+
+                if (variant.Server == ServerType.Nginx)
+                {
+                    deploymentParameters.ServerConfigTemplateContent = Helpers.GetNginxConfigContent("nginx.conf");
+                }
 
                 using (var deployer = IISApplicationDeployerFactory.Create(deploymentParameters, loggerFactory))
                 {

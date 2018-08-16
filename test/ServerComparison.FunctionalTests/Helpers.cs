@@ -29,33 +29,10 @@ namespace ServerComparison.FunctionalTests
             throw new Exception($"Solution root could not be found using {applicationBasePath}");
         }
 
-        public static string GetConfigContent(ServerType serverType, string iisConfig, string nginxConfig)
+        public static string GetNginxConfigContent(string nginxConfig)
         {
             var applicationBasePath = AppContext.BaseDirectory;
-
-            string content = null;
-            if (serverType == ServerType.IISExpress)
-            {
-                content = File.ReadAllText(Path.Combine(applicationBasePath, iisConfig));
-            }
-            else if (serverType == ServerType.Nginx)
-            {
-                content = File.ReadAllText(Path.Combine(applicationBasePath, nginxConfig));
-            }
-
-            return content;
-        }
-
-        public static string GetNginxConfigContent(ServerType serverType,  string nginxConfig)
-        {
-            var applicationBasePath = AppContext.BaseDirectory;
-
-            string content = null;
-            if (serverType == ServerType.Nginx)
-            {
-                content = File.ReadAllText(Path.Combine(applicationBasePath, nginxConfig));
-            }
-
+            var content = File.ReadAllText(Path.Combine(applicationBasePath, nginxConfig));
             return content;
         }
     }
