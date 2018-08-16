@@ -422,12 +422,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 var options = new PipeOptions(pool: memoryPool, readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline, useSynchronizationContext: false);
                 var pair = DuplexPipe.CreateConnectionPair(options, options);
                 var transport = pair.Transport;
-                var application = pair.Application;
                 var http1ConnectionContext = new Http1ConnectionContext
                 {
                     ServiceContext = new TestServiceContext(),
                     ConnectionFeatures = new FeatureCollection(),
-                    Application = application,
                     Transport = transport,
                     MemoryPool = memoryPool,
                     TimeoutControl = Mock.Of<ITimeoutControl>()

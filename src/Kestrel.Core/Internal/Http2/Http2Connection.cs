@@ -86,8 +86,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         public Http2Connection(Http2ConnectionContext context)
         {
             _context = context;
-            _frameWriter = new Http2FrameWriter(context.Transport.Output, context.Application.Input, _outputFlowControl, this, context.ConnectionId, context.ServiceContext.Log);
+            _frameWriter = new Http2FrameWriter(context.Transport.Output, context.ConnectionContext, _outputFlowControl, this, context.ConnectionId, context.ServiceContext.Log);
             _hpackDecoder = new HPackDecoder((int)_serverSettings.HeaderTableSize);
+            _serverSettings.MaxConcurrentStreams = (uint)context.ServiceContext.ServerOptions.Limits.Http2.MaxStreamsPerConnection;
         }
 
         public string ConnectionId => _context.ConnectionId;
@@ -97,6 +98,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         public IKestrelTrace Log => _context.ServiceContext.Log;
 
         public IFeatureCollection ConnectionFeatures => _context.ConnectionFeatures;
+
+        internal Http2PeerSettings ServerSettings => _serverSettings;
 
         public void OnInputOrOutputCompleted()
         {
@@ -172,7 +175,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
                 if (_state != Http2ConnectionState.Closed)
                 {
-                    await _frameWriter.WriteSettingsAsync(_serverSettings);
+                    await _frameWriter.WriteSettingsAsync(_serverSettings.GetNonProtocolDefaults());
                 }
 
                 while (_state != Http2ConnectionState.Closed)
@@ -201,7 +204,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     catch (Http2StreamErrorException ex)
                     {
                         Log.Http2StreamError(ConnectionId, ex);
-                        AbortStream(_incomingFrame.StreamId, new ConnectionAbortedException(ex.Message, ex));
+                        AbortStream(_incomingFrame.StreamId, new IOException(ex.Message, ex));
                         await _frameWriter.WriteRstStreamAsync(ex.StreamId, ex.ErrorCode);
                     }
                     finally
@@ -269,7 +272,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
                     foreach (var stream in _streams.Values)
                     {
-                        stream.Abort(connectionError);
+                        stream.Abort(new IOException(CoreStrings.Http2StreamAborted, connectionError));
                     }
 
                     await _streamsCompleted.Task;
@@ -583,7 +586,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
 
             ThrowIfIncomingFrameSentToIdleStream();
-            AbortStream(_incomingFrame.StreamId, new ConnectionAbortedException(CoreStrings.Http2StreamResetByClient));
+            AbortStream(_incomingFrame.StreamId, new IOException(CoreStrings.Http2StreamResetByClient));
 
             return Task.CompletedTask;
         }
@@ -617,10 +620,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
             try
             {
-                // ParseFrame will not parse an InitialWindowSize > int.MaxValue.
+                // int.MaxValue is the largest allowed windows size.
                 var previousInitialWindowSize = (int)_clientSettings.InitialWindowSize;
 
-                _clientSettings.ParseFrame(_incomingFrame);
+                _clientSettings.Update(_incomingFrame.GetSettings());
 
                 var ackTask = _frameWriter.WriteSettingsAckAsync(); // Ack before we update the windows, they could send data immediately.
 
@@ -838,6 +841,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 throw new Http2StreamErrorException(_currentHeadersStream.StreamId, CoreStrings.Http2ErrorMissingMandatoryPseudoHeaderFields, Http2ErrorCode.PROTOCOL_ERROR);
             }
 
+            if (_streams.Count >= _serverSettings.MaxConcurrentStreams)
+            {
+                throw new Http2StreamErrorException(_currentHeadersStream.StreamId, CoreStrings.Http2ErrorMaxStreams, Http2ErrorCode.REFUSED_STREAM);
+            }
+
             // This must be initialized before we offload the request or else we may start processing request body frames without it.
             _currentHeadersStream.InputRemaining = _currentHeadersStream.RequestHeaders.ContentLength;
 
@@ -885,7 +893,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
         }
 
-        private void AbortStream(int streamId, ConnectionAbortedException error)
+        private void AbortStream(int streamId, IOException error)
         {
             if (_streams.TryGetValue(streamId, out var stream))
             {

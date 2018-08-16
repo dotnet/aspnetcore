@@ -352,7 +352,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             return _context.FrameWriter.TryUpdateStreamWindow(_outputFlowControl, bytes);
         }
 
-        public override void Abort(ConnectionAbortedException abortReason)
+        public void Abort(IOException abortReason)
         {
             if (!TryApplyCompletionFlag(StreamCompletionFlags.Aborted))
             {
@@ -362,10 +362,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             AbortCore(abortReason);
         }
 
-        protected override void ErrorAfterResponseStarted()
+        protected override void OnErrorAfterResponseStarted()
         {
             // We can no longer change the response, send a Reset instead.
-            base.ErrorAfterResponseStarted();
             var abortReason = new ConnectionAbortedException(CoreStrings.Http2StreamErrorAfterHeaders);
             ResetAndAbort(abortReason, Http2ErrorCode.INTERNAL_ERROR);
         }
@@ -391,12 +390,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             AbortCore(abortReason);
         }
 
-        private void AbortCore(ConnectionAbortedException abortReason)
+        private void AbortCore(Exception abortReason)
         {
-            base.Abort(abortReason);
+            // Call OnIOCompleted() which closes the output prior to poisoning the request body stream or pipe to
+            // ensure that an app that completes early due to the abort doesn't result in header frames being sent.
+            OnInputOrOutputCompleted();
 
             // Unblock the request body.
-            RequestBodyPipe.Writer.Complete(new IOException(CoreStrings.Http2StreamAborted, abortReason));
+            PoisonRequestBodyStream(abortReason);
+            RequestBodyPipe.Writer.Complete(abortReason);
 
             _inputFlowControl.Abort();
         }
@@ -420,7 +422,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 var lastCompletionState = _completionState;
                 _completionState |= completionState;
 
-                if (ShoulStopTrackingStream(_completionState) && !ShoulStopTrackingStream(lastCompletionState))
+                if (ShouldStopTrackingStream(_completionState) && !ShouldStopTrackingStream(lastCompletionState))
                 {
                     _context.StreamLifetimeHandler.OnStreamCompleted(StreamId);
                 }
@@ -429,7 +431,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
         }
 
-        private static bool ShoulStopTrackingStream(StreamCompletionFlags completionState)
+        private static bool ShouldStopTrackingStream(StreamCompletionFlags completionState)
         {
             // This could be a single condition, but I think it reads better as two if's.
             if ((completionState & StreamCompletionFlags.RequestProcessingEnded) == StreamCompletionFlags.RequestProcessingEnded)

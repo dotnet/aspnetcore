@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
@@ -85,11 +86,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 .Build();
 
             _host.Start();
+
+            Context.Log.LogDebug($"TestServer is listening on port {Port}");
         }
 
-        public IPEndPoint EndPoint => _listenOptions.IPEndPoint;
-        public int Port => _listenOptions.IPEndPoint.Port;
-        public AddressFamily AddressFamily => _listenOptions.IPEndPoint.AddressFamily;
+        // Avoid NullReferenceException in the CanListenToOpenTcpSocketHandle test
+        public int Port => _listenOptions.IPEndPoint?.Port ?? 0;
 
         public TestServiceContext Context { get; }
 
@@ -107,7 +109,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
         public TestConnection CreateConnection()
         {
-            return new TestConnection(Port, AddressFamily);
+            return new TestConnection(Port, _listenOptions.IPEndPoint.AddressFamily);
         }
 
         public Task StopAsync(CancellationToken token = default)

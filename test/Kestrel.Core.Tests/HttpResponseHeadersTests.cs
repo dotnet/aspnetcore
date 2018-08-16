@@ -30,7 +30,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                     ServiceContext = new TestServiceContext(),
                     ConnectionFeatures = new FeatureCollection(),
                     MemoryPool = memoryPool,
-                    Application = pair.Application,
                     Transport = pair.Transport,
                     TimeoutControl = null
                 };

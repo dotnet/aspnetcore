@@ -38,7 +38,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 ServiceContext = new TestServiceContext(),
                 ConnectionContext = Mock.Of<ConnectionContext>(),
                 ConnectionFeatures = connectionFeatures,
-                Application = Application,
                 Transport = Transport,
                 MemoryPool = _memoryPool,
                 TimeoutControl = Mock.Of<ITimeoutControl>()

@@ -112,7 +112,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 // _adaptedTransport must be set prior to adding the connection to the manager in order
                 // to allow the connection to be aported prior to protocol selection.
                 _adaptedTransport = _context.Transport;
-                var application = _context.Application;
 
 
                 if (_context.ConnectionAdapters.Count > 0)
@@ -147,14 +146,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                         {
                             case HttpProtocols.Http1:
                                 // _http1Connection must be initialized before adding the connection to the connection manager
-                                requestProcessor = _http1Connection = CreateHttp1Connection(_adaptedTransport, application);
+                                requestProcessor = _http1Connection = CreateHttp1Connection(_adaptedTransport);
                                 _protocolSelectionState = ProtocolSelectionState.Selected;
                                 break;
                             case HttpProtocols.Http2:
                                 // _http2Connection must be initialized before yielding control to the transport thread,
                                 // to prevent a race condition where _http2Connection.Abort() is called just as
                                 // _http2Connection is about to be initialized.
-                                requestProcessor = CreateHttp2Connection(_adaptedTransport, application);
+                                requestProcessor = CreateHttp2Connection(_adaptedTransport);
                                 _protocolSelectionState = ProtocolSelectionState.Selected;
                                 break;
                             case HttpProtocols.None:
@@ -199,13 +198,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         }
 
         // For testing only
-        internal void Initialize(IDuplexPipe transport, IDuplexPipe application)
+        internal void Initialize(IDuplexPipe transport)
         {
-            _requestProcessor = _http1Connection = CreateHttp1Connection(transport, application);
+            _requestProcessor = _http1Connection = CreateHttp1Connection(transport);
             _protocolSelectionState = ProtocolSelectionState.Selected;
         }
 
-        private Http1Connection CreateHttp1Connection(IDuplexPipe transport, IDuplexPipe application)
+        private Http1Connection CreateHttp1Connection(IDuplexPipe transport)
         {
             return new Http1Connection(new Http1ConnectionContext
             {
@@ -217,22 +216,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 ServiceContext = _context.ServiceContext,
                 ConnectionContext = _context.ConnectionContext,
                 TimeoutControl = this,
-                Transport = transport,
-                Application = application
+                Transport = transport
             });
         }
 
-        private Http2Connection CreateHttp2Connection(IDuplexPipe transport, IDuplexPipe application)
+        private Http2Connection CreateHttp2Connection(IDuplexPipe transport)
         {
             return new Http2Connection(new Http2ConnectionContext
             {
                 ConnectionId = _context.ConnectionId,
+                ConnectionContext = _context.ConnectionContext,
                 ServiceContext = _context.ServiceContext,
                 ConnectionFeatures = _context.ConnectionFeatures,
                 MemoryPool = MemoryPool,
                 LocalEndPoint = LocalEndPoint,
                 RemoteEndPoint = RemoteEndPoint,
-                Application = application,
                 Transport = transport
             });
         }

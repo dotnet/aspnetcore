@@ -18,7 +18,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
@@ -250,7 +249,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             var clientClosedConnection = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             var writeTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-            var mockKestrelTrace = new Mock<KestrelTrace>(Logger) { CallBase = true };
+            var mockKestrelTrace = new Mock<IKestrelTrace>();
             var mockLogger = new Mock<ILogger>();
             mockLogger
                 .Setup(logger => logger.IsEnabled(It.IsAny<LogLevel>()))
@@ -276,9 +275,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                                                                "Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets")))
                 .Returns(mockLogger.Object);
 
-            var testContext = new TestServiceContext(mockLoggerFactory.Object)
+            var testContext = new TestServiceContext(mockLoggerFactory.Object, mockKestrelTrace.Object)
             {
-                Log = mockKestrelTrace.Object,
                 ServerOptions =
                 {
                     Limits =
@@ -470,7 +468,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 var requestAborted = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
                 var appFuncCompleted = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-                var mockKestrelTrace = new Mock<KestrelTrace>(Logger) { CallBase = true };
+                var mockKestrelTrace = new Mock<IKestrelTrace>();
                 mockKestrelTrace
                     .Setup(trace => trace.ResponseMininumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>()))
                     .Callback(() => responseRateTimeoutMessageLogged.SetResult(null));
@@ -478,10 +476,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     .Setup(trace => trace.ConnectionStop(It.IsAny<string>()))
                     .Callback(() => connectionStopMessageLogged.SetResult(null));
 
-                var testContext = new TestServiceContext
+                var testContext = new TestServiceContext(loggerFactory, mockKestrelTrace.Object)
                 {
-                    LoggerFactory = loggerFactory,
-                    Log = mockKestrelTrace.Object,
                     ServerOptions =
                     {
                         Limits =
@@ -539,7 +535,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         await responseRateTimeoutMessageLogged.Task.DefaultTimeout();
                         await connectionStopMessageLogged.Task.DefaultTimeout();
                         await appFuncCompleted.Task.DefaultTimeout();
-                        await AssertStreamAborted(connection.Reader.BaseStream, chunkSize * chunks);
+                        await AssertStreamAborted(connection.Stream, chunkSize * chunks);
 
                         sw.Stop();
                         logger.LogInformation("Connection was aborted after {totalMilliseconds}ms.", sw.ElapsedMilliseconds);
@@ -562,7 +558,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             var aborted = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             var appFuncCompleted = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-            var mockKestrelTrace = new Mock<KestrelTrace>(Logger) { CallBase = true };
+            var mockKestrelTrace = new Mock<IKestrelTrace>();
             mockKestrelTrace
                 .Setup(trace => trace.ResponseMininumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>()))
                 .Callback(() => responseRateTimeoutMessageLogged.SetResult(null));
@@ -616,7 +612,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             {
                 using (var connection = server.CreateConnection())
                 {
-                    using (var sslStream = new SslStream(connection.Reader.BaseStream, false, (sender, cert, chain, errors) => true, null))
+                    using (var sslStream = new SslStream(connection.Stream, false, (sender, cert, chain, errors) => true, null))
                     {
                         await sslStream.AuthenticateAsClientAsync("localhost", new X509CertificateCollection(), SslProtocols.Tls12 | SslProtocols.Tls11, false);
 
@@ -628,7 +624,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         await connectionStopMessageLogged.Task.DefaultTimeout();
                         await appFuncCompleted.Task.DefaultTimeout();
 
-                        await AssertStreamAborted(connection.Reader.BaseStream, chunkSize * chunks);
+                        await AssertStreamAborted(connection.Stream, chunkSize * chunks);
                     }
                 }
             }
@@ -647,7 +643,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             var requestAborted = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             var copyToAsyncCts = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-            var mockKestrelTrace = new Mock<KestrelTrace>(Logger) { CallBase = true };
+            var mockKestrelTrace = new Mock<IKestrelTrace>();
             mockKestrelTrace
                 .Setup(trace => trace.ResponseMininumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>()))
                 .Callback(() => responseRateTimeoutMessageLogged.SetResult(null));
@@ -655,10 +651,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 .Setup(trace => trace.ConnectionStop(It.IsAny<string>()))
                 .Callback(() => connectionStopMessageLogged.SetResult(null));
 
-            var testContext = new TestServiceContext
+            var testContext = new TestServiceContext(LoggerFactory, mockKestrelTrace.Object)
             {
-                LoggerFactory = LoggerFactory,
-                Log = mockKestrelTrace.Object,
                 ServerOptions =
                 {
                     Limits =
@@ -734,11 +728,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             var requestAborted = false;
             var appFuncCompleted = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var mockKestrelTrace = new Mock<KestrelTrace>(Logger) { CallBase = true };
+            var mockKestrelTrace = new Mock<IKestrelTrace>();
 
-            var testContext = new TestServiceContext
+            var testContext = new TestServiceContext(LoggerFactory, mockKestrelTrace.Object)
             {
-                Log = mockKestrelTrace.Object,
                 ServerOptions =
                 {
                     Limits =
@@ -783,7 +776,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                     // Make sure consuming a single chunk exceeds the 2 second timeout.
                     var targetBytesPerSecond = chunkSize / 4;
-                    await AssertStreamCompleted(connection.Reader.BaseStream, minTotalOutputSize, targetBytesPerSecond);
+                    await AssertStreamCompleted(connection.Stream, minTotalOutputSize, targetBytesPerSecond);
                     await appFuncCompleted.Task.DefaultTimeout();
 
                     mockKestrelTrace.Verify(t => t.ResponseMininumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>()), Times.Never());
@@ -803,11 +796,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             var headerStringValues = new StringValues(Enumerable.Repeat(headerValue, headerCount).ToArray());
 
             var requestAborted = false;
-            var mockKestrelTrace = new Mock<KestrelTrace>(Logger) { CallBase = true };
+            var mockKestrelTrace = new Mock<IKestrelTrace>();
 
-            var testContext = new TestServiceContext
+            var testContext = new TestServiceContext(LoggerFactory, mockKestrelTrace.Object)
             {
-                Log = mockKestrelTrace.Object,
                 ServerOptions =
                 {
                     Limits =
@@ -860,7 +852,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                     // Make sure consuming a single set of response headers exceeds the 2 second timeout.
                     var targetBytesPerSecond = responseSize / 4;
-                    await AssertStreamCompleted(connection.Reader.BaseStream, minTotalOutputSize, targetBytesPerSecond);
+                    await AssertStreamCompleted(connection.Stream, minTotalOutputSize, targetBytesPerSecond);
 
                     mockKestrelTrace.Verify(t => t.ResponseMininumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>()), Times.Never());
                     mockKestrelTrace.Verify(t => t.ConnectionStop(It.IsAny<string>()), Times.Once());

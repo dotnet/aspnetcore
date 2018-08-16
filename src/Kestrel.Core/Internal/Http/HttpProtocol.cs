@@ -18,7 +18,6 @@ using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 
@@ -42,7 +41,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private Stack<KeyValuePair<Func<object, Task>, object>> _onStarting;
         private Stack<KeyValuePair<Func<object, Task>, object>> _onCompleted;
 
-        private int _requestAborted;
         private volatile int _ioCompleted;
         private CancellationTokenSource _abortedCts;
         private CancellationToken? _manuallySetRequestAbortToken;
@@ -385,6 +383,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
         }
 
+        protected virtual void OnErrorAfterResponseStarted()
+        {
+        }
+
         protected virtual bool BeginRead(out ValueTask<ReadResult> awaitable)
         {
             awaitable = default;
@@ -425,23 +427,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             ServiceContext.Scheduler.Schedule(state => ((HttpProtocol)state).CancelRequestAbortedToken(), this);
         }
 
-        /// <summary>
-        /// Immediately kill the connection and poison the request and response streams with an error if there is one.
-        /// </summary>
-        public virtual void Abort(ConnectionAbortedException abortReason)
+        protected void PoisonRequestBodyStream(Exception abortReason)
         {
-            if (Interlocked.Exchange(ref _requestAborted, 1) != 0)
-            {
-                return;
-            }
-
             _streams?.Abort(abortReason);
-
-            // Abort output prior to calling OnIOCompleted() to give the transport the chance to
-            // complete the input with the correct error and message.
-            Output.Abort(abortReason);
-
-            OnInputOrOutputCompleted();
         }
 
         public void OnHeader(Span<byte> name, Span<byte> value)
@@ -1032,7 +1020,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 if (HasResponseStarted)
                 {
-                    ErrorAfterResponseStarted();
+                    // We can no longer change the response, so we simply close the connection.
+                    _keepAlive = false;
+                    OnErrorAfterResponseStarted();
                     return Task.CompletedTask;
                 }
 
@@ -1055,12 +1045,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
 
             return WriteSuffix();
-        }
-
-        protected virtual void ErrorAfterResponseStarted()
-        {
-            // We can no longer change the response, so we simply close the connection.
-            _keepAlive = false;
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]

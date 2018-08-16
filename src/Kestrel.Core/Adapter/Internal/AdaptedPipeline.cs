@@ -168,9 +168,5 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
                 _transport.Input.Complete();
             }
         }
-
-        public void Dispose()
-        {
-        }
     }
 }
