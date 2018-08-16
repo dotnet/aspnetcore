@@ -114,6 +114,8 @@
     <!-- netstandard2.0 -->
     <ExternalDependency Include="NETStandard.Library" Version="$(NETStandardLibrary20PackageVersion)" VariableName="NETStandardLibrary20PackageVersion" />
 
+    <ExternalDependency Include="NetTopologySuite.Core" Version="$(NetTopologySuiteCorePackageVersion)" />
+
     <!-- This version should be used by runtime packages -->
     <ExternalDependency Include="Newtonsoft.Json" Version="$(NewtonsoftJsonPackageVersion)" />
     <!-- This version is required by MSBuild tasks or Visual Studio extensions. -->
