@@ -104,7 +104,7 @@
         /p:Configuration=$(Configuration);
         /p:FeatureBranchVersionSuffix=$(FeatureBranchVersionSuffix);
         /p:BuildNumber=$(BuildNumber);
-        /p:LangVersion=7.1" />
+        /p:LangVersion=7.2" />
     </ItemGroup>
 
     <MakeDir Directories="$(LogOutputDir)" />
