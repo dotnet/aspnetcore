@@ -11,8 +11,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
@@ -421,7 +421,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             const string response = "hello, world";
 
             var logTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var mockKestrelTrace = new Mock<KestrelTrace>(Logger) { CallBase = true };
+            var mockKestrelTrace = new Mock<IKestrelTrace>();
             mockKestrelTrace
                 .Setup(trace => trace.ConnectionHeadResponseBodyWrite(It.IsAny<string>(), response.Length))
                 .Callback<string, long>((connectionId, count) => logTcs.SetResult(null));
@@ -610,7 +610,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         public async Task WhenAppWritesLessThanContentLengthErrorLogged()
         {
             var logTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var mockTrace = new Mock<KestrelTrace>(Logger) { CallBase = true };
+            var mockTrace = new Mock<IKestrelTrace>();
             mockTrace
                 .Setup(trace => trace.ApplicationError(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<InvalidOperationException>()))
                 .Callback<string, string, Exception>((connectionId, requestId, ex) =>
@@ -663,7 +663,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         public async Task WhenAppWritesLessThanContentLengthButRequestIsAbortedErrorNotLogged()
         {
             var requestAborted = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var mockTrace = new Mock<KestrelTrace>(Logger) { CallBase = true };
+            var mockTrace = new Mock<IKestrelTrace>();
 
             using (var server = new TestServer(async httpContext =>
             {
