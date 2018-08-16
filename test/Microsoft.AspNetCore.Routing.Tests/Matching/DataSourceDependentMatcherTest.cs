@@ -68,6 +68,27 @@ namespace Microsoft.AspNetCore.Routing.Matching
         }
 
         [Fact]
+        public void Matcher_Ignores_SuppressedEndpoint()
+        {
+            // Arrange
+            var dataSource = new DynamicEndpointDataSource();
+            var endpoint = new MatcherEndpoint(
+                MatcherEndpoint.EmptyInvoker,
+                RoutePatternFactory.Parse("/"),
+                0,
+                new EndpointMetadataCollection(new SuppressMatchingMetadata()),
+                "test");
+            dataSource.AddEndpoint(endpoint);
+
+            // Act
+            var matcher = new DataSourceDependentMatcher(dataSource, TestMatcherBuilder.Create);
+
+            // Assert
+            var inner = Assert.IsType<TestMatcher>(matcher.CurrentMatcher);
+            Assert.Empty(inner.Endpoints);
+        }
+
+        [Fact]
         public void Cache_Reinitializes_WhenDataSourceChanges()
         {
             // Arrange
