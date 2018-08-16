@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Mvc
         string Action(UrlActionContext actionContext);
 
         /// <summary>
-        /// Converts a virtual (relative) path to an application absolute path.
+        /// Converts a virtual (relative, starting with ~/) path to an application absolute path.
         /// </summary>
         /// <remarks>
         /// If the specified content path does not start with the tilde (~) character,

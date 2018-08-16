@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -22,7 +23,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 {
     public class DefaultObjectValidatorTests
     {
-        private IModelMetadataProvider MetadataProvider { get; } = TestModelMetadataProvider.CreateDefaultProvider();
+        private readonly MvcOptions _options = new MvcOptions();
+
+        private ModelMetadataProvider MetadataProvider { get; } = TestModelMetadataProvider.CreateDefaultProvider();
 
         [Fact]
         public void Validate_SimpleValueType_Valid_WithPrefix()
@@ -1258,6 +1261,70 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 });
         }
 
+        [Fact]
+        public void Validate_Throws_IfValidationDepthExceedsMaxDepth()
+        {
+            // Arrange
+            var maxDepth = 5;
+            var expected = $"ValidationVisitor exceeded the maximum configured validation depth '{maxDepth}' when validating property '{nameof(DepthObject.Depth)}' on type '{typeof(DepthObject)}'. " +
+                "This may indicate a very deep or infinitely recursive object graph. Consider modifying 'MvcOptions.MaxValidationDepth' or suppressing validation on the model type.";
+            _options.MaxValidationDepth = maxDepth;
+            var actionContext = new ActionContext();
+            var validator = CreateValidator();
+            var model = new DepthObject(maxDepth);
+            var validationState = new ValidationStateDictionary
+            {
+                { model, new ValidationStateEntry() }
+            };
+
+            // Act & Assert
+            var ex = Assert.Throws<InvalidOperationException>(() => validator.Validate(actionContext, validationState, prefix: string.Empty, model));
+            Assert.Equal(expected, ex.Message);
+        }
+
+        [Fact]
+        public void Validate_WorksIfObjectGraphIsSmallerThanMaxDepth()
+        {
+            // Arrange
+            var maxDepth = 5;
+            _options.MaxValidationDepth = maxDepth;
+            var actionContext = new ActionContext();
+            var validator = CreateValidator();
+            var model = new DepthObject(maxDepth - 1);
+            var validationState = new ValidationStateDictionary
+            {
+                { model, new ValidationStateEntry() }
+            };
+
+            // Act & Assert
+            validator.Validate(actionContext, validationState, prefix: string.Empty, model);
+            Assert.True(actionContext.ModelState.IsValid);
+        }
+
+        [Fact]
+        public void Validate_Throws_WithMaxDepth_1()
+        {
+            // Arrange
+            var maxDepth = 1;
+            var expected = $"ValidationVisitor exceeded the maximum configured validation depth '{maxDepth}' when validating property '{nameof(DepthObject.Depth)}' on type '{typeof(DepthObject)}'. " +
+                "This may indicate a very deep or infinitely recursive object graph. Consider modifying 'MvcOptions.MaxValidationDepth' or suppressing validation on the model type.";
+            _options.MaxValidationDepth = maxDepth;
+            var actionContext = new ActionContext();
+            var validator = CreateValidator();
+            var model = new DepthObject(maxDepth + 1);
+            var validationState = new ValidationStateDictionary
+            {
+                { model, new ValidationStateEntry() }
+            };
+            var method = GetType().GetMethod(nameof(Validate_Throws_ForTopLeveleMetadataData), BindingFlags.NonPublic | BindingFlags.Instance);
+            var metadata = MetadataProvider.GetMetadataForParameter(method.GetParameters()[0]);
+
+            // Act & Assert
+            var ex = Assert.Throws<InvalidOperationException>(() => validator.Validate(actionContext, validationState, prefix: string.Empty, model));
+            Assert.Equal(expected, ex.Message);
+            Assert.NotNull(ex.HelpLink);
+        }
+
         private static DefaultObjectValidator CreateValidator(Type excludedType)
         {
             var excludeFilters = new List<SuppressChildValidationMetadataProvider>();
@@ -1268,14 +1335,14 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider(excludeFilters.ToArray());
             var validatorProviders = TestModelValidatorProvider.CreateDefaultProvider().ValidatorProviders;
-            return new DefaultObjectValidator(metadataProvider, validatorProviders);
+            return new DefaultObjectValidator(metadataProvider, validatorProviders, new MvcOptions());
         }
 
-        private static DefaultObjectValidator CreateValidator(params IMetadataDetailsProvider[] providers)
+        private DefaultObjectValidator CreateValidator(params IMetadataDetailsProvider[] providers)
         {
             var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider(providers);
             var validatorProviders = TestModelValidatorProvider.CreateDefaultProvider().ValidatorProviders;
-            return new DefaultObjectValidator(metadataProvider, validatorProviders);
+            return new DefaultObjectValidator(metadataProvider, validatorProviders, _options);
         }
 
         private static void AssertKeysEqual(ModelStateDictionary modelState, params string[] keys)
@@ -1398,6 +1465,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             void DoSomething();
         }
 
+        private void Validate_Throws_ForTopLeveleMetadataData(DepthObject depthObject) { }
+
         // Custom validation attribute that returns multiple entries in ValidationResult.MemberNames and those member
         // names are indexers. An example scenario is an attribute that confirms all entries in a list are unique.
         private class InvalidItemsAttribute : ValidationAttribute
@@ -1441,6 +1510,31 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         private class InvalidAddress
         {
             public string City { get; set; }
+        }
+
+        private class DepthObject
+        {
+            public DepthObject(int maxAllowedDepth, int depth = 0)
+            {
+                MaxAllowedDepth = maxAllowedDepth;
+                Depth = depth;
+            }
+
+            public int Depth { get; }
+            public int MaxAllowedDepth { get; }
+
+            public DepthObject Instance
+            {
+                get
+                {
+                    if (Depth == MaxAllowedDepth - 1)
+                    {
+                        return this;
+                    }
+
+                    return new DepthObject(MaxAllowedDepth, Depth + 1);
+                }
+            }
         }
     }
 }

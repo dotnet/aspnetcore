@@ -78,5 +78,11 @@ namespace FormatterWebSite
 
             return Ok();
         }
+
+        [HttpPost]
+        public IActionResult ValidationThrowsError_WhenValidationExceedsMaxValidationDepth([FromBody] InfinitelyRecursiveModel model)
+        {
+            return Ok();
+        }
     }
 }

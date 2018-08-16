@@ -4,8 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Internal;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
 {
@@ -15,6 +17,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
     /// </summary>
     public class ValidationVisitor
     {
+        private int? _maxValidationDepth;
+
         /// <summary>
         /// Creates a new <see cref="ValidationVisitor"/>.
         /// </summary>
@@ -75,6 +79,31 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
         protected object Model { get; set; }
         protected ModelMetadata Metadata { get; set; }
         protected IValidationStrategy Strategy { get; set; }
+
+        /// <summary>
+        /// Gets or sets the maximum depth to constrain the validation visitor when validating.
+        /// <para>
+        /// <see cref="ValidationVisitor"/> traverses the object graph of the model being validated. For models
+        /// that are very deep or are infinitely recursive, validation may result in stack overflow.
+        /// </para>
+        /// <para>
+        /// When not <see langword="null"/>, <see cref="Visit(ModelMetadata, string, object)"/> will throw if
+        /// current traversal depth exceeds the specified value.
+        /// </para>
+        /// </summary>
+        public int? MaxValidationDepth
+        {
+            get => _maxValidationDepth;
+            set
+            {
+                if (value != null && value <= 0)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value));
+                }
+
+                _maxValidationDepth = value;
+            }
+        }
 
         /// <summary>
         /// Indicates whether validation of a complex type should be performed if validation fails for any of its children. The default behavior is false.
@@ -190,6 +219,33 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
             {
                 // This is a cycle, bail.
                 return true;
+            }
+
+            if (MaxValidationDepth != null && CurrentPath.Count > MaxValidationDepth)
+            {
+                // Non cyclic but too deep an object graph.
+
+                // Pop the current model to make ValidationStack.Dispose happy
+                CurrentPath.Pop(model);
+
+                string message;
+                switch (metadata.MetadataKind)
+                {
+                    case ModelMetadataKind.Property:
+                        message = Resources.FormatValidationVisitor_ExceededMaxPropertyDepth(nameof(ValidationVisitor), MaxValidationDepth, metadata.Name, metadata.ContainerType);
+                        break;
+
+                    default:
+                        // Since the minimum depth is never 0, MetadataKind can never be Parameter. Consequently we only special case MetadataKind.Property.
+                        message = Resources.FormatValidationVisitor_ExceededMaxDepth(nameof(ValidationVisitor), MaxValidationDepth, metadata.ModelType);
+                        break;
+                }
+
+                message += " " + Resources.FormatValidationVisitor_ExceededMaxDepthFix(nameof(MvcOptions), nameof(MvcOptions.MaxValidationDepth));
+                throw new InvalidOperationException(message)
+                {
+                    HelpLink = "https://aka.ms/AA21ue1",
+                };
             }
 
             var entry = GetValidationEntry(model);

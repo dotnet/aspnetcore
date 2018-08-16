@@ -338,7 +338,7 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         /// <summary>
-        /// Generates a URL with an absolute path for the specified <paramref name="pageName"/>.
+        /// Generates a URL with a relative path for the specified <paramref name="pageName"/>.
         /// </summary>
         /// <param name="urlHelper">The <see cref="IUrlHelper"/>.</param>
         /// <param name="pageName">The page name to generate the url for.</param>
@@ -347,7 +347,7 @@ namespace Microsoft.AspNetCore.Mvc
             => Page(urlHelper, pageName, values: null);
 
         /// <summary>
-        /// Generates a URL with an absolute path for the specified <paramref name="pageName"/>.
+        /// Generates a URL with a relative path for the specified <paramref name="pageName"/>.
         /// </summary>
         /// <param name="urlHelper">The <see cref="IUrlHelper"/>.</param>
         /// <param name="pageName">The page name to generate the url for.</param>
@@ -357,7 +357,7 @@ namespace Microsoft.AspNetCore.Mvc
             => Page(urlHelper, pageName, pageHandler, values: null);
 
         /// <summary>
-        /// Generates a URL with an absolute path for the specified <paramref name="pageName"/>.
+        /// Generates a URL with a relative path for the specified <paramref name="pageName"/>.
         /// </summary>
         /// <param name="urlHelper">The <see cref="IUrlHelper"/>.</param>
         /// <param name="pageName">The page name to generate the url for.</param>
@@ -367,7 +367,7 @@ namespace Microsoft.AspNetCore.Mvc
             => Page(urlHelper, pageName, pageHandler: null, values: values);
 
         /// <summary>
-        /// Generates a URL with an absolute path for the specified <paramref name="pageName"/>.
+        /// Generates a URL with a relative path for the specified <paramref name="pageName"/>.
         /// </summary>
         /// <param name="urlHelper">The <see cref="IUrlHelper"/>.</param>
         /// <param name="pageName">The page name to generate the url for.</param>

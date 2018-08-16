@@ -19,13 +19,19 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
 
         public const string AuthorizeAttribute = "Microsoft.AspNetCore.Authorization.AuthorizeAttribute";
 
+        public const string BindAttribute = "Microsoft.AspNetCore.Mvc.BindAttribute";
+
         public const string ControllerAttribute = "Microsoft.AspNetCore.Mvc.ControllerAttribute";
 
         public const string DefaultStatusCodeAttribute = "Microsoft.AspNetCore.Mvc.Infrastructure.DefaultStatusCodeAttribute";
 
+        public const string FromBodyAttribute = "Microsoft.AspNetCore.Mvc.FromBodyAttribute";
+
         public const string HtmlHelperPartialExtensionsType = "Microsoft.AspNetCore.Mvc.Rendering.HtmlHelperPartialExtensions";
 
         public const string IApiBehaviorMetadata = "Microsoft.AspNetCore.Mvc.Internal.IApiBehaviorMetadata";
+
+        public const string IBinderTypeProviderMetadata = "Microsoft.AspNetCore.Mvc.ModelBinding.IBinderTypeProviderMetadata";
 
         public const string IActionResult = "Microsoft.AspNetCore.Mvc.IActionResult";
 
@@ -34,6 +40,8 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
         public const string IFilterMetadataType = "Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata";
 
         public const string IHtmlHelperType = "Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper";
+
+        public const string IModelNameProvider = "Microsoft.AspNetCore.Mvc.ModelBinding.IModelNameProvider";
 
         public const string IRouteTemplateProvider = "Microsoft.AspNetCore.Mvc.Routing.IRouteTemplateProvider";
 

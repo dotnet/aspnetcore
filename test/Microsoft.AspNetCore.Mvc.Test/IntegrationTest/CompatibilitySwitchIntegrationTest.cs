@@ -40,6 +40,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTest
             Assert.False(jsonOptions.AllowInputFormatterExceptionMessages);
             Assert.False(razorPagesOptions.AllowAreas);
             Assert.False(mvcOptions.EnableEndpointRouting);
+            Assert.Null(mvcOptions.MaxValidationDepth);
         }
 
         [Fact]
@@ -65,6 +66,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTest
             Assert.True(jsonOptions.AllowInputFormatterExceptionMessages);
             Assert.True(razorPagesOptions.AllowAreas);
             Assert.False(mvcOptions.EnableEndpointRouting);
+            Assert.Null(mvcOptions.MaxValidationDepth);
         }
 
         [Fact]
@@ -90,6 +92,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTest
             Assert.True(jsonOptions.AllowInputFormatterExceptionMessages);
             Assert.True(razorPagesOptions.AllowAreas);
             Assert.True(mvcOptions.EnableEndpointRouting);
+            Assert.Equal(32, mvcOptions.MaxValidationDepth);
         }
 
         [Fact]
@@ -115,6 +118,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTest
             Assert.True(jsonOptions.AllowInputFormatterExceptionMessages);
             Assert.True(razorPagesOptions.AllowAreas);
             Assert.True(mvcOptions.EnableEndpointRouting);
+            Assert.Equal(32, mvcOptions.MaxValidationDepth);
         }
 
         // This just does the minimum needed to be able to resolve these options.

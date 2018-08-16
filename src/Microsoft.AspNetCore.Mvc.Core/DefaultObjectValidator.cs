@@ -2,26 +2,33 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNetCore.Mvc.Internal
+namespace Microsoft.AspNetCore.Mvc
 {
     /// <summary>
     /// The default implementation of <see cref="IObjectModelValidator"/>.
     /// </summary>
-    public class DefaultObjectValidator : ObjectModelValidator
+    internal class DefaultObjectValidator : ObjectModelValidator
     {
+        private readonly MvcOptions _mvcOptions;
+
         /// <summary>
         /// Initializes a new instance of <see cref="DefaultObjectValidator"/>.
         /// </summary>
         /// <param name="modelMetadataProvider">The <see cref="IModelMetadataProvider"/>.</param>
         /// <param name="validatorProviders">The list of <see cref="IModelValidatorProvider"/>.</param>
+        /// <param name="mvcOptions">Accessor to <see cref="MvcOptions"/>.</param>
         public DefaultObjectValidator(
             IModelMetadataProvider modelMetadataProvider,
-            IList<IModelValidatorProvider> validatorProviders)
+            IList<IModelValidatorProvider> validatorProviders,
+            MvcOptions mvcOptions)
             : base(modelMetadataProvider, validatorProviders)
         {
+            _mvcOptions = mvcOptions;
         }
 
         public override ValidationVisitor GetValidationVisitor(
@@ -31,12 +38,16 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             IModelMetadataProvider metadataProvider,
             ValidationStateDictionary validationState)
         {
-            return new ValidationVisitor(
+            var visitor = new ValidationVisitor(
                 actionContext,
                 validatorProvider,
                 validatorCache,
                 metadataProvider,
                 validationState);
+
+            visitor.MaxValidationDepth = _mvcOptions.MaxValidationDepth;
+
+            return visitor;
         }
     }
 }

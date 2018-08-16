@@ -2711,7 +2711,8 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             var controller = GetController(binder, valueProvider: null);
             controller.ObjectValidator = new DefaultObjectValidator(
                 controller.MetadataProvider,
-                new[] { Mock.Of<IModelValidatorProvider>() });
+                new[] { Mock.Of<IModelValidatorProvider>() },
+                new MvcOptions());
 
             var model = new TryValidateModelModel();
 
@@ -2747,7 +2748,8 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             var controller = GetController(binder, valueProvider: null);
             controller.ObjectValidator = new DefaultObjectValidator(
                 controller.MetadataProvider,
-                new[] { provider.Object });
+                new[] { provider.Object },
+                new MvcOptions());
 
             // Act
             var result = controller.TryValidateModel(model, "Prefix");
@@ -2783,7 +2785,8 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             var controller = GetController(binder, valueProvider: null);
             controller.ObjectValidator = new DefaultObjectValidator(
                 controller.MetadataProvider,
-                new[] { provider.Object });
+                new[] { provider.Object },
+                new MvcOptions());
 
             // Act
             var result = controller.TryValidateModel(model);
@@ -2867,7 +2870,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
                 ControllerContext = controllerContext,
                 MetadataProvider = metadataProvider,
                 ModelBinderFactory = binderFactory.Object,
-                ObjectValidator = new DefaultObjectValidator(metadataProvider, validatorProviders),
+                ObjectValidator = new DefaultObjectValidator(metadataProvider, validatorProviders, new MvcOptions()),
             };
 
             return controller;

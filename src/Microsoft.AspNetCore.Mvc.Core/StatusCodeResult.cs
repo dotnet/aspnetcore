@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -12,7 +13,7 @@ namespace Microsoft.AspNetCore.Mvc
     /// Represents an <see cref="ActionResult"/> that when executed will
     /// produce an HTTP response with the given response status code.
     /// </summary>
-    public class StatusCodeResult : ActionResult
+    public class StatusCodeResult : ActionResult, IStatusCodeActionResult
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="StatusCodeResult"/> class
@@ -28,6 +29,8 @@ namespace Microsoft.AspNetCore.Mvc
         /// Gets the HTTP status code.
         /// </summary>
         public int StatusCode { get; }
+
+        int? IStatusCodeActionResult.StatusCode => StatusCode;
 
         /// <inheritdoc />
         public override void ExecuteResult(ActionContext context)

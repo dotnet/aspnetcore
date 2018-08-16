@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Controllers;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Routing;
@@ -79,7 +78,8 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 new ModelBinderFactory(metadataProvider, options, serviceProvider),
                 new DefaultObjectValidator(
                     metadataProvider,
-                    new[] { new CompositeModelValidatorProvider(GetModelValidatorProviders(options)) }),
+                    new[] { new CompositeModelValidatorProvider(GetModelValidatorProviders(options)) },
+                    options.Value),
                 options,
                 NullLoggerFactory.Instance);
         }
@@ -102,7 +102,8 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 new ModelBinderFactory(metadataProvider, options, services),
                 new DefaultObjectValidator(
                     metadataProvider,
-                    new[] { new CompositeModelValidatorProvider(GetModelValidatorProviders(options)) }),
+                    new[] { new CompositeModelValidatorProvider(GetModelValidatorProviders(options)) },
+                    options.Value),
                 options,
                 NullLoggerFactory.Instance);
         }
@@ -127,7 +128,8 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         {
             return new DefaultObjectValidator(
                 metadataProvider,
-                GetModelValidatorProviders(options));
+                GetModelValidatorProviders(options),
+                options?.Value ?? new MvcOptions());
         }
 
         private static IList<IModelValidatorProvider> GetModelValidatorProviders(IOptions<MvcOptions> options)
