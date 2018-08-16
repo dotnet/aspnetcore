@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics;
 using System.Text;
+using Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
@@ -13,18 +14,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         internal abstract object IgnoreRemaining { get; }
         internal abstract object CreateTokenizer(ITextDocument source);
 
-        internal void TestTokenizer<TSymbol, TSymbolType>(string input, params TSymbol[] expectedSymbols)
-            where TSymbolType : struct
-            where TSymbol : TokenBase<TSymbolType>
+        internal void TestTokenizer(string input, params SyntaxToken[] expectedSymbols)
         {
             // Arrange
             var success = true;
             var output = new StringBuilder();
             using (var source = new SeekableTextReader(input, filePath: null))
             {
-                var tokenizer = (Tokenizer<TSymbol, TSymbolType>)CreateTokenizer(source);
+                var tokenizer = (Tokenizer)CreateTokenizer(source);
                 var counter = 0;
-                TSymbol current = null;
+                SyntaxToken current = null;
                 while ((current = tokenizer.NextToken()) != null)
                 {
                     if (counter >= expectedSymbols.Length)
@@ -34,11 +33,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     }
                     else if (ReferenceEquals(expectedSymbols[counter], IgnoreRemaining))
                     {
-                        output.AppendLine(string.Format("P: Ignored {0}", current));
+                        output.AppendLine(string.Format("P: Ignored |{0}|", current));
                     }
                     else
                     {
-                        if (!Equals(expectedSymbols[counter], current))
+                        if (!expectedSymbols[counter].IsEquivalentTo(current))
                         {
                             output.AppendLine(string.Format("F: Expected: {0}; Actual: {1}", expectedSymbols[counter], current));
                             success = false;

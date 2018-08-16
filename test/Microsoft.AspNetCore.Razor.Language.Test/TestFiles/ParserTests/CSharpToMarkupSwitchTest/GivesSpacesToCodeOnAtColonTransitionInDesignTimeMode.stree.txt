@@ -1,26 +1,26 @@
 Statement block - Gen<None> - 26 - (0:0,0)
     MetaCode span - Gen<None> - [{] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-        CSharpTokenType.LeftBrace;[{];
+        SyntaxKind.LeftBrace;[{];
     Code span - Gen<Stmt> - [LF    ] - AutoCompleteEditHandler;Accepts:Any,AutoComplete:[<null>];AtEOL - (1:0,1) - Tokens:2
-        CSharpTokenType.NewLine;[LF];
-        CSharpTokenType.WhiteSpace;[    ];
+        SyntaxKind.NewLine;[LF];
+        SyntaxKind.Whitespace;[    ];
     Markup block - Gen<None> - 18 - (7:1,4)
         Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (7:1,4) - Tokens:1
-            HtmlTokenType.Transition;[@];
+            SyntaxKind.Transition;[@];
         MetaCode span - Gen<None> - [:] - SpanEditHandler;Accepts:Any - (8:1,5) - Tokens:1
-            HtmlTokenType.Colon;[:];
+            SyntaxKind.Colon;[:];
         Markup span - Gen<Markup> - [<p>Foo</p>    LF] - SpanEditHandler;Accepts:None - (9:1,6) - Tokens:10
-            HtmlTokenType.OpenAngle;[<];
-            HtmlTokenType.Text;[p];
-            HtmlTokenType.CloseAngle;[>];
-            HtmlTokenType.Text;[Foo];
-            HtmlTokenType.OpenAngle;[<];
-            HtmlTokenType.ForwardSlash;[/];
-            HtmlTokenType.Text;[p];
-            HtmlTokenType.CloseAngle;[>];
-            HtmlTokenType.WhiteSpace;[    ];
-            HtmlTokenType.NewLine;[LF];
+            SyntaxKind.OpenAngle;[<];
+            SyntaxKind.HtmlTextLiteral;[p];
+            SyntaxKind.CloseAngle;[>];
+            SyntaxKind.HtmlTextLiteral;[Foo];
+            SyntaxKind.OpenAngle;[<];
+            SyntaxKind.ForwardSlash;[/];
+            SyntaxKind.HtmlTextLiteral;[p];
+            SyntaxKind.CloseAngle;[>];
+            SyntaxKind.Whitespace;[    ];
+            SyntaxKind.NewLine;[LF];
     Code span - Gen<Stmt> - [] - SpanEditHandler;Accepts:Any - (25:2,0) - Tokens:1
-        CSharpTokenType.Unknown;[];
+        SyntaxKind.Unknown;[];
     MetaCode span - Gen<None> - [}] - SpanEditHandler;Accepts:None - (25:2,0) - Tokens:1
-        CSharpTokenType.RightBrace;[}];
+        SyntaxKind.RightBrace;[}];

@@ -1,17 +1,17 @@
 Directive block - Gen<Directive:{custom;SingleLine;Unrestricted}> - 23 - (0:0,0)
     Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-        CSharpTokenType.Transition;[@];
+        SyntaxKind.Transition;[@];
     MetaCode span - Gen<None> - [custom] - SpanEditHandler;Accepts:None - (1:0,1) - Tokens:1
-        CSharpTokenType.Identifier;[custom];
+        SyntaxKind.Identifier;[custom];
     Code span - Gen<None> - [ ] - SpanEditHandler;Accepts:WhiteSpace - (7:0,7) - Tokens:1
-        CSharpTokenType.WhiteSpace;[ ];
+        SyntaxKind.Whitespace;[ ];
     Code span - Gen<DirectiveToken {;Type;Opt:False}> - [(bool, int?)] - DirectiveTokenEditHandler;Accepts:NonWhiteSpace - (8:0,8) - Tokens:7
-        CSharpTokenType.LeftParenthesis;[(];
-        CSharpTokenType.Keyword;[bool];
-        CSharpTokenType.Comma;[,];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Keyword;[int];
-        CSharpTokenType.QuestionMark;[?];
-        CSharpTokenType.RightParenthesis;[)];
+        SyntaxKind.LeftParenthesis;[(];
+        SyntaxKind.Keyword;[bool];
+        SyntaxKind.Comma;[,];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.Keyword;[int];
+        SyntaxKind.QuestionMark;[?];
+        SyntaxKind.RightParenthesis;[)];
     None span - Gen<None> - [   ] - SpanEditHandler;Accepts:WhiteSpace - (20:0,20) - Tokens:1
-        CSharpTokenType.WhiteSpace;[   ];
+        SyntaxKind.Whitespace;[   ];

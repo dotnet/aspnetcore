@@ -3,10 +3,11 @@
 
 using System.Collections.Generic;
 using System.Diagnostics;
+using Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
-    internal class HtmlLanguageCharacteristics : LanguageCharacteristics<HtmlTokenizer, HtmlToken, HtmlTokenType>
+    internal class HtmlLanguageCharacteristics : LanguageCharacteristics<HtmlTokenizer>
     {
         private static readonly HtmlLanguageCharacteristics _instance = new HtmlLanguageCharacteristics();
 
@@ -19,47 +20,47 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             get { return _instance; }
         }
 
-        public override string GetSample(HtmlTokenType type)
+        public override string GetSample(SyntaxKind type)
         {
             switch (type)
             {
-                case HtmlTokenType.Text:
+                case SyntaxKind.HtmlTextLiteral:
                     return Resources.HtmlToken_Text;
-                case HtmlTokenType.WhiteSpace:
+                case SyntaxKind.Whitespace:
                     return Resources.HtmlToken_WhiteSpace;
-                case HtmlTokenType.NewLine:
+                case SyntaxKind.NewLine:
                     return Resources.HtmlToken_NewLine;
-                case HtmlTokenType.OpenAngle:
+                case SyntaxKind.OpenAngle:
                     return "<";
-                case HtmlTokenType.Bang:
+                case SyntaxKind.Bang:
                     return "!";
-                case HtmlTokenType.ForwardSlash:
+                case SyntaxKind.ForwardSlash:
                     return "/";
-                case HtmlTokenType.QuestionMark:
+                case SyntaxKind.QuestionMark:
                     return "?";
-                case HtmlTokenType.DoubleHyphen:
+                case SyntaxKind.DoubleHyphen:
                     return "--";
-                case HtmlTokenType.LeftBracket:
+                case SyntaxKind.LeftBracket:
                     return "[";
-                case HtmlTokenType.CloseAngle:
+                case SyntaxKind.CloseAngle:
                     return ">";
-                case HtmlTokenType.RightBracket:
+                case SyntaxKind.RightBracket:
                     return "]";
-                case HtmlTokenType.Equals:
+                case SyntaxKind.Equals:
                     return "=";
-                case HtmlTokenType.DoubleQuote:
+                case SyntaxKind.DoubleQuote:
                     return "\"";
-                case HtmlTokenType.SingleQuote:
+                case SyntaxKind.SingleQuote:
                     return "'";
-                case HtmlTokenType.Transition:
+                case SyntaxKind.Transition:
                     return "@";
-                case HtmlTokenType.Colon:
+                case SyntaxKind.Colon:
                     return ":";
-                case HtmlTokenType.RazorComment:
+                case SyntaxKind.RazorComment:
                     return Resources.HtmlToken_RazorComment;
-                case HtmlTokenType.RazorCommentStar:
+                case SyntaxKind.RazorCommentStar:
                     return "*";
-                case HtmlTokenType.RazorCommentTransition:
+                case SyntaxKind.RazorCommentTransition:
                     return "@";
                 default:
                     return Resources.Token_Unknown;
@@ -71,57 +72,57 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return new HtmlTokenizer(source);
         }
 
-        public override HtmlTokenType FlipBracket(HtmlTokenType bracket)
+        public override SyntaxKind FlipBracket(SyntaxKind bracket)
         {
             switch (bracket)
             {
-                case HtmlTokenType.LeftBracket:
-                    return HtmlTokenType.RightBracket;
-                case HtmlTokenType.OpenAngle:
-                    return HtmlTokenType.CloseAngle;
-                case HtmlTokenType.RightBracket:
-                    return HtmlTokenType.LeftBracket;
-                case HtmlTokenType.CloseAngle:
-                    return HtmlTokenType.OpenAngle;
+                case SyntaxKind.LeftBracket:
+                    return SyntaxKind.RightBracket;
+                case SyntaxKind.OpenAngle:
+                    return SyntaxKind.CloseAngle;
+                case SyntaxKind.RightBracket:
+                    return SyntaxKind.LeftBracket;
+                case SyntaxKind.CloseAngle:
+                    return SyntaxKind.OpenAngle;
                 default:
                     Debug.Fail("FlipBracket must be called with a bracket character");
-                    return HtmlTokenType.Unknown;
+                    return SyntaxKind.Unknown;
             }
         }
 
-        public override HtmlToken CreateMarkerToken()
+        public override SyntaxToken CreateMarkerToken()
         {
-            return new HtmlToken(string.Empty, HtmlTokenType.Unknown);
+            return SyntaxFactory.Token(SyntaxKind.Unknown, string.Empty);
         }
 
-        public override HtmlTokenType GetKnownTokenType(KnownTokenType type)
+        public override SyntaxKind GetKnownTokenType(KnownTokenType type)
         {
             switch (type)
             {
                 case KnownTokenType.CommentStart:
-                    return HtmlTokenType.RazorCommentTransition;
+                    return SyntaxKind.RazorCommentTransition;
                 case KnownTokenType.CommentStar:
-                    return HtmlTokenType.RazorCommentStar;
+                    return SyntaxKind.RazorCommentStar;
                 case KnownTokenType.CommentBody:
-                    return HtmlTokenType.RazorComment;
+                    return SyntaxKind.RazorComment;
                 case KnownTokenType.Identifier:
-                    return HtmlTokenType.Text;
+                    return SyntaxKind.HtmlTextLiteral;
                 case KnownTokenType.Keyword:
-                    return HtmlTokenType.Text;
+                    return SyntaxKind.HtmlTextLiteral;
                 case KnownTokenType.NewLine:
-                    return HtmlTokenType.NewLine;
+                    return SyntaxKind.NewLine;
                 case KnownTokenType.Transition:
-                    return HtmlTokenType.Transition;
+                    return SyntaxKind.Transition;
                 case KnownTokenType.WhiteSpace:
-                    return HtmlTokenType.WhiteSpace;
+                    return SyntaxKind.Whitespace;
                 default:
-                    return HtmlTokenType.Unknown;
+                    return SyntaxKind.Unknown;
             }
         }
 
-        protected override HtmlToken CreateToken(string content, HtmlTokenType type, IReadOnlyList<RazorDiagnostic> errors)
+        protected override SyntaxToken CreateToken(string content, SyntaxKind kind, IReadOnlyList<RazorDiagnostic> errors)
         {
-            return new HtmlToken(content, type, errors);
+            return SyntaxFactory.Token(kind, content, errors);
         }
     }
 }

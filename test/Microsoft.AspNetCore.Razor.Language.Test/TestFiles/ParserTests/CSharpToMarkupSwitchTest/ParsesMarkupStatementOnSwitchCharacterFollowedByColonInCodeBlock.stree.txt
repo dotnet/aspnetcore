@@ -1,26 +1,26 @@
 Statement block - Gen<None> - 22 - (0:0,0)
     MetaCode span - Gen<None> - [{] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-        CSharpTokenType.LeftBrace;[{];
+        SyntaxKind.LeftBrace;[{];
     Code span - Gen<Stmt> - [ if(foo) {] - AutoCompleteEditHandler;Accepts:Any,AutoComplete:[<null>];AtEOL - (1:0,1) - Tokens:7
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Keyword;[if];
-        CSharpTokenType.LeftParenthesis;[(];
-        CSharpTokenType.Identifier;[foo];
-        CSharpTokenType.RightParenthesis;[)];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.LeftBrace;[{];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.Keyword;[if];
+        SyntaxKind.LeftParenthesis;[(];
+        SyntaxKind.Identifier;[foo];
+        SyntaxKind.RightParenthesis;[)];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.LeftBrace;[{];
     Markup block - Gen<None> - 8 - (11:0,11)
         Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:Any - (11:0,11) - Tokens:1
-            HtmlTokenType.WhiteSpace;[ ];
+            SyntaxKind.Whitespace;[ ];
         Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (12:0,12) - Tokens:1
-            HtmlTokenType.Transition;[@];
+            SyntaxKind.Transition;[@];
         MetaCode span - Gen<None> - [:] - SpanEditHandler;Accepts:Any - (13:0,13) - Tokens:1
-            HtmlTokenType.Colon;[:];
+            SyntaxKind.Colon;[:];
         Markup span - Gen<Markup> - [BarLF] - SpanEditHandler;Accepts:None - (14:0,14) - Tokens:2
-            HtmlTokenType.Text;[Bar];
-            HtmlTokenType.NewLine;[LF];
+            SyntaxKind.HtmlTextLiteral;[Bar];
+            SyntaxKind.NewLine;[LF];
     Code span - Gen<Stmt> - [} ] - SpanEditHandler;Accepts:Any - (19:1,0) - Tokens:2
-        CSharpTokenType.RightBrace;[}];
-        CSharpTokenType.WhiteSpace;[ ];
+        SyntaxKind.RightBrace;[}];
+        SyntaxKind.Whitespace;[ ];
     MetaCode span - Gen<None> - [}] - SpanEditHandler;Accepts:None - (21:1,2) - Tokens:1
-        CSharpTokenType.RightBrace;[}];
+        SyntaxKind.RightBrace;[}];

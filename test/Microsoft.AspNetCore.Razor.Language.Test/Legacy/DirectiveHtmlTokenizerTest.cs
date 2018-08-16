@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
@@ -12,9 +13,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             TestTokenizer(
                 "\r\n <div>Ignored</div>",
-                new HtmlToken("\r\n", HtmlTokenType.NewLine),
-                new HtmlToken(" ", HtmlTokenType.WhiteSpace),
-                new HtmlToken("<", HtmlTokenType.OpenAngle));
+                SyntaxFactory.Token(SyntaxKind.NewLine, "\r\n"),
+                SyntaxFactory.Token(SyntaxKind.Whitespace, " "),
+                SyntaxFactory.Token(SyntaxKind.OpenAngle, "<"));
         }
 
         [Fact]
@@ -22,15 +23,15 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             TestTokenizer(
                 "\r\n @*included*@ <div>Ignored</div>",
-                new HtmlToken("\r\n", HtmlTokenType.NewLine),
-                new HtmlToken(" ", HtmlTokenType.WhiteSpace),
-                new HtmlToken("@", HtmlTokenType.RazorCommentTransition),
-                new HtmlToken("*", HtmlTokenType.RazorCommentStar),
-                new HtmlToken("included", HtmlTokenType.RazorComment),
-                new HtmlToken("*", HtmlTokenType.RazorCommentStar),
-                new HtmlToken("@", HtmlTokenType.RazorCommentTransition),
-                new HtmlToken(" ", HtmlTokenType.WhiteSpace),
-                new HtmlToken("<", HtmlTokenType.OpenAngle));
+                SyntaxFactory.Token(SyntaxKind.NewLine, "\r\n"),
+                SyntaxFactory.Token(SyntaxKind.Whitespace, " "),
+                SyntaxFactory.Token(SyntaxKind.RazorCommentTransition, "@"),
+                SyntaxFactory.Token(SyntaxKind.RazorCommentStar, "*"),
+                SyntaxFactory.Token(SyntaxKind.RazorComment, "included"),
+                SyntaxFactory.Token(SyntaxKind.RazorCommentStar, "*"),
+                SyntaxFactory.Token(SyntaxKind.RazorCommentTransition, "@"),
+                SyntaxFactory.Token(SyntaxKind.Whitespace, " "),
+                SyntaxFactory.Token(SyntaxKind.OpenAngle, "<"));
         }
 
         internal override object CreateTokenizer(ITextDocument source)

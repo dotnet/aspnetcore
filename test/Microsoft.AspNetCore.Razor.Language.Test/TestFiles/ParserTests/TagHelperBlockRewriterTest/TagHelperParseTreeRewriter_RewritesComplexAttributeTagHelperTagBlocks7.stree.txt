@@ -6,61 +6,61 @@ Markup block - Gen<None> - 122 - (0:0,0)
                 Markup block - Gen<DynAttr:@(10:0,10)> - 13 - (10:0,10)
                     Expression block - Gen<Expr> - 13 - (10:0,10)
                         Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (10:0,10) - Tokens:1
-                            CSharpTokenType.Transition;[@];
+                            SyntaxKind.Transition;[@];
                         Code span - Gen<Expr> - [DateTime.Now] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K14 - (11:0,11) - Tokens:3
-                            CSharpTokenType.Identifier;[DateTime];
-                            CSharpTokenType.Dot;[.];
-                            CSharpTokenType.Identifier;[Now];
+                            SyntaxKind.Identifier;[DateTime];
+                            SyntaxKind.Dot;[.];
+                            SyntaxKind.Identifier;[Now];
         style - SingleQuotes
             Markup block - Gen<None> - 13 - (32:0,32)
                 Markup block - Gen<DynAttr:@(32:0,32)> - 13 - (32:0,32)
                     Expression block - Gen<Expr> - 13 - (32:0,32)
                         Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (32:0,32) - Tokens:1
-                            CSharpTokenType.Transition;[@];
+                            SyntaxKind.Transition;[@];
                         Code span - Gen<Expr> - [DateTime.Now] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K14 - (33:0,33) - Tokens:3
-                            CSharpTokenType.Identifier;[DateTime];
-                            CSharpTokenType.Dot;[.];
-                            CSharpTokenType.Identifier;[Now];
+                            SyntaxKind.Identifier;[DateTime];
+                            SyntaxKind.Dot;[.];
+                            SyntaxKind.Identifier;[Now];
         SyntaxKind.HtmlText - [Hello World ] - [47..59) - FullWidth: 12 - Slots: 1
             SyntaxKind.List - [Hello World ] - [47..59) - FullWidth: 12 - Slots: 4
-                SyntaxKind.HtmlTextLiteralToken;[Hello];
+                SyntaxKind.HtmlTextLiteral;[Hello];
                 SyntaxKind.Whitespace;[ ];
-                SyntaxKind.HtmlTextLiteralToken;[World];
+                SyntaxKind.HtmlTextLiteral;[World];
                 SyntaxKind.Whitespace;[ ];
         Tag block - Gen<None> - 30 - (59:0,59)
             Markup span - Gen<Markup> - [<strong] - SpanEditHandler;Accepts:Any - (59:0,59) - Tokens:2
-                HtmlTokenType.OpenAngle;[<];
-                HtmlTokenType.Text;[strong];
+                SyntaxKind.OpenAngle;[<];
+                SyntaxKind.HtmlTextLiteral;[strong];
             Markup block - Gen<Attr:class, class="@(66:0,66),"@(87:0,87)> - 22 - (66:0,66)
                 Markup span - Gen<None> - [ class="] - SpanEditHandler;Accepts:Any - (66:0,66) - Tokens:4
-                    HtmlTokenType.WhiteSpace;[ ];
-                    HtmlTokenType.Text;[class];
-                    HtmlTokenType.Equals;[=];
-                    HtmlTokenType.DoubleQuote;["];
+                    SyntaxKind.Whitespace;[ ];
+                    SyntaxKind.HtmlTextLiteral;[class];
+                    SyntaxKind.Equals;[=];
+                    SyntaxKind.DoubleQuote;["];
                 Markup block - Gen<DynAttr:@(74:0,74)> - 13 - (74:0,74)
                     Expression block - Gen<Expr> - 13 - (74:0,74)
                         Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (74:0,74) - Tokens:1
-                            CSharpTokenType.Transition;[@];
+                            SyntaxKind.Transition;[@];
                         Code span - Gen<Expr> - [DateTime.Now] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K14 - (75:0,75) - Tokens:3
-                            CSharpTokenType.Identifier;[DateTime];
-                            CSharpTokenType.Dot;[.];
-                            CSharpTokenType.Identifier;[Now];
+                            SyntaxKind.Identifier;[DateTime];
+                            SyntaxKind.Dot;[.];
+                            SyntaxKind.Identifier;[Now];
                 Markup span - Gen<None> - ["] - SpanEditHandler;Accepts:Any - (87:0,87) - Tokens:1
-                    HtmlTokenType.DoubleQuote;["];
+                    SyntaxKind.DoubleQuote;["];
             Markup span - Gen<Markup> - [>] - SpanEditHandler;Accepts:Any - (88:0,88) - Tokens:1
-                HtmlTokenType.CloseAngle;[>];
+                SyntaxKind.CloseAngle;[>];
         SyntaxKind.HtmlText - [inside of strong tag] - [89..109) - FullWidth: 20 - Slots: 1
             SyntaxKind.List - [inside of strong tag] - [89..109) - FullWidth: 20 - Slots: 7
-                SyntaxKind.HtmlTextLiteralToken;[inside];
+                SyntaxKind.HtmlTextLiteral;[inside];
                 SyntaxKind.Whitespace;[ ];
-                SyntaxKind.HtmlTextLiteralToken;[of];
+                SyntaxKind.HtmlTextLiteral;[of];
                 SyntaxKind.Whitespace;[ ];
-                SyntaxKind.HtmlTextLiteralToken;[strong];
+                SyntaxKind.HtmlTextLiteral;[strong];
                 SyntaxKind.Whitespace;[ ];
-                SyntaxKind.HtmlTextLiteralToken;[tag];
+                SyntaxKind.HtmlTextLiteral;[tag];
         Tag block - Gen<None> - 9 - (109:0,109)
             Markup span - Gen<Markup> - [</strong>] - SpanEditHandler;Accepts:Any - (109:0,109) - Tokens:4
-                HtmlTokenType.OpenAngle;[<];
-                HtmlTokenType.ForwardSlash;[/];
-                HtmlTokenType.Text;[strong];
-                HtmlTokenType.CloseAngle;[>];
+                SyntaxKind.OpenAngle;[<];
+                SyntaxKind.ForwardSlash;[/];
+                SyntaxKind.HtmlTextLiteral;[strong];
+                SyntaxKind.CloseAngle;[>];

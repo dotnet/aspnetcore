@@ -3,12 +3,12 @@ Markup block - Gen<None> - 40 - (0:0,0)
         StartTagAndEndTag - <th:myth> ... </th:myth>
         Tag block - Gen<None> - 10 - (9:0,9)
             Markup span - Gen<Markup> - [<th:my2th>] - SpanEditHandler;Accepts:Any - (9:0,9) - Tokens:3
-                HtmlTokenType.OpenAngle;[<];
-                HtmlTokenType.Text;[th:my2th];
-                HtmlTokenType.CloseAngle;[>];
+                SyntaxKind.OpenAngle;[<];
+                SyntaxKind.HtmlTextLiteral;[th:my2th];
+                SyntaxKind.CloseAngle;[>];
         Tag block - Gen<None> - 11 - (19:0,19)
             Markup span - Gen<Markup> - [</th:my2th>] - SpanEditHandler;Accepts:Any - (19:0,19) - Tokens:4
-                HtmlTokenType.OpenAngle;[<];
-                HtmlTokenType.ForwardSlash;[/];
-                HtmlTokenType.Text;[th:my2th];
-                HtmlTokenType.CloseAngle;[>];
+                SyntaxKind.OpenAngle;[<];
+                SyntaxKind.ForwardSlash;[/];
+                SyntaxKind.HtmlTextLiteral;[th:my2th];
+                SyntaxKind.CloseAngle;[>];

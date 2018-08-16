@@ -1,31 +1,31 @@
 Markup block - Gen<None> - 18 - (0:0,0)
     Tag block - Gen<None> - 18 - (0:0,0)
         Markup span - Gen<Markup> - [<span] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:2
-            HtmlTokenType.OpenAngle;[<];
-            HtmlTokenType.Text;[span];
+            SyntaxKind.OpenAngle;[<];
+            SyntaxKind.HtmlTextLiteral;[span];
         Markup block - Gen<Attr:foo, foo='@(5:0,5),'@(14:0,14)> - 10 - (5:0,5)
             Markup span - Gen<None> - [ foo='] - SpanEditHandler;Accepts:Any - (5:0,5) - Tokens:4
-                HtmlTokenType.WhiteSpace;[ ];
-                HtmlTokenType.Text;[foo];
-                HtmlTokenType.Equals;[=];
-                HtmlTokenType.SingleQuote;['];
+                SyntaxKind.Whitespace;[ ];
+                SyntaxKind.HtmlTextLiteral;[foo];
+                SyntaxKind.Equals;[=];
+                SyntaxKind.SingleQuote;['];
             Markup block - Gen<DynAttr:@(11:0,11)> - 1 - (11:0,11)
                 Expression block - Gen<Expr> - 1 - (11:0,11)
                     Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (11:0,11) - Tokens:1
-                        CSharpTokenType.Transition;[@];
+                        SyntaxKind.Transition;[@];
                     Code span - Gen<Expr> - [] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K14 - (12:0,12) - Tokens:1
-                        CSharpTokenType.Unknown;[];
+                        SyntaxKind.Unknown;[];
             Markup block - Gen<DynAttr: @(12:0,12)> - 2 - (12:0,12)
                 Markup span - Gen<None> - [ ] - SpanEditHandler;Accepts:Any - (12:0,12) - Tokens:1
-                    HtmlTokenType.WhiteSpace;[ ];
+                    SyntaxKind.Whitespace;[ ];
                 Expression block - Gen<Expr> - 1 - (13:0,13)
                     Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (13:0,13) - Tokens:1
-                        CSharpTokenType.Transition;[@];
+                        SyntaxKind.Transition;[@];
                     Code span - Gen<Expr> - [] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K14 - (14:0,14) - Tokens:1
-                        CSharpTokenType.Unknown;[];
+                        SyntaxKind.Unknown;[];
             Markup span - Gen<None> - ['] - SpanEditHandler;Accepts:Any - (14:0,14) - Tokens:1
-                HtmlTokenType.SingleQuote;['];
+                SyntaxKind.SingleQuote;['];
         Markup span - Gen<Markup> - [ />] - SpanEditHandler;Accepts:Any - (15:0,15) - Tokens:3
-            HtmlTokenType.WhiteSpace;[ ];
-            HtmlTokenType.ForwardSlash;[/];
-            HtmlTokenType.CloseAngle;[>];
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.ForwardSlash;[/];
+            SyntaxKind.CloseAngle;[>];

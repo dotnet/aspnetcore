@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
@@ -17,113 +18,113 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void Text_Is_Recognized()
         {
             TestTokenizer("foo-9309&smlkmb;::-3029022,.sdkq92384",
-                          new HtmlToken("foo-9309&smlkmb;::-3029022,.sdkq92384", HtmlTokenType.Text));
+                          SyntaxFactory.Token(SyntaxKind.HtmlTextLiteral, "foo-9309&smlkmb;::-3029022,.sdkq92384"));
         }
 
         [Fact]
         public void Whitespace_Is_Recognized()
         {
             TestTokenizer(" \t\f ",
-                          new HtmlToken(" \t\f ", HtmlTokenType.WhiteSpace));
+                          SyntaxFactory.Token(SyntaxKind.Whitespace, " \t\f "));
         }
 
         [Fact]
         public void Newline_Is_Recognized()
         {
             TestTokenizer("\n\r\r\n",
-                          new HtmlToken("\n", HtmlTokenType.NewLine),
-                          new HtmlToken("\r", HtmlTokenType.NewLine),
-                          new HtmlToken("\r\n", HtmlTokenType.NewLine));
+                          SyntaxFactory.Token(SyntaxKind.NewLine, "\n"),
+                          SyntaxFactory.Token(SyntaxKind.NewLine, "\r"),
+                          SyntaxFactory.Token(SyntaxKind.NewLine, "\r\n"));
         }
 
         [Fact]
         public void Transition_Is_Not_Recognized_Mid_Text_If_Surrounded_By_Alphanumeric_Characters()
         {
-            TestSingleToken("foo@bar", HtmlTokenType.Text);
+            TestSingleToken("foo@bar", SyntaxKind.HtmlTextLiteral);
         }
 
         [Fact]
         public void OpenAngle_Is_Recognized()
         {
-            TestSingleToken("<", HtmlTokenType.OpenAngle);
+            TestSingleToken("<", SyntaxKind.OpenAngle);
         }
 
         [Fact]
         public void Bang_Is_Recognized()
         {
-            TestSingleToken("!", HtmlTokenType.Bang);
+            TestSingleToken("!", SyntaxKind.Bang);
         }
 
         [Fact]
         public void Solidus_Is_Recognized()
         {
-            TestSingleToken("/", HtmlTokenType.ForwardSlash);
+            TestSingleToken("/", SyntaxKind.ForwardSlash);
         }
 
         [Fact]
         public void QuestionMark_Is_Recognized()
         {
-            TestSingleToken("?", HtmlTokenType.QuestionMark);
+            TestSingleToken("?", SyntaxKind.QuestionMark);
         }
 
         [Fact]
         public void LeftBracket_Is_Recognized()
         {
-            TestSingleToken("[", HtmlTokenType.LeftBracket);
+            TestSingleToken("[", SyntaxKind.LeftBracket);
         }
 
         [Fact]
         public void CloseAngle_Is_Recognized()
         {
-            TestSingleToken(">", HtmlTokenType.CloseAngle);
+            TestSingleToken(">", SyntaxKind.CloseAngle);
         }
 
         [Fact]
         public void RightBracket_Is_Recognized()
         {
-            TestSingleToken("]", HtmlTokenType.RightBracket);
+            TestSingleToken("]", SyntaxKind.RightBracket);
         }
 
         [Fact]
         public void Equals_Is_Recognized()
         {
-            TestSingleToken("=", HtmlTokenType.Equals);
+            TestSingleToken("=", SyntaxKind.Equals);
         }
 
         [Fact]
         public void DoubleQuote_Is_Recognized()
         {
-            TestSingleToken("\"", HtmlTokenType.DoubleQuote);
+            TestSingleToken("\"", SyntaxKind.DoubleQuote);
         }
 
         [Fact]
         public void SingleQuote_Is_Recognized()
         {
-            TestSingleToken("'", HtmlTokenType.SingleQuote);
+            TestSingleToken("'", SyntaxKind.SingleQuote);
         }
 
         [Fact]
         public void Transition_Is_Recognized()
         {
-            TestSingleToken("@", HtmlTokenType.Transition);
+            TestSingleToken("@", SyntaxKind.Transition);
         }
 
         [Fact]
         public void DoubleHyphen_Is_Recognized()
         {
-            TestSingleToken("--", HtmlTokenType.DoubleHyphen);
+            TestSingleToken("--", SyntaxKind.DoubleHyphen);
         }
 
         [Fact]
         public void SingleHyphen_Is_Not_Recognized()
         {
-            TestSingleToken("-", HtmlTokenType.Text);
+            TestSingleToken("-", SyntaxKind.HtmlTextLiteral);
         }
 
         [Fact]
         public void SingleHyphen_Mid_Text_Is_Not_Recognized_As_Separate_Token()
         {
-            TestSingleToken("foo-bar", HtmlTokenType.Text);
+            TestSingleToken("foo-bar", SyntaxKind.HtmlTextLiteral);
         }
 
         [Fact]
@@ -131,9 +132,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             TestTokenizer(
                 "@* Foo * Bar * Baz *",
-                new HtmlToken("@", HtmlTokenType.RazorCommentTransition),
-                new HtmlToken("*", HtmlTokenType.RazorCommentStar),
-                new HtmlToken(" Foo * Bar * Baz *", HtmlTokenType.RazorComment));
+                SyntaxFactory.Token(SyntaxKind.RazorCommentTransition, "@"),
+                SyntaxFactory.Token(SyntaxKind.RazorCommentStar, "*"),
+                SyntaxFactory.Token(SyntaxKind.RazorComment, " Foo * Bar * Baz *"));
         }
 
         [Fact]
@@ -141,11 +142,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             TestTokenizer(
                 "@* Foo * Bar * Baz *@",
-                new HtmlToken("@", HtmlTokenType.RazorCommentTransition),
-                new HtmlToken("*", HtmlTokenType.RazorCommentStar),
-                new HtmlToken(" Foo * Bar * Baz ", HtmlTokenType.RazorComment),
-                new HtmlToken("*", HtmlTokenType.RazorCommentStar),
-                new HtmlToken("@", HtmlTokenType.RazorCommentTransition));
+                SyntaxFactory.Token(SyntaxKind.RazorCommentTransition, "@"),
+                SyntaxFactory.Token(SyntaxKind.RazorCommentStar, "*"),
+                SyntaxFactory.Token(SyntaxKind.RazorComment, " Foo * Bar * Baz "),
+                SyntaxFactory.Token(SyntaxKind.RazorCommentStar, "*"),
+                SyntaxFactory.Token(SyntaxKind.RazorCommentTransition, "@"));
         }
 
         [Fact]
@@ -153,11 +154,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             TestTokenizer(
                 "@* Foo Bar Baz *@",
-                new HtmlToken("@", HtmlTokenType.RazorCommentTransition),
-                new HtmlToken("*", HtmlTokenType.RazorCommentStar),
-                new HtmlToken(" Foo Bar Baz ", HtmlTokenType.RazorComment),
-                new HtmlToken("*", HtmlTokenType.RazorCommentStar),
-                new HtmlToken("@", HtmlTokenType.RazorCommentTransition));
+                SyntaxFactory.Token(SyntaxKind.RazorCommentTransition, "@"),
+                SyntaxFactory.Token(SyntaxKind.RazorCommentStar, "*"),
+                SyntaxFactory.Token(SyntaxKind.RazorComment, " Foo Bar Baz "),
+                SyntaxFactory.Token(SyntaxKind.RazorCommentStar, "*"),
+                SyntaxFactory.Token(SyntaxKind.RazorCommentTransition, "@"));
         }
     }
 }

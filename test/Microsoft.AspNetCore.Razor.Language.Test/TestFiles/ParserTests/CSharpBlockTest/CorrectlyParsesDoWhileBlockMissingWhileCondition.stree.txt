@@ -1,18 +1,18 @@
 Statement block - Gen<None> - 27 - (0:0,0)
     Code span - Gen<Stmt> - [do { var foo = bar; } while] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:16
-        CSharpTokenType.Keyword;[do];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.LeftBrace;[{];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Identifier;[var];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Identifier;[foo];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Assign;[=];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Identifier;[bar];
-        CSharpTokenType.Semicolon;[;];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.RightBrace;[}];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Keyword;[while];
+        SyntaxKind.Keyword;[do];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.LeftBrace;[{];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.Identifier;[var];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.Identifier;[foo];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.Assign;[=];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.Identifier;[bar];
+        SyntaxKind.Semicolon;[;];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.RightBrace;[}];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.Keyword;[while];

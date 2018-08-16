@@ -2,25 +2,25 @@ Markup block - Gen<None> - 75 - (0:0,0)
     Tag block - Gen<TagHelper> - 39 - (0:0,0) - script - scripttaghelper
         StartTagAndEndTag - <script> ... </script>
         Markup span - Gen<Markup> - [Hel<strong>lo</strong>] - SpanEditHandler;Accepts:Any - (8:0,8) - Tokens:9
-            HtmlTokenType.Text;[Hel];
-            HtmlTokenType.OpenAngle;[<];
-            HtmlTokenType.Text;[strong];
-            HtmlTokenType.CloseAngle;[>];
-            HtmlTokenType.Text;[lo];
-            HtmlTokenType.OpenAngle;[<];
-            HtmlTokenType.ForwardSlash;[/];
-            HtmlTokenType.Text;[strong];
-            HtmlTokenType.CloseAngle;[>];
+            SyntaxKind.HtmlTextLiteral;[Hel];
+            SyntaxKind.OpenAngle;[<];
+            SyntaxKind.HtmlTextLiteral;[strong];
+            SyntaxKind.CloseAngle;[>];
+            SyntaxKind.HtmlTextLiteral;[lo];
+            SyntaxKind.OpenAngle;[<];
+            SyntaxKind.ForwardSlash;[/];
+            SyntaxKind.HtmlTextLiteral;[strong];
+            SyntaxKind.CloseAngle;[>];
     SyntaxKind.HtmlText - [ ] - [39..40) - FullWidth: 1 - Slots: 1
         SyntaxKind.Whitespace;[ ];
     Tag block - Gen<TagHelper> - 35 - (40:0,40) - script - scripttaghelper
         StartTagAndEndTag - <script> ... </script>
         Markup span - Gen<Markup> - [<span>World</span>] - SpanEditHandler;Accepts:Any - (48:0,48) - Tokens:8
-            HtmlTokenType.OpenAngle;[<];
-            HtmlTokenType.Text;[span];
-            HtmlTokenType.CloseAngle;[>];
-            HtmlTokenType.Text;[World];
-            HtmlTokenType.OpenAngle;[<];
-            HtmlTokenType.ForwardSlash;[/];
-            HtmlTokenType.Text;[span];
-            HtmlTokenType.CloseAngle;[>];
+            SyntaxKind.OpenAngle;[<];
+            SyntaxKind.HtmlTextLiteral;[span];
+            SyntaxKind.CloseAngle;[>];
+            SyntaxKind.HtmlTextLiteral;[World];
+            SyntaxKind.OpenAngle;[<];
+            SyntaxKind.ForwardSlash;[/];
+            SyntaxKind.HtmlTextLiteral;[span];
+            SyntaxKind.CloseAngle;[>];

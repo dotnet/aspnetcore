@@ -1,21 +1,21 @@
 Markup block - Gen<None> - 46 - (0:0,0)
     Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:1
-        HtmlTokenType.Unknown;[];
+        SyntaxKind.Unknown;[];
     Statement block - Gen<None> - 46 - (0:0,0)
         Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-            CSharpTokenType.Transition;[@];
+            SyntaxKind.Transition;[@];
         MetaCode span - Gen<None> - [{] - SpanEditHandler;Accepts:None - (1:0,1) - Tokens:1
-            CSharpTokenType.LeftBrace;[{];
+            SyntaxKind.LeftBrace;[{];
         Markup block - Gen<None> - 43 - (2:0,2)
             Tag block - Gen<TagHelper> - 43 - (2:0,2) - input - InputTagHelper1 - InputTagHelper3
                 SelfClosing - <input bound-required-string class='btn' />
                 bound-required-string - Minimized
                 class - SingleQuotes
                     Markup span - Gen<Markup> - [btn] - SpanEditHandler;Accepts:Any - (38:0,38) - Tokens:1
-                        HtmlTokenType.Text;[btn];
+                        SyntaxKind.HtmlTextLiteral;[btn];
         Code span - Gen<Stmt> - [] - SpanEditHandler;Accepts:Any - (45:0,45) - Tokens:1
-            CSharpTokenType.Unknown;[];
+            SyntaxKind.Unknown;[];
         MetaCode span - Gen<None> - [}] - SpanEditHandler;Accepts:None - (45:0,45) - Tokens:1
-            CSharpTokenType.RightBrace;[}];
+            SyntaxKind.RightBrace;[}];
     Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (46:0,46) - Tokens:1
-        HtmlTokenType.Unknown;[];
+        SyntaxKind.Unknown;[];

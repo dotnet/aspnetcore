@@ -1,5 +1,5 @@
 Statement block - Gen<None> - 17 - (0:0,0)
     Code span - Gen<Stmt> - [using          LF] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:3
-        CSharpTokenType.Keyword;[using];
-        CSharpTokenType.WhiteSpace;[          ];
-        CSharpTokenType.NewLine;[LF];
+        SyntaxKind.Keyword;[using];
+        SyntaxKind.Whitespace;[          ];
+        SyntaxKind.NewLine;[LF];

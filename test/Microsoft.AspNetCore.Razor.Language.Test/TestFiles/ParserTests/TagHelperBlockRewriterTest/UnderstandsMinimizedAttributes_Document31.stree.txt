@@ -6,15 +6,15 @@ Markup block - Gen<None> - 43 - (0:0,0)
                 Markup block - Gen<DynAttr:@(10:0,10)> - 13 - (10:0,10)
                     Expression block - Gen<Expr> - 13 - (10:0,10)
                         Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (10:0,10) - Tokens:1
-                            CSharpTokenType.Transition;[@];
+                            SyntaxKind.Transition;[@];
                         Code span - Gen<Expr> - [DateTime.Now] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K14 - (11:0,11) - Tokens:3
-                            CSharpTokenType.Identifier;[DateTime];
-                            CSharpTokenType.Dot;[.];
-                            CSharpTokenType.Identifier;[Now];
+                            SyntaxKind.Identifier;[DateTime];
+                            SyntaxKind.Dot;[.];
+                            SyntaxKind.Identifier;[Now];
                 Markup span - Gen<LitAttr: @(23:0,23)> - [ +] - SpanEditHandler;Accepts:Any - (23:0,23) - Tokens:2
-                    HtmlTokenType.WhiteSpace;[ ];
-                    HtmlTokenType.Text;[+];
+                    SyntaxKind.Whitespace;[ ];
+                    SyntaxKind.HtmlTextLiteral;[+];
                 Markup span - Gen<LitAttr: @(25:0,25)> - [ 1] - SpanEditHandler;Accepts:Any - (25:0,25) - Tokens:2
-                    HtmlTokenType.WhiteSpace;[ ];
-                    HtmlTokenType.Text;[1];
+                    SyntaxKind.Whitespace;[ ];
+                    SyntaxKind.HtmlTextLiteral;[1];
         bound-int - Minimized

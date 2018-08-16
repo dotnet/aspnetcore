@@ -1,11 +1,11 @@
 Markup block - Gen<None> - 85 - (0:0,0)
     Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:1
-        HtmlTokenType.Unknown;[];
+        SyntaxKind.Unknown;[];
     Statement block - Gen<None> - 85 - (0:0,0)
         Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-            CSharpTokenType.Transition;[@];
+            SyntaxKind.Transition;[@];
         MetaCode span - Gen<None> - [{] - SpanEditHandler;Accepts:None - (1:0,1) - Tokens:1
-            CSharpTokenType.LeftBrace;[{];
+            SyntaxKind.LeftBrace;[{];
         Markup block - Gen<None> - 82 - (2:0,2)
             Tag block - Gen<TagHelper> - 82 - (2:0,2) - input - inputtaghelper
                 SelfClosing - <input pre-attribute data-required='prefix @DateTime.Now suffix' post-attribute />
@@ -13,22 +13,22 @@ Markup block - Gen<None> - 85 - (0:0,0)
                 data-required - SingleQuotes
                     Markup block - Gen<None> - 27 - (38:0,38)
                         Markup span - Gen<Markup> - [prefix ] - SpanEditHandler;Accepts:Any - (38:0,38) - Tokens:2
-                            HtmlTokenType.Text;[prefix];
-                            HtmlTokenType.WhiteSpace;[ ];
+                            SyntaxKind.HtmlTextLiteral;[prefix];
+                            SyntaxKind.Whitespace;[ ];
                         Expression block - Gen<Expr> - 13 - (45:0,45)
                             Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (45:0,45) - Tokens:1
-                                CSharpTokenType.Transition;[@];
+                                SyntaxKind.Transition;[@];
                             Code span - Gen<Expr> - [DateTime.Now] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K14 - (46:0,46) - Tokens:3
-                                CSharpTokenType.Identifier;[DateTime];
-                                CSharpTokenType.Dot;[.];
-                                CSharpTokenType.Identifier;[Now];
+                                SyntaxKind.Identifier;[DateTime];
+                                SyntaxKind.Dot;[.];
+                                SyntaxKind.Identifier;[Now];
                         Markup span - Gen<Markup> - [ suffix] - SpanEditHandler;Accepts:Any - (58:0,58) - Tokens:2
-                            HtmlTokenType.WhiteSpace;[ ];
-                            HtmlTokenType.Text;[suffix];
+                            SyntaxKind.Whitespace;[ ];
+                            SyntaxKind.HtmlTextLiteral;[suffix];
                 post-attribute - Minimized
         Code span - Gen<Stmt> - [] - SpanEditHandler;Accepts:Any - (84:0,84) - Tokens:1
-            CSharpTokenType.Unknown;[];
+            SyntaxKind.Unknown;[];
         MetaCode span - Gen<None> - [}] - SpanEditHandler;Accepts:None - (84:0,84) - Tokens:1
-            CSharpTokenType.RightBrace;[}];
+            SyntaxKind.RightBrace;[}];
     Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (85:0,85) - Tokens:1
-        HtmlTokenType.Unknown;[];
+        SyntaxKind.Unknown;[];

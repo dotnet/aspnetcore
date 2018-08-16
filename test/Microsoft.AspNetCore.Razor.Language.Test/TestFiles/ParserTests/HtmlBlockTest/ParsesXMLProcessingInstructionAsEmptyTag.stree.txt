@@ -1,24 +1,24 @@
 Markup block - Gen<None> - 30 - (0:0,0)
     Tag block - Gen<None> - 5 - (0:0,0)
         Markup span - Gen<Markup> - [<foo>] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:3
-            HtmlTokenType.OpenAngle;[<];
-            HtmlTokenType.Text;[foo];
-            HtmlTokenType.CloseAngle;[>];
+            SyntaxKind.OpenAngle;[<];
+            SyntaxKind.HtmlTextLiteral;[foo];
+            SyntaxKind.CloseAngle;[>];
     Markup span - Gen<Markup> - [<?xml foo bar baz?>] - SpanEditHandler;Accepts:None - (5:0,5) - Tokens:11
-        HtmlTokenType.OpenAngle;[<];
-        HtmlTokenType.QuestionMark;[?];
-        HtmlTokenType.Text;[xml];
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Text;[foo];
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Text;[bar];
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Text;[baz];
-        HtmlTokenType.QuestionMark;[?];
-        HtmlTokenType.CloseAngle;[>];
+        SyntaxKind.OpenAngle;[<];
+        SyntaxKind.QuestionMark;[?];
+        SyntaxKind.HtmlTextLiteral;[xml];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.HtmlTextLiteral;[foo];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.HtmlTextLiteral;[bar];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.HtmlTextLiteral;[baz];
+        SyntaxKind.QuestionMark;[?];
+        SyntaxKind.CloseAngle;[>];
     Tag block - Gen<None> - 6 - (24:0,24)
         Markup span - Gen<Markup> - [</foo>] - SpanEditHandler;Accepts:None - (24:0,24) - Tokens:4
-            HtmlTokenType.OpenAngle;[<];
-            HtmlTokenType.ForwardSlash;[/];
-            HtmlTokenType.Text;[foo];
-            HtmlTokenType.CloseAngle;[>];
+            SyntaxKind.OpenAngle;[<];
+            SyntaxKind.ForwardSlash;[/];
+            SyntaxKind.HtmlTextLiteral;[foo];
+            SyntaxKind.CloseAngle;[>];

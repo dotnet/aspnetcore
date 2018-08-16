@@ -1,51 +1,51 @@
 Statement block - Gen<None> - 46 - (0:0,0)
     MetaCode span - Gen<None> - [{] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-        CSharpTokenType.LeftBrace;[{];
+        SyntaxKind.LeftBrace;[{];
     Code span - Gen<Stmt> - [ for(int i = 0; i < 10; i++) {] - AutoCompleteEditHandler;Accepts:Any,AutoComplete:[<null>];AtEOL - (1:0,1) - Tokens:24
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Keyword;[for];
-        CSharpTokenType.LeftParenthesis;[(];
-        CSharpTokenType.Keyword;[int];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Identifier;[i];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Assign;[=];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.IntegerLiteral;[0];
-        CSharpTokenType.Semicolon;[;];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Identifier;[i];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.LessThan;[<];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.IntegerLiteral;[10];
-        CSharpTokenType.Semicolon;[;];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Identifier;[i];
-        CSharpTokenType.Increment;[++];
-        CSharpTokenType.RightParenthesis;[)];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.LeftBrace;[{];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.Keyword;[for];
+        SyntaxKind.LeftParenthesis;[(];
+        SyntaxKind.Keyword;[int];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.Identifier;[i];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.Assign;[=];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.IntegerLiteral;[0];
+        SyntaxKind.Semicolon;[;];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.Identifier;[i];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.LessThan;[<];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.IntegerLiteral;[10];
+        SyntaxKind.Semicolon;[;];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.Identifier;[i];
+        SyntaxKind.Increment;[++];
+        SyntaxKind.RightParenthesis;[)];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.LeftBrace;[{];
     Markup block - Gen<None> - 12 - (31:0,31)
         Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:Any - (31:0,31) - Tokens:1
-            HtmlTokenType.WhiteSpace;[ ];
+            SyntaxKind.Whitespace;[ ];
         Tag block - Gen<None> - 3 - (32:0,32)
             Markup span - Gen<Markup> - [<p>] - SpanEditHandler;Accepts:None - (32:0,32) - Tokens:3
-                HtmlTokenType.OpenAngle;[<];
-                HtmlTokenType.Text;[p];
-                HtmlTokenType.CloseAngle;[>];
+                SyntaxKind.OpenAngle;[<];
+                SyntaxKind.HtmlTextLiteral;[p];
+                SyntaxKind.CloseAngle;[>];
         Markup span - Gen<Markup> - [Foo] - SpanEditHandler;Accepts:Any - (35:0,35) - Tokens:1
-            HtmlTokenType.Text;[Foo];
+            SyntaxKind.HtmlTextLiteral;[Foo];
         Tag block - Gen<None> - 4 - (38:0,38)
             Markup span - Gen<Markup> - [</p>] - SpanEditHandler;Accepts:None - (38:0,38) - Tokens:4
-                HtmlTokenType.OpenAngle;[<];
-                HtmlTokenType.ForwardSlash;[/];
-                HtmlTokenType.Text;[p];
-                HtmlTokenType.CloseAngle;[>];
+                SyntaxKind.OpenAngle;[<];
+                SyntaxKind.ForwardSlash;[/];
+                SyntaxKind.HtmlTextLiteral;[p];
+                SyntaxKind.CloseAngle;[>];
         Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:None - (42:0,42) - Tokens:1
-            HtmlTokenType.WhiteSpace;[ ];
+            SyntaxKind.Whitespace;[ ];
     Code span - Gen<Stmt> - [} ] - SpanEditHandler;Accepts:Any - (43:0,43) - Tokens:2
-        CSharpTokenType.RightBrace;[}];
-        CSharpTokenType.WhiteSpace;[ ];
+        SyntaxKind.RightBrace;[}];
+        SyntaxKind.Whitespace;[ ];
     MetaCode span - Gen<None> - [}] - SpanEditHandler;Accepts:None - (45:0,45) - Tokens:1
-        CSharpTokenType.RightBrace;[}];
+        SyntaxKind.RightBrace;[}];

@@ -5,4 +5,4 @@ Markup block - Gen<None> - 28 - (0:0,0)
             Markup block - Gen<None> - 0 - (0:0,0)
         class - DoubleQuotes
             Markup span - Gen<Markup> - [btn] - SpanEditHandler;Accepts:Any - (21:0,21) - Tokens:1
-                HtmlTokenType.Text;[btn];
+                SyntaxKind.HtmlTextLiteral;[btn];

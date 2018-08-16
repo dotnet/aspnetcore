@@ -143,8 +143,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         {
             return currentChild is Span currentSpan &&
                 currentSpan.Tokens.Count == 1 &&
-                currentSpan.Tokens[0] is CSharpToken symbol &&
-                symbol.Type == CSharpTokenType.LeftBrace;
+                currentSpan.Tokens[0].Kind == SyntaxKind.LeftBrace;
         }
     }
 }

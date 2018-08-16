@@ -1,26 +1,26 @@
 Markup block - Gen<None> - 11 - (0:0,0)
     Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:1
-        HtmlTokenType.Unknown;[];
+        SyntaxKind.Unknown;[];
     Statement block - Gen<None> - 11 - (0:0,0)
         Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-            CSharpTokenType.Transition;[@];
+            SyntaxKind.Transition;[@];
         MetaCode span - Gen<None> - [{] - SpanEditHandler;Accepts:None - (1:0,1) - Tokens:1
-            CSharpTokenType.LeftBrace;[{];
+            SyntaxKind.LeftBrace;[{];
         Markup block - Gen<None> - 8 - (2:0,2)
             Tag block - Gen<TagHelper> - 8 - (2:0,2) - p - ptaghelper
                 StartTagAndEndTag - <p>
                 Tag block - Gen<None> - 5 - (5:0,5)
                     Markup span - Gen<Markup> - [</] - SpanEditHandler;Accepts:Any - (5:0,5) - Tokens:2
-                        HtmlTokenType.OpenAngle;[<];
-                        HtmlTokenType.ForwardSlash;[/];
+                        SyntaxKind.OpenAngle;[<];
+                        SyntaxKind.ForwardSlash;[/];
                     MetaCode span - Gen<None> - [!] - SpanEditHandler;Accepts:None - (7:0,7) - Tokens:1
-                        HtmlTokenType.Bang;[!];
+                        SyntaxKind.Bang;[!];
                     Markup span - Gen<Markup> - [p>] - SpanEditHandler;Accepts:None - (8:0,8) - Tokens:2
-                        HtmlTokenType.Text;[p];
-                        HtmlTokenType.CloseAngle;[>];
+                        SyntaxKind.HtmlTextLiteral;[p];
+                        SyntaxKind.CloseAngle;[>];
         Code span - Gen<Stmt> - [] - SpanEditHandler;Accepts:Any - (10:0,10) - Tokens:1
-            CSharpTokenType.Unknown;[];
+            SyntaxKind.Unknown;[];
         MetaCode span - Gen<None> - [}] - SpanEditHandler;Accepts:None - (10:0,10) - Tokens:1
-            CSharpTokenType.RightBrace;[}];
+            SyntaxKind.RightBrace;[}];
     Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (11:0,11) - Tokens:1
-        HtmlTokenType.Unknown;[];
+        SyntaxKind.Unknown;[];

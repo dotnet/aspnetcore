@@ -1,28 +1,28 @@
 Statement block - Gen<None> - 24 - (0:0,0)
     Code span - Gen<Stmt> - [if(LFelse {] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:6
-        CSharpTokenType.Keyword;[if];
-        CSharpTokenType.LeftParenthesis;[(];
-        CSharpTokenType.NewLine;[LF];
-        CSharpTokenType.Keyword;[else];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.LeftBrace;[{];
+        SyntaxKind.Keyword;[if];
+        SyntaxKind.LeftParenthesis;[(];
+        SyntaxKind.NewLine;[LF];
+        SyntaxKind.Keyword;[else];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.LeftBrace;[{];
     Markup block - Gen<None> - 12 - (11:1,6)
         Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:Any - (11:1,6) - Tokens:1
-            HtmlTokenType.WhiteSpace;[ ];
+            SyntaxKind.Whitespace;[ ];
         Tag block - Gen<None> - 3 - (12:1,7)
             Markup span - Gen<Markup> - [<p>] - SpanEditHandler;Accepts:None - (12:1,7) - Tokens:3
-                HtmlTokenType.OpenAngle;[<];
-                HtmlTokenType.Text;[p];
-                HtmlTokenType.CloseAngle;[>];
+                SyntaxKind.OpenAngle;[<];
+                SyntaxKind.HtmlTextLiteral;[p];
+                SyntaxKind.CloseAngle;[>];
         Markup span - Gen<Markup> - [Foo] - SpanEditHandler;Accepts:Any - (15:1,10) - Tokens:1
-            HtmlTokenType.Text;[Foo];
+            SyntaxKind.HtmlTextLiteral;[Foo];
         Tag block - Gen<None> - 4 - (18:1,13)
             Markup span - Gen<Markup> - [</p>] - SpanEditHandler;Accepts:None - (18:1,13) - Tokens:4
-                HtmlTokenType.OpenAngle;[<];
-                HtmlTokenType.ForwardSlash;[/];
-                HtmlTokenType.Text;[p];
-                HtmlTokenType.CloseAngle;[>];
+                SyntaxKind.OpenAngle;[<];
+                SyntaxKind.ForwardSlash;[/];
+                SyntaxKind.HtmlTextLiteral;[p];
+                SyntaxKind.CloseAngle;[>];
         Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:None - (22:1,17) - Tokens:1
-            HtmlTokenType.WhiteSpace;[ ];
+            SyntaxKind.Whitespace;[ ];
     Code span - Gen<Stmt> - [}] - SpanEditHandler;Accepts:None - (23:1,18) - Tokens:1
-        CSharpTokenType.RightBrace;[}];
+        SyntaxKind.RightBrace;[}];

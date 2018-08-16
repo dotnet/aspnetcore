@@ -4,12 +4,12 @@ Markup block - Gen<None> - 73 - (0:0,0)
         class - DoubleQuotes
             Markup block - Gen<None> - 8 - (14:0,14)
                 Markup span - Gen<Markup> - [   foo] - SpanEditHandler;Accepts:Any - (14:0,14) - Tokens:2
-                    HtmlTokenType.WhiteSpace;[   ];
-                    HtmlTokenType.Text;[foo];
+                    SyntaxKind.Whitespace;[   ];
+                    SyntaxKind.HtmlTextLiteral;[foo];
                 Markup span - Gen<Markup> - [  ] - SpanEditHandler;Accepts:Any - (20:0,20) - Tokens:1
-                    HtmlTokenType.WhiteSpace;[  ];
+                    SyntaxKind.Whitespace;[  ];
         SyntaxKind.HtmlText - [Hello] - [25..30) - FullWidth: 5 - Slots: 1
-            SyntaxKind.HtmlTextLiteralToken;[Hello];
+            SyntaxKind.HtmlTextLiteral;[Hello];
     SyntaxKind.HtmlText - [ ] - [34..35) - FullWidth: 1 - Slots: 1
         SyntaxKind.Whitespace;[ ];
     Tag block - Gen<TagHelper> - 38 - (35:0,35) - p - ptaghelper
@@ -17,9 +17,9 @@ Markup block - Gen<None> - 73 - (0:0,0)
         style - DoubleQuotes
             Markup block - Gen<None> - 13 - (48:0,48)
                 Markup span - Gen<Markup> - [  color:red;] - SpanEditHandler;Accepts:Any - (48:0,48) - Tokens:2
-                    HtmlTokenType.WhiteSpace;[  ];
-                    HtmlTokenType.Text;[color:red;];
+                    SyntaxKind.Whitespace;[  ];
+                    SyntaxKind.HtmlTextLiteral;[color:red;];
                 Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:Any - (60:0,60) - Tokens:1
-                    HtmlTokenType.WhiteSpace;[ ];
+                    SyntaxKind.Whitespace;[ ];
         SyntaxKind.HtmlText - [World] - [64..69) - FullWidth: 5 - Slots: 1
-            SyntaxKind.HtmlTextLiteralToken;[World];
+            SyntaxKind.HtmlTextLiteral;[World];

@@ -4,7 +4,7 @@ Markup block - Gen<None> - 43 - (0:0,0)
         string-prefix-value - SingleQuotes
             Markup block - Gen<None> - 11 - (28:0,28)
                 Markup span - Gen<Markup> - [some] - SpanEditHandler;Accepts:Any - (28:0,28) - Tokens:1
-                    HtmlTokenType.Text;[some];
+                    SyntaxKind.HtmlTextLiteral;[some];
                 Markup span - Gen<Markup> - [ string] - SpanEditHandler;Accepts:Any - (32:0,32) - Tokens:2
-                    HtmlTokenType.WhiteSpace;[ ];
-                    HtmlTokenType.Text;[string];
+                    SyntaxKind.Whitespace;[ ];
+                    SyntaxKind.HtmlTextLiteral;[string];

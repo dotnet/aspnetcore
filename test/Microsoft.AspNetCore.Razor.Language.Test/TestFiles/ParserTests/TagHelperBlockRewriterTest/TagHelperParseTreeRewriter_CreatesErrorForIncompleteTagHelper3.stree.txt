@@ -1,22 +1,22 @@
 Markup block - Gen<None> - 33 - (0:0,0)
     Tag block - Gen<None> - 5 - (0:0,0)
         Markup span - Gen<Markup> - [<div>] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:3
-            HtmlTokenType.OpenAngle;[<];
-            HtmlTokenType.Text;[div];
-            HtmlTokenType.CloseAngle;[>];
+            SyntaxKind.OpenAngle;[<];
+            SyntaxKind.HtmlTextLiteral;[div];
+            SyntaxKind.CloseAngle;[>];
     Tag block - Gen<TagHelper> - 28 - (5:0,5) - p - ptaghelper
         StartTagAndEndTag - <p>
         SyntaxKind.HtmlText - [Hello ] - [8..14) - FullWidth: 6 - Slots: 1
             SyntaxKind.List - [Hello ] - [8..14) - FullWidth: 6 - Slots: 2
-                SyntaxKind.HtmlTextLiteralToken;[Hello];
+                SyntaxKind.HtmlTextLiteral;[Hello];
                 SyntaxKind.Whitespace;[ ];
         Tag block - Gen<TagHelper> - 19 - (14:0,14) - strong - strongtaghelper
             StartTagAndEndTag - <strong>
             SyntaxKind.HtmlText - [World] - [22..27) - FullWidth: 5 - Slots: 1
-                SyntaxKind.HtmlTextLiteralToken;[World];
+                SyntaxKind.HtmlTextLiteral;[World];
             Tag block - Gen<None> - 6 - (27:0,27)
                 Markup span - Gen<Markup> - [</div>] - SpanEditHandler;Accepts:Any - (27:0,27) - Tokens:4
-                    HtmlTokenType.OpenAngle;[<];
-                    HtmlTokenType.ForwardSlash;[/];
-                    HtmlTokenType.Text;[div];
-                    HtmlTokenType.CloseAngle;[>];
+                    SyntaxKind.OpenAngle;[<];
+                    SyntaxKind.ForwardSlash;[/];
+                    SyntaxKind.HtmlTextLiteral;[div];
+                    SyntaxKind.CloseAngle;[>];

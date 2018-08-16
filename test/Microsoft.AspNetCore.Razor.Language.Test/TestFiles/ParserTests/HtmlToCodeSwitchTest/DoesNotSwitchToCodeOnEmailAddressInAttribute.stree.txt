@@ -1,27 +1,27 @@
 Markup block - Gen<None> - 50 - (0:0,0)
     Tag block - Gen<None> - 38 - (0:0,0)
         Markup span - Gen<Markup> - [<a] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:2
-            HtmlTokenType.OpenAngle;[<];
-            HtmlTokenType.Text;[a];
+            SyntaxKind.OpenAngle;[<];
+            SyntaxKind.HtmlTextLiteral;[a];
         Markup block - Gen<Attr:href, href="@(2:0,2),"@(36:0,36)> - 35 - (2:0,2)
             Markup span - Gen<None> - [ href="] - SpanEditHandler;Accepts:Any - (2:0,2) - Tokens:4
-                HtmlTokenType.WhiteSpace;[ ];
-                HtmlTokenType.Text;[href];
-                HtmlTokenType.Equals;[=];
-                HtmlTokenType.DoubleQuote;["];
+                SyntaxKind.Whitespace;[ ];
+                SyntaxKind.HtmlTextLiteral;[href];
+                SyntaxKind.Equals;[=];
+                SyntaxKind.DoubleQuote;["];
             Markup span - Gen<LitAttr:@(9:0,9)> - [mailto:anurse@microsoft.com] - SpanEditHandler;Accepts:Any - (9:0,9) - Tokens:1
-                HtmlTokenType.Text;[mailto:anurse@microsoft.com];
+                SyntaxKind.HtmlTextLiteral;[mailto:anurse@microsoft.com];
             Markup span - Gen<None> - ["] - SpanEditHandler;Accepts:Any - (36:0,36) - Tokens:1
-                HtmlTokenType.DoubleQuote;["];
+                SyntaxKind.DoubleQuote;["];
         Markup span - Gen<Markup> - [>] - SpanEditHandler;Accepts:None - (37:0,37) - Tokens:1
-            HtmlTokenType.CloseAngle;[>];
+            SyntaxKind.CloseAngle;[>];
     Markup span - Gen<Markup> - [Email me] - SpanEditHandler;Accepts:Any - (38:0,38) - Tokens:3
-        HtmlTokenType.Text;[Email];
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Text;[me];
+        SyntaxKind.HtmlTextLiteral;[Email];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.HtmlTextLiteral;[me];
     Tag block - Gen<None> - 4 - (46:0,46)
         Markup span - Gen<Markup> - [</a>] - SpanEditHandler;Accepts:None - (46:0,46) - Tokens:4
-            HtmlTokenType.OpenAngle;[<];
-            HtmlTokenType.ForwardSlash;[/];
-            HtmlTokenType.Text;[a];
-            HtmlTokenType.CloseAngle;[>];
+            SyntaxKind.OpenAngle;[<];
+            SyntaxKind.ForwardSlash;[/];
+            SyntaxKind.HtmlTextLiteral;[a];
+            SyntaxKind.CloseAngle;[>];

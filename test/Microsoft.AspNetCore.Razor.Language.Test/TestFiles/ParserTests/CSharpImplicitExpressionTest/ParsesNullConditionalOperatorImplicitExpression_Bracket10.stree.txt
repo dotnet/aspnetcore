@@ -1,10 +1,10 @@
 Expression block - Gen<Expr> - 9 - (0:0,0)
     Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-        CSharpTokenType.Transition;[@];
+        SyntaxKind.Transition;[@];
     Code span - Gen<Expr> - [val?[-1]] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K14 - (1:0,1) - Tokens:6
-        CSharpTokenType.Identifier;[val];
-        CSharpTokenType.QuestionMark;[?];
-        CSharpTokenType.LeftBracket;[[];
-        CSharpTokenType.Minus;[-];
-        CSharpTokenType.IntegerLiteral;[1];
-        CSharpTokenType.RightBracket;[]];
+        SyntaxKind.Identifier;[val];
+        SyntaxKind.QuestionMark;[?];
+        SyntaxKind.LeftBracket;[[];
+        SyntaxKind.Minus;[-];
+        SyntaxKind.IntegerLiteral;[1];
+        SyntaxKind.RightBracket;[]];

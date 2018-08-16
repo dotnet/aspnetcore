@@ -3,18 +3,18 @@ Markup block - Gen<None> - 26 - (0:0,0)
         StartTagAndEndTag - <strong> ... </strong>
     Tag block - Gen<None> - 4 - (17:0,17)
         Markup span - Gen<Markup> - [<] - SpanEditHandler;Accepts:Any - (17:0,17) - Tokens:1
-            HtmlTokenType.OpenAngle;[<];
+            SyntaxKind.OpenAngle;[<];
         MetaCode span - Gen<None> - [!] - SpanEditHandler;Accepts:None - (18:0,18) - Tokens:1
-            HtmlTokenType.Bang;[!];
+            SyntaxKind.Bang;[!];
         Markup span - Gen<Markup> - [p>] - SpanEditHandler;Accepts:Any - (19:0,19) - Tokens:2
-            HtmlTokenType.Text;[p];
-            HtmlTokenType.CloseAngle;[>];
+            SyntaxKind.HtmlTextLiteral;[p];
+            SyntaxKind.CloseAngle;[>];
     Tag block - Gen<None> - 5 - (21:0,21)
         Markup span - Gen<Markup> - [</] - SpanEditHandler;Accepts:Any - (21:0,21) - Tokens:2
-            HtmlTokenType.OpenAngle;[<];
-            HtmlTokenType.ForwardSlash;[/];
+            SyntaxKind.OpenAngle;[<];
+            SyntaxKind.ForwardSlash;[/];
         MetaCode span - Gen<None> - [!] - SpanEditHandler;Accepts:None - (23:0,23) - Tokens:1
-            HtmlTokenType.Bang;[!];
+            SyntaxKind.Bang;[!];
         Markup span - Gen<Markup> - [p>] - SpanEditHandler;Accepts:Any - (24:0,24) - Tokens:2
-            HtmlTokenType.Text;[p];
-            HtmlTokenType.CloseAngle;[>];
+            SyntaxKind.HtmlTextLiteral;[p];
+            SyntaxKind.CloseAngle;[>];

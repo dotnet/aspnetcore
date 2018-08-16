@@ -1,18 +1,18 @@
 Markup block - Gen<None> - 19 - (0:0,0)
     Tag block - Gen<None> - 14 - (0:0,0)
         Markup span - Gen<Markup> - [<] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:1
-            HtmlTokenType.OpenAngle;[<];
+            SyntaxKind.OpenAngle;[<];
         Markup block - Gen<Attr:class, class="@(1:0,1),"@(12:0,12)> - 12 - (1:0,1)
             Markup span - Gen<None> - [ class="] - SpanEditHandler;Accepts:Any - (1:0,1) - Tokens:4
-                HtmlTokenType.WhiteSpace;[ ];
-                HtmlTokenType.Text;[class];
-                HtmlTokenType.Equals;[=];
-                HtmlTokenType.DoubleQuote;["];
+                SyntaxKind.Whitespace;[ ];
+                SyntaxKind.HtmlTextLiteral;[class];
+                SyntaxKind.Equals;[=];
+                SyntaxKind.DoubleQuote;["];
             Markup span - Gen<LitAttr:@(9:0,9)> - [foo] - SpanEditHandler;Accepts:Any - (9:0,9) - Tokens:1
-                HtmlTokenType.Text;[foo];
+                SyntaxKind.HtmlTextLiteral;[foo];
             Markup span - Gen<None> - ["] - SpanEditHandler;Accepts:Any - (12:0,12) - Tokens:1
-                HtmlTokenType.DoubleQuote;["];
+                SyntaxKind.DoubleQuote;["];
         Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:Any - (13:0,13) - Tokens:1
-            HtmlTokenType.WhiteSpace;[ ];
+            SyntaxKind.Whitespace;[ ];
     Tag block - Gen<TagHelper> - 5 - (14:0,14) - p - ptaghelper
         SelfClosing - <p />

@@ -1,37 +1,37 @@
 Markup block - Gen<None> - 30 - (0:0,0)
     Tag block - Gen<None> - 5 - (0:0,0)
         Markup span - Gen<Markup> - [<foo>] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:3
-            HtmlTokenType.OpenAngle;[<];
-            HtmlTokenType.Text;[foo];
-            HtmlTokenType.CloseAngle;[>];
+            SyntaxKind.OpenAngle;[<];
+            SyntaxKind.HtmlTextLiteral;[foo];
+            SyntaxKind.CloseAngle;[>];
     Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (5:0,5) - Tokens:1
-        HtmlTokenType.Unknown;[];
+        SyntaxKind.Unknown;[];
     Expression block - Gen<Expr> - 4 - (5:0,5)
         Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (5:0,5) - Tokens:1
-            CSharpTokenType.Transition;[@];
+            SyntaxKind.Transition;[@];
         Code span - Gen<Expr> - [bar] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K14 - (6:0,6) - Tokens:1
-            CSharpTokenType.Identifier;[bar];
+            SyntaxKind.Identifier;[bar];
     Tag block - Gen<None> - 5 - (9:0,9)
         Markup span - Gen<Markup> - [<baz>] - SpanEditHandler;Accepts:None - (9:0,9) - Tokens:3
-            HtmlTokenType.OpenAngle;[<];
-            HtmlTokenType.Text;[baz];
-            HtmlTokenType.CloseAngle;[>];
+            SyntaxKind.OpenAngle;[<];
+            SyntaxKind.HtmlTextLiteral;[baz];
+            SyntaxKind.CloseAngle;[>];
     Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (14:0,14) - Tokens:1
-        HtmlTokenType.Unknown;[];
+        SyntaxKind.Unknown;[];
     Expression block - Gen<Expr> - 4 - (14:0,14)
         Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (14:0,14) - Tokens:1
-            CSharpTokenType.Transition;[@];
+            SyntaxKind.Transition;[@];
         Code span - Gen<Expr> - [boz] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K14 - (15:0,15) - Tokens:1
-            CSharpTokenType.Identifier;[boz];
+            SyntaxKind.Identifier;[boz];
     Tag block - Gen<None> - 6 - (18:0,18)
         Markup span - Gen<Markup> - [</baz>] - SpanEditHandler;Accepts:None - (18:0,18) - Tokens:4
-            HtmlTokenType.OpenAngle;[<];
-            HtmlTokenType.ForwardSlash;[/];
-            HtmlTokenType.Text;[baz];
-            HtmlTokenType.CloseAngle;[>];
+            SyntaxKind.OpenAngle;[<];
+            SyntaxKind.ForwardSlash;[/];
+            SyntaxKind.HtmlTextLiteral;[baz];
+            SyntaxKind.CloseAngle;[>];
     Tag block - Gen<None> - 6 - (24:0,24)
         Markup span - Gen<Markup> - [</foo>] - SpanEditHandler;Accepts:None - (24:0,24) - Tokens:4
-            HtmlTokenType.OpenAngle;[<];
-            HtmlTokenType.ForwardSlash;[/];
-            HtmlTokenType.Text;[foo];
-            HtmlTokenType.CloseAngle;[>];
+            SyntaxKind.OpenAngle;[<];
+            SyntaxKind.ForwardSlash;[/];
+            SyntaxKind.HtmlTextLiteral;[foo];
+            SyntaxKind.CloseAngle;[>];

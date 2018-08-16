@@ -1,28 +1,28 @@
 Markup block - Gen<None> - 34 - (0:0,0)
     Tag block - Gen<None> - 2 - (0:0,0)
         Markup span - Gen<Markup> - [</] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:2
-            HtmlTokenType.OpenAngle;[<];
-            HtmlTokenType.ForwardSlash;[/];
+            SyntaxKind.OpenAngle;[<];
+            SyntaxKind.ForwardSlash;[/];
     Tag block - Gen<None> - 1 - (2:0,2)
         Markup span - Gen<Markup> - [<] - SpanEditHandler;Accepts:Any - (2:0,2) - Tokens:1
-            HtmlTokenType.OpenAngle;[<];
+            SyntaxKind.OpenAngle;[<];
     Tag block - Gen<TagHelper> - 30 - (3:0,3) - p - ptaghelper
         StartTagAndEndTag - <p> ... </p>
         Expression block - Gen<Expr> - 13 - (6:0,6)
             Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (6:0,6) - Tokens:1
-                CSharpTokenType.Transition;[@];
+                SyntaxKind.Transition;[@];
             Code span - Gen<Expr> - [DateTime.Now] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K14 - (7:0,7) - Tokens:3
-                CSharpTokenType.Identifier;[DateTime];
-                CSharpTokenType.Dot;[.];
-                CSharpTokenType.Identifier;[Now];
+                SyntaxKind.Identifier;[DateTime];
+                SyntaxKind.Dot;[.];
+                SyntaxKind.Identifier;[Now];
         SyntaxKind.HtmlText - [/>] - [19..21) - FullWidth: 2 - Slots: 1
             SyntaxKind.List - [/>] - [19..21) - FullWidth: 2 - Slots: 2
                 SyntaxKind.ForwardSlash;[/];
                 SyntaxKind.CloseAngle;[>];
         Tag block - Gen<None> - 8 - (21:0,21)
             Markup span - Gen<Markup> - [<strong>] - SpanEditHandler;Accepts:Any - (21:0,21) - Tokens:3
-                HtmlTokenType.OpenAngle;[<];
-                HtmlTokenType.Text;[strong];
-                HtmlTokenType.CloseAngle;[>];
+                SyntaxKind.OpenAngle;[<];
+                SyntaxKind.HtmlTextLiteral;[strong];
+                SyntaxKind.CloseAngle;[>];
     Markup span - Gen<Markup> - [>] - SpanEditHandler;Accepts:Any - (33:0,33) - Tokens:1
-        HtmlTokenType.CloseAngle;[>];
+        SyntaxKind.CloseAngle;[>];

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
@@ -12,10 +13,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             // Arrange
             var builder = new SpanBuilder(SourceLocation.Zero);
-            builder.Accept(new HtmlToken("hello", HtmlTokenType.Text));
+            builder.Accept(SyntaxFactory.Token(SyntaxKind.HtmlTextLiteral, "hello"));
             var span = builder.Build();
             var newBuilder = new SpanBuilder(SourceLocation.Zero);
-            newBuilder.Accept(new HtmlToken("hi", HtmlTokenType.Text));
+            newBuilder.Accept(SyntaxFactory.Token(SyntaxKind.HtmlTextLiteral, "hi"));
             var originalLength = span.Length;
 
             // Act
@@ -33,7 +34,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             // Arrange
             var spanBuilder = new SpanBuilder(SourceLocation.Zero);
-            spanBuilder.Accept(new HtmlToken("hello", HtmlTokenType.Text));
+            spanBuilder.Accept(SyntaxFactory.Token(SyntaxKind.HtmlTextLiteral, "hello"));
             var span = spanBuilder.Build();
             var blockBuilder = new BlockBuilder()
             {
@@ -44,7 +45,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             span.Parent = block;
             var originalBlockLength = block.Length;
             var newSpanBuilder = new SpanBuilder(SourceLocation.Zero);
-            newSpanBuilder.Accept(new HtmlToken("hi", HtmlTokenType.Text));
+            newSpanBuilder.Accept(SyntaxFactory.Token(SyntaxKind.HtmlTextLiteral, "hi"));
 
             // Act
             span.ReplaceWith(newSpanBuilder);
@@ -64,7 +65,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 Kind = SpanKindInternal.Transition,
                 ChunkGenerator = new ExpressionChunkGenerator(),
             };
-            spanBuilder.Accept(new CSharpToken("@", CSharpTokenType.Transition));
+            spanBuilder.Accept(SyntaxFactory.Token(SyntaxKind.Transition, "@"));
             var span = spanBuilder.Build();
 
             // Act

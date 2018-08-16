@@ -1,42 +1,42 @@
 Markup block - Gen<None> - 42 - (0:0,0)
     Tag block - Gen<None> - 3 - (0:0,0)
         Markup span - Gen<Markup> - [<p>] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:3
-            HtmlTokenType.OpenAngle;[<];
-            HtmlTokenType.Text;[p];
-            HtmlTokenType.CloseAngle;[>];
+            SyntaxKind.OpenAngle;[<];
+            SyntaxKind.HtmlTextLiteral;[p];
+            SyntaxKind.CloseAngle;[>];
     Markup span - Gen<Markup> - [LF] - SpanEditHandler;Accepts:Any - (3:0,3) - Tokens:1
-        HtmlTokenType.NewLine;[LF];
+        SyntaxKind.NewLine;[LF];
     Comment block - Gen<RazorComment> - 11 - (5:1,0)
         Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (5:1,0) - Tokens:1
-            HtmlTokenType.RazorCommentTransition;[@];
+            SyntaxKind.RazorCommentTransition;[@];
         MetaCode span - Gen<None> - [*] - SpanEditHandler;Accepts:None - (6:1,1) - Tokens:1
-            HtmlTokenType.RazorCommentStar;[*];
+            SyntaxKind.RazorCommentStar;[*];
         Comment span - Gen<None> - [ hello ] - SpanEditHandler;Accepts:Any - (7:1,2) - Tokens:1
-            HtmlTokenType.RazorComment;[ hello ];
+            SyntaxKind.RazorComment;[ hello ];
         MetaCode span - Gen<None> - [*] - SpanEditHandler;Accepts:None - (14:1,9) - Tokens:1
-            HtmlTokenType.RazorCommentStar;[*];
+            SyntaxKind.RazorCommentStar;[*];
         Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (15:1,10) - Tokens:1
-            HtmlTokenType.RazorCommentTransition;[@];
+            SyntaxKind.RazorCommentTransition;[@];
     Markup span - Gen<Markup> - [ content ] - SpanEditHandler;Accepts:Any - (16:1,11) - Tokens:3
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Text;[content];
-        HtmlTokenType.WhiteSpace;[ ];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.HtmlTextLiteral;[content];
+        SyntaxKind.Whitespace;[ ];
     Comment block - Gen<RazorComment> - 11 - (25:1,20)
         Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (25:1,20) - Tokens:1
-            HtmlTokenType.RazorCommentTransition;[@];
+            SyntaxKind.RazorCommentTransition;[@];
         MetaCode span - Gen<None> - [*] - SpanEditHandler;Accepts:None - (26:1,21) - Tokens:1
-            HtmlTokenType.RazorCommentStar;[*];
+            SyntaxKind.RazorCommentStar;[*];
         Comment span - Gen<None> - [ world ] - SpanEditHandler;Accepts:Any - (27:1,22) - Tokens:1
-            HtmlTokenType.RazorComment;[ world ];
+            SyntaxKind.RazorComment;[ world ];
         MetaCode span - Gen<None> - [*] - SpanEditHandler;Accepts:None - (34:1,29) - Tokens:1
-            HtmlTokenType.RazorCommentStar;[*];
+            SyntaxKind.RazorCommentStar;[*];
         Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (35:1,30) - Tokens:1
-            HtmlTokenType.RazorCommentTransition;[@];
+            SyntaxKind.RazorCommentTransition;[@];
     SyntaxKind.HtmlText - [LF] - [36..38) - FullWidth: 2 - Slots: 1
         SyntaxKind.NewLine;[LF];
     Tag block - Gen<None> - 4 - (38:2,0)
         Markup span - Gen<Markup> - [</p>] - SpanEditHandler;Accepts:Any - (38:2,0) - Tokens:4
-            HtmlTokenType.OpenAngle;[<];
-            HtmlTokenType.ForwardSlash;[/];
-            HtmlTokenType.Text;[p];
-            HtmlTokenType.CloseAngle;[>];
+            SyntaxKind.OpenAngle;[<];
+            SyntaxKind.ForwardSlash;[/];
+            SyntaxKind.HtmlTextLiteral;[p];
+            SyntaxKind.CloseAngle;[>];

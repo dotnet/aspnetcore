@@ -1,25 +1,25 @@
 Expression block - Gen<Expr> - 24 - (0:0,0)
     Code span - Gen<Expr> - [Foo(    ] - ImplicitExpressionEditHandler;Accepts:Any;ImplicitExpression[RTD];K14 - (0:0,0) - Tokens:3
-        CSharpTokenType.Identifier;[Foo];
-        CSharpTokenType.LeftParenthesis;[(];
-        CSharpTokenType.WhiteSpace;[    ];
+        SyntaxKind.Identifier;[Foo];
+        SyntaxKind.LeftParenthesis;[(];
+        SyntaxKind.Whitespace;[    ];
     Template block - Gen<Template> - 11 - (8:0,8)
         Markup block - Gen<None> - 11 - (8:0,8)
             Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (8:0,8) - Tokens:1
-                HtmlTokenType.Transition;[@];
+                SyntaxKind.Transition;[@];
             Tag block - Gen<None> - 3 - (9:0,9)
                 Markup span - Gen<Markup> - [<p>] - SpanEditHandler;Accepts:None - (9:0,9) - Tokens:3
-                    HtmlTokenType.OpenAngle;[<];
-                    HtmlTokenType.Text;[p];
-                    HtmlTokenType.CloseAngle;[>];
+                    SyntaxKind.OpenAngle;[<];
+                    SyntaxKind.HtmlTextLiteral;[p];
+                    SyntaxKind.CloseAngle;[>];
             Markup span - Gen<Markup> - [Foo] - SpanEditHandler;Accepts:Any - (12:0,12) - Tokens:1
-                HtmlTokenType.Text;[Foo];
+                SyntaxKind.HtmlTextLiteral;[Foo];
             Tag block - Gen<None> - 4 - (15:0,15)
                 Markup span - Gen<Markup> - [</p>] - SpanEditHandler;Accepts:None - (15:0,15) - Tokens:4
-                    HtmlTokenType.OpenAngle;[<];
-                    HtmlTokenType.ForwardSlash;[/];
-                    HtmlTokenType.Text;[p];
-                    HtmlTokenType.CloseAngle;[>];
+                    SyntaxKind.OpenAngle;[<];
+                    SyntaxKind.ForwardSlash;[/];
+                    SyntaxKind.HtmlTextLiteral;[p];
+                    SyntaxKind.CloseAngle;[>];
     Code span - Gen<Expr> - [    )] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K14 - (19:0,19) - Tokens:2
-        CSharpTokenType.WhiteSpace;[    ];
-        CSharpTokenType.RightParenthesis;[)];
+        SyntaxKind.Whitespace;[    ];
+        SyntaxKind.RightParenthesis;[)];

@@ -7,6 +7,7 @@ using System.ComponentModel.Composition;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
+using Microsoft.AspNetCore.Razor.Language.Syntax;
 
 namespace Microsoft.VisualStudio.Editor.Razor
 {
@@ -83,16 +84,11 @@ namespace Microsoft.VisualStudio.Editor.Razor
         }
 
         // Internal for testing
-        internal static bool IsDirectiveCompletableToken(IToken token)
+        internal static bool IsDirectiveCompletableToken(SyntaxToken token)
         {
-            if (!(token is CSharpToken csharpToken))
-            {
-                return false;
-            }
-
-            return csharpToken.Type == CSharpTokenType.Identifier ||
+            return token.Kind == SyntaxKind.Identifier ||
                 // Marker symbol
-                csharpToken.Type == CSharpTokenType.Unknown;
+                token.Kind == SyntaxKind.Unknown;
         }
     }
 }

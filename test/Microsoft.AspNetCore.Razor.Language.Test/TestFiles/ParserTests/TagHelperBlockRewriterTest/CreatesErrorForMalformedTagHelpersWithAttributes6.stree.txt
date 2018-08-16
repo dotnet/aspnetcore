@@ -3,5 +3,5 @@ Markup block - Gen<None> - 14 - (0:0,0)
         StartTagAndEndTag - <p bar="false'
         bar - DoubleQuotes
             Markup span - Gen<Markup> - [false'] - SpanEditHandler;Accepts:Any - (8:0,8) - Tokens:2
-                HtmlTokenType.Text;[false];
-                HtmlTokenType.SingleQuote;['];
+                SyntaxKind.HtmlTextLiteral;[false];
+                SyntaxKind.SingleQuote;['];

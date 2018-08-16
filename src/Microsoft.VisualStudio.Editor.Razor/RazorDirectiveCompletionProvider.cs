@@ -206,17 +206,5 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
             return false;
         }
-
-        private static bool IsDirectiveCompletableSymbol(AspNetCore.Razor.Language.Legacy.IToken symbol)
-        {
-            if (!(symbol is CSharpToken csharpSymbol))
-            {
-                return false;
-            }
-
-            return csharpSymbol.Type == CSharpTokenType.Identifier ||
-                // Marker symbol
-                csharpSymbol.Type == CSharpTokenType.Unknown;
-        }
     }
 }

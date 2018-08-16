@@ -6,15 +6,15 @@ Markup block - Gen<None> - 45 - (0:0,0)
                 Markup block - Gen<DynAttr:@(10:0,10)> - 13 - (10:0,10)
                     Expression block - Gen<Expr> - 13 - (10:0,10)
                         Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (10:0,10) - Tokens:1
-                            CSharpTokenType.Transition;[@];
+                            SyntaxKind.Transition;[@];
                         Code span - Gen<Expr> - [DateTime.Now] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K14 - (11:0,11) - Tokens:3
-                            CSharpTokenType.Identifier;[DateTime];
-                            CSharpTokenType.Dot;[.];
-                            CSharpTokenType.Identifier;[Now];
+                            SyntaxKind.Identifier;[DateTime];
+                            SyntaxKind.Dot;[.];
+                            SyntaxKind.Identifier;[Now];
         SyntaxKind.HtmlText - [words and spaces] - [25..41) - FullWidth: 16 - Slots: 1
             SyntaxKind.List - [words and spaces] - [25..41) - FullWidth: 16 - Slots: 5
-                SyntaxKind.HtmlTextLiteralToken;[words];
+                SyntaxKind.HtmlTextLiteral;[words];
                 SyntaxKind.Whitespace;[ ];
-                SyntaxKind.HtmlTextLiteralToken;[and];
+                SyntaxKind.HtmlTextLiteral;[and];
                 SyntaxKind.Whitespace;[ ];
-                SyntaxKind.HtmlTextLiteralToken;[spaces];
+                SyntaxKind.HtmlTextLiteral;[spaces];

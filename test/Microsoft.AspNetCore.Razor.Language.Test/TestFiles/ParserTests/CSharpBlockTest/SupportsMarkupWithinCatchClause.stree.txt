@@ -1,50 +1,50 @@
 Statement block - Gen<None> - 59 - (0:0,0)
     Code span - Gen<Stmt> - [try { var foo = new { } } catch(Foo Bar Baz) {] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:28
-        CSharpTokenType.Keyword;[try];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.LeftBrace;[{];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Identifier;[var];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Identifier;[foo];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Assign;[=];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Keyword;[new];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.LeftBrace;[{];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.RightBrace;[}];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.RightBrace;[}];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Keyword;[catch];
-        CSharpTokenType.LeftParenthesis;[(];
-        CSharpTokenType.Identifier;[Foo];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Identifier;[Bar];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Identifier;[Baz];
-        CSharpTokenType.RightParenthesis;[)];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.LeftBrace;[{];
+        SyntaxKind.Keyword;[try];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.LeftBrace;[{];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.Identifier;[var];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.Identifier;[foo];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.Assign;[=];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.Keyword;[new];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.LeftBrace;[{];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.RightBrace;[}];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.RightBrace;[}];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.Keyword;[catch];
+        SyntaxKind.LeftParenthesis;[(];
+        SyntaxKind.Identifier;[Foo];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.Identifier;[Bar];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.Identifier;[Baz];
+        SyntaxKind.RightParenthesis;[)];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.LeftBrace;[{];
     Markup block - Gen<None> - 12 - (46:0,46)
         Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:Any - (46:0,46) - Tokens:1
-            HtmlTokenType.WhiteSpace;[ ];
+            SyntaxKind.Whitespace;[ ];
         Tag block - Gen<None> - 3 - (47:0,47)
             Markup span - Gen<Markup> - [<p>] - SpanEditHandler;Accepts:None - (47:0,47) - Tokens:3
-                HtmlTokenType.OpenAngle;[<];
-                HtmlTokenType.Text;[p];
-                HtmlTokenType.CloseAngle;[>];
+                SyntaxKind.OpenAngle;[<];
+                SyntaxKind.HtmlTextLiteral;[p];
+                SyntaxKind.CloseAngle;[>];
         Markup span - Gen<Markup> - [Foo] - SpanEditHandler;Accepts:Any - (50:0,50) - Tokens:1
-            HtmlTokenType.Text;[Foo];
+            SyntaxKind.HtmlTextLiteral;[Foo];
         Tag block - Gen<None> - 4 - (53:0,53)
             Markup span - Gen<Markup> - [</p>] - SpanEditHandler;Accepts:None - (53:0,53) - Tokens:4
-                HtmlTokenType.OpenAngle;[<];
-                HtmlTokenType.ForwardSlash;[/];
-                HtmlTokenType.Text;[p];
-                HtmlTokenType.CloseAngle;[>];
+                SyntaxKind.OpenAngle;[<];
+                SyntaxKind.ForwardSlash;[/];
+                SyntaxKind.HtmlTextLiteral;[p];
+                SyntaxKind.CloseAngle;[>];
         Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:None - (57:0,57) - Tokens:1
-            HtmlTokenType.WhiteSpace;[ ];
+            SyntaxKind.Whitespace;[ ];
     Code span - Gen<Stmt> - [}] - SpanEditHandler;Accepts:Any - (58:0,58) - Tokens:1
-        CSharpTokenType.RightBrace;[}];
+        SyntaxKind.RightBrace;[}];

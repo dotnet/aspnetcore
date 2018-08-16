@@ -2,4 +2,4 @@ Markup block - Gen<None> - 12 - (0:0,0)
     Tag block - Gen<TagHelper> - 12 - (0:0,0) - p - PTagHelper
         StartTagAndEndTag - <p> ... </p>
         SyntaxKind.HtmlText - [Hello] - [3..8) - FullWidth: 5 - Slots: 1
-            SyntaxKind.HtmlTextLiteralToken;[Hello];
+            SyntaxKind.HtmlTextLiteral;[Hello];

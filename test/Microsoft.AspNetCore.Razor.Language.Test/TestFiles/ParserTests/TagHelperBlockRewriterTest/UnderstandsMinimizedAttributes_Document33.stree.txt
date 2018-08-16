@@ -7,32 +7,32 @@ Markup block - Gen<None> - 101 - (0:0,0)
                 Markup block - Gen<DynAttr:@(23:0,23)> - 13 - (23:0,23)
                     Expression block - Gen<Expr> - 13 - (23:0,23)
                         Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (23:0,23) - Tokens:1
-                            CSharpTokenType.Transition;[@];
+                            SyntaxKind.Transition;[@];
                         Code span - Gen<Expr> - [DateTime.Now] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K14 - (24:0,24) - Tokens:3
-                            CSharpTokenType.Identifier;[DateTime];
-                            CSharpTokenType.Dot;[.];
-                            CSharpTokenType.Identifier;[Now];
+                            SyntaxKind.Identifier;[DateTime];
+                            SyntaxKind.Dot;[.];
+                            SyntaxKind.Identifier;[Now];
                 Markup span - Gen<LitAttr: @(36:0,36)> - [ +] - SpanEditHandler;Accepts:Any - (36:0,36) - Tokens:2
-                    HtmlTokenType.WhiteSpace;[ ];
-                    HtmlTokenType.Text;[+];
+                    SyntaxKind.Whitespace;[ ];
+                    SyntaxKind.HtmlTextLiteral;[+];
                 Markup span - Gen<LitAttr: @(38:0,38)> - [ 1] - SpanEditHandler;Accepts:Any - (38:0,38) - Tokens:2
-                    HtmlTokenType.WhiteSpace;[ ];
-                    HtmlTokenType.Text;[1];
+                    SyntaxKind.Whitespace;[ ];
+                    SyntaxKind.HtmlTextLiteral;[1];
         bound-string - Minimized
         class - SingleQuotes
             Markup block - Gen<None> - 17 - (64:0,64)
                 Markup block - Gen<DynAttr:@(64:0,64)> - 13 - (64:0,64)
                     Expression block - Gen<Expr> - 13 - (64:0,64)
                         Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (64:0,64) - Tokens:1
-                            CSharpTokenType.Transition;[@];
+                            SyntaxKind.Transition;[@];
                         Code span - Gen<Expr> - [DateTime.Now] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K14 - (65:0,65) - Tokens:3
-                            CSharpTokenType.Identifier;[DateTime];
-                            CSharpTokenType.Dot;[.];
-                            CSharpTokenType.Identifier;[Now];
+                            SyntaxKind.Identifier;[DateTime];
+                            SyntaxKind.Dot;[.];
+                            SyntaxKind.Identifier;[Now];
                 Markup span - Gen<LitAttr: @(77:0,77)> - [ +] - SpanEditHandler;Accepts:Any - (77:0,77) - Tokens:2
-                    HtmlTokenType.WhiteSpace;[ ];
-                    HtmlTokenType.Text;[+];
+                    SyntaxKind.Whitespace;[ ];
+                    SyntaxKind.HtmlTextLiteral;[+];
                 Markup span - Gen<LitAttr: @(79:0,79)> - [ 1] - SpanEditHandler;Accepts:Any - (79:0,79) - Tokens:2
-                    HtmlTokenType.WhiteSpace;[ ];
-                    HtmlTokenType.Text;[1];
+                    SyntaxKind.Whitespace;[ ];
+                    SyntaxKind.HtmlTextLiteral;[1];
         bound-string - Minimized

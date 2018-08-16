@@ -1,12 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax;
+
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
-    internal class TokenizerView<TTokenizer, TToken, TTokenType>
-        where TTokenType : struct
-        where TTokenizer : Tokenizer<TToken, TTokenType>
-        where TToken : TokenBase<TTokenType>
+    internal class TokenizerView<TTokenizer>
+        where TTokenizer : Tokenizer
     {
         public TokenizerView(TTokenizer tokenizer)
         {
@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         public TTokenizer Tokenizer { get; private set; }
         public bool EndOfFile { get; private set; }
-        public TToken Current { get; private set; }
+        public SyntaxToken Current { get; private set; }
 
         public ITextDocument Source
         {
@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return !EndOfFile;
         }
 
-        public void PutBack(TToken token)
+        public void PutBack(SyntaxToken token)
         {
             Source.Position -= token.Content.Length;
             Current = null;

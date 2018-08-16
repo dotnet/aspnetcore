@@ -1,9 +1,9 @@
 Directive block - Gen<None> - 19 - (0:0,0)
     Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-        CSharpTokenType.Transition;[@];
+        SyntaxKind.Transition;[@];
     MetaCode span - Gen<None> - [tagHelperPrefix] - SpanEditHandler;Accepts:None - (1:0,1) - Tokens:1
-        CSharpTokenType.Identifier;[tagHelperPrefix];
+        SyntaxKind.Identifier;[tagHelperPrefix];
     Markup span - Gen<None> - [ ] - SpanEditHandler;Accepts:None - (16:0,16) - Tokens:1
-        CSharpTokenType.WhiteSpace;[ ];
+        SyntaxKind.Whitespace;[ ];
     Code span - Gen<TagHelperPrefix:{"";}> - [""] - SpanEditHandler;Accepts:AnyExceptNewline - (17:0,17) - Tokens:1
-        CSharpTokenType.StringLiteral;[""];
+        SyntaxKind.StringLiteral;[""];

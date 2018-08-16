@@ -1,13 +1,13 @@
 Directive block - Gen<Directive:{custom;SingleLine;Unrestricted}> - 29 - (0:0,0)
     Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-        CSharpTokenType.Transition;[@];
+        SyntaxKind.Transition;[@];
     MetaCode span - Gen<None> - [custom] - SpanEditHandler;Accepts:None - (1:0,1) - Tokens:1
-        CSharpTokenType.Identifier;[custom];
+        SyntaxKind.Identifier;[custom];
     Code span - Gen<None> - [ ] - SpanEditHandler;Accepts:WhiteSpace - (7:0,7) - Tokens:1
-        CSharpTokenType.WhiteSpace;[ ];
+        SyntaxKind.Whitespace;[ ];
     Code span - Gen<DirectiveToken {;Namespace;Opt:False}> - [BaseNamespace.Foo.Bar] - DirectiveTokenEditHandler;Accepts:NonWhiteSpace - (8:0,8) - Tokens:5
-        CSharpTokenType.Identifier;[BaseNamespace];
-        CSharpTokenType.Dot;[.];
-        CSharpTokenType.Identifier;[Foo];
-        CSharpTokenType.Dot;[.];
-        CSharpTokenType.Identifier;[Bar];
+        SyntaxKind.Identifier;[BaseNamespace];
+        SyntaxKind.Dot;[.];
+        SyntaxKind.Identifier;[Foo];
+        SyntaxKind.Dot;[.];
+        SyntaxKind.Identifier;[Bar];

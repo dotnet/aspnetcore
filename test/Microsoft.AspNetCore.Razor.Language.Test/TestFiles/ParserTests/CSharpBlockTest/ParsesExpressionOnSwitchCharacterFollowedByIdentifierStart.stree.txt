@@ -1,24 +1,24 @@
 Statement block - Gen<None> - 25 - (0:0,0)
     Code span - Gen<Stmt> - [if(foo) { ] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:7
-        CSharpTokenType.Keyword;[if];
-        CSharpTokenType.LeftParenthesis;[(];
-        CSharpTokenType.Identifier;[foo];
-        CSharpTokenType.RightParenthesis;[)];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.LeftBrace;[{];
-        CSharpTokenType.WhiteSpace;[ ];
+        SyntaxKind.Keyword;[if];
+        SyntaxKind.LeftParenthesis;[(];
+        SyntaxKind.Identifier;[foo];
+        SyntaxKind.RightParenthesis;[)];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.LeftBrace;[{];
+        SyntaxKind.Whitespace;[ ];
     Expression block - Gen<Expr> - 13 - (10:0,10)
         Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (10:0,10) - Tokens:1
-            CSharpTokenType.Transition;[@];
+            SyntaxKind.Transition;[@];
         Code span - Gen<Expr> - [foo[4].bar()] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[ATD];K14 - (11:0,11) - Tokens:8
-            CSharpTokenType.Identifier;[foo];
-            CSharpTokenType.LeftBracket;[[];
-            CSharpTokenType.IntegerLiteral;[4];
-            CSharpTokenType.RightBracket;[]];
-            CSharpTokenType.Dot;[.];
-            CSharpTokenType.Identifier;[bar];
-            CSharpTokenType.LeftParenthesis;[(];
-            CSharpTokenType.RightParenthesis;[)];
+            SyntaxKind.Identifier;[foo];
+            SyntaxKind.LeftBracket;[[];
+            SyntaxKind.IntegerLiteral;[4];
+            SyntaxKind.RightBracket;[]];
+            SyntaxKind.Dot;[.];
+            SyntaxKind.Identifier;[bar];
+            SyntaxKind.LeftParenthesis;[(];
+            SyntaxKind.RightParenthesis;[)];
     Code span - Gen<Stmt> - [ }] - SpanEditHandler;Accepts:Any - (23:0,23) - Tokens:2
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.RightBrace;[}];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.RightBrace;[}];

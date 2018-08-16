@@ -1,16 +1,16 @@
 Markup block - Gen<None> - 9 - (0:0,0)
     Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:1
-        HtmlTokenType.Unknown;[];
+        SyntaxKind.Unknown;[];
     Statement block - Gen<None> - 9 - (0:0,0)
         Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-            CSharpTokenType.Transition;[@];
+            SyntaxKind.Transition;[@];
         MetaCode span - Gen<None> - [{] - SpanEditHandler;Accepts:None - (1:0,1) - Tokens:1
-            CSharpTokenType.LeftBrace;[{];
+            SyntaxKind.LeftBrace;[{];
         Markup block - Gen<None> - 7 - (2:0,2)
             Tag block - Gen<None> - 7 - (2:0,2)
                 Markup span - Gen<Markup> - [<] - SpanEditHandler;Accepts:Any - (2:0,2) - Tokens:1
-                    HtmlTokenType.OpenAngle;[<];
+                    SyntaxKind.OpenAngle;[<];
                 MetaCode span - Gen<None> - [!] - SpanEditHandler;Accepts:None - (3:0,3) - Tokens:1
-                    HtmlTokenType.Bang;[!];
+                    SyntaxKind.Bang;[!];
                 Markup span - Gen<Markup> - [text}] - SpanEditHandler;Accepts:Any - (4:0,4) - Tokens:1
-                    HtmlTokenType.Text;[text}];
+                    SyntaxKind.HtmlTextLiteral;[text}];

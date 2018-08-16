@@ -5,8 +5,8 @@ Markup block - Gen<None> - 39 - (0:0,0)
             StartTagAndEndTag - <strong> ... </strong>
             SyntaxKind.HtmlText - [Hello World] - [11..22) - FullWidth: 11 - Slots: 1
                 SyntaxKind.List - [Hello World] - [11..22) - FullWidth: 11 - Slots: 3
-                    SyntaxKind.HtmlTextLiteralToken;[Hello];
+                    SyntaxKind.HtmlTextLiteral;[Hello];
                     SyntaxKind.Whitespace;[ ];
-                    SyntaxKind.HtmlTextLiteralToken;[World];
+                    SyntaxKind.HtmlTextLiteral;[World];
         Tag block - Gen<TagHelper> - 4 - (31:0,31) - br - BRTagHelper
             StartTagOnly - <br>

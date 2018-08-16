@@ -1,30 +1,30 @@
 Markup block - Gen<None> - 26 - (0:0,0)
     Tag block - Gen<None> - 5 - (0:0,0)
         Markup span - Gen<Markup> - [<foo>] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:3
-            HtmlTokenType.OpenAngle;[<];
-            HtmlTokenType.Text;[foo];
-            HtmlTokenType.CloseAngle;[>];
+            SyntaxKind.OpenAngle;[<];
+            SyntaxKind.HtmlTextLiteral;[foo];
+            SyntaxKind.CloseAngle;[>];
     Tag block - Gen<None> - 15 - (5:0,5)
         Markup span - Gen<Markup> - [<bar] - SpanEditHandler;Accepts:Any - (5:0,5) - Tokens:2
-            HtmlTokenType.OpenAngle;[<];
-            HtmlTokenType.Text;[bar];
+            SyntaxKind.OpenAngle;[<];
+            SyntaxKind.HtmlTextLiteral;[bar];
         Markup block - Gen<Attr:baz, baz="@(9:0,9),"@(16:0,16)> - 8 - (9:0,9)
             Markup span - Gen<None> - [ baz="] - SpanEditHandler;Accepts:Any - (9:0,9) - Tokens:4
-                HtmlTokenType.WhiteSpace;[ ];
-                HtmlTokenType.Text;[baz];
-                HtmlTokenType.Equals;[=];
-                HtmlTokenType.DoubleQuote;["];
+                SyntaxKind.Whitespace;[ ];
+                SyntaxKind.HtmlTextLiteral;[baz];
+                SyntaxKind.Equals;[=];
+                SyntaxKind.DoubleQuote;["];
             Markup span - Gen<LitAttr:@(15:0,15)> - [>] - SpanEditHandler;Accepts:Any - (15:0,15) - Tokens:1
-                HtmlTokenType.CloseAngle;[>];
+                SyntaxKind.CloseAngle;[>];
             Markup span - Gen<None> - ["] - SpanEditHandler;Accepts:Any - (16:0,16) - Tokens:1
-                HtmlTokenType.DoubleQuote;["];
+                SyntaxKind.DoubleQuote;["];
         Markup span - Gen<Markup> - [ />] - SpanEditHandler;Accepts:None - (17:0,17) - Tokens:3
-            HtmlTokenType.WhiteSpace;[ ];
-            HtmlTokenType.ForwardSlash;[/];
-            HtmlTokenType.CloseAngle;[>];
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.ForwardSlash;[/];
+            SyntaxKind.CloseAngle;[>];
     Tag block - Gen<None> - 6 - (20:0,20)
         Markup span - Gen<Markup> - [</foo>] - SpanEditHandler;Accepts:None - (20:0,20) - Tokens:4
-            HtmlTokenType.OpenAngle;[<];
-            HtmlTokenType.ForwardSlash;[/];
-            HtmlTokenType.Text;[foo];
-            HtmlTokenType.CloseAngle;[>];
+            SyntaxKind.OpenAngle;[<];
+            SyntaxKind.ForwardSlash;[/];
+            SyntaxKind.HtmlTextLiteral;[foo];
+            SyntaxKind.CloseAngle;[>];

@@ -1,9 +1,9 @@
 Expression block - Gen<Expr> - 12 - (0:0,0)
     Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-        CSharpTokenType.Transition;[@];
+        SyntaxKind.Transition;[@];
     Code span - Gen<Expr> - [foo.bar.baz] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K14 - (1:0,1) - Tokens:5
-        CSharpTokenType.Identifier;[foo];
-        CSharpTokenType.Dot;[.];
-        CSharpTokenType.Identifier;[bar];
-        CSharpTokenType.Dot;[.];
-        CSharpTokenType.Identifier;[baz];
+        SyntaxKind.Identifier;[foo];
+        SyntaxKind.Dot;[.];
+        SyntaxKind.Identifier;[bar];
+        SyntaxKind.Dot;[.];
+        SyntaxKind.Identifier;[baz];

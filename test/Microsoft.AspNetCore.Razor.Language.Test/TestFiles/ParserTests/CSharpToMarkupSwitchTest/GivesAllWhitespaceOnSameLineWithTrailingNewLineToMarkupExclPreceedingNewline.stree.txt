@@ -1,74 +1,74 @@
 Statement block - Gen<None> - 161 - (0:0,0)
     Code span - Gen<Stmt> - [if(foo) {LF    var foo = "After this statement there are 10 spaces";          LF] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:18
-        CSharpTokenType.Keyword;[if];
-        CSharpTokenType.LeftParenthesis;[(];
-        CSharpTokenType.Identifier;[foo];
-        CSharpTokenType.RightParenthesis;[)];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.LeftBrace;[{];
-        CSharpTokenType.NewLine;[LF];
-        CSharpTokenType.WhiteSpace;[    ];
-        CSharpTokenType.Identifier;[var];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Identifier;[foo];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Assign;[=];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.StringLiteral;["After this statement there are 10 spaces"];
-        CSharpTokenType.Semicolon;[;];
-        CSharpTokenType.WhiteSpace;[          ];
-        CSharpTokenType.NewLine;[LF];
+        SyntaxKind.Keyword;[if];
+        SyntaxKind.LeftParenthesis;[(];
+        SyntaxKind.Identifier;[foo];
+        SyntaxKind.RightParenthesis;[)];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.LeftBrace;[{];
+        SyntaxKind.NewLine;[LF];
+        SyntaxKind.Whitespace;[    ];
+        SyntaxKind.Identifier;[var];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.Identifier;[foo];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.Assign;[=];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.StringLiteral;["After this statement there are 10 spaces"];
+        SyntaxKind.Semicolon;[;];
+        SyntaxKind.Whitespace;[          ];
+        SyntaxKind.NewLine;[LF];
     Markup block - Gen<None> - 46 - (80:2,0)
         Markup span - Gen<Markup> - [    ] - SpanEditHandler;Accepts:Any - (80:2,0) - Tokens:1
-            HtmlTokenType.WhiteSpace;[    ];
+            SyntaxKind.Whitespace;[    ];
         Tag block - Gen<None> - 3 - (84:2,4)
             Markup span - Gen<Markup> - [<p>] - SpanEditHandler;Accepts:None - (84:2,4) - Tokens:3
-                HtmlTokenType.OpenAngle;[<];
-                HtmlTokenType.Text;[p];
-                HtmlTokenType.CloseAngle;[>];
+                SyntaxKind.OpenAngle;[<];
+                SyntaxKind.HtmlTextLiteral;[p];
+                SyntaxKind.CloseAngle;[>];
         Markup span - Gen<Markup> - [LF        FooLF] - SpanEditHandler;Accepts:Any - (87:2,7) - Tokens:4
-            HtmlTokenType.NewLine;[LF];
-            HtmlTokenType.WhiteSpace;[        ];
-            HtmlTokenType.Text;[Foo];
-            HtmlTokenType.NewLine;[LF];
+            SyntaxKind.NewLine;[LF];
+            SyntaxKind.Whitespace;[        ];
+            SyntaxKind.HtmlTextLiteral;[Foo];
+            SyntaxKind.NewLine;[LF];
         Expression block - Gen<Expr> - 12 - (102:4,0)
             Code span - Gen<Stmt> - [        ] - SpanEditHandler;Accepts:Any - (102:4,0) - Tokens:1
-                CSharpTokenType.WhiteSpace;[        ];
+                SyntaxKind.Whitespace;[        ];
             Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (110:4,8) - Tokens:1
-                CSharpTokenType.Transition;[@];
+                SyntaxKind.Transition;[@];
             Code span - Gen<Expr> - [bar] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K14 - (111:4,9) - Tokens:1
-                CSharpTokenType.Identifier;[bar];
+                SyntaxKind.Identifier;[bar];
         Markup span - Gen<Markup> - [LF    ] - SpanEditHandler;Accepts:Any - (114:4,12) - Tokens:2
-            HtmlTokenType.NewLine;[LF];
-            HtmlTokenType.WhiteSpace;[    ];
+            SyntaxKind.NewLine;[LF];
+            SyntaxKind.Whitespace;[    ];
         Tag block - Gen<None> - 4 - (120:5,4)
             Markup span - Gen<Markup> - [</p>] - SpanEditHandler;Accepts:None - (120:5,4) - Tokens:4
-                HtmlTokenType.OpenAngle;[<];
-                HtmlTokenType.ForwardSlash;[/];
-                HtmlTokenType.Text;[p];
-                HtmlTokenType.CloseAngle;[>];
+                SyntaxKind.OpenAngle;[<];
+                SyntaxKind.ForwardSlash;[/];
+                SyntaxKind.HtmlTextLiteral;[p];
+                SyntaxKind.CloseAngle;[>];
         Markup span - Gen<Markup> - [LF] - SpanEditHandler;Accepts:None - (124:5,8) - Tokens:1
-            HtmlTokenType.NewLine;[LF];
+            SyntaxKind.NewLine;[LF];
     Markup block - Gen<None> - 14 - (126:6,0)
         Markup span - Gen<Markup> - [    ] - SpanEditHandler;Accepts:Any - (126:6,0) - Tokens:1
-            HtmlTokenType.WhiteSpace;[    ];
+            SyntaxKind.Whitespace;[    ];
         Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (130:6,4) - Tokens:1
-            HtmlTokenType.Transition;[@];
+            SyntaxKind.Transition;[@];
         MetaCode span - Gen<None> - [:] - SpanEditHandler;Accepts:Any - (131:6,5) - Tokens:1
-            HtmlTokenType.Colon;[:];
+            SyntaxKind.Colon;[:];
         Markup span - Gen<Markup> - [Hello!LF] - SpanEditHandler;Accepts:None - (132:6,6) - Tokens:3
-            HtmlTokenType.Text;[Hello];
-            HtmlTokenType.Bang;[!];
-            HtmlTokenType.NewLine;[LF];
+            SyntaxKind.HtmlTextLiteral;[Hello];
+            SyntaxKind.Bang;[!];
+            SyntaxKind.NewLine;[LF];
     Code span - Gen<Stmt> - [    var biz = boz;LF}] - SpanEditHandler;Accepts:Any - (140:7,0) - Tokens:11
-        CSharpTokenType.WhiteSpace;[    ];
-        CSharpTokenType.Identifier;[var];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Identifier;[biz];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Assign;[=];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Identifier;[boz];
-        CSharpTokenType.Semicolon;[;];
-        CSharpTokenType.NewLine;[LF];
-        CSharpTokenType.RightBrace;[}];
+        SyntaxKind.Whitespace;[    ];
+        SyntaxKind.Identifier;[var];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.Identifier;[biz];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.Assign;[=];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.Identifier;[boz];
+        SyntaxKind.Semicolon;[;];
+        SyntaxKind.NewLine;[LF];
+        SyntaxKind.RightBrace;[}];

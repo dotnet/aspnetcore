@@ -1,7 +1,7 @@
 Directive block - Gen<Directive:{custom;SingleLine;Unrestricted} [RZ1016(8:0,8 [1] )]> - 8 - (0:0,0)
     Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-        CSharpTokenType.Transition;[@];
+        SyntaxKind.Transition;[@];
     MetaCode span - Gen<None> - [custom] - SpanEditHandler;Accepts:None - (1:0,1) - Tokens:1
-        CSharpTokenType.Identifier;[custom];
+        SyntaxKind.Identifier;[custom];
     Markup span - Gen<None> - [ ] - SpanEditHandler;Accepts:WhiteSpace - (7:0,7) - Tokens:1
-        CSharpTokenType.WhiteSpace;[ ];
+        SyntaxKind.Whitespace;[ ];

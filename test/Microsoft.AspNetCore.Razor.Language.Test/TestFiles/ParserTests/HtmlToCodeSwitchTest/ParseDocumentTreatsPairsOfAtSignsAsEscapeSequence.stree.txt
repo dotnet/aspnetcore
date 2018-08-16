@@ -1,25 +1,25 @@
 Markup block - Gen<None> - 19 - (0:0,0)
     Tag block - Gen<None> - 5 - (0:0,0)
         Markup span - Gen<Markup> - [<foo>] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:3
-            HtmlTokenType.OpenAngle;[<];
-            HtmlTokenType.Text;[foo];
-            HtmlTokenType.CloseAngle;[>];
+            SyntaxKind.OpenAngle;[<];
+            SyntaxKind.HtmlTextLiteral;[foo];
+            SyntaxKind.CloseAngle;[>];
     Markup span - Gen<None> - [@] - SpanEditHandler;Accepts:Any - (5:0,5) - Tokens:1
-        HtmlTokenType.Transition;[@];
+        SyntaxKind.Transition;[@];
     Markup span - Gen<Markup> - [@] - SpanEditHandler;Accepts:Any - (6:0,6) - Tokens:1
-        HtmlTokenType.Transition;[@];
+        SyntaxKind.Transition;[@];
     Markup span - Gen<None> - [@] - SpanEditHandler;Accepts:Any - (7:0,7) - Tokens:1
-        HtmlTokenType.Transition;[@];
+        SyntaxKind.Transition;[@];
     Markup span - Gen<Markup> - [@] - SpanEditHandler;Accepts:Any - (8:0,8) - Tokens:1
-        HtmlTokenType.Transition;[@];
+        SyntaxKind.Transition;[@];
     Expression block - Gen<Expr> - 4 - (9:0,9)
         Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (9:0,9) - Tokens:1
-            CSharpTokenType.Transition;[@];
+            SyntaxKind.Transition;[@];
         Code span - Gen<Expr> - [bar] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K14 - (10:0,10) - Tokens:1
-            CSharpTokenType.Identifier;[bar];
+            SyntaxKind.Identifier;[bar];
     Tag block - Gen<None> - 6 - (13:0,13)
         Markup span - Gen<Markup> - [</foo>] - SpanEditHandler;Accepts:Any - (13:0,13) - Tokens:4
-            HtmlTokenType.OpenAngle;[<];
-            HtmlTokenType.ForwardSlash;[/];
-            HtmlTokenType.Text;[foo];
-            HtmlTokenType.CloseAngle;[>];
+            SyntaxKind.OpenAngle;[<];
+            SyntaxKind.ForwardSlash;[/];
+            SyntaxKind.HtmlTextLiteral;[foo];
+            SyntaxKind.CloseAngle;[>];

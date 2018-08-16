@@ -1,14 +1,14 @@
 Markup block - Gen<None> - 28 - (0:0,0)
     Tag block - Gen<None> - 5 - (0:0,0)
         Markup span - Gen<Markup> - [<div>] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:3
-            HtmlTokenType.OpenAngle;[<];
-            HtmlTokenType.Text;[div];
-            HtmlTokenType.CloseAngle;[>];
+            SyntaxKind.OpenAngle;[<];
+            SyntaxKind.HtmlTextLiteral;[div];
+            SyntaxKind.CloseAngle;[>];
     Tag block - Gen<TagHelper> - 17 - (5:0,5) - strong - StrongTagHelper
         StartTagAndEndTag - <strong> ... </strong>
     Tag block - Gen<None> - 6 - (22:0,22)
         Markup span - Gen<Markup> - [</div>] - SpanEditHandler;Accepts:Any - (22:0,22) - Tokens:4
-            HtmlTokenType.OpenAngle;[<];
-            HtmlTokenType.ForwardSlash;[/];
-            HtmlTokenType.Text;[div];
-            HtmlTokenType.CloseAngle;[>];
+            SyntaxKind.OpenAngle;[<];
+            SyntaxKind.ForwardSlash;[/];
+            SyntaxKind.HtmlTextLiteral;[div];
+            SyntaxKind.CloseAngle;[>];

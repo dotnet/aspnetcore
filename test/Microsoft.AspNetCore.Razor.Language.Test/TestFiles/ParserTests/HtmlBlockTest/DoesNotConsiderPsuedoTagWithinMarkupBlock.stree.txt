@@ -1,28 +1,28 @@
 Markup block - Gen<None> - 28 - (0:0,0)
     Tag block - Gen<None> - 5 - (0:0,0)
         Markup span - Gen<Markup> - [<foo>] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:3
-            HtmlTokenType.OpenAngle;[<];
-            HtmlTokenType.Text;[foo];
-            HtmlTokenType.CloseAngle;[>];
+            SyntaxKind.OpenAngle;[<];
+            SyntaxKind.HtmlTextLiteral;[foo];
+            SyntaxKind.CloseAngle;[>];
     Tag block - Gen<None> - 6 - (5:0,5)
         Markup span - Gen<Markup> - [<text>] - SpanEditHandler;Accepts:None - (5:0,5) - Tokens:3
-            HtmlTokenType.OpenAngle;[<];
-            HtmlTokenType.Text;[text];
-            HtmlTokenType.CloseAngle;[>];
+            SyntaxKind.OpenAngle;[<];
+            SyntaxKind.HtmlTextLiteral;[text];
+            SyntaxKind.CloseAngle;[>];
     Tag block - Gen<None> - 5 - (11:0,11)
         Markup span - Gen<Markup> - [<bar>] - SpanEditHandler;Accepts:None - (11:0,11) - Tokens:3
-            HtmlTokenType.OpenAngle;[<];
-            HtmlTokenType.Text;[bar];
-            HtmlTokenType.CloseAngle;[>];
+            SyntaxKind.OpenAngle;[<];
+            SyntaxKind.HtmlTextLiteral;[bar];
+            SyntaxKind.CloseAngle;[>];
     Tag block - Gen<None> - 6 - (16:0,16)
         Markup span - Gen<Markup> - [</bar>] - SpanEditHandler;Accepts:None - (16:0,16) - Tokens:4
-            HtmlTokenType.OpenAngle;[<];
-            HtmlTokenType.ForwardSlash;[/];
-            HtmlTokenType.Text;[bar];
-            HtmlTokenType.CloseAngle;[>];
+            SyntaxKind.OpenAngle;[<];
+            SyntaxKind.ForwardSlash;[/];
+            SyntaxKind.HtmlTextLiteral;[bar];
+            SyntaxKind.CloseAngle;[>];
     Tag block - Gen<None> - 6 - (22:0,22)
         Markup span - Gen<Markup> - [</foo>] - SpanEditHandler;Accepts:None - (22:0,22) - Tokens:4
-            HtmlTokenType.OpenAngle;[<];
-            HtmlTokenType.ForwardSlash;[/];
-            HtmlTokenType.Text;[foo];
-            HtmlTokenType.CloseAngle;[>];
+            SyntaxKind.OpenAngle;[<];
+            SyntaxKind.ForwardSlash;[/];
+            SyntaxKind.HtmlTextLiteral;[foo];
+            SyntaxKind.CloseAngle;[>];

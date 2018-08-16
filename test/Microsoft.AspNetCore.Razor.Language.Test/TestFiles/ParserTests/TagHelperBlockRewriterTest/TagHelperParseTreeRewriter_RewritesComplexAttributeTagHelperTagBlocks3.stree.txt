@@ -6,23 +6,23 @@ Markup block - Gen<None> - 62 - (0:0,0)
                 Markup block - Gen<DynAttr:@(10:0,10)> - 13 - (10:0,10)
                     Expression block - Gen<Expr> - 13 - (10:0,10)
                         Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (10:0,10) - Tokens:1
-                            CSharpTokenType.Transition;[@];
+                            SyntaxKind.Transition;[@];
                         Code span - Gen<Expr> - [DateTime.Now] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K14 - (11:0,11) - Tokens:3
-                            CSharpTokenType.Identifier;[DateTime];
-                            CSharpTokenType.Dot;[.];
-                            CSharpTokenType.Identifier;[Now];
+                            SyntaxKind.Identifier;[DateTime];
+                            SyntaxKind.Dot;[.];
+                            SyntaxKind.Identifier;[Now];
         style - SingleQuotes
             Markup block - Gen<None> - 13 - (32:0,32)
                 Markup block - Gen<DynAttr:@(32:0,32)> - 13 - (32:0,32)
                     Expression block - Gen<Expr> - 13 - (32:0,32)
                         Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (32:0,32) - Tokens:1
-                            CSharpTokenType.Transition;[@];
+                            SyntaxKind.Transition;[@];
                         Code span - Gen<Expr> - [DateTime.Now] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K14 - (33:0,33) - Tokens:3
-                            CSharpTokenType.Identifier;[DateTime];
-                            CSharpTokenType.Dot;[.];
-                            CSharpTokenType.Identifier;[Now];
+                            SyntaxKind.Identifier;[DateTime];
+                            SyntaxKind.Dot;[.];
+                            SyntaxKind.Identifier;[Now];
         SyntaxKind.HtmlText - [Hello World] - [47..58) - FullWidth: 11 - Slots: 1
             SyntaxKind.List - [Hello World] - [47..58) - FullWidth: 11 - Slots: 3
-                SyntaxKind.HtmlTextLiteralToken;[Hello];
+                SyntaxKind.HtmlTextLiteral;[Hello];
                 SyntaxKind.Whitespace;[ ];
-                SyntaxKind.HtmlTextLiteralToken;[World];
+                SyntaxKind.HtmlTextLiteral;[World];

@@ -2,23 +2,24 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
+using Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language.Test.Legacy
 {
     public class HtmlMarkupParserTests
     {
-        private static readonly HtmlToken doubleHyphenToken = new HtmlToken("--", HtmlTokenType.DoubleHyphen);
+        private static readonly SyntaxToken doubleHyphenToken = SyntaxFactory.Token(SyntaxKind.DoubleHyphen, "--");
 
         public static IEnumerable<object[]> NonDashTokens
         {
             get
             {
-                yield return new[] { new HtmlToken("--", HtmlTokenType.DoubleHyphen) };
-                yield return new[] { new HtmlToken("asdf", HtmlTokenType.Text) };
-                yield return new[] { new HtmlToken(">", HtmlTokenType.CloseAngle) };
-                yield return new[] { new HtmlToken("<", HtmlTokenType.OpenAngle) };
-                yield return new[] { new HtmlToken("!", HtmlTokenType.Bang) };
+                yield return new[] { SyntaxFactory.Token(SyntaxKind.DoubleHyphen, "--") };
+                yield return new[] { SyntaxFactory.Token(SyntaxKind.HtmlTextLiteral, "asdf") };
+                yield return new[] { SyntaxFactory.Token(SyntaxKind.CloseAngle, ">") };
+                yield return new[] { SyntaxFactory.Token(SyntaxKind.OpenAngle, "<") };
+                yield return new[] { SyntaxFactory.Token(SyntaxKind.Bang, "!") };
             }
         }
 
@@ -27,7 +28,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Test.Legacy
         public void IsHyphen_ReturnsFalseForNonDashToken(object token)
         {
             // Arrange
-            var convertedToken = (HtmlToken)token;
+            var convertedToken = (SyntaxToken)token;
 
             // Act & Assert
             Assert.False(HtmlMarkupParser.IsHyphen(convertedToken));
@@ -37,7 +38,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Test.Legacy
         public void IsHyphen_ReturnsTrueForADashToken()
         {
             // Arrange
-            var dashToken = new HtmlToken("-", HtmlTokenType.Text);
+            var dashToken = SyntaxFactory.Token(SyntaxKind.HtmlTextLiteral, "-");
 
             // Act & Assert
             Assert.True(HtmlMarkupParser.IsHyphen(dashToken));
@@ -53,9 +54,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Test.Legacy
             var token = sut.AcceptAllButLastDoubleHyphens();
 
             // Assert
-            Assert.Equal(doubleHyphenToken, token);
-            Assert.True(sut.At(HtmlTokenType.CloseAngle));
-            Assert.Equal(doubleHyphenToken, sut.PreviousToken);
+            Assert.True(doubleHyphenToken.IsEquivalentTo(token));
+            Assert.True(sut.At(SyntaxKind.CloseAngle));
+            Assert.True(doubleHyphenToken.IsEquivalentTo(sut.PreviousToken));
         }
 
         [Fact]
@@ -68,8 +69,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Test.Legacy
             var token = sut.AcceptAllButLastDoubleHyphens();
 
             // Assert
-            Assert.Equal(doubleHyphenToken, token);
-            Assert.True(sut.At(HtmlTokenType.CloseAngle));
+            Assert.True(doubleHyphenToken.IsEquivalentTo(token));
+            Assert.True(sut.At(SyntaxKind.CloseAngle));
             Assert.True(HtmlMarkupParser.IsHyphen(sut.PreviousToken));
         }
 
@@ -157,8 +158,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Test.Legacy
         public void IsCommentContentEndingInvalid_ReturnsFalseForAllowedContent()
         {
             // Arrange
-            var expectedToken1 = new HtmlToken("a", HtmlTokenType.Text);
-            var sequence = Enumerable.Range((int)'a', 26).Select(item => new HtmlToken(((char)item).ToString(), HtmlTokenType.Text));
+            var expectedToken1 = SyntaxFactory.Token(SyntaxKind.HtmlTextLiteral, "a");
+            var sequence = Enumerable.Range((int)'a', 26).Select(item => SyntaxFactory.Token(SyntaxKind.HtmlTextLiteral, ((char)item).ToString()));
 
             // Act & Assert
             Assert.False(HtmlMarkupParser.IsCommentContentEndingInvalid(sequence));
@@ -168,8 +169,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Test.Legacy
         public void IsCommentContentEndingInvalid_ReturnsTrueForDisallowedContent()
         {
             // Arrange
-            var expectedToken1 = new HtmlToken("a", HtmlTokenType.Text);
-            var sequence = new[] { new HtmlToken("<", HtmlTokenType.OpenAngle), new HtmlToken("!", HtmlTokenType.Bang), new HtmlToken("-", HtmlTokenType.Text) };
+            var expectedToken1 = SyntaxFactory.Token(SyntaxKind.HtmlTextLiteral, "a");
+            var sequence = new[]
+            {
+                SyntaxFactory.Token(SyntaxKind.OpenAngle, "<"),
+                SyntaxFactory.Token(SyntaxKind.Bang, "!"),
+                SyntaxFactory.Token(SyntaxKind.HtmlTextLiteral, "-")
+            };
 
             // Act & Assert
             Assert.True(HtmlMarkupParser.IsCommentContentEndingInvalid(sequence));
@@ -179,8 +185,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Test.Legacy
         public void IsCommentContentEndingInvalid_ReturnsFalseForEmptyContent()
         {
             // Arrange
-            var expectedToken1 = new HtmlToken("a", HtmlTokenType.Text);
-            var sequence = Array.Empty<HtmlToken>();
+            var expectedToken1 = SyntaxFactory.Token(SyntaxKind.HtmlTextLiteral, "a");
+            var sequence = Array.Empty<SyntaxToken>();
 
             // Act & Assert
             Assert.False(HtmlMarkupParser.IsCommentContentEndingInvalid(sequence));
@@ -188,7 +194,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Test.Legacy
 
         private class TestHtmlMarkupParser : HtmlMarkupParser
         {
-            public new HtmlToken PreviousToken
+            public new SyntaxToken PreviousToken
             {
                 get => base.PreviousToken;
             }
@@ -203,7 +209,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Test.Legacy
                 this.EnsureCurrent();
             }
 
-            public new HtmlToken AcceptAllButLastDoubleHyphens()
+            public new SyntaxToken AcceptAllButLastDoubleHyphens()
             {
                 return base.AcceptAllButLastDoubleHyphens();
             }

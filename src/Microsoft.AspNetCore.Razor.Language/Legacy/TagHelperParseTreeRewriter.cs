@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using Microsoft.AspNetCore.Razor.Language.Syntax;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
@@ -372,10 +373,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     var childOffset = 0;
                     if (childSpan.Tokens.Count > 0)
                     {
-                        var potentialQuote = childSpan.Tokens[childSpan.Tokens.Count - 1] as HtmlToken;
+                        var potentialQuote = childSpan.Tokens[childSpan.Tokens.Count - 1];
                         if (potentialQuote != null &&
-                            (potentialQuote.Type == HtmlTokenType.DoubleQuote ||
-                            potentialQuote.Type == HtmlTokenType.SingleQuote))
+                            (potentialQuote.Kind == SyntaxKind.DoubleQuote ||
+                            potentialQuote.Kind == SyntaxKind.SingleQuote))
                         {
                             childOffset = 1;
                         }
@@ -409,23 +410,23 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     // Entire attribute is a string
                     for (var j = 0; j < endValueMarker; j++)
                     {
-                        var htmlToken = (HtmlToken)childSpan.Tokens[j];
+                        var token = childSpan.Tokens[j];
 
                         if (!afterEquals)
                         {
-                            afterEquals = htmlToken.Type == HtmlTokenType.Equals;
+                            afterEquals = token.Kind == SyntaxKind.Equals;
                             continue;
                         }
 
                         if (!atValue)
                         {
-                            atValue = htmlToken.Type != HtmlTokenType.WhiteSpace &&
-                                htmlToken.Type != HtmlTokenType.NewLine;
+                            atValue = token.Kind != SyntaxKind.Whitespace &&
+                                token.Kind != SyntaxKind.NewLine;
 
                             if (atValue)
                             {
-                                if (htmlToken.Type == HtmlTokenType.DoubleQuote ||
-                                    htmlToken.Type == HtmlTokenType.SingleQuote)
+                                if (token.Kind == SyntaxKind.DoubleQuote ||
+                                    token.Kind == SyntaxKind.SingleQuote)
                                 {
                                     endValueMarker--;
                                 }
@@ -433,14 +434,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 {
                                     // Current token is considered the value (unquoted). Add its content to the
                                     // attribute value builder before we move past it.
-                                    _attributeValueBuilder.Append(htmlToken.Content);
+                                    _attributeValueBuilder.Append(token.Content);
                                 }
                             }
 
                             continue;
                         }
 
-                        _attributeValueBuilder.Append(htmlToken.Content);
+                        _attributeValueBuilder.Append(token.Content);
                     }
                 }
 
@@ -643,10 +644,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             if (tagEnd != null && tagEnd.Kind == SpanKindInternal.Markup)
             {
                 var endToken = tagEnd.Tokens.Count > 0 ?
-                    tagEnd.Tokens[tagEnd.Tokens.Count - 1] as HtmlToken :
+                    tagEnd.Tokens[tagEnd.Tokens.Count - 1] :
                     null;
 
-                if (endToken != null && endToken.Type == HtmlTokenType.CloseAngle)
+                if (endToken != null && endToken.Kind == SyntaxKind.CloseAngle)
                 {
                     return false;
                 }
@@ -793,13 +794,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
 
             var childSpan = (Span)child;
-            HtmlToken textToken = null;
+            SyntaxToken textToken = null;
             for (var i = 0; i < childSpan.Tokens.Count; i++)
             {
-                var token = childSpan.Tokens[i] as HtmlToken;
+                var token = childSpan.Tokens[i];
 
                 if (token != null &&
-                    (token.Type & (HtmlTokenType.WhiteSpace | HtmlTokenType.Text)) == token.Type)
+                    (token.Kind == SyntaxKind.Whitespace || token.Kind == SyntaxKind.HtmlTextLiteral))
                 {
                     textToken = token;
                     break;
@@ -811,7 +812,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 return null;
             }
 
-            return textToken.Type == HtmlTokenType.WhiteSpace ? null : textToken.Content;
+            return textToken.Kind == SyntaxKind.Whitespace ? null : textToken.Content;
         }
 
         private static bool IsEndTag(Block tagBlock)
@@ -821,9 +822,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             var childSpan = (Span)tagBlock.Children.First();
 
             // We grab the token that could be forward slash
-            var relevantToken = (HtmlToken)childSpan.Tokens[childSpan.Tokens.Count == 1 ? 0 : 1];
+            var relevantToken = childSpan.Tokens[childSpan.Tokens.Count == 1 ? 0 : 1];
 
-            return relevantToken.Type == HtmlTokenType.ForwardSlash;
+            return relevantToken.Kind == SyntaxKind.ForwardSlash;
         }
 
         internal static bool IsComment(Span span)

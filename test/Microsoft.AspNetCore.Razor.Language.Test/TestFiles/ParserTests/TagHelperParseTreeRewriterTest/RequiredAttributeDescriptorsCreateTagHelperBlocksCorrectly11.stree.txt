@@ -6,8 +6,8 @@ Markup block - Gen<None> - 35 - (0:0,0)
                 Markup block - Gen<DynAttr:@(18:0,18)> - 13 - (18:0,18)
                     Expression block - Gen<Expr> - 13 - (18:0,18)
                         Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (18:0,18) - Tokens:1
-                            CSharpTokenType.Transition;[@];
+                            SyntaxKind.Transition;[@];
                         Code span - Gen<Expr> - [DateTime.Now] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K14 - (19:0,19) - Tokens:3
-                            CSharpTokenType.Identifier;[DateTime];
-                            CSharpTokenType.Dot;[.];
-                            CSharpTokenType.Identifier;[Now];
+                            SyntaxKind.Identifier;[DateTime];
+                            SyntaxKind.Dot;[.];
+                            SyntaxKind.Identifier;[Now];

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax;
 using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
@@ -11,18 +12,18 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
     {
         private static readonly int TypeHashCode = typeof(AutoCompleteEditHandler).GetHashCode();
 
-        public AutoCompleteEditHandler(Func<string, IEnumerable<IToken>> tokenizer)
+        public AutoCompleteEditHandler(Func<string, IEnumerable<SyntaxToken>> tokenizer)
             : base(tokenizer)
         {
         }
 
-        public AutoCompleteEditHandler(Func<string, IEnumerable<IToken>> tokenizer, bool autoCompleteAtEndOfSpan)
+        public AutoCompleteEditHandler(Func<string, IEnumerable<SyntaxToken>> tokenizer, bool autoCompleteAtEndOfSpan)
             : this(tokenizer)
         {
             AutoCompleteAtEndOfSpan = autoCompleteAtEndOfSpan;
         }
 
-        public AutoCompleteEditHandler(Func<string, IEnumerable<IToken>> tokenizer, AcceptedCharactersInternal accepted)
+        public AutoCompleteEditHandler(Func<string, IEnumerable<SyntaxToken>> tokenizer, AcceptedCharactersInternal accepted)
             : base(tokenizer, accepted)
         {
         }

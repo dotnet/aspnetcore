@@ -3,4 +3,4 @@ Markup block - Gen<None> - 14 - (0:0,0)
         StartTagAndEndTag - <p class="btn"
         class - DoubleQuotes
             Markup span - Gen<Markup> - [btn] - SpanEditHandler;Accepts:Any - (10:0,10) - Tokens:1
-                HtmlTokenType.Text;[btn];
+                SyntaxKind.HtmlTextLiteral;[btn];

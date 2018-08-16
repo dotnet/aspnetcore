@@ -1,13 +1,13 @@
 Directive block - Gen<None> - 35 - (0:0,0)
     Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-        CSharpTokenType.Transition;[@];
+        SyntaxKind.Transition;[@];
     MetaCode span - Gen<None> - [removeTagHelper] - SpanEditHandler;Accepts:None - (1:0,1) - Tokens:1
-        CSharpTokenType.Identifier;[removeTagHelper];
+        SyntaxKind.Identifier;[removeTagHelper];
     Markup span - Gen<None> - [     ] - SpanEditHandler;Accepts:None - (16:0,16) - Tokens:1
-        CSharpTokenType.WhiteSpace;[     ];
+        SyntaxKind.Whitespace;[     ];
     Code span - Gen<RemoveTagHelper:{Foo,   Bar;Foo,   Bar;Foo;Bar}> - [Foo,   Bar    ] - SpanEditHandler;Accepts:AnyExceptNewline - (21:0,21) - Tokens:5
-        CSharpTokenType.Identifier;[Foo];
-        CSharpTokenType.Comma;[,];
-        CSharpTokenType.WhiteSpace;[   ];
-        CSharpTokenType.Identifier;[Bar];
-        CSharpTokenType.WhiteSpace;[    ];
+        SyntaxKind.Identifier;[Foo];
+        SyntaxKind.Comma;[,];
+        SyntaxKind.Whitespace;[   ];
+        SyntaxKind.Identifier;[Bar];
+        SyntaxKind.Whitespace;[    ];

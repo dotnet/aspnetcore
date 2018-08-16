@@ -5,16 +5,16 @@ Markup block - Gen<None> - 82 - (0:0,0)
         data-required - SingleQuotes
             Markup block - Gen<None> - 27 - (36:0,36)
                 Markup span - Gen<Markup> - [prefix ] - SpanEditHandler;Accepts:Any - (36:0,36) - Tokens:2
-                    HtmlTokenType.Text;[prefix];
-                    HtmlTokenType.WhiteSpace;[ ];
+                    SyntaxKind.HtmlTextLiteral;[prefix];
+                    SyntaxKind.Whitespace;[ ];
                 Expression block - Gen<Expr> - 13 - (43:0,43)
                     Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (43:0,43) - Tokens:1
-                        CSharpTokenType.Transition;[@];
+                        SyntaxKind.Transition;[@];
                     Code span - Gen<Expr> - [DateTime.Now] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K14 - (44:0,44) - Tokens:3
-                        CSharpTokenType.Identifier;[DateTime];
-                        CSharpTokenType.Dot;[.];
-                        CSharpTokenType.Identifier;[Now];
+                        SyntaxKind.Identifier;[DateTime];
+                        SyntaxKind.Dot;[.];
+                        SyntaxKind.Identifier;[Now];
                 Markup span - Gen<Markup> - [ suffix] - SpanEditHandler;Accepts:Any - (56:0,56) - Tokens:2
-                    HtmlTokenType.WhiteSpace;[ ];
-                    HtmlTokenType.Text;[suffix];
+                    SyntaxKind.Whitespace;[ ];
+                    SyntaxKind.HtmlTextLiteral;[suffix];
         post-attribute - Minimized

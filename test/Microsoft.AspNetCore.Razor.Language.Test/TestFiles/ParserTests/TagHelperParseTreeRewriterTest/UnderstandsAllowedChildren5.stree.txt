@@ -3,8 +3,8 @@ Markup block - Gen<None> - 13 - (0:0,0)
         StartTagAndEndTag - <p> ... </p>
         Tag block - Gen<None> - 6 - (3:0,3)
             Markup span - Gen<Markup> - [<hr />] - SpanEditHandler;Accepts:Any - (3:0,3) - Tokens:5
-                HtmlTokenType.OpenAngle;[<];
-                HtmlTokenType.Text;[hr];
-                HtmlTokenType.WhiteSpace;[ ];
-                HtmlTokenType.ForwardSlash;[/];
-                HtmlTokenType.CloseAngle;[>];
+                SyntaxKind.OpenAngle;[<];
+                SyntaxKind.HtmlTextLiteral;[hr];
+                SyntaxKind.Whitespace;[ ];
+                SyntaxKind.ForwardSlash;[/];
+                SyntaxKind.CloseAngle;[>];

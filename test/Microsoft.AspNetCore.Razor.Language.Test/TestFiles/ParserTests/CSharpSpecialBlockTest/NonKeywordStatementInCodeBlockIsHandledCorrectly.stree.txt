@@ -1,26 +1,26 @@
 Statement block - Gen<None> - 56 - (0:0,0)
     MetaCode span - Gen<None> - [{] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-        CSharpTokenType.LeftBrace;[{];
+        SyntaxKind.LeftBrace;[{];
     Code span - Gen<Stmt> - [LF    List<dynamic> photos = gallery.Photo.ToList();LF] - AutoCompleteEditHandler;Accepts:Any,AutoComplete:[<null>];AtEOL - (1:0,1) - Tokens:20
-        CSharpTokenType.NewLine;[LF];
-        CSharpTokenType.WhiteSpace;[    ];
-        CSharpTokenType.Identifier;[List];
-        CSharpTokenType.LessThan;[<];
-        CSharpTokenType.Identifier;[dynamic];
-        CSharpTokenType.GreaterThan;[>];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Identifier;[photos];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Assign;[=];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Identifier;[gallery];
-        CSharpTokenType.Dot;[.];
-        CSharpTokenType.Identifier;[Photo];
-        CSharpTokenType.Dot;[.];
-        CSharpTokenType.Identifier;[ToList];
-        CSharpTokenType.LeftParenthesis;[(];
-        CSharpTokenType.RightParenthesis;[)];
-        CSharpTokenType.Semicolon;[;];
-        CSharpTokenType.NewLine;[LF];
+        SyntaxKind.NewLine;[LF];
+        SyntaxKind.Whitespace;[    ];
+        SyntaxKind.Identifier;[List];
+        SyntaxKind.LessThan;[<];
+        SyntaxKind.Identifier;[dynamic];
+        SyntaxKind.GreaterThan;[>];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.Identifier;[photos];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.Assign;[=];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.Identifier;[gallery];
+        SyntaxKind.Dot;[.];
+        SyntaxKind.Identifier;[Photo];
+        SyntaxKind.Dot;[.];
+        SyntaxKind.Identifier;[ToList];
+        SyntaxKind.LeftParenthesis;[(];
+        SyntaxKind.RightParenthesis;[)];
+        SyntaxKind.Semicolon;[;];
+        SyntaxKind.NewLine;[LF];
     MetaCode span - Gen<None> - [}] - SpanEditHandler;Accepts:None - (55:2,0) - Tokens:1
-        CSharpTokenType.RightBrace;[}];
+        SyntaxKind.RightBrace;[}];

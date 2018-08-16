@@ -3,17 +3,17 @@ Markup block - Gen<None> - 56 - (0:0,0)
         StartTagAndEndTag - <p class=foo dynamic=@DateTime.Now style=color:red;> ... </p>
         class - NoQuotes
             Markup span - Gen<Markup> - [foo] - SpanEditHandler;Accepts:Any - (9:0,9) - Tokens:1
-                HtmlTokenType.Text;[foo];
+                SyntaxKind.HtmlTextLiteral;[foo];
         dynamic - DoubleQuotes
             Markup block - Gen<None> - 13 - (21:0,21)
                 Markup block - Gen<DynAttr:@(21:0,21)> - 13 - (21:0,21)
                     Expression block - Gen<Expr> - 13 - (21:0,21)
                         Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (21:0,21) - Tokens:1
-                            CSharpTokenType.Transition;[@];
+                            SyntaxKind.Transition;[@];
                         Code span - Gen<Expr> - [DateTime.Now] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K14 - (22:0,22) - Tokens:3
-                            CSharpTokenType.Identifier;[DateTime];
-                            CSharpTokenType.Dot;[.];
-                            CSharpTokenType.Identifier;[Now];
+                            SyntaxKind.Identifier;[DateTime];
+                            SyntaxKind.Dot;[.];
+                            SyntaxKind.Identifier;[Now];
         style - NoQuotes
             Markup span - Gen<Markup> - [color:red;] - SpanEditHandler;Accepts:Any - (41:0,41) - Tokens:1
-                HtmlTokenType.Text;[color:red;];
+                SyntaxKind.HtmlTextLiteral;[color:red;];

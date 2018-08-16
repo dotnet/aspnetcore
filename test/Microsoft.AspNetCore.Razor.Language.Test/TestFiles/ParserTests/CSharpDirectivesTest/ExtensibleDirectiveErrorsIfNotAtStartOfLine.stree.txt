@@ -1,26 +1,26 @@
 Statement block - Gen<None> - 48 - (0:0,0)
     MetaCode span - Gen<None> - [{] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-        CSharpTokenType.LeftBrace;[{];
+        SyntaxKind.LeftBrace;[{];
     Code span - Gen<Stmt> - [  ] - AutoCompleteEditHandler;Accepts:Any,AutoComplete:[<null>];AtEOL - (1:0,1) - Tokens:1
-        CSharpTokenType.WhiteSpace;[  ];
+        SyntaxKind.Whitespace;[  ];
     Directive block - Gen<Directive:{custom;SingleLine;Unrestricted} [RZ2005(4:0,4 [6] )]> - 44 - (3:0,3)
         Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (3:0,3) - Tokens:1
-            CSharpTokenType.Transition;[@];
+            SyntaxKind.Transition;[@];
         MetaCode span - Gen<None> - [custom] - SpanEditHandler;Accepts:None - (4:0,4) - Tokens:1
-            CSharpTokenType.Identifier;[custom];
+            SyntaxKind.Identifier;[custom];
         Code span - Gen<None> - [ ] - SpanEditHandler;Accepts:WhiteSpace - (10:0,10) - Tokens:1
-            CSharpTokenType.WhiteSpace;[ ];
+            SyntaxKind.Whitespace;[ ];
         Code span - Gen<DirectiveToken {;Type;Opt:False}> - [System.Text.Encoding.ASCIIEncoding] - DirectiveTokenEditHandler;Accepts:NonWhiteSpace - (11:0,11) - Tokens:7
-            CSharpTokenType.Identifier;[System];
-            CSharpTokenType.Dot;[.];
-            CSharpTokenType.Identifier;[Text];
-            CSharpTokenType.Dot;[.];
-            CSharpTokenType.Identifier;[Encoding];
-            CSharpTokenType.Dot;[.];
-            CSharpTokenType.Identifier;[ASCIIEncoding];
+            SyntaxKind.Identifier;[System];
+            SyntaxKind.Dot;[.];
+            SyntaxKind.Identifier;[Text];
+            SyntaxKind.Dot;[.];
+            SyntaxKind.Identifier;[Encoding];
+            SyntaxKind.Dot;[.];
+            SyntaxKind.Identifier;[ASCIIEncoding];
         Markup span - Gen<None> - [LF] - SpanEditHandler;Accepts:WhiteSpace - (45:0,45) - Tokens:1
-            CSharpTokenType.NewLine;[LF];
+            SyntaxKind.NewLine;[LF];
     Code span - Gen<Stmt> - [] - SpanEditHandler;Accepts:Any - (47:1,0) - Tokens:1
-        CSharpTokenType.Unknown;[];
+        SyntaxKind.Unknown;[];
     MetaCode span - Gen<None> - [}] - SpanEditHandler;Accepts:None - (47:1,0) - Tokens:1
-        CSharpTokenType.RightBrace;[}];
+        SyntaxKind.RightBrace;[}];

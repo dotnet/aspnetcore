@@ -1,20 +1,20 @@
 Markup block - Gen<None> - 19 - (0:0,0)
     Tag block - Gen<None> - 19 - (0:0,0)
         Markup span - Gen<Markup> - [<a] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:2
-            HtmlTokenType.OpenAngle;[<];
-            HtmlTokenType.Text;[a];
+            SyntaxKind.OpenAngle;[<];
+            SyntaxKind.HtmlTextLiteral;[a];
         Markup block - Gen<Attr:href, 	LFhref='@(2:0,2),'@(15:1,9)> - 14 - (2:0,2)
             Markup span - Gen<None> - [ 	LFhref='] - SpanEditHandler;Accepts:Any - (2:0,2) - Tokens:5
-                HtmlTokenType.WhiteSpace;[ 	];
-                HtmlTokenType.NewLine;[LF];
-                HtmlTokenType.Text;[href];
-                HtmlTokenType.Equals;[=];
-                HtmlTokenType.SingleQuote;['];
+                SyntaxKind.Whitespace;[ 	];
+                SyntaxKind.NewLine;[LF];
+                SyntaxKind.HtmlTextLiteral;[href];
+                SyntaxKind.Equals;[=];
+                SyntaxKind.SingleQuote;['];
             Markup span - Gen<LitAttr:@(12:1,6)> - [Foo] - SpanEditHandler;Accepts:Any - (12:1,6) - Tokens:1
-                HtmlTokenType.Text;[Foo];
+                SyntaxKind.HtmlTextLiteral;[Foo];
             Markup span - Gen<None> - ['] - SpanEditHandler;Accepts:Any - (15:1,9) - Tokens:1
-                HtmlTokenType.SingleQuote;['];
+                SyntaxKind.SingleQuote;['];
         Markup span - Gen<Markup> - [ />] - SpanEditHandler;Accepts:None - (16:1,10) - Tokens:3
-            HtmlTokenType.WhiteSpace;[ ];
-            HtmlTokenType.ForwardSlash;[/];
-            HtmlTokenType.CloseAngle;[>];
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.ForwardSlash;[/];
+            SyntaxKind.CloseAngle;[>];

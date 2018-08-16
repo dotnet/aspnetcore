@@ -1,5 +1,5 @@
 Expression block - Gen<Expr> - 8 - (0:0,0)
     Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-        CSharpTokenType.Transition;[@];
+        SyntaxKind.Transition;[@];
     Code span - Gen<Expr> - [हळूँजद॔] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K14 - (1:0,1) - Tokens:1
-        CSharpTokenType.Identifier;[हळूँजद॔];
+        SyntaxKind.Identifier;[हळूँजद॔];

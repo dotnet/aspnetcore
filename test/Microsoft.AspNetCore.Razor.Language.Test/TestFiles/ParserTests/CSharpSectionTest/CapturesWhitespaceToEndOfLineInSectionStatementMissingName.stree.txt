@@ -1,15 +1,15 @@
 Markup block - Gen<None> - 23 - (0:0,0)
     Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:1
-        HtmlTokenType.Unknown;[];
+        SyntaxKind.Unknown;[];
     Directive block - Gen<Directive:{section;RazorBlock;Unrestricted} [RZ1015(17:0,17 [2] )]> - 17 - (0:0,0)
         Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-            CSharpTokenType.Transition;[@];
+            SyntaxKind.Transition;[@];
         MetaCode span - Gen<None> - [section] - SpanEditHandler;Accepts:None - (1:0,1) - Tokens:1
-            CSharpTokenType.Identifier;[section];
+            SyntaxKind.Identifier;[section];
         Code span - Gen<None> - [         ] - SpanEditHandler;Accepts:WhiteSpace - (8:0,8) - Tokens:1
-            CSharpTokenType.WhiteSpace;[         ];
+            SyntaxKind.Whitespace;[         ];
         Code span - Gen<DirectiveToken {SectionName;Member;Opt:False}> - [] - DirectiveTokenEditHandler;Accepts:NonWhiteSpace - (17:0,17) - Tokens:1
-            CSharpTokenType.Unknown;[];
+            SyntaxKind.Unknown;[];
     Markup span - Gen<Markup> - [LF    ] - SpanEditHandler;Accepts:Any - (17:0,17) - Tokens:2
-        HtmlTokenType.NewLine;[LF];
-        HtmlTokenType.WhiteSpace;[    ];
+        SyntaxKind.NewLine;[LF];
+        SyntaxKind.Whitespace;[    ];

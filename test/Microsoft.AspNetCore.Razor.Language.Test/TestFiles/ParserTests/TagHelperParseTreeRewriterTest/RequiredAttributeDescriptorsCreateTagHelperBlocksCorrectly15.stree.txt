@@ -1,23 +1,23 @@
 Markup block - Gen<None> - 23 - (0:0,0)
     Tag block - Gen<None> - 17 - (0:0,0)
         Markup span - Gen<Markup> - [<div] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:2
-            HtmlTokenType.OpenAngle;[<];
-            HtmlTokenType.Text;[div];
+            SyntaxKind.OpenAngle;[<];
+            SyntaxKind.HtmlTextLiteral;[div];
         Markup block - Gen<Attr:class, class="@(4:0,4),"@(15:0,15)> - 12 - (4:0,4)
             Markup span - Gen<None> - [ class="] - SpanEditHandler;Accepts:Any - (4:0,4) - Tokens:4
-                HtmlTokenType.WhiteSpace;[ ];
-                HtmlTokenType.Text;[class];
-                HtmlTokenType.Equals;[=];
-                HtmlTokenType.DoubleQuote;["];
+                SyntaxKind.Whitespace;[ ];
+                SyntaxKind.HtmlTextLiteral;[class];
+                SyntaxKind.Equals;[=];
+                SyntaxKind.DoubleQuote;["];
             Markup span - Gen<LitAttr:@(12:0,12)> - [btn] - SpanEditHandler;Accepts:Any - (12:0,12) - Tokens:1
-                HtmlTokenType.Text;[btn];
+                SyntaxKind.HtmlTextLiteral;[btn];
             Markup span - Gen<None> - ["] - SpanEditHandler;Accepts:Any - (15:0,15) - Tokens:1
-                HtmlTokenType.DoubleQuote;["];
+                SyntaxKind.DoubleQuote;["];
         Markup span - Gen<Markup> - [>] - SpanEditHandler;Accepts:Any - (16:0,16) - Tokens:1
-            HtmlTokenType.CloseAngle;[>];
+            SyntaxKind.CloseAngle;[>];
     Tag block - Gen<None> - 6 - (17:0,17)
         Markup span - Gen<Markup> - [</div>] - SpanEditHandler;Accepts:Any - (17:0,17) - Tokens:4
-            HtmlTokenType.OpenAngle;[<];
-            HtmlTokenType.ForwardSlash;[/];
-            HtmlTokenType.Text;[div];
-            HtmlTokenType.CloseAngle;[>];
+            SyntaxKind.OpenAngle;[<];
+            SyntaxKind.ForwardSlash;[/];
+            SyntaxKind.HtmlTextLiteral;[div];
+            SyntaxKind.CloseAngle;[>];

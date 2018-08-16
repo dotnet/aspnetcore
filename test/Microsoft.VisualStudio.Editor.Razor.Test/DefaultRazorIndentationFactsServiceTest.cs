@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
+using Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax;
 using Microsoft.VisualStudio.Text;
 using Xunit;
 
@@ -34,7 +35,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         {
             // Arrange
             var childBuilder = new SpanBuilder(SourceLocation.Zero);
-            childBuilder.Accept(new CSharpToken("{", CSharpTokenType.LeftBrace));
+            childBuilder.Accept(SyntaxFactory.Token(SyntaxKind.LeftBrace, "{"));
             var child = childBuilder.Build();
 
             // Act
@@ -45,16 +46,16 @@ namespace Microsoft.VisualStudio.Editor.Razor
         }
 
         [Theory]
-        [InlineData("if", CSharpTokenType.Keyword)]
-        [InlineData("}", CSharpTokenType.RightBrace)]
-        [InlineData("++", CSharpTokenType.Increment)]
-        [InlineData("text", CSharpTokenType.Identifier)]
+        [InlineData("if", SyntaxKind.Keyword)]
+        [InlineData("}", SyntaxKind.RightBrace)]
+        [InlineData("++", SyntaxKind.Increment)]
+        [InlineData("text", SyntaxKind.Identifier)]
         public void IsCSharpOpenCurlyBrace_SpanWithUnsupportedSymbolType_ReturnFalse(string content, object symbolTypeObject)
         {
             // Arrange
-            var symbolType = (CSharpTokenType)symbolTypeObject;
+            var symbolType = (SyntaxKind)symbolTypeObject;
             var childBuilder = new SpanBuilder(SourceLocation.Zero);
-            childBuilder.Accept(new CSharpToken(content, symbolType));
+            childBuilder.Accept(SyntaxFactory.Token(symbolType, content));
             var child = childBuilder.Build();
 
             // Act
@@ -69,8 +70,8 @@ namespace Microsoft.VisualStudio.Editor.Razor
         {
             // Arrange
             var childBuilder = new SpanBuilder(SourceLocation.Zero);
-            childBuilder.Accept(new CSharpToken("hello", CSharpTokenType.Identifier));
-            childBuilder.Accept(new CSharpToken(",", CSharpTokenType.Comma));
+            childBuilder.Accept(SyntaxFactory.Token(SyntaxKind.Identifier, "hello"));
+            childBuilder.Accept(SyntaxFactory.Token(SyntaxKind.Comma, ","));
             var child = childBuilder.Build();
 
             // Act
@@ -85,7 +86,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         {
             // Arrange
             var childBuilder = new SpanBuilder(SourceLocation.Zero);
-            childBuilder.Accept(new HtmlToken("hello", HtmlTokenType.Text));
+            childBuilder.Accept(SyntaxFactory.Token(SyntaxKind.HtmlTextLiteral, "hello"));
             var child = childBuilder.Build();
 
             // Act

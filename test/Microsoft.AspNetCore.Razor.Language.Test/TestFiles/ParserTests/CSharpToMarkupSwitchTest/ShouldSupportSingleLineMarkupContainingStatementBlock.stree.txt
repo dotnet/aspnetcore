@@ -1,29 +1,29 @@
 Expression block - Gen<Expr> - 25 - (0:0,0)
     Code span - Gen<Expr> - [Repeat(10,LF    ] - ImplicitExpressionEditHandler;Accepts:Any;ImplicitExpression[RTD];K14 - (0:0,0) - Tokens:6
-        CSharpTokenType.Identifier;[Repeat];
-        CSharpTokenType.LeftParenthesis;[(];
-        CSharpTokenType.IntegerLiteral;[10];
-        CSharpTokenType.Comma;[,];
-        CSharpTokenType.NewLine;[LF];
-        CSharpTokenType.WhiteSpace;[    ];
+        SyntaxKind.Identifier;[Repeat];
+        SyntaxKind.LeftParenthesis;[(];
+        SyntaxKind.IntegerLiteral;[10];
+        SyntaxKind.Comma;[,];
+        SyntaxKind.NewLine;[LF];
+        SyntaxKind.Whitespace;[    ];
     Template block - Gen<Template> - 8 - (16:1,4)
         Markup block - Gen<None> - 8 - (16:1,4)
             Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (16:1,4) - Tokens:1
-                HtmlTokenType.Transition;[@];
+                SyntaxKind.Transition;[@];
             MetaCode span - Gen<None> - [:] - SpanEditHandler;Accepts:Any - (17:1,5) - Tokens:1
-                HtmlTokenType.Colon;[:];
+                SyntaxKind.Colon;[:];
             Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:Any - (18:1,6) - Tokens:1
-                HtmlTokenType.WhiteSpace;[ ];
+                SyntaxKind.Whitespace;[ ];
             Statement block - Gen<None> - 3 - (19:1,7)
                 Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (19:1,7) - Tokens:1
-                    CSharpTokenType.Transition;[@];
+                    SyntaxKind.Transition;[@];
                 MetaCode span - Gen<None> - [{] - SpanEditHandler;Accepts:None - (20:1,8) - Tokens:1
-                    CSharpTokenType.LeftBrace;[{];
+                    SyntaxKind.LeftBrace;[{];
                 Code span - Gen<Stmt> - [] - AutoCompleteEditHandler;Accepts:Any,AutoComplete:[<null>];AtEOL - (21:1,9) - Tokens:1
-                    CSharpTokenType.Unknown;[];
+                    SyntaxKind.Unknown;[];
                 MetaCode span - Gen<None> - [}] - SpanEditHandler;Accepts:None - (21:1,9) - Tokens:1
-                    CSharpTokenType.RightBrace;[}];
+                    SyntaxKind.RightBrace;[}];
             Markup span - Gen<Markup> - [LF] - SpanEditHandler;Accepts:None - (22:1,10) - Tokens:1
-                HtmlTokenType.NewLine;[LF];
+                SyntaxKind.NewLine;[LF];
     Code span - Gen<Expr> - [)] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K14 - (24:2,0) - Tokens:1
-        CSharpTokenType.RightParenthesis;[)];
+        SyntaxKind.RightParenthesis;[)];

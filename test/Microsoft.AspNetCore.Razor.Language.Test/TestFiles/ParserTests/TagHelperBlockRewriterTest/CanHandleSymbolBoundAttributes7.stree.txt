@@ -4,4 +4,4 @@ Markup block - Gen<None> - 32 - (0:0,0)
         bound - Minimized
         #local - SingleQuotes
             Markup span - Gen<Markup> - [value] - SpanEditHandler;Accepts:Any - (19:0,19) - Tokens:1
-                HtmlTokenType.Text;[value];
+                SyntaxKind.HtmlTextLiteral;[value];

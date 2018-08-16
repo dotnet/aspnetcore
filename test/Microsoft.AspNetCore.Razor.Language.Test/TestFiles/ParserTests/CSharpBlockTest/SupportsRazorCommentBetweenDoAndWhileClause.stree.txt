@@ -1,48 +1,48 @@
 Statement block - Gen<None> - 54 - (0:0,0)
     Code span - Gen<Stmt> - [do { var foo = bar; } ] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:15
-        CSharpTokenType.Keyword;[do];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.LeftBrace;[{];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Identifier;[var];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Identifier;[foo];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Assign;[=];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Identifier;[bar];
-        CSharpTokenType.Semicolon;[;];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.RightBrace;[}];
-        CSharpTokenType.WhiteSpace;[ ];
+        SyntaxKind.Keyword;[do];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.LeftBrace;[{];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.Identifier;[var];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.Identifier;[foo];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.Assign;[=];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.Identifier;[bar];
+        SyntaxKind.Semicolon;[;];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.RightBrace;[}];
+        SyntaxKind.Whitespace;[ ];
     Comment block - Gen<RazorComment> - 9 - (22:0,22)
         Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (22:0,22) - Tokens:1
-            CSharpTokenType.RazorCommentTransition;[@];
+            SyntaxKind.RazorCommentTransition;[@];
         MetaCode span - Gen<None> - [*] - SpanEditHandler;Accepts:None - (23:0,23) - Tokens:1
-            CSharpTokenType.RazorCommentStar;[*];
+            SyntaxKind.RazorCommentStar;[*];
         Comment span - Gen<None> - [ Foo ] - SpanEditHandler;Accepts:Any - (24:0,24) - Tokens:1
-            CSharpTokenType.RazorComment;[ Foo ];
+            SyntaxKind.RazorComment;[ Foo ];
         MetaCode span - Gen<None> - [*] - SpanEditHandler;Accepts:None - (29:0,29) - Tokens:1
-            CSharpTokenType.RazorCommentStar;[*];
+            SyntaxKind.RazorCommentStar;[*];
         Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (30:0,30) - Tokens:1
-            CSharpTokenType.RazorCommentTransition;[@];
+            SyntaxKind.RazorCommentTransition;[@];
     Code span - Gen<Stmt> - [ ] - SpanEditHandler;Accepts:Any - (31:0,31) - Tokens:1
-        CSharpTokenType.WhiteSpace;[ ];
+        SyntaxKind.Whitespace;[ ];
     Comment block - Gen<RazorComment> - 9 - (32:0,32)
         Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (32:0,32) - Tokens:1
-            CSharpTokenType.RazorCommentTransition;[@];
+            SyntaxKind.RazorCommentTransition;[@];
         MetaCode span - Gen<None> - [*] - SpanEditHandler;Accepts:None - (33:0,33) - Tokens:1
-            CSharpTokenType.RazorCommentStar;[*];
+            SyntaxKind.RazorCommentStar;[*];
         Comment span - Gen<None> - [ Bar ] - SpanEditHandler;Accepts:Any - (34:0,34) - Tokens:1
-            CSharpTokenType.RazorComment;[ Bar ];
+            SyntaxKind.RazorComment;[ Bar ];
         MetaCode span - Gen<None> - [*] - SpanEditHandler;Accepts:None - (39:0,39) - Tokens:1
-            CSharpTokenType.RazorCommentStar;[*];
+            SyntaxKind.RazorCommentStar;[*];
         Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (40:0,40) - Tokens:1
-            CSharpTokenType.RazorCommentTransition;[@];
+            SyntaxKind.RazorCommentTransition;[@];
     Code span - Gen<Stmt> - [ while(true);] - SpanEditHandler;Accepts:None - (41:0,41) - Tokens:6
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Keyword;[while];
-        CSharpTokenType.LeftParenthesis;[(];
-        CSharpTokenType.Keyword;[true];
-        CSharpTokenType.RightParenthesis;[)];
-        CSharpTokenType.Semicolon;[;];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.Keyword;[while];
+        SyntaxKind.LeftParenthesis;[(];
+        SyntaxKind.Keyword;[true];
+        SyntaxKind.RightParenthesis;[)];
+        SyntaxKind.Semicolon;[;];

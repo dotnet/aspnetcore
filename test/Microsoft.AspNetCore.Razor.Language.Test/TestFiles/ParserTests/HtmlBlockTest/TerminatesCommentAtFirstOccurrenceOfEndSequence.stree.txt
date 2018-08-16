@@ -1,30 +1,30 @@
 Markup block - Gen<None> - 31 - (0:0,0)
     Tag block - Gen<None> - 5 - (0:0,0)
         Markup span - Gen<Markup> - [<foo>] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:3
-            HtmlTokenType.OpenAngle;[<];
-            HtmlTokenType.Text;[foo];
-            HtmlTokenType.CloseAngle;[>];
+            SyntaxKind.OpenAngle;[<];
+            SyntaxKind.HtmlTextLiteral;[foo];
+            SyntaxKind.CloseAngle;[>];
     HtmlComment block - Gen<None> - 17 - (5:0,5)
         Markup span - Gen<Markup> - [<!--] - SpanEditHandler;Accepts:None - (5:0,5) - Tokens:3
-            HtmlTokenType.OpenAngle;[<];
-            HtmlTokenType.Bang;[!];
-            HtmlTokenType.DoubleHyphen;[--];
+            SyntaxKind.OpenAngle;[<];
+            SyntaxKind.Bang;[!];
+            SyntaxKind.DoubleHyphen;[--];
         Markup span - Gen<Markup> - [<foo></bar] - SpanEditHandler;Accepts:WhiteSpace - (9:0,9) - Tokens:6
-            HtmlTokenType.OpenAngle;[<];
-            HtmlTokenType.Text;[foo];
-            HtmlTokenType.CloseAngle;[>];
-            HtmlTokenType.OpenAngle;[<];
-            HtmlTokenType.ForwardSlash;[/];
-            HtmlTokenType.Text;[bar];
+            SyntaxKind.OpenAngle;[<];
+            SyntaxKind.HtmlTextLiteral;[foo];
+            SyntaxKind.CloseAngle;[>];
+            SyntaxKind.OpenAngle;[<];
+            SyntaxKind.ForwardSlash;[/];
+            SyntaxKind.HtmlTextLiteral;[bar];
         Markup span - Gen<Markup> - [-->] - SpanEditHandler;Accepts:None - (19:0,19) - Tokens:2
-            HtmlTokenType.DoubleHyphen;[--];
-            HtmlTokenType.CloseAngle;[>];
+            SyntaxKind.DoubleHyphen;[--];
+            SyntaxKind.CloseAngle;[>];
     Markup span - Gen<Markup> - [-->] - SpanEditHandler;Accepts:None - (22:0,22) - Tokens:2
-        HtmlTokenType.DoubleHyphen;[--];
-        HtmlTokenType.CloseAngle;[>];
+        SyntaxKind.DoubleHyphen;[--];
+        SyntaxKind.CloseAngle;[>];
     Tag block - Gen<None> - 6 - (25:0,25)
         Markup span - Gen<Markup> - [</foo>] - SpanEditHandler;Accepts:None - (25:0,25) - Tokens:4
-            HtmlTokenType.OpenAngle;[<];
-            HtmlTokenType.ForwardSlash;[/];
-            HtmlTokenType.Text;[foo];
-            HtmlTokenType.CloseAngle;[>];
+            SyntaxKind.OpenAngle;[<];
+            SyntaxKind.ForwardSlash;[/];
+            SyntaxKind.HtmlTextLiteral;[foo];
+            SyntaxKind.CloseAngle;[>];

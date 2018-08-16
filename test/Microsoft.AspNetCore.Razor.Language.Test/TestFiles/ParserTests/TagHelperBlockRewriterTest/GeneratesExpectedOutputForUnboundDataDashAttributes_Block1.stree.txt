@@ -1,11 +1,11 @@
 Markup block - Gen<None> - 42 - (0:0,0)
     Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:1
-        HtmlTokenType.Unknown;[];
+        SyntaxKind.Unknown;[];
     Statement block - Gen<None> - 42 - (0:0,0)
         Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-            CSharpTokenType.Transition;[@];
+            SyntaxKind.Transition;[@];
         MetaCode span - Gen<None> - [{] - SpanEditHandler;Accepts:None - (1:0,1) - Tokens:1
-            CSharpTokenType.LeftBrace;[{];
+            SyntaxKind.LeftBrace;[{];
         Markup block - Gen<None> - 39 - (2:0,2)
             Tag block - Gen<TagHelper> - 39 - (2:0,2) - input - inputtaghelper
                 SelfClosing - <input data-required='@DateTime.Now' />
@@ -13,14 +13,14 @@ Markup block - Gen<None> - 42 - (0:0,0)
                     Markup block - Gen<None> - 13 - (24:0,24)
                         Expression block - Gen<Expr> - 13 - (24:0,24)
                             Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (24:0,24) - Tokens:1
-                                CSharpTokenType.Transition;[@];
+                                SyntaxKind.Transition;[@];
                             Code span - Gen<Expr> - [DateTime.Now] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K14 - (25:0,25) - Tokens:3
-                                CSharpTokenType.Identifier;[DateTime];
-                                CSharpTokenType.Dot;[.];
-                                CSharpTokenType.Identifier;[Now];
+                                SyntaxKind.Identifier;[DateTime];
+                                SyntaxKind.Dot;[.];
+                                SyntaxKind.Identifier;[Now];
         Code span - Gen<Stmt> - [] - SpanEditHandler;Accepts:Any - (41:0,41) - Tokens:1
-            CSharpTokenType.Unknown;[];
+            SyntaxKind.Unknown;[];
         MetaCode span - Gen<None> - [}] - SpanEditHandler;Accepts:None - (41:0,41) - Tokens:1
-            CSharpTokenType.RightBrace;[}];
+            SyntaxKind.RightBrace;[}];
     Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (42:0,42) - Tokens:1
-        HtmlTokenType.Unknown;[];
+        SyntaxKind.Unknown;[];

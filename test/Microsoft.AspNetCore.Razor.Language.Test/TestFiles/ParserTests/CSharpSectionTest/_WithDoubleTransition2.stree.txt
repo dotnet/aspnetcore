@@ -1,51 +1,51 @@
 Markup block - Gen<None> - 44 - (0:0,0)
     Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:1
-        HtmlTokenType.Unknown;[];
+        SyntaxKind.Unknown;[];
     Directive block - Gen<Directive:{section;RazorBlock;Unrestricted}> - 44 - (0:0,0)
         Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-            CSharpTokenType.Transition;[@];
+            SyntaxKind.Transition;[@];
         MetaCode span - Gen<None> - [section] - SpanEditHandler;Accepts:None - (1:0,1) - Tokens:1
-            CSharpTokenType.Identifier;[section];
+            SyntaxKind.Identifier;[section];
         Code span - Gen<None> - [ ] - SpanEditHandler;Accepts:WhiteSpace - (8:0,8) - Tokens:1
-            CSharpTokenType.WhiteSpace;[ ];
+            SyntaxKind.Whitespace;[ ];
         Code span - Gen<DirectiveToken {SectionName;Member;Opt:False}> - [s] - DirectiveTokenEditHandler;Accepts:NonWhiteSpace - (9:0,9) - Tokens:1
-            CSharpTokenType.Identifier;[s];
+            SyntaxKind.Identifier;[s];
         Markup span - Gen<None> - [ ] - SpanEditHandler;Accepts:AllWhiteSpace - (10:0,10) - Tokens:1
-            CSharpTokenType.WhiteSpace;[ ];
+            SyntaxKind.Whitespace;[ ];
         MetaCode span - Gen<None> - [{] - AutoCompleteEditHandler;Accepts:None,AutoComplete:[<null>];AtEnd - (11:0,11) - Tokens:1
-            CSharpTokenType.LeftBrace;[{];
+            SyntaxKind.LeftBrace;[{];
         Markup block - Gen<None> - 31 - (12:0,12)
             Tag block - Gen<None> - 31 - (12:0,12)
                 Markup span - Gen<Markup> - [<span] - SpanEditHandler;Accepts:Any - (12:0,12) - Tokens:2
-                    HtmlTokenType.OpenAngle;[<];
-                    HtmlTokenType.Text;[span];
+                    SyntaxKind.OpenAngle;[<];
+                    SyntaxKind.HtmlTextLiteral;[span];
                 Markup block - Gen<Attr:foo, foo='@(17:0,17),'@(39:0,39)> - 23 - (17:0,17)
                     Markup span - Gen<None> - [ foo='] - SpanEditHandler;Accepts:Any - (17:0,17) - Tokens:4
-                        HtmlTokenType.WhiteSpace;[ ];
-                        HtmlTokenType.Text;[foo];
-                        HtmlTokenType.Equals;[=];
-                        HtmlTokenType.SingleQuote;['];
+                        SyntaxKind.Whitespace;[ ];
+                        SyntaxKind.HtmlTextLiteral;[foo];
+                        SyntaxKind.Equals;[=];
+                        SyntaxKind.SingleQuote;['];
                     Markup block - Gen<DynAttr:@(23:0,23)> - 13 - (23:0,23)
                         Expression block - Gen<Expr> - 13 - (23:0,23)
                             Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (23:0,23) - Tokens:1
-                                CSharpTokenType.Transition;[@];
+                                SyntaxKind.Transition;[@];
                             Code span - Gen<Expr> - [DateTime.Now] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K15 - (24:0,24) - Tokens:3
-                                CSharpTokenType.Identifier;[DateTime];
-                                CSharpTokenType.Dot;[.];
-                                CSharpTokenType.Identifier;[Now];
+                                SyntaxKind.Identifier;[DateTime];
+                                SyntaxKind.Dot;[.];
+                                SyntaxKind.Identifier;[Now];
                     Markup block - Gen<None> - 3 - (36:0,36)
                         Markup span - Gen<LitAttr: @(36:0,36)> - [ @] - SpanEditHandler;Accepts:None - (36:0,36) - Tokens:2
-                            HtmlTokenType.WhiteSpace;[ ];
-                            HtmlTokenType.Transition;[@];
+                            SyntaxKind.Whitespace;[ ];
+                            SyntaxKind.Transition;[@];
                         Markup span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (38:0,38) - Tokens:1
-                            HtmlTokenType.Transition;[@];
+                            SyntaxKind.Transition;[@];
                     Markup span - Gen<None> - ['] - SpanEditHandler;Accepts:Any - (39:0,39) - Tokens:1
-                        HtmlTokenType.SingleQuote;['];
+                        SyntaxKind.SingleQuote;['];
                 Markup span - Gen<Markup> - [ />] - SpanEditHandler;Accepts:Any - (40:0,40) - Tokens:3
-                    HtmlTokenType.WhiteSpace;[ ];
-                    HtmlTokenType.ForwardSlash;[/];
-                    HtmlTokenType.CloseAngle;[>];
+                    SyntaxKind.Whitespace;[ ];
+                    SyntaxKind.ForwardSlash;[/];
+                    SyntaxKind.CloseAngle;[>];
         MetaCode span - Gen<None> - [}] - SpanEditHandler;Accepts:None - (43:0,43) - Tokens:1
-            CSharpTokenType.RightBrace;[}];
+            SyntaxKind.RightBrace;[}];
     Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (44:0,44) - Tokens:1
-        HtmlTokenType.Unknown;[];
+        SyntaxKind.Unknown;[];

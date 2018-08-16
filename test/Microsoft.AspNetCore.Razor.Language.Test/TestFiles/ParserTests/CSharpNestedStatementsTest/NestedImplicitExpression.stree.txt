@@ -1,19 +1,19 @@
 Statement block - Gen<None> - 21 - (0:0,0)
     Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-        CSharpTokenType.Transition;[@];
+        SyntaxKind.Transition;[@];
     Code span - Gen<Stmt> - [while(true) { ] - SpanEditHandler;Accepts:Any - (1:0,1) - Tokens:7
-        CSharpTokenType.Keyword;[while];
-        CSharpTokenType.LeftParenthesis;[(];
-        CSharpTokenType.Keyword;[true];
-        CSharpTokenType.RightParenthesis;[)];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.LeftBrace;[{];
-        CSharpTokenType.WhiteSpace;[ ];
+        SyntaxKind.Keyword;[while];
+        SyntaxKind.LeftParenthesis;[(];
+        SyntaxKind.Keyword;[true];
+        SyntaxKind.RightParenthesis;[)];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.LeftBrace;[{];
+        SyntaxKind.Whitespace;[ ];
     Expression block - Gen<Expr> - 4 - (15:0,15)
         Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (15:0,15) - Tokens:1
-            CSharpTokenType.Transition;[@];
+            SyntaxKind.Transition;[@];
         Code span - Gen<Expr> - [foo] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[ATD];K14 - (16:0,16) - Tokens:1
-            CSharpTokenType.Identifier;[foo];
+            SyntaxKind.Identifier;[foo];
     Code span - Gen<Stmt> - [ }] - SpanEditHandler;Accepts:None - (19:0,19) - Tokens:2
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.RightBrace;[}];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.RightBrace;[}];

@@ -1,34 +1,34 @@
 Markup block - Gen<None> - 39 - (0:0,0)
     Tag block - Gen<None> - 39 - (0:0,0)
         Markup span - Gen<Markup> - [<a] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:2
-            HtmlTokenType.OpenAngle;[<];
-            HtmlTokenType.Text;[a];
+            SyntaxKind.OpenAngle;[<];
+            SyntaxKind.HtmlTextLiteral;[a];
         Markup block - Gen<Attr:[(item,, LF  [(item,='@(2:0,2),'@(19:1,14)> - 18 - (2:0,2)
             Markup span - Gen<None> - [ LF  [(item,='] - SpanEditHandler;Accepts:Any - (2:0,2) - Tokens:7
-                HtmlTokenType.WhiteSpace;[ ];
-                HtmlTokenType.NewLine;[LF];
-                HtmlTokenType.WhiteSpace;[  ];
-                HtmlTokenType.LeftBracket;[[];
-                HtmlTokenType.Text;[(item,];
-                HtmlTokenType.Equals;[=];
-                HtmlTokenType.SingleQuote;['];
+                SyntaxKind.Whitespace;[ ];
+                SyntaxKind.NewLine;[LF];
+                SyntaxKind.Whitespace;[  ];
+                SyntaxKind.LeftBracket;[[];
+                SyntaxKind.HtmlTextLiteral;[(item,];
+                SyntaxKind.Equals;[=];
+                SyntaxKind.SingleQuote;['];
             Markup span - Gen<LitAttr:@(16:1,11)> - [Foo] - SpanEditHandler;Accepts:Any - (16:1,11) - Tokens:1
-                HtmlTokenType.Text;[Foo];
+                SyntaxKind.HtmlTextLiteral;[Foo];
             Markup span - Gen<None> - ['] - SpanEditHandler;Accepts:Any - (19:1,14) - Tokens:1
-                HtmlTokenType.SingleQuote;['];
+                SyntaxKind.SingleQuote;['];
         Markup block - Gen<Attr:[(item,,	LF[(item,='@(20:1,15),'@(35:2,12)> - 16 - (20:1,15)
             Markup span - Gen<None> - [	LF[(item,='] - SpanEditHandler;Accepts:Any - (20:1,15) - Tokens:6
-                HtmlTokenType.WhiteSpace;[	];
-                HtmlTokenType.NewLine;[LF];
-                HtmlTokenType.LeftBracket;[[];
-                HtmlTokenType.Text;[(item,];
-                HtmlTokenType.Equals;[=];
-                HtmlTokenType.SingleQuote;['];
+                SyntaxKind.Whitespace;[	];
+                SyntaxKind.NewLine;[LF];
+                SyntaxKind.LeftBracket;[[];
+                SyntaxKind.HtmlTextLiteral;[(item,];
+                SyntaxKind.Equals;[=];
+                SyntaxKind.SingleQuote;['];
             Markup span - Gen<LitAttr:@(32:2,9)> - [Bar] - SpanEditHandler;Accepts:Any - (32:2,9) - Tokens:1
-                HtmlTokenType.Text;[Bar];
+                SyntaxKind.HtmlTextLiteral;[Bar];
             Markup span - Gen<None> - ['] - SpanEditHandler;Accepts:Any - (35:2,12) - Tokens:1
-                HtmlTokenType.SingleQuote;['];
+                SyntaxKind.SingleQuote;['];
         Markup span - Gen<Markup> - [ />] - SpanEditHandler;Accepts:None - (36:2,13) - Tokens:3
-            HtmlTokenType.WhiteSpace;[ ];
-            HtmlTokenType.ForwardSlash;[/];
-            HtmlTokenType.CloseAngle;[>];
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.ForwardSlash;[/];
+            SyntaxKind.CloseAngle;[>];

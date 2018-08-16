@@ -1,20 +1,20 @@
 Statement block - Gen<None> - 25 - (0:0,0)
     Code span - Gen<Stmt> - [if(foo) { ] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:7
-        CSharpTokenType.Keyword;[if];
-        CSharpTokenType.LeftParenthesis;[(];
-        CSharpTokenType.Identifier;[foo];
-        CSharpTokenType.RightParenthesis;[)];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.LeftBrace;[{];
-        CSharpTokenType.WhiteSpace;[ ];
+        SyntaxKind.Keyword;[if];
+        SyntaxKind.LeftParenthesis;[(];
+        SyntaxKind.Identifier;[foo];
+        SyntaxKind.RightParenthesis;[)];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.LeftBrace;[{];
+        SyntaxKind.Whitespace;[ ];
     Code span - Gen<None> - [@] - SpanEditHandler;Accepts:Any - (10:0,10) - Tokens:1
-        CSharpTokenType.Transition;[@];
+        SyntaxKind.Transition;[@];
     Code span - Gen<Stmt> - [@class.Foo() }] - SpanEditHandler;Accepts:Any - (11:0,11) - Tokens:8
-        CSharpTokenType.Transition;[@];
-        CSharpTokenType.Keyword;[class];
-        CSharpTokenType.Dot;[.];
-        CSharpTokenType.Identifier;[Foo];
-        CSharpTokenType.LeftParenthesis;[(];
-        CSharpTokenType.RightParenthesis;[)];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.RightBrace;[}];
+        SyntaxKind.Transition;[@];
+        SyntaxKind.Keyword;[class];
+        SyntaxKind.Dot;[.];
+        SyntaxKind.Identifier;[Foo];
+        SyntaxKind.LeftParenthesis;[(];
+        SyntaxKind.RightParenthesis;[)];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.RightBrace;[}];

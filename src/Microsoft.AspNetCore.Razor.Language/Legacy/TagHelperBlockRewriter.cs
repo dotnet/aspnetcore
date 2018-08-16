@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using Microsoft.AspNetCore.Razor.Language.Syntax;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
@@ -150,7 +151,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             };
 
             // Will contain tokens that represent a single attribute value: <input| class="btn"| />
-            var htmlTokens = span.Tokens.OfType<HtmlToken>().ToArray();
+            var tokens = span.Tokens;
             var capturedAttributeValueStart = false;
             var attributeValueStartLocation = span.Start;
 
@@ -165,9 +166,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
             // Iterate down through the tokens to find the name and the start of the value.
             // We subtract the tokenOffset so we don't accept an ending quote of a span.
-            for (var i = 0; i < htmlTokens.Length - tokenOffset; i++)
+            for (var i = 0; i < tokens.Count - tokenOffset; i++)
             {
-                var token = htmlTokens[i];
+                var token = tokens[i];
 
                 if (afterEquals)
                 {
@@ -186,9 +187,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         attributeValueStartLocation = token.Start;
                     }
 
-                    builder.Accept(token);
+                    builder.Accept(token.Green);
                 }
-                else if (name == null && HtmlMarkupParser.IsValidAttributeNameToken(token))
+                else if (name == null && HtmlMarkupParser.IsValidAttributeNameToken(token.Green))
                 {
                     // We've captured all leading whitespace prior to the attribute name.
                     // We're now at: " |asp-for='...'" or " |asp-for=..."
@@ -196,10 +197,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
                     var nameBuilder = new StringBuilder();
                     // Move the indexer past the attribute name tokens.
-                    for (var j = i; j < htmlTokens.Length; j++)
+                    for (var j = i; j < tokens.Count; j++)
                     {
-                        var nameToken = htmlTokens[j];
-                        if (!HtmlMarkupParser.IsValidAttributeNameToken(nameToken))
+                        var nameToken = tokens[j];
+                        if (!HtmlMarkupParser.IsValidAttributeNameToken(nameToken.Green))
                         {
                             break;
                         }
@@ -213,7 +214,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     name = nameBuilder.ToString();
                     attributeValueStartLocation = SourceLocationTracker.Advance(attributeValueStartLocation, name);
                 }
-                else if (token.Type == HtmlTokenType.Equals)
+                else if (token.Kind == SyntaxKind.Equals)
                 {
                     // We've captured all leading whitespace and the attribute name.
                     // We're now at: " asp-for|='...'" or " asp-for|=..."
@@ -227,19 +228,19 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     do
                     {
                         i++; // Start from the token after '='.
-                    } while (i < htmlTokens.Length &&
-                        (htmlTokens[i].Type == HtmlTokenType.WhiteSpace ||
-                        htmlTokens[i].Type == HtmlTokenType.NewLine));
+                    } while (i < tokens.Count &&
+                        (tokens[i].Kind == SyntaxKind.Whitespace ||
+                        tokens[i].Kind == SyntaxKind.NewLine));
 
                     // Check for attribute start values, aka single or double quote
-                    if (i < htmlTokens.Length && IsQuote(htmlTokens[i]))
+                    if (i < tokens.Count && IsQuote(tokens[i]))
                     {
-                        if (htmlTokens[i].Type == HtmlTokenType.SingleQuote)
+                        if (tokens[i].Kind == SyntaxKind.SingleQuote)
                         {
                             attributeValueStyle = AttributeStructure.SingleQuotes;
                         }
 
-                        tokenStartLocation = htmlTokens[i].Start;
+                        tokenStartLocation = tokens[i].Start;
 
                         // If there's a start quote then there must be an end quote to be valid, skip it.
                         tokenOffset = 1;
@@ -260,7 +261,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
                     afterEquals = true;
                 }
-                else if (token.Type == HtmlTokenType.WhiteSpace)
+                else if (token.Kind == SyntaxKind.Whitespace)
                 {
                     // We're at the start of the attribute, this branch may be hit on the first iterations of
                     // the loop since the parser separates attributes with their spaces included as tokens.
@@ -343,9 +344,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
             var nameTokens = childSpan
                 .Tokens
-                .OfType<HtmlToken>()
-                .SkipWhile(token => !HtmlMarkupParser.IsValidAttributeNameToken(token)) // Skip prefix
-                .TakeWhile(nameToken => HtmlMarkupParser.IsValidAttributeNameToken(nameToken))
+                .SkipWhile(token => !HtmlMarkupParser.IsValidAttributeNameToken(token.Green)) // Skip prefix
+                .TakeWhile(nameToken => HtmlMarkupParser.IsValidAttributeNameToken(nameToken.Green))
                 .Select(nameToken => nameToken.Content);
 
             var name = string.Concat(nameTokens);
@@ -362,12 +362,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             var result = CreateTryParseResult(name, descriptors, processedBoundAttributeNames);
 
             var firstChild = builder.Children[0] as Span;
-            if (firstChild != null && firstChild.Tokens[0] is HtmlToken)
+            if (firstChild != null)
             {
-                var htmlToken = firstChild.Tokens[firstChild.Tokens.Count - 1] as HtmlToken;
-                switch (htmlToken.Type)
+                var token = firstChild.Tokens[firstChild.Tokens.Count - 1];
+                switch (token.Kind)
                 {
-                    case HtmlTokenType.Equals:
+                    case SyntaxKind.Equals:
                         if (builder.Children.Count == 2 &&
                             builder.Children[1] is Span value &&
                             value.Kind == SpanKindInternal.Markup)
@@ -385,10 +385,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             result.AttributeStructure = AttributeStructure.DoubleQuotes;
                         }
                         break;
-                    case HtmlTokenType.DoubleQuote:
+                    case SyntaxKind.DoubleQuote:
                         result.AttributeStructure = AttributeStructure.DoubleQuotes;
                         break;
-                    case HtmlTokenType.SingleQuote:
+                    case SyntaxKind.SingleQuote:
                         result.AttributeStructure = AttributeStructure.SingleQuotes;
                         break;
                     default:
@@ -408,8 +408,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
                 // In some malformed cases e.g. <p bar="false', the last Span (false' in the ex.) may contain more
                 // than a single HTML token. Do not ignore those other tokens.
-                var tokenCount = endSpan.Tokens.Count();
-                var endToken = tokenCount == 1 ? (HtmlToken)endSpan.Tokens.First() : null;
+                var tokenCount = endSpan.Tokens.Count;
+                var endToken = tokenCount == 1 ? endSpan.Tokens.First() : null;
 
                 // Checking to see if it's a quoted attribute, if so we should remove end quote
                 if (endToken != null && IsQuote(endToken))
@@ -614,8 +614,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // expression).
             var firstNonWhitespaceToken = span
                 .Tokens
-                .OfType<HtmlToken>()
-                .First(token => token.Type != HtmlTokenType.WhiteSpace && token.Type != HtmlTokenType.NewLine);
+                .First(token => token.Kind != SyntaxKind.Whitespace && token.Kind != SyntaxKind.NewLine);
 
             var location = new SourceSpan(firstNonWhitespaceToken.Start, attributeName.Length);
             return location;
@@ -716,10 +715,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return firstBoundAttribute;
         }
 
-        private static bool IsQuote(HtmlToken htmlToken)
+        private static bool IsQuote(SyntaxToken token)
         {
-            return htmlToken.Type == HtmlTokenType.DoubleQuote ||
-                   htmlToken.Type == HtmlTokenType.SingleQuote;
+            return token.Kind == SyntaxKind.DoubleQuote ||
+                   token.Kind == SyntaxKind.SingleQuote;
         }
 
         private static void ConfigureNonStringAttribute(SpanBuilder builder, bool isDuplicateAttribute)

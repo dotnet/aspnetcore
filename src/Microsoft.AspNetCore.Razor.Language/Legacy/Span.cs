@@ -5,13 +5,16 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax;
+using Microsoft.AspNetCore.Razor.Language.Syntax;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
     internal class Span : SyntaxTreeNode
     {
+        private static readonly List<SyntaxToken> EmptyTokenList = new List<SyntaxToken>(0);
         private static readonly int TypeHashCode = typeof(Span).GetHashCode();
+        private IReadOnlyList<Syntax.InternalSyntax.SyntaxToken> _greenTokens;
         private string _content;
         private int? _length;
         private SourceLocation _start;
@@ -24,7 +27,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public ISpanChunkGenerator ChunkGenerator { get; private set; }
 
         public SpanKindInternal Kind { get; private set; }
-        public IReadOnlyList<IToken> Tokens { get; private set; }
+
+        public IReadOnlyList<SyntaxToken> Tokens { get; private set; }
 
         // Allow test code to re-link spans
         public Span Previous { get; internal set; }
@@ -32,7 +36,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         public SpanEditHandler EditHandler { get; private set; }
 
-        public HtmlNodeSyntax SyntaxNode { get; private set; }
+        public SyntaxNode SyntaxNode { get; private set; }
 
         public override bool IsBlock => false;
 
@@ -96,19 +100,28 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void ReplaceWith(SpanBuilder builder)
         {
             Kind = builder.Kind;
-            Tokens = builder.Tokens;
-            SyntaxNode = builder.SyntaxNode;
-
-            for (var i = 0; i <Tokens.Count; i++)
-            {
-                Tokens[i].Parent = this;
-            }
-
+            _greenTokens = builder.Tokens;
             EditHandler = builder.EditHandler;
             ChunkGenerator = builder.ChunkGenerator ?? SpanChunkGenerator.Null;
             _start = builder.Start;
+            SyntaxNode = builder.SyntaxNode?.CreateRed(parent: null, position: _start.AbsoluteIndex);
             _content = null;
             _length = null;
+
+            var tokens = EmptyTokenList;
+            if (_greenTokens.Count > 0)
+            {
+                tokens = new List<SyntaxToken>();
+                var currentStart = _start.AbsoluteIndex;
+                for (var i = 0; i < _greenTokens.Count; i++)
+                {
+                    var token = new SyntaxToken(_greenTokens[i], parent: SyntaxNode, parentSpan: this, position: currentStart);
+                    tokens.Add(token);
+                    currentStart += token.FullWidth;
+                }
+            }
+
+            Tokens = tokens;
 
             Parent?.ChildChanged();
 
@@ -149,8 +162,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         /// </summary>
         public override bool EquivalentTo(SyntaxTreeNode node)
         {
-            var other = node as Span;
-            return other != null &&
+            return node is Span other &&
                 Kind.Equals(other.Kind) &&
                 Start.Equals(other.Start) &&
                 EditHandler.Equals(other.EditHandler) &&
@@ -165,12 +177,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         public override bool Equals(object obj)
         {
-            var other = obj as Span;
-            return other != null &&
+            return obj is Span other &&
                 Kind.Equals(other.Kind) &&
                 EditHandler.Equals(other.EditHandler) &&
                 ChunkGenerator.Equals(other.ChunkGenerator) &&
-                Tokens.SequenceEqual(other.Tokens);
+                Tokens.SequenceEqual(other.Tokens, SyntaxTokenComparer.Default);
         }
 
         public override int GetHashCode()
@@ -188,6 +199,29 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             var spanBuilder = new SpanBuilder(this);
             return spanBuilder.Build();
+        }
+
+        private class SyntaxTokenComparer : IEqualityComparer<SyntaxToken>
+        {
+            public static readonly SyntaxTokenComparer Default = new SyntaxTokenComparer();
+
+            private SyntaxTokenComparer()
+            {
+            }
+
+            public bool Equals(SyntaxToken x, SyntaxToken y)
+            {
+                return x.IsEquivalentTo(y);
+            }
+
+            public int GetHashCode(SyntaxToken obj)
+            {
+                var hash = HashCodeCombiner.Start();
+                hash.Add(obj.Content, StringComparer.Ordinal);
+                hash.Add(obj.Kind);
+
+                return hash;
+            }
         }
     }
 }

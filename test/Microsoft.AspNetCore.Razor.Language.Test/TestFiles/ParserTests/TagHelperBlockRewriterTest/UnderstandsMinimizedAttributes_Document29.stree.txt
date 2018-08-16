@@ -3,5 +3,5 @@ Markup block - Gen<None> - 29 - (0:0,0)
         StartTagAndEndTag - <p class='btn' bound-int> ... </p>
         class - SingleQuotes
             Markup span - Gen<Markup> - [btn] - SpanEditHandler;Accepts:Any - (10:0,10) - Tokens:1
-                HtmlTokenType.Text;[btn];
+                SyntaxKind.HtmlTextLiteral;[btn];
         bound-int - Minimized

@@ -4,12 +4,12 @@ Markup block - Gen<None> - 46 - (0:0,0)
         data-required - SingleQuotes
             Markup block - Gen<None> - 20 - (22:0,22)
                 Markup span - Gen<Markup> - [prefix ] - SpanEditHandler;Accepts:Any - (22:0,22) - Tokens:2
-                    HtmlTokenType.Text;[prefix];
-                    HtmlTokenType.WhiteSpace;[ ];
+                    SyntaxKind.HtmlTextLiteral;[prefix];
+                    SyntaxKind.Whitespace;[ ];
                 Expression block - Gen<Expr> - 13 - (29:0,29)
                     Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (29:0,29) - Tokens:1
-                        CSharpTokenType.Transition;[@];
+                        SyntaxKind.Transition;[@];
                     Code span - Gen<Expr> - [DateTime.Now] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K14 - (30:0,30) - Tokens:3
-                        CSharpTokenType.Identifier;[DateTime];
-                        CSharpTokenType.Dot;[.];
-                        CSharpTokenType.Identifier;[Now];
+                        SyntaxKind.Identifier;[DateTime];
+                        SyntaxKind.Dot;[.];
+                        SyntaxKind.Identifier;[Now];

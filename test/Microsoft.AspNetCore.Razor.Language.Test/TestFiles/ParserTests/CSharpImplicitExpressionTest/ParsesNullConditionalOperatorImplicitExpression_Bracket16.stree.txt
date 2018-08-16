@@ -1,17 +1,17 @@
 Expression block - Gen<Expr> - 20 - (0:0,0)
     Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-        CSharpTokenType.Transition;[@];
+        SyntaxKind.Transition;[@];
     Code span - Gen<Expr> - [val?[abc?.gef?[-1]]] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K14 - (1:0,1) - Tokens:13
-        CSharpTokenType.Identifier;[val];
-        CSharpTokenType.QuestionMark;[?];
-        CSharpTokenType.LeftBracket;[[];
-        CSharpTokenType.Identifier;[abc];
-        CSharpTokenType.QuestionMark;[?];
-        CSharpTokenType.Dot;[.];
-        CSharpTokenType.Identifier;[gef];
-        CSharpTokenType.QuestionMark;[?];
-        CSharpTokenType.LeftBracket;[[];
-        CSharpTokenType.Minus;[-];
-        CSharpTokenType.IntegerLiteral;[1];
-        CSharpTokenType.RightBracket;[]];
-        CSharpTokenType.RightBracket;[]];
+        SyntaxKind.Identifier;[val];
+        SyntaxKind.QuestionMark;[?];
+        SyntaxKind.LeftBracket;[[];
+        SyntaxKind.Identifier;[abc];
+        SyntaxKind.QuestionMark;[?];
+        SyntaxKind.Dot;[.];
+        SyntaxKind.Identifier;[gef];
+        SyntaxKind.QuestionMark;[?];
+        SyntaxKind.LeftBracket;[[];
+        SyntaxKind.Minus;[-];
+        SyntaxKind.IntegerLiteral;[1];
+        SyntaxKind.RightBracket;[]];
+        SyntaxKind.RightBracket;[]];

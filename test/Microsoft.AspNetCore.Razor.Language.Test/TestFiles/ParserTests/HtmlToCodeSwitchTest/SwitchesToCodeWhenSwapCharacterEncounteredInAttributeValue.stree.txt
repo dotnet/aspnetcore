@@ -1,23 +1,23 @@
 Markup block - Gen<None> - 18 - (0:0,0)
     Tag block - Gen<None> - 18 - (0:0,0)
         Markup span - Gen<Markup> - [<foo] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:2
-            HtmlTokenType.OpenAngle;[<];
-            HtmlTokenType.Text;[foo];
+            SyntaxKind.OpenAngle;[<];
+            SyntaxKind.HtmlTextLiteral;[foo];
         Markup block - Gen<Attr:bar, bar="@(4:0,4),"@(14:0,14)> - 11 - (4:0,4)
             Markup span - Gen<None> - [ bar="] - SpanEditHandler;Accepts:Any - (4:0,4) - Tokens:4
-                HtmlTokenType.WhiteSpace;[ ];
-                HtmlTokenType.Text;[bar];
-                HtmlTokenType.Equals;[=];
-                HtmlTokenType.DoubleQuote;["];
+                SyntaxKind.Whitespace;[ ];
+                SyntaxKind.HtmlTextLiteral;[bar];
+                SyntaxKind.Equals;[=];
+                SyntaxKind.DoubleQuote;["];
             Markup block - Gen<DynAttr:@(10:0,10)> - 4 - (10:0,10)
                 Expression block - Gen<Expr> - 4 - (10:0,10)
                     Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (10:0,10) - Tokens:1
-                        CSharpTokenType.Transition;[@];
+                        SyntaxKind.Transition;[@];
                     Code span - Gen<Expr> - [baz] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K14 - (11:0,11) - Tokens:1
-                        CSharpTokenType.Identifier;[baz];
+                        SyntaxKind.Identifier;[baz];
             Markup span - Gen<None> - ["] - SpanEditHandler;Accepts:Any - (14:0,14) - Tokens:1
-                HtmlTokenType.DoubleQuote;["];
+                SyntaxKind.DoubleQuote;["];
         Markup span - Gen<Markup> - [ />] - SpanEditHandler;Accepts:None - (15:0,15) - Tokens:3
-            HtmlTokenType.WhiteSpace;[ ];
-            HtmlTokenType.ForwardSlash;[/];
-            HtmlTokenType.CloseAngle;[>];
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.ForwardSlash;[/];
+            SyntaxKind.CloseAngle;[>];

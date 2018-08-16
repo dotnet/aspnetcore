@@ -1,11 +1,11 @@
 Expression block - Gen<Expr> - 19 - (0:0,0)
     Code span - Gen<Expr> - [Foo[Bar[Baz]LFBizLF] - ImplicitExpressionEditHandler;Accepts:Any;ImplicitExpression[RTD];K14 - (0:0,0) - Tokens:9
-        CSharpTokenType.Identifier;[Foo];
-        CSharpTokenType.LeftBracket;[[];
-        CSharpTokenType.Identifier;[Bar];
-        CSharpTokenType.LeftBracket;[[];
-        CSharpTokenType.Identifier;[Baz];
-        CSharpTokenType.RightBracket;[]];
-        CSharpTokenType.NewLine;[LF];
-        CSharpTokenType.Identifier;[Biz];
-        CSharpTokenType.NewLine;[LF];
+        SyntaxKind.Identifier;[Foo];
+        SyntaxKind.LeftBracket;[[];
+        SyntaxKind.Identifier;[Bar];
+        SyntaxKind.LeftBracket;[[];
+        SyntaxKind.Identifier;[Baz];
+        SyntaxKind.RightBracket;[]];
+        SyntaxKind.NewLine;[LF];
+        SyntaxKind.Identifier;[Biz];
+        SyntaxKind.NewLine;[LF];

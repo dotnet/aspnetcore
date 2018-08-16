@@ -3,4 +3,4 @@ Markup block - Gen<None> - 24 - (0:0,0)
         SelfClosing - <strong catchAll="hi" />
         catchAll - DoubleQuotes
             Markup span - Gen<Markup> - [hi] - SpanEditHandler;Accepts:Any - (18:0,18) - Tokens:1
-                HtmlTokenType.Text;[hi];
+                SyntaxKind.HtmlTextLiteral;[hi];

@@ -5,8 +5,8 @@ Markup block - Gen<None> - 35 - (0:0,0)
             StartTagAndEndTag - <p> ... </p>
             Tag block - Gen<None> - 4 - (6:0,6)
                 Markup span - Gen<Markup> - [<br>] - SpanEditHandler;Accepts:Any - (6:0,6) - Tokens:3
-                    HtmlTokenType.OpenAngle;[<];
-                    HtmlTokenType.Text;[br];
-                    HtmlTokenType.CloseAngle;[>];
+                    SyntaxKind.OpenAngle;[<];
+                    SyntaxKind.HtmlTextLiteral;[br];
+                    SyntaxKind.CloseAngle;[>];
         Tag block - Gen<TagHelper> - 17 - (14:0,14) - strong - StrongTagHelper
             StartTagAndEndTag - <strong> ... </strong>

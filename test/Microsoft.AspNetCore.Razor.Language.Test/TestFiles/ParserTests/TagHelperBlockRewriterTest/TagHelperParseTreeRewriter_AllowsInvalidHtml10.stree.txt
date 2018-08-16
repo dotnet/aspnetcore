@@ -3,30 +3,30 @@ Markup block - Gen<None> - 42 - (0:0,0)
         StartTagAndEndTag - <p> ... </p>
         Tag block - Gen<None> - 17 - (3:0,3)
             Markup span - Gen<Markup> - [< ] - SpanEditHandler;Accepts:Any - (3:0,3) - Tokens:2
-                HtmlTokenType.OpenAngle;[<];
-                HtmlTokenType.WhiteSpace;[ ];
+                SyntaxKind.OpenAngle;[<];
+                SyntaxKind.Whitespace;[ ];
             Expression block - Gen<Expr> - 13 - (5:0,5)
                 Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (5:0,5) - Tokens:1
-                    CSharpTokenType.Transition;[@];
+                    SyntaxKind.Transition;[@];
                 Code span - Gen<Expr> - [DateTime.Now] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K14 - (6:0,6) - Tokens:3
-                    CSharpTokenType.Identifier;[DateTime];
-                    CSharpTokenType.Dot;[.];
-                    CSharpTokenType.Identifier;[Now];
+                    SyntaxKind.Identifier;[DateTime];
+                    SyntaxKind.Dot;[.];
+                    SyntaxKind.Identifier;[Now];
             Markup span - Gen<Markup> - [ >] - SpanEditHandler;Accepts:Any - (18:0,18) - Tokens:2
-                HtmlTokenType.WhiteSpace;[ ];
-                HtmlTokenType.CloseAngle;[>];
+                SyntaxKind.Whitespace;[ ];
+                SyntaxKind.CloseAngle;[>];
         Tag block - Gen<None> - 3 - (20:0,20)
             Markup span - Gen<Markup> - [</ ] - SpanEditHandler;Accepts:Any - (20:0,20) - Tokens:3
-                HtmlTokenType.OpenAngle;[<];
-                HtmlTokenType.ForwardSlash;[/];
-                HtmlTokenType.WhiteSpace;[ ];
+                SyntaxKind.OpenAngle;[<];
+                SyntaxKind.ForwardSlash;[/];
+                SyntaxKind.Whitespace;[ ];
         Expression block - Gen<Expr> - 13 - (23:0,23)
             Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (23:0,23) - Tokens:1
-                CSharpTokenType.Transition;[@];
+                SyntaxKind.Transition;[@];
             Code span - Gen<Expr> - [DateTime.Now] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K14 - (24:0,24) - Tokens:3
-                CSharpTokenType.Identifier;[DateTime];
-                CSharpTokenType.Dot;[.];
-                CSharpTokenType.Identifier;[Now];
+                SyntaxKind.Identifier;[DateTime];
+                SyntaxKind.Dot;[.];
+                SyntaxKind.Identifier;[Now];
         SyntaxKind.HtmlText - [ >] - [36..38) - FullWidth: 2 - Slots: 1
             SyntaxKind.List - [ >] - [36..38) - FullWidth: 2 - Slots: 2
                 SyntaxKind.Whitespace;[ ];

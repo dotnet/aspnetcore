@@ -7,21 +7,21 @@ Markup block - Gen<None> - 53 - (0:0,0)
                 SyntaxKind.Whitespace;[    ];
         Tag block - Gen<None> - 8 - (9:1,4)
             Markup span - Gen<Markup> - [<strong>] - SpanEditHandler;Accepts:Any - (9:1,4) - Tokens:3
-                HtmlTokenType.OpenAngle;[<];
-                HtmlTokenType.Text;[strong];
-                HtmlTokenType.CloseAngle;[>];
+                SyntaxKind.OpenAngle;[<];
+                SyntaxKind.HtmlTextLiteral;[strong];
+                SyntaxKind.CloseAngle;[>];
         SyntaxKind.HtmlText - [LF        HelloLF    ] - [17..38) - FullWidth: 21 - Slots: 1
             SyntaxKind.List - [LF        HelloLF    ] - [17..38) - FullWidth: 21 - Slots: 5
                 SyntaxKind.NewLine;[LF];
                 SyntaxKind.Whitespace;[        ];
-                SyntaxKind.HtmlTextLiteralToken;[Hello];
+                SyntaxKind.HtmlTextLiteral;[Hello];
                 SyntaxKind.NewLine;[LF];
                 SyntaxKind.Whitespace;[    ];
         Tag block - Gen<None> - 9 - (38:3,4)
             Markup span - Gen<Markup> - [</strong>] - SpanEditHandler;Accepts:Any - (38:3,4) - Tokens:4
-                HtmlTokenType.OpenAngle;[<];
-                HtmlTokenType.ForwardSlash;[/];
-                HtmlTokenType.Text;[strong];
-                HtmlTokenType.CloseAngle;[>];
+                SyntaxKind.OpenAngle;[<];
+                SyntaxKind.ForwardSlash;[/];
+                SyntaxKind.HtmlTextLiteral;[strong];
+                SyntaxKind.CloseAngle;[>];
         SyntaxKind.HtmlText - [LF] - [47..49) - FullWidth: 2 - Slots: 1
             SyntaxKind.NewLine;[LF];

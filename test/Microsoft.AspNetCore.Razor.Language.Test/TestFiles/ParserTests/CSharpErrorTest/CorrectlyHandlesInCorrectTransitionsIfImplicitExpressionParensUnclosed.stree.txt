@@ -1,5 +1,5 @@
 Expression block - Gen<Expr> - 7 - (0:0,0)
     Code span - Gen<Expr> - [Href(LF] - ImplicitExpressionEditHandler;Accepts:Any;ImplicitExpression[RTD];K14 - (0:0,0) - Tokens:3
-        CSharpTokenType.Identifier;[Href];
-        CSharpTokenType.LeftParenthesis;[(];
-        CSharpTokenType.NewLine;[LF];
+        SyntaxKind.Identifier;[Href];
+        SyntaxKind.LeftParenthesis;[(];
+        SyntaxKind.NewLine;[LF];

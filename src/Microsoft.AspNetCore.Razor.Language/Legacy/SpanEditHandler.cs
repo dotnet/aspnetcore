@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
@@ -11,12 +11,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
     {
         private static readonly int TypeHashCode = typeof(SpanEditHandler).GetHashCode();
 
-        public SpanEditHandler(Func<string, IEnumerable<IToken>> tokenizer)
+        public SpanEditHandler(Func<string, IEnumerable<SyntaxToken>> tokenizer)
             : this(tokenizer, AcceptedCharactersInternal.Any)
         {
         }
 
-        public SpanEditHandler(Func<string, IEnumerable<IToken>> tokenizer, AcceptedCharactersInternal accepted)
+        public SpanEditHandler(Func<string, IEnumerable<SyntaxToken>> tokenizer, AcceptedCharactersInternal accepted)
         {
             AcceptedCharacters = accepted;
             Tokenizer = tokenizer;
@@ -24,9 +24,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         public AcceptedCharactersInternal AcceptedCharacters { get; set; }
 
-        public Func<string, IEnumerable<IToken>> Tokenizer { get; set; }
+        public Func<string, IEnumerable<SyntaxToken>> Tokenizer { get; set; }
 
-        public static SpanEditHandler CreateDefault(Func<string, IEnumerable<IToken>> tokenizer)
+        public static SpanEditHandler CreateDefault(Func<string, IEnumerable<SyntaxToken>> tokenizer)
         {
             return new SpanEditHandler(tokenizer);
         }
@@ -116,8 +116,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         public override bool Equals(object obj)
         {
-            var other = obj as SpanEditHandler;
-            return other != null &&
+            return obj is SpanEditHandler other &&
                 GetType() == other.GetType() &&
                 AcceptedCharacters == other.AcceptedCharacters;
         }

@@ -3,35 +3,35 @@ Markup block - Gen<None> - 96 - (0:0,0)
         StartTagAndEndTag - <p class=foo dynamic=@DateTime.Now> ... </p>
         class - NoQuotes
             Markup span - Gen<Markup> - [foo] - SpanEditHandler;Accepts:Any - (9:0,9) - Tokens:1
-                HtmlTokenType.Text;[foo];
+                SyntaxKind.HtmlTextLiteral;[foo];
         dynamic - DoubleQuotes
             Markup block - Gen<None> - 13 - (21:0,21)
                 Markup block - Gen<DynAttr:@(21:0,21)> - 13 - (21:0,21)
                     Expression block - Gen<Expr> - 13 - (21:0,21)
                         Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (21:0,21) - Tokens:1
-                            CSharpTokenType.Transition;[@];
+                            SyntaxKind.Transition;[@];
                         Code span - Gen<Expr> - [DateTime.Now] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K14 - (22:0,22) - Tokens:3
-                            CSharpTokenType.Identifier;[DateTime];
-                            CSharpTokenType.Dot;[.];
-                            CSharpTokenType.Identifier;[Now];
+                            SyntaxKind.Identifier;[DateTime];
+                            SyntaxKind.Dot;[.];
+                            SyntaxKind.Identifier;[Now];
         SyntaxKind.HtmlText - [Hello] - [35..40) - FullWidth: 5 - Slots: 1
-            SyntaxKind.HtmlTextLiteralToken;[Hello];
+            SyntaxKind.HtmlTextLiteral;[Hello];
     SyntaxKind.HtmlText - [ ] - [44..45) - FullWidth: 1 - Slots: 1
         SyntaxKind.Whitespace;[ ];
     Tag block - Gen<TagHelper> - 51 - (45:0,45) - p - ptaghelper
         StartTagAndEndTag - <p style=color:red; dynamic=@DateTime.Now> ... </p>
         style - NoQuotes
             Markup span - Gen<Markup> - [color:red;] - SpanEditHandler;Accepts:Any - (54:0,54) - Tokens:1
-                HtmlTokenType.Text;[color:red;];
+                SyntaxKind.HtmlTextLiteral;[color:red;];
         dynamic - DoubleQuotes
             Markup block - Gen<None> - 13 - (73:0,73)
                 Markup block - Gen<DynAttr:@(73:0,73)> - 13 - (73:0,73)
                     Expression block - Gen<Expr> - 13 - (73:0,73)
                         Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (73:0,73) - Tokens:1
-                            CSharpTokenType.Transition;[@];
+                            SyntaxKind.Transition;[@];
                         Code span - Gen<Expr> - [DateTime.Now] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K14 - (74:0,74) - Tokens:3
-                            CSharpTokenType.Identifier;[DateTime];
-                            CSharpTokenType.Dot;[.];
-                            CSharpTokenType.Identifier;[Now];
+                            SyntaxKind.Identifier;[DateTime];
+                            SyntaxKind.Dot;[.];
+                            SyntaxKind.Identifier;[Now];
         SyntaxKind.HtmlText - [World] - [87..92) - FullWidth: 5 - Slots: 1
-            SyntaxKind.HtmlTextLiteralToken;[World];
+            SyntaxKind.HtmlTextLiteral;[World];

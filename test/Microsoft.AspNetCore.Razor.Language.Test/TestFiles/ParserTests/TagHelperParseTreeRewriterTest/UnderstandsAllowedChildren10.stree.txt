@@ -4,28 +4,28 @@ Markup block - Gen<None> - 69 - (0:0,0)
         Tag block - Gen<TagHelper> - 47 - (3:0,3) - strong - StrongTagHelper
             StartTagAndEndTag - <strong> ... </strong>
             SyntaxKind.HtmlText - [Title:] - [11..17) - FullWidth: 6 - Slots: 1
-                SyntaxKind.HtmlTextLiteralToken;[Title:];
+                SyntaxKind.HtmlTextLiteral;[Title:];
             Tag block - Gen<TagHelper> - 4 - (17:0,17) - br - BRTagHelper
                 StartTagOnly - <br>
             Tag block - Gen<None> - 4 - (21:0,21)
                 Markup span - Gen<Markup> - [<em>] - SpanEditHandler;Accepts:Any - (21:0,21) - Tokens:3
-                    HtmlTokenType.OpenAngle;[<];
-                    HtmlTokenType.Text;[em];
-                    HtmlTokenType.CloseAngle;[>];
+                    SyntaxKind.OpenAngle;[<];
+                    SyntaxKind.HtmlTextLiteral;[em];
+                    SyntaxKind.CloseAngle;[>];
             SyntaxKind.HtmlText - [A Very Cool] - [25..36) - FullWidth: 11 - Slots: 1
                 SyntaxKind.List - [A Very Cool] - [25..36) - FullWidth: 11 - Slots: 5
-                    SyntaxKind.HtmlTextLiteralToken;[A];
+                    SyntaxKind.HtmlTextLiteral;[A];
                     SyntaxKind.Whitespace;[ ];
-                    SyntaxKind.HtmlTextLiteralToken;[Very];
+                    SyntaxKind.HtmlTextLiteral;[Very];
                     SyntaxKind.Whitespace;[ ];
-                    SyntaxKind.HtmlTextLiteralToken;[Cool];
+                    SyntaxKind.HtmlTextLiteral;[Cool];
             Tag block - Gen<None> - 5 - (36:0,36)
                 Markup span - Gen<Markup> - [</em>] - SpanEditHandler;Accepts:Any - (36:0,36) - Tokens:4
-                    HtmlTokenType.OpenAngle;[<];
-                    HtmlTokenType.ForwardSlash;[/];
-                    HtmlTokenType.Text;[em];
-                    HtmlTokenType.CloseAngle;[>];
+                    SyntaxKind.OpenAngle;[<];
+                    SyntaxKind.ForwardSlash;[/];
+                    SyntaxKind.HtmlTextLiteral;[em];
+                    SyntaxKind.CloseAngle;[>];
         Tag block - Gen<TagHelper> - 6 - (50:0,50) - br - BRTagHelper
             SelfClosing - <br />
         SyntaxKind.HtmlText - [Something] - [56..65) - FullWidth: 9 - Slots: 1
-            SyntaxKind.HtmlTextLiteralToken;[Something];
+            SyntaxKind.HtmlTextLiteral;[Something];

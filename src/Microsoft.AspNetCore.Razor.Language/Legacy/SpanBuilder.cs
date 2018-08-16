@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
     internal class SpanBuilder
     {
         private SourceLocation _start;
-        private List<IToken> _tokens;
+        private List<SyntaxToken> _tokens;
         private SourceLocationTracker _tracker;
 
         public SpanBuilder(Span original)
@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             _start = original.Start;
             ChunkGenerator = original.ChunkGenerator;
 
-            _tokens = new List<IToken>(original.Tokens);
+            _tokens = new List<SyntaxToken>(original.Tokens.Select(t =>t.Green));
             _tracker = new SourceLocationTracker(original.Start);
         }
 
@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             Start = location;
         }
 
-        public HtmlNodeSyntax SyntaxNode { get; private set; }
+        public Syntax.GreenNode SyntaxNode { get; private set; }
 
         public ISpanChunkGenerator ChunkGenerator { get; set; }
 
@@ -53,13 +53,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         public SpanKindInternal Kind { get; set; }
 
-        public IReadOnlyList<IToken> Tokens
+        public IReadOnlyList<SyntaxToken> Tokens
         {
             get
             {
                 if (_tokens == null)
                 {
-                    _tokens = new List<IToken>();
+                    _tokens = new List<SyntaxToken>();
                 }
 
                 return _tokens;
@@ -73,9 +73,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Need to potentially allocate a new list because Span.ReplaceWith takes ownership
             // of the original list.
             _tokens = null;
-            _tokens = new List<IToken>();
+            _tokens = new List<SyntaxToken>();
 
-            EditHandler = SpanEditHandler.CreateDefault((content) => Enumerable.Empty<IToken>());
+            EditHandler = SpanEditHandler.CreateDefault((content) => Enumerable.Empty<SyntaxToken>());
             ChunkGenerator = SpanChunkGenerator.Null;
             Start = SourceLocation.Undefined;
         }
@@ -85,12 +85,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             SyntaxNode = GetSyntaxNode(syntaxKind);
 
             var span = new Span(this);
-            
-            for (var i = 0; i < span.Tokens.Count; i++)
-            {
-                var token = span.Tokens[i];
-                token.Parent = span;
-            }
 
             return span;
         }
@@ -100,7 +94,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             _tokens?.Clear();
         }
 
-        public void Accept(IToken token)
+        public void Accept(SyntaxToken token)
         {
             if (token == null)
             {
@@ -116,20 +110,20 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             _tracker.UpdateLocation(token.Content);
         }
 
-        private HtmlNodeSyntax GetSyntaxNode(SyntaxKind syntaxKind)
+        private Syntax.GreenNode GetSyntaxNode(SyntaxKind syntaxKind)
         {
             if (syntaxKind == SyntaxKind.HtmlText)
             {
                 var textTokens = new SyntaxListBuilder<SyntaxToken>(SyntaxListBuilder.Create());
                 foreach (var token in Tokens)
                 {
-                    if (token.SyntaxKind == SyntaxKind.Unknown)
+                    if (token.Kind == SyntaxKind.Unknown)
                     {
-                        Debug.Assert(false, $"Unexpected html token {((HtmlToken)token).Type}");
+                        Debug.Assert(false, $"Unexpected token {token.Kind}");
                         continue;
                     }
 
-                    textTokens.Add(token.SyntaxToken);
+                    textTokens.Add(token);
                 }
                 var textResult = textTokens.ToList();
                 return SyntaxFactory.HtmlText(new SyntaxList<SyntaxToken>(textResult.Node));

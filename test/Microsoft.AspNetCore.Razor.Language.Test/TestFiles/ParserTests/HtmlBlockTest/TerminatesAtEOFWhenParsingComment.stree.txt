@@ -1,8 +1,8 @@
 Markup block - Gen<None> - 9 - (0:0,0)
     Markup span - Gen<Markup> - [<!--<foo>] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:6
-        HtmlTokenType.OpenAngle;[<];
-        HtmlTokenType.Bang;[!];
-        HtmlTokenType.DoubleHyphen;[--];
-        HtmlTokenType.OpenAngle;[<];
-        HtmlTokenType.Text;[foo];
-        HtmlTokenType.CloseAngle;[>];
+        SyntaxKind.OpenAngle;[<];
+        SyntaxKind.Bang;[!];
+        SyntaxKind.DoubleHyphen;[--];
+        SyntaxKind.OpenAngle;[<];
+        SyntaxKind.HtmlTextLiteral;[foo];
+        SyntaxKind.CloseAngle;[>];

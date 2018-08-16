@@ -377,6 +377,70 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
         }
         #endregion
 
+        #region Equivalence 
+        public virtual bool IsEquivalentTo(GreenNode other)
+        {
+            if (this == other)
+            {
+                return true;
+            }
+
+            if (other == null)
+            {
+                return false;
+            }
+
+            return EquivalentToInternal(this, other);
+        }
+
+        private static bool EquivalentToInternal(GreenNode node1, GreenNode node2)
+        {
+            if (node1.Kind != node2.Kind)
+            {
+                // A single-element list is usually represented as just a single node,
+                // but can be represented as a List node with one child. Move to that
+                // child if necessary.
+                if (node1.IsList && node1.SlotCount == 1)
+                {
+                    node1 = node1.GetSlot(0);
+                }
+
+                if (node2.IsList && node2.SlotCount == 1)
+                {
+                    node2 = node2.GetSlot(0);
+                }
+
+                if (node1.Kind != node2.Kind)
+                {
+                    return false;
+                }
+            }
+
+            if (node1.FullWidth != node2.FullWidth)
+            {
+                return false;
+            }
+
+            var n = node1.SlotCount;
+            if (n != node2.SlotCount)
+            {
+                return false;
+            }
+
+            for (var i = 0; i < n; i++)
+            {
+                var node1Child = node1.GetSlot(i);
+                var node2Child = node2.GetSlot(i);
+                if (node1Child != null && node2Child != null && !node1Child.IsEquivalentTo(node2Child))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+        #endregion
+
         #region Factories
         public virtual GreenNode CreateList(IEnumerable<GreenNode> nodes, bool alwaysCreateListNode = false)
         {

@@ -5,20 +5,20 @@ Markup block - Gen<None> - 65 - (0:0,0)
             Markup block - Gen<None> - 0 - (0:0,0)
         class - DoubleQuotes
             Markup span - Gen<Markup> - [btn] - SpanEditHandler;Accepts:Any - (21:0,21) - Tokens:1
-                HtmlTokenType.Text;[btn];
+                SyntaxKind.HtmlTextLiteral;[btn];
         catchAll - DoubleQuotes
             Markup block - Gen<None> - 4 - (36:0,36)
                 Markup block - Gen<None> - 2 - (36:0,36)
                     Markup span - Gen<Markup> - [@] - SpanEditHandler;Accepts:None - (36:0,36) - Tokens:1
-                        HtmlTokenType.Transition;[@];
+                        SyntaxKind.Transition;[@];
                     Markup span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (37:0,37) - Tokens:1
-                        HtmlTokenType.Transition;[@];
+                        SyntaxKind.Transition;[@];
                 Markup span - Gen<Markup> - [hi] - SpanEditHandler;Accepts:Any - (38:0,38) - Tokens:1
-                    HtmlTokenType.Text;[hi];
+                    SyntaxKind.HtmlTextLiteral;[hi];
         SyntaxKind.HtmlText - [words and spaces] - [43..59) - FullWidth: 16 - Slots: 1
             SyntaxKind.List - [words and spaces] - [43..59) - FullWidth: 16 - Slots: 5
-                SyntaxKind.HtmlTextLiteralToken;[words];
+                SyntaxKind.HtmlTextLiteral;[words];
                 SyntaxKind.Whitespace;[ ];
-                SyntaxKind.HtmlTextLiteralToken;[and];
+                SyntaxKind.HtmlTextLiteral;[and];
                 SyntaxKind.Whitespace;[ ];
-                SyntaxKind.HtmlTextLiteralToken;[spaces];
+                SyntaxKind.HtmlTextLiteral;[spaces];

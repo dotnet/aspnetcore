@@ -2,48 +2,48 @@ Markup block - Gen<None> - 77 - (0:0,0)
     Tag block - Gen<TagHelper> - 77 - (0:0,0) - p - ptaghelper
         StartTagAndEndTag - <p> ... </p>
         Markup span - Gen<Markup> - [Hello World ] - SpanEditHandler;Accepts:Any - (3:0,3) - Tokens:4
-            HtmlTokenType.Text;[Hello];
-            HtmlTokenType.WhiteSpace;[ ];
-            HtmlTokenType.Text;[World];
-            HtmlTokenType.WhiteSpace;[ ];
+            SyntaxKind.HtmlTextLiteral;[Hello];
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.HtmlTextLiteral;[World];
+            SyntaxKind.Whitespace;[ ];
         Statement block - Gen<None> - 58 - (15:0,15)
             Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (15:0,15) - Tokens:1
-                CSharpTokenType.Transition;[@];
+                SyntaxKind.Transition;[@];
             Code span - Gen<Stmt> - [do { var foo = bar;] - SpanEditHandler;Accepts:Any - (16:0,16) - Tokens:12
-                CSharpTokenType.Keyword;[do];
-                CSharpTokenType.WhiteSpace;[ ];
-                CSharpTokenType.LeftBrace;[{];
-                CSharpTokenType.WhiteSpace;[ ];
-                CSharpTokenType.Identifier;[var];
-                CSharpTokenType.WhiteSpace;[ ];
-                CSharpTokenType.Identifier;[foo];
-                CSharpTokenType.WhiteSpace;[ ];
-                CSharpTokenType.Assign;[=];
-                CSharpTokenType.WhiteSpace;[ ];
-                CSharpTokenType.Identifier;[bar];
-                CSharpTokenType.Semicolon;[;];
+                SyntaxKind.Keyword;[do];
+                SyntaxKind.Whitespace;[ ];
+                SyntaxKind.LeftBrace;[{];
+                SyntaxKind.Whitespace;[ ];
+                SyntaxKind.Identifier;[var];
+                SyntaxKind.Whitespace;[ ];
+                SyntaxKind.Identifier;[foo];
+                SyntaxKind.Whitespace;[ ];
+                SyntaxKind.Assign;[=];
+                SyntaxKind.Whitespace;[ ];
+                SyntaxKind.Identifier;[bar];
+                SyntaxKind.Semicolon;[;];
             Markup block - Gen<None> - 12 - (35:0,35)
                 Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:Any - (35:0,35) - Tokens:1
-                    HtmlTokenType.WhiteSpace;[ ];
+                    SyntaxKind.Whitespace;[ ];
                 Tag block - Gen<TagHelper> - 10 - (36:0,36) - p - ptaghelper
                     StartTagAndEndTag - <p> ... </p>
                     Markup span - Gen<Markup> - [Foo] - SpanEditHandler;Accepts:Any - (39:0,39) - Tokens:1
-                        HtmlTokenType.Text;[Foo];
+                        SyntaxKind.HtmlTextLiteral;[Foo];
                 Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:None - (46:0,46) - Tokens:1
-                    HtmlTokenType.WhiteSpace;[ ];
+                    SyntaxKind.Whitespace;[ ];
             Code span - Gen<Stmt> - [foo++; } while (foo<bar>);] - SpanEditHandler;Accepts:None - (47:0,47) - Tokens:15
-                CSharpTokenType.Identifier;[foo];
-                CSharpTokenType.Increment;[++];
-                CSharpTokenType.Semicolon;[;];
-                CSharpTokenType.WhiteSpace;[ ];
-                CSharpTokenType.RightBrace;[}];
-                CSharpTokenType.WhiteSpace;[ ];
-                CSharpTokenType.Keyword;[while];
-                CSharpTokenType.WhiteSpace;[ ];
-                CSharpTokenType.LeftParenthesis;[(];
-                CSharpTokenType.Identifier;[foo];
-                CSharpTokenType.LessThan;[<];
-                CSharpTokenType.Identifier;[bar];
-                CSharpTokenType.GreaterThan;[>];
-                CSharpTokenType.RightParenthesis;[)];
-                CSharpTokenType.Semicolon;[;];
+                SyntaxKind.Identifier;[foo];
+                SyntaxKind.Increment;[++];
+                SyntaxKind.Semicolon;[;];
+                SyntaxKind.Whitespace;[ ];
+                SyntaxKind.RightBrace;[}];
+                SyntaxKind.Whitespace;[ ];
+                SyntaxKind.Keyword;[while];
+                SyntaxKind.Whitespace;[ ];
+                SyntaxKind.LeftParenthesis;[(];
+                SyntaxKind.Identifier;[foo];
+                SyntaxKind.LessThan;[<];
+                SyntaxKind.Identifier;[bar];
+                SyntaxKind.GreaterThan;[>];
+                SyntaxKind.RightParenthesis;[)];
+                SyntaxKind.Semicolon;[;];

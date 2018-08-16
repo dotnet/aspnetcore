@@ -2,10 +2,10 @@ Markup block - Gen<None> - 25 - (0:0,0)
     Tag block - Gen<TagHelper> - 12 - (0:0,0) - p - ptaghelper
         StartTagAndEndTag - <p> ... </p>
         SyntaxKind.HtmlText - [Hello] - [3..8) - FullWidth: 5 - Slots: 1
-            SyntaxKind.HtmlTextLiteralToken;[Hello];
+            SyntaxKind.HtmlTextLiteral;[Hello];
     SyntaxKind.HtmlText - [ ] - [12..13) - FullWidth: 1 - Slots: 1
         SyntaxKind.Whitespace;[ ];
     Tag block - Gen<TagHelper> - 12 - (13:0,13) - p - ptaghelper
         StartTagAndEndTag - <p> ... </p>
         SyntaxKind.HtmlText - [World] - [16..21) - FullWidth: 5 - Slots: 1
-            SyntaxKind.HtmlTextLiteralToken;[World];
+            SyntaxKind.HtmlTextLiteral;[World];

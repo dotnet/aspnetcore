@@ -1,10 +1,10 @@
 Markup block - Gen<None> - 16 - (0:0,0)
     Markup span - Gen<Markup> - [<!DOCTYPE html>] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:6
-        HtmlTokenType.OpenAngle;[<];
-        HtmlTokenType.Bang;[!];
-        HtmlTokenType.Text;[DOCTYPE];
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Text;[html];
-        HtmlTokenType.CloseAngle;[>];
+        SyntaxKind.OpenAngle;[<];
+        SyntaxKind.Bang;[!];
+        SyntaxKind.HtmlTextLiteral;[DOCTYPE];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.HtmlTextLiteral;[html];
+        SyntaxKind.CloseAngle;[>];
     Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:None - (15:0,15) - Tokens:1
-        HtmlTokenType.WhiteSpace;[ ];
+        SyntaxKind.Whitespace;[ ];

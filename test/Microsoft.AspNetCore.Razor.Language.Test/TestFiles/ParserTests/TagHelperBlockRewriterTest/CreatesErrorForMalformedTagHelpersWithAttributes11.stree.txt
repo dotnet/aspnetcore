@@ -4,11 +4,11 @@ Markup block - Gen<None> - 31 - (0:0,0)
         class - DoubleQuotes
             Markup block - Gen<None> - 8 - (10:0,10)
                 Markup span - Gen<Markup> - [btn] - SpanEditHandler;Accepts:Any - (10:0,10) - Tokens:1
-                    HtmlTokenType.Text;[btn];
+                    SyntaxKind.HtmlTextLiteral;[btn];
                 Markup span - Gen<Markup> - [ bar=] - SpanEditHandler;Accepts:Any - (13:0,13) - Tokens:3
-                    HtmlTokenType.WhiteSpace;[ ];
-                    HtmlTokenType.Text;[bar];
-                    HtmlTokenType.Equals;[=];
+                    SyntaxKind.Whitespace;[ ];
+                    SyntaxKind.HtmlTextLiteral;[bar];
+                    SyntaxKind.Equals;[=];
         foo - Minimized
         Tag block - Gen<TagHelper> - 8 - (23:0,23) - strong - strongtaghelper
             StartTagAndEndTag - <strong>

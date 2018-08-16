@@ -4,32 +4,39 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Microsoft.AspNetCore.Razor.Language.Legacy;
 
 namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
 {
-    internal abstract class SyntaxToken : GreenNode
+    internal class SyntaxToken : GreenNode
     {
-        internal SyntaxToken(SyntaxKind tokenKind, string text, GreenNode leadingTrivia, GreenNode trailingTrivia)
-            : base(tokenKind, text.Length)
+        internal SyntaxToken(SyntaxKind kind, string content, RazorDiagnostic[] diagnostics)
+            : base(kind, content.Length, diagnostics, annotations: null)
         {
-            Text = text;
+            Content = content;
+        }
+
+        internal SyntaxToken(SyntaxKind kind, string content, GreenNode leadingTrivia, GreenNode trailingTrivia)
+            : base(kind, content.Length)
+        {
+            Content = content;
             LeadingTrivia = leadingTrivia;
             AdjustFlagsAndWidth(leadingTrivia);
             TrailingTrivia = trailingTrivia;
             AdjustFlagsAndWidth(trailingTrivia);
         }
 
-        internal SyntaxToken(SyntaxKind tokenKind, string text, GreenNode leadingTrivia, GreenNode trailingTrivia, RazorDiagnostic[] diagnostics, SyntaxAnnotation[] annotations)
-            : base(tokenKind, text.Length, diagnostics, annotations)
+        internal SyntaxToken(SyntaxKind kind, string content, GreenNode leadingTrivia, GreenNode trailingTrivia, RazorDiagnostic[] diagnostics, SyntaxAnnotation[] annotations)
+            : base(kind, content.Length, diagnostics, annotations)
         {
-            Text = text;
+            Content = content;
             LeadingTrivia = leadingTrivia;
             AdjustFlagsAndWidth(leadingTrivia);
             TrailingTrivia = trailingTrivia;
             AdjustFlagsAndWidth(trailingTrivia);
         }
 
-        public string Text { get; }
+        public string Content { get; }
 
         public GreenNode LeadingTrivia { get; }
 
@@ -37,7 +44,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
 
         internal override bool IsToken => true;
 
-        public override int Width => Text.Length;
+        public override int Width => Content.Length;
+
+        internal override SyntaxNode CreateRed(SyntaxNode parent, int position)
+        {
+            return new Syntax.SyntaxToken(this, parent, position);
+        }
 
         protected override void WriteTokenTo(TextWriter writer, bool leading, bool trailing)
         {
@@ -50,7 +62,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
                 }
             }
 
-            writer.Write(Text);
+            writer.Write(Content);
 
             if (trailing)
             {
@@ -87,14 +99,30 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
             return TokenWithLeadingTrivia(trivia);
         }
 
-        public abstract SyntaxToken TokenWithLeadingTrivia(GreenNode trivia);
+        public virtual SyntaxToken TokenWithLeadingTrivia(GreenNode trivia)
+        {
+            return new SyntaxToken(Kind, Content, trivia, TrailingTrivia, GetDiagnostics(), GetAnnotations());
+        }
 
         public sealed override GreenNode WithTrailingTrivia(GreenNode trivia)
         {
             return TokenWithTrailingTrivia(trivia);
         }
 
-        public abstract SyntaxToken TokenWithTrailingTrivia(GreenNode trivia);
+        public virtual SyntaxToken TokenWithTrailingTrivia(GreenNode trivia)
+        {
+            return new SyntaxToken(Kind, Content, LeadingTrivia, trivia, GetDiagnostics(), GetAnnotations());
+        }
+
+        internal override GreenNode SetDiagnostics(RazorDiagnostic[] diagnostics)
+        {
+            return new SyntaxToken(Kind, Content, LeadingTrivia, TrailingTrivia, diagnostics, GetAnnotations());
+        }
+
+        internal override GreenNode SetAnnotations(SyntaxAnnotation[] annotations)
+        {
+            return new SyntaxToken(Kind, Content, LeadingTrivia, TrailingTrivia, GetDiagnostics(), annotations);
+        }
 
         protected override sealed int GetSlotCount()
         {
@@ -103,7 +131,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
 
         internal override sealed GreenNode GetSlot(int index)
         {
-            throw new InvalidOperationException();
+            throw new InvalidOperationException("Tokens don't have slots.");
         }
 
         internal override GreenNode Accept(SyntaxVisitor visitor)
@@ -111,9 +139,56 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
             return visitor.VisitSyntaxToken(this);
         }
 
+        public override bool IsEquivalentTo(GreenNode other)
+        {
+            if (!base.IsEquivalentTo(other))
+            {
+                return false;
+            }
+
+            var otherToken = (SyntaxToken)other;
+
+            if (Content != otherToken.Content)
+            {
+                return false;
+            }
+
+            var thisLeading = GetLeadingTrivia();
+            var otherLeading = otherToken.GetLeadingTrivia();
+            if (thisLeading != otherLeading)
+            {
+                if (thisLeading == null || otherLeading == null)
+                {
+                    return false;
+                }
+
+                if (!thisLeading.IsEquivalentTo(otherLeading))
+                {
+                    return false;
+                }
+            }
+
+            var thisTrailing = GetTrailingTrivia();
+            var otherTrailing = otherToken.GetTrailingTrivia();
+            if (thisTrailing != otherTrailing)
+            {
+                if (thisTrailing == null || otherTrailing == null)
+                {
+                    return false;
+                }
+
+                if (!thisTrailing.IsEquivalentTo(otherTrailing))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
         public override string ToString()
         {
-            return Text;
+            return Content;
         }
     }
 }

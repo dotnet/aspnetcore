@@ -6,25 +6,25 @@ Markup block - Gen<None> - 71 - (0:0,0)
                 Markup block - Gen<DynAttr:@(12:0,12)> - 13 - (12:0,12)
                     Expression block - Gen<Expr> - 13 - (12:0,12)
                         Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (12:0,12) - Tokens:1
-                            CSharpTokenType.Transition;[@];
+                            SyntaxKind.Transition;[@];
                         Code span - Gen<Expr> - [DateTime.Now] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K14 - (13:0,13) - Tokens:3
-                            CSharpTokenType.Identifier;[DateTime];
-                            CSharpTokenType.Dot;[.];
-                            CSharpTokenType.Identifier;[Now];
+                            SyntaxKind.Identifier;[DateTime];
+                            SyntaxKind.Dot;[.];
+                            SyntaxKind.Identifier;[Now];
         class - DoubleQuotes
             Markup block - Gen<None> - 13 - (34:0,34)
                 Markup block - Gen<DynAttr:@(34:0,34)> - 13 - (34:0,34)
                     Expression block - Gen<Expr> - 13 - (34:0,34)
                         Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (34:0,34) - Tokens:1
-                            CSharpTokenType.Transition;[@];
+                            SyntaxKind.Transition;[@];
                         Code span - Gen<Expr> - [DateTime.Now] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K14 - (35:0,35) - Tokens:3
-                            CSharpTokenType.Identifier;[DateTime];
-                            CSharpTokenType.Dot;[.];
-                            CSharpTokenType.Identifier;[Now];
+                            SyntaxKind.Identifier;[DateTime];
+                            SyntaxKind.Dot;[.];
+                            SyntaxKind.Identifier;[Now];
         SyntaxKind.HtmlText - [words and spaces] - [49..65) - FullWidth: 16 - Slots: 1
             SyntaxKind.List - [words and spaces] - [49..65) - FullWidth: 16 - Slots: 5
-                SyntaxKind.HtmlTextLiteralToken;[words];
+                SyntaxKind.HtmlTextLiteral;[words];
                 SyntaxKind.Whitespace;[ ];
-                SyntaxKind.HtmlTextLiteralToken;[and];
+                SyntaxKind.HtmlTextLiteral;[and];
                 SyntaxKind.Whitespace;[ ];
-                SyntaxKind.HtmlTextLiteralToken;[spaces];
+                SyntaxKind.HtmlTextLiteral;[spaces];

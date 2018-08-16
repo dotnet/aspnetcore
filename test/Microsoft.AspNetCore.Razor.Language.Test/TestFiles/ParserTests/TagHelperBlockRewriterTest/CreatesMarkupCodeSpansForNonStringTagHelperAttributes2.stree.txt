@@ -3,4 +3,4 @@ Markup block - Gen<None> - 34 - (0:0,0)
         SelfClosing - <person birthday="DateTime.Now" />
         birthday - DoubleQuotes
             Code span - Gen<Expr> - [DateTime.Now] - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14 - (18:0,18) - Tokens:1
-                HtmlTokenType.Text;[DateTime.Now];
+                SyntaxKind.HtmlTextLiteral;[DateTime.Now];

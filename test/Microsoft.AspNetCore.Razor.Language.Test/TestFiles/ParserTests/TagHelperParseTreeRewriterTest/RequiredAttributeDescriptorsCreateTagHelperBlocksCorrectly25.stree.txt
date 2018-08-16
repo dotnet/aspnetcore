@@ -3,14 +3,14 @@ Markup block - Gen<None> - 49 - (0:0,0)
         StartTagAndEndTag - <p class="btn" catchAll="hi"> ... </p>
         class - DoubleQuotes
             Markup span - Gen<Markup> - [btn] - SpanEditHandler;Accepts:Any - (10:0,10) - Tokens:1
-                HtmlTokenType.Text;[btn];
+                SyntaxKind.HtmlTextLiteral;[btn];
         catchAll - DoubleQuotes
             Markup span - Gen<Markup> - [hi] - SpanEditHandler;Accepts:Any - (25:0,25) - Tokens:1
-                HtmlTokenType.Text;[hi];
+                SyntaxKind.HtmlTextLiteral;[hi];
         SyntaxKind.HtmlText - [words and spaces] - [29..45) - FullWidth: 16 - Slots: 1
             SyntaxKind.List - [words and spaces] - [29..45) - FullWidth: 16 - Slots: 5
-                SyntaxKind.HtmlTextLiteralToken;[words];
+                SyntaxKind.HtmlTextLiteral;[words];
                 SyntaxKind.Whitespace;[ ];
-                SyntaxKind.HtmlTextLiteralToken;[and];
+                SyntaxKind.HtmlTextLiteral;[and];
                 SyntaxKind.Whitespace;[ ];
-                SyntaxKind.HtmlTextLiteralToken;[spaces];
+                SyntaxKind.HtmlTextLiteral;[spaces];

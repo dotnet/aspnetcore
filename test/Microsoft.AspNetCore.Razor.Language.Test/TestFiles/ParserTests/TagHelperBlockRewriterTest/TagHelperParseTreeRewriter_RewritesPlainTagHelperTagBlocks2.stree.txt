@@ -3,6 +3,6 @@ Markup block - Gen<None> - 18 - (0:0,0)
         StartTagAndEndTag - <p> ... </p>
         SyntaxKind.HtmlText - [Hello World] - [3..14) - FullWidth: 11 - Slots: 1
             SyntaxKind.List - [Hello World] - [3..14) - FullWidth: 11 - Slots: 3
-                SyntaxKind.HtmlTextLiteralToken;[Hello];
+                SyntaxKind.HtmlTextLiteral;[Hello];
                 SyntaxKind.Whitespace;[ ];
-                SyntaxKind.HtmlTextLiteralToken;[World];
+                SyntaxKind.HtmlTextLiteral;[World];

@@ -3,44 +3,44 @@ Markup block - Gen<None> - 99 - (0:0,0)
         StartTagAndEndTag - <p class="foo" style="color:red;"> ... </p>
         class - DoubleQuotes
             Markup span - Gen<Markup> - [foo] - SpanEditHandler;Accepts:Any - (10:0,10) - Tokens:1
-                HtmlTokenType.Text;[foo];
+                SyntaxKind.HtmlTextLiteral;[foo];
         style - DoubleQuotes
             Markup span - Gen<Markup> - [color:red;] - SpanEditHandler;Accepts:Any - (22:0,22) - Tokens:1
-                HtmlTokenType.Text;[color:red;];
+                SyntaxKind.HtmlTextLiteral;[color:red;];
         SyntaxKind.HtmlText - [Hello World ] - [34..46) - FullWidth: 12 - Slots: 1
             SyntaxKind.List - [Hello World ] - [34..46) - FullWidth: 12 - Slots: 4
-                SyntaxKind.HtmlTextLiteralToken;[Hello];
+                SyntaxKind.HtmlTextLiteral;[Hello];
                 SyntaxKind.Whitespace;[ ];
-                SyntaxKind.HtmlTextLiteralToken;[World];
+                SyntaxKind.HtmlTextLiteral;[World];
                 SyntaxKind.Whitespace;[ ];
         Tag block - Gen<None> - 20 - (46:0,46)
             Markup span - Gen<Markup> - [<strong] - SpanEditHandler;Accepts:Any - (46:0,46) - Tokens:2
-                HtmlTokenType.OpenAngle;[<];
-                HtmlTokenType.Text;[strong];
+                SyntaxKind.OpenAngle;[<];
+                SyntaxKind.HtmlTextLiteral;[strong];
             Markup block - Gen<Attr:class, class="@(53:0,53),"@(64:0,64)> - 12 - (53:0,53)
                 Markup span - Gen<None> - [ class="] - SpanEditHandler;Accepts:Any - (53:0,53) - Tokens:4
-                    HtmlTokenType.WhiteSpace;[ ];
-                    HtmlTokenType.Text;[class];
-                    HtmlTokenType.Equals;[=];
-                    HtmlTokenType.DoubleQuote;["];
+                    SyntaxKind.Whitespace;[ ];
+                    SyntaxKind.HtmlTextLiteral;[class];
+                    SyntaxKind.Equals;[=];
+                    SyntaxKind.DoubleQuote;["];
                 Markup span - Gen<LitAttr:@(61:0,61)> - [foo] - SpanEditHandler;Accepts:Any - (61:0,61) - Tokens:1
-                    HtmlTokenType.Text;[foo];
+                    SyntaxKind.HtmlTextLiteral;[foo];
                 Markup span - Gen<None> - ["] - SpanEditHandler;Accepts:Any - (64:0,64) - Tokens:1
-                    HtmlTokenType.DoubleQuote;["];
+                    SyntaxKind.DoubleQuote;["];
             Markup span - Gen<Markup> - [>] - SpanEditHandler;Accepts:Any - (65:0,65) - Tokens:1
-                HtmlTokenType.CloseAngle;[>];
+                SyntaxKind.CloseAngle;[>];
         SyntaxKind.HtmlText - [inside of strong tag] - [66..86) - FullWidth: 20 - Slots: 1
             SyntaxKind.List - [inside of strong tag] - [66..86) - FullWidth: 20 - Slots: 7
-                SyntaxKind.HtmlTextLiteralToken;[inside];
+                SyntaxKind.HtmlTextLiteral;[inside];
                 SyntaxKind.Whitespace;[ ];
-                SyntaxKind.HtmlTextLiteralToken;[of];
+                SyntaxKind.HtmlTextLiteral;[of];
                 SyntaxKind.Whitespace;[ ];
-                SyntaxKind.HtmlTextLiteralToken;[strong];
+                SyntaxKind.HtmlTextLiteral;[strong];
                 SyntaxKind.Whitespace;[ ];
-                SyntaxKind.HtmlTextLiteralToken;[tag];
+                SyntaxKind.HtmlTextLiteral;[tag];
         Tag block - Gen<None> - 9 - (86:0,86)
             Markup span - Gen<Markup> - [</strong>] - SpanEditHandler;Accepts:Any - (86:0,86) - Tokens:4
-                HtmlTokenType.OpenAngle;[<];
-                HtmlTokenType.ForwardSlash;[/];
-                HtmlTokenType.Text;[strong];
-                HtmlTokenType.CloseAngle;[>];
+                SyntaxKind.OpenAngle;[<];
+                SyntaxKind.ForwardSlash;[/];
+                SyntaxKind.HtmlTextLiteral;[strong];
+                SyntaxKind.CloseAngle;[>];

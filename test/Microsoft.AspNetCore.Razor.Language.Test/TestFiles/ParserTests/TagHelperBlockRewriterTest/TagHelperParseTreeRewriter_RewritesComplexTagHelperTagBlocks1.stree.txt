@@ -3,8 +3,8 @@ Markup block - Gen<None> - 20 - (0:0,0)
         StartTagAndEndTag - <p> ... </p>
         Expression block - Gen<Expr> - 13 - (3:0,3)
             Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (3:0,3) - Tokens:1
-                CSharpTokenType.Transition;[@];
+                SyntaxKind.Transition;[@];
             Code span - Gen<Expr> - [DateTime.Now] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K14 - (4:0,4) - Tokens:3
-                CSharpTokenType.Identifier;[DateTime];
-                CSharpTokenType.Dot;[.];
-                CSharpTokenType.Identifier;[Now];
+                SyntaxKind.Identifier;[DateTime];
+                SyntaxKind.Dot;[.];
+                SyntaxKind.Identifier;[Now];

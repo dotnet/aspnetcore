@@ -1,18 +1,18 @@
 Expression block - Gen<Expr> - 29 - (0:0,0)
     Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-        CSharpTokenType.Transition;[@];
+        SyntaxKind.Transition;[@];
     Code span - Gen<Expr> - [val?.more(null ?? true)?.abc] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K14 - (1:0,1) - Tokens:14
-        CSharpTokenType.Identifier;[val];
-        CSharpTokenType.QuestionMark;[?];
-        CSharpTokenType.Dot;[.];
-        CSharpTokenType.Identifier;[more];
-        CSharpTokenType.LeftParenthesis;[(];
-        CSharpTokenType.Keyword;[null];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.NullCoalesce;[??];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Keyword;[true];
-        CSharpTokenType.RightParenthesis;[)];
-        CSharpTokenType.QuestionMark;[?];
-        CSharpTokenType.Dot;[.];
-        CSharpTokenType.Identifier;[abc];
+        SyntaxKind.Identifier;[val];
+        SyntaxKind.QuestionMark;[?];
+        SyntaxKind.Dot;[.];
+        SyntaxKind.Identifier;[more];
+        SyntaxKind.LeftParenthesis;[(];
+        SyntaxKind.Keyword;[null];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.NullCoalesce;[??];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.Keyword;[true];
+        SyntaxKind.RightParenthesis;[)];
+        SyntaxKind.QuestionMark;[?];
+        SyntaxKind.Dot;[.];
+        SyntaxKind.Identifier;[abc];

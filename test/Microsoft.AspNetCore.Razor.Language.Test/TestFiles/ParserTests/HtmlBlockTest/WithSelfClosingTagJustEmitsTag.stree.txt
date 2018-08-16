@@ -1,8 +1,8 @@
 Markup block - Gen<None> - 7 - (0:0,0)
     Tag block - Gen<None> - 7 - (0:0,0)
         Markup span - Gen<Markup> - [<foo />] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:5
-            HtmlTokenType.OpenAngle;[<];
-            HtmlTokenType.Text;[foo];
-            HtmlTokenType.WhiteSpace;[ ];
-            HtmlTokenType.ForwardSlash;[/];
-            HtmlTokenType.CloseAngle;[>];
+            SyntaxKind.OpenAngle;[<];
+            SyntaxKind.HtmlTextLiteral;[foo];
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.ForwardSlash;[/];
+            SyntaxKind.CloseAngle;[>];

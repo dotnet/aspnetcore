@@ -6,11 +6,11 @@ Markup block - Gen<None> - 45 - (0:0,0)
                 Markup block - Gen<DynAttr:@(16:0,16)> - 13 - (16:0,16)
                     Expression block - Gen<Expr> - 13 - (16:0,16)
                         Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (16:0,16) - Tokens:1
-                            CSharpTokenType.Transition;[@];
+                            SyntaxKind.Transition;[@];
                         Code span - Gen<Expr> - [DateTime.Now] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K14 - (17:0,17) - Tokens:3
-                            CSharpTokenType.Identifier;[DateTime];
-                            CSharpTokenType.Dot;[.];
-                            CSharpTokenType.Identifier;[Now];
+                            SyntaxKind.Identifier;[DateTime];
+                            SyntaxKind.Dot;[.];
+                            SyntaxKind.Identifier;[Now];
         class - DoubleQuotes
             Markup span - Gen<Markup> - [btn] - SpanEditHandler;Accepts:Any - (38:0,38) - Tokens:1
-                HtmlTokenType.Text;[btn];
+                SyntaxKind.HtmlTextLiteral;[btn];

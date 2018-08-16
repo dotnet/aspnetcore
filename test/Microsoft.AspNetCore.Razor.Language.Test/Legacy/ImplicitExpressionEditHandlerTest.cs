@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNetCore.Razor.Language.Syntax;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
@@ -159,7 +160,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void TryUpdateBalanceCount_SingleLeftParenthesis_CountsCorrectly()
         {
             // Arrange
-            var token = new CSharpToken("(", CSharpTokenType.LeftParenthesis);
+            var token = SyntaxFactory.Token(SyntaxKind.LeftParenthesis, "(");
             var count = 0;
 
             // Act
@@ -174,7 +175,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void TryUpdateBalanceCount_SingleRightParenthesis_CountsCorrectly()
         {
             // Arrange
-            var token = new CSharpToken(")", CSharpTokenType.RightParenthesis);
+            var token = SyntaxFactory.Token(SyntaxKind.RightParenthesis, ")");
             var count = 2;
 
             // Act
@@ -189,7 +190,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void TryUpdateBalanceCount_IncompleteStringLiteral_CountsCorrectly()
         {
             // Arrange
-            var token = new CSharpToken("\"((", CSharpTokenType.StringLiteral);
+            var token = SyntaxFactory.Token(SyntaxKind.StringLiteral, "\"((");
             var count = 2;
 
             // Act
@@ -204,7 +205,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void TryUpdateBalanceCount_IncompleteCharacterLiteral_CountsCorrectly()
         {
             // Arrange
-            var token = new CSharpToken("'((", CSharpTokenType.CharacterLiteral);
+            var token = SyntaxFactory.Token(SyntaxKind.CharacterLiteral, "'((");
             var count = 2;
 
             // Act
@@ -219,7 +220,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void TryUpdateBalanceCount_CompleteStringLiteral_CountsCorrectly()
         {
             // Arrange
-            var token = new CSharpToken("\"((\"", CSharpTokenType.StringLiteral);
+            var token = SyntaxFactory.Token(SyntaxKind.StringLiteral, "\"((\"");
             var count = 2;
 
             // Act
@@ -234,7 +235,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void TryUpdateBalanceCount_CompleteCharacterLiteral_CountsCorrectly()
         {
             // Arrange
-            var token = new CSharpToken("'('", CSharpTokenType.CharacterLiteral);
+            var token = SyntaxFactory.Token(SyntaxKind.CharacterLiteral, "'('");
             var count = 2;
 
             // Act
@@ -249,7 +250,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void TryUpdateBalanceCount_InvalidParenthesis_ReturnsFalse()
         {
             // Arrange
-            var token = new CSharpToken(")", CSharpTokenType.RightParenthesis);
+            var token = SyntaxFactory.Token(SyntaxKind.RightParenthesis, ")");
             var count = 0;
 
             // Act
@@ -264,7 +265,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void TryUpdateBalanceCount_InvalidParenthesisStringLiteral_ReturnsFalse()
         {
             // Arrange
-            var token = new CSharpToken("\")", CSharpTokenType.StringLiteral);
+            var token = SyntaxFactory.Token(SyntaxKind.StringLiteral, "\")");
             var count = 0;
 
             // Act
@@ -279,7 +280,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void TryUpdateBalanceCount_InvalidParenthesisCharacterLiteral_ReturnsFalse()
         {
             // Arrange
-            var token = new CSharpToken("')", CSharpTokenType.CharacterLiteral);
+            var token = SyntaxFactory.Token(SyntaxKind.CharacterLiteral, "')");
             var count = 0;
 
             // Act
@@ -453,11 +454,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return span;
         }
 
-        private static IReadOnlyList<CSharpToken> GetTokens(SourceLocation start, string content)
+        private static IReadOnlyList<SyntaxToken> GetTokens(SourceLocation start, string content)
         {
             var parent = GetSpan(start, content);
-            var tokens = parent.Tokens.Cast<CSharpToken>().ToArray();
-            return tokens;
+            return parent.Tokens;
         }
     }
 }

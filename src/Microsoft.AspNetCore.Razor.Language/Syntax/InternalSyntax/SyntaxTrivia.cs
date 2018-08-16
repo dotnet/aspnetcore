@@ -76,5 +76,20 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
         {
             return new SyntaxTrivia(Kind, Text, GetDiagnostics(), annotations);
         }
+
+        public override bool IsEquivalentTo(GreenNode other)
+        {
+            if (!base.IsEquivalentTo(other))
+            {
+                return false;
+            }
+
+            if (Text != ((SyntaxTrivia)other).Text)
+            {
+                return false;
+            }
+
+            return true;
+        }
     }
 }

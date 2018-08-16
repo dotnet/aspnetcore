@@ -1,39 +1,39 @@
 Markup block - Gen<None> - 85 - (0:0,0)
     Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:1
-        HtmlTokenType.Unknown;[];
+        SyntaxKind.Unknown;[];
     Directive block - Gen<Directive:{custom;SingleLine;FileScopedMultipleOccurring}> - 44 - (0:0,0)
         Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-            CSharpTokenType.Transition;[@];
+            SyntaxKind.Transition;[@];
         MetaCode span - Gen<None> - [custom] - SpanEditHandler;Accepts:None - (1:0,1) - Tokens:1
-            CSharpTokenType.Identifier;[custom];
+            SyntaxKind.Identifier;[custom];
         Code span - Gen<None> - [ ] - SpanEditHandler;Accepts:WhiteSpace - (7:0,7) - Tokens:1
-            CSharpTokenType.WhiteSpace;[ ];
+            SyntaxKind.Whitespace;[ ];
         Code span - Gen<DirectiveToken {;Type;Opt:False}> - [System.Text.Encoding.ASCIIEncoding] - DirectiveTokenEditHandler;Accepts:NonWhiteSpace - (8:0,8) - Tokens:7
-            CSharpTokenType.Identifier;[System];
-            CSharpTokenType.Dot;[.];
-            CSharpTokenType.Identifier;[Text];
-            CSharpTokenType.Dot;[.];
-            CSharpTokenType.Identifier;[Encoding];
-            CSharpTokenType.Dot;[.];
-            CSharpTokenType.Identifier;[ASCIIEncoding];
+            SyntaxKind.Identifier;[System];
+            SyntaxKind.Dot;[.];
+            SyntaxKind.Identifier;[Text];
+            SyntaxKind.Dot;[.];
+            SyntaxKind.Identifier;[Encoding];
+            SyntaxKind.Dot;[.];
+            SyntaxKind.Identifier;[ASCIIEncoding];
         Markup span - Gen<None> - [LF] - SpanEditHandler;Accepts:WhiteSpace - (42:0,42) - Tokens:1
-            CSharpTokenType.NewLine;[LF];
+            SyntaxKind.NewLine;[LF];
     Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (44:1,0) - Tokens:1
-        HtmlTokenType.Unknown;[];
+        SyntaxKind.Unknown;[];
     Directive block - Gen<Directive:{custom;SingleLine;FileScopedMultipleOccurring}> - 41 - (44:1,0)
         Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (44:1,0) - Tokens:1
-            CSharpTokenType.Transition;[@];
+            SyntaxKind.Transition;[@];
         MetaCode span - Gen<None> - [custom] - SpanEditHandler;Accepts:None - (45:1,1) - Tokens:1
-            CSharpTokenType.Identifier;[custom];
+            SyntaxKind.Identifier;[custom];
         Code span - Gen<None> - [ ] - SpanEditHandler;Accepts:WhiteSpace - (51:1,7) - Tokens:1
-            CSharpTokenType.WhiteSpace;[ ];
+            SyntaxKind.Whitespace;[ ];
         Code span - Gen<DirectiveToken {;Type;Opt:False}> - [System.Text.Encoding.UTF8Encoding] - DirectiveTokenEditHandler;Accepts:NonWhiteSpace - (52:1,8) - Tokens:7
-            CSharpTokenType.Identifier;[System];
-            CSharpTokenType.Dot;[.];
-            CSharpTokenType.Identifier;[Text];
-            CSharpTokenType.Dot;[.];
-            CSharpTokenType.Identifier;[Encoding];
-            CSharpTokenType.Dot;[.];
-            CSharpTokenType.Identifier;[UTF8Encoding];
+            SyntaxKind.Identifier;[System];
+            SyntaxKind.Dot;[.];
+            SyntaxKind.Identifier;[Text];
+            SyntaxKind.Dot;[.];
+            SyntaxKind.Identifier;[Encoding];
+            SyntaxKind.Dot;[.];
+            SyntaxKind.Identifier;[UTF8Encoding];
     Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (85:1,41) - Tokens:1
-        HtmlTokenType.Unknown;[];
+        SyntaxKind.Unknown;[];

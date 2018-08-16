@@ -1,25 +1,25 @@
 Markup block - Gen<None> - 24 - (0:0,0)
     Tag block - Gen<None> - 24 - (0:0,0)
         Markup span - Gen<Markup> - [<a] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:2
-            HtmlTokenType.OpenAngle;[<];
-            HtmlTokenType.Text;[a];
+            SyntaxKind.OpenAngle;[<];
+            SyntaxKind.HtmlTextLiteral;[a];
         Markup block - Gen<Attr:href, href='@(2:0,2),'@(20:0,20)> - 19 - (2:0,2)
             Markup span - Gen<None> - [ href='] - SpanEditHandler;Accepts:Any - (2:0,2) - Tokens:4
-                HtmlTokenType.WhiteSpace;[ ];
-                HtmlTokenType.Text;[href];
-                HtmlTokenType.Equals;[=];
-                HtmlTokenType.SingleQuote;['];
+                SyntaxKind.Whitespace;[ ];
+                SyntaxKind.HtmlTextLiteral;[href];
+                SyntaxKind.Equals;[=];
+                SyntaxKind.SingleQuote;['];
             Markup span - Gen<LitAttr:@(9:0,9)> - [Foo] - SpanEditHandler;Accepts:Any - (9:0,9) - Tokens:1
-                HtmlTokenType.Text;[Foo];
+                SyntaxKind.HtmlTextLiteral;[Foo];
             Markup span - Gen<LitAttr: @(12:0,12)> - [ Bar] - SpanEditHandler;Accepts:Any - (12:0,12) - Tokens:2
-                HtmlTokenType.WhiteSpace;[ ];
-                HtmlTokenType.Text;[Bar];
+                SyntaxKind.Whitespace;[ ];
+                SyntaxKind.HtmlTextLiteral;[Bar];
             Markup span - Gen<LitAttr: @(16:0,16)> - [ Baz] - SpanEditHandler;Accepts:Any - (16:0,16) - Tokens:2
-                HtmlTokenType.WhiteSpace;[ ];
-                HtmlTokenType.Text;[Baz];
+                SyntaxKind.Whitespace;[ ];
+                SyntaxKind.HtmlTextLiteral;[Baz];
             Markup span - Gen<None> - ['] - SpanEditHandler;Accepts:Any - (20:0,20) - Tokens:1
-                HtmlTokenType.SingleQuote;['];
+                SyntaxKind.SingleQuote;['];
         Markup span - Gen<Markup> - [ />] - SpanEditHandler;Accepts:None - (21:0,21) - Tokens:3
-            HtmlTokenType.WhiteSpace;[ ];
-            HtmlTokenType.ForwardSlash;[/];
-            HtmlTokenType.CloseAngle;[>];
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.ForwardSlash;[/];
+            SyntaxKind.CloseAngle;[>];

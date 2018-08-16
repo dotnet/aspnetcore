@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
+using Microsoft.AspNetCore.Razor.Language.Syntax;
 using Moq;
 using Xunit;
 
@@ -164,7 +165,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         public void IsDirectiveCompletableToken_ReturnsTrueForCSharpIdentifiers()
         {
             // Arrange
-            var csharpToken = new CSharpToken("model", CSharpTokenType.Identifier);
+            var csharpToken = SyntaxFactory.Token(SyntaxKind.Identifier, "model");
 
             // Act
             var result = DefaultRazorCompletionFactsService.IsDirectiveCompletableToken(csharpToken);
@@ -177,7 +178,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         public void IsDirectiveCompletableToken_ReturnsTrueForCSharpMarkerTokens()
         {
             // Arrange
-            var csharpToken = new CSharpToken(string.Empty, CSharpTokenType.Unknown);
+            var csharpToken = SyntaxFactory.Token(SyntaxKind.Unknown, string.Empty);
 
             // Act
             var result = DefaultRazorCompletionFactsService.IsDirectiveCompletableToken(csharpToken);
@@ -190,7 +191,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         public void IsDirectiveCompletableToken_ReturnsFalseForNonCSharpTokens()
         {
             // Arrange
-            var token = Mock.Of<IToken>();
+            var token = SyntaxFactory.Token(SyntaxKind.HtmlTextLiteral, string.Empty);
 
             // Act
             var result = DefaultRazorCompletionFactsService.IsDirectiveCompletableToken(token);
@@ -203,7 +204,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         public void IsDirectiveCompletableToken_ReturnsFalseForInvalidCSharpTokens()
         {
             // Arrange
-            var csharpToken = new CSharpToken("~", CSharpTokenType.Tilde);
+            var csharpToken = SyntaxFactory.Token(SyntaxKind.Tilde, "~");
 
             // Act
             var result = DefaultRazorCompletionFactsService.IsDirectiveCompletableToken(csharpToken);

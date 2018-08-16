@@ -1,24 +1,24 @@
 Statement block - Gen<None> - 29 - (0:0,0)
     MetaCode span - Gen<None> - [{] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-        CSharpTokenType.LeftBrace;[{];
+        SyntaxKind.LeftBrace;[{];
     Code span - Gen<Stmt> - [string.Format(] - AutoCompleteEditHandler;Accepts:Any,AutoComplete:[<null>];AtEOL - (1:0,1) - Tokens:4
-        CSharpTokenType.Keyword;[string];
-        CSharpTokenType.Dot;[.];
-        CSharpTokenType.Identifier;[Format];
-        CSharpTokenType.LeftParenthesis;[(];
+        SyntaxKind.Keyword;[string];
+        SyntaxKind.Dot;[.];
+        SyntaxKind.Identifier;[Format];
+        SyntaxKind.LeftParenthesis;[(];
     Markup block - Gen<None> - 13 - (15:0,15)
         Tag block - Gen<None> - 6 - (15:0,15)
             Markup span - Gen<Markup> - [<html>] - SpanEditHandler;Accepts:None - (15:0,15) - Tokens:3
-                HtmlTokenType.OpenAngle;[<];
-                HtmlTokenType.Text;[html];
-                HtmlTokenType.CloseAngle;[>];
+                SyntaxKind.OpenAngle;[<];
+                SyntaxKind.HtmlTextLiteral;[html];
+                SyntaxKind.CloseAngle;[>];
         Tag block - Gen<None> - 7 - (21:0,21)
             Markup span - Gen<Markup> - [</html>] - SpanEditHandler;Accepts:None - (21:0,21) - Tokens:4
-                HtmlTokenType.OpenAngle;[<];
-                HtmlTokenType.ForwardSlash;[/];
-                HtmlTokenType.Text;[html];
-                HtmlTokenType.CloseAngle;[>];
+                SyntaxKind.OpenAngle;[<];
+                SyntaxKind.ForwardSlash;[/];
+                SyntaxKind.HtmlTextLiteral;[html];
+                SyntaxKind.CloseAngle;[>];
     Code span - Gen<Stmt> - [] - SpanEditHandler;Accepts:Any - (28:0,28) - Tokens:1
-        CSharpTokenType.Unknown;[];
+        SyntaxKind.Unknown;[];
     MetaCode span - Gen<None> - [}] - SpanEditHandler;Accepts:None - (28:0,28) - Tokens:1
-        CSharpTokenType.RightBrace;[}];
+        SyntaxKind.RightBrace;[}];

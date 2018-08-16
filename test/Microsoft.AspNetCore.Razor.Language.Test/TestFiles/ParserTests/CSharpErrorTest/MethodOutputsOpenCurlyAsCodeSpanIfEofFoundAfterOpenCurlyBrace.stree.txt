@@ -1,5 +1,5 @@
 Statement block - Gen<None> - 1 - (0:0,0)
     MetaCode span - Gen<None> - [{] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-        CSharpTokenType.LeftBrace;[{];
+        SyntaxKind.LeftBrace;[{];
     Code span - Gen<Stmt> - [] - AutoCompleteEditHandler;Accepts:Any,AutoComplete:[}];AtEOL - (1:0,1) - Tokens:1
-        CSharpTokenType.Unknown;[];
+        SyntaxKind.Unknown;[];

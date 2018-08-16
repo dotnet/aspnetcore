@@ -1,4 +1,4 @@
 Markup block - Gen<None> - 2 - (0:0,0)
     Markup span - Gen<Markup> - [<!] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:2
-        HtmlTokenType.OpenAngle;[<];
-        HtmlTokenType.Bang;[!];
+        SyntaxKind.OpenAngle;[<];
+        SyntaxKind.Bang;[!];

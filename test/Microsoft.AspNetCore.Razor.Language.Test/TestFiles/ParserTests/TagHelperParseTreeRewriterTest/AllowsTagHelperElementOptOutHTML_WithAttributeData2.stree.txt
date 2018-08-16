@@ -1,29 +1,29 @@
 Markup block - Gen<None> - 21 - (0:0,0)
     Tag block - Gen<None> - 16 - (0:0,0)
         Markup span - Gen<Markup> - [<] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:1
-            HtmlTokenType.OpenAngle;[<];
+            SyntaxKind.OpenAngle;[<];
         MetaCode span - Gen<None> - [!] - SpanEditHandler;Accepts:None - (1:0,1) - Tokens:1
-            HtmlTokenType.Bang;[!];
+            SyntaxKind.Bang;[!];
         Markup span - Gen<Markup> - [p] - SpanEditHandler;Accepts:Any - (2:0,2) - Tokens:1
-            HtmlTokenType.Text;[p];
+            SyntaxKind.HtmlTextLiteral;[p];
         Markup block - Gen<Attr:class, class="@(3:0,3),"@(14:0,14)> - 12 - (3:0,3)
             Markup span - Gen<None> - [ class="] - SpanEditHandler;Accepts:Any - (3:0,3) - Tokens:4
-                HtmlTokenType.WhiteSpace;[ ];
-                HtmlTokenType.Text;[class];
-                HtmlTokenType.Equals;[=];
-                HtmlTokenType.DoubleQuote;["];
+                SyntaxKind.Whitespace;[ ];
+                SyntaxKind.HtmlTextLiteral;[class];
+                SyntaxKind.Equals;[=];
+                SyntaxKind.DoubleQuote;["];
             Markup span - Gen<LitAttr:@(11:0,11)> - [btn] - SpanEditHandler;Accepts:Any - (11:0,11) - Tokens:1
-                HtmlTokenType.Text;[btn];
+                SyntaxKind.HtmlTextLiteral;[btn];
             Markup span - Gen<None> - ["] - SpanEditHandler;Accepts:Any - (14:0,14) - Tokens:1
-                HtmlTokenType.DoubleQuote;["];
+                SyntaxKind.DoubleQuote;["];
         Markup span - Gen<Markup> - [>] - SpanEditHandler;Accepts:Any - (15:0,15) - Tokens:1
-            HtmlTokenType.CloseAngle;[>];
+            SyntaxKind.CloseAngle;[>];
     Tag block - Gen<None> - 5 - (16:0,16)
         Markup span - Gen<Markup> - [</] - SpanEditHandler;Accepts:Any - (16:0,16) - Tokens:2
-            HtmlTokenType.OpenAngle;[<];
-            HtmlTokenType.ForwardSlash;[/];
+            SyntaxKind.OpenAngle;[<];
+            SyntaxKind.ForwardSlash;[/];
         MetaCode span - Gen<None> - [!] - SpanEditHandler;Accepts:None - (18:0,18) - Tokens:1
-            HtmlTokenType.Bang;[!];
+            SyntaxKind.Bang;[!];
         Markup span - Gen<Markup> - [p>] - SpanEditHandler;Accepts:Any - (19:0,19) - Tokens:2
-            HtmlTokenType.Text;[p];
-            HtmlTokenType.CloseAngle;[>];
+            SyntaxKind.HtmlTextLiteral;[p];
+            SyntaxKind.CloseAngle;[>];

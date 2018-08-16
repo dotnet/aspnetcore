@@ -1,25 +1,25 @@
 Markup block - Gen<None> - 33 - (0:0,0)
     Tag block - Gen<None> - 26 - (0:0,0)
         Markup span - Gen<Markup> - [<text ] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:3
-            HtmlTokenType.OpenAngle;[<];
-            HtmlTokenType.Text;[text];
-            HtmlTokenType.WhiteSpace;[ ];
+            SyntaxKind.OpenAngle;[<];
+            SyntaxKind.HtmlTextLiteral;[text];
+            SyntaxKind.Whitespace;[ ];
         Comment block - Gen<RazorComment> - 19 - (6:0,6)
             Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (6:0,6) - Tokens:1
-                HtmlTokenType.RazorCommentTransition;[@];
+                SyntaxKind.RazorCommentTransition;[@];
             MetaCode span - Gen<None> - [*] - SpanEditHandler;Accepts:None - (7:0,7) - Tokens:1
-                HtmlTokenType.RazorCommentStar;[*];
+                SyntaxKind.RazorCommentStar;[*];
             Comment span - Gen<None> - [ razor comment ] - SpanEditHandler;Accepts:Any - (8:0,8) - Tokens:1
-                HtmlTokenType.RazorComment;[ razor comment ];
+                SyntaxKind.RazorComment;[ razor comment ];
             MetaCode span - Gen<None> - [*] - SpanEditHandler;Accepts:None - (23:0,23) - Tokens:1
-                HtmlTokenType.RazorCommentStar;[*];
+                SyntaxKind.RazorCommentStar;[*];
             Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (24:0,24) - Tokens:1
-                HtmlTokenType.RazorCommentTransition;[@];
+                SyntaxKind.RazorCommentTransition;[@];
         Markup span - Gen<Markup> - [>] - SpanEditHandler;Accepts:Any - (25:0,25) - Tokens:1
-            HtmlTokenType.CloseAngle;[>];
+            SyntaxKind.CloseAngle;[>];
     Tag block - Gen<None> - 7 - (26:0,26)
         Markup span - Gen<Markup> - [</text>] - SpanEditHandler;Accepts:Any - (26:0,26) - Tokens:4
-            HtmlTokenType.OpenAngle;[<];
-            HtmlTokenType.ForwardSlash;[/];
-            HtmlTokenType.Text;[text];
-            HtmlTokenType.CloseAngle;[>];
+            SyntaxKind.OpenAngle;[<];
+            SyntaxKind.ForwardSlash;[/];
+            SyntaxKind.HtmlTextLiteral;[text];
+            SyntaxKind.CloseAngle;[>];

@@ -1,26 +1,26 @@
 Markup block - Gen<None> - 31 - (0:0,0)
     Tag block - Gen<None> - 5 - (0:0,0)
         Markup span - Gen<Markup> - [<foo>] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:3
-            HtmlTokenType.OpenAngle;[<];
-            HtmlTokenType.Text;[foo];
-            HtmlTokenType.CloseAngle;[>];
+            SyntaxKind.OpenAngle;[<];
+            SyntaxKind.HtmlTextLiteral;[foo];
+            SyntaxKind.CloseAngle;[>];
     HtmlComment block - Gen<None> - 20 - (5:0,5)
         Markup span - Gen<Markup> - [<!--] - SpanEditHandler;Accepts:None - (5:0,5) - Tokens:3
-            HtmlTokenType.OpenAngle;[<];
-            HtmlTokenType.Bang;[!];
-            HtmlTokenType.DoubleHyphen;[--];
+            SyntaxKind.OpenAngle;[<];
+            SyntaxKind.Bang;[!];
+            SyntaxKind.DoubleHyphen;[--];
         Markup span - Gen<Markup> - [ Hello World ] - SpanEditHandler;Accepts:WhiteSpace - (9:0,9) - Tokens:5
-            HtmlTokenType.WhiteSpace;[ ];
-            HtmlTokenType.Text;[Hello];
-            HtmlTokenType.WhiteSpace;[ ];
-            HtmlTokenType.Text;[World];
-            HtmlTokenType.WhiteSpace;[ ];
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.HtmlTextLiteral;[Hello];
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.HtmlTextLiteral;[World];
+            SyntaxKind.Whitespace;[ ];
         Markup span - Gen<Markup> - [-->] - SpanEditHandler;Accepts:None - (22:0,22) - Tokens:2
-            HtmlTokenType.DoubleHyphen;[--];
-            HtmlTokenType.CloseAngle;[>];
+            SyntaxKind.DoubleHyphen;[--];
+            SyntaxKind.CloseAngle;[>];
     Tag block - Gen<None> - 6 - (25:0,25)
         Markup span - Gen<Markup> - [</foo>] - SpanEditHandler;Accepts:Any - (25:0,25) - Tokens:4
-            HtmlTokenType.OpenAngle;[<];
-            HtmlTokenType.ForwardSlash;[/];
-            HtmlTokenType.Text;[foo];
-            HtmlTokenType.CloseAngle;[>];
+            SyntaxKind.OpenAngle;[<];
+            SyntaxKind.ForwardSlash;[/];
+            SyntaxKind.HtmlTextLiteral;[foo];
+            SyntaxKind.CloseAngle;[>];

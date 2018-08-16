@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Diagnostics;
+using Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
@@ -16,7 +17,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         protected override StateResult Dispatch()
         {
             var result = base.Dispatch();
-            if (result.Result != null && IsValidTokenType(result.Result.Type))
+            if (result.Result != null && IsValidTokenType(result.Result.Kind))
             {
                 _visitedFirstTokenStart = true;
             }
@@ -24,7 +25,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return result;
         }
 
-        public override HtmlToken NextToken()
+        public override SyntaxToken NextToken()
         {
             // Post-Condition: Buffer should be empty at the start of Next()
             Debug.Assert(Buffer.Length == 0);
@@ -43,14 +44,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return token;
         }
 
-        private bool IsValidTokenType(HtmlTokenType type)
+        private bool IsValidTokenType(SyntaxKind kind)
         {
-            return type != HtmlTokenType.WhiteSpace &&
-                type != HtmlTokenType.NewLine &&
-                type != HtmlTokenType.RazorComment &&
-                type != HtmlTokenType.RazorCommentStar &&
-                type != HtmlTokenType.RazorCommentTransition &&
-                type != HtmlTokenType.Transition;
+            return kind != SyntaxKind.Whitespace &&
+                kind != SyntaxKind.NewLine &&
+                kind != SyntaxKind.RazorComment &&
+                kind != SyntaxKind.RazorCommentStar &&
+                kind != SyntaxKind.RazorCommentTransition &&
+                kind != SyntaxKind.Transition;
         }
     }
 }

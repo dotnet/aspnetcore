@@ -1,45 +1,45 @@
 Statement block - Gen<None> - 64 - (0:0,0)
     Code span - Gen<Stmt> - [if(foo) {LF    var foo = "foo bar bazLF    ] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:17
-        CSharpTokenType.Keyword;[if];
-        CSharpTokenType.LeftParenthesis;[(];
-        CSharpTokenType.Identifier;[foo];
-        CSharpTokenType.RightParenthesis;[)];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.LeftBrace;[{];
-        CSharpTokenType.NewLine;[LF];
-        CSharpTokenType.WhiteSpace;[    ];
-        CSharpTokenType.Identifier;[var];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Identifier;[foo];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Assign;[=];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.StringLiteral;["foo bar baz];RZ1000(25:1,14 [1] )
-        CSharpTokenType.NewLine;[LF];
-        CSharpTokenType.WhiteSpace;[    ];
+        SyntaxKind.Keyword;[if];
+        SyntaxKind.LeftParenthesis;[(];
+        SyntaxKind.Identifier;[foo];
+        SyntaxKind.RightParenthesis;[)];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.LeftBrace;[{];
+        SyntaxKind.NewLine;[LF];
+        SyntaxKind.Whitespace;[    ];
+        SyntaxKind.Identifier;[var];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.Identifier;[foo];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.Assign;[=];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.StringLiteral;["foo bar baz];RZ1000(25:1,14 [1] )
+        SyntaxKind.NewLine;[LF];
+        SyntaxKind.Whitespace;[    ];
     Markup block - Gen<None> - 20 - (43:2,4)
         Tag block - Gen<None> - 3 - (43:2,4)
             Markup span - Gen<Markup> - [<p>] - SpanEditHandler;Accepts:None - (43:2,4) - Tokens:3
-                HtmlTokenType.OpenAngle;[<];
-                HtmlTokenType.Text;[p];
-                HtmlTokenType.CloseAngle;[>];
+                SyntaxKind.OpenAngle;[<];
+                SyntaxKind.HtmlTextLiteral;[p];
+                SyntaxKind.CloseAngle;[>];
         Markup span - Gen<Markup> - [Foo is ] - SpanEditHandler;Accepts:Any - (46:2,7) - Tokens:4
-            HtmlTokenType.Text;[Foo];
-            HtmlTokenType.WhiteSpace;[ ];
-            HtmlTokenType.Text;[is];
-            HtmlTokenType.WhiteSpace;[ ];
+            SyntaxKind.HtmlTextLiteral;[Foo];
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.HtmlTextLiteral;[is];
+            SyntaxKind.Whitespace;[ ];
         Expression block - Gen<Expr> - 4 - (53:2,14)
             Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (53:2,14) - Tokens:1
-                CSharpTokenType.Transition;[@];
+                SyntaxKind.Transition;[@];
             Code span - Gen<Expr> - [foo] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K14 - (54:2,15) - Tokens:1
-                CSharpTokenType.Identifier;[foo];
+                SyntaxKind.Identifier;[foo];
         Tag block - Gen<None> - 4 - (57:2,18)
             Markup span - Gen<Markup> - [</p>] - SpanEditHandler;Accepts:None - (57:2,18) - Tokens:4
-                HtmlTokenType.OpenAngle;[<];
-                HtmlTokenType.ForwardSlash;[/];
-                HtmlTokenType.Text;[p];
-                HtmlTokenType.CloseAngle;[>];
+                SyntaxKind.OpenAngle;[<];
+                SyntaxKind.ForwardSlash;[/];
+                SyntaxKind.HtmlTextLiteral;[p];
+                SyntaxKind.CloseAngle;[>];
         Markup span - Gen<Markup> - [LF] - SpanEditHandler;Accepts:None - (61:2,22) - Tokens:1
-            HtmlTokenType.NewLine;[LF];
+            SyntaxKind.NewLine;[LF];
     Code span - Gen<Stmt> - [}] - SpanEditHandler;Accepts:Any - (63:3,0) - Tokens:1
-        CSharpTokenType.RightBrace;[}];
+        SyntaxKind.RightBrace;[}];

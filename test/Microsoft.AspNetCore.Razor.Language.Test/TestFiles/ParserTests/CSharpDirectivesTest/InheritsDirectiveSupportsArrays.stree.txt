@@ -1,20 +1,20 @@
 Markup block - Gen<None> - 22 - (0:0,0)
     Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:1
-        HtmlTokenType.Unknown;[];
+        SyntaxKind.Unknown;[];
     Directive block - Gen<Directive:{inherits;SingleLine;FileScopedSinglyOccurring}> - 22 - (0:0,0)
         Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-            CSharpTokenType.Transition;[@];
+            SyntaxKind.Transition;[@];
         MetaCode span - Gen<None> - [inherits] - SpanEditHandler;Accepts:None - (1:0,1) - Tokens:1
-            CSharpTokenType.Identifier;[inherits];
+            SyntaxKind.Identifier;[inherits];
         Code span - Gen<None> - [ ] - SpanEditHandler;Accepts:WhiteSpace - (9:0,9) - Tokens:1
-            CSharpTokenType.WhiteSpace;[ ];
+            SyntaxKind.Whitespace;[ ];
         Code span - Gen<DirectiveToken {TypeName;Type;Opt:False}> - [string[[]][]] - DirectiveTokenEditHandler;Accepts:NonWhiteSpace - (10:0,10) - Tokens:7
-            CSharpTokenType.Keyword;[string];
-            CSharpTokenType.LeftBracket;[[];
-            CSharpTokenType.LeftBracket;[[];
-            CSharpTokenType.RightBracket;[]];
-            CSharpTokenType.RightBracket;[]];
-            CSharpTokenType.LeftBracket;[[];
-            CSharpTokenType.RightBracket;[]];
+            SyntaxKind.Keyword;[string];
+            SyntaxKind.LeftBracket;[[];
+            SyntaxKind.LeftBracket;[[];
+            SyntaxKind.RightBracket;[]];
+            SyntaxKind.RightBracket;[]];
+            SyntaxKind.LeftBracket;[[];
+            SyntaxKind.RightBracket;[]];
     Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (22:0,22) - Tokens:1
-        HtmlTokenType.Unknown;[];
+        SyntaxKind.Unknown;[];

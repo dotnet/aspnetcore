@@ -1,28 +1,28 @@
 Markup block - Gen<None> - 51 - (0:0,0)
     Tag block - Gen<None> - 39 - (0:0,0)
         Markup span - Gen<Markup> - [<a] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:2
-            HtmlTokenType.OpenAngle;[<];
-            HtmlTokenType.Text;[a];
+            SyntaxKind.OpenAngle;[<];
+            SyntaxKind.HtmlTextLiteral;[a];
         Markup block - Gen<Attr:href, href="@(2:0,2),"@(37:0,37)> - 36 - (2:0,2)
             Markup span - Gen<None> - [ href="] - SpanEditHandler;Accepts:Any - (2:0,2) - Tokens:4
-                HtmlTokenType.WhiteSpace;[ ];
-                HtmlTokenType.Text;[href];
-                HtmlTokenType.Equals;[=];
-                HtmlTokenType.DoubleQuote;["];
+                SyntaxKind.Whitespace;[ ];
+                SyntaxKind.HtmlTextLiteral;[href];
+                SyntaxKind.Equals;[=];
+                SyntaxKind.DoubleQuote;["];
             Markup span - Gen<LitAttr:@(9:0,9)> - [mailto:example@microsoft.com] - SpanEditHandler;Accepts:Any - (9:0,9) - Tokens:1
-                HtmlTokenType.Text;[mailto:example@microsoft.com];
+                SyntaxKind.HtmlTextLiteral;[mailto:example@microsoft.com];
             Markup span - Gen<None> - ["] - SpanEditHandler;Accepts:Any - (37:0,37) - Tokens:1
-                HtmlTokenType.DoubleQuote;["];
+                SyntaxKind.DoubleQuote;["];
         Markup span - Gen<Markup> - [>] - SpanEditHandler;Accepts:Any - (38:0,38) - Tokens:1
-            HtmlTokenType.CloseAngle;[>];
+            SyntaxKind.CloseAngle;[>];
     SyntaxKind.HtmlText - [Email me] - [39..47) - FullWidth: 8 - Slots: 1
         SyntaxKind.List - [Email me] - [39..47) - FullWidth: 8 - Slots: 3
-            SyntaxKind.HtmlTextLiteralToken;[Email];
+            SyntaxKind.HtmlTextLiteral;[Email];
             SyntaxKind.Whitespace;[ ];
-            SyntaxKind.HtmlTextLiteralToken;[me];
+            SyntaxKind.HtmlTextLiteral;[me];
     Tag block - Gen<None> - 4 - (47:0,47)
         Markup span - Gen<Markup> - [</a>] - SpanEditHandler;Accepts:Any - (47:0,47) - Tokens:4
-            HtmlTokenType.OpenAngle;[<];
-            HtmlTokenType.ForwardSlash;[/];
-            HtmlTokenType.Text;[a];
-            HtmlTokenType.CloseAngle;[>];
+            SyntaxKind.OpenAngle;[<];
+            SyntaxKind.ForwardSlash;[/];
+            SyntaxKind.HtmlTextLiteral;[a];
+            SyntaxKind.CloseAngle;[>];

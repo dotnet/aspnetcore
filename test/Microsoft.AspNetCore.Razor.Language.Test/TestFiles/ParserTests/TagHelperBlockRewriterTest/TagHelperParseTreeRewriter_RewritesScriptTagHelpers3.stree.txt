@@ -2,15 +2,15 @@ Markup block - Gen<None> - 53 - (0:0,0)
     Tag block - Gen<TagHelper> - 29 - (0:0,0) - script - scripttaghelper
         StartTagAndEndTag - <script> ... </script>
         Markup span - Gen<Markup> - [Hel<p>lo</p>] - SpanEditHandler;Accepts:Any - (8:0,8) - Tokens:9
-            HtmlTokenType.Text;[Hel];
-            HtmlTokenType.OpenAngle;[<];
-            HtmlTokenType.Text;[p];
-            HtmlTokenType.CloseAngle;[>];
-            HtmlTokenType.Text;[lo];
-            HtmlTokenType.OpenAngle;[<];
-            HtmlTokenType.ForwardSlash;[/];
-            HtmlTokenType.Text;[p];
-            HtmlTokenType.CloseAngle;[>];
+            SyntaxKind.HtmlTextLiteral;[Hel];
+            SyntaxKind.OpenAngle;[<];
+            SyntaxKind.HtmlTextLiteral;[p];
+            SyntaxKind.CloseAngle;[>];
+            SyntaxKind.HtmlTextLiteral;[lo];
+            SyntaxKind.OpenAngle;[<];
+            SyntaxKind.ForwardSlash;[/];
+            SyntaxKind.HtmlTextLiteral;[p];
+            SyntaxKind.CloseAngle;[>];
     SyntaxKind.HtmlText - [ ] - [29..30) - FullWidth: 1 - Slots: 1
         SyntaxKind.Whitespace;[ ];
     Tag block - Gen<TagHelper> - 23 - (30:0,30) - p - ptaghelper
@@ -18,4 +18,4 @@ Markup block - Gen<None> - 53 - (0:0,0)
         Tag block - Gen<TagHelper> - 16 - (33:0,33) - div - divtaghelper
             StartTagAndEndTag - <div> ... </div>
             SyntaxKind.HtmlText - [World] - [38..43) - FullWidth: 5 - Slots: 1
-                SyntaxKind.HtmlTextLiteralToken;[World];
+                SyntaxKind.HtmlTextLiteral;[World];

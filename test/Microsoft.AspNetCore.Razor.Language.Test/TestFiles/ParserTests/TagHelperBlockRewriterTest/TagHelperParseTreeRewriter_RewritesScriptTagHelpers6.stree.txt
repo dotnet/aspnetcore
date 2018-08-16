@@ -3,17 +3,17 @@ Markup block - Gen<None> - 67 - (0:0,0)
         StartTagAndEndTag - <p> ... </p>
         SyntaxKind.HtmlText - [Hello ] - [3..9) - FullWidth: 6 - Slots: 1
             SyntaxKind.List - [Hello ] - [3..9) - FullWidth: 6 - Slots: 2
-                SyntaxKind.HtmlTextLiteralToken;[Hello];
+                SyntaxKind.HtmlTextLiteral;[Hello];
                 SyntaxKind.Whitespace;[ ];
         Tag block - Gen<TagHelper> - 48 - (9:0,9) - script - scripttaghelper
             StartTagAndEndTag - <script class="foo" style="color:red;"> ... </script>
             class - DoubleQuotes
                 Markup span - Gen<Markup> - [foo] - SpanEditHandler;Accepts:Any - (24:0,24) - Tokens:1
-                    HtmlTokenType.Text;[foo];
+                    SyntaxKind.HtmlTextLiteral;[foo];
             style - DoubleQuotes
                 Markup span - Gen<Markup> - [color:red;] - SpanEditHandler;Accepts:Any - (36:0,36) - Tokens:1
-                    HtmlTokenType.Text;[color:red;];
+                    SyntaxKind.HtmlTextLiteral;[color:red;];
         SyntaxKind.HtmlText - [ World] - [57..63) - FullWidth: 6 - Slots: 1
             SyntaxKind.List - [ World] - [57..63) - FullWidth: 6 - Slots: 2
                 SyntaxKind.Whitespace;[ ];
-                SyntaxKind.HtmlTextLiteralToken;[World];
+                SyntaxKind.HtmlTextLiteral;[World];

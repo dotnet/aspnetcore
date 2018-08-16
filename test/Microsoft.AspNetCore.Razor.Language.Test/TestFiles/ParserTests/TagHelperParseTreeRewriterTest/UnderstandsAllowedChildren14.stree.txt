@@ -3,29 +3,29 @@ Markup block - Gen<None> - 76 - (0:0,0)
         StartTagAndEndTag - <p> ... </p>
         Tag block - Gen<None> - 8 - (3:0,3)
             Markup span - Gen<Markup> - [<custom>] - SpanEditHandler;Accepts:Any - (3:0,3) - Tokens:3
-                HtmlTokenType.OpenAngle;[<];
-                HtmlTokenType.Text;[custom];
-                HtmlTokenType.CloseAngle;[>];
+                SyntaxKind.OpenAngle;[<];
+                SyntaxKind.HtmlTextLiteral;[custom];
+                SyntaxKind.CloseAngle;[>];
         Tag block - Gen<TagHelper> - 4 - (11:0,11) - br - BRTagHelper
             StartTagOnly - <br>
         SyntaxKind.HtmlText - [:] - [15..16) - FullWidth: 1 - Slots: 1
-            SyntaxKind.HtmlTextLiteralToken;[:];
+            SyntaxKind.HtmlTextLiteral;[:];
         Tag block - Gen<TagHelper> - 39 - (16:0,16) - strong - StrongTagHelper
             StartTagAndEndTag - <strong> ... </strong>
             Tag block - Gen<TagHelper> - 22 - (24:0,24) - strong - StrongTagHelper
                 StartTagAndEndTag - <strong> ... </strong>
                 SyntaxKind.HtmlText - [Hello] - [32..37) - FullWidth: 5 - Slots: 1
-                    SyntaxKind.HtmlTextLiteralToken;[Hello];
+                    SyntaxKind.HtmlTextLiteral;[Hello];
         SyntaxKind.HtmlText - [:] - [55..56) - FullWidth: 1 - Slots: 1
-            SyntaxKind.HtmlTextLiteralToken;[:];
+            SyntaxKind.HtmlTextLiteral;[:];
         Tag block - Gen<None> - 7 - (56:0,56)
             Markup span - Gen<Markup> - [<input>] - SpanEditHandler;Accepts:Any - (56:0,56) - Tokens:3
-                HtmlTokenType.OpenAngle;[<];
-                HtmlTokenType.Text;[input];
-                HtmlTokenType.CloseAngle;[>];
+                SyntaxKind.OpenAngle;[<];
+                SyntaxKind.HtmlTextLiteral;[input];
+                SyntaxKind.CloseAngle;[>];
         Tag block - Gen<None> - 9 - (63:0,63)
             Markup span - Gen<Markup> - [</custom>] - SpanEditHandler;Accepts:Any - (63:0,63) - Tokens:4
-                HtmlTokenType.OpenAngle;[<];
-                HtmlTokenType.ForwardSlash;[/];
-                HtmlTokenType.Text;[custom];
-                HtmlTokenType.CloseAngle;[>];
+                SyntaxKind.OpenAngle;[<];
+                SyntaxKind.ForwardSlash;[/];
+                SyntaxKind.HtmlTextLiteral;[custom];
+                SyntaxKind.CloseAngle;[>];

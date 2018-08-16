@@ -1,9 +1,9 @@
 Markup block - Gen<None> - 9 - (0:0,0)
     Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-        HtmlTokenType.Transition;[@];
+        SyntaxKind.Transition;[@];
     MetaCode span - Gen<None> - [:] - SpanEditHandler;Accepts:Any - (1:0,1) - Tokens:1
-        HtmlTokenType.Colon;[:];
+        SyntaxKind.Colon;[:];
     Markup span - Gen<Markup> - [foo bar] - SpanEditHandler;Accepts:Any - (2:0,2) - Tokens:3
-        HtmlTokenType.Text;[foo];
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Text;[bar];
+        SyntaxKind.HtmlTextLiteral;[foo];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.HtmlTextLiteral;[bar];

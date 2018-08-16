@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using Microsoft.AspNetCore.Razor.Language.Syntax;
 using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
@@ -16,7 +17,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         private readonly ISet<string> _keywords;
         private readonly IReadOnlyCollection<string> _readOnlyKeywords;
 
-        public ImplicitExpressionEditHandler(Func<string, IEnumerable<IToken>> tokenizer, ISet<string> keywords, bool acceptTrailingDot)
+        public ImplicitExpressionEditHandler(Func<string, IEnumerable<Syntax.InternalSyntax.SyntaxToken>> tokenizer, ISet<string> keywords, bool acceptTrailingDot)
             : base(tokenizer)
         {
             _keywords = keywords ?? new HashSet<string>();
@@ -172,20 +173,20 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
             for (var i = 0; i < target.Tokens.Count; i++)
             {
-                var token = target.Tokens[i] as CSharpToken;
+                var token = target.Tokens[i];
 
                 if (token == null)
                 {
                     break;
                 }
 
-                var tokenStartIndex = token.Start.AbsoluteIndex;
-                var tokenEndIndex = tokenStartIndex + token.Content.Length;
+                var tokenStartIndex = token.Position;
+                var tokenEndIndex = token.EndPosition;
 
                 // We're looking for the first token that contains the SourceChange.
                 if (tokenEndIndex > change.Span.AbsoluteIndex)
                 {
-                    if (tokenEndIndex >= change.Span.AbsoluteIndex + change.Span.Length && token.Type == CSharpTokenType.Identifier)
+                    if (tokenEndIndex >= change.Span.AbsoluteIndex + change.Span.Length && token.Kind == SyntaxKind.Identifier)
                     {
                         // The token we're changing happens to be an identifier. Need to check if its transformed state is also one.
                         // We do this transformation logic to capture the case that the new text change happens to not be an identifier;
@@ -200,8 +201,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             break;
                         }
 
-                        var newToken = (CSharpToken)newTokens.First();
-                        if (newToken.Type == CSharpTokenType.Identifier)
+                        var newToken = newTokens.First();
+                        if (newToken.Kind == SyntaxKind.Identifier)
                         {
                             return true;
                         }
@@ -241,8 +242,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             var changeStart = change.Span.AbsoluteIndex;
             var changeLength = change.Span.Length;
             var changeEnd = changeStart + changeLength;
-            var tokens = target.Tokens.Cast<CSharpToken>().ToArray();
-            if (!IsInsideParenthesis(changeStart, tokens) || !IsInsideParenthesis(changeEnd, tokens))
+            if (!IsInsideParenthesis(changeStart, target.Tokens) || !IsInsideParenthesis(changeEnd, target.Tokens))
             {
                 // Either the start or end of the delete does not fall inside of parenthesis, unacceptable inner deletion.
                 return false;
@@ -274,8 +274,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 return false;
             }
 
-            var tokens = target.Tokens.Cast<CSharpToken>().ToArray();
-            if (IsInsideParenthesis(change.Span.AbsoluteIndex, tokens))
+            if (IsInsideParenthesis(change.Span.AbsoluteIndex, target.Tokens))
             {
                 return true;
             }
@@ -284,7 +283,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         // Internal for testing
-        internal static bool IsInsideParenthesis(int position, IReadOnlyList<CSharpToken> tokens)
+        internal static bool IsInsideParenthesis(int position, IReadOnlyList<SyntaxToken> tokens)
         {
             var balanceCount = 0;
             var foundInsertionPoint = false;
@@ -322,9 +321,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         // Internal for testing
-        internal static bool ContainsPosition(int position, CSharpToken currentToken)
+        internal static bool ContainsPosition(int position, SyntaxToken currentToken)
         {
-            var tokenStart = currentToken.Start.AbsoluteIndex;
+            var tokenStart = currentToken.Position;
             if (tokenStart == position)
             {
                 // Token is exactly at the insertion point.
@@ -342,14 +341,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         // Internal for testing
-        internal static bool TryUpdateBalanceCount(CSharpToken token, ref int count)
+        internal static bool TryUpdateBalanceCount(SyntaxToken token, ref int count)
         {
             var updatedCount = count;
-            if (token.Type == CSharpTokenType.LeftParenthesis)
+            if (token.Kind == SyntaxKind.LeftParenthesis)
             {
                 updatedCount++;
             }
-            else if (token.Type == CSharpTokenType.RightParenthesis)
+            else if (token.Kind == SyntaxKind.RightParenthesis)
             {
                 if (updatedCount == 0)
                 {
@@ -358,7 +357,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
                 updatedCount--;
             }
-            else if (token.Type == CSharpTokenType.StringLiteral)
+            else if (token.Kind == SyntaxKind.StringLiteral)
             {
                 var content = token.Content;
                 if (content.Length > 0 && content[content.Length - 1] != '"')
@@ -370,7 +369,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     }
                 }
             }
-            else if (token.Type == CSharpTokenType.CharacterLiteral)
+            else if (token.Kind == SyntaxKind.CharacterLiteral)
             {
                 var content = token.Content;
                 if (content.Length > 0 && content[content.Length - 1] != '\'')

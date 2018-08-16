@@ -177,7 +177,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             if (span.SyntaxNode != null)
             {
-                WriteSyntaxNode(span.SyntaxNode.CreateRed(null, span.Start.AbsoluteIndex));
+                WriteSyntaxNode(span.SyntaxNode);
                 return;
             }
 
@@ -199,8 +199,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             foreach (var token in span.Tokens)
             {
                 WriteNewLine();
-                WriteIndent();
-                WriteToken(token);
+                WriteSyntaxToken(token);
             }
             Depth--;
         }
@@ -244,27 +243,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             WriteIndent();
             var diagnostics = syntaxToken.GetDiagnostics();
-            var tokenString = $"{typeof(SyntaxKind).Name}.{syntaxToken.Kind};[{syntaxToken.Text}];{string.Join(", ", diagnostics.Select(diagnostic => diagnostic.Id + diagnostic.Span))}";
-            Write(tokenString);
-        }
-
-        protected void WriteToken(IToken token)
-        {
-            var tokenType = string.Empty;
-            IEnumerable<RazorDiagnostic> diagnostics = RazorDiagnostic.EmptyArray;
-
-            if (token is HtmlToken htmlToken)
-            {
-                tokenType = $"{htmlToken.Type.GetType().Name}.{htmlToken.Type}";
-                diagnostics = htmlToken.Errors;
-            }
-            else if (token is CSharpToken csharpToken)
-            {
-                tokenType = $"{csharpToken.Type.GetType().Name}.{csharpToken.Type}";
-                diagnostics = csharpToken.Errors;
-            }
-
-            var tokenString = $"{tokenType};[{token.Content}];{string.Join(", ", diagnostics.Select(diagnostic => diagnostic.Id + diagnostic.Span))}";
+            var tokenString = $"{typeof(SyntaxKind).Name}.{syntaxToken.Kind};[{syntaxToken.Content}];{string.Join(", ", diagnostics.Select(diagnostic => diagnostic.Id + diagnostic.Span))}";
             Write(tokenString);
         }
 

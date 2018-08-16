@@ -1,5 +1,5 @@
 Directive block - Gen<Directive:{namespace;SingleLine;Unrestricted}> - 10 - (0:0,0)
     Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-        CSharpTokenType.Transition;[@];
+        SyntaxKind.Transition;[@];
     MetaCode span - Gen<None> - [namespace] - SpanEditHandler;Accepts:None - (1:0,1) - Tokens:1
-        CSharpTokenType.Keyword;[namespace];
+        SyntaxKind.Keyword;[namespace];

@@ -1,39 +1,39 @@
 Markup block - Gen<None> - 44 - (0:0,0)
     Markup span - Gen<Markup> - [{] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:1
-        HtmlTokenType.Text;[{];
+        SyntaxKind.HtmlTextLiteral;[{];
     Tag block - Gen<None> - 42 - (1:0,1)
         Markup span - Gen<Markup> - [<span] - SpanEditHandler;Accepts:Any - (1:0,1) - Tokens:2
-            HtmlTokenType.OpenAngle;[<];
-            HtmlTokenType.Text;[span];
+            SyntaxKind.OpenAngle;[<];
+            SyntaxKind.HtmlTextLiteral;[span];
         Markup block - Gen<Attr:foo, foo='@(6:0,6),'@(39:0,39)> - 34 - (6:0,6)
             Markup span - Gen<None> - [ foo='] - SpanEditHandler;Accepts:Any - (6:0,6) - Tokens:4
-                HtmlTokenType.WhiteSpace;[ ];
-                HtmlTokenType.Text;[foo];
-                HtmlTokenType.Equals;[=];
-                HtmlTokenType.SingleQuote;['];
+                SyntaxKind.Whitespace;[ ];
+                SyntaxKind.HtmlTextLiteral;[foo];
+                SyntaxKind.Equals;[=];
+                SyntaxKind.SingleQuote;['];
             Markup span - Gen<LitAttr:@(12:0,12)> - [abc@def.com] - SpanEditHandler;Accepts:Any - (12:0,12) - Tokens:1
-                HtmlTokenType.Text;[abc@def.com];
+                SyntaxKind.HtmlTextLiteral;[abc@def.com];
             Markup span - Gen<LitAttr: @(23:0,23)> - [ abc] - SpanEditHandler;Accepts:Any - (23:0,23) - Tokens:2
-                HtmlTokenType.WhiteSpace;[ ];
-                HtmlTokenType.Text;[abc];
+                SyntaxKind.Whitespace;[ ];
+                SyntaxKind.HtmlTextLiteral;[abc];
             Markup block - Gen<None> - 2 - (27:0,27)
                 Markup span - Gen<LitAttr:@(27:0,27)> - [@] - SpanEditHandler;Accepts:None - (27:0,27) - Tokens:1
-                    HtmlTokenType.Transition;[@];
+                    SyntaxKind.Transition;[@];
                 Markup span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (28:0,28) - Tokens:1
-                    HtmlTokenType.Transition;[@];
+                    SyntaxKind.Transition;[@];
             Markup span - Gen<LitAttr:@(29:0,29)> - [def.com] - SpanEditHandler;Accepts:Any - (29:0,29) - Tokens:1
-                HtmlTokenType.Text;[def.com];
+                SyntaxKind.HtmlTextLiteral;[def.com];
             Markup block - Gen<None> - 3 - (36:0,36)
                 Markup span - Gen<LitAttr: @(36:0,36)> - [ @] - SpanEditHandler;Accepts:None - (36:0,36) - Tokens:2
-                    HtmlTokenType.WhiteSpace;[ ];
-                    HtmlTokenType.Transition;[@];
+                    SyntaxKind.Whitespace;[ ];
+                    SyntaxKind.Transition;[@];
                 Markup span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (38:0,38) - Tokens:1
-                    HtmlTokenType.Transition;[@];
+                    SyntaxKind.Transition;[@];
             Markup span - Gen<None> - ['] - SpanEditHandler;Accepts:Any - (39:0,39) - Tokens:1
-                HtmlTokenType.SingleQuote;['];
+                SyntaxKind.SingleQuote;['];
         Markup span - Gen<Markup> - [ />] - SpanEditHandler;Accepts:Any - (40:0,40) - Tokens:3
-            HtmlTokenType.WhiteSpace;[ ];
-            HtmlTokenType.ForwardSlash;[/];
-            HtmlTokenType.CloseAngle;[>];
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.ForwardSlash;[/];
+            SyntaxKind.CloseAngle;[>];
     Markup span - Gen<Markup> - [}] - SpanEditHandler;Accepts:Any - (43:0,43) - Tokens:1
-        HtmlTokenType.Text;[}];
+        SyntaxKind.HtmlTextLiteral;[}];

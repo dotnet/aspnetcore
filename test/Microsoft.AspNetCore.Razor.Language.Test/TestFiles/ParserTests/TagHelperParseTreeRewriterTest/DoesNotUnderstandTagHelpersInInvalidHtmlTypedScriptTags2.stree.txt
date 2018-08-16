@@ -1,31 +1,31 @@
 Markup block - Gen<None> - 44 - (0:0,0)
     Tag block - Gen<None> - 26 - (0:0,0)
         Markup span - Gen<Markup> - [<script] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:2
-            HtmlTokenType.OpenAngle;[<];
-            HtmlTokenType.Text;[script];
+            SyntaxKind.OpenAngle;[<];
+            SyntaxKind.HtmlTextLiteral;[script];
         Markup block - Gen<Attr:types, types='@(7:0,7),'@(24:0,24)> - 18 - (7:0,7)
             Markup span - Gen<None> - [ types='] - SpanEditHandler;Accepts:Any - (7:0,7) - Tokens:4
-                HtmlTokenType.WhiteSpace;[ ];
-                HtmlTokenType.Text;[types];
-                HtmlTokenType.Equals;[=];
-                HtmlTokenType.SingleQuote;['];
+                SyntaxKind.Whitespace;[ ];
+                SyntaxKind.HtmlTextLiteral;[types];
+                SyntaxKind.Equals;[=];
+                SyntaxKind.SingleQuote;['];
             Markup span - Gen<LitAttr:@(15:0,15)> - [text/html] - SpanEditHandler;Accepts:Any - (15:0,15) - Tokens:3
-                HtmlTokenType.Text;[text];
-                HtmlTokenType.ForwardSlash;[/];
-                HtmlTokenType.Text;[html];
+                SyntaxKind.HtmlTextLiteral;[text];
+                SyntaxKind.ForwardSlash;[/];
+                SyntaxKind.HtmlTextLiteral;[html];
             Markup span - Gen<None> - ['] - SpanEditHandler;Accepts:Any - (24:0,24) - Tokens:1
-                HtmlTokenType.SingleQuote;['];
+                SyntaxKind.SingleQuote;['];
         Markup span - Gen<Markup> - [>] - SpanEditHandler;Accepts:Any - (25:0,25) - Tokens:1
-            HtmlTokenType.CloseAngle;[>];
+            SyntaxKind.CloseAngle;[>];
     Markup span - Gen<Markup> - [<input />] - SpanEditHandler;Accepts:Any - (26:0,26) - Tokens:5
-        HtmlTokenType.OpenAngle;[<];
-        HtmlTokenType.Text;[input];
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.ForwardSlash;[/];
-        HtmlTokenType.CloseAngle;[>];
+        SyntaxKind.OpenAngle;[<];
+        SyntaxKind.HtmlTextLiteral;[input];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.ForwardSlash;[/];
+        SyntaxKind.CloseAngle;[>];
     Tag block - Gen<None> - 9 - (35:0,35)
         Markup span - Gen<Markup> - [</script>] - SpanEditHandler;Accepts:Any - (35:0,35) - Tokens:4
-            HtmlTokenType.OpenAngle;[<];
-            HtmlTokenType.ForwardSlash;[/];
-            HtmlTokenType.Text;[script];
-            HtmlTokenType.CloseAngle;[>];
+            SyntaxKind.OpenAngle;[<];
+            SyntaxKind.ForwardSlash;[/];
+            SyntaxKind.HtmlTextLiteral;[script];
+            SyntaxKind.CloseAngle;[>];

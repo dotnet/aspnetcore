@@ -1,16 +1,16 @@
 Markup block - Gen<None> - 29 - (0:0,0)
     Tag block - Gen<None> - 5 - (0:0,0)
         Markup span - Gen<Markup> - [<foo>] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:3
-            HtmlTokenType.OpenAngle;[<];
-            HtmlTokenType.Text;[foo];
-            HtmlTokenType.CloseAngle;[>];
+            SyntaxKind.OpenAngle;[<];
+            SyntaxKind.HtmlTextLiteral;[foo];
+            SyntaxKind.CloseAngle;[>];
     Markup span - Gen<Markup> - [blah blah blah blah blah] - SpanEditHandler;Accepts:Any - (5:0,5) - Tokens:9
-        HtmlTokenType.Text;[blah];
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Text;[blah];
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Text;[blah];
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Text;[blah];
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Text;[blah];
+        SyntaxKind.HtmlTextLiteral;[blah];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.HtmlTextLiteral;[blah];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.HtmlTextLiteral;[blah];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.HtmlTextLiteral;[blah];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.HtmlTextLiteral;[blah];

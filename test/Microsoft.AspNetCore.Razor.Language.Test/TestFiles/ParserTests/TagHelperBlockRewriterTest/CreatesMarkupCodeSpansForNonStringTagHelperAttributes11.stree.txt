@@ -5,37 +5,37 @@ Markup block - Gen<None> - 77 - (0:0,0)
             Markup block - Gen<None> - 9 - (13:0,13)
                 Markup block - Gen<None> - 2 - (13:0,13)
                     Code span - Gen<Expr> - [@] - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14 - (13:0,13) - Tokens:1
-                        HtmlTokenType.Transition;[@];
+                        SyntaxKind.Transition;[@];
                     Code span - Gen<None> - [@] - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14 - (14:0,14) - Tokens:1
-                        HtmlTokenType.Transition;[@];
+                        SyntaxKind.Transition;[@];
                 Markup block - Gen<None> - 7 - (15:0,15)
                     Code span - Gen<Expr> - [] - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14 - (15:0,15) - Tokens:1
-                        HtmlTokenType.Unknown;[];
+                        SyntaxKind.Unknown;[];
                     Expression block - Gen<Expr> - 7 - (15:0,15)
                         Code span - Gen<Expr> - [@] - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14 - (15:0,15) - Tokens:1
-                            CSharpTokenType.Transition;[@];
+                            SyntaxKind.Transition;[@];
                         Code span - Gen<Expr> - [(] - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14 - (16:0,16) - Tokens:1
-                            CSharpTokenType.LeftParenthesis;[(];
+                            SyntaxKind.LeftParenthesis;[(];
                         Code span - Gen<Expr> - [11+1] - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14 - (17:0,17) - Tokens:3
-                            CSharpTokenType.IntegerLiteral;[11];
-                            CSharpTokenType.Plus;[+];
-                            CSharpTokenType.IntegerLiteral;[1];
+                            SyntaxKind.IntegerLiteral;[11];
+                            SyntaxKind.Plus;[+];
+                            SyntaxKind.IntegerLiteral;[1];
                         Code span - Gen<Expr> - [)] - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14 - (21:0,21) - Tokens:1
-                            CSharpTokenType.RightParenthesis;[)];
+                            SyntaxKind.RightParenthesis;[)];
         birthday - DoubleQuotes
             Code span - Gen<Expr> - [DateTime.Now] - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14 - (34:0,34) - Tokens:1
-                HtmlTokenType.Text;[DateTime.Now];
+                SyntaxKind.HtmlTextLiteral;[DateTime.Now];
         name - DoubleQuotes
             Markup block - Gen<None> - 19 - (54:0,54)
                 Markup span - Gen<Markup> - [Time:] - SpanEditHandler;Accepts:Any - (54:0,54) - Tokens:1
-                    HtmlTokenType.Text;[Time:];
+                    SyntaxKind.HtmlTextLiteral;[Time:];
                 Markup block - Gen<None> - 14 - (59:0,59)
                     Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:Any - (59:0,59) - Tokens:1
-                        HtmlTokenType.WhiteSpace;[ ];
+                        SyntaxKind.Whitespace;[ ];
                     Expression block - Gen<Expr> - 13 - (60:0,60)
                         Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (60:0,60) - Tokens:1
-                            CSharpTokenType.Transition;[@];
+                            SyntaxKind.Transition;[@];
                         Code span - Gen<Expr> - [DateTime.Now] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K14 - (61:0,61) - Tokens:3
-                            CSharpTokenType.Identifier;[DateTime];
-                            CSharpTokenType.Dot;[.];
-                            CSharpTokenType.Identifier;[Now];
+                            SyntaxKind.Identifier;[DateTime];
+                            SyntaxKind.Dot;[.];
+                            SyntaxKind.Identifier;[Now];

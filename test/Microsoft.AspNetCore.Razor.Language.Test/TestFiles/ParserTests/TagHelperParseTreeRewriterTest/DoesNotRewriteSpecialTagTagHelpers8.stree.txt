@@ -1,21 +1,21 @@
 Markup block - Gen<None> - 29 - (0:0,0)
     Tag block - Gen<None> - 5 - (0:0,0)
         Markup span - Gen<Markup> - [<foo>] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:3
-            HtmlTokenType.OpenAngle;[<];
-            HtmlTokenType.Text;[foo];
-            HtmlTokenType.CloseAngle;[>];
+            SyntaxKind.OpenAngle;[<];
+            SyntaxKind.HtmlTextLiteral;[foo];
+            SyntaxKind.CloseAngle;[>];
     Markup span - Gen<Markup> - [<![CDATA[ ] - SpanEditHandler;Accepts:Any - (5:0,5) - Tokens:6
-        HtmlTokenType.OpenAngle;[<];
-        HtmlTokenType.Bang;[!];
-        HtmlTokenType.LeftBracket;[[];
-        HtmlTokenType.Text;[CDATA];
-        HtmlTokenType.LeftBracket;[[];
-        HtmlTokenType.WhiteSpace;[ ];
+        SyntaxKind.OpenAngle;[<];
+        SyntaxKind.Bang;[!];
+        SyntaxKind.LeftBracket;[[];
+        SyntaxKind.HtmlTextLiteral;[CDATA];
+        SyntaxKind.LeftBracket;[[];
+        SyntaxKind.Whitespace;[ ];
     Expression block - Gen<Expr> - 4 - (15:0,15)
         Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (15:0,15) - Tokens:1
-            CSharpTokenType.Transition;[@];
+            SyntaxKind.Transition;[@];
         Code span - Gen<Expr> - [foo] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K14 - (16:0,16) - Tokens:1
-            CSharpTokenType.Identifier;[foo];
+            SyntaxKind.Identifier;[foo];
     SyntaxKind.HtmlText - [ ]]>] - [19..23) - FullWidth: 4 - Slots: 1
         SyntaxKind.List - [ ]]>] - [19..23) - FullWidth: 4 - Slots: 4
             SyntaxKind.Whitespace;[ ];
@@ -24,7 +24,7 @@ Markup block - Gen<None> - 29 - (0:0,0)
             SyntaxKind.CloseAngle;[>];
     Tag block - Gen<None> - 6 - (23:0,23)
         Markup span - Gen<Markup> - [</foo>] - SpanEditHandler;Accepts:Any - (23:0,23) - Tokens:4
-            HtmlTokenType.OpenAngle;[<];
-            HtmlTokenType.ForwardSlash;[/];
-            HtmlTokenType.Text;[foo];
-            HtmlTokenType.CloseAngle;[>];
+            SyntaxKind.OpenAngle;[<];
+            SyntaxKind.ForwardSlash;[/];
+            SyntaxKind.HtmlTextLiteral;[foo];
+            SyntaxKind.CloseAngle;[>];

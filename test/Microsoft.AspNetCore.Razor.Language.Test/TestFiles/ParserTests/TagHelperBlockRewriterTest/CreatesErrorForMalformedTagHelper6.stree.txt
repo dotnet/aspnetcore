@@ -1,20 +1,20 @@
 Markup block - Gen<None> - 16 - (0:0,0)
     Tag block - Gen<None> - 1 - (0:0,0)
         Markup span - Gen<Markup> - [<] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:1
-            HtmlTokenType.OpenAngle;[<];
+            SyntaxKind.OpenAngle;[<];
     Tag block - Gen<None> - 1 - (1:0,1)
         Markup span - Gen<Markup> - [<] - SpanEditHandler;Accepts:Any - (1:0,1) - Tokens:1
-            HtmlTokenType.OpenAngle;[<];
+            SyntaxKind.OpenAngle;[<];
     Tag block - Gen<None> - 9 - (2:0,2)
         Markup span - Gen<Markup> - [</strong>] - SpanEditHandler;Accepts:Any - (2:0,2) - Tokens:4
-            HtmlTokenType.OpenAngle;[<];
-            HtmlTokenType.ForwardSlash;[/];
-            HtmlTokenType.Text;[strong];
-            HtmlTokenType.CloseAngle;[>];
+            SyntaxKind.OpenAngle;[<];
+            SyntaxKind.ForwardSlash;[/];
+            SyntaxKind.HtmlTextLiteral;[strong];
+            SyntaxKind.CloseAngle;[>];
     SyntaxKind.HtmlText - [ ] - [11..12) - FullWidth: 1 - Slots: 1
         SyntaxKind.Whitespace;[ ];
     Tag block - Gen<None> - 1 - (12:0,12)
         Markup span - Gen<Markup> - [<] - SpanEditHandler;Accepts:Any - (12:0,12) - Tokens:1
-            HtmlTokenType.OpenAngle;[<];
+            SyntaxKind.OpenAngle;[<];
     Tag block - Gen<TagHelper> - 3 - (13:0,13) - p - ptaghelper
         StartTagAndEndTag - <p>

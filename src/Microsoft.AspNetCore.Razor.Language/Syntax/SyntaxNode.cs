@@ -239,6 +239,21 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
             return Green.GetAnnotations();
         }
 
+        public bool IsEquivalentTo(SyntaxNode other)
+        {
+            if (this == other)
+            {
+                return true;
+            }
+
+            if (other == null)
+            {
+                return false;
+            }
+
+            return Green.IsEquivalentTo(other.Green);
+        }
+
         public override string ToString()
         {
             return Green.ToString();

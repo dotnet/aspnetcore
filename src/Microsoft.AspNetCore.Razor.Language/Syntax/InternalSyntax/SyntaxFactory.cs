@@ -1,6 +1,9 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
+using System.Linq;
+
 namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
 {
     internal static class SyntaxFactory
@@ -10,29 +13,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
             return new HtmlTextSyntax(textTokens.Node);
         }
 
-        internal static HtmlTextTokenSyntax HtmlTextToken(string text, params RazorDiagnostic[] diagnostics)
+        internal static SyntaxToken Token(SyntaxKind kind, string content, IEnumerable<RazorDiagnostic> diagnostics)
         {
-            return new HtmlTextTokenSyntax(text, diagnostics);
+            return Token(kind, content, diagnostics.ToArray());
         }
 
-        internal static WhitespaceTokenSyntax WhitespaceToken(string text, params RazorDiagnostic[] diagnostics)
+        internal static SyntaxToken Token(SyntaxKind kind, string content, params RazorDiagnostic[] diagnostics)
         {
-            return new WhitespaceTokenSyntax(text, diagnostics);
-        }
-
-        internal static NewLineTokenSyntax NewLineToken(string text, params RazorDiagnostic[] diagnostics)
-        {
-            return new NewLineTokenSyntax(text, diagnostics);
-        }
-
-        internal static PunctuationSyntax Punctuation(SyntaxKind syntaxKind, string text, params RazorDiagnostic[] diagnostics)
-        {
-            return new PunctuationSyntax(syntaxKind, text, diagnostics);
-        }
-
-        internal static UnknownTokenSyntax UnknownToken(string text, params RazorDiagnostic[] diagnostics)
-        {
-            return new UnknownTokenSyntax(text, diagnostics);
+            return new SyntaxToken(kind, content, diagnostics);
         }
     }
 }

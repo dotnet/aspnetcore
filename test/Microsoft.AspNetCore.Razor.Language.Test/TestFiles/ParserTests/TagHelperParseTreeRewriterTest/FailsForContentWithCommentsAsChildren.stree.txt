@@ -3,23 +3,23 @@ Markup block - Gen<None> - 35 - (0:0,0)
         StartTagAndEndTag - <p> ... </p>
         HtmlComment block - Gen<None> - 12 - (3:0,3)
             Markup span - Gen<Markup> - [<!--] - SpanEditHandler;Accepts:None - (3:0,3) - Tokens:3
-                HtmlTokenType.OpenAngle;[<];
-                HtmlTokenType.Bang;[!];
-                HtmlTokenType.DoubleHyphen;[--];
+                SyntaxKind.OpenAngle;[<];
+                SyntaxKind.Bang;[!];
+                SyntaxKind.DoubleHyphen;[--];
             Markup span - Gen<Markup> - [Hello] - SpanEditHandler;Accepts:WhiteSpace - (7:0,7) - Tokens:1
-                HtmlTokenType.Text;[Hello];
+                SyntaxKind.HtmlTextLiteral;[Hello];
             Markup span - Gen<Markup> - [-->] - SpanEditHandler;Accepts:None - (12:0,12) - Tokens:2
-                HtmlTokenType.DoubleHyphen;[--];
-                HtmlTokenType.CloseAngle;[>];
+                SyntaxKind.DoubleHyphen;[--];
+                SyntaxKind.CloseAngle;[>];
         Markup span - Gen<Markup> - [asdf] - SpanEditHandler;Accepts:Any - (15:0,15) - Tokens:1
-            HtmlTokenType.Text;[asdf];
+            SyntaxKind.HtmlTextLiteral;[asdf];
         HtmlComment block - Gen<None> - 12 - (19:0,19)
             Markup span - Gen<Markup> - [<!--] - SpanEditHandler;Accepts:None - (19:0,19) - Tokens:3
-                HtmlTokenType.OpenAngle;[<];
-                HtmlTokenType.Bang;[!];
-                HtmlTokenType.DoubleHyphen;[--];
+                SyntaxKind.OpenAngle;[<];
+                SyntaxKind.Bang;[!];
+                SyntaxKind.DoubleHyphen;[--];
             Markup span - Gen<Markup> - [World] - SpanEditHandler;Accepts:WhiteSpace - (23:0,23) - Tokens:1
-                HtmlTokenType.Text;[World];
+                SyntaxKind.HtmlTextLiteral;[World];
             Markup span - Gen<Markup> - [-->] - SpanEditHandler;Accepts:None - (28:0,28) - Tokens:2
-                HtmlTokenType.DoubleHyphen;[--];
-                HtmlTokenType.CloseAngle;[>];
+                SyntaxKind.DoubleHyphen;[--];
+                SyntaxKind.CloseAngle;[>];

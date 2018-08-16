@@ -4,12 +4,13 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
     internal class CodeBlockEditHandler : SpanEditHandler
     {
-        public CodeBlockEditHandler(Func<string, IEnumerable<IToken>> tokenizer) : base(tokenizer)
+        public CodeBlockEditHandler(Func<string, IEnumerable<SyntaxToken>> tokenizer) : base(tokenizer)
         {
         }
 

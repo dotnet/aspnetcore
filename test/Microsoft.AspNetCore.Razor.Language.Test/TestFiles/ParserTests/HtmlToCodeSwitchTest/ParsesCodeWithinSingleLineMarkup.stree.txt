@@ -1,20 +1,20 @@
 Markup block - Gen<None> - 20 - (0:0,0)
     Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-        HtmlTokenType.Transition;[@];
+        SyntaxKind.Transition;[@];
     MetaCode span - Gen<None> - [:] - SpanEditHandler;Accepts:Any - (1:0,1) - Tokens:1
-        HtmlTokenType.Colon;[:];
+        SyntaxKind.Colon;[:];
     Markup span - Gen<Markup> - [<li>Foo ] - SpanEditHandler;Accepts:Any - (2:0,2) - Tokens:5
-        HtmlTokenType.OpenAngle;[<];
-        HtmlTokenType.Text;[li];
-        HtmlTokenType.CloseAngle;[>];
-        HtmlTokenType.Text;[Foo];
-        HtmlTokenType.WhiteSpace;[ ];
+        SyntaxKind.OpenAngle;[<];
+        SyntaxKind.HtmlTextLiteral;[li];
+        SyntaxKind.CloseAngle;[>];
+        SyntaxKind.HtmlTextLiteral;[Foo];
+        SyntaxKind.Whitespace;[ ];
     Expression block - Gen<Expr> - 4 - (10:0,10)
         Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (10:0,10) - Tokens:1
-            CSharpTokenType.Transition;[@];
+            SyntaxKind.Transition;[@];
         Code span - Gen<Expr> - [Bar] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K14 - (11:0,11) - Tokens:1
-            CSharpTokenType.Identifier;[Bar];
+            SyntaxKind.Identifier;[Bar];
     Markup span - Gen<Markup> - [ BazLF] - SpanEditHandler;Accepts:None - (14:0,14) - Tokens:3
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Text;[Baz];
-        HtmlTokenType.NewLine;[LF];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.HtmlTextLiteral;[Baz];
+        SyntaxKind.NewLine;[LF];

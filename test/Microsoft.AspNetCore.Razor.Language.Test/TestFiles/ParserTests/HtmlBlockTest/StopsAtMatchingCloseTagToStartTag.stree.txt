@@ -1,23 +1,23 @@
 Markup block - Gen<None> - 14 - (0:0,0)
     Tag block - Gen<None> - 3 - (0:0,0)
         Markup span - Gen<Markup> - [<a>] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:3
-            HtmlTokenType.OpenAngle;[<];
-            HtmlTokenType.Text;[a];
-            HtmlTokenType.CloseAngle;[>];
+            SyntaxKind.OpenAngle;[<];
+            SyntaxKind.HtmlTextLiteral;[a];
+            SyntaxKind.CloseAngle;[>];
     Tag block - Gen<None> - 3 - (3:0,3)
         Markup span - Gen<Markup> - [<b>] - SpanEditHandler;Accepts:None - (3:0,3) - Tokens:3
-            HtmlTokenType.OpenAngle;[<];
-            HtmlTokenType.Text;[b];
-            HtmlTokenType.CloseAngle;[>];
+            SyntaxKind.OpenAngle;[<];
+            SyntaxKind.HtmlTextLiteral;[b];
+            SyntaxKind.CloseAngle;[>];
     Tag block - Gen<None> - 4 - (6:0,6)
         Markup span - Gen<Markup> - [</b>] - SpanEditHandler;Accepts:None - (6:0,6) - Tokens:4
-            HtmlTokenType.OpenAngle;[<];
-            HtmlTokenType.ForwardSlash;[/];
-            HtmlTokenType.Text;[b];
-            HtmlTokenType.CloseAngle;[>];
+            SyntaxKind.OpenAngle;[<];
+            SyntaxKind.ForwardSlash;[/];
+            SyntaxKind.HtmlTextLiteral;[b];
+            SyntaxKind.CloseAngle;[>];
     Tag block - Gen<None> - 4 - (10:0,10)
         Markup span - Gen<Markup> - [</a>] - SpanEditHandler;Accepts:None - (10:0,10) - Tokens:4
-            HtmlTokenType.OpenAngle;[<];
-            HtmlTokenType.ForwardSlash;[/];
-            HtmlTokenType.Text;[a];
-            HtmlTokenType.CloseAngle;[>];
+            SyntaxKind.OpenAngle;[<];
+            SyntaxKind.ForwardSlash;[/];
+            SyntaxKind.HtmlTextLiteral;[a];
+            SyntaxKind.CloseAngle;[>];

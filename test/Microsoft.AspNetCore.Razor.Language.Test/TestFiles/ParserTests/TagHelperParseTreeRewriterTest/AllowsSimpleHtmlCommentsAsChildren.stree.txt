@@ -3,26 +3,26 @@ Markup block - Gen<None> - 36 - (0:0,0)
         StartTagAndEndTag - <p> ... </p>
         Tag block - Gen<None> - 3 - (3:0,3)
             Markup span - Gen<Markup> - [<b>] - SpanEditHandler;Accepts:Any - (3:0,3) - Tokens:3
-                HtmlTokenType.OpenAngle;[<];
-                HtmlTokenType.Text;[b];
-                HtmlTokenType.CloseAngle;[>];
+                SyntaxKind.OpenAngle;[<];
+                SyntaxKind.HtmlTextLiteral;[b];
+                SyntaxKind.CloseAngle;[>];
         SyntaxKind.HtmlText - [asdf] - [6..10) - FullWidth: 4 - Slots: 1
-            SyntaxKind.HtmlTextLiteralToken;[asdf];
+            SyntaxKind.HtmlTextLiteral;[asdf];
         Tag block - Gen<None> - 4 - (10:0,10)
             Markup span - Gen<Markup> - [</b>] - SpanEditHandler;Accepts:Any - (10:0,10) - Tokens:4
-                HtmlTokenType.OpenAngle;[<];
-                HtmlTokenType.ForwardSlash;[/];
-                HtmlTokenType.Text;[b];
-                HtmlTokenType.CloseAngle;[>];
+                SyntaxKind.OpenAngle;[<];
+                SyntaxKind.ForwardSlash;[/];
+                SyntaxKind.HtmlTextLiteral;[b];
+                SyntaxKind.CloseAngle;[>];
         HtmlComment block - Gen<None> - 18 - (14:0,14)
             Markup span - Gen<Markup> - [<!--] - SpanEditHandler;Accepts:None - (14:0,14) - Tokens:3
-                HtmlTokenType.OpenAngle;[<];
-                HtmlTokenType.Bang;[!];
-                HtmlTokenType.DoubleHyphen;[--];
+                SyntaxKind.OpenAngle;[<];
+                SyntaxKind.Bang;[!];
+                SyntaxKind.DoubleHyphen;[--];
             Markup span - Gen<Markup> - [Hello World] - SpanEditHandler;Accepts:WhiteSpace - (18:0,18) - Tokens:3
-                HtmlTokenType.Text;[Hello];
-                HtmlTokenType.WhiteSpace;[ ];
-                HtmlTokenType.Text;[World];
+                SyntaxKind.HtmlTextLiteral;[Hello];
+                SyntaxKind.Whitespace;[ ];
+                SyntaxKind.HtmlTextLiteral;[World];
             Markup span - Gen<Markup> - [-->] - SpanEditHandler;Accepts:None - (29:0,29) - Tokens:2
-                HtmlTokenType.DoubleHyphen;[--];
-                HtmlTokenType.CloseAngle;[>];
+                SyntaxKind.DoubleHyphen;[--];
+                SyntaxKind.CloseAngle;[>];

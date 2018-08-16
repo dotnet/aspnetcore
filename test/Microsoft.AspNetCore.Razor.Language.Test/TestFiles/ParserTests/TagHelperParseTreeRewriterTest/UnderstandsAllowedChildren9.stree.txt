@@ -6,7 +6,7 @@ Markup block - Gen<None> - 51 - (0:0,0)
         Tag block - Gen<TagHelper> - 23 - (5:0,5) - strong - StrongTagHelper
             StartTagAndEndTag - <strong> ... </strong>
             SyntaxKind.HtmlText - [Title:] - [13..19) - FullWidth: 6 - Slots: 1
-                SyntaxKind.HtmlTextLiteralToken;[Title:];
+                SyntaxKind.HtmlTextLiteral;[Title:];
         SyntaxKind.HtmlText - [  ] - [28..30) - FullWidth: 2 - Slots: 1
             SyntaxKind.Whitespace;[  ];
         Tag block - Gen<TagHelper> - 6 - (30:0,30) - br - BRTagHelper
@@ -14,4 +14,4 @@ Markup block - Gen<None> - 51 - (0:0,0)
         SyntaxKind.HtmlText - [  Something] - [36..47) - FullWidth: 11 - Slots: 1
             SyntaxKind.List - [  Something] - [36..47) - FullWidth: 11 - Slots: 2
                 SyntaxKind.Whitespace;[  ];
-                SyntaxKind.HtmlTextLiteralToken;[Something];
+                SyntaxKind.HtmlTextLiteral;[Something];

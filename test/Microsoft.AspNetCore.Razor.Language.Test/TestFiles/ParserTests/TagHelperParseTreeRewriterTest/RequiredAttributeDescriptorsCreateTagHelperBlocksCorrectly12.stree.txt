@@ -3,11 +3,11 @@ Markup block - Gen<None> - 47 - (0:0,0)
         StartTagAndEndTag - <strong catchAll="hi"> ... </strong>
         catchAll - DoubleQuotes
             Markup span - Gen<Markup> - [hi] - SpanEditHandler;Accepts:Any - (18:0,18) - Tokens:1
-                HtmlTokenType.Text;[hi];
+                SyntaxKind.HtmlTextLiteral;[hi];
         SyntaxKind.HtmlText - [words and spaces] - [22..38) - FullWidth: 16 - Slots: 1
             SyntaxKind.List - [words and spaces] - [22..38) - FullWidth: 16 - Slots: 5
-                SyntaxKind.HtmlTextLiteralToken;[words];
+                SyntaxKind.HtmlTextLiteral;[words];
                 SyntaxKind.Whitespace;[ ];
-                SyntaxKind.HtmlTextLiteralToken;[and];
+                SyntaxKind.HtmlTextLiteral;[and];
                 SyntaxKind.Whitespace;[ ];
-                SyntaxKind.HtmlTextLiteralToken;[spaces];
+                SyntaxKind.HtmlTextLiteral;[spaces];
