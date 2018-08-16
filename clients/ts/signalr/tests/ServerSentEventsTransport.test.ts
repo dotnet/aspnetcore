@@ -9,6 +9,9 @@ import { ServerSentEventsTransport } from "../src/ServerSentEventsTransport";
 import { VerifyLogger } from "./Common";
 import { TestEventSource, TestMessageEvent } from "./TestEventSource";
 import { TestHttpClient } from "./TestHttpClient";
+import { registerUnhandledRejectionHandler } from "./Utils";
+
+registerUnhandledRejectionHandler();
 
 describe("ServerSentEventsTransport", () => {
     it("does not allow non-text formats", async () => {

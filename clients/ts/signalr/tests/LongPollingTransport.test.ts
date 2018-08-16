@@ -7,7 +7,9 @@ import { LongPollingTransport } from "../src/LongPollingTransport";
 
 import { VerifyLogger } from "./Common";
 import { TestHttpClient } from "./TestHttpClient";
-import { PromiseSource, SyncPoint } from "./Utils";
+import { PromiseSource, registerUnhandledRejectionHandler, SyncPoint } from "./Utils";
+
+registerUnhandledRejectionHandler();
 
 describe("LongPollingTransport", () => {
     it("shuts down polling by aborting in-progress request", async () => {
