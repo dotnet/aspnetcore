@@ -743,7 +743,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 ConnectionFeatures = connectionFeatures,
                 MemoryPool = _memoryPool,
                 TimeoutControl = Mock.Of<ITimeoutControl>(),
-                Application = pair.Application,
                 Transport = pair.Transport
             });
 

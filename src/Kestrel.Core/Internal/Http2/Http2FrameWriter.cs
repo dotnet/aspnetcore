@@ -26,7 +26,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private readonly object _writeLock = new object();
         private readonly HPackEncoder _hpackEncoder = new HPackEncoder();
         private readonly PipeWriter _outputWriter;
-        private readonly PipeReader _outputReader;
+        private bool _aborted;
+        private readonly ConnectionContext _connectionContext;
         private readonly OutputFlowControl _connectionOutputFlowControl;
         private readonly string _connectionId;
         private readonly IKestrelTrace _log;
@@ -36,15 +37,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public Http2FrameWriter(
             PipeWriter outputPipeWriter,
-            PipeReader outputPipeReader,
+            ConnectionContext connectionContext,
             OutputFlowControl connectionOutputFlowControl,
             ITimeoutControl timeoutControl,
             string connectionId,
             IKestrelTrace log)
         {
             _outputWriter = outputPipeWriter;
-            _outputReader = outputPipeReader;
-
+            _connectionContext = connectionContext;
             _connectionOutputFlowControl = connectionOutputFlowControl;
             _connectionId = connectionId;
             _log = log;
@@ -66,11 +66,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
         }
 
-        public void Abort(ConnectionAbortedException ex)
+        public void Abort(ConnectionAbortedException error)
         {
-            // TODO: Really abort the connection using the ConnectionContex like Http1OutputProducer.
-            _outputReader.CancelPendingRead();
-            Complete();
+            lock (_writeLock)
+            {
+                if (_aborted)
+                {
+                    return;
+                }
+
+                _aborted = true;
+                _connectionContext.Abort(error);
+
+                Complete();
+            }
         }
 
         public Task FlushAsync(IHttpOutputProducer outputProducer, CancellationToken cancellationToken)
@@ -239,7 +248,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 }
 
                 // This awaitable releases continuations in FIFO order when the window updates.
-                // It should be very rare for a continuation to run without any availability. 
+                // It should be very rare for a continuation to run without any availability.
                 if (availabilityAwaitable != null)
                 {
                     await availabilityAwaitable;

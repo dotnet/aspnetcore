@@ -46,7 +46,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 ConnectionFeatures = new FeatureCollection(),
                 MemoryPool = _memoryPool,
                 TimeoutControl = _timeoutControl.Object,
-                Application = pair.Application,
                 Transport = pair.Transport
             };
 

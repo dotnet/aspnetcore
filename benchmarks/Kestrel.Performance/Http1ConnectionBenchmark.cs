@@ -43,7 +43,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
                 ConnectionFeatures = new FeatureCollection(),
                 MemoryPool = memoryPool,
                 TimeoutControl = new MockTimeoutControl(),
-                Application = pair.Application,
                 Transport = pair.Transport
             });
 

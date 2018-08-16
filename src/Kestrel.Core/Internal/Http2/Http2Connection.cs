@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         public Http2Connection(Http2ConnectionContext context)
         {
             _context = context;
-            _frameWriter = new Http2FrameWriter(context.Transport.Output, context.Application.Input, _outputFlowControl, this, context.ConnectionId, context.ServiceContext.Log);
+            _frameWriter = new Http2FrameWriter(context.Transport.Output, context.ConnectionContext, _outputFlowControl, this, context.ConnectionId, context.ServiceContext.Log);
             _hpackDecoder = new HPackDecoder((int)_serverSettings.HeaderTableSize);
             _serverSettings.MaxConcurrentStreams = (uint)context.ServiceContext.ServerOptions.Limits.Http2.MaxStreamsPerConnection;
         }

@@ -63,7 +63,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 ConnectionFeatures = connectionFeatures,
                 MemoryPool = _pipelineFactory,
                 TimeoutControl = _timeoutControl.Object,
-                Application = pair.Application,
                 Transport = pair.Transport
             };
 

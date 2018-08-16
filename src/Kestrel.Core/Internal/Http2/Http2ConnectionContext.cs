@@ -4,6 +4,7 @@
 using System.Buffers;
 using System.IO.Pipelines;
 using System.Net;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
@@ -11,13 +12,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
     public class Http2ConnectionContext
     {
         public string ConnectionId { get; set; }
+        public ConnectionContext ConnectionContext { get; set; }
         public ServiceContext ServiceContext { get; set; }
         public IFeatureCollection ConnectionFeatures { get; set; }
         public MemoryPool<byte> MemoryPool { get; set; }
         public IPEndPoint LocalEndPoint { get; set; }
         public IPEndPoint RemoteEndPoint { get; set; }
-
         public IDuplexPipe Transport { get; set; }
-        public IDuplexPipe Application { get; set; }
     }
 }

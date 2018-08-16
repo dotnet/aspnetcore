@@ -188,7 +188,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
                 ServiceContext = serviceContext,
                 ConnectionFeatures = new FeatureCollection(),
                 MemoryPool = memoryPool,
-                Application = pair.Application,
                 Transport = pair.Transport
             });
 
