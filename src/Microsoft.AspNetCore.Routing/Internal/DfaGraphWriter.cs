@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             for (var i = 0; i < endpoints.Count; i++)
             {
                 var endpoint = endpoints[i] as MatcherEndpoint;
-                if (endpoint != null)
+                if (endpoint != null && endpoint.Metadata.GetMetadata<ISuppressMatchingMetadata>() == null)
                 {
                     builder.AddEndpoint(endpoint);
                 }

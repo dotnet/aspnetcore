@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 // register other endpoint types, which are non-routable, and it's
                 // ok that we won't route to them.
                 var endpoint = endpoints[i] as MatcherEndpoint;
-                if (endpoint != null)
+                if (endpoint != null && endpoint.Metadata.GetMetadata<ISuppressMatchingMetadata>() == null)
                 {
                     builder.AddEndpoint(endpoint);
                 }
