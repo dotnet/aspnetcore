@@ -14,8 +14,15 @@ namespace NativeIISSample
 {
     public class Startup
     {
+        private readonly IAuthenticationSchemeProvider _authSchemeProvider;
+
+        public Startup(IAuthenticationSchemeProvider authSchemeProvider = null)
+        {
+            _authSchemeProvider = authSchemeProvider;
+        }
+
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, IAuthenticationSchemeProvider authSchemeProvider)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
             app.Run(async (context) =>
             {
@@ -41,8 +48,11 @@ namespace NativeIISSample
                 await context.Response.WriteAsync(Environment.NewLine);
 
                 await context.Response.WriteAsync("User: " + context.User.Identity.Name + Environment.NewLine);
-                var scheme = await authSchemeProvider.GetSchemeAsync(IISServerDefaults.AuthenticationScheme);
-                await context.Response.WriteAsync("DisplayName: " + scheme?.DisplayName + Environment.NewLine);
+                if (_authSchemeProvider != null)
+                {
+                    var scheme = await _authSchemeProvider.GetSchemeAsync(IISServerDefaults.AuthenticationScheme);
+                    await context.Response.WriteAsync("DisplayName: " + scheme?.DisplayName + Environment.NewLine);
+                }
 
                 await context.Response.WriteAsync(Environment.NewLine);
 
@@ -98,7 +108,9 @@ namespace NativeIISSample
         public static void Main(string[] args)
         {
             var host = new WebHostBuilder()
+                .UseKestrel()
                 .UseIIS()
+                .UseIISIntegration()
                 .UseStartup<Startup>()
                 .Build();
 

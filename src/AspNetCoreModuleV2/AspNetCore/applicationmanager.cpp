@@ -116,7 +116,7 @@ APPLICATION_MANAGER::FindConfigChangedApplication(
     BOOL fChanged = pstruConfigPath->StartsWith(pContext->pstrPath, true);
     if (fChanged)
     {
-        DWORD dwLen = (DWORD)wcslen(pContext->pstrPath);
+        auto dwLen = wcslen(pContext->pstrPath);
         WCHAR wChar = pstruConfigPath->QueryStr()[dwLen];
 
         // We need to check that the last character of the config path
@@ -189,12 +189,6 @@ APPLICATION_MANAGER::RecycleApplicationFromManager(
 
         // Removed the applications which are impacted by the configurtion change
         m_pApplicationInfoHash->DeleteIf(FindConfigChangedApplication, (PVOID)&context);
-
-        if (m_pApplicationInfoHash->Count() == 0 && m_hostingModel == HOSTING_OUT_PROCESS)
-        {
-            // reuse current process
-            m_hostingModel = HOSTING_UNKNOWN;
-        }
     }
 
     // If we receive a request at this point.
@@ -211,15 +205,10 @@ APPLICATION_MANAGER::RecycleApplicationFromManager(
             APPLICATION_INFO* pRecord;
 
             // Application got recycled. Log an event
-            STACK_STRU(strEventMsg, 256);
-            if (SUCCEEDED(strEventMsg.SafeSnwprintf(
-                ASPNETCORE_EVENT_RECYCLE_CONFIGURATION_MSG,
-                path)))
-            {
-                EventLog::Info(
+            EventLog::Info(
                     ASPNETCORE_EVENT_RECYCLE_CONFIGURATION,
-                    strEventMsg.QueryStr());
-            }
+                    ASPNETCORE_EVENT_RECYCLE_CONFIGURATION_MSG,
+                    path);
 
             table->FindKey(path, &pRecord);
             DBG_ASSERT(pRecord != NULL);
@@ -241,15 +230,10 @@ Finished:
     if (FAILED(hr))
     {
         // Failed to recycle an application. Log an event
-        STACK_STRU(strEventMsg, 256);
-        if  (SUCCEEDED(strEventMsg.SafeSnwprintf(
-                ASPNETCORE_EVENT_RECYCLE_FAILURE_CONFIGURATION_MSG,
-                pszApplicationId)))
-        {
-            EventLog::Error(
+        EventLog::Error(
                 ASPNETCORE_EVENT_RECYCLE_APP_FAILURE,
-                strEventMsg.QueryStr());
-        }
+                ASPNETCORE_EVENT_RECYCLE_FAILURE_CONFIGURATION_MSG,
+                pszApplicationId);
         // Need to recycle the process as we cannot recycle the application
         if (!g_fRecycleProcessCalled)
         {

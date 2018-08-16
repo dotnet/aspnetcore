@@ -112,7 +112,6 @@ public:
 private:
     APPLICATION_MANAGER(HMODULE hModule, IHttpServer& pHttpServer) :
                             m_pApplicationInfoHash(NULL),
-                            m_hostingModel(HOSTING_UNKNOWN),
                             m_fDebugInitialize(FALSE),
                             m_pHttpServer(pHttpServer),
                             m_handlerResolver(hModule, pHttpServer)
@@ -123,7 +122,6 @@ private:
     APPLICATION_INFO_HASH      *m_pApplicationInfoHash;
     static APPLICATION_MANAGER *sm_pApplicationManager;
     SRWLOCK                     m_srwLock {};
-    APP_HOSTING_MODEL           m_hostingModel;
     BOOL                        m_fDebugInitialize;
     IHttpServer                &m_pHttpServer;
     HandlerResolver             m_handlerResolver;

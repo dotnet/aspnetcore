@@ -5,6 +5,7 @@ using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
+using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
@@ -53,6 +54,25 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             // Have to retry here to allow ANCM to receive notification and react to it
             // Verify that worker process gets restarted with new process id
             await deploymentResult.HttpClient.RetryRequestAsync("/ProcessId", async r => await r.Content.ReadAsStringAsync() != processBefore);
+        }
+
+        [ConditionalFact]
+        public async Task OutOfProcessToInProcessHostingModelSwitchWorks()
+        {
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess, publish: true);
+
+            var deploymentResult = await DeployAsync(deploymentParameters);
+
+            await deploymentResult.AssertStarts();
+
+            deploymentResult.ModifyWebConfig(element => element
+                .GetOrAdd("system.webServer")
+                .GetOrAdd("aspNetCore")
+                .SetAttributeValue("hostingModel", "inprocess"));
+
+            // Have to retry here to allow ANCM to receive notification and react to it
+            // Verify that worker process gets restarted with new process id
+            await deploymentResult.HttpClient.RetryRequestAsync("/HelloWorld", r => r.StatusCode == HttpStatusCode.InternalServerError);
         }
     }
 }
