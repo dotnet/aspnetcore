@@ -39,7 +39,15 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 return new ZeroEntryJumpTable(defaultDestination, exitDestination);
             }
 
-            // The IL Emit jump table is not faster for a single entry
+            // The IL Emit jump table is not faster for a single entry - but we have an optimized version when all text
+            // is ASCII
+            if (pathEntries.Length == 1 && Ascii.IsAscii(pathEntries[0].text))
+            {
+                var entry = pathEntries[0];
+                return new SingleEntryAsciiJumpTable(defaultDestination, exitDestination, entry.text, entry.destination);
+            }
+
+            // We have a fallback that works for non-ASCII
             if (pathEntries.Length == 1)
             {
                 var entry = pathEntries[0];
