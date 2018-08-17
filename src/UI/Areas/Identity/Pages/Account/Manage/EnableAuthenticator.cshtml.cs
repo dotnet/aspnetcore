@@ -156,7 +156,7 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage.Internal
         {
             return string.Format(
                 AuthenticatorUriFormat,
-                _urlEncoder.Encode("Microsoft.AspNetCore.Identity.UI"),
+                _urlEncoder.Encode(_userManager.Options.Tokens.AuthenticatorIssuer),
                 _urlEncoder.Encode(email),
                 unformattedKey);
         }
