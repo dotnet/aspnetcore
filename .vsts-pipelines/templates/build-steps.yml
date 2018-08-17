@@ -3,16 +3,26 @@ phases:
   parameters:
     agentOs: Windows
     beforeBuild:
-      - powershell: "& ./tools/UpdateIISExpressCertificate.ps1; & ./tools/update_schema.ps1"
+      - powershell: "& ./tools/UpdateIISExpressCertificate.ps1; & ./tools/update_schema.ps1; & ./tools/SetupTestEnvironment.ps1 Setup"
         displayName: Prepare repo
     afterBuild:
+      - powershell: "& ./tools/SetupTestEnvironment.ps1 Shutdown"
+        displayName: Stop AppVerifier
+        condition: always()
       - task: PublishBuildArtifacts@1
-        displayName: Upload binlog
+        displayName: Upload logs
         condition: eq(variables['system.pullrequest.isfork'], false)
         inputs:
           artifactName: logs
           artifactType: Container
-          pathtoPublish: artifacts/logs/
+          pathtoPublish: artifacts/logs
+      - task: PublishBuildArtifacts@1
+        displayName: Upload dumps
+        condition: eq(variables['system.pullrequest.isfork'], false)
+        inputs:
+          artifactName: dumps
+          artifactType: Container
+          pathtoPublish: artifacts/dumps
 
 - template: .vsts-pipelines/templates/phases/default-build.yml@buildtools
   parameters:
