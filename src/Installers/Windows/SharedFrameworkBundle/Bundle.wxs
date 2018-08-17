@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:dep="http://schemas.microsoft.com/wix/DependencyExtension" xmlns:bal="http://schemas.microsoft.com/wix/BalExtension">
+    <Bundle Name="$(var.BundleName)" Version="$(var.Version)" Manufacturer="Microsoft Corporation" UpgradeCode="$(var.BundleUpgradeCode)"
+            dep:ProviderKey="$(var.BundleProviderKey)">
+        <BootstrapperApplicationRef Id="WixStandardBootstrapperApplication.HyperlinkLicense">
+            <bal:WixStandardBootstrapperApplication LicenseUrl="https://go.microsoft.com/fwlink/?LinkId=320539"
+                                                    LogoFile="DotNetLogo.bmp"
+                                                    SuppressOptionsUI="yes"
+                                                    ThemeFile="thm.xml"
+                                                    LocalizationFile="thm.wxl"/>
+        </BootstrapperApplicationRef>
+
+        <!-- Customizations of the default BA -->
+        <Log Prefix="dd_$(var.BundleLogPrefix)_" Extension=".log" />
+        <OptionalUpdateRegistration Manufacturer="$(var.BundleRegManufacturer)" ProductFamily="$(var.BundleRegFamily)" Name="$(var.BundleRegName)" />
+
+        <Variable Name="BundleNameShort" Value="$(var.BundleNameShort)"/>
+        <Variable Name="BundleNameSub" Value="$(var.BundleNameSub)"/>
+        <Variable Name="BundleNameFull" Value="$(var.BundleNameFull)"/>
+
+        <Chain>
+            <?if $(var.Platform)=x86?>
+            <PackageGroupRef Id="PG_AspNetCoreSharedFramework_x86"/>
+            <?elseif $(var.Platform)=x64?>
+            <PackageGroupRef Id="PG_AspNetCoreSharedFramework_x64"/>
+            <?endif?>
+        </Chain>
+    </Bundle>
+</Wix>

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
+    <Fragment>
+        <PackageGroup Id="PG_DOTNET_REDIST_LTS_BUNDLE">
+            <RollbackBoundary Id="RB_DOTNET_REDIST_LTS_BUNDLE" />
+
+            <ExePackage Id="DotNetRedistLts_x64" SourceFile="$(var.DepsPath)\$(var.DotNetRedistLtsInstallerx64)"
+                        Name="$(var.DotNetRedistLtsInstallerx64)"
+                        Compressed="yes"
+                        Vital="yes"
+                        InstallCondition="VersionNT64 AND (NOT OPT_NO_RUNTIME)"
+                        InstallCommand="/quiet /norestart"
+                        Permanent="yes"
+                        DetectCondition="DotNetRedistLtsProductVersion_x64 = v$(var.DotNetRedistLtsInstallerProductVersionx64)">
+            </ExePackage>
+
+            <ExePackage Id="DotNetRedistLts_x86" SourceFile="$(var.DepsPath)\$(var.DotNetRedistLtsInstallerx86)"
+                        Name="$(var.DotNetRedistLtsInstallerx86)"
+                        Compressed="yes"
+                        Vital="yes"
+                        InstallCondition="(NOT OPT_NO_RUNTIME) AND (NOT OPT_NO_X86)"
+                        InstallCommand="/quiet /norestart"
+                        Permanent="yes"
+                        DetectCondition="DotNetRedistLtsProductVersion_x86 = v$(var.DotNetRedistLtsInstallerProductVersionx86)">
+            </ExePackage>
+        </PackageGroup>
+    </Fragment>
+
+    <Fragment>
+        <util:ProductSearch Id="DotNetRedistLtsProductSearch_x86"
+                            Condition="NOT VersionNT64"
+                            ProductCode="$(var.DotNetRedistLtsInstallerProductCodex86)"
+                            Result="version"
+                            Variable="DotNetRedistLtsProductVersion_x86" />
+
+        <util:ProductSearch Id="DotNetRedistLtsProductSearch_x64"
+                            Condition="VersionNT64"
+                            ProductCode="$(var.DotNetRedistLtsInstallerProductCodex64)"
+                            Result="version"
+                            Variable="DotNetRedistLtsProductVersion_x64" />
+    </Fragment>
+</Wix>

@@ -1,5 +1,5 @@
-bin
-obj
+bin/
+obj/
 .vs/
 *.suo
 *.user
@@ -11,11 +11,9 @@ _ReSharper.*
 *.psess
 *.binlog
 *.log
-packages
-target
-artifacts
+artifacts/
 StyleCop.Cache
-node_modules
+node_modules/
 *.snk
 .nuget
 .r

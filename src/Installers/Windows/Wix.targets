@@ -1,0 +1,42 @@
+<Project>
+  <PropertyGroup Condition="'$(OutputType)' == 'package'">
+    <InstallDir>$(ProductName)</InstallDir>
+    <DepProviderKey>Microsoft.$(ProductNameShort)_$(Platform)_$(Lang),v$(PackageVersion)</DepProviderKey>
+    <DefineConstants>$(DefineConstants);DepProviderKey=$(DepProviderKey)</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <GuidInputs>$(Version);$(Platform)</GuidInputs>
+    <GuidInputs Condition="'$(IsFinalBuild)' != 'true'">$(GuidInputs);$(BuildNumber)</GuidInputs>
+  </PropertyGroup>
+
+  <UsingTask AssemblyFile="$(OutputPath)..\InstallerTasks\InstallerTasks.dll" TaskName="RepoTasks.GenerateGuid" />
+
+  <Target Name="GenerateGUIDs" BeforeTargets="BeforeBuild" DependsOnTargets="_GeneratePackageGuids;_GenerateBundleGuids" />
+
+  <Target Name="_GeneratePackageGuids" Condition="'$(OutputType)' == 'package'">
+    <GenerateGuid NamespaceGuid="$(NamespaceGuid)" Values="$(ProductNameShort);$(GuidInputs)">
+      <Output TaskParameter="Guid" PropertyName="ProductCode" />
+    </GenerateGuid>
+    <GenerateGuid NamespaceGuid="$(NamespaceGuid)" Values="$(ProductNameShort);$(GuidInputs);$(OutputType)">
+      <Output TaskParameter="Guid" PropertyName="UpgradeCode" />
+    </GenerateGuid>
+
+    <PropertyGroup>
+      <DefineConstants>$(DefineConstants);ProductCode=$(ProductCode);UpgradeCode=$(UpgradeCode)</DefineConstants>
+    </PropertyGroup>
+  </Target>
+
+  <Target Name="_GenerateBundleGuids" Condition="'$(OutputType)' == 'bundle'">
+    <GenerateGuid NamespaceGuid="$(NamespaceGuid)" Values="$(BundleNameShort);$(GuidInputs)">
+      <Output TaskParameter="Guid" PropertyName="BundleProviderKey" />
+    </GenerateGuid>
+    <GenerateGuid NamespaceGuid="$(NamespaceGuid)" Values="$(BundleNameShort);$(GuidInputs);$(OutputType)">
+      <Output TaskParameter="Guid" PropertyName="BundleUpgradeCode" />
+    </GenerateGuid>
+
+    <PropertyGroup>
+      <DefineConstants>$(DefineConstants);BundleProviderKey=$(BundleProviderKey);BundleUpgradeCode=$(BundleUpgradeCode)</DefineConstants>
+    </PropertyGroup>
+  </Target>
+</Project>
