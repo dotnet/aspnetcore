@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 {
     public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, IHttpHeadersHandler
     {
-        protected static readonly string _largeHeaderValue = new string('a', HPackDecoder.MaxStringOctets);
+        protected static readonly string _4kHeaderValue = new string('a', HPackDecoder.MaxStringOctets);
 
         protected static readonly IEnumerable<KeyValuePair<string, string>> _browserRequestHeaders = new[]
         {
@@ -174,7 +174,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             {
                 foreach (var name in new[] { "a", "b", "c", "d", "e", "f", "g", "h" })
                 {
-                    context.Response.Headers[name] = _largeHeaderValue;
+                    context.Response.Headers[name] = _4kHeaderValue;
                 }
 
                 return Task.CompletedTask;
@@ -307,7 +307,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _decodedHeaders[name.GetAsciiStringNonNullCharacters()] = value.GetAsciiOrUTF8StringNonNullCharacters();
         }
 
-        protected async Task InitializeConnectionAsync(RequestDelegate application, int expectedSettingsLegnth = 6)
+        protected async Task InitializeConnectionAsync(RequestDelegate application, int expectedSettingsCount = 2)
         {
             _connectionTask = _connection.ProcessRequestsAsync(new DummyApplication(application));
 
@@ -315,7 +315,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await SendSettingsAsync();
 
             await ExpectAsync(Http2FrameType.SETTINGS,
-                withLength: expectedSettingsLegnth,
+                withLength: expectedSettingsCount * 6,
                 withFlags: 0,
                 withStreamId: 0);
 

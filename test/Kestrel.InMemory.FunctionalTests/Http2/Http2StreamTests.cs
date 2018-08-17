@@ -623,10 +623,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
                 new KeyValuePair<string, string>(HeaderNames.Path, "/"),
                 new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
-                new KeyValuePair<string, string>("a", _largeHeaderValue),
-                new KeyValuePair<string, string>("b", _largeHeaderValue),
-                new KeyValuePair<string, string>("c", _largeHeaderValue),
-                new KeyValuePair<string, string>("d", _largeHeaderValue),
+                new KeyValuePair<string, string>("a", _4kHeaderValue),
+                new KeyValuePair<string, string>("b", _4kHeaderValue),
+                new KeyValuePair<string, string>("c", _4kHeaderValue),
+                new KeyValuePair<string, string>("d", _4kHeaderValue),
                 new KeyValuePair<string, string>(HeaderNames.ContentLength, "12"),
             };
             await StartStreamAsync(1, headers, endStream: false);
@@ -726,10 +726,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
                 new KeyValuePair<string, string>(HeaderNames.Path, "/"),
                 new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
-                new KeyValuePair<string, string>("a", _largeHeaderValue),
-                new KeyValuePair<string, string>("b", _largeHeaderValue),
-                new KeyValuePair<string, string>("c", _largeHeaderValue),
-                new KeyValuePair<string, string>("d", _largeHeaderValue),
+                new KeyValuePair<string, string>("a", _4kHeaderValue),
+                new KeyValuePair<string, string>("b", _4kHeaderValue),
+                new KeyValuePair<string, string>("c", _4kHeaderValue),
+                new KeyValuePair<string, string>("d", _4kHeaderValue),
                 new KeyValuePair<string, string>(HeaderNames.ContentLength, "12"),
             };
             await InitializeConnectionAsync(_noopApplication);
