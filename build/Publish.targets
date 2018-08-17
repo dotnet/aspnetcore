@@ -193,7 +193,7 @@
     <Error Text="Missing required property: PublishMyGetNpmRegistryUrl"  Condition=" '$(PublishMyGetNpmRegistryUrl)' == '' "/>
     <Error Text="Missing required property: PublishMyGetFeedKey"  Condition=" '$(PublishMyGetFeedKey)' == '' "/>
 
-    <Error Message="No packages found to publish" Condition="@(PackageToPublish->Count()) == 0" />
+    <Error Text="No packages found to publish" Condition="@(PackageToPublish->Count()) == 0" />
 
     <PushNuGetPackages Condition="'%(PackageToPublish.IsSymbolsPackage)' != 'true' AND @(PackageToPublish->Count()) != 0"
       Packages="@(PackageToPublish)"
@@ -209,12 +209,16 @@
       <AuthTokenSetting>$(PublishMyGetNpmRegistryUrl.Replace("https:", "")):_authToken</AuthTokenSetting>
     </PropertyGroup>
 
-    <Exec Condition=" '$(ContainsNpmPackageToPublish)' == 'true' "
+    <Message Condition=" @(NpmPackageToPublish->Count()) != 0 "
+             Text="Skipping NPM publish because there are no npm packages to publish."
+             Importance="high" />
+
+    <Exec Condition=" @(NpmPackageToPublish->Count()) != 0 "
           Command="npm config set &quot;$(AuthTokenSetting)&quot; $(PublishMyGetFeedKey)"
           StandardOutputImportance="Normal" />
 
     <!-- When you UseCommandProcessor FileName is ignored -->
-    <Run Condition=" @(PackageToPublish->Count()) != 0 "
+    <Run Condition=" @(NpmPackageToPublish->Count()) != 0 "
          FileName="cmd"
          Arguments="npm;publish;--registry;$(PublishMyGetNpmRegistryUrl);%(NpmPackageToPublish.Identity)"
          MaxRetries="5"
@@ -223,11 +227,11 @@
       <Output TaskParameter="ExitCode" ItemName="_NpmExitCodes" />
     </Run>
 
-    <Exec Condition=" @(PackageToPublish->Count()) != 0 "
+    <Exec Condition=" @(NpmPackageToPublish->Count()) != 0 "
           Command="npm config delete $(AuthTokenSetting)"
           StandardOutputImportance="Normal" />
 
-    <Error Text="Publishing npm modules failed" Condition=" @(PackageToPublish->Count()) != 0 AND %(_NpmExitCodes.Identity) != 0" />
+    <Error Text="Publishing npm modules failed" Condition=" @(NpmPackageToPublish->Count()) != 0 AND %(_NpmExitCodes.Identity) != 0" />
   </Target>
 
   <Target Name="PublishToAzureFeed"
