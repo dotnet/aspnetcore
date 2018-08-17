@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests.Account
             return new Index(
                 Client,
                 index,
-                Context.WithAuthenticatedUser());
+                Context.WithAuthenticatedUser().WithPasswordLogin());
         }
 
         public async Task<DefaultUIPage> LockoutUserAsync(string userName, string password)

@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Identity.Test
         public async Task IdentityUI_ScriptTags_FallbackSourceContent_Matches_CDNContent(ScriptTag scriptTag)
         {
             var slnDir = GetSolutionDir();
-            var wwwrootDir = Path.Combine(slnDir, "src", "UI", "wwwroot");
+            var wwwrootDir = Path.Combine(slnDir, "src", "UI", "wwwroot", "V4");
 
             var cdnContent = await _httpClient.GetStringAsync(scriptTag.Src);
             var fallbackSrcContent = File.ReadAllText(
@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.Identity.Test
         private static List<ScriptTag> GetScriptTags()
         {
             var slnDir = GetSolutionDir();
-            var uiDir = Path.Combine(slnDir, "src", "UI");
+            var uiDir = Path.Combine(slnDir, "src", "UI", "Areas", "Identity", "Pages", "V4");
             var cshtmlFiles = Directory.GetFiles(uiDir, "*.cshtml", SearchOption.AllDirectories);
 
             var scriptTags = new List<ScriptTag>();
