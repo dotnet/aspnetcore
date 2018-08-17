@@ -9,7 +9,9 @@ using System.Net;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
+using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
@@ -81,9 +83,9 @@ namespace ServerComparison.FunctionalTests
             return ResponseCompression(variant, CheckAppCompressionAsync, hostCompression: true);
         }
 
-        private async Task ResponseCompression(TestVariant variant, 
-            Func<HttpClient, ILogger, Task> scenario, 
-            bool hostCompression, 
+        private async Task ResponseCompression(TestVariant variant,
+            Func<HttpClient, ILogger, Task> scenario,
+            bool hostCompression,
             [CallerMemberName] string testName = null)
         {
             testName = $"{testName}_{variant.Server}_{variant.Tfm}_{variant.Architecture}_{variant.ApplicationType}";
@@ -96,13 +98,37 @@ namespace ServerComparison.FunctionalTests
                     ApplicationPath = Helpers.GetApplicationPath(),
                     EnvironmentName = "ResponseCompression",
                 };
-                if (hostCompression)
+
+                if (variant.Server == ServerType.Nginx)
                 {
-                    deploymentParameters.ServerConfigTemplateContent = Helpers.GetNginxConfigContent(variant.Server, "nginx.conf");
+                    deploymentParameters.ServerConfigTemplateContent = hostCompression
+                        ? Helpers.GetNginxConfigContent("nginx.conf")
+                        : Helpers.GetNginxConfigContent("NoCompression.conf");
                 }
-                else
+                else if (variant.Server == ServerType.IISExpress && !hostCompression)
                 {
-                    deploymentParameters.ServerConfigTemplateContent = Helpers.GetConfigContent(variant.Server, "NoCompression.config", "NoCompression.conf");
+                    var iisDeploymentParameters = new IISDeploymentParameters(deploymentParameters);
+                    iisDeploymentParameters.ServerConfigActionList.Add(
+                        (element, _) => {
+                            var compressionElement = element
+                                .RequiredElement("system.webServer")
+                                .RequiredElement("httpCompression");
+
+                            compressionElement
+                                .RequiredElement("dynamicTypes")
+                                .Elements()
+                                .SkipLast(1)
+                                .Remove();
+
+                            compressionElement
+                                .RequiredElement("staticTypes")
+                                .Elements()
+                                .SkipLast(1)
+                                .Remove();
+                            // last element in both dynamicTypes and staticTypes disables compression
+                            // <add mimeType="*/*" enabled="false" />
+                        });
+                    deploymentParameters = iisDeploymentParameters;
                 }
 
                 using (var deployer = IISApplicationDeployerFactory.Create(deploymentParameters, loggerFactory))
