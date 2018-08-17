@@ -4,6 +4,7 @@ using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
+using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
@@ -36,8 +37,6 @@ namespace E2ETests
                     ApplicationPath = Helpers.GetApplicationPath(),
                     PreservePublishedApplicationForDebugging = Helpers.PreservePublishedApplicationForDebugging,
                     EnvironmentName = "NtlmAuthentication", //Will pick the Start class named 'StartupNtlmAuthentication'
-                    ServerConfigTemplateContent = Helpers.GetConfigContent(variant.Server, "NtlmAuthentation.config"),
-                    SiteName = "MusicStoreNtlmAuthentication", //This is configured in the NtlmAuthentication.config
                     UserAdditionalCleanup = parameters =>
                     {
                         DbUtils.DropDatabase(musicStoreDbName, logger);
@@ -49,6 +48,25 @@ namespace E2ETests
                     .Add(new KeyValuePair<string, string>(
                         MusicStoreConfig.ConnectionStringKey,
                         DbUtils.CreateConnectionString(musicStoreDbName)));
+
+                if (variant.Server == ServerType.IISExpress)
+                {
+                    var iisDeploymentParameters = new IISDeploymentParameters(deploymentParameters);
+                    iisDeploymentParameters.ServerConfigActionList.Add(
+                        (element, _) => {
+                            var authentication = element
+                                .RequiredElement("system.webServer")
+                                .GetOrAdd("security")
+                                .GetOrAdd("authentication");
+
+                            authentication.GetOrAdd("anonymousAuthentication")
+                                .SetAttributeValue("enabled", "false");
+
+                            authentication.GetOrAdd("windowsAuthentication")
+                                .SetAttributeValue("enabled", "true");
+                        });
+                    deploymentParameters = iisDeploymentParameters;
+                }
 
                 using (var deployer = IISApplicationDeployerFactory.Create(deploymentParameters, loggerFactory))
                 {
