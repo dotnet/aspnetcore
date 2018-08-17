@@ -259,7 +259,6 @@ IN_PROCESS_APPLICATION::LoadManagedApplication
         // Set up stdout redirect
 
         SRWExclusiveLock lock(m_stateLock);
-
         if (m_pLoggerProvider == NULL)
         {
             hr =  LoggingHelpers::CreateLoggingProvider(
@@ -394,28 +393,22 @@ IN_PROCESS_APPLICATION::SetEnvironementVariablesOnWorkerProcess(
 {
     HRESULT hr = S_OK;
     ENVIRONMENT_VAR_HASH* pHashTable = NULL;
-    if (FAILED(hr = ENVIRONMENT_VAR_HELPERS::InitEnvironmentVariablesTable(
+    std::unique_ptr<ENVIRONMENT_VAR_HASH, ENVIRONMENT_VAR_HASH_DELETER> table;
+    RETURN_IF_FAILED(hr = ENVIRONMENT_VAR_HELPERS::InitEnvironmentVariablesTable(
         m_pConfig->QueryEnvironmentVariables(),
         m_pConfig->QueryWindowsAuthEnabled(),
         m_pConfig->QueryBasicAuthEnabled(),
         m_pConfig->QueryAnonymousAuthEnabled(),
-        &pHashTable)))
-    {
-        goto Finished;
-    }
+        &pHashTable));
 
-    pHashTable->Apply(ENVIRONMENT_VAR_HELPERS::AppendEnvironmentVariables, &hr);
-    if (FAILED(hr))
-    {
-        goto Finished;
-    }
-    pHashTable->Apply(ENVIRONMENT_VAR_HELPERS::SetEnvironmentVariables, &hr);
-    if (FAILED(hr))
-    {
-        goto Finished;
-    }
-Finished:
-    return hr;
+    table.reset(pHashTable);
+
+    table->Apply(ENVIRONMENT_VAR_HELPERS::AppendEnvironmentVariables, &hr);
+    RETURN_IF_FAILED(hr);
+
+    table->Apply(ENVIRONMENT_VAR_HELPERS::SetEnvironmentVariables, &hr);
+    RETURN_IF_FAILED(hr);
+    return S_OK;
 }
 
 HRESULT

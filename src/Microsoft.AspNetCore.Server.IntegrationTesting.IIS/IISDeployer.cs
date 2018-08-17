@@ -341,7 +341,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                         throw new InvalidOperationException("Site not stopped yet");
                     }
 
-                    if (appPool.WorkerProcesses.Any(wp => wp.State == WorkerProcessState.Running ||
+                    if (appPool.WorkerProcesses != null && appPool.WorkerProcesses.Any(wp => wp.State == WorkerProcessState.Running ||
                                                           wp.State == WorkerProcessState.Stopping))
                     {
                         throw new InvalidOperationException("WorkerProcess not stopped yet");
