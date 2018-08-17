@@ -16,7 +16,7 @@ addons:
     - libunwind8
 branches:
   only:
-  - master
+  - dev
   - /^release\/.*$/
   - /^(.*\/)?ci-.*$/
 before_install:
