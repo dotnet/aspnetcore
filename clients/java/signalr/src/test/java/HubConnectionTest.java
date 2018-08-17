@@ -597,6 +597,65 @@ public class HubConnectionTest {
         assertEquals(1, value.get(), 0);
     }
 
+    @Test
+    public void onClosedCallbackRunsWhenStopIsCalled() throws Exception {
+        AtomicReference<String> value1 = new AtomicReference<>();
+        Transport mockTransport = new MockTransport();
+        HubConnection hubConnection = new HubConnection("http://example.com", mockTransport);
+        hubConnection.start();
+        hubConnection.onClosed((ex) -> {
+            assertNull(value1.get());
+            value1.set("Closed callback ran.");
+        });
+        hubConnection.stop();
+
+        assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
+        assertEquals(value1.get(), "Closed callback ran.");
+    }
+
+    @Test
+    public void multipleOnClosedCallbacksRunWhenStopIsCalled() throws Exception {
+        AtomicReference<String> value1 = new AtomicReference<>();
+        AtomicReference<String> value2 = new AtomicReference<>();
+        Transport mockTransport = new MockTransport();
+        HubConnection hubConnection = new HubConnection("http://example.com", mockTransport);
+        hubConnection.start();
+
+        hubConnection.onClosed((ex) -> {
+            assertNull(value1.get());
+            value1.set("Closed callback ran.");
+        });
+
+        hubConnection.onClosed((ex) -> {
+            assertNull(value2.get());
+            value2.set("The second onClosed callback ran");
+        });
+
+        assertNull(value1.get());
+        assertNull(value2.get());
+        hubConnection.stop();
+
+        assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
+        assertEquals("Closed callback ran.",value1.get());
+        assertEquals("The second onClosed callback ran", value2.get());
+    }
+
+    @Test
+    public void HubConnectionClosesAndRunsOnClosedCallbackAfterCloseMessageWithError() throws Exception {
+        MockTransport mockTransport = new MockTransport();
+        HubConnection hubConnection = new HubConnection("http://example.com", mockTransport);
+        hubConnection.onClosed((ex) -> {
+            assertEquals(ex.getMessage(), "There was an error");
+        });
+        hubConnection.start();
+        mockTransport.receiveMessage("{}" + RECORD_SEPARATOR);
+
+        assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
+
+        mockTransport.receiveMessage("{\"type\":7,\"error\": \"There was an error\"}" + RECORD_SEPARATOR);
+
+        assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
+    }
 
     private class MockTransport implements Transport {
         private OnReceiveCallBack onReceiveCallBack;
