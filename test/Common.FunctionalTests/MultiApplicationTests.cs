@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
@@ -78,7 +79,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             var webConfigLocation = GetWebConfigLocation(directory);
             XDocument webConfig = XDocument.Load(webConfigLocation);
             webConfig.Root
-                .GetOrAdd("system.webServer")
+                .Descendants("system.webServer")
+                .Single()
                 .GetOrAdd("aspNetCore")
                 .SetAttributeValue("hostingModel", model.ToString());
             webConfig.Save(webConfigLocation);

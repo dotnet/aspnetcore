@@ -100,7 +100,8 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
         private void AddWebConfigEnvironmentVariables(XElement element, string contentRoot)
         {
             var environmentVariables = element
-                .RequiredElement("system.webServer")
+                .Descendants("system.webServer")
+                .Single()
                 .RequiredElement("aspNetCore")
                 .GetOrAdd("environmentVariables");
 
@@ -114,7 +115,8 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
         private void AddHandlerSettings(XElement element, string contentRoot)
         {
             var handlerSettings = element
-                .RequiredElement("system.webServer")
+                .Descendants("system.webServer")
+                .Single()
                 .RequiredElement("aspNetCore")
                 .GetOrAdd("handlerSettings");
 
