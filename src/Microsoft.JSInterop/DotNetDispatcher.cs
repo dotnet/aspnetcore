@@ -240,7 +240,11 @@ namespace Microsoft.JSInterop
             var result = new Dictionary<string, (MethodInfo, Type[])>();
             var invokableMethods = GetRequiredLoadedAssembly(assemblyName)
                 .GetExportedTypes()
-                .SelectMany(type => type.GetMethods())
+                .SelectMany(type => type.GetMethods(
+                    BindingFlags.Public | 
+                    BindingFlags.DeclaredOnly | 
+                    BindingFlags.Instance |
+                    BindingFlags.Static))
                 .Where(method => method.IsDefined(typeof(JSInvokableAttribute), inherit: false));
             foreach (var method in invokableMethods)
             {

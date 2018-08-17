@@ -156,6 +156,21 @@ namespace Microsoft.JSInterop.Test
         });
 
         [Fact]
+        public Task CanInvokeBaseInstanceVoidMethod() => WithJSRuntime(jsRuntime =>
+        {
+            // Arrange: Track some instance
+            var targetInstance = new DerivedClass();
+            jsRuntime.Invoke<object>("unimportant", new DotNetObjectRef(targetInstance));
+
+            // Act
+            var resultJson = DotNetDispatcher.Invoke(null, "BaseClassInvokableInstanceVoid", 1, null);
+
+            // Assert
+            Assert.Null(resultJson);
+            Assert.True(targetInstance.DidInvokeMyBaseClassInvocableInstanceVoid);
+        });
+
+        [Fact]
         public Task CannotUseDotNetObjectRefAfterDisposal() => WithJSRuntime(jsRuntime =>
         {
             // This test addresses the case where the developer calls objectRef.Dispose()
@@ -374,6 +389,21 @@ namespace Microsoft.JSInterop.Test
                     })
                 };
             }
+        }
+
+        public class BaseClass
+        {
+            public bool DidInvokeMyBaseClassInvocableInstanceVoid;
+
+            [JSInvokable]
+            public void BaseClassInvokableInstanceVoid()
+            {
+                DidInvokeMyBaseClassInvocableInstanceVoid = true;
+            }
+        }
+
+        public class DerivedClass : BaseClass
+        {
         }
 
         public class TestDTO
