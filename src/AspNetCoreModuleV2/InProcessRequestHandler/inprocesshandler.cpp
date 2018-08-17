@@ -180,11 +180,18 @@ HRESULT
 Finished:
     if (FAILED(hr))
     {
-        if (sm_pAlloc != NULL)
-        {
-            delete sm_pAlloc;
-            sm_pAlloc = NULL;
-        }
+        StaticTerminate();
     }
     return hr;
+}
+
+// static
+void
+IN_PROCESS_HANDLER::StaticTerminate(VOID)
+{
+    if (sm_pAlloc != NULL)
+    {
+        delete sm_pAlloc;
+        sm_pAlloc = NULL;
+    }
 }
