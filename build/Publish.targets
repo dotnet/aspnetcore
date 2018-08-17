@@ -209,11 +209,13 @@
       <AuthTokenSetting>$(PublishMyGetNpmRegistryUrl.Replace("https:", "")):_authToken</AuthTokenSetting>
     </PropertyGroup>
 
-    <Exec Command="npm config set &quot;$(AuthTokenSetting)&quot; $(PublishMyGetFeedKey)"
+    <Exec Condition=" '$(ContainsNpmPackageToPublish)' == 'true' "
+          Command="npm config set &quot;$(AuthTokenSetting)&quot; $(PublishMyGetFeedKey)"
           StandardOutputImportance="Normal" />
 
     <!-- When you UseCommandProcessor FileName is ignored -->
-    <Run FileName="cmd"
+    <Run Condition=" @(PackageToPublish->Count()) != 0 "
+         FileName="cmd"
          Arguments="npm;publish;--registry;$(PublishMyGetNpmRegistryUrl);%(NpmPackageToPublish.Identity)"
          MaxRetries="5"
          UseCommandProcessor="true"
@@ -221,10 +223,11 @@
       <Output TaskParameter="ExitCode" ItemName="_NpmExitCodes" />
     </Run>
 
-    <Exec Command="npm config delete $(AuthTokenSetting)"
+    <Exec Condition=" @(PackageToPublish->Count()) != 0 "
+          Command="npm config delete $(AuthTokenSetting)"
           StandardOutputImportance="Normal" />
 
-    <Error Text="Publishing npm modules failed" Condition="%(_NpmExitCodes.Identity) != 0" />
+    <Error Text="Publishing npm modules failed" Condition=" @(PackageToPublish->Count()) != 0 AND %(_NpmExitCodes.Identity) != 0" />
   </Target>
 
   <Target Name="PublishToAzureFeed"
