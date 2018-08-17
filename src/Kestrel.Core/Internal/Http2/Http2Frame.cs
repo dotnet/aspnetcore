@@ -5,6 +5,17 @@ using System;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
+    /* https://tools.ietf.org/html/rfc7540#section-4.1
+        +-----------------------------------------------+
+        |                 Length (24)                   |
+        +---------------+---------------+---------------+
+        |   Type (8)    |   Flags (8)   |
+        +-+-------------+---------------+-------------------------------+
+        |R|                 Stream Identifier (31)                      |
+        +=+=============================================================+
+        |                   Frame Payload (0...)                      ...
+        +---------------------------------------------------------------+
+    */
     public partial class Http2Frame
     {
         public const int MinAllowedMaxFrameSize = 16 * 1024;
@@ -19,52 +30,60 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         private readonly byte[] _data = new byte[HeaderLength + MinAllowedMaxFrameSize];
 
-        public Span<byte> Raw => new Span<byte>(_data, 0, HeaderLength + Length);
+        public Span<byte> Raw => new Span<byte>(_data, 0, HeaderLength + PayloadLength);
 
-        public int Length
+        public int PayloadLength
         {
-            get => (_data[LengthOffset] << 16) | (_data[LengthOffset + 1] << 8) | _data[LengthOffset + 2];
-            set
-            {
-                _data[LengthOffset] = (byte)((value & 0x00ff0000) >> 16);
-                _data[LengthOffset + 1] = (byte)((value & 0x0000ff00) >> 8);
-                _data[LengthOffset + 2] = (byte)(value & 0x000000ff);
-            }
+            get => (int)Bitshifter.ReadUInt24BigEndian(_data.AsSpan(LengthOffset));
+            set => Bitshifter.WriteUInt24BigEndian(_data.AsSpan(LengthOffset), (uint)value);
         }
 
         public Http2FrameType Type
         {
             get => (Http2FrameType)_data[TypeOffset];
-            set
-            {
-                _data[TypeOffset] = (byte)value;
-            }
+            set => _data[TypeOffset] = (byte)value;
         }
 
         public byte Flags
         {
             get => _data[FlagsOffset];
-            set
-            {
-                _data[FlagsOffset] = value;
-            }
+            set => _data[FlagsOffset] = value;
         }
 
         public int StreamId
         {
-            get => (int)((uint)((_data[StreamIdOffset] << 24)
-                | (_data[StreamIdOffset + 1] << 16)
-                | (_data[StreamIdOffset + 2] << 8)
-                | _data[StreamIdOffset + 3]) & 0x7fffffff);
-            set
-            {
-                _data[StreamIdOffset] = (byte)((value & 0xff000000) >> 24);
-                _data[StreamIdOffset + 1] = (byte)((value & 0x00ff0000) >> 16);
-                _data[StreamIdOffset + 2] = (byte)((value & 0x0000ff00) >> 8);
-                _data[StreamIdOffset + 3] = (byte)(value & 0x000000ff);
-            }
+            get => (int)Bitshifter.ReadUInt31BigEndian(_data.AsSpan(StreamIdOffset));
+            set => Bitshifter.WriteUInt31BigEndian(_data.AsSpan(StreamIdOffset), (uint)value);
         }
 
-        public Span<byte> Payload => new Span<byte>(_data, PayloadOffset, Length);
+        public Span<byte> Payload => new Span<byte>(_data, PayloadOffset, PayloadLength);
+
+        internal object ShowFlags()
+        {
+            switch (Type)
+            {
+                case Http2FrameType.CONTINUATION:
+                    return ContinuationFlags;
+                case Http2FrameType.DATA:
+                    return DataFlags;
+                case Http2FrameType.HEADERS:
+                    return HeadersFlags;
+                case Http2FrameType.SETTINGS:
+                    return SettingsFlags;
+                case Http2FrameType.PING:
+                    return PingFlags;
+
+                // Not Implemented
+                case Http2FrameType.PUSH_PROMISE:
+
+                // No flags defined
+                case Http2FrameType.PRIORITY:
+                case Http2FrameType.RST_STREAM:
+                case Http2FrameType.GOAWAY:
+                case Http2FrameType.WINDOW_UPDATE:
+                default:
+                    return $"0x{Flags:x}";
+            }
+        }
     }
 }

@@ -333,7 +333,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var frame = new Http2Frame();
             frame.PrepareHeaders(Http2HeadersFrameFlags.NONE, streamId);
             var done = _hpackEncoder.BeginEncode(headers, frame.HeadersPayload, out var length);
-            frame.Length = length;
+            frame.PayloadLength = length;
 
             if (done)
             {
@@ -351,7 +351,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             {
                 frame.PrepareContinuation(Http2ContinuationFrameFlags.NONE, streamId);
                 done = _hpackEncoder.Encode(frame.HeadersPayload, out length);
-                frame.Length = length;
+                frame.PayloadLength = length;
 
                 if (done)
                 {
@@ -374,7 +374,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             _hpackEncoder.BeginEncode(headers, frame.HeadersPayload, out var length);
 
-            frame.Length = 1 + length + padLength;
+            frame.PayloadLength = 1 + length + padLength;
             frame.Payload.Slice(1 + length).Fill(0);
 
             if (endStream)
@@ -392,12 +392,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             var frame = new Http2Frame();
             frame.PrepareHeaders(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.PRIORITY, streamId);
-            frame.HeadersPriority = priority;
+            frame.HeadersPriorityWeight = priority;
             frame.HeadersStreamDependency = streamDependency;
 
             _hpackEncoder.BeginEncode(headers, frame.HeadersPayload, out var length);
 
-            frame.Length = 5 + length;
+            frame.PayloadLength = 5 + length;
 
             if (endStream)
             {
@@ -415,12 +415,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var frame = new Http2Frame();
             frame.PrepareHeaders(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.PADDED | Http2HeadersFrameFlags.PRIORITY, streamId);
             frame.HeadersPadLength = padLength;
-            frame.HeadersPriority = priority;
+            frame.HeadersPriorityWeight = priority;
             frame.HeadersStreamDependency = streamDependency;
 
             _hpackEncoder.BeginEncode(headers, frame.HeadersPayload, out var length);
 
-            frame.Length = 6 + length + padLength;
+            frame.PayloadLength = 6 + length + padLength;
             frame.Payload.Slice(6 + length).Fill(0);
 
             if (endStream)
@@ -461,7 +461,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             var frame = new Http2Frame();
             frame.PrepareSettings(Http2SettingsFrameFlags.ACK);
-            frame.Length = length;
+            frame.PayloadLength = length;
             return SendAsync(frame.Raw);
         }
 
@@ -477,7 +477,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             var frame = new Http2Frame();
             frame.PrepareSettings(Http2SettingsFrameFlags.NONE, _clientSettings.GetNonProtocolDefaults());
-            frame.Length = length;
+            frame.PayloadLength = length;
             return SendAsync(frame.Raw);
         }
 
@@ -485,7 +485,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             var frame = new Http2Frame();
             frame.PrepareSettings(Http2SettingsFrameFlags.NONE);
-            frame.Length = 6;
+            frame.PayloadLength = 6;
 
             frame.Payload[0] = (byte)((ushort)parameter >> 8);
             frame.Payload[1] = (byte)(ushort)parameter;
@@ -500,7 +500,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         protected Task SendPushPromiseFrameAsync()
         {
             var frame = new Http2Frame();
-            frame.Length = 0;
+            frame.PayloadLength = 0;
             frame.Type = Http2FrameType.PUSH_PROMISE;
             frame.StreamId = 1;
             return SendAsync(frame.Raw);
@@ -512,7 +512,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             frame.PrepareHeaders(flags, streamId);
             var done = _hpackEncoder.BeginEncode(headers, frame.Payload, out var length);
-            frame.Length = length;
+            frame.PayloadLength = length;
 
             await SendAsync(frame.Raw);
 
@@ -524,15 +524,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var frame = new Http2Frame();
 
             frame.PrepareHeaders(flags, streamId);
-            frame.Length = headerBlock.Length;
+            frame.PayloadLength = headerBlock.Length;
             headerBlock.CopyTo(frame.HeadersPayload);
 
             return SendAsync(frame.Raw);
         }
 
-        protected Task SendInvalidHeadersFrameAsync(int streamId, int frameLength, byte padLength)
+        protected Task SendInvalidHeadersFrameAsync(int streamId, int payloadLength, byte padLength)
         {
-            Assert.True(padLength >= frameLength, $"{nameof(padLength)} must be greater than or equal to {nameof(frameLength)} to create an invalid frame.");
+            Assert.True(padLength >= payloadLength, $"{nameof(padLength)} must be greater than or equal to {nameof(payloadLength)} to create an invalid frame.");
 
             var frame = new Http2Frame();
 
@@ -540,7 +540,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             frame.Payload[0] = padLength;
 
             // Set length last so .Payload can be written to
-            frame.Length = frameLength;
+            frame.PayloadLength = payloadLength;
 
             return SendAsync(frame.Raw);
         }
@@ -550,7 +550,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var frame = new Http2Frame();
 
             frame.PrepareHeaders(Http2HeadersFrameFlags.END_HEADERS, streamId);
-            frame.Length = 3;
+            frame.PayloadLength = 3;
 
             // Set up an incomplete Literal Header Field w/ Incremental Indexing frame,
             // with an incomplete new name
@@ -567,7 +567,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             frame.PrepareContinuation(flags, streamId);
             var done = _hpackEncoder.Encode(frame.Payload, out var length);
-            frame.Length = length;
+            frame.PayloadLength = length;
 
             await SendAsync(frame.Raw);
 
@@ -579,7 +579,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var frame = new Http2Frame();
 
             frame.PrepareContinuation(flags, streamId);
-            frame.Length = payload.Length;
+            frame.PayloadLength = payload.Length;
             payload.CopyTo(frame.Payload);
 
             await SendAsync(frame.Raw);
@@ -590,7 +590,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var frame = new Http2Frame();
 
             frame.PrepareContinuation(flags, streamId);
-            frame.Length = 0;
+            frame.PayloadLength = 0;
 
             return SendAsync(frame.Raw);
         }
@@ -600,7 +600,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var frame = new Http2Frame();
 
             frame.PrepareContinuation(Http2ContinuationFrameFlags.END_HEADERS, streamId);
-            frame.Length = 3;
+            frame.PayloadLength = 3;
 
             // Set up an incomplete Literal Header Field w/ Incremental Indexing frame,
             // with an incomplete new name
@@ -616,7 +616,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var frame = new Http2Frame();
 
             frame.PrepareData(streamId);
-            frame.Length = data.Length;
+            frame.PayloadLength = data.Length;
             frame.DataFlags = endStream ? Http2DataFrameFlags.END_STREAM : Http2DataFrameFlags.NONE;
             data.CopyTo(frame.DataPayload);
 
@@ -628,7 +628,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var frame = new Http2Frame();
 
             frame.PrepareData(streamId, padLength);
-            frame.Length = data.Length + 1 + padLength;
+            frame.PayloadLength = data.Length + 1 + padLength;
             data.CopyTo(frame.DataPayload);
 
             if (endStream)
@@ -650,7 +650,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             frame.Payload[0] = padLength;
 
             // Set length last so .Payload can be written to
-            frame.Length = frameLength;
+            frame.PayloadLength = frameLength;
 
             return SendAsync(frame.Raw);
         }
@@ -666,7 +666,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             var pingFrame = new Http2Frame();
             pingFrame.PreparePing(Http2PingFrameFlags.NONE);
-            pingFrame.Length = length;
+            pingFrame.PayloadLength = length;
             return SendAsync(pingFrame.Raw);
         }
 
@@ -691,7 +691,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             var priorityFrame = new Http2Frame();
             priorityFrame.PreparePriority(streamId, streamDependency: 0, exclusive: false, weight: 0);
-            priorityFrame.Length = length;
+            priorityFrame.PayloadLength = length;
             return SendAsync(priorityFrame.Raw);
         }
 
@@ -706,7 +706,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             var frame = new Http2Frame();
             frame.PrepareRstStream(streamId, Http2ErrorCode.CANCEL);
-            frame.Length = length;
+            frame.PayloadLength = length;
             return SendAsync(frame.Raw);
         }
 
@@ -736,7 +736,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             var frame = new Http2Frame();
             frame.PrepareWindowUpdate(streamId, sizeIncrement);
-            frame.Length = length;
+            frame.PayloadLength = length;
             return SendAsync(frame.Raw);
         }
 
@@ -745,7 +745,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var frame = new Http2Frame();
             frame.StreamId = streamId;
             frame.Type = (Http2FrameType)frameType;
-            frame.Length = 0;
+            frame.PayloadLength = 0;
             return SendAsync(frame.Raw);
         }
 
@@ -786,7 +786,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var frame = await ReceiveFrameAsync();
 
             Assert.Equal(type, frame.Type);
-            Assert.Equal(withLength, frame.Length);
+            Assert.Equal(withLength, frame.PayloadLength);
             Assert.Equal(withFlags, frame.Flags);
             Assert.Equal(withStreamId, frame.StreamId);
 
@@ -808,7 +808,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         protected void VerifyGoAway(Http2Frame frame, int expectedLastStreamId, Http2ErrorCode expectedErrorCode)
         {
             Assert.Equal(Http2FrameType.GOAWAY, frame.Type);
-            Assert.Equal(8, frame.Length);
+            Assert.Equal(8, frame.PayloadLength);
             Assert.Equal(0, frame.Flags);
             Assert.Equal(0, frame.StreamId);
             Assert.Equal(expectedLastStreamId, frame.GoAwayLastStreamId);
@@ -845,7 +845,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var frame = await ReceiveFrameAsync();
 
             Assert.Equal(Http2FrameType.RST_STREAM, frame.Type);
-            Assert.Equal(4, frame.Length);
+            Assert.Equal(4, frame.PayloadLength);
             Assert.Equal(0, frame.Flags);
             Assert.Equal(expectedStreamId, frame.StreamId);
             Assert.Equal(expectedErrorCode, frame.RstStreamErrorCode);

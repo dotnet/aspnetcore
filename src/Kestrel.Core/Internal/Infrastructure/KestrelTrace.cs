@@ -256,12 +256,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         public void Http2FrameReceived(string connectionId, Http2Frame frame)
         {
-            _http2FrameReceived(_logger, connectionId, frame.Type, frame.StreamId, frame.Length, frame.ShowFlags(), null);
+            _http2FrameReceived(_logger, connectionId, frame.Type, frame.StreamId, frame.PayloadLength, frame.ShowFlags(), null);
         }
 
         public void Http2FrameSending(string connectionId, Http2Frame frame)
         {
-            _http2FrameSending(_logger, connectionId, frame.Type, frame.StreamId, frame.Length, frame.ShowFlags(), null);
+            _http2FrameSending(_logger, connectionId, frame.Type, frame.StreamId, frame.PayloadLength, frame.ShowFlags(), null);
         }
 
         public virtual void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)

@@ -5,6 +5,19 @@ using System;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
+    /* https://tools.ietf.org/html/rfc7540#section-6.2
+        +---------------+
+        |Pad Length? (8)|
+        +-+-------------+-----------------------------------------------+
+        |E|                 Stream Dependency? (31)                     |
+        +-+-------------+-----------------------------------------------+
+        |  Weight? (8)  |
+        +-+-------------+-----------------------------------------------+
+        |                   Header Block Fragment (*)                 ...
+        +---------------------------------------------------------------+
+        |                           Padding (*)                       ...
+        +---------------------------------------------------------------+
+    */
     public partial class Http2Frame
     {
         public Http2HeadersFrameFlags HeadersFlags
@@ -13,57 +26,45 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             set => Flags = (byte)value;
         }
 
-        public bool HeadersHasPadding => (HeadersFlags & Http2HeadersFrameFlags.PADDED) == Http2HeadersFrameFlags.PADDED;
+        public bool HeadersEndHeaders => (HeadersFlags & Http2HeadersFrameFlags.END_HEADERS) == Http2HeadersFrameFlags.END_HEADERS;
 
-        public byte HeadersPadLength
-        {
-            get => HeadersHasPadding ? _data[HeaderLength] : (byte)0;
-            set => _data[HeaderLength] = value;
-        }
+        public bool HeadersEndStream => (HeadersFlags & Http2HeadersFrameFlags.END_STREAM) == Http2HeadersFrameFlags.END_STREAM;
+
+        public bool HeadersHasPadding => (HeadersFlags & Http2HeadersFrameFlags.PADDED) == Http2HeadersFrameFlags.PADDED;
 
         public bool HeadersHasPriority => (HeadersFlags & Http2HeadersFrameFlags.PRIORITY) == Http2HeadersFrameFlags.PRIORITY;
 
-        public byte HeadersPriority
+        public byte HeadersPadLength
         {
-            get => _data[HeadersPriorityOffset];
-            set => _data[HeadersPriorityOffset] = value;
+            get => HeadersHasPadding ? Payload[0] : (byte)0;
+            set => Payload[0] = value;
         }
 
-        private int HeadersPriorityOffset => PayloadOffset + (HeadersHasPadding ? 1 : 0) + 4;
+        private int HeadersStreamDependencyOffset => HeadersHasPadding ? 1 : 0;
 
         public int HeadersStreamDependency
         {
-            get
-            {
-                var offset = HeadersStreamDependencyOffset;
-
-                return (int)((uint)((_data[offset] << 24)
-                    | (_data[offset + 1] << 16)
-                    | (_data[offset + 2] << 8)
-                    | _data[offset + 3]) & 0x7fffffff);
-            }
-            set
-            {
-                var offset = HeadersStreamDependencyOffset;
-
-                _data[offset] = (byte)((value & 0xff000000) >> 24);
-                _data[offset + 1] = (byte)((value & 0x00ff0000) >> 16);
-                _data[offset + 2] = (byte)((value & 0x0000ff00) >> 8);
-                _data[offset + 3] = (byte)(value & 0x000000ff);
-            }
+            get => (int)Bitshifter.ReadUInt31BigEndian(Payload.Slice(HeadersStreamDependencyOffset));
+            set => Bitshifter.WriteUInt31BigEndian(Payload.Slice(HeadersStreamDependencyOffset), (uint)value);
         }
 
-        private int HeadersStreamDependencyOffset => PayloadOffset + (HeadersHasPadding ? 1 : 0);
+        private int HeadersPriorityWeightOffset => HeadersStreamDependencyOffset + 4;
 
-        public Span<byte> HeadersPayload => new Span<byte>(_data, HeadersPayloadOffset, HeadersPayloadLength);
+        public byte HeadersPriorityWeight
+        {
+            get => Payload[HeadersPriorityWeightOffset];
+            set => Payload[HeadersPriorityWeightOffset] = value;
+        }
 
-        private int HeadersPayloadOffset => PayloadOffset + (HeadersHasPadding ? 1 : 0) + (HeadersHasPriority ? 5 : 0);
+        public int HeadersPayloadOffset => (HeadersHasPadding ? 1 : 0) + (HeadersHasPriority ? 5 : 0);
 
-        private int HeadersPayloadLength => Length - ((HeadersHasPadding ? 1 : 0) + (HeadersHasPriority ? 5 : 0)) - HeadersPadLength;
+        private int HeadersPayloadLength => PayloadLength - HeadersPayloadOffset - HeadersPadLength;
+
+        public Span<byte> HeadersPayload => Payload.Slice(HeadersPayloadOffset, HeadersPayloadLength);
 
         public void PrepareHeaders(Http2HeadersFrameFlags flags, int streamId)
         {
-            Length = MinAllowedMaxFrameSize - HeaderLength;
+            PayloadLength = MinAllowedMaxFrameSize - HeaderLength;
             Type = Http2FrameType.HEADERS;
             HeadersFlags = flags;
             StreamId = streamId;

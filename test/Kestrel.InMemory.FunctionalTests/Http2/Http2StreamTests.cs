@@ -16,7 +16,6 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
-using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
@@ -812,7 +811,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.IsType<Http2StreamErrorException>(thrownEx.InnerException);
         }
 
-        [Fact]
+        [Fact(Skip = "Flaky test #2799, #2832")]
         public async Task ContentLength_Received_MultipleDataFramesOverSize_Reset()
         {
             IOException thrownEx = null;

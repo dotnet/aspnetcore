@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.Http2
             }
 
             Assert.Equal(Http2FrameType.GOAWAY, frame.Type);
-            Assert.Equal(8, frame.Length);
+            Assert.Equal(8, frame.PayloadLength);
             Assert.Equal(0, frame.Flags);
             Assert.Equal(0, frame.StreamId);
             Assert.Equal(expectedLastStreamId, frame.GoAwayLastStreamId);

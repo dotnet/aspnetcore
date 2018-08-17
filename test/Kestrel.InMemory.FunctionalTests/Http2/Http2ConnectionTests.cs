@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
-            Assert.Equal(_helloWorldBytes, dataFrame.DataPayload);
+            Assert.True(_helloWorldBytes.AsSpan().SequenceEqual(dataFrame.DataPayload));
         }
 
         [Fact]
@@ -151,7 +151,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
-            Assert.Equal(_maxData, dataFrame.DataPayload);
+            Assert.True(_maxData.AsSpan().SequenceEqual(dataFrame.DataPayload));
         }
 
         [Fact]
@@ -223,10 +223,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
-            Assert.Equal(_maxData, dataFrame1.DataPayload);
-            Assert.Equal(_maxData, dataFrame2.DataPayload);
-            Assert.Equal(_maxData, dataFrame3.DataPayload);
-            Assert.Equal(_maxData, dataFrame4.DataPayload);
+            Assert.True(_maxData.AsSpan().SequenceEqual(dataFrame1.DataPayload));
+            Assert.True(_maxData.AsSpan().SequenceEqual(dataFrame2.DataPayload));
+            Assert.True(_maxData.AsSpan().SequenceEqual(dataFrame3.DataPayload));
+            Assert.True(_maxData.AsSpan().SequenceEqual(dataFrame4.DataPayload));
             Assert.Equal(_maxData.Length * 2, streamWindowUpdateFrame1.WindowUpdateSizeIncrement);
             Assert.Equal(_maxData.Length * 2, connectionWindowUpdateFrame1.WindowUpdateSizeIncrement);
             Assert.Equal(_maxData.Length * 2, connectionWindowUpdateFrame2.WindowUpdateSizeIncrement);
@@ -261,7 +261,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
-            Assert.Equal(_helloWorldBytes, dataFrame.DataPayload);
+            Assert.True(_helloWorldBytes.AsSpan().SequenceEqual(dataFrame.DataPayload));
         }
 
         [Fact]
@@ -324,10 +324,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
 
-            Assert.Equal(stream1DataFrame1.DataPayload, _helloBytes);
-            Assert.Equal(stream1DataFrame2.DataPayload, _worldBytes);
-            Assert.Equal(stream3DataFrame1.DataPayload, _helloBytes);
-            Assert.Equal(stream3DataFrame2.DataPayload, _worldBytes);
+            Assert.True(_helloBytes.AsSpan().SequenceEqual(stream1DataFrame1.DataPayload));
+            Assert.True(_worldBytes.AsSpan().SequenceEqual(stream1DataFrame2.DataPayload));
+            Assert.True(_helloBytes.AsSpan().SequenceEqual(stream3DataFrame1.DataPayload));
+            Assert.True(_worldBytes.AsSpan().SequenceEqual(stream3DataFrame2.DataPayload));
         }
 
         [Fact]
@@ -417,16 +417,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
 
-            Assert.Equal(_maxData, dataFrame1.DataPayload);
-            Assert.Equal(_maxData, dataFrame2.DataPayload);
-            Assert.Equal(_maxData, dataFrame3.DataPayload);
+            Assert.True(_maxData.AsSpan().SequenceEqual(dataFrame1.DataPayload));
+            Assert.True(_maxData.AsSpan().SequenceEqual(dataFrame2.DataPayload));
+            Assert.True(_maxData.AsSpan().SequenceEqual(dataFrame3.DataPayload));
             Assert.Equal(_maxData.Length * 2, streamWindowUpdateFrame.WindowUpdateSizeIncrement);
             Assert.Equal(_maxData.Length * 2, connectionWindowUpdateFrame1.WindowUpdateSizeIncrement);
 
-            Assert.Equal(_maxData, dataFrame4.DataPayload);
+            Assert.True(_maxData.AsSpan().SequenceEqual(dataFrame4.DataPayload));
             Assert.Equal(_maxData.Length * 2, connectionWindowUpdateFrame2.WindowUpdateSizeIncrement);
 
-            Assert.Equal(_maxData, dataFrame5.DataPayload);
+            Assert.True(_maxData.AsSpan().SequenceEqual(dataFrame5.DataPayload));
         }
 
         [Fact]
@@ -521,7 +521,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
-            Assert.Equal(_helloWorldBytes, dataFrame.DataPayload);
+            Assert.True(_helloWorldBytes.AsSpan().SequenceEqual(dataFrame.DataPayload));
         }
 
         [Theory]
@@ -533,12 +533,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             // _maxData should be 1/4th of the default initial window size + 1.
             Assert.Equal(Http2PeerSettings.DefaultInitialWindowSize + 1, (uint)_maxData.Length * 4);
 
-            var maxDataMinusPadding = new ArraySegment<byte>(_maxData, 0, _maxData.Length - padLength - 1);
+            var maxDataMinusPadding = _maxData.AsMemory(0, _maxData.Length - padLength - 1);
 
             await InitializeConnectionAsync(_echoApplication);
 
             await StartStreamAsync(1, _browserRequestHeaders, endStream: false);
-            await SendDataWithPaddingAsync(1, maxDataMinusPadding, padLength, endStream: false);
+            await SendDataWithPaddingAsync(1, maxDataMinusPadding.Span, padLength, endStream: false);
 
             await ExpectAsync(Http2FrameType.HEADERS,
                 withLength: 37,
@@ -546,7 +546,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 withStreamId: 1);
 
             var dataFrame1 = await ExpectAsync(Http2FrameType.DATA,
-                withLength: maxDataMinusPadding.Count,
+                withLength: maxDataMinusPadding.Length,
                 withFlags: (byte)Http2DataFrameFlags.NONE,
                 withStreamId: 1);
 
@@ -569,8 +569,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
-            Assert.Equal(maxDataMinusPadding, dataFrame1.DataPayload);
-            Assert.Equal(_maxData, dataFrame2.DataPayload);
+            Assert.True(maxDataMinusPadding.Span.SequenceEqual(dataFrame1.DataPayload));
+            Assert.True(_maxData.AsSpan().SequenceEqual(dataFrame2.DataPayload));
 
             Assert.Equal(_maxData.Length * 2, connectionWindowUpdateFrame.WindowUpdateSizeIncrement);
         }
@@ -678,7 +678,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 ignoreNonGoAwayFrames: true,
                 expectedLastStreamId: 1,
                 expectedErrorCode: Http2ErrorCode.PROTOCOL_ERROR,
-                expectedErrorMessage: CoreStrings.FormatHttp2ErrorPaddingTooLong(Http2FrameType.DATA));
+                expectedErrorMessage: CoreStrings.Http2FrameMissingFields);
         }
 
         [Fact]
@@ -1303,14 +1303,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Theory]
-        [InlineData(0)]
         [InlineData(1)]
         [InlineData(255)]
         public async Task HEADERS_Received_PaddingEqualToFramePayloadLength_ConnectionError(byte padLength)
         {
             await InitializeConnectionAsync(_noopApplication);
 
-            await SendInvalidHeadersFrameAsync(1, frameLength: padLength, padLength: padLength);
+            // The payload length includes the pad length field
+            await SendInvalidHeadersFrameAsync(1, payloadLength: padLength, padLength: padLength);
 
             await WaitForConnectionErrorAsync<Http2ConnectionErrorException>(
                 ignoreNonGoAwayFrames: true,
@@ -1319,8 +1319,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedErrorMessage: CoreStrings.FormatHttp2ErrorPaddingTooLong(Http2FrameType.HEADERS));
         }
 
+        [Fact]
+        public async Task HEADERS_Received_PaddingFieldMissing_ConnectionError()
+        {
+            await InitializeConnectionAsync(_noopApplication);
+
+            await SendInvalidHeadersFrameAsync(1, payloadLength: 0, padLength: 1);
+
+            await WaitForConnectionErrorAsync<Http2ConnectionErrorException>(
+                ignoreNonGoAwayFrames: true,
+                expectedLastStreamId: 0,
+                expectedErrorCode: Http2ErrorCode.PROTOCOL_ERROR,
+                expectedErrorMessage: CoreStrings.Http2FrameMissingFields);
+        }
+
         [Theory]
-        [InlineData(0, 1)]
         [InlineData(1, 2)]
         [InlineData(254, 255)]
         public async Task HEADERS_Received_PaddingGreaterThanFramePayloadLength_ConnectionError(int frameLength, byte padLength)
@@ -1825,7 +1838,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                     withFlags: (byte)Http2DataFrameFlags.NONE,
                     withStreamId: streamId);
 
-                Assert.Equal(new ArraySegment<byte>(_helloWorldBytes, 0, initialWindowSize), dataFrame.DataPayload);
+                Assert.True(_helloWorldBytes.AsSpan(0, initialWindowSize).SequenceEqual(dataFrame.DataPayload));
                 Assert.False(writeTasks[streamId].IsCompleted);
             }
 
@@ -2445,7 +2458,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                     withFlags: (byte)Http2DataFrameFlags.NONE,
                     withStreamId: streamId);
 
-                Assert.Equal(new ArraySegment<byte>(_helloWorldBytes, 0, initialWindowSize), dataFrame.DataPayload);
+                Assert.True(_helloWorldBytes.AsSpan(0, initialWindowSize).SequenceEqual(dataFrame.DataPayload));
                 Assert.False(writeTasks[streamId].IsCompleted);
             }
 
@@ -2749,8 +2762,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
-            Assert.Equal(new ArraySegment<byte>(_helloWorldBytes, 0, initialWindowSize), dataFrame1.DataPayload);
-            Assert.Equal(new ArraySegment<byte>(_helloWorldBytes, initialWindowSize, initialWindowSize), dataFrame2.DataPayload);
+            Assert.True(_helloWorldBytes.AsSpan(0, initialWindowSize).SequenceEqual(dataFrame1.DataPayload));
+            Assert.True(_helloWorldBytes.AsSpan(initialWindowSize, initialWindowSize).SequenceEqual(dataFrame2.DataPayload));
         }
 
         [Fact]
@@ -2804,9 +2817,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
-            Assert.Equal(new ArraySegment<byte>(_helloWorldBytes, 0, 6), dataFrame1.DataPayload);
-            Assert.Equal(new ArraySegment<byte>(_helloWorldBytes, 6, 3), dataFrame2.DataPayload);
-            Assert.Equal(new ArraySegment<byte>(_helloWorldBytes, 9, 3), dataFrame3.DataPayload);
+            Assert.True(_helloWorldBytes.AsSpan(0, 6).SequenceEqual(dataFrame1.DataPayload));
+            Assert.True(_helloWorldBytes.AsSpan(6, 3).SequenceEqual(dataFrame2.DataPayload));
+            Assert.True(_helloWorldBytes.AsSpan(9, 3).SequenceEqual(dataFrame3.DataPayload));
         }
 
         [Fact]
