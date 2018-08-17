@@ -20,6 +20,12 @@ public class Chat {
                 System.out.println("REGISTERED HANDLER: " + message);
             }, String.class);
 
+            hubConnection.onClosed((ex) -> {
+                if(ex.getMessage() != null){
+                    System.out.printf("There was an error: %s", ex.getMessage());
+                }
+            });
+
             //This is a blocking call
             hubConnection.start();
 
