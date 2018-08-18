@@ -70,6 +70,10 @@ public:
     HRESULT
     StaticInitialize(VOID);
 
+    static
+    void
+    StaticTerminate(VOID);
+
 private:
     REQUEST_NOTIFICATION_STATUS
     ServerShutdownMessage() const;

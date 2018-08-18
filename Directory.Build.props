@@ -18,6 +18,8 @@
     <PackageSigningCertName>MicrosoftNuGet</PackageSigningCertName>
     <PublicSign Condition="'$(OS)' != 'Windows_NT'">true</PublicSign>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <!-- Workaround microsoft/msbuild#3626 -->
+    <AddSyntheticProjectReferencesForSolutionDependencies>false</AddSyntheticProjectReferencesForSolutionDependencies>
   </PropertyGroup>
 
 </Project>

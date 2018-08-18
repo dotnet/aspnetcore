@@ -260,6 +260,8 @@ BOOL APIENTRY DllMain(HMODULE hModule,
         break;
     case DLL_PROCESS_DETACH:
         g_fProcessDetach = TRUE;
+        FORWARDING_HANDLER::StaticTerminate();
+        ALLOC_CACHE_HANDLER::StaticTerminate();
         DebugStop();
     default:
         break;

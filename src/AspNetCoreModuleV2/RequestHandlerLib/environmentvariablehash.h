@@ -76,6 +76,7 @@ private:
     mutable LONG        _cRefs;
 };
 
+
 class ENVIRONMENT_VAR_HASH : public HASH_TABLE<ENVIRONMENT_VAR_ENTRY, PWSTR>
 {
 public:
@@ -128,4 +129,13 @@ public:
 private:
     ENVIRONMENT_VAR_HASH(const ENVIRONMENT_VAR_HASH &);
     void operator=(const ENVIRONMENT_VAR_HASH &);
+};
+
+struct ENVIRONMENT_VAR_HASH_DELETER
+{
+    void operator ()(ENVIRONMENT_VAR_HASH* hashTable) const
+    {
+        hashTable->Clear();
+        delete hashTable;
+    }
 };
