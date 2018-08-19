@@ -3,20 +3,20 @@
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
   <PropertyGroup Label="Package Versions">
-    <InternalAspNetCoreSdkPackageVersion>3.0.0-alpha1-20180810.1</InternalAspNetCoreSdkPackageVersion>
-    <MicrosoftAspNetCoreDataProtectionPackageVersion>3.0.0-alpha1-10275</MicrosoftAspNetCoreDataProtectionPackageVersion>
-    <MicrosoftAspNetCoreHttpAbstractionsPackageVersion>3.0.0-alpha1-10275</MicrosoftAspNetCoreHttpAbstractionsPackageVersion>
-    <MicrosoftAspNetCoreServerIISIntegrationPackageVersion>3.0.0-alpha1-10275</MicrosoftAspNetCoreServerIISIntegrationPackageVersion>
-    <MicrosoftAspNetCoreServerKestrelPackageVersion>3.0.0-alpha1-10275</MicrosoftAspNetCoreServerKestrelPackageVersion>
-    <MicrosoftAspNetCoreTestHostPackageVersion>3.0.0-alpha1-10275</MicrosoftAspNetCoreTestHostPackageVersion>
-    <MicrosoftExtensionsCachingAbstractionsPackageVersion>3.0.0-alpha1-10275</MicrosoftExtensionsCachingAbstractionsPackageVersion>
-    <MicrosoftExtensionsCachingMemoryPackageVersion>3.0.0-alpha1-10275</MicrosoftExtensionsCachingMemoryPackageVersion>
-    <MicrosoftExtensionsCachingRedisPackageVersion>3.0.0-alpha1-10275</MicrosoftExtensionsCachingRedisPackageVersion>
-    <MicrosoftExtensionsCachingSqlServerPackageVersion>3.0.0-alpha1-10275</MicrosoftExtensionsCachingSqlServerPackageVersion>
-    <MicrosoftExtensionsLoggingAbstractionsPackageVersion>3.0.0-alpha1-10275</MicrosoftExtensionsLoggingAbstractionsPackageVersion>
-    <MicrosoftExtensionsLoggingConsolePackageVersion>3.0.0-alpha1-10275</MicrosoftExtensionsLoggingConsolePackageVersion>
-    <MicrosoftExtensionsLoggingTestingPackageVersion>3.0.0-alpha1-10275</MicrosoftExtensionsLoggingTestingPackageVersion>
-    <MicrosoftExtensionsOptionsPackageVersion>3.0.0-alpha1-10275</MicrosoftExtensionsOptionsPackageVersion>
+    <InternalAspNetCoreSdkPackageVersion>3.0.0-alpha1-20180817.3</InternalAspNetCoreSdkPackageVersion>
+    <MicrosoftAspNetCoreDataProtectionPackageVersion>3.0.0-alpha1-10321</MicrosoftAspNetCoreDataProtectionPackageVersion>
+    <MicrosoftAspNetCoreHttpAbstractionsPackageVersion>3.0.0-alpha1-10321</MicrosoftAspNetCoreHttpAbstractionsPackageVersion>
+    <MicrosoftAspNetCoreServerIISIntegrationPackageVersion>3.0.0-alpha1-10321</MicrosoftAspNetCoreServerIISIntegrationPackageVersion>
+    <MicrosoftAspNetCoreServerKestrelPackageVersion>3.0.0-alpha1-10321</MicrosoftAspNetCoreServerKestrelPackageVersion>
+    <MicrosoftAspNetCoreTestHostPackageVersion>3.0.0-alpha1-10321</MicrosoftAspNetCoreTestHostPackageVersion>
+    <MicrosoftExtensionsCachingAbstractionsPackageVersion>3.0.0-alpha1-10321</MicrosoftExtensionsCachingAbstractionsPackageVersion>
+    <MicrosoftExtensionsCachingMemoryPackageVersion>3.0.0-alpha1-10321</MicrosoftExtensionsCachingMemoryPackageVersion>
+    <MicrosoftExtensionsCachingRedisPackageVersion>3.0.0-alpha1-10321</MicrosoftExtensionsCachingRedisPackageVersion>
+    <MicrosoftExtensionsCachingSqlServerPackageVersion>3.0.0-alpha1-10321</MicrosoftExtensionsCachingSqlServerPackageVersion>
+    <MicrosoftExtensionsLoggingAbstractionsPackageVersion>3.0.0-alpha1-10321</MicrosoftExtensionsLoggingAbstractionsPackageVersion>
+    <MicrosoftExtensionsLoggingConsolePackageVersion>3.0.0-alpha1-10321</MicrosoftExtensionsLoggingConsolePackageVersion>
+    <MicrosoftExtensionsLoggingTestingPackageVersion>3.0.0-alpha1-10321</MicrosoftExtensionsLoggingTestingPackageVersion>
+    <MicrosoftExtensionsOptionsPackageVersion>3.0.0-alpha1-10321</MicrosoftExtensionsOptionsPackageVersion>
     <MicrosoftNETCoreApp20PackageVersion>2.0.9</MicrosoftNETCoreApp20PackageVersion>
     <MicrosoftNETCoreApp21PackageVersion>2.1.2</MicrosoftNETCoreApp21PackageVersion>
     <MicrosoftNETCoreApp22PackageVersion>2.2.0-preview1-26618-02</MicrosoftNETCoreApp22PackageVersion>
