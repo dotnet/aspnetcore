@@ -63,13 +63,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         protected override void OnRequestProcessingEnded()
         {
-            TryApplyCompletionFlag(StreamCompletionFlags.RequestProcessingEnded);
+            var states = ApplyCompletionFlag(StreamCompletionFlags.RequestProcessingEnded);
 
-            RequestBodyPipe.Reader.Complete();
+            try
+            {
+                RequestBodyPipe.Reader.Complete();
 
-            // The app can no longer read any more of the request body, so return any bytes that weren't read to the
-            // connection's flow-control window.
-            _inputFlowControl.Abort();
+                // The app can no longer read any more of the request body, so return any bytes that weren't read to the
+                // connection's flow-control window.
+                _inputFlowControl.Abort();
+            }
+            finally
+            {
+                TryFireOnStreamCompleted(states);
+            }
         }
 
         protected override string CreateRequestId()
@@ -335,11 +342,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 }
             }
 
-            TryApplyCompletionFlag(StreamCompletionFlags.EndStreamReceived);
+            var states = ApplyCompletionFlag(StreamCompletionFlags.EndStreamReceived);
 
-            RequestBodyPipe.Writer.Complete();
+            try
+            {
+                RequestBodyPipe.Writer.Complete();
 
-            _inputFlowControl.StopWindowUpdates();
+                _inputFlowControl.StopWindowUpdates();
+            }
+            finally
+            {
+                TryFireOnStreamCompleted(states);
+            }
         }
 
         public void OnDataRead(int bytesRead)
@@ -354,12 +368,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public void Abort(IOException abortReason)
         {
-            if (!TryApplyCompletionFlag(StreamCompletionFlags.Aborted))
-            {
-                return;
-            }
+            var states = ApplyCompletionFlag(StreamCompletionFlags.Aborted);
 
-            AbortCore(abortReason);
+            try
+            {
+                if (states.OldState == states.NewState)
+                {
+                    return;
+                }
+
+                AbortCore(abortReason);
+            }
+            finally
+            {
+                TryFireOnStreamCompleted(states);
+            }
         }
 
         protected override void OnErrorAfterResponseStarted()
@@ -377,17 +400,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         private void ResetAndAbort(ConnectionAbortedException abortReason, Http2ErrorCode error)
         {
-            if (!TryApplyCompletionFlag(StreamCompletionFlags.Aborted))
+            var states = ApplyCompletionFlag(StreamCompletionFlags.Aborted);
+
+            if (states.OldState == states.NewState)
             {
                 return;
             }
 
-            Log.Http2StreamResetAbort(TraceIdentifier, error, abortReason);
+            try
+            {
+                Log.Http2StreamResetAbort(TraceIdentifier, error, abortReason);
 
-            // Don't block on IO. This never faults.
-            _ = _http2Output.WriteRstStreamAsync(error);
+                // Don't block on IO. This never faults.
+                _ = _http2Output.WriteRstStreamAsync(error);
 
-            AbortCore(abortReason);
+                AbortCore(abortReason);
+            }
+            finally
+            {
+                TryFireOnStreamCompleted(states);
+            }
         }
 
         private void AbortCore(Exception abortReason)
@@ -415,19 +447,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 minimumSegmentSize: KestrelMemoryPool.MinimumSegmentSize
             ));
 
-        private bool TryApplyCompletionFlag(StreamCompletionFlags completionState)
+        private (StreamCompletionFlags OldState, StreamCompletionFlags NewState) ApplyCompletionFlag(StreamCompletionFlags completionState)
         {
             lock (_completionLock)
             {
-                var lastCompletionState = _completionState;
+                var oldCompletionState = _completionState;
                 _completionState |= completionState;
 
-                if (ShouldStopTrackingStream(_completionState) && !ShouldStopTrackingStream(lastCompletionState))
-                {
-                    _context.StreamLifetimeHandler.OnStreamCompleted(StreamId);
-                }
+                return (oldCompletionState, _completionState);
+            }
+        }
 
-                return _completionState != lastCompletionState;
+        private void TryFireOnStreamCompleted((StreamCompletionFlags OldState, StreamCompletionFlags NewState) states)
+        {
+            if (!ShouldStopTrackingStream(states.OldState) && ShouldStopTrackingStream(states.NewState))
+            {
+                _context.StreamLifetimeHandler.OnStreamCompleted(StreamId);
             }
         }
 
