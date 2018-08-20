@@ -319,11 +319,7 @@
     <PropertyGroup>
       <WorkingDir>$(SharedFxFile)</WorkingDir>
       <SharedFxName>$([System.IO.Path]::GetFileName($(SharedFxFile)))</SharedFxName>
-      <CreateTarGzip Condition="$(SharedFxName.Contains('osx')) OR $(SharedFxName.Contains('linux')) OR $(SharedFxName.Contains('alpine'))">true</CreateTarGzip>
-      <OutputFile>$(OutDir)$(SharedFxName)</OutputFile>
-
-      <OutputFile Condition="'$(CreateTarGzip)'=='true'">$(OutputFile).tar.gz</OutputFile>
-      <OutputFile Condition="'$(CreateTarGzip)'!='true'">$(OutputFile).zip</OutputFile>
+      <OutputFile>$(OutDir)$(SharedFxName).zip</OutputFile>
     </PropertyGroup>
     <Error Condition="'$(OutDir)'==''" Text="Output dir not specified" />
 
@@ -331,12 +327,7 @@
 
     <!-- see https://sevenzip.osdn.jp/chm/cmdline/ -->
     <Exec Command="&quot;$(ZipExePath)&quot; a -tzip -mx9 -r -y &quot;$(OutputFile)&quot; * > nul"
-      WorkingDirectory="$(WorkingDir)"
-      Condition="'$(CreateTarGzip)' != 'true'" />
-
-    <Exec Command="&quot;$(ZipExePath)&quot; a -ttar -r -y -so tmp.tar * | &quot;$(ZipExePath)&quot; a -y -si &quot;$(OutputFile)&quot;"
-       WorkingDirectory="$(WorkingDir)"
-       Condition="'$(CreateTarGzip)' == 'true'" />
+      WorkingDirectory="$(WorkingDir)" />
   </Target>
 
   <Target Name="RebuildOobArchives">
