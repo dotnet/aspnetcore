@@ -190,7 +190,9 @@
       "Releases_22xPublic_Signed",
       "Releases_22xPublic_SetupSharedFramework",
       "Releases_22xPublic_SiteExtension",
-      "Releases_22xPublic_Publish"
+      "Releases_22xPublic_Publish",
+      // Maintenance builds
+      "Maintenance_Backup"
     ]
   }
 }
