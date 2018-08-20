@@ -6,9 +6,12 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using AngleSharp.Dom;
 using AngleSharp.Dom.Html;
+using AngleSharp.Extensions;
+using AngleSharp.Html;
 using HtmlGenerationWebSite;
 using Microsoft.AspNetCore.Hosting;
 using Xunit;
+using Xunit.Sdk;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
@@ -149,6 +152,14 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             // Assert - 3
             Assert.Equal("fr-FR", culture);
             Assert.Equal("14", correlationId);
+
+            if (cachedCorrelationId != "10")
+            {
+                // This is logging to investigate potential flakiness in this test tracked by https://github.com/aspnet/Mvc/issues/8281
+                var documentContent = document.ToHtml(new HtmlMarkupFormatter());
+                throw new XunitException($"Unexpected correlation Id, reading values from document:{Environment.NewLine}{documentContent}");
+            }
+
             Assert.Equal("10", cachedCorrelationId);
 
             void ReadValuesFromDocument()
