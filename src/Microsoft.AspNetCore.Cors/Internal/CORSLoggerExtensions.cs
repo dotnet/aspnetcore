@@ -38,12 +38,12 @@ namespace Microsoft.AspNetCore.Cors.Internal
             _policySuccess = LoggerMessage.Define(
                 LogLevel.Information,
                 4,
-                "Policy execution successful.");
+                "CORS policy execution successful.");
 
             _policyFailure = LoggerMessage.Define(
                 LogLevel.Information,
                 5,
-                "Policy execution failed.");
+                "CORS policy execution failed.");
 
             _originNotAllowed = LoggerMessage.Define<string>(
                 LogLevel.Information,
