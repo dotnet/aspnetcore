@@ -16,7 +16,7 @@ namespace TriageBuildFailures.Handlers
     /// </summary>
     public class HandleBuildTimeFailures : HandleFailureBase
     {
-        private IEnumerable<string> BuildTimeErrors = new string[] { "E:	 ", "error NU1603:", "error KRB4005:", "Failed to publish artifacts:", "error :", "The active test run was aborted. Reason:" };
+        private IEnumerable<string> BuildTimeErrors = new string[] { "E:	 ", "error NU1603:", "error KRB4005:", "Failed to publish artifacts:", "error :", "error:", "The active test run was aborted. Reason:" };
 
         public override bool CanHandleFailure(TeamCityBuild build)
         {
