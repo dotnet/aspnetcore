@@ -31,8 +31,8 @@ phases:
   # TODO: configure harvesting to run as a part of build.cmd
   - powershell: >
       src/Installers/Windows/build.ps1
-      -x64 artifacts/assets/Runtime/2.2.0-preview1-$(Build.BuildNumber)/aspnetcore-runtime-internal-2.2.0-preview1-$(Build.BuildNumber)-win-x64.zip
-      -x86 artifacts/assets/Runtime/2.2.0-preview1-$(Build.BuildNumber)/aspnetcore-runtime-internal-2.2.0-preview1-$(Build.BuildNumber)-win-x86.zip
+      -x64 artifacts/runtime/aspnetcore-runtime-internal-2.2.0-preview1-$(Build.BuildNumber)-win-x64.zip
+      -x86 artifacts/runtime/aspnetcore-runtime-internal-2.2.0-preview1-$(Build.BuildNumber)-win-x86.zip
       -Config $(BuildConfiguration)
       -BuildNumber $(Build.BuildNumber)
     displayName: Build Windows installers
@@ -176,7 +176,7 @@ phases:
       ./build.sh
       --ci
       /t:BuildInstallers
-      /p:_SharedFxSourceDir=$(Build.SourcesDirectory)/artifacts/assets/Runtime/2.2.0-preview1-$(Build.BuildNumber)/
+      /p:_SharedFxSourceDir=$(Build.SourcesDirectory)/artifacts/runtime/
     displayName: Build linux installers
   - task: PublishTestResults@2
     displayName: Publish test results

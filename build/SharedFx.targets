@@ -3,7 +3,9 @@
   <Import Project="SharedFx.props" />
 
   <PropertyGroup>
-    <SharedFxOutputPath>$([MSBuild]::NormalizeDirectory($(ArtifactsDir)))assets\Runtime\$(PackageVersion)\</SharedFxOutputPath>
+    <SharedFxOutputPath>$([MSBuild]::NormalizeDirectory($(ArtifactsDir)))runtime\</SharedFxOutputPath>
+    <!-- TODO: temporary. Publish Windows to folder so dotnet-install.ps1 can use the folder as a source. -->
+    <SharedFxOutputPath Condition="$(SharedFxRID.StartsWith('win')) AND '$(TEAMCITY_VERSION)' != '' ">$([MSBuild]::NormalizeDirectory($(ArtifactsDir)))assets\Runtime\$(PackageVersion)\</SharedFxOutputPath>
   </PropertyGroup>
 
   <Target Name="GetMetapackageArtifactInfo">
