@@ -47,18 +47,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         [ConditionalTheory]
-        [MemberData(nameof(AddressRegistrationDataIPv4Port5000Default))]
-        public async Task RegisterAddresses_IPv4Port5000Default_Success(string addressInput, string testUrl)
-        {
-            if (!CanBindToEndpoint(IPAddress.Loopback, 5000))
-            {
-                return;
-            }
-
-            await RegisterAddresses_Success(addressInput, testUrl, 5000);
-        }
-
-        [ConditionalTheory]
         [MemberData(nameof(AddressRegistrationDataIPv4Port80))]
         public async Task RegisterAddresses_IPv4Port80_Success(string addressInput, string testUrl)
         {
@@ -121,19 +109,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [IPv6SupportedCondition]
         public async Task RegisterAddresses_IPv6_Success(string addressInput, string[] testUrls)
         {
-            await RegisterAddresses_Success(addressInput, testUrls);
-        }
-
-        [ConditionalTheory]
-        [MemberData(nameof(AddressRegistrationDataIPv6Port5000Default))]
-        [IPv6SupportedCondition]
-        public async Task RegisterAddresses_IPv6Port5000Default_Success(string addressInput, string[] testUrls)
-        {
-            if (!CanBindToEndpoint(IPAddress.Loopback, 5000) || !CanBindToEndpoint(IPAddress.IPv6Loopback, 5000))
-            {
-                return;
-            }
-
             await RegisterAddresses_Success(addressInput, testUrls);
         }
 
@@ -870,13 +845,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
         }
 
-        public static TheoryData<string, string> AddressRegistrationDataIPv4Port5000Default =>
-            new TheoryData<string, string>
-            {
-                { null, "http://127.0.0.1:5000/" },
-                { string.Empty, "http://127.0.0.1:5000/" }
-            };
-
         public static TheoryData<IPEndPoint, string> IPEndPointRegistrationDataDynamicPort
         {
             get
@@ -973,13 +941,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 return dataset;
             }
         }
-
-        public static TheoryData<string, string[]> AddressRegistrationDataIPv6Port5000Default =>
-            new TheoryData<string, string[]>
-            {
-                { null, new[] { "http://127.0.0.1:5000/", "http://[::1]:5000/" } },
-                { string.Empty, new[] { "http://127.0.0.1:5000/", "http://[::1]:5000/" } }
-            };
 
         public static TheoryData<string, string[]> AddressRegistrationDataIPv6Port80 =>
             new TheoryData<string, string[]>
