@@ -261,7 +261,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
                             Method = "PUT",
                             Headers = null,
                             OriginLogMessage = "The request has an origin header: 'http://example.com'.",
-                            PolicyLogMessage = "Policy execution failed.",
+                            PolicyLogMessage = "CORS policy execution failed.",
                             FailureReason = "Request origin http://example.com does not have permission to access the resource."
                         }
                     },
@@ -271,7 +271,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
                             Method = "DELETE",
                             Headers = null,
                             OriginLogMessage = "The request has an origin header: 'http://allowed.example.com'.",
-                            PolicyLogMessage = "Policy execution failed.",
+                            PolicyLogMessage = "CORS policy execution failed.",
                             FailureReason = "Request method DELETE not allowed in CORS policy."
                         }
                     },
@@ -281,7 +281,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
                             Method = "PUT",
                             Headers = new[] { "test" },
                             OriginLogMessage = "The request has an origin header: 'http://allowed.example.com'.",
-                            PolicyLogMessage = "Policy execution failed.",
+                            PolicyLogMessage = "CORS policy execution failed.",
                             FailureReason = "Request header 'test' not allowed in CORS policy."
                         }
                     },
@@ -330,7 +330,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             var writeList = sink.Writes.ToList();
             Assert.Equal("The request is a preflight request.", writeList[0].State.ToString());
             Assert.Equal("The request has an origin header: 'http://allowed.example.com'.", writeList[1].State.ToString());
-            Assert.Equal("Policy execution successful.", writeList[2].State.ToString());
+            Assert.Equal("CORS policy execution successful.", writeList[2].State.ToString());
         }
 
         [Fact]
@@ -369,7 +369,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
 
             var writeList = sink.Writes.ToList();
             Assert.Equal("The request has an origin header: 'http://example.com'.", writeList[0].State.ToString());
-            Assert.Equal("Policy execution failed.", writeList[1].State.ToString());
+            Assert.Equal("CORS policy execution failed.", writeList[1].State.ToString());
             Assert.Equal("Request origin http://example.com does not have permission to access the resource.", writeList[2].State.ToString());
         }
 
@@ -389,7 +389,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
 
             var writeList = sink.Writes.ToList();
             Assert.Equal("The request has an origin header: 'http://allowed.example.com'.", writeList[0].State.ToString());
-            Assert.Equal("Policy execution successful.", writeList[1].State.ToString());
+            Assert.Equal("CORS policy execution successful.", writeList[1].State.ToString());
         }
 
         [Fact]
