@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Http;
 namespace Microsoft.AspNetCore.Routing.Matching
 {
     // Just like TechEmpower Plaintext
-    public partial class MatcherSingleEntryBenchmark : MatcherBenchmarkBase
+    public partial class MatcherSingleEntryBenchmark : EndpointRoutingBenchmarkBase
     {
         private const int SampleCount = 100;
 

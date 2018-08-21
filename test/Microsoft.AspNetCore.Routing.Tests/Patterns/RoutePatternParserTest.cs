@@ -470,7 +470,6 @@ namespace Microsoft.AspNetCore.Routing.Patterns
         }
 
         [Theory]
-        [InlineData("{**}", "*")]
         [InlineData("{a*}", "a*")]
         [InlineData("{*a*}", "a*")]
         [InlineData("{*a*:int}", "a*")]

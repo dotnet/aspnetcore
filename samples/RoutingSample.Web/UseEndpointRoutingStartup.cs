@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace RoutingSample.Web
 {
@@ -78,21 +79,55 @@ namespace RoutingSample.Web
                     },
                     "/withoptionalconstraints/{id:endsWith(_001)?}",
                     "withoptionalconstraints");
-            builder.MapEndpoint(
-                (next) => (httpContext) =>
-                {
-                    using (var writer = new StreamWriter(httpContext.Response.Body, Encoding.UTF8, 1024, leaveOpen: true))
+                builder.MapEndpoint(
+                    (next) => (httpContext) =>
                     {
-                        var graphWriter = httpContext.RequestServices.GetRequiredService<DfaGraphWriter>();
-                        var dataSource = httpContext.RequestServices.GetRequiredService<CompositeEndpointDataSource>();
-                        graphWriter.Write(dataSource, writer);
-                    }
+                        using (var writer = new StreamWriter(httpContext.Response.Body, Encoding.UTF8, 1024, leaveOpen: true))
+                        {
+                            var graphWriter = httpContext.RequestServices.GetRequiredService<DfaGraphWriter>();
+                            var dataSource = httpContext.RequestServices.GetRequiredService<CompositeEndpointDataSource>();
+                            graphWriter.Write(dataSource, writer);
+                        }
 
-                    return Task.CompletedTask;
-                },
-                "/graph",
-                "DFA Graph",
-                new object[] { new HttpMethodMetadata(new[] { "GET", }) });
+                        return Task.CompletedTask;
+                    },
+                    "/graph",
+                    "DFA Graph",
+                    new object[] { new HttpMethodMetadata(new[] { "GET", }) });
+                builder.MapEndpoint(
+                    (next) => (httpContext) =>
+                    {
+                        var linkGenerator = httpContext.RequestServices.GetRequiredService<LinkGenerator>();
+
+                        var response = httpContext.Response;
+                        response.StatusCode = 200;
+                        response.ContentType = "text/plain";
+                        return response.WriteAsync(
+                            "Link: " + linkGenerator.GetLink(httpContext, "WithSingleAsteriskCatchAll", new { }));
+                    },
+                    "/WithSingleAsteriskCatchAll/{*path}",
+                    "WithSingleAsteriskCatchAll",
+                    new object[]
+                    {
+                        new RouteValuesAddressMetadata(name: "WithSingleAsteriskCatchAll", requiredValues: new RouteValueDictionary()),
+                    });
+                builder.MapEndpoint(
+                    (next) => (httpContext) =>
+                    {
+                        var linkGenerator = httpContext.RequestServices.GetRequiredService<LinkGenerator>();
+
+                        var response = httpContext.Response;
+                        response.StatusCode = 200;
+                        response.ContentType = "text/plain";
+                        return response.WriteAsync(
+                            "Link: " + linkGenerator.GetLink(httpContext, "WithDoubleAsteriskCatchAll", new { }));
+                    },
+                    "/WithDoubleAsteriskCatchAll/{**path}",
+                    "WithDoubleAsteriskCatchAll",
+                    new object[]
+                    {
+                        new RouteValuesAddressMetadata(name: "WithDoubleAsteriskCatchAll", requiredValues: new RouteValueDictionary())
+                    });
             });
 
             // Imagine some more stuff here...

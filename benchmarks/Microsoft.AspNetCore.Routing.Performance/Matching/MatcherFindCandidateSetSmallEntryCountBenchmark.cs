@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Routing.Matching
 {
-    public class MatcherFindCandidateSetSmallEntryCountBenchmark : MatcherBenchmarkBase
+    public class MatcherFindCandidateSetSmallEntryCountBenchmark : EndpointRoutingBenchmarkBase
     {
         // SegmentCount should be max-segments + 1
         private const int SegmentCount = 6;

@@ -19,6 +19,16 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             object @default,
             RoutePatternParameterKind parameterKind,
             RoutePatternConstraintReference[] constraints)
+            : this(parameterName, @default, parameterKind, constraints, encodeSlashes: true)
+        {
+        }
+
+        internal RoutePatternParameterPart(
+            string parameterName,
+            object @default,
+            RoutePatternParameterKind parameterKind,
+            RoutePatternConstraintReference[] constraints,
+            bool encodeSlashes)
             : base(RoutePatternPartKind.Parameter)
         {
             // See #475 - this code should have some asserts, but it can't because of the design of RouteParameterParser.
@@ -27,12 +37,18 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             Default = @default;
             ParameterKind = parameterKind;
             Constraints = constraints;
+            EncodeSlashes = encodeSlashes;
         }
 
         /// <summary>
         /// Gets the list of constraints associated with this parameter.
         /// </summary>
         public IReadOnlyList<RoutePatternConstraintReference> Constraints { get; }
+
+        /// <summary>
+        /// Gets the value indicating if slashes in current parameter's value should be encoded.
+        /// </summary>
+        public bool EncodeSlashes { get; }
 
         /// <summary>
         /// Gets the default value of this route parameter. May be null.

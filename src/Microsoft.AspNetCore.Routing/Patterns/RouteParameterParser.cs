@@ -27,9 +27,17 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
             var startIndex = 0;
             var endIndex = parameter.Length - 1;
+            var encodeSlashes = true;
 
             var parameterKind = RoutePatternParameterKind.Standard;
-            if (parameter[0] == '*')
+
+            if (parameter.StartsWith("**", StringComparison.Ordinal))
+            {
+                encodeSlashes = false;
+                parameterKind = RoutePatternParameterKind.CatchAll;
+                startIndex += 2;
+            }
+            else if (parameter[0] == '*')
             {
                 parameterKind = RoutePatternParameterKind.CatchAll;
                 startIndex++;
@@ -79,7 +87,12 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                 defaultValue = parameter.Substring(currentIndex + 1, endIndex - currentIndex);
             }
 
-            return new RoutePatternParameterPart(parameterName, defaultValue, parameterKind, parseResults.Constraints.ToArray());
+            return new RoutePatternParameterPart(
+                parameterName,
+                defaultValue,
+                parameterKind,
+                parseResults.Constraints.ToArray(),
+                encodeSlashes);
         }
 
         private static ConstraintParseResults ParseConstraints(
@@ -237,7 +250,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             public readonly int CurrentIndex;
 
             public readonly IReadOnlyList<RoutePatternConstraintReference> Constraints;
-            
+
             public ConstraintParseResults(int currentIndex, IReadOnlyList<RoutePatternConstraintReference> constraints)
             {
                 CurrentIndex = currentIndex;

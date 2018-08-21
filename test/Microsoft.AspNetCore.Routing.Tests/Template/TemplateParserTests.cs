@@ -626,7 +626,6 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Theory]
-        [InlineData("{**}", "*")]
         [InlineData("{a*}", "a*")]
         [InlineData("{*a*}", "a*")]
         [InlineData("{*a*:int}", "a*")]

@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Text.Encodings.Web;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.ObjectPool;
@@ -223,12 +224,12 @@ namespace Microsoft.AspNetCore.Routing.Template
                             // If the value is not accepted, it is null or empty value in the 
                             // middle of the segment. We accept this if the parameter is an
                             // optional parameter and it is preceded by an optional seperator.
-                            // I this case, we need to remove the optional seperator that we
+                            // In this case, we need to remove the optional seperator that we
                             // have added to the URI
                             // Example: template = {id}.{format?}. parameters: id=5
                             // In this case after we have generated "5.", we wont find any value 
                             // for format, so we remove '.' and generate 5.
-                            if (!context.Accept(converted))
+                            if (!context.Accept(converted, parameterPart.EncodeSlashes))
                             {
                                 if (j != 0 && parameterPart.IsOptional && (separatorPart = segment.Parts[j - 1] as RoutePatternSeparatorPart) != null)
                                 {

@@ -284,7 +284,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             {
                 var segment = VisitSegment(updatedSegments[i]);
                 updatedSegments[i] = segment;
-                
+
                 for (var j = 0; j < segment.Parts.Count; j++)
                 {
                     if (segment.Parts[j] is RoutePatternParameterPart parameter)
@@ -339,7 +339,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
                     @default = newDefault;
                 }
-                
+
                 if (parameter.Default != null)
                 {
                     updatedDefaults.Add(parameter.Name, parameter.Default);
@@ -361,7 +361,8 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                     parameter.Name,
                     @default,
                     parameter.ParameterKind,
-                    (IEnumerable<RoutePatternConstraintReference>)parameterConstraints ?? Array.Empty<RoutePatternConstraintReference>());
+                    (IEnumerable<RoutePatternConstraintReference>)parameterConstraints ?? Array.Empty<RoutePatternConstraintReference>(),
+                    parameter.EncodeSlashes);
             }
         }
 
@@ -624,7 +625,22 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             RoutePatternParameterKind parameterKind,
             IEnumerable<RoutePatternConstraintReference> constraints)
         {
-            return new RoutePatternParameterPart(parameterName, @default, parameterKind, constraints.ToArray());
+            return ParameterPartCore(parameterName, @default, parameterKind, constraints, encodeSlashes: true);
+        }
+
+        private static RoutePatternParameterPart ParameterPartCore(
+            string parameterName,
+            object @default,
+            RoutePatternParameterKind parameterKind,
+            IEnumerable<RoutePatternConstraintReference> constraints,
+            bool encodeSlashes)
+        {
+            return new RoutePatternParameterPart(
+                parameterName,
+                @default,
+                parameterKind,
+                constraints.ToArray(),
+                encodeSlashes);
         }
 
         /// <summary>
