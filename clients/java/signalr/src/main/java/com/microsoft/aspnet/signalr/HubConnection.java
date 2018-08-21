@@ -142,6 +142,10 @@ public class HubConnection {
      * @throws Exception An error occurred while connecting.
      */
     public void start() throws Exception {
+        if (connectionState != HubConnectionState.DISCONNECTED) {
+            return;
+        }
+
         logger.log(LogLevel.Debug, "Starting HubConnection");
         transport.setOnReceive(this.callback);
         transport.start();
@@ -155,7 +159,11 @@ public class HubConnection {
      * Stops a connection to the server.
      */
     private void stop(String errorMessage) {
-        if(errorMessage != null){
+        if (connectionState == HubConnectionState.DISCONNECTED) {
+            return;
+        }
+
+        if(errorMessage != null) {
             logger.log(LogLevel.Error , "HubConnection disconnected with an error %s.", errorMessage);
         } else {
             logger.log(LogLevel.Debug, "Stopping HubConnection.");
@@ -187,6 +195,10 @@ public class HubConnection {
      * @throws Exception If there was an error while sending.
      */
     public void send(String method, Object... args) throws Exception {
+        if (connectionState != HubConnectionState.CONNECTED) {
+            throw new HubException("The 'send' method cannot be called if the connection is not active");
+        }
+
         InvocationMessage invocationMessage = new InvocationMessage(method, args);
         String message = protocol.writeMessage(invocationMessage);
         logger.log(LogLevel.Debug, "Sending message");

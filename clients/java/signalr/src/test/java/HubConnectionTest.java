@@ -4,7 +4,10 @@
 import com.microsoft.aspnet.signalr.*;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicReference;
+
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import static org.junit.Assert.*;
 
@@ -87,7 +90,6 @@ public class HubConnectionTest {
         assertEquals(1, value.get(), 0);
 
         hubConnection.remove("inc");
-        hubConnection.send("inc");
         assertEquals(1, value.get(), 0);
     }
 
@@ -655,6 +657,35 @@ public class HubConnectionTest {
         mockTransport.receiveMessage("{\"type\":7,\"error\": \"There was an error\"}" + RECORD_SEPARATOR);
 
         assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
+    }
+    
+    @Test
+    public void CallingStartOnStartedHubConnectionNoOps() throws Exception {
+        Transport mockTransport = new MockTransport();
+        HubConnection hubConnection = new HubConnection("http://example.com", mockTransport);
+        hubConnection.start();
+        assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
+
+        hubConnection.start();
+        assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
+
+        hubConnection.stop();
+        assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
+    }
+
+    @Rule
+    public ExpectedException exceptionRule = ExpectedException.none();
+
+    @Test
+    public void CannotSendBeforeStart() throws Exception {
+        exceptionRule.expect(HubException.class);
+        exceptionRule.expectMessage("The 'send' method cannot be called if the connection is not active");
+
+        Transport mockTransport = new MockTransport();
+        HubConnection hubConnection = new HubConnection("http://example.com", mockTransport);
+        assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
+
+        hubConnection.send("inc");
     }
 
     private class MockTransport implements Transport {
