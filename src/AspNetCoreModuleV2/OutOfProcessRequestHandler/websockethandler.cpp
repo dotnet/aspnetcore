@@ -28,6 +28,7 @@ This prevents the need for data buffering at the Asp.Net Core Module level.
 --*/
 
 #include "websockethandler.h"
+#include "exceptions.h"
 
 SRWLOCK WEBSOCKET_HANDLER::sm_RequestsListLock;
 
@@ -86,7 +87,7 @@ HRESULT
 WEBSOCKET_HANDLER::StaticInitialize(
     BOOL   fEnableReferenceCountTracing
     )
-/*++ 
+/*++
 
     Routine Description:
 
@@ -145,7 +146,7 @@ WEBSOCKET_HANDLER::InsertRequest(
     }
 }
 
-//static 
+//static
 VOID
 WEBSOCKET_HANDLER::RemoveRequest(
     VOID
@@ -244,11 +245,11 @@ WEBSOCKET_HANDLER::ProcessRequest(
 Routine Description:
 
     Entry point to WebSocket Handler:
-    
+
     This routine is called after the 101 response was successfully sent to
-    the client. 
-    This routine get's a websocket handle to winhttp, 
-    websocket handle to IIS's websocket context, and initiates IO 
+    the client.
+    This routine get's a websocket handle to winhttp,
+    websocket handle to IIS's websocket context, and initiates IO
     in these two endpoints.
 
 
@@ -267,10 +268,10 @@ Routine Description:
     //
     // Cache the points to IHttpContext3
     //
-    hr = HttpGetExtendedInterface(g_pHttpServer, 
-            pHttpContext, 
+    hr = HttpGetExtendedInterface(g_pHttpServer,
+            pHttpContext,
             &_pHttpContext);
-    if (FAILED (hr))
+    if (FAILED_LOG(hr))
     {
         goto Finished;
     }
@@ -338,7 +339,7 @@ Routine Description:
     // Initiate Read on IIS
     //
     hr = DoIisWebSocketReceive();
-    if (FAILED(hr))
+    if (FAILED_LOG(hr))
     {
         goto Finished;
     }
@@ -348,7 +349,7 @@ Routine Description:
     //
 
     hr = DoWinHttpWebSocketReceive();
-    if (FAILED(hr))
+    if (FAILED_LOG(hr))
     {
         goto Finished;
     }
@@ -356,7 +357,7 @@ Routine Description:
 Finished:
     LeaveCriticalSection(&_RequestLock);
 
-    if (FAILED (hr))
+    if (FAILED_LOG(hr))
     {
         DebugPrintf (ASPNETCORE_DEBUG_FLAG_ERROR,
             "Process Request Failed with HR=%08x", hr);
@@ -399,7 +400,7 @@ Routine Description:
             OnReadIoCompletion,
             this,
             NULL);
-    if (FAILED(hr))
+    if (FAILED_LOG(hr))
     {
         DecrementOutstandingIo();
         DebugPrintf(ASPNETCORE_DEBUG_FLAG_ERROR,
@@ -498,7 +499,7 @@ Routine Description:
         //
         hr = strCloseReason.CopyA((PCSTR)&_WinHttpReceiveBuffer,
             dwReceived);
-        if (FAILED(hr))
+        if (FAILED_LOG(hr))
         {
             goto Finished;
         }
@@ -549,13 +550,13 @@ Routine Description:
                 NULL);
     }
 
-    if (FAILED(hr))
+    if (FAILED_LOG(hr))
     {
         DecrementOutstandingIo();
     }
 
 Finished:
-    if (FAILED(hr))
+    if (FAILED_LOG(hr))
     {
         DebugPrintf(ASPNETCORE_DEBUG_FLAG_ERROR,
             "WEBSOCKET_HANDLER::DoIisWebSocketSend failed with %08x", hr);
@@ -592,10 +593,10 @@ Routine Description:
         //
         // Get Close status from IIS.
         //
-        hr = _pWebSocketContext->GetCloseStatus(&uStatus, 
+        hr = _pWebSocketContext->GetCloseStatus(&uStatus,
                 &pszReason);
 
-        if (FAILED(hr))
+        if (FAILED_LOG(hr))
         {
             goto Finished;
         }
@@ -604,7 +605,7 @@ Routine Description:
         // Convert status to UTF8
         //
         hr = strCloseReason.CopyWToUTF8Unescaped(pszReason);
-        if (FAILED(hr))
+        if (FAILED_LOG(hr))
         {
             goto Finished;
         }
@@ -663,7 +664,7 @@ Routine Description:
     }
 
 Finished:
-    if (FAILED(hr))
+    if (FAILED_LOG(hr))
     {
         DebugPrintf(ASPNETCORE_DEBUG_FLAG_ERROR,
             "WEBSOCKET_HANDLER::DoWinHttpWebSocketSend failed with %08x", hr);
@@ -691,7 +692,7 @@ WEBSOCKET_HANDLER::OnReadIoCompletion(
 
 --*/
 {
-    WEBSOCKET_HANDLER *     pHandler = (WEBSOCKET_HANDLER *) 
+    WEBSOCKET_HANDLER *     pHandler = (WEBSOCKET_HANDLER *)
                             pvCompletionContext;
 
     pHandler->OnIisReceiveComplete(
@@ -721,7 +722,7 @@ WEBSOCKET_HANDLER::OnWriteIoCompletion(
 
 --*/
 {
-    WEBSOCKET_HANDLER *     pHandler = (WEBSOCKET_HANDLER *) 
+    WEBSOCKET_HANDLER *     pHandler = (WEBSOCKET_HANDLER *)
                             pvCompletionContext;
 
     UNREFERENCED_PARAMETER(fUTF8Encoded);
@@ -776,18 +777,18 @@ Routine Description:
     //
 
     hr = DoIisWebSocketReceive();
-    if (FAILED(hr))
+    if (FAILED_LOG(hr))
     {
         goto Finished;
     }
 
 Finished:
-    if (fLocked) 
+    if (fLocked)
     {
         LeaveCriticalSection(&_RequestLock);
     }
 
-    if (FAILED (hr))
+    if (FAILED_LOG(hr))
     {
         Cleanup (cleanupReason);
 
@@ -848,7 +849,7 @@ Routine Description:
     Issue send on the Client(IIS) if the receive was
     successful.
 
-    If the receive completed with zero bytes, that 
+    If the receive completed with zero bytes, that
     indicates that the server has disconnected the connection.
     Issue cleanup for the websocket handler.
 --*/
@@ -877,18 +878,18 @@ Routine Description:
             pCompletionStatus->eBufferType
             );
 
-    if (FAILED (hr))
+    if (FAILED_LOG(hr))
     {
         cleanupReason = ClientDisconnect;
         goto Finished;
     }
 
 Finished:
-    if (fLocked) 
+    if (fLocked)
     {
         LeaveCriticalSection(&_RequestLock);
     }
-    if (FAILED (hr))
+    if (FAILED_LOG(hr))
     {
         Cleanup (cleanupReason);
 
@@ -917,7 +918,7 @@ Routine Description:
     Completion callback executed when a send
     completes from the client.
 
-    If send was successful,issue read on the 
+    If send was successful,issue read on the
     server endpoint, to continue the readloop.
 
 --*/
@@ -930,7 +931,7 @@ Routine Description:
 
     DebugPrintf(ASPNETCORE_DEBUG_FLAG_INFO, "WEBSOCKET_HANDLER::OnIisSendComplete");
 
-    if (FAILED(hrCompletion))
+    if (FAILED_LOG(hrCompletion))
     {
         hr = hrCompletion;
         cleanupReason = ClientDisconnect;
@@ -957,7 +958,7 @@ Routine Description:
         // Write Completed, initiate next read from backend server.
         //
         hr = DoWinHttpWebSocketReceive();
-        if (FAILED(hr))
+        if (FAILED_LOG(hr))
         {
             cleanupReason = ServerDisconnect;
             goto Finished;
@@ -969,7 +970,7 @@ Finished:
     {
         LeaveCriticalSection(&_RequestLock);
     }
-    if (FAILED (hr))
+    if (FAILED_LOG(hr))
     {
         Cleanup (cleanupReason);
 
@@ -1016,7 +1017,7 @@ Routine Description:
     DebugPrintf(ASPNETCORE_DEBUG_FLAG_INFO,
         "WEBSOCKET_HANDLER::OnIisReceiveComplete");
 
-    if (FAILED(hrCompletion))
+    if (FAILED_LOG(hrCompletion))
     {
         cleanupReason = ClientDisconnect;
         hr = hrCompletion;
@@ -1029,7 +1030,7 @@ Routine Description:
     }
 
     EnterCriticalSection(&_RequestLock);
-    
+
     fLocked = TRUE;
     if (_fCleanupInProgress)
     {
@@ -1049,7 +1050,7 @@ Routine Description:
     //
 
     hr =  DoWinHttpWebSocketSend(cbIO, BufferType);
-    if (FAILED (hr))
+    if (FAILED_LOG(hr))
     {
         cleanupReason = ServerDisconnect;
         goto Finished;
@@ -1060,7 +1061,7 @@ Finished:
     {
         LeaveCriticalSection(&_RequestLock);
     }
-    if (FAILED (hr))
+    if (FAILED_LOG(hr))
     {
         Cleanup (cleanupReason);
 

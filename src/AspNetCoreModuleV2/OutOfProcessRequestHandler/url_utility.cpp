@@ -5,6 +5,7 @@
 
 #include <Shlwapi.h>
 #include "debugutil.h"
+#include "exceptions.h"
 
 // static
 HRESULT
@@ -38,8 +39,6 @@ Return Value:
 
 --*/
 {
-    HRESULT hr;
-
     //
     // First determine if the target is secure
     //
@@ -55,12 +54,12 @@ Return Value:
     }
     else
     {
-        return HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
+        RETURN_HR(HRESULT_FROM_WIN32(ERROR_INVALID_DATA));
     }
 
     if (*pszDestinationUrl == L'\0')
     {
-        return HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
+        RETURN_HR(HRESULT_FROM_WIN32(ERROR_INVALID_DATA));
     }
 
     //
@@ -69,20 +68,14 @@ Return Value:
     LPCWSTR pszSlash = wcschr(pszDestinationUrl, L'/');
     if (pszSlash == NULL)
     {
-        if (FAILED(hr = pstrUrl->Copy(L"/", 1)) ||
-            FAILED(hr = pstrDestination->Copy(pszDestinationUrl)))
-        {
-            return hr;
-        }
+        RETURN_IF_FAILED(pstrUrl->Copy(L"/", 1));
+        RETURN_IF_FAILED(pstrDestination->Copy(pszDestinationUrl));
     }
     else
     {
-        if (FAILED(hr = pstrUrl->Copy(pszSlash)) ||
-            FAILED(hr = pstrDestination->Copy(pszDestinationUrl,
-                            (DWORD)(pszSlash - pszDestinationUrl))))
-        {
-            return hr;
-        }
+        RETURN_IF_FAILED(pstrUrl->Copy(pszSlash));
+        RETURN_IF_FAILED(pstrDestination->Copy(pszDestinationUrl,
+                            (DWORD)(pszSlash - pszDestinationUrl)));
     }
 
     return S_OK;
@@ -102,34 +95,28 @@ URL_UTILITY::EscapeAbsPath(
     STRU * strEscapedUrl
 )
 {
-    HRESULT hr = S_OK;
     STRU    strAbsPath;
     LPCWSTR pszAbsPath = NULL;
     LPCWSTR pszFindStr = NULL;
 
-    hr = strAbsPath.Copy( pRequest->GetRawHttpRequest()->CookedUrl.pAbsPath,
-        pRequest->GetRawHttpRequest()->CookedUrl.AbsPathLength / sizeof(WCHAR) );
-    if(FAILED(hr))
-    {
-        goto Finished;
-    }
+    RETURN_IF_FAILED(strAbsPath.Copy( pRequest->GetRawHttpRequest()->CookedUrl.pAbsPath,
+        pRequest->GetRawHttpRequest()->CookedUrl.AbsPathLength / sizeof(WCHAR) ));
 
     pszAbsPath = strAbsPath.QueryStr();
     pszFindStr = wcschr(pszAbsPath, L'?');
 
     while(pszFindStr != NULL)
     {
-        strEscapedUrl->Append( pszAbsPath, pszFindStr - pszAbsPath);
-        strEscapedUrl->Append(L"%3F");
+        RETURN_IF_FAILED(strEscapedUrl->Append( pszAbsPath, pszFindStr - pszAbsPath));
+        RETURN_IF_FAILED(strEscapedUrl->Append(L"%3F"));
         pszAbsPath = pszFindStr + 1;
         pszFindStr = wcschr(pszAbsPath, L'?');
     }
 
-    strEscapedUrl->Append(pszAbsPath);
-    strEscapedUrl->Append(pRequest->GetRawHttpRequest()->CookedUrl.pQueryString,
-                          pRequest->GetRawHttpRequest()->CookedUrl.QueryStringLength / sizeof(WCHAR));
+    RETURN_IF_FAILED(strEscapedUrl->Append(pszAbsPath));
+    RETURN_IF_FAILED(strEscapedUrl->Append(pRequest->GetRawHttpRequest()->CookedUrl.pQueryString,
+                          pRequest->GetRawHttpRequest()->CookedUrl.QueryStringLength / sizeof(WCHAR)));
 
-Finished:
-    return hr;
+    return S_OK;
 }
 

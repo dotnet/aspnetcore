@@ -3,6 +3,7 @@
 
 #include "forwardinghandler.h"
 #include "url_utility.h"
+#include "exceptions.h"
 
 // Just to be aware of the FORWARDING_HANDLER object size.
 C_ASSERT(sizeof(FORWARDING_HANDLER) <= 632);
@@ -140,7 +141,7 @@ FORWARDING_HANDLER::OnExecuteRequestHandler()
     }
 
     hr = pApplication->GetProcess(&pServerProcess);
-    if (FAILED(hr))
+    if (FAILED_LOG(hr))
     {
         fFailedToStartKestrel = TRUE;
         goto Failure;
@@ -165,7 +166,7 @@ FORWARDING_HANDLER::OnExecuteRequestHandler()
     //
     // parse original url
     //
-    if (FAILED(hr = URL_UTILITY::SplitUrl(pRequest->GetRawHttpRequest()->CookedUrl.pFullUrl,
+    if (FAILED_LOG(hr = URL_UTILITY::SplitUrl(pRequest->GetRawHttpRequest()->CookedUrl.pFullUrl,
         &fSecure,
         &strDestination,
         &strUrl)))
@@ -173,7 +174,7 @@ FORWARDING_HANDLER::OnExecuteRequestHandler()
         goto Failure;
     }
 
-    if (FAILED(hr = URL_UTILITY::EscapeAbsPath(pRequest, &struEscapedUrl)))
+    if (FAILED_LOG(hr = URL_UTILITY::EscapeAbsPath(pRequest, &struEscapedUrl)))
     {
         goto Failure;
     }
@@ -200,7 +201,7 @@ FORWARDING_HANDLER::OnExecuteRequestHandler()
         hConnect,
         &struEscapedUrl,
         pServerProcess);
-    if (FAILED(hr))
+    if (FAILED_LOG(hr))
     {
         goto Failure;
     }
@@ -222,7 +223,7 @@ FORWARDING_HANDLER::OnExecuteRequestHandler()
             SetConnectionModuleContext(m_pDisconnect,
                 m_pModuleId);
         DBG_ASSERT(hr != HRESULT_FROM_WIN32(ERROR_ALREADY_ASSIGNED));
-        if (FAILED(hr))
+        if (FAILED_LOG(hr))
         {
             goto Failure;
         }
@@ -477,7 +478,7 @@ REQUEST_NOTIFICATION_STATUS
             InterlockedIncrement(&m_dwHandlers);
         }
 
-        if (FAILED(hr))
+        if (FAILED_LOG(hr))
         {
             // This failure could happen when client disconnect happens or backend server fails
             // after websocket upgrade
@@ -514,7 +515,7 @@ REQUEST_NOTIFICATION_STATUS
         // failure, if there is more data available from WinHTTP, read it
         // or else ask if there is more.
         //
-        if (FAILED(hrCompletionStatus))
+        if (FAILED_LOG(hrCompletionStatus))
         {
             hr = hrCompletionStatus;
             fClientError = TRUE;
@@ -522,7 +523,7 @@ REQUEST_NOTIFICATION_STATUS
         }
 
         hr = OnReceivingResponse();
-        if (FAILED(hr))
+        if (FAILED_LOG(hr))
         {
             goto Failure;
         }
@@ -533,7 +534,7 @@ REQUEST_NOTIFICATION_STATUS
         hr = OnSendingRequest(cbCompletion,
             hrCompletionStatus,
             &fClientError);
-        if (FAILED(hr))
+        if (FAILED_LOG(hr))
         {
             goto Failure;
         }
@@ -730,7 +731,7 @@ HRESULT
 
     hr = sm_pAlloc->Initialize(sizeof(FORWARDING_HANDLER),
                                64); // nThreshold
-    if (FAILED(hr))
+    if (FAILED_LOG(hr))
     {
         goto Finished;
     }
@@ -743,14 +744,14 @@ HRESULT
     }
 
     hr = sm_pResponseHeaderHash->Initialize();
-    if (FAILED(hr))
+    if (FAILED_LOG(hr))
     {
         goto Finished;
     }
 
     // Initialize PROTOCOL_CONFIG
     hr = sm_ProtocolConfig.Initialize();
-    if (FAILED(hr))
+    if (FAILED_LOG(hr))
     {
         goto Finished;
     }
@@ -786,7 +787,7 @@ HRESULT
        </div></body></html>");
 
 Finished:
-    if (FAILED(hr))
+    if (FAILED_LOG(hr))
     {
         StaticTerminate();
     }
@@ -871,12 +872,12 @@ FORWARDING_HANDLER::GetHeaders(
     //
     if (!pProtocol->QueryPreserveHostHeader())
     {
-        if (FAILED(hr = URL_UTILITY::SplitUrl(pRequest->GetRawHttpRequest()->CookedUrl.pFullUrl,
+        if (FAILED_LOG(hr = URL_UTILITY::SplitUrl(pRequest->GetRawHttpRequest()->CookedUrl.pFullUrl,
             &fSecure,
             &struDestination,
             &struUrl)) ||
-            FAILED(hr = strTemp.CopyW(struDestination.QueryStr())) ||
-            FAILED(hr = pRequest->SetHeader(HttpHeaderHost,
+            FAILED_LOG(hr = strTemp.CopyW(struDestination.QueryStr())) ||
+            FAILED_LOG(hr = pRequest->SetHeader(HttpHeaderHost,
                 strTemp.QueryStr(),
                 static_cast<USHORT>(strTemp.QueryCCH()),
                 TRUE))) // fReplace
@@ -917,7 +918,7 @@ FORWARDING_HANDLER::GetHeaders(
             pServerProcess->QueryGuid(),
             (USHORT)strlen(pServerProcess->QueryGuid()),
             TRUE);
-        if (FAILED(hr))
+        if (FAILED_LOG(hr))
         {
             return hr;
         }
@@ -933,7 +934,7 @@ FORWARDING_HANDLER::GetHeaders(
             HANDLE hTargetTokenHandle = NULL;
             hr = pServerProcess->SetWindowsAuthToken(m_pW3Context->GetUser()->GetPrimaryToken(),
                 &hTargetTokenHandle);
-            if (FAILED(hr))
+            if (FAILED_LOG(hr))
             {
                 return hr;
             }
@@ -952,7 +953,7 @@ FORWARDING_HANDLER::GetHeaders(
                 pszHandleStr,
                 (USHORT)strlen(pszHandleStr),
                 TRUE);
-            if (FAILED(hr))
+            if (FAILED_LOG(hr))
             {
                 return hr;
             }
@@ -966,14 +967,14 @@ FORWARDING_HANDLER::GetHeaders(
         pszCurrentHeader = pRequest->GetHeader(pProtocol->QueryXForwardedForName()->QueryStr(), &cchCurrentHeader);
         if (pszCurrentHeader != NULL)
         {
-            if (FAILED(hr = strTemp.Copy(pszCurrentHeader, cchCurrentHeader)) ||
-                FAILED(hr = strTemp.Append(", ", 2)))
+            if (FAILED_LOG(hr = strTemp.Copy(pszCurrentHeader, cchCurrentHeader)) ||
+                FAILED_LOG(hr = strTemp.Append(", ", 2)))
             {
                 return hr;
             }
         }
 
-        if (FAILED(hr = m_pW3Context->GetServerVariable("REMOTE_ADDR",
+        if (FAILED_LOG(hr = m_pW3Context->GetServerVariable("REMOTE_ADDR",
             &pszFinalHeader,
             &cchFinalHeader)))
         {
@@ -982,16 +983,16 @@ FORWARDING_HANDLER::GetHeaders(
 
         if (pRequest->GetRawHttpRequest()->Address.pRemoteAddress->sa_family == AF_INET6)
         {
-            if (FAILED(hr = strTemp.Append("[", 1)) ||
-                FAILED(hr = strTemp.Append(pszFinalHeader, cchFinalHeader)) ||
-                FAILED(hr = strTemp.Append("]", 1)))
+            if (FAILED_LOG(hr = strTemp.Append("[", 1)) ||
+                FAILED_LOG(hr = strTemp.Append(pszFinalHeader, cchFinalHeader)) ||
+                FAILED_LOG(hr = strTemp.Append("]", 1)))
             {
                 return hr;
             }
         }
         else
         {
-            if (FAILED(hr = strTemp.Append(pszFinalHeader, cchFinalHeader)))
+            if (FAILED_LOG(hr = strTemp.Append(pszFinalHeader, cchFinalHeader)))
             {
                 return hr;
             }
@@ -999,21 +1000,21 @@ FORWARDING_HANDLER::GetHeaders(
 
         if (pProtocol->QueryIncludePortInXForwardedFor())
         {
-            if (FAILED(hr = m_pW3Context->GetServerVariable("REMOTE_PORT",
+            if (FAILED_LOG(hr = m_pW3Context->GetServerVariable("REMOTE_PORT",
                 &pszFinalHeader,
                 &cchFinalHeader)))
             {
                 return hr;
             }
 
-            if (FAILED(hr = strTemp.Append(":", 1)) ||
-                FAILED(hr = strTemp.Append(pszFinalHeader, cchFinalHeader)))
+            if (FAILED_LOG(hr = strTemp.Append(":", 1)) ||
+                FAILED_LOG(hr = strTemp.Append(pszFinalHeader, cchFinalHeader)))
             {
                 return hr;
             }
         }
 
-        if (FAILED(hr = pRequest->SetHeader(pProtocol->QueryXForwardedForName()->QueryStr(),
+        if (FAILED_LOG(hr = pRequest->SetHeader(pProtocol->QueryXForwardedForName()->QueryStr(),
             strTemp.QueryStr(),
             static_cast<USHORT>(strTemp.QueryCCH()),
             TRUE))) // fReplace
@@ -1036,19 +1037,19 @@ FORWARDING_HANDLER::GetHeaders(
         pszCurrentHeader = pRequest->GetHeader(pProtocol->QuerySslHeaderName()->QueryStr(), &cchCurrentHeader);
         if (pszCurrentHeader != NULL)
         {
-            if (FAILED(hr = strTemp.Copy(pszCurrentHeader, cchCurrentHeader)) ||
-                FAILED(hr = strTemp.Append(", ", 2)))
+            if (FAILED_LOG(hr = strTemp.Copy(pszCurrentHeader, cchCurrentHeader)) ||
+                FAILED_LOG(hr = strTemp.Append(", ", 2)))
             {
                 return hr;
             }
         }
 
-        if (FAILED(hr = strTemp.Append(pszScheme)))
+        if (FAILED_LOG(hr = strTemp.Append(pszScheme)))
         {
             return hr;
         }
 
-        if (FAILED(pRequest->SetHeader(pProtocol->QuerySslHeaderName()->QueryStr(),
+        if (FAILED_LOG(pRequest->SetHeader(pProtocol->QuerySslHeaderName()->QueryStr(),
             strTemp.QueryStr(),
             (USHORT)strTemp.QueryCCH(),
             TRUE)))
@@ -1067,7 +1068,7 @@ FORWARDING_HANDLER::GetHeaders(
         else
         {
             // Resize the buffer large enough to hold the encoded certificate info
-            if (FAILED(hr = strTemp.Resize(
+            if (FAILED_LOG(hr = strTemp.Resize(
                 1 + (pRequest->GetRawHttpRequest()->pSslInfo->pClientCertInfo->CertEncodedSize + 2) / 3 * 4)))
             {
                 return hr;
@@ -1081,7 +1082,7 @@ FORWARDING_HANDLER::GetHeaders(
                 NULL);
             strTemp.SyncWithBuffer();
 
-            if (FAILED(hr = pRequest->SetHeader(
+            if (FAILED_LOG(hr = pRequest->SetHeader(
                 pProtocol->QueryClientCertName()->QueryStr(),
                 strTemp.QueryStr(),
                 static_cast<USHORT>(strTemp.QueryCCH()),
@@ -1106,7 +1107,7 @@ FORWARDING_HANDLER::GetHeaders(
     hr = m_pW3Context->GetServerVariable("ALL_RAW",
         ppszHeaders,
         pcchHeaders);
-    if (FAILED(hr))
+    if (FAILED_LOG(hr))
     {
         return hr;
     }
@@ -1134,7 +1135,7 @@ FORWARDING_HANDLER::CreateWinHttpRequest(
     // we will fill them when sending the request)
     //
     pszVerb = pRequest->GetHttpMethod();
-    if (FAILED(hr = strVerb.CopyA(pszVerb)))
+    if (FAILED_LOG(hr = strVerb.CopyA(pszVerb)))
     {
         goto Finished;
     }
@@ -1147,7 +1148,7 @@ FORWARDING_HANDLER::CreateWinHttpRequest(
             "HTTP_VERSION",
             &pszVersion,
             &cchUnused);
-        if (FAILED(hr))
+        if (FAILED_LOG(hr))
         {
             goto Finished;
         }
@@ -1235,7 +1236,7 @@ FORWARDING_HANDLER::CreateWinHttpRequest(
                     pServerProcess,
                    &m_pszHeaders,
                    &m_cchHeaders);
-    if (FAILED(hr))
+    if (FAILED_LOG(hr))
     {
         goto Finished;
     }
@@ -1514,7 +1515,7 @@ None
     //
     // Handle failure code for switch statement above.
     //
-    if (FAILED(hr))
+    if (FAILED_LOG(hr))
     {
         goto Failure;
     }
@@ -1762,7 +1763,7 @@ FORWARDING_HANDLER::OnWinHttpCompletionSendRequestOrWriteComplete(
                 goto Finished;
             }
         }
-        else if (FAILED(hr))
+        else if (FAILED_LOG(hr))
         {
             *pfClientError = TRUE;
             goto Finished;
@@ -1842,7 +1843,7 @@ FORWARDING_HANDLER::OnWinHttpCompletionStatusHeadersAvailable(
         }
     }
 
-    if (FAILED(hr = strHeaders.CopyW(
+    if (FAILED_LOG(hr = strHeaders.CopyW(
         reinterpret_cast<PWSTR>(bufHeaderBuffer.QueryPtr()))))
     {
         goto Finished;
@@ -1859,13 +1860,13 @@ FORWARDING_HANDLER::OnWinHttpCompletionStatusHeadersAvailable(
     if (!strHeaders.IsEmpty() && strHeaders.QueryStr()[strHeaders.QueryCCH() - 1] != '\n')
     {
         hr = strHeaders.Append("\r\n");
-        if (FAILED(hr))
+        if (FAILED_LOG(hr))
         {
             goto Finished;
         }
     }
 
-    if (FAILED(hr = SetStatusAndHeaders(
+    if (FAILED_LOG(hr = SetStatusAndHeaders(
         strHeaders.QueryStr(),
         strHeaders.QueryCCH())))
     {
@@ -1890,7 +1891,7 @@ FORWARDING_HANDLER::OnWinHttpCompletionStatusHeadersAvailable(
             NULL,
             NULL);
 
-        if (FAILED(hr))
+        if (FAILED_LOG(hr))
         {
             *pfAnotherCompletionExpected = FALSE;
         }
@@ -2022,7 +2023,7 @@ FORWARDING_HANDLER::OnWinHttpCompletionStatusReadComplete(
         Chunk.DataChunkType = HttpDataChunkFromMemory;
         Chunk.FromMemory.pBuffer = m_pEntityBuffer;
         Chunk.FromMemory.BufferLength = dwStatusInformationLength;
-        if (FAILED(hr = pResponse->WriteEntityChunkByReference(&Chunk)))
+        if (FAILED_LOG(hr = pResponse->WriteEntityChunkByReference(&Chunk)))
         {
             goto Finished;
         }
@@ -2036,7 +2037,7 @@ FORWARDING_HANDLER::OnWinHttpCompletionStatusReadComplete(
         hr = pResponse->Flush(TRUE,     // fAsync
             TRUE,     // fMoreData
             NULL);    // pcbSent
-        if (FAILED(hr))
+        if (FAILED_LOG(hr))
         {
             goto Finished;
         }
@@ -2357,10 +2358,10 @@ FORWARDING_HANDLER::SetStatusAndHeaders(
         //
         // Copy the status description
         //
-        if (FAILED(hr = strHeaderValue.Copy(
+        if (FAILED_LOG(hr = strHeaderValue.Copy(
             pchStatus,
             (DWORD)(pchEndofHeaderValue - pchStatus) + 1)) ||
-            FAILED(hr = pResponse->SetStatus(uStatus,
+            FAILED_LOG(hr = pResponse->SetStatus(uStatus,
                 strHeaderValue.QueryStr(),
                 0,
                 S_OK,
@@ -2422,7 +2423,7 @@ FORWARDING_HANDLER::SetStatusAndHeaders(
         //
         // Copy the header name
         //
-        if (FAILED(hr = strHeaderName.Copy(
+        if (FAILED_LOG(hr = strHeaderName.Copy(
             pszHeaders + index,
             (DWORD)(pchEndofHeaderName - pszHeaders) - index)))
         {
@@ -2458,7 +2459,7 @@ FORWARDING_HANDLER::SetStatusAndHeaders(
         {
             strHeaderValue.Reset();
         }
-        else if (FAILED(hr = strHeaderValue.Copy(
+        else if (FAILED_LOG(hr = strHeaderValue.Copy(
             pszHeaders + index,
             (DWORD)(pchEndofHeaderValue - pszHeaders) - index)))
         {
@@ -2508,7 +2509,7 @@ FORWARDING_HANDLER::SetStatusAndHeaders(
                 static_cast<USHORT>(strHeaderValue.QueryCCH()),
                 TRUE); // fReplace
         }
-        if (FAILED(hr))
+        if (FAILED_LOG(hr))
         {
             return hr;
         }
@@ -2526,7 +2527,7 @@ FORWARDING_HANDLER::SetStatusAndHeaders(
     if (m_fDoReverseRewriteHeaders)
     {
         hr = DoReverseRewrite(pResponse);
-        if (FAILED(hr))
+        if (FAILED_LOG(hr))
         {
             return hr;
         }
@@ -2573,17 +2574,17 @@ FORWARDING_HANDLER::DoReverseRewrite(
 
         pszEndHost = strchr(pszStartHost, '/');
 
-        if (FAILED(hr = strTemp.Copy(fSecure ? "https://" : "http://")) ||
-            FAILED(hr = strTemp.Append(m_pszOriginalHostHeader)))
+        if (FAILED_LOG(hr = strTemp.Copy(fSecure ? "https://" : "http://")) ||
+            FAILED_LOG(hr = strTemp.Append(m_pszOriginalHostHeader)))
         {
             return hr;
         }
         if (pszEndHost != NULL &&
-            FAILED(hr = strTemp.Append(pszEndHost)))
+            FAILED_LOG(hr = strTemp.Append(pszEndHost)))
         {
             return hr;
         }
-        if (FAILED(hr = pResponse->SetHeader(HttpHeaderContentLocation,
+        if (FAILED_LOG(hr = pResponse->SetHeader(HttpHeaderContentLocation,
             strTemp.QueryStr(),
             static_cast<USHORT>(strTemp.QueryCCH()),
             TRUE)))
@@ -2612,17 +2613,17 @@ Location:
 
         pszEndHost = strchr(pszStartHost, '/');
 
-        if (FAILED(hr = strTemp.Copy(fSecure ? "https://" : "http://")) ||
-            FAILED(hr = strTemp.Append(m_pszOriginalHostHeader)))
+        if (FAILED_LOG(hr = strTemp.Copy(fSecure ? "https://" : "http://")) ||
+            FAILED_LOG(hr = strTemp.Append(m_pszOriginalHostHeader)))
         {
             return hr;
         }
         if (pszEndHost != NULL &&
-            FAILED(hr = strTemp.Append(pszEndHost)))
+            FAILED_LOG(hr = strTemp.Append(pszEndHost)))
         {
             return hr;
         }
-        if (FAILED(hr = pResponse->SetHeader(HttpHeaderLocation,
+        if (FAILED_LOG(hr = pResponse->SetHeader(HttpHeaderLocation,
             strTemp.QueryStr(),
             static_cast<USHORT>(strTemp.QueryCCH()),
             TRUE)))
@@ -2687,9 +2688,9 @@ SetCookie:
                 pszEndHost++;
             }
 
-            if (FAILED(hr = strTemp.Copy(pszHeader, static_cast<DWORD>(pszStartHost - pszHeader))) ||
-                FAILED(hr = strTemp.Append(m_pszOriginalHostHeader)) ||
-                FAILED(hr = strTemp.Append(pszEndHost)))
+            if (FAILED_LOG(hr = strTemp.Copy(pszHeader, static_cast<DWORD>(pszStartHost - pszHeader))) ||
+                FAILED_LOG(hr = strTemp.Append(m_pszOriginalHostHeader)) ||
+                FAILED_LOG(hr = strTemp.Append(pszEndHost)))
             {
                 return hr;
             }

@@ -4,6 +4,7 @@
 #include "outprocessapplication.h"
 
 #include "SRWExclusiveLock.h"
+#include "exceptions.h"
 
 OUT_OF_PROCESS_APPLICATION::OUT_OF_PROCESS_APPLICATION(
     IHttpApplication& pApplication,
@@ -30,25 +31,12 @@ HRESULT
 OUT_OF_PROCESS_APPLICATION::Initialize(
 )
 {
-    HRESULT hr = S_OK;
     if (m_pProcessManager == NULL)
     {
-        m_pProcessManager = new PROCESS_MANAGER;
-        if (m_pProcessManager == NULL)
-        {
-            hr = E_OUTOFMEMORY;
-            goto Finished;
-        }
-
-        hr = m_pProcessManager->Initialize();
-        if (FAILED(hr))
-        {
-            goto Finished;
-        }
+        m_pProcessManager = new PROCESS_MANAGER();
+        RETURN_IF_FAILED(m_pProcessManager->Initialize());
     }
-
-Finished:
-    return hr;
+    return S_OK;
 }
 
 HRESULT
@@ -76,7 +64,6 @@ OUT_OF_PROCESS_APPLICATION::CreateHandler(
     _In_  IHttpContext       *pHttpContext,
     _Out_ IREQUEST_HANDLER  **pRequestHandler)
 {
-    HRESULT hr = S_OK;
     IREQUEST_HANDLER* pHandler = NULL;
 
     //add websocket check here
@@ -86,14 +73,8 @@ OUT_OF_PROCESS_APPLICATION::CreateHandler(
     }
 
     pHandler = new FORWARDING_HANDLER(pHttpContext, this);
-
-    if (pHandler == NULL)
-    {
-        hr = HRESULT_FROM_WIN32(ERROR_OUTOFMEMORY);
-    }
-
     *pRequestHandler = pHandler;
-    return hr;
+    return S_OK;
 }
 
 VOID
@@ -105,10 +86,8 @@ OUT_OF_PROCESS_APPLICATION::SetWebsocketStatus(
     // the websocket module may still not be enabled.
     PCWSTR pszTempWebsocketValue;
     DWORD cbLength;
-    HRESULT hr;
 
-    hr = pHttpContext->GetServerVariable("WEBSOCKET_VERSION", &pszTempWebsocketValue, &cbLength);
-    if (FAILED(hr))
+    if (FAILED_LOG(pHttpContext->GetServerVariable("WEBSOCKET_VERSION", &pszTempWebsocketValue, &cbLength)))
     {
         m_fWebSocketSupported = WEBSOCKET_STATUS::WEBSOCKET_NOT_SUPPORTED;
     }

@@ -121,28 +121,29 @@ EnsureOutOfProcessInitializtion()
     DBG_ASSERT(g_pHttpServer);
 
     HRESULT hr = S_OK;
-    BOOL    fLocked = FALSE;
 
     if (g_fOutOfProcessInitializeError)
     {
-        hr = E_NOT_VALID_STATE;
-        goto Finished;
+        FINISHED(E_NOT_VALID_STATE);
     }
 
-    if (!g_fOutOfProcessInitialize)
+    if (g_fOutOfProcessInitialize)
     {
-        AcquireSRWLockExclusive(&g_srwLockRH);
-        fLocked = TRUE;
+        FINISHED(S_OK);
+    }
+
+    {
+        auto lock = SRWExclusiveLock(g_srwLockRH);
+
         if (g_fOutOfProcessInitializeError)
         {
-            hr = E_NOT_VALID_STATE;
-            goto Finished;
+            FINISHED(E_NOT_VALID_STATE);
         }
 
         if (g_fOutOfProcessInitialize)
         {
             // Done by another thread
-            goto Finished;
+            FINISHED(S_OK);
         }
 
         g_hWinHttpModule = GetModuleHandle(TEXT("winhttp.dll"));
@@ -150,7 +151,7 @@ EnsureOutOfProcessInitializtion()
         g_hAspNetCoreModule = GetModuleHandle(TEXT("aspnetcorev2.dll"));
 
         hr = WINHTTP_HELPER::StaticInitialize();
-        if (FAILED(hr))
+        if (FAILED_LOG(hr))
         {
             if (hr == HRESULT_FROM_WIN32(ERROR_PROC_NOT_FOUND))
             {
@@ -158,7 +159,7 @@ EnsureOutOfProcessInitializtion()
             }
             else
             {
-                goto Finished;
+                FINISHED(hr);
             }
         }
 
@@ -167,11 +168,7 @@ EnsureOutOfProcessInitializtion()
             WINHTTP_NO_PROXY_NAME,
             WINHTTP_NO_PROXY_BYPASS,
             WINHTTP_FLAG_ASYNC);
-        if (g_hWinhttpSession == NULL)
-        {
-            hr = HRESULT_FROM_WIN32(GetLastError());
-            goto Finished;
-        }
+        FINISHED_LAST_ERROR_IF(g_hWinhttpSession == NULL);
 
         //
         // Don't set non-blocking callbacks WINHTTP_OPTION_ASSURED_NON_BLOCKING_CALLBACKS,
@@ -182,64 +179,32 @@ EnsureOutOfProcessInitializtion()
         //
         // Setup the callback function
         //
-        if (WinHttpSetStatusCallback(g_hWinhttpSession,
+        FINISHED_LAST_ERROR_IF(WinHttpSetStatusCallback(g_hWinhttpSession,
             FORWARDING_HANDLER::OnWinHttpCompletion,
             (WINHTTP_CALLBACK_FLAG_ALL_COMPLETIONS |
                 WINHTTP_CALLBACK_STATUS_SENDING_REQUEST),
-            NULL) == WINHTTP_INVALID_STATUS_CALLBACK)
-        {
-            hr = HRESULT_FROM_WIN32(GetLastError());
-            goto Finished;
-        }
+            NULL) == WINHTTP_INVALID_STATUS_CALLBACK);
 
         //
         // Make sure we see the redirects (rather than winhttp doing it
         // automatically)
         //
         DWORD dwRedirectOption = WINHTTP_OPTION_REDIRECT_POLICY_NEVER;
-        if (!WinHttpSetOption(g_hWinhttpSession,
+        FINISHED_LAST_ERROR_IF(!WinHttpSetOption(g_hWinhttpSession,
             WINHTTP_OPTION_REDIRECT_POLICY,
             &dwRedirectOption,
-            sizeof(dwRedirectOption)))
-        {
-            hr = HRESULT_FROM_WIN32(GetLastError());
-            goto Finished;
-        }
+            sizeof(dwRedirectOption)));
 
         g_dwTlsIndex = TlsAlloc();
-        if (g_dwTlsIndex == TLS_OUT_OF_INDEXES)
-        {
-            hr = HRESULT_FROM_WIN32(GetLastError());
-            goto Finished;
-        }
-
-        hr = ALLOC_CACHE_HANDLER::StaticInitialize();
-        if (FAILED(hr))
-        {
-            goto Finished;
-        }
-
-        hr = FORWARDING_HANDLER::StaticInitialize(g_fEnableReferenceCountTracing);
-        if (FAILED(hr))
-        {
-            goto Finished;
-        }
-
-        hr = WEBSOCKET_HANDLER::StaticInitialize(g_fEnableReferenceCountTracing);
-        if (FAILED(hr))
-        {
-            goto Finished;
-        }
+        FINISHED_LAST_ERROR_IF(g_dwTlsIndex == TLS_OUT_OF_INDEXES);
+        FINISHED_IF_FAILED(ALLOC_CACHE_HANDLER::StaticInitialize());
+        FINISHED_IF_FAILED(FORWARDING_HANDLER::StaticInitialize(g_fEnableReferenceCountTracing));
+        FINISHED_IF_FAILED(WEBSOCKET_HANDLER::StaticInitialize(g_fEnableReferenceCountTracing));
     }
-
 Finished:
     if (FAILED(hr))
     {
         g_fOutOfProcessInitializeError = TRUE;
-    }
-    if (fLocked)
-    {
-        ReleaseSRWLockExclusive(&g_srwLockRH);
     }
     return hr;
 }
