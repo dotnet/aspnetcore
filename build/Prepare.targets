@@ -19,7 +19,7 @@
     <ItemGroup>
       <UnsignedPackages Include="$(UnsignedPackagesDir)*.nupkg" />
       <UnsignedVSIX Include="$(DepsDirectory)build\*.vsix" />
-      <UnsignedSharedFx Include="$(DepsDirectory)assets\Runtime\*\*.zip" />
+      <UnsignedSharedFx Include="$(DepsDirectory)runtime\*.zip" />
       <UnsignedOobArchive Include="$(DepsDirectory)build\AspNetCoreModule.zip" Condition="Exists('$(DepsDirectory)build\AspNetCoreModule.zip')" />
       <UnsignedOobArchive Include="$(DepsDirectory)build\runtime-site-extension-*.zip" />
       <PoliCheckPackages Include="@(UnsignedPackages)" />
