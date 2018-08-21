@@ -29,6 +29,11 @@
     <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="$(RazorPackageVersion)"/>
   </ItemGroup>
 
+  <!-- This is used as a P2P when building the repo. Normal Blazor projects will get this as a reference through the Blazor.Build package -->
+  <ItemGroup>
+    <ProjectReference Include="$(MSBuildThisFileDirectory)..\Microsoft.AspNetCore.Blazor.TagHelperWorkaround\Microsoft.AspNetCore.Blazor.TagHelperWorkaround.csproj" PrivateAssets="all" />
+  </ItemGroup>
+
   <Target
     Name="BuildBlazorBuildBinary"
     BeforeTargets="BlazorGenerateDeclaration">

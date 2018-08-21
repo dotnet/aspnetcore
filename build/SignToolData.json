@@ -7,6 +7,7 @@
         "bin/Microsoft.AspNetCore.Blazor.Browser.JS/netcoreapp2.1/Microsoft.AspNetCore.Blazor.Browser.JS.dll",
         "bin/Microsoft.AspNetCore.Blazor.Browser/netstandard2.0/Microsoft.AspNetCore.Blazor.Browser.dll",
         "bin/Microsoft.AspNetCore.Blazor.Server/netstandard2.0/Microsoft.AspNetCore.Blazor.Server.dll",
+        "bin/Microsoft.AspNetCore.Blazor.TagHelperWorkaround/netstandard1.0/Microsoft.AspNetCore.Blazor.TagHelperWorkaround.dll",
         "bin/Microsoft.AspNetCore.Blazor.Build/netcoreapp2.1/Microsoft.AspNetCore.Blazor.Build.dll",
         "bin/Microsoft.AspNetCore.Blazor.Cli/netcoreapp2.1/dotnet-blazor.dll",
         "bin/Microsoft.AspNetCore.Blazor.Razor.Extensions/net461/Microsoft.AspNetCore.Blazor.Razor.Extensions.dll",
