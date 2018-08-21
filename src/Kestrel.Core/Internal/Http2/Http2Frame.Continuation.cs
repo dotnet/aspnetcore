@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public void PrepareContinuation(Http2ContinuationFrameFlags flags, int streamId)
         {
-            PayloadLength = MinAllowedMaxFrameSize - HeaderLength;
+            PayloadLength = (int)_maxFrameSize;
             Type = Http2FrameType.CONTINUATION;
             ContinuationFlags = flags;
             StreamId = streamId;

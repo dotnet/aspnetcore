@@ -575,4 +575,7 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
   <data name="Http2FrameMissingFields" xml:space="preserve">
     <value>The frame is too short to contain the fields indicated by the given flags.</value>
   </data>
+  <data name="ArgumentOutOfRange" xml:space="preserve">
+    <value>A value between {min} and {max} is required.</value>
+  </data>
 </root>

@@ -18,8 +18,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
     */
     public partial class Http2Frame
     {
-        public const int MinAllowedMaxFrameSize = 16 * 1024;
-        public const int MaxAllowedMaxFrameSize = 16 * 1024 * 1024 - 1;
         public const int HeaderLength = 9;
 
         private const int LengthOffset = 0;
@@ -28,7 +26,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private const int StreamIdOffset = 5;
         private const int PayloadOffset = 9;
 
-        private readonly byte[] _data = new byte[HeaderLength + MinAllowedMaxFrameSize];
+        private uint _maxFrameSize;
+
+        private readonly byte[] _data;
+
+        public Http2Frame(uint maxFrameSize)
+        {
+            _maxFrameSize = maxFrameSize;
+            _data = new byte[HeaderLength + _maxFrameSize];
+        }
 
         public Span<byte> Raw => new Span<byte>(_data, 0, HeaderLength + PayloadLength);
 

@@ -141,7 +141,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             _echoApplication = async context =>
             {
-                var buffer = new byte[Http2Frame.MinAllowedMaxFrameSize];
+                var buffer = new byte[Http2Limits.MinAllowedMaxFrameSize];
                 var received = 0;
 
                 while ((received = await context.Request.Body.ReadAsync(buffer, 0, buffer.Length)) > 0)
@@ -152,7 +152,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             _echoWaitForAbortApplication = async context =>
             {
-                var buffer = new byte[Http2Frame.MinAllowedMaxFrameSize];
+                var buffer = new byte[Http2Limits.MinAllowedMaxFrameSize];
                 var received = 0;
 
                 while ((received = await context.Request.Body.ReadAsync(buffer, 0, buffer.Length)) > 0)
@@ -307,7 +307,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _decodedHeaders[name.GetAsciiStringNonNullCharacters()] = value.GetAsciiStringNonNullCharacters();
         }
 
-        protected async Task InitializeConnectionAsync(RequestDelegate application)
+        protected async Task InitializeConnectionAsync(RequestDelegate application, int expectedSettingsLegnth = 6)
         {
             _connectionTask = _connection.ProcessRequestsAsync(new DummyApplication(application));
 
@@ -315,7 +315,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await SendSettingsAsync();
 
             await ExpectAsync(Http2FrameType.SETTINGS,
-                withLength: 6,
+                withLength: expectedSettingsLegnth,
                 withFlags: 0,
                 withStreamId: 0);
 
@@ -330,7 +330,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             _runningStreams[streamId] = tcs;
 
-            var frame = new Http2Frame();
+            var frame = new Http2Frame(Http2Limits.MinAllowedMaxFrameSize);
             frame.PrepareHeaders(Http2HeadersFrameFlags.NONE, streamId);
             var done = _hpackEncoder.BeginEncode(headers, frame.HeadersPayload, out var length);
             frame.PayloadLength = length;
@@ -367,7 +367,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             _runningStreams[streamId] = tcs;
 
-            var frame = new Http2Frame();
+            var frame = new Http2Frame(Http2Limits.MinAllowedMaxFrameSize);
 
             frame.PrepareHeaders(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.PADDED, streamId);
             frame.HeadersPadLength = padLength;
@@ -390,7 +390,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             _runningStreams[streamId] = tcs;
 
-            var frame = new Http2Frame();
+            var frame = new Http2Frame(Http2Limits.MinAllowedMaxFrameSize);
             frame.PrepareHeaders(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.PRIORITY, streamId);
             frame.HeadersPriorityWeight = priority;
             frame.HeadersStreamDependency = streamDependency;
@@ -412,7 +412,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             _runningStreams[streamId] = tcs;
 
-            var frame = new Http2Frame();
+            var frame = new Http2Frame(Http2Limits.MinAllowedMaxFrameSize);
             frame.PrepareHeaders(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.PADDED | Http2HeadersFrameFlags.PRIORITY, streamId);
             frame.HeadersPadLength = padLength;
             frame.HeadersPriorityWeight = priority;
@@ -452,14 +452,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         protected Task SendSettingsAsync()
         {
-            var frame = new Http2Frame();
+            var frame = new Http2Frame(Http2Limits.MinAllowedMaxFrameSize);
             frame.PrepareSettings(Http2SettingsFrameFlags.NONE, _clientSettings.GetNonProtocolDefaults());
             return SendAsync(frame.Raw);
         }
 
         protected Task SendSettingsAckWithInvalidLengthAsync(int length)
         {
-            var frame = new Http2Frame();
+            var frame = new Http2Frame(Http2Limits.MinAllowedMaxFrameSize);
             frame.PrepareSettings(Http2SettingsFrameFlags.ACK);
             frame.PayloadLength = length;
             return SendAsync(frame.Raw);
@@ -467,7 +467,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         protected Task SendSettingsWithInvalidStreamIdAsync(int streamId)
         {
-            var frame = new Http2Frame();
+            var frame = new Http2Frame(Http2Limits.MinAllowedMaxFrameSize);
             frame.PrepareSettings(Http2SettingsFrameFlags.NONE, _clientSettings.GetNonProtocolDefaults());
             frame.StreamId = streamId;
             return SendAsync(frame.Raw);
@@ -475,7 +475,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         protected Task SendSettingsWithInvalidLengthAsync(int length)
         {
-            var frame = new Http2Frame();
+            var frame = new Http2Frame(Http2Limits.MinAllowedMaxFrameSize);
             frame.PrepareSettings(Http2SettingsFrameFlags.NONE, _clientSettings.GetNonProtocolDefaults());
             frame.PayloadLength = length;
             return SendAsync(frame.Raw);
@@ -483,7 +483,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         protected Task SendSettingsWithInvalidParameterValueAsync(Http2SettingsParameter parameter, uint value)
         {
-            var frame = new Http2Frame();
+            var frame = new Http2Frame(Http2Limits.MinAllowedMaxFrameSize);
             frame.PrepareSettings(Http2SettingsFrameFlags.NONE);
             frame.PayloadLength = 6;
 
@@ -499,7 +499,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         protected Task SendPushPromiseFrameAsync()
         {
-            var frame = new Http2Frame();
+            var frame = new Http2Frame(Http2Limits.MinAllowedMaxFrameSize);
             frame.PayloadLength = 0;
             frame.Type = Http2FrameType.PUSH_PROMISE;
             frame.StreamId = 1;
@@ -508,7 +508,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         protected async Task<bool> SendHeadersAsync(int streamId, Http2HeadersFrameFlags flags, IEnumerable<KeyValuePair<string, string>> headers)
         {
-            var frame = new Http2Frame();
+            var frame = new Http2Frame(Http2Limits.MinAllowedMaxFrameSize);
 
             frame.PrepareHeaders(flags, streamId);
             var done = _hpackEncoder.BeginEncode(headers, frame.Payload, out var length);
@@ -521,7 +521,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         protected Task SendHeadersAsync(int streamId, Http2HeadersFrameFlags flags, byte[] headerBlock)
         {
-            var frame = new Http2Frame();
+            var frame = new Http2Frame(Http2Limits.MinAllowedMaxFrameSize);
 
             frame.PrepareHeaders(flags, streamId);
             frame.PayloadLength = headerBlock.Length;
@@ -534,7 +534,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             Assert.True(padLength >= payloadLength, $"{nameof(padLength)} must be greater than or equal to {nameof(payloadLength)} to create an invalid frame.");
 
-            var frame = new Http2Frame();
+            var frame = new Http2Frame(Http2Limits.MinAllowedMaxFrameSize);
 
             frame.PrepareHeaders(Http2HeadersFrameFlags.PADDED, streamId);
             frame.Payload[0] = padLength;
@@ -547,7 +547,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         protected Task SendIncompleteHeadersFrameAsync(int streamId)
         {
-            var frame = new Http2Frame();
+            var frame = new Http2Frame(Http2Limits.MinAllowedMaxFrameSize);
 
             frame.PrepareHeaders(Http2HeadersFrameFlags.END_HEADERS, streamId);
             frame.PayloadLength = 3;
@@ -563,7 +563,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         protected async Task<bool> SendContinuationAsync(int streamId, Http2ContinuationFrameFlags flags)
         {
-            var frame = new Http2Frame();
+            var frame = new Http2Frame(Http2Limits.MinAllowedMaxFrameSize);
 
             frame.PrepareContinuation(flags, streamId);
             var done = _hpackEncoder.Encode(frame.Payload, out var length);
@@ -576,7 +576,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         protected async Task SendContinuationAsync(int streamId, Http2ContinuationFrameFlags flags, byte[] payload)
         {
-            var frame = new Http2Frame();
+            var frame = new Http2Frame(Http2Limits.MinAllowedMaxFrameSize);
 
             frame.PrepareContinuation(flags, streamId);
             frame.PayloadLength = payload.Length;
@@ -587,7 +587,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         protected Task SendEmptyContinuationFrameAsync(int streamId, Http2ContinuationFrameFlags flags)
         {
-            var frame = new Http2Frame();
+            var frame = new Http2Frame(Http2Limits.MinAllowedMaxFrameSize);
 
             frame.PrepareContinuation(flags, streamId);
             frame.PayloadLength = 0;
@@ -597,7 +597,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         protected Task SendIncompleteContinuationFrameAsync(int streamId)
         {
-            var frame = new Http2Frame();
+            var frame = new Http2Frame(Http2Limits.MinAllowedMaxFrameSize);
 
             frame.PrepareContinuation(Http2ContinuationFrameFlags.END_HEADERS, streamId);
             frame.PayloadLength = 3;
@@ -613,7 +613,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         protected Task SendDataAsync(int streamId, Span<byte> data, bool endStream)
         {
-            var frame = new Http2Frame();
+            var frame = new Http2Frame((uint)data.Length);
 
             frame.PrepareData(streamId);
             frame.PayloadLength = data.Length;
@@ -625,7 +625,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         protected Task SendDataWithPaddingAsync(int streamId, Span<byte> data, byte padLength, bool endStream)
         {
-            var frame = new Http2Frame();
+            var frame = new Http2Frame(Http2Limits.MinAllowedMaxFrameSize);
 
             frame.PrepareData(streamId, padLength);
             frame.PayloadLength = data.Length + 1 + padLength;
@@ -643,7 +643,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             Assert.True(padLength >= frameLength, $"{nameof(padLength)} must be greater than or equal to {nameof(frameLength)} to create an invalid frame.");
 
-            var frame = new Http2Frame();
+            var frame = new Http2Frame(Http2Limits.MinAllowedMaxFrameSize);
 
             frame.PrepareData(streamId);
             frame.DataFlags = Http2DataFrameFlags.PADDED;
@@ -657,14 +657,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         protected Task SendPingAsync(Http2PingFrameFlags flags)
         {
-            var pingFrame = new Http2Frame();
+            var pingFrame = new Http2Frame(Http2Limits.MinAllowedMaxFrameSize);
             pingFrame.PreparePing(flags);
             return SendAsync(pingFrame.Raw);
         }
 
         protected Task SendPingWithInvalidLengthAsync(int length)
         {
-            var pingFrame = new Http2Frame();
+            var pingFrame = new Http2Frame(Http2Limits.MinAllowedMaxFrameSize);
             pingFrame.PreparePing(Http2PingFrameFlags.NONE);
             pingFrame.PayloadLength = length;
             return SendAsync(pingFrame.Raw);
@@ -674,7 +674,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             Assert.NotEqual(0, streamId);
 
-            var pingFrame = new Http2Frame();
+            var pingFrame = new Http2Frame(Http2Limits.MinAllowedMaxFrameSize);
             pingFrame.PreparePing(Http2PingFrameFlags.NONE);
             pingFrame.StreamId = streamId;
             return SendAsync(pingFrame.Raw);
@@ -682,14 +682,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         protected Task SendPriorityAsync(int streamId, int streamDependency = 0)
         {
-            var priorityFrame = new Http2Frame();
+            var priorityFrame = new Http2Frame(Http2Limits.MinAllowedMaxFrameSize);
             priorityFrame.PreparePriority(streamId, streamDependency: streamDependency, exclusive: false, weight: 0);
             return SendAsync(priorityFrame.Raw);
         }
 
         protected Task SendInvalidPriorityFrameAsync(int streamId, int length)
         {
-            var priorityFrame = new Http2Frame();
+            var priorityFrame = new Http2Frame(Http2Limits.MinAllowedMaxFrameSize);
             priorityFrame.PreparePriority(streamId, streamDependency: 0, exclusive: false, weight: 0);
             priorityFrame.PayloadLength = length;
             return SendAsync(priorityFrame.Raw);
@@ -697,14 +697,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         protected Task SendRstStreamAsync(int streamId)
         {
-            var rstStreamFrame = new Http2Frame();
+            var rstStreamFrame = new Http2Frame(Http2Limits.MinAllowedMaxFrameSize);
             rstStreamFrame.PrepareRstStream(streamId, Http2ErrorCode.CANCEL);
             return SendAsync(rstStreamFrame.Raw);
         }
 
         protected Task SendInvalidRstStreamFrameAsync(int streamId, int length)
         {
-            var frame = new Http2Frame();
+            var frame = new Http2Frame(Http2Limits.MinAllowedMaxFrameSize);
             frame.PrepareRstStream(streamId, Http2ErrorCode.CANCEL);
             frame.PayloadLength = length;
             return SendAsync(frame.Raw);
@@ -712,14 +712,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         protected Task SendGoAwayAsync()
         {
-            var frame = new Http2Frame();
+            var frame = new Http2Frame(Http2Limits.MinAllowedMaxFrameSize);
             frame.PrepareGoAway(0, Http2ErrorCode.NO_ERROR);
             return SendAsync(frame.Raw);
         }
 
         protected Task SendInvalidGoAwayFrameAsync()
         {
-            var frame = new Http2Frame();
+            var frame = new Http2Frame(Http2Limits.MinAllowedMaxFrameSize);
             frame.PrepareGoAway(0, Http2ErrorCode.NO_ERROR);
             frame.StreamId = 1;
             return SendAsync(frame.Raw);
@@ -727,14 +727,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         protected Task SendWindowUpdateAsync(int streamId, int sizeIncrement)
         {
-            var frame = new Http2Frame();
+            var frame = new Http2Frame(Http2Limits.MinAllowedMaxFrameSize);
             frame.PrepareWindowUpdate(streamId, sizeIncrement);
             return SendAsync(frame.Raw);
         }
 
         protected Task SendInvalidWindowUpdateAsync(int streamId, int sizeIncrement, int length)
         {
-            var frame = new Http2Frame();
+            var frame = new Http2Frame(Http2Limits.MinAllowedMaxFrameSize);
             frame.PrepareWindowUpdate(streamId, sizeIncrement);
             frame.PayloadLength = length;
             return SendAsync(frame.Raw);
@@ -742,16 +742,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         protected Task SendUnknownFrameTypeAsync(int streamId, int frameType)
         {
-            var frame = new Http2Frame();
+            var frame = new Http2Frame(Http2Limits.MinAllowedMaxFrameSize);
             frame.StreamId = streamId;
             frame.Type = (Http2FrameType)frameType;
             frame.PayloadLength = 0;
             return SendAsync(frame.Raw);
         }
 
-        protected async Task<Http2Frame> ReceiveFrameAsync()
+        protected async Task<Http2Frame> ReceiveFrameAsync(uint maxFrameSize = Http2PeerSettings.DefaultMaxFrameSize)
         {
-            var frame = new Http2Frame();
+            var frame = new Http2Frame(maxFrameSize);
 
             while (true)
             {
@@ -764,7 +764,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 {
                     Assert.True(buffer.Length > 0);
 
-                    if (Http2FrameReader.ReadFrame(buffer, frame, 16_384, out consumed, out examined))
+                    if (Http2FrameReader.ReadFrame(buffer, frame, maxFrameSize, out consumed, out examined))
                     {
                         return frame;
                     }
@@ -783,7 +783,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         protected async Task<Http2Frame> ExpectAsync(Http2FrameType type, int withLength, byte withFlags, int withStreamId)
         {
-            var frame = await ReceiveFrameAsync();
+            var frame = await ReceiveFrameAsync((uint)withLength);
 
             Assert.Equal(type, frame.Type);
             Assert.Equal(withLength, frame.PayloadLength);
