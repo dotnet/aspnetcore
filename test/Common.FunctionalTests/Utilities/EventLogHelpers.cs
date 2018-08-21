@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Microsoft.Extensions.Logging.Testing;
@@ -14,17 +16,16 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         {
             Assert.True(deploymentResult.HostProcess.HasExited);
 
-            var eventLogRegex = new Regex($"Event Log: {expectedRegexMatchString}");
+            var builder = new StringBuilder();
 
-            int count = 0;
             foreach (var context in testSink.Writes)
             {
-                if (eventLogRegex.IsMatch(context.Message))
-                {
-                    count++;
-                }
+                builder.Append(context.Message);
             }
-            Assert.Equal(1, count);
+
+            var eventLogRegex = new Regex($"Event Log: (.*?){expectedRegexMatchString}(.*?)End Event Log Message.", RegexOptions.Singleline);
+
+            Assert.Matches(eventLogRegex, builder.ToString());
         }
     }
 }

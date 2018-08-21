@@ -37,7 +37,6 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                 ServerConfigActionList = tempParameters.ServerConfigActionList;
                 WebConfigBasedEnvironmentVariables = tempParameters.WebConfigBasedEnvironmentVariables;
                 HandlerSettings = tempParameters.HandlerSettings;
-                GracefulShutdown = tempParameters.GracefulShutdown;
             }
         }
 
@@ -48,8 +47,6 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
         public IDictionary<string, string> WebConfigBasedEnvironmentVariables { get; set; } = new Dictionary<string, string>();
 
         public IDictionary<string, string> HandlerSettings { get; set; } = new Dictionary<string, string>();
-
-        public bool GracefulShutdown { get; set; }
 
     }
 }

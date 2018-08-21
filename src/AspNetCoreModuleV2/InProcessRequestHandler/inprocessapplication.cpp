@@ -102,12 +102,6 @@ IN_PROCESS_APPLICATION::StopInternal(bool fServerInitiated)
         }
     }
 
-    if (m_pLoggerProvider != NULL)
-    {
-        delete m_pLoggerProvider;
-        m_pLoggerProvider = NULL;
-    }
-
 Finished:
 
     if (FAILED(hr))
@@ -256,24 +250,7 @@ IN_PROCESS_APPLICATION::LoadManagedApplication
     }
 
     {
-        // Set up stdout redirect
-
         SRWExclusiveLock lock(m_stateLock);
-        if (m_pLoggerProvider == NULL)
-        {
-            hr =  LoggingHelpers::CreateLoggingProvider(
-                m_pConfig->QueryStdoutLogEnabled(),
-                !GetConsoleWindow(),
-                m_pConfig->QueryStdoutLogFile()->QueryStr(),
-                m_pConfig->QueryApplicationPhysicalPath()->QueryStr(),
-                &m_pLoggerProvider);
-            if (FAILED(hr))
-            {
-                goto Finished;
-            }
-
-            LOG_IF_FAILED(m_pLoggerProvider->Start());
-        }
 
         if (m_status != MANAGED_APPLICATION_STATUS::STARTING)
         {
@@ -461,6 +438,20 @@ IN_PROCESS_APPLICATION::ExecuteApplication(
         FINISHED_IF_FAILED(SetEnvironementVariablesOnWorkerProcess());
     }
 
+    LOG_INFO("Starting managed application");
+
+    if (m_pLoggerProvider == NULL)
+    {
+        FINISHED_IF_FAILED(hr = LoggingHelpers::CreateLoggingProvider(
+            m_pConfig->QueryStdoutLogEnabled(),
+            !m_pHttpServer.IsCommandLineLaunch(),
+            m_pConfig->QueryStdoutLogFile()->QueryStr(),
+            m_pConfig->QueryApplicationPhysicalPath()->QueryStr(),
+            m_pLoggerProvider));
+
+        LOG_IF_FAILED(m_pLoggerProvider->Start());
+    }
+
     // There can only ever be a single instance of .NET Core
     // loaded in the process but we need to get config information to boot it up in the
     // first place. This is happening in an execute request handler and everyone waits
@@ -482,7 +473,7 @@ Finished:
     //
     m_status = MANAGED_APPLICATION_STATUS::SHUTDOWN;
     m_fShutdownCalledFromManaged = TRUE;
-    FreeLibrary(hModule);
+
     m_pLoggerProvider->Stop();
 
     if (!m_fShutdownCalledFromNative)
@@ -545,7 +536,6 @@ IN_PROCESS_APPLICATION::RunDotnetApplication(DWORD argc, CONST PCWSTR* argv, hos
 
     __try
     {
-        LOG_INFO("Starting managed application");
         m_ProcessExitCode = pProc(argc, argv);
         if (m_ProcessExitCode != 0)
         {

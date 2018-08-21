@@ -151,5 +151,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                 .GetOrAdd("add", "name", ancmVersion)
                 .SetAttributeValue("image", GetAncmLocation(DeploymentParameters.AncmVersion));
         }
+
+        public abstract void Dispose(bool gracefulShutdown);
     }
 }

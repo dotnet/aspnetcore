@@ -42,22 +42,21 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         public async Task GracefulShutdown_DoesNotCrashProcess()
         {
             var parameters = _fixture.GetBaseDeploymentParameters(publish: true);
-            parameters.GracefulShutdown = true;
             var result = await DeployAsync(parameters);
 
             var response = await result.HttpClient.GetAsync("/HelloWorld");
-            StopServer();
+            StopServer(gracefulShutdown: true);
             Assert.True(result.HostProcess.ExitCode == 0);
         }
 
         [ConditionalFact]
-        public async Task ForcefulShutdown_DoesrashProcess()
+        public async Task ForcefulShutdown_DoesCrashProcess()
         {
             var parameters = _fixture.GetBaseDeploymentParameters(publish: true);
             var result = await DeployAsync(parameters);
 
             var response = await result.HttpClient.GetAsync("/HelloWorld");
-            StopServer();
+            StopServer(gracefulShutdown: false);
             Assert.True(result.HostProcess.ExitCode == 1);
         }
     }

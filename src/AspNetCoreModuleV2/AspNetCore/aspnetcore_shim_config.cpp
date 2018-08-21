@@ -29,7 +29,7 @@ ASPNETCORE_SHIM_CONFIG::Populate(
         CS_ASPNETCORE_PROCESS_EXE_PATH,
         &m_struProcessPath));
 
-    // Swallow this error for backward compatability
+    // Swallow this error for backward compatibility
     // Use default behavior for empty string
     GetElementStringProperty(pAspNetCoreElement,
         CS_ASPNETCORE_HOSTING_MODEL,
@@ -61,6 +61,14 @@ ASPNETCORE_SHIM_CONFIG::Populate(
     {
         RETURN_IF_FAILED(ConfigUtility::FindHandlerVersion(pAspNetCoreElement, m_struHandlerVersion));
     }
+
+
+    RETURN_IF_FAILED(GetElementBoolProperty(pAspNetCoreElement,
+        CS_ASPNETCORE_STDOUT_LOG_ENABLED,
+        &m_fStdoutLogEnabled));
+    RETURN_IF_FAILED(GetElementStringProperty(pAspNetCoreElement,
+        CS_ASPNETCORE_STDOUT_LOG_FILE,
+        &m_struStdoutLogFile));
 
     return S_OK;
 }

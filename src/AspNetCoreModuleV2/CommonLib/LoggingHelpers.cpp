@@ -7,14 +7,18 @@
 #include "FileOutputManager.h"
 #include "PipeOutputManager.h"
 #include "NullOutputManager.h"
+#include "debugutil.h"
+#include <Windows.h>
+#include <io.h>
+#include "ntassert.h"
 
 HRESULT
 LoggingHelpers::CreateLoggingProvider(
     bool fIsLoggingEnabled,
-    bool fEnablePipe,
+    bool fEnableNativeLogging,
     PCWSTR pwzStdOutFileName,
     PCWSTR pwzApplicationPath,
-    _Out_ IOutputManager** outputManager
+    std::unique_ptr<IOutputManager>& outputManager
 )
 {
     HRESULT hr = S_OK;
@@ -25,17 +29,17 @@ LoggingHelpers::CreateLoggingProvider(
     {
         if (fIsLoggingEnabled)
         {
-            FileOutputManager* manager = new FileOutputManager;
+            auto manager = std::make_unique<FileOutputManager>(fEnableNativeLogging);
             hr = manager->Initialize(pwzStdOutFileName, pwzApplicationPath);
-            *outputManager = manager;
+            outputManager = std::move(manager);
         }
-        else if (fEnablePipe)
+        else if (!GetConsoleWindow())
         {
-            *outputManager = new PipeOutputManager;
+            outputManager = std::make_unique<PipeOutputManager>(fEnableNativeLogging);
         }
         else
         {
-            *outputManager = new NullOutputManager;
+            outputManager = std::make_unique<NullOutputManager>();
         }
     }
     catch (std::bad_alloc&)

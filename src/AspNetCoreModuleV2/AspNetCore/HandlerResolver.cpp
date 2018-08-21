@@ -10,6 +10,8 @@
 #include "GlobalVersionUtility.h"
 #include "HandleWrapper.h"
 #include "file_utility.h"
+#include "LoggingHelpers.h"
+#include "resources.h"
 
 const PCWSTR HandlerResolver::s_pwzAspnetcoreInProcessRequestHandlerName = L"aspnetcorev2_inprocess.dll";
 const PCWSTR HandlerResolver::s_pwzAspnetcoreOutOfProcessRequestHandlerName = L"aspnetcorev2_outofprocess.dll";
@@ -46,6 +48,7 @@ HandlerResolver::LoadRequestHandlerAssembly(IHttpApplication &pApplication, STRU
         if (pConfiguration->QueryHostingModel() == APP_HOSTING_MODEL::HOSTING_IN_PROCESS)
         {
             std::unique_ptr<HOSTFXR_OPTIONS> options;
+            std::unique_ptr<IOutputManager> outputManager;
 
             RETURN_IF_FAILED(HOSTFXR_OPTIONS::Create(
                 NULL,
@@ -56,14 +59,35 @@ HandlerResolver::LoadRequestHandlerAssembly(IHttpApplication &pApplication, STRU
 
             RETURN_IF_FAILED(location.Copy(options->GetExeLocation()));
 
-            if (FAILED_LOG(hr = FindNativeAssemblyFromHostfxr(options.get(), pstrHandlerDllName, &struFileName)))
-            {
-                EventLog::Error(
-                    ASPNETCORE_EVENT_INPROCESS_RH_MISSING,
-                    ASPNETCORE_EVENT_INPROCESS_RH_MISSING_MSG,
-                    struFileName.IsEmpty() ? s_pwzAspnetcoreInProcessRequestHandlerName : struFileName.QueryStr());
+            RETURN_IF_FAILED(LoggingHelpers::CreateLoggingProvider(
+                pConfiguration->QueryStdoutLogEnabled(),
+                !m_pServer.IsCommandLineLaunch(),
+                pConfiguration->QueryStdoutLogFile()->QueryStr(),
+                pApplication.GetApplicationPhysicalPath(),
+                outputManager));
 
-                return hr;
+            outputManager->Start();
+
+            hr = FindNativeAssemblyFromHostfxr(options.get(), pstrHandlerDllName, &struFileName);
+            outputManager->Stop();
+
+            if (FAILED(hr) && m_hHostFxrDll != NULL)
+            {
+                STRA content;
+                STRU struStdMsg;
+
+                outputManager->GetStdOutContent(&content);
+                if (content.QueryCCH() > 0)
+                {
+                    struStdMsg.CopyA(content.QueryStr());
+                }
+
+                EventLog::Error(
+                    ASPNETCORE_EVENT_GENERAL_ERROR,
+                    ASPNETCORE_EVENT_INPROCESS_RH_ERROR_MSG,
+                    struFileName.IsEmpty() ? s_pwzAspnetcoreInProcessRequestHandlerName : struFileName.QueryStr(),
+                    struStdMsg.QueryStr());
+
             }
         }
         else
@@ -188,12 +212,23 @@ HandlerResolver::FindNativeAssemblyFromHostfxr(
     BOOL        fFound = FALSE;
     DWORD       dwBufferSize = 1024 * 10;
     DWORD       dwRequiredBufferSize = 0;
+    STRA        output;
+
 
     DBG_ASSERT(struFilename != NULL);
 
     RETURN_LAST_ERROR_IF_NULL(m_hHostFxrDll = LoadLibraryW(hostfxrOptions->GetHostFxrLocation()));
 
     auto pFnHostFxrSearchDirectories = reinterpret_cast<hostfxr_get_native_search_directories_fn>(GetProcAddress(m_hHostFxrDll, "hostfxr_get_native_search_directories"));
+    if (pFnHostFxrSearchDirectories == nullptr)
+    {
+        EventLog::Error(
+            ASPNETCORE_EVENT_GENERAL_ERROR,
+            ASPNETCORE_EVENT_HOSTFXR_DLL_INVALID_VERSION_MSG,
+            hostfxrOptions->GetHostFxrLocation()
+            );
+        RETURN_IF_FAILED(E_FAIL);
+    }
 
     RETURN_LAST_ERROR_IF_NULL(pFnHostFxrSearchDirectories);
     RETURN_IF_FAILED(struNativeSearchPaths.Resize(dwBufferSize));

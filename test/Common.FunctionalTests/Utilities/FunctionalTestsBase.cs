@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
         {
         }
 
-        protected ApplicationDeployer _deployer;
+        protected IISDeployerBase _deployer;
 
         protected ApplicationDeployer CreateDeployer(IISDeploymentParameters parameters)
         {
@@ -38,18 +38,18 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
 
         protected virtual async Task<IISDeploymentResult> DeployAsync(IISDeploymentParameters parameters)
         {
-            _deployer = CreateDeployer(parameters);
+            _deployer = (IISDeployerBase)CreateDeployer(parameters);
             return (IISDeploymentResult)await _deployer.DeployAsync();
         }
 
         public override void Dispose()
         {
-            StopServer();
+            StopServer(false);
         }
 
-        public void StopServer()
+        public void StopServer(bool gracefulShutdown = true)
         {
-            _deployer?.Dispose();
+            _deployer?.Dispose(gracefulShutdown);
             _deployer = null;
         }
     }

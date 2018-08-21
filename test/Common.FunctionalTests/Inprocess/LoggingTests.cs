@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -47,20 +46,14 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
                 StopServer();
 
-                var fileInDirectory = Directory.GetFiles(pathToLogs).Single();
-
+                var fileInDirectory = Directory.GetFiles(pathToLogs).Single(fileName => fileName.Contains("inprocess"));
                 var contents = File.ReadAllText(fileInDirectory);
 
                 Assert.NotNull(contents);
                 Assert.Contains("TEST MESSAGE", contents);
-                Assert.DoesNotContain(TestSink.Writes, context => context.Message.Contains("TEST MESSAGE"));
-                // TODO we should check that debug logs are restored during graceful shutdown.
-                // The IIS Express deployer doesn't support graceful shutdown.
-                //Assert.Contains(TestSink.Writes, context => context.Message.Contains("Restoring original stdout: "));
             }
             finally
             {
-
                 RetryHelper.RetryOperation(
                     () => Directory.Delete(pathToLogs, true),
                     e => Logger.LogWarning($"Failed to delete directory : {e.Message}"),
@@ -132,7 +125,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         public async Task CheckStdoutLoggingToPipe_DoesNotCrashProcess(string path)
         {
             var deploymentParameters = _fixture.GetBaseDeploymentParameters(publish: true);
-            deploymentParameters.GracefulShutdown = true;
             var deploymentResult = await DeployAsync(deploymentParameters);
 
             await Helpers.AssertStarts(deploymentResult, path);
@@ -151,7 +143,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         public async Task CheckStdoutLoggingToPipeWithFirstWrite(string path)
         {
             var deploymentParameters = _fixture.GetBaseDeploymentParameters(publish: true);
-            deploymentParameters.GracefulShutdown = true;
 
             var firstWriteString = path + path;
 

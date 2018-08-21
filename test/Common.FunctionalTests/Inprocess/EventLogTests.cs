@@ -23,8 +23,9 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         public async Task CheckStartupEventLogMessage()
         {
             var deploymentParameters = _fixture.GetBaseDeploymentParameters(publish: true);
+            
             var deploymentResult = await DeployAsync(deploymentParameters);
-            await Helpers.AssertStarts(deploymentResult);
+            await deploymentResult.AssertStarts();
 
             StopServer();
 
@@ -35,9 +36,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         public async Task CheckShutdownEventLogMessage()
         {
             var deploymentParameters = _fixture.GetBaseDeploymentParameters(publish: true);
-            deploymentParameters.GracefulShutdown = true;
             var deploymentResult = await DeployAsync(deploymentParameters);
-            await Helpers.AssertStarts(deploymentResult);
+            await deploymentResult.AssertStarts();
 
             StopServer();
 
