@@ -32,7 +32,6 @@
   <!-- Properties for ESRP signing -->
   <PropertyGroup>
     <ESRPApplicationId>f616b396-be72-40d2-98fd-d7c2e4041560</ESRPApplicationId>
-    <ESRPClientConfigFile>$(MSBuildThisFileDirectory)esrpconfig.json</ESRPClientConfigFile>
   </PropertyGroup>
 
   <PropertyGroup>

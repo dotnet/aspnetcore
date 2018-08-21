@@ -26,6 +26,13 @@ namespace Microsoft.Build.OOB.ESRP
             set;
         }
 
+        [Output]
+        public string ConfigJson
+        {
+            get;
+            set;
+        }
+
         public string DestinationLocationType
         {
             get;
@@ -46,8 +53,21 @@ namespace Microsoft.Build.OOB.ESRP
             set;
         }
 
+        public bool GenerateMultipleInputManifests
+        {
+            get;
+            set;
+        }
+
         [Output]
         public string InputJson
+        {
+            get;
+            set;
+        }
+
+        [Output]
+        public ITaskItem[] InputJsonManifests
         {
             get;
             set;
@@ -59,14 +79,18 @@ namespace Microsoft.Build.OOB.ESRP
             set;
         }
 
-        public int MaxBatchSize { get; set; } = 50;
-
         [Required]
         public string ManifestOutputPath
         {
             get;
             set;
         }
+
+        public int MaxBatchSize
+        {
+            get;
+            set;
+        } = 50;
 
         public string OpusInfo
         {
@@ -106,6 +130,12 @@ namespace Microsoft.Build.OOB.ESRP
             set;
         }
 
+        public int SessionTimeout
+        {
+            get;
+            set;
+        } = 3600;
+
         public string SourceLocationType
         {
             get;
@@ -128,11 +158,9 @@ namespace Microsoft.Build.OOB.ESRP
 
         private void ValidateAndSortKeyCodes()
         {
-            // Sort the global key codes if they exist and check their validity
+            // Check whether the keycodes exist, but don't sort because the ordering matters when doing multiple operations, e.g. StrongName + AuthentiCode.
             if (KeyCodes.Count() > 0)
             {
-                KeyCodes = KeyCodes.OrderBy(o => o.ItemSpec.ToLowerInvariant()).ToArray();
-
                 foreach (var keyCode in KeyCodes)
                 {
                     if (!OperationsJson.ContainsKey(keyCode.ItemSpec))
@@ -149,9 +177,9 @@ namespace Microsoft.Build.OOB.ESRP
                 // Files can specify individual KeyCodes. Check validity and sort them so we can create batches
                 foreach (var f in Files)
                 {
-                    var fileKeyCode = f.GetMetadata("KeyCodes");
+                    var fileKeyCodes = f.GetMetadata("KeyCodes");
 
-                    if (String.IsNullOrEmpty(fileKeyCode))
+                    if (String.IsNullOrEmpty(fileKeyCodes))
                     {
                         if (KeyCodes.Count() == 0)
                         {
@@ -167,7 +195,6 @@ namespace Microsoft.Build.OOB.ESRP
                     else
                     {
                         // Standardize the individual key codes to reduce the number of batches
-                        var fileKeyCodes = fileKeyCode.Split(';').OrderBy(o => o.ToLowerInvariant());
                         f.SetMetadata("KeyCodes", String.Join(";", fileKeyCodes));
                         Log.LogMessage(MessageImportance.Low, String.Format("Setting KeyCodes for {0} to {1}", f.ItemSpec, f.GetMetadata("KeyCodes")));
                     }
@@ -207,6 +234,20 @@ namespace Microsoft.Build.OOB.ESRP
                 JsonConvert.SerializeObject(auth, Formatting.Indented, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore }));
         }
 
+        private void GenerateConfigManifest()
+        {
+            var config = new Config
+            {
+                EsrpSessionTimeoutInSec = SessionTimeout
+            };
+
+            // Set the output property for the task
+            ConfigJson = Path.Combine(ManifestOutputPath, "config.json");
+
+            File.WriteAllText(ConfigJson,
+                JsonConvert.SerializeObject(config, Formatting.Indented, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore }));
+        }
+
         private void GeneratePolicyManifest()
         {
             var policy = Policy.Default;
@@ -235,6 +276,27 @@ namespace Microsoft.Build.OOB.ESRP
             InputJson = Path.Combine(ManifestOutputPath, "input.json");
             File.WriteAllText(InputJson,
                 JsonConvert.SerializeObject(input, Formatting.Indented, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore, DefaultValueHandling = DefaultValueHandling.Ignore }));
+
+            // If we're splitting the batches into separate manifests to run multiple clients in parallel, then process the batches a second time
+            if (GenerateMultipleInputManifests)
+            {
+                List<TaskItem> inputJsonFiles = new List<TaskItem>();
+                int i = 1;
+                foreach (var batch in input.SignBatches)
+                {
+                    SignInput si = new SignInput { SignBatches = new SignBatches[] { batch } };
+                    string inputFile = Path.Combine(ManifestOutputPath, String.Format("input{0}.json", i));
+                    string outputFile = Path.Combine(ManifestOutputPath, String.Format("output{0}.json", i));
+                    TaskItem ti = new TaskItem(inputFile);
+                    ti.SetMetadata("OutputJson", outputFile);
+                    inputJsonFiles.Add(ti);
+                    File.WriteAllText(inputFile,
+                        JsonConvert.SerializeObject(si, Formatting.Indented, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore, DefaultValueHandling = DefaultValueHandling.Ignore }));
+                    i++;
+                }
+
+                InputJsonManifests = inputJsonFiles.ToArray();
+            }
         }
 
         private SignInput CreateInputManifestByKeyCode()
@@ -263,12 +325,17 @@ namespace Microsoft.Build.OOB.ESRP
                     operations.AddRange(o);
                 }
 
-                foreach (var signRequestFiles in GetSignRequestFiles(kcb.Files).Batch(MaxBatchSize))
+                var signRequestFiles = GetSignRequestFiles(kcb.Files);
+                int i = 0;
+                while (i < signRequestFiles.Count())
                 {
+                    var batch = signRequestFiles.Skip(i).Take(MaxBatchSize);
+                    i += MaxBatchSize;
+
                     var sb = new SignBatches
                     {
                         DestinationRootDirectory = DestinationRootDirectory,
-                        SignRequestFiles = signRequestFiles.ToArray(),
+                        SignRequestFiles = batch.ToArray(),
                         SigningInfo = new SigningInfo
                         {
                             Operations = operations.ToArray()
@@ -297,13 +364,18 @@ namespace Microsoft.Build.OOB.ESRP
             }
 
             var signBatches = new List<SignBatches>();
+            var signRequestFiles = GetSignRequestFiles(Files);
 
-            foreach (var signRequestFiles in GetSignRequestFiles(Files).Batch(MaxBatchSize))
+            int i = 0;
+            while (i < signRequestFiles.Count())
             {
+                var batch = signRequestFiles.Skip(i).Take(MaxBatchSize);
+                i += MaxBatchSize;
+
                 var sb = new SignBatches
                 {
                     DestinationRootDirectory = DestinationRootDirectory,
-                    SignRequestFiles = signRequestFiles.ToArray(),
+                    SignRequestFiles = batch.ToArray(),
                     SigningInfo = new SigningInfo
                     {
                         Operations = operations.ToArray()
@@ -312,6 +384,7 @@ namespace Microsoft.Build.OOB.ESRP
 
                 signBatches.Add(sb);
             }
+
             si.SignBatches = signBatches.ToArray();
 
             return si;
@@ -356,6 +429,7 @@ namespace Microsoft.Build.OOB.ESRP
             GenerateInputManifest();
             GeneratePolicyManifest();
             GenerateAuthManifest();
+            GenerateConfigManifest();
 
             // ESRPClient.EXE will generate the content, but the build needs to provide a path for this file on the commandline.
             OutputJson = Path.Combine(ManifestOutputPath, "Output.json");

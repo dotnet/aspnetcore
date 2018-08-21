@@ -12,6 +12,9 @@
         public const string CP_231522 = "CP-231522";
         public const string CP_233016 = "CP-233016";
         public const string CP_401405 = "CP-401405";
+
         public const string CP_232612_Java = "CP-232612-Java";
+
+        public const string CP_401337_Apple = "CP-401337-Apple";
     }
 }

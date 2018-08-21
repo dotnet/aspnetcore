@@ -17,5 +17,6 @@ namespace Microsoft.Build.OOB.ESRP
         StrongNameVerify,
         JavaSign,
         JavaVerify,
+        MacAppDeveloperSign
     }
 }

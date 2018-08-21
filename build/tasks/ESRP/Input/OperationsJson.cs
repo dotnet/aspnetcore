@@ -276,6 +276,7 @@ namespace Microsoft.Build.OOB.ESRP
                 }
             };
 
+            // Classic ID: 170
             var _microsoftJava = new Operations[]
             {
                 new Operations
@@ -285,13 +286,24 @@ namespace Microsoft.Build.OOB.ESRP
                     Parameters = new JObject
                     {
                         { "SigAlg", "SHA256withRSA" },
-                        { "Timestamp", "-tsa http://sha256timestamp.ws.symantec.com/sha256/timestamp" },
+                        { "TimeStamp", "-tsa http://sha256timestamp.ws.symantec.com/sha256/timestamp"}        
                     }
                 },
                 new Operations
                 {
                     KeyCode = ESRP.KeyCode.CP_232612_Java,
-                    OperationCode = OperationCode.JavaVerify,
+                    OperationCode = OperationCode.JavaVerify
+                }
+            };
+
+            // Classic ID: 8003
+            var _microsoftMacAppDeveloper = new Operations[]
+            {
+                new Operations
+                {
+                    KeyCode = ESRP.KeyCode.CP_401337_Apple,
+                    OperationCode = OperationCode.MacAppDeveloperSign,
+                    ToolName = ToolName.Sign
                 }
             };
 
@@ -307,6 +319,7 @@ namespace Microsoft.Build.OOB.ESRP
                 { "Microsoft3rdPartyAppComponent", _microsoft3rdPartyAppComponent },
                 { "Microsoft3rdPartyAppComponentDual", _microsoft3rdPartyAppComponentDual },
                 { "MicrosoftJava", _microsoftJava },
+                { "MicrosoftMacAppDeveloper", _microsoftMacAppDeveloper }
             };
         }
     }

@@ -11,5 +11,5 @@ namespace Microsoft.Build.OOB.ESRP
         Flight,
         MSDCDeployment,
         NonMSDCDeployment
-    };
+    };    
 }
