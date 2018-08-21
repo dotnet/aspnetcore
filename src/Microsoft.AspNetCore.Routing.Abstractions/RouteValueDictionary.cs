@@ -222,13 +222,7 @@ namespace Microsoft.AspNetCore.Routing
             }
         }
 
-        IEnumerable<string> IReadOnlyDictionary<string, object>.Keys
-        {
-            get
-            {
-                return Keys;
-            }
-        }
+        IEnumerable<string> IReadOnlyDictionary<string, object>.Keys => Keys;
 
         /// <inheritdoc />
         public ICollection<object> Values
@@ -248,13 +242,7 @@ namespace Microsoft.AspNetCore.Routing
             }
         }
 
-        IEnumerable<object> IReadOnlyDictionary<string, object>.Values
-        {
-            get
-            {
-                return Values;
-            }
-        }
+        IEnumerable<object> IReadOnlyDictionary<string, object>.Values => Values;
 
         /// <inheritdoc />
         void ICollection<KeyValuePair<string, object>>.Add(KeyValuePair<string, object> item)
@@ -565,7 +553,7 @@ namespace Microsoft.AspNetCore.Routing
 
         internal class PropertyStorage
         {
-            private static readonly PropertyCache _propertyCache = new PropertyCache();
+            private static readonly ConcurrentDictionary<Type, PropertyHelper[]> _propertyCache = new ConcurrentDictionary<Type, PropertyHelper[]>();
 
             public readonly object Value;
             public readonly PropertyHelper[] Properties;
@@ -605,10 +593,6 @@ namespace Microsoft.AspNetCore.Routing
                     names.Add(property.Name, property);
                 }
             }
-        }
-
-        private class PropertyCache : ConcurrentDictionary<Type, PropertyHelper[]>
-        {
         }
     }
 }
