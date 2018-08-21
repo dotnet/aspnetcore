@@ -21,10 +21,10 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
         internal RoutePattern(
             string rawText,
-            Dictionary<string, object> defaults,
-            Dictionary<string, IReadOnlyList<RoutePatternConstraintReference>> constraints,
-            RoutePatternParameterPart[] parameters,
-            RoutePatternPathSegment[] pathSegments)
+            IReadOnlyDictionary<string, object> defaults,
+            IReadOnlyDictionary<string, IReadOnlyList<RoutePatternConstraintReference>> constraints,
+            IReadOnlyList<RoutePatternParameterPart> parameters,
+            IReadOnlyList<RoutePatternPathSegment> pathSegments)
         {
             Debug.Assert(defaults != null);
             Debug.Assert(constraints != null);

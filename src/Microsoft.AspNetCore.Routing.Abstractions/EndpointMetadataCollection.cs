@@ -112,8 +112,7 @@ namespace Microsoft.AspNetCore.Routing
             var items = new List<T>();
             for (var i = 0; i < _items.Length; i++)
             {
-                var item = _items[i] as T;
-                if (item != null)
+                if (_items[i] is T item)
                 {
                     items.Add(item);
                 }
@@ -150,19 +149,18 @@ namespace Microsoft.AspNetCore.Routing
             // Intentionally not readonly to prevent defensive struct copies
             private object[] _items;
             private int _index;
-            private object _current;
 
             internal Enumerator(EndpointMetadataCollection collection)
             {
                 _items = collection._items;
                 _index = 0;
-                _current = null;
+                Current = null;
             }
 
             /// <summary>
             /// Gets the element at the current position of the enumerator
             /// </summary>
-            public object Current => _current;
+            public object Current { get; private set; }
 
             /// <summary>
             /// Releases all resources used by the <see cref="Enumerator"/>.
@@ -182,11 +180,11 @@ namespace Microsoft.AspNetCore.Routing
             {
                 if (_index < _items.Length)
                 {
-                    _current = _items[_index++];
+                    Current = _items[_index++];
                     return true;
                 }
 
-                _current = null;
+                Current = null;
                 return false;
             }
 
@@ -196,7 +194,7 @@ namespace Microsoft.AspNetCore.Routing
             public void Reset()
             {
                 _index = 0;
-                _current = null;
+                Current = null;
             }
         }
     }
