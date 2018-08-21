@@ -39,20 +39,15 @@ namespace TriageBuildFailures.GitHub
         /// <remarks>We take care of repos which keep their issues on the home repo within this function.</remarks>
         public async Task<IEnumerable<GithubIssue>> GetIssues(string owner, string repo)
         {
-            string repoLabel = null;
-            if (IssuesOnHomeRepo(repo))
-            {
-                repoLabel = $"repo:{repo}";
-                repo = "Home";
-            }
-
             var request = new RepositoryIssueRequest
             {
                 State = ItemStateFilter.Open
             };
-            if (repoLabel != null)
+
+            if (IssuesOnHomeRepo(repo))
             {
-                request.Labels.Add(repoLabel);
+                request.Labels.Add($"repo:{repo}");
+                repo = "Home";
             }
 
             var issues = await Client.Issue.GetAllForRepository(owner, repo, request);
@@ -114,8 +109,19 @@ namespace TriageBuildFailures.GitHub
 
         public const int MaxBodyLength = 64000;
 
-        public async Task<GithubIssue> CreateIssue(string owner, string repo, string subject, string body, IEnumerable<string> labels)
+        public async Task<GithubIssue> CreateIssue(string owner, string repo, string subject, string body, IList<string> labels)
         {
+            if(IssuesOnHomeRepo(repo))
+            {
+                if (labels == null)
+                {
+                    labels = new List<string>();
+                }
+
+                labels.Add($"repo:{repo}");
+                repo = "Home";
+            }
+
             body += $"\n\nThis issue was made automatically. If there is a problem contact {Config.BuildBuddyUsername}.";
 
             if (body.Length > MaxBodyLength)
