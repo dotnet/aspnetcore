@@ -29,15 +29,19 @@ namespace Microsoft.AspNetCore.Blazor.Server.Circuits
 
             public int Serialize(ref byte[] bytes, int offset, RenderBatch value, IFormatterResolver formatterResolver)
             {
-                using (var memoryStream = new MemoryStream())
-                using (var renderBatchWriter = new RenderBatchWriter(memoryStream, leaveOpen: false))
+                // Instead of using MessagePackBinary.WriteBytes, we write into a stream that
+                // knows how to format its output as a MessagePack binary block. The benefit
+                // is that we don't have to allocate a second large buffer to capture the
+                // RenderBatchWriter output - we can just write directly to the underlying
+                // output buffer.
+                using (var binaryBlockStream = new MessagePackBinaryBlockStream(bytes, offset))
+                using (var renderBatchWriter = new RenderBatchWriter(binaryBlockStream, leaveOpen: false))
                 {
                     renderBatchWriter.Write(value);
-                    
-                    var bytesBuffer = memoryStream.GetBuffer();
-                    return MessagePackBinary.WriteBytes(ref bytes, offset, bytesBuffer, 0, (int)memoryStream.Length);
+
+                    bytes = binaryBlockStream.Buffer; // In case the buffer was expanded
+                    return (int)binaryBlockStream.Length;
                 }
-                    
             }
         }
     }
