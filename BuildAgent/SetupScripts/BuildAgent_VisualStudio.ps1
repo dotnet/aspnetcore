@@ -105,8 +105,19 @@ foreach ($agent in $Agents) {
             Write-Host "pid = $($process.Id)"
             Wait-Process -InputObject $process
             Write-Host "exit code = $($process.ExitCode)"
-            if ($process.ExitCode -ne 0) {
-                Write-Error "Installation failed on $(hostname)"
+
+            # https://docs.microsoft.com/en-us/visualstudio/install/use-command-line-parameters-to-install-visual-studio#error-codes
+            if ($process.ExitCode -eq 3010) {
+                Write-Warning "Agent $(hostname) requires restart to finish the VS update"
+            }
+            elseif ($process.ExitCode -eq 5007) {
+                Write-Error "Operation was blocked - the computer does not meet the requirements"
+            }
+            elseif (($process.ExitCode -eq 5004) -or ($process.ExitCode -eq 1602)) {
+                Write-Error "Operation was canceled"
+            }
+            elseif ($process.ExitCode -ne 0) {
+                Write-Error "Installation failed on $(hostname) for unknown reason"
             }
         }
         finally {
