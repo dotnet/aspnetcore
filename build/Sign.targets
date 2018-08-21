@@ -134,7 +134,6 @@
       <Output TaskParameter="AuthJson" PropertyName="AuthJson" />
       <Output TaskParameter="ConfigJson" PropertyName="ConfigJson" />
       <Output TaskParameter="InputJson" ItemName="InputJson" />
-      <Output TaskParameter="OutputJson" PropertyName="OutputJson" />
       <Output TaskParameter="PolicyJson" PropertyName="PolicyJson" />
     </Microsoft.Build.OOB.ESRP.CreateSignManifests>
 
@@ -170,7 +169,6 @@
       <Output TaskParameter="AuthJson" PropertyName="AuthJson" />
       <Output TaskParameter="ConfigJson" PropertyName="ConfigJson" />
       <Output TaskParameter="InputJson" ItemName="InputJson" />
-      <Output TaskParameter="OutputJson" PropertyName="OutputJson" />
       <Output TaskParameter="PolicyJson" PropertyName="PolicyJson" />
     </Microsoft.Build.OOB.ESRP.CreateSignManifests>
 
@@ -300,7 +298,6 @@
       <Output TaskParameter="AuthJson" PropertyName="AuthJson" />
       <Output TaskParameter="ConfigJson" PropertyName="ConfigJson" />
       <Output TaskParameter="InputJson" ItemName="InputJson" />
-      <Output TaskParameter="OutputJson" PropertyName="OutputJson" />
       <Output TaskParameter="PolicyJson" PropertyName="PolicyJson" />
     </Microsoft.Build.OOB.ESRP.CreateSignManifests>
 

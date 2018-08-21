@@ -54,11 +54,12 @@ namespace Microsoft.Build.OOB.ESRP
             set;
         } = 200;
 
+        // milliseconds
         public int Throttle
         {
             get;
             set;
-        } = 60000;
+        } = 90_000;
 
         public override bool Execute()
         {
@@ -73,7 +74,7 @@ namespace Microsoft.Build.OOB.ESRP
                     {
                         ProcessStartInfo pi = new ProcessStartInfo
                         {
-                            Arguments = String.Format("sign -a {0} -p {1} -i {2} -o {3} -c {4} -l error", AuthJson, PolicyJson, InputJson[i], InputJson[i].GetMetadata("OutputJson"), ConfigJson),
+                            Arguments = String.Format("sign -a {0} -p {1} -i {2} -o {3} -c {4} -l progress", AuthJson, PolicyJson, InputJson[i], InputJson[i].GetMetadata("OutputJson"), ConfigJson),
                             FileName = Path,
                             RedirectStandardOutput = true,
                             UseShellExecute = false,
