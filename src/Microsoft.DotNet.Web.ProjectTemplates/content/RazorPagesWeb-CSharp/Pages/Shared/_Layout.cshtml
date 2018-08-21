@@ -18,7 +18,7 @@
 </head>
 <body>
     <header>
-        <nav class="mb-3 navbar navbar-expand navbar-light flex-column flex-md-row bg-white border-bottom box-shadow">
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container">
                 <a class="navbar-brand" asp-area="" asp-page="/">Company.WebApplication1</a>
                 <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse" aria-controls="navbarSupportedContent"
@@ -31,7 +31,7 @@
     #elseif (WindowsAuth)
                     <p class="nav navbar-text navbar-right">Hello, @User.Identity.Name!</p>
     #endif*@
-                    <ul class="navbar-nav ml-md-auto">
+                    <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Page1</a>
                         </li>
@@ -51,7 +51,9 @@
     </div>
 
     <footer class="border-top footer pl-3 text-muted">
-        &copy; copyrightYear - Company.WebApplication1 - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+        <div class="container">
+            &copy; copyrightYear - Company.WebApplication1 - <a asp-area="" asp-page="/Privacy">Privacy</a>
+        </div>
     </footer>
 
     <environment include="Development">
