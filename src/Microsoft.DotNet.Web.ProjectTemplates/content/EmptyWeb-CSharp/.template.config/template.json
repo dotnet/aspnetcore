@@ -9,7 +9,7 @@
   "generatorVersions": "[1.0.0.0-*)",
   "description": "An empty project template for creating an ASP.NET Core application. This template does not have any content in it.",
   "groupIdentity": "Microsoft.Web.Empty",
-  "precedence": "3000",
+  "precedence": "4000",
   "identity": "Microsoft.Web.Empty.CSharp.2.2",
   "shortName": "web",
   "tags": {

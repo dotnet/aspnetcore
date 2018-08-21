@@ -9,7 +9,7 @@
   "generatorVersions": "[1.0.0.0-*)",
   "description": "A project template for creating an ASP.NET Core application with example ASP.NET Core MVC Views and Controllers. This template can also be used for RESTful HTTP services.",
   "groupIdentity": "Microsoft.Web.Mvc",
-  "precedence": "3000",
+  "precedence": "4000",
   "identity": "Microsoft.Web.Mvc.FSharp.2.2",
   "shortName": "mvc",
   "thirdPartyNotices": "https://aka.ms/aspnetcore-template-3pn-210",
