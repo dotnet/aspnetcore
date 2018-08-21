@@ -138,7 +138,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
             if (IsSegmentValid(context, parts))
             {
-                segments.Add(new RoutePatternPathSegment(parts.ToArray()));
+                segments.Add(new RoutePatternPathSegment(parts));
                 return true;
             }
             else

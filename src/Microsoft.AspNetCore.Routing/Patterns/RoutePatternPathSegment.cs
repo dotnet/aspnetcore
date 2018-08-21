@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
     [DebuggerDisplay("{DebuggerToString()}")]
     public sealed class RoutePatternPathSegment
     {
-        internal RoutePatternPathSegment(RoutePatternPart[] parts)
+        internal RoutePatternPathSegment(IReadOnlyList<RoutePatternPart> parts)
         {
             Parts = parts;
         }

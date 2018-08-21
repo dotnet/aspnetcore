@@ -298,19 +298,35 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                 rawText,
                 updatedDefaults,
                 updatedConstraints.ToDictionary(kvp => kvp.Key, kvp => (IReadOnlyList<RoutePatternConstraintReference>)kvp.Value.ToArray()),
-                parameters.ToArray(),
-                updatedSegments.ToArray());
+                parameters,
+                updatedSegments);
 
             RoutePatternPathSegment VisitSegment(RoutePatternPathSegment segment)
             {
-                var updatedParts = new RoutePatternPart[segment.Parts.Count];
+                RoutePatternPart[] updatedParts = null;
                 for (var i = 0; i < segment.Parts.Count; i++)
                 {
                     var part = segment.Parts[i];
-                    updatedParts[i] = VisitPart(part);
+                    var updatedPart = VisitPart(part);
+
+                    if (part != updatedPart)
+                    {
+                        if (updatedParts == null)
+                        {
+                            updatedParts = segment.Parts.ToArray();
+                        }
+
+                        updatedParts[i] = updatedPart;
+                    }
                 }
 
-                return SegmentCore(updatedParts);
+                if (updatedParts == null)
+                {
+                    // Segment has not changed
+                    return segment;
+                }
+
+                return new RoutePatternPathSegment(updatedParts);
             }
 
             RoutePatternPart VisitPart(RoutePatternPart part)
@@ -355,6 +371,14 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                 if (parameter.Constraints.Count > 0)
                 {
                     parameterConstraints.AddRange(parameter.Constraints);
+                }
+
+                if (Equals(parameter.Default, @default)
+                    && parameter.Constraints.Count == 0
+                    && (parameterConstraints?.Count ?? 0) == 0)
+                {
+                    // Part has not changed
+                    return part;
                 }
 
                 return ParameterPartCore(
