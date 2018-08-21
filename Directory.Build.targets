@@ -7,4 +7,6 @@
     <!-- aspnet/BuildTools#662 Don't police what version of NetCoreApp we use -->
     <NETCoreAppMaximumVersion>99.9</NETCoreAppMaximumVersion>
   </PropertyGroup>
+
+  <Import Project="eng\targets\Wix.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.wixproj'" />
 </Project>

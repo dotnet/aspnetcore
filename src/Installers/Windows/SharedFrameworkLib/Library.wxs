@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:bal="http://schemas.microsoft.com/wix/BalExtension">
+	<Fragment>
+        <PackageGroup Id="PG_AspNetCoreSharedFramework_$(var.Platform)">
+            <RollbackBoundary Id="RB_AspNetCoreSharedFramework_$(var.Platform)" />
+
+            <?ifdef SharedFrameworkInstallCondition?>
+            <?undef SharedFrameworkInstallCondition?>
+            <?endif?>
+            <?if $(var.Platform)=x86?>
+            <?define SharedFrameworkInstallCondition=(NOT OPT_NO_SHAREDFX) AND (NOT OPT_NO_X86)?>
+            <?elseif $(var.Platform)=x64?>
+            <?define SharedFrameworkInstallCondition=VersionNT64 AND (NOT OPT_NO_SHAREDFX)?>
+            <?endif?>
+
+            <?define SourceFile=$(var.BinPath)\aspnetcore-runtime-$(var.PackageVersion)-win-$(var.Platform).msi?>
+
+            <MsiPackage Id="AspNetCoreSharedFramework_$(var.Platform)"
+                        SourceFile="$(var.SourceFile)"
+                        Compressed="yes"
+                        Visible="no"
+                        Vital="yes"
+                        InstallCondition="$(var.SharedFrameworkInstallCondition)">
+                <Payload Name="sfx_$(var.Platform).cab" SourceFile="$(var.BinPath)\sfx_$(var.Platform).cab"/>
+            </MsiPackage>
+        </PackageGroup>
+	</Fragment>
+</Wix>

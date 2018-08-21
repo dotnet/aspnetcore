@@ -1,0 +1,11 @@
+<Project>
+  <PropertyGroup>
+    <ProductNameFolder>Microsoft ASP.NET Core Shared Framework</ProductNameFolder>
+    <ProductName>Microsoft ASP.NET Core $(PackageBrandingVersion) Shared Framework ($(Platform))</ProductName>
+    <ProductNameShort>AspNetCore.SharedFramework</ProductNameShort>
+
+    <DefineConstants>$(DefineConstants);ProductName=$(ProductName)</DefineConstants>
+    <DefineConstants>$(DefineConstants);ProductNameShort=$(ProductNameShort)</DefineConstants>
+    <DefineConstants>$(DefineConstants);ProductNameFolder=$(ProductNameFolder)</DefineConstants>
+  </PropertyGroup>
+</Project>

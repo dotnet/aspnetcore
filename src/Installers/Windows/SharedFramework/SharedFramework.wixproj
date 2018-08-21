@@ -1,0 +1,51 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.props))\Directory.Build.props" />
+
+  <Import Project="Product.props" />
+
+  <PropertyGroup>
+    <Name>AspNetCoreSharedFramework</Name>
+    <OutputName>$(RuntimeInstallerBaseName)-$(PackageVersion)-win-$(Platform)</OutputName>
+    <OutputType>Package</OutputType>
+    <EmbedCab>no</EmbedCab>
+    <Cabinet>sfx_$(Platform).cab</Cabinet>
+    <ProjectGuid>C681D730-4505-42C6-9E6C-87F757C4FB32</ProjectGuid>
+    <HarvestDirectoryAutoGenerateGuids>true</HarvestDirectoryAutoGenerateGuids>
+    <HarvestDirectorySuppressSpecificWarnings>5150;5151</HarvestDirectorySuppressSpecificWarnings>
+    <HarvestDirectorySuppressRegistry>true</HarvestDirectorySuppressRegistry>
+    <HarvestSource>$(SharedFrameworkHarvestRootPath)\$(Platform)\</HarvestSource>
+    <DefineConstants>$(DefineConstants);AspNetCoreSharedFrameworkSource=$(HarvestSource)</DefineConstants>
+    <NamespaceGuid>$(SharedFrameworkNamespaceGuid)</NamespaceGuid>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <WixExtension Include="WixDependencyExtension">
+      <HintPath>$(WixExtDir)\WixDependencyExtension.dll</HintPath>
+      <Name>WixDependencyExtension</Name>
+    </WixExtension>
+    <WixExtension Include="WixNetFxExtension">
+      <HintPath>$(WixExtDir)\WixNetFxExtension.dll</HintPath>
+      <Name>WixNetFxExtension</Name>
+    </WixExtension>
+    <WixExtension Include="WixUtilExtension">
+      <HintPath>$(WixExtDir)\WixUtilExtension.dll</HintPath>
+      <Name>WixUtilExtension</Name>
+    </WixExtension>
+    <WixExtension Include="WixUIExtension">
+      <HintPath>$(WixExtDir)\WixUIExtension.dll</HintPath>
+      <Name>WixUIExtension</Name>
+    </WixExtension>
+  </ItemGroup>
+
+  <ItemGroup>
+    <HarvestDirectory Include="$(HarvestSource)">
+      <SuppressRootDirectory>true</SuppressRootDirectory>
+      <ComponentGroupName>CG_AspNetCoreSharedFramework</ComponentGroupName>
+      <DirectoryRefId>DotNetFolder</DirectoryRefId>
+      <PreprocessorVariable>var.AspNetCoreSharedFrameworkSource</PreprocessorVariable>
+    </HarvestDirectory>
+  </ItemGroup>
+
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
+</Project>

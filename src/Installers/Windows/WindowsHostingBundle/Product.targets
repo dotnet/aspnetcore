@@ -1,0 +1,90 @@
+<Project>
+  <PropertyGroup>
+    <DotNetDarkOutputPath>$(IntermediateOutputPath)d\</DotNetDarkOutputPath>
+    <DepsPath>$(BaseIntermediateOutputPath)</DepsPath>
+    <DefineConstants>$(DefineConstants);DepsPath=$(DepsPath)</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Platforms Include="x64;x86" />
+    <RuntimeInstallers Include="$(DepsPath)dotnet-runtime-$(MicrosoftNETCoreAppPackageVersion)-win-x64.exe">
+      <TargetPlatform>x64</TargetPlatform>
+      <BundleNameProperty>DotNetRedistLtsInstallerx64</BundleNameProperty>
+      <Version>$(MicrosoftNETCoreAppPackageVersion)</Version>
+    </RuntimeInstallers>
+    <RuntimeInstallers Include="$(DepsPath)dotnet-runtime-$(MicrosoftNETCoreAppPackageVersion)-win-x86.exe">
+      <TargetPlatform>x86</TargetPlatform>
+      <BundleNameProperty>DotNetRedistLtsInstallerx86</BundleNameProperty>
+      <Version>$(MicrosoftNETCoreAppPackageVersion)</Version>
+    </RuntimeInstallers>
+  </ItemGroup>
+
+  <Target Name="FetchDependencies" BeforeTargets="Restore">
+    <PropertyGroup>
+      <DotNetAssetRootUrl Condition=" '$(DotNetAssetRootUrl)' == '' ">https://dotnetcli.azureedge.net/dotnet/</DotNetAssetRootUrl>
+      <DotNetAssetRootUrl Condition=" ! $(DotNetAssetRootUrl.EndsWith('/'))">$(DotNetAssetRootUrl)/</DotNetAssetRootUrl>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <RemoteAsset Include="$(DotNetAssetRootUrl)Runtime/$(MicrosoftNETCoreAppPackageVersion)/dotnet-runtime-$(MicrosoftNETCoreAppPackageVersion)-win-x64.exe$(DotNetAssetRootAccessTokenSuffix)">
+        <TargetFileName>dotnet-runtime-$(MicrosoftNETCoreAppPackageVersion)-win-x64.exe</TargetFileName>
+      </RemoteAsset>
+      <RemoteAsset Include="$(DotNetAssetRootUrl)Runtime/$(MicrosoftNETCoreAppPackageVersion)/dotnet-runtime-$(MicrosoftNETCoreAppPackageVersion)-win-x86.exe$(DotNetAssetRootAccessTokenSuffix)">
+        <TargetFileName>dotnet-runtime-$(MicrosoftNETCoreAppPackageVersion)-win-x86.exe</TargetFileName>
+      </RemoteAsset>
+    </ItemGroup>
+
+    <MakeDir Directories="$(DepsPath)" />
+
+    <Exec Condition=" ! Exists('$(DepsPath)%(RemoteAsset.TargetFileName)') "
+          Command="powershell.exe -noprofile -NoLogo -ExecutionPolicy unrestricted -Command &quot;iwr -usebasicparsing -uri %(RemoteAsset.Identity) -outfile $(DepsPath)/%(RemoteAsset.TargetFileName)&quot;" />
+
+    <!-- Requires MSBuild 15.8 -->
+    <!-- <DownloadFile Condition=" ! Exists('$(DepsPath)%(RemoteAsset.TargetFileName)') "
+                  SourceUrl="%(RemoteAsset.Identity)" DestinationFolder="$(DepsPath)" DestinationFileName="%(RemoteAsset.TargetFileName)" /> -->
+  </Target>
+
+  <UsingTask AssemblyFile="$(OutputPath)..\InstallerTasks\InstallerTasks.dll" TaskName="RepoTasks.GetMsiProperty" />
+
+  <Target Name="ExtractPropertiesFromDotNetMsi" BeforeTargets="BeforeBuild">
+    <!-- Create properties that holds the executable name. These are passed to the bundles so we can reference them as variables
+             from inside the ExePackage authoring. -->
+    <CreateProperty Value="%(RuntimeInstallers.Filename)%(Extension)">
+      <Output TaskParameter="Value" PropertyName="%(RuntimeInstallers.BundleNameProperty)"/>
+    </CreateProperty>
+
+    <!-- Decompile the bundles so that we can extract the MSI and read their version information. We need this to author ExePackage@DetectCondition
+          in the bundles that chain the runtime bundles -->
+    <Exec Command="$(DarkToolPath) -x $(DotNetDarkOutputPath)\%(RuntimeInstallers.Version)\%(TargetPlatform) %(Identity)" />
+
+    <ItemGroup>
+      <DotNetPayload Include="$(DotNetDarkOutputPath)\$(MicrosoftNETCoreAppPackageVersion)\%(Platforms.Identity)\AttachedContainer\**\dotnet-host-*win-*.msi">
+        <ProductVersionProperty>DotNetRedistLtsInstallerProductVersion%(Platforms.Identity)</ProductVersionProperty>
+        <ProductCodeProperty>DotNetRedistLtsInstallerProductCode%(Platforms.Identity)</ProductCodeProperty>
+        <UpgradeCodeProperty>DotNetRedistLtsInstallerUpgradeCode%(Platforms.Identity)</UpgradeCodeProperty>
+      </DotNetPayload>
+    </ItemGroup>
+
+    <!-- Read MSI properties -->
+    <GetMsiProperty InstallPackage="%(DotNetPayload.Identity)" Property="ProductVersion">
+      <Output TaskParameter="Value" PropertyName="%(ProductVersionProperty)" />
+    </GetMsiProperty>
+    <GetMsiProperty InstallPackage="%(DotNetPayload.Identity)" Property="ProductCode">
+      <Output TaskParameter="Value" PropertyName="%(ProductCodeProperty)" />
+    </GetMsiProperty>
+    <GetMsiProperty InstallPackage="%(DotNetPayload.Identity)" Property="UpgradeCode">
+      <Output TaskParameter="Value" PropertyName="%(UpgradeCodeProperty)" />
+    </GetMsiProperty>
+
+    <PropertyGroup>
+      <DefineConstants>$(DefineConstants);DotNetRedistLtsInstallerx64=$(DotNetRedistLtsInstallerx64)</DefineConstants>
+      <DefineConstants>$(DefineConstants);DotNetRedistLtsInstallerProductVersionx64=$(DotNetRedistLtsInstallerProductVersionx64)</DefineConstants>
+      <DefineConstants>$(DefineConstants);DotNetRedistLtsInstallerProductCodex64=$(DotNetRedistLtsInstallerProductCodex64)</DefineConstants>
+      <DefineConstants>$(DefineConstants);DotNetRedistLtsInstallerUpgradeCodex64=$(DotNetRedistLtsInstallerUpgradeCodex64)</DefineConstants>
+      <DefineConstants>$(DefineConstants);DotNetRedistLtsInstallerx86=$(DotNetRedistLtsInstallerx86)</DefineConstants>
+      <DefineConstants>$(DefineConstants);DotNetRedistLtsInstallerProductVersionx86=$(DotNetRedistLtsInstallerProductVersionx86)</DefineConstants>
+      <DefineConstants>$(DefineConstants);DotNetRedistLtsInstallerProductCodex86=$(DotNetRedistLtsInstallerProductCodex86)</DefineConstants>
+      <DefineConstants>$(DefineConstants);DotNetRedistLtsInstallerUpgradeCodex86=$(DotNetRedistLtsInstallerUpgradeCodex86)</DefineConstants>
+    </PropertyGroup>
+  </Target>
+</Project>

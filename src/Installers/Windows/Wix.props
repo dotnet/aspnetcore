@@ -1,0 +1,38 @@
+<Project>
+
+  <PropertyGroup>
+    <Version>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).$(AspNetCorePatchVersion).0</Version>
+
+    <Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
+    <Platform Condition="'$(Platform)' == ''">x64</Platform>
+    <Lang Condition="'$(Lang)' == ''">ENU</Lang>
+    <Cultures>en-US</Cultures>
+    <BaseOutputPath>$(RootOutputPath)bin/$(Configuration)/installers/</BaseOutputPath>
+    <OutputPath>$(BaseOutputPath)</OutputPath>
+  </PropertyGroup>
+
+  <!-- Additional parameters for Light/Candle-->
+  <PropertyGroup>
+    <LinkerAdditionalOptions>-fv</LinkerAdditionalOptions>
+    <SuppressIces>ICE61</SuppressIces>
+    <SuppressWarnings>1033</SuppressWarnings>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <DefineSolutionProperties>false</DefineSolutionProperties>
+
+    <!-- Namespace used to generate stable UUID3 GUIDs for MSI ProductCode, etc. DO NOT CHANGE THESE. -->
+    <HostingBundleNamespaceGuid>E1FD1271-E0F0-4B8B-B4BE-01F2EBA58F4E</HostingBundleNamespaceGuid>
+    <SharedFrameworkNamespaceGuid>C43D5520-11B3-4D62-B6FE-5D6840B04101</SharedFrameworkNamespaceGuid>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <DefineConstants>$(DefineConstants);files=$(MSBuildThisFileDirectory)files</DefineConstants>
+    <DefineConstants>$(DefineConstants);Version=$(Version)</DefineConstants>
+    <DefineConstants>$(DefineConstants);Culture=$(Cultures)</DefineConstants>
+    <DefineConstants>$(DefineConstants);MajorVersion=$(AspNetCoreMajorVersion)</DefineConstants>
+    <DefineConstants>$(DefineConstants);MinorVersion=$(AspNetCoreMinorVersion)</DefineConstants>
+    <DefineConstants>$(DefineConstants);PackageVersion=$(PackageVersion)</DefineConstants>
+  </PropertyGroup>
+
+</Project>

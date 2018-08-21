@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:util="http://schemas.microsoft.com/wix/UtilExtension"
+     xmlns:dep="http://schemas.microsoft.com/wix/DependencyExtension" xmlns:bal="http://schemas.microsoft.com/wix/BalExtension">
+    <Bundle Name="$(var.BundleName)" Version="$(var.Version)" Manufacturer="Microsoft Corporation" UpgradeCode="$(var.BundleUpgradeCode)"
+            dep:ProviderKey="$(var.BundleProviderKey)">
+        <BootstrapperApplicationRef Id="WixStandardBootstrapperApplication.HyperlinkLicense">
+            <bal:WixStandardBootstrapperApplication LicenseUrl="https://go.microsoft.com/fwlink/?LinkId=320539"
+                                                    LogoFile="DotNetLogo.bmp"
+                                                    SuppressOptionsUI="yes"
+                                                    ThemeFile="thm.xml"
+                                                    LocalizationFile="thm.wxl"/>
+        </BootstrapperApplicationRef>
+
+        <!-- Customizations of the default BA -->
+        <Log Prefix="dd_$(var.BundleLogPrefix)_" Extension=".log" />
+        <OptionalUpdateRegistration Manufacturer="$(var.BundleRegManufacturer)" ProductFamily="$(var.BundleRegFamily)" Name="$(var.BundleRegName)" />
+
+        <!-- Bundle variables -->
+        <Variable Name="BundleNameShort" Value="$(var.BundleNameShort)"/>
+        <Variable Name="BundleNameSub" Value="$(var.BundleNameSub)"/>
+        <Variable Name="OPT_NO_ANCM" Value="0" bal:Overridable="yes"/>
+        <Variable Name="OPT_NO_FTS" Value="0" bal:Overridable="yes"/>
+        <Variable Name="OPT_NO_LTS" Value="0" bal:Overridable="yes"/>
+        <Variable Name="OPT_NO_SHAREDFX" Value="0" bal:Overridable="yes"/>
+        <Variable Name="OPT_NO_RUNTIME" Value="0" bal:Overridable="yes"/>
+        <Variable Name="OPT_NO_X86" Value="0" bal:Overridable="yes"/>
+
+        <!-- These variables control the state of conditional UI text elements. 
+             They are disabled by default and enabled based on whether or not we detect that IIS is installed -->
+        <Variable Name="InstallResetIISState" Value="disable"/>
+        <Variable Name="InstallNoIISState" Value="disable"/>
+        <Variable Name="ModifyResetIISState" Value="disable"/>
+        <Variable Name="ModifyNoIISState" Value="disable"/>
+
+        <Chain ParallelCache="yes">
+            <PackageGroupRef Id="PG_ANCM" />
+            <PackageGroupRef Id="PG_DOTNET_REDIST_LTS_BUNDLE" />
+            <!--<PackageGroupRef Id="PG_DOTNET_REDIST_FTS_BUNDLE" />-->
+            <PackageGroupRef Id="PG_AspNetCoreSharedFramework_x86" />
+            <PackageGroupRef Id="PG_AspNetCoreSharedFramework_x64" />
+        </Chain>
+    </Bundle>
+</Wix>

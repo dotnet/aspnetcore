@@ -1,0 +1,31 @@
+<Project>
+  <PropertyGroup>
+    <BundleNameShort>Microsoft .NET Core $(PackageBrandingVersion)</BundleNameShort>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <BundleNameSub>Windows Server Hosting</BundleNameSub>
+    <BundleName>$(BundleNameShort) - $(BundleNameSub)</BundleName>
+    <BundleNameFull>$(BundleName) ($(Platform))</BundleNameFull>
+    <BundleManufacturer>Microsoft Corporation</BundleManufacturer>
+    <BundleLogPrefix>dd_DotNetCoreWinSvrHosting</BundleLogPrefix>
+
+    <!-- Registration -->
+    <BundleRegManufacturer>Microsoft</BundleRegManufacturer>
+    <BundleRegFamily>.NET Core</BundleRegFamily>
+    <BundleRegName>Microsoft .NET Core $(PackageBrandingVersion) - Windows Server Hosting</BundleRegName>
+    <BundleRegName>$(BundleNameFull)</BundleRegName>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <DefineConstants>$(DefineConstants);BundleName=$(BundleName)</DefineConstants>
+    <DefineConstants>$(DefineConstants);BundleNameFull=$(BundleNameFull)</DefineConstants>
+    <DefineConstants>$(DefineConstants);BundleNameShort=$(BundleNameShort)</DefineConstants>
+    <DefineConstants>$(DefineConstants);BundleNameSub=$(BundleNameSub)</DefineConstants>
+    <DefineConstants>$(DefineConstants);BundleManufacturer=$(BundleManufacturer)</DefineConstants>
+    <DefineConstants>$(DefineConstants);BundleLogPrefix=$(BundleLogPrefix)</DefineConstants>
+    <DefineConstants>$(DefineConstants);BundleRegManufacturer=$(BundleRegManufacturer)</DefineConstants>
+    <DefineConstants>$(DefineConstants);BundleRegFamily=$(BundleRegFamily)</DefineConstants>
+    <DefineConstants>$(DefineConstants);BundleRegName=$(BundleRegName)</DefineConstants>
+  </PropertyGroup>
+</Project>

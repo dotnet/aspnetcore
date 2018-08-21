@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <!-- MicroBuild plugins can be installed in any parent directory up the tree from the project that is building.
+        The use of a sentinel file (which will be installed automatically due to package dependencies from any plugin)
+        will help us locate the plugin packages directory while being constrained to using MSBuild's intrinsic functions,
+        since we want the imports to occur at evaluation time instead of when a specific target is executing.
+
+        Note: All MicroBuild plugins must be installed to the same directory (under the same packages folder). If plugins
+        are installed to different directories, the plugins which are in the directories closest to the executing project
+        up the hierarchy will be discovered, and the ones higher up the tree will be ignored.
+         -->
+        <MicroBuildSentinelFile>packages\MicroBuild.Core.Sentinel.1.0.0\sentinel.txt</MicroBuildSentinelFile>
+        <MicroBuildSentinelFileV3>MicroBuild.Core.Sentinel\1.0.0\sentinel.txt</MicroBuildSentinelFileV3>
+
+        <MicroBuildPluginDirectory>$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), $(MicroBuildSentinelFile)))</MicroBuildPluginDirectory>
+        <MicroBuildPluginDirectory Condition="'$(MicroBuildPluginDirectory)' != ''">$(MicroBuildPluginDirectory)\packages</MicroBuildPluginDirectory>
+
+        <!-- Some people might want to put the plugin packages directly in their Nuget v3 global cache. This doesn't happen by default,
+        but we will allow for it here. We don't support nuget.config's globalPackagesFolder setting here because we don't have a good
+        way to load/parse that file with MSBuild intrinsics. We can check the other two mechanisms though, which are the %NUGET_PACKAGES%
+        environment variable and %USERPROFILE%\.nuget\packages -->
+        <MicroBuildPluginDirectory Condition="'$(MicroBuildPluginDirectory)' == '' and '$(NUGET_PACKAGES)' != '' and Exists('$(NUGET_PACKAGES)\$(MicroBuildSentinelFileV3)')">$(NUGET_PACKAGES)</MicroBuildPluginDirectory>
+        <MicroBuildPluginDirectory Condition="'$(MicroBuildPluginDirectory)' == '' and '$(USERPROFILE)' != '' and Exists('$(USERPROFILE)\.nuget\packages\$(MicroBuildSentinelFileV3)')">$(USERPROFILE)\.nuget\packages</MicroBuildPluginDirectory>
+
+        <!-- Allow for the ability to override the plugin directory, for example in automated builds -->
+        <MicroBuildPluginDirectory Condition="'$(MicroBuildOverridePluginDirectory)' != ''">$(MicroBuildOverridePluginDirectory)</MicroBuildPluginDirectory>
+    </PropertyGroup>
+</Project>
