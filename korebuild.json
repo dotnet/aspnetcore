@@ -5,7 +5,7 @@
     "visualstudio": {
       "required": false,
       "includePrerelease": true,
-      "minVersion": "[15.0.26730.03, 15.9)",
+      "minVersion": "[15.0.26730.03, 16.0)",
       "requiredWorkloads": [
         "Microsoft.VisualStudio.Component.VSSDK"
       ]

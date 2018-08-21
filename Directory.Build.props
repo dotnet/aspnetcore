@@ -13,14 +13,13 @@
     <RepositoryType>git</RepositoryType>
     <RepositoryRoot>$(MSBuildThisFileDirectory)</RepositoryRoot>
     <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)build\Key.snk</AssemblyOriginatorKeyFile>
+    <SignAssembly>true</SignAssembly>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <AssemblySigningCertName>Microsoft</AssemblySigningCertName>
     <LangVersion>7.3</LangVersion>
 
-    <!-- Our customizations -->
-    <SignAssembly>false</SignAssembly>
+    <!-- Disable API baseline checks. -->
     <EnableApiCheck>false</EnableApiCheck>
-    <PublicSign>false</PublicSign>
   </PropertyGroup>
 
   <Import Project="build\arcade.props" />

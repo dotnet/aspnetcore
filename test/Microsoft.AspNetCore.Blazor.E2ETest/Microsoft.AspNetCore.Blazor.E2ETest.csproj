@@ -4,6 +4,8 @@
     <!-- Requires 2.1 because of the dependency on applications -->
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <IsPackable>false</IsPackable>
+    <!-- WebDriver is not strong-named signed -->
+    <SignAssembly>false</SignAssembly>
   </PropertyGroup>
 
   <ItemGroup>
