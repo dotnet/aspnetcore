@@ -121,7 +121,7 @@ private:
     };
 
     // Thread executing the .NET Core process
-    HANDLE                          m_hThread;
+    HandleWrapper<InvalidHandleTraits> m_hThread;
 
     // The request handler callback from managed code
     PFN_REQUEST_HANDLER             m_RequestHandler;
@@ -134,7 +134,7 @@ private:
     PFN_ASYNC_COMPLETION_HANDLER    m_AsyncCompletionHandler;
 
     // The event that gets triggered when managed initialization is complete
-    HANDLE                          m_pInitalizeEvent;
+    HandleWrapper<InvalidHandleTraits> m_pInitalizeEvent;
 
     STRU                            m_struExeLocation;
 

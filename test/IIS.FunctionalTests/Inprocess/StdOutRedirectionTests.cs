@@ -81,6 +81,7 @@ namespace IIS.FunctionalTests.Inprocess
         }
 
         [ConditionalFact]
+        [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
         [SkipIfDebug]
         public async Task EnableCoreHostTraceLogging_TwoLogFilesCreated()
         {
@@ -108,6 +109,7 @@ namespace IIS.FunctionalTests.Inprocess
         }
 
         [ConditionalTheory]
+        [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
         [SkipIfDebug]
         [InlineData("CheckLargeStdErrWrites")]
         [InlineData("CheckLargeStdOutWrites")]
@@ -131,6 +133,7 @@ namespace IIS.FunctionalTests.Inprocess
         }
 
         [ConditionalTheory]
+        [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
         [SkipIfDebug]
         [InlineData("CheckLargeStdErrWrites")]
         [InlineData("CheckLargeStdOutWrites")]
