@@ -155,7 +155,7 @@ SERVER_PROCESS::SetupListenPort(
     pEnvironmentVarTable->FindKey(ASPNETCORE_PORT_ENV_STR, &pEntry);
     if (pEntry != NULL)
     {
-        if (pEntry->QueryValue() != NULL || pEntry->QueryValue()[0] != L'\0')
+        if (pEntry->QueryValue() != NULL && pEntry->QueryValue()[0] != L'\0')
         {
             m_dwPort = (DWORD)_wtoi(pEntry->QueryValue());
             if (m_dwPort >MAX_PORT || m_dwPort < MIN_PORT)
@@ -174,9 +174,9 @@ SERVER_PROCESS::SetupListenPort(
             // user set the env variable but did not give value, let's set it up
             //
             pEnvironmentVarTable->DeleteKey(ASPNETCORE_PORT_ENV_STR);
+            pEntry->Dereference();
+            pEntry = NULL;
         }
-        pEntry->Dereference();
-        pEntry = NULL;
     }
 
     WCHAR buffer[15];

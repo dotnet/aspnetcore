@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
@@ -16,6 +17,10 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
     [Collection(PublishedSitesCollection.Name)]
     public class AspNetCorePortTests : IISFunctionalTestBase
     {
+        // Port range allowed by ANCM config
+        private const int _minPort = 1025;
+        private const int _maxPort = 48000;
+
         private static readonly Random _random = new Random();
 
         private readonly PublishedSitesFixture _fixture;
@@ -31,9 +36,14 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 .WithApplicationTypes(ApplicationType.Portable)
                 .WithAllAncmVersions();
 
+        public static IEnumerable<object[]> InvalidTestVariants
+            => from v in TestVariants.Select(v => v.Single())
+               from s in new string[] { (_minPort - 1).ToString(), (_maxPort + 1).ToString(), "noninteger" }
+               select new object[] { v, s };
+
         [ConditionalTheory]
         [MemberData(nameof(TestVariants))]
-        public async Task EnvVarInWebConfig(TestVariant variant)
+        public async Task EnvVarInWebConfig_Valid(TestVariant variant)
         {
             // Must publish to set env vars in web.config
             var deploymentParameters = _fixture.GetBaseDeploymentParameters(variant, publish: true);
@@ -42,18 +52,44 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             var deploymentResult = await DeployAsync(deploymentParameters);
 
-            var response = await deploymentResult.HttpClient.GetAsync("/ServerAddresses");
-            var responseText = await response.Content.ReadAsStringAsync();
+            var responseText = await deploymentResult.HttpClient.GetStringAsync("/ServerAddresses");
 
             Assert.Equal(port, new Uri(responseText).Port);
         }
 
+        [ConditionalTheory]
+        [MemberData(nameof(TestVariants))]
+        public async Task EnvVarInWebConfig_Empty(TestVariant variant)
+        {
+            // Must publish to set env vars in web.config
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(variant, publish: true);
+            deploymentParameters.WebConfigBasedEnvironmentVariables["ASPNETCORE_PORT"] = string.Empty;
+
+            var deploymentResult = await DeployAsync(deploymentParameters);
+
+            var responseText = await deploymentResult.HttpClient.GetStringAsync("/ServerAddresses");
+
+            // If env var is empty, ANCM should assign a random port (same as no env var)
+            Assert.InRange(new Uri(responseText).Port, _minPort, _maxPort);
+        }
+
+        [ConditionalTheory]
+        [MemberData(nameof(InvalidTestVariants))]
+        public async Task EnvVarInWebConfig_Invalid(TestVariant variant, string port)
+        {
+            // Must publish to set env vars in web.config
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(variant, publish: true);
+            deploymentParameters.WebConfigBasedEnvironmentVariables["ASPNETCORE_PORT"] = port;
+
+            var deploymentResult = await DeployAsync(deploymentParameters);
+
+            var response = await deploymentResult.HttpClient.GetAsync("/ServerAddresses");
+
+            Assert.Equal(HttpStatusCode.BadGateway, response.StatusCode);
+        }
+
         private static int GetUnusedRandomPort()
         {
-            // Port range allowed by ANCM config
-            const int minPort = 1025;
-            const int maxPort = 48000;
-
             // Large number of retries to prevent test failures due to port collisions, but not infinite
             // to prevent infinite loop in case Bind() fails repeatedly for some other reason.
             const int retries = 100;
@@ -62,7 +98,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             for (var i = 0; i < retries; i++)
             {
-                var port = _random.Next(minPort, maxPort);
+                var port = _random.Next(_minPort, _maxPort);
 
                 using (var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
                 {
