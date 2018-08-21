@@ -8,8 +8,8 @@
     <FeatureBranchVersionPrefix Condition="'$(FeatureBranchVersionPrefix)' == ''">a-</FeatureBranchVersionPrefix>
     <VersionSuffix Condition="'$(VersionSuffix)' != '' And '$(FeatureBranchVersionSuffix)' != ''">$(FeatureBranchVersionPrefix)$(VersionSuffix)-$([System.Text.RegularExpressions.Regex]::Replace('$(FeatureBranchVersionSuffix)', '[^\w-]', '-'))</VersionSuffix>
     <VersionSuffix Condition="'$(VersionSuffix)' != '' And '$(BuildNumber)' != ''">$(VersionSuffix)-$(BuildNumber)</VersionSuffix>
-    <AspNetCoreModuleVersionMajor>8</AspNetCoreModuleVersionMajor>
-    <AspNetCoreModuleVersionMinor>1</AspNetCoreModuleVersionMinor>
+    <AspNetCoreModuleVersionMajor>12</AspNetCoreModuleVersionMajor>
+    <AspNetCoreModuleVersionMinor>2</AspNetCoreModuleVersionMinor>
     <AspNetCoreModuleVersionRevision>0</AspNetCoreModuleVersionRevision>
     <AspNetCoreModuleOutOfProcessVersion>2.0.0</AspNetCoreModuleOutOfProcessVersion>
   </PropertyGroup>
