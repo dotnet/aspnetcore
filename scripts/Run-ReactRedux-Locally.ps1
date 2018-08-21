@@ -9,4 +9,4 @@ $ErrorActionPreference = 'Stop'
 
 . $PSScriptRoot\Custom-Hive.ps1
 
-Test-Template "reactredux" "Microsoft.DotNet.Web.Spa.ProjectTemplates.2.2.0-preview1-t000.nupkg" $true
+Test-Template "reactredux" "reactredux" "Microsoft.DotNet.Web.Spa.ProjectTemplates.2.2.0-preview2-t000.nupkg" $true

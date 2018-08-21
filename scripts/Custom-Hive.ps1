@@ -1,7 +1,7 @@
 $customHive = "$PSScriptRoot/CustomHive"
 
-function Test-Template($templateName, $templateNupkg, $isSPA) {
-    $tmpDir = "$PSScriptRoot/tmp"
+function Test-Template($templateName, $templateArgs, $templateNupkg, $isSPA) {
+    $tmpDir = "$PSScriptRoot/$templateName"
     Remove-Item -Path $tmpDir -Recurse -ErrorAction Ignore
 
     Create-Hive
@@ -12,10 +12,10 @@ function Test-Template($templateName, $templateNupkg, $isSPA) {
     New-Item -ErrorAction Ignore -Path $tmpDir -ItemType Directory
     Push-Location $tmpDir
     try {
-        Run-DotnetNew $templateName, "--no-restore"
-        $csproj = "$tmpDir/tmp.csproj"
+        Run-DotnetNew $templateArgs, "--no-restore"
+        $csproj = "$tmpDir/$templateName.csproj"
         $csprojContent = Get-Content -Path $csproj -Raw
-        $csprojContent = $csprojContent -replace ('<Project Sdk="Microsoft.NET.Sdk.Web">', "<Project Sdk=""Microsoft.NET.Sdk.Web"">`n<Import Project=""$PSScriptRoot/../test/Templates.Test/bin/Release/netcoreapp2.2/TemplateTests.props"" />")
+        $csprojContent = $csprojContent -replace ('<Project Sdk="Microsoft.NET.Sdk.Web">', "<Project Sdk=""Microsoft.NET.Sdk.Web"">`n<Import Project=""$PSScriptRoot/../test/Templates.Test/bin/Debug/netcoreapp2.2/TemplateTests.props"" />")
         $csprojContent | Set-Content $csproj
 
         dotnet publish
@@ -49,5 +49,6 @@ function Clean-Hive() {
 }
 
 function Run-DotnetNew($arguments) {
-    dotnet new $arguments --debug:custom-hive $customHive
+    $expression = "dotnet new $arguments --debug:custom-hive $customHive"
+    Invoke-Expression $expression
 }
