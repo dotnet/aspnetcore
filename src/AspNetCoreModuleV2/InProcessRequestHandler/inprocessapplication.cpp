@@ -44,7 +44,6 @@ IN_PROCESS_APPLICATION::IN_PROCESS_APPLICATION(
 
 IN_PROCESS_APPLICATION::~IN_PROCESS_APPLICATION()
 {
-    m_hThread = NULL;
     s_Application = NULL;
 }
 
@@ -190,8 +189,6 @@ IN_PROCESS_APPLICATION::ShutDownInternal()
         }
     }
 
-    CloseHandle(m_hThread);
-    m_hThread = NULL;
     s_Application = NULL;
 }
 
