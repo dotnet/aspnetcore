@@ -5,7 +5,7 @@
     "visualstudio": {
       "required": false,
       "includePrerelease": true,
-      "versionRange": "[15.0.26730.03, 15.8)",
+      "versionRange": "[15.0.26730.03, 16.0)",
       "requiredWorkloads": [
         "Microsoft.VisualStudio.Component.VSSDK"
       ]
