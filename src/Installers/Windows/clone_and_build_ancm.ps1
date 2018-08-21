@@ -9,7 +9,7 @@ param(
     [string]$Configuration = 'Release',
     [string]$DepsZip,
     [string]$BuildNumber = 't000',
-    [string]$AncmSourceBranch = 'release/2.2'
+    [string]$AncmSourceBranch = 'master'
 )
 
 $ErrorActionPreference = 'Stop'
