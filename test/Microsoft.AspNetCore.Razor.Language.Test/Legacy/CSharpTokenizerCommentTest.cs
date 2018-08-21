@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 "@* Foo * Bar * Baz *",
                 SyntaxFactory.Token(SyntaxKind.RazorCommentTransition, "@"),
                 SyntaxFactory.Token(SyntaxKind.RazorCommentStar, "*"),
-                SyntaxFactory.Token(SyntaxKind.RazorComment, " Foo * Bar * Baz *"));
+                SyntaxFactory.Token(SyntaxKind.RazorCommentLiteral, " Foo * Bar * Baz *"));
         }
 
         [Fact]
@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 "@* Foo * Bar * Baz *@",
                 SyntaxFactory.Token(SyntaxKind.RazorCommentTransition, "@"),
                 SyntaxFactory.Token(SyntaxKind.RazorCommentStar, "*"),
-                SyntaxFactory.Token(SyntaxKind.RazorComment, " Foo * Bar * Baz "),
+                SyntaxFactory.Token(SyntaxKind.RazorCommentLiteral, " Foo * Bar * Baz "),
                 SyntaxFactory.Token(SyntaxKind.RazorCommentStar, "*"),
                 SyntaxFactory.Token(SyntaxKind.RazorCommentTransition, "@"));
         }
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 "@* Foo Bar Baz *@",
                 SyntaxFactory.Token(SyntaxKind.RazorCommentTransition, "@"),
                 SyntaxFactory.Token(SyntaxKind.RazorCommentStar, "*"),
-                SyntaxFactory.Token(SyntaxKind.RazorComment, " Foo Bar Baz "),
+                SyntaxFactory.Token(SyntaxKind.RazorCommentLiteral, " Foo Bar Baz "),
                 SyntaxFactory.Token(SyntaxKind.RazorCommentStar, "*"),
                 SyntaxFactory.Token(SyntaxKind.RazorCommentTransition, "@"));
         }

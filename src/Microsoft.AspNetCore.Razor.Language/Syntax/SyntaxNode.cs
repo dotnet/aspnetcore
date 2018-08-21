@@ -80,7 +80,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
 
         public bool ContainsAnnotations => Green.ContainsAnnotations;
 
-        internal abstract SyntaxNode Accept(SyntaxVisitor visitor);
+        public abstract TResult Accept<TResult>(SyntaxVisitor<TResult> visitor);
+
+        public abstract void Accept(SyntaxVisitor visitor);
 
         internal abstract SyntaxNode GetNodeSlot(int index);
 
@@ -103,6 +105,24 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
             return result;
         }
 
+        // Special case of above function where slot = 0, does not need GetChildPosition 
+        internal SyntaxNode GetRedAtZero(ref SyntaxNode field)
+        {
+            var result = field;
+
+            if (result == null)
+            {
+                var green = Green.GetSlot(0);
+                if (green != null)
+                {
+                    Interlocked.CompareExchange(ref field, green.CreateRed(this, Position), null);
+                    result = field;
+                }
+            }
+
+            return result;
+        }
+
         protected T GetRed<T>(ref T field, int slot) where T : SyntaxNode
         {
             var result = field;
@@ -113,6 +133,24 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
                 if (green != null)
                 {
                     Interlocked.CompareExchange(ref field, (T)green.CreateRed(this, this.GetChildPosition(slot)), null);
+                    result = field;
+                }
+            }
+
+            return result;
+        }
+
+        // special case of above function where slot = 0, does not need GetChildPosition 
+        protected T GetRedAtZero<T>(ref T field) where T : SyntaxNode
+        {
+            var result = field;
+
+            if (result == null)
+            {
+                var green = Green.GetSlot(0);
+                if (green != null)
+                {
+                    Interlocked.CompareExchange(ref field, (T)green.CreateRed(this, Position), null);
                     result = field;
                 }
             }

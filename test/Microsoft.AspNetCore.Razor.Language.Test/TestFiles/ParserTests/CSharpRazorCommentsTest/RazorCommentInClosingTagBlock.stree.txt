@@ -16,7 +16,7 @@ Markup block - Gen<None> - 33 - (0:0,0)
         MetaCode span - Gen<None> - [*] - SpanEditHandler;Accepts:None - (14:0,14) - Tokens:1
             SyntaxKind.RazorCommentStar;[*];
         Comment span - Gen<None> - [ razor comment ] - SpanEditHandler;Accepts:Any - (15:0,15) - Tokens:1
-            SyntaxKind.RazorComment;[ razor comment ];
+            SyntaxKind.RazorCommentLiteral;[ razor comment ];
         MetaCode span - Gen<None> - [*] - SpanEditHandler;Accepts:None - (30:0,30) - Tokens:1
             SyntaxKind.RazorCommentStar;[*];
         Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (31:0,31) - Tokens:1

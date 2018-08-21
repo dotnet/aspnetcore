@@ -7,7 +7,7 @@ Markup block - Gen<None> - 130 - (0:0,0)
         MetaCode span - Gen<None> - [*] - SpanEditHandler;Accepts:None - (1:0,1) - Tokens:1
             SyntaxKind.RazorCommentStar;[*];
         Comment span - Gen<None> - [ There are two directives beneath this ] - SpanEditHandler;Accepts:Any - (2:0,2) - Tokens:1
-            SyntaxKind.RazorComment;[ There are two directives beneath this ];
+            SyntaxKind.RazorCommentLiteral;[ There are two directives beneath this ];
         MetaCode span - Gen<None> - [*] - SpanEditHandler;Accepts:None - (41:0,41) - Tokens:1
             SyntaxKind.RazorCommentStar;[*];
         Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (42:0,42) - Tokens:1

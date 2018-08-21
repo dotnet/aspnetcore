@@ -17,7 +17,7 @@ Statement block - Gen<None> - 53 - (0:0,0)
         MetaCode span - Gen<None> - [*] - SpanEditHandler;Accepts:None - (16:0,16) - Tokens:1
             SyntaxKind.RazorCommentStar;[*];
         Comment span - Gen<None> - [ Foo ] - SpanEditHandler;Accepts:Any - (17:0,17) - Tokens:1
-            SyntaxKind.RazorComment;[ Foo ];
+            SyntaxKind.RazorCommentLiteral;[ Foo ];
         MetaCode span - Gen<None> - [*] - SpanEditHandler;Accepts:None - (22:0,22) - Tokens:1
             SyntaxKind.RazorCommentStar;[*];
         Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (23:0,23) - Tokens:1
@@ -30,7 +30,7 @@ Statement block - Gen<None> - 53 - (0:0,0)
         MetaCode span - Gen<None> - [*] - SpanEditHandler;Accepts:None - (26:0,26) - Tokens:1
             SyntaxKind.RazorCommentStar;[*];
         Comment span - Gen<None> - [ Bar ] - SpanEditHandler;Accepts:Any - (27:0,27) - Tokens:1
-            SyntaxKind.RazorComment;[ Bar ];
+            SyntaxKind.RazorCommentLiteral;[ Bar ];
         MetaCode span - Gen<None> - [*] - SpanEditHandler;Accepts:None - (32:0,32) - Tokens:1
             SyntaxKind.RazorCommentStar;[*];
         Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (33:0,33) - Tokens:1

@@ -136,7 +136,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 case KnownTokenType.CommentStar:
                     return SyntaxKind.RazorCommentStar;
                 case KnownTokenType.CommentBody:
-                    return SyntaxKind.RazorComment;
+                    return SyntaxKind.RazorCommentLiteral;
                 default:
                     return SyntaxKind.Unknown;
             }

@@ -26,9 +26,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
             throw new InvalidOperationException();
         }
 
-        internal override SyntaxNode Accept(SyntaxVisitor visitor)
+        public override TResult Accept<TResult>(SyntaxVisitor<TResult> visitor)
         {
-            return visitor.VisitSyntaxTrivia(this);
+            return visitor.VisitTrivia(this);
+        }
+
+        public override void Accept(SyntaxVisitor visitor)
+        {
+            visitor.VisitTrivia(this);
         }
 
         public sealed override SyntaxTriviaList GetTrailingTrivia()

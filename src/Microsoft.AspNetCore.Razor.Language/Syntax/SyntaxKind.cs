@@ -6,9 +6,26 @@ namespace Microsoft.AspNetCore.Razor.Language
     internal enum SyntaxKind : byte
     {
         #region Nodes
+        // HTML
         HtmlText,
         HtmlDocument,
         HtmlDeclaration,
+
+        // CSharp
+        CSharpBlock,
+        CSharpStatement,
+        CSharpStatementBody,
+        CSharpExpression,
+        CSharpExpressionBody,
+        CSharpDirective,
+        CSharpDirectiveBody,
+        CSharpCodeBlock,
+        CSharpCodeLiteral,
+        CSharpMetaCode,
+        CSharpTransition,
+
+        // Common
+        RazorComment,
         #endregion
 
         #region Tokens
@@ -89,7 +106,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         Hash,
 
         // Razor specific
-        RazorComment,
+        RazorCommentLiteral,
         RazorCommentStar,
         RazorCommentTransition,
         #endregion

@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         public override SyntaxKind RazorCommentKind
         {
-            get { return SyntaxKind.RazorComment; }
+            get { return SyntaxKind.RazorCommentLiteral; }
         }
 
         public override SyntaxKind RazorCommentTransitionKind

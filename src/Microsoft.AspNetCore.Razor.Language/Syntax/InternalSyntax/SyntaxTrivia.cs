@@ -62,9 +62,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
             return new Syntax.SyntaxTrivia(this, parent, position);
         }
 
-        internal override GreenNode Accept(SyntaxVisitor visitor)
+        public override TResult Accept<TResult>(SyntaxVisitor<TResult> visitor)
         {
-            return visitor.VisitSyntaxTrivia(this);
+            return visitor.VisitTrivia(this);
+        }
+
+        public override void Accept(SyntaxVisitor visitor)
+        {
+            visitor.VisitTrivia(this);
         }
 
         internal override GreenNode SetDiagnostics(RazorDiagnostic[] diagnostics)

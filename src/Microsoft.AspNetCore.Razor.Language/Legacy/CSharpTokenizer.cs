@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         private new CSharpTokenizerState? CurrentState => (CSharpTokenizerState?)base.CurrentState;
 
-        public override SyntaxKind RazorCommentKind => SyntaxKind.RazorComment;
+        public override SyntaxKind RazorCommentKind => SyntaxKind.RazorCommentLiteral;
 
         public override SyntaxKind RazorCommentTransitionKind => SyntaxKind.RazorCommentTransition;
 

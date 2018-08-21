@@ -69,9 +69,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
             throw new InvalidOperationException("Tokens can't have slots.");
         }
 
-        internal override SyntaxNode Accept(SyntaxVisitor visitor)
+        public override TResult Accept<TResult>(SyntaxVisitor<TResult> visitor)
         {
-            return visitor.VisitSyntaxToken(this);
+            return visitor.VisitToken(this);
+        }
+
+        public override void Accept(SyntaxVisitor visitor)
+        {
+            visitor.VisitToken(this);
         }
 
         public SyntaxToken WithLeadingTrivia(SyntaxNode trivia)

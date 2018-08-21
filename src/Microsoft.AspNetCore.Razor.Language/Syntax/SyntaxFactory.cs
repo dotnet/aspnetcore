@@ -3,9 +3,14 @@
 
 namespace Microsoft.AspNetCore.Razor.Language.Syntax
 {
-    internal static class SyntaxFactory
+    internal static partial class SyntaxFactory
     {
-        internal static SyntaxToken Token(SyntaxKind kind, string content, params RazorDiagnostic[] diagnostics)
+        public static SyntaxToken Token(SyntaxKind kind, params RazorDiagnostic[] diagnostics)
+        {
+            return Token(kind, content: string.Empty, diagnostics: diagnostics);
+        }
+
+        public static SyntaxToken Token(SyntaxKind kind, string content, params RazorDiagnostic[] diagnostics)
         {
             return new SyntaxToken(InternalSyntax.SyntaxFactory.Token(kind, content), parent: null, position: 0);
         }

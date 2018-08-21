@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             return kind != SyntaxKind.Whitespace &&
                 kind != SyntaxKind.NewLine &&
-                kind != SyntaxKind.RazorComment &&
+                kind != SyntaxKind.RazorCommentLiteral &&
                 kind != SyntaxKind.RazorCommentStar &&
                 kind != SyntaxKind.RazorCommentTransition &&
                 kind != SyntaxKind.Transition;

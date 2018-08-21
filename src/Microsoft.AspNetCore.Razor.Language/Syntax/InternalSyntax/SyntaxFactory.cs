@@ -6,13 +6,8 @@ using System.Linq;
 
 namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
 {
-    internal static class SyntaxFactory
+    internal static partial class SyntaxFactory
     {
-        internal static HtmlTextSyntax HtmlText(SyntaxList<SyntaxToken> textTokens)
-        {
-            return new HtmlTextSyntax(textTokens.Node);
-        }
-
         internal static SyntaxToken Token(SyntaxKind kind, string content, IEnumerable<RazorDiagnostic> diagnostics)
         {
             return Token(kind, content, diagnostics.ToArray());

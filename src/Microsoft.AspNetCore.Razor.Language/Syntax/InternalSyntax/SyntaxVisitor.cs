@@ -3,41 +3,58 @@
 
 namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
 {
-    internal abstract class SyntaxVisitor
+    internal abstract partial class SyntaxVisitor<TResult>
+    {
+        public virtual TResult Visit(GreenNode node)
+        {
+            if (node == null)
+            {
+                return default(TResult);
+            }
+
+            return node.Accept(this);
+        }
+
+        public virtual TResult VisitToken(SyntaxToken token)
+        {
+            return DefaultVisit(token);
+        }
+
+        public virtual TResult VisitTrivia(SyntaxTrivia trivia)
+        {
+            return DefaultVisit(trivia);
+        }
+
+        protected virtual TResult DefaultVisit(GreenNode node)
+        {
+            return default(TResult);
+        }
+    }
+
+    internal abstract partial class SyntaxVisitor
     {
         public virtual GreenNode Visit(GreenNode node)
         {
             if (node != null)
             {
-                return node.Accept(this);
+                node.Accept(this);
             }
 
             return null;
         }
 
-        public virtual GreenNode VisitSyntaxNode(GreenNode node)
+        public virtual void VisitToken(SyntaxToken token)
         {
-            return node;
+            DefaultVisit(token);
         }
 
-        public virtual GreenNode VisitHtmlNode(HtmlNodeSyntax node)
+        public virtual void VisitTrivia(SyntaxTrivia trivia)
         {
-            return VisitSyntaxNode(node);
+            DefaultVisit(trivia);
         }
 
-        public virtual GreenNode VisitHtmlText(HtmlTextSyntax node)
+        protected virtual void DefaultVisit(GreenNode node)
         {
-            return VisitHtmlNode(node);
-        }
-
-        public virtual SyntaxToken VisitSyntaxToken(SyntaxToken token)
-        {
-            return token;
-        }
-
-        public virtual SyntaxTrivia VisitSyntaxTrivia(SyntaxTrivia trivia)
-        {
-            return trivia;
         }
     }
 }

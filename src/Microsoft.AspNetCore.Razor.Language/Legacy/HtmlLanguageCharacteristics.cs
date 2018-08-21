@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     return "@";
                 case SyntaxKind.Colon:
                     return ":";
-                case SyntaxKind.RazorComment:
+                case SyntaxKind.RazorCommentLiteral:
                     return Resources.HtmlToken_RazorComment;
                 case SyntaxKind.RazorCommentStar:
                     return "*";
@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 case KnownTokenType.CommentStar:
                     return SyntaxKind.RazorCommentStar;
                 case KnownTokenType.CommentBody:
-                    return SyntaxKind.RazorComment;
+                    return SyntaxKind.RazorCommentLiteral;
                 case KnownTokenType.Identifier:
                     return SyntaxKind.HtmlTextLiteral;
                 case KnownTokenType.Keyword:

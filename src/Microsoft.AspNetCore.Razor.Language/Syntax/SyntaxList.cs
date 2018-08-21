@@ -10,9 +10,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
         {
         }
 
-        internal override SyntaxNode Accept(SyntaxVisitor visitor)
+        public override TResult Accept<TResult>(SyntaxVisitor<TResult> visitor)
         {
             return visitor.Visit(this);
+        }
+
+        public override void Accept(SyntaxVisitor visitor)
+        {
+            visitor.Visit(this);
         }
 
         internal class WithTwoChildren : SyntaxList

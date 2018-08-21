@@ -481,10 +481,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
         internal abstract SyntaxNode CreateRed(SyntaxNode parent, int position);
         #endregion
 
-        internal virtual GreenNode Accept(InternalSyntax.SyntaxVisitor visitor)
-        {
-            return visitor.Visit(this);
-        }
+        public abstract TResult Accept<TResult>(InternalSyntax.SyntaxVisitor<TResult> visitor);
+
+        public abstract void Accept(InternalSyntax.SyntaxVisitor visitor);
 
         #region StaticMethods
 

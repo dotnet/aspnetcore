@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 SyntaxFactory.Token(SyntaxKind.Whitespace, " "),
                 SyntaxFactory.Token(SyntaxKind.RazorCommentTransition, "@"),
                 SyntaxFactory.Token(SyntaxKind.RazorCommentStar, "*"),
-                SyntaxFactory.Token(SyntaxKind.RazorComment, "included"),
+                SyntaxFactory.Token(SyntaxKind.RazorCommentLiteral, "included"),
                 SyntaxFactory.Token(SyntaxKind.RazorCommentStar, "*"),
                 SyntaxFactory.Token(SyntaxKind.RazorCommentTransition, "@"),
                 SyntaxFactory.Token(SyntaxKind.Whitespace, " "),

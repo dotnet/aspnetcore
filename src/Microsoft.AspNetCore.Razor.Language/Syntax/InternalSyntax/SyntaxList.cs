@@ -121,6 +121,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
             }
         }
 
+        public override TResult Accept<TResult>(SyntaxVisitor<TResult> visitor)
+        {
+            return visitor.Visit(this);
+        }
+
+        public override void Accept(SyntaxVisitor visitor)
+        {
+            visitor.Visit(this);
+        }
+
         internal class WithTwoChildren : SyntaxList
         {
             private readonly GreenNode _child0;

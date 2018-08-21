@@ -134,9 +134,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
             throw new InvalidOperationException("Tokens don't have slots.");
         }
 
-        internal override GreenNode Accept(SyntaxVisitor visitor)
+        public override TResult Accept<TResult>(SyntaxVisitor<TResult> visitor)
         {
-            return visitor.VisitSyntaxToken(this);
+            return visitor.VisitToken(this);
+        }
+
+        public override void Accept(SyntaxVisitor visitor)
+        {
+            visitor.VisitToken(this);
         }
 
         public override bool IsEquivalentTo(GreenNode other)
