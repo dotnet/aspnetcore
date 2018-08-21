@@ -6,12 +6,17 @@
 #include "sttimer.h"
 #include "IOutputManager.h"
 #include "HandleWrapper.h"
+#include "StdWrapper.h"
+#include "stringa.h"
+#include "stringu.h"
 
 class FileOutputManager : public IOutputManager
 {
     #define FILE_FLUSH_TIMEOUT 3000
+    #define MAX_FILE_READ_SIZE 30000
 public:
     FileOutputManager();
+    FileOutputManager(bool fEnableNativeLogging);
     ~FileOutputManager();
 
     HRESULT
@@ -27,9 +32,10 @@ private:
     STRU m_wsStdOutLogFileName;
     STRU m_wsApplicationPath;
     STRU m_struLogFilePath;
-    int m_fdPreviousStdOut;
-    int m_fdPreviousStdErr;
+    STRA m_straFileContent;
     BOOL m_disposed;
-    SRWLOCK m_srwLock;
+    BOOL m_fEnableNativeRedirection;
+    SRWLOCK m_srwLock{};
+    std::unique_ptr<StdWrapper>    stdoutWrapper;
+    std::unique_ptr<StdWrapper>    stderrWrapper;
 };
-

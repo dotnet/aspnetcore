@@ -150,7 +150,7 @@ private:
 
     static IN_PROCESS_APPLICATION*  s_Application;
 
-    IOutputManager*                 m_pLoggerProvider;
+    std::unique_ptr<IOutputManager> m_pLoggerProvider;
 
     static const LPCSTR             s_exeLocationParameterName;
 

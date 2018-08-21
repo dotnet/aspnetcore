@@ -3,6 +3,7 @@
 #include <windows.h>
 #include "version.h"
 #include "resource.h"
+#include "Aspnetcore_msg.rc"
 /////////////////////////////////////////////////////////////////////////////
 // English (United States) resources
 
@@ -75,10 +76,10 @@ BEGIN
     BEGIN
         BLOCK "040904b0"
         BEGIN
-            VALUE "CompanyName", "Microsoft"
+            VALUE "CompanyName", "Microsoft Corporation"
             VALUE "FileDescription", FileDescription
             VALUE "FileVersion", FileVersionStr
-            VALUE "InternalName", "aspnetcore.dll"
+            VALUE "InternalName", "aspnetcore"
             VALUE "LegalCopyright", "Copyright (C) Microsoft Corporation"
             VALUE "OriginalFilename", "aspnetcore.dll"
             VALUE "ProductName", "ASP.NET Core Module"

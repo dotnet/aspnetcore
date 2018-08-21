@@ -2,8 +2,9 @@
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
 #include "responseheaderhash.h"
+#include "exceptions.h"
 
-HEADER_RECORD RESPONSE_HEADER_HASH::sm_rgHeaders[] = 
+HEADER_RECORD RESPONSE_HEADER_HASH::sm_rgHeaders[] =
 {
     { "Cache-Control",       HttpHeaderCacheControl       },
     { "Connection",          HttpHeaderConnection         },
@@ -65,8 +66,6 @@ Return Value:
 
 --*/
 {
-    HRESULT hr;
-
     //
     // 31 response headers.
     // Make sure to update the number of buckets it new headers
@@ -79,20 +78,13 @@ Return Value:
     // Known collisions are "Age" colliding with "Expire" and "Location"
     // colliding with both "Expire" and "Age".
     //
-    hr = HASH_TABLE::Initialize(79);
-    if (FAILED(hr))
-    {
-        return hr;
-    }
+    RETURN_IF_FAILED(HASH_TABLE::Initialize(79));
 
     for ( DWORD Index = 0; Index < _countof(sm_rgHeaders); ++Index )
     {
-        if (FAILED(hr = InsertRecord(&sm_rgHeaders[Index])))
-        {
-            return hr;
-        }
+        RETURN_IF_FAILED(InsertRecord(&sm_rgHeaders[Index]));
     }
-    
+
     return S_OK;
 }
 

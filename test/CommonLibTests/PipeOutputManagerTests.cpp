@@ -23,14 +23,58 @@ public:
 
 namespace PipeOutputManagerTests
 {
-    TEST(PipeManagerOutputTest, NotifyStartupCompleteCallsDispose)
+    TEST(PipeManagerOutputTest, StdOut)
     {
         PCWSTR expected = L"test";
+        STRA output;
 
-        PipeOutputManager* pManager = new PipeOutputManager();
+        PipeOutputManager* pManager = new PipeOutputManager(true);
+
         ASSERT_EQ(S_OK, pManager->Start());
+        fwprintf(stdout, expected);
+
+        ASSERT_EQ(S_OK, pManager->Stop());
+
+        pManager->GetStdOutContent(&output);
+        ASSERT_STREQ(output.QueryStr(), "test");
+        delete pManager;
     }
 
+    TEST(PipeManagerOutputTest, StdErr)
+    {
+        PCWSTR expected = L"test";
+        STRA output;
+
+        PipeOutputManager* pManager = new PipeOutputManager();
+
+        ASSERT_EQ(S_OK, pManager->Start());
+        fwprintf(stderr, expected);
+        ASSERT_EQ(S_OK, pManager->Stop());
+
+        pManager->GetStdOutContent(&output);
+        ASSERT_STREQ(output.QueryStr(), "test");
+        delete pManager;
+    }
+
+    TEST(PipeManagerOutputTest, CheckMaxPipeSize)
+    {
+        std::wstring test;
+        STRA output;
+        for (int i = 0; i < 3000; i++)
+        {
+            test.append(L"hello world");
+        }
+
+        PipeOutputManager* pManager = new PipeOutputManager();
+
+        ASSERT_EQ(S_OK, pManager->Start());
+        wprintf(test.c_str());
+        ASSERT_EQ(S_OK, pManager->Stop());
+
+        pManager->GetStdOutContent(&output);
+        ASSERT_EQ(output.QueryCCH(), (DWORD)30000);
+        delete pManager;
+    }
     TEST(PipeManagerOutputTest, SetInvalidHandlesForErrAndOut)
     {
         auto m_fdPreviousStdOut = _dup(_fileno(stdout));
@@ -50,6 +94,61 @@ namespace PipeOutputManagerTests
         // Test will fail if we didn't redirect stdout back to a file descriptor.
         // This is because gtest relies on console output to know if a test succeeded or failed.
         // If the output still points to a file/pipe, the test (and all other tests after it) will fail.
+        delete pManager;
+    }
+
+    TEST(PipeManagerOutputTest, CreateDeleteMultipleTimesStdOutWorks)
+    {
+        for (int i = 0; i < 10; i++)
+        {
+            auto stdoutBefore = _fileno(stdout);
+            auto stderrBefore = _fileno(stderr);
+            PCWSTR expected = L"test";
+            STRA output;
+
+            PipeOutputManager* pManager = new PipeOutputManager();
+
+            ASSERT_EQ(S_OK, pManager->Start());
+            fwprintf(stdout, expected);
+
+            ASSERT_EQ(S_OK, pManager->Stop());
+
+            pManager->GetStdOutContent(&output);
+            ASSERT_STREQ(output.QueryStr(), "test");
+            ASSERT_EQ(stdoutBefore, _fileno(stdout));
+            ASSERT_EQ(stderrBefore, _fileno(stderr));
+            delete pManager;
+        }
+        // When this returns, we get an AV from gtest.
+    }
+
+    TEST(PipeManagerOutputTest, CreateDeleteKeepOriginalStdErr)
+    {
+        for (int i = 0; i < 10; i++)
+        {
+            auto stdoutBefore = _fileno(stdout);
+            auto stderrBefore = _fileno(stderr);
+            auto stdoutHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+            auto stderrHandle = GetStdHandle(STD_ERROR_HANDLE);
+            PCWSTR expected = L"test";
+            STRA output;
+
+            PipeOutputManager* pManager = new PipeOutputManager();
+
+            ASSERT_EQ(S_OK, pManager->Start());
+            fwprintf(stderr, expected);
+            ASSERT_EQ(S_OK, pManager->Stop());
+
+            pManager->GetStdOutContent(&output);
+            ASSERT_STREQ(output.QueryStr(), "test");
+            ASSERT_EQ(stdoutBefore, _fileno(stdout));
+
+            ASSERT_EQ(stderrBefore, _fileno(stderr));
+
+            delete pManager;
+        }
+
+        wprintf(L"Hello!");
     }
 }
 

@@ -177,19 +177,19 @@ Language=English
 .
 
 Messageid=1025
-SymbolicName=ASPNETCORE_EVENT_GENERAL_INFO_MSG
+SymbolicName=ASPNETCORE_EVENT_GENERAL_INFO
 Language=English
 %1
 .
 
 Messageid=1026
-SymbolicName=ASPNETCORE_EVENT_GENERAL_WARNING_MSG
+SymbolicName=ASPNETCORE_EVENT_GENERAL_WARNING
 Language=English
 %1
 .
 
 Messageid=1027
-SymbolicName=ASPNETCORE_EVENT_GENERAL_ERROR_MSG
+SymbolicName=ASPNETCORE_EVENT_GENERAL_ERROR
 Language=English
 %1
 .

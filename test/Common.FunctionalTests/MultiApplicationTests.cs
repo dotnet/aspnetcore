@@ -44,6 +44,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         {
             var parameters = _fixture.GetBaseDeploymentParameters(HostingModel.InProcess, publish: true);
             parameters.ServerConfigActionList.Add(DuplicateApplication);
+
             var result = await DeployAsync(parameters);
             var result1 = await result.HttpClient.GetAsync("/app1/HelloWorld");
             var result2 = await result.HttpClient.GetAsync("/app2/HelloWorld");

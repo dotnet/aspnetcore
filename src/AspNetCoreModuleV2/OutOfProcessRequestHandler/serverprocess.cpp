@@ -6,6 +6,7 @@
 #include <IPHlpApi.h>
 #include "EventLog.h"
 #include "file_utility.h"
+#include "exceptions.h"
 //#include <share.h>
 
 //extern BOOL g_fNsiApiNotSupported;
@@ -45,13 +46,13 @@ SERVER_PROCESS::Initialize(
     m_pProcessManager->ReferenceProcessManager();
     m_fDebuggerAttached = FALSE;
 
-    if (FAILED(hr = m_ProcessPath.Copy(*pszProcessExePath)) ||
-        FAILED(hr = m_struLogFile.Copy(*pstruStdoutLogFile))||
-        FAILED(hr = m_struPhysicalPath.Copy(*pszAppPhysicalPath))||
-        FAILED(hr = m_struAppFullPath.Copy(*pszAppPath))||
-        FAILED(hr = m_struAppVirtualPath.Copy(*pszAppVirtualPath))||
-        FAILED(hr = m_Arguments.Copy(*pszArguments)) ||
-        FAILED(hr = SetupJobObject()))
+    if (FAILED_LOG(hr = m_ProcessPath.Copy(*pszProcessExePath)) ||
+        FAILED_LOG(hr = m_struLogFile.Copy(*pstruStdoutLogFile))||
+        FAILED_LOG(hr = m_struPhysicalPath.Copy(*pszAppPhysicalPath))||
+        FAILED_LOG(hr = m_struAppFullPath.Copy(*pszAppPath))||
+        FAILED_LOG(hr = m_struAppVirtualPath.Copy(*pszAppVirtualPath))||
+        FAILED_LOG(hr = m_Arguments.Copy(*pszArguments)) ||
+        FAILED_LOG(hr = SetupJobObject()))
     {
         goto Finished;
     }
@@ -155,7 +156,7 @@ SERVER_PROCESS::SetupListenPort(
     pEnvironmentVarTable->FindKey(ASPNETCORE_PORT_ENV_STR, &pEntry);
     if (pEntry != NULL)
     {
-        if (pEntry->QueryValue() != NULL || pEntry->QueryValue()[0] != L'\0')
+        if (pEntry->QueryValue() != NULL && pEntry->QueryValue()[0] != L'\0')
         {
             m_dwPort = (DWORD)_wtoi(pEntry->QueryValue());
             if (m_dwPort >MAX_PORT || m_dwPort < MIN_PORT)
@@ -174,13 +175,13 @@ SERVER_PROCESS::SetupListenPort(
             // user set the env variable but did not give value, let's set it up
             //
             pEnvironmentVarTable->DeleteKey(ASPNETCORE_PORT_ENV_STR);
+            pEntry->Dereference();
+            pEntry = NULL;
         }
-        pEntry->Dereference();
-        pEntry = NULL;
     }
 
     WCHAR buffer[15];
-    if (FAILED(hr = GetRandomPort(&m_dwPort)))
+    if (FAILED_LOG(hr = GetRandomPort(&m_dwPort)))
     {
         goto Finished;
     }
@@ -198,9 +199,9 @@ SERVER_PROCESS::SetupListenPort(
         goto Finished;
     }
 
-    if (FAILED(hr = pEntry->Initialize(ASPNETCORE_PORT_ENV_STR, buffer)) ||
-        FAILED(hr = pEnvironmentVarTable->InsertRecord(pEntry)) ||
-        FAILED(hr = m_struPort.Copy(buffer)))
+    if (FAILED_LOG(hr = pEntry->Initialize(ASPNETCORE_PORT_ENV_STR, buffer)) ||
+        FAILED_LOG(hr = pEnvironmentVarTable->InsertRecord(pEntry)) ||
+        FAILED_LOG(hr = m_struPort.Copy(buffer)))
     {
         goto Finished;
     }
@@ -212,7 +213,7 @@ Finished:
         pEntry = NULL;
     }
 
-    if (FAILED(hr))
+    if (FAILED_LOG(hr))
     {
         EventLog::Error(
             ASPNETCORE_EVENT_PROCESS_START_SUCCESS,
@@ -252,8 +253,8 @@ SERVER_PROCESS::SetupAppPath(
         goto Finished;
     }
 
-    if (FAILED(hr = pEntry->Initialize(ASPNETCORE_APP_PATH_ENV_STR, m_struAppVirtualPath.QueryStr())) ||
-        FAILED(hr = pEnvironmentVarTable->InsertRecord(pEntry)))
+    if (FAILED_LOG(hr = pEntry->Initialize(ASPNETCORE_APP_PATH_ENV_STR, m_struAppVirtualPath.QueryStr())) ||
+        FAILED_LOG(hr = pEnvironmentVarTable->InsertRecord(pEntry)))
     {
         goto Finished;
     }
@@ -311,7 +312,7 @@ SERVER_PROCESS::SetupAppToken(
 
             fRpcStringAllocd = TRUE;
 
-            if (FAILED(hr = m_straGuid.Copy(pszLogUuid)))
+            if (FAILED_LOG(hr = m_straGuid.Copy(pszLogUuid)))
             {
                 goto Finished;
             }
@@ -324,9 +325,9 @@ SERVER_PROCESS::SetupAppToken(
             goto Finished;
         }
 
-        if (FAILED(strAppToken.CopyA(m_straGuid.QueryStr())) ||
-            FAILED(hr = pEntry->Initialize(ASPNETCORE_APP_TOKEN_ENV_STR, strAppToken.QueryStr())) ||
-            FAILED(hr = pEnvironmentVarTable->InsertRecord(pEntry)))
+        if (FAILED_LOG(strAppToken.CopyA(m_straGuid.QueryStr())) ||
+            FAILED_LOG(hr = pEntry->Initialize(ASPNETCORE_APP_TOKEN_ENV_STR, strAppToken.QueryStr())) ||
+            FAILED_LOG(hr = pEnvironmentVarTable->InsertRecord(pEntry)))
         {
             goto Finished;
         }
@@ -382,7 +383,7 @@ SERVER_PROCESS::OutputEnvironmentVariables
         pszEqualChar = wcschr(pszCurrentVariable, L'=');
         if (pszEqualChar != NULL)
         {
-            if (FAILED(hr = strEnvVar.Copy(pszCurrentVariable, (DWORD)(pszEqualChar - pszCurrentVariable) + 1)))
+            if (FAILED_LOG(hr = strEnvVar.Copy(pszCurrentVariable, (DWORD)(pszEqualChar - pszCurrentVariable) + 1)))
             {
                 goto Finished;
             }
@@ -390,7 +391,7 @@ SERVER_PROCESS::OutputEnvironmentVariables
             if (pEntry != NULL)
             {
                 // same env variable is defined in configuration, use it
-                if (FAILED(hr = strEnvVar.Append(pEntry->QueryValue())))
+                if (FAILED_LOG(hr = strEnvVar.Append(pEntry->QueryValue())))
                 {
                     goto Finished;
                 }
@@ -453,9 +454,9 @@ SERVER_PROCESS::SetupCommandLine(
     if ((wcsstr(pszPath, L":") == NULL) && (wcsstr(pszPath, L"%") == NULL))
     {
         // let's check whether it is a relative path
-        if (FAILED(hr = strRelativePath.Copy(m_struPhysicalPath.QueryStr())) ||
-            FAILED(hr = strRelativePath.Append(L"\\")) ||
-            FAILED(hr = strRelativePath.Append(pszPath)))
+        if (FAILED_LOG(hr = strRelativePath.Copy(m_struPhysicalPath.QueryStr())) ||
+            FAILED_LOG(hr = strRelativePath.Append(L"\\")) ||
+            FAILED_LOG(hr = strRelativePath.Append(pszPath)))
         {
             goto Finished;
         }
@@ -482,9 +483,9 @@ SERVER_PROCESS::SetupCommandLine(
             pszPath = pszFullPath;
         }
     }
-    if (FAILED(hr = pstrCommandLine->Copy(pszPath)) ||
-        FAILED(hr = pstrCommandLine->Append(L" ")) ||
-        FAILED(hr = pstrCommandLine->Append(m_Arguments.QueryStr())))
+    if (FAILED_LOG(hr = pstrCommandLine->Copy(pszPath)) ||
+        FAILED_LOG(hr = pstrCommandLine->Append(L" ")) ||
+        FAILED_LOG(hr = pstrCommandLine->Append(m_Arguments.QueryStr())))
     {
         goto Finished;
     }
@@ -566,7 +567,7 @@ SERVER_PROCESS::PostStartCheck(
     }
 
     // register call back with the created process
-    if (FAILED(hr = RegisterProcessWait(&m_hProcessWaitHandle, m_hProcessHandle)))
+    if (FAILED_LOG(hr = RegisterProcessWait(&m_hProcessWaitHandle, m_hProcessHandle)))
     {
         goto Finished;
     }
@@ -595,7 +596,7 @@ SERVER_PROCESS::PostStartCheck(
         if (!fProcessMatch)
         {
             // could be the scenario that backend creates child process
-            if (FAILED(hr = GetChildProcessHandles()))
+            if (FAILED_LOG(hr = GetChildProcessHandles()))
             {
                 goto Finished;
             }
@@ -617,7 +618,7 @@ SERVER_PROCESS::PostStartCheck(
                             fDebuggerAttached = FALSE;
                         }
 
-                        if (FAILED(hr = RegisterProcessWait(&m_hChildProcessWaitHandles[i],
+                        if (FAILED_LOG(hr = RegisterProcessWait(&m_hChildProcessWaitHandles[i],
                             m_hChildProcessHandles[i])))
                         {
                             goto Finished;
@@ -678,7 +679,7 @@ SERVER_PROCESS::PostStartCheck(
 
         hr = CheckIfServerIsUp(m_dwPort, &dwActualProcessId, &fReady);
 
-        if ((FAILED(hr) || fReady == FALSE))
+        if ((FAILED_LOG(hr) || fReady == FALSE))
         {
             strEventMsg.SafeSnwprintf(
                 ASPNETCORE_EVENT_PROCESS_START_NOTREADY_ERROR_MSG,
@@ -705,7 +706,7 @@ SERVER_PROCESS::PostStartCheck(
         }
 
         hr = m_pForwarderConnection->Initialize(m_dwPort);
-        if (FAILED(hr))
+        if (FAILED_LOG(hr))
         {
             goto Finished;
         }
@@ -726,7 +727,7 @@ SERVER_PROCESS::PostStartCheck(
 Finished:
     m_fDebuggerAttached = fDebuggerAttached;
 
-    if (FAILED(hr))
+    if (FAILED_LOG(hr))
     {
         if (m_pForwarderConnection != NULL)
         {
@@ -773,13 +774,13 @@ SERVER_PROCESS::StartProcess(
         //
         // generate process command line.
         //
-        if (FAILED(hr = SetupCommandLine(&m_struCommandLine)))
+        if (FAILED_LOG(hr = SetupCommandLine(&m_struCommandLine)))
         {
             pStrStage = L"SetupCommandLine";
             goto Failure;
         }
 
-        if (FAILED(hr = ENVIRONMENT_VAR_HELPERS::InitEnvironmentVariablesTable(
+        if (FAILED_LOG(hr = ENVIRONMENT_VAR_HELPERS::InitEnvironmentVariablesTable(
             m_pEnvironmentVarTable,
             m_fWindowsAuthEnabled,
             m_fBasicAuthEnabled,
@@ -790,7 +791,7 @@ SERVER_PROCESS::StartProcess(
             goto Failure;
         }
 
-        if (FAILED(hr = ENVIRONMENT_VAR_HELPERS::AddWebsocketEnabledToEnvironmentVariables(
+        if (FAILED_LOG(hr = ENVIRONMENT_VAR_HELPERS::AddWebsocketEnabledToEnvironmentVariables(
             pHashTable,
             m_fWebSocketSupported
         )))
@@ -803,7 +804,7 @@ SERVER_PROCESS::StartProcess(
         //
         // setup the the port that the backend process will listen on
         //
-        if (FAILED(hr = SetupListenPort(pHashTable, &fCriticalError)))
+        if (FAILED_LOG(hr = SetupListenPort(pHashTable, &fCriticalError)))
         {
             pStrStage = L"SetupListenPort";
             goto Failure;
@@ -812,7 +813,7 @@ SERVER_PROCESS::StartProcess(
         //
         // get app path
         //
-        if (FAILED(hr = SetupAppPath(pHashTable)))
+        if (FAILED_LOG(hr = SetupAppPath(pHashTable)))
         {
             pStrStage = L"SetupAppPath";
             goto Failure;
@@ -821,7 +822,7 @@ SERVER_PROCESS::StartProcess(
         //
         // generate new guid for each process
         //
-        if (FAILED(hr = SetupAppToken(pHashTable)))
+        if (FAILED_LOG(hr = SetupAppToken(pHashTable)))
         {
             pStrStage = L"SetupAppToken";
             goto Failure;
@@ -830,7 +831,7 @@ SERVER_PROCESS::StartProcess(
         //
         // setup environment variables for new process
         //
-        if (FAILED(hr = OutputEnvironmentVariables(&mszNewEnvironment, pHashTable)))
+        if (FAILED_LOG(hr = OutputEnvironmentVariables(&mszNewEnvironment, pHashTable)))
         {
             pStrStage = L"OutputEnvironmentVariables";
             goto Failure;
@@ -861,7 +862,7 @@ SERVER_PROCESS::StartProcess(
         m_hProcessHandle = processInformation.hProcess;
         m_dwProcessId = processInformation.dwProcessId;
 
-        if (FAILED(hr = SetupJobObject()))
+        if (FAILED_LOG(hr = SetupJobObject()))
         {
             pStrStage = L"SetupJobObject";
             goto Failure;
@@ -890,7 +891,7 @@ SERVER_PROCESS::StartProcess(
         //
         // need to make sure the server is up and listening on the port specified.
         //
-        if (FAILED(hr = PostStartCheck()))
+        if (FAILED_LOG(hr = PostStartCheck()))
         {
             pStrStage = L"PostStartCheck";
             goto Failure;
@@ -944,7 +945,7 @@ SERVER_PROCESS::StartProcess(
     }
 
 Finished:
-    if (FAILED(hr) || m_fReady == FALSE)
+    if (FAILED_LOG(hr) || m_fReady == FALSE)
     {
         if (m_hStdoutHandle != NULL)
         {
@@ -1034,7 +1035,7 @@ SERVER_PROCESS::SetupStdHandles(
                  m_struLogFile.QueryStr(),
                  m_struPhysicalPath.QueryStr(),
                  &struPath);
-    if (FAILED(hr))
+    if (FAILED_LOG(hr))
     {
         goto Finished;
     }
@@ -1049,13 +1050,13 @@ SERVER_PROCESS::SetupStdHandles(
         systemTime.wMinute,
         systemTime.wSecond,
         GetCurrentProcessId());
-    if (FAILED(hr))
+    if (FAILED_LOG(hr))
     {
         goto Finished;
     }
 
     hr = FILE_UTILITY::EnsureDirectoryPathExist(struPath.QueryStr());
-    if (FAILED(hr))
+    if (FAILED_LOG(hr))
     {
         goto Finished;
     }
@@ -1086,7 +1087,7 @@ SERVER_PROCESS::SetupStdHandles(
     m_Timer.InitializeTimer(STTIMER::TimerCallback, &m_struFullLogFile, 3000, 3000);
 
 Finished:
-    if (FAILED(hr))
+    if (FAILED_LOG(hr))
     {
         pStartupInfo->dwFlags = STARTF_USESTDHANDLES;
         pStartupInfo->hStdInput = INVALID_HANDLE_VALUE;
@@ -1305,7 +1306,7 @@ Finished:
         hThread = NULL;
     }
 
-    if (FAILED(hr))
+    if (FAILED_LOG(hr))
     {
         TerminateBackendProcess();
     }
@@ -1874,7 +1875,7 @@ SERVER_PROCESS::RegisterProcessWait(
 
 Finished:
 
-    if (FAILED(hr))
+    if (FAILED_LOG(hr))
     {
         *phWaitHandle = NULL;
         DereferenceServerProcess();
@@ -1981,10 +1982,10 @@ SERVER_PROCESS::SendShutdownHttpMessage( VOID )
     }
 
     // set up the shutdown headers
-    if (FAILED(hr = strHeaders.Append(L"MS-ASPNETCORE-EVENT:shutdown \r\n")) ||
-        FAILED(hr = strAppToken.Append(L"MS-ASPNETCORE-TOKEN:")) ||
-        FAILED(hr = strAppToken.AppendA(m_straGuid.QueryStr())) ||
-        FAILED(hr = strHeaders.Append(strAppToken.QueryStr())))
+    if (FAILED_LOG(hr = strHeaders.Append(L"MS-ASPNETCORE-EVENT:shutdown \r\n")) ||
+        FAILED_LOG(hr = strAppToken.Append(L"MS-ASPNETCORE-TOKEN:")) ||
+        FAILED_LOG(hr = strAppToken.AppendA(m_straGuid.QueryStr())) ||
+        FAILED_LOG(hr = strHeaders.Append(strAppToken.QueryStr())))
     {
         goto Finished;
     }
@@ -2072,7 +2073,7 @@ SERVER_PROCESS::SendShutDownSignalInternal(
 {
     ReferenceServerProcess();
 
-    if (FAILED(SendShutdownHttpMessage()))
+    if (FAILED_LOG(SendShutdownHttpMessage()))
     {
         //
         // failed to send shutdown http message

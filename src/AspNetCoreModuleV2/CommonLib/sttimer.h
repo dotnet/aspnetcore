@@ -6,6 +6,7 @@
 
 #ifndef _STTIMER_H
 #define _STTIMER_H
+#include "stringu.h"
 
 class STTIMER
 {

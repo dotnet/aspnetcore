@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.Linq;
 using System.Xml.Linq;
 
@@ -49,6 +50,15 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                         .Single()
                         .SetAttributeValue("enabled", "true");
                 });
+        }
+
+        public static void EnableLogging(this IISDeploymentParameters deploymentParameters, string path)
+        {
+            deploymentParameters.WebConfigActionList.Add(
+                WebConfigHelpers.AddOrModifyAspNetCoreSection("stdoutLogEnabled", "true"));
+
+            deploymentParameters.WebConfigActionList.Add(
+                WebConfigHelpers.AddOrModifyAspNetCoreSection("stdoutLogFile", Path.Combine(path, "std")));
         }
     }
 }

@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Windows.h>
+#include <ntassert.h>
 
 struct InvalidHandleTraits
 {

@@ -26,6 +26,8 @@
 #endif
 
 #define OBSERVE_CAUGHT_EXCEPTION()                              CaughtExceptionHResult(LOCATION_INFO);
+#define RETURN_HR(hr)                                           do { HRESULT __hrRet = hr; if (FAILED(__hrRet)) { LogHResultFailed(LOCATION_INFO, __hrRet); } return __hrRet; } while (0, 0)
+#define RETURN_LAST_ERROR()                                     do { return LogLastError(LOCATION_INFO); } while (0, 0)
 #define RETURN_IF_FAILED(hr)                                    do { HRESULT __hrRet = hr; if (FAILED(__hrRet)) { LogHResultFailed(LOCATION_INFO, __hrRet); return __hrRet; }} while (0, 0)
 #define RETURN_CAUGHT_EXCEPTION()                               return CaughtExceptionHResult(LOCATION_INFO);
 #define RETURN_LAST_ERROR_IF(condition)                         do { if (condition) { return LogLastError(LOCATION_INFO); }} while (0, 0)

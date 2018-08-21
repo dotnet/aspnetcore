@@ -13,10 +13,10 @@ public:
     HRESULT
     CreateLoggingProvider(
         bool fLoggingEnabled,
-        bool fEnablePipe,
+        bool fEnableNativeLogging,
         PCWSTR pwzStdOutFileName,
         PCWSTR pwzApplicationPath,
-        _Out_ IOutputManager** outputManager
+        std::unique_ptr<IOutputManager>& outputManager
     );
 };
 

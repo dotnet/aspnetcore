@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
 #include "winhttphelper.h"
+#include "exceptions.h"
 
 PFN_WINHTTP_WEBSOCKET_COMPLETE_UPGRADE
 WINHTTP_HELPER::sm_pfnWinHttpWebSocketCompleteUpgrade;
@@ -24,8 +25,6 @@ WINHTTP_HELPER::StaticInitialize(
     VOID
 )
 {
-    HRESULT hr = S_OK;
-
     //
     // Initialize the function pointers for WinHttp Websocket API's.
     //
@@ -35,54 +34,29 @@ WINHTTP_HELPER::StaticInitialize(
     }
 
     HMODULE  hWinHttp = GetModuleHandleA("winhttp.dll");
-    if (hWinHttp == NULL)
-    {
-        hr = HRESULT_FROM_WIN32(GetLastError());
-        goto Finished;
-    }
+    RETURN_LAST_ERROR_IF (hWinHttp == NULL);
 
-    sm_pfnWinHttpWebSocketCompleteUpgrade = (PFN_WINHTTP_WEBSOCKET_COMPLETE_UPGRADE) 
+    sm_pfnWinHttpWebSocketCompleteUpgrade = (PFN_WINHTTP_WEBSOCKET_COMPLETE_UPGRADE)
         GetProcAddress(hWinHttp, "WinHttpWebSocketCompleteUpgrade");
-    if (sm_pfnWinHttpWebSocketCompleteUpgrade == NULL)
-    {
-        hr = HRESULT_FROM_WIN32(GetLastError());
-        goto Finished;
-    }
+    RETURN_LAST_ERROR_IF (sm_pfnWinHttpWebSocketCompleteUpgrade == NULL);
 
     sm_pfnWinHttpWebSocketQueryCloseStatus = (PFN_WINHTTP_WEBSOCKET_QUERY_CLOSE_STATUS)
         GetProcAddress(hWinHttp, "WinHttpWebSocketQueryCloseStatus");
-    if (sm_pfnWinHttpWebSocketQueryCloseStatus == NULL)
-    {
-        hr = HRESULT_FROM_WIN32(GetLastError());
-        goto Finished;
-    }
+    RETURN_LAST_ERROR_IF (sm_pfnWinHttpWebSocketQueryCloseStatus == NULL);
 
     sm_pfnWinHttpWebSocketReceive = (PFN_WINHTTP_WEBSOCKET_RECEIVE)
         GetProcAddress(hWinHttp, "WinHttpWebSocketReceive");
-    if (sm_pfnWinHttpWebSocketReceive == NULL)
-    {
-        hr = HRESULT_FROM_WIN32(GetLastError());
-        goto Finished;
-    }
+    RETURN_LAST_ERROR_IF (sm_pfnWinHttpWebSocketReceive == NULL);
 
     sm_pfnWinHttpWebSocketSend = (PFN_WINHTTP_WEBSOCKET_SEND)
         GetProcAddress(hWinHttp, "WinHttpWebSocketSend");
-    if (sm_pfnWinHttpWebSocketSend == NULL)
-    {
-        hr = HRESULT_FROM_WIN32(GetLastError());
-        goto Finished;
-    }
+    RETURN_LAST_ERROR_IF (sm_pfnWinHttpWebSocketSend == NULL);
 
     sm_pfnWinHttpWebSocketShutdown = (PFN_WINHTTP_WEBSOCKET_SHUTDOWN)
         GetProcAddress(hWinHttp, "WinHttpWebSocketShutdown");
-    if (sm_pfnWinHttpWebSocketShutdown == NULL)
-    {
-        hr = HRESULT_FROM_WIN32(GetLastError());
-        goto Finished;
-    }
+    RETURN_LAST_ERROR_IF (sm_pfnWinHttpWebSocketShutdown == NULL);
 
-Finished:
-    return hr;
+    return S_OK;
 }
 
 
@@ -170,6 +144,4 @@ WINHTTP_HELPER::GetBufferTypeFromFlags(
             *pBufferType = WINHTTP_WEB_SOCKET_BINARY_FRAGMENT_BUFFER_TYPE;
         }
     }
-
-    return;
 }

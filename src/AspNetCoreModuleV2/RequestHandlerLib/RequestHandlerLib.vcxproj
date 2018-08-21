@@ -193,22 +193,14 @@
     <ClInclude Include="AppOfflineTrackingApplication.h" />
     <ClInclude Include="environmentvariablehelpers.h" />
     <ClInclude Include="filewatcher.h" />
-    <ClInclude Include="NullOutputManager.h" />
-    <ClInclude Include="FileOutputManager.h" />
     <ClInclude Include="environmentvariablehash.h" />
-    <ClInclude Include="IOutputManager.h" />
-    <ClInclude Include="LoggingHelpers.h" />
-    <ClInclude Include="PipeOutputManager.h" />
     <ClInclude Include="requesthandler_config.h" />
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AppOfflineTrackingApplication.cpp" />
-    <ClCompile Include="FileOutputManager.cpp" />
     <ClCompile Include="filewatcher.cpp" />
     <ClCompile Include="requesthandler_config.cpp" />
-    <ClCompile Include="LoggingHelpers.cpp" />
-    <ClCompile Include="PipeOutputManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CommonLib\CommonLib.vcxproj">

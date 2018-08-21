@@ -45,6 +45,11 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
 
         public override void Dispose()
         {
+            Dispose(gracefulShutdown: false);
+        }
+
+        public override void Dispose(bool gracefulShutdown)
+        {
             Stop();
 
             TriggerHostShutdown(_hostShutdownToken);
@@ -127,6 +132,8 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                 yield return action;
             }
         }
+
+
 
         private void GetLogsFromFile()
         {

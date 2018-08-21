@@ -3,6 +3,8 @@
 
 #include "processmanager.h"
 #include "EventLog.h"
+#include "exceptions.h"
+#include "SRWSharedLock.h"
 
 volatile BOOL               PROCESS_MANAGER::sm_fWSAStartupDone = FALSE;
 
@@ -11,28 +13,21 @@ PROCESS_MANAGER::Initialize(
     VOID
 )
 {
-    HRESULT                              hr       = S_OK;
     WSADATA                              wsaData;
     int                                  result;
-    BOOL                                 fLocked = FALSE;
 
     if( !sm_fWSAStartupDone )
     {
-        AcquireSRWLockExclusive( &m_srwLock );
-        fLocked = TRUE;
+        auto lock = SRWExclusiveLock(m_srwLock);
 
         if( !sm_fWSAStartupDone )
         {
             if( (result = WSAStartup(MAKEWORD(2, 2), &wsaData)) != 0 )
             {
-                hr = HRESULT_FROM_WIN32( result );
-                goto Finished;
+                RETURN_HR(HRESULT_FROM_WIN32( result ));
             }
             sm_fWSAStartupDone = TRUE;
         }
-
-        ReleaseSRWLockExclusive( &m_srwLock );
-        fLocked = FALSE;
     }
 
     m_dwRapidFailTickStart = GetTickCount();
@@ -51,55 +46,14 @@ PROCESS_MANAGER::Initialize(
                                     CREATE_ALWAYS,
                                     FILE_ATTRIBUTE_NORMAL,
                                     NULL );
-        if( m_hNULHandle == INVALID_HANDLE_VALUE )
-        {
-            hr = HRESULT_FROM_WIN32(GetLastError());
-            goto Finished;
-        }
+        RETURN_LAST_ERROR_IF( m_hNULHandle == INVALID_HANDLE_VALUE );
     }
 
-Finished:
-
-    if(fLocked)
-    {
-        ReleaseSRWLockExclusive( &m_srwLock );
-    }
-
-    return hr;
+    return S_OK;
 }
 
 PROCESS_MANAGER::~PROCESS_MANAGER()
 {
-    AcquireSRWLockExclusive(&m_srwLock);
-
-    //if( m_ppServerProcessList != NULL )
-    //{
-    //    for( DWORD i = 0; i < m_dwProcessesPerApplication; ++i )
-    //    {
-    //        if( m_ppServerProcessList[i] != NULL )
-    //        {
-    //            m_ppServerProcessList[i]->DereferenceServerProcess();
-    //            m_ppServerProcessList[i] = NULL;
-    //        }
-    //    }
-
-    //    delete[] m_ppServerProcessList;
-    //    m_ppServerProcessList = NULL;
-    //}
-
-    //if( m_hNULHandle != NULL )
-    //{
-    //    CloseHandle( m_hNULHandle );
-    //    m_hNULHandle = NULL;
-    //}
-
-    //if( sm_fWSAStartupDone )
-    //{
-    //    WSACleanup();
-    //    sm_fWSAStartupDone = FALSE;
-    //}
-
-    ReleaseSRWLockExclusive(&m_srwLock);
 }
 
 HRESULT
@@ -109,31 +63,22 @@ PROCESS_MANAGER::GetProcess(
     _Out_   SERVER_PROCESS            **ppServerProcess
 )
 {
-    HRESULT          hr = S_OK;
-    BOOL             fSharedLock = FALSE;
-    BOOL             fExclusiveLock = FALSE;
     DWORD            dwProcessIndex = 0;
-    SERVER_PROCESS  *pSelectedServerProcess = NULL;
+    std::unique_ptr<SERVER_PROCESS>  pSelectedServerProcess;
 
     if (InterlockedCompareExchange(&m_lStopping, 1L, 1L) == 1L)
     {
-        return hr = E_APPLICATION_EXITING;
+        RETURN_IF_FAILED(E_APPLICATION_EXITING);
     }
 
     if (!m_fServerProcessListReady)
     {
-        AcquireSRWLockExclusive(&m_srwLock);
-        fExclusiveLock = TRUE;
+        auto lock = SRWExclusiveLock(m_srwLock);
 
         if (!m_fServerProcessListReady)
         {
             m_dwProcessesPerApplication = pConfig->QueryProcessesPerApplication();
             m_ppServerProcessList = new SERVER_PROCESS*[m_dwProcessesPerApplication];
-            if (m_ppServerProcessList == NULL)
-            {
-                hr = E_OUTOFMEMORY;
-                goto Finished;
-            }
 
             for (DWORD i = 0; i < m_dwProcessesPerApplication; ++i)
             {
@@ -141,35 +86,30 @@ PROCESS_MANAGER::GetProcess(
             }
         }
         m_fServerProcessListReady = TRUE;
-        ReleaseSRWLockExclusive(&m_srwLock);
-        fExclusiveLock = FALSE;
     }
 
-    AcquireSRWLockShared(&m_srwLock);
-    fSharedLock = TRUE;
-
-    //
-    // round robin through to the next available process.
-    //
-    dwProcessIndex = (DWORD)InterlockedIncrement64((LONGLONG*)&m_dwRouteToProcessIndex);
-    dwProcessIndex = dwProcessIndex % m_dwProcessesPerApplication;
-
-    if (m_ppServerProcessList[dwProcessIndex] != NULL &&
-        m_ppServerProcessList[dwProcessIndex]->IsReady())
     {
-        *ppServerProcess = m_ppServerProcessList[dwProcessIndex];
-        goto Finished;
-    }
+        auto lock = SRWSharedLock(m_srwLock);
 
-    ReleaseSRWLockShared(&m_srwLock);
-    fSharedLock = FALSE;
+        //
+        // round robin through to the next available process.
+        //
+        dwProcessIndex = (DWORD)InterlockedIncrement64((LONGLONG*)&m_dwRouteToProcessIndex);
+        dwProcessIndex = dwProcessIndex % m_dwProcessesPerApplication;
+
+        if (m_ppServerProcessList[dwProcessIndex] != NULL &&
+            m_ppServerProcessList[dwProcessIndex]->IsReady())
+        {
+            *ppServerProcess = m_ppServerProcessList[dwProcessIndex];
+            return S_OK;
+        }
+    }
 
     // should make the lock per process so that we can start processes simultaneously ?
     if (m_ppServerProcessList[dwProcessIndex] == NULL ||
         !m_ppServerProcessList[dwProcessIndex]->IsReady())
     {
-        AcquireSRWLockExclusive(&m_srwLock);
-        fExclusiveLock = TRUE;
+        auto lock = SRWExclusiveLock(m_srwLock);
 
         if (m_ppServerProcessList[dwProcessIndex] != NULL)
         {
@@ -186,7 +126,7 @@ PROCESS_MANAGER::GetProcess(
                 // server is already up and ready to serve requests.
                 //m_ppServerProcessList[dwProcessIndex]->ReferenceServerProcess();
                 *ppServerProcess = m_ppServerProcessList[dwProcessIndex];
-                goto Finished;
+                return S_OK;
             }
         }
 
@@ -200,22 +140,14 @@ PROCESS_MANAGER::GetProcess(
                 ASPNETCORE_EVENT_RAPID_FAIL_COUNT_EXCEEDED_MSG,
                 pConfig->QueryRapidFailsPerMinute());
 
-            hr = HRESULT_FROM_WIN32(ERROR_SERVER_DISABLED);
-            goto Finished;
+            RETURN_HR(HRESULT_FROM_WIN32(ERROR_SERVER_DISABLED));
         }
 
         if (m_ppServerProcessList[dwProcessIndex] == NULL)
         {
 
-            pSelectedServerProcess = new SERVER_PROCESS();
-            if (pSelectedServerProcess == NULL)
-            {
-                hr = E_OUTOFMEMORY;
-                goto Finished;
-            }
-
-
-            hr = pSelectedServerProcess->Initialize(
+            pSelectedServerProcess = std::make_unique<SERVER_PROCESS>();
+            RETURN_IF_FAILED(pSelectedServerProcess->Initialize(
                     this,                                   //ProcessManager
                     pConfig->QueryProcessPath(),            //
                     pConfig->QueryArguments(),              //
@@ -231,50 +163,18 @@ PROCESS_MANAGER::GetProcess(
                     pConfig->QueryApplicationPhysicalPath(),   // physical path
                     pConfig->QueryApplicationPath(),           // app path
                     pConfig->QueryApplicationVirtualPath()     // App relative virtual path
-            );
-            if (FAILED(hr))
-            {
-                goto Finished;
-            }
-
-            hr = pSelectedServerProcess->StartProcess();
-            if (FAILED(hr))
-            {
-                goto Finished;
-            }
+            ));
+            RETURN_IF_FAILED(pSelectedServerProcess->StartProcess());
         }
 
         if (!pSelectedServerProcess->IsReady())
         {
-            hr = HRESULT_FROM_WIN32(ERROR_CREATE_FAILED);
-            goto Finished;
+            RETURN_HR(HRESULT_FROM_WIN32(ERROR_CREATE_FAILED));
         }
 
-        m_ppServerProcessList[dwProcessIndex] = pSelectedServerProcess;
-        pSelectedServerProcess = NULL;
-
+        m_ppServerProcessList[dwProcessIndex] = pSelectedServerProcess.release();
     }
     *ppServerProcess = m_ppServerProcessList[dwProcessIndex];
 
-Finished:
-
-    if (fSharedLock)
-    {
-        ReleaseSRWLockShared(&m_srwLock);
-        fSharedLock = FALSE;
-    }
-
-    if (fExclusiveLock)
-    {
-        ReleaseSRWLockExclusive(&m_srwLock);
-        fExclusiveLock = FALSE;
-    }
-
-    if (pSelectedServerProcess != NULL)
-    {
-        delete pSelectedServerProcess;
-        pSelectedServerProcess = NULL;
-    }
-
-    return hr;
+    return S_OK;
 }
