@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Routing.Template
             Constraint = constraint;
         }
 
-        public InlineConstraint(RoutePatternConstraintReference other)
+        public InlineConstraint(RoutePatternParameterPolicyReference other)
         {
             if (other == null)
             {

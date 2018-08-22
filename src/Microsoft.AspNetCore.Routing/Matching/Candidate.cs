@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         // RouteValueDictionary.
         public readonly (RoutePatternPathSegment pathSegment, int segmentIndex)[] ComplexSegments;
 
-        public readonly MatchProcessor[] MatchProcessors;
+        public readonly KeyValuePair<string, IRouteConstraint>[] Constraints;
 
         // Score is a sequential integer value that in determines the priority of an Endpoint.
         // Scores are computed within the context of candidate set, and are meaningless when
@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             Captures = Array.Empty<(string parameterName, int segmentIndex, int slotIndex)>();
             CatchAll = default;
             ComplexSegments = Array.Empty<(RoutePatternPathSegment pathSegment, int segmentIndex)>();
-            MatchProcessors = Array.Empty<MatchProcessor>();
+            Constraints = Array.Empty<KeyValuePair<string, IRouteConstraint>>();
             Score = 0;
 
             Flags = CandidateFlags.None;
@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             (string parameterName, int segmentIndex, int slotIndex)[] captures,
             (string parameterName, int segmentIndex, int slotIndex) catchAll,
             (RoutePatternPathSegment pathSegment, int segmentIndex)[] complexSegments,
-            MatchProcessor[] matchProcessors)
+            KeyValuePair<string, IRouteConstraint>[] constraints)
         {
             Endpoint = endpoint;
             Score = score;
@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             Captures = captures;
             CatchAll = catchAll;
             ComplexSegments = complexSegments;
-            MatchProcessors = matchProcessors;
+            Constraints = constraints;
 
             Flags = CandidateFlags.None;
             for (var i = 0; i < slots.Length; i++)
@@ -103,9 +103,9 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 Flags |= CandidateFlags.HasComplexSegments;
             }
 
-            if (matchProcessors.Length > 0)
+            if (constraints.Length > 0)
             {
-                Flags |= CandidateFlags.HasMatchProcessors;
+                Flags |= CandidateFlags.HasConstraints;
             }
         }
 
@@ -118,7 +118,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             HasCatchAll = 4,
             HasSlots = HasDefaults | HasCaptures | HasCatchAll,
             HasComplexSegments = 8,
-            HasMatchProcessors = 16,
+            HasConstraints = 16,
         }
     }
 }

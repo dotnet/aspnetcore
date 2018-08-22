@@ -641,7 +641,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
         private class RoutePatternEqualityComparer :
             IEqualityComparer<RoutePattern>,
-            IEqualityComparer<RoutePatternConstraintReference>
+            IEqualityComparer<RoutePatternParameterPolicyReference>
         {
             public bool Equals(RoutePattern x, RoutePattern y)
             {
@@ -733,15 +733,15 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                     x.Name == y.Name &&
                     x.Default == y.Default &&
                     x.ParameterKind == y.ParameterKind &&
-                    Enumerable.SequenceEqual(x.Constraints, y.Constraints, this);
+                    Enumerable.SequenceEqual(x.ParameterPolicies, y.ParameterPolicies, this);
 
             }
 
-            public bool Equals(RoutePatternConstraintReference x, RoutePatternConstraintReference y)
+            public bool Equals(RoutePatternParameterPolicyReference x, RoutePatternParameterPolicyReference y)
             {
                 return
                     x.Content == y.Content &&
-                    x.Constraint == y.Constraint;
+                    x.ParameterPolicy == y.ParameterPolicy;
             }
 
             private bool Equals(RoutePatternSeparatorPart x, RoutePatternSeparatorPart y)
@@ -754,7 +754,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                 throw new NotImplementedException();
             }
 
-            public int GetHashCode(RoutePatternConstraintReference obj)
+            public int GetHashCode(RoutePatternParameterPolicyReference obj)
             {
                 throw new NotImplementedException();
             }

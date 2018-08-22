@@ -154,7 +154,7 @@ namespace Microsoft.AspNetCore.Routing
         {
             return new MatcherEndpoint(
                 MatcherEndpoint.EmptyInvoker,
-                RoutePatternFactory.Parse(template, defaults, constraints: null),
+                RoutePatternFactory.Parse(template, defaults, parameterPolicies: null),
                 order,
                 EndpointMetadataCollection.Empty,
                 null);

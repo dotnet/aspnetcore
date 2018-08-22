@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Routing.Template
                 IsCatchAll = parameter.IsCatchAll;
                 IsOptional = parameter.IsOptional;
                 DefaultValue = parameter.Default;
-                InlineConstraints = parameter.Constraints?.Select(p => new InlineConstraint(p));
+                InlineConstraints = parameter.ParameterPolicies?.Select(p => new InlineConstraint(p));
             }
             else if (other.IsSeparator && other is RoutePatternSeparatorPart separator)
             {
@@ -118,7 +118,7 @@ namespace Microsoft.AspNetCore.Routing.Template
                         RoutePatternParameterKind.Optional :
                         RoutePatternParameterKind.Standard;
 
-                var constraints = InlineConstraints.Select(c => new RoutePatternConstraintReference(c.Constraint));
+                var constraints = InlineConstraints.Select(c => new RoutePatternParameterPolicyReference(c.Constraint));
                 return RoutePatternFactory.ParameterPart(Name, DefaultValue, kind, constraints);
             }
         }

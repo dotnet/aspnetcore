@@ -1554,7 +1554,7 @@ namespace Microsoft.AspNetCore.Routing
             var serviceProvider = services.BuildServiceProvider();
 
             return new DefaultLinkGenerator(
-                new DefaultMatchProcessorFactory(options, serviceProvider),
+                new DefaultParameterPolicyFactory(options, serviceProvider),
                 new DefaultObjectPool<UriBuildingContext>(new UriBuilderContextPooledObjectPolicy()),
                 options,
                 NullLogger<DefaultLinkGenerator>.Instance,

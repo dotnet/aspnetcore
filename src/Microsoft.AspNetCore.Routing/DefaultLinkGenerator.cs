@@ -19,20 +19,20 @@ namespace Microsoft.AspNetCore.Routing
     internal class DefaultLinkGenerator : LinkGenerator
     {
         private readonly static char[] UrlQueryDelimiters = new char[] { '?', '#' };
-        private readonly MatchProcessorFactory _matchProcessorFactory;
+        private readonly ParameterPolicyFactory _parameterPolicyFactory;
         private readonly ObjectPool<UriBuildingContext> _uriBuildingContextPool;
         private readonly ILogger<DefaultLinkGenerator> _logger;
         private readonly IServiceProvider _serviceProvider;
         private readonly RouteOptions _options;
 
         public DefaultLinkGenerator(
-            MatchProcessorFactory matchProcessorFactory,
+            ParameterPolicyFactory parameterPolicyFactory,
             ObjectPool<UriBuildingContext> uriBuildingContextPool,
             IOptions<RouteOptions> routeOptions,
             ILogger<DefaultLinkGenerator> logger,
             IServiceProvider serviceProvider)
         {
-            _matchProcessorFactory = matchProcessorFactory;
+            _parameterPolicyFactory = parameterPolicyFactory;
             _uriBuildingContextPool = uriBuildingContextPool;
             _options = routeOptions.Value;
             _logger = logger;
@@ -240,15 +240,16 @@ namespace Microsoft.AspNetCore.Routing
                 throw new ArgumentNullException(nameof(routeValues));
             }
 
-            foreach (var kvp in endpoint.RoutePattern.Constraints)
+            foreach (var kvp in endpoint.RoutePattern.ParameterPolicies)
             {
                 var parameter = endpoint.RoutePattern.GetParameter(kvp.Key); // may be null, that's ok
                 var constraintReferences = kvp.Value;
                 for (var i = 0; i < constraintReferences.Count; i++)
                 {
                     var constraintReference = constraintReferences[i];
-                    var matchProcessor = _matchProcessorFactory.Create(parameter, constraintReference);
-                    if (!matchProcessor.ProcessOutbound(httpContext, routeValues))
+                    var parameterPolicy = _parameterPolicyFactory.Create(parameter, constraintReference);
+                    if (parameterPolicy is IRouteConstraint routeConstraint
+                        && !routeConstraint.Match(httpContext, NullRouter.Instance, kvp.Key, routeValues, RouteDirection.UrlGeneration))
                     {
                         return false;
                     }

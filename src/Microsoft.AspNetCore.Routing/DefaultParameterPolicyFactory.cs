@@ -2,17 +2,19 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNetCore.Routing.Constraints;
+using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNetCore.Routing.Matching
+namespace Microsoft.AspNetCore.Routing
 {
-    internal class DefaultMatchProcessorFactory : MatchProcessorFactory
+    internal class DefaultParameterPolicyFactory : ParameterPolicyFactory
     {
         private readonly RouteOptions _options;
         private readonly IServiceProvider _serviceProvider;
 
-        public DefaultMatchProcessorFactory(
+        public DefaultParameterPolicyFactory(
             IOptions<RouteOptions> options,
             IServiceProvider serviceProvider)
         {
@@ -20,31 +22,26 @@ namespace Microsoft.AspNetCore.Routing.Matching
             _serviceProvider = serviceProvider;
         }
 
-        public override MatchProcessor Create(string parameterName, IRouteConstraint value, bool optional)
+        public override IParameterPolicy Create(RoutePatternParameterPart parameter, IParameterPolicy parameterPolicy)
         {
-            if (value == null)
+            if (parameterPolicy == null)
             {
-                throw new ArgumentNullException(nameof(value));
+                throw new ArgumentNullException(nameof(parameterPolicy));
             }
 
-            return InitializeMatchProcessor(parameterName, optional, value, argument: null);
-        }
-
-        public override MatchProcessor Create(string parameterName, MatchProcessor value, bool optional)
-        {
-            if (value == null)
+            if (parameterPolicy is IRouteConstraint routeConstraint)
             {
-                throw new ArgumentNullException(nameof(value));
+                return InitializeRouteConstraint(parameter?.IsOptional ?? false, routeConstraint, argument: null);
             }
 
-            return InitializeMatchProcessor(parameterName, optional, value, argument: null);
+            return parameterPolicy;
         }
 
-        public override MatchProcessor Create(string parameterName, string value, bool optional)
+        public override IParameterPolicy Create(RoutePatternParameterPart parameter, string inlineText)
         {
-            if (value == null)
+            if (inlineText == null)
             {
-                throw new ArgumentNullException(nameof(value));
+                throw new ArgumentNullException(nameof(inlineText));
             }
 
             // Example:
@@ -54,7 +51,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             // value: regex(\d+)
             // name: regex
             // argument: \d+
-            (var name, var argument) = Parse(value);
+            (var name, var argument) = Parse(inlineText);
 
             if (!_options.ConstraintMap.TryGetValue(name, out var type))
             {
@@ -64,49 +61,37 @@ namespace Microsoft.AspNetCore.Routing.Matching
                     nameof(RouteOptions.ConstraintMap)));
             }
 
-            if (typeof(MatchProcessor).IsAssignableFrom(type))
-            {
-                var matchProcessor = (MatchProcessor)_serviceProvider.GetRequiredService(type);
-                return InitializeMatchProcessor(parameterName, optional, matchProcessor, argument);
-            }
-
             if (typeof(IRouteConstraint).IsAssignableFrom(type))
             {
                 var constraint = DefaultInlineConstraintResolver.CreateConstraint(type, argument);
-                return InitializeMatchProcessor(parameterName, optional, constraint, argument);
+                return InitializeRouteConstraint(parameter?.IsOptional ?? false, constraint, argument);
+            }
+
+            if (typeof(IParameterPolicy).IsAssignableFrom(type))
+            {
+                var parameterPolicy = (IParameterPolicy)_serviceProvider.GetRequiredService(type);
+                return parameterPolicy;
             }
 
             var message = Resources.FormatRoutePattern_InvalidStringConstraintReference(
                 type,
                 name,
                 typeof(IRouteConstraint),
-                typeof(MatchProcessor));
+                typeof(IParameterPolicy));
             throw new InvalidOperationException(message);
         }
 
-        private MatchProcessor InitializeMatchProcessor(
-            string parameterName,
+        private IParameterPolicy InitializeRouteConstraint(
             bool optional,
-            IRouteConstraint constraint,
-            string argument)
-        {
-            var matchProcessor = (MatchProcessor)new RouteConstraintMatchProcessor(parameterName, constraint);
-            return InitializeMatchProcessor(parameterName, optional, matchProcessor, argument);
-        }
-
-        private MatchProcessor InitializeMatchProcessor(
-            string parameterName,
-            bool optional,
-            MatchProcessor matchProcessor,
+            IRouteConstraint routeConstraint,
             string argument)
         {
             if (optional)
             {
-                matchProcessor = new OptionalMatchProcessor(matchProcessor);
+                routeConstraint = new OptionalRouteConstraint(routeConstraint);
             }
 
-            matchProcessor.Initialize(parameterName, argument);
-            return matchProcessor;
+            return routeConstraint;
         }
 
         private (string name, string argument) Parse(string text)

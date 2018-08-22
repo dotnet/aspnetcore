@@ -18,8 +18,8 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             string parameterName,
             object @default,
             RoutePatternParameterKind parameterKind,
-            RoutePatternConstraintReference[] constraints)
-            : this(parameterName, @default, parameterKind, constraints, encodeSlashes: true)
+            RoutePatternParameterPolicyReference[] parameterPolicies)
+            : this(parameterName, @default, parameterKind, parameterPolicies, encodeSlashes: true)
         {
         }
 
@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             string parameterName,
             object @default,
             RoutePatternParameterKind parameterKind,
-            RoutePatternConstraintReference[] constraints,
+            RoutePatternParameterPolicyReference[] parameterPolicies,
             bool encodeSlashes)
             : base(RoutePatternPartKind.Parameter)
         {
@@ -36,14 +36,14 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             Name = parameterName;
             Default = @default;
             ParameterKind = parameterKind;
-            Constraints = constraints;
+            ParameterPolicies = parameterPolicies;
             EncodeSlashes = encodeSlashes;
         }
 
         /// <summary>
-        /// Gets the list of constraints associated with this parameter.
+        /// Gets the list of parameter policies associated with this parameter.
         /// </summary>
-        public IReadOnlyList<RoutePatternConstraintReference> Constraints { get; }
+        public IReadOnlyList<RoutePatternParameterPolicyReference> ParameterPolicies { get; }
 
         /// <summary>
         /// Gets the value indicating if slashes in current parameter's value should be encoded.
@@ -89,10 +89,10 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
             builder.Append(Name);
 
-            foreach (var constraint in Constraints)
+            foreach (var constraint in ParameterPolicies)
             {
                 builder.Append(":");
-                builder.Append(constraint.Constraint);
+                builder.Append(constraint.ParameterPolicy);
             }
 
             if (Default != null)

@@ -123,9 +123,9 @@ namespace Microsoft.AspNetCore.Routing.Matching
                     isMatch &= ProcessComplexSegments(candidate.ComplexSegments, path, segments, values);
                 }
 
-                if ((flags & Candidate.CandidateFlags.HasMatchProcessors) != 0)
+                if ((flags & Candidate.CandidateFlags.HasConstraints) != 0)
                 {
-                    isMatch &= ProcessMatchProcessors(candidate.MatchProcessors, httpContext, values);
+                    isMatch &= ProcessConstraints(candidate.Constraints, httpContext, values);
                 }
 
                 state.IsValidCandidate = isMatch;
@@ -215,15 +215,15 @@ namespace Microsoft.AspNetCore.Routing.Matching
             return true;
         }
 
-        private bool ProcessMatchProcessors(
-            MatchProcessor[] matchProcessors,
+        private bool ProcessConstraints(
+            KeyValuePair<string, IRouteConstraint>[] constraints,
             HttpContext httpContext,
             RouteValueDictionary values)
         {
-            for (var i = 0; i < matchProcessors.Length; i++)
+            for (var i = 0; i < constraints.Length; i++)
             {
-                var matchProcessor = matchProcessors[i];
-                if (!matchProcessor.ProcessInbound(httpContext, values))
+                var constraint = constraints[i];
+                if (!constraint.Value.Match(httpContext, NullRouter.Instance, constraint.Key, values, RouteDirection.IncomingRequest))
                 {
                     return false;
                 }
