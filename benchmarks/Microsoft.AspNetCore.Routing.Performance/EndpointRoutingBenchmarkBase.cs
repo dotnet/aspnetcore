@@ -136,7 +136,7 @@ namespace Microsoft.AspNetCore.Routing
                 new RouteTemplate(RoutePatternFactory.Parse(
                     endpoint.RoutePattern.RawText,
                     defaults: endpoint.RoutePattern.Defaults,
-                    constraints: null)),
+                    parameterPolicies: null)),
                 requiredLinkValues: new RouteValueDictionary(requiredValues),
                 routeName: null,
                 order: 0);

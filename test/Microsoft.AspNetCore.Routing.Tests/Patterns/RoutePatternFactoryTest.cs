@@ -132,21 +132,21 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
             // Assert
             Assert.Collection(
-                actual.GetParameter("a").Constraints,
-                c => Assert.IsType<RegexRouteConstraint>(c.Constraint),
+                actual.GetParameter("a").ParameterPolicies,
+                c => Assert.IsType<RegexRouteConstraint>(c.ParameterPolicy),
                 c => Assert.Equal("int", c.Content));
             Assert.Collection(
-                actual.GetParameter("b").Constraints,
-                c => Assert.IsType<RegexRouteConstraint>(c.Constraint));
+                actual.GetParameter("b").ParameterPolicies,
+                c => Assert.IsType<RegexRouteConstraint>(c.ParameterPolicy));
 
             Assert.Collection(
-                actual.Constraints.OrderBy(kvp => kvp.Key),
+                actual.ParameterPolicies.OrderBy(kvp => kvp.Key),
                 kvp =>
                 {
                     Assert.Equal("a", kvp.Key);
                     Assert.Collection(
                         kvp.Value,
-                        c => Assert.IsType<RegexRouteConstraint>(c.Constraint),
+                        c => Assert.IsType<RegexRouteConstraint>(c.ParameterPolicy),
                         c => Assert.Equal("int", c.Content));
                 },
                 kvp =>
@@ -154,7 +154,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                     Assert.Equal("b", kvp.Key);
                     Assert.Collection(
                         kvp.Value,
-                        c => Assert.IsType<RegexRouteConstraint>(c.Constraint));
+                        c => Assert.IsType<RegexRouteConstraint>(c.ParameterPolicy));
                 });
         }
 
@@ -177,30 +177,30 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
             // Assert
             Assert.Collection(
-                actual.Constraints.OrderBy(kvp => kvp.Key),
+                actual.ParameterPolicies.OrderBy(kvp => kvp.Key),
                 kvp =>
                 {
                     Assert.Equal("d", kvp.Key);
                     Assert.Collection(
                         kvp.Value,
-                        c => Assert.IsType<RegexRouteConstraint>(c.Constraint));
+                        c => Assert.IsType<RegexRouteConstraint>(c.ParameterPolicy));
                 },
                 kvp =>
                 {
                     Assert.Equal("e", kvp.Key);
                     Assert.Collection(
                         kvp.Value,
-                        c => Assert.IsType<RegexRouteConstraint>(c.Constraint));
+                        c => Assert.IsType<RegexRouteConstraint>(c.ParameterPolicy));
                 });
         }
 
         [Fact]
-        public void Pattern_ExtraConstraints_MatchProcessor()
+        public void Pattern_ExtraConstraints_RouteConstraint()
         {
             // Arrange
             var template = "{a}/{b}/{c}";
             var defaults = new { };
-            var constraints = new { d = Mock.Of<MatchProcessor>(), e = Mock.Of<MatchProcessor>(), };
+            var constraints = new { d = Mock.Of<IRouteConstraint>(), e = Mock.Of<IRouteConstraint>(), };
 
             var original = RoutePatternFactory.Parse(template);
 
@@ -213,20 +213,20 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
             // Assert
             Assert.Collection(
-                actual.Constraints.OrderBy(kvp => kvp.Key),
+                actual.ParameterPolicies.OrderBy(kvp => kvp.Key),
                 kvp =>
                 {
                     Assert.Equal("d", kvp.Key);
                     Assert.Collection(
                         kvp.Value,
-                        c => Assert.NotNull(c.MatchProcessor));
+                        c => Assert.NotNull(c.ParameterPolicy));
                 },
                 kvp =>
                 {
                     Assert.Equal("e", kvp.Key);
                     Assert.Collection(
                         kvp.Value,
-                        c => Assert.NotNull(c.MatchProcessor));
+                        c => Assert.NotNull(c.ParameterPolicy));
                 });
         }
 
@@ -249,11 +249,11 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
             // Assert
             Assert.Collection(
-                actual.Constraints.OrderBy(kvp => kvp.Key),
+                actual.ParameterPolicies.OrderBy(kvp => kvp.Key),
                 kvp =>
                 {
                     Assert.Equal("d", kvp.Key);
-                    var regex = Assert.IsType<RegexRouteConstraint>(Assert.Single(kvp.Value).Constraint);
+                    var regex = Assert.IsType<RegexRouteConstraint>(Assert.Single(kvp.Value).ParameterPolicy);
                     Assert.Equal("^(foo)$", regex.Constraint.ToString());
                 });
         }
@@ -277,7 +277,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
             // Assert
             Assert.Equal(
-                $"Invalid constraint '17'. A constraint must be of type 'string', '{typeof(IRouteConstraint)}', or '{typeof(MatchProcessor)}'.",
+                $"Invalid constraint '17'. A constraint must be of type 'string' or '{typeof(IRouteConstraint)}'.",
                 ex.Message);
         }
     }

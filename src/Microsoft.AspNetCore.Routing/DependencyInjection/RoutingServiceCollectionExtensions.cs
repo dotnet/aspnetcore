@@ -68,7 +68,7 @@ namespace Microsoft.Extensions.DependencyInjection
             //
             // Default matcher implementation
             //
-            services.TryAddSingleton<MatchProcessorFactory, DefaultMatchProcessorFactory>();
+            services.TryAddSingleton<ParameterPolicyFactory, DefaultParameterPolicyFactory>();
             services.TryAddSingleton<MatcherFactory, DfaMatcherFactory>();
             services.TryAddTransient<DfaMatcherBuilder>();
             services.TryAddSingleton<DfaGraphWriter>();

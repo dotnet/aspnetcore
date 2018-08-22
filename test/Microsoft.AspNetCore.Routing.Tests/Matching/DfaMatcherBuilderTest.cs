@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.AspNetCore.Routing.Patterns;
+using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
@@ -641,7 +642,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             Assert.Empty(candidate.Captures);
             Assert.Equal(default, candidate.CatchAll);
             Assert.Empty(candidate.ComplexSegments);
-            Assert.Empty(candidate.MatchProcessors);
+            Assert.Empty(candidate.Constraints);
         }
 
         [Fact]
@@ -665,7 +666,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 c => Assert.Equal(("c", 2, 2), c));
             Assert.Equal(default, candidate.CatchAll);
             Assert.Empty(candidate.ComplexSegments);
-            Assert.Empty(candidate.MatchProcessors);
+            Assert.Empty(candidate.Constraints);
         }
 
         [Fact]
@@ -695,7 +696,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 c => Assert.Equal(("c", 2, 2), c));
             Assert.Equal(default, candidate.CatchAll);
             Assert.Empty(candidate.ComplexSegments);
-            Assert.Empty(candidate.MatchProcessors);
+            Assert.Empty(candidate.Constraints);
         }
 
         [Fact]
@@ -726,7 +727,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 c => Assert.Equal(("b", 1, 2), c));
             Assert.Equal(("c", 2, 0), candidate.CatchAll);
             Assert.Empty(candidate.ComplexSegments);
-            Assert.Empty(candidate.MatchProcessors);
+            Assert.Empty(candidate.Constraints);
         }
 
         // Defaults are processed first, which affects the slot ordering.
@@ -758,7 +759,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 c => Assert.Equal(("c", 2, 2), c));
             Assert.Equal(default, candidate.CatchAll);
             Assert.Empty(candidate.ComplexSegments);
-            Assert.Empty(candidate.MatchProcessors);
+            Assert.Empty(candidate.Constraints);
         }
 
         [Fact]
@@ -789,11 +790,11 @@ namespace Microsoft.AspNetCore.Routing.Matching
             Assert.Collection(
                 candidate.ComplexSegments,
                 s => Assert.Equal(0, s.segmentIndex));
-            Assert.Empty(candidate.MatchProcessors);
+            Assert.Empty(candidate.Constraints);
         }
 
         [Fact]
-        public void CreateCandidate_MatchProcessors()
+        public void CreateCandidate_RouteConstraints()
         {
             // Arrange
             var endpoint = CreateEndpoint("/a/b/c", constraints: new { a = new IntRouteConstraint(), });
@@ -804,14 +805,38 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var candidate = builder.CreateCandidate(endpoint, score: 0);
 
             // Assert
-            Assert.Equal( Candidate.CandidateFlags.HasMatchProcessors, candidate.Flags);
+            Assert.Equal(Candidate.CandidateFlags.HasConstraints, candidate.Flags);
             Assert.Empty(candidate.Slots);
             Assert.Empty(candidate.Captures);
             Assert.Equal(default, candidate.CatchAll);
             Assert.Empty(candidate.ComplexSegments);
-            Assert.Single(candidate.MatchProcessors);
+            Assert.Single(candidate.Constraints);
         }
-        
+
+        [Fact]
+        public void CreateCandidate_CustomParameterPolicy()
+        {
+            // Arrange
+            var endpoint = CreateEndpoint("/a/b/c", constraints: new { a = new CustomParameterPolicy(), });
+
+            var builder = CreateDfaMatcherBuilder();
+
+            // Act
+            var candidate = builder.CreateCandidate(endpoint, score: 0);
+
+            // Assert
+            Assert.Equal(Candidate.CandidateFlags.None, candidate.Flags);
+            Assert.Empty(candidate.Slots);
+            Assert.Empty(candidate.Captures);
+            Assert.Equal(default, candidate.CatchAll);
+            Assert.Empty(candidate.ComplexSegments);
+            Assert.Empty(candidate.Constraints);
+        }
+
+        private class CustomParameterPolicy : IParameterPolicy
+        {
+        }
+
         [Fact]
         public void CreateCandidates_CreatesScoresCorrectly()
         {
@@ -846,7 +871,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         {
             var dataSource = new CompositeEndpointDataSource(Array.Empty<EndpointDataSource>());
             return new DfaMatcherBuilder(
-                Mock.Of<MatchProcessorFactory>(),
+                new DefaultParameterPolicyFactory(Options.Create(new RouteOptions()), Mock.Of<IServiceProvider>()),
                 Mock.Of<EndpointSelector>(),
                 policies);
         }

@@ -22,18 +22,18 @@ namespace Microsoft.AspNetCore.Routing.Patterns
         internal RoutePattern(
             string rawText,
             IReadOnlyDictionary<string, object> defaults,
-            IReadOnlyDictionary<string, IReadOnlyList<RoutePatternConstraintReference>> constraints,
+            IReadOnlyDictionary<string, IReadOnlyList<RoutePatternParameterPolicyReference>> parameterPolicies,
             IReadOnlyList<RoutePatternParameterPart> parameters,
             IReadOnlyList<RoutePatternPathSegment> pathSegments)
         {
             Debug.Assert(defaults != null);
-            Debug.Assert(constraints != null);
+            Debug.Assert(parameterPolicies != null);
             Debug.Assert(parameters != null);
             Debug.Assert(pathSegments != null);
 
             RawText = rawText;
             Defaults = defaults;
-            Constraints = constraints;
+            ParameterPolicies = parameterPolicies;
             Parameters = parameters;
             PathSegments = pathSegments;
 
@@ -48,10 +48,10 @@ namespace Microsoft.AspNetCore.Routing.Patterns
         public IReadOnlyDictionary<string, object> Defaults { get; }
 
         /// <summary>
-        /// Gets the set of constraint references for the route pattern.
-        /// The keys of <see cref="Constraints"/> are the route parameter names.
+        /// Gets the set of parameter policy references for the route pattern.
+        /// The keys of <see cref="ParameterPolicies"/> are the route parameter names.
         /// </summary>
-        public IReadOnlyDictionary<string, IReadOnlyList<RoutePatternConstraintReference>> Constraints { get; }
+        public IReadOnlyDictionary<string, IReadOnlyList<RoutePatternParameterPolicyReference>> ParameterPolicies { get; }
 
         /// <summary>
         /// Gets the precedence value of the route pattern for URL matching.

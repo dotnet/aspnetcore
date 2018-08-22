@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         {
             var dataSource = new CompositeEndpointDataSource(Array.Empty<EndpointDataSource>());
             return new DfaMatcherBuilder(
-                Mock.Of<MatchProcessorFactory>(),
+                Mock.Of<ParameterPolicyFactory>(),
                 Mock.Of<EndpointSelector>(),
                 policies);
         }

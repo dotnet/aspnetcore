@@ -21,11 +21,11 @@ namespace RoutingSample.Web
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddTransient<EndsWithStringMatchProcessor>();
+            services.AddTransient<EndsWithStringRouteConstraint>();
 
             services.AddRouting(options =>
             {
-                options.ConstraintMap.Add("endsWith", typeof(EndsWithStringMatchProcessor));
+                options.ConstraintMap.Add("endsWith", typeof(EndsWithStringRouteConstraint));
             });
         }
 

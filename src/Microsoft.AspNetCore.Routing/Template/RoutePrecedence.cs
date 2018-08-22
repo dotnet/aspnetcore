@@ -149,7 +149,7 @@ namespace Microsoft.AspNetCore.Routing.Template
                 Debug.Assert(parameterPart != null);
                 var digit = parameterPart.IsCatchAll ? 1 : 3;
 
-                if (parameterPart.Constraints.Count > 0)
+                if (parameterPart.ParameterPolicies.Count > 0)
                 {
                     digit++;
                 }
@@ -220,7 +220,7 @@ namespace Microsoft.AspNetCore.Routing.Template
 
                 // If there is a route constraint for the parameter, reduce order by 1
                 // Constrained parameters end up with order 2, Constrained catch alls end up with order 4
-                if (parameterPart.Constraints.Count > 0)
+                if (parameterPart.ParameterPolicies.Count > 0)
                 {
                     digit--;
                 }

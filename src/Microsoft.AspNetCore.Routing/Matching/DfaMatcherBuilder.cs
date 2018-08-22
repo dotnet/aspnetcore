@@ -12,18 +12,18 @@ namespace Microsoft.AspNetCore.Routing.Matching
     {
         private readonly List<MatcherEndpoint> _endpoints = new List<MatcherEndpoint>();
 
-        private readonly MatchProcessorFactory _matchProcessorFactory;
+        private readonly ParameterPolicyFactory _parameterPolicyFactory;
         private readonly EndpointSelector _selector;
         private readonly MatcherPolicy[] _policies;
         private readonly INodeBuilderPolicy[] _nodeBuilders;
         private readonly MatcherEndpointComparer _comparer;
 
         public DfaMatcherBuilder(
-            MatchProcessorFactory matchProcessorFactory,
+            ParameterPolicyFactory parameterPolicyFactory,
             EndpointSelector selector,
             IEnumerable<MatcherPolicy> policies)
         {
-            _matchProcessorFactory = matchProcessorFactory;
+            _parameterPolicyFactory = parameterPolicyFactory;
             _selector = selector;
             _policies = policies.OrderBy(p => p.Order).ToArray();
 
@@ -425,16 +425,19 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 complexSegments.Add((segment, i));
             }
 
-            var matchProcessors = new List<MatchProcessor>();
-            foreach (var kvp in endpoint.RoutePattern.Constraints)
+            var constraints = new List<KeyValuePair<string, IRouteConstraint>>();
+            foreach (var kvp in endpoint.RoutePattern.ParameterPolicies)
             {
                 var parameter = endpoint.RoutePattern.GetParameter(kvp.Key); // may be null, that's ok
-                var constraintReferences = kvp.Value;
-                for (var i = 0; i < constraintReferences.Count; i++)
+                var parameterPolicyReferences = kvp.Value;
+                for (var i = 0; i < parameterPolicyReferences.Count; i++)
                 {
-                    var constraintReference = constraintReferences[i];
-                    var matchProcessor = _matchProcessorFactory.Create(parameter, constraintReference);
-                    matchProcessors.Add(matchProcessor);
+                    var reference = parameterPolicyReferences[i];
+                    var parameterPolicy = _parameterPolicyFactory.Create(parameter, reference);
+                    if (parameterPolicy is IRouteConstraint routeConstraint)
+                    {
+                        constraints.Add(new KeyValuePair<string, IRouteConstraint>(kvp.Key, routeConstraint));
+                    }
                 }
             }
 
@@ -445,7 +448,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 captures.ToArray(),
                 catchAll,
                 complexSegments.ToArray(),
-                matchProcessors.ToArray());
+                constraints.ToArray());
         }
 
         private int[] GetGroupLengths(DfaNode node)
