@@ -2,11 +2,13 @@
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Formatting;
+using System.Threading;
 using System.Threading.Tasks;
 using BasicWebSite;
 using BasicWebSite.Controllers;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.Mvc.Testing.Handlers;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
@@ -17,13 +19,14 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
     {
         public TestingInfrastructureTests(WebApplicationFactory<BasicWebSite.Startup> fixture)
         {
-            var factory = fixture.Factories.FirstOrDefault() ?? fixture.WithWebHostBuilder(ConfigureWebHostBuilder);
-            Client = factory.CreateClient();
+            Factory = fixture.Factories.FirstOrDefault() ?? fixture.WithWebHostBuilder(ConfigureWebHostBuilder);
+            Client = Factory.CreateClient();
         }
 
         private static void ConfigureWebHostBuilder(IWebHostBuilder builder) =>
             builder.ConfigureTestServices(s => s.AddSingleton<TestService, OverridenService>());
 
+        public WebApplicationFactory<Startup> Factory { get; }
         public HttpClient Client { get; }
 
         [Fact]
@@ -55,6 +58,22 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var handlerResponse = await response.Content.ReadAsAsync<RedirectHandlerResponse>();
             Assert.Equal(5, handlerResponse.Url);
             Assert.Equal(5, handlerResponse.Body);
+        }
+
+        [Fact]
+        public async Task TestingInfrastructure_RedirectHandlerUsesOriginalRequestHeaders()
+        {
+            // Act
+            var request = new HttpRequestMessage(HttpMethod.Get, "Testing/RedirectHandler/Headers");
+            var client = Factory.CreateDefaultClient(
+                new RedirectHandler(), new TestHandler());
+            var response = await client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var modifiedHeaderWasSent = await response.Content.ReadAsStringAsync();
+
+            Assert.Equal("false", modifiedHeaderWasSent);
         }
 
         [Fact]
@@ -91,6 +110,30 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             public OverridenService()
             {
                 Message = "Test";
+            }
+        }
+
+        private class TestHandler : DelegatingHandler
+        {
+            public TestHandler()
+            {
+            }
+
+            public TestHandler(HttpMessageHandler innerHandler) : base(innerHandler)
+            {
+            }
+
+            public bool HeaderAdded { get; set; }
+
+            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            {
+                if (!HeaderAdded)
+                {
+                    request.Headers.Add("X-Added-Header", "true");
+                    HeaderAdded = true;
+                }
+
+                return base.SendAsync(request, cancellationToken);
             }
         }
     }
