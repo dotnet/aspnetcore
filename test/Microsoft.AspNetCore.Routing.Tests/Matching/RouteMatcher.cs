@@ -4,6 +4,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Routing.Matching
 {
@@ -17,7 +18,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             _inner = inner;
         }
 
-        public async override Task MatchAsync(HttpContext httpContext, IEndpointFeature feature)
+        public async override Task MatchAsync(HttpContext httpContext, EndpointFeature feature)
         {
             if (httpContext == null)
             {
@@ -34,7 +35,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             if (context.Handler != null)
             {
-                feature.Values = context.RouteData.Values;
+                feature.RouteValues = context.RouteData.Values;
                 await context.Handler(httpContext);
             }
         }

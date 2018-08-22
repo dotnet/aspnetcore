@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         public DfaNode()
         {
             Literals = new Dictionary<string, DfaNode>(StringComparer.OrdinalIgnoreCase);
-            Matches = new List<MatcherEndpoint>();
+            Matches = new List<RouteEndpoint>();
             PolicyEdges = new Dictionary<object, DfaNode>();
         }
 
@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         // Just for diagnostics and debugging
         public string Label { get; set; }
         
-        public List<MatcherEndpoint> Matches { get; }
+        public List<RouteEndpoint> Matches { get; }
 
         public Dictionary<string, DfaNode> Literals { get; }
 

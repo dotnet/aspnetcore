@@ -4,6 +4,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Routing.Matching
 {
@@ -12,17 +13,17 @@ namespace Microsoft.AspNetCore.Routing.Matching
     // to establish a lower bound for perf comparisons.
     internal sealed class TrivialMatcher : Matcher
     {
-        private readonly MatcherEndpoint _endpoint;
+        private readonly RouteEndpoint _endpoint;
         private readonly Candidate[] _candidates;
 
-        public TrivialMatcher(MatcherEndpoint endpoint)
+        public TrivialMatcher(RouteEndpoint endpoint)
         {
             _endpoint = endpoint;
 
             _candidates = new Candidate[] { new Candidate(endpoint), };
         }
 
-        public sealed override Task MatchAsync(HttpContext httpContext, IEndpointFeature feature)
+        public sealed override Task MatchAsync(HttpContext httpContext, EndpointFeature feature)
         {
             if (httpContext == null)
             {
@@ -38,7 +39,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             if (string.Equals(_endpoint.RoutePattern.RawText, path, StringComparison.OrdinalIgnoreCase))
             {
                 feature.Endpoint = _endpoint;
-                feature.Values = new RouteValueDictionary();
+                feature.RouteValues = new RouteValueDictionary();
             }
 
             return Task.CompletedTask;

@@ -10,13 +10,13 @@ namespace Microsoft.AspNetCore.Routing.Matching
 {
     internal class DfaMatcherBuilder : MatcherBuilder
     {
-        private readonly List<MatcherEndpoint> _endpoints = new List<MatcherEndpoint>();
+        private readonly List<RouteEndpoint> _endpoints = new List<RouteEndpoint>();
 
         private readonly ParameterPolicyFactory _parameterPolicyFactory;
         private readonly EndpointSelector _selector;
         private readonly MatcherPolicy[] _policies;
         private readonly INodeBuilderPolicy[] _nodeBuilders;
-        private readonly MatcherEndpointComparer _comparer;
+        private readonly RouteEndpointComparer _comparer;
 
         public DfaMatcherBuilder(
             ParameterPolicyFactory parameterPolicyFactory,
@@ -29,10 +29,10 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             // Taking care to use _policies, which has been sorted.
             _nodeBuilders = _policies.OfType<INodeBuilderPolicy>().ToArray();
-            _comparer = new MatcherEndpointComparer(_policies.OfType<IEndpointComparerPolicy>().ToArray());
+            _comparer = new RouteEndpointComparer(_policies.OfType<IEndpointComparerPolicy>().ToArray());
         }
 
-        public override void AddEndpoint(MatcherEndpoint endpoint)
+        public override void AddEndpoint(RouteEndpoint endpoint)
         {
             _endpoints.Add(endpoint);
         }
@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             // Since we're doing a BFS we will process each 'level' of the tree in stages
             // this list will hold the set of items we need to process at the current
             // stage.
-            var work = new List<(MatcherEndpoint endpoint, List<DfaNode> parents)>();
+            var work = new List<(RouteEndpoint endpoint, List<DfaNode> parents)>();
 
             var root = new DfaNode() { PathDepth = 0, Label = "/" };
 
@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             for (var depth = 0; depth <= maxDepth; depth++)
             {
                 // As we process items, collect the next set of items.
-                var nextWork = new List<(MatcherEndpoint endpoint, List<DfaNode> parents)>();
+                var nextWork = new List<(RouteEndpoint endpoint, List<DfaNode> parents)>();
 
                 for (var i = 0; i < work.Count; i++)
                 {
@@ -192,7 +192,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             return root;
         }
 
-        private RoutePatternPathSegment GetCurrentSegment(MatcherEndpoint endpoint, int depth)
+        private RoutePatternPathSegment GetCurrentSegment(RouteEndpoint endpoint, int depth)
         {
             if (depth < endpoint.RoutePattern.PathSegments.Count)
             {
@@ -337,7 +337,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
         // Builds an array of candidates for a node, assigns a 'score' for each
         // endpoint.
-        internal Candidate[] CreateCandidates(IReadOnlyList<MatcherEndpoint> endpoints)
+        internal Candidate[] CreateCandidates(IReadOnlyList<RouteEndpoint> endpoints)
         {
             if (endpoints.Count == 0)
             {
@@ -367,7 +367,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         }
 
         // internal for tests
-        internal Candidate CreateCandidate(MatcherEndpoint endpoint, int score)
+        internal Candidate CreateCandidate(RouteEndpoint endpoint, int score)
         {
             var assignments = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
             var slots = new List<KeyValuePair<string, object>>();
@@ -481,7 +481,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             return groups.ToArray();
         }
 
-        private static bool HasAdditionalRequiredSegments(MatcherEndpoint endpoint, int depth)
+        private static bool HasAdditionalRequiredSegments(RouteEndpoint endpoint, int depth)
         {
             for (var i = depth; i < endpoint.RoutePattern.PathSegments.Count; i++)
             {
@@ -550,7 +550,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                         };
 
                         // TODO: https://github.com/aspnet/Routing/issues/648
-                        next.Matches.AddRange(edge.Endpoints.Cast<MatcherEndpoint>().ToArray());
+                        next.Matches.AddRange(edge.Endpoints.Cast<RouteEndpoint>().ToArray());
                         nextWork.Add(next);
 
                         parent.PolicyEdges.Add(edge.State, next);

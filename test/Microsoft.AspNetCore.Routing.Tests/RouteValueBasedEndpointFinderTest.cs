@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.AspNetCore.Routing.Matching;
 using Microsoft.AspNetCore.Routing.Patterns;
@@ -34,7 +35,7 @@ namespace Microsoft.AspNetCore.Routing
             Assert.NotNull(finder.NamedMatches);
             Assert.True(finder.NamedMatches.TryGetValue("named", out var namedMatches));
             var namedMatch = Assert.Single(namedMatches);
-            var actual = Assert.IsType<MatcherEndpoint>(namedMatch.Match.Entry.Data);
+            var actual = Assert.IsType<RouteEndpoint>(namedMatch.Match.Entry.Data);
             Assert.Same(endpoint2, actual);
         }
 
@@ -55,8 +56,8 @@ namespace Microsoft.AspNetCore.Routing
             Assert.NotNull(finder.NamedMatches);
             Assert.True(finder.NamedMatches.TryGetValue("named", out var namedMatches));
             Assert.Equal(2, namedMatches.Count);
-            Assert.Same(endpoint2, Assert.IsType<MatcherEndpoint>(namedMatches[0].Match.Entry.Data));
-            Assert.Same(endpoint3, Assert.IsType<MatcherEndpoint>(namedMatches[1].Match.Entry.Data));
+            Assert.Same(endpoint2, Assert.IsType<RouteEndpoint>(namedMatches[0].Match.Entry.Data));
+            Assert.Same(endpoint3, Assert.IsType<RouteEndpoint>(namedMatches[1].Match.Entry.Data));
         }
 
         [Fact]
@@ -76,8 +77,8 @@ namespace Microsoft.AspNetCore.Routing
             Assert.NotNull(finder.NamedMatches);
             Assert.True(finder.NamedMatches.TryGetValue("named", out var namedMatches));
             Assert.Equal(2, namedMatches.Count);
-            Assert.Same(endpoint2, Assert.IsType<MatcherEndpoint>(namedMatches[0].Match.Entry.Data));
-            Assert.Same(endpoint3, Assert.IsType<MatcherEndpoint>(namedMatches[1].Match.Entry.Data));
+            Assert.Same(endpoint2, Assert.IsType<RouteEndpoint>(namedMatches[0].Match.Entry.Data));
+            Assert.Same(endpoint3, Assert.IsType<RouteEndpoint>(namedMatches[1].Match.Entry.Data));
         }
 
         [Fact]
@@ -97,7 +98,7 @@ namespace Microsoft.AspNetCore.Routing
             // Assert 1
             Assert.NotNull(finder.AllMatches);
             var match = Assert.Single(finder.AllMatches);
-            var actual = Assert.IsType<MatcherEndpoint>(match.Entry.Data);
+            var actual = Assert.IsType<RouteEndpoint>(match.Entry.Data);
             Assert.Same(endpoint1, actual);
 
             // Arrange 2
@@ -127,22 +128,22 @@ namespace Microsoft.AspNetCore.Routing
                 finder.AllMatches,
                 (m) =>
                 {
-                    actual = Assert.IsType<MatcherEndpoint>(m.Entry.Data);
+                    actual = Assert.IsType<RouteEndpoint>(m.Entry.Data);
                     Assert.Same(endpoint1, actual);
                 },
                 (m) =>
                 {
-                    actual = Assert.IsType<MatcherEndpoint>(m.Entry.Data);
+                    actual = Assert.IsType<RouteEndpoint>(m.Entry.Data);
                     Assert.Same(endpoint2, actual);
                 },
                 (m) =>
                 {
-                    actual = Assert.IsType<MatcherEndpoint>(m.Entry.Data);
+                    actual = Assert.IsType<RouteEndpoint>(m.Entry.Data);
                     Assert.Same(endpoint3, actual);
                 },
                 (m) =>
                 {
-                    actual = Assert.IsType<MatcherEndpoint>(m.Entry.Data);
+                    actual = Assert.IsType<RouteEndpoint>(m.Entry.Data);
                     Assert.Same(endpoint4, actual);
                 });
         }
@@ -231,7 +232,7 @@ namespace Microsoft.AspNetCore.Routing
                 objectPool);
         }
 
-        private MatcherEndpoint CreateEndpoint(
+        private RouteEndpoint CreateEndpoint(
             string template,
             object defaults = null,
             object requiredValues = null,
@@ -249,8 +250,8 @@ namespace Microsoft.AspNetCore.Routing
                 metadataCollection = new EndpointMetadataCollection(metadata);
             }
 
-            return new MatcherEndpoint(
-                MatcherEndpoint.EmptyInvoker,
+            return new RouteEndpoint(
+                TestConstants.EmptyRequestDelegate,
                 RoutePatternFactory.Parse(template, defaults, parameterPolicies: null),
                 order,
                 metadataCollection,

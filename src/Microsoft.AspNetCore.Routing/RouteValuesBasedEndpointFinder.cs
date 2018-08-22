@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.AspNetCore.Routing.Matching;
 using Microsoft.AspNetCore.Routing.Template;
@@ -56,7 +57,7 @@ namespace Microsoft.AspNetCore.Routing
 
             return matchResults
                 .Select(matchResult => matchResult.Match)
-                .Select(match => (MatcherEndpoint)match.Entry.Data);
+                .Select(match => (RouteEndpoint)match.Entry.Data);
         }
 
         private void HandleChange()
@@ -103,7 +104,7 @@ namespace Microsoft.AspNetCore.Routing
             var namedOutboundMatchResults = new Dictionary<string, List<OutboundMatchResult>>(
                 StringComparer.OrdinalIgnoreCase);
 
-            var endpoints = _endpointDataSource.Endpoints.OfType<MatcherEndpoint>();
+            var endpoints = _endpointDataSource.Endpoints.OfType<RouteEndpoint>();
             foreach (var endpoint in endpoints)
             {
                 // Do not consider an endpoint for link generation if the following marker metadata is on it
@@ -135,7 +136,7 @@ namespace Microsoft.AspNetCore.Routing
             return (allOutboundMatches, namedOutboundMatchResults);
         }
 
-        private OutboundRouteEntry CreateOutboundRouteEntry(MatcherEndpoint endpoint)
+        private OutboundRouteEntry CreateOutboundRouteEntry(RouteEndpoint endpoint)
         {
             var routeValuesAddressMetadata = endpoint.Metadata.GetMetadata<IRouteValuesAddressMetadata>();
             var entry = new OutboundRouteEntry()

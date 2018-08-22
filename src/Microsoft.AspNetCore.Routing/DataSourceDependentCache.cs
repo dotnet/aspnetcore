@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Routing
 {

@@ -5,7 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing.Matching;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.AspNetCore.Routing.Template;
@@ -18,10 +20,10 @@ namespace Microsoft.AspNetCore.Routing
 {
     public abstract class EndpointRoutingBenchmarkBase
     {
-        private protected MatcherEndpoint[] Endpoints;
+        private protected RouteEndpoint[] Endpoints;
         private protected HttpContext[] Requests;
 
-        private protected void SetupEndpoints(params MatcherEndpoint[] endpoints)
+        private protected void SetupEndpoints(params RouteEndpoint[] endpoints)
         {
             Endpoints = endpoints;
         }
@@ -76,8 +78,8 @@ namespace Microsoft.AspNetCore.Routing
                 var message = new StringBuilder();
                 message.AppendLine($"Validation failed for request {Array.IndexOf(Requests, httpContext)}");
                 message.AppendLine($"{httpContext.Request.Method} {httpContext.Request.Path}");
-                message.AppendLine($"expected: '{((MatcherEndpoint)expected)?.DisplayName ?? "null"}'");
-                message.AppendLine($"actual:   '{((MatcherEndpoint)actual)?.DisplayName ?? "null"}'");
+                message.AppendLine($"expected: '{((RouteEndpoint)expected)?.DisplayName ?? "null"}'");
+                message.AppendLine($"actual:   '{((RouteEndpoint)actual)?.DisplayName ?? "null"}'");
                 throw new InvalidOperationException(message.ToString());
             }
         }
@@ -95,7 +97,7 @@ namespace Microsoft.AspNetCore.Routing
             }
         }
 
-        protected MatcherEndpoint CreateEndpoint(
+        protected RouteEndpoint CreateEndpoint(
             string template,
             object defaults = null,
             object constraints = null,
@@ -108,8 +110,8 @@ namespace Microsoft.AspNetCore.Routing
             var endpointMetadata = new List<object>(metadata ?? Array.Empty<object>());
             endpointMetadata.Add(new RouteValuesAddressMetadata(routeName, new RouteValueDictionary(requiredValues)));
 
-            return new MatcherEndpoint(
-                MatcherEndpoint.EmptyInvoker,
+            return new RouteEndpoint(
+                (context) => Task.CompletedTask,
                 RoutePatternFactory.Parse(template, defaults, constraints),
                 order,
                 new EndpointMetadataCollection(endpointMetadata),
@@ -119,14 +121,15 @@ namespace Microsoft.AspNetCore.Routing
         protected (HttpContext httpContext, RouteValueDictionary ambientValues) CreateCurrentRequestContext(
             object ambientValues = null)
         {
-            var feature = new EndpointFeature { Values = new RouteValueDictionary(ambientValues) };
+            var feature = new EndpointFeature { RouteValues = new RouteValueDictionary(ambientValues) };
             var context = new DefaultHttpContext();
             context.Features.Set<IEndpointFeature>(feature);
+            context.Features.Set<IRouteValuesFeature>(feature);
 
-            return (context, feature.Values);
+            return (context, feature.RouteValues);
         }
 
-        protected void CreateOutboundRouteEntry(TreeRouteBuilder treeRouteBuilder, MatcherEndpoint endpoint)
+        protected void CreateOutboundRouteEntry(TreeRouteBuilder treeRouteBuilder, RouteEndpoint endpoint)
         {
             var routeValuesAddressMetadata = endpoint.Metadata.GetMetadata<IRouteValuesAddressMetadata>();
             var requiredValues = routeValuesAddressMetadata?.RequiredValues ?? new RouteValueDictionary();

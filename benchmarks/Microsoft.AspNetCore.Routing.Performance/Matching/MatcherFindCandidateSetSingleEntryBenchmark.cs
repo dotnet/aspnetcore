@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         [GlobalSetup]
         public void Setup()
         {
-            Endpoints = new MatcherEndpoint[1];
+            Endpoints = new RouteEndpoint[1];
             Endpoints[0] = CreateEndpoint("/plaintext");
 
             Requests = new HttpContext[1];

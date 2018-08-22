@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Routing
     {
         public DefaultLinkGenerationTemplate(
             DefaultLinkGenerator linkGenerator,
-            IEnumerable<MatcherEndpoint> endpoints,
+            IEnumerable<RouteEndpoint> endpoints,
             HttpContext httpContext,
             RouteValueDictionary explicitValues,
             RouteValueDictionary ambientValues)
@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Routing
 
         internal DefaultLinkGenerator LinkGenerator { get; }
 
-        internal IEnumerable<MatcherEndpoint> Endpoints { get; }
+        internal IEnumerable<RouteEndpoint> Endpoints { get; }
 
         internal HttpContext HttpContext { get; }
 

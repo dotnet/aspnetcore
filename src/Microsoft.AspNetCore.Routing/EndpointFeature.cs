@@ -3,39 +3,31 @@
 
 using System;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Routing
 {
-    /// <summary>
-    /// A default implementation of <see cref="IEndpointFeature"/> and <see cref="IRoutingFeature"/>.
-    /// </summary>
-    public sealed class EndpointFeature : IEndpointFeature, IRoutingFeature
+    public sealed class EndpointFeature : IEndpointFeature, IRouteValuesFeature, IRoutingFeature
     {
         private RouteData _routeData;
-        private RouteValueDictionary _values;
+        private RouteValueDictionary _routeValues;
 
         /// <summary>
-        /// Gets or sets the selected <see cref="Routing.Endpoint"/> for the current
+        /// Gets or sets the selected <see cref="Http.Endpoint"/> for the current
         /// request.
         /// </summary>
         public Endpoint Endpoint { get; set; }
 
         /// <summary>
-        /// Gets or sets a delegate that can be used to invoke the current
-        /// <see cref="Routing.Endpoint"/>.
-        /// </summary>
-        public Func<RequestDelegate, RequestDelegate> Invoker { get; set; }
-
-        /// <summary>
         /// Gets or sets the <see cref="RouteValueDictionary"/> associated with the currrent
         /// request.
         /// </summary>
-        public RouteValueDictionary Values
+        public RouteValueDictionary RouteValues
         {
-            get => _values;
+            get => _routeValues;
             set
             {
-                _values = value;
+                _routeValues = value;
 
                 // RouteData will be created next get with new Values
                 _routeData = null;
@@ -46,7 +38,7 @@ namespace Microsoft.AspNetCore.Routing
         /// Gets or sets the <see cref="RouteData"/> for the current request.
         /// </summary>
         /// <remarks>
-        /// The setter is not implemented. Use <see cref="Values"/> to set the route values.
+        /// The setter is not implemented. Use <see cref="RouteValues"/> to set the route values.
         /// </remarks>
         RouteData IRoutingFeature.RouteData
         {
@@ -54,7 +46,7 @@ namespace Microsoft.AspNetCore.Routing
             {
                 if (_routeData == null)
                 {
-                    _routeData = _values == null ? new RouteData() : new RouteData(_values);
+                    _routeData = _routeValues == null ? new RouteData() : new RouteData(_routeValues);
 
                     // Note: DataTokens won't update if someone else overwrites the Endpoint
                     // after route values has been set. This seems find since endpoints are a new

@@ -8,9 +8,9 @@ namespace Microsoft.AspNetCore.Routing.Matching
 {
     internal class TrivialMatcherBuilder : MatcherBuilder
     {
-        private readonly List<MatcherEndpoint> _endpoints = new List<MatcherEndpoint>();
+        private readonly List<RouteEndpoint> _endpoints = new List<RouteEndpoint>();
 
-        public override void AddEndpoint(MatcherEndpoint endpoint)
+        public override void AddEndpoint(RouteEndpoint endpoint)
         {
             _endpoints.Add(endpoint);
         }

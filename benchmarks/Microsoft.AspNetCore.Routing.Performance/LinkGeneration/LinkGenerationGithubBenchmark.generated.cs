@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Routing.LinkGeneration
 
         private void SetupEndpoints()
         {
-            Endpoints = new MatcherEndpoint[243];
+            Endpoints = new RouteEndpoint[243];
             Endpoints[0] = CreateEndpoint("/emojis", "Controller1", "Action1", "GET");
             Endpoints[1] = CreateEndpoint("/events", "Controller2", "Action1", "GET");
             Endpoints[2] = CreateEndpoint("/feeds", "Controller3", "Action1", "GET");
@@ -1485,7 +1485,7 @@ namespace Microsoft.AspNetCore.Routing.LinkGeneration
             return builder.Build();
         }
 
-        private MatcherEndpoint CreateEndpoint(string template, string controllerName, string actionName, string httpMethod)
+        private RouteEndpoint CreateEndpoint(string template, string controllerName, string actionName, string httpMethod)
         {
             var requiredValues = new
             {

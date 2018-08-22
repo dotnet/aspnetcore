@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Xunit;
 using static Microsoft.AspNetCore.Routing.Matching.HttpMethodMatcherPolicy;
@@ -276,7 +277,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 });
         }
 
-        private static MatcherEndpoint CreateEndpoint(string template, HttpMethodMetadata httpMethodMetadata)
+        private static RouteEndpoint CreateEndpoint(string template, HttpMethodMetadata httpMethodMetadata)
         {
             var metadata = new List<object>();
             if (httpMethodMetadata != null)
@@ -284,8 +285,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 metadata.Add(httpMethodMetadata);
             }
 
-            return new MatcherEndpoint(
-                MatcherEndpoint.EmptyInvoker,
+            return new RouteEndpoint(
+                TestConstants.EmptyRequestDelegate,
                 RoutePatternFactory.Parse(template),
                 0,
                 new EndpointMetadataCollection(metadata),

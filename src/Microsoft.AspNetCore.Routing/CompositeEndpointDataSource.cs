@@ -7,7 +7,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
-using Microsoft.AspNetCore.Routing.Matching;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Routing
@@ -132,15 +132,15 @@ namespace Microsoft.AspNetCore.Routing
                 var sb = new StringBuilder();
                 foreach (var endpoint in _endpoints)
                 {
-                    if (endpoint is MatcherEndpoint matcherEndpoint)
+                    if (endpoint is RouteEndpoint routeEndpoint)
                     {
-                        var template = matcherEndpoint.RoutePattern.RawText;
+                        var template = routeEndpoint.RoutePattern.RawText;
                         template = string.IsNullOrEmpty(template) ? "\"\"" : template;
                         sb.Append(template);
                         sb.Append(", Defaults: new { ");
-                        sb.Append(string.Join(", ", FormatValues(matcherEndpoint.RoutePattern.Defaults)));
+                        sb.Append(string.Join(", ", FormatValues(routeEndpoint.RoutePattern.Defaults)));
                         sb.Append(" }");
-                        var routeValuesAddressMetadata = matcherEndpoint.Metadata.GetMetadata<IRouteValuesAddressMetadata>();
+                        var routeValuesAddressMetadata = routeEndpoint.Metadata.GetMetadata<IRouteValuesAddressMetadata>();
                         sb.Append(", Route Name: ");
                         sb.Append(routeValuesAddressMetadata?.Name);
                         if (routeValuesAddressMetadata?.RequiredValues != null)
@@ -150,21 +150,21 @@ namespace Microsoft.AspNetCore.Routing
                             sb.Append(" }");
                         }
                         sb.Append(", Order: ");
-                        sb.Append(matcherEndpoint.Order);
+                        sb.Append(routeEndpoint.Order);
 
-                        var httpMethodMetadata = matcherEndpoint.Metadata.GetMetadata<IHttpMethodMetadata>();
+                        var httpMethodMetadata = routeEndpoint.Metadata.GetMetadata<IHttpMethodMetadata>();
                         if (httpMethodMetadata != null)
                         {
                             sb.Append(", Http Methods: ");
                             sb.Append(string.Join(", ", httpMethodMetadata.HttpMethods));
                         }
                         sb.Append(", Display Name: ");
-                        sb.Append(matcherEndpoint.DisplayName);
+                        sb.Append(routeEndpoint.DisplayName);
                         sb.AppendLine();
                     }
                     else
                     {
-                        sb.Append("Non-MatcherEndpoint. DisplayName:");
+                        sb.Append("Non-RouteEndpoint. DisplayName:");
                         sb.AppendLine(endpoint.DisplayName);
                     }
                 }

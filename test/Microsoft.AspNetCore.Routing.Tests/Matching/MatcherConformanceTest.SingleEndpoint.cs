@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             await matcher.MatchAsync(httpContext, feature);
 
             // Assert
-            MatcherAssert.AssertMatch(feature, endpoint);
+            MatcherAssert.AssertMatch(feature, httpContext, endpoint);
         }
 
         [Fact]
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             await matcher.MatchAsync(httpContext, feature);
 
             // Assert
-            MatcherAssert.AssertMatch(feature, endpoint);
+            MatcherAssert.AssertMatch(feature, httpContext, endpoint);
         }
 
         [Fact]
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             await matcher.MatchAsync(httpContext, feature);
 
             // Assert
-            MatcherAssert.AssertMatch(feature, endpoint);
+            MatcherAssert.AssertMatch(feature, httpContext, endpoint);
         }
 
         [Theory]
@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             await matcher.MatchAsync(httpContext, feature);
 
             // Assert
-            MatcherAssert.AssertMatch(feature, endpoint);
+            MatcherAssert.AssertMatch(feature, httpContext, endpoint);
         }
 
         // Some matchers will optimize for the ASCII case
@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             await matcher.MatchAsync(httpContext, feature);
 
             // Assert
-            MatcherAssert.AssertMatch(feature, endpoint);
+            MatcherAssert.AssertMatch(feature, httpContext, endpoint);
         }
 
         // Matchers should operate on the decoded representation - a matcher that calls 
@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             await matcher.MatchAsync(httpContext, feature);
 
             // Assert
-            MatcherAssert.AssertMatch(feature, endpoint);
+            MatcherAssert.AssertMatch(feature, httpContext, endpoint);
         }
 
         [Theory]
@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             await matcher.MatchAsync(httpContext, feature);
 
             // Assert
-            MatcherAssert.AssertNotMatch(feature);
+            MatcherAssert.AssertNotMatch(feature, httpContext);
         }
 
         [Theory]
@@ -136,7 +136,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             await matcher.MatchAsync(httpContext, feature);
 
             // Assert
-            MatcherAssert.AssertMatch(feature, endpoint);
+            MatcherAssert.AssertMatch(feature, httpContext, endpoint);
         }
 
         // Matchers do their own 'splitting' of the path into segments, so including
@@ -159,7 +159,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             await matcher.MatchAsync(httpContext, feature);
 
             // Assert
-            MatcherAssert.AssertMatch(feature, endpoint);
+            MatcherAssert.AssertMatch(feature, httpContext, endpoint);
         }
 
         // Matchers do their own 'splitting' of the path into segments, so including
@@ -190,7 +190,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             await matcher.MatchAsync(httpContext, feature);
 
             // Assert
-            MatcherAssert.AssertNotMatch(feature);
+            MatcherAssert.AssertNotMatch(feature, httpContext);
         }
 
         [Fact]
@@ -205,7 +205,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             await matcher.MatchAsync(httpContext, feature);
 
             // Assert
-            MatcherAssert.AssertMatch(feature, endpoint, values);
+            MatcherAssert.AssertMatch(feature, httpContext, endpoint, values);
         }
 
         [Fact]
@@ -220,7 +220,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             await matcher.MatchAsync(httpContext, feature);
 
             // Assert
-            MatcherAssert.AssertMatch(feature, endpoint, values);
+            MatcherAssert.AssertMatch(feature, httpContext, endpoint, values);
         }
 
         [Fact]
@@ -235,7 +235,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             await matcher.MatchAsync(httpContext, feature);
 
             // Assert
-            MatcherAssert.AssertMatch(feature, endpoint, values);
+            MatcherAssert.AssertMatch(feature, httpContext, endpoint, values);
         }
 
         [Fact]
@@ -255,7 +255,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             await matcher.MatchAsync(httpContext, feature);
 
             // Assert
-            MatcherAssert.AssertMatch(feature, endpoint, values);
+            MatcherAssert.AssertMatch(feature, httpContext, endpoint, values);
         }
 
         [Theory]
@@ -273,7 +273,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             await matcher.MatchAsync(httpContext, feature);
 
             // Assert
-            MatcherAssert.AssertNotMatch(feature);
+            MatcherAssert.AssertNotMatch(feature, httpContext);
         }
 
         [Theory]
@@ -294,7 +294,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             await matcher.MatchAsync(httpContext, feature);
 
             // Assert
-            MatcherAssert.AssertMatch(feature, endpoint, keys, values);
+            MatcherAssert.AssertMatch(feature, httpContext, endpoint, keys, values);
         }
 
         [Theory]
@@ -323,7 +323,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             await matcher.MatchAsync(httpContext, feature);
 
             // Assert
-            MatcherAssert.AssertNotMatch(feature);
+            MatcherAssert.AssertNotMatch(feature, httpContext);
         }
     }
 }

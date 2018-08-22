@@ -7,39 +7,34 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Patterns;
 
-namespace Microsoft.AspNetCore.Routing.Matching
+namespace Microsoft.AspNetCore.Routing
 {
     /// <summary>
     /// Represents an <see cref="Endpoint"/> that can be used in URL matching or URL generation.
     /// </summary>
-    public sealed class MatcherEndpoint : Endpoint
+    public sealed class RouteEndpoint : Endpoint
     {
-        internal static readonly Func<RequestDelegate, RequestDelegate> EmptyInvoker = (next) =>
-        {
-            return (context) => Task.CompletedTask;
-        };
-
         /// <summary>
-        /// Initializes a new instance of the <see cref="MatcherEndpoint"/> class.
+        /// Initializes a new instance of the <see cref="RouteEndpoint"/> class.
         /// </summary>
-        /// <param name="invoker">The delegate to invoke to create a <see cref="RequestDelegate"/>.</param>
+        /// <param name="requestDelegate">The delegate used to process requests for the endpoint.</param>
         /// <param name="routePattern">The <see cref="RoutePattern"/> to use in URL matching.</param>
         /// <param name="order">The order assigned to the endpoint.</param>
         /// <param name="metadata">
         /// The <see cref="EndpointMetadataCollection"/> or metadata associated with the endpoint.
         /// </param>
         /// <param name="displayName">The informational display name of the endpoint.</param>
-        public MatcherEndpoint(
-            Func<RequestDelegate, RequestDelegate> invoker,
+        public RouteEndpoint(
+            RequestDelegate requestDelegate,
             RoutePattern routePattern,
             int order,
             EndpointMetadataCollection metadata,
             string displayName)
-            : base(metadata, displayName)
+            : base(requestDelegate, metadata, displayName)
         {
-            if (invoker == null)
+            if (requestDelegate == null)
             {
-                throw new ArgumentNullException(nameof(invoker));
+                throw new ArgumentNullException(nameof(requestDelegate));
             }
 
             if (routePattern == null)
@@ -47,15 +42,9 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 throw new ArgumentNullException(nameof(routePattern));
             }
 
-            Invoker = invoker;
             RoutePattern = routePattern;
             Order = order;
         }
-
-        /// <summary>
-        /// Gets the invoker. The invoker is a delegate used to create a <see cref="RequestDelegate"/>.
-        /// </summary>
-        public Func<RequestDelegate, RequestDelegate> Invoker { get; }
 
         /// <summary>
         /// Gets the order value of endpoint.

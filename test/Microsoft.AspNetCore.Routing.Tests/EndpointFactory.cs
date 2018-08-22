@@ -1,7 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Routing.Matching;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Patterns;
 using System;
 using System.Collections.Generic;
@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Routing
 {
     internal static class EndpointFactory
     {
-        public static MatcherEndpoint CreateMatcherEndpoint(
+        public static RouteEndpoint CreateRouteEndpoint(
             string template,
             object defaults = null,
             object constraints = null,
@@ -25,8 +25,8 @@ namespace Microsoft.AspNetCore.Routing
                 d.Add(new RouteValuesAddressMetadata(null, new RouteValueDictionary(requiredValues)));
             }
 
-            return new MatcherEndpoint(
-                MatcherEndpoint.EmptyInvoker,
+            return new RouteEndpoint(
+                TestConstants.EmptyRequestDelegate,
                 RoutePatternFactory.Parse(template, defaults, constraints),
                 order,
                 new EndpointMetadataCollection(d),

@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Routing.TestObjects;
+using Microsoft.AspNetCore.Http;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Routing.Matching
@@ -13,8 +13,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
         public void Compare_EndpointWithMetadata_MoreSpecific()
         {
             // Arrange
-            var endpoint1 = new TestEndpoint(new EndpointMetadataCollection(new object[] { new TestMetadata(), }), "test1");
-            var endpoint2 = new TestEndpoint(new EndpointMetadataCollection(new object[] {  }), "test2");
+            var endpoint1 = new Endpoint(TestConstants.EmptyRequestDelegate, new EndpointMetadataCollection(new object[] { new TestMetadata(), }), "test1");
+            var endpoint2 = new Endpoint(TestConstants.EmptyRequestDelegate, new EndpointMetadataCollection(new object[] {  }), "test2");
 
             // Act
             var result = EndpointMetadataComparer<TestMetadata>.Default.Compare(endpoint1, endpoint2);
@@ -27,8 +27,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
         public void Compare_EndpointWithMetadata_ReverseOrder_MoreSpecific()
         {
             // Arrange
-            var endpoint1 = new TestEndpoint(new EndpointMetadataCollection(new object[] { }), "test1");
-            var endpoint2 = new TestEndpoint(new EndpointMetadataCollection(new object[] { new TestMetadata(), }), "test2");
+            var endpoint1 = new Endpoint(TestConstants.EmptyRequestDelegate, new EndpointMetadataCollection(new object[] { }), "test1");
+            var endpoint2 = new Endpoint(TestConstants.EmptyRequestDelegate, new EndpointMetadataCollection(new object[] { new TestMetadata(), }), "test2");
 
             // Act
             var result = EndpointMetadataComparer<TestMetadata>.Default.Compare(endpoint1, endpoint2);
@@ -41,8 +41,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
         public void Compare_BothEndpointsWithMetadata_Equal()
         {
             // Arrange
-            var endpoint1 = new TestEndpoint(new EndpointMetadataCollection(new object[] { new TestMetadata(), }), "test1");
-            var endpoint2 = new TestEndpoint(new EndpointMetadataCollection(new object[] { new TestMetadata(), }), "test2");
+            var endpoint1 = new Endpoint(TestConstants.EmptyRequestDelegate, new EndpointMetadataCollection(new object[] { new TestMetadata(), }), "test1");
+            var endpoint2 = new Endpoint(TestConstants.EmptyRequestDelegate, new EndpointMetadataCollection(new object[] { new TestMetadata(), }), "test2");
 
             // Act
             var result = EndpointMetadataComparer<TestMetadata>.Default.Compare(endpoint1, endpoint2);
@@ -55,8 +55,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
         public void Compare_BothEndpointsWithoutMetadata_Equal()
         {
             // Arrange
-            var endpoint1 = new TestEndpoint(new EndpointMetadataCollection(new object[] { }), "test1");
-            var endpoint2 = new TestEndpoint(new EndpointMetadataCollection(new object[] { }), "test2");
+            var endpoint1 = new Endpoint(TestConstants.EmptyRequestDelegate, new EndpointMetadataCollection(new object[] { }), "test1");
+            var endpoint2 = new Endpoint(TestConstants.EmptyRequestDelegate, new EndpointMetadataCollection(new object[] { }), "test2");
 
             // Act
             var result = EndpointMetadataComparer<TestMetadata>.Default.Compare(endpoint1, endpoint2);
@@ -69,8 +69,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
         public void Sort_EndpointWithMetadata_FirstInList()
         {
             // Arrange
-            var endpoint1 = new TestEndpoint(new EndpointMetadataCollection(new object[] { new TestMetadata(), }), "test1");
-            var endpoint2 = new TestEndpoint(new EndpointMetadataCollection(new object[] { }), "test2");
+            var endpoint1 = new Endpoint(TestConstants.EmptyRequestDelegate, new EndpointMetadataCollection(new object[] { new TestMetadata(), }), "test1");
+            var endpoint2 = new Endpoint(TestConstants.EmptyRequestDelegate, new EndpointMetadataCollection(new object[] { }), "test2");
 
             var list = new List<Endpoint>() { endpoint2, endpoint1, };
 

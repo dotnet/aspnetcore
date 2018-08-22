@@ -36,7 +36,7 @@ namespace RoutingSample.Web
                 builder.MapHello("/helloworld", "World");
 
                 builder.MapEndpoint(
-                    (next) => (httpContext) =>
+                    (httpContext) =>
                     {
                         var response = httpContext.Response;
                         var payloadLength = _homePayload.Length;
@@ -48,7 +48,7 @@ namespace RoutingSample.Web
                     "/",
                     "Home");
                 builder.MapEndpoint(
-                    (next) => (httpContext) =>
+                    (httpContext) =>
                     {
                         var response = httpContext.Response;
                         var payloadLength = _plainTextPayload.Length;
@@ -60,7 +60,7 @@ namespace RoutingSample.Web
                     "/plaintext",
                     "Plaintext");
                 builder.MapEndpoint(
-                    (next) => (httpContext) =>
+                    (httpContext) =>
                     {
                         var response = httpContext.Response;
                         response.StatusCode = 200;
@@ -70,7 +70,7 @@ namespace RoutingSample.Web
                     "/withconstraints/{id:endsWith(_001)}",
                     "withconstraints");
                 builder.MapEndpoint(
-                    (next) => (httpContext) =>
+                    (httpContext) =>
                     {
                         var response = httpContext.Response;
                         response.StatusCode = 200;
@@ -80,7 +80,7 @@ namespace RoutingSample.Web
                     "/withoptionalconstraints/{id:endsWith(_001)?}",
                     "withoptionalconstraints");
                 builder.MapEndpoint(
-                    (next) => (httpContext) =>
+                    (httpContext) =>
                     {
                         using (var writer = new StreamWriter(httpContext.Response.Body, Encoding.UTF8, 1024, leaveOpen: true))
                         {
@@ -95,7 +95,7 @@ namespace RoutingSample.Web
                     "DFA Graph",
                     new object[] { new HttpMethodMetadata(new[] { "GET", }) });
                 builder.MapEndpoint(
-                    (next) => (httpContext) =>
+                    (httpContext) =>
                     {
                         var linkGenerator = httpContext.RequestServices.GetRequiredService<LinkGenerator>();
 
@@ -112,7 +112,7 @@ namespace RoutingSample.Web
                         new RouteValuesAddressMetadata(name: "WithSingleAsteriskCatchAll", requiredValues: new RouteValueDictionary()),
                     });
                 builder.MapEndpoint(
-                    (next) => (httpContext) =>
+                    (httpContext) =>
                     {
                         var linkGenerator = httpContext.RequestServices.GetRequiredService<LinkGenerator>();
 

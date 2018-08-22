@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
@@ -15,10 +16,10 @@ namespace Microsoft.AspNetCore.Routing.Matching
     // so we're reusing the services here.
     public class DfaMatcherTest
     {
-        private MatcherEndpoint CreateEndpoint(string template, int order, object defaults = null, EndpointMetadataCollection metadata = null)
+        private RouteEndpoint CreateEndpoint(string template, int order, object defaults = null, EndpointMetadataCollection metadata = null)
         {
-            return new MatcherEndpoint(
-                MatcherEndpoint.EmptyInvoker,
+            return new RouteEndpoint(
+                TestConstants.EmptyRequestDelegate,
                 RoutePatternFactory.Parse(template, defaults, parameterPolicies: null),
                 order,
                 metadata ?? EndpointMetadataCollection.Empty,
@@ -54,10 +55,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             var matcher = CreateDfaMatcher(endpointDataSource);
 
-            var httpContext = new DefaultHttpContext();
+            var (httpContext, endpointFeature) = CreateHttpContext();
             httpContext.Request.Path = "/1";
-
-            var endpointFeature = new EndpointFeature();
 
             // Act
             await matcher.MatchAsync(httpContext, endpointFeature);
@@ -77,10 +76,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             var matcher = CreateDfaMatcher(endpointDataSource);
 
-            var httpContext = new DefaultHttpContext();
+            var (httpContext, endpointFeature) = CreateHttpContext();
             httpContext.Request.Path = "/One";
-
-            var endpointFeature = new EndpointFeature();
 
             // Act
             await matcher.MatchAsync(httpContext, endpointFeature);
@@ -104,10 +101,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             var matcher = CreateDfaMatcher(endpointDataSource);
 
-            var httpContext = new DefaultHttpContext();
+            var (httpContext, endpointFeature) = CreateHttpContext();
             httpContext.Request.Path = "/Teams";
-
-            var endpointFeature = new EndpointFeature();
 
             // Act
             await matcher.MatchAsync(httpContext, endpointFeature);
@@ -125,7 +120,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             var endpointSelector = new Mock<EndpointSelector>();
             endpointSelector
-                .Setup(s => s.SelectAsync(It.IsAny<HttpContext>(), It.IsAny<IEndpointFeature>(), It.IsAny<CandidateSet>()))
+                .Setup(s => s.SelectAsync(It.IsAny<HttpContext>(), It.IsAny<EndpointFeature>(), It.IsAny<CandidateSet>()))
                 .Callback<HttpContext, IEndpointFeature, CandidateSet>((c, f, cs) =>
                 {
                     Assert.Equal(2, cs.Count);
@@ -152,16 +147,25 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             var matcher = CreateDfaMatcher(endpointDataSource, endpointSelector.Object);
 
-            var httpContext = new DefaultHttpContext();
+            var (httpContext, endpointFeature) = CreateHttpContext();
             httpContext.Request.Path = "/Teams";
-
-            var endpointFeature = new EndpointFeature();
 
             // Act
             await matcher.MatchAsync(httpContext, endpointFeature);
 
             // Assert
             Assert.Equal(endpoint2, endpointFeature.Endpoint);
+        }
+
+        private (HttpContext httpContext, EndpointFeature feature) CreateHttpContext()
+        {
+            var feature = new EndpointFeature();
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.Features.Set<IEndpointFeature>(feature);
+            httpContext.Features.Set<IRouteValuesFeature>(feature);
+
+            return (httpContext, feature);
         }
     }
 }

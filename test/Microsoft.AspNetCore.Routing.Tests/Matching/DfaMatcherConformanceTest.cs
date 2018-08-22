@@ -20,10 +20,10 @@ namespace Microsoft.AspNetCore.Routing.Matching
             await matcher.MatchAsync(httpContext, feature);
 
             // Assert
-            MatcherAssert.AssertMatch(feature, endpoint, keys, values);
+            MatcherAssert.AssertMatch(feature, httpContext, endpoint, keys, values);
         }
 
-        internal override Matcher CreateMatcher(params MatcherEndpoint[] endpoints)
+        internal override Matcher CreateMatcher(params RouteEndpoint[] endpoints)
         {
             var services = new ServiceCollection()
                 .AddLogging()

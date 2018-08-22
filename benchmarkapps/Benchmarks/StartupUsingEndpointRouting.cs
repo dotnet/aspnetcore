@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Text;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.AspNetCore.Routing.Matching;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -21,8 +21,8 @@ namespace Benchmarks
 
             var endpointDataSource = new DefaultEndpointDataSource(new[]
                 {
-                    new MatcherEndpoint(
-                        invoker: (next) => (httpContext) =>
+                    new RouteEndpoint(
+                        requestDelegate: (httpContext) =>
                         {
                             var response = httpContext.Response;
                             var payloadLength = _helloWorldPayload.Length;
