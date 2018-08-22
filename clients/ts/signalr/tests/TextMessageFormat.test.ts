@@ -13,7 +13,7 @@ describe("TextMessageFormat", () => {
         ["Hello\u001e", ["Hello"]],
         ["Hello,\u001eWorld!\u001e", ["Hello,", "World!"]],
     ] as Array<[string, string[]]>).forEach(([payload, expectedMessages]) => {
-        it(`should parse '${payload}' correctly`, () => {
+        it(`should parse '${encodeURI(payload)}' correctly`, () => {
             const messages = TextMessageFormat.parse(payload);
             expect(messages).toEqual(expectedMessages);
         });
@@ -24,7 +24,7 @@ describe("TextMessageFormat", () => {
         ["ABC", "Message is incomplete."],
         ["ABC\u001eXYZ", "Message is incomplete."],
     ] as Array<[string, string]>).forEach(([payload, expectedError]) => {
-        it(`should fail to parse '${payload}'`, () => {
+        it(`should fail to parse '${encodeURI(payload)}'`, () => {
             expect(() => TextMessageFormat.parse(payload)).toThrow(expectedError);
         });
     });
