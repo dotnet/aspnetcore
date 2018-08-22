@@ -18,6 +18,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 {
     public class ApiBehaviorApplicationModelProvider : IApplicationModelProvider
     {
+        private readonly ProducesErrorResponseTypeAttribute DefaultErrorType = new ProducesErrorResponseTypeAttribute(typeof(ProblemDetails));
         private readonly ApiBehaviorOptions _apiBehaviorOptions;
         private readonly IModelMetadataProvider _modelMetadataProvider;
         private readonly ModelStateInvalidFilter _modelStateInvalidFilter;
@@ -105,6 +106,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     AddMultipartFormDataConsumesAttribute(actionModel);
 
                     DiscoverApiConvention(actionModel, conventions);
+
+                    DiscoverErrorResponseType(actionModel);
                 }
             }
         }
@@ -271,6 +274,25 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             if (ApiConventionResult.TryGetApiConvention(actionModel.ActionMethod, apiConventionAttributes, out var result))
             {
                 actionModel.Properties[typeof(ApiConventionResult)] = result;
+            }
+        }
+
+        internal void DiscoverErrorResponseType(ActionModel actionModel)
+        {
+            var errorTypeAttribute =
+                actionModel.Attributes.OfType<ProducesErrorResponseTypeAttribute>().FirstOrDefault() ??
+                actionModel.Controller.Attributes.OfType<ProducesErrorResponseTypeAttribute>().FirstOrDefault() ??
+                actionModel.Controller.ControllerType.Assembly.GetCustomAttribute<ProducesErrorResponseTypeAttribute>();
+
+            if (!_apiBehaviorOptions.SuppressMapClientErrors)
+            {
+                // If ClientErrorFactory is being used and the application does not supply a error response type, assume ProblemDetails.
+                errorTypeAttribute = errorTypeAttribute ?? DefaultErrorType;
+            }
+
+            if (errorTypeAttribute != null)
+            {
+                actionModel.Properties[typeof(ProducesErrorResponseTypeAttribute)] = errorTypeAttribute;
             }
         }
 

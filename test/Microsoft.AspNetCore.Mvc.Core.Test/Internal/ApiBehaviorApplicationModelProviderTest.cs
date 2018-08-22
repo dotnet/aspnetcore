@@ -12,13 +12,14 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
-using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
+
+[assembly: Microsoft.AspNetCore.Mvc.ProducesErrorResponseType(typeof(InvalidEnumArgumentException))]
 
 namespace Microsoft.AspNetCore.Mvc.Internal
 {
@@ -1042,9 +1043,6 @@ Environment.NewLine + "int b";
             var actionModel = new ActionModel(
                 typeof(TestApiConventionController).GetMethod(nameof(TestApiConventionController.Delete)),
                 Array.Empty<object>());
-            actionModel.Filters.Add(new AuthorizeFilter());
-            actionModel.Filters.Add(new ServiceFilterAttribute(typeof(object)));
-            actionModel.Filters.Add(new ConsumesAttribute("application/xml"));
             var attributes = new[] { new ApiConventionTypeAttribute(typeof(DefaultApiConventions)) };
 
             // Act
@@ -1057,6 +1055,167 @@ Environment.NewLine + "int b";
                 {
                     Assert.Equal(typeof(ApiConventionResult), kvp.Key);
                     Assert.NotNull(kvp.Value);
+                });
+        }
+
+        [Fact]
+        public void DiscoverErrorResponseType_SetsProblemDetails_IfActionHasNoAttributes()
+        {
+            // Arrange
+            var expected = typeof(ProblemDetails);
+            var controllerModel = new ControllerModel(typeof(object).GetTypeInfo(), new[] { new object() });
+            var actionModel = new ActionModel(
+                typeof(TestApiConventionController).GetMethod(nameof(TestApiConventionController.Delete)),
+                Array.Empty<object>())
+            {
+                Controller = controllerModel,
+            };
+            var provider = GetProvider();
+
+            // Act
+            provider.DiscoverErrorResponseType(actionModel);
+
+            // Assert
+            Assert.Collection(
+                actionModel.Properties,
+                kvp =>
+                {
+                    Assert.Equal(typeof(ProducesErrorResponseTypeAttribute), kvp.Key);
+                    var value = Assert.IsType<ProducesErrorResponseTypeAttribute>(kvp.Value);
+                    Assert.Equal(expected, value.Type);
+                });
+        }
+
+        [Fact]
+        public void DiscoverErrorResponseType_DoesNotSetDefaultProblemDetailsResponse_IfSuppressMapClientErrorsIsSet()
+        {
+            // Arrange
+            var expected = typeof(ProblemDetails);
+            var controllerModel = new ControllerModel(typeof(object).GetTypeInfo(), new[] { new object() });
+            var actionModel = new ActionModel(
+                typeof(TestApiConventionController).GetMethod(nameof(TestApiConventionController.Delete)),
+                Array.Empty<object>())
+            {
+                Controller = controllerModel,
+            };
+            var provider = GetProvider(new ApiBehaviorOptions
+            {
+                InvalidModelStateResponseFactory = _ => null,
+                SuppressMapClientErrors = true,
+            });
+
+            // Act
+            provider.DiscoverErrorResponseType(actionModel);
+
+            // Assert
+            Assert.Empty(actionModel.Properties);
+        }
+
+        [Fact]
+        public void DiscoverErrorResponseType_UsesValueFromApiErrorTypeAttribute_SpecifiedOnControllerAsssembly()
+        {
+            // Arrange
+            var expected = typeof(InvalidEnumArgumentException);
+            var controllerModel = new ControllerModel(typeof(TestApiConventionController).GetTypeInfo(), new[] { new object() });
+            var actionModel = new ActionModel(
+                typeof(TestApiConventionController).GetMethod(nameof(TestApiConventionController.Delete)),
+                Array.Empty<object>())
+            {
+                Controller = controllerModel,
+            };
+            var provider = GetProvider();
+
+            // Act
+            provider.DiscoverErrorResponseType(actionModel);
+
+            // Assert
+            Assert.Collection(
+                actionModel.Properties,
+                kvp =>
+                {
+                    Assert.Equal(typeof(ProducesErrorResponseTypeAttribute), kvp.Key);
+                    var value = Assert.IsType<ProducesErrorResponseTypeAttribute>(kvp.Value);
+                    Assert.Equal(expected, value.Type);
+                });
+        }
+
+        [Fact]
+        public void DiscoverErrorResponseType_UsesValueFromApiErrorTypeAttribute_SpecifiedOnController()
+        {
+            // Arrange
+            var expected = typeof(InvalidTimeZoneException);
+            var controllerModel = new ControllerModel(typeof(TestApiConventionController).GetTypeInfo(), new[] { new ProducesErrorResponseTypeAttribute(expected) });
+            var actionModel = new ActionModel(
+                typeof(TestApiConventionController).GetMethod(nameof(TestApiConventionController.Delete)),
+                Array.Empty<object>())
+            {
+                Controller = controllerModel,
+            };
+            var provider = GetProvider();
+
+            // Act
+            provider.DiscoverErrorResponseType(actionModel);
+
+            // Assert
+            Assert.Collection(
+                actionModel.Properties,
+                kvp =>
+                {
+                    Assert.Equal(typeof(ProducesErrorResponseTypeAttribute), kvp.Key);
+                    var value = Assert.IsType<ProducesErrorResponseTypeAttribute>(kvp.Value);
+                    Assert.Equal(expected, value.Type);
+                });
+        }
+
+        [Fact]
+        public void DiscoverErrorResponseType_UsesValueFromApiErrorTypeAttribute_SpecifiedOnAction()
+        {
+            // Arrange
+            var expected = typeof(InvalidTimeZoneException);
+            var controllerModel = new ControllerModel(typeof(TestApiConventionController).GetTypeInfo(), new[] { new ProducesErrorResponseTypeAttribute(typeof(Guid)) });
+            var actionModel = new ActionModel(
+                typeof(TestApiConventionController).GetMethod(nameof(TestApiConventionController.Delete)),
+                new[] { new ProducesErrorResponseTypeAttribute(expected) })
+            {
+                Controller = controllerModel,
+            };
+            var provider = GetProvider();
+
+            // Act
+            provider.DiscoverErrorResponseType(actionModel);
+
+            // Assert
+            Assert.Collection(
+                actionModel.Properties,
+                kvp =>
+                {
+                    Assert.Equal(typeof(ProducesErrorResponseTypeAttribute), kvp.Key);
+                    var value = Assert.IsType<ProducesErrorResponseTypeAttribute>(kvp.Value);
+                    Assert.Equal(expected, value.Type);
+                });
+        }
+
+        [Fact]
+        public void DiscoverErrorResponseType_AllowsVoidsType()
+        {
+            // Arrange
+            var expected = typeof(void);
+            var actionModel = new ActionModel(
+                typeof(TestApiConventionController).GetMethod(nameof(TestApiConventionController.Delete)),
+                new[] { new ProducesErrorResponseTypeAttribute(expected) });
+            var provider = GetProvider();
+
+            // Act
+            provider.DiscoverErrorResponseType(actionModel);
+
+            // Assert
+            Assert.Collection(
+                actionModel.Properties,
+                kvp =>
+                {
+                    Assert.Equal(typeof(ProducesErrorResponseTypeAttribute), kvp.Key);
+                    var value = Assert.IsType<ProducesErrorResponseTypeAttribute>(kvp.Value);
+                    Assert.Equal(expected, value.Type);
                 });
         }
 

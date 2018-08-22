@@ -1180,9 +1180,9 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                 },
                 responseType =>
                 {
-                    Assert.Equal(typeof(void).FullName, responseType.ResponseType);
+                    Assert.Equal(typeof(ProblemDetails).FullName, responseType.ResponseType);
                     Assert.Equal(404, responseType.StatusCode);
-                    Assert.Empty(responseType.ResponseFormats);
+                    Assert.Equal(expectedMediaTypes, GetSortedMediaTypes(responseType));
                 });
         }
 
@@ -1215,7 +1215,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public async Task ApiConvention_ForMethodWithResponseTypeAttributes()
         {
             // Arrange
-            var expectedMediaTypes = new[] { "application/json", "application/xml", "text/json", "text/xml" };
+            var expectedMediaTypes = new[] { "application/json" };
 
             // Act
             var response = await Client.PostAsync(
@@ -1236,15 +1236,18 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                 },
                 responseType =>
                 {
-                    Assert.Equal(typeof(void).FullName, responseType.ResponseType);
+                    Assert.Equal(typeof(ProblemDetails).FullName, responseType.ResponseType);
                     Assert.Equal(403, responseType.StatusCode);
-                    Assert.Empty(responseType.ResponseFormats);
+                    Assert.Equal(expectedMediaTypes, GetSortedMediaTypes(responseType));
                 });
         }
 
         [Fact]
         public async Task ApiConvention_ForPostMethodThatMatchesConvention()
         {
+            // Arrange
+            var expectedMediaTypes = new[] { "application/json", "application/xml", "text/json", "text/xml" };
+
             // Act
             var response = await Client.PostAsync(
                 $"ApiExplorerResponseTypeWithApiConventionController/PostTaskOfProduct",
@@ -1268,15 +1271,18 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                 },
                 responseType =>
                 {
-                    Assert.Equal(typeof(void).FullName, responseType.ResponseType);
+                    Assert.Equal(typeof(ProblemDetails).FullName, responseType.ResponseType);
                     Assert.Equal(400, responseType.StatusCode);
-                    Assert.Empty(responseType.ResponseFormats);
+                    Assert.Equal(expectedMediaTypes, GetSortedMediaTypes(responseType));
                 });
         }
 
         [Fact]
         public async Task ApiConvention_ForPutActionThatMatchesConvention()
         {
+            // Arrange
+            var expectedMediaTypes = new[] { "application/json", "application/xml", "text/json", "text/xml" };
+
             // Act
             var response = await Client.PutAsync(
                 $"ApiExplorerResponseTypeWithApiConventionController/Put",
@@ -1300,21 +1306,24 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                 },
                 responseType =>
                 {
-                    Assert.Equal(typeof(void).FullName, responseType.ResponseType);
+                    Assert.Equal(typeof(ProblemDetails).FullName, responseType.ResponseType);
                     Assert.Equal(400, responseType.StatusCode);
-                    Assert.Empty(responseType.ResponseFormats);
+                    Assert.Equal(expectedMediaTypes, GetSortedMediaTypes(responseType));
                 },
                 responseType =>
                 {
-                    Assert.Equal(typeof(void).FullName, responseType.ResponseType);
+                    Assert.Equal(typeof(ProblemDetails).FullName, responseType.ResponseType);
                     Assert.Equal(404, responseType.StatusCode);
-                    Assert.Empty(responseType.ResponseFormats);
+                    Assert.Equal(expectedMediaTypes, GetSortedMediaTypes(responseType));
                 });
         }
 
         [Fact]
         public async Task ApiConvention_ForDeleteActionThatMatchesConvention()
         {
+            // Arrange
+            var expectedMediaTypes = new[] { "application/json", "application/xml", "text/json", "text/xml" };
+
             // Act
             var response = await Client.DeleteAsync(
                 $"ApiExplorerResponseTypeWithApiConventionController/DeleteProductAsync");
@@ -1337,21 +1346,24 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                 },
                 responseType =>
                 {
-                    Assert.Equal(typeof(void).FullName, responseType.ResponseType);
+                    Assert.Equal(typeof(ProblemDetails).FullName, responseType.ResponseType);
                     Assert.Equal(400, responseType.StatusCode);
-                    Assert.Empty(responseType.ResponseFormats);
+                    Assert.Equal(expectedMediaTypes, GetSortedMediaTypes(responseType));
                 },
                 responseType =>
                 {
-                    Assert.Equal(typeof(void).FullName, responseType.ResponseType);
+                    Assert.Equal(typeof(ProblemDetails).FullName, responseType.ResponseType);
                     Assert.Equal(404, responseType.StatusCode);
-                    Assert.Empty(responseType.ResponseFormats);
+                    Assert.Equal(expectedMediaTypes, GetSortedMediaTypes(responseType));
                 });
         }
 
         [Fact]
         public async Task ApiConvention_ForActionWtihApiConventionMethod()
         {
+            // Arrange
+            var expectedMediaTypes = new[] { "application/json", "application/xml", "text/json", "text/xml" };
+
             // Act
             var response = await Client.PostAsync(
                 "ApiExplorerResponseTypeWithApiConventionController/PostItem",
@@ -1371,9 +1383,9 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                 },
                 responseType =>
                 {
-                    Assert.Equal(typeof(void).FullName, responseType.ResponseType);
+                    Assert.Equal(typeof(ProblemDetails).FullName, responseType.ResponseType);
                     Assert.Equal(409, responseType.StatusCode);
-                    Assert.Empty(responseType.ResponseFormats);
+                    Assert.Equal(expectedMediaTypes, GetSortedMediaTypes(responseType));
                 });
         }
 

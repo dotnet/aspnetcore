@@ -46,7 +46,13 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 responseMetadataAttributes = apiConventionResult.ResponseMetadataProviders;
             }
 
-            var apiResponseTypes = GetApiResponseTypes(responseMetadataAttributes, runtimeReturnType);
+            var defaultErrorType = typeof(void);
+            if (action.Properties.TryGetValue(typeof(ProducesErrorResponseTypeAttribute), out result))
+            {
+                defaultErrorType = ((ProducesErrorResponseTypeAttribute)result).Type;
+            }
+
+            var apiResponseTypes = GetApiResponseTypes(responseMetadataAttributes, runtimeReturnType, defaultErrorType);
             return apiResponseTypes;
         }
 
@@ -69,7 +75,8 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 
         private ICollection<ApiResponseType> GetApiResponseTypes(
            IReadOnlyList<IApiResponseMetadataProvider> responseMetadataAttributes,
-           Type type)
+           Type type,
+           Type defaultErrorType)
         {
             var results = new Dictionary<int, ApiResponseType>();
 
@@ -83,47 +90,38 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 {
                     metadataAttribute.SetContentTypes(contentTypes);
 
-                    ApiResponseType apiResponseType;
+                    var statusCode = metadataAttribute.StatusCode;
 
-                    if (metadataAttribute is IApiDefaultResponseMetadataProvider)
+                    var apiResponseType = new ApiResponseType
                     {
-                        apiResponseType = new ApiResponseType
+                        Type = metadataAttribute.Type,
+                        StatusCode = statusCode,
+                        IsDefaultResponse = metadataAttribute is IApiDefaultResponseMetadataProvider,
+                    };
+
+                    if (apiResponseType.Type == typeof(void))
+                    {
+                        if (type != null && (statusCode == StatusCodes.Status200OK || statusCode == StatusCodes.Status201Created))
                         {
-                            IsDefaultResponse = true,
-                            Type = metadataAttribute.Type,
-                        };
-                    }
-                    else if (metadataAttribute.Type == typeof(void) &&
-                        type != null &&
-                        (metadataAttribute.StatusCode == StatusCodes.Status200OK || metadataAttribute.StatusCode == StatusCodes.Status201Created))
-                    {
-                        // ProducesResponseTypeAttribute's constructor defaults to setting "Type" to void when no value is specified.
-                        // In this event, use the action's return type for 200 or 201 status codes. This lets you decorate an action with a
-                        // [ProducesResponseType(201)] instead of [ProducesResponseType(201, typeof(Person)] when typeof(Person) can be inferred
-                        // from the return type.
-                        apiResponseType = new ApiResponseType
+                            // ProducesResponseTypeAttribute's constructor defaults to setting "Type" to void when no value is specified.
+                            // In this event, use the action's return type for 200 or 201 status codes. This lets you decorate an action with a
+                            // [ProducesResponseType(201)] instead of [ProducesResponseType(201, typeof(Person)] when typeof(Person) can be inferred
+                            // from the return type.
+                            apiResponseType.Type = type;
+                        }
+                        else if (IsClientError(statusCode) || apiResponseType.IsDefaultResponse)
                         {
-                            StatusCode = metadataAttribute.StatusCode,
-                            Type = type,
-                        };
-                    }
-                    else if (metadataAttribute.Type != null)
-                    {
-                        apiResponseType = new ApiResponseType
-                        {
-                            StatusCode = metadataAttribute.StatusCode,
-                            Type = metadataAttribute.Type,
-                        };
-                    }
-                    else
-                    {
-                        continue;
+                            // Use the default error type for "default" responses or 4xx client errors if no response type is specified.
+                            apiResponseType.Type = defaultErrorType;
+                        }
                     }
 
-                    results[apiResponseType.StatusCode] = apiResponseType;
+                    if (apiResponseType.Type != null)
+                    {
+                        results[apiResponseType.StatusCode] = apiResponseType;
+                    }
                 }
             }
-
 
             // Set the default status only when no status has already been set explicitly
             if (results.Count == 0 && type != null)
@@ -224,6 +222,11 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             }
 
             return declaredReturnType;
+        }
+
+        private static bool IsClientError(int statusCode)
+        {
+            return statusCode >= 400 && statusCode < 500;
         }
     }
 }
