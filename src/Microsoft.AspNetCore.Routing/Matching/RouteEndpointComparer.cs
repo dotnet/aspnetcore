@@ -6,7 +6,7 @@ using System.Diagnostics;
 
 namespace Microsoft.AspNetCore.Routing.Matching
 {
-    // Use to sort and group MatcherEndpoints.
+    // Use to sort and group RouteEndpoints.
     //
     // NOTE:
     // When ordering endpoints, we compare the route templates as an absolute last resort.
@@ -20,14 +20,14 @@ namespace Microsoft.AspNetCore.Routing.Matching
     //  IComparer implementation considers the template string as a tiebreaker.
     //  IEqualityComparer implementation does not.
     //  This is cool and good.
-    internal class MatcherEndpointComparer : IComparer<MatcherEndpoint>, IEqualityComparer<MatcherEndpoint>
+    internal class RouteEndpointComparer : IComparer<RouteEndpoint>, IEqualityComparer<RouteEndpoint>
     {
-        private readonly IComparer<MatcherEndpoint>[] _comparers;
+        private readonly IComparer<RouteEndpoint>[] _comparers;
 
-        public MatcherEndpointComparer(IEndpointComparerPolicy[] policies)
+        public RouteEndpointComparer(IEndpointComparerPolicy[] policies)
         {
             // Order, Precedence, (others)...
-            _comparers = new IComparer<MatcherEndpoint>[2 + policies.Length];
+            _comparers = new IComparer<RouteEndpoint>[2 + policies.Length];
             _comparers[0] = OrderComparer.Instance;
             _comparers[1] = PrecedenceComparer.Instance;
             for (var i = 0; i < policies.Length; i++)
@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             }
         }
 
-        public int Compare(MatcherEndpoint x, MatcherEndpoint y)
+        public int Compare(RouteEndpoint x, RouteEndpoint y)
         {
             // We don't expose this publicly, and we should never call it on
             // a null endpoint.
@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             return compare == 0 ? x.RoutePattern.RawText.CompareTo(y.RoutePattern.RawText) : compare;
         }
 
-        public bool Equals(MatcherEndpoint x, MatcherEndpoint y)
+        public bool Equals(RouteEndpoint x, RouteEndpoint y)
         {
             // We don't expose this publicly, and we should never call it on
             // a null endpoint.
@@ -59,14 +59,14 @@ namespace Microsoft.AspNetCore.Routing.Matching
             return CompareCore(x, y) == 0;
         }
         
-        public int GetHashCode(MatcherEndpoint obj)
+        public int GetHashCode(RouteEndpoint obj)
         {
             // This should not be possible to call publicly.
             Debug.Fail("We don't expect this to be called.");
             throw new System.NotImplementedException();
         }
 
-        private int CompareCore(MatcherEndpoint x, MatcherEndpoint y)
+        private int CompareCore(RouteEndpoint x, RouteEndpoint y)
         {
             for (var i = 0; i < _comparers.Length; i++)
             {
@@ -80,21 +80,21 @@ namespace Microsoft.AspNetCore.Routing.Matching
             return 0;
         }
 
-        private class OrderComparer : IComparer<MatcherEndpoint>
+        private class OrderComparer : IComparer<RouteEndpoint>
         {
-            public static readonly IComparer<MatcherEndpoint> Instance = new OrderComparer();
+            public static readonly IComparer<RouteEndpoint> Instance = new OrderComparer();
 
-            public int Compare(MatcherEndpoint x, MatcherEndpoint y)
+            public int Compare(RouteEndpoint x, RouteEndpoint y)
             {
                 return x.Order.CompareTo(y.Order);
             }
         }
 
-        private class PrecedenceComparer : IComparer<MatcherEndpoint>
+        private class PrecedenceComparer : IComparer<RouteEndpoint>
         {
-            public static readonly IComparer<MatcherEndpoint> Instance = new PrecedenceComparer();
+            public static readonly IComparer<RouteEndpoint> Instance = new PrecedenceComparer();
 
-            public int Compare(MatcherEndpoint x, MatcherEndpoint y)
+            public int Compare(RouteEndpoint x, RouteEndpoint y)
             {
                 return x.RoutePattern.InboundPrecedence.CompareTo(y.RoutePattern.InboundPrecedence);
             }

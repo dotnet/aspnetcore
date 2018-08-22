@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.AspNetCore.Routing.Tree;
@@ -16,14 +17,14 @@ namespace Microsoft.AspNetCore.Routing.Matching
 {
     internal class TreeRouterMatcherBuilder : MatcherBuilder
     {
-        private readonly List<MatcherEndpoint> _endpoints;
+        private readonly List<RouteEndpoint> _endpoints;
 
         public TreeRouterMatcherBuilder()
         {
-            _endpoints = new List<MatcherEndpoint>();
+            _endpoints = new List<RouteEndpoint>();
         }
 
-        public override void AddEndpoint(MatcherEndpoint endpoint)
+        public override void AddEndpoint(RouteEndpoint endpoint)
         {
             _endpoints.Add(endpoint);
         }
@@ -48,7 +49,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             {
                 var candidates = group.ToArray();
 
-                // MatcherEndpoint.Values contains the default values parsed from the template
+                // RouteEndpoint.Values contains the default values parsed from the template
                 // as well as those specified with a literal. We need to separate those
                 // for legacy cases.
                 var endpoint = group.First();
@@ -75,10 +76,10 @@ namespace Microsoft.AspNetCore.Routing.Matching
         private class SelectorRouter : IRouter
         {
             private readonly EndpointSelector _selector;
-            private readonly MatcherEndpoint[] _candidates;
+            private readonly RouteEndpoint[] _candidates;
             private readonly int[] _scores;
 
-            public SelectorRouter(EndpointSelector selector, MatcherEndpoint[] candidates)
+            public SelectorRouter(EndpointSelector selector, RouteEndpoint[] candidates)
             {
                 _selector = selector;
                 _candidates = candidates;
@@ -93,7 +94,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             public async Task RouteAsync(RouteContext context)
             {
-                var feature = context.HttpContext.Features.Get<IEndpointFeature>();
+                var feature = (EndpointFeature)context.HttpContext.Features.Get<IEndpointFeature>();
 
                 // This is needed due to a quirk of our tests - they reuse the endpoint feature.
                 feature.Endpoint = null;

@@ -4,6 +4,7 @@
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Routing.Matching
 {
@@ -22,7 +23,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         [GlobalSetup]
         public void Setup()
         {
-            Endpoints = new MatcherEndpoint[1];
+            Endpoints = new RouteEndpoint[1];
             Endpoints[0] = CreateEndpoint("/plaintext");
 
             Requests = new HttpContext[1];

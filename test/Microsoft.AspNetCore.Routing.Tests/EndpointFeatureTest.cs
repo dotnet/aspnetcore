@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Linq;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Matching;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Xunit;
@@ -18,8 +19,8 @@ namespace Microsoft.AspNetCore.Routing
 
             var feature = new EndpointFeature()
             {
-                Endpoint = new MatcherEndpoint(
-                    MatcherEndpoint.EmptyInvoker,
+                Endpoint = new RouteEndpoint(
+                    TestConstants.EmptyRequestDelegate,
                     RoutePatternFactory.Parse("/"),
                     0,
                     new EndpointMetadataCollection(new DataTokensMetadata(expected)),
@@ -40,8 +41,8 @@ namespace Microsoft.AspNetCore.Routing
             // Arrange
             var feature = new EndpointFeature()
             {
-                Endpoint = new MatcherEndpoint(
-                    MatcherEndpoint.EmptyInvoker,
+                Endpoint = new RouteEndpoint(
+                    TestConstants.EmptyRequestDelegate,
                     RoutePatternFactory.Parse("/"),
                     0,
                     new EndpointMetadataCollection(),

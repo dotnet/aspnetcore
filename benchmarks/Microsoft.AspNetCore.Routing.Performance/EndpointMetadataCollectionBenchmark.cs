@@ -3,6 +3,7 @@
 
 using System;
 using BenchmarkDotNet.Attributes;
+using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Routing
 {

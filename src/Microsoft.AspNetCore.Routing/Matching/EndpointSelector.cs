@@ -3,6 +3,7 @@
 
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Routing.Matching
 {
@@ -21,13 +22,12 @@ namespace Microsoft.AspNetCore.Routing.Matching
         /// <param name="candidates">The <see cref="CandidateSet"/>.</param>
         /// <returns>A <see cref="Task"/> that completes asynchronously once endpoint selection is complete.</returns>
         /// <remarks>
-        /// An <see cref="EndpointSelector"/> should assign the <see cref="IEndpointFeature.Endpoint"/>,
-        /// <see cref="IEndpointFeature.Invoker"/>, and <see cref="IEndpointFeature.Values"/> properties
-        /// once an endpoint is selected.
+        /// An <see cref="EndpointSelector"/> should assign the <see cref="EndpointFeature.Endpoint"/>
+        /// and <see cref="EndpointFeature.RouteValues"/> properties once an endpoint is selected.
         /// </remarks>
         public abstract Task SelectAsync(
             HttpContext httpContext,
-            IEndpointFeature feature,
+            EndpointFeature feature,
             CandidateSet candidates);
     }
 }

@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
 {
     internal readonly struct Candidate
     {
-        public readonly MatcherEndpoint Endpoint;
+        public readonly RouteEndpoint Endpoint;
 
         // Used to optimize out operations that modify route values.
         public readonly CandidateFlags Flags;
@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         public readonly int Score;
 
         // Used in tests.
-        public Candidate(MatcherEndpoint endpoint)
+        public Candidate(RouteEndpoint endpoint)
         {
             Endpoint = endpoint;
 
@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         }
 
         public Candidate(
-            MatcherEndpoint endpoint,
+            RouteEndpoint endpoint,
             int score,
             KeyValuePair<string, object>[] slots,
             (string parameterName, int segmentIndex, int slotIndex)[] captures,

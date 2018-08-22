@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
@@ -28,7 +29,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             await matcher.MatchAsync(httpContext, feature);
 
             // Assert
-            MatcherAssert.AssertMatch(feature, endpoint);
+            MatcherAssert.AssertMatch(feature, httpContext, endpoint);
         }
 
         [Fact]
@@ -44,7 +45,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             await matcher.MatchAsync(httpContext, feature);
 
             // Assert
-            MatcherAssert.AssertMatch(feature, endpoint);
+            MatcherAssert.AssertMatch(feature, httpContext, endpoint);
         }
 
         [Fact]
@@ -60,7 +61,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             await matcher.MatchAsync(httpContext, feature);
 
             // Assert
-            MatcherAssert.AssertMatch(feature, endpoint);
+            MatcherAssert.AssertMatch(feature, httpContext, endpoint);
         }
 
 
@@ -94,7 +95,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             await matcher.MatchAsync(httpContext, feature);
 
             // Assert
-            MatcherAssert.AssertMatch(feature, endpoint);
+            MatcherAssert.AssertMatch(feature, httpContext, endpoint);
         }
 
         [Fact]
@@ -110,7 +111,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             await matcher.MatchAsync(httpContext, feature);
 
             // Assert
-            MatcherAssert.AssertMatch(feature, endpoint);
+            MatcherAssert.AssertMatch(feature, httpContext, endpoint);
         }
 
         [Fact]
@@ -126,7 +127,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             await matcher.MatchAsync(httpContext, feature);
 
             // Assert
-            MatcherAssert.AssertMatch(feature, endpoint);
+            MatcherAssert.AssertMatch(feature, httpContext, endpoint);
         }
 
         [Fact]
@@ -142,7 +143,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             await matcher.MatchAsync(httpContext, feature);
 
             // Assert
-            MatcherAssert.AssertMatch(feature, endpoint);
+            MatcherAssert.AssertMatch(feature, httpContext, endpoint);
         }
 
         [Fact] // This matches because the endpoint accepts OPTIONS
@@ -158,7 +159,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             await matcher.MatchAsync(httpContext, feature);
 
             // Assert
-            MatcherAssert.AssertMatch(feature, endpoint);
+            MatcherAssert.AssertMatch(feature, httpContext, endpoint);
         }
 
         [Fact]
@@ -174,7 +175,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             await matcher.MatchAsync(httpContext, feature);
 
             // Assert
-            MatcherAssert.AssertMatch(feature, endpoint);
+            MatcherAssert.AssertMatch(feature, httpContext, endpoint);
         }
 
         [Fact] // When all of the candidates handles specific verbs, use a 405 endpoint
@@ -197,7 +198,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             Assert.Same(HttpMethodMatcherPolicy.Http405EndpointDisplayName, feature.Endpoint.DisplayName);
 
             // Invoke the endpoint
-            await feature.Invoker((c) => Task.CompletedTask)(httpContext);
+            await feature.Endpoint.RequestDelegate(httpContext);
             Assert.Equal(405, httpContext.Response.StatusCode);
             Assert.Equal("DELETE, GET, PUT", httpContext.Response.Headers["Allow"]);
         }
@@ -216,7 +217,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             await matcher.MatchAsync(httpContext, feature);
 
             // Assert
-            MatcherAssert.AssertNotMatch(feature);
+            MatcherAssert.AssertNotMatch(feature, httpContext);
         }
 
         [Fact] // When one of the candidates handles all verbs, dont use a 405 endpoint
@@ -233,7 +234,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             await matcher.MatchAsync(httpContext, feature);
 
             // Assert
-            MatcherAssert.AssertNotMatch(feature);
+            MatcherAssert.AssertNotMatch(feature, httpContext);
         }
 
         [Fact]
@@ -250,7 +251,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             await matcher.MatchAsync(httpContext, feature);
 
             // Assert
-            MatcherAssert.AssertMatch(feature, endpoint1);
+            MatcherAssert.AssertMatch(feature, httpContext, endpoint1);
         }
 
         [Fact]
@@ -267,7 +268,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             await matcher.MatchAsync(httpContext, feature);
 
             // Assert
-            MatcherAssert.AssertMatch(feature, endpoint1);
+            MatcherAssert.AssertMatch(feature, httpContext, endpoint1);
         }
 
         [Fact] // The non-http-method-specific endpoint is part of the same candidate set
@@ -284,10 +285,10 @@ namespace Microsoft.AspNetCore.Routing.Matching
             await matcher.MatchAsync(httpContext, feature);
 
             // Assert
-            MatcherAssert.AssertMatch(feature, endpoint2, ignoreValues: true);
+            MatcherAssert.AssertMatch(feature, httpContext, endpoint2, ignoreValues: true);
         }
 
-        private static Matcher CreateMatcher(params MatcherEndpoint[] endpoints)
+        private static Matcher CreateMatcher(params RouteEndpoint[] endpoints)
         {
             var services = new ServiceCollection()
                 .AddOptions()
@@ -304,7 +305,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             return builder.Build();
         }
 
-        internal static (HttpContext httpContext, IEndpointFeature feature) CreateContext(
+        internal static (HttpContext httpContext, EndpointFeature feature) CreateContext(
             string path,
             string httpMethod,
             bool corsPreflight = false)
@@ -321,10 +322,11 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             var feature = new EndpointFeature();
             httpContext.Features.Set<IEndpointFeature>(feature);
+            httpContext.Features.Set<IRouteValuesFeature>(feature);
 
             return (httpContext, feature);
         }
-        internal static MatcherEndpoint CreateEndpoint(
+        internal static RouteEndpoint CreateEndpoint(
             string template,
             object defaults = null,
             object constraints = null,
@@ -339,15 +341,15 @@ namespace Microsoft.AspNetCore.Routing.Matching
             }
 
             var displayName = "endpoint: " + template + " " + string.Join(", ", httpMethods ?? new[] { "(any)" });
-            return new MatcherEndpoint(
-                MatcherEndpoint.EmptyInvoker,
+            return new RouteEndpoint(
+                TestConstants.EmptyRequestDelegate,
                 RoutePatternFactory.Parse(template, defaults, constraints),
                 order,
                 new EndpointMetadataCollection(metadata),
                 displayName);
         }
 
-        internal (Matcher matcher, MatcherEndpoint endpoint) CreateMatcher(string template)
+        internal (Matcher matcher, RouteEndpoint endpoint) CreateMatcher(string template)
         {
             var endpoint = CreateEndpoint(template);
             return (CreateMatcher(endpoint), endpoint);

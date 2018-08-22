@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.AspNetCore.Routing.Matching;
 using Microsoft.AspNetCore.Routing.Template;
@@ -97,7 +98,7 @@ namespace Microsoft.AspNetCore.Routing
 
         internal string MakeLink(
             HttpContext httpContext,
-            MatcherEndpoint endpoint,
+            RouteEndpoint endpoint,
             RouteValueDictionary ambientValues,
             RouteValueDictionary explicitValues,
             LinkOptions options)
@@ -232,7 +233,7 @@ namespace Microsoft.AspNetCore.Routing
 
         private bool MatchesConstraints(
             HttpContext httpContext,
-            MatcherEndpoint endpoint,
+            RouteEndpoint endpoint,
             RouteValueDictionary routeValues)
         {
             if (routeValues == null)
@@ -303,16 +304,16 @@ namespace Microsoft.AspNetCore.Routing
         {
             if (httpContext != null)
             {
-                var feature = httpContext.Features.Get<IEndpointFeature>();
+                var feature = httpContext.Features.Get<IRouteValuesFeature>();
                 if (feature != null)
                 {
-                    return feature.Values;
+                    return feature.RouteValues;
                 }
             }
             return new RouteValueDictionary();
         }
 
-        private IEnumerable<MatcherEndpoint> FindEndpoints<TAddress>(TAddress address)
+        private IEnumerable<RouteEndpoint> FindEndpoints<TAddress>(TAddress address)
         {
             var finder = _serviceProvider.GetRequiredService<IEndpointFinder<TAddress>>();
             var endpoints = finder.FindEndpoints(address);
@@ -321,13 +322,13 @@ namespace Microsoft.AspNetCore.Routing
                 return null;
             }
 
-            var matcherEndpoints = endpoints.OfType<MatcherEndpoint>();
-            if (!matcherEndpoints.Any())
+            var routeEndpoints = endpoints.OfType<RouteEndpoint>();
+            if (!routeEndpoints.Any())
             {
                 return null;
             }
 
-            return matcherEndpoints;
+            return routeEndpoints;
         }
     }
 }

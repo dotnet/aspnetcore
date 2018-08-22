@@ -11,9 +11,9 @@ namespace Microsoft.AspNetCore.Routing.Matching
 {
     internal class BarebonesMatcherBuilder : MatcherBuilder
     {
-        private List<MatcherEndpoint> _endpoints = new List<MatcherEndpoint>();
+        private List<RouteEndpoint> _endpoints = new List<RouteEndpoint>();
 
-        public override void AddEndpoint(MatcherEndpoint endpoint)
+        public override void AddEndpoint(RouteEndpoint endpoint)
         {
             _endpoints.Add(endpoint);
         }

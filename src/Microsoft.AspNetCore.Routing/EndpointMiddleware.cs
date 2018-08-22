@@ -4,6 +4,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Routing
@@ -40,13 +41,13 @@ namespace Microsoft.AspNetCore.Routing
                 throw new InvalidOperationException(message);
             }
 
-            if (feature.Invoker != null)
+            if (feature.Endpoint?.RequestDelegate != null)
             {
                 Log.ExecutingEndpoint(_logger, feature.Endpoint);
 
                 try
                 {
-                    await feature.Invoker(_next)(httpContext);
+                    await feature.Endpoint.RequestDelegate(httpContext);
                 }
                 finally
                 {

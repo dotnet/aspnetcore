@@ -250,8 +250,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
         private Endpoint CreateRejectionEndpoint(IEnumerable<string> httpMethods)
         {
             var allow = string.Join(", ", httpMethods);
-            return new MatcherEndpoint(
-                (next) => (context) =>
+            return new RouteEndpoint(
+                (context) =>
                 {
                     context.Response.StatusCode = 405;
                     context.Response.Headers.Add("Allow", allow);

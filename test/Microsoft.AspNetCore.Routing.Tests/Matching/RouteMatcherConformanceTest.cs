@@ -5,7 +5,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
 {
     public class RouteMatcherConformanceTest : FullFeaturedMatcherConformanceTest
     {
-        internal override Matcher CreateMatcher(params MatcherEndpoint[] endpoints)
+        internal override Matcher CreateMatcher(params RouteEndpoint[] endpoints)
         {
             var builder = new RouteMatcherBuilder();
             for (int i = 0; i < endpoints.Length; i++)

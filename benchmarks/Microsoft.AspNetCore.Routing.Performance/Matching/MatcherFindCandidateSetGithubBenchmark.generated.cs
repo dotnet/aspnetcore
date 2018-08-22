@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
         private void SetupEndpoints()
         {
-            Endpoints = new MatcherEndpoint[155];
+            Endpoints = new RouteEndpoint[155];
             Endpoints[0] = CreateEndpoint("/emojis");
             Endpoints[1] = CreateEndpoint("/events");
             Endpoints[2] = CreateEndpoint("/feeds");

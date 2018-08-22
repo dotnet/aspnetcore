@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.Threading;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Routing.TestObjects

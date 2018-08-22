@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.AspNetCore.Routing.TestObjects;
 using Xunit;
@@ -34,8 +35,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var dataSource = new DynamicEndpointDataSource();
             var matcher = new DataSourceDependentMatcher(dataSource, TestMatcherBuilder.Create);
 
-            var endpoint = new MatcherEndpoint(
-                MatcherEndpoint.EmptyInvoker,
+            var endpoint = new RouteEndpoint(
+                TestConstants.EmptyRequestDelegate,
                 RoutePatternFactory.Parse("a/b/c"),
                 0,
                 EndpointMetadataCollection.Empty,
@@ -52,11 +53,11 @@ namespace Microsoft.AspNetCore.Routing.Matching
         }
 
         [Fact]
-        public void Matcher_Ignores_NonMatcherEndpoint()
+        public void Matcher_Ignores_NonRouteEndpoint()
         {
             // Arrange
             var dataSource = new DynamicEndpointDataSource();
-            var endpoint = new TestEndpoint(EndpointMetadataCollection.Empty, "test");
+            var endpoint = new Endpoint(TestConstants.EmptyRequestDelegate, EndpointMetadataCollection.Empty, "test");
             dataSource.AddEndpoint(endpoint);
 
             // Act
@@ -72,8 +73,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
         {
             // Arrange
             var dataSource = new DynamicEndpointDataSource();
-            var endpoint = new MatcherEndpoint(
-                MatcherEndpoint.EmptyInvoker,
+            var endpoint = new RouteEndpoint(
+                TestConstants.EmptyRequestDelegate,
                 RoutePatternFactory.Parse("/"),
                 0,
                 new EndpointMetadataCollection(new SuppressMatchingMetadata()),
@@ -116,9 +117,9 @@ namespace Microsoft.AspNetCore.Routing.Matching
         {
             public static Func<MatcherBuilder> Create = () => new TestMatcherBuilder();
 
-            private List<MatcherEndpoint> Endpoints { get; } = new List<MatcherEndpoint>();
+            private List<RouteEndpoint> Endpoints { get; } = new List<RouteEndpoint>();
 
-            public override void AddEndpoint(MatcherEndpoint endpoint)
+            public override void AddEndpoint(RouteEndpoint endpoint)
             {
                 Endpoints.Add(endpoint);
             }
@@ -131,9 +132,9 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
         private class TestMatcher : Matcher
         {
-            public IReadOnlyList<MatcherEndpoint> Endpoints { get; set; }
+            public IReadOnlyList<RouteEndpoint> Endpoints { get; set; }
 
-            public override Task MatchAsync(HttpContext httpContext, IEndpointFeature feature)
+            public override Task MatchAsync(HttpContext httpContext, EndpointFeature feature)
             {
                 throw new NotImplementedException();
             }

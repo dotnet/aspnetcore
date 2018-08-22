@@ -3,6 +3,7 @@
 
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Moq;
 using Xunit;
@@ -15,7 +16,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         public async Task SelectAsync_NoCandidates_DoesNothing()
         {
             // Arrange
-            var endpoints = new MatcherEndpoint[] { };
+            var endpoints = new RouteEndpoint[] { };
             var scores = new int[] { };
             var candidateSet = CreateCandidateSet(endpoints, scores);
 
@@ -33,7 +34,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         public async Task SelectAsync_NoValidCandidates_DoesNothing()
         {
             // Arrange
-            var endpoints = new MatcherEndpoint[] { CreateEndpoint("/test"), };
+            var endpoints = new RouteEndpoint[] { CreateEndpoint("/test"), };
             var scores = new int[] { 0, };
             var candidateSet = CreateCandidateSet(endpoints, scores);
 
@@ -48,14 +49,13 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             // Assert
             Assert.Null(feature.Endpoint);
-            Assert.Null(feature.Values);
         }
 
         [Fact]
         public async Task SelectAsync_SingleCandidate_ChoosesCandidate()
         {
             // Arrange
-            var endpoints = new MatcherEndpoint[] { CreateEndpoint("/test"), };
+            var endpoints = new RouteEndpoint[] { CreateEndpoint("/test"), };
             var scores = new int[] { 0, };
             var candidateSet = CreateCandidateSet(endpoints, scores);
 
@@ -70,18 +70,16 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             // Assert
             Assert.Same(endpoints[0], feature.Endpoint);
-            Assert.Same(endpoints[0].Invoker, feature.Invoker);
-            Assert.NotNull(feature.Values);
         }
 
         [Fact]
         public async Task SelectAsync_SingleValidCandidate_ChoosesCandidate()
         {
             // Arrange
-            var endpoints = new MatcherEndpoint[] { CreateEndpoint("/test1"), CreateEndpoint("/test2"), };
+            var endpoints = new RouteEndpoint[] { CreateEndpoint("/test1"), CreateEndpoint("/test2"), };
             var scores = new int[] { 0, 0 };
             var candidateSet = CreateCandidateSet(endpoints, scores);
-            
+
             candidateSet[0].IsValidCandidate = false;
             candidateSet[1].IsValidCandidate = true;
 
@@ -99,7 +97,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         public async Task SelectAsync_SingleValidCandidateInGroup_ChoosesCandidate()
         {
             // Arrange
-            var endpoints = new MatcherEndpoint[] { CreateEndpoint("/test1"), CreateEndpoint("/test2"), CreateEndpoint("/test3"), };
+            var endpoints = new RouteEndpoint[] { CreateEndpoint("/test1"), CreateEndpoint("/test2"), CreateEndpoint("/test3"), };
             var scores = new int[] { 0, 0, 1 };
             var candidateSet = CreateCandidateSet(endpoints, scores);
 
@@ -121,7 +119,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         public async Task SelectAsync_ManyGroupsLastCandidate_ChoosesCandidate()
         {
             // Arrange
-            var endpoints = new MatcherEndpoint[] 
+            var endpoints = new RouteEndpoint[]
             {
                 CreateEndpoint("/test1"),
                 CreateEndpoint("/test2"),
@@ -152,7 +150,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         public async Task SelectAsync_MultipleValidCandidatesInGroup_ReportsAmbiguity()
         {
             // Arrange
-            var endpoints = new MatcherEndpoint[] { CreateEndpoint("/test1"), CreateEndpoint("/test2"), CreateEndpoint("/test3"), };
+            var endpoints = new RouteEndpoint[] { CreateEndpoint("/test1"), CreateEndpoint("/test2"), CreateEndpoint("/test3"), };
             var scores = new int[] { 0, 1, 1 };
             var candidateSet = CreateCandidateSet(endpoints, scores);
 
@@ -179,7 +177,7 @@ test: /test3", ex.Message);
         public async Task SelectAsync_RunsEndpointSelectorPolicies()
         {
             // Arrange
-            var endpoints = new MatcherEndpoint[] { CreateEndpoint("/test1"), CreateEndpoint("/test2"), CreateEndpoint("/test3"), };
+            var endpoints = new RouteEndpoint[] { CreateEndpoint("/test1"), CreateEndpoint("/test2"), CreateEndpoint("/test3"), };
             var scores = new int[] { 0, 0, 1 };
             var candidateSet = CreateCandidateSet(endpoints, scores);
 
@@ -206,22 +204,27 @@ test: /test3", ex.Message);
             Assert.Same(endpoints[2], feature.Endpoint);
         }
 
-        private static (HttpContext httpContext, IEndpointFeature feature) CreateContext()
+        private static (HttpContext httpContext, EndpointFeature feature) CreateContext()
         {
-            return (new DefaultHttpContext(), new EndpointFeature());
+            var feature = new EndpointFeature();
+            var httpContext = new DefaultHttpContext();
+            httpContext.Features.Set<IEndpointFeature>(feature);
+            httpContext.Features.Set<IRouteValuesFeature>(feature);
+
+            return (httpContext, feature);
         }
 
-        private static MatcherEndpoint CreateEndpoint(string template)
+        private static RouteEndpoint CreateEndpoint(string template)
         {
-            return new MatcherEndpoint(
-                MatcherEndpoint.EmptyInvoker,
+            return new RouteEndpoint(
+                TestConstants.EmptyRequestDelegate,
                 RoutePatternFactory.Parse(template),
                 0,
                 EndpointMetadataCollection.Empty,
                 $"test: {template}");
         }
 
-        private static CandidateSet CreateCandidateSet(MatcherEndpoint[] endpoints, int[] scores)
+        private static CandidateSet CreateCandidateSet(RouteEndpoint[] endpoints, int[] scores)
         {
             return new CandidateSet(endpoints, scores);
         }

@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
     /// </summary>
     public struct CandidateState
     {
-        internal CandidateState(MatcherEndpoint endpoint, int score)
+        internal CandidateState(RouteEndpoint endpoint, int score)
         {
             Endpoint = endpoint;
             Score = score;
@@ -18,12 +18,12 @@ namespace Microsoft.AspNetCore.Routing.Matching
         }
 
         /// <summary>
-        /// Gets the <see cref="Routing.Endpoint"/>.
+        /// Gets the <see cref="Http.Endpoint"/>.
         /// </summary>
-        public MatcherEndpoint Endpoint { get; }
+        public RouteEndpoint Endpoint { get; }
 
         /// <summary>
-        /// Gets the score of the <see cref="Routing.Endpoint"/> within the current
+        /// Gets the score of the <see cref="Http.Endpoint"/> within the current
         /// <see cref="CandidateSet"/>.
         /// </summary>
         /// <remarks>
@@ -40,15 +40,15 @@ namespace Microsoft.AspNetCore.Routing.Matching
         public int Score { get; }
 
         /// <summary>
-        /// Gets or sets a value which indicates where the <see cref="Routing.Endpoint"/> is considered
+        /// Gets or sets a value which indicates where the <see cref="Http.Endpoint"/> is considered
         /// a valid candiate for the current request. Set this value to <c>false</c> to exclude an
-        /// <see cref="Routing.Endpoint"/> from consideration.
+        /// <see cref="Http.Endpoint"/> from consideration.
         /// </summary>
         public bool IsValidCandidate { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="RouteValueDictionary"/> associated with the
-        /// <see cref="Routing.Endpoint"/> and the current request.
+        /// <see cref="Http.Endpoint"/> and the current request.
         /// </summary>
         public RouteValueDictionary Values { get; set; }
     }

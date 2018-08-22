@@ -3,6 +3,7 @@
 
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Routing.Matching
 {
@@ -18,8 +19,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
         /// <param name="httpContext">The <see cref="HttpContext"/> associated with the current request.</param>
         /// <param name="feature">
         /// The <see cref="IEndpointFeature"/> associated with the current request. The 
-        /// <see cref="IEndpointFeature"/> will be mutated to contain the result of the operation.</param>
+        /// <see cref="EndpointFeature"/> will be mutated to contain the result of the operation.</param>
         /// <returns>A <see cref="Task"/> which represents the asynchronous completion of the operation.</returns>
-        public abstract Task MatchAsync(HttpContext httpContext, IEndpointFeature feature);
+        public abstract Task MatchAsync(HttpContext httpContext, EndpointFeature feature);
     }
 }

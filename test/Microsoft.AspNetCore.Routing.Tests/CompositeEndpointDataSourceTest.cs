@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Matching;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.AspNetCore.Routing.TestObjects;
@@ -146,14 +147,14 @@ namespace Microsoft.AspNetCore.Routing
             Assert.False(token.HasChanged);
         }
 
-        private MatcherEndpoint CreateEndpoint(
+        private RouteEndpoint CreateEndpoint(
             string template,
             object defaults = null,
             int order = 0,
             string routeName = null)
         {
-            return new MatcherEndpoint(
-                MatcherEndpoint.EmptyInvoker,
+            return new RouteEndpoint(
+                TestConstants.EmptyRequestDelegate,
                 RoutePatternFactory.Parse(template, defaults, parameterPolicies: null),
                 order,
                 EndpointMetadataCollection.Empty,

@@ -4,6 +4,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing.TestObjects;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -19,8 +20,7 @@ namespace Microsoft.AspNetCore.Routing
         public async Task Invoke_OnCall_SetsEndpointFeature()
         {
             // Arrange
-            var httpContext = new DefaultHttpContext();
-            httpContext.RequestServices = new TestServiceProvider();
+            var httpContext = CreateHttpContext();
 
             var middleware = CreateMiddleware();
 
@@ -43,8 +43,7 @@ namespace Microsoft.AspNetCore.Routing
                 TestSink.EnableWithTypeName<EndpointRoutingMiddleware>);
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
 
-            var httpContext = new DefaultHttpContext();
-            httpContext.RequestServices = new TestServiceProvider();
+            var httpContext = CreateHttpContext();
 
             var logger = new Logger<EndpointRoutingMiddleware>(loggerFactory);
             var middleware = CreateMiddleware(logger);
@@ -62,8 +61,7 @@ namespace Microsoft.AspNetCore.Routing
         public async Task Invoke_BackCompatGetRouteValue_ValueUsedFromEndpointFeature()
         {
             // Arrange
-            var httpContext = new DefaultHttpContext();
-            httpContext.RequestServices = new TestServiceProvider();
+            var httpContext = CreateHttpContext();
 
             var middleware = CreateMiddleware();
 
@@ -71,7 +69,7 @@ namespace Microsoft.AspNetCore.Routing
             await middleware.Invoke(httpContext);
             var routeData = httpContext.GetRouteData();
             var routeValue = httpContext.GetRouteValue("controller");
-            var endpointFeature = httpContext.Features.Get<IEndpointFeature>();
+            var routeValuesFeature = httpContext.Features.Get<IRouteValuesFeature>();
 
             // Assert
             Assert.NotNull(routeData);
@@ -79,15 +77,14 @@ namespace Microsoft.AspNetCore.Routing
 
             // changing route data value is reflected in endpoint feature values
             routeData.Values["testKey"] = "testValue";
-            Assert.Equal("testValue", endpointFeature.Values["testKey"]);
+            Assert.Equal("testValue", routeValuesFeature.RouteValues["testKey"]);
         }
 
         [Fact]
         public async Task Invoke_BackCompatGetDataTokens_ValueUsedFromEndpointMetadata()
         {
             // Arrange
-            var httpContext = new DefaultHttpContext();
-            httpContext.RequestServices = new TestServiceProvider();
+            var httpContext = CreateHttpContext();
 
             var middleware = CreateMiddleware();
 
@@ -95,7 +92,7 @@ namespace Microsoft.AspNetCore.Routing
             await middleware.Invoke(httpContext);
             var routeData = httpContext.GetRouteData();
             var routeValue = httpContext.GetRouteValue("controller");
-            var endpointFeature = httpContext.Features.Get<IEndpointFeature>();
+            var routeValuesFeature = httpContext.Features.Get<IRouteValuesFeature>();
 
             // Assert
             Assert.NotNull(routeData);
@@ -103,7 +100,20 @@ namespace Microsoft.AspNetCore.Routing
 
             // changing route data value is reflected in endpoint feature values
             routeData.Values["testKey"] = "testValue";
-            Assert.Equal("testValue", endpointFeature.Values["testKey"]);
+            Assert.Equal("testValue", routeValuesFeature.RouteValues["testKey"]);
+        }
+
+        private HttpContext CreateHttpContext()
+        {
+            var feature = new EndpointFeature();
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.Features.Set<IEndpointFeature>(feature);
+            httpContext.Features.Set<IRouteValuesFeature>(feature);
+
+            httpContext.RequestServices = new TestServiceProvider();
+
+            return httpContext;
         }
 
         private EndpointRoutingMiddleware CreateMiddleware(Logger<EndpointRoutingMiddleware> logger = null)

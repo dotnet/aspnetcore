@@ -4,6 +4,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Routing.Matching
 {
@@ -19,7 +20,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             Matchers = matchers;
         }
 
-        public override Task MatchAsync(HttpContext httpContext, IEndpointFeature feature)
+        public override Task MatchAsync(HttpContext httpContext, EndpointFeature feature)
         {
             if (httpContext == null)
             {
@@ -37,7 +38,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 if (Matchers[i].TryMatch(path))
                 {
                     feature.Endpoint = Matchers[i].Endpoint;
-                    feature.Values = new RouteValueDictionary();
+                    feature.RouteValues = new RouteValueDictionary();
                 }
             }
 
@@ -46,12 +47,12 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
         public sealed class InnerMatcher : Matcher
         {
-            public readonly MatcherEndpoint Endpoint;
+            public readonly RouteEndpoint Endpoint;
 
             private readonly string[] _segments;
             private readonly Candidate[] _candidates;
 
-            public InnerMatcher(string[] segments, MatcherEndpoint endpoint)
+            public InnerMatcher(string[] segments, RouteEndpoint endpoint)
             {
                 _segments = segments;
                 Endpoint = endpoint;
@@ -120,12 +121,12 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 return Array.Empty<Candidate>();
             }
 
-            public override Task MatchAsync(HttpContext httpContext, IEndpointFeature feature)
+            public override Task MatchAsync(HttpContext httpContext, EndpointFeature feature)
             {
                 if (TryMatch(httpContext.Request.Path.Value))
                 {
                     feature.Endpoint = Endpoint;
-                    feature.Values = new RouteValueDictionary();
+                    feature.RouteValues = new RouteValueDictionary();
                 }
 
                 return Task.CompletedTask;

@@ -3,6 +3,7 @@
 
 using System;
 using System.Runtime.CompilerServices;
+using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Routing.Matching
 {
@@ -35,7 +36,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         /// </summary>
         /// <param name="endpoints">The list of endpoints, sorted in descending priority order.</param>
         /// <param name="scores">The list of endpoint scores. <see cref="CandidateState.Score"/>.</param>
-        public CandidateSet(MatcherEndpoint[] endpoints, int[] scores)
+        public CandidateSet(RouteEndpoint[] endpoints, int[] scores)
         {
             Count = endpoints.Length;
 

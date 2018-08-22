@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Routing
 
         private void SetupEndpoints()
         {{
-            Endpoints = new MatcherEndpoint[{3}];
+            Endpoints = new RouteEndpoint[{3}];
 {0}
         }}
 
@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Routing
             return builder.Build();
         }}
 
-        private MatcherEndpoint CreateEndpoint(string template, string controllerName, string actionName, string httpMethod)
+        private RouteEndpoint CreateEndpoint(string template, string controllerName, string actionName, string httpMethod)
         {{
             var requiredValues = new
             {{

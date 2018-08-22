@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Moq;
 using Xunit;
@@ -24,7 +25,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         public void Create_CreatesCandidateSet(int count)
         {
             // Arrange
-            var endpoints = new MatcherEndpoint[count];
+            var endpoints = new RouteEndpoint[count];
             for (var i = 0; i < endpoints.Length; i++)
             {
                 endpoints[i] = CreateEndpoint($"/{i}");
@@ -60,7 +61,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         public void Create_CreatesCandidateSet_TestConstructor(int count)
         {
             // Arrange
-            var endpoints = new MatcherEndpoint[count];
+            var endpoints = new RouteEndpoint[count];
             for (var i = 0; i < endpoints.Length; i++)
             {
                 endpoints[i] = CreateEndpoint($"/{i}");
@@ -80,10 +81,10 @@ namespace Microsoft.AspNetCore.Routing.Matching
             }
         }
 
-        private MatcherEndpoint CreateEndpoint(string template)
+        private RouteEndpoint CreateEndpoint(string template)
         {
-            return new MatcherEndpoint(
-                MatcherEndpoint.EmptyInvoker,
+            return new RouteEndpoint(
+                TestConstants.EmptyRequestDelegate,
                 RoutePatternFactory.Parse(template),
                 0,
                 EndpointMetadataCollection.Empty,

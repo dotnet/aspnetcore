@@ -32,7 +32,7 @@ namespace RoutingSample.Web
 
             var endpointDataSource = new DefaultEndpointDataSource(new[]
                 {
-                    new MatcherEndpoint((next) => (httpContext) =>
+                    new RouteEndpoint((httpContext) =>
                         {
                             var response = httpContext.Response;
                             var payloadLength = _homePayload.Length;
@@ -45,7 +45,7 @@ namespace RoutingSample.Web
                         0,
                         EndpointMetadataCollection.Empty,
                         "Home"),
-                    new MatcherEndpoint((next) => (httpContext) =>
+                    new RouteEndpoint((httpContext) =>
                         {
                             var response = httpContext.Response;
                             var payloadLength = _helloWorldPayload.Length;
@@ -58,7 +58,7 @@ namespace RoutingSample.Web
                         0,
                         EndpointMetadataCollection.Empty,
                         "Plaintext"),
-                    new MatcherEndpoint((next) => (httpContext) =>
+                    new RouteEndpoint((httpContext) =>
                         {
                             var response = httpContext.Response;
                             response.StatusCode = 200;
@@ -69,7 +69,7 @@ namespace RoutingSample.Web
                         0,
                         EndpointMetadataCollection.Empty,
                         "withconstraints"),
-                    new MatcherEndpoint((next) => (httpContext) =>
+                    new RouteEndpoint((httpContext) =>
                         {
                             var response = httpContext.Response;
                             response.StatusCode = 200;
@@ -80,7 +80,7 @@ namespace RoutingSample.Web
                         0,
                         EndpointMetadataCollection.Empty,
                         "withoptionalconstraints"),
-                    new MatcherEndpoint((next) => (httpContext) =>
+                    new RouteEndpoint((httpContext) =>
                         {
                             using (var writer = new StreamWriter(httpContext.Response.Body, Encoding.UTF8, 1024, leaveOpen: true))
                             {
@@ -95,7 +95,7 @@ namespace RoutingSample.Web
                         0,
                         new EndpointMetadataCollection(new HttpMethodMetadata(new[]{ "GET", })),
                         "DFA Graph"),
-                    new MatcherEndpoint((next) => (httpContext) =>
+                    new RouteEndpoint((httpContext) =>
                         {
                             var linkGenerator = httpContext.RequestServices.GetRequiredService<LinkGenerator>();
 
@@ -112,7 +112,7 @@ namespace RoutingSample.Web
                                 name: "WithSingleAsteriskCatchAll",
                                 requiredValues: new RouteValueDictionary())),
                         "WithSingleAsteriskCatchAll"),
-                    new MatcherEndpoint((next) => (httpContext) =>
+                    new RouteEndpoint((httpContext) =>
                         {
                             var linkGenerator = httpContext.RequestServices.GetRequiredService<LinkGenerator>();
 
