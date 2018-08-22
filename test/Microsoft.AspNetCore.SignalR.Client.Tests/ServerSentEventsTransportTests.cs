@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.AspNetCore.Http.Connections.Client.Internal;
 using Microsoft.AspNetCore.SignalR.Tests;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Moq;
 using Moq.Protected;
@@ -198,7 +199,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 });
 
             using (var httpClient = new HttpClient(mockHttpHandler.Object))
-            using (StartVerifiableLog(out var loggerFactory, expectedErrorsFilter: ExpectedErrors))
+            using (StartVerifiableLog(out var loggerFactory, LogLevel.Trace, expectedErrorsFilter: ExpectedErrors))
             {
                 var sseTransport = new ServerSentEventsTransport(httpClient, loggerFactory);
 

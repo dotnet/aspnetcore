@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.AspNetCore.Http.Connections.Client.Internal;
 using Microsoft.AspNetCore.SignalR.Tests;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 using Xunit.Abstractions;
@@ -332,16 +333,16 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                            writeContext.EventId.Name == "ErrorStartingTransport";
                 }
 
-                using (StartVerifiableLog(out var loggerFactory, expectedErrorsFilter: ExpectedErrors))
+                using (StartVerifiableLog(out var loggerFactory, LogLevel.Trace, expectedErrorsFilter: ExpectedErrors))
                 {
-                    var httpHandler = new TestHttpMessageHandler();
+                    var httpHandler = new TestHttpMessageHandler(loggerFactory);
 
                     httpHandler.OnGet("/?id=00000000-0000-0000-0000-000000000000", (_, __) =>
                     {
                         return Task.FromResult(ResponseUtils.CreateResponse(HttpStatusCode.InternalServerError));
                     });
 
-                    var sse = new ServerSentEventsTransport(new HttpClient(httpHandler));
+                    var sse = new ServerSentEventsTransport(new HttpClient(httpHandler), loggerFactory);
 
                     await WithConnectionAsync(
                         CreateConnection(httpHandler, loggerFactory: loggerFactory, transport: sse),
@@ -367,7 +368,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                         return ResponseUtils.CreateResponse(HttpStatusCode.Accepted);
                     });
 
-                    var sse = new ServerSentEventsTransport(new HttpClient(httpHandler));
+                    var sse = new ServerSentEventsTransport(new HttpClient(httpHandler), loggerFactory);
 
                     await WithConnectionAsync(
                         CreateConnection(httpHandler, loggerFactory: loggerFactory, transport: sse),
