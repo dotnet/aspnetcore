@@ -35,7 +35,6 @@ namespace AspNetCoreSdkTests.Util
 
         public static bool IsPreReleaseSdk =>
             SdkVersion.IsPrerelease ||
-            SdkVersion == new SemanticVersion(2, 1, 401) ||
             SdkVersion == new SemanticVersion(2, 1, 402);
 
         public static string TargetFrameworkMoniker => $"netcoreapp{RuntimeVersion.Major}.{RuntimeVersion.Minor}";
