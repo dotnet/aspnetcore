@@ -1,7 +1,7 @@
 try {
     const path = require("path");
 
-    let defaultReporters = ["progress", "summary"];
+    let defaultReporters = ["progress", "summary", "junit"];
 
     /** Creates the Karma config function based on the provided options
      *
@@ -45,6 +45,11 @@ try {
 
                 // Apply the default reporters along with whatever was passed in
                 reporters: [...defaultReporters, ...(config.reporters || [])],
+
+                junitReporter: {
+                    outputDir: "../../../artifacts/logs",
+                    outputFile: `${process.platform}` + ".functionaltest.junit.xml",
+                },
             });
         }
     }

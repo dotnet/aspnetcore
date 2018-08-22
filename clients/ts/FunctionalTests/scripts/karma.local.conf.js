@@ -58,7 +58,7 @@ try {
           base: 'ChromeHeadless',
           flags: ['--no-sandbox']
         }
-      }
+      },
     });
 } catch (e) {
     console.error(e);

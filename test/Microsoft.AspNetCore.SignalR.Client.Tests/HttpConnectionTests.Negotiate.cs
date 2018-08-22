@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             }
 
             [Fact]
-            public async Task NegotiateReturnedConenctionIdIsSetOnConnection()
+            public async Task NegotiateReturnedConnectionIdIsSetOnConnection()
             {
                 string connectionId = null;
 
@@ -153,7 +153,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 testHttpHandler.OnLongPoll((token) =>
                 {
                     var tcs = new TaskCompletionSource<HttpResponseMessage>(TaskCreationOptions.RunContinuationsAsynchronously);
-                    
+
                     token.Register(() => tcs.TrySetResult(ResponseUtils.CreateResponse(HttpStatusCode.NoContent)));
 
                     return tcs.Task;

@@ -4,7 +4,7 @@
 import { CompletionMessage, InvocationMessage, MessageType, NullLogger, StreamItemMessage } from "@aspnet/signalr";
 import { MessagePackHubProtocol } from "../src/MessagePackHubProtocol";
 
-describe("MessageHubProtocol", () => {
+describe("MessagePackHubProtocol", () => {
     it("can write/read non-blocking Invocation message", () => {
         const invocation = {
             arguments: [42, true, "test", ["x1", "y2"], null],
@@ -187,5 +187,15 @@ describe("MessageHubProtocol", () => {
                 type: MessageType.Ping,
             },
         ]);
+    });
+
+    it("can write ping message", () => {
+        const payload = new Uint8Array([
+            0x02, // length prefix
+            0x91, // message array length = 1 (fixarray)
+            0x06, // type = 6 = Ping (fixnum)
+        ]);
+        const buffer = new MessagePackHubProtocol().writeMessage({ type: MessageType.Ping });
+        expect(new Uint8Array(buffer)).toEqual(payload);
     });
 });

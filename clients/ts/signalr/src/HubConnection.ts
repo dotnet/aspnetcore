@@ -408,7 +408,13 @@ export class HubConnection {
         this.cleanupPingTimer();
         this.pingServerHandle = setTimeout(async () => {
             if (this.connectionState === HubConnectionState.Connected) {
-                await this.sendMessage(this.cachedPingMessage);
+                try {
+                    await this.sendMessage(this.cachedPingMessage);
+                } catch {
+                    // We don't care about the error. It should be seen elsewhere in the client.
+                    // The connection is probably in a bad or closed state now, cleanup the timer so it stops triggering
+                    this.cleanupPingTimer();
+                }
             }
         }, this.keepAliveIntervalInMilliseconds);
     }
