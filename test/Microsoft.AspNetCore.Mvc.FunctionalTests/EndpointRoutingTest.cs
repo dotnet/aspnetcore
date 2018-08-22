@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                 result.Routers);
         }
 
-        // Global routing exposes HTTP 405s for HTTP method mismatches
+        // Endpoint routing exposes HTTP 405s for HTTP method mismatches
         [Fact]
         public override async Task ConventionalRoutedController_InArea_ActionBlockedByHttpMethod()
         {
@@ -97,7 +97,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(HttpStatusCode.MethodNotAllowed, response.StatusCode);
         }
 
-        // Global routing exposes HTTP 405s for HTTP method mismatches
+        // Endpoint routing exposes HTTP 405s for HTTP method mismatches
         [Fact]
         public override async Task AttributeRoutedAction_MultipleRouteAttributes_RouteAttributeTemplatesIgnoredForOverrideActions()
         {
@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(HttpStatusCode.MethodNotAllowed, response.StatusCode);
         }
 
-        // Global routing exposes HTTP 405s for HTTP method mismatches
+        // Endpoint routing exposes HTTP 405s for HTTP method mismatches
         [Theory]
         [MemberData(nameof(AttributeRoutedAction_MultipleRouteAttributes_WithMultipleHttpAttributes_RespectsConstraintsData))]
         public override async Task AttributeRoutedAction_MultipleRouteAttributes_WithMultipleHttpAttributes_RespectsConstraints(
@@ -128,7 +128,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(HttpStatusCode.MethodNotAllowed, response.StatusCode);
         }
 
-        // Global routing exposes HTTP 405s for HTTP method mismatches
+        // Endpoint routing exposes HTTP 405s for HTTP method mismatches
         [Theory]
         [MemberData(nameof(AttributeRoutedAction_RejectsRequestsWithWrongMethods_InRoutesWithoutExtraTemplateSegmentsOnTheActionData))]
         public override async Task AttributeRoutedAction_RejectsRequestsWithWrongMethods_InRoutesWithoutExtraTemplateSegmentsOnTheAction(

@@ -15,7 +15,7 @@ namespace BasicWebSite
             services.AddRouting();
 
             services.AddMvc()
-                .SetCompatibilityVersion(CompatibilityVersion.Latest) // this compat version enables global routing
+                .SetCompatibilityVersion(CompatibilityVersion.Latest) // this compat version enables endpoint routing
                 .AddXmlDataContractSerializerFormatters();
 
             services.ConfigureBaseWebSiteAuthPolicies();

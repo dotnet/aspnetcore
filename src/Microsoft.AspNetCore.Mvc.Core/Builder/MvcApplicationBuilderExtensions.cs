@@ -118,7 +118,7 @@ namespace Microsoft.AspNetCore.Builder
                     }
                     else
                     {
-                        throw new InvalidOperationException($"Cannot use '{router.GetType().FullName}' with Global Routing.");
+                        throw new InvalidOperationException($"Cannot use '{router.GetType().FullName}' with Endpoint Routing.");
                     }
                 }
 

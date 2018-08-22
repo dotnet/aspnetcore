@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         {
         }
 
-        [Fact] // This intentionally returns a 405 with global routing
+        [Fact] // This intentionally returns a 405 with endpoint routing
         public override async Task PreflightRequestOnNonCorsEnabledController_DoesNotMatchTheAction()
         {
             // Arrange
