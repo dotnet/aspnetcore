@@ -34,11 +34,13 @@ namespace Microsoft.AspNetCore.Blazor.Server.Circuits
     internal class RenderBatchWriter : IDisposable
     {
         private readonly List<string> _strings;
+        private readonly Dictionary<string, int> _deduplicatedStringIndices;
         private readonly BinaryWriter _binaryWriter;
 
         public RenderBatchWriter(Stream output, bool leaveOpen)
         {
             _strings = new List<string>();
+            _deduplicatedStringIndices = new Dictionary<string, int>();
             _binaryWriter = new BinaryWriter(output, Encoding.UTF8, leaveOpen);
         }
 
@@ -104,7 +106,7 @@ namespace Microsoft.AspNetCore.Blazor.Server.Circuits
             _binaryWriter.Write((int)edit.Type);
             _binaryWriter.Write(edit.SiblingIndex);
             _binaryWriter.Write(edit.ReferenceFrameIndex);
-            WriteString(edit.RemovedAttributeName);
+            WriteString(edit.RemovedAttributeName, allowDeduplication: true);
         }
 
         int Write(in ArrayRange<RenderTreeFrame> frames)
@@ -137,7 +139,7 @@ namespace Microsoft.AspNetCore.Blazor.Server.Circuits
             switch (frame.FrameType)
             {
                 case RenderTreeFrameType.Attribute:
-                    WriteString(frame.AttributeName);
+                    WriteString(frame.AttributeName, allowDeduplication: true);
                     if (frame.AttributeValue is bool boolValue)
                     {
                         // Encoding the bool as either "" or null is pretty odd, but avoids
@@ -147,11 +149,12 @@ namespace Microsoft.AspNetCore.Blazor.Server.Circuits
                         // or something else, we'll need a different encoding mechanism. Since there
                         // would never be more than (say) 2^28 (268 million) distinct string table
                         // entries, we could use the first 4 bits to encode the value type.
-                        WriteString(boolValue ? string.Empty : null);
+                        WriteString(boolValue ? string.Empty : null, allowDeduplication: true);
                     }
                     else
                     {
-                        WriteString(frame.AttributeValue as string);
+                        var attributeValueString = frame.AttributeValue as string;
+                        WriteString(attributeValueString, allowDeduplication: string.IsNullOrEmpty(attributeValueString));
                     }
                     _binaryWriter.Write(frame.AttributeEventHandlerId);
                     break;
@@ -168,11 +171,11 @@ namespace Microsoft.AspNetCore.Blazor.Server.Circuits
                     break;
                 case RenderTreeFrameType.Element:
                     _binaryWriter.Write(frame.ElementSubtreeLength);
-                    WriteString(frame.ElementName);
+                    WriteString(frame.ElementName, allowDeduplication: true);
                     WritePadding(_binaryWriter, 4);
                     break;
                 case RenderTreeFrameType.ElementReferenceCapture:
-                    WriteString(frame.ElementReferenceCaptureId);
+                    WriteString(frame.ElementReferenceCaptureId, allowDeduplication: false);
                     WritePadding(_binaryWriter, 8);
                     break;
                 case RenderTreeFrameType.Region:
@@ -180,11 +183,13 @@ namespace Microsoft.AspNetCore.Blazor.Server.Circuits
                     WritePadding(_binaryWriter, 8);
                     break;
                 case RenderTreeFrameType.Text:
-                    WriteString(frame.TextContent);
+                    WriteString(
+                        frame.TextContent,
+                        allowDeduplication: string.IsNullOrWhiteSpace(frame.TextContent));
                     WritePadding(_binaryWriter, 8);
                     break;
                 case RenderTreeFrameType.Markup:
-                    WriteString(frame.MarkupContent);
+                    WriteString(frame.MarkupContent, allowDeduplication: false);
                     WritePadding(_binaryWriter, 8);
                     break;
                 default:
@@ -207,7 +212,7 @@ namespace Microsoft.AspNetCore.Blazor.Server.Circuits
             return startPos;
         }
 
-        void WriteString(string value)
+        void WriteString(string value, bool allowDeduplication)
         {
             if (value == null)
             {
@@ -215,9 +220,20 @@ namespace Microsoft.AspNetCore.Blazor.Server.Circuits
             }
             else
             {
-                var stringIndex = _strings.Count;
+                int stringIndex;
+
+                if (!allowDeduplication || !_deduplicatedStringIndices.TryGetValue(value, out stringIndex))
+                {
+                    stringIndex = _strings.Count;
+                    _strings.Add(value);
+
+                    if (allowDeduplication)
+                    {
+                        _deduplicatedStringIndices.Add(value, stringIndex);
+                    }
+                }
+
                 _binaryWriter.Write(stringIndex);
-                _strings.Add(value);
             }
         }
 
