@@ -18,6 +18,8 @@ namespace Microsoft.AspNetCore.Http.Connections
         private const string AvailableTransportsPropertyName = "availableTransports";
         private const string TransportPropertyName = "transport";
         private const string TransferFormatsPropertyName = "transferFormats";
+        // Used to detect ASP.NET SignalR Server connection attempt
+        private const string ProtocolVersionPropertyName = "ProtocolVersion";
 
         public static void WriteResponse(NegotiationResponse response, IBufferWriter<byte> output)
         {
@@ -134,6 +136,8 @@ namespace Microsoft.AspNetCore.Http.Connections
                                             }
                                         }
                                         break;
+                                    case ProtocolVersionPropertyName:
+                                        throw new InvalidOperationException("Detected a connection attempt to an ASP.NET SignalR Server. This client only supports connecting to an ASP.NET Core SignalR Server. See https://aka.ms/signalr-core-differences for details.");
                                     default:
                                         reader.Skip();
                                         break;
