@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     // up the endpoints too.
                     //
                     // Start with an order of '1' for conventional routes as attribute routes have a default order of '0'.
-                    // This is for scenarios dealing with migrating existing Router based code to Global Routing world.
+                    // This is for scenarios dealing with migrating existing Router based code to Endpoint Routing world.
                     var conventionalRouteOrder = 0;
 
                     // Check each of the conventional templates to see if the action would be reachable

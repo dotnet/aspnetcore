@@ -189,7 +189,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                             foundMatchingConstraint = true;
 
                             // Before we run the constraint, we need to initialize the route values.
-                            // In global routing, the route values are per-endpoint.
+                            // In endpoint routing, the route values are per-endpoint.
                             constraintContext.RouteContext = new RouteContext(httpContext)
                             {
                                 RouteData = new RouteData(candidateSet[item.index].Values),
