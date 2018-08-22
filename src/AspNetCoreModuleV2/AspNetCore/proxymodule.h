@@ -15,7 +15,7 @@ class ASPNET_CORE_PROXY_MODULE : public CHttpModule
 
      ASPNET_CORE_PROXY_MODULE();
 
-    ~ASPNET_CORE_PROXY_MODULE();
+    ~ASPNET_CORE_PROXY_MODULE() = default;
 
     void * operator new(size_t size, IModuleAllocator * pPlacement)
     {
@@ -46,9 +46,7 @@ class ASPNET_CORE_PROXY_MODULE : public CHttpModule
     );
 
  private:
-
-    APPLICATION_INFO *m_pApplicationInfo;
-    IAPPLICATION      *m_pApplication;
+    std::shared_ptr<APPLICATION_INFO> m_pApplicationInfo;
     std::unique_ptr<IREQUEST_HANDLER, IREQUEST_HANDLER_DELETER>  m_pHandler;
 };
 

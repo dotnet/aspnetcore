@@ -51,17 +51,8 @@ Return value:
 }
 
 ASPNET_CORE_PROXY_MODULE::ASPNET_CORE_PROXY_MODULE(
-) : m_pApplicationInfo(nullptr), m_pApplication(nullptr), m_pHandler(nullptr)
+) : m_pApplicationInfo(nullptr), m_pHandler(nullptr)
 {
-}
-
-ASPNET_CORE_PROXY_MODULE::~ASPNET_CORE_PROXY_MODULE()
-{
-    if (m_pApplicationInfo != NULL)
-    {
-        m_pApplicationInfo->DereferenceApplicationInfo();
-        m_pApplicationInfo = NULL;
-    }
 }
 
 __override
@@ -72,9 +63,7 @@ ASPNET_CORE_PROXY_MODULE::OnExecuteRequestHandler(
 )
 {
     HRESULT hr = S_OK;
-    APPLICATION_MANAGER   *pApplicationManager = NULL;
     REQUEST_NOTIFICATION_STATUS retVal = RQ_NOTIFICATION_CONTINUE;
-    STRU struExeLocation;
     try
     {
 
@@ -83,13 +72,11 @@ ASPNET_CORE_PROXY_MODULE::OnExecuteRequestHandler(
             FINISHED(HRESULT_FROM_WIN32(ERROR_SERVER_SHUTDOWN_IN_PROGRESS));
         }
 
-        pApplicationManager = APPLICATION_MANAGER::GetInstance();
+        auto pApplicationManager = APPLICATION_MANAGER::GetInstance();
 
         FINISHED_IF_FAILED(pApplicationManager->GetOrCreateApplicationInfo(
-            pHttpContext,
-            &m_pApplicationInfo));
-
-        DBG_ASSERT(pHttpContext);
+            *pHttpContext,
+            m_pApplicationInfo));
 
         std::unique_ptr<IAPPLICATION, IAPPLICATION_DELETER> pApplication;
         FINISHED_IF_FAILED(m_pApplicationInfo->GetOrCreateApplication(pHttpContext, pApplication));

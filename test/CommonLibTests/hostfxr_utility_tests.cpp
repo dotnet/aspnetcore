@@ -98,11 +98,11 @@ TEST(GetAbsolutePathToDotnetFromProgramFiles, BackupWorks)
 
     if (is64Bit)
     {
-        fDotnetInProgramFiles = FILE_UTILITY::CheckIfFileExists(L"C:/Program Files/dotnet/dotnet.exe");
+        fDotnetInProgramFiles = std::filesystem::is_regular_file(L"C:/Program Files/dotnet/dotnet.exe");
     }
     else
     {
-        fDotnetInProgramFiles = FILE_UTILITY::CheckIfFileExists(L"C:/Program Files (x86)/dotnet/dotnet.exe");
+        fDotnetInProgramFiles = std::filesystem::is_regular_file(L"C:/Program Files (x86)/dotnet/dotnet.exe");
     }
 
     auto dotnetPath = HOSTFXR_UTILITY::GetAbsolutePathToDotnetFromProgramFiles();

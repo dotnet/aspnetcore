@@ -14,8 +14,8 @@ enum APPLICATION_STATUS
 
 struct APPLICATION_PARAMETER
 {
-    LPCSTR       pzName;
-    PVOID        pValue;
+    LPCSTR pzName;
+    const void *pValue;
 };
 
 class IAPPLICATION

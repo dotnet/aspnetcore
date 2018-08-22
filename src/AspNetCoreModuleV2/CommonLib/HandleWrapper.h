@@ -52,6 +52,13 @@ public:
 
     HandleType* operator&() { return &m_handle; }
 
+    HandleType release() noexcept
+    {
+        auto value = m_handle;
+        m_handle = traits::DefaultHandle;
+        return value;
+    }
+
 private:
     HandleType m_handle;
 };

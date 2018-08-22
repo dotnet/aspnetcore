@@ -3,10 +3,9 @@
 
 #pragma once
 
+#include <string>
 #include <windows.h>
 #include <httpserv.h>
-
-#include "stringu.h"
 
 #define CS_ASPNETCORE_SECTION                            L"system.webServer/aspNetCore"
 #define CS_ASPNETCORE_PROCESS_EXE_PATH                   L"processPath"
@@ -34,16 +33,16 @@ public:
         IHttpApplication    *pHttpApplication
     );
 
-    STRU*
+    std::wstring&
     QueryProcessPath()
     {
-        return &m_struProcessPath;
+        return m_strProcessPath;
     }
 
-    STRU*
+    std::wstring&
     QueryArguments()
     {
-        return &m_struArguments;
+        return m_strArguments;
     }
 
     APP_HOSTING_MODEL
@@ -52,10 +51,10 @@ public:
         return m_hostingModel;
     }
 
-    STRU*
+    std::wstring&
     QueryHandlerVersion()
     {
-        return &m_struHandlerVersion;
+        return m_strHandlerVersion;
     }
 
     BOOL
@@ -77,10 +76,10 @@ public:
 
 private:
 
-    STRU                   m_struArguments;
-    STRU                   m_struProcessPath;
-    APP_HOSTING_MODEL      m_hostingModel;
-    STRU                   m_struHandlerVersion;
+    std::wstring                   m_strArguments;
+    std::wstring                   m_strProcessPath;
+    APP_HOSTING_MODEL              m_hostingModel;
+    std::wstring                   m_strHandlerVersion;
     BOOL                   m_fStdoutLogEnabled;
     STRU                   m_struStdoutLogFile;
 };

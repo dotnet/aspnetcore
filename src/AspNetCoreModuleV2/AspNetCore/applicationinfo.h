@@ -4,8 +4,6 @@
 #pragma once
 
 #include "hostfxroptions.h"
-#include "hashtable.h"
-#include "hashfn.h"
 #include "aspnetcore_shim_config.h"
 #include "iapplication.h"
 #include "SRWSharedLock.h"
@@ -19,61 +17,35 @@ class APPLICATION_INFO
 {
 public:
 
-    APPLICATION_INFO(IHttpServer &pServer) :
+    APPLICATION_INFO(
+        IHttpServer &pServer,
+        IHttpApplication    &pApplication,
+        HandlerResolver     &pHandlerResolver
+    ) :
         m_pServer(pServer),
-        m_cRefs(1),
-        m_handlerResolver(nullptr)
+        m_handlerResolver(pHandlerResolver),
+        m_strConfigPath(pApplication.GetAppConfigPath()),
+        m_strInfoKey(pApplication.GetApplicationId())
     {
         InitializeSRWLock(&m_applicationLock);
     }
 
-    PCWSTR
-    QueryApplicationInfoKey()
-    {
-        return m_struInfoKey.QueryStr();
-    }
-
-    STRU*
-    QueryConfigPath()
-    {
-        return &m_struConfigPath;
-    }
-
-    virtual
     ~APPLICATION_INFO();
 
-    static
-    void
-    StaticInitialize()
+    std::wstring&
+    QueryApplicationInfoKey()
     {
+        return m_strInfoKey;
     }
 
-    HRESULT
-    Initialize(
-        IHttpApplication    &pApplication,
-        HandlerResolver     *pHandlerResolver
-    );
-
-    VOID
-    ReferenceApplicationInfo() const
+    std::wstring&
+    QueryConfigPath()
     {
-        InterlockedIncrement(&m_cRefs);
+        return m_strConfigPath;
     }
 
     VOID
-    DereferenceApplicationInfo() const
-    {
-        if (InterlockedDecrement(&m_cRefs) == 0)
-        {
-            delete this;
-        }
-    }
-
-    VOID
-    RecycleApplication();
-
-    VOID
-    ShutDownApplication();
+    ShutDownApplication(bool fServerInitiated);
 
     HRESULT
     GetOrCreateApplication(
@@ -81,88 +53,30 @@ public:
         std::unique_ptr<IAPPLICATION, IAPPLICATION_DELETER>& pApplication
     );
 
+    bool ConfigurationPathApplies(const std::wstring& path)
+    {
+        // We need to check that the last character of the config path
+        // is either a null terminator or a slash.
+        // This checks the case where the config path was
+        // MACHINE/WEBROOT/site and your site path is MACHINE/WEBROOT/siteTest
+        auto const changed = m_strConfigPath._Starts_with(path);
+        if (changed)
+        {
+            const auto lastChar = m_strConfigPath[m_strConfigPath.length()];
+            return lastChar == L'\0' || lastChar == L'/';
+        }
+        return false;
+    }
+
 private:
-
-    static DWORD WINAPI DoRecycleApplication(LPVOID lpParam);
-
-    mutable LONG            m_cRefs;
-    STRU                    m_struConfigPath;
-    STRU                    m_struInfoKey;
-    SRWLOCK                 m_applicationLock;
     IHttpServer            &m_pServer;
-    HandlerResolver        *m_handlerResolver;
+    HandlerResolver        &m_handlerResolver;
 
+    std::wstring            m_strConfigPath;
+    std::wstring            m_strInfoKey;
+    SRWLOCK                 m_applicationLock {};
+
+    std::unique_ptr<ApplicationFactory> m_pApplicationFactory;
     std::unique_ptr<IAPPLICATION, IAPPLICATION_DELETER> m_pApplication;
 };
 
-class APPLICATION_INFO_HASH :
-    public HASH_TABLE<APPLICATION_INFO, PCWSTR>
-{
-
-public:
-
-    APPLICATION_INFO_HASH()
-    {}
-
-    PCWSTR
-    ExtractKey(
-        APPLICATION_INFO *pApplicationInfo
-    )
-    {
-        return pApplicationInfo->QueryApplicationInfoKey();
-    }
-
-    DWORD
-    CalcKeyHash(
-        PCWSTR  pszApplicationId
-    )
-    {
-        return HashStringNoCase(pszApplicationId);
-    }
-
-    BOOL
-    EqualKeys(
-        PCWSTR pszKey1,
-        PCWSTR pszKey2
-    )
-    {
-        return CompareStringOrdinal(pszKey1,
-            -1,
-            pszKey2,
-            -1,
-            TRUE) == CSTR_EQUAL;
-    }
-
-    VOID
-    ReferenceRecord(
-        APPLICATION_INFO *pApplicationInfo
-    )
-    {
-        pApplicationInfo->ReferenceApplicationInfo();
-    }
-
-    VOID
-    DereferenceRecord(
-        APPLICATION_INFO *pApplicationInfo
-    )
-    {
-        pApplicationInfo->DereferenceApplicationInfo();
-    }
-
-    static
-    VOID
-    ReferenceCopyToTable(
-        APPLICATION_INFO *        pEntry,
-        PVOID                     pvData
-    )
-    {
-        APPLICATION_INFO_HASH *pHash = static_cast<APPLICATION_INFO_HASH *>(pvData);
-        DBG_ASSERT(pHash);
-        pHash->InsertRecord(pEntry);
-    }
-
-private:
-
-    APPLICATION_INFO_HASH(const APPLICATION_INFO_HASH &);
-    void operator=(const APPLICATION_INFO_HASH &);
-};

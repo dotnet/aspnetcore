@@ -227,6 +227,7 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="ApplicationFactory.h" />
     <ClInclude Include="applicationinfo.h" />
     <ClInclude Include="AppOfflineApplication.h" />
     <ClInclude Include="AppOfflineHandler.h" />

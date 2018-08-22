@@ -25,12 +25,6 @@ public:
     EnsureDirectoryPathExist(
         _In_  LPCWSTR pszPath
     );
-
-    static
-    BOOL
-    CheckIfFileExists(
-        PCWSTR pszFilePath
-    );
 private:
     static
     HRESULT

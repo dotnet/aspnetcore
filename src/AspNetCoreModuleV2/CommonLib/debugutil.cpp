@@ -65,7 +65,7 @@ void SetDebugFlags(const std::wstring &debugValue)
 {
     try
     {
-        if (!debugValue.empty())
+        if (!debugValue.empty() && debugValue.find_first_not_of(L"0123456789") == std::wstring::npos)
         {
             const auto value = std::stoi(debugValue);
 

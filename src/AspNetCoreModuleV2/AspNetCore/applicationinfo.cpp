@@ -3,7 +3,6 @@
 
 #include "applicationinfo.h"
 
-#include <array>
 #include "proxymodule.h"
 #include "hostfxr_utility.h"
 #include "debugutil.h"
@@ -11,27 +10,13 @@
 #include "SRWExclusiveLock.h"
 #include "exceptions.h"
 #include "EventLog.h"
-#include "HandleWrapper.h"
 #include "ServerErrorApplication.h"
 #include "AppOfflineApplication.h"
 
 APPLICATION_INFO::~APPLICATION_INFO()
 {
-    ShutDownApplication();
+    ShutDownApplication(/* fServerInitiated */ false);
 }
-
-HRESULT
-APPLICATION_INFO::Initialize(
-    _In_ IHttpApplication         &pApplication,
-    HandlerResolver * pHandlerResolver
-)
-{
-    m_handlerResolver = pHandlerResolver;
-    RETURN_IF_FAILED(m_struConfigPath.Copy(pApplication.GetAppConfigPath()));
-    RETURN_IF_FAILED(m_struInfoKey.Copy(pApplication.GetApplicationId()));
-    return S_OK;
-}
-
 
 HRESULT
 APPLICATION_INFO::GetOrCreateApplication(
@@ -54,6 +39,7 @@ APPLICATION_INFO::GetOrCreateApplication(
             // Call to wait for application to complete stopping
             m_pApplication->Stop(/* fServerInitiated */ false);
             m_pApplication = nullptr;
+            m_pApplicationFactory = nullptr;
         }
         else
         {
@@ -69,20 +55,13 @@ APPLICATION_INFO::GetOrCreateApplication(
     }
     else
     {
-        STRU struExeLocation;
-        PFN_ASPNETCORE_CREATE_APPLICATION      pfnAspNetCoreCreateApplication;
-        FINISHED_IF_FAILED(m_handlerResolver->GetApplicationFactory(httpApplication, struExeLocation, &pfnAspNetCoreCreateApplication));
-        std::array<APPLICATION_PARAMETER, 1> parameters {
-            {"InProcessExeLocation", struExeLocation.QueryStr()}
-        };
+        FINISHED_IF_FAILED(m_handlerResolver.GetApplicationFactory(httpApplication, m_pApplicationFactory));
 
         LOG_INFO("Creating handler application");
         IAPPLICATION * newApplication;
-        FINISHED_IF_FAILED(pfnAspNetCoreCreateApplication(
+        FINISHED_IF_FAILED(m_pApplicationFactory->Execute(
             &m_pServer,
             &httpApplication,
-            parameters.data(),
-            static_cast<DWORD>(parameters.size()),
             &newApplication));
 
         m_pApplication.reset(newApplication);
@@ -110,50 +89,17 @@ Finished:
     return hr;
 }
 
+
 VOID
-APPLICATION_INFO::RecycleApplication()
+APPLICATION_INFO::ShutDownApplication(bool fServerInitiated)
 {
     SRWExclusiveLock lock(m_applicationLock);
 
     if (m_pApplication)
     {
-        const auto pApplication = m_pApplication.release();
-
-        HandleWrapper<InvalidHandleTraits> hThread = CreateThread(
-            NULL,       // default security attributes
-            0,          // default stack size
-            (LPTHREAD_START_ROUTINE)DoRecycleApplication,
-            pApplication,       // thread function arguments
-            0,          // default creation flags
-            NULL);      // receive thread identifier
-    }
-}
-
-
-DWORD WINAPI
-APPLICATION_INFO::DoRecycleApplication(
-    LPVOID lpParam)
-{
-    auto pApplication = std::unique_ptr<IAPPLICATION, IAPPLICATION_DELETER>(static_cast<IAPPLICATION*>(lpParam));
-
-    if (pApplication)
-    {
-        // Recycle will call shutdown for out of process
-        pApplication->Stop(/*fServerInitiated*/ false);
-    }
-
-    return 0;
-}
-
-
-VOID
-APPLICATION_INFO::ShutDownApplication()
-{
-    SRWExclusiveLock lock(m_applicationLock);
-
-    if (m_pApplication)
-    {
-        m_pApplication ->Stop(/* fServerInitiated */ true);
+        LOG_ERRORF("Stopping application %S", QueryApplicationInfoKey().c_str());
+        m_pApplication ->Stop(fServerInitiated);
         m_pApplication = nullptr;
+        m_pApplicationFactory = nullptr;
     }
 }

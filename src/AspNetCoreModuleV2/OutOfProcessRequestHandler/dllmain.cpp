@@ -146,6 +146,8 @@ EnsureOutOfProcessInitializtion()
             FINISHED(S_OK);
         }
 
+        g_fOutOfProcessInitialize = TRUE;
+
         g_hWinHttpModule = GetModuleHandle(TEXT("winhttp.dll"));
 
         g_hAspNetCoreModule = GetModuleHandle(TEXT("aspnetcorev2.dll"));
