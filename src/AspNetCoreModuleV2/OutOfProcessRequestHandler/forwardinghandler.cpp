@@ -344,6 +344,10 @@ Failure:
     {
         pResponse->SetStatus(400, "Bad Request", 0, hr);
     }
+    else if (hr == E_APPLICATION_EXITING)
+    {
+        pResponse->SetStatus(503, "Service Unavailable", 0, S_OK, nullptr, TRUE);
+    }
     else if (fFailedToStartKestrel && !m_pApplication->QueryConfig()->QueryDisableStartUpErrorPage())
     {
         HTTP_DATA_CHUNK   DataChunk;
