@@ -1,7 +1,7 @@
 export async function fetchBootConfigAsync() {
   // Later we might make the location of this configurable (e.g., as an attribute on the <script>
   // element that's importing this file), but currently there isn't a use case for that.
-  const bootConfigResponse = await fetch('_framework/blazor.boot.json');
+  const bootConfigResponse = await fetch('_framework/blazor.boot.json', { method: 'Get', credentials: 'include' });
   return bootConfigResponse.json() as Promise<BootJsonData>;
 }
 
