@@ -17,18 +17,18 @@ namespace Microsoft.AspNetCore.Routing.Matching
         {
             const int defaultOrder = 0;
             object metadata = new object();
-            Func<RequestDelegate, RequestDelegate> invoker = (d) => null;
+            RequestDelegate requestDelegate = (d) => null;
 
-            var builder = new MatcherEndpointBuilder(invoker, RoutePatternFactory.Parse("/"), defaultOrder)
+            var builder = new MatcherEndpointBuilder(requestDelegate, RoutePatternFactory.Parse("/"), defaultOrder)
             {
                 DisplayName = "Display name!",
                 Metadata = { metadata }
             };
 
-            var endpoint = Assert.IsType<MatcherEndpoint>(builder.Build());
+            var endpoint = Assert.IsType<RouteEndpoint>(builder.Build());
             Assert.Equal("Display name!", endpoint.DisplayName);
             Assert.Equal(defaultOrder, endpoint.Order);
-            Assert.Equal(invoker, endpoint.Invoker);
+            Assert.Equal(requestDelegate, endpoint.RequestDelegate);
             Assert.Equal("/", endpoint.RoutePattern.RawText);
             Assert.Equal(metadata, Assert.Single(endpoint.Metadata));
         }

@@ -10,26 +10,26 @@ namespace Microsoft.AspNetCore.Routing.Matching
 {
     public sealed class MatcherEndpointBuilder : EndpointBuilder
     {
-        public Func<RequestDelegate, RequestDelegate> Invoker { get; set; }
+        public RequestDelegate RequestDelegate { get; set; }
 
         public RoutePattern RoutePattern { get; set; }
 
         public int Order { get; set; }
 
         public MatcherEndpointBuilder(
-           Func<RequestDelegate, RequestDelegate> invoker,
+           RequestDelegate requestDelegate,
            RoutePattern routePattern,
            int order)
         {
-            Invoker = invoker;
+            RequestDelegate = requestDelegate;
             RoutePattern = routePattern;
             Order = order;
         }
 
         public override Endpoint Build()
         {
-            var matcherEndpoint = new MatcherEndpoint(
-                Invoker,
+            var matcherEndpoint = new RouteEndpoint(
+                RequestDelegate,
                 RoutePattern,
                 Order,
                 new EndpointMetadataCollection(Metadata),

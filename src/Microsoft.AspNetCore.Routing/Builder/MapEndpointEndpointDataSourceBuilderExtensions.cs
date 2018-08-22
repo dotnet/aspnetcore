@@ -14,35 +14,35 @@ namespace Microsoft.AspNetCore.Builder
     {
         public static MatcherEndpointBuilder MapEndpoint(
             this EndpointDataSourceBuilder builder,
-            Func<RequestDelegate, RequestDelegate> invoker,
+            RequestDelegate requestDelegate,
             string pattern,
             string displayName)
         {
-            return MapEndpoint(builder, invoker, pattern, displayName, metadata: null);
+            return MapEndpoint(builder, requestDelegate, pattern, displayName, metadata: null);
         }
 
         public static MatcherEndpointBuilder MapEndpoint(
             this EndpointDataSourceBuilder builder,
-            Func<RequestDelegate, RequestDelegate> invoker,
+            RequestDelegate requestDelegate,
             RoutePattern pattern,
             string displayName)
         {
-            return MapEndpoint(builder, invoker, pattern, displayName, metadata: null);
+            return MapEndpoint(builder, requestDelegate, pattern, displayName, metadata: null);
         }
 
         public static MatcherEndpointBuilder MapEndpoint(
             this EndpointDataSourceBuilder builder,
-            Func<RequestDelegate, RequestDelegate> invoker,
+            RequestDelegate requestDelegate,
             string pattern,
             string displayName,
             IList<object> metadata)
         {
-            return MapEndpoint(builder, invoker, RoutePatternFactory.Parse(pattern), displayName, metadata);
+            return MapEndpoint(builder, requestDelegate, RoutePatternFactory.Parse(pattern), displayName, metadata);
         }
 
         public static MatcherEndpointBuilder MapEndpoint(
             this EndpointDataSourceBuilder builder,
-            Func<RequestDelegate, RequestDelegate> invoker,
+            RequestDelegate requestDelegate,
             RoutePattern pattern,
             string displayName,
             IList<object> metadata)
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Builder
             const int defaultOrder = 0;
 
             var endpointBuilder = new MatcherEndpointBuilder(
-               invoker,
+               requestDelegate,
                pattern,
                defaultOrder);
             endpointBuilder.DisplayName = displayName;
