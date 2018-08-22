@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             _linearSearch = new LinearSearchJumpTable(0, -1, entries.ToArray());
             _dictionary = new DictionaryJumpTable(0, -1, entries.ToArray());
-            Debug.Assert(AsciiKeyedJumpTable.TryCreate(0, -1, entries, out _ascii));
+            AsciiKeyedJumpTable.TryCreate(0, -1, entries, out _ascii);
             _dictionaryLookup = new DictionaryLookupJumpTable(0, -1, entries.ToArray());
             _customHashTable = new CustomHashTableJumpTable(0, -1, entries.ToArray());
         }

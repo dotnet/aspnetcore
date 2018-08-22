@@ -12,8 +12,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
     public partial class MatcherFindCandidateSetGithubBenchmark : EndpointRoutingBenchmarkBase
     {
         // SegmentCount should be max-segments + 1, but we don't have a good way to compute
-        // it here, so using 16 as a safe guess.
-        private const int SegmentCount = 16;
+        // it here, so using 32 as a safe guess.
+        private const int SegmentCount = 32;
 
         private BarebonesMatcher _baseline;
         private DfaMatcher _dfa;

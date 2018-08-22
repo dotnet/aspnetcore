@@ -97,6 +97,14 @@ namespace Microsoft.AspNetCore.Routing
             }
         }
 
+        protected RouteEndpoint CreateEndpoint(string template, string httpMethod)
+        {
+            return CreateEndpoint(template, metadata: new object[]
+            {
+                new HttpMethodMetadata(new string[]{ httpMethod, }),
+            });
+        }
+
         protected RouteEndpoint CreateEndpoint(
             string template,
             object defaults = null,
