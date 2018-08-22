@@ -43,6 +43,7 @@
 
 #define CATCH_RETURN()                                          catch (...) { RETURN_CAUGHT_EXCEPTION(); }
 #define LOG_IF_FAILED(hr)                                       LogHResultFailed(LOCATION_INFO, hr)
+#define LOG_LAST_ERROR()                                        LogLastErrorIf(LOCATION_INFO, true)
 #define LOG_LAST_ERROR_IF(condition)                            LogLastErrorIf(LOCATION_INFO, condition)
 #define SUCCEEDED_LOG(hr)                                       SUCCEEDED(LOG_IF_FAILED(hr))
 #define FAILED_LOG(hr)                                          FAILED(LOG_IF_FAILED(hr))
@@ -74,7 +75,7 @@
 
  __declspec(noinline) inline VOID ReportException(LOCATION_ARGUMENTS std::exception& exception)
 {
-    DebugPrintf(ASPNETCORE_DEBUG_FLAG_ERROR, LOCATION_FORMAT "Unhandled exception: %s", LOCATION_CALL exception.what());
+    DebugPrintf(ASPNETCORE_DEBUG_FLAG_ERROR, "Exception : %s caught at" LOCATION_FORMAT, exception.what(), LOCATION_CALL_ONLY);
 }
 
  __declspec(noinline) inline HRESULT LogHResultFailed(LOCATION_ARGUMENTS HRESULT hr)

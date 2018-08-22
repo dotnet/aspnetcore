@@ -392,11 +392,10 @@ IN_PROCESS_APPLICATION::ExecuteApplication(
 {
     HRESULT             hr;
     HMODULE             hModule = nullptr;
-    DWORD               hostfxrArgc = 0;
-    BSTR               *hostfxrArgv = NULL;
     hostfxr_main_fn     pProc;
     std::unique_ptr<HOSTFXR_OPTIONS>    hostFxrOptions = NULL;
-
+    DWORD                       hostfxrArgc = 0;
+    std::unique_ptr<PCWSTR[]>   hostfxrArgv;
     DBG_ASSERT(m_status == MANAGED_APPLICATION_STATUS::STARTING);
 
     pProc = s_fMainCallback;
@@ -428,10 +427,7 @@ IN_PROCESS_APPLICATION::ExecuteApplication(
             m_pConfig->QueryArguments()->QueryStr(),
             hostFxrOptions
             ));
-
-        hostfxrArgc = hostFxrOptions->GetArgc();
-        hostfxrArgv = hostFxrOptions->GetArgv();
-
+        hostFxrOptions->GetArguments(hostfxrArgc, hostfxrArgv);
         FINISHED_IF_FAILED(SetEnvironementVariablesOnWorkerProcess());
     }
 
@@ -457,7 +453,7 @@ IN_PROCESS_APPLICATION::ExecuteApplication(
     // set the callbacks
     s_Application = this;
 
-    hr = RunDotnetApplication(hostfxrArgc, hostfxrArgv, pProc);
+    hr = RunDotnetApplication(hostfxrArgc, hostfxrArgv.get(), pProc);
 
 Finished:
 

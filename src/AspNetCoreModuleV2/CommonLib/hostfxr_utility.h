@@ -7,7 +7,7 @@
 #include <vector>
 #include <filesystem>
 #include <optional>
-#include "stringu.h"
+#include <string>
 
 typedef INT(*hostfxr_get_native_search_directories_fn) (CONST INT argc, CONST PCWSTR* argv, PWSTR buffer, DWORD buffer_size, DWORD* required_buffer_size);
 typedef INT(*hostfxr_main_fn) (CONST DWORD argc, CONST PCWSTR argv[]);
@@ -19,76 +19,88 @@ class HOSTFXR_UTILITY
 public:
 
     static
-    HRESULT
-    GetStandaloneHostfxrParameters(
-        PCWSTR              pwzExeAbsolutePath, // includes .exe file extension.
-        PCWSTR				pcwzApplicationPhysicalPath,
-        PCWSTR              pcwzArguments,
-        _Inout_ STRU*		pStruHostFxrDllLocation,
-        _Out_ DWORD*		pdwArgCount,
-        _Out_ BSTR**		ppwzArgv
-    );
-
-    static
-    HRESULT
-    ParseHostfxrArguments(
-        PCWSTR              pwzArgumentsFromConfig,
-        PCWSTR              pwzExePath,
-        PCWSTR              pcwzApplicationPhysicalPath,
-        _Out_ DWORD*        pdwArgCount,
-        _Out_ BSTR**        pbstrArgv
-    );
-
-    static
-    BOOL
-    IsDotnetExecutable(
-        _In_ const std::filesystem::path & dotnetPath
-    );
-
-    static
-    HRESULT
+    void
     GetHostFxrParameters(
-        _In_ PCWSTR         pcwzProcessPath,
-        _In_ PCWSTR         pcwzApplicationPhysicalPath,
-        _In_ PCWSTR         pcwzArguments,
-        _Inout_ STRU       *pStruHostFxrDllLocation,
-        _Inout_ STRU       *struExeAbsolutePath,
-        _Out_ DWORD        *pdwArgCount,
-        _Out_ BSTR        **ppwzArgv
+        const std::filesystem::path     &processPath,
+        const std::filesystem::path     &applicationPhysicalPath,
+        const std::wstring              &applicationArguments,
+        std::filesystem::path           &hostFxrDllPath,
+        std::filesystem::path           &dotnetExePath,
+        std::vector<std::wstring>       &arguments
     );
 
-    static
-    VOID
-    FindDotNetFolders(
-        _In_ PCWSTR pszPath,
-        _Out_ std::vector<std::wstring> & pvFolders
-    );
+    class StartupParametersResolutionException: public std::runtime_error
+    {
+        public:
+            StartupParametersResolutionException(std::wstring msg)
+                : runtime_error("Startup parameter resulution error occured"), message(std::move(msg))
+            {
+            }
+
+            std::wstring get_message() const { return message; }
+
+        private:
+            std::wstring message;
+    };
 
     static
-    std::wstring
-    FindHighestDotNetVersion(
-        _In_ std::vector<std::wstring> & vFolders
-    );
-
-    static
-    std::optional<std::filesystem::path>
-    GetAbsolutePathToHostFxr(
-        _In_ const std::filesystem::path & dotnetPath
+    void
+    ParseHostfxrArguments(
+        const std::wstring          &arugments,
+        const std::filesystem::path &exePath,
+        const std::filesystem::path &applicationPhysicalPath,
+        std::vector<std::wstring>   &arguments,
+        bool                        expandDllPaths = false
     );
 
     static
     std::optional<std::filesystem::path>
     GetAbsolutePathToDotnetFromProgramFiles();
+private:
+
+    static
+    BOOL
+    IsDotnetExecutable(
+        const std::filesystem::path & dotnetPath
+    );
+
+    static
+    VOID
+    FindDotNetFolders(
+        const std::filesystem::path& path,
+        std::vector<std::wstring> & pvFolders
+    );
+
+    static
+    std::wstring
+    FindHighestDotNetVersion(
+        std::vector<std::wstring> & vFolders
+    );
+
+    static
+    std::filesystem::path
+    GetAbsolutePathToHostFxr(
+        const std::filesystem::path & dotnetPath
+    );
+
 
     static
     std::optional<std::filesystem::path>
     InvokeWhereToFindDotnet();
 
     static
-    std::optional<std::filesystem::path>
+    std::filesystem::path
     GetAbsolutePathToDotnet(
-        _In_ const std::filesystem::path & applicationPath,
-        _In_ const std::filesystem::path & requestedPath
+        const std::filesystem::path & applicationPath,
+        const std::filesystem::path & requestedPath
     );
+
+    struct LocalFreeDeleter
+    {
+         void operator ()(LPWSTR* ptr) const
+         {
+             LocalFree(ptr);
+         }
+    };
 };
 

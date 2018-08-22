@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
@@ -40,14 +41,16 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
 
         [ConditionalTheory]
-        [InlineData("bogus")]
-        [InlineData("c:\\random files\\dotnet.exe")]
-        [InlineData(".\\dotnet.exe")]
-        public async Task InvalidProcessPath_ExpectServerError(string path)
+        [InlineData("bogus", "", @"Executable was not found at '.*?\\bogus.exe")]
+        [InlineData("c:\\random files\\dotnet.exe", "something.dll", @"Could not find dotnet.exe at '.*?\\dotnet.exe'")]
+        [InlineData(".\\dotnet.exe", "something.dll", @"Could not find dotnet.exe at '.*?\\.\\dotnet.exe'")]
+        [InlineData("dotnet.exe", "", @"Application arguments are empty.")]
+        [InlineData("dotnet.zip", "", @"Process path 'dotnet.zip' doesn't have '.exe' extension.")]
+        public async Task InvalidProcessPath_ExpectServerError(string path, string arguments, string subError)
         {
             var deploymentParameters = _fixture.GetBaseDeploymentParameters(publish: true);
             deploymentParameters.WebConfigActionList.Add(WebConfigHelpers.AddOrModifyAspNetCoreSection("processPath", path));
-
+            deploymentParameters.WebConfigActionList.Add(WebConfigHelpers.AddOrModifyAspNetCoreSection("arguments", arguments));
 
             var deploymentResult = await DeployAsync(deploymentParameters);
 
@@ -57,7 +60,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             StopServer();
 
-            EventLogHelpers.VerifyEventLogEvent(deploymentResult, TestSink, @"Invalid or unknown processPath provided in web\.config: processPath = '.+', ErrorCode = '0x80070002'\.");
+            EventLogHelpers.VerifyEventLogEvent(deploymentResult, TestSink, $@"Application '{Regex.Escape(deploymentResult.ContentRoot)}\\' wasn't able to start. {subError}");
         }
 
         [ConditionalFact]
@@ -134,6 +137,24 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             var responseText = await response.Content.ReadAsStringAsync();
 
             Assert.Equal("Hello World", responseText);
+        }
+
+        [ConditionalFact]
+        public async Task StartsWithPortableAndBootstraperExe()
+        {
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.InProcessTestSite, publish: true);
+            // rest publisher as it doesn't support additional parameters
+            deploymentParameters.ApplicationPublisher = null;
+            // ReferenceTestTasks is workaround for https://github.com/dotnet/sdk/issues/2482
+            deploymentParameters.AdditionalPublishParameters = "-p:RuntimeIdentifier=win7-x64 -p:UseAppHost=true -p:SelfContained=false -p:ReferenceTestTasks=false";
+            deploymentParameters.RestoreOnPublish = true;
+            var deploymentResult = await DeployAsync(deploymentParameters);
+
+            Assert.True(File.Exists(Path.Combine(deploymentResult.ContentRoot, "InProcessWebSite.exe")));
+            Assert.False(File.Exists(Path.Combine(deploymentResult.ContentRoot, "hostfxr.dll")));
+            Assert.Contains("InProcessWebSite.exe", File.ReadAllText(Path.Combine(deploymentResult.ContentRoot, "web.config")));
+
+            await deploymentResult.AssertStarts();
         }
 
         [ConditionalFact]
