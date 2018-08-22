@@ -6,11 +6,11 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.AspNetCore.Routing.Matching;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.Extensions.Primitives;
@@ -262,7 +262,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             return false;
         }
 
-        private MatcherEndpoint CreateEndpoint(
+        private RouteEndpoint CreateEndpoint(
             ActionDescriptor action,
             string routeName,
             string template,
@@ -271,9 +271,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             object source,
             bool suppressLinkGeneration)
         {
-            RequestDelegate invokerDelegate = (context) =>
+            RequestDelegate requestDelegate = (context) =>
             {
-                var values = context.Features.Get<IEndpointFeature>().Values;
+                var values = context.Features.Get<IRouteValuesFeature>().RouteValues;
                 var routeData = new RouteData();
                 foreach (var kvp in values)
                 {
@@ -299,9 +299,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 source,
                 suppressLinkGeneration);
 
-            var endpoint = new MatcherEndpoint(
-                next => invokerDelegate,
-                RoutePatternFactory.Parse(template, defaults, constraints: null),
+            var endpoint = new RouteEndpoint(
+                requestDelegate,
+                RoutePatternFactory.Parse(template, defaults, parameterPolicies: null),
                 order,
                 metadataCollection,
                 action.DisplayName);

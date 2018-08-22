@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             // Assert
             var actionModel = Assert.Single(Assert.Single(context.Result.Controllers).Actions);
-            Assert.IsType<ModelStateInvalidFilter>(actionModel.Filters.Last());
+            Assert.Single(actionModel.Filters.OfType<ModelStateInvalidFilter>());
         }
 
         [Fact]
@@ -54,8 +54,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             provider.OnProvidersExecuting(context);
 
             // Assert
-            var controllerModel = Assert.Single(context.Result.Controllers);
-            Assert.DoesNotContain(typeof(ModelStateInvalidFilter), controllerModel.Filters.Select(f => f.GetType()));
+            var actionModel = Assert.Single(Assert.Single(context.Result.Controllers).Actions);
+            Assert.Empty(actionModel.Filters.OfType<ModelStateInvalidFilter>());
         }
 
         [Fact]
@@ -73,11 +73,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 Assert.Single(context.Result.Controllers).Actions.OrderBy(a => a.ActionName),
                 action =>
                 {
-                    Assert.Contains(typeof(ModelStateInvalidFilter), action.Filters.Select(f => f.GetType()));
+                    Assert.Single(action.Filters.OfType<ModelStateInvalidFilter>());
                 },
                 action =>
                 {
-                    Assert.DoesNotContain(typeof(ModelStateInvalidFilter), action.Filters.Select(f => f.GetType()));
+                    Assert.Empty(action.Filters.OfType<ModelStateInvalidFilter>());
                 });
         }
 
@@ -101,11 +101,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 Assert.Single(context.Result.Controllers).Actions.OrderBy(a => a.ActionName),
                 action =>
                 {
-                    Assert.DoesNotContain(typeof(ModelStateInvalidFilter), action.Filters.Select(f => f.GetType()));
+                    Assert.Empty(action.Filters.OfType<ModelStateInvalidFilter>());
                 },
                 action =>
                 {
-                    Assert.DoesNotContain(typeof(ModelStateInvalidFilter), action.Filters.Select(f => f.GetType()));
+                    Assert.Empty(action.Filters.OfType<ModelStateInvalidFilter>());
                 });
         }
 
@@ -1057,6 +1057,41 @@ Environment.NewLine + "int b";
                     Assert.Equal(typeof(ApiConventionResult), kvp.Key);
                     Assert.NotNull(kvp.Value);
                 });
+        }
+
+        [Fact]
+        public void OnProvidersExecuting_AddsClientErrorResultFilter()
+        {
+            // Arrange
+            var context = GetContext(typeof(TestApiController));
+            var provider = GetProvider();
+
+            // Act
+            provider.OnProvidersExecuting(context);
+
+            // Assert
+            var actionModel = Assert.Single(Assert.Single(context.Result.Controllers).Actions);
+            Assert.Single(actionModel.Filters.OfType<ClientErrorResultFilter>());
+        }
+
+        [Fact]
+        public void OnProvidersExecuting_DoesNotAddClientErrorResultFilter_IfFeatureIsDisabled()
+        {
+            // Arrange
+            var context = GetContext(typeof(TestApiController));
+            var options = new ApiBehaviorOptions
+            {
+                SuppressUseClientErrorFactory = true,
+                InvalidModelStateResponseFactory = _ => null,
+            };
+            var provider = GetProvider(options);
+
+            // Act
+            provider.OnProvidersExecuting(context);
+
+            // Assert
+            var actionModel = Assert.Single(Assert.Single(context.Result.Controllers).Actions);
+            Assert.Empty(actionModel.Filters.OfType<ClientErrorResultFilter>());
         }
 
         // A dynamically generated type in an assembly that has an ApiConventionAttribute.

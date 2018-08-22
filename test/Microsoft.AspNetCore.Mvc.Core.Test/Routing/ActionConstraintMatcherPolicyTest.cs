@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
@@ -369,11 +370,11 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             return httpContext;
         }
 
-        private static MatcherEndpoint CreateEndpoint(ActionDescriptor action)
+        private static RouteEndpoint CreateEndpoint(ActionDescriptor action)
         {
             var metadata = new List<object>() { action, };
-            return new MatcherEndpoint(
-                (r) => null,
+            return new RouteEndpoint(
+                (context) => Task.CompletedTask,
                 RoutePatternFactory.Parse("/"),
                 0,
                 new EndpointMetadataCollection(metadata),

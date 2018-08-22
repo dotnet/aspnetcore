@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Matching;
@@ -212,7 +213,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             Assert.Equal(expected, actual);
         }
 
-        private static MatcherEndpoint CreateEndpoint(string template, ConsumesMetadata consumesMetadata)
+        private static RouteEndpoint CreateEndpoint(string template, ConsumesMetadata consumesMetadata)
         {
             var metadata = new List<object>();
             if (consumesMetadata != null)
@@ -220,8 +221,8 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 metadata.Add(consumesMetadata);
             }
 
-            return new MatcherEndpoint(
-                (next) => null,
+            return new RouteEndpoint(
+                (context) => Task.CompletedTask,
                 RoutePatternFactory.Parse(template),
                 0,
                 new EndpointMetadataCollection(metadata),
