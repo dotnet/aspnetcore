@@ -3,7 +3,7 @@ param($Mode)
 function Setup-appverif($application)
 {
     appverif.exe -enable Exceptions Handles Heaps Leak Locks Memory Threadpool TLS SRWLock -for $application
-    $onlyLog = 0x181;
+    $onlyLog = 0x1E1;
     $codes = @(
         # Exceptions
         0x650,
@@ -62,8 +62,8 @@ if (!(Test-Path $cdb))
 
 if ($Mode -eq "Setup")
 {
-    #Setup-appverif w3wp.exe
-    #Setup-appverif iisexpress.exe
+    Setup-appverif w3wp.exe
+    Setup-appverif iisexpress.exe
 
     if (!(Test-Path $ldHive ))
     {
@@ -81,14 +81,15 @@ if ($Mode -eq "Shutdown")
 {
     Remove-Item $ldHive -Recurse -Force
 
-    #Shutdown-appverif w3wp.exe
-    #Shutdown-appverif iisexpress.exe
+    Shutdown-appverif w3wp.exe
+    Shutdown-appverif iisexpress.exe
 
     foreach ($dump in (Get-ChildItem -Path $DumpFolder -Filter "*.dmp"))
     {
         if (Test-Path $cdb)
         {
             & $cdb -z $dump.FullName -y "https://msdl.microsoft.com/download/symbols" -c ".loadby sos coreclr;!sym noisy;.reload /f;.dumpcab -a $($dump.FullName).cab;q;"
+            Remove-Item $dump.FullName
         }
     }
 }
