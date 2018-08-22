@@ -135,8 +135,8 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 
         private Endpoint CreateRejectionEndpoint()
         {
-            return new MatcherEndpoint(
-                (next) => (context) =>
+            return new RouteEndpoint(
+                (context) =>
                 {
                     context.Response.StatusCode = StatusCodes.Status415UnsupportedMediaType;
                     return Task.CompletedTask;

@@ -5,6 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Matching;
 using Microsoft.AspNetCore.Routing.Patterns;
@@ -60,8 +62,9 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             // Set the endpoint feature and current context just as a normal request to MVC app would be
             var endpointFeature = new EndpointFeature();
             urlHelper.ActionContext.HttpContext.Features.Set<IEndpointFeature>(endpointFeature);
+            urlHelper.ActionContext.HttpContext.Features.Set<IRouteValuesFeature>(endpointFeature);
             endpointFeature.Endpoint = endpoint1;
-            endpointFeature.Values = new RouteValueDictionary
+            endpointFeature.RouteValues = new RouteValueDictionary
             {
                 ["controller"] = "Orders",
                 ["action"] = "GetById",
@@ -123,7 +126,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 
         protected override IUrlHelper CreateUrlHelper(string appRoot, string host, string protocol)
         {
-            return CreateUrlHelper(Enumerable.Empty<MatcherEndpoint>(), appRoot, host, protocol);
+            return CreateUrlHelper(Enumerable.Empty<RouteEndpoint>(), appRoot, host, protocol);
         }
 
         protected override IUrlHelper CreateUrlHelperWithDefaultRoutes(string appRoot, string host, string protocol)
@@ -139,8 +142,8 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             string template)
         {
             var endpoints = GetDefaultEndpoints();
-            endpoints.Add(new MatcherEndpoint(
-                next => httpContext => Task.CompletedTask,
+            endpoints.Add(new RouteEndpoint(
+                httpContext => Task.CompletedTask,
                 RoutePatternFactory.Parse(template),
                 0,
                 EndpointMetadataCollection.Empty,
@@ -153,10 +156,8 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             var httpContext = actionContext.HttpContext;
             httpContext.Features.Set<IEndpointFeature>(new EndpointFeature()
             {
-                Endpoint = new MatcherEndpoint(
-                    next => cntxt => Task.CompletedTask,
-                    RoutePatternFactory.Parse("/"),
-                    0,
+                Endpoint = new Endpoint(
+                    context => Task.CompletedTask,
                     EndpointMetadataCollection.Empty,
                     null)
             });
@@ -187,7 +188,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             return CreateUrlHelper(actionContext);
         }
 
-        private IUrlHelper CreateUrlHelper(IEnumerable<MatcherEndpoint> endpoints, ActionContext actionContext = null)
+        private IUrlHelper CreateUrlHelper(IEnumerable<RouteEndpoint> endpoints, ActionContext actionContext = null)
         {
             var serviceProvider = CreateServices(endpoints);
             var httpContext = CreateHttpContext(serviceProvider, null, null, "http");
@@ -196,7 +197,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         }
 
         private IUrlHelper CreateUrlHelper(
-            IEnumerable<MatcherEndpoint> endpoints,
+            IEnumerable<RouteEndpoint> endpoints,
             string appRoot,
             string host,
             string protocol)
@@ -207,9 +208,9 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             return CreateUrlHelper(actionContext);
         }
 
-        private List<MatcherEndpoint> GetDefaultEndpoints()
+        private List<RouteEndpoint> GetDefaultEndpoints()
         {
-            var endpoints = new List<MatcherEndpoint>();
+            var endpoints = new List<RouteEndpoint>();
             endpoints.Add(
                 CreateEndpoint(
                     "home/newaction/{id}",
@@ -278,7 +279,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             return endpoints;
         }
 
-        private MatcherEndpoint CreateEndpoint(
+        private RouteEndpoint CreateEndpoint(
             string template,
             object defaults = null,
             object requiredValues = null,
@@ -292,9 +293,9 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                     new RouteValuesAddressMetadata(routeName, new RouteValueDictionary(requiredValues)));
             }
 
-            return new MatcherEndpoint(
-                next => (httpContext) => Task.CompletedTask,
-                RoutePatternFactory.Parse(template, defaults, constraints: null),
+            return new RouteEndpoint(
+                (httpContext) => Task.CompletedTask,
+                RoutePatternFactory.Parse(template, defaults, parameterPolicies: null),
                 order,
                 metadataCollection,
                 null);
@@ -315,11 +316,11 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             return services.BuildServiceProvider();
         }
 
-        private MatcherEndpoint GetEndpoint(string name, string template, RouteValueDictionary defaults)
+        private RouteEndpoint GetEndpoint(string name, string template, RouteValueDictionary defaults)
         {
-            return new MatcherEndpoint(
-                next => c => Task.CompletedTask,
-                RoutePatternFactory.Parse(template, defaults, constraints: null),
+            return new RouteEndpoint(
+                c => Task.CompletedTask,
+                RoutePatternFactory.Parse(template, defaults, parameterPolicies: null),
                 0,
                 EndpointMetadataCollection.Empty,
                 null);
