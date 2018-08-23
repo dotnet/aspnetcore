@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Infrastructure
 
     public class WaitAssert
     {
-        private readonly static TimeSpan DefaultTimeout = TimeSpan.FromSeconds(1);
+        private readonly static TimeSpan DefaultTimeout = TimeSpan.FromSeconds(2);
 
         public static void Equal<T>(T expected, Func<T> actual)
             => WaitAssertCore(() => Assert.Equal(expected, actual()));
