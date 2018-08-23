@@ -96,7 +96,7 @@ namespace AspNetCoreSdkTests.Util
 
         public static string Restore(string workingDirectory, NuGetPackageSource packageSource, RuntimeIdentifier runtimeIdentifier)
         {
-            return RunDotNet($"restore --no-cache {packageSource.SourceArgument} {runtimeIdentifier.RuntimeArgument}",
+            return RunDotNet($"restore /warnaserror --no-cache {packageSource.SourceArgument} {runtimeIdentifier.RuntimeArgument}",
                 workingDirectory, GetEnvironment(packageSource));
         }
 
@@ -108,7 +108,7 @@ namespace AspNetCoreSdkTests.Util
 
             var restoreArgument = restoreRequired ? $"--no-cache {packageSource.SourceArgument}" : "--no-restore";
 
-            return RunDotNet($"build {restoreArgument} {runtimeIdentifier.RuntimeArgument}", workingDirectory, GetEnvironment(packageSource));
+            return RunDotNet($"build /warnaserror {restoreArgument} {runtimeIdentifier.RuntimeArgument}", workingDirectory, GetEnvironment(packageSource));
         }
 
         public static (Process Process, ConcurrentStringBuilder OutputBuilder, ConcurrentStringBuilder ErrorBuilder) Run(
