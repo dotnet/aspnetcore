@@ -24,16 +24,30 @@ namespace Microsoft.AspNetCore.Routing.Matching
             _selectorPolicies = matcherPolicies.OrderBy(p => p.Order).OfType<IEndpointSelectorPolicy>().ToArray();
         }
 
-        public override Task SelectAsync(
+        public override async Task SelectAsync(
             HttpContext httpContext,
             EndpointFeature feature,
             CandidateSet candidateSet)
         {
+            var selectorPolicies = _selectorPolicies;
             for (var i = 0; i < _selectorPolicies.Length; i++)
             {
-                _selectorPolicies[i].Apply(httpContext, candidateSet);
+                await selectorPolicies[i].ApplyAsync(httpContext, feature, candidateSet);
+                if (feature.Endpoint != null)
+                {
+                    // This is a short circuit, the selector chose an endpoint.
+                    return;
+                }
             }
 
+            ProcessFinalCandidates(httpContext, feature, candidateSet);
+        }
+
+        private static void ProcessFinalCandidates(
+            HttpContext httpContext,
+            EndpointFeature feature,
+            CandidateSet candidateSet)
+        {
             RouteEndpoint endpoint = null;
             RouteValueDictionary values = null;
             int? foundScore = null;
@@ -76,8 +90,6 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 feature.Endpoint = endpoint;
                 feature.RouteValues = values;
             }
-
-            return Task.CompletedTask;
         }
 
         private static void ReportAmbiguity(CandidateSet candidates)

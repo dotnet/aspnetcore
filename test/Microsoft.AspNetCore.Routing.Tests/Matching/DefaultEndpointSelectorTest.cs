@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
@@ -184,10 +185,11 @@ test: /test3", ex.Message);
             var policy = new Mock<MatcherPolicy>();
             policy
                 .As<IEndpointSelectorPolicy>()
-                .Setup(p => p.Apply(It.IsAny<HttpContext>(), It.IsAny<CandidateSet>()))
-                .Callback<HttpContext, CandidateSet>((c, cs) =>
+                .Setup(p => p.ApplyAsync(It.IsAny<HttpContext>(), It.IsAny<EndpointFeature>(), It.IsAny<CandidateSet>()))
+                .Returns<HttpContext, EndpointFeature, CandidateSet>((c, f, cs) =>
                 {
                     cs[1].IsValidCandidate = false;
+                    return Task.CompletedTask;
                 });
 
             candidateSet[0].IsValidCandidate = false;
@@ -202,6 +204,48 @@ test: /test3", ex.Message);
 
             // Assert
             Assert.Same(endpoints[2], feature.Endpoint);
+        }
+
+        [Fact]
+        public async Task SelectAsync_RunsEndpointSelectorPolicies_CanShortCircuit()
+        {
+            // Arrange
+            var endpoints = new RouteEndpoint[] { CreateEndpoint("/test1"), CreateEndpoint("/test2"), CreateEndpoint("/test3"), };
+            var scores = new int[] { 0, 0, 1 };
+            var candidateSet = CreateCandidateSet(endpoints, scores);
+
+            var policy1 = new Mock<MatcherPolicy>();
+            policy1
+                .As<IEndpointSelectorPolicy>()
+                .Setup(p => p.ApplyAsync(It.IsAny<HttpContext>(), It.IsAny<EndpointFeature>(), It.IsAny<CandidateSet>()))
+                .Returns<HttpContext, EndpointFeature, CandidateSet>((c, f, cs) =>
+                {
+                    f.Endpoint = cs[0].Endpoint;
+                    return Task.CompletedTask;
+                });
+
+            // This should never run, it's after policy1 which short circuits
+            var policy2 = new Mock<MatcherPolicy>();
+            policy2
+                .SetupGet(p => p.Order)
+                .Returns(1000);
+            policy2
+                .As<IEndpointSelectorPolicy>()
+                .Setup(p => p.ApplyAsync(It.IsAny<HttpContext>(), It.IsAny<EndpointFeature>(), It.IsAny<CandidateSet>()))
+                .Throws(new InvalidOperationException());
+
+            candidateSet[0].IsValidCandidate = false;
+            candidateSet[1].IsValidCandidate = true;
+            candidateSet[2].IsValidCandidate = true;
+
+            var (httpContext, feature) = CreateContext();
+            var selector = CreateSelector(policy1.Object, policy2.Object);
+
+            // Act
+            await selector.SelectAsync(httpContext, feature, candidateSet);
+
+            // Assert
+            Assert.Same(endpoints[0], feature.Endpoint);
         }
 
         private static (HttpContext httpContext, EndpointFeature feature) CreateContext()
