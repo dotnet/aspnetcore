@@ -191,7 +191,9 @@
       "Releases_22xPublic_Signed",
       "Releases_22xPublic_SetupSharedFramework",
       "Releases_22xPublic_SiteExtension",
+      "Releases_22xPublic_CoherencePackageCacheLinux",
       "Releases_22xPublic_Publish",
+      "Releases_22xPublic_PbTestWindowsServer2012",
       // Maintenance builds
       "Maintenance_Backup"
     ]
