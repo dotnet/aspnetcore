@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Authentication.AzureADB2C.UI;
 using Microsoft.AspNetCore.Builder;
 #if (IndividualLocalAuth)
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI;
 #endif
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -69,6 +70,7 @@ namespace Company.WebApplication1
                     Configuration.GetConnectionString("DefaultConnection")));
 #endif
             services.AddDefaultIdentity<IdentityUser>()
+                .AddDefaultUI(UIFramework.Bootstrap4)
                 .AddEntityFrameworkStores<ApplicationDbContext>();
 
 #elif (OrganizationalAuth)
@@ -147,6 +149,7 @@ namespace Company.WebApplication1
             {
                 app.UseExceptionHandler("/Error");
 #if (RequiresHttps)
+                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
 
