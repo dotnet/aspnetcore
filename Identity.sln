@@ -90,6 +90,9 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Identity.DefaultUI.WebSite", "test\WebSites\Identity.DefaultUI.WebSite\Identity.DefaultUI.WebSite.csproj", "{CAE02AD2-F941-4ACB-B469-13EFF551BB74}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity.FunctionalTests", "test\Identity.FunctionalTests\Microsoft.AspNetCore.Identity.FunctionalTests.csproj", "{B3616029-7DA6-4FB3-8722-D5AC69884B3F}"
+	ProjectSection(ProjectDependencies) = postProject
+		{894E102D-56D4-4B02-8F13-8781F4324C3E} = {894E102D-56D4-4B02-8F13-8781F4324C3E}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
