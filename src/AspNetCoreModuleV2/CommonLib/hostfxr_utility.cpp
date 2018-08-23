@@ -159,7 +159,7 @@ HOSTFXR_UTILITY::ParseHostfxrArguments(
     auto pwzArgs = std::unique_ptr<LPWSTR[], LocalFreeDeleter>(CommandLineToArgvW(applicationArguments.c_str(), &argc));
     if (!pwzArgs)
     {
-        throw StartupParametersResolutionException(format(L"Unable parse command line argumens '%s' or '%s'", applicationArguments.c_str()));
+        throw StartupParametersResolutionException(format(L"Unable parse command line arguments '%s' or '%s'", applicationArguments.c_str()));
     }
 
     for (int intArgsProcessed = 0; intArgsProcessed < argc; intArgsProcessed++)
