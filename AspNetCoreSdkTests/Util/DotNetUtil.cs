@@ -1,9 +1,12 @@
 ﻿using Microsoft.Extensions.Internal;
+using Newtonsoft.Json;
 using NuGet.Versioning;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
+using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading;
 
@@ -33,11 +36,13 @@ namespace AspNetCoreSdkTests.Util
 
         public static SemanticVersion RuntimeVersion => _versions.Value.RuntimeVersion;
 
-        public static bool IsPreReleaseSdk =>
-            SdkVersion.IsPrerelease ||
-            SdkVersion == new SemanticVersion(2, 1, 402);
+        private static readonly Lazy<bool> _requiresPrivateFeed = new Lazy<bool>(GetRequiresPrivateFeed, LazyThreadSafetyMode.PublicationOnly);
+
+        public static bool RequiresPrivateFeed => _requiresPrivateFeed.Value;
 
         public static string TargetFrameworkMoniker => $"netcoreapp{RuntimeVersion.Major}.{RuntimeVersion.Minor}";
+
+        private static readonly HttpClient _httpClient = new HttpClient();
 
         private static (SemanticVersion SdkVersion, SemanticVersion RuntimeVersion) GetVersions()
         {
@@ -58,6 +63,16 @@ namespace AspNetCoreSdkTests.Util
             {
                 throw new InvalidOperationException($"Unsupported SDK version: {sdkVersion}");
             }
+        }
+
+        // Private feed is required if nuget.org doesn't contain the matching version of Microsoft.NETCore.App
+        private static bool GetRequiresPrivateFeed()
+        {
+            var versionString = _httpClient.GetStringAsync("https://api.nuget.org/v3-flatcontainer/microsoft.netcore.app/index.json").Result;
+            var definition = new { Versions = Enumerable.Empty<string>() };
+
+            var versions = JsonConvert.DeserializeAnonymousType(versionString, definition);
+            return !versions.Versions.Contains(RuntimeVersion.ToString());
         }
 
         private static IEnumerable<KeyValuePair<string, string>> GetEnvironment(NuGetPackageSource nuGetPackageSource)

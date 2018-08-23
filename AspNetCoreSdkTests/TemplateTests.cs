@@ -130,7 +130,7 @@ namespace AspNetCoreSdkTests
                 NuGetPackageSource.NuGetOrg : NuGetPackageSource.None;
 
             // Pre-release SDKs require a private nuget feed
-            var onlinePackageSource = DotNetUtil.IsPreReleaseSdk ?
+            var onlinePackageSource = DotNetUtil.RequiresPrivateFeed ?
                 NuGetPackageSource.EnvironmentVariableAndNuGetOrg : NuGetPackageSource.NuGetOrg;
 
             if (runtimeIdentifier == RuntimeIdentifier.None)
