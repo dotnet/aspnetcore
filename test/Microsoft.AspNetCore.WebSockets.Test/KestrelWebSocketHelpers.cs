@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.WebSockets.Test
 {
     public class KestrelWebSocketHelpers
     {
-        public static IDisposable CreateServer(ILoggerFactory loggerFactory, Func<HttpContext, Task> app, Action<WebSocketOptions> configure = null)
+        public static IDisposable CreateServer(ILoggerFactory loggerFactory, Func<HttpContext, Task> app, int clientPort, Action<WebSocketOptions> configure = null)
         {
             configure = configure ?? (o => { });
             Action<IApplicationBuilder> startup = builder =>
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.WebSockets.Test
             var configBuilder = new ConfigurationBuilder();
             configBuilder.AddInMemoryCollection();
             var config = configBuilder.Build();
-            config["server.urls"] = "http://localhost:54321";
+            config["server.urls"] = $"http://localhost:{clientPort}";
 
             var host = new WebHostBuilder()
                 .ConfigureServices(s =>
