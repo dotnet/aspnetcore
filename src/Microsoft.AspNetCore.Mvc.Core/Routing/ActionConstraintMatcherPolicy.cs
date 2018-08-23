@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         // Run really late.
         public override int Order => 100000;
 
-        public void Apply(HttpContext httpContext, CandidateSet candidateSet)
+        public Task ApplyAsync(HttpContext httpContext, EndpointFeature endpointFeature, CandidateSet candidateSet)
         {
             // PERF: we can skip over action constraints if there aren't any app-wide.
             //
@@ -47,6 +47,8 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             {
                 ApplyActionConstraints(httpContext, candidateSet);
             }
+
+            return Task.CompletedTask;
         }
         
         private void ApplyActionConstraints(

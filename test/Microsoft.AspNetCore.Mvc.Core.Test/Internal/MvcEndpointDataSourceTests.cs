@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Matching;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using Moq;
@@ -185,9 +186,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         [InlineData("{controller}/{action}/{*catchAll}", new[] { "TestController/TestAction/{*catchAll}" })]
         [InlineData("{controller}/{action=TestAction}/{*catchAll}", new[] { "TestController", "TestController/TestAction/{*catchAll}" })]
         [InlineData("{controller}/{action=TestAction}/{id?}/{*catchAll}", new[] { "TestController", "TestController/TestAction/{id?}/{*catchAll}" })]
-        //[InlineData("{controller}/{action}.{ext?}", new[] { "TestController/TestAction.{ext?}" })]
-        //[InlineData("{controller}/{action=TestAction}.{ext?}", new[] { "TestController", "TestController/TestAction.{ext?}" })]
-        public void Endpoints_SingleAction(string endpointInfoRoute, string[] finalEndpointTemplates)
+        [InlineData("{controller}/{action}.{ext?}", new[] { "TestController/TestAction.{ext?}" })]
+        [InlineData("{controller}/{action=TestAction}.{ext?}", new[] { "TestController", "TestController/TestAction.{ext?}" })]
+        public void Endpoints_SingleAction(string endpointInfoRoute, string[] finalEndpointPatterns)
         {
             // Arrange
             var actionDescriptorCollection = GetActionDescriptorCollection(
@@ -199,7 +200,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var endpoints = dataSource.Endpoints;
 
             // Assert
-            var inspectors = finalEndpointTemplates
+            var inspectors = finalEndpointPatterns
                 .Select(t => new Action<Endpoint>(e => Assert.Equal(t, Assert.IsType<RouteEndpoint>(e).RoutePattern.RawText)))
                 .ToArray();
 
@@ -694,12 +695,16 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             IDictionary<string, object> constraints = null,
             RouteValueDictionary dataTokens = null)
         {
-            var routeOptions = new RouteOptions();
-            var routeOptionsSetup = new MvcCoreRouteOptionsSetup();
-            routeOptionsSetup.Configure(routeOptions);
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddRouting();
 
-            var constraintResolver = new DefaultInlineConstraintResolver(Options.Create<RouteOptions>(routeOptions));
-            return new MvcEndpointInfo(name, template, defaults, constraints, dataTokens, constraintResolver);
+            var routeOptionsSetup = new MvcCoreRouteOptionsSetup();
+            serviceCollection.Configure<RouteOptions>(routeOptionsSetup.Configure);
+
+            var serviceProvider = serviceCollection.BuildServiceProvider();
+
+            var parameterPolicyFactory = serviceProvider.GetRequiredService<ParameterPolicyFactory>();
+            return new MvcEndpointInfo(name, template, defaults, constraints, dataTokens, parameterPolicyFactory);
         }
 
         private IActionDescriptorCollectionProvider GetActionDescriptorCollection(params object[] requiredValues)

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
@@ -12,7 +13,6 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
-using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Mvc.Internal
@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         private readonly object _lock = new object();
         private readonly IActionDescriptorCollectionProvider _actions;
         private readonly MvcEndpointInvokerFactory _invokerFactory;
-        private readonly IServiceProvider _serviceProvider;
+        private readonly DefaultHttpContext _httpContextInstance;
         private readonly IActionDescriptorChangeProvider[] _actionDescriptorChangeProviders;
 
         private List<Endpoint> _endpoints;
@@ -55,8 +55,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             _actions = actions;
             _invokerFactory = invokerFactory;
-            _serviceProvider = serviceProvider;
             _actionDescriptorChangeProviders = actionDescriptorChangeProviders.ToArray();
+            _httpContextInstance = new DefaultHttpContext() { RequestServices = serviceProvider };
 
             ConventionalEndpointInfos = new List<MvcEndpointInfo>();
 
@@ -67,7 +67,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         private List<Endpoint> CreateEndpoints()
         {
-            List<Endpoint> endpoints = new List<Endpoint>();
+            var endpoints = new List<Endpoint>();
+            StringBuilder patternStringBuilder = null;
 
             foreach (var action in _actions.ActionDescriptors.Items)
             {
@@ -81,8 +82,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     // This is for scenarios dealing with migrating existing Router based code to Endpoint Routing world.
                     var conventionalRouteOrder = 0;
 
-                    // Check each of the conventional templates to see if the action would be reachable
-                    // If the action and template are compatible then create an endpoint with the
+                    // Check each of the conventional patterns to see if the action would be reachable
+                    // If the action and pattern are compatible then create an endpoint with the
                     // area/controller/action parameter parts replaced with literals
                     //
                     // e.g. {controller}/{action} with HomeController.Index and HomeController.Login
@@ -91,32 +92,30 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     // - Home/Login
                     foreach (var endpointInfo in ConventionalEndpointInfos)
                     {
-                        var actionRouteValues = action.RouteValues;
-                        var endpointTemplateSegments = endpointInfo.ParsedTemplate.Segments;
-
                         if (MatchRouteValue(action, endpointInfo, "Area")
                             && MatchRouteValue(action, endpointInfo, "Controller")
                             && MatchRouteValue(action, endpointInfo, "Action"))
                         {
-                            var newEndpointTemplate = TemplateParser.Parse(endpointInfo.Template);
+                            var newPathSegments = endpointInfo.ParsedPattern.PathSegments.ToList();
 
-                            for (var i = 0; i < newEndpointTemplate.Segments.Count; i++)
+                            for (var i = 0; i < newPathSegments.Count; i++)
                             {
-                                // Check if the template can be shortened because the remaining parameters are optional
+                                // Check if the pattern can be shortened because the remaining parameters are optional
                                 //
-                                // e.g. Matching template {controller=Home}/{action=Index}/{id?} against HomeController.Index
+                                // e.g. Matching pattern {controller=Home}/{action=Index}/{id?} against HomeController.Index
                                 // can resolve to the following endpoints:
                                 // - /Home/Index/{id?}
                                 // - /Home
                                 // - /
-                                if (UseDefaultValuePlusRemainingSegementsOptional(i, action, endpointInfo, newEndpointTemplate))
+                                if (UseDefaultValuePlusRemainingSegementsOptional(i, action, endpointInfo, newPathSegments))
                                 {
-                                    var subTemplate = RouteTemplateWriter.ToString(newEndpointTemplate.Segments.Take(i));
+                                    var subPathSegments = newPathSegments.Take(i);
 
                                     var subEndpoint = CreateEndpoint(
                                         action,
                                         endpointInfo.Name,
-                                        subTemplate,
+                                        GetPattern(ref patternStringBuilder, subPathSegments),
+                                        subPathSegments,
                                         endpointInfo.Defaults,
                                         ++conventionalRouteOrder,
                                         endpointInfo,
@@ -124,25 +123,36 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                                     endpoints.Add(subEndpoint);
                                 }
 
-                                var segment = newEndpointTemplate.Segments[i];
+                                List<RoutePatternPart> segmentParts = null; // Initialize only as needed
+                                var segment = newPathSegments[i];
                                 for (var j = 0; j < segment.Parts.Count; j++)
                                 {
                                     var part = segment.Parts[j];
 
-                                    if (part.IsParameter && IsMvcParameter(part.Name))
+                                    if (part.IsParameter && part is RoutePatternParameterPart parameterPart && IsMvcParameter(parameterPart.Name))
                                     {
+                                        if (segmentParts == null)
+                                        {
+                                            segmentParts = segment.Parts.ToList();
+                                        }
+
                                         // Replace parameter with literal value
-                                        segment.Parts[j] = TemplatePart.CreateLiteral(action.RouteValues[part.Name]);
+                                        segmentParts[j] = RoutePatternFactory.LiteralPart(action.RouteValues[parameterPart.Name]);
                                     }
                                 }
-                            }
 
-                            var newTemplate = RouteTemplateWriter.ToString(newEndpointTemplate.Segments);
+                                // A parameter part was replaced so replace segment with updated parts
+                                if (segmentParts != null)
+                                {
+                                    newPathSegments[i] = RoutePatternFactory.Segment(segmentParts);
+                                }
+                            }
 
                             var endpoint = CreateEndpoint(
                                 action,
                                 endpointInfo.Name,
-                                newTemplate,
+                                GetPattern(ref patternStringBuilder, newPathSegments),
+                                newPathSegments,
                                 endpointInfo.Defaults,
                                 ++conventionalRouteOrder,
                                 endpointInfo,
@@ -157,6 +167,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                         action,
                         action.AttributeRouteInfo.Name,
                         action.AttributeRouteInfo.Template,
+                        RoutePatternFactory.Parse(action.AttributeRouteInfo.Template).PathSegments,
                         nonInlineDefaults: null,
                         action.AttributeRouteInfo.Order,
                         action.AttributeRouteInfo,
@@ -166,6 +177,20 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             }
 
             return endpoints;
+
+            string GetPattern(ref StringBuilder sb, IEnumerable<RoutePatternPathSegment> segments)
+            {
+                if (sb == null)
+                {
+                    sb = new StringBuilder();
+                }
+
+                RoutePatternWriter.WriteString(sb, segments);
+                var rawPattern = sb.ToString();
+                sb.Length = 0;
+
+                return rawPattern;
+            }
         }
 
         private bool IsMvcParameter(string name)
@@ -184,33 +209,49 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             int segmentIndex,
             ActionDescriptor action,
             MvcEndpointInfo endpointInfo,
-            RouteTemplate template)
+            List<RoutePatternPathSegment> pathSegments)
         {
             // Check whether the remaining segments are all optional and one or more of them is
             // for area/controller/action and has a default value
             var usedDefaultValue = false;
 
-            for (var i = segmentIndex; i < template.Segments.Count; i++)
+            for (var i = segmentIndex; i < pathSegments.Count; i++)
             {
-                var segment = template.Segments[i];
+                var segment = pathSegments[i];
                 for (var j = 0; j < segment.Parts.Count; j++)
                 {
                     var part = segment.Parts[j];
-                    if (part.IsOptional || part.IsOptionalSeperator || part.IsCatchAll)
+                    if (part.IsParameter && part is RoutePatternParameterPart parameterPart)
                     {
-                        continue;
-                    }
-                    if (part.IsParameter)
-                    {
-                        if (IsMvcParameter(part.Name))
+                        if (parameterPart.IsOptional || parameterPart.IsCatchAll)
                         {
-                            if (endpointInfo.MergedDefaults[part.Name] is string defaultValue
-                                && action.RouteValues.TryGetValue(part.Name, out var routeValue)
+                            continue;
+                        }
+
+                        if (IsMvcParameter(parameterPart.Name))
+                        {
+                            if (endpointInfo.MergedDefaults[parameterPart.Name] is string defaultValue
+                                && action.RouteValues.TryGetValue(parameterPart.Name, out var routeValue)
                                 && string.Equals(defaultValue, routeValue, StringComparison.OrdinalIgnoreCase))
                             {
                                 usedDefaultValue = true;
                                 continue;
                             }
+                        }
+                    }
+                    else if (part.IsSeparator && part is RoutePatternSeparatorPart separatorPart
+                        && separatorPart.Content == ".")
+                    {
+                        // Check if this pattern ends in an optional extension, e.g. ".{ext?}"
+                        // Current literal must be "." and followed by a single optional parameter part
+                        var nextPartIndex = j + 1;
+
+                        if (nextPartIndex == segment.Parts.Count - 1
+                            && segment.Parts[nextPartIndex].IsParameter
+                            && segment.Parts[nextPartIndex] is RoutePatternParameterPart extensionParameterPart
+                            && extensionParameterPart.IsOptional)
+                        {
+                            continue;
                         }
                     }
 
@@ -227,8 +268,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             if (!action.RouteValues.TryGetValue(routeKey, out var actionValue) || string.IsNullOrWhiteSpace(actionValue))
             {
                 // Action does not have a value for this routeKey, most likely because action is not in an area
-                // Check that the template does not have a parameter for the routeKey
-                var matchingParameter = endpointInfo.ParsedTemplate.Parameters.SingleOrDefault(p => string.Equals(p.Name, routeKey, StringComparison.OrdinalIgnoreCase));
+                // Check that the pattern does not have a parameter for the routeKey
+                var matchingParameter = endpointInfo.ParsedPattern.Parameters.SingleOrDefault(p => string.Equals(p.Name, routeKey, StringComparison.OrdinalIgnoreCase));
                 if (matchingParameter == null)
                 {
                     return true;
@@ -241,18 +282,21 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     return true;
                 }
 
-                var matchingParameter = endpointInfo.ParsedTemplate.Parameters.SingleOrDefault(p => string.Equals(p.Name, routeKey, StringComparison.OrdinalIgnoreCase));
+                var matchingParameter = endpointInfo.ParsedPattern.Parameters.SingleOrDefault(p => string.Equals(p.Name, routeKey, StringComparison.OrdinalIgnoreCase));
                 if (matchingParameter != null)
                 {
                     // Check that the value matches against constraints on that parameter
                     // e.g. For {controller:regex((Home|Login))} the controller value must match the regex
-                    //
-                    // REVIEW: This is really ugly
-                    if (endpointInfo.Constraints.TryGetValue(routeKey, out var constraint)
-                        && !constraint.Match(new DefaultHttpContext() { RequestServices = _serviceProvider }, NullRouter.Instance, routeKey, new RouteValueDictionary(action.RouteValues), RouteDirection.IncomingRequest))
+                    if (endpointInfo.Constraints.TryGetValue(routeKey, out var constraints))
                     {
-                        // Did not match constraint
-                        return false;
+                        foreach (var constraint in constraints)
+                        {
+                            if (!constraint.Match(_httpContextInstance, NullRouter.Instance, routeKey, new RouteValueDictionary(action.RouteValues), RouteDirection.IncomingRequest))
+                            {
+                                // Did not match constraint
+                                return false;
+                            }
+                        }
                     }
 
                     return true;
@@ -265,7 +309,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         private RouteEndpoint CreateEndpoint(
             ActionDescriptor action,
             string routeName,
-            string template,
+            string patternRawText,
+            IEnumerable<RoutePatternPathSegment> segments,
             object nonInlineDefaults,
             int order,
             object source,
@@ -301,7 +346,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             var endpoint = new RouteEndpoint(
                 requestDelegate,
-                RoutePatternFactory.Parse(template, defaults, parameterPolicies: null),
+                RoutePatternFactory.Pattern(patternRawText, defaults, parameterPolicies: null, segments),
                 order,
                 metadataCollection,
                 action.DisplayName);
@@ -377,13 +422,13 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         // Template: {controller}/{action}/{category}/{id?}
         // Defaults(in-line or non in-line): category=products
         // Required values: controller=foo, action=bar
-        // Final constructed template: foo/bar/{category}/{id?}
+        // Final constructed pattern: foo/bar/{category}/{id?}
         // Final defaults: controller=foo, action=bar, category=products
         //
         // Template: {controller=Home}/{action=Index}/{category=products}/{id?}
         // Defaults: controller=Home, action=Index, category=products
         // Required values: controller=foo, action=bar
-        // Final constructed template: foo/bar/{category}/{id?}
+        // Final constructed pattern: foo/bar/{category}/{id?}
         // Final defaults: controller=foo, action=bar, category=products
         private void EnsureRequiredValuesInDefaults(IDictionary<string, string> requiredValues, RouteValueDictionary defaults)
         {

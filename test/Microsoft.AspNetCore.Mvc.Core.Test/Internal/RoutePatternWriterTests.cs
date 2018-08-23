@@ -1,13 +1,14 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Text;
 using Microsoft.AspNetCore.Mvc.Internal;
-using Microsoft.AspNetCore.Routing.Template;
+using Microsoft.AspNetCore.Routing.Patterns;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Core.Test.Internal
 {
-    public class RouteTemplateWriterTests
+    public class RoutePatternWriterTests
     {
         [Theory]
         [InlineData(@"")]
@@ -23,11 +24,12 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test.Internal
         [InlineData(@"{p1}.{p2}.{p3}")]
         public void ToString_TemplateRoundtrips(string template)
         {
-            var routeTemplate = TemplateParser.Parse(template);
+            var routePattern = RoutePatternFactory.Parse(template);
 
-            var output = RouteTemplateWriter.ToString(routeTemplate.Segments);
+            var sb = new StringBuilder();
+            RoutePatternWriter.WriteString(sb, routePattern.PathSegments);
 
-            Assert.Equal(template, output);
+            Assert.Equal(template, sb.ToString());
         }
     }
 }

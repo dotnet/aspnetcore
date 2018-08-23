@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.Patterns;
 
 namespace Microsoft.AspNetCore.Mvc.Performance
 {
@@ -49,7 +50,7 @@ namespace Microsoft.AspNetCore.Mvc.Performance
                     new RouteValueDictionary(),
                     new Dictionary<string, object>(),
                     new RouteValueDictionary(),
-                    new MockInlineConstraintResolver())
+                    new MockParameterPolicyFactory())
             };
         }
 
@@ -134,9 +135,14 @@ namespace Microsoft.AspNetCore.Mvc.Performance
             }
         }
 
-        private class MockInlineConstraintResolver : IInlineConstraintResolver
+        private class MockParameterPolicyFactory : ParameterPolicyFactory
         {
-            public IRouteConstraint ResolveConstraint(string inlineConstraint)
+            public override IParameterPolicy Create(RoutePatternParameterPart parameter, string inlineText)
+            {
+                throw new NotImplementedException();
+            }
+
+            public override IParameterPolicy Create(RoutePatternParameterPart parameter, IParameterPolicy parameterPolicy)
             {
                 throw new NotImplementedException();
             }

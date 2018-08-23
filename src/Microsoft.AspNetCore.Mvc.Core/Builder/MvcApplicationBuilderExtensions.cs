@@ -93,8 +93,8 @@ namespace Microsoft.AspNetCore.Builder
                     .GetRequiredService<IEnumerable<EndpointDataSource>>()
                     .OfType<MvcEndpointDataSource>()
                     .First();
-                var constraintResolver = app.ApplicationServices
-                    .GetRequiredService<IInlineConstraintResolver>();
+                var parameterPolicyFactory = app.ApplicationServices
+                    .GetRequiredService<ParameterPolicyFactory>();
 
                 var endpointRouteBuilder = new EndpointRouteBuilder(app);
 
@@ -112,7 +112,7 @@ namespace Microsoft.AspNetCore.Builder
                             route.Defaults,
                             route.Constraints.ToDictionary(kvp => kvp.Key, kvp => (object)kvp.Value),
                             route.DataTokens,
-                            constraintResolver);
+                            parameterPolicyFactory);
 
                         mvcEndpointDataSource.ConventionalEndpointInfos.Add(endpointInfo);
                     }
