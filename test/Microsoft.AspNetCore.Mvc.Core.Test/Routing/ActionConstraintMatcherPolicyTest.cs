@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
     public class ActionConstraintMatcherPolicyTest
     {
         [Fact]
-        public void Apply_CanBeAmbiguous()
+        public async Task Apply_CanBeAmbiguous()
         {
             // Arrange
             var actions = new ActionDescriptor[]
@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             var selector = CreateSelector(actions);
 
             // Act
-            selector.Apply(new DefaultHttpContext(), candidateSet);
+            await selector.ApplyAsync(new DefaultHttpContext(), new EndpointFeature(), candidateSet);
 
             // Assert
             Assert.True(candidateSet[0].IsValidCandidate);
@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         }
 
         [Fact]
-        public void Apply_PrefersActionWithConstraints()
+        public async Task Apply_PrefersActionWithConstraints()
         {
             // Arrange
             var actionWithConstraints = new ActionDescriptor()
@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             var httpContext = CreateHttpContext("POST");
 
             // Act
-            selector.Apply(httpContext, candidateSet);
+            await selector.ApplyAsync(httpContext, new EndpointFeature(), candidateSet);
 
             // Assert
             Assert.True(candidateSet[0].IsValidCandidate);
@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         }
 
         [Fact]
-        public void Apply_ConstraintsRejectAll()
+        public async Task Apply_ConstraintsRejectAll()
         {
             // Arrange
             var action1 = new ActionDescriptor()
@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             var httpContext = CreateHttpContext("POST");
 
             // Act
-            selector.Apply(httpContext, candidateSet);
+            await selector.ApplyAsync(httpContext, new EndpointFeature(), candidateSet);
 
             // Assert
             Assert.False(candidateSet[0].IsValidCandidate);
@@ -110,7 +110,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         }
 
         [Fact]
-        public void Apply_ConstraintsRejectAll_DifferentStages()
+        public async Task Apply_ConstraintsRejectAll_DifferentStages()
         {
             // Arrange
             var action1 = new ActionDescriptor()
@@ -138,7 +138,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             var httpContext = CreateHttpContext("POST");
 
             // Act
-            selector.Apply(httpContext, candidateSet);
+            await selector.ApplyAsync(httpContext, new EndpointFeature(), candidateSet);
 
             // Assert
             Assert.False(candidateSet[0].IsValidCandidate);
@@ -147,7 +147,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 
         // Due to ordering of stages, the first action will be better.
         [Fact]
-        public void Apply_ConstraintsInOrder()
+        public async Task Apply_ConstraintsInOrder()
         {
             // Arrange
             var best = new ActionDescriptor()
@@ -173,7 +173,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             var httpContext = CreateHttpContext("POST");
 
             // Act
-            selector.Apply(httpContext, candidateSet);
+            await selector.ApplyAsync(httpContext, new EndpointFeature(), candidateSet);
 
             // Assert
             Assert.True(candidateSet[0].IsValidCandidate);
@@ -181,7 +181,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         }
 
         [Fact]
-        public void Apply_SkipsOverInvalidEndpoints()
+        public async Task Apply_SkipsOverInvalidEndpoints()
         {
             // Arrange
             var best = new ActionDescriptor()
@@ -211,7 +211,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             var httpContext = CreateHttpContext("POST");
 
             // Act
-            selector.Apply(httpContext, candidateSet);
+            await selector.ApplyAsync(httpContext, new EndpointFeature(), candidateSet);
 
             // Assert
             Assert.False(candidateSet[0].IsValidCandidate);
@@ -220,7 +220,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         }
 
         [Fact]
-        public void Apply_IncludesNonMvcEndpoints()
+        public async Task Apply_IncludesNonMvcEndpoints()
         {
             // Arrange
             var action1 = new ActionDescriptor()
@@ -246,7 +246,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             var httpContext = CreateHttpContext("POST");
 
             // Act
-            selector.Apply(httpContext, candidateSet);
+            await selector.ApplyAsync(httpContext, new EndpointFeature(), candidateSet);
 
             // Assert
             Assert.False(candidateSet[0].IsValidCandidate);
@@ -256,7 +256,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 
         // Due to ordering of stages, the first action will be better.
         [Fact]
-        public void Apply_ConstraintsInOrder_MultipleStages()
+        public async Task Apply_ConstraintsInOrder_MultipleStages()
         {
             // Arrange
             var best = new ActionDescriptor()
@@ -287,7 +287,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             var httpContext = CreateHttpContext("POST");
 
             // Act
-            selector.Apply(httpContext, candidateSet);
+            await selector.ApplyAsync(httpContext, new EndpointFeature(), candidateSet);
 
             // Assert
             Assert.True(candidateSet[0].IsValidCandidate);
@@ -295,7 +295,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         }
 
         [Fact]
-        public void Apply_Fallback_ToActionWithoutConstraints()
+        public async Task Apply_Fallback_ToActionWithoutConstraints()
         {
             // Arrange
             var nomatch1 = new ActionDescriptor()
@@ -328,7 +328,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             var httpContext = CreateHttpContext("POST");
 
             // Act
-            selector.Apply(httpContext, candidateSet);
+            await selector.ApplyAsync(httpContext, new EndpointFeature(), candidateSet);
 
             // Assert
             Assert.True(candidateSet[0].IsValidCandidate);
