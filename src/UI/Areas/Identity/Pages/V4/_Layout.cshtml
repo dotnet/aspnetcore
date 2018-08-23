@@ -23,37 +23,41 @@
 <body>
     <header>
         <nav class="navbar navbar-expand-sm navbar-light navbar-toggleable-sm bg-white border-bottom box-shadow mb-3">
-            <a class="navbar-brand" href="~/">@Environment.ApplicationName</a>
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                    aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="navbar-collapse collapse d-sm-inline-flex flex-sm-row-reverse">
-                @{
-                    var result = Engine.FindView(ViewContext, "_LoginPartial", isMainPage: false);
-                }
-                @if (result.Success)
-                {
-                    await Html.RenderPartialAsync("_LoginPartial");
-                }
-                else
-                {
-                    throw new InvalidOperationException("The default Identity UI layout requires a partial view '_LoginPartial' " +
-                        "usually located at '/Pages/_LoginPartial' or at '/Views/Shared/_LoginPartial' to work. Based on your configuration " +
-                        $"we have looked at it in the following locations: {System.Environment.NewLine}{string.Join(System.Environment.NewLine, result.SearchedLocations)}.");
-                }
+            <div class="container">
+                <a class="navbar-brand" href="~/">@Environment.ApplicationName</a>
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="navbar-collapse collapse d-sm-inline-flex flex-sm-row-reverse">
+                    @{
+                        var result = Engine.FindView(ViewContext, "_LoginPartial", isMainPage: false);
+                    }
+                    @if (result.Success)
+                    {
+                        await Html.RenderPartialAsync("_LoginPartial");
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException("The default Identity UI layout requires a partial view '_LoginPartial' " +
+                            "usually located at '/Pages/_LoginPartial' or at '/Views/Shared/_LoginPartial' to work. Based on your configuration " +
+                            $"we have looked at it in the following locations: {System.Environment.NewLine}{string.Join(System.Environment.NewLine, result.SearchedLocations)}.");
+                    }
+                </div>
             </div>
         </nav>
     </header>
 
-    <div class="container-fluid">
+    <div class="container">
         <partial name="_CookieConsentPartial" optional />
         <main role="main" class="pb-1">
             @RenderBody()
         </main>
     </div>
     <footer class="footer border-top pl-3 text-muted">
+        <div class="container">
         &copy; @DateTime.Now.Year - @Environment.ApplicationName - <a asp-area="" asp-page="Privacy">Privacy</a>
+        </div>
     </footer>
 
     <environment include="Development">
