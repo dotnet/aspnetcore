@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
         }
 
         [Fact]
-        public void Pattern_DuplicateDefaultValue_Throws()
+        public void Pattern_DifferentDuplicateDefaultValue_Throws()
         {
             // Arrange
             var template = "{a=13}/{b}/{c}";
@@ -88,6 +88,29 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                 "value specified. A route parameter cannot contain an inline default value when a " +
                 "default value is specified explicitly. Consider removing one of them.",
                 ex.Message);
+        }
+
+        [Fact]
+        public void Pattern_SameDuplicateDefaultValue()
+        {
+            // Arrange
+            var template = "{a=13}/{b}/{c}";
+            var defaults = new { a = "13", };
+            var constraints = new { };
+
+            var original = RoutePatternFactory.Parse(template);
+
+            // Act
+            var actual = RoutePatternFactory.Pattern(
+                original.RawText,
+                defaults,
+                constraints,
+                original.PathSegments);
+
+            // Assert
+            Assert.Collection(
+                actual.Defaults,
+                kvp => { Assert.Equal("a", kvp.Key); Assert.Equal("13", kvp.Value); });
         }
 
         [Fact]

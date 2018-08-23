@@ -343,7 +343,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
                 if (updatedDefaults.TryGetValue(parameter.Name, out var newDefault))
                 {
-                    if (parameter.Default != null)
+                    if (parameter.Default != null && !Equals(newDefault, parameter.Default))
                     {
                         var message = Resources.FormatTemplateRoute_CannotHaveDefaultValueSpecifiedInlineAndExplicitly(parameter.Name);
                         throw new InvalidOperationException(message);
@@ -360,7 +360,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
                 if (parameter.Default != null)
                 {
-                    updatedDefaults.Add(parameter.Name, parameter.Default);
+                    updatedDefaults[parameter.Name] = parameter.Default;
                 }
 
                 if (!updatedParameterPolicies.TryGetValue(parameter.Name, out var parameterConstraints) &&
