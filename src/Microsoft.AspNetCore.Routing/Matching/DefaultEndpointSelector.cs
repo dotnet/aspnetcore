@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             EndpointFeature feature,
             CandidateSet candidateSet)
         {
-            RouteEndpoint endpoint = null;
+            Endpoint endpoint = null;
             RouteValueDictionary values = null;
             int? foundScore = null;
             for (var i = 0; i < candidateSet.Count; i++)
@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         {
             // If we get here it's the result of an ambiguity - we're OK with this
             // being a littler slower and more allocatey.
-            var matches = new List<RouteEndpoint>();
+            var matches = new List<Endpoint>();
             for (var i = 0; i < candidates.Count; i++)
             {
                 ref var state = ref candidates[i];

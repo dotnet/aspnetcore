@@ -3,13 +3,14 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Patterns;
 
 namespace Microsoft.AspNetCore.Routing.Matching
 {
     internal readonly struct Candidate
     {
-        public readonly RouteEndpoint Endpoint;
+        public readonly Endpoint Endpoint;
 
         // Used to optimize out operations that modify route values.
         public readonly CandidateFlags Flags;
@@ -48,7 +49,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         public readonly int Score;
 
         // Used in tests.
-        public Candidate(RouteEndpoint endpoint)
+        public Candidate(Endpoint endpoint)
         {
             Endpoint = endpoint;
 
@@ -63,7 +64,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         }
 
         public Candidate(
-            RouteEndpoint endpoint,
+            Endpoint endpoint,
             int score,
             KeyValuePair<string, object>[] slots,
             (string parameterName, int segmentIndex, int slotIndex)[] captures,
