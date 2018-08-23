@@ -60,6 +60,7 @@
     <PropertyGroup>
       <BlobBasePath>aspnetcore/Runtime/$(PackageVersion)/</BlobBasePath>
       <NpmBlobBasePath>aspnetcore/npm/</NpmBlobBasePath>
+      <JarBlobBasePath>aspnetcore/jar/</JarBlobBasePath>
       <AliasBlobBasePath>aspnetcore/Runtime/$(SharedFxCliBlobChannel)/</AliasBlobBasePath>
       <SiteExtensionArchiveFileName>runtime-site-extension-internal-$(PackageVersion).zip</SiteExtensionArchiveFileName>
       <InstallerBaseFileName>aspnetcore-runtime-$(PackageVersion)</InstallerBaseFileName>
@@ -154,6 +155,15 @@
         Include="@(ArtifactInfo)"
         ArtifactPath="$(DependencyPackagesDir)%(ArtifactInfo.PackageId).%(ArtifactInfo.Version).symbols.nupkg"
         Condition="'%(ArtifactInfo.ArtifactType)' == 'NuGetSymbolsPackage'" />
+
+      <FilesToPublish Include="$(DependencyPackagesDir)%(ArtifactInfo.FileName)%(ArtifactInfo.Extension)" Condition="'%(ArtifactInfo.ArtifactType)' == 'JavaJar'">
+        <RelativeBlobPath>$(JarBlobBasePath)%(ArtifactInfo.FileName)%(ArtifactInfo.Extension)</RelativeBlobPath>
+        <ManifestArtifactData>Type=JavaJar</ManifestArtifactData>
+      </FilesToPublish>
+
+      <FilesToPublish Include="$(DependencyAssetsDir)%(ArtifactInfo.FileName)%(ArtifactInfo.Extension)" Condition="'%(ArtifactInfo.ArtifactType)' == 'MavenPOM'">
+        <RelativeBlobPath>$(JarBlobBasePath)%(ArtifactInfo.FileName)%(ArtifactInfo.Extension)</RelativeBlobPath>
+      </FilesToPublish>
 
       <NpmPackageToPublish Include="$(DependencyAssetsDir)%(ArtifactInfo.FileName)%(ArtifactInfo.Extension)" Condition="'%(ArtifactInfo.ArtifactType)' == 'NpmPackage'">
         <RelativeBlobPath>$(NpmBlobBasePath)%(ArtifactInfo.PackageId)/%(ArtifactInfo.FileName)%(ArtifactInfo.Extension)</RelativeBlobPath>
