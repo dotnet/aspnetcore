@@ -113,7 +113,7 @@ class VirtualConnectionsCollection {
         newVirtualConnection.on('finish', () => {
             // The virtual connection was closed locally. Clean up locally, and notify the remote that we're done.
             this._onVirtualConnectionWasClosed(header.connectionIdString);
-            this._sendFrame(header.connectionIdBinary, new Buffer(0));
+            this._sendFrame(header.connectionIdBinary, Buffer.alloc(0));
         });
 
         this._virtualConnections[header.connectionIdString] = newVirtualConnection;
@@ -180,7 +180,7 @@ class VirtualConnectionsCollection {
      * Sends a number serialized in the correct format for .NET to receive as a System.Int32
      */
     private _sendInt32LE(value: number, callback?: EndWriteCallback) {
-        const buf = new Buffer(4);
+        const buf = Buffer.alloc(4);
         buf.writeInt32LE(value, 0);
         this._socket.write(buf, callback);
     }

@@ -27,7 +27,7 @@ export class VirtualConnection extends Duplex {
 
     public _write(chunk: Buffer | string, encodingIfString: string, callback: EndWriteCallback) {
         if (typeof chunk === 'string') {
-            chunk = new Buffer(chunk as string, encodingIfString);
+            chunk = Buffer.from(chunk as string, encodingIfString);
         }
 
         this._beginWriteCallback(chunk as Buffer, callback);

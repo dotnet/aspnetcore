@@ -1,7 +1,5 @@
-/// <reference path="../npm/aspnet-prerendering/src/PrerenderingInterfaces.d.ts" />
-import * as url from 'url';
+import { BootModuleInfo, RenderToStringFunc, RenderToStringCallback } from '../npm/aspnet-prerendering/src/PrerenderingInterfaces';
 import * as path from 'path';
-import * as fs from 'fs';
 declare var __non_webpack_require__;
 
 // Separate declaration and export just to add type checking on function signature
