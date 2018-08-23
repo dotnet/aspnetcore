@@ -27,13 +27,15 @@
       <SrcExclusions Include="
         src\Microsoft.AspNetCore.TestHost\ResponseStream.cs;
         src\Microsoft.AspNetCore.Server.IntegrationTesting\Deployers\IISExpressDeployer.cs;
-        src\Microsoft.AspNetCore.Server.IntegrationTesting\Deployers\SelfHostDeployer.cs">
+        src\Microsoft.AspNetCore.Server.IntegrationTesting\Deployers\SelfHostDeployer.cs;
+        mscorrc.debug.dll">
         <term>hang</term>
         <Justification>Refers to a stuck process/thread.</Justification>
       </SrcExclusions>
       <SrcExclusions Include="
         src\Microsoft.AspNetCore.Mvc.DataAnnotations\Internal\DataAnnotationsMetadataProvider.cs;
-        src\Microsoft.CodeAnalysis.Razor.Workspaces\ProjectSystem\DefaultProjectSnapshotManager.cs">
+        src\Microsoft.CodeAnalysis.Razor.Workspaces\ProjectSystem\DefaultProjectSnapshotManager.cs;
+        NuGet.Build.Tasks.Pack.xml">
         <term>hanging</term>
         <Justification>Refers to a stuck process/thread.</Justification>
       </SrcExclusions>

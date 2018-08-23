@@ -12,12 +12,4 @@
       ExcludedRules="@(ExcludedRules)" />
   </Target>
 
-  <!-- Ensures binaries in the aspnetcore shared framework are correctly authenticode signed -->
-  <Target Name="VerifySignedSharedFxBinaries" Condition="'$(SignType)' == 'real'">
-    <ItemGroup>
-      <SignedSharedFxBinaries Include="$(UnsignedSharedFxPath)**\*.dll" Exclude="$(UnsignedSharedFxPath)*.*"/>
-    </ItemGroup>
-    <RepoTasks.VerifySignedSharedFxBinaries Binaries="@(SignedSharedFxBinaries)" />
-  </Target>
-
 </Project>

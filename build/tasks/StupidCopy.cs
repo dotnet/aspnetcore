@@ -15,6 +15,11 @@ namespace RepoTasks
         public string DestinationFolder { get; set; }
         public override bool Execute()
         {
+            if (SourceFiles == null || SourceFiles.Length == 0)
+            {
+                return true;
+            }
+
             if (!string.IsNullOrEmpty(DestinationFolder))
             {
                 Directory.CreateDirectory(DestinationFolder);

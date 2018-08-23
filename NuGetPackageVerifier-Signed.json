@@ -1,4 +1,11 @@
 {
+    "siteextension": {
+        "rules": [],
+        "packages": {
+            "AspNetCoreRuntime.2.2.x86": {},
+            "AspNetCoreRuntime.2.2.x64": {}
+        }
+    },
     "default": { // Rules to run for packages not listed in any other set.
         "rules": [
             "SigningVerificationCompositeRule"

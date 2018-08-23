@@ -6,8 +6,8 @@
   </PropertyGroup>
 
   <UsingTask TaskName="RepoTasks.GetFileHash" AssemblyFile="$(_RepoTaskAssembly)" />
+  <UsingTask TaskName="RepoTasks.FilterAuthenticodeSignedFiles" AssemblyFile="$(_RepoTaskAssembly)" />
   <UsingTask TaskName="RepoTasks.StupidCopy" AssemblyFile="$(_RepoTaskAssembly)" />
-  <UsingTask TaskName="RepoTasks.VerifySignedSharedFxBinaries" AssemblyFile="$(_RepoTaskAssembly)" />
   <UsingTask TaskName="RepoTasks.VerifyPoliCheckResults" AssemblyFile="$(_RepoTaskAssembly)" />
   <UsingTask TaskName="Microsoft.Build.OOB.ESRP.CreateSignManifests" AssemblyFile="$(_RepoTaskAssembly)" />
 
@@ -18,6 +18,7 @@
     <NuGetPackagesPath>$([MSBuild]::NormalizeDirectory($(NuGetPackagesPath)))</NuGetPackagesPath>
 
     <ESRPClientToolPath>$(NuGetPackagesPath)esrpclient\$(ESRPClientVersion)\tools\EsrpClient.exe</ESRPClientToolPath>
+    <SignCheckToolPath>$(NuGetPackagesPath)signcheck\$(SignCheckVersion)\tools\SignCheck.exe</SignCheckToolPath>
   </PropertyGroup>
 
 </Project>
