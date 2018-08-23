@@ -1,6 +1,8 @@
 ASP.NET Core SignalR
 ========
 
+**IMPORTANT**: This repository hosts code and project management for ASP.NET **Core** SignalR, for use in ASP.NET Core applications using `Microsoft.AspNetCore.App`. If you are looking for information on ASP.NET SignalR (used in .NET Framework applications using System.Web and/or Katana), see the https://github.com/SignalR/SignalR repository.
+
 [![Join the chat at https://gitter.im/aspnet/SignalR](https://badges.gitter.im/aspnet/SignalR.svg)](https://gitter.im/aspnet/SignalR?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 Travis:   [![Travis](https://travis-ci.org/aspnet/SignalR.svg?branch=dev)](https://travis-ci.org/aspnet/SignalR)
