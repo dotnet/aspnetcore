@@ -27,6 +27,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         public ApiBehaviorApplicationModelProvider(
             IOptions<ApiBehaviorOptions> apiBehaviorOptions,
             IModelMetadataProvider modelMetadataProvider,
+            IClientErrorFactory clientErrorFactory,
             ILoggerFactory loggerFactory)
         {
             _apiBehaviorOptions = apiBehaviorOptions.Value;
@@ -45,7 +46,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 loggerFactory.CreateLogger<ModelStateInvalidFilter>());
 
             _clientErrorResultFilter = new ClientErrorResultFilter(
-                _apiBehaviorOptions,
+                clientErrorFactory,
                 loggerFactory.CreateLogger<ClientErrorResultFilter>());
         }
 
@@ -158,7 +159,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         private void AddClientErrorFilter(ActionModel actionModel)
         {
-            if (_apiBehaviorOptions.SuppressUseClientErrorFactory)
+            if (_apiBehaviorOptions.SuppressMapClientErrors)
             {
                 return;
             }

@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Mvc
         public string Type { get; set; }
 
         /// <summary>
-        /// A short, human-readable summary of the problem type.It SHOULD NOT change from occurrence to occurrence
+        /// A short, human-readable summary of the problem type. It SHOULD NOT change from occurrence to occurrence
         /// of the problem, except for purposes of localization(e.g., using proactive content negotiation;
         /// see[RFC7231], Section 3.4).
         /// </summary>
@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Mvc
         public string Detail { get; set; }
 
         /// <summary>
-        /// A URI reference that identifies the specific occurrence of the problem.It may or may not yield further information if dereferenced.
+        /// A URI reference that identifies the specific occurrence of the problem. It may or may not yield further information if dereferenced.
         /// </summary>
         public string Instance { get; set; }
     }

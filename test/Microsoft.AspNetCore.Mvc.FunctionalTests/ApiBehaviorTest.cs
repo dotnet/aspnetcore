@@ -97,6 +97,10 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             // Assert
             await response.AssertStatusCodeAsync(HttpStatusCode.UnsupportedMediaType);
+            var content = await response.Content.ReadAsStringAsync();
+            var problemDetails = JsonConvert.DeserializeObject<ProblemDetails>(content);
+            Assert.Equal((int)HttpStatusCode.UnsupportedMediaType, problemDetails.Status);
+            Assert.Equal("Unsupported Media Type", problemDetails.Title);
         }
 
         [Fact]

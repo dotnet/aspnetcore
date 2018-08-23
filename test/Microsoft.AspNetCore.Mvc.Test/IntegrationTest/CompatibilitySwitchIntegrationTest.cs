@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTest
             Assert.False(mvcOptions.EnableEndpointRouting);
             Assert.Null(mvcOptions.MaxValidationDepth);
             Assert.True(apiBehaviorOptions.SuppressUseValidationProblemDetailsForInvalidModelStateResponses);
-            Assert.True(apiBehaviorOptions.SuppressUseClientErrorFactory);
+            Assert.True(apiBehaviorOptions.SuppressMapClientErrors);
         }
 
         [Fact]
@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTest
             Assert.False(mvcOptions.EnableEndpointRouting);
             Assert.Null(mvcOptions.MaxValidationDepth);
             Assert.True(apiBehaviorOptions.SuppressUseValidationProblemDetailsForInvalidModelStateResponses);
-            Assert.True(apiBehaviorOptions.SuppressUseClientErrorFactory);
+            Assert.True(apiBehaviorOptions.SuppressMapClientErrors);
         }
 
         [Fact]
@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTest
             Assert.True(mvcOptions.EnableEndpointRouting);
             Assert.Equal(32, mvcOptions.MaxValidationDepth);
             Assert.False(apiBehaviorOptions.SuppressUseValidationProblemDetailsForInvalidModelStateResponses);
-            Assert.False(apiBehaviorOptions.SuppressUseClientErrorFactory);
+            Assert.False(apiBehaviorOptions.SuppressMapClientErrors);
         }
 
         [Fact]
@@ -130,7 +130,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTest
             Assert.True(mvcOptions.EnableEndpointRouting);
             Assert.Equal(32, mvcOptions.MaxValidationDepth);
             Assert.False(apiBehaviorOptions.SuppressUseValidationProblemDetailsForInvalidModelStateResponses);
-            Assert.False(apiBehaviorOptions.SuppressUseClientErrorFactory);
+            Assert.False(apiBehaviorOptions.SuppressMapClientErrors);
         }
 
         // This just does the minimum needed to be able to resolve these options.

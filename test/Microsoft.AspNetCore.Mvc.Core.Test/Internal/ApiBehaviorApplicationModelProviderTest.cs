@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Internal
@@ -1081,7 +1082,7 @@ Environment.NewLine + "int b";
             var context = GetContext(typeof(TestApiController));
             var options = new ApiBehaviorOptions
             {
-                SuppressUseClientErrorFactory = true,
+                SuppressMapClientErrors = true,
                 InvalidModelStateResponseFactory = _ => null,
             };
             var provider = GetProvider(options);
@@ -1122,7 +1123,11 @@ Environment.NewLine + "int b";
 
             var loggerFactory = NullLoggerFactory.Instance;
             modelMetadataProvider = modelMetadataProvider ?? new EmptyModelMetadataProvider();
-            return new ApiBehaviorApplicationModelProvider(optionsAccessor, modelMetadataProvider, loggerFactory);
+            return new ApiBehaviorApplicationModelProvider(
+                optionsAccessor,
+                modelMetadataProvider,
+                Mock.Of<IClientErrorFactory>(),
+                loggerFactory);
         }
 
         private static ApplicationModelProviderContext GetContext(

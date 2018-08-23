@@ -151,7 +151,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         private static readonly Action<ILogger, Type, Type, Type, Exception> _notMostEffectiveFilter;
         private static readonly Action<ILogger, IEnumerable<IOutputFormatter>, Exception> _registeredOutputFormatters;
 
-        private static readonly Action<ILogger, Type, Type, int, Exception> _transformingClientError;
+        private static readonly Action<ILogger, Type, int?, Type, Exception> _transformingClientError;
 
         static MvcCoreLoggerExtensions()
         {
@@ -651,10 +651,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                48,
                "Skipped binding parameter '{ParameterName}' since its binding information disallowed it for the current request.");
 
-            _transformingClientError = LoggerMessage.Define<Type, Type, int>(
+            _transformingClientError = LoggerMessage.Define<Type, int?, Type>(
                 LogLevel.Trace,
                 new EventId(49, nameof(Infrastructure.ClientErrorResultFilter)),
-                "Replacing {InitialActionResultType} with status code {StatusCode} with {ReplacedActionResultType} produced from ClientErrorFactory'.");
+                "Replacing {InitialActionResultType} with status code {StatusCode} with {ReplacedActionResultType}.");
         }
 
         public static void RegisteredOutputFormatters(this ILogger logger, IEnumerable<IOutputFormatter> outputFormatters)
@@ -1585,9 +1585,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             }
         }
 
-        public static void TransformingClientError(this ILogger logger, Type initialType, Type replacedType, int statusCode)
+        public static void TransformingClientError(this ILogger logger, Type initialType, Type replacedType, int? statusCode)
         {
-            _transformingClientError(logger, initialType, replacedType, statusCode, null);
+            _transformingClientError(logger, initialType, statusCode, replacedType, null);
         }
 
         private static void LogFilterExecutionPlan(

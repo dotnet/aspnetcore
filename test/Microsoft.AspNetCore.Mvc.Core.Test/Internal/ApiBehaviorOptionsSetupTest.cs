@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
-        public void Configure_AddsClientErrorFactories()
+        public void Configure_AddsClientErrorMappings()
         {
             // Arrange
             var expected = new[] { 400, 401, 403, 404, 406, 409, 415, 422, };
@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             optionsSetup.Configure(options);
 
             // Assert
-            Assert.Equal(expected, options.ClientErrorFactory.Keys);
+            Assert.Equal(expected, options.ClientErrorMapping.Keys);
         }
 
         [Fact]
