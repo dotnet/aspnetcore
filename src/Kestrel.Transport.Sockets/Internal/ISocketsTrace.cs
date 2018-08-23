@@ -19,5 +19,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
         void ConnectionPause(string connectionId);
 
         void ConnectionResume(string connectionId);
+
+        void ConnectionAborted(string connectionId);
     }
 }

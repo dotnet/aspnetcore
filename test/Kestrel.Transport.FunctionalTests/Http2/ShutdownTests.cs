@@ -109,6 +109,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
                 MemoryPoolFactory = memoryPoolFactory.Create
             };
 
+            TestApplicationErrorLogger.ThrowOnUngracefulShutdown = false;
+
             // Abortive shutdown leaves one request hanging
             using (var server = new TestServer(async context =>
             {

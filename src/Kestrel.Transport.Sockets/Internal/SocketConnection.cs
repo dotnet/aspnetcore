@@ -95,6 +95,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
         public override void Abort(ConnectionAbortedException abortReason)
         {
+            _trace.ConnectionAborted(ConnectionId);
+
             _abortReason = abortReason;
             Output.CancelPendingRead();
 
@@ -106,6 +108,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
         public void Dispose()
         {
             _connectionClosedTokenSource.Dispose();
+            _connectionClosingCts.Dispose();
         }
 
         private async Task DoReceive()
@@ -188,17 +191,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
                 var flushTask = Input.FlushAsync();
 
-                if (!flushTask.IsCompleted)
+                var paused = !flushTask.IsCompleted;
+
+                if (paused)
                 {
                     _trace.ConnectionPause(ConnectionId);
+                }
 
-                    await flushTask;
+                var result = await flushTask;
 
+                if (paused)
+                {
                     _trace.ConnectionResume(ConnectionId);
                 }
 
-                var result = flushTask.GetAwaiter().GetResult();
-                if (result.IsCompleted)
+                if (result.IsCompleted || result.IsCanceled)
                 {
                     // Pipe consumer is shut down, do we stop writing
                     break;
@@ -244,6 +251,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
                 // Complete the output after disposing the socket
                 Output.Complete(error);
+
+                // Cancel any pending flushes so that the input loop is un-paused
+                Input.CancelPendingFlush();
             }
         }
 

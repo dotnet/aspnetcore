@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO.Pipelines;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
@@ -23,7 +24,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var tcs = new TaskCompletionSource<object>();
             var dispatcher = new ConnectionDispatcher(serviceContext, _ => tcs.Task);
 
-            var connection = Mock.Of<TransportConnection>();
+            var connection = new Mock<TransportConnection>() { CallBase = true }.Object;
+            connection.ConnectionClosed = new CancellationToken(canceled: true);
 
             dispatcher.OnConnection(connection);
 
@@ -51,7 +53,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var serviceContext = new TestServiceContext();
             var dispatcher = new ConnectionDispatcher(serviceContext, _ => Task.CompletedTask);
 
-            var mockConnection = new Mock<TransportConnection>();
+            var mockConnection = new Mock<TransportConnection>() { CallBase = true };
+            mockConnection.Object.ConnectionClosed = new CancellationToken(canceled: true);
             var mockPipeReader = new Mock<PipeReader>();
             var mockPipeWriter = new Mock<PipeWriter>();
             var mockPipe = new Mock<IDuplexPipe>();

@@ -8,29 +8,31 @@ using Microsoft.AspNetCore.Connections;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
-    public static class HttpConnectionManagerShutdownExtensions
+    public static class ConnectionManagerShutdownExtensions
     {
-        public static async Task<bool> CloseAllConnectionsAsync(this HttpConnectionManager connectionManager, CancellationToken token)
+        public static async Task<bool> CloseAllConnectionsAsync(this ConnectionManager connectionManager, CancellationToken token)
         {
             var closeTasks = new List<Task>();
 
             connectionManager.Walk(connection =>
             {
-                closeTasks.Add(connection.StopProcessingNextRequestAsync());
+                connection.TransportConnection.RequestClose();
+                closeTasks.Add(connection.ExecutionTask);
             });
 
             var allClosedTask = Task.WhenAll(closeTasks.ToArray());
             return await Task.WhenAny(allClosedTask, CancellationTokenAsTask(token)).ConfigureAwait(false) == allClosedTask;
         }
 
-        public static async Task<bool> AbortAllConnectionsAsync(this HttpConnectionManager connectionManager)
+        public static async Task<bool> AbortAllConnectionsAsync(this ConnectionManager connectionManager)
         {
             var abortTasks = new List<Task>();
             var canceledException = new ConnectionAbortedException(CoreStrings.ConnectionAbortedDuringServerShutdown);
 
             connectionManager.Walk(connection =>
             {
-                abortTasks.Add(connection.AbortAsync(canceledException));
+                connection.TransportConnection.Abort(canceledException);
+                abortTasks.Add(connection.ExecutionTask);
             });
 
             var allAbortedTask = Task.WhenAll(abortTasks.ToArray());

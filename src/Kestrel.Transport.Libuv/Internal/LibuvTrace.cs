@@ -35,6 +35,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         private static readonly Action<ILogger, string, Exception> _connectionReset =
             LoggerMessage.Define<string>(LogLevel.Debug, 19, @"Connection id ""{ConnectionId}"" reset.");
 
+        private static readonly Action<ILogger, string, Exception> _connectionAborted =
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(20, nameof(ConnectionAborted)), @"Connection id ""{ConnectionId}"" aborted.");
+
         private readonly ILogger _logger;
 
         public LibuvTrace(ILogger logger)
@@ -93,6 +96,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         public void ConnectionResume(string connectionId)
         {
             _connectionResume(_logger, connectionId, null);
+        }
+
+        public void ConnectionAborted(string connectionId)
+        {
+            _connectionAborted(_logger, connectionId, null);
         }
 
         public IDisposable BeginScope<TState>(TState state) => _logger.BeginScope(state);

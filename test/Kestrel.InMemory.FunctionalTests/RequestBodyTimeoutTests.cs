@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         {
             var gracePeriod = TimeSpan.FromSeconds(5);
             var serviceContext = new TestServiceContext(LoggerFactory);
-            var heartbeatManager = new HttpHeartbeatManager(serviceContext.ConnectionManager);
+            var heartbeatManager = new HeartbeatManager(serviceContext.ConnectionManager);
 
             var appRunningEvent = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
@@ -136,7 +136,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         {
             var gracePeriod = TimeSpan.FromSeconds(5);
             var serviceContext = new TestServiceContext(LoggerFactory);
-            var heartbeatManager = new HttpHeartbeatManager(serviceContext.ConnectionManager);
+            var heartbeatManager = new HeartbeatManager(serviceContext.ConnectionManager);
 
             var appRunningTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             var exceptionSwallowedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);

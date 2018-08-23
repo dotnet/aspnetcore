@@ -67,17 +67,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             var serverOptions = options.Value ?? new KestrelServerOptions();
             var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel");
             var trace = new KestrelTrace(logger);
-            var connectionManager = new HttpConnectionManager(
+            var connectionManager = new ConnectionManager(
                 trace,
                 serverOptions.Limits.MaxConcurrentUpgradedConnections);
 
-            var systemClock = new SystemClock();
-            var dateHeaderValueManager = new DateHeaderValueManager(systemClock);
-
-            var httpHeartbeatManager = new HttpHeartbeatManager(connectionManager);
+            var heartbeatManager = new HeartbeatManager(connectionManager);
+            var dateHeaderValueManager = new DateHeaderValueManager(heartbeatManager);
             var heartbeat = new Heartbeat(
-                new IHeartbeatHandler[] { dateHeaderValueManager, httpHeartbeatManager },
-                systemClock,
+                new IHeartbeatHandler[] { dateHeaderValueManager, heartbeatManager },
+                new SystemClock(),
                 DebuggerWrapper.Singleton,
                 trace);
 
@@ -102,7 +100,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                 Log = trace,
                 HttpParser = new HttpParser<Http1ParsingHandler>(trace.IsEnabled(LogLevel.Information)),
                 Scheduler = scheduler,
-                SystemClock = systemClock,
+                SystemClock = heartbeatManager,
                 DateHeaderValueManager = dateHeaderValueManager,
                 ConnectionManager = connectionManager,
                 Heartbeat = heartbeat,
@@ -118,7 +116,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
         private IKestrelTrace Trace => ServiceContext.Log;
 
-        private HttpConnectionManager ConnectionManager => ServiceContext.ConnectionManager;
+        private ConnectionManager ConnectionManager => ServiceContext.ConnectionManager;
 
         public async Task StartAsync<TContext>(IHttpApplication<TContext> application, CancellationToken cancellationToken)
         {

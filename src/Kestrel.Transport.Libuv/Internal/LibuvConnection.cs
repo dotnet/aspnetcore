@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         {
             _abortReason = abortReason;
             Output.CancelPendingRead();
-            
+
             // This cancels any pending I/O.
             Thread.Post(s => s.Dispose(), _socket);
         }
@@ -129,6 +129,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         public void Dispose()
         {
             _connectionClosedTokenSource.Dispose();
+            _connectionClosingCts.Dispose();
         }
 
         // Called on Libuv thread
