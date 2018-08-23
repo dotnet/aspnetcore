@@ -14,7 +14,6 @@ ASPNETCORE_SHIM_CONFIG::Populate(
 )
 {
     STACK_STRU(strHostingModel, 12);
-    STRU                            strApplicationFullPath;
     CComPtr<IAppHostElement>        pAspNetCoreElement;
 
     IAppHostAdminManager *pAdminManager = pHttpServer->GetAdminManager();
@@ -25,9 +24,11 @@ ASPNETCORE_SHIM_CONFIG::Populate(
         applicationConfigPath,
         &pAspNetCoreElement));
 
+    CComBSTR struProcessPath;
     RETURN_IF_FAILED(GetElementStringProperty(pAspNetCoreElement,
         CS_ASPNETCORE_PROCESS_EXE_PATH,
-        &m_struProcessPath));
+        &struProcessPath));
+    m_strProcessPath = struProcessPath;
 
     // Swallow this error for backward compatibility
     // Use default behavior for empty string
@@ -53,13 +54,18 @@ ASPNETCORE_SHIM_CONFIG::Populate(
         RETURN_HR(HRESULT_FROM_WIN32(ERROR_NOT_SUPPORTED));
     }
 
+    CComBSTR struArguments;
     RETURN_IF_FAILED(GetElementStringProperty(pAspNetCoreElement,
         CS_ASPNETCORE_PROCESS_ARGUMENTS,
-        &m_struArguments));
+        &struArguments));
+
+    m_strArguments = struArguments;
 
     if (m_hostingModel == HOSTING_OUT_PROCESS)
     {
-        RETURN_IF_FAILED(ConfigUtility::FindHandlerVersion(pAspNetCoreElement, m_struHandlerVersion));
+        STRU struHandlerVersion;
+        RETURN_IF_FAILED(ConfigUtility::FindHandlerVersion(pAspNetCoreElement, struHandlerVersion));
+        m_strHandlerVersion = struHandlerVersion.QueryStr();
     }
 
 

@@ -219,6 +219,7 @@
     <ClInclude Include="SRWExclusiveLock.h" />
     <ClInclude Include="SRWSharedLock.h" />
     <ClInclude Include="stdafx.h" />
+    <ClInclude Include="StringHelpers.h" />
     <ClInclude Include="sttimer.h" />
   </ItemGroup>
   <ItemGroup>
@@ -243,6 +244,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="StringHelpers.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\IISLib\IISLib.vcxproj">

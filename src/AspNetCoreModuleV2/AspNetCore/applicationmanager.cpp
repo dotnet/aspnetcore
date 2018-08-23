@@ -20,25 +20,16 @@ APPLICATION_MANAGER* APPLICATION_MANAGER::sm_pApplicationManager = NULL;
 //
 HRESULT
 APPLICATION_MANAGER::GetOrCreateApplicationInfo(
-    _In_ IHttpContext*         pHttpContext,
-    _Out_ APPLICATION_INFO **  ppApplicationInfo
+    _In_ IHttpContext& pHttpContext,
+    _Out_ std::shared_ptr<APPLICATION_INFO>& ppApplicationInfo
 )
 {
-    HRESULT                 hr = S_OK;
-    APPLICATION_INFO       *pApplicationInfo = NULL;
-    PCWSTR                  pszApplicationId = NULL;
 
-    STACK_STRU ( strEventMsg, 256 );
-
-    DBG_ASSERT(pHttpContext);
-    DBG_ASSERT(ppApplicationInfo);
-
-    *ppApplicationInfo = NULL;
-    IHttpApplication &pApplication = *pHttpContext->GetApplication();
+    auto &pApplication = *pHttpContext.GetApplication();
 
     // The configuration path is unique for each application and is used for the
     // key in the applicationInfoHash.
-    pszApplicationId = pApplication.GetApplicationId();
+    std::wstring pszApplicationId = pApplication.GetApplicationId();
 
     {
         // When accessing the m_pApplicationInfoHash, we need to acquire the application manager
@@ -47,93 +38,41 @@ APPLICATION_MANAGER::GetOrCreateApplicationInfo(
 
         if (g_fInShutdown)
         {
-            FINISHED(HRESULT_FROM_WIN32(ERROR_SERVER_SHUTDOWN_IN_PROGRESS));
+            return HRESULT_FROM_WIN32(ERROR_SERVER_SHUTDOWN_IN_PROGRESS);
         }
 
-        m_pApplicationInfoHash->FindKey(pszApplicationId, ppApplicationInfo);
+        const auto pair = m_pApplicationInfoHash.find(pszApplicationId);
+        if (pair != m_pApplicationInfoHash.end())
+        {
+            ppApplicationInfo = pair->second;
+            return S_OK;
+        }
 
         // It's important to release read lock here so exclusive lock
         // can be reacquired later as SRW lock doesn't allow upgrades
     }
 
-    if (*ppApplicationInfo == NULL)
+    // Take exclusive lock before creating the application
+    SRWExclusiveLock writeLock(m_srwLock);
+
+    if (!m_fDebugInitialize)
     {
-        // Take exclusive lock before creating the application
-        SRWExclusiveLock writeLock(m_srwLock);
-
-        if (!m_fDebugInitialize)
-        {
-            DebugInitializeFromConfig(m_pHttpServer, pApplication);
-            m_fDebugInitialize = TRUE;
-        }
-
-        // Check if other thread created the application
-        m_pApplicationInfoHash->FindKey(pszApplicationId, ppApplicationInfo);
-        if (*ppApplicationInfo != NULL)
-        {
-            FINISHED(S_OK);
-        }
-
-        pApplicationInfo = new APPLICATION_INFO(m_pHttpServer);
-
-        FINISHED_IF_FAILED(pApplicationInfo->Initialize(pApplication, &m_handlerResolver));
-        FINISHED_IF_FAILED(m_pApplicationInfoHash->InsertRecord(pApplicationInfo));
-
-        *ppApplicationInfo = pApplicationInfo;
-        pApplicationInfo = NULL;
-    }
-Finished:
-
-    if (pApplicationInfo != NULL)
-    {
-        pApplicationInfo->DereferenceApplicationInfo();
-        pApplicationInfo = NULL;
+        DebugInitializeFromConfig(m_pHttpServer, pApplication);
+        m_fDebugInitialize = TRUE;
     }
 
-    return hr;
-}
-
-
-//
-// If the application's configuration was changed,
-// append the configuration path to the config change context.
-//
-BOOL
-APPLICATION_MANAGER::FindConfigChangedApplication(
-    _In_ APPLICATION_INFO *     pEntry,
-    _In_ PVOID                  pvContext)
-{
-    DBG_ASSERT(pEntry);
-    DBG_ASSERT(pvContext);
-
-    // Config Change context contains the original config path that changed
-    // and a multiStr containing
-    CONFIG_CHANGE_CONTEXT* pContext = static_cast<CONFIG_CHANGE_CONTEXT*>(pvContext);
-    STRU* pstruConfigPath = pEntry->QueryConfigPath();
-
-    // check if the application path contains our app/subapp by seeing if the config path
-    // starts with the notification path.
-    BOOL fChanged = pstruConfigPath->StartsWith(pContext->pstrPath, true);
-    if (fChanged)
+    // Check if other thread created the application
+    const auto pair = m_pApplicationInfoHash.find(pszApplicationId);
+    if (pair != m_pApplicationInfoHash.end())
     {
-        auto dwLen = wcslen(pContext->pstrPath);
-        WCHAR wChar = pstruConfigPath->QueryStr()[dwLen];
-
-        // We need to check that the last character of the config path
-        // is either a null terminator or a slash.
-        // This checks the case where the config path was
-        // MACHINE/WEBROOT/site and your site path is MACHINE/WEBROOT/siteTest
-        if (wChar != L'\0' && wChar != L'/')
-        {
-            // not current app or sub app
-            fChanged = FALSE;
-        }
-        else
-        {
-            pContext->MultiSz.Append(pEntry->QueryApplicationInfoKey());
-        }
+        ppApplicationInfo = pair->second;
+        return S_OK;
     }
-    return fChanged;
+
+    ppApplicationInfo = std::make_shared<APPLICATION_INFO>(m_pHttpServer, pApplication, m_handlerResolver);
+    m_pApplicationInfoHash.emplace(pszApplicationId, ppApplicationInfo);
+
+    return S_OK;
 }
 
 //
@@ -148,101 +87,82 @@ APPLICATION_MANAGER::RecycleApplicationFromManager(
     _In_ LPCWSTR pszApplicationId
 )
 {
-    HRESULT                 hr = S_OK;
-    DWORD                   dwPreviousCounter = 0;
-    APPLICATION_INFO_HASH*  table = NULL;
-    CONFIG_CHANGE_CONTEXT   context;
-
-    if (g_fInShutdown)
+    try
     {
-        // We are already shutting down, ignore this event as a global configuration change event
-        // can occur after global stop listening for some reason.
-        return hr;
-    }
+        std::vector<std::shared_ptr<APPLICATION_INFO>> applicationsToRecycle;
 
-    {
-        SRWExclusiveLock lock(m_srwLock);
         if (g_fInShutdown)
         {
-            return hr;
+            // We are already shutting down, ignore this event as a global configuration change event
+            // can occur after global stop listening for some reason.
+            return S_OK;
         }
 
-        // Make a shallow copy of existing hashtable as we may need to remove nodes
-        // This will be used for finding differences in which applications are affected by a config change.
-        table = new APPLICATION_INFO_HASH();
-
-        // few application expected, small bucket size for hash table
-        if (FAILED(hr = table->Initialize(17 /*prime*/)))
         {
-            goto Finished;
+            SRWExclusiveLock lock(m_srwLock);
+            if (g_fInShutdown)
+            {
+                return S_OK;
+            }
+            const std::wstring configurationPath = pszApplicationId;
+
+            auto itr = m_pApplicationInfoHash.begin();
+            while (itr != m_pApplicationInfoHash.end())
+            {
+                if (itr->second->ConfigurationPathApplies(configurationPath))
+                {
+                    applicationsToRecycle.emplace_back(itr->second);
+                    itr = m_pApplicationInfoHash.erase(itr);
+                }
+                else
+                {
+                    ++itr;
+                }
+            }
+
+            // All applications were unloaded reset handler resolver validation logic
+            if (m_pApplicationInfoHash.empty())
+            {
+                m_handlerResolver.ResetHostingModel();
+            }
         }
 
-        context.pstrPath = pszApplicationId;
+        // If we receive a request at this point.
+        // OutOfProcess: we will create a new application with new configuration
+        // InProcess: the request would have to be rejected, as we are about to call g_HttpServer->RecycleProcess
+        // on the worker proocess
 
-        // Keep track of the preview count of applications to know whether there are applications to delete
-        dwPreviousCounter = m_pApplicationInfoHash->Count();
-
-        // We don't want to hold the application manager lock for long time as it will block all incoming requests
-        // Don't call application shutdown inside the lock
-        m_pApplicationInfoHash->Apply(APPLICATION_INFO_HASH::ReferenceCopyToTable, static_cast<PVOID>(table));
-        DBG_ASSERT(dwPreviousCounter == table->Count());
-
-        // Removed the applications which are impacted by the configurtion change
-        m_pApplicationInfoHash->DeleteIf(FindConfigChangedApplication, (PVOID)&context);
-    }
-
-    // If we receive a request at this point.
-    // OutOfProcess: we will create a new application with new configuration
-    // InProcess: the request would have to be rejected, as we are about to call g_HttpServer->RecycleProcess
-    // on the worker proocess
-    if (!context.MultiSz.IsEmpty())
-    {
-        PCWSTR path = context.MultiSz.First();
-        // Iterate through each of the paths that were shut down,
-        // calling RecycleApplication on each of them.
-        while (path != NULL)
+        if (!applicationsToRecycle.empty())
         {
-            APPLICATION_INFO* pRecord;
+            for (auto& application : applicationsToRecycle)
+            {
+                try
+                {
+                    application->ShutDownApplication(/* fServerInitiated */ false);
+                }
+                catch (...)
+                {
+                    LOG_ERRORF("Failed to stop application %S", application->QueryApplicationInfoKey().c_str());
+                    OBSERVE_CAUGHT_EXCEPTION();
 
-            // Application got recycled. Log an event
-            EventLog::Info(
-                    ASPNETCORE_EVENT_RECYCLE_CONFIGURATION,
-                    ASPNETCORE_EVENT_RECYCLE_CONFIGURATION_MSG,
-                    path);
-
-            table->FindKey(path, &pRecord);
-            DBG_ASSERT(pRecord != NULL);
-
-            // RecycleApplication is called on a separate thread.
-            pRecord->RecycleApplication();
-            pRecord->DereferenceApplicationInfo();
-            path = context.MultiSz.Next(path);
+                    // Failed to recycle an application. Log an event
+                    EventLog::Error(
+                        ASPNETCORE_EVENT_RECYCLE_APP_FAILURE,
+                        ASPNETCORE_EVENT_RECYCLE_FAILURE_CONFIGURATION_MSG,
+                        pszApplicationId);
+                    // Need to recycle the process as we cannot recycle the application
+                    if (!g_fRecycleProcessCalled)
+                    {
+                        g_fRecycleProcessCalled = TRUE;
+                        m_pHttpServer.RecycleProcess(L"AspNetCore Recycle Process on Demand Due Application Recycle Error");
+                    }
+                }
+            }
         }
     }
+    CATCH_RETURN();
 
-Finished:
-    if (table != NULL)
-    {
-        table->Clear();
-        delete table;
-    }
-
-    if (FAILED(hr))
-    {
-        // Failed to recycle an application. Log an event
-        EventLog::Error(
-                ASPNETCORE_EVENT_RECYCLE_APP_FAILURE,
-                ASPNETCORE_EVENT_RECYCLE_FAILURE_CONFIGURATION_MSG,
-                pszApplicationId);
-        // Need to recycle the process as we cannot recycle the application
-        if (!g_fRecycleProcessCalled)
-        {
-            g_fRecycleProcessCalled = TRUE;
-            m_pHttpServer.RecycleProcess(L"AspNetCore Recycle Process on Demand Due Application Recycle Error");
-        }
-    }
-
-    return hr;
+    return S_OK;
 }
 
 //
@@ -256,34 +176,12 @@ APPLICATION_MANAGER::ShutDown()
     // However, it is possible to receive multiple OnGlobalStopListening events
     // Protect against this by checking if we already shut down.
     g_fInShutdown = TRUE;
-    if (m_pApplicationInfoHash != NULL)
+
+    // During shutdown we lock until we delete the application
+    SRWExclusiveLock lock(m_srwLock);
+    for (auto &pair : m_pApplicationInfoHash)
     {
-        DBG_ASSERT(m_pApplicationInfoHash);
-
-        // During shutdown we lock until we delete the application
-        SRWExclusiveLock lock(m_srwLock);
-
-        // Call shutdown on each application in the application manager
-        m_pApplicationInfoHash->Apply(ShutdownApplication, NULL);
-        m_pApplicationInfoHash->Clear();
-        delete m_pApplicationInfoHash;
-        m_pApplicationInfoHash = NULL;
+        pair.second->ShutDownApplication(/* fServerInitiated */ true);
+        pair.second = nullptr;
     }
-}
-
-//
-// Calls shutdown on each application. ApplicationManager's lock is held for duration of
-// each shutdown call, guaranteeing another application cannot be created.
-//
-// static
-VOID
-APPLICATION_MANAGER::ShutdownApplication(
-    _In_ APPLICATION_INFO *     pEntry,
-    _In_ PVOID                  pvContext
-)
-{
-    UNREFERENCED_PARAMETER(pvContext);
-    DBG_ASSERT(pEntry != NULL);
-
-    pEntry->ShutDownApplication();
 }

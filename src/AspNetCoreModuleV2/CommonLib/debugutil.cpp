@@ -14,7 +14,6 @@
 #include "atlbase.h"
 #include "config_utility.h"
 
-inline HANDLE g_hStandardOutput = INVALID_HANDLE_VALUE;
 inline HANDLE g_logFile = INVALID_HANDLE_VALUE;
 inline HMODULE g_hModule;
 inline SRWLOCK g_logFileLock;
@@ -65,7 +64,7 @@ void SetDebugFlags(const std::wstring &debugValue)
 {
     try
     {
-        if (!debugValue.empty())
+        if (!debugValue.empty() && debugValue.find_first_not_of(L"0123456789") == std::wstring::npos)
         {
             const auto value = std::stoi(debugValue);
 
@@ -149,7 +148,6 @@ VOID
 DebugInitialize(HMODULE hModule)
 {
     g_hModule = hModule;
-    g_hStandardOutput = GetStdHandle(STD_OUTPUT_HANDLE);
 
     HKEY hKey;
     InitializeSRWLock(&g_logFileLock);
@@ -290,10 +288,10 @@ DebugPrint(
 
         OutputDebugStringA( strOutput.QueryStr() );
         DWORD nBytesWritten = 0;
-
         if (IsEnabled(ASPNETCORE_DEBUG_FLAG_CONSOLE))
         {
-            WriteFile(g_hStandardOutput, strOutput.QueryStr(), strOutput.QueryCB(), &nBytesWritten, nullptr);
+            auto outputHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+            WriteFile(outputHandle, strOutput.QueryStr(), strOutput.QueryCB(), &nBytesWritten, nullptr);
         }
 
         if (g_logFile != INVALID_HANDLE_VALUE)

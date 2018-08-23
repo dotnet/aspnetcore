@@ -4,7 +4,7 @@
 #pragma once
 
 #include <Windows.h>
-#include <ntassert.h>
+#include "ntassert.h"
 
 struct InvalidHandleTraits
 {
@@ -18,6 +18,13 @@ struct NullHandleTraits
     using HandleType = HANDLE;
     static constexpr HANDLE DefaultHandle = NULL;
     static void Close(HANDLE handle) { CloseHandle(handle); }
+};
+
+struct FindFileHandleTraits
+{
+    using HandleType = HANDLE;
+    static const HANDLE DefaultHandle;
+    static void Close(HANDLE handle) { FindClose(handle); }
 };
 
 struct ModuleHandleTraits
@@ -51,6 +58,13 @@ public:
     }
 
     HandleType* operator&() { return &m_handle; }
+
+    HandleType release() noexcept
+    {
+        auto value = m_handle;
+        m_handle = traits::DefaultHandle;
+        return value;
+    }
 
 private:
     HandleType m_handle;

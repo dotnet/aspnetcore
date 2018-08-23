@@ -6,6 +6,7 @@
 #include "applicationinfo.h"
 #include "multisz.h"
 #include "exceptions.h"
+#include <unordered_map>
 
 #define DEFAULT_HASH_BUCKETS 17
 
@@ -15,11 +16,6 @@
 // Should always call GetInstance to get the object instance
 //
 
-struct CONFIG_CHANGE_CONTEXT
-{
-    PCWSTR   pstrPath;
-    MULTISZ  MultiSz;
-};
 
 class APPLICATION_MANAGER
 {
@@ -35,9 +31,7 @@ public:
 
     static
     VOID
-    Cleanup(
-        VOID
-    )
+    Cleanup()
     {
         if(sm_pApplicationManager != NULL)
         {
@@ -46,24 +40,10 @@ public:
         }
     }
 
-    static
-    BOOL
-    FindConfigChangedApplication(
-        _In_ APPLICATION_INFO *     pEntry,
-        _In_ PVOID                  pvContext
-    );
-
-    static
-    VOID
-    ShutdownApplication(
-        _In_ APPLICATION_INFO *     pEntry,
-        _In_ PVOID                  pvContext
-    );
-
     HRESULT
     GetOrCreateApplicationInfo(
-        _In_ IHttpContext*         pHttpContext,
-        _Out_ APPLICATION_INFO **  ppApplicationInfo
+        _In_ IHttpContext& pHttpContext,
+        _Out_ std::shared_ptr<APPLICATION_INFO>&  ppApplicationInfo
     );
 
     HRESULT
@@ -74,40 +54,13 @@ public:
     VOID
     ShutDown();
 
-    ~APPLICATION_MANAGER()
-    {
-
-        if(m_pApplicationInfoHash != NULL)
-        {
-            m_pApplicationInfoHash->Clear();
-            delete m_pApplicationInfoHash;
-            m_pApplicationInfoHash = NULL;
-        }
-    }
-
     static HRESULT StaticInitialize(HMODULE hModule, IHttpServer& pHttpServer)
     {
         assert(!sm_pApplicationManager);
         sm_pApplicationManager = new APPLICATION_MANAGER(hModule, pHttpServer);
-        RETURN_IF_FAILED(sm_pApplicationManager->Initialize());
-
-        APPLICATION_INFO::StaticInitialize();
         return S_OK;
     }
 
-    HRESULT Initialize()
-    {
-        if(m_pApplicationInfoHash == NULL)
-        {
-            try
-            {
-                m_pApplicationInfoHash = new APPLICATION_INFO_HASH();
-            }
-            CATCH_RETURN();
-            RETURN_IF_FAILED(m_pApplicationInfoHash->Initialize(DEFAULT_HASH_BUCKETS));
-        }
-        return S_OK;
-    }
 
 private:
     APPLICATION_MANAGER(HMODULE hModule, IHttpServer& pHttpServer) :
@@ -119,7 +72,7 @@ private:
         InitializeSRWLock(&m_srwLock);
     }
 
-    APPLICATION_INFO_HASH      *m_pApplicationInfoHash;
+    std::unordered_map<std::wstring, std::shared_ptr<APPLICATION_INFO>>      m_pApplicationInfoHash;
     static APPLICATION_MANAGER *sm_pApplicationManager;
     SRWLOCK                     m_srwLock {};
     BOOL                        m_fDebugInitialize;

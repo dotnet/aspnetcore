@@ -165,34 +165,3 @@ FILE_UTILITY::EnsureDirectoryPathExist(
 Finished:
     return hr;
 }
-
-BOOL
-FILE_UTILITY::CheckIfFileExists(
-    _In_ PCWSTR pszFilePath
-)
-{
-    HANDLE              hFileHandle = INVALID_HANDLE_VALUE;
-    SECURITY_ATTRIBUTES saAttr;
-    BOOL                fFileExists = FALSE;
-
-    saAttr.nLength = sizeof(SECURITY_ATTRIBUTES);
-    saAttr.bInheritHandle = TRUE;
-    saAttr.lpSecurityDescriptor = NULL;
-
-    hFileHandle = CreateFile(pszFilePath,
-        GENERIC_READ,
-        FILE_SHARE_READ,
-        &saAttr,
-        OPEN_EXISTING,
-        FILE_ATTRIBUTE_NORMAL,
-        NULL);
-
-    fFileExists = hFileHandle != INVALID_HANDLE_VALUE || GetLastError() == ERROR_SHARING_VIOLATION;
-
-    if (fFileExists)
-    {
-        CloseHandle(hFileHandle);
-    }
-
-    return fFileExists;
-}

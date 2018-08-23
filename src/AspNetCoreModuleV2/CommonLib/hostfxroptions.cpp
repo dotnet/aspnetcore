@@ -6,82 +6,48 @@
 #include "hostfxr_utility.h"
 #include "debugutil.h"
 #include "exceptions.h"
+#include "EventLog.h"
 
 HRESULT HOSTFXR_OPTIONS::Create(
-        _In_ PCWSTR         pcwzExeLocation,
+        _In_ PCWSTR         pcwzDotnetExePath,
         _In_ PCWSTR         pcwzProcessPath,
         _In_ PCWSTR         pcwzApplicationPhysicalPath,
         _In_ PCWSTR         pcwzArguments,
         _Out_ std::unique_ptr<HOSTFXR_OPTIONS>& ppWrapper)
 {
-    STRU struHostFxrDllLocation;
-    STRU struExeAbsolutePath;
-    STRU struExeLocation;
-    BSTR* pwzArgv;
-    DWORD dwArgCount;
+    std::filesystem::path knownDotnetLocation;
 
-    if (pcwzExeLocation != NULL)
+    if (pcwzDotnetExePath != nullptr)
     {
-        RETURN_IF_FAILED(struExeLocation.Copy(pcwzExeLocation));
+        knownDotnetLocation = pcwzDotnetExePath;
     }
+    try
+    {
+        std::filesystem::path hostFxrDllPath;
+        std::vector<std::wstring> arguments;
+        HOSTFXR_UTILITY::GetHostFxrParameters(
+                pcwzProcessPath,
+                pcwzApplicationPhysicalPath,
+                pcwzArguments,
+                hostFxrDllPath,
+                knownDotnetLocation,
+                arguments);
 
-    // If the exe was not provided by the shim, reobtain the hostfxr parameters (which finds dotnet).
-    if (struExeLocation.IsEmpty())
-    {
-        RETURN_IF_FAILED(HOSTFXR_UTILITY::GetHostFxrParameters(
-            pcwzProcessPath,
-            pcwzApplicationPhysicalPath,
-            pcwzArguments,
-            &struHostFxrDllLocation,
-            &struExeAbsolutePath,
-            &dwArgCount,
-            &pwzArgv));
+        ppWrapper = std::make_unique<HOSTFXR_OPTIONS>(knownDotnetLocation, hostFxrDllPath, arguments);
     }
-    else if (HOSTFXR_UTILITY::IsDotnetExecutable(struExeLocation.QueryStr()))
+    catch (HOSTFXR_UTILITY::StartupParametersResolutionException &resolutionException)
     {
-        RETURN_IF_FAILED(HOSTFXR_UTILITY::ParseHostfxrArguments(
-            pcwzArguments,
-            pcwzExeLocation,
-            pcwzApplicationPhysicalPath,
-            &dwArgCount,
-            &pwzArgv));
-    }
-    else
-    {
-        RETURN_IF_FAILED(HOSTFXR_UTILITY::GetStandaloneHostfxrParameters(
-            pcwzExeLocation,
-            pcwzApplicationPhysicalPath,
-            pcwzArguments,
-            &struHostFxrDllLocation,
-            &dwArgCount,
-            &pwzArgv));
-    }
+        OBSERVE_CAUGHT_EXCEPTION();
 
-    ppWrapper = std::make_unique<HOSTFXR_OPTIONS>();
-    RETURN_IF_FAILED(ppWrapper->Populate(struHostFxrDllLocation.QueryStr(), struExeAbsolutePath.QueryStr(), dwArgCount, pwzArgv));
+        EventLog::Error(
+            ASPNETCORE_EVENT_INPROCESS_START_ERROR,
+            ASPNETCORE_EVENT_INPROCESS_START_ERROR_MSG,
+            pcwzApplicationPhysicalPath,
+            resolutionException.get_message().c_str());
+
+        return E_FAIL;
+    }
+    CATCH_RETURN();
 
     return S_OK;
-}
-
-
-HRESULT HOSTFXR_OPTIONS::Populate(PCWSTR hostFxrLocation, PCWSTR struExeLocation, DWORD argc, BSTR argv[])
-{
-    HRESULT hr;
-
-    m_argc = argc;
-    m_argv = argv;
-
-    if (FAILED(hr = m_hostFxrLocation.Copy(hostFxrLocation)))
-    {
-        goto Finished;
-    }
-
-    if (FAILED(hr = m_exeLocation.Copy(struExeLocation)))
-    {
-        goto Finished;
-    }
-
-    Finished:
-
-    return hr;
 }
