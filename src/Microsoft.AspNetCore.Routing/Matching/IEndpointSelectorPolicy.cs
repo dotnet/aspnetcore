@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Http;
+using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Routing.Matching
 {
@@ -19,12 +20,21 @@ namespace Microsoft.AspNetCore.Routing.Matching
         /// <param name="httpContext">
         /// The <see cref="HttpContext"/> associated with the current request.
         /// </param>
+        /// <param name="feature">
+        /// The <see cref="EndpointFeature"/> associated with the current request.
+        /// </param>
         /// <param name="candidates">The <see cref="CandidateSet"/>.</param>
         /// <remarks>
+        /// <para>
         /// Implementations of <see cref="IEndpointSelectorPolicy"/> should implement this method
         /// and filter the set of candidates in the <paramref name="candidates"/> by setting
         /// <see cref="CandidateState.IsValidCandidate"/> to <c>false</c> where desired.
+        /// </para>
+        /// <para>
+        /// To signal an error condition, set <see cref="EndpointFeature.Endpoint"/> to an
+        /// <see cref="Endpoint"/> value that will produce the desired error when executed.
+        /// </para>
         /// </remarks>
-        void Apply(HttpContext httpContext, CandidateSet candidates);
+        Task ApplyAsync(HttpContext httpContext, EndpointFeature feature, CandidateSet candidates);
     }
 }
