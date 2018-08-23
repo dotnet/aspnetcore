@@ -596,6 +596,54 @@ namespace Microsoft.AspNetCore.Routing.Matching
         }
 
         [Fact]
+        public void BuildDfaTree_WithPolicies_AndBranches_NonRouteEndpoint()
+        {
+            // Arrange
+            var builder = CreateDfaMatcherBuilder(new TestNonRoutePatternMatcherPolicy());
+
+            var endpoint1 = CreateEndpoint("/a", metadata: new object[] { new TestMetadata1(0), });
+            builder.AddEndpoint(endpoint1);
+
+            var endpoint2 = CreateEndpoint("/a", metadata: new object[] { new TestMetadata1(1), });
+            builder.AddEndpoint(endpoint2);
+
+            var endpoint3 = CreateEndpoint("/a", metadata: new object[] { new TestMetadata1(1), });
+            builder.AddEndpoint(endpoint3);
+
+            // Act
+            var root = builder.BuildDfaTree();
+
+            // Assert
+            Assert.Empty(root.Matches);
+            Assert.Null(root.Parameters);
+
+            var next = Assert.Single(root.Literals);
+            Assert.Equal("a", next.Key);
+
+            var a = next.Value;
+            Assert.Empty(a.Matches);
+            Assert.IsType<TestNonRoutePatternMatcherPolicy>(a.NodeBuilder);
+            Assert.Collection(
+                a.PolicyEdges.OrderBy(e => e.Key),
+                e => Assert.Equal(0, e.Key),
+                e => Assert.Equal(1, e.Key),
+                e => Assert.Equal(int.MaxValue, e.Key));
+
+            var test1_0 = a.PolicyEdges[0];
+            Assert.Equal(new[] { endpoint1, }, test1_0.Matches);
+            Assert.Null(test1_0.NodeBuilder);
+            Assert.Empty(test1_0.PolicyEdges);
+
+            var test1_1 = a.PolicyEdges[1];
+            Assert.Equal(new[] { endpoint2, endpoint3, }, test1_1.Matches);
+            Assert.Null(test1_1.NodeBuilder);
+            Assert.Empty(test1_1.PolicyEdges);
+
+            var nonRouteEndpoint = a.PolicyEdges[int.MaxValue];
+            Assert.Equal("MaxValueEndpoint", Assert.Single(nonRouteEndpoint.Matches).DisplayName);
+        }
+
+        [Fact]
         public void BuildDfaTree_WithPolicies_AndBranches_BothPoliciesSkipped()
         {
             // Arrange
@@ -966,6 +1014,36 @@ namespace Microsoft.AspNetCore.Routing.Matching
                     .GroupBy(e => e.Metadata.GetMetadata<TestMetadata2>().State)
                     .Select(g => new PolicyNodeEdge(g.Key, g.ToArray()))
                     .ToArray();
+            }
+        }
+
+        private class TestNonRoutePatternMatcherPolicy : MatcherPolicy, IEndpointComparerPolicy, INodeBuilderPolicy
+        {
+            public override int Order => 100;
+
+            public IComparer<Endpoint> Comparer => EndpointMetadataComparer<TestMetadata1>.Default;
+
+            public bool AppliesToNode(IReadOnlyList<Endpoint> endpoints)
+            {
+                return endpoints.Any(e => e.Metadata.GetMetadata<TestMetadata1>() != null);
+            }
+
+            public PolicyJumpTable BuildJumpTable(int exitDestination, IReadOnlyList<PolicyJumpTableEdge> edges)
+            {
+                throw new NotImplementedException();
+            }
+
+            public IReadOnlyList<PolicyNodeEdge> GetEdges(IReadOnlyList<Endpoint> endpoints)
+            {
+                var edges = endpoints
+                    .GroupBy(e => e.Metadata.GetMetadata<TestMetadata1>().State)
+                    .Select(g => new PolicyNodeEdge(g.Key, g.ToArray()))
+                    .ToList();
+
+                var maxValueEndpoint = new Endpoint(TestConstants.EmptyRequestDelegate, EndpointMetadataCollection.Empty, "MaxValueEndpoint");
+                edges.Add(new PolicyNodeEdge(int.MaxValue, new[] { maxValueEndpoint }));
+
+                return edges;
             }
         }
     }

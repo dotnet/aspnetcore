@@ -1,6 +1,8 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.AspNetCore.Http;
+
 namespace Microsoft.AspNetCore.Routing.Matching
 {
     /// <summary>
@@ -8,7 +10,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
     /// </summary>
     public struct CandidateState
     {
-        internal CandidateState(RouteEndpoint endpoint, int score)
+        internal CandidateState(Endpoint endpoint, int score)
         {
             Endpoint = endpoint;
             Score = score;
@@ -20,7 +22,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         /// <summary>
         /// Gets the <see cref="Http.Endpoint"/>.
         /// </summary>
-        public RouteEndpoint Endpoint { get; }
+        public Endpoint Endpoint { get; }
 
         /// <summary>
         /// Gets the score of the <see cref="Http.Endpoint"/> within the current

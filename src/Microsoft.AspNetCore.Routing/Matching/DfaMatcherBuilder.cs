@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Patterns;
 
 namespace Microsoft.AspNetCore.Routing.Matching
@@ -16,7 +17,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         private readonly EndpointSelector _selector;
         private readonly MatcherPolicy[] _policies;
         private readonly INodeBuilderPolicy[] _nodeBuilders;
-        private readonly RouteEndpointComparer _comparer;
+        private readonly EndpointComparer _comparer;
 
         public DfaMatcherBuilder(
             ParameterPolicyFactory parameterPolicyFactory,
@@ -29,7 +30,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             // Taking care to use _policies, which has been sorted.
             _nodeBuilders = _policies.OfType<INodeBuilderPolicy>().ToArray();
-            _comparer = new RouteEndpointComparer(_policies.OfType<IEndpointComparerPolicy>().ToArray());
+            _comparer = new EndpointComparer(_policies.OfType<IEndpointComparerPolicy>().ToArray());
         }
 
         public override void AddEndpoint(RouteEndpoint endpoint)
@@ -337,7 +338,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
         // Builds an array of candidates for a node, assigns a 'score' for each
         // endpoint.
-        internal Candidate[] CreateCandidates(IReadOnlyList<RouteEndpoint> endpoints)
+        internal Candidate[] CreateCandidates(IReadOnlyList<Endpoint> endpoints)
         {
             if (endpoints.Count == 0)
             {
@@ -367,76 +368,80 @@ namespace Microsoft.AspNetCore.Routing.Matching
         }
 
         // internal for tests
-        internal Candidate CreateCandidate(RouteEndpoint endpoint, int score)
+        internal Candidate CreateCandidate(Endpoint endpoint, int score)
         {
             var assignments = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
             var slots = new List<KeyValuePair<string, object>>();
             var captures = new List<(string parameterName, int segmentIndex, int slotIndex)>();
             (string parameterName, int segmentIndex, int slotIndex) catchAll = default;
 
-            foreach (var kvp in endpoint.RoutePattern.Defaults)
-            {
-                assignments.Add(kvp.Key, assignments.Count);
-                slots.Add(kvp);
-            }
-
-            for (var i = 0; i < endpoint.RoutePattern.PathSegments.Count; i++)
-            {
-                var segment = endpoint.RoutePattern.PathSegments[i];
-                if (!segment.IsSimple)
-                {
-                    continue;
-                }
-
-                var parameterPart = segment.Parts[0] as RoutePatternParameterPart;
-                if (parameterPart == null)
-                {
-                    continue;
-                }
-
-                if (!assignments.TryGetValue(parameterPart.Name, out var slotIndex))
-                {
-                    slotIndex = assignments.Count;
-                    assignments.Add(parameterPart.Name, slotIndex);
-
-                    var hasDefaultValue = parameterPart.Default != null || parameterPart.IsCatchAll;
-                    slots.Add(hasDefaultValue ? new KeyValuePair<string, object>(parameterPart.Name, parameterPart.Default) : default);
-                }
-
-                if (parameterPart.IsCatchAll)
-                {
-                    catchAll = (parameterPart.Name, i, slotIndex);
-                }
-                else
-                {
-                    captures.Add((parameterPart.Name, i, slotIndex));
-                }
-            }
-
             var complexSegments = new List<(RoutePatternPathSegment pathSegment, int segmentIndex)>();
-            for (var i = 0; i < endpoint.RoutePattern.PathSegments.Count; i++)
+            var constraints = new List<KeyValuePair<string, IRouteConstraint>>();
+
+            if (endpoint is RouteEndpoint routeEndpoint)
             {
-                var segment = endpoint.RoutePattern.PathSegments[i];
-                if (segment.IsSimple)
+                foreach (var kvp in routeEndpoint.RoutePattern.Defaults)
                 {
-                    continue;
+                    assignments.Add(kvp.Key, assignments.Count);
+                    slots.Add(kvp);
                 }
 
-                complexSegments.Add((segment, i));
-            }
-
-            var constraints = new List<KeyValuePair<string, IRouteConstraint>>();
-            foreach (var kvp in endpoint.RoutePattern.ParameterPolicies)
-            {
-                var parameter = endpoint.RoutePattern.GetParameter(kvp.Key); // may be null, that's ok
-                var parameterPolicyReferences = kvp.Value;
-                for (var i = 0; i < parameterPolicyReferences.Count; i++)
+                for (var i = 0; i < routeEndpoint.RoutePattern.PathSegments.Count; i++)
                 {
-                    var reference = parameterPolicyReferences[i];
-                    var parameterPolicy = _parameterPolicyFactory.Create(parameter, reference);
-                    if (parameterPolicy is IRouteConstraint routeConstraint)
+                    var segment = routeEndpoint.RoutePattern.PathSegments[i];
+                    if (!segment.IsSimple)
                     {
-                        constraints.Add(new KeyValuePair<string, IRouteConstraint>(kvp.Key, routeConstraint));
+                        continue;
+                    }
+
+                    var parameterPart = segment.Parts[0] as RoutePatternParameterPart;
+                    if (parameterPart == null)
+                    {
+                        continue;
+                    }
+
+                    if (!assignments.TryGetValue(parameterPart.Name, out var slotIndex))
+                    {
+                        slotIndex = assignments.Count;
+                        assignments.Add(parameterPart.Name, slotIndex);
+
+                        var hasDefaultValue = parameterPart.Default != null || parameterPart.IsCatchAll;
+                        slots.Add(hasDefaultValue ? new KeyValuePair<string, object>(parameterPart.Name, parameterPart.Default) : default);
+                    }
+
+                    if (parameterPart.IsCatchAll)
+                    {
+                        catchAll = (parameterPart.Name, i, slotIndex);
+                    }
+                    else
+                    {
+                        captures.Add((parameterPart.Name, i, slotIndex));
+                    }
+                }
+
+                for (var i = 0; i < routeEndpoint.RoutePattern.PathSegments.Count; i++)
+                {
+                    var segment = routeEndpoint.RoutePattern.PathSegments[i];
+                    if (segment.IsSimple)
+                    {
+                        continue;
+                    }
+
+                    complexSegments.Add((segment, i));
+                }
+
+                foreach (var kvp in routeEndpoint.RoutePattern.ParameterPolicies)
+                {
+                    var parameter = routeEndpoint.RoutePattern.GetParameter(kvp.Key); // may be null, that's ok
+                    var parameterPolicyReferences = kvp.Value;
+                    for (var i = 0; i < parameterPolicyReferences.Count; i++)
+                    {
+                        var reference = parameterPolicyReferences[i];
+                        var parameterPolicy = _parameterPolicyFactory.Create(parameter, reference);
+                        if (parameterPolicy is IRouteConstraint routeConstraint)
+                        {
+                            constraints.Add(new KeyValuePair<string, IRouteConstraint>(kvp.Key, routeConstraint));
+                        }
                     }
                 }
             }
@@ -549,8 +554,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                             Label = parent.Label + " " + edge.State.ToString(),
                         };
 
-                        // TODO: https://github.com/aspnet/Routing/issues/648
-                        next.Matches.AddRange(edge.Endpoints.Cast<RouteEndpoint>().ToArray());
+                        next.Matches.AddRange(edge.Endpoints);
                         nextWork.Add(next);
 
                         parent.PolicyEdges.Add(edge.State, next);

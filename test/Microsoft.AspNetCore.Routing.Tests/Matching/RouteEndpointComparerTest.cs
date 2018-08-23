@@ -228,9 +228,9 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 "test: " + template);
         }
 
-        private static RouteEndpointComparer CreateComparer(params IEndpointComparerPolicy[] policies)
+        private static EndpointComparer CreateComparer(params IEndpointComparerPolicy[] policies)
         {
-            return new RouteEndpointComparer(policies);
+            return new EndpointComparer(policies);
         }
 
         private class TestMetadata1
