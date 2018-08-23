@@ -139,7 +139,7 @@
       Command="$(ESRPClientToolPath) sign -c $(ESRPClientConfigFile) -a $(AuthJson) -p $(PolicyJson) -i $(InputJson) -o $(OutputJson) -l progress -f $(LogOutputDir)sign-packages.log"
       Condition="'$(SignType)'=='real' AND '$(LocalBuild)'!='true'" />
 
-    <Copy Condition="'$(SignType)'!='real' OR '$(LocalBuild)'=='true'"
+    <StupidCopy Condition="'$(SignType)'!='real' OR '$(LocalBuild)'=='true'"
       SourceFiles="@(_UnsignedNupkgs)"
       DestinationFolder="$(PackagesOutputPath)" />
   </Target>
@@ -169,7 +169,7 @@
       Command="$(ESRPClientToolPath) sign -c $(ESRPClientConfigFile) -a $(AuthJson) -p $(PolicyJson) -i $(InputJson) -o $(OutputJson) -l progress -f $(LogOutputDir)sign-java.log"
       Condition="'$(SignType)'=='real' AND '$(LocalBuild)'!='true'" />
 
-    <Copy Condition="'$(SignType)'!='real' OR '$(LocalBuild)'=='true'"
+    <StupidCopy Condition="'$(SignType)'!='real' OR '$(LocalBuild)'=='true'"
       SourceFiles="@(_UnsignedJars)"
       DestinationFolder="$(PackagesOutputPath)" />
   </Target>
@@ -247,7 +247,7 @@
 
     <MakeDir Directories="$(SignedVSIXPath)%(VSIXToSign.FileName)\" />
 
-    <Copy Condition="'@(VSIXToSign)' != ''"
+    <StupidCopy Condition="'@(VSIXToSign)' != ''"
       SourceFiles="%(VSIXToSign.FullPath);$(DepsDirectory)build\%(VSIXToSign.FileName).json"
       DestinationFolder="$(SignedVSIXPath)%(VSIXToSign.FileName)\" />
   </Target>
@@ -276,7 +276,7 @@
     <Message Text="Executing code sign job $(JobName).%0A  @(_FilesPath->Count()) files%0A  @(_FilesToSign->Distinct()->Count()) unique files" Importance="High" />
     <Message Text="Go grab a coffee. This is going to take a while..." Importance="High" Condition="@(_FilesToSign->Distinct()->Count()) > 300" />
 
-    <Copy SourceFiles="@(_FilesToSign->Distinct()->'%(OriginalFilePath)')" DestinationFiles="%(_FilesToSign.Identity)" />
+    <StupidCopy SourceFiles="@(_FilesToSign->Distinct()->'%(OriginalFilePath)')" DestinationFiles="%(_FilesToSign.Identity)" />
 
     <Microsoft.Build.OOB.ESRP.CreateSignManifests
        ApplicationId="$(ESRPApplicationId)"
@@ -296,9 +296,9 @@
 
     <Message Text="Finished code sign job $(JobName)" Importance="High" />
 
-    <Copy SourceFiles="@(_FilesToSign)" DestinationFolder="$(SignOutputDir)" Condition="'$(LocalBuild)'=='true'" />
+    <StupidCopy SourceFiles="@(_FilesToSign)" DestinationFolder="$(SignOutputDir)" Condition="'$(LocalBuild)'=='true'" />
 
-    <Copy SourceFiles="$(SignOutputDir)%(_FilesToSign.FileName)%(Extension)" DestinationFiles="%(OriginalFilePath)" />
+    <StupidCopy SourceFiles="$(SignOutputDir)%(_FilesToSign.FileName)%(Extension)" DestinationFiles="%(OriginalFilePath)" />
   </Target>
 
   <!-- Repacks aspnetcore shared framework -->
