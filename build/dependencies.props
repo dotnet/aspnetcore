@@ -3,7 +3,8 @@
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
   <PropertyGroup Label="Package Versions">
-    <ESRPClientVersion>1.1.0</ESRPClientVersion>
+    <ESRPClientVersion>1.1.1</ESRPClientVersion>
+    <SignCheckVersion>1.0.105</SignCheckVersion>
   </PropertyGroup>
   <Import Project="$(DotNetPackageVersionPropsPath)" Condition=" '$(DotNetPackageVersionPropsPath)' != '' " />
 </Project>

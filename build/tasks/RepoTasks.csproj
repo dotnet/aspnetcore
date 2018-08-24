@@ -11,6 +11,9 @@
 
     <!-- See https://aka.ms/esrpclient -->
     <PackageReference Include="ESRPClient" Version="$(ESRPClientVersion)" />
+
+    <!-- See https://devdiv.visualstudio.com/DevDiv/_packaging?feed=WebTools&package=SignChec&protocolType=NuGet&_a=package  -->
+    <PackageReference Include="SignCheck" Version="$(SignCheckVersion)" />
    </ItemGroup>
 
   <Import Project="$(RepoTasksSdkPath)\Sdk.targets" Condition="'$(RepoTasksSdkPath)' != '' "/>

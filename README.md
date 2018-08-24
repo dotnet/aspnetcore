@@ -7,17 +7,20 @@ To run this repo, you need the following:
 * Install the SSL/PKITA certificates for the ESRP client (see the AspNetCoreCerts KeyVault and https://aka.ms/esrpclient for details).
 * Configure the ESRP package feed
 
+More details
+
+* [SignCheck](https://devdiv.visualstudio.com/DevDiv/DevDiv%20Team/_git/WebTools-InternalTools?path=%2FSignCheck&version=GBmaster)
+
 ### Running locally without code signing
 
 `build /t:LocalBuild`
 
 ### Running locally with code signing
-* Launch a shell running under redmond\fxsign (https://microsoft.sharepoint.com/teams/fxsign/SitePages/FxSign-Account.aspx)
-* `build /t:Verify`
+* `build.cmd /p:SignType=real`
 
-### Configure the ESRP package feed
+### Configure the internal package feeds
 
-See https://microsoft.visualstudio.com/Universal%20Store/_packaging?feed=esrp&_a=feed
+This build uses packages from two internal-only feeds: https://microsoft.visualstudio.com/Universal%20Store/_packaging?feed=esrp&_a=feed and https://devdiv.visualstudio.com/DevDiv/_packaging?feed=WebTools&_a=feed.
 
 To consume the NuGet package:
 
@@ -25,11 +28,9 @@ To consume the NuGet package:
 2. Add package source on your machine using the command:
     ```
     nuget.exe sources add -name esrp -source https://microsoft.pkgs.visualstudio.com/_packaging/ESRP/nuget/v3/index.json -username {anything} -password {your PAT}
+    nuget.exe sources add -name webtools -source https://devdiv.pkgs.visualstudio.com/_packaging/WebTools/nuget/v3/index.json -username {anything} -password {your PAT}
     ```
-3. Install/download the package using the command:
-    ```
-    nuget.exe install EsrpClient  -source https://microsoft.pkgs.visualstudio.com/_packaging/ESRP/nuget/v3/index.json
-    ```
+
 More help on feed access is at
 https://docs.microsoft.com/en-us/nuget/reference/extensibility/nuget-exe-credential-providers#using-a-credential-provider-from-an-environment-variable
 
@@ -39,5 +40,6 @@ You can also configure the ESRP package feed access on CI by setting the followi
 
 ```
 $env:NuGetPackageSourceCredentials_esrp="Username=$alias$@microsoft.com;Password=$pat$"
+$env:NuGetPackageSourceCredentials_webtools="Username=$alias$@microsoft.com;Password=$pat$"
 ```
 where `$pat$` is a PAT from https://microsoft.visualstudio.com/_details/security/tokens​​ that has access to the "Packaging" scope.

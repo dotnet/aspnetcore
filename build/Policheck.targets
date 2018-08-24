@@ -8,7 +8,7 @@
   <Target Name="_GetPolicheckSettings">
     <!-- These are terms that appear frequently but are not used offensively e.g. red is a color constant name. -->
     <PropertyGroup>
-      <Exclusions>countries;country;race</Exclusions>
+      <Exclusions>countries;country</Exclusions>
       <!-- Refers to the browser. -->
       <Exclusions>$(Exclusions);Edge</Exclusions>
     </PropertyGroup>
@@ -20,42 +20,43 @@
 
       <!-- List is sorted OrdinalIgnoreCase. Path must be the relative path (non-wildcard) of the file inside the symbols nupkg -->
 
-      <SrcExclusions Include="Angular-CSharp\ClientApp\package.json">
-        <term>ssr</term>
-        <Justification>Refers to server side rendering.</Justification>
+      <SrcExclusions Include="wwwroot\lib\bootstrap\dist\js\bootstrap.bundle.js">
+        <term>kickass</term>
+        <Justification>bootstrap is external code shipping in our templates.</Justification>
       </SrcExclusions>
-      <SrcExclusions Include="
-        src\Microsoft.AspNetCore.TestHost\ResponseStream.cs;
-        src\Microsoft.AspNetCore.Server.IntegrationTesting\Deployers\IISExpressDeployer.cs;
-        src\Microsoft.AspNetCore.Server.IntegrationTesting\Deployers\SelfHostDeployer.cs">
+      <SrcExclusions Include="wwwroot\lib\bootstrap\dist\js\bootstrap.bundle.js">
+        <term>WTF</term>
+        <Justification>bootstrap is external code shipping in our templates.</Justification>
+      </SrcExclusions>
+      <SrcExclusions Include="mscorrc.debug.dll">
         <term>hang</term>
         <Justification>Refers to a stuck process/thread.</Justification>
       </SrcExclusions>
-      <SrcExclusions Include="
-        src\Microsoft.AspNetCore.Mvc.DataAnnotations\Internal\DataAnnotationsMetadataProvider.cs;
-        src\Microsoft.CodeAnalysis.Razor.Workspaces\ProjectSystem\DefaultProjectSnapshotManager.cs">
+      <SrcExclusions Include="wwwroot\lib\jquery\dist\jquery.js;
+        NuGet.Build.Tasks.Pack.xml">
         <term>hanging</term>
         <Justification>Refers to a stuck process/thread.</Justification>
       </SrcExclusions>
-      <SrcExclusions Include="
-        src\Microsoft.AspNetCore.Http.Connections\HttpConnectionManager.cs">
-        <term>hung</term>
-        <Justification>Refers to a stuck process/thread.</Justification>
+      <SrcExclusions Include="wwwroot\lib\jquery\dist\jquery.js">
+        <term>screw</term>
+        <Justification>jquery is external code shipping in our templates.</Justification>
       </SrcExclusions>
-      <SrcExclusions Include="
-        src\EFCore.Specification.Tests\TestModels\ConcurrencyModel\F1Context.cs">
-        <term>ho</term>
-        <Justification>Part of a name</Justification>
+      <SrcExclusions Include="wwwroot\lib\jquery-validation\dist\additional-methods.js">
+        <term>Brazilian</term>
+        <Justification>jquery.validation includes some geopolitical terms to support validating country specific data formats.</Justification>
+      </SrcExclusions>
+      <SrcExclusions Include="wwwroot\lib\jquery-validation\dist\additional-methods.js">
+        <term>nip</term>
+        <Justification>Used here as an acronym for tax ID's in Poland</Justification>
+      </SrcExclusions>
+      <SrcExclusions Include="wwwroot\lib\jquery-validation\dist\additional-methods.min.js">
+        <term>nip</term>
+        <Justification>Used here as an acronym for tax ID's in Poland</Justification>
       </SrcExclusions>
     </ItemGroup>
 
     <ItemGroup>
       <!-- Path must be the relative path (non-wildcard) of the file inside the symbols nupkg -->
-      <FileExclusions Include="
-        src\EFCore.Specification.Tests\TestModels\Northwind\NorthwindData.Objects.cs">
-        <Justification>Northwind database contains too many violations to track them individually.</Justification>
-      </FileExclusions>
-
       <!-- Paths using wildcards must use $(PoliCheckPath) as the base for MSBuild to be happy -->
       <FileExclusions Include="
         $(PoliCheckPath)**\package-lock.json">
@@ -65,13 +66,6 @@
         $(PoliCheckPath)**\System.Text.Encoding.CodePages.dll;
         $(PoliCheckPath)**\System.Text.Encodings.Web.dll;">
         <Justification>These BCL libraries includes geopolitical terms to support localized code pages.</Justification>
-      </FileExclusions>
-
-      <FileExclusions Include="
-        $(PoliCheckPath)**\bootstrap\dist\js\bootstrap.bundle.js;
-        $(PoliCheckPath)**\jquery\dist\jquery.js;
-        $(PoliCheckPath)**\jquery-validation\dist\additional-methods*.js">
-        <Justification>Third party code shipping in our packages</Justification>
       </FileExclusions>
 
       <FileExclusions Include="

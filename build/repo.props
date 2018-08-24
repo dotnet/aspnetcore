@@ -8,14 +8,16 @@
     <ToolsPath>$(RepositoryRoot)tools\</ToolsPath>
     <ZipExePath>$(ToolsPath)7Za.exe</ZipExePath>
     <CodeSignProjectDirectory>$(RepositoryRoot)src\CodeSign\</CodeSignProjectDirectory>
+    <SignCheckExclusionFile>$(MSBuildThisFileDirectory)signcheck.exclusions.txt</SignCheckExclusionFile>
     <GenerateSignRequest>false</GenerateSignRequest>
 
     <!-- Output -->
-    <PackagesOutputPath>$(ArtifactsDir)Signed\Packages\</PackagesOutputPath>
-    <SharedFxOutputPath>$(ArtifactsDir)Signed\SharedFx\</SharedFxOutputPath>
-    <SignedVSIXPath>$(ArtifactsDir)Signed\VSIX\</SignedVSIXPath>
-    <SignedMPacksOutputPath>$(ArtifactsDir)Signed\MPacks\</SignedMPacksOutputPath>
-    <SignedOobArchivePath>$(ArtifactsDir)Signed\OobArchives\</SignedOobArchivePath>
+    <SignedOutputPath>$(ArtifactsDir)Signed\</SignedOutputPath>
+    <PackagesOutputPath>$(SignedOutputPath)Packages\</PackagesOutputPath>
+    <SharedFxOutputPath>$(SignedOutputPath)SharedFx\</SharedFxOutputPath>
+    <SignedVSIXPath>$(SignedOutputPath)VSIX\</SignedVSIXPath>
+    <SignedMPacksOutputPath>$(SignedOutputPath)MPacks\</SignedMPacksOutputPath>
+    <SignedOobArchivePath>$(SignedOutputPath)OobArchives\</SignedOobArchivePath>
 
     <!-- Working directories -->
     <PoliCheckPath>$(IntermediateDir)policheck\</PoliCheckPath>
