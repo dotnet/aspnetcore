@@ -512,7 +512,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         AcceptAndMoveNext();
                         Output(SpanKindInternal.Markup, AcceptedCharactersInternal.None);
 
-                        Span.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.WhiteSpace;
+                        Span.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.Whitespace;
                         while (!EndOfFile)
                         {
                             SkipToAndParseCode(SyntaxKind.DoubleHyphen);
@@ -521,7 +521,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             if (At(SyntaxKind.CloseAngle))
                             {
                                 // Output the content in the comment block as a separate markup
-                                Output(SpanKindInternal.Markup, AcceptedCharactersInternal.WhiteSpace);
+                                Output(SpanKindInternal.Markup, AcceptedCharactersInternal.Whitespace);
 
                                 // This is the end of a comment block
                                 Accept(lastDoubleHyphen);

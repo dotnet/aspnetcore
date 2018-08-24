@@ -62,7 +62,7 @@ Statement block - Gen<None> - 120 - (0:0,0)
                     Expression block - Gen<Expr> - 13 - (35:0,35)
                         Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (35:0,35) - Tokens:1
                             SyntaxKind.Transition;[@];
-                        Code span - Gen<Expr> - [DateTime.Now] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K14 - (36:0,36) - Tokens:3
+                        Code span - Gen<Expr> - [DateTime.Now] - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14 - (36:0,36) - Tokens:3
                             SyntaxKind.Identifier;[DateTime];
                             SyntaxKind.Dot;[.];
                             SyntaxKind.Identifier;[Now];
@@ -78,7 +78,7 @@ Statement block - Gen<None> - 120 - (0:0,0)
                     Expression block - Gen<Expr> - 13 - (55:0,55)
                         Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (55:0,55) - Tokens:1
                             SyntaxKind.Transition;[@];
-                        Code span - Gen<Expr> - [DateTime.Now] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K14 - (56:0,56) - Tokens:3
+                        Code span - Gen<Expr> - [DateTime.Now] - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14 - (56:0,56) - Tokens:3
                             SyntaxKind.Identifier;[DateTime];
                             SyntaxKind.Dot;[.];
                             SyntaxKind.Identifier;[Now];
@@ -99,7 +99,7 @@ Statement block - Gen<None> - 120 - (0:0,0)
                     Expression block - Gen<Expr> - 13 - (77:0,77)
                         Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (77:0,77) - Tokens:1
                             SyntaxKind.Transition;[@];
-                        Code span - Gen<Expr> - [DateTime.Now] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K14 - (78:0,78) - Tokens:3
+                        Code span - Gen<Expr> - [DateTime.Now] - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14 - (78:0,78) - Tokens:3
                             SyntaxKind.Identifier;[DateTime];
                             SyntaxKind.Dot;[.];
                             SyntaxKind.Identifier;[Now];
@@ -128,7 +128,7 @@ Statement block - Gen<None> - 120 - (0:0,0)
                     Expression block - Gen<Expr> - 13 - (102:0,102)
                         Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (102:0,102) - Tokens:1
                             SyntaxKind.Transition;[@];
-                        Code span - Gen<Expr> - [DateTime.Now] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K14 - (103:0,103) - Tokens:3
+                        Code span - Gen<Expr> - [DateTime.Now] - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14 - (103:0,103) - Tokens:3
                             SyntaxKind.Identifier;[DateTime];
                             SyntaxKind.Dot;[.];
                             SyntaxKind.Identifier;[Now];

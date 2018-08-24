@@ -1,7 +1,7 @@
 Expression block - Gen<Expr> - 34 - (0:0,0)
     Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
         SyntaxKind.Transition;[@];
-    Code span - Gen<Expr> - [foo.bar[4 * (8 + 7)]["fo\"o"].baz] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K14 - (1:0,1) - Tokens:21
+    Code span - Gen<Expr> - [foo.bar[4 * (8 + 7)]["fo\"o"].baz] - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14 - (1:0,1) - Tokens:21
         SyntaxKind.Identifier;[foo];
         SyntaxKind.Dot;[.];
         SyntaxKind.Identifier;[bar];

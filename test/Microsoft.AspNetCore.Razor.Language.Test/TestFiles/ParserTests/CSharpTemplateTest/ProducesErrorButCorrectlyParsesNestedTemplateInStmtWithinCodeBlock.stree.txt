@@ -56,7 +56,7 @@ Statement block - Gen<None> - 96 - (0:0,0)
                         Expression block - Gen<Expr> - 5 - (78:0,78)
                             Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (78:0,78) - Tokens:1
                                 SyntaxKind.Transition;[@];
-                            Code span - Gen<Expr> - [item] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K14 - (79:0,79) - Tokens:1
+                            Code span - Gen<Expr> - [item] - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14 - (79:0,79) - Tokens:1
                                 SyntaxKind.Identifier;[item];
                         Tag block - Gen<None> - 4 - (83:0,83)
                             Markup span - Gen<Markup> - [</p>] - SpanEditHandler;Accepts:None - (83:0,83) - Tokens:4
@@ -64,7 +64,7 @@ Statement block - Gen<None> - 96 - (0:0,0)
                                 SyntaxKind.ForwardSlash;[/];
                                 SyntaxKind.HtmlTextLiteral;[p];
                                 SyntaxKind.CloseAngle;[>];
-                Code span - Gen<Expr> - [)] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K14 - (87:0,87) - Tokens:1
+                Code span - Gen<Expr> - [)] - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14 - (87:0,87) - Tokens:1
                     SyntaxKind.RightParenthesis;[)];
             Tag block - Gen<None> - 4 - (88:0,88)
                 Markup span - Gen<Markup> - [</p>] - SpanEditHandler;Accepts:None - (88:0,88) - Tokens:4

@@ -36,7 +36,7 @@ Statement block - Gen<None> - 161 - (0:0,0)
                 SyntaxKind.Whitespace;[        ];
             Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (110:4,8) - Tokens:1
                 SyntaxKind.Transition;[@];
-            Code span - Gen<Expr> - [bar] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K14 - (111:4,9) - Tokens:1
+            Code span - Gen<Expr> - [bar] - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14 - (111:4,9) - Tokens:1
                 SyntaxKind.Identifier;[bar];
         Markup span - Gen<Markup> - [LF    ] - SpanEditHandler;Accepts:Any - (114:4,12) - Tokens:2
             SyntaxKind.NewLine;[LF];

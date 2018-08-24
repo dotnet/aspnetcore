@@ -7,7 +7,7 @@ Markup span at (25:0,25 [1] ) (Accepts:Any) - Parent: Markup block at (25:0,25 [
 Markup span at (26:0,26 [5] ) (Accepts:None) - Parent: Tag block at (26:0,26 [5] )
 Markup span at (31:0,31 [0] ) (Accepts:Any) - Parent: Markup block at (25:0,25 [24] )
 Transition span at (31:0,31 [1] ) (Accepts:None) - Parent: Expression block at (31:0,31 [10] )
-Code span at (32:0,32 [9] ) (Accepts:NonWhiteSpace) - Parent: Expression block at (31:0,31 [10] )
+Code span at (32:0,32 [9] ) (Accepts:NonWhitespace) - Parent: Expression block at (31:0,31 [10] )
 Markup span at (41:0,41 [1] ) (Accepts:Any) - Parent: Markup block at (25:0,25 [24] )
 Markup span at (42:0,42 [6] ) (Accepts:None) - Parent: Tag block at (42:0,42 [6] )
 Markup span at (48:0,48 [1] ) (Accepts:None) - Parent: Markup block at (25:0,25 [24] )

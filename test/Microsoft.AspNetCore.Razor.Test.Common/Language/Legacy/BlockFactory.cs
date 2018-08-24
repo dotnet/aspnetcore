@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         public HtmlCommentBlock HtmlCommentBlock(string content)
         {
-            return HtmlCommentBlock(_factory, f => new SyntaxTreeNode[] { f.Markup(content).Accepts(AcceptedCharactersInternal.WhiteSpace) });
+            return HtmlCommentBlock(_factory, f => new SyntaxTreeNode[] { f.Markup(content).Accepts(AcceptedCharactersInternal.Whitespace) });
         }
 
         public static HtmlCommentBlock HtmlCommentBlock(SpanFactory factory, Func<SpanFactory, IEnumerable<SyntaxTreeNode>> nodesBuilder = null)

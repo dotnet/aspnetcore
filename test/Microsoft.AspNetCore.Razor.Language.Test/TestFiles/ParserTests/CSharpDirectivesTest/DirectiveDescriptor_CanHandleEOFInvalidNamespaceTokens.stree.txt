@@ -3,5 +3,5 @@ Directive block - Gen<Directive:{custom;SingleLine;Unrestricted} [RZ1014(8:0,8 [
         SyntaxKind.Transition;[@];
     MetaCode span - Gen<None> - [custom] - SpanEditHandler;Accepts:None - (1:0,1) - Tokens:1
         SyntaxKind.Identifier;[custom];
-    Code span - Gen<None> - [ ] - SpanEditHandler;Accepts:WhiteSpace - (7:0,7) - Tokens:1
+    Code span - Gen<None> - [ ] - SpanEditHandler;Accepts:Whitespace - (7:0,7) - Tokens:1
         SyntaxKind.Whitespace;[ ];

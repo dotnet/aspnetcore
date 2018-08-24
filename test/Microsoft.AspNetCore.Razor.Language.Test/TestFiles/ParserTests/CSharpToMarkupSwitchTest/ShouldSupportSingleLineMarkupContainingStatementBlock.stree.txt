@@ -25,5 +25,5 @@ Expression block - Gen<Expr> - 25 - (0:0,0)
                     SyntaxKind.RightBrace;[}];
             Markup span - Gen<Markup> - [LF] - SpanEditHandler;Accepts:None - (22:1,10) - Tokens:1
                 SyntaxKind.NewLine;[LF];
-    Code span - Gen<Expr> - [)] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K14 - (24:2,0) - Tokens:1
+    Code span - Gen<Expr> - [)] - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14 - (24:2,0) - Tokens:1
         SyntaxKind.RightParenthesis;[)];

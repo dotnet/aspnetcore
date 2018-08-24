@@ -16,7 +16,7 @@ Markup block - Gen<None> - 68 - (0:0,0)
                     SyntaxKind.OpenAngle;[<];
                     SyntaxKind.Bang;[!];
                     SyntaxKind.DoubleHyphen;[--];
-                Markup span - Gen<Markup> - [ Hello, I'm a comment that shouldn't break razor -] - SpanEditHandler;Accepts:WhiteSpace - (12:1,8) - Tokens:22
+                Markup span - Gen<Markup> - [ Hello, I'm a comment that shouldn't break razor -] - SpanEditHandler;Accepts:Whitespace - (12:1,8) - Tokens:22
                     SyntaxKind.Whitespace;[ ];
                     SyntaxKind.HtmlTextLiteral;[Hello,];
                     SyntaxKind.Whitespace;[ ];

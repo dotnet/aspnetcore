@@ -340,7 +340,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         CurrentKeywords,
                         acceptTrailingDot: IsNested)
                     {
-                        AcceptedCharacters = AcceptedCharactersInternal.NonWhiteSpace
+                        AcceptedCharacters = AcceptedCharactersInternal.NonWhitespace
                     };
                     if (At(SyntaxKind.Whitespace) || At(SyntaxKind.NewLine))
                     {
@@ -416,7 +416,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         private void ImplicitExpression()
         {
-            ImplicitExpression(AcceptedCharactersInternal.NonWhiteSpace);
+            ImplicitExpression(AcceptedCharactersInternal.NonWhitespace);
         }
 
         // Async implicit expressions include the "await" keyword and therefore need to allow spaces to
@@ -1667,7 +1667,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         tokenDescriptor.Kind == DirectiveTokenKind.Type)
                     {
                         Span.ChunkGenerator = SpanChunkGenerator.Null;
-                        Output(SpanKindInternal.Code, AcceptedCharactersInternal.WhiteSpace);
+                        Output(SpanKindInternal.Code, AcceptedCharactersInternal.Whitespace);
 
                         if (EndOfFile || At(SyntaxKind.NewLine))
                         {
@@ -1675,13 +1675,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             AddMarkerTokenIfNecessary();
                             Span.ChunkGenerator = new DirectiveTokenChunkGenerator(tokenDescriptor);
                             Span.EditHandler = new DirectiveTokenEditHandler(Language.TokenizeString);
-                            Output(SpanKindInternal.Code, AcceptedCharactersInternal.NonWhiteSpace);
+                            Output(SpanKindInternal.Code, AcceptedCharactersInternal.NonWhitespace);
                         }
                     }
                     else
                     {
                         Span.ChunkGenerator = SpanChunkGenerator.Null;
-                        Output(SpanKindInternal.Markup, AcceptedCharactersInternal.WhiteSpace);
+                        Output(SpanKindInternal.Markup, AcceptedCharactersInternal.Whitespace);
                     }
 
                     if (tokenDescriptor.Optional && (EndOfFile || At(SyntaxKind.NewLine)))
@@ -1753,7 +1753,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
                     Span.ChunkGenerator = new DirectiveTokenChunkGenerator(tokenDescriptor);
                     Span.EditHandler = new DirectiveTokenEditHandler(Language.TokenizeString);
-                    Output(SpanKindInternal.Code, AcceptedCharactersInternal.NonWhiteSpace);
+                    Output(SpanKindInternal.Code, AcceptedCharactersInternal.NonWhitespace);
                 }
 
                 AcceptWhile(IsSpacingToken(includeNewLines: false, includeComments: true));
@@ -1762,11 +1762,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 switch (descriptor.Kind)
                 {
                     case DirectiveKind.SingleLine:
-                        Output(SpanKindInternal.None, AcceptedCharactersInternal.WhiteSpace);
+                        Output(SpanKindInternal.None, AcceptedCharactersInternal.Whitespace);
 
                         Optional(SyntaxKind.Semicolon);
                         Span.ChunkGenerator = SpanChunkGenerator.Null;
-                        Output(SpanKindInternal.MetaCode, AcceptedCharactersInternal.WhiteSpace);
+                        Output(SpanKindInternal.MetaCode, AcceptedCharactersInternal.Whitespace);
 
                         AcceptWhile(IsSpacingToken(includeNewLines: false, includeComments: true));
 
@@ -1787,11 +1787,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
                         // This should contain the optional whitespace after the optional semicolon and the new line.
                         // Output as Markup as we want intellisense here.
-                        Output(SpanKindInternal.Markup, AcceptedCharactersInternal.WhiteSpace);
+                        Output(SpanKindInternal.Markup, AcceptedCharactersInternal.Whitespace);
                         break;
                     case DirectiveKind.RazorBlock:
                         AcceptWhile(IsSpacingToken(includeNewLines: true, includeComments: true));
-                        Output(SpanKindInternal.Markup, AcceptedCharactersInternal.AllWhiteSpace);
+                        Output(SpanKindInternal.Markup, AcceptedCharactersInternal.AllWhitespace);
 
                         ParseDirectiveBlock(descriptor, parseChildren: (startingBraceLocation) =>
                         {
@@ -1816,7 +1816,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         break;
                     case DirectiveKind.CodeBlock:
                         AcceptWhile(IsSpacingToken(includeNewLines: true, includeComments: true));
-                        Output(SpanKindInternal.Markup, AcceptedCharactersInternal.AllWhiteSpace);
+                        Output(SpanKindInternal.Markup, AcceptedCharactersInternal.AllWhitespace);
 
                         ParseDirectiveBlock(descriptor, parseChildren: (startingBraceLocation) =>
                         {

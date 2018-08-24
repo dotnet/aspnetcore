@@ -17,7 +17,7 @@ Markup block - Gen<None> - 23 - (0:0,0)
                 Expression block - Gen<Expr> - 4 - (15:2,1)
                     Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (15:2,1) - Tokens:1
                         SyntaxKind.Transition;[@];
-                    Code span - Gen<Expr> - [Foo] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K14 - (16:2,2) - Tokens:1
+                    Code span - Gen<Expr> - [Foo] - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14 - (16:2,2) - Tokens:1
                         SyntaxKind.Identifier;[Foo];
             Markup span - Gen<None> - ['] - SpanEditHandler;Accepts:Any - (19:2,5) - Tokens:1
                 SyntaxKind.SingleQuote;['];

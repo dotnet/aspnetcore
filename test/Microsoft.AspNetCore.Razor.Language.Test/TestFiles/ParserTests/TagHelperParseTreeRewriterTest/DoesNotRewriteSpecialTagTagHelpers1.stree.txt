@@ -9,7 +9,7 @@ Markup block - Gen<None> - 31 - (0:0,0)
             SyntaxKind.OpenAngle;[<];
             SyntaxKind.Bang;[!];
             SyntaxKind.DoubleHyphen;[--];
-        Markup span - Gen<Markup> - [ Hello World ] - SpanEditHandler;Accepts:WhiteSpace - (9:0,9) - Tokens:5
+        Markup span - Gen<Markup> - [ Hello World ] - SpanEditHandler;Accepts:Whitespace - (9:0,9) - Tokens:5
             SyntaxKind.Whitespace;[ ];
             SyntaxKind.HtmlTextLiteral;[Hello];
             SyntaxKind.Whitespace;[ ];

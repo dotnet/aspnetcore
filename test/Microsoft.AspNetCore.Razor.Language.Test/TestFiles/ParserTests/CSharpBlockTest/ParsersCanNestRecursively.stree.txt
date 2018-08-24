@@ -36,7 +36,7 @@ Statement block - Gen<None> - 351 - (0:0,0)
         Expression block - Gen<Expr> - 7 - (74:2,20)
             Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (74:2,20) - Tokens:1
                 SyntaxKind.Transition;[@];
-            Code span - Gen<Expr> - [c.Name] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K14 - (75:2,21) - Tokens:3
+            Code span - Gen<Expr> - [c.Name] - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14 - (75:2,21) - Tokens:3
                 SyntaxKind.Identifier;[c];
                 SyntaxKind.Dot;[.];
                 SyntaxKind.Identifier;[Name];
@@ -99,7 +99,7 @@ Statement block - Gen<None> - 351 - (0:0,0)
                             Expression block - Gen<Expr> - 56 - (200:5,37)
                                 Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (200:5,37) - Tokens:1
                                     SyntaxKind.Transition;[@];
-                                Code span - Gen<Expr> - [Html.ActionUrl("Products", "Detail", new { id = p.Id })] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K14 - (201:5,38) - Tokens:24
+                                Code span - Gen<Expr> - [Html.ActionUrl("Products", "Detail", new { id = p.Id })] - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14 - (201:5,38) - Tokens:24
                                     SyntaxKind.Identifier;[Html];
                                     SyntaxKind.Dot;[.];
                                     SyntaxKind.Identifier;[ActionUrl];
@@ -133,7 +133,7 @@ Statement block - Gen<None> - 351 - (0:0,0)
                 Expression block - Gen<Expr> - 7 - (258:5,95)
                     Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (258:5,95) - Tokens:1
                         SyntaxKind.Transition;[@];
-                    Code span - Gen<Expr> - [p.Name] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K14 - (259:5,96) - Tokens:3
+                    Code span - Gen<Expr> - [p.Name] - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14 - (259:5,96) - Tokens:3
                         SyntaxKind.Identifier;[p];
                         SyntaxKind.Dot;[.];
                         SyntaxKind.Identifier;[Name];

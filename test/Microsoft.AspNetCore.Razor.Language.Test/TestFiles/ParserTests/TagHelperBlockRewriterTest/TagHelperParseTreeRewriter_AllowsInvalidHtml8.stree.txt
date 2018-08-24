@@ -11,7 +11,7 @@ Markup block - Gen<None> - 34 - (0:0,0)
         Expression block - Gen<Expr> - 13 - (6:0,6)
             Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (6:0,6) - Tokens:1
                 SyntaxKind.Transition;[@];
-            Code span - Gen<Expr> - [DateTime.Now] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K14 - (7:0,7) - Tokens:3
+            Code span - Gen<Expr> - [DateTime.Now] - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14 - (7:0,7) - Tokens:3
                 SyntaxKind.Identifier;[DateTime];
                 SyntaxKind.Dot;[.];
                 SyntaxKind.Identifier;[Now];

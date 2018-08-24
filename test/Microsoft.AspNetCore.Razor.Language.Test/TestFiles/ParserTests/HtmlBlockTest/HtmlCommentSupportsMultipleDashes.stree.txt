@@ -9,7 +9,7 @@ Markup block - Gen<None> - 165 - (0:0,0)
             SyntaxKind.OpenAngle;[<];
             SyntaxKind.Bang;[!];
             SyntaxKind.DoubleHyphen;[--];
-        Markup span - Gen<Markup> - [- Hello World -] - SpanEditHandler;Accepts:WhiteSpace - (9:0,9) - Tokens:7
+        Markup span - Gen<Markup> - [- Hello World -] - SpanEditHandler;Accepts:Whitespace - (9:0,9) - Tokens:7
             SyntaxKind.HtmlTextLiteral;[-];
             SyntaxKind.Whitespace;[ ];
             SyntaxKind.HtmlTextLiteral;[Hello];
@@ -38,7 +38,7 @@ Markup block - Gen<None> - 165 - (0:0,0)
             SyntaxKind.OpenAngle;[<];
             SyntaxKind.Bang;[!];
             SyntaxKind.DoubleHyphen;[--];
-        Markup span - Gen<Markup> - [-- Hello World --] - SpanEditHandler;Accepts:WhiteSpace - (44:1,9) - Tokens:7
+        Markup span - Gen<Markup> - [-- Hello World --] - SpanEditHandler;Accepts:Whitespace - (44:1,9) - Tokens:7
             SyntaxKind.DoubleHyphen;[--];
             SyntaxKind.Whitespace;[ ];
             SyntaxKind.HtmlTextLiteral;[Hello];
@@ -67,7 +67,7 @@ Markup block - Gen<None> - 165 - (0:0,0)
             SyntaxKind.OpenAngle;[<];
             SyntaxKind.Bang;[!];
             SyntaxKind.DoubleHyphen;[--];
-        Markup span - Gen<Markup> - [--- Hello World ---] - SpanEditHandler;Accepts:WhiteSpace - (81:2,9) - Tokens:9
+        Markup span - Gen<Markup> - [--- Hello World ---] - SpanEditHandler;Accepts:Whitespace - (81:2,9) - Tokens:9
             SyntaxKind.DoubleHyphen;[--];
             SyntaxKind.HtmlTextLiteral;[-];
             SyntaxKind.Whitespace;[ ];
@@ -98,7 +98,7 @@ Markup block - Gen<None> - 165 - (0:0,0)
             SyntaxKind.OpenAngle;[<];
             SyntaxKind.Bang;[!];
             SyntaxKind.DoubleHyphen;[--];
-        Markup span - Gen<Markup> - [--- Hello < --- > World </div> ---] - SpanEditHandler;Accepts:WhiteSpace - (120:3,9) - Tokens:21
+        Markup span - Gen<Markup> - [--- Hello < --- > World </div> ---] - SpanEditHandler;Accepts:Whitespace - (120:3,9) - Tokens:21
             SyntaxKind.DoubleHyphen;[--];
             SyntaxKind.HtmlTextLiteral;[-];
             SyntaxKind.Whitespace;[ ];

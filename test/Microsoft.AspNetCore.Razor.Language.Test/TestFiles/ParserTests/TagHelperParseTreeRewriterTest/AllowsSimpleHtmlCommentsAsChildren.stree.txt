@@ -19,7 +19,7 @@ Markup block - Gen<None> - 36 - (0:0,0)
                 SyntaxKind.OpenAngle;[<];
                 SyntaxKind.Bang;[!];
                 SyntaxKind.DoubleHyphen;[--];
-            Markup span - Gen<Markup> - [Hello World] - SpanEditHandler;Accepts:WhiteSpace - (18:0,18) - Tokens:3
+            Markup span - Gen<Markup> - [Hello World] - SpanEditHandler;Accepts:Whitespace - (18:0,18) - Tokens:3
                 SyntaxKind.HtmlTextLiteral;[Hello];
                 SyntaxKind.Whitespace;[ ];
                 SyntaxKind.HtmlTextLiteral;[World];

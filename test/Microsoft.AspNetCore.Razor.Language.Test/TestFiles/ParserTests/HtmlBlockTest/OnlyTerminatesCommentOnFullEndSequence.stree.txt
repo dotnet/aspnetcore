@@ -4,7 +4,7 @@ Markup block - Gen<None> - 20 - (0:0,0)
             SyntaxKind.OpenAngle;[<];
             SyntaxKind.Bang;[!];
             SyntaxKind.DoubleHyphen;[--];
-        Markup span - Gen<Markup> - [<foo>--</bar>] - SpanEditHandler;Accepts:WhiteSpace - (4:0,4) - Tokens:8
+        Markup span - Gen<Markup> - [<foo>--</bar>] - SpanEditHandler;Accepts:Whitespace - (4:0,4) - Tokens:8
             SyntaxKind.OpenAngle;[<];
             SyntaxKind.HtmlTextLiteral;[foo];
             SyntaxKind.CloseAngle;[>];

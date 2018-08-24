@@ -6,7 +6,7 @@ Markup block - Gen<None> - 25 - (0:0,0)
             SyntaxKind.Transition;[@];
         MetaCode span - Gen<None> - [section] - SpanEditHandler;Accepts:None - (1:0,1) - Tokens:1
             SyntaxKind.Identifier;[section];
-        Code span - Gen<None> - [ ] - SpanEditHandler;Accepts:WhiteSpace - (8:0,8) - Tokens:1
+        Code span - Gen<None> - [ ] - SpanEditHandler;Accepts:Whitespace - (8:0,8) - Tokens:1
             SyntaxKind.Whitespace;[ ];
     Markup span - Gen<Markup> - [9 { ] - SpanEditHandler;Accepts:Any - (9:0,9) - Tokens:4
         SyntaxKind.HtmlTextLiteral;[9];

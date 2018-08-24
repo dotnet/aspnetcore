@@ -12,7 +12,7 @@ Statement block - Gen<None> - 21 - (0:0,0)
     Expression block - Gen<Expr> - 4 - (15:0,15)
         Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (15:0,15) - Tokens:1
             SyntaxKind.Transition;[@];
-        Code span - Gen<Expr> - [foo] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[ATD];K14 - (16:0,16) - Tokens:1
+        Code span - Gen<Expr> - [foo] - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[ATD];K14 - (16:0,16) - Tokens:1
             SyntaxKind.Identifier;[foo];
     Code span - Gen<Stmt> - [ }] - SpanEditHandler;Accepts:None - (19:0,19) - Tokens:2
         SyntaxKind.Whitespace;[ ];

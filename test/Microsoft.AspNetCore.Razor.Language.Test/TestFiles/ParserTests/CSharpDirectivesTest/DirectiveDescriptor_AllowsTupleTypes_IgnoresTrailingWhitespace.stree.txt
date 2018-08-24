@@ -3,9 +3,9 @@ Directive block - Gen<Directive:{custom;SingleLine;Unrestricted}> - 23 - (0:0,0)
         SyntaxKind.Transition;[@];
     MetaCode span - Gen<None> - [custom] - SpanEditHandler;Accepts:None - (1:0,1) - Tokens:1
         SyntaxKind.Identifier;[custom];
-    Code span - Gen<None> - [ ] - SpanEditHandler;Accepts:WhiteSpace - (7:0,7) - Tokens:1
+    Code span - Gen<None> - [ ] - SpanEditHandler;Accepts:Whitespace - (7:0,7) - Tokens:1
         SyntaxKind.Whitespace;[ ];
-    Code span - Gen<DirectiveToken {;Type;Opt:False}> - [(bool, int?)] - DirectiveTokenEditHandler;Accepts:NonWhiteSpace - (8:0,8) - Tokens:7
+    Code span - Gen<DirectiveToken {;Type;Opt:False}> - [(bool, int?)] - DirectiveTokenEditHandler;Accepts:NonWhitespace - (8:0,8) - Tokens:7
         SyntaxKind.LeftParenthesis;[(];
         SyntaxKind.Keyword;[bool];
         SyntaxKind.Comma;[,];
@@ -13,5 +13,5 @@ Directive block - Gen<Directive:{custom;SingleLine;Unrestricted}> - 23 - (0:0,0)
         SyntaxKind.Keyword;[int];
         SyntaxKind.QuestionMark;[?];
         SyntaxKind.RightParenthesis;[)];
-    None span - Gen<None> - [   ] - SpanEditHandler;Accepts:WhiteSpace - (20:0,20) - Tokens:1
+    None span - Gen<None> - [   ] - SpanEditHandler;Accepts:Whitespace - (20:0,20) - Tokens:1
         SyntaxKind.Whitespace;[   ];

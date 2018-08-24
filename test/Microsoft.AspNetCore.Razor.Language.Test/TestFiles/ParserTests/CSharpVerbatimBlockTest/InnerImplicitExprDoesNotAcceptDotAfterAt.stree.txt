@@ -6,7 +6,7 @@ Statement block - Gen<None> - 4 - (0:0,0)
     Expression block - Gen<Expr> - 1 - (1:0,1)
         Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (1:0,1) - Tokens:1
             SyntaxKind.Transition;[@];
-        Code span - Gen<Expr> - [] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[ATD];K14 - (2:0,2) - Tokens:1
+        Code span - Gen<Expr> - [] - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[ATD];K14 - (2:0,2) - Tokens:1
             SyntaxKind.Unknown;[];
     Code span - Gen<Stmt> - [.] - SpanEditHandler;Accepts:Any - (2:0,2) - Tokens:1
         SyntaxKind.Dot;[.];

@@ -3,18 +3,18 @@ Directive block - Gen<Directive:{custom;SingleLine;Unrestricted}> - 246 - (0:0,0
         SyntaxKind.Transition;[@];
     MetaCode span - Gen<None> - [custom] - SpanEditHandler;Accepts:None - (1:0,1) - Tokens:1
         SyntaxKind.Identifier;[custom];
-    Code span - Gen<None> - [ ] - SpanEditHandler;Accepts:WhiteSpace - (7:0,7) - Tokens:1
+    Code span - Gen<None> - [ ] - SpanEditHandler;Accepts:Whitespace - (7:0,7) - Tokens:1
         SyntaxKind.Whitespace;[ ];
-    Code span - Gen<DirectiveToken {;Type;Opt:False}> - [(bool, int)] - DirectiveTokenEditHandler;Accepts:NonWhiteSpace - (8:0,8) - Tokens:6
+    Code span - Gen<DirectiveToken {;Type;Opt:False}> - [(bool, int)] - DirectiveTokenEditHandler;Accepts:NonWhitespace - (8:0,8) - Tokens:6
         SyntaxKind.LeftParenthesis;[(];
         SyntaxKind.Keyword;[bool];
         SyntaxKind.Comma;[,];
         SyntaxKind.Whitespace;[ ];
         SyntaxKind.Keyword;[int];
         SyntaxKind.RightParenthesis;[)];
-    Code span - Gen<None> - [ ] - SpanEditHandler;Accepts:WhiteSpace - (19:0,19) - Tokens:1
+    Code span - Gen<None> - [ ] - SpanEditHandler;Accepts:Whitespace - (19:0,19) - Tokens:1
         SyntaxKind.Whitespace;[ ];
-    Code span - Gen<DirectiveToken {;Type;Opt:False}> - [(int aa, string bb)?] - DirectiveTokenEditHandler;Accepts:NonWhiteSpace - (20:0,20) - Tokens:11
+    Code span - Gen<DirectiveToken {;Type;Opt:False}> - [(int aa, string bb)?] - DirectiveTokenEditHandler;Accepts:NonWhitespace - (20:0,20) - Tokens:11
         SyntaxKind.LeftParenthesis;[(];
         SyntaxKind.Keyword;[int];
         SyntaxKind.Whitespace;[ ];
@@ -26,9 +26,9 @@ Directive block - Gen<Directive:{custom;SingleLine;Unrestricted}> - 246 - (0:0,0
         SyntaxKind.Identifier;[bb];
         SyntaxKind.RightParenthesis;[)];
         SyntaxKind.QuestionMark;[?];
-    Code span - Gen<None> - [ ] - SpanEditHandler;Accepts:WhiteSpace - (40:0,40) - Tokens:1
+    Code span - Gen<None> - [ ] - SpanEditHandler;Accepts:Whitespace - (40:0,40) - Tokens:1
         SyntaxKind.Whitespace;[ ];
-    Code span - Gen<DirectiveToken {;Type;Opt:False}> - [(  int?   q   ,  bool   w   )] - DirectiveTokenEditHandler;Accepts:NonWhiteSpace - (41:0,41) - Tokens:14
+    Code span - Gen<DirectiveToken {;Type;Opt:False}> - [(  int?   q   ,  bool   w   )] - DirectiveTokenEditHandler;Accepts:NonWhitespace - (41:0,41) - Tokens:14
         SyntaxKind.LeftParenthesis;[(];
         SyntaxKind.Whitespace;[  ];
         SyntaxKind.Keyword;[int];
@@ -43,9 +43,9 @@ Directive block - Gen<Directive:{custom;SingleLine;Unrestricted}> - 246 - (0:0,0
         SyntaxKind.Identifier;[w];
         SyntaxKind.Whitespace;[   ];
         SyntaxKind.RightParenthesis;[)];
-    Code span - Gen<None> - [ ] - SpanEditHandler;Accepts:WhiteSpace - (70:0,70) - Tokens:1
+    Code span - Gen<None> - [ ] - SpanEditHandler;Accepts:Whitespace - (70:0,70) - Tokens:1
         SyntaxKind.Whitespace;[ ];
-    Code span - Gen<DirectiveToken {;Type;Opt:False}> - [( int  ?  q, bool ?w ,(long ?  [])) ?] - DirectiveTokenEditHandler;Accepts:NonWhiteSpace - (71:0,71) - Tokens:26
+    Code span - Gen<DirectiveToken {;Type;Opt:False}> - [( int  ?  q, bool ?w ,(long ?  [])) ?] - DirectiveTokenEditHandler;Accepts:NonWhitespace - (71:0,71) - Tokens:26
         SyntaxKind.LeftParenthesis;[(];
         SyntaxKind.Whitespace;[ ];
         SyntaxKind.Keyword;[int];
@@ -72,9 +72,9 @@ Directive block - Gen<Directive:{custom;SingleLine;Unrestricted}> - 246 - (0:0,0
         SyntaxKind.RightParenthesis;[)];
         SyntaxKind.Whitespace;[ ];
         SyntaxKind.QuestionMark;[?];
-    Code span - Gen<None> - [ ] - SpanEditHandler;Accepts:WhiteSpace - (108:0,108) - Tokens:1
+    Code span - Gen<None> - [ ] - SpanEditHandler;Accepts:Whitespace - (108:0,108) - Tokens:1
         SyntaxKind.Whitespace;[ ];
-    Code span - Gen<DirectiveToken {;Type;Opt:False}> - [(List<(int, string)?> aa, string bb)] - DirectiveTokenEditHandler;Accepts:NonWhiteSpace - (109:0,109) - Tokens:19
+    Code span - Gen<DirectiveToken {;Type;Opt:False}> - [(List<(int, string)?> aa, string bb)] - DirectiveTokenEditHandler;Accepts:NonWhitespace - (109:0,109) - Tokens:19
         SyntaxKind.LeftParenthesis;[(];
         SyntaxKind.Identifier;[List];
         SyntaxKind.LessThan;[<];
@@ -94,9 +94,9 @@ Directive block - Gen<Directive:{custom;SingleLine;Unrestricted}> - 246 - (0:0,0
         SyntaxKind.Whitespace;[ ];
         SyntaxKind.Identifier;[bb];
         SyntaxKind.RightParenthesis;[)];
-    Code span - Gen<None> - [ ] - SpanEditHandler;Accepts:WhiteSpace - (145:0,145) - Tokens:1
+    Code span - Gen<None> - [ ] - SpanEditHandler;Accepts:Whitespace - (145:0,145) - Tokens:1
         SyntaxKind.Whitespace;[ ];
-    Code span - Gen<DirectiveToken {;Type;Opt:False}> - [(string ss, (int u, List<(string, int)> k, (Char c, bool b, List<int> l)), global::System.Int32[] a)] - DirectiveTokenEditHandler;Accepts:NonWhiteSpace - (146:0,146) - Tokens:56
+    Code span - Gen<DirectiveToken {;Type;Opt:False}> - [(string ss, (int u, List<(string, int)> k, (Char c, bool b, List<int> l)), global::System.Int32[] a)] - DirectiveTokenEditHandler;Accepts:NonWhitespace - (146:0,146) - Tokens:56
         SyntaxKind.LeftParenthesis;[(];
         SyntaxKind.Keyword;[string];
         SyntaxKind.Whitespace;[ ];

@@ -6,9 +6,9 @@ Markup block - Gen<None> - 31 - (0:0,0)
             SyntaxKind.Transition;[@];
         MetaCode span - Gen<None> - [section] - SpanEditHandler;Accepts:None - (1:0,1) - Tokens:1
             SyntaxKind.Identifier;[section];
-        Code span - Gen<None> - [ ] - SpanEditHandler;Accepts:WhiteSpace - (8:0,8) - Tokens:1
+        Code span - Gen<None> - [ ] - SpanEditHandler;Accepts:Whitespace - (8:0,8) - Tokens:1
             SyntaxKind.Whitespace;[ ];
-        Code span - Gen<DirectiveToken {SectionName;Member;Opt:False}> - [foo] - DirectiveTokenEditHandler;Accepts:NonWhiteSpace - (9:0,9) - Tokens:1
+        Code span - Gen<DirectiveToken {SectionName;Member;Opt:False}> - [foo] - DirectiveTokenEditHandler;Accepts:NonWhitespace - (9:0,9) - Tokens:1
             SyntaxKind.Identifier;[foo];
     Markup span - Gen<Markup> - [-bar { ] - SpanEditHandler;Accepts:Any - (12:0,12) - Tokens:4
         SyntaxKind.HtmlTextLiteral;[-bar];

@@ -6,11 +6,11 @@ Markup block - Gen<None> - 16 - (0:0,0)
             SyntaxKind.Transition;[@];
         MetaCode span - Gen<None> - [section] - SpanEditHandler;Accepts:None - (1:0,1) - Tokens:1
             SyntaxKind.Identifier;[section];
-        Code span - Gen<None> - [ ] - SpanEditHandler;Accepts:WhiteSpace - (8:0,8) - Tokens:1
+        Code span - Gen<None> - [ ] - SpanEditHandler;Accepts:Whitespace - (8:0,8) - Tokens:1
             SyntaxKind.Whitespace;[ ];
-        Code span - Gen<DirectiveToken {SectionName;Member;Opt:False}> - [foo] - DirectiveTokenEditHandler;Accepts:NonWhiteSpace - (9:0,9) - Tokens:1
+        Code span - Gen<DirectiveToken {SectionName;Member;Opt:False}> - [foo] - DirectiveTokenEditHandler;Accepts:NonWhitespace - (9:0,9) - Tokens:1
             SyntaxKind.Identifier;[foo];
-        Markup span - Gen<None> - [ ] - SpanEditHandler;Accepts:AllWhiteSpace - (12:0,12) - Tokens:1
+        Markup span - Gen<None> - [ ] - SpanEditHandler;Accepts:AllWhitespace - (12:0,12) - Tokens:1
             SyntaxKind.Whitespace;[ ];
         MetaCode span - Gen<None> - [{] - AutoCompleteEditHandler;Accepts:None,AutoComplete:[}];AtEnd - (13:0,13) - Tokens:1
             SyntaxKind.LeftBrace;[{];

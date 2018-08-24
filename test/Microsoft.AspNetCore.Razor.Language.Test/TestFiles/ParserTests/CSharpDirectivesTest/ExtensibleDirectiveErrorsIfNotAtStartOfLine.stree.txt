@@ -8,9 +8,9 @@ Statement block - Gen<None> - 48 - (0:0,0)
             SyntaxKind.Transition;[@];
         MetaCode span - Gen<None> - [custom] - SpanEditHandler;Accepts:None - (4:0,4) - Tokens:1
             SyntaxKind.Identifier;[custom];
-        Code span - Gen<None> - [ ] - SpanEditHandler;Accepts:WhiteSpace - (10:0,10) - Tokens:1
+        Code span - Gen<None> - [ ] - SpanEditHandler;Accepts:Whitespace - (10:0,10) - Tokens:1
             SyntaxKind.Whitespace;[ ];
-        Code span - Gen<DirectiveToken {;Type;Opt:False}> - [System.Text.Encoding.ASCIIEncoding] - DirectiveTokenEditHandler;Accepts:NonWhiteSpace - (11:0,11) - Tokens:7
+        Code span - Gen<DirectiveToken {;Type;Opt:False}> - [System.Text.Encoding.ASCIIEncoding] - DirectiveTokenEditHandler;Accepts:NonWhitespace - (11:0,11) - Tokens:7
             SyntaxKind.Identifier;[System];
             SyntaxKind.Dot;[.];
             SyntaxKind.Identifier;[Text];
@@ -18,7 +18,7 @@ Statement block - Gen<None> - 48 - (0:0,0)
             SyntaxKind.Identifier;[Encoding];
             SyntaxKind.Dot;[.];
             SyntaxKind.Identifier;[ASCIIEncoding];
-        Markup span - Gen<None> - [LF] - SpanEditHandler;Accepts:WhiteSpace - (45:0,45) - Tokens:1
+        Markup span - Gen<None> - [LF] - SpanEditHandler;Accepts:Whitespace - (45:0,45) - Tokens:1
             SyntaxKind.NewLine;[LF];
     Code span - Gen<Stmt> - [] - SpanEditHandler;Accepts:Any - (47:1,0) - Tokens:1
         SyntaxKind.Unknown;[];

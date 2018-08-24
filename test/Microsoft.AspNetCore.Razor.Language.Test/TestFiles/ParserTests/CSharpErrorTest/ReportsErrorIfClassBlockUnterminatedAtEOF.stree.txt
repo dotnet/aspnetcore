@@ -1,7 +1,7 @@
 Directive block - Gen<Directive:{functions;CodeBlock;Unrestricted} [RZ1006(10:0,10 [1] )]> - 54 - (0:0,0)
     MetaCode span - Gen<None> - [functions] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
         SyntaxKind.Identifier;[functions];
-    Markup span - Gen<None> - [ ] - SpanEditHandler;Accepts:AllWhiteSpace - (9:0,9) - Tokens:1
+    Markup span - Gen<None> - [ ] - SpanEditHandler;Accepts:AllWhitespace - (9:0,9) - Tokens:1
         SyntaxKind.Whitespace;[ ];
     MetaCode span - Gen<None> - [{] - AutoCompleteEditHandler;Accepts:None,AutoComplete:[}];AtEnd - (10:0,10) - Tokens:1
         SyntaxKind.LeftBrace;[{];

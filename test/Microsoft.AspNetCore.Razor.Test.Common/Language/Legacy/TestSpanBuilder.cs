@@ -156,7 +156,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return self
                 .With(new DirectiveTokenChunkGenerator(descriptor))
                 .With(new DirectiveTokenEditHandler((content) => SpanConstructor.TestTokenizer(content)))
-                .Accepts(AcceptedCharactersInternal.NonWhiteSpace);
+                .Accepts(AcceptedCharactersInternal.NonWhitespace);
         }
 
         public static SourceLocation GetLocationAndAdvance(this SourceLocationTracker self, string content)

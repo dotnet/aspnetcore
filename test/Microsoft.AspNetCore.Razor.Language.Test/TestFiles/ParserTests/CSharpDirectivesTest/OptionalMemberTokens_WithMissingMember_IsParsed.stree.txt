@@ -3,7 +3,7 @@ Directive block - Gen<Directive:{TestDirective;SingleLine;Unrestricted}> - 15 - 
         SyntaxKind.Transition;[@];
     MetaCode span - Gen<None> - [TestDirective] - SpanEditHandler;Accepts:None - (1:0,1) - Tokens:1
         SyntaxKind.Identifier;[TestDirective];
-    Code span - Gen<None> - [ ] - SpanEditHandler;Accepts:WhiteSpace - (14:0,14) - Tokens:1
+    Code span - Gen<None> - [ ] - SpanEditHandler;Accepts:Whitespace - (14:0,14) - Tokens:1
         SyntaxKind.Whitespace;[ ];
-    Code span - Gen<DirectiveToken {;Member;Opt:True}> - [] - DirectiveTokenEditHandler;Accepts:NonWhiteSpace - (15:0,15) - Tokens:1
+    Code span - Gen<DirectiveToken {;Member;Opt:True}> - [] - DirectiveTokenEditHandler;Accepts:NonWhitespace - (15:0,15) - Tokens:1
         SyntaxKind.Unknown;[];

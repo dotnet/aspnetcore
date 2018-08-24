@@ -69,7 +69,7 @@ Statement block - Gen<None> - 206 - (0:0,0)
         Expression block - Gen<Expr> - 2 - (134:5,28)
             Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (134:5,28) - Tokens:1
                 SyntaxKind.Transition;[@];
-            Code span - Gen<Expr> - [p] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K14 - (135:5,29) - Tokens:1
+            Code span - Gen<Expr> - [p] - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14 - (135:5,29) - Tokens:1
                 SyntaxKind.Identifier;[p];
         Tag block - Gen<None> - 7 - (136:5,30)
             Transition span - Gen<None> - [</text>] - SpanEditHandler;Accepts:None - (136:5,30) - Tokens:4

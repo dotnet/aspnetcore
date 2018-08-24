@@ -20,6 +20,6 @@ Expression block - Gen<Expr> - 24 - (0:0,0)
                     SyntaxKind.ForwardSlash;[/];
                     SyntaxKind.HtmlTextLiteral;[p];
                     SyntaxKind.CloseAngle;[>];
-    Code span - Gen<Expr> - [    )] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K14 - (19:0,19) - Tokens:2
+    Code span - Gen<Expr> - [    )] - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14 - (19:0,19) - Tokens:2
         SyntaxKind.Whitespace;[    ];
         SyntaxKind.RightParenthesis;[)];

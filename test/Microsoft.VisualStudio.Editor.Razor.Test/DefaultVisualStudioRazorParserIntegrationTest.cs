@@ -84,7 +84,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                     factory.Markup("foo "),
                     new ExpressionBlock(
                         factory.CodeTransition(),
-                        factory.Code("await Html").AsImplicitExpression(CSharpCodeParser.DefaultKeywords).Accepts(AcceptedCharactersInternal.WhiteSpace | AcceptedCharactersInternal.NonWhiteSpace)),
+                        factory.Code("await Html").AsImplicitExpression(CSharpCodeParser.DefaultKeywords).Accepts(AcceptedCharactersInternal.Whitespace | AcceptedCharactersInternal.NonWhitespace)),
                     factory.Markup(". baz")));
             }
         }
@@ -119,7 +119,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                                 factory.CodeTransition(),
                                 factory.Code(expectedCode)
                                        .AsImplicitExpression(CSharpCodeParser.DefaultKeywords, acceptTrailingDot: true)
-                                       .Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
+                                       .Accepts(AcceptedCharactersInternal.NonWhitespace)),
                             factory.Code(Environment.NewLine).AsStatement(),
                             factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)),
                         factory.EmptyHtml()));
@@ -178,7 +178,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                                 factory.CodeTransition(),
                                 factory.Code(expectedCode)
                                        .AsImplicitExpression(CSharpCodeParser.DefaultKeywords, acceptTrailingDot: true)
-                                       .Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
+                                       .Accepts(AcceptedCharactersInternal.NonWhitespace)),
                             factory.Code(Environment.NewLine).AsStatement(),
                             factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)),
                         factory.EmptyHtml()));
@@ -217,7 +217,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                         factory.Markup("foo "),
                         new ExpressionBlock(
                             factory.CodeTransition(),
-                            factory.Code(expectedCode).AsImplicitExpression(CSharpCodeParser.DefaultKeywords).Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
+                            factory.Code(expectedCode).AsImplicitExpression(CSharpCodeParser.DefaultKeywords).Accepts(AcceptedCharactersInternal.NonWhitespace)),
                         factory.Markup(" baz")));
                 };
 
@@ -240,7 +240,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                         factory.Markup("foo "),
                         new ExpressionBlock(
                             factory.CodeTransition(),
-                            factory.Code("DateTime").AsImplicitExpression(CSharpCodeParser.DefaultKeywords).Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
+                            factory.Code("DateTime").AsImplicitExpression(CSharpCodeParser.DefaultKeywords).Accepts(AcceptedCharactersInternal.NonWhitespace)),
                         factory.Markup(". baz")));
             }
         }
@@ -263,7 +263,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                         factory.Markup("foo "),
                         new ExpressionBlock(
                             factory.CodeTransition(),
-                            factory.Code(expectedCode).AsImplicitExpression(CSharpCodeParser.DefaultKeywords).Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
+                            factory.Code(expectedCode).AsImplicitExpression(CSharpCodeParser.DefaultKeywords).Accepts(AcceptedCharactersInternal.NonWhitespace)),
                         factory.Markup(" baz")));
                 };
 
@@ -292,7 +292,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                         factory.Markup("foo "),
                         new ExpressionBlock(
                             factory.CodeTransition(),
-                            factory.Code("DateTime.Now").AsImplicitExpression(CSharpCodeParser.DefaultKeywords).Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
+                            factory.Code("DateTime.Now").AsImplicitExpression(CSharpCodeParser.DefaultKeywords).Accepts(AcceptedCharactersInternal.NonWhitespace)),
                         factory.Markup(". baz")));
             }
         }
@@ -315,7 +315,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                         factory.Markup("foo "),
                         new ExpressionBlock(
                             factory.CodeTransition(),
-                            factory.Code(expectedCode).AsImplicitExpression(CSharpCodeParser.DefaultKeywords).Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
+                            factory.Code(expectedCode).AsImplicitExpression(CSharpCodeParser.DefaultKeywords).Accepts(AcceptedCharactersInternal.NonWhitespace)),
                         factory.Markup(" baz")));
                 };
 
@@ -355,7 +355,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                     factory.Markup("foo "),
                     new ExpressionBlock(
                         factory.CodeTransition(),
-                        factory.Code("DateTime").AsImplicitExpression(CSharpCodeParser.DefaultKeywords).Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
+                        factory.Code("DateTime").AsImplicitExpression(CSharpCodeParser.DefaultKeywords).Accepts(AcceptedCharactersInternal.NonWhitespace)),
                     factory.Markup(". baz")));
             }
         }
@@ -386,13 +386,13 @@ namespace Microsoft.VisualStudio.Editor.Razor
                             factory.CodeTransition(),
                             factory.Code("foo")
                                    .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                                   .Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
+                                   .Accepts(AcceptedCharactersInternal.NonWhitespace)),
                         factory.Markup(". "),
                         new ExpressionBlock(
                             factory.CodeTransition(),
                             factory.Code("barb")
                                    .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                                   .Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
+                                   .Accepts(AcceptedCharactersInternal.NonWhitespace)),
                         factory.EmptyHtml()));
             }
         }
@@ -423,7 +423,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                             factory.CodeTransition(),
                             factory.Code("foo.b")
                                    .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                                   .Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
+                                   .Accepts(AcceptedCharactersInternal.NonWhitespace)),
                         factory.Markup(" bar")));
             }
         }
@@ -452,7 +452,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                             factory.CodeTransition(),
                             factory.Code("foo()")
                                    .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                                   .Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
+                                   .Accepts(AcceptedCharactersInternal.NonWhitespace)),
                         factory.Markup(" bar")));
             }
         }
@@ -484,7 +484,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                             factory.CodeTransition(),
                             factory.Code("foo()")
                                    .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                                   .Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
+                                   .Accepts(AcceptedCharactersInternal.NonWhitespace)),
                         factory.Markup(" bar")));
             }
         }

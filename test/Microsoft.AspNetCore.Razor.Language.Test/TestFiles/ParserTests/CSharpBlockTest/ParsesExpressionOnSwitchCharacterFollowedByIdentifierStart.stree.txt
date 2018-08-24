@@ -10,7 +10,7 @@ Statement block - Gen<None> - 25 - (0:0,0)
     Expression block - Gen<Expr> - 13 - (10:0,10)
         Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (10:0,10) - Tokens:1
             SyntaxKind.Transition;[@];
-        Code span - Gen<Expr> - [foo[4].bar()] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[ATD];K14 - (11:0,11) - Tokens:8
+        Code span - Gen<Expr> - [foo[4].bar()] - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[ATD];K14 - (11:0,11) - Tokens:8
             SyntaxKind.Identifier;[foo];
             SyntaxKind.LeftBracket;[[];
             SyntaxKind.IntegerLiteral;[4];
