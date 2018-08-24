@@ -22,7 +22,7 @@ namespace FunctionalTests
 
         public ApplicationTestFixture Fixture { get; }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/MvcPrecompilation/issues/287")]
         public async Task Precompilation_WorksForIndexPage_UsingFolderName()
         {
             using (StartLog(out var loggerFactory))
@@ -40,7 +40,7 @@ namespace FunctionalTests
             }
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/MvcPrecompilation/issues/287")]
         public async Task Precompilation_WorksForIndexPage_UsingFileName()
         {
             using (StartLog(out var loggerFactory))
@@ -58,7 +58,7 @@ namespace FunctionalTests
             }
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/MvcPrecompilation/issues/287")]
         public async Task Precompilation_WorksForPageWithModel()
         {
             using (StartLog(out var loggerFactory))
@@ -76,7 +76,7 @@ namespace FunctionalTests
             }
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/MvcPrecompilation/issues/287")]
         public async Task Precompilation_WorksForPageWithRoute()
         {
             using (StartLog(out var loggerFactory))
@@ -94,7 +94,7 @@ namespace FunctionalTests
             }
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/MvcPrecompilation/issues/287")]
         public async Task Precompilation_WorksForPageInNestedFolder()
         {
             using (StartLog(out var loggerFactory))
@@ -112,7 +112,7 @@ namespace FunctionalTests
             }
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/MvcPrecompilation/issues/287")]
         public async Task Precompilation_WorksWithPageConventions()
         {
             using (StartLog(out var loggerFactory))
