@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -49,13 +50,14 @@ namespace Microsoft.AspNetCore.Mvc.Testing.Handlers
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             var remainingRedirects = MaxRedirects;
-
+            var redirectRequest = new HttpRequestMessage();
             var originalRequestContent = HasBody(request) ? await DuplicateRequestContent(request) : null;
+            CopyRequestHeaders(request.Headers, redirectRequest.Headers);
             var response = await base.SendAsync(request, cancellationToken);
             while (IsRedirect(response) && remainingRedirects >= 0)
             {
                 remainingRedirects--;
-                var redirectRequest = GetRedirectRequest(response, originalRequestContent);
+                UpdateRedirectRequest(response, redirectRequest, originalRequestContent);
                 originalRequestContent = HasBody(redirectRequest) ? await DuplicateRequestContent(redirectRequest) : null;
                 response = await base.SendAsync(redirectRequest, cancellationToken);
             }
@@ -95,6 +97,16 @@ namespace Microsoft.AspNetCore.Mvc.Testing.Handlers
             }
         }
 
+        private static void CopyRequestHeaders(
+            HttpRequestHeaders originalRequestHeaders,
+            HttpRequestHeaders newRequestHeaders)
+        {
+            foreach (var header in originalRequestHeaders)
+            {
+                newRequestHeaders.Add(header.Key, header.Value);
+            }
+        }
+
         private static async Task<(Stream originalBody, Stream copy)> CopyBody(HttpRequestMessage request)
         {
             var originalBody = await request.Content.ReadAsStreamAsync();
@@ -116,8 +128,9 @@ namespace Microsoft.AspNetCore.Mvc.Testing.Handlers
             return (originalBody, bodyCopy);
         }
 
-        private static HttpRequestMessage GetRedirectRequest(
+        private static void UpdateRedirectRequest(
             HttpResponseMessage response,
+            HttpRequestMessage redirect,
             HttpContent originalContent)
         {
             var location = response.Headers.Location;
@@ -128,31 +141,28 @@ namespace Microsoft.AspNetCore.Mvc.Testing.Handlers
                     location);
             }
 
-            var redirect = !ShouldKeepVerb(response) ?
-                new HttpRequestMessage(HttpMethod.Get, location) :
-                new HttpRequestMessage(response.RequestMessage.Method, location)
-                {
-                    Content = originalContent
-                };
-
-            foreach (var header in response.RequestMessage.Headers)
+            redirect.RequestUri = location;
+            if (!ShouldKeepVerb(response))
             {
-                redirect.Headers.Add(header.Key, header.Value);
+                redirect.Method = HttpMethod.Get;
+            }
+            else
+            {
+                redirect.Method = response.RequestMessage.Method;
+                redirect.Content = originalContent;
             }
 
             foreach (var property in response.RequestMessage.Properties)
             {
                 redirect.Properties.Add(property.Key, property.Value);
             }
-
-            return redirect;
         }
 
         private static bool ShouldKeepVerb(HttpResponseMessage response) =>
             response.StatusCode == HttpStatusCode.RedirectKeepVerb ||
                 (int)response.StatusCode == 308;
 
-        private bool IsRedirect(HttpResponseMessage response) => 
+        private bool IsRedirect(HttpResponseMessage response) =>
             response.StatusCode == HttpStatusCode.MovedPermanently ||
                 response.StatusCode == HttpStatusCode.Redirect ||
                 response.StatusCode == HttpStatusCode.RedirectKeepVerb ||

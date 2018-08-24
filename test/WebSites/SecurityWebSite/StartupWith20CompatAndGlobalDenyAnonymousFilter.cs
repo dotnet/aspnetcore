@@ -10,7 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace SecurityWebSite
 {
-    public class StartupWithGlobalDenyAnonymousFilter
+    public class StartupWith20CompatAndGlobalDenyAnonymousFilter
     {
         public void ConfigureServices(IServiceCollection services)
         {
@@ -26,7 +26,7 @@ namespace SecurityWebSite
             {
                 o.Filters.Add(new AuthorizeFilter());
             })
-            .SetCompatibilityVersion(CompatibilityVersion.Latest);
+            .SetCompatibilityVersion(CompatibilityVersion.Version_2_0);
 
             services.AddScoped<IPolicyEvaluator, CountingPolicyEvaluator>();
         }

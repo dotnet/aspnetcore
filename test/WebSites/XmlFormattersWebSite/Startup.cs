@@ -17,7 +17,8 @@ namespace XmlFormattersWebSite
         public void ConfigureServices(IServiceCollection services)
         {
             // Add MVC services to the services container
-            services.AddMvc();
+            services.AddMvc()
+                .SetCompatibilityVersion(CompatibilityVersion.Latest);
 
             services.Configure<MvcOptions>(options =>
             {

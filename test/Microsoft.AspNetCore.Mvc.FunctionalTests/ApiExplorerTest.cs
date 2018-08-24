@@ -1087,7 +1087,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                 });
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/Routing/issues/722")]
         public async Task ApiExplorer_Updates_WhenActionDescriptorCollectionIsUpdated()
         {
             // Act - 1

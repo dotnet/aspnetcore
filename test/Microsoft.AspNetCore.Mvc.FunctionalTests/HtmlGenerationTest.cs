@@ -10,8 +10,8 @@ using System.Net.Http.Headers;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-using AngleSharp.Dom;
-using AngleSharp.Dom.Html;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
@@ -26,13 +26,20 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             MvcTestFixture<HtmlGenerationWebSite.Startup> fixture,
             MvcEncodedTestFixture<HtmlGenerationWebSite.Startup> encodedFixture)
         {
+            Factory = fixture.Factories.FirstOrDefault() ?? fixture.WithWebHostBuilder(ConfigureWebHostBuilder);
+
             Client = fixture.CreateDefaultClient();
             EncodedClient = encodedFixture.CreateDefaultClient();
         }
 
+        private static void ConfigureWebHostBuilder(IWebHostBuilder builder) =>
+            builder.UseStartup<HtmlGenerationWebSite.Startup>();
+
         public HttpClient Client { get; }
 
         public HttpClient EncodedClient { get; }
+
+        public WebApplicationFactory<HtmlGenerationWebSite.Startup> Factory { get; }
 
         public static TheoryData<string, string> WebPagesData
         {
@@ -129,6 +136,35 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                 Assert.Equal(expectedContent.Trim(), responseContent, ignoreLineEndingDifferences: true);
 #endif
             }
+        }
+
+        [Fact]
+        public async Task HtmlGenerationWebSite_LinkGeneration_With21CompatibilityBehavior()
+        {
+            // Arrange
+            var client = Factory
+                 .WithWebHostBuilder(builder => builder.UseStartup<HtmlGenerationWebSite.StartupWith21CompatibilityBehavior>())
+                 .CreateDefaultClient();
+            var expectedMediaType = MediaTypeHeaderValue.Parse("text/html; charset=utf-8");
+            var outputFile = "compiler/resources/HtmlGenerationWebSite.HtmlGeneration_Home.Index21Compat.html";
+            var expectedContent =
+                await ResourceFile.ReadResourceAsync(_resourcesAssembly, outputFile, sourceFile: false);
+
+            // Act
+            // The host is not important as everything runs in memory and tests are isolated from each other.
+            var response = await client.GetAsync("http://localhost/HtmlGeneration_Home/");
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(expectedMediaType, response.Content.Headers.ContentType);
+
+            responseContent = responseContent.Trim();
+#if GENERATE_BASELINES
+            ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
+#else
+            Assert.Equal(expectedContent.Trim(), responseContent, ignoreLineEndingDifferences: true);
+#endif
         }
 
         public static TheoryData<string, string> EncodedPagesData

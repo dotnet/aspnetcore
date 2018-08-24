@@ -10,7 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace HtmlGenerationWebSite
 {
-    public class Startup
+    public class StartupWith21CompatibilityBehavior
     {
         // Set up application services
         public void ConfigureServices(IServiceCollection services)
@@ -19,7 +19,7 @@ namespace HtmlGenerationWebSite
             // null which is interpreted as true unless element includes an action attribute.
             services.AddMvc()
                 .InitializeTagHelper<FormTagHelper>((helper, _) => helper.Antiforgery = false)
-                .SetCompatibilityVersion(CompatibilityVersion.Latest);
+                .SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
             services.AddSingleton(typeof(ISignalTokenProviderService<>), typeof(SignalTokenProviderService<>));
             services.AddSingleton<ProductsService>();
@@ -43,14 +43,6 @@ namespace HtmlGenerationWebSite
                     template: "{controller}/{action}/{id?}",
                     defaults: new { controller = "HtmlGeneration_Home", action = "Index" });
             });
-        }
-
-        public static void Main(string[] args)
-        {
-            var host = CreateWebHostBuilder(args)
-                .Build();
-
-            host.Run();
         }
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
