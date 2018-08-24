@@ -208,5 +208,68 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                 "</ArrayOfSerializableErrorWrapper>",
                 result);
         }
+
+        [Fact]
+        public async Task ProblemDetails_IsSerialized()
+        {
+            // Arrange
+            var expected = @"<ProblemDetails><Status>404</Status><Title>Not Found</Title><Type>https://tools.ietf.org/html/rfc7231#section-6.5.4</Type></ProblemDetails>";
+
+            // Act
+            var response = await Client.GetAsync("/api/XmlDataContractApi/ActionReturningClientErrorStatusCodeResult");
+
+            // Assert
+            await response.AssertStatusCodeAsync(HttpStatusCode.NotFound);
+            var content = await response.Content.ReadAsStringAsync();
+            XmlAssert.Equal(expected, content);
+        }
+
+        [Fact]
+        public async Task ProblemDetails_WithExtensionMembers_IsSerialized()
+        {
+            // Arrange
+            var expected = @"<ProblemDetails><Instance>instance</Instance><Status>404</Status><Title>title</Title>
+<Correlation>correlation</Correlation><Accounts>Account1 Account2</Accounts></ProblemDetails>";
+
+            // Act
+            var response = await Client.GetAsync("/api/XmlDataContractApi/ActionReturningProblemDetails");
+
+            // Assert
+            await response.AssertStatusCodeAsync(HttpStatusCode.NotFound);
+            var content = await response.Content.ReadAsStringAsync();
+            XmlAssert.Equal(expected, content);
+        }
+
+        [Fact]
+        public async Task ValidationProblemDetails_IsSerialized()
+        {
+            // Arrange
+            var expected = @"<ValidationProblemDetails><Status>400</Status><Title>One or more validation errors occurred.</Title>
+<MVC-Errors><State>The State field is required.</State></MVC-Errors></ValidationProblemDetails>";
+
+            // Act
+            var response = await Client.GetAsync("/api/XmlDataContractApi/ActionReturningValidationProblem");
+
+            // Assert
+            await response.AssertStatusCodeAsync(HttpStatusCode.BadRequest);
+            var content = await response.Content.ReadAsStringAsync();
+            XmlAssert.Equal(expected, content);
+        }
+
+        [Fact]
+        public async Task ValidationProblemDetails_WithExtensionMembers_IsSerialized()
+        {
+            // Arrange
+            var expected = @"<ValidationProblemDetails><Detail>some detail</Detail><Status>400</Status><Title>One or more validation errors occurred.</Title>
+<Type>some type</Type><CorrelationId>correlation</CorrelationId><MVC-Errors><Error1>ErrorValue</Error1></MVC-Errors></ValidationProblemDetails>";
+
+            // Act
+            var response = await Client.GetAsync("/api/XmlDataContractApi/ActionReturningValidationDetailsWithMetadata");
+
+            // Assert
+            await response.AssertStatusCodeAsync(HttpStatusCode.BadRequest);
+            var content = await response.Content.ReadAsStringAsync();
+            XmlAssert.Equal(expected, content);
+        }
     }
 }

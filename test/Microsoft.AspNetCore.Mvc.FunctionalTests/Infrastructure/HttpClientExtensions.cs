@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             throw new StatusCodeMismatchException
             {
-                ExpectedStatusCode = HttpStatusCode.OK,
+                ExpectedStatusCode = expectedStatusCode,
                 ActualStatusCode = response.StatusCode,
                 ResponseContent = responseContent,
             };
@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             {
                 get
                 {
-                    return $"Excepted status code 200. Actual {ActualStatusCode}. Response Content:" + Environment.NewLine + ResponseContent;
+                    return $"Excepted status code {ExpectedStatusCode}. Actual {ActualStatusCode}. Response Content:" + Environment.NewLine + ResponseContent;
                 }
             }
         }

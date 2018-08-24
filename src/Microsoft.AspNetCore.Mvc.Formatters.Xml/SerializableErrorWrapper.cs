@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
     {
         // Element name used when ModelStateEntry's Key is empty. Dash in element name should avoid collisions with
         // other ModelState entries because the character is not legal in an expression name.
-        private static readonly string EmptyKey = "MVC-Empty";
+        internal static readonly string EmptyKey = "MVC-Empty";
 
         // Note: XmlSerializer requires to have default constructor
         public SerializableErrorWrapper()

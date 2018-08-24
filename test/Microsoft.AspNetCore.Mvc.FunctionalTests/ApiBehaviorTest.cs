@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using BasicWebSite.Models;
 using Microsoft.AspNetCore.Hosting;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
@@ -116,8 +117,8 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             };
             var expected = new Dictionary<string, string[]>
             {
-                {"Name", new string[] {"The field Name must be a string with a minimum length of 5 and a maximum length of 30."}},
-                {"Zip", new string[]{ @"The field Zip must match the regular expression '\d{5}'."}}
+                {"Name", new[] {"The field Name must be a string with a minimum length of 5 and a maximum length of 30."}},
+                {"Zip", new[] { @"The field Zip must match the regular expression '\d{5}'."}}
             };
             var contactString = JsonConvert.SerializeObject(contactModel);
 
@@ -260,6 +261,63 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var content = await response.Content.ReadAsStringAsync();
             var problemDetails = JsonConvert.DeserializeObject<ProblemDetails>(content);
             Assert.Equal(404, problemDetails.Status);
+        }
+
+        [Fact]
+        public async Task SerializingProblemDetails_IgnoresNullValuedProperties()
+        {
+            // Arrange
+            var expected = new[] { "status", "title", "type" };
+
+            // Act
+            var response = await Client.GetAsync("/contact/ActionReturningStatusCodeResult");
+
+            // Assert
+            await response.AssertStatusCodeAsync(HttpStatusCode.NotFound);
+            var content = await response.Content.ReadAsStringAsync();
+
+            // Verify that null-valued properties on ProblemDetails are not serialized.
+            var json = JObject.Parse(content);
+            Assert.Equal(expected, json.Properties().OrderBy(p => p.Name).Select(p => p.Name));
+        }
+
+        [Fact]
+        public async Task SerializingProblemDetails_WithAllValuesSpecified()
+        {
+            // Arrange
+            var expected = new[] { "detail", "instance", "status", "title", "tracking-id", "type" };
+
+            // Act
+            var response = await Client.GetAsync("/contact/ActionReturningProblemDetails");
+
+            // Assert
+            await response.AssertStatusCodeAsync(HttpStatusCode.NotFound);
+            var content = await response.Content.ReadAsStringAsync();
+            var json = JObject.Parse(content);
+            Assert.Equal(expected, json.Properties().OrderBy(p => p.Name).Select(p => p.Name));
+        }
+
+        [Fact]
+        public async Task SerializingValidationProblemDetails_WithExtensionData()
+        {
+            // Act
+            var response = await Client.GetAsync("/contact/ActionReturningValidationProblemDetails");
+
+            // Assert
+            await response.AssertStatusCodeAsync(HttpStatusCode.BadRequest);
+            var content = await response.Content.ReadAsStringAsync();
+            var validationProblemDetails = JsonConvert.DeserializeObject<ValidationProblemDetails>(content);
+
+            Assert.Equal("Error", validationProblemDetails.Title);
+            Assert.Equal(400, validationProblemDetails.Status);
+            Assert.Equal("27", validationProblemDetails.Extensions["tracking-id"]);
+            Assert.Collection(
+                validationProblemDetails.Errors,
+                kvp =>
+                {
+                    Assert.Equal("Error1", kvp.Key);
+                    Assert.Equal(new[] { "Error Message" }, kvp.Value);
+                });
         }
     }
 }

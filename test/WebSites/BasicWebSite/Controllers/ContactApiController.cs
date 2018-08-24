@@ -91,6 +91,41 @@ namespace BasicWebSite
             return NotFound();
         }
 
+        [HttpGet("[action]")]
+        public ActionResult<int> ActionReturningProblemDetails()
+        {
+            return NotFound(new ProblemDetails
+            {
+                Title = "Not Found",
+                Type = "Type",
+                Detail = "Detail",
+                Status = 404,
+                Instance = "Instance",
+                Extensions =
+                {
+                    ["tracking-id"] = 27,
+                },
+            });
+        }
+
+        [HttpGet("[action]")]
+        public ActionResult<int> ActionReturningValidationProblemDetails()
+        {
+            return BadRequest(new ValidationProblemDetails
+            {
+                Title = "Error",
+                Status = 400,
+                Extensions =
+                {
+                    ["tracking-id"] = "27",
+                },
+                Errors =
+                {
+                    { "Error1", new[] { "Error Message" } },
+                },
+            });
+        }
+
         private class TestModelBinder : IModelBinder
         {
             public Task BindModelAsync(ModelBindingContext bindingContext)
