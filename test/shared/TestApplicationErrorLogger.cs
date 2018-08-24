@@ -20,6 +20,8 @@ namespace Microsoft.AspNetCore.Testing
 
         public bool ThrowOnCriticalErrors { get; set; } = true;
 
+        public bool ThrowOnUngracefulShutdown { get; set; } = true;
+
         public ConcurrentQueue<LogMessage> Messages { get; } = new ConcurrentQueue<LogMessage>();
 
         public ConcurrentQueue<object> Scopes { get; } = new ConcurrentQueue<object>();
@@ -59,10 +61,20 @@ namespace Microsoft.AspNetCore.Testing
             }
 
             // Fail tests where not all the connections close during server shutdown.
-            if (eventId.Id == 21 && eventId.Name == nameof(KestrelTrace.NotAllConnectionsAborted))
+            if (ThrowOnUngracefulShutdown &&
+                ((eventId.Id == 16 && eventId.Name == nameof(KestrelTrace.NotAllConnectionsClosedGracefully)) ||
+                 (eventId.Id == 21 && eventId.Name == nameof(KestrelTrace.NotAllConnectionsAborted))))
             {
-                var log = $"Log {logLevel}[{eventId}]: {formatter(state, exception)} {exception?.Message}";
+                var log = $"Log {logLevel}[{eventId}]: {formatter(state, exception)} {exception}";
                 throw new Exception($"Shutdown failure. {log}");
+            }
+
+            // We don't use nameof here because this is logged by the transports and we don't know which one is
+            // referenced in this shared source file.
+            if (eventId.Id == 14 && eventId.Name == "ConnectionError")
+            {
+                var log = $"Log {logLevel}[{eventId}]: {formatter(state, exception)} {exception}";
+                throw new Exception($"Unexpected connection error. {log}");
             }
 
             Messages.Enqueue(new LogMessage

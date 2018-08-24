@@ -13,7 +13,6 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
@@ -22,7 +21,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         // Literal Header Field without Indexing - Indexed Name (Index 8 - :status)
         private static readonly byte[] _continueBytes = new byte[] { 0x08, 0x03, (byte)'1', (byte)'0', (byte)'0' };
 
-        private readonly Http2Frame _outgoingFrame = new Http2Frame();
+        private uint _maxFrameSize = Http2Limits.MinAllowedMaxFrameSize;
+        private Http2Frame _outgoingFrame;
         private readonly object _writeLock = new object();
         private readonly HPackEncoder _hpackEncoder = new HPackEncoder();
         private readonly PipeWriter _outputWriter;
@@ -49,6 +49,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             _connectionId = connectionId;
             _log = log;
             _flusher = new StreamSafePipeFlusher(_outputWriter, timeoutControl);
+            _outgoingFrame = new Http2Frame(_maxFrameSize);
+        }
+
+        public void UpdateMaxFrameSize(uint maxFrameSize)
+        {
+            lock (_writeLock)
+            {
+                _maxFrameSize = maxFrameSize;
+                _outgoingFrame = new Http2Frame(maxFrameSize);
+            }
         }
 
         public void Complete()

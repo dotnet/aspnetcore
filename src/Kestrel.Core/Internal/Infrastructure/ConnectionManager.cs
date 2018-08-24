@@ -6,17 +6,17 @@ using System.Collections.Concurrent;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
-    public class HttpConnectionManager
+    public class ConnectionManager
     {
-        private readonly ConcurrentDictionary<long, HttpConnectionReference> _connectionReferences = new ConcurrentDictionary<long, HttpConnectionReference>();
+        private readonly ConcurrentDictionary<long, ConnectionReference> _connectionReferences = new ConcurrentDictionary<long, ConnectionReference>();
         private readonly IKestrelTrace _trace;
 
-        public HttpConnectionManager(IKestrelTrace trace, long? upgradedConnectionLimit)
+        public ConnectionManager(IKestrelTrace trace, long? upgradedConnectionLimit)
             : this(trace, GetCounter(upgradedConnectionLimit))
         {
         }
 
-        public HttpConnectionManager(IKestrelTrace trace, ResourceCounter upgradedConnections)
+        public ConnectionManager(IKestrelTrace trace, ResourceCounter upgradedConnections)
         {
             UpgradedConnectionCount = upgradedConnections;
             _trace = trace;
@@ -27,9 +27,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         /// </summary>
         public ResourceCounter UpgradedConnectionCount { get; }
 
-        public void AddConnection(long id, HttpConnection connection)
+        public void AddConnection(long id, KestrelConnection connection)
         {
-            if (!_connectionReferences.TryAdd(id, new HttpConnectionReference(connection)))
+            if (!_connectionReferences.TryAdd(id, new ConnectionReference(connection)))
             {
                 throw new ArgumentException(nameof(id));
             }
@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             }
         }
 
-        public void Walk(Action<HttpConnection> callback)
+        public void Walk(Action<KestrelConnection> callback)
         {
             foreach (var kvp in _connectionReferences)
             {

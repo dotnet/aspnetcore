@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private readonly Http2PeerSettings _serverSettings = new Http2PeerSettings();
         private readonly Http2PeerSettings _clientSettings = new Http2PeerSettings();
 
-        private readonly Http2Frame _incomingFrame = new Http2Frame();
+        private readonly Http2Frame _incomingFrame;
 
         private Http2Stream _currentHeadersStream;
         private RequestHeaderParsingState _requestHeaderParsingState;
@@ -87,8 +87,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         {
             _context = context;
             _frameWriter = new Http2FrameWriter(context.Transport.Output, context.ConnectionContext, _outputFlowControl, this, context.ConnectionId, context.ServiceContext.Log);
-            _hpackDecoder = new HPackDecoder((int)_serverSettings.HeaderTableSize);
             _serverSettings.MaxConcurrentStreams = (uint)context.ServiceContext.ServerOptions.Limits.Http2.MaxStreamsPerConnection;
+            _serverSettings.MaxFrameSize = (uint)context.ServiceContext.ServerOptions.Limits.Http2.MaxFrameSize;
+            _serverSettings.HeaderTableSize = (uint)context.ServiceContext.ServerOptions.Limits.Http2.HeaderTableSize;
+            _hpackDecoder = new HPackDecoder((int)_serverSettings.HeaderTableSize);
+            _incomingFrame = new Http2Frame(_serverSettings.MaxFrameSize);
         }
 
         public string ConnectionId => _context.ConnectionId;
@@ -601,7 +604,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             return Task.CompletedTask;
         }
 
-        private Task ProcessSettingsFrameAsync()
+        private async Task ProcessSettingsFrameAsync()
         {
             if (_currentHeadersStream != null)
             {
@@ -620,7 +623,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorSettingsAckLengthNotZero, Http2ErrorCode.FRAME_SIZE_ERROR);
                 }
 
-                return Task.CompletedTask;
+                return;
             }
 
             if (_incomingFrame.PayloadLength % 6 != 0)
@@ -632,10 +635,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             {
                 // int.MaxValue is the largest allowed windows size.
                 var previousInitialWindowSize = (int)_clientSettings.InitialWindowSize;
+                var previousMaxFrameSize = _clientSettings.MaxFrameSize;
 
                 _clientSettings.Update(_incomingFrame.GetSettings());
 
-                var ackTask = _frameWriter.WriteSettingsAckAsync(); // Ack before we update the windows, they could send data immediately.
+                // Ack before we update the windows, they could send data immediately.
+                await _frameWriter.WriteSettingsAckAsync();
+
+                if (_clientSettings.MaxFrameSize != previousMaxFrameSize)
+                {
+                    _frameWriter.UpdateMaxFrameSize(_clientSettings.MaxFrameSize);
+                }
 
                 // This difference can be negative.
                 var windowSizeDifference = (int)_clientSettings.InitialWindowSize - previousInitialWindowSize;
@@ -653,8 +663,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                         }
                     }
                 }
-
-                return ackTask;
             }
             catch (Http2SettingsParameterOutOfRangeException ex)
             {

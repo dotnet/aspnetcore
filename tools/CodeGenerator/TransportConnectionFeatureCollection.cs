@@ -19,6 +19,8 @@ namespace CodeGenerator
                 "IApplicationTransportFeature",
                 "ITransportSchedulerFeature",
                 "IConnectionLifetimeFeature",
+                "IConnectionHeartbeatFeature",
+                "IConnectionLifetimeNotificationFeature",
                 "IBytesWrittenFeature",
             };
 

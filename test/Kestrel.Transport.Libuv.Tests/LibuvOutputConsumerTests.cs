@@ -396,7 +396,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                     // Cause all writes to fail
                     while (completeQueue.TryDequeue(out var triggerNextCompleted))
                     {
-                        await _libuvThread.PostAsync(cb => cb(-1), triggerNextCompleted);
+                        await _libuvThread.PostAsync(cb => cb(LibuvConstants.ECONNRESET.Value), triggerNextCompleted);
                     }
 
                     // Second task is now completed

@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         private static readonly byte[] _worldBytes = Encoding.ASCII.GetBytes("world");
         private static readonly byte[] _helloWorldBytes = Encoding.ASCII.GetBytes("hello, world");
         private static readonly byte[] _noData = new byte[0];
-        private static readonly byte[] _maxData = Encoding.ASCII.GetBytes(new string('a', Http2Frame.MinAllowedMaxFrameSize));
+        private static readonly byte[] _maxData = Encoding.ASCII.GetBytes(new string('a', Http2Limits.MinAllowedMaxFrameSize));
 
         [Fact]
         public async Task Frame_Received_OverMaxSize_FrameError()
@@ -85,20 +85,47 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await InitializeConnectionAsync(_echoApplication);
 
             await StartStreamAsync(1, _browserRequestHeaders, endStream: false);
-            // Manually craft a frame where the size is too large. Our own frame class won't allow this.
-            // See Http2Frame.Length
-            var length = Http2Frame.MinAllowedMaxFrameSize + 1; // Too big
-            var frame = new byte[9 + length];
-            frame[0] = (byte)((length & 0x00ff0000) >> 16);
-            frame[1] = (byte)((length & 0x0000ff00) >> 8);
-            frame[2] = (byte)(length & 0x000000ff);
-            await SendAsync(frame);
+            uint length = Http2Limits.MinAllowedMaxFrameSize + 1;
+            await SendDataAsync(1, new byte[length].AsSpan(), endStream: true);
 
             await WaitForConnectionErrorAsync<Http2ConnectionErrorException>(
                 ignoreNonGoAwayFrames: true,
                 expectedLastStreamId: 1,
                 expectedErrorCode: Http2ErrorCode.FRAME_SIZE_ERROR,
-                expectedErrorMessage: CoreStrings.FormatHttp2ErrorFrameOverLimit(length, Http2Frame.MinAllowedMaxFrameSize));
+                expectedErrorMessage: CoreStrings.FormatHttp2ErrorFrameOverLimit(length, Http2Limits.MinAllowedMaxFrameSize));
+        }
+
+        [Fact]
+        public async Task ServerSettings_ChangesRequestMaxFrameSize()
+        {
+            var length = Http2Limits.MinAllowedMaxFrameSize + 10;
+            _connectionContext.ServiceContext.ServerOptions.Limits.Http2.MaxFrameSize = length;
+            _connection = new Http2Connection(_connectionContext);
+
+            await InitializeConnectionAsync(_echoApplication, expectedSettingsLegnth: 12);
+
+            await StartStreamAsync(1, _browserRequestHeaders, endStream: false);
+            await SendDataAsync(1, new byte[length].AsSpan(), endStream: true);
+
+            await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 37,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1);
+            // The client's settings is still defaulted to Http2PeerSettings.MinAllowedMaxFrameSize so the echo response will come back in two separate frames
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: Http2Limits.MinAllowedMaxFrameSize,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 1);
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: length - Http2Limits.MinAllowedMaxFrameSize,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 1);
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 0,
+                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withStreamId: 1);
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
         }
 
         [Fact]
@@ -2042,7 +2069,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             await InitializeConnectionAsync(_noopApplication);
 
-            var frame = new Http2Frame();
+            var frame = new Http2Frame(Http2Limits.MinAllowedMaxFrameSize);
             frame.PrepareSettings(Http2SettingsFrameFlags.ACK);
             await SendAsync(frame.Raw);
 
@@ -2073,6 +2100,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [InlineData(Http2SettingsParameter.SETTINGS_MAX_FRAME_SIZE, 16 * 1024 - 1, Http2ErrorCode.PROTOCOL_ERROR)]
         [InlineData(Http2SettingsParameter.SETTINGS_MAX_FRAME_SIZE, 16 * 1024 * 1024, Http2ErrorCode.PROTOCOL_ERROR)]
         [InlineData(Http2SettingsParameter.SETTINGS_MAX_FRAME_SIZE, uint.MaxValue, Http2ErrorCode.PROTOCOL_ERROR)]
+        [InlineData(Http2SettingsParameter.SETTINGS_HEADER_TABLE_SIZE, 4097, Http2ErrorCode.PROTOCOL_ERROR)]
         public async Task SETTINGS_Received_InvalidParameterValue_ConnectionError(Http2SettingsParameter parameter, uint value, Http2ErrorCode expectedErrorCode)
         {
             await InitializeConnectionAsync(_noopApplication);
@@ -2158,6 +2186,60 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedLastStreamId: 1,
                 expectedErrorCode: Http2ErrorCode.FLOW_CONTROL_ERROR,
                 expectedErrorMessage: CoreStrings.Http2ErrorInitialWindowSizeInvalid);
+        }
+
+        [Fact]
+        public async Task SETTINGS_Received_ChangesAllowedResponseMaxFrameSize()
+        {
+            // This includes the default response headers such as :status, etc
+            var defaultResponseHeaderLength = 37;
+            var headerValueLength = Http2Limits.MinAllowedMaxFrameSize;
+            // First byte is always 0
+            // Second byte is the length of header name which is 1
+            // Third byte is the header name which is A/B
+            // Next three bytes are the 7-bit integer encoding representation of the header length which is 16*1024
+            var encodedHeaderLength = 1 + 1 + 1 + 3 + headerValueLength;
+            // Adding 10 additional bytes for encoding overhead
+            var payloadLength = defaultResponseHeaderLength + encodedHeaderLength;
+
+            await InitializeConnectionAsync(context =>
+            {
+                context.Response.Headers["A"] = new string('a', headerValueLength);
+                context.Response.Headers["B"] = new string('b', headerValueLength);
+                return context.Response.Body.WriteAsync(new byte[payloadLength], 0, payloadLength);
+            });
+
+            // Update client settings
+            _clientSettings.MaxFrameSize = (uint)payloadLength;
+            await SendSettingsAsync();
+
+            // ACK
+            await ExpectAsync(Http2FrameType.SETTINGS,
+                withLength: 0,
+                withFlags: (byte)Http2SettingsFrameFlags.ACK,
+                withStreamId: 0);
+
+            // Start request
+            await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
+
+            await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: defaultResponseHeaderLength + encodedHeaderLength,
+                withFlags: (byte)Http2HeadersFrameFlags.NONE,
+                withStreamId: 1);
+            await ExpectAsync(Http2FrameType.CONTINUATION,
+                withLength: encodedHeaderLength,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1);
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: payloadLength,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 1);
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 0,
+                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withStreamId: 1);
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
         }
 
         [Fact]

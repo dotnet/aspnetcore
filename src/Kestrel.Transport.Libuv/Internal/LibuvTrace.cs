@@ -30,10 +30,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         // ConnectionWriteCallback: Reserved: 12
 
         private static readonly Action<ILogger, string, Exception> _connectionError =
-            LoggerMessage.Define<string>(LogLevel.Information, 14, @"Connection id ""{ConnectionId}"" communication error.");
+            LoggerMessage.Define<string>(LogLevel.Information, new EventId(14, nameof(ConnectionError)), @"Connection id ""{ConnectionId}"" communication error.");
 
         private static readonly Action<ILogger, string, Exception> _connectionReset =
-            LoggerMessage.Define<string>(LogLevel.Debug, 19, @"Connection id ""{ConnectionId}"" reset.");
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(19, nameof(ConnectionReset)), @"Connection id ""{ConnectionId}"" reset.");
+
+        private static readonly Action<ILogger, string, Exception> _connectionAborted =
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(20, nameof(ConnectionAborted)), @"Connection id ""{ConnectionId}"" aborted.");
 
         private readonly ILogger _logger;
 
@@ -93,6 +96,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         public void ConnectionResume(string connectionId)
         {
             _connectionResume(_logger, connectionId, null);
+        }
+
+        public void ConnectionAborted(string connectionId)
+        {
+            _connectionAborted(_logger, connectionId, null);
         }
 
         public IDisposable BeginScope<TState>(TState state) => _logger.BeginScope(state);

@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         public const bool DefaultEnablePush = true;
         public const uint DefaultMaxConcurrentStreams = uint.MaxValue;
         public const uint DefaultInitialWindowSize = 65535;
-        public const uint DefaultMaxFrameSize = 16384;
+        public const uint DefaultMaxFrameSize = Http2Limits.MinAllowedMaxFrameSize;
         public const uint DefaultMaxHeaderListSize = uint.MaxValue;
         public const uint MaxWindowSize = int.MaxValue;
 
@@ -38,6 +38,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 switch (setting.Parameter)
                 {
                     case Http2SettingsParameter.SETTINGS_HEADER_TABLE_SIZE:
+                        if (value > Http2Limits.MaxAllowedHeaderTableSize)
+                        {
+                            throw new Http2SettingsParameterOutOfRangeException(Http2SettingsParameter.SETTINGS_HEADER_TABLE_SIZE,
+                                lowerBound: 0,
+                                upperBound: Http2Limits.MaxAllowedHeaderTableSize);
+                        }
                         HeaderTableSize = value;
                         break;
                     case Http2SettingsParameter.SETTINGS_ENABLE_PUSH:
@@ -64,11 +70,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                         InitialWindowSize = value;
                         break;
                     case Http2SettingsParameter.SETTINGS_MAX_FRAME_SIZE:
-                        if (value <  Http2Frame.MinAllowedMaxFrameSize || value > Http2Frame.MaxAllowedMaxFrameSize)
+                        if (value < Http2Limits.MinAllowedMaxFrameSize || value > Http2Limits.MaxAllowedMaxFrameSize)
                         {
                             throw new Http2SettingsParameterOutOfRangeException(Http2SettingsParameter.SETTINGS_MAX_FRAME_SIZE,
-                                lowerBound: Http2Frame.MinAllowedMaxFrameSize,
-                                upperBound: Http2Frame.MaxAllowedMaxFrameSize);
+                                lowerBound: Http2Limits.MinAllowedMaxFrameSize,
+                                upperBound: Http2Limits.MaxAllowedMaxFrameSize);
                         }
 
                         MaxFrameSize = value;

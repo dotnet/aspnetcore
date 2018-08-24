@@ -17,6 +17,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 {
     public class ConnectionDispatcher : IConnectionDispatcher
     {
+        private static long _lastConnectionId = long.MinValue;
+
         private readonly ServiceContext _serviceContext;
         private readonly ConnectionDelegate _connectionDelegate;
 
@@ -44,27 +46,50 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             // This *must* be set before returning from OnConnection
             connection.Application = pair.Application;
 
-            return Execute(connection);
+            return Execute(new KestrelConnection(connection));
         }
 
-        private async Task Execute(ConnectionContext connectionContext)
+        private async Task Execute(KestrelConnection connection)
         {
-            using (BeginConnectionScope(connectionContext))
+            var id = Interlocked.Increment(ref _lastConnectionId);
+            var connectionContext = connection.TransportConnection;
+
+            try
             {
-                try
+                _serviceContext.ConnectionManager.AddConnection(id, connection);
+
+                Log.ConnectionStart(connectionContext.ConnectionId);
+                KestrelEventSource.Log.ConnectionStart(connectionContext);
+
+                using (BeginConnectionScope(connectionContext))
                 {
-                    await _connectionDelegate(connectionContext);
+                    try
+                    {
+                        await _connectionDelegate(connectionContext);
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.LogCritical(0, ex, $"{nameof(ConnectionDispatcher)}.{nameof(Execute)}() {connectionContext.ConnectionId}");
+                    }
+                    finally
+                    {
+                        // Complete the transport PipeReader and PipeWriter after calling into application code
+                        connectionContext.Transport.Input.Complete();
+                        connectionContext.Transport.Output.Complete();
+                    }
+
+                    // Wait for the transport to close
+                    await CancellationTokenAsTask(connectionContext.ConnectionClosed);
                 }
-                catch (Exception ex)
-                {
-                    Log.LogCritical(0, ex, $"{nameof(ConnectionDispatcher)}.{nameof(Execute)}() {connectionContext.ConnectionId}");
-                }
-                finally
-                {
-                    // Complete the transport PipeReader and PipeWriter after calling into application code
-                    connectionContext.Transport.Input.Complete();
-                    connectionContext.Transport.Output.Complete();
-                }
+            }
+            finally
+            {
+                Log.ConnectionStop(connectionContext.ConnectionId);
+                KestrelEventSource.Log.ConnectionStop(connectionContext);
+
+                connection.Complete();
+
+                _serviceContext.ConnectionManager.RemoveConnection(id);
             }
         }
 
@@ -76,6 +101,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             }
 
             return null;
+        }
+
+        private static Task CancellationTokenAsTask(CancellationToken token)
+        {
+            if (token.IsCancellationRequested)
+            {
+                return Task.CompletedTask;
+            }
+
+            // Transports already dispatch prior to tripping ConnectionClosed
+            // since application code can register to this token.
+            var tcs = new TaskCompletionSource<object>();
+            token.Register(state => ((TaskCompletionSource<object>)state).SetResult(null), tcs);
+            return tcs.Task;
         }
 
         // Internal for testing

@@ -20,6 +20,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
                                                IApplicationTransportFeature,
                                                ITransportSchedulerFeature,
                                                IConnectionLifetimeFeature,
+                                               IConnectionHeartbeatFeature,
+                                               IConnectionLifetimeNotificationFeature,
                                                IBytesWrittenFeature
     {
         // NOTE: When feature interfaces are added to or removed from this TransportConnection class implementation,
@@ -85,7 +87,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
             set => ConnectionClosed = value;
         }
 
+        CancellationToken IConnectionLifetimeNotificationFeature.ConnectionClosedRequested
+        {
+            get => ConnectionClosedRequested;
+            set => ConnectionClosedRequested = value;
+        }
+
         void IConnectionLifetimeFeature.Abort() => Abort(abortReason: null);
+
+        void IConnectionLifetimeNotificationFeature.RequestClose() => RequestClose();
+
+        void IConnectionHeartbeatFeature.OnHeartbeat(System.Action<object> action, object state)
+        {
+            OnHeartbeat(action, state);
+        }
 
         long IBytesWrittenFeature.TotalBytesWritten => TotalBytesWritten;
     }

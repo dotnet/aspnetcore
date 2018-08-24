@@ -2142,6 +2142,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         internal static string FormatHttp2FrameMissingFields()
             => GetString("Http2FrameMissingFields");
 
+        /// <summary>
+        /// A value between {min} and {max} is required.
+        /// </summary>
+        internal static string ArgumentOutOfRange
+        {
+            get => GetString("ArgumentOutOfRange");
+        }
+
+        /// <summary>
+        /// A value between {min} and {max} is required.
+        /// </summary>
+        internal static string FormatArgumentOutOfRange(object min, object max)
+            => string.Format(CultureInfo.CurrentCulture, GetString("ArgumentOutOfRange", "min", "max"), min, max);
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.IO.Pipelines;
@@ -14,10 +15,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
     public abstract partial class TransportConnection : ConnectionContext
     {
         private IDictionary<object, object> _items;
+        private List<(Action<object> handler, object state)> _heartbeatHandlers;
+        private readonly object _heartbeatLock = new object();
+        protected readonly CancellationTokenSource _connectionClosingCts = new CancellationTokenSource();
 
         public TransportConnection()
         {
             FastReset();
+
+            ConnectionClosedRequested = _connectionClosingCts.Token;
         }
 
         public IPAddress RemoteAddress { get; set; }
@@ -55,6 +61,37 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
 
         public CancellationToken ConnectionClosed { get; set; }
 
+        public CancellationToken ConnectionClosedRequested { get; set; }
+
+        public void TickHeartbeat()
+        {
+            lock (_heartbeatLock)
+            {
+                if (_heartbeatHandlers == null)
+                {
+                    return;
+                }
+
+                foreach (var (handler, state) in _heartbeatHandlers)
+                {
+                    handler(state);
+                }
+            }
+        }
+
+        public void OnHeartbeat(Action<object> action, object state)
+        {
+            lock (_heartbeatLock)
+            {
+                if (_heartbeatHandlers == null)
+                {
+                    _heartbeatHandlers = new List<(Action<object> handler, object state)>();
+                }
+
+                _heartbeatHandlers.Add((action, state));
+            }
+        }
+
         // DO NOT remove this override to ConnectionContext.Abort. Doing so would cause
         // any TransportConnection that does not override Abort or calls base.Abort
         // to stack overflow when IConnectionLifetimeFeature.Abort() is called.
@@ -64,6 +101,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
         public override void Abort(ConnectionAbortedException abortReason)
         {
             Output.CancelPendingRead();
+        }
+
+        public void RequestClose()
+        {
+            try
+            {
+                _connectionClosingCts.Cancel();
+            }
+            catch (ObjectDisposedException)
+            {
+                // There's a race where the token could be disposed
+                // swallow the exception and no-op
+            }
         }
     }
 }
