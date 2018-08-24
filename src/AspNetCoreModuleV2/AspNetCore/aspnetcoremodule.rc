@@ -10,7 +10,7 @@
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 
-#define FileDescription "IIS AspNetCore Module V2. Commit: " CommitHash
+#define FileDescription "IIS ASP.NET Core Module V2. Commit: " CommitHash
 
 /////////////////////////////////////////////////////////////////////////////
 //

@@ -13,6 +13,7 @@
 #include "exceptions.h"
 #include "atlbase.h"
 #include "config_utility.h"
+#include "StringHelpers.h"
 
 inline HANDLE g_logFile = INVALID_HANDLE_VALUE;
 inline HMODULE g_hModule;
@@ -21,43 +22,72 @@ inline SRWLOCK g_logFileLock;
 HRESULT
 PrintDebugHeader()
 {
-    DWORD  verHandle = 0;
-    UINT   size      = 0;
-    LPVOID lpBuffer  = NULL;
+    // Major, minor are stored in dwFileVersionMS field and patch, build in dwFileVersionLS field as pair of 32 bit numbers
+    DebugPrintf(ASPNETCORE_DEBUG_FLAG_INFO, "Initializing logs for %S. %S. %S.",
+        GetModuleName().c_str(),
+        GetProcessIdString().c_str(),
+        GetVersionInfoString().c_str()
+    );
 
-    WCHAR path[MAX_PATH];
-    RETURN_LAST_ERROR_IF(!GetModuleFileName(g_hModule, path, sizeof(path)));
+    return S_OK;
+}
 
-    DWORD verSize = GetFileVersionInfoSize(path, &verHandle);
-    RETURN_LAST_ERROR_IF(verSize == 0);
+std::wstring
+GetProcessIdString()
+{
+    return format(L"Process Id: %u.", GetCurrentProcessId());
+}
 
-    // Allocate memory to hold data structure returned by GetFileVersionInfo
-    std::vector<BYTE> verData(verSize);
-
-    RETURN_LAST_ERROR_IF(!GetFileVersionInfo(path, verHandle, verSize, verData.data()));
-    RETURN_LAST_ERROR_IF(!VerQueryValue(verData.data(), L"\\", &lpBuffer, &size));
-
-    auto verInfo = reinterpret_cast<VS_FIXEDFILEINFO *>(lpBuffer);
-    // Check result signature
-    if (verInfo->dwSignature == VS_FFI_SIGNATURE)
+std::wstring
+GetVersionInfoString()
+{
+    auto func = [](std::wstring& res)
     {
+        DWORD  verHandle = 0;
+        UINT   size = 0;
+        LPVOID lpBuffer = NULL;
+
+        auto path = GetModuleName();
+
+        DWORD verSize = GetFileVersionInfoSize(path.c_str(), &verHandle);
+        RETURN_LAST_ERROR_IF(verSize == 0);
+
+        // Allocate memory to hold data structure returned by GetFileVersionInfo
+        std::vector<BYTE> verData(verSize);
+
+        RETURN_LAST_ERROR_IF(!GetFileVersionInfo(path.c_str(), verHandle, verSize, verData.data()));
+        RETURN_LAST_ERROR_IF(!VerQueryValue(verData.data(), L"\\", &lpBuffer, &size));
+
+        auto verInfo = reinterpret_cast<VS_FIXEDFILEINFO *>(lpBuffer);
+        if (verInfo->dwSignature != VS_FFI_SIGNATURE)
+        {
+            RETURN_IF_FAILED(E_FAIL);
+        }
+
         LPVOID pvProductName = NULL;
         unsigned int iProductNameLen = 0;
         RETURN_LAST_ERROR_IF(!VerQueryValue(verData.data(), _T("\\StringFileInfo\\040904b0\\FileDescription"), &pvProductName, &iProductNameLen));
 
-        // Major, minor are stored in dwFileVersionMS field and patch, build in dwFileVersionLS field as pair of 32 bit numbers
-        DebugPrintf(ASPNETCORE_DEBUG_FLAG_INFO, "Initializing logs for %S. ProcessId: %d. File Version: %d.%d.%d.%d. Description: %S",
-            path,
-            GetCurrentProcessId(),
-            ( verInfo->dwFileVersionMS >> 16 ) & 0xffff,
-            ( verInfo->dwFileVersionMS >>  0 ) & 0xffff,
-            ( verInfo->dwFileVersionLS >> 16 ) & 0xffff,
-            ( verInfo->dwFileVersionLS >>  0 ) & 0xffff,
-            pvProductName
-        );
-    }
+        res = format(L"File Version: %d.%d.%d.%d. Description: %s",
+            (verInfo->dwFileVersionMS >> 16) & 0xffff,
+            (verInfo->dwFileVersionMS >> 0) & 0xffff,
+            (verInfo->dwFileVersionLS >> 16) & 0xffff,
+            (verInfo->dwFileVersionLS >> 0) & 0xffff,
+            pvProductName);
+        return S_OK;
+    };
 
-    return S_OK;
+    std::wstring versionInfoString;
+
+    return func(versionInfoString) == S_OK ? versionInfoString : L"";
+}
+
+std::wstring
+GetModuleName()
+{
+    WCHAR path[MAX_PATH];
+    LOG_LAST_ERROR_IF(GetModuleFileName(g_hModule, path, sizeof(path)));
+    return path;
 }
 
 void SetDebugFlags(const std::wstring &debugValue)
