@@ -327,9 +327,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
         private static bool IsConnectionResetError(SocketError errorCode)
         {
             // A connection reset can be reported as SocketError.ConnectionAborted on Windows.
+            // ProtocolType can be removed once https://github.com/dotnet/corefx/issues/31927 is fixed.
             return errorCode == SocketError.ConnectionReset ||
-                   errorCode == SocketError.ConnectionAborted ||
-                   errorCode == SocketError.Shutdown;
+                   errorCode == SocketError.Shutdown ||
+                   (errorCode == SocketError.ConnectionAborted && IsWindows) ||
+                   (errorCode == SocketError.ProtocolType && IsMacOS);
         }
 
         private static bool IsConnectionAbortError(SocketError errorCode)
@@ -337,7 +339,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             // Calling Dispose after ReceiveAsync can cause an "InvalidArgument" error on *nix.
             return errorCode == SocketError.OperationAborted ||
                    errorCode == SocketError.Interrupted ||
-                   errorCode == SocketError.InvalidArgument;
+                   (errorCode == SocketError.InvalidArgument && !IsWindows);
         }
     }
 }
