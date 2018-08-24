@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Common;
 using Octokit;
@@ -34,7 +35,7 @@ namespace TriageBuildFailures.Handlers
         {
             var result = text;
 
-            if(result.Length > 6000)
+            if (result.Length > 6000)
             {
                 result = text.Substring(0, 6000);
                 result += $"{Environment.NewLine}...";
@@ -84,7 +85,7 @@ namespace TriageBuildFailures.Handlers
                 var owner = TestToRepoMapper.FindOwner(failure.Name, Reporter);
 
                 var issuesTask = GHClient.GetFlakyIssues(owner, repo);
-                
+
                 var errors = TCClient.GetTestFailureText(failure);
 
                 var applicableIssues = GetApplicableIssues(await issuesTask, failure);
@@ -123,7 +124,7 @@ CC @{ GetManager(repo) }";
         {
             var repo = Config.GitHub.Repos.FirstOrDefault(r => r.Name.Equals(repoName, StringComparison.OrdinalIgnoreCase));
 
-            if(repo == null || string.IsNullOrEmpty(repo.Manager))
+            if (repo == null || string.IsNullOrEmpty(repo.Manager))
             {
                 // Default to Eilon
                 return "Eilon (because the bot doesn't know who else to pick)";
@@ -141,47 +142,9 @@ CC @{ GetManager(repo) }";
             return shortTestName.Split('.').Last();
         }
 
-        private static int LevenshteinDistance(string source, string target)
-        {
-            // Use the Levenshtein distance for "fuzzy matching"
-            var sourceLen = source == null ? 0 : source.Length;
-            var targetLen = target == null ? 0 : target.Length;
+        private static Regex WordRegex = new Regex(@"[ \r\n\\?()]+", RegexOptions.Compiled);
 
-            if(sourceLen == 0)
-            {
-                return 0;
-            }
-
-            if(targetLen == 0)
-            {
-                return 0;
-            }
-
-            var matrix = new int[sourceLen+1, targetLen+1];
-            for (int i = 0; i <= sourceLen; i++) matrix[i, 0] = i;
-            for (int j = 0; j <= targetLen; j++) matrix[0, j] = j;
-
-            for(int i = 1; i <= sourceLen; i++)
-            {
-                var sourceChar = source[i-1];
-                
-                for(int j = 1;j <= targetLen; j++)
-                {
-                    var targetChar = target[j-1];
-                    var cost = 0;
-                    if(sourceChar != targetChar)
-                    {
-                        cost = 1;
-                    }
-
-                    matrix[i, j] = new int[] { matrix[i - 1, j] + 1, matrix[i, j - 1] + 1, matrix[i - 1, j - 1] + cost }.Min();
-                }
-            }
-
-            return matrix[sourceLen, targetLen];
-        }
-
-        private static bool LevenshteinClose(string source, string target)
+        private static bool MessagesAreClose(string source, string target)
         {
             if (source == null && target == null)
             {
@@ -192,9 +155,12 @@ CC @{ GetManager(repo) }";
                 return false;
             }
 
-            var dist = LevenshteinDistance(source, target);
+            var h1 = new HashSet<string>(WordRegex.Split(source).Distinct());
+            var h2 = new HashSet<string>(WordRegex.Split(target).Distinct());
 
-            var percentSame = (source.Length - dist) / (double)source.Length;
+            var intersection = h1.Intersect(h2);
+            var min = Math.Min(h1.Count, h2.Count);
+            var percentSame = intersection.Count() / (double)min;
 
             // After a little testing and fiddling it seems that ~70% similarity of exception messages is a good heuristic for if things are "the same problem".
             // We expect this to cause the occasional false positive/negative, but let's see what they are before doing something more complicated here.
@@ -232,7 +198,7 @@ CC @{ GetManager(repo) }";
                 // 2. The issue exception message is the same as or close to the test exception message.
                 if (issue.Title.Contains(shortTestName, StringComparison.OrdinalIgnoreCase)
                     || (issueException != null && issueException.Equals(testException))
-                    || LevenshteinClose(issueException, testException))
+                    || MessagesAreClose(issueException, testException))
                 {
                     yield return issue;
                 }
