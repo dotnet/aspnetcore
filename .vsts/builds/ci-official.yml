@@ -6,8 +6,9 @@ phases:
     matrix:
       Release:
         BuildConfiguration: Release
-    # see https://github.com/dotnet/core-eng/issues/4053
-    demands: in(agent.name, 'DDVSOSWINAGE086', 'DDVSOSWINAGE087')
+    # see https://github.com/dotnet/core-eng/issues/4053 - MSI's cannot build from the NTAuthority\NetworkService account
+    demands:
+    - agent.os -eq 'DDVSOSWINAGE086'
   variables:
     CI: true
     DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
