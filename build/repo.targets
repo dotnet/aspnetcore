@@ -23,6 +23,16 @@
     <GradleOptions Condition="'$(CI)' == 'true'">$(GradleOptions) -Dorg.gradle.daemon=false</GradleOptions>
   </PropertyGroup>
 
+  <Target Name="EnsureJdkInstalled" BeforeTargets="GetToolsets" Condition=" '$(SkipJavaClient)' != 'true' ">
+    <Error Text="The JDK is required to build the SignalR repo on CI. Set the JAVA_HOME environment variable to the installation of the JDK"
+            Condition="'$(HasJdk)' != 'true' AND '$(CI)' == 'true' " />
+    
+    <Warning Text="The JDK is required to build the SignalR Java client. No JDK could be found so this will be skipped. Set the JAVA_HOME environment variable to the installation of the JDK"
+        Condition="'$(HasJdk)' != 'true' AND '$(CI)' != 'true' " />
+
+    <Message Text="Using Java from $(JavacPath)" Importance="high" />
+  </Target>
+
   <PropertyGroup>
     <RestoreDependsOn>$(RestoreDependsOn);RestoreNpm</RestoreDependsOn>
   </PropertyGroup>
@@ -48,7 +58,7 @@
     <Exec Command="npm run test:inner -- --no-color --configuration $(Configuration)" WorkingDirectory="$(RepositoryRoot)clients/ts/FunctionalTests" IgnoreStandardErrorWarningFormat="true" />
   </Target>
 
-  <Target Name="RunJavaTests" Condition="'$(HasJdk)' == 'true'">
+  <Target Name="RunJavaTests" Condition="'$(HasJdk)' == 'true' AND '$(SkipJavaClient)' != 'true' ">
     <Message Text="Running Java client tests" Importance="high" />
     <Message Text="> gradlew $(GradleOptions) test" Importance="high" />
     <Exec Command="./gradlew $(GradleOptions) test" WorkingDirectory="$(RepositoryRoot)clients/java/signalr" IgnoreStandardErrorWarningFormat="true" />
@@ -80,8 +90,8 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="GetJavaArtifactInfo" Condition="'$(HasJdk)' == 'true'">
-    <ItemGroup>
+  <Target Name="GetJavaArtifactInfo">
+    <ItemGroup Condition=" '$(SkipJavaClient)' != 'true' ">
       <ArtifactInfo Include="$(BuildDir)\%(Jars.Identity)">
         <ArtifactType>JavaJar</ArtifactType>
         <Version>$(JavaClientVersion)</Version>
@@ -92,9 +102,7 @@
         <Version>$(JavaClientVersion)</Version>
         <Category>ship</Category>
       </ArtifactInfo>
-    </ItemGroup>
 
-    <ItemGroup>
       <FilesToExcludeFromSigning Include="$(BuildDir)\%(Jars.Identity)" />
       <FilesToExcludeFromSigning Include="$(BuildDir)\%(PomFile.Identity)" />
     </ItemGroup>
@@ -110,7 +118,7 @@
     <Exec Command="npm run build" WorkingDirectory="$(RepositoryRoot)clients/ts/FunctionalTests" IgnoreStandardErrorWarningFormat="true" />
   </Target>
 
-  <Target Name="BuildJavaClient" Condition="'$(HasJdk)' == 'true'" DependsOnTargets="GetJavaArtifactInfo">
+  <Target Name="BuildJavaClient" Condition="'$(HasJdk)' == 'true' AND '$(SkipJavaClient)' != 'true' " DependsOnTargets="GetJavaArtifactInfo">
     <Message Text="Building Java client" Importance="high" />
     <Message Text="> gradlew $(GradleOptions) compileJava" Importance="high" />
     <Exec Command="./gradlew $(GradleOptions) compileJava" WorkingDirectory="$(RepositoryRoot)clients/java/signalr" />
@@ -135,7 +143,7 @@
     <JavaBuildFiles Include="@(Jars);@(PomFile)"/>
   </ItemGroup>
 
-  <Target Name="PackJavaClient" Condition="'$(HasJdk)' == 'true'">
+  <Target Name="PackJavaClient" Condition="'$(HasJdk)' == 'true' AND '$(SkipJavaClient)' != 'true' ">
     <Message Text="Packing Java client" Importance="high" />
     <Message Text="> gradlew $(GradleOptions) createPackage" Importance="high" />
     <Exec Command="./gradlew $(GradleOptions) createPackage" WorkingDirectory="$(RepositoryRoot)clients/java/signalr" />

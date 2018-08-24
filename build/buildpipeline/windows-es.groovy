@@ -9,6 +9,6 @@ simpleNode('Windows.10.Amd64.ClientRS4.ES.Open') {
     stage ('Build') {
         def logFolder = getLogFolder()
         def environment = "set ASPNETCORE_TEST_LOG_DIR=${WORKSPACE}\\${logFolder}"
-        bat "${environment}&.\\run.cmd -CI default-build"
+        bat "${environment}&.\\build.cmd -ci /p:SkipJavaClient=true"
     }
 }
