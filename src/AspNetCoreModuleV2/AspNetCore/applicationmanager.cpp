@@ -142,7 +142,7 @@ APPLICATION_MANAGER::RecycleApplicationFromManager(
                 }
                 catch (...)
                 {
-                    LOG_ERRORF("Failed to stop application %S", application->QueryApplicationInfoKey().c_str());
+                    LOG_ERRORF(L"Failed to stop application '%ls'", application->QueryApplicationInfoKey().c_str());
                     OBSERVE_CAUGHT_EXCEPTION();
 
                     // Failed to recycle an application. Log an event

@@ -8,7 +8,7 @@
 
 HRESULT AppOfflineTrackingApplication::StartMonitoringAppOffline()
 {
-    LOG_INFOF("Starting app_offline monitoring in application %S", m_applicationPath.c_str());
+    LOG_INFOF(L"Starting app_offline monitoring in application '%ls'", m_applicationPath.c_str());
     HRESULT hr = StartMonitoringAppOflineImpl();
 
     if (FAILED_LOG(hr))
@@ -56,7 +56,7 @@ void AppOfflineTrackingApplication::OnAppOffline()
         return;
     }
 
-    LOG_INFOF("Received app_offline notification in application %S", m_applicationPath.c_str());
+    LOG_INFOF(L"Received app_offline notification in application '%ls'", m_applicationPath.c_str());
     EventLog::Info(
         ASPNETCORE_EVENT_RECYCLE_APPOFFLINE,
         ASPNETCORE_EVENT_RECYCLE_APPOFFLINE_MSG,

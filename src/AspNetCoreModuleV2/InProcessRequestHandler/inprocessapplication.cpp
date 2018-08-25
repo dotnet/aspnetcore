@@ -443,7 +443,7 @@ IN_PROCESS_APPLICATION::ExecuteApplication(
         FINISHED_IF_FAILED(SetEnvironementVariablesOnWorkerProcess());
     }
 
-    LOG_INFO("Starting managed application");
+    LOG_INFO(L"Starting managed application");
 
     if (m_pLoggerProvider == NULL)
     {
@@ -547,12 +547,12 @@ IN_PROCESS_APPLICATION::RunDotnetApplication(DWORD argc, CONST PCWSTR* argv, hos
             hr = HRESULT_FROM_WIN32(GetLastError());
         }
 
-        LOG_INFOF("Managed application exited with code %d", m_ProcessExitCode);
+        LOG_INFOF(L"Managed application exited with code %d", m_ProcessExitCode);
     }
     __except(GetExceptionCode() != 0)
     {
 
-        LOG_INFOF("Managed threw an exception %d", GetExceptionCode());
+        LOG_INFOF(L"Managed threw an exception %d", GetExceptionCode());
         hr = HRESULT_FROM_WIN32(GetLastError());
     }
 

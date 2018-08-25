@@ -11,64 +11,58 @@
 TEST(ParseHostFxrArguments, BasicHostFxrArguments)
 {
     std::vector<std::wstring> bstrArray;
-    PCWSTR exeStr = L"C:/Program Files/dotnet.exe";
 
-    HOSTFXR_UTILITY::ParseHostfxrArguments(
+    HOSTFXR_UTILITY::AppendArguments(
         L"exec \"test.dll\"", // args
-        exeStr,  // exe path
         L"invalid",  // physical path to application
         bstrArray); // args array.
 
-    EXPECT_EQ(3, bstrArray.size());
-    ASSERT_STREQ(exeStr, bstrArray[0].c_str());
-    ASSERT_STREQ(L"exec", bstrArray[1].c_str());
-    ASSERT_STREQ(L"test.dll", bstrArray[2].c_str());
+    EXPECT_EQ(2, bstrArray.size());
+    ASSERT_STREQ(L"exec", bstrArray[0].c_str());
+    ASSERT_STREQ(L"test.dll", bstrArray[1].c_str());
 }
 
 TEST(ParseHostFxrArguments, NoExecProvided)
 {
     std::vector<std::wstring> bstrArray;
-    PCWSTR exeStr = L"C:/Program Files/dotnet.exe";
 
-    HOSTFXR_UTILITY::ParseHostfxrArguments(
+    HOSTFXR_UTILITY::AppendArguments(
         L"test.dll", // args
-        exeStr,  // exe path
         L"ignored",  // physical path to application
         bstrArray); // args array.
 
-    EXPECT_EQ(DWORD(2), bstrArray.size());
-    ASSERT_STREQ(exeStr, bstrArray[0].c_str());
-    ASSERT_STREQ(L"test.dll", bstrArray[1].c_str());
+    EXPECT_EQ(1, bstrArray.size());
+    ASSERT_STREQ(L"test.dll", bstrArray[0].c_str());
 }
 
 TEST(ParseHostFxrArguments, ConvertDllToAbsolutePath)
 {
     std::vector<std::wstring> bstrArray;
-    PCWSTR exeStr = L"C:/Program Files/dotnet.exe";
     // we need to use existing dll so let's use ntdll that we know exists everywhere
     auto system32 = Environment::ExpandEnvironmentVariables(L"%WINDIR%\\System32");
-    HOSTFXR_UTILITY::ParseHostfxrArguments(
+    HOSTFXR_UTILITY::AppendArguments(
         L"exec \"ntdll.dll\"", // args
-        exeStr,  // exe path
         system32,  // physical path to application
         bstrArray, // args array.
         true); // expandDllPaths
 
-    EXPECT_EQ(DWORD(3), bstrArray.size());
-    ASSERT_STREQ(exeStr, bstrArray[0].c_str());
-    ASSERT_STREQ(L"exec", bstrArray[1].c_str());
-    ASSERT_STREQ((system32 + L"\\ntdll.dll").c_str(), bstrArray[2].c_str());
+    EXPECT_EQ(2, bstrArray.size());
+    ASSERT_STREQ(L"exec", bstrArray[0].c_str());
+    ASSERT_STREQ((system32 + L"\\ntdll.dll").c_str(), bstrArray[1].c_str());
 }
 
 TEST(ParseHostFxrArguments, ProvideNoArgs_InvalidArgs)
 {
     std::vector<std::wstring> bstrArray;
-    PCWSTR exeStr = L"C:/Program Files/dotnet.exe";
+    std::filesystem::path struHostFxrDllLocation;
+    std::filesystem::path struExeLocation;
 
-    ASSERT_THROW(HOSTFXR_UTILITY::ParseHostfxrArguments(
-        L"", // args
-        exeStr,  // exe path
-        L"ignored",  // physical path to application
+    EXPECT_THROW(HOSTFXR_UTILITY::GetHostFxrParameters(
+        L"dotnet", // processPath
+        L"some\\path",  // application physical path, ignored.
+        L"",  //arguments
+        struHostFxrDllLocation,
+        struExeLocation,
         bstrArray), // args array.
         HOSTFXR_UTILITY::StartupParametersResolutionException);
 }

@@ -34,7 +34,7 @@ APPLICATION_INFO::GetOrCreateApplication(
     {
         if (m_pApplication->QueryStatus() == RECYCLED)
         {
-            LOG_INFO("Application went offline");
+            LOG_INFO(L"Application went offline");
 
             // Call to wait for application to complete stopping
             m_pApplication->Stop(/* fServerInitiated */ false);
@@ -50,14 +50,14 @@ APPLICATION_INFO::GetOrCreateApplication(
 
     if (AppOfflineApplication::ShouldBeStarted(httpApplication))
     {
-        LOG_INFO("Detected app_offline file, creating polling application");
+        LOG_INFO(L"Detected app_offline file, creating polling application");
         m_pApplication.reset(new AppOfflineApplication(httpApplication));
     }
     else
     {
         FINISHED_IF_FAILED(m_handlerResolver.GetApplicationFactory(httpApplication, m_pApplicationFactory));
 
-        LOG_INFO("Creating handler application");
+        LOG_INFO(L"Creating handler application");
         IAPPLICATION * newApplication;
         FINISHED_IF_FAILED(m_pApplicationFactory->Execute(
             &m_pServer,
@@ -97,7 +97,7 @@ APPLICATION_INFO::ShutDownApplication(bool fServerInitiated)
 
     if (m_pApplication)
     {
-        LOG_ERRORF("Stopping application %S", QueryApplicationInfoKey().c_str());
+        LOG_ERRORF(L"Stopping application '%ls'", QueryApplicationInfoKey().c_str());
         m_pApplication ->Stop(fServerInitiated);
         m_pApplication = nullptr;
         m_pApplicationFactory = nullptr;

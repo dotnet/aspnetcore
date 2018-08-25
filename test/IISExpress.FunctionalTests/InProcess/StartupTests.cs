@@ -33,13 +33,10 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         public async Task ExpandEnvironmentVariableInWebConfig()
         {
             // Point to dotnet installed in user profile.
-            await AssertStarts(
-                deploymentParameters =>
-                {
-                    deploymentParameters.EnvironmentVariables["DotnetPath"] = _dotnetLocation;
-                    deploymentParameters.WebConfigActionList.Add(WebConfigHelpers.AddOrModifyAspNetCoreSection("processPath", "%DotnetPath%"));
-                }
-            );
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(publish: true);
+            deploymentParameters.EnvironmentVariables["DotnetPath"] = _dotnetLocation;
+            deploymentParameters.WebConfigActionList.Add(WebConfigHelpers.AddOrModifyAspNetCoreSection("processPath", "%DotnetPath%"));
+            await StartAsync(deploymentParameters);
         }
 
         [ConditionalTheory]
@@ -68,26 +65,23 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [ConditionalFact]
         public async Task StartsWithDotnetLocationWithoutExe()
         {
-            var dotnetLocationWithoutExtension = _dotnetLocation.Substring(0, _dotnetLocation.LastIndexOf("."));
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(publish: true);
 
-            await AssertStarts(
-                deploymentParameters =>
-                {
-                    deploymentParameters.WebConfigActionList.Add(WebConfigHelpers.AddOrModifyAspNetCoreSection("processPath", dotnetLocationWithoutExtension));
-                }
-            );
+            var dotnetLocationWithoutExtension = _dotnetLocation.Substring(0, _dotnetLocation.LastIndexOf("."));
+            deploymentParameters.WebConfigActionList.Add(WebConfigHelpers.AddOrModifyAspNetCoreSection("processPath", dotnetLocationWithoutExtension));
+
+            await StartAsync(deploymentParameters);
         }
 
         [ConditionalFact]
         public async Task StartsWithDotnetLocationUppercase()
         {
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(publish: true);
+
             var dotnetLocationWithoutExtension = _dotnetLocation.Substring(0, _dotnetLocation.LastIndexOf(".")).ToUpperInvariant();
-            await AssertStarts(
-                deploymentParameters =>
-                {
-                    deploymentParameters.WebConfigActionList.Add(WebConfigHelpers.AddOrModifyAspNetCoreSection("processPath", dotnetLocationWithoutExtension));
-                }
-            );
+            deploymentParameters.WebConfigActionList.Add(WebConfigHelpers.AddOrModifyAspNetCoreSection("processPath", dotnetLocationWithoutExtension));
+
+            await StartAsync(deploymentParameters);
         }
 
         [ConditionalTheory]
@@ -95,30 +89,16 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [InlineData("dotnet.EXE")]
         public async Task StartsWithDotnetOnThePath(string path)
         {
-            await AssertStarts(
-                deploymentParameters =>
-                {
-                    deploymentParameters.EnvironmentVariables["PATH"] = Path.GetDirectoryName(_dotnetLocation);
-                    deploymentParameters.WebConfigActionList.Add(WebConfigHelpers.AddOrModifyAspNetCoreSection("processPath", path));
-                }
-            );
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(publish: true);
+
+            deploymentParameters.EnvironmentVariables["PATH"] = Path.GetDirectoryName(_dotnetLocation);
+            deploymentParameters.WebConfigActionList.Add(WebConfigHelpers.AddOrModifyAspNetCoreSection("processPath", path));
+
+            var deploymentResult = await DeployAsync(deploymentParameters);
+            await deploymentResult.AssertStarts();
 
             // Verify that in this scenario where.exe was invoked only once by shim and request handler uses cached value
             Assert.Equal(1, TestSink.Writes.Count(w => w.Message.Contains("Invoking where.exe to find dotnet.exe")));
-        }
-
-        private async Task AssertStarts(Action<IISDeploymentParameters> preDeploy = null)
-        {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(publish: true);
-
-            preDeploy?.Invoke(deploymentParameters);
-
-            var deploymentResult = await DeployAsync(deploymentParameters);
-
-            var response = await deploymentResult.HttpClient.GetAsync("HelloWorld");
-
-            var responseText = await response.Content.ReadAsStringAsync();
-            Assert.Equal("Hello World", responseText);
         }
 
         public static TestMatrix TestVariants
@@ -132,13 +112,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         public async Task HelloWorld(TestVariant variant)
         {
             var deploymentParameters = _fixture.GetBaseDeploymentParameters(variant, publish: true);
-
-            var deploymentResult = await DeployAsync(deploymentParameters);
-
-            var response = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
-            var responseText = await response.Content.ReadAsStringAsync();
-
-            Assert.Equal("Hello World", responseText);
+            await StartAsync(deploymentParameters);
         }
 
         [ConditionalFact]
@@ -194,7 +168,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         [ConditionalTheory]
         [MemberData(nameof(InvalidConfigTransformationsScenarios))]
-        public async Task StartsWithWebConfigVariationsPortable(string scenario)
+        public async Task ReportsWebConfigAuthoringErrors(string scenario)
         {
             var (expectedError, action) = InvalidConfigTransformations[scenario];
             var iisDeploymentParameters = _fixture.GetBaseDeploymentParameters(publish: true);
@@ -227,5 +201,148 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 ));
             return dictionary;
         }
+
+        private static Dictionary<string, Func<IISDeploymentParameters, string>> PortableConfigTransformations = InitPortableWebConfigTransformations();
+        public static IEnumerable<object[]> PortableConfigTransformationsScenarios => PortableConfigTransformations.ToTheoryData();
+
+        [ConditionalTheory]
+        [MemberData(nameof(PortableConfigTransformationsScenarios))]
+        public async Task StartsWithWebConfigVariationsPortable(string scenario)
+        {
+            var action = PortableConfigTransformations[scenario];
+            var iisDeploymentParameters = _fixture.GetBaseDeploymentParameters(publish: true);
+            var expectedArguments = action(iisDeploymentParameters);
+            var result = await DeployAsync(iisDeploymentParameters);
+            Assert.Equal(expectedArguments, await result.HttpClient.GetStringAsync("/CommandLineArgs"));
+        }
+
+        public static Dictionary<string, Func<IISDeploymentParameters, string>> InitPortableWebConfigTransformations()
+        {
+            var dictionary = new Dictionary<string, Func<IISDeploymentParameters, string>>();
+            var pathWithSpace = "\u03c0 \u2260 3\u00b714";
+
+            dictionary.Add("App in bin subdirectory full path to dll using exec and quotes",
+                parameters => {
+                    MoveApplication(parameters, "bin");
+                    TransformArguments(parameters, (arguments, root) => "exec " + Path.Combine(root, "bin", arguments));
+                    return "";
+                });
+
+            dictionary.Add("App in subdirectory with space",
+                parameters => {
+                    MoveApplication(parameters, pathWithSpace);
+                    TransformArguments(parameters, (arguments, root) => Path.Combine(pathWithSpace, arguments));
+                    return "";
+                });
+
+            dictionary.Add("App in subdirectory with space and full path to dll",
+                parameters => {
+                    MoveApplication(parameters, pathWithSpace);
+                    TransformArguments(parameters, (arguments, root) => Path.Combine(root, pathWithSpace, arguments));
+                    return "";
+                });
+
+            dictionary.Add("App in bin subdirectory with space full path to dll using exec and quotes",
+                parameters => {
+                    MoveApplication(parameters, pathWithSpace);
+                    TransformArguments(parameters, (arguments, root) => "exec \"" + Path.Combine(root, pathWithSpace, arguments) + "\" extra arguments");
+                    return "extra|arguments";
+                });
+
+            dictionary.Add("App in bin subdirectory and quoted argument",
+                parameters => {
+                    MoveApplication(parameters, "bin");
+                    TransformArguments(parameters, (arguments, root) => Path.Combine("bin", arguments) + " \"extra argument\"");
+                    return "extra argument";
+                });
+
+            dictionary.Add("App in bin subdirectory full path to dll",
+                parameters => {
+                    MoveApplication(parameters, "bin");
+                    TransformArguments(parameters, (arguments, root) => Path.Combine(root, "bin", arguments) + " extra arguments");
+                    return "extra|arguments";
+                });
+            return dictionary;
+        }
+
+
+        private static Dictionary<string, Func<IISDeploymentParameters, string>> StandaloneConfigTransformations = InitStandaloneConfigTransformations();
+        public static IEnumerable<object[]> StandaloneConfigTransformationsScenarios => StandaloneConfigTransformations.ToTheoryData();
+
+        [ConditionalTheory]
+        [MemberData(nameof(StandaloneConfigTransformationsScenarios))]
+        public async Task StartsWithWebConfigVariationsStandalone(string scenario)
+        {
+            var action = StandaloneConfigTransformations[scenario];
+            var iisDeploymentParameters = _fixture.GetBaseDeploymentParameters(publish: true);
+            iisDeploymentParameters.ApplicationType = ApplicationType.Standalone;
+            var expectedArguments = action(iisDeploymentParameters);
+            var result = await DeployAsync(iisDeploymentParameters);
+            Assert.Equal(expectedArguments, await result.HttpClient.GetStringAsync("/CommandLineArgs"));
+        }
+
+        public static Dictionary<string, Func<IISDeploymentParameters, string>> InitStandaloneConfigTransformations()
+        {
+            var dictionary = new Dictionary<string, Func<IISDeploymentParameters, string>>();
+            var pathWithSpace = "\u03c0 \u2260 3\u00b714";
+
+            dictionary.Add("App in subdirectory",
+                parameters => {
+                    MoveApplication(parameters, pathWithSpace);
+                    TransformPath(parameters, (path, root) => Path.Combine(pathWithSpace, path));
+                    TransformArguments(parameters, (arguments, root) => "\"additional argument\"");
+                    return "additional argument";
+                });
+
+            dictionary.Add("App in bin subdirectory full path",
+                parameters => {
+                    MoveApplication(parameters, pathWithSpace);
+                    TransformPath(parameters, (path, root) => Path.Combine(root, pathWithSpace, path));
+                    TransformArguments(parameters, (arguments, root) => "additional arguments");
+                    return "additional|arguments";
+                });
+
+            return dictionary;
+        }
+
+        private static void MoveApplication(
+            IISDeploymentParameters parameters,
+            string subdirectory)
+        {
+            parameters.WebConfigActionList.Add((config, contentRoot) =>
+            {
+                var source = new DirectoryInfo(contentRoot);
+                var subDirectoryPath = source.CreateSubdirectory(subdirectory);
+
+                // Copy everything into a subfolder
+                Helpers.CopyFiles(source, subDirectoryPath, null);
+                // Cleanup files
+                foreach (var fileSystemInfo in source.GetFiles())
+                {
+                    fileSystemInfo.Delete();
+                }
+            });
+        }
+
+        private static void TransformPath(IISDeploymentParameters parameters, Func<string, string, string> transformation)
+        {
+            parameters.WebConfigActionList.Add(
+                (config, contentRoot) =>
+                {
+                    var aspNetCoreElement = config.Descendants("aspNetCore").Single();
+                    aspNetCoreElement.SetAttributeValue("processPath", transformation((string)aspNetCoreElement.Attribute("processPath"), contentRoot));
+                });
+        }
+
+        private static void TransformArguments(IISDeploymentParameters parameters, Func<string, string, string> transformation)
+        {
+            parameters.WebConfigActionList.Add(
+                (config, contentRoot) =>
+                {
+                    var aspNetCoreElement = config.Descendants("aspNetCore").Single();
+                    aspNetCoreElement.SetAttributeValue("arguments", transformation((string)aspNetCoreElement.Attribute("arguments"), contentRoot));
+                });
+        }
+
     }
 }

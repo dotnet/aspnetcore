@@ -45,9 +45,8 @@ public:
 
     static
     void
-    ParseHostfxrArguments(
+    AppendArguments(
         const std::wstring          &arugments,
-        const std::filesystem::path &exePath,
         const std::filesystem::path &applicationPhysicalPath,
         std::vector<std::wstring>   &arguments,
         bool                        expandDllPaths = false

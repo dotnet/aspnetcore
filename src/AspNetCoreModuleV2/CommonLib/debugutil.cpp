@@ -23,7 +23,7 @@ HRESULT
 PrintDebugHeader()
 {
     // Major, minor are stored in dwFileVersionMS field and patch, build in dwFileVersionLS field as pair of 32 bit numbers
-    DebugPrintf(ASPNETCORE_DEBUG_FLAG_INFO, "Initializing logs for %S. %S. %S.",
+    DebugPrintfW(ASPNETCORE_DEBUG_FLAG_INFO, L"Initializing logs for '%ls'. %ls. %ls.",
         GetModuleName().c_str(),
         GetProcessIdString().c_str(),
         GetVersionInfoString().c_str()
@@ -86,7 +86,7 @@ std::wstring
 GetModuleName()
 {
     WCHAR path[MAX_PATH];
-    LOG_LAST_ERROR_IF(GetModuleFileName(g_hModule, path, sizeof(path)));
+    LOG_LAST_ERROR_IF(!GetModuleFileName(g_hModule, path, sizeof(path)));
     return path;
 }
 
@@ -146,7 +146,7 @@ bool CreateDebugLogFile(const std::wstring &debugOutputFile)
         {
             if (g_logFile != INVALID_HANDLE_VALUE)
             {
-                LOG_INFOF("Switching debug log files to %S", debugOutputFile.c_str());
+                LOG_INFOF(L"Switching debug log files to '%ls'", debugOutputFile.c_str());
             }
 
             SRWExclusiveLock lock(g_logFileLock);
@@ -296,19 +296,29 @@ IsEnabled(
     return ( dwFlag & DEBUG_FLAGS_VAR );
 }
 
+void WriteFileEncoded(UINT codePage, HANDLE hFile, const LPCWSTR  szString)
+{
+    DWORD nBytesWritten = 0;
+    auto const encodedByteCount = WideCharToMultiByte(codePage, 0, szString, -1, nullptr, 0, nullptr, nullptr);
+    auto encodedBytes = std::shared_ptr<CHAR[]>(new CHAR[encodedByteCount]);
+    WideCharToMultiByte(codePage, 0, szString, -1, encodedBytes.get(), encodedByteCount, nullptr, nullptr);
+
+    WriteFile(hFile, encodedBytes.get(), encodedByteCount - 1, &nBytesWritten, nullptr);
+}
+
 VOID
-DebugPrint(
+DebugPrintW(
     DWORD   dwFlag,
-    const LPCSTR  szString
+    const LPCWSTR  szString
     )
 {
-    STACK_STRA (strOutput, 256);
+    STACK_STRU (strOutput, 256);
     HRESULT  hr = S_OK;
 
     if ( IsEnabled( dwFlag ) )
     {
-        hr = strOutput.SafeSnprintf(
-            "[%s] %s\r\n",
+        hr = strOutput.SafeSnwprintf(
+            L"[%S] %s\r\n",
             DEBUG_LABEL_VAR, szString );
 
         if (FAILED (hr))
@@ -316,22 +326,68 @@ DebugPrint(
             return;
         }
 
-        OutputDebugStringA( strOutput.QueryStr() );
-        DWORD nBytesWritten = 0;
-        if (IsEnabled(ASPNETCORE_DEBUG_FLAG_CONSOLE))
+        OutputDebugString( strOutput.QueryStr() );
+
+        if (IsEnabled(ASPNETCORE_DEBUG_FLAG_CONSOLE) || g_logFile != INVALID_HANDLE_VALUE)
         {
-            auto outputHandle = GetStdHandle(STD_OUTPUT_HANDLE);
-            WriteFile(outputHandle, strOutput.QueryStr(), strOutput.QueryCB(), &nBytesWritten, nullptr);
+            if (IsEnabled(ASPNETCORE_DEBUG_FLAG_CONSOLE))
+            {
+                WriteFileEncoded(GetConsoleOutputCP(), GetStdHandle(STD_OUTPUT_HANDLE), strOutput.QueryStr());
+            }
+
+            if (g_logFile != INVALID_HANDLE_VALUE)
+            {
+                SRWExclusiveLock lock(g_logFileLock);
+
+                SetFilePointer(g_logFile, 0, nullptr, FILE_END);
+                WriteFileEncoded(CP_UTF8, g_logFile, strOutput.QueryStr());
+                FlushFileBuffers(g_logFile);
+            }
+        }
+    }
+}
+
+VOID
+DebugPrintfW(
+    DWORD   dwFlag,
+    const LPCWSTR  szFormat,
+    ...
+    )
+{
+    STACK_STRU (strCooked,256);
+
+    va_list  args;
+    HRESULT hr = S_OK;
+
+    if ( IsEnabled( dwFlag ) )
+    {
+        va_start( args, szFormat );
+
+        hr = strCooked.SafeVsnwprintf(szFormat, args );
+
+        va_end( args );
+
+        if (FAILED (hr))
+        {
+            return;
         }
 
-        if (g_logFile != INVALID_HANDLE_VALUE)
-        {
-            SRWExclusiveLock lock(g_logFileLock);
+        DebugPrintW( dwFlag, strCooked.QueryStr() );
+    }
+}
 
-            SetFilePointer(g_logFile, 0, nullptr, FILE_END);
-            WriteFile(g_logFile, strOutput.QueryStr(), strOutput.QueryCB(), &nBytesWritten, nullptr);
-            FlushFileBuffers(g_logFile);
-        }
+VOID
+DebugPrint(
+    DWORD   dwFlag,
+    const LPCSTR  szString
+    )
+{
+    STACK_STRU (strOutput, 256);
+
+    if ( IsEnabled( dwFlag ) )
+    {
+        strOutput.CopyA(szString);
+        DebugPrintW(dwFlag, strOutput.QueryStr());
     }
 }
 

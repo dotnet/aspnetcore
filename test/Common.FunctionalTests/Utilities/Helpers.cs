@@ -65,12 +65,15 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         {
             foreach (DirectoryInfo directoryInfo in source.GetDirectories())
             {
-                CopyFiles(directoryInfo, target.CreateSubdirectory(directoryInfo.Name), logger);
+                if (directoryInfo.FullName != target.FullName)
+                {
+                    CopyFiles(directoryInfo, target.CreateSubdirectory(directoryInfo.Name), logger);
+                }
             }
-            logger.LogDebug($"Processing {target.FullName}");
+            logger?.LogDebug($"Processing {target.FullName}");
             foreach (FileInfo fileInfo in source.GetFiles())
             {
-                logger.LogDebug($"  Copying {fileInfo.Name}");
+                logger?.LogDebug($"  Copying {fileInfo.Name}");
                 var destFileName = Path.Combine(target.FullName, fileInfo.Name);
                 fileInfo.CopyTo(destFileName);
             }
