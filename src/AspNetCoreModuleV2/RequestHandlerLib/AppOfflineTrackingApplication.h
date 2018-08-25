@@ -12,7 +12,7 @@ class AppOfflineTrackingApplication: public APPLICATION
 {
 public:
     AppOfflineTrackingApplication(const IHttpApplication& application)
-        : APPLICATION(),
+        : APPLICATION(application),
         m_applicationPath(application.GetApplicationPhysicalPath()),
         m_fileWatcher(nullptr),
         m_fAppOfflineProcessed(false)

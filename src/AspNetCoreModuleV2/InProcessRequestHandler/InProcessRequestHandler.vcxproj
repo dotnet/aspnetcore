@@ -228,6 +228,7 @@
     <ClInclude Include="inprocessapplication.h" />
     <ClInclude Include="InProcessApplicationBase.h" />
     <ClInclude Include="inprocesshandler.h" />
+    <ClInclude Include="InProcessOptions.h" />
     <ClInclude Include="ShuttingDownApplication.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="StartupExceptionApplication.h" />
@@ -238,6 +239,7 @@
     <ClCompile Include="inprocessapplication.cpp" />
     <ClCompile Include="InProcessApplicationBase.cpp" />
     <ClCompile Include="inprocesshandler.cpp" />
+    <ClCompile Include="InProcessOptions.cpp" />
     <ClCompile Include="managedexports.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

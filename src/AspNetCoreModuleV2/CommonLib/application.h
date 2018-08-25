@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <string>
 #include "iapplication.h"
 #include "ntassert.h"
 #include "SRWExclusiveLock.h"
@@ -20,11 +21,15 @@ public:
         return m_fStopCalled ? APPLICATION_STATUS::RECYCLED : APPLICATION_STATUS::RUNNING;
     }
 
-    APPLICATION()
+    APPLICATION(const IHttpApplication& pHttpApplication)
         : m_fStopCalled(false),
-          m_cRefs(1)
+          m_cRefs(1),
+          m_applicationPhysicalPath(pHttpApplication.GetApplicationPhysicalPath()),
+          m_applicationConfigPath(pHttpApplication.GetAppConfigPath()),
+          m_applicationId(pHttpApplication.GetApplicationId())
     {
         InitializeSRWLock(&m_stateLock);
+        m_applicationVirtualPath = ToVirtualPath(m_applicationConfigPath);
     }
 
 
@@ -69,10 +74,58 @@ public:
         }
     }
 
+    const std::wstring&
+    QueryApplicationId() const
+    {
+        return m_applicationId;
+    }
+
+    const std::wstring&
+    QueryApplicationPhysicalPath() const
+    {
+        return m_applicationPhysicalPath;
+    }
+
+    const std::wstring&
+    QueryApplicationVirtualPath() const
+    {
+        return m_applicationVirtualPath;
+    }
+
+    const std::wstring&
+    QueryConfigPath() const
+    {
+        return m_applicationConfigPath;
+    }
+
 protected:
-    SRWLOCK m_stateLock;
+    SRWLOCK m_stateLock {};
     bool m_fStopCalled;
 
 private:
     mutable LONG           m_cRefs;
+
+    std::wstring m_applicationPhysicalPath;
+    std::wstring m_applicationVirtualPath;
+    std::wstring m_applicationConfigPath;
+    std::wstring m_applicationId;
+
+    static std::wstring ToVirtualPath(const std::wstring& configurationPath)
+    {
+        auto segments = 0;
+        auto position = configurationPath.find('/');
+        // Skip first 4 segments of config path
+        while (segments != 3 && position != std::wstring::npos)
+        {
+            segments++;
+            position = configurationPath.find('/', position + 1);
+        }
+
+        if (position != std::wstring::npos)
+        {
+            return configurationPath.substr(position);
+        }
+
+        return L"/";
+    }
 };

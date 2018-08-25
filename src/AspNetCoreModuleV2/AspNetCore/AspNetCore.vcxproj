@@ -231,7 +231,7 @@
     <ClInclude Include="applicationinfo.h" />
     <ClInclude Include="AppOfflineApplication.h" />
     <ClInclude Include="AppOfflineHandler.h" />
-    <ClInclude Include="aspnetcore_shim_config.h" />
+    <ClInclude Include="ShimOptions.h" />
     <ClInclude Include="globalmodule.h" />
     <ClInclude Include="applicationmanager.h" />
     <ClInclude Include="HandlerResolver.h" />
@@ -246,7 +246,7 @@
     <ClCompile Include="applicationmanager.cpp" />
     <ClCompile Include="AppOfflineApplication.cpp" />
     <ClCompile Include="AppOfflineHandler.cpp" />
-    <ClCompile Include="aspnetcore_shim_config.cpp" />
+    <ClCompile Include="ShimOptions.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="globalmodule.cpp" />
     <ClCompile Include="HandlerResolver.cpp" />

@@ -195,6 +195,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="application.h" />
+    <ClInclude Include="ConfigurationLoadException.h" />
+    <ClInclude Include="ConfigurationSection.h" />
+    <ClInclude Include="ConfigurationSource.h" />
     <ClInclude Include="config_utility.h" />
     <ClInclude Include="Environment.h" />
     <ClInclude Include="EventLog.h" />
@@ -211,6 +214,7 @@
     <ClInclude Include="IOutputManager.h" />
     <ClInclude Include="irequesthandler.h" />
     <ClInclude Include="LoggingHelpers.h" />
+    <ClInclude Include="NonCopyable.h" />
     <ClInclude Include="NullOutputManager.h" />
     <ClInclude Include="PipeOutputManager.h" />
     <ClInclude Include="StdWrapper.h" />
@@ -221,8 +225,12 @@
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="StringHelpers.h" />
     <ClInclude Include="sttimer.h" />
+    <ClInclude Include="WebConfigConfigurationSection.h" />
+    <ClInclude Include="WebConfigConfigurationSource.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ConfigurationSection.cpp" />
+    <ClCompile Include="ConfigurationSource.cpp" />
     <ClCompile Include="debugutil.cpp" />
     <ClCompile Include="Environment.cpp" />
     <ClCompile Include="EventLog.cpp" />
@@ -245,6 +253,8 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="StringHelpers.cpp" />
+    <ClCompile Include="WebConfigConfigurationSection.cpp" />
+    <ClCompile Include="WebConfigConfigurationSource.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\IISLib\IISLib.vcxproj">

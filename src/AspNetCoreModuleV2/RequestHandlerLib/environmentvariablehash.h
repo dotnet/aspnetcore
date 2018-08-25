@@ -33,13 +33,13 @@ public:
     {
         HRESULT hr = S_OK;
         if (FAILED(hr = _strName.Copy(pszName)) ||
-            FAILED(hr = _strValue.Copy(pszValue))) 
+            FAILED(hr = _strValue.Copy(pszValue)))
         {
         }
-        return hr;        
+        return hr;
     }
 
-    VOID 
+    VOID
     Reference() const
     {
         InterlockedIncrement(&_cRefs);
@@ -137,5 +137,13 @@ struct ENVIRONMENT_VAR_HASH_DELETER
     {
         hashTable->Clear();
         delete hashTable;
+    }
+};
+
+struct ENVIRONMENT_VAR_ENTRY_DELETER
+{
+    void operator ()(ENVIRONMENT_VAR_ENTRY* entry) const
+    {
+        entry->Dereference();
     }
 };

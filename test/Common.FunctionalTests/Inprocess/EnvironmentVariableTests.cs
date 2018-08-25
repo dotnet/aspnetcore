@@ -8,11 +8,11 @@ using Xunit;
 namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 {
     [Collection(IISTestSiteCollection.Name)]
-    public class EnvironmentVariableTests
+    public class EnvironmentVariableTests: FixtureLoggedTest
     {
         private readonly IISTestSiteFixture _fixture;
 
-        public EnvironmentVariableTests(IISTestSiteFixture fixture)
+        public EnvironmentVariableTests(IISTestSiteFixture fixture): base(fixture)
         {
             _fixture = fixture;
         }

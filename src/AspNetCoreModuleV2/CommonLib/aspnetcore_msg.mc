@@ -190,7 +190,7 @@ Language=English
 .
 
 Messageid=1034
-SymbolicName=ASPNETCORE_EVENT_UNKNOWN_HOSTING_MODEL_ERROR
+SymbolicName=ASPNETCORE_CONFIGURATION_LOAD_ERROR
 Language=English
 %1
 .
