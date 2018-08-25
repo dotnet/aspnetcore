@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -153,8 +153,17 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             new RazorDiagnosticDescriptor(
             "BL9991",
             () => "The attribute names could not be inferred from bind attibute '{0}'. Bind attributes should be of the form" +
-                    "'bind', 'bind-value' or 'bind-value-change'",
+                "'bind', 'bind-value' or 'bind-value-change'",
             RazorDiagnosticSeverity.Error);
+
+        public static RazorDiagnostic CreateBindAttribute_InvalidSyntax(SourceSpan? source, string attribute)
+        {
+            var diagnostic = RazorDiagnostic.Create(
+                BindAttribute_InvalidSyntax,
+                source ?? SourceSpan.Undefined,
+                attribute);
+            return diagnostic;
+        }
 
         public static readonly RazorDiagnosticDescriptor DisallowedScriptTag = new RazorDiagnosticDescriptor(
             "BL9992",
@@ -169,13 +178,15 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             return diagnostic;
         }
 
-        public static RazorDiagnostic CreateBindAttribute_InvalidSyntax(SourceSpan? source, string attribute)
+        public static readonly RazorDiagnosticDescriptor Template_InvalidLocation =
+            new RazorDiagnosticDescriptor(
+            "BL9994",
+            () => "Razor templates cannot be used in attributes.",
+            RazorDiagnosticSeverity.Error);
+
+        public static RazorDiagnostic CreateTemplate_InvalidLocation(SourceSpan? source)
         {
-            var diagnostic = RazorDiagnostic.Create(
-                BindAttribute_InvalidSyntax,
-                source ?? SourceSpan.Undefined,
-                attribute);
-            return diagnostic;
+            return RazorDiagnostic.Create(Template_InvalidLocation, source ?? SourceSpan.Undefined);
         }
     }
 }

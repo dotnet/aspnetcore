@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Blazor.Shared;
@@ -21,9 +21,25 @@ namespace Microsoft.AspNetCore.Blazor.Razor
 
         public string BuilderVarName { get; private set; } = "builder";
 
-        public void OpenScope(string tagName, bool isComponent)
+        public void OpenElementScope(string tagName)
         {
-            _stack.Push(new ScopeEntry(tagName, isComponent));
+            _stack.Push(new ScopeEntry(tagName, ScopeKind.Element));
+        }
+
+        public void OpenComponentScope(string tagName)
+        {
+            _stack.Push(new ScopeEntry(tagName, ScopeKind.Component));
+        }
+
+        public void OpenTemplateScope(CodeRenderingContext context, string variableName)
+        {
+            var currentScope = new ScopeEntry("__template", ScopeKind.Template);
+            _stack.Push(currentScope);
+
+            // Templates always get a lambda scope, because they are defined as a lambda.
+            OffsetBuilderVarNumber(1);
+            currentScope.LambdaScope = context.CodeWriter.BuildLambda(BuilderVarName, variableName);
+
         }
 
         public void CloseScope(CodeRenderingContext context)
@@ -34,8 +50,13 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             if (currentScope.LambdaScope != null)
             {
                 currentScope.LambdaScope.Dispose();
-                context.CodeWriter.Write(")");
-                context.CodeWriter.WriteEndMethodInvocation();
+
+                if (currentScope.Kind == ScopeKind.Component)
+                {
+                    context.CodeWriter.Write(")");
+                    context.CodeWriter.WriteEndMethodInvocation();
+                }
+
                 OffsetBuilderVarNumber(-1);
             }
         }
@@ -46,7 +67,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             {
                 var currentScope = _stack.Peek();
 
-                if (currentScope.IsComponent && currentScope.ChildCount == 0)
+                if (currentScope.Kind == ScopeKind.Component && currentScope.ChildCount == 0)
                 {
                     // When we're about to insert the first child into a component,
                     // it's time to open a new lambda
@@ -72,16 +93,25 @@ namespace Microsoft.AspNetCore.Blazor.Razor
         private class ScopeEntry
         {
             public readonly string TagName;
-            public readonly bool IsComponent;
+            public ScopeKind Kind;
             public int ChildCount;
             public IDisposable LambdaScope;
 
-            public ScopeEntry(string tagName, bool isComponent)
+            public ScopeEntry(string tagName, ScopeKind kind)
             {
                 TagName = tagName;
-                IsComponent = isComponent;
+                Kind = kind;
                 ChildCount = 0;
             }
+
+            public override string ToString() => $"<{TagName}> ({Kind})";
+        }
+
+        private enum ScopeKind
+        {
+            Element,
+            Component,
+            Template,
         }
     }
 }

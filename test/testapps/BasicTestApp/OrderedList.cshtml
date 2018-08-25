@@ -1,0 +1,22 @@
+<ol>
+    @{
+        var index = 1;
+    }
+    @foreach (var item in Items)
+    {
+        @Template.WithValue(new Context() { Index = index++, Item = item, });
+    }
+</ol>
+
+@functions{
+    [Parameter] IEnumerable<string> Items { get; set; }
+
+    [Parameter] RenderFragment<Context> Template { get; set; }
+
+    public class Context
+    {
+        public int Index { get; set; }
+
+        public string Item { get; set; }
+    }
+}

@@ -7,6 +7,7 @@ using System.Linq;
 using Microsoft.AspNetCore.Blazor.Shared;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
+using Microsoft.AspNetCore.Razor.Language.Extensions;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
 namespace Microsoft.AspNetCore.Blazor.Razor
@@ -351,7 +352,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             // because each component creates a lambda scope for its child content.
             //
             // We're hacking it a bit here by just forcing every component to have an empty lambda
-            _scopeStack.OpenScope(node.TagName, isComponent: true);
+            _scopeStack.OpenComponentScope(node.TagName);
             _scopeStack.IncrementCurrentScopeChildCount(context);
 
             foreach (var child in node.Body)
@@ -397,6 +398,34 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             {
                 // Do nothing
             }
+            else if (node.Children.Count == 1 && node.Children[0] is TemplateIntermediateNode template)
+            {
+                // Templates are represented as lambdas assignable for RenderFragment<T> (for some T).
+                // We don't have a type to write down unless its bound to a stronly typed attribute.
+                // That's OK because the compiler gives an error if we can't type check it.
+                context.CodeWriter.Write(DesignTimeVariable);
+                context.CodeWriter.Write(" = ");
+
+                // If we have a parameter type, then add a type check.
+                if (NeedsTypeCheck(node))
+                {
+                    context.CodeWriter.Write(BlazorApi.RuntimeHelpers.TypeCheck);
+                    context.CodeWriter.Write("<");
+                    context.CodeWriter.Write(node.BoundAttribute.TypeName);
+                    context.CodeWriter.Write(">");
+                    context.CodeWriter.Write("(");
+                }
+
+                context.RenderNode(template);
+
+                if (NeedsTypeCheck(node))
+                {
+                    context.CodeWriter.Write(")");
+                }
+
+                context.CodeWriter.Write(";");
+                context.CodeWriter.WriteLine();
+            }
             else
             {
                 // There are a few different forms that could be used to contain all of the tokens, but we don't really care
@@ -437,7 +466,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                     context.CodeWriter.Write(" = ");
 
                     // If we have a parameter type, then add a type check.
-                    if (node.BoundAttribute != null && !node.BoundAttribute.IsWeaklyTyped())
+                    if (NeedsTypeCheck(node))
                     {
                         context.CodeWriter.Write(BlazorApi.RuntimeHelpers.TypeCheck);
                         context.CodeWriter.Write("<");
@@ -451,7 +480,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                         WriteCSharpToken(context, tokens[i]);
                     }
 
-                    if (node.BoundAttribute != null && !node.BoundAttribute.IsWeaklyTyped())
+                    if (NeedsTypeCheck(node))
                     {
                         context.CodeWriter.Write(")");
                     }
@@ -461,11 +490,37 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 }
             }
 
+            bool NeedsTypeCheck(ComponentAttributeExtensionNode n)
+            {
+                return n.BoundAttribute != null && !n.BoundAttribute.IsWeaklyTyped();
+            }
+
             IReadOnlyList<IntermediateToken> GetCSharpTokens(ComponentAttributeExtensionNode attribute)
             {
                 // We generally expect all children to be CSharp, this is here just in case.
                 return attribute.FindDescendantNodes<IntermediateToken>().Where(t => t.IsCSharp).ToArray();
             }
+        }
+
+        public override void WriteTemplate(CodeRenderingContext context, TemplateIntermediateNode node)
+        {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (node == null)
+            {
+                throw new ArgumentNullException(nameof(node));
+            }
+
+            // Since the user doesn't write this name themselves, we have to use something hardcoded
+            // and predicatable.
+            const string VariableName = "context";
+
+            _scopeStack.OpenTemplateScope(context, VariableName);
+            context.RenderChildren(node);
+            _scopeStack.CloseScope(context);
         }
 
         public override void WriteReferenceCapture(CodeRenderingContext context, RefExtensionNode refNode)

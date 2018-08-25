@@ -9,6 +9,7 @@ using System.Text;
 using Microsoft.AspNetCore.Blazor.Shared;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
+using Microsoft.AspNetCore.Razor.Language.Extensions;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
 namespace Microsoft.AspNetCore.Blazor.Razor
@@ -114,7 +115,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 else
                 {
                     // There may be something else inside the expression like a Template or another extension node.
-                    throw new NotImplementedException("Unsupported: CSharpExpression with child node that isn't a CSharp node");
+                    context.RenderNode(node.Children[i]);
                 }
             }
 
@@ -202,7 +203,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 context.RenderNode(capture);
             }
 
-            _scopeStack.OpenScope(tagName: node.TagName, isComponent: false);
+            _scopeStack.OpenElementScope(node.TagName);
 
             // Render body of the tag inside the scope
             foreach (var child in node.Body)
@@ -321,7 +322,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 context.RenderNode(attribute);
             }
 
-            _scopeStack.OpenScope(node.TagName, isComponent: true);
+            _scopeStack.OpenComponentScope(node.TagName);
             foreach (var child in node.Body)
             {
                 context.RenderNode(child);
@@ -382,6 +383,29 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 var content = string.Join(string.Empty, GetHtmlTokens(htmlNode).Select(t => t.Content));
                 context.CodeWriter.WriteStringLiteral(content);
             }
+            else if (node.Children.Count == 1 && node.Children[0] is TemplateIntermediateNode template)
+            {
+                // Templates are represented as lambdas assignable for RenderFragment<T> (for some T).
+                // We don't have a type to write down unless its bound to a stronly typed attribute.
+                // That's OK because the compiler gives an error if we can't type check it.
+
+                // If we have a parameter type, then add a type check.
+                if (node.BoundAttribute != null && !node.BoundAttribute.IsWeaklyTyped())
+                {
+                    context.CodeWriter.Write(BlazorApi.RuntimeHelpers.TypeCheck);
+                    context.CodeWriter.Write("<");
+                    context.CodeWriter.Write(node.BoundAttribute.TypeName);
+                    context.CodeWriter.Write(">");
+                    context.CodeWriter.Write("(");
+                }
+
+                context.RenderNode(template);
+
+                if (node.BoundAttribute != null && !node.BoundAttribute.IsWeaklyTyped())
+                {
+                    context.CodeWriter.Write(")");
+                }
+            }
             else
             {
                 // See comments in BlazorDesignTimeNodeWriter for a description of the cases that are possible.
@@ -436,6 +460,27 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 // We generally expect all children to be HTML, this is here just in case.
                 return html.FindDescendantNodes<IntermediateToken>().Where(t => t.IsHtml).ToArray();
             }
+        }
+
+        public override void WriteTemplate(CodeRenderingContext context, TemplateIntermediateNode node)
+        {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (node == null)
+            {
+                throw new ArgumentNullException(nameof(node));
+            }
+
+            // Since the user doesn't write this name themselves, we have to use something hardcoded
+            // and predicatable.
+            const string VariableName = "context";
+
+            _scopeStack.OpenTemplateScope(context, VariableName);
+            context.RenderChildren(node);
+            _scopeStack.CloseScope(context);
         }
 
         public override void WriteReferenceCapture(CodeRenderingContext context, RefExtensionNode node)

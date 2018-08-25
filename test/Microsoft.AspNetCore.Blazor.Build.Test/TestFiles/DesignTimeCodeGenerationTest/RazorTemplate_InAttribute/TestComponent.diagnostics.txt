@@ -1,0 +1,1 @@
+x:\dir\subdir\Test\TestComponent.cshtml(1,15): Error BL9994: Razor templates cannot be used in markup-attribute, bind attributes, ref attributes, or event handler attributes.

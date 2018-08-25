@@ -1,0 +1,29 @@
+Source Location: (35:1,2 [33] x:\dir\subdir\Test\TestComponent.cshtml)
+|
+    RenderFragment<Person> p = |
+Generated Location: (654:18,2 [33] )
+|
+    RenderFragment<Person> p = |
+
+Source Location: (115:2,78 [3] x:\dir\subdir\Test\TestComponent.cshtml)
+|;
+|
+Generated Location: (1244:31,78 [3] )
+|;
+|
+
+Source Location: (186:8,12 [76] x:\dir\subdir\Test\TestComponent.cshtml)
+|
+    class Person
+    {
+        public string Name { get; set; }
+    }
+|
+Generated Location: (1784:46,12 [76] )
+|
+    class Person
+    {
+        public string Name { get; set; }
+    }
+|
+

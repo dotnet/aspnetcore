@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
                 frame => AssertFrame.Markup(frame, "<myelem>Hello</myelem>", 0));
         }
 
-        [Fact(Skip = "Temporarily disable compiling markup frames in 0.5.1")]
+        [Fact]
         public void CreatesSeparateMarkupFrameForEachTopLevelStaticElement()
         {
             // The JavaScript-side rendering code does not rely on this behavior. It supports
@@ -106,14 +106,14 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
                 "<root>@(\"Hi\") <child1>a</child1> <child2><another>b</another></child2> </root>");
 
             // Assert
-            Assert.Collection(GetRenderTree(component),
-                frame => AssertFrame.Element(frame, "root", 7, 0),
+            var frames = GetRenderTree(component);
+            Assert.Collection(
+                frames,
+                frame => AssertFrame.Element(frame, "root", 5, 0),
                 frame => AssertFrame.Text(frame, "Hi", 1),
                 frame => AssertFrame.Text(frame, " ", 2),
-                frame => AssertFrame.Markup(frame, "<child1>a</child1>", 3),
-                frame => AssertFrame.Text(frame, " ", 4),
-                frame => AssertFrame.Markup(frame, "<child2><another>b</another></child2>", 5),
-                frame => AssertFrame.Text(frame, " ", 6));
+                frame => AssertFrame.Markup(frame, "<child1>a</child1> ", 3),
+                frame => AssertFrame.Markup(frame, "<child2><another>b</another></child2> ", 4));
         }
 
         [Fact]
@@ -598,5 +598,69 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         }
 
         public enum MyEnum { FirstValue, SecondValue }
+
+        [Fact]
+        public void RazorTemplate_CanBeUsedFromRazorCode()
+        {
+            // Arrange
+            var component = CompileToComponent(@"
+@{ RenderFragment<string> template = @<div>@context.ToLower()</div>; }
+@for (var i = 0; i < 3; i++)
+{
+    @template.WithValue(""Hello, World!"");
+}
+");
+
+            // Act
+            var frames = GetRenderTree(component);
+
+            // Assert
+            Assert.Collection(
+                frames,
+                frame => AssertFrame.Element(frame, "div", 2, 0),
+                frame => AssertFrame.Text(frame, "hello, world!", 1),
+                frame => AssertFrame.Element(frame, "div", 2, 0),
+                frame => AssertFrame.Text(frame, "hello, world!", 1),
+                frame => AssertFrame.Element(frame, "div", 2, 0),
+                frame => AssertFrame.Text(frame, "hello, world!", 1));
+        }
+
+        [Fact]
+        public void RazorTemplate_CanBeUsedFromMethod()
+        {
+            // Arrange
+            var component = CompileToComponent(@"
+@(Repeat(@<div>@context.ToLower()</div>, ""Hello, World!"", 3))
+
+@functions {
+    RenderFragment Repeat<T>(RenderFragment<T> template, T value, int count)
+    {
+        return (b) =>
+        {
+            for (var i = 0; i < count; i++)
+            {
+                template(b, value);
+            }
+        };
+    }
+}");
+
+            // Act
+            var frames = GetRenderTree(component);
+
+            // Assert
+            //
+            // The sequence numbers start at 1 here because there is an AddContent(0, Repeat(....) call
+            // that precedes the definition of the lambda. Sequence numbers for the lambda are allocated
+            // from the same logical sequence as the surrounding code.
+            Assert.Collection(
+                frames,
+                frame => AssertFrame.Element(frame, "div", 2, 1),
+                frame => AssertFrame.Text(frame, "hello, world!", 2),
+                frame => AssertFrame.Element(frame, "div", 2, 1),
+                frame => AssertFrame.Text(frame, "hello, world!", 2),
+                frame => AssertFrame.Element(frame, "div", 2, 1),
+                frame => AssertFrame.Text(frame, "hello, world!", 2));
+        }
     }
 }

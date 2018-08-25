@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Blazor.Shared;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.AspNetCore.Razor.Language.Extensions;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
 namespace Microsoft.AspNetCore.Blazor.Razor
@@ -474,6 +475,14 @@ namespace Microsoft.AspNetCore.Blazor.Razor
 
         private static IntermediateToken GetAttributeContent(TagHelperPropertyIntermediateNode node)
         {
+            var template = node.FindDescendantNodes<TemplateIntermediateNode>().FirstOrDefault();
+            if (template != null)
+            {
+                // See comments in TemplateDiagnosticPass
+                node.Diagnostics.Add(BlazorDiagnosticFactory.CreateTemplate_InvalidLocation(template.Source));
+                return new IntermediateToken() { Kind = TokenKind.CSharp, Content = string.Empty, };
+            }
+
             if (node.Children[0] is HtmlContentIntermediateNode htmlContentNode)
             {
                 // This case can be hit for a 'string' attribute. We want to turn it into

@@ -1,0 +1,19 @@
+Source Location: (56:1,12 [138] x:\dir\subdir\Test\TestComponent.cshtml)
+|
+    class Person
+    {
+        public string Name { get; set; }
+    }
+
+    object RenderPerson(RenderFragment<Person> p) => null;
+|
+Generated Location: (964:26,12 [138] )
+|
+    class Person
+    {
+        public string Name { get; set; }
+    }
+
+    object RenderPerson(RenderFragment<Person> p) => null;
+|
+

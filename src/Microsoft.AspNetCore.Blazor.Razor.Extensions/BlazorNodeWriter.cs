@@ -4,6 +4,7 @@
 using System;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
+using Microsoft.AspNetCore.Razor.Language.Extensions;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
 namespace Microsoft.AspNetCore.Blazor.Razor
@@ -21,6 +22,8 @@ namespace Microsoft.AspNetCore.Blazor.Razor
         public abstract void WriteHtmlBlock(CodeRenderingContext context, HtmlBlockIntermediateNode node);
 
         public abstract void WriteReferenceCapture(CodeRenderingContext context, RefExtensionNode node);
+
+        public abstract void WriteTemplate(CodeRenderingContext context, TemplateIntermediateNode node);
 
         public sealed override void BeginWriterScope(CodeRenderingContext context, string writer)
         {

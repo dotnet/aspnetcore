@@ -493,6 +493,20 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
                 appElement.FindElement(By.CssSelector("#dynamic-markup-block span em")).Text);
         }
 
+        [Fact]
+        public void CanRenderRazorTemplates()
+        {
+            var appElement = MountTestComponent<RazorTemplates>();
+
+            // code block template (component parameter)
+            var element = appElement.FindElement(By.CssSelector("div#codeblocktemplate ol"));
+            Assert.Collection(
+                element.FindElements(By.TagName("li")),
+                e => Assert.Equal("#1 - a", e.Text),
+                e => Assert.Equal("#2 - b", e.Text),
+                e => Assert.Equal("#3 - c", e.Text));
+        }
+
         static IAlert SwitchToAlert(IWebDriver driver)
         {
             try

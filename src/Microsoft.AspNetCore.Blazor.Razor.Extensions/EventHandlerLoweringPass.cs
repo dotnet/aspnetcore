@@ -1,10 +1,11 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Blazor.Shared;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.AspNetCore.Razor.Language.Extensions;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
 namespace Microsoft.AspNetCore.Blazor.Razor
@@ -110,6 +111,12 @@ namespace Microsoft.AspNetCore.Blazor.Razor
         private IntermediateNode RewriteUsage(IntermediateNode parent, TagHelperPropertyIntermediateNode node)
         {
             var original = GetAttributeContent(node);
+            if (original.Count == 0)
+            {
+                // This can happen in error cases, the parser will already have flagged this
+                // as an error, so ignore it.
+                return node;
+            }
 
             // Now rewrite the content of the value node to look like:
             //
@@ -178,6 +185,14 @@ namespace Microsoft.AspNetCore.Blazor.Razor
 
         private static IReadOnlyList<IntermediateToken> GetAttributeContent(TagHelperPropertyIntermediateNode node)
         {
+            var template = node.FindDescendantNodes<TemplateIntermediateNode>().FirstOrDefault();
+            if (template != null)
+            {
+                // See comments in TemplateDiagnosticPass
+                node.Diagnostics.Add(BlazorDiagnosticFactory.CreateTemplate_InvalidLocation(template.Source));
+                return new[] { new IntermediateToken() { Kind = TokenKind.CSharp, Content = string.Empty, }, };
+            }
+
             if (node.Children.Count == 1 && node.Children[0] is HtmlContentIntermediateNode htmlContentNode)
             {
                 // This case can be hit for a 'string' attribute. We want to turn it into

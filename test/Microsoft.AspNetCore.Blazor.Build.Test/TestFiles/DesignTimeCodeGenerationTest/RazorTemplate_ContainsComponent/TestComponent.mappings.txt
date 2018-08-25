@@ -1,0 +1,39 @@
+Source Location: (14:0,14 [17] x:\dir\subdir\Test\TestComponent.cshtml)
+|"*, TestAssembly"|
+Generated Location: (558:16,37 [17] )
+|"*, TestAssembly"|
+
+Source Location: (35:1,2 [33] x:\dir\subdir\Test\TestComponent.cshtml)
+|
+    RenderFragment<Person> p = |
+Generated Location: (1039:29,2 [33] )
+|
+    RenderFragment<Person> p = |
+
+Source Location: (94:2,57 [12] x:\dir\subdir\Test\TestComponent.cshtml)
+|context.Name|
+Generated Location: (1354:37,57 [12] )
+|context.Name|
+
+Source Location: (115:2,78 [3] x:\dir\subdir\Test\TestComponent.cshtml)
+|;
+|
+Generated Location: (1723:47,78 [3] )
+|;
+|
+
+Source Location: (133:4,12 [76] x:\dir\subdir\Test\TestComponent.cshtml)
+|
+    class Person
+    {
+        public string Name { get; set; }
+    }
+|
+Generated Location: (1869:54,12 [76] )
+|
+    class Person
+    {
+        public string Name { get; set; }
+    }
+|
+
