@@ -2,10 +2,10 @@
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
 #pragma once
-#include "aspnetcore_shim_config.h"
 
 #include <memory>
 #include <string>
+#include "ShimOptions.h"
 #include "hostfxroptions.h"
 #include "HandleWrapper.h"
 #include "ApplicationFactory.h"
@@ -18,8 +18,8 @@ public:
     void ResetHostingModel();
 
 private:
-    HRESULT LoadRequestHandlerAssembly(IHttpApplication &pApplication, ASPNETCORE_SHIM_CONFIG& pConfiguration, std::unique_ptr<ApplicationFactory>& pApplicationFactory);
-    HRESULT FindNativeAssemblyFromGlobalLocation(ASPNETCORE_SHIM_CONFIG& pConfiguration, PCWSTR libraryName, std::wstring& handlerDllPath);
+    HRESULT LoadRequestHandlerAssembly(IHttpApplication &pApplication, ShimOptions& pConfiguration, std::unique_ptr<ApplicationFactory>& pApplicationFactory);
+    HRESULT FindNativeAssemblyFromGlobalLocation(ShimOptions& pConfiguration, PCWSTR libraryName, std::wstring& handlerDllPath);
     HRESULT FindNativeAssemblyFromHostfxr(HOSTFXR_OPTIONS& hostfxrOptions, PCWSTR libraryName, std::wstring& handlerDllPath);
 
     HMODULE m_hModule;

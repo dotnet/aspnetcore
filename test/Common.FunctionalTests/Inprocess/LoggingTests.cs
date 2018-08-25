@@ -200,8 +200,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 var logContents = streamReader.ReadToEnd();
                 Assert.Contains("[aspnetcorev2.dll]", logContents);
                 Assert.Contains("[aspnetcorev2_inprocess.dll]", logContents);
-                Assert.Contains("Description: IIS AspNetCore Module V2. Commit:", logContents);
-                Assert.Contains("Description: IIS ASP.NET Core Module Request Handler. Commit:", logContents);
+                Assert.Contains("Description: IIS ASP.NET Core Module V2. Commit:", logContents);
+                Assert.Contains("Description: IIS ASP.NET Core Module V2 Request Handler. Commit:", logContents);
             }
         }
     }

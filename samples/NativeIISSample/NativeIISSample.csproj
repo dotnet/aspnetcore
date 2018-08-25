@@ -19,6 +19,6 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <AspNetCoreModuleHostingModel>inprocess</AspNetCoreModuleHostingModel>
+    <AspNetCoreHostingModel>inprocess</AspNetCoreHostingModel>
   </PropertyGroup>
 </Project>

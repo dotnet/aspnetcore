@@ -12,6 +12,8 @@
 #include "file_utility.h"
 #include "LoggingHelpers.h"
 #include "resources.h"
+#include "ConfigurationLoadException.h"
+#include "WebConfigConfigurationSource.h"
 
 const PCWSTR HandlerResolver::s_pwzAspnetcoreInProcessRequestHandlerName = L"aspnetcorev2_inprocess.dll";
 const PCWSTR HandlerResolver::s_pwzAspnetcoreOutOfProcessRequestHandlerName = L"aspnetcorev2_outofprocess.dll";
@@ -25,7 +27,7 @@ HandlerResolver::HandlerResolver(HMODULE hModule, IHttpServer &pServer)
 }
 
 HRESULT
-HandlerResolver::LoadRequestHandlerAssembly(IHttpApplication &pApplication, ASPNETCORE_SHIM_CONFIG& pConfiguration, std::unique_ptr<ApplicationFactory>& pApplicationFactory)
+HandlerResolver::LoadRequestHandlerAssembly(IHttpApplication &pApplication, ShimOptions& pConfiguration, std::unique_ptr<ApplicationFactory>& pApplicationFactory)
 {
     HRESULT hr;
     PCWSTR              pstrHandlerDllName;
@@ -65,7 +67,7 @@ HandlerResolver::LoadRequestHandlerAssembly(IHttpApplication &pApplication, ASPN
             RETURN_IF_FAILED(LoggingHelpers::CreateLoggingProvider(
                 pConfiguration.QueryStdoutLogEnabled(),
                 !m_pServer.IsCommandLineLaunch(),
-                pConfiguration.QueryStdoutLogFile()->QueryStr(),
+                pConfiguration.QueryStdoutLogFile().c_str(),
                 pApplication.GetApplicationPhysicalPath(),
                 outputManager));
 
@@ -129,20 +131,20 @@ HandlerResolver::GetApplicationFactory(IHttpApplication &pApplication, std::uniq
 {
     try
     {
-        ASPNETCORE_SHIM_CONFIG pConfiguration;
-        RETURN_IF_FAILED(pConfiguration.Populate(&m_pServer, &pApplication));
+        const WebConfigConfigurationSource configurationSource(m_pServer.GetAdminManager(), pApplication);
+        ShimOptions options(configurationSource);
 
         SRWExclusiveLock lock(m_requestHandlerLoadLock);
         if (m_loadedApplicationHostingModel != HOSTING_UNKNOWN)
         {
             // Mixed hosting models
-            if (m_loadedApplicationHostingModel != pConfiguration.QueryHostingModel())
+            if (m_loadedApplicationHostingModel != options.QueryHostingModel())
             {
                 EventLog::Error(
                     ASPNETCORE_EVENT_MIXED_HOSTING_MODEL_ERROR,
                     ASPNETCORE_EVENT_MIXED_HOSTING_MODEL_ERROR_MSG,
                     pApplication.GetApplicationId(),
-                    pConfiguration.QueryHostingModel());
+                    options.QueryHostingModel());
 
                 return E_FAIL;
             }
@@ -158,10 +160,19 @@ HandlerResolver::GetApplicationFactory(IHttpApplication &pApplication, std::uniq
             }
         }
 
-        m_loadedApplicationHostingModel = pConfiguration.QueryHostingModel();
+        m_loadedApplicationHostingModel = options.QueryHostingModel();
         m_loadedApplicationId = pApplication.GetApplicationId();
-        RETURN_IF_FAILED(LoadRequestHandlerAssembly(pApplication, pConfiguration, pApplicationFactory));
+        RETURN_IF_FAILED(LoadRequestHandlerAssembly(pApplication, options, pApplicationFactory));
 
+    }
+    catch(ConfigurationLoadException &ex)
+    {
+        EventLog::Error(
+            ASPNETCORE_CONFIGURATION_LOAD_ERROR,
+            ASPNETCORE_CONFIGURATION_LOAD_ERROR_MSG,
+            ex.get_message().c_str());
+
+        RETURN_HR(E_FAIL);
     }
     CATCH_RETURN();
 
@@ -178,7 +189,7 @@ void HandlerResolver::ResetHostingModel()
 
 HRESULT
 HandlerResolver::FindNativeAssemblyFromGlobalLocation(
-    ASPNETCORE_SHIM_CONFIG& pConfiguration,
+    ShimOptions& pConfiguration,
     PCWSTR pstrHandlerDllName,
     std::wstring& handlerDllPath
 )

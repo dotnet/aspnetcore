@@ -187,11 +187,11 @@ http_get_application_properties(
     auto pConfiguration = pInProcessApplication->QueryConfig();
 
     pIISCofigurationData->pInProcessApplication = pInProcessApplication;
-    pIISCofigurationData->pwzFullApplicationPath = SysAllocString(pConfiguration->QueryApplicationPhysicalPath()->QueryStr());
-    pIISCofigurationData->pwzVirtualApplicationPath = SysAllocString(pConfiguration->QueryApplicationVirtualPath()->QueryStr());
-    pIISCofigurationData->fWindowsAuthEnabled = pConfiguration->QueryWindowsAuthEnabled();
-    pIISCofigurationData->fBasicAuthEnabled = pConfiguration->QueryBasicAuthEnabled();
-    pIISCofigurationData->fAnonymousAuthEnable = pConfiguration->QueryAnonymousAuthEnabled();
+    pIISCofigurationData->pwzFullApplicationPath = SysAllocString(pInProcessApplication->QueryApplicationPhysicalPath().c_str());
+    pIISCofigurationData->pwzVirtualApplicationPath = SysAllocString(pInProcessApplication->QueryApplicationVirtualPath().c_str());
+    pIISCofigurationData->fWindowsAuthEnabled = pConfiguration.QueryWindowsAuthEnabled();
+    pIISCofigurationData->fBasicAuthEnabled = pConfiguration.QueryBasicAuthEnabled();
+    pIISCofigurationData->fAnonymousAuthEnable = pConfiguration.QueryAnonymousAuthEnabled();
 
     return S_OK;
 }

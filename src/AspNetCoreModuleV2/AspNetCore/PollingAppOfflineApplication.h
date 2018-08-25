@@ -15,7 +15,7 @@ class PollingAppOfflineApplication: public APPLICATION
 {
 public:
     PollingAppOfflineApplication(IHttpApplication& pApplication, PollingAppOfflineApplicationMode mode)
-        :
+        : APPLICATION(pApplication),
         m_ulLastCheckTime(0),
         m_appOfflineLocation(GetAppOfflineLocation(pApplication)),
         m_fAppOfflineFound(false),

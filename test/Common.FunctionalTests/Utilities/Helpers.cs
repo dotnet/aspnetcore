@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -132,6 +133,11 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 verificationAction = verificationAction ?? (() => deploymentResult.AssertStarts());
                 await verificationAction();
             }
+        }
+
+        public static IEnumerable<object[]> ToTheoryData<T>(this Dictionary<string, T> dictionary)
+        {
+            return dictionary.Keys.Select(k => new[] { k });
         }
     }
 }

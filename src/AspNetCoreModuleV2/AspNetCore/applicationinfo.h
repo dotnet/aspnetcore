@@ -4,7 +4,6 @@
 #pragma once
 
 #include "hostfxroptions.h"
-#include "aspnetcore_shim_config.h"
 #include "iapplication.h"
 #include "SRWSharedLock.h"
 #include "HandlerResolver.h"

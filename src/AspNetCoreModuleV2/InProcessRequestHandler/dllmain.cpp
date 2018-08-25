@@ -13,6 +13,10 @@
 #include "resources.h"
 #include "exceptions.h"
 #include "ShuttingDownApplication.h"
+#include "InProcessOptions.h"
+#include "EventLog.h"
+#include "WebConfigConfigurationSource.h"
+#include "ConfigurationLoadException.h"
 
 DECLARE_DEBUG_PRINT_OBJECT("aspnetcorev2_inprocess.dll");
 
@@ -106,13 +110,12 @@ CreateApplication(
             return S_OK;
         }
 
-        REQUESTHANDLER_CONFIG *pConfig = nullptr;
-        RETURN_IF_FAILED(REQUESTHANDLER_CONFIG::CreateRequestHandlerConfig(pServer, pHttpApplication, &pConfig));
-        std::unique_ptr<REQUESTHANDLER_CONFIG> pRequestHandlerConfig(pConfig);
+        const WebConfigConfigurationSource configurationSource(pServer->GetAdminManager(), *pHttpApplication);
+        auto pConfig = std::make_unique<InProcessOptions>(configurationSource);
 
         BOOL disableStartupPage = pConfig->QueryDisableStartUpErrorPage();
 
-        auto pApplication = std::make_unique<IN_PROCESS_APPLICATION>(*pServer, *pHttpApplication, std::move(pRequestHandlerConfig), pParameters, nParameters);
+        auto pApplication = std::make_unique<IN_PROCESS_APPLICATION>(*pServer, *pHttpApplication, std::move(pConfig), pParameters, nParameters);
 
         // never create two inprocess applications in one process
         g_fInProcessApplicationCreated = true;
@@ -129,6 +132,15 @@ CreateApplication(
             RETURN_IF_FAILED(pApplication->StartMonitoringAppOffline());
             *ppApplication = pApplication.release();
         }
+    }
+    catch(ConfigurationLoadException &ex)
+    {
+        EventLog::Error(
+            ASPNETCORE_CONFIGURATION_LOAD_ERROR,
+            ASPNETCORE_CONFIGURATION_LOAD_ERROR_MSG,
+            ex.get_message().c_str());
+
+        RETURN_HR(E_FAIL);
     }
     CATCH_RETURN();
 

@@ -19,7 +19,7 @@ IN_PROCESS_APPLICATION*  IN_PROCESS_APPLICATION::s_Application = NULL;
 IN_PROCESS_APPLICATION::IN_PROCESS_APPLICATION(
     IHttpServer& pHttpServer,
     IHttpApplication& pApplication,
-    std::unique_ptr<REQUESTHANDLER_CONFIG> pConfig,
+    std::unique_ptr<InProcessOptions> pConfig,
     APPLICATION_PARAMETER *pParameters,
     DWORD                  nParameters) :
     InProcessApplicationBase(pHttpServer, pApplication),
@@ -108,14 +108,14 @@ Finished:
         EventLog::Warn(
             ASPNETCORE_EVENT_GRACEFUL_SHUTDOWN_FAILURE,
             ASPNETCORE_EVENT_APP_SHUTDOWN_FAILURE_MSG,
-            m_pConfig->QueryConfigPath()->QueryStr());
+            QueryConfigPath().c_str());
     }
 	else
     {
         EventLog::Info(
             ASPNETCORE_EVENT_APP_SHUTDOWN_SUCCESSFUL,
             ASPNETCORE_EVENT_APP_SHUTDOWN_SUCCESSFUL_MSG,
-            m_pConfig->QueryConfigPath()->QueryStr());
+            QueryConfigPath().c_str());
     }
 
     InProcessApplicationBase::StopInternal(fServerInitiated);
@@ -212,7 +212,7 @@ IN_PROCESS_APPLICATION::SetCallbackHandles(
     EventLog::Info(
         ASPNETCORE_EVENT_INPROCESS_START_SUCCESS,
         ASPNETCORE_EVENT_INPROCESS_START_SUCCESS_MSG,
-        m_pConfig->QueryApplicationPhysicalPath()->QueryStr());
+        QueryApplicationPhysicalPath().c_str());
     SetEvent(m_pInitalizeEvent);
     m_fInitialized = TRUE;
 }
@@ -334,8 +334,8 @@ Finished:
         EventLog::Error(
             ASPNETCORE_EVENT_LOAD_CLR_FALIURE,
             ASPNETCORE_EVENT_LOAD_CLR_FALIURE_MSG,
-            m_pConfig->QueryApplicationPath()->QueryStr(),
-            m_pConfig->QueryApplicationPhysicalPath()->QueryStr(),
+            QueryApplicationId().c_str(),
+            QueryApplicationPhysicalPath().c_str(),
             hr);
     }
     DereferenceApplication();
@@ -365,11 +365,21 @@ IN_PROCESS_APPLICATION::SetEnvironementVariablesOnWorkerProcess(
     VOID
 )
 {
-    HRESULT hr = S_OK;
+    auto variables = m_pConfig->QueryEnvironmentVariables();
+    auto inputTable = std::unique_ptr<ENVIRONMENT_VAR_HASH, ENVIRONMENT_VAR_HASH_DELETER>(new ENVIRONMENT_VAR_HASH());
+    RETURN_IF_FAILED(inputTable->Initialize(37 /*prime*/));
+    // Copy environment variables to old style hash table
+    for (auto & variable : variables)
+    {
+        auto pNewEntry = std::unique_ptr<ENVIRONMENT_VAR_ENTRY, ENVIRONMENT_VAR_ENTRY_DELETER>(new ENVIRONMENT_VAR_ENTRY());
+        RETURN_IF_FAILED(pNewEntry->Initialize((variable.first + L"=").c_str(), variable.second.c_str()));
+        RETURN_IF_FAILED(inputTable->InsertRecord(pNewEntry.get()));
+    }
+
     ENVIRONMENT_VAR_HASH* pHashTable = NULL;
     std::unique_ptr<ENVIRONMENT_VAR_HASH, ENVIRONMENT_VAR_HASH_DELETER> table;
-    RETURN_IF_FAILED(hr = ENVIRONMENT_VAR_HELPERS::InitEnvironmentVariablesTable(
-        m_pConfig->QueryEnvironmentVariables(),
+    RETURN_IF_FAILED(ENVIRONMENT_VAR_HELPERS::InitEnvironmentVariablesTable(
+        inputTable.get(),
         m_pConfig->QueryWindowsAuthEnabled(),
         m_pConfig->QueryBasicAuthEnabled(),
         m_pConfig->QueryAnonymousAuthEnabled(),
@@ -377,11 +387,13 @@ IN_PROCESS_APPLICATION::SetEnvironementVariablesOnWorkerProcess(
 
     table.reset(pHashTable);
 
+    HRESULT hr = S_OK;
     table->Apply(ENVIRONMENT_VAR_HELPERS::AppendEnvironmentVariables, &hr);
     RETURN_IF_FAILED(hr);
 
     table->Apply(ENVIRONMENT_VAR_HELPERS::SetEnvironmentVariables, &hr);
     RETURN_IF_FAILED(hr);
+
     return S_OK;
 }
 
@@ -422,9 +434,9 @@ IN_PROCESS_APPLICATION::ExecuteApplication(
 
         FINISHED_IF_FAILED(hr = HOSTFXR_OPTIONS::Create(
             m_struExeLocation.QueryStr(),
-            m_pConfig->QueryProcessPath()->QueryStr(),
-            m_pConfig->QueryApplicationPhysicalPath()->QueryStr(),
-            m_pConfig->QueryArguments()->QueryStr(),
+            m_pConfig->QueryProcessPath().c_str(),
+            QueryApplicationPhysicalPath().c_str(),
+            m_pConfig->QueryArguments().c_str(),
             hostFxrOptions
             ));
         hostFxrOptions->GetArguments(hostfxrArgc, hostfxrArgv);
@@ -438,8 +450,8 @@ IN_PROCESS_APPLICATION::ExecuteApplication(
         FINISHED_IF_FAILED(hr = LoggingHelpers::CreateLoggingProvider(
             m_pConfig->QueryStdoutLogEnabled(),
             !m_pHttpServer.IsCommandLineLaunch(),
-            m_pConfig->QueryStdoutLogFile()->QueryStr(),
-            m_pConfig->QueryApplicationPhysicalPath()->QueryStr(),
+            m_pConfig->QueryStdoutLogFile().c_str(),
+            QueryApplicationPhysicalPath().c_str(),
             m_pLoggerProvider));
 
         LOG_IF_FAILED(m_pLoggerProvider->Start());
@@ -502,8 +514,8 @@ IN_PROCESS_APPLICATION::LogErrorsOnMainExit(
             EventLog::Error(
                 ASPNETCORE_EVENT_INPROCESS_THREAD_EXIT_STDOUT,
                 ASPNETCORE_EVENT_INPROCESS_THREAD_EXIT_STDOUT_MSG,
-                m_pConfig->QueryApplicationPath()->QueryStr(),
-                m_pConfig->QueryApplicationPhysicalPath()->QueryStr(),
+                QueryApplicationId().c_str(),
+                QueryApplicationPhysicalPath().c_str(),
                 hr,
                 struStdMsg.QueryStr());
         }
@@ -513,8 +525,8 @@ IN_PROCESS_APPLICATION::LogErrorsOnMainExit(
         EventLog::Error(
             ASPNETCORE_EVENT_INPROCESS_THREAD_EXIT,
             ASPNETCORE_EVENT_INPROCESS_THREAD_EXIT_MSG,
-            m_pConfig->QueryApplicationPath()->QueryStr(),
-            m_pConfig->QueryApplicationPhysicalPath()->QueryStr(),
+            QueryApplicationId().c_str(),
+            QueryApplicationPhysicalPath().c_str(),
             hr);
     }
 }

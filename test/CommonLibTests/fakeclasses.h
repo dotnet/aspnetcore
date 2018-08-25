@@ -5,6 +5,7 @@
 
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
+#include "InProcessOptions.h"
 
 class MockProperty : public IAppHostProperty
 {
@@ -176,20 +177,14 @@ public:
     MOCK_METHOD0(GetModuleContextContainer, IHttpModuleContextContainer* ());
 };
 
-class MockRequestHandlerConfig : public REQUESTHANDLER_CONFIG
+class MockInProcessOptions : public InProcessOptions
 {
 public:
     static
-        MockRequestHandlerConfig*
+        MockInProcessOptions*
         CreateConfig()
     {
-        return new MockRequestHandlerConfig;
-    }
-
-private:
-    MockRequestHandlerConfig()
-    {
-
+        return new MockInProcessOptions;
     }
 };
 

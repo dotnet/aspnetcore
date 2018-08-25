@@ -49,3 +49,12 @@ DebugPrintf(
     LPCSTR  szFormat,
     ...
     );
+
+std::wstring
+GetProcessIdString();
+
+std::wstring
+GetVersionInfoString();
+
+std::wstring
+GetModuleName();

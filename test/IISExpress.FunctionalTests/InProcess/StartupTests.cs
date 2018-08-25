@@ -2,11 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
@@ -184,6 +186,46 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             StopServer();
 
             EventLogHelpers.VerifyEventLogEvent(deploymentResult, TestSink, "Unknown hosting model 'bogus'. Please specify either hostingModel=\"inprocess\" or hostingModel=\"outofprocess\" in the web.config file.");
+        }
+
+
+        private static Dictionary<string, (string, Action<XElement>)> InvalidConfigTransformations = InitInvalidConfigTransformations();
+        public static IEnumerable<object[]> InvalidConfigTransformationsScenarios => InvalidConfigTransformations.ToTheoryData();
+
+        [ConditionalTheory]
+        [MemberData(nameof(InvalidConfigTransformationsScenarios))]
+        public async Task StartsWithWebConfigVariationsPortable(string scenario)
+        {
+            var (expectedError, action) = InvalidConfigTransformations[scenario];
+            var iisDeploymentParameters = _fixture.GetBaseDeploymentParameters(publish: true);
+            iisDeploymentParameters.WebConfigActionList.Add((element, _) => action(element));
+            var deploymentResult = await DeployAsync(iisDeploymentParameters);
+            var result = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
+            Assert.Equal(HttpStatusCode.InternalServerError, result.StatusCode);
+
+            StopServer();
+            EventLogHelpers.VerifyEventLogEvent(deploymentResult, TestSink, "Configuration load error. " + expectedError);
+        }
+
+        public static Dictionary<string, (string, Action<XElement>)> InitInvalidConfigTransformations()
+        {
+            var dictionary = new Dictionary<string, (string, Action<XElement>)>();
+            dictionary.Add("Empty process path",
+                (
+                    "Attribute 'processPath' is required.",
+                    element => element.Descendants("aspNetCore").Single().SetAttributeValue("processPath", "")
+                ));
+            dictionary.Add("Unknown hostingModel",
+                (
+                    "Unknown hosting model 'asdf'.",
+                    element => element.Descendants("aspNetCore").Single().SetAttributeValue("hostingModel", "asdf")
+                ));
+            dictionary.Add("environmentVariables with add",
+                (
+                    "Unable to get required configuration section 'system.webServer/aspNetCore'. Possible reason is web.config authoring error.",
+                    element => element.Descendants("aspNetCore").Single().GetOrAdd("environmentVariables").GetOrAdd("add")
+                ));
+            return dictionary;
         }
     }
 }
