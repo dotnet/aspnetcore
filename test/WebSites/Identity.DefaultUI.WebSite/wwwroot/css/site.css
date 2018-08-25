@@ -57,7 +57,7 @@ body {
   position: absolute;
   bottom: 0;
   width: 100%;
-  overflow: scroll;
+  overflow: hidden;
   white-space: nowrap;
   /* Set the fixed height of the footer here */
   height: 60px;

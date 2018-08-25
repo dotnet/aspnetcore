@@ -22,11 +22,12 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests.Account
             : base(client, externalLogin, context)
         {
             _emailForm = HtmlAssert.HasForm(Document);
-            var title = externalLogin.GetElementsByTagName("h4").FirstOrDefault(e => e.TextContent.StartsWith("Associate your"));
-            Assert.Equal("Associate your Contoso auth account.", title?.TextContent);
-            var info = externalLogin.QuerySelectorAll<IHtmlParagraphElement>(".text-info").FirstOrDefault(e => e.TextContent.Trim().StartsWith("You've successfully authenticated"));
-            Assert.StartsWith("You've successfully authenticated with Contoso auth.", info?.TextContent.Trim());
+            Title = HtmlAssert.HasElement("#external-login-title", Document);
+            Description = HtmlAssert.HasElement("#external-login-description",Document);
         }
+
+        public IHtmlElement Title { get; }
+        public IHtmlElement Description { get; }
 
         public async Task<Index> SendEmailAsync(string email)
         {

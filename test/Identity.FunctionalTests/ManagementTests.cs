@@ -213,10 +213,7 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
             var externalLogins = await manage.ClickExternalLoginsAsync();
 
             // Assert
-            var title = externalLogins.Document.GetElementsByTagName("h4").FirstOrDefault(e => e.TextContent == "Registered Logins");
-            var table = title?.NextElementSibling as IHtmlTableElement;
-            var firstCell = table?.Bodies?.FirstOrDefault()?.Rows.FirstOrDefault()?.Cells?.FirstOrDefault();
-            Assert.Equal("Contoso auth", firstCell?.TextContent);
+            Assert.Contains("Contoso", externalLogins.ExternalLoginDisplayName.TextContent);
         }
 
         [Fact]

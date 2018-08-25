@@ -4,7 +4,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity.UI;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,6 +22,8 @@ namespace Identity.DefaultUI.WebSite
 
         public IConfiguration Configuration { get; }
 
+        public virtual UIFramework Framework { get; } = UIFramework.Bootstrap4;
+
         // This method gets called by the runtime. Use this method to add services to the container.
         public virtual void ConfigureServices(IServiceCollection services)
         {
@@ -38,6 +40,7 @@ namespace Identity.DefaultUI.WebSite
                 ));
 
             services.AddDefaultIdentity<TUser>()
+                .AddDefaultUI(Framework)
                 .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<TContext>();
 
