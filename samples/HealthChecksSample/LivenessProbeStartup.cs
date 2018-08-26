@@ -50,7 +50,7 @@ namespace HealthChecksSample
             // The readiness check uses all of the registered health checks (default)
             app.UseHealthChecks("/health/ready");
 
-            // The liveness check uses an 'identity' health check that always returns healty
+            // The liveness check uses an 'identity' health check that always returns healthy
             app.UseHealthChecks("/health/live", new HealthCheckOptions()
             {
                 // Filters the set of health checks run by this middleware
