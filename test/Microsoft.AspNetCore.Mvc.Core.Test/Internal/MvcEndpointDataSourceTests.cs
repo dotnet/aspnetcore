@@ -656,7 +656,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 new { controller = "Foo", action = "Bar", subarea = "test" });
             var expectedDefaults = new RouteValueDictionary(
                 new { controller = "Foo", action = "Bar", subarea = "test", subscription = "general" });
-            var actionDescriptorCollection = GetActionDescriptorCollection(requiredValues: requiredValues);
+            var actionDescriptorCollection = GetActionDescriptorCollection(requiredValues);
             var dataSource = CreateMvcEndpointDataSource(actionDescriptorCollection);
             dataSource.ConventionalEndpointInfos.Add(
                 CreateEndpointInfo(
@@ -671,6 +671,60 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var endpoint = Assert.Single(endpoints);
             var matcherEndpoint = Assert.IsType<RouteEndpoint>(endpoint);
             Assert.Equal("Foo/Bar/{subscription=general}", matcherEndpoint.RoutePattern.RawText);
+            AssertIsSubset(expectedDefaults, matcherEndpoint.RoutePattern.Defaults);
+        }
+
+        [Fact]
+        public void RequiredValues_DoesNotMatchParameterDefaults_Included()
+        {
+            // Arrange
+            var action = new RouteValueDictionary(
+                new { controller = "Foo", action = "Baz", }); // Doesn't match default
+            var expectedDefaults = new RouteValueDictionary(
+                new { controller = "Foo", action = "Baz", });
+            var actionDescriptorCollection = GetActionDescriptorCollection(action);
+            var dataSource = CreateMvcEndpointDataSource(actionDescriptorCollection);
+            dataSource.ConventionalEndpointInfos.Add(
+                CreateEndpointInfo(
+                    string.Empty,
+                    "{controller}/{action}/{id?}",
+                    defaults: new RouteValueDictionary(new { controller = "Foo", action = "Bar" })));
+
+            // Act
+            var endpoints = dataSource.Endpoints;
+
+            // Assert
+            var endpoint = Assert.Single(endpoints);
+            var matcherEndpoint = Assert.IsType<RouteEndpoint>(endpoint);
+            Assert.Equal("Foo/Baz/{id?}", matcherEndpoint.RoutePattern.RawText);
+            AssertIsSubset(expectedDefaults, matcherEndpoint.RoutePattern.Defaults);
+        }
+
+        [Fact]
+        public void RequiredValues_DoesNotMatchNonParameterDefaults_FilteredOut()
+        {
+            // Arrange
+            var action1 = new RouteValueDictionary(
+                new { controller = "Foo", action = "Bar", });
+            var action2 = new RouteValueDictionary(
+                new { controller = "Foo", action = "Baz", }); // Doesn't match default
+            var expectedDefaults = new RouteValueDictionary(
+                new { controller = "Foo", action = "Bar", });
+            var actionDescriptorCollection = GetActionDescriptorCollection(action1, action2);
+            var dataSource = CreateMvcEndpointDataSource(actionDescriptorCollection);
+            dataSource.ConventionalEndpointInfos.Add(
+                CreateEndpointInfo(
+                    string.Empty,
+                    "Blog/{*slug}",
+                    defaults: new RouteValueDictionary(new { controller = "Foo", action = "Bar" })));
+
+            // Act
+            var endpoints = dataSource.Endpoints;
+
+            // Assert
+            var endpoint = Assert.Single(endpoints);
+            var matcherEndpoint = Assert.IsType<RouteEndpoint>(endpoint);
+            Assert.Equal("Blog/{*slug}", matcherEndpoint.RoutePattern.RawText);
             AssertIsSubset(expectedDefaults, matcherEndpoint.RoutePattern.Defaults);
         }
 
