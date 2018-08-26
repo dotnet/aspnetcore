@@ -173,7 +173,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 .Setup(p => p.OnProvidersExecuted(It.IsAny<ActionDescriptorProviderContext>()))
                 .Verifiable();
 
-            var descriptorCollectionProvider = new ActionDescriptorCollectionProvider(
+            var descriptorCollectionProvider = new DefaultActionDescriptorCollectionProvider(
                 new[] { actionProvider.Object },
                 Enumerable.Empty<IActionDescriptorChangeProvider>());
 

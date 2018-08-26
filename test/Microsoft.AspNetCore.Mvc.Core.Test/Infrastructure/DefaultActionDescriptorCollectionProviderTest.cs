@@ -4,14 +4,13 @@
 using System.Linq;
 using System.Threading;
 using Microsoft.AspNetCore.Mvc.Abstractions;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Primitives;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.Internal
+namespace Microsoft.AspNetCore.Mvc.Infrastructure
 {
-    public class ActionDescriptorCollectionProviderTest
+    public class DefaultActionDescriptorCollectionProviderTest
     {
         [Fact]
         public void ActionDescriptors_ReadsDescriptorsFromActionDescriptorProviders()
@@ -24,7 +23,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var expected3 = new ActionDescriptor();
             var actionDescriptorProvider2 = GetActionDescriptorProvider(expected2, expected3);
 
-            var actionDescriptorCollectionProvider = new ActionDescriptorCollectionProvider(
+            var actionDescriptorCollectionProvider = new DefaultActionDescriptorCollectionProvider(
                 new[] { actionDescriptorProvider1, actionDescriptorProvider2 },
                 Enumerable.Empty<IActionDescriptorChangeProvider>());
 
@@ -46,7 +45,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             // Arrange
             var actionDescriptorProvider = GetActionDescriptorProvider(new ActionDescriptor());
 
-            var actionDescriptorCollectionProvider = new ActionDescriptorCollectionProvider(
+            var actionDescriptorCollectionProvider = new DefaultActionDescriptorCollectionProvider(
                 new[] { actionDescriptorProvider },
                 Enumerable.Empty<IActionDescriptorChangeProvider>());
 
@@ -66,55 +65,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
-        public void ActionDescriptors_UpdateWhenChangeTokenProviderChanges()
-        {
-            // Arrange
-            var actionDescriptorProvider = new Mock<IActionDescriptorProvider>();
-            var expected1 = new ActionDescriptor();
-            var expected2 = new ActionDescriptor();
-
-            var invocations = 0;
-            actionDescriptorProvider
-                .Setup(p => p.OnProvidersExecuting(It.IsAny<ActionDescriptorProviderContext>()))
-                .Callback((ActionDescriptorProviderContext context) =>
-                {
-                    if (invocations == 0)
-                    {
-                        context.Results.Add(expected1);
-                    }
-                    else
-                    {
-                        context.Results.Add(expected2);
-                    }
-
-                    invocations++;
-                });
-            var changeProvider = new TestChangeProvider();
-            var actionDescriptorCollectionProvider = new ActionDescriptorCollectionProvider(
-                new[] { actionDescriptorProvider.Object },
-                new[] { changeProvider });
-
-            // Act - 1
-            var collection1 = actionDescriptorCollectionProvider.ActionDescriptors;
-
-            // Assert - 1
-            Assert.Equal(0, collection1.Version);
-            Assert.Collection(collection1.Items,
-                item => Assert.Same(expected1, item));
-
-            // Act - 2
-            changeProvider.TokenSource.Cancel();
-            var collection2 = actionDescriptorCollectionProvider.ActionDescriptors;
-
-            // Assert - 2
-            Assert.NotSame(collection1, collection2);
-            Assert.Equal(1, collection2.Version);
-            Assert.Collection(collection2.Items,
-                item => Assert.Same(expected2, item));
-        }
-
-        [Fact]
-        public void ActionDescriptors_SubscribesToNewChangeNotificationsAfterInvalidating()
+        public void ActionDescriptors_UpdatesAndResubscripes_WhenChangeTokenTriggers()
         {
             // Arrange
             var actionDescriptorProvider = new Mock<IActionDescriptorProvider>();
@@ -143,34 +94,61 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     invocations++;
                 });
             var changeProvider = new TestChangeProvider();
-            var actionDescriptorCollectionProvider = new ActionDescriptorCollectionProvider(
+            var actionDescriptorCollectionProvider = new DefaultActionDescriptorCollectionProvider(
                 new[] { actionDescriptorProvider.Object },
                 new[] { changeProvider });
 
             // Act - 1
+            var changeToken1 = actionDescriptorCollectionProvider.GetChangeToken();
             var collection1 = actionDescriptorCollectionProvider.ActionDescriptors;
 
+            ActionDescriptorCollection captured = null;
+            changeToken1.RegisterChangeCallback((_) =>
+            {
+                captured = actionDescriptorCollectionProvider.ActionDescriptors;
+            }, null);
+
             // Assert - 1
+            Assert.False(changeToken1.HasChanged);
             Assert.Equal(0, collection1.Version);
             Assert.Collection(collection1.Items,
                 item => Assert.Same(expected1, item));
 
             // Act - 2
             changeProvider.TokenSource.Cancel();
+            var changeToken2 = actionDescriptorCollectionProvider.GetChangeToken();
             var collection2 = actionDescriptorCollectionProvider.ActionDescriptors;
 
+            changeToken2.RegisterChangeCallback((_) =>
+            {
+                captured = actionDescriptorCollectionProvider.ActionDescriptors;
+            }, null);
+
             // Assert - 2
+            Assert.NotSame(changeToken1, changeToken2);
+            Assert.True(changeToken1.HasChanged);
+            Assert.False(changeToken2.HasChanged);
+
             Assert.NotSame(collection1, collection2);
+            Assert.NotNull(captured);
+            Assert.Same(captured, collection2);
             Assert.Equal(1, collection2.Version);
             Assert.Collection(collection2.Items,
                 item => Assert.Same(expected2, item));
 
             // Act - 3
             changeProvider.TokenSource.Cancel();
+            var changeToken3 = actionDescriptorCollectionProvider.GetChangeToken();
             var collection3 = actionDescriptorCollectionProvider.ActionDescriptors;
 
             // Assert - 3
+            Assert.NotSame(changeToken2, changeToken3);
+            Assert.True(changeToken2.HasChanged);
+            Assert.False(changeToken3.HasChanged);
+
             Assert.NotSame(collection2, collection3);
+            Assert.NotNull(captured);
+            Assert.Same(captured, collection3);
             Assert.Equal(2, collection3.Version);
             Assert.Collection(collection3.Items,
                 item => Assert.Same(expected3, item));

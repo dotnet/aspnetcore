@@ -351,7 +351,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                     }
                 });
 
-            var actionDescriptorCollectionProvider = new ActionDescriptorCollectionProvider(
+            var actionDescriptorCollectionProvider = new DefaultActionDescriptorCollectionProvider(
                 new IActionDescriptorProvider[] { actionDescriptorProvider.Object, },
                 Enumerable.Empty<IActionDescriptorChangeProvider>());
 
@@ -398,7 +398,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 
         private static ActionConstraintCache GetActionConstraintCache(IActionConstraintProvider[] actionConstraintProviders = null)
         {
-            var descriptorProvider = new ActionDescriptorCollectionProvider(
+            var descriptorProvider = new DefaultActionDescriptorCollectionProvider(
                 Enumerable.Empty<IActionDescriptorProvider>(),
                 Enumerable.Empty<IActionDescriptorChangeProvider>());
             return new ActionConstraintCache(descriptorProvider, actionConstraintProviders.AsEnumerable() ?? new List<IActionConstraintProvider>());

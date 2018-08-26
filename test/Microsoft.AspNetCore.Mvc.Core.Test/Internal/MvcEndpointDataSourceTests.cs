@@ -133,47 +133,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             Assert.True(actionInvokerCalled);
         }
 
-        [Fact(Skip = "https://github.com/aspnet/Routing/issues/722")]
-        public void GetChangeToken_MultipleChangeTokenProviders_ComposedResult()
-        {
-            // Arrange
-            var featureCollection = new FeatureCollection();
-            featureCollection.Set<IEndpointFeature>(new EndpointFeature
-            {
-                RouteValues = new RouteValueDictionary()
-            });
-
-            var httpContextMock = new Mock<HttpContext>();
-            httpContextMock.Setup(m => m.Features).Returns(featureCollection);
-
-            var descriptorProviderMock = new Mock<IActionDescriptorCollectionProvider>();
-            descriptorProviderMock.Setup(m => m.ActionDescriptors).Returns(new ActionDescriptorCollection(new List<ActionDescriptor>(), 0));
-
-            var actionInvokerMock = new Mock<IActionInvoker>();
-
-            var actionInvokerProviderMock = new Mock<IActionInvokerFactory>();
-            actionInvokerProviderMock.Setup(m => m.CreateInvoker(It.IsAny<ActionContext>())).Returns(actionInvokerMock.Object);
-
-            var changeTokenMock = new Mock<IChangeToken>();
-
-            var changeProvider1Mock = new Mock<IActionDescriptorChangeProvider>();
-            changeProvider1Mock.Setup(m => m.GetChangeToken()).Returns(changeTokenMock.Object);
-            var changeProvider2Mock = new Mock<IActionDescriptorChangeProvider>();
-            changeProvider2Mock.Setup(m => m.GetChangeToken()).Returns(changeTokenMock.Object);
-
-            var dataSource = CreateMvcEndpointDataSource(
-                descriptorProviderMock.Object,
-                new MvcEndpointInvokerFactory(actionInvokerProviderMock.Object),
-                new[] { changeProvider1Mock.Object, changeProvider2Mock.Object });
-
-            // Act
-            var changeToken = dataSource.GetChangeToken();
-
-            // Assert
-            var compositeChangeToken = Assert.IsType<CompositeChangeToken>(changeToken);
-            Assert.Equal(2, compositeChangeToken.ChangeTokens.Count);
-        }
-
         [Theory]
         [InlineData("{controller}/{action}/{id?}", new[] { "TestController/TestAction/{id?}" })]
         [InlineData("{controller}/{id?}", new string[] { })]
@@ -287,11 +246,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             actionDescriptorCollectionProviderMock.VerifyGet(m => m.ActionDescriptors, Times.Once);
         }
 
-        [Fact(Skip = "https://github.com/aspnet/Routing/issues/722")]
+        [Fact]
         public void Endpoints_ChangeTokenTriggered_EndpointsRecreated()
         {
             // Arrange
-            var actionDescriptorCollectionProviderMock = new Mock<IActionDescriptorCollectionProvider>();
+            var actionDescriptorCollectionProviderMock = new Mock<ActionDescriptorCollectionProvider>();
             actionDescriptorCollectionProviderMock
                 .Setup(m => m.ActionDescriptors)
                 .Returns(new ActionDescriptorCollection(new[]
@@ -300,19 +259,18 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 }, version: 0));
 
             CancellationTokenSource cts = null;
+            actionDescriptorCollectionProviderMock
+                .Setup(m => m.GetChangeToken())
+                .Returns(() =>
+                {
+                    cts = new CancellationTokenSource();
+                    var changeToken = new CancellationChangeToken(cts.Token);
 
-            var changeProviderMock = new Mock<IActionDescriptorChangeProvider>();
-            changeProviderMock.Setup(m => m.GetChangeToken()).Returns(() =>
-            {
-                cts = new CancellationTokenSource();
-                var changeToken = new CancellationChangeToken(cts.Token);
+                    return changeToken;
+                });
 
-                return changeToken;
-            });
 
-            var dataSource = CreateMvcEndpointDataSource(
-                actionDescriptorCollectionProviderMock.Object,
-                actionDescriptorChangeProviders: new[] { changeProviderMock.Object });
+            var dataSource = CreateMvcEndpointDataSource(actionDescriptorCollectionProviderMock.Object);
             dataSource.ConventionalEndpointInfos.Add(CreateEndpointInfo(
                 string.Empty,
                 "{controller}/{action}",
@@ -752,15 +710,13 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         private MvcEndpointDataSource CreateMvcEndpointDataSource(
             IActionDescriptorCollectionProvider actionDescriptorCollectionProvider = null,
-            MvcEndpointInvokerFactory mvcEndpointInvokerFactory = null,
-            IEnumerable<IActionDescriptorChangeProvider> actionDescriptorChangeProviders = null)
+            MvcEndpointInvokerFactory mvcEndpointInvokerFactory = null)
         {
             if (actionDescriptorCollectionProvider == null)
             {
-                var mockDescriptorProvider = new Mock<IActionDescriptorCollectionProvider>();
-                mockDescriptorProvider.Setup(m => m.ActionDescriptors).Returns(new ActionDescriptorCollection(new List<ActionDescriptor>(), 0));
-
-                actionDescriptorCollectionProvider = mockDescriptorProvider.Object;
+                actionDescriptorCollectionProvider = new DefaultActionDescriptorCollectionProvider(
+                    Array.Empty<IActionDescriptorProvider>(),
+                    Array.Empty<IActionDescriptorChangeProvider>());
             }
 
             var serviceProviderMock = new Mock<IServiceProvider>();
@@ -769,7 +725,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var dataSource = new MvcEndpointDataSource(
                 actionDescriptorCollectionProvider,
                 mvcEndpointInvokerFactory ?? new MvcEndpointInvokerFactory(new ActionInvokerFactory(Array.Empty<IActionInvokerProvider>())),
-                actionDescriptorChangeProviders ?? Array.Empty<IActionDescriptorChangeProvider>(),
                 serviceProviderMock.Object);
 
             return dataSource;
