@@ -4,33 +4,33 @@
   </PropertyGroup>
   <PropertyGroup Label="Package Versions">
     <BenchmarkDotNetPackageVersion>0.10.13</BenchmarkDotNetPackageVersion>
-    <InternalAspNetCoreSdkPackageVersion>3.0.0-alpha1-20180817.3</InternalAspNetCoreSdkPackageVersion>
-    <MicrosoftAspNetCoreAppPackageVersion>3.0.0-alpha1-10321</MicrosoftAspNetCoreAppPackageVersion>
-    <MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>3.0.0-alpha1-10321</MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>
-    <MicrosoftAspNetCoreHostingAbstractionsPackageVersion>3.0.0-alpha1-10321</MicrosoftAspNetCoreHostingAbstractionsPackageVersion>
-    <MicrosoftAspNetCoreHostingPackageVersion>3.0.0-alpha1-10321</MicrosoftAspNetCoreHostingPackageVersion>
-    <MicrosoftAspNetCoreHttpAbstractionsPackageVersion>3.0.0-alpha1-10321</MicrosoftAspNetCoreHttpAbstractionsPackageVersion>
-    <MicrosoftAspNetCoreHttpExtensionsPackageVersion>3.0.0-alpha1-10321</MicrosoftAspNetCoreHttpExtensionsPackageVersion>
-    <MicrosoftAspNetCoreHttpPackageVersion>3.0.0-alpha1-10321</MicrosoftAspNetCoreHttpPackageVersion>
-    <MicrosoftAspNetCoreServerIISIntegrationPackageVersion>3.0.0-alpha1-10321</MicrosoftAspNetCoreServerIISIntegrationPackageVersion>
-    <MicrosoftAspNetCoreServerKestrelPackageVersion>3.0.0-alpha1-10321</MicrosoftAspNetCoreServerKestrelPackageVersion>
-    <MicrosoftAspNetCoreTestHostPackageVersion>3.0.0-alpha1-10321</MicrosoftAspNetCoreTestHostPackageVersion>
-    <MicrosoftAspNetCoreTestingPackageVersion>3.0.0-alpha1-10321</MicrosoftAspNetCoreTestingPackageVersion>
-    <MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>3.0.0-alpha1-10321</MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>
-    <MicrosoftExtensionsConfigurationCommandLinePackageVersion>3.0.0-alpha1-10321</MicrosoftExtensionsConfigurationCommandLinePackageVersion>
-    <MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion>3.0.0-alpha1-10321</MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion>
-    <MicrosoftExtensionsConfigurationPackageVersion>3.0.0-alpha1-10321</MicrosoftExtensionsConfigurationPackageVersion>
-    <MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>3.0.0-alpha1-10321</MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>
-    <MicrosoftExtensionsDependencyInjectionPackageVersion>3.0.0-alpha1-10321</MicrosoftExtensionsDependencyInjectionPackageVersion>
-    <MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>3.0.0-alpha1-10321</MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>
-    <MicrosoftExtensionsLoggingAbstractionsPackageVersion>3.0.0-alpha1-10321</MicrosoftExtensionsLoggingAbstractionsPackageVersion>
-    <MicrosoftExtensionsLoggingConsolePackageVersion>3.0.0-alpha1-10321</MicrosoftExtensionsLoggingConsolePackageVersion>
-    <MicrosoftExtensionsLoggingPackageVersion>3.0.0-alpha1-10321</MicrosoftExtensionsLoggingPackageVersion>
-    <MicrosoftExtensionsLoggingTestingPackageVersion>3.0.0-alpha1-10321</MicrosoftExtensionsLoggingTestingPackageVersion>
-    <MicrosoftExtensionsObjectPoolPackageVersion>3.0.0-alpha1-10321</MicrosoftExtensionsObjectPoolPackageVersion>
-    <MicrosoftExtensionsOptionsPackageVersion>3.0.0-alpha1-10321</MicrosoftExtensionsOptionsPackageVersion>
-    <MicrosoftExtensionsPropertyHelperSourcesPackageVersion>3.0.0-alpha1-10321</MicrosoftExtensionsPropertyHelperSourcesPackageVersion>
-    <MicrosoftExtensionsWebEncodersPackageVersion>3.0.0-alpha1-10321</MicrosoftExtensionsWebEncodersPackageVersion>
+    <InternalAspNetCoreSdkPackageVersion>3.0.0-alpha1-20180821.3</InternalAspNetCoreSdkPackageVersion>
+    <MicrosoftAspNetCoreAppPackageVersion>3.0.0-alpha1-10352</MicrosoftAspNetCoreAppPackageVersion>
+    <MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>3.0.0-alpha1-10352</MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>
+    <MicrosoftAspNetCoreHostingAbstractionsPackageVersion>3.0.0-alpha1-10352</MicrosoftAspNetCoreHostingAbstractionsPackageVersion>
+    <MicrosoftAspNetCoreHostingPackageVersion>3.0.0-alpha1-10352</MicrosoftAspNetCoreHostingPackageVersion>
+    <MicrosoftAspNetCoreHttpAbstractionsPackageVersion>3.0.0-alpha1-10352</MicrosoftAspNetCoreHttpAbstractionsPackageVersion>
+    <MicrosoftAspNetCoreHttpExtensionsPackageVersion>3.0.0-alpha1-10352</MicrosoftAspNetCoreHttpExtensionsPackageVersion>
+    <MicrosoftAspNetCoreHttpPackageVersion>3.0.0-alpha1-10352</MicrosoftAspNetCoreHttpPackageVersion>
+    <MicrosoftAspNetCoreServerIISIntegrationPackageVersion>3.0.0-alpha1-10352</MicrosoftAspNetCoreServerIISIntegrationPackageVersion>
+    <MicrosoftAspNetCoreServerKestrelPackageVersion>3.0.0-alpha1-10352</MicrosoftAspNetCoreServerKestrelPackageVersion>
+    <MicrosoftAspNetCoreTestHostPackageVersion>3.0.0-alpha1-10352</MicrosoftAspNetCoreTestHostPackageVersion>
+    <MicrosoftAspNetCoreTestingPackageVersion>3.0.0-alpha1-10352</MicrosoftAspNetCoreTestingPackageVersion>
+    <MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>3.0.0-alpha1-10352</MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>
+    <MicrosoftExtensionsConfigurationCommandLinePackageVersion>3.0.0-alpha1-10352</MicrosoftExtensionsConfigurationCommandLinePackageVersion>
+    <MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion>3.0.0-alpha1-10352</MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion>
+    <MicrosoftExtensionsConfigurationPackageVersion>3.0.0-alpha1-10352</MicrosoftExtensionsConfigurationPackageVersion>
+    <MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>3.0.0-alpha1-10352</MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>
+    <MicrosoftExtensionsDependencyInjectionPackageVersion>3.0.0-alpha1-10352</MicrosoftExtensionsDependencyInjectionPackageVersion>
+    <MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>3.0.0-alpha1-10352</MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>
+    <MicrosoftExtensionsLoggingAbstractionsPackageVersion>3.0.0-alpha1-10352</MicrosoftExtensionsLoggingAbstractionsPackageVersion>
+    <MicrosoftExtensionsLoggingConsolePackageVersion>3.0.0-alpha1-10352</MicrosoftExtensionsLoggingConsolePackageVersion>
+    <MicrosoftExtensionsLoggingPackageVersion>3.0.0-alpha1-10352</MicrosoftExtensionsLoggingPackageVersion>
+    <MicrosoftExtensionsLoggingTestingPackageVersion>3.0.0-alpha1-10352</MicrosoftExtensionsLoggingTestingPackageVersion>
+    <MicrosoftExtensionsObjectPoolPackageVersion>3.0.0-alpha1-10352</MicrosoftExtensionsObjectPoolPackageVersion>
+    <MicrosoftExtensionsOptionsPackageVersion>3.0.0-alpha1-10352</MicrosoftExtensionsOptionsPackageVersion>
+    <MicrosoftExtensionsPropertyHelperSourcesPackageVersion>3.0.0-alpha1-10352</MicrosoftExtensionsPropertyHelperSourcesPackageVersion>
+    <MicrosoftExtensionsWebEncodersPackageVersion>3.0.0-alpha1-10352</MicrosoftExtensionsWebEncodersPackageVersion>
     <MicrosoftNETCoreApp20PackageVersion>2.0.9</MicrosoftNETCoreApp20PackageVersion>
     <MicrosoftNETCoreApp21PackageVersion>2.1.2</MicrosoftNETCoreApp21PackageVersion>
     <MicrosoftNETCoreApp22PackageVersion>2.2.0-preview1-26618-02</MicrosoftNETCoreApp22PackageVersion>
