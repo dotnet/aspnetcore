@@ -3,17 +3,17 @@
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
   <PropertyGroup Label="Package Versions">
-    <InternalAspNetCoreSdkPackageVersion>3.0.0-alpha1-20180817.3</InternalAspNetCoreSdkPackageVersion>
-    <MicrosoftAspNetCoreCertificatesGenerationSourcesPackageVersion>3.0.0-alpha1-10321</MicrosoftAspNetCoreCertificatesGenerationSourcesPackageVersion>
-    <MicrosoftAspNetCoreTestingPackageVersion>3.0.0-alpha1-10321</MicrosoftAspNetCoreTestingPackageVersion>
-    <MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>3.0.0-alpha1-10321</MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>
-    <MicrosoftExtensionsConfigurationUserSecretsPackageVersion>3.0.0-alpha1-10321</MicrosoftExtensionsConfigurationUserSecretsPackageVersion>
-    <MicrosoftExtensionsProcessSourcesPackageVersion>3.0.0-alpha1-10321</MicrosoftExtensionsProcessSourcesPackageVersion>
-    <MicrosoftNETCoreApp30PackageVersion>3.0.0-preview1-26817-04</MicrosoftNETCoreApp30PackageVersion>
+    <InternalAspNetCoreSdkPackageVersion>3.0.0-alpha1-20180821.3</InternalAspNetCoreSdkPackageVersion>
+    <MicrosoftAspNetCoreCertificatesGenerationSourcesPackageVersion>3.0.0-alpha1-10352</MicrosoftAspNetCoreCertificatesGenerationSourcesPackageVersion>
+    <MicrosoftAspNetCoreTestingPackageVersion>3.0.0-alpha1-10352</MicrosoftAspNetCoreTestingPackageVersion>
+    <MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>3.0.0-alpha1-10352</MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>
+    <MicrosoftExtensionsConfigurationUserSecretsPackageVersion>3.0.0-alpha1-10352</MicrosoftExtensionsConfigurationUserSecretsPackageVersion>
+    <MicrosoftExtensionsProcessSourcesPackageVersion>3.0.0-alpha1-10352</MicrosoftExtensionsProcessSourcesPackageVersion>
+    <MicrosoftNETCoreApp30PackageVersion>3.0.0-preview1-26821-04</MicrosoftNETCoreApp30PackageVersion>
     <MicrosoftNETTestSdkPackageVersion>15.6.1</MicrosoftNETTestSdkPackageVersion>
     <NETStandardLibrary20PackageVersion>2.0.3</NETStandardLibrary20PackageVersion>
-    <SystemDataSqlClientPackageVersion>4.6.0-preview1-26816-01</SystemDataSqlClientPackageVersion>
-    <SystemSecurityCryptographyCngPackageVersion>4.6.0-preview1-26816-01</SystemSecurityCryptographyCngPackageVersion>
+    <SystemDataSqlClientPackageVersion>4.6.0-preview1-26817-04</SystemDataSqlClientPackageVersion>
+    <SystemSecurityCryptographyCngPackageVersion>4.6.0-preview1-26817-04</SystemSecurityCryptographyCngPackageVersion>
     <VisualStudio_NewtonsoftJsonPackageVersion>9.0.1</VisualStudio_NewtonsoftJsonPackageVersion>
     <XunitPackageVersion>2.3.1</XunitPackageVersion>
     <XunitRunnerVisualStudioPackageVersion>2.4.0</XunitRunnerVisualStudioPackageVersion>
