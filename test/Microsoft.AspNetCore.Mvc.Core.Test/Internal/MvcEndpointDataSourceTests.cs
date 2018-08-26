@@ -511,29 +511,40 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             Assert.Empty(endpoints);
         }
 
-        // Since area, controller, action and page are special, check to see if the followin test succeeds for a 
-        // custom required value too.
-        [Fact(Skip = "Needs review")]
+        // area, controller, action and page are special, but not hardcoded. Actions can define custom required
+        // route values. This has been used successfully for localization, versioning and similar schemes. We should
+        // be able to replace custom route values too.
+        [Fact]
         public void NonReservedRequiredValue_WithNoCorresponding_TemplateParameter_DoesNotProduceEndpoint()
         {
             // Arrange
-            var requiredValues = new RouteValueDictionary(new { controller = "home", action = "index", foo = "bar" });
-            var actionDescriptorCollection = GetActionDescriptorCollection(requiredValues);
+            var action1 = new RouteValueDictionary(new { controller = "home", action = "index", locale = "en-NZ" });
+            var action2 = new RouteValueDictionary(new { controller = "home", action = "about", locale = "en-CA" });
+            var action3 = new RouteValueDictionary(new { controller = "home", action = "index", locale = (string)null });
+
+            var actionDescriptorCollection = GetActionDescriptorCollection(action1, action2, action3);
             var dataSource = CreateMvcEndpointDataSource(actionDescriptorCollection);
+
+            // Adding a localized route a non-localized route
+            dataSource.ConventionalEndpointInfos.Add(CreateEndpointInfo(string.Empty, "{locale}/{controller}/{action}"));
             dataSource.ConventionalEndpointInfos.Add(CreateEndpointInfo(string.Empty, "{controller}/{action}"));
 
             // Act
             var endpoints = dataSource.Endpoints;
 
             // Assert
-            Assert.Empty(endpoints);
+            Assert.Collection(
+                endpoints.Cast<RouteEndpoint>().OrderBy(e => e.RoutePattern.RawText),
+                e => Assert.Equal("en-CA/home/about", e.RoutePattern.RawText),
+                e => Assert.Equal("en-NZ/home/index", e.RoutePattern.RawText),
+                e => Assert.Equal("home/index", e.RoutePattern.RawText));
         }
 
         [Fact]
         public void TemplateParameter_WithNoDefaultOrRequiredValue_DoesNotProduceEndpoint()
         {
             // Arrange
-            var requiredValues = new RouteValueDictionary(new { controller = "home", action = "index" });
+            var requiredValues = new RouteValueDictionary(new { controller = "home", action = "index", area = (string)null });
             var actionDescriptorCollection = GetActionDescriptorCollection(requiredValues);
             var dataSource = CreateMvcEndpointDataSource(actionDescriptorCollection);
             dataSource.ConventionalEndpointInfos.Add(CreateEndpointInfo(string.Empty, "{area}/{controller}/{action}"));
@@ -606,7 +617,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var actionDescriptorCollection = GetActionDescriptorCollection(requiredValues: requiredValues);
             var dataSource = CreateMvcEndpointDataSource(actionDescriptorCollection);
             dataSource.ConventionalEndpointInfos.Add(
-                CreateEndpointInfo(string.Empty, "{controller=Home}/{action=Index}"));
+                CreateEndpointInfo(string.Empty, "{subarea}/{controller=Home}/{action=Index}"));
 
             // Act
             var endpoints = dataSource.Endpoints;
@@ -614,8 +625,27 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             // Assert
             var endpoint = Assert.Single(endpoints);
             var matcherEndpoint = Assert.IsType<RouteEndpoint>(endpoint);
-            Assert.Equal("Foo/Bar", matcherEndpoint.RoutePattern.RawText);
+            Assert.Equal("test/Foo/Bar", matcherEndpoint.RoutePattern.RawText);
             AssertIsSubset(expectedDefaults, matcherEndpoint.RoutePattern.Defaults);
+        }
+
+        [Fact]
+        public void RequiredValues_NotPresent_InDefaultValuesOrParameter_EndpointNotCreated()
+        {
+            // Arrange
+            var requiredValues = new RouteValueDictionary(
+                new { controller = "Foo", action = "Bar", subarea = "test" });
+            var expectedDefaults = requiredValues;
+            var actionDescriptorCollection = GetActionDescriptorCollection(requiredValues: requiredValues);
+            var dataSource = CreateMvcEndpointDataSource(actionDescriptorCollection);
+            dataSource.ConventionalEndpointInfos.Add(
+                CreateEndpointInfo(string.Empty, "{controller=Home}/{action=Index}"));
+
+            // Act
+            var endpoints = dataSource.Endpoints;
+
+            // Assert
+            Assert.Empty(endpoints);
         }
 
         [Fact]
@@ -629,7 +659,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var actionDescriptorCollection = GetActionDescriptorCollection(requiredValues: requiredValues);
             var dataSource = CreateMvcEndpointDataSource(actionDescriptorCollection);
             dataSource.ConventionalEndpointInfos.Add(
-                CreateEndpointInfo(string.Empty, "{controller=Home}/{action=Index}/{subscription=general}"));
+                CreateEndpointInfo(
+                    string.Empty, 
+                    "{controller=Home}/{action=Index}/{subscription=general}",
+                    defaults: new RouteValueDictionary(new { subarea = "test", })));
 
             // Act
             var endpoints = dataSource.Endpoints;

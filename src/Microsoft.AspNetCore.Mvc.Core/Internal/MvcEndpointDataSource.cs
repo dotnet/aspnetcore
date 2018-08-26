@@ -89,73 +89,88 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     // - Home/Login
                     foreach (var endpointInfo in ConventionalEndpointInfos)
                     {
-                        if (MatchRouteValue(action, endpointInfo, "Area")
-                            && MatchRouteValue(action, endpointInfo, "Controller")
-                            && MatchRouteValue(action, endpointInfo, "Action"))
+                        // An 'endpointInfo' is applicable if:
+                        // 1. it has a parameter (or default value) for 'required' non-null route value
+                        // 2. it does not have a parameter (or default value) for 'required' null route value
+                        var isApplicable = true;
+                        foreach (var routeKey in action.RouteValues.Keys)
                         {
-                            var newPathSegments = endpointInfo.ParsedPattern.PathSegments.ToList();
-
-                            for (var i = 0; i < newPathSegments.Count; i++)
+                            if (!MatchRouteValue(action, endpointInfo, routeKey))
                             {
-                                // Check if the pattern can be shortened because the remaining parameters are optional
-                                //
-                                // e.g. Matching pattern {controller=Home}/{action=Index}/{id?} against HomeController.Index
-                                // can resolve to the following endpoints:
-                                // - /Home/Index/{id?}
-                                // - /Home
-                                // - /
-                                if (UseDefaultValuePlusRemainingSegementsOptional(i, action, endpointInfo, newPathSegments))
+                                isApplicable = false;
+                                break;
+                            }
+                        }
+
+                        if (!isApplicable)
+                        {
+                            continue;
+                        }
+
+                        var newPathSegments = endpointInfo.ParsedPattern.PathSegments.ToList();
+
+                        for (var i = 0; i < newPathSegments.Count; i++)
+                        {
+                            // Check if the pattern can be shortened because the remaining parameters are optional
+                            //
+                            // e.g. Matching pattern {controller=Home}/{action=Index}/{id?} against HomeController.Index
+                            // can resolve to the following endpoints:
+                            // - /Home/Index/{id?}
+                            // - /Home
+                            // - /
+                            if (UseDefaultValuePlusRemainingSegementsOptional(i, action, endpointInfo, newPathSegments))
+                            {
+                                var subPathSegments = newPathSegments.Take(i);
+
+                                var subEndpoint = CreateEndpoint(
+                                    action,
+                                    endpointInfo.Name,
+                                    GetPattern(ref patternStringBuilder, subPathSegments),
+                                    subPathSegments,
+                                    endpointInfo.Defaults,
+                                    ++conventionalRouteOrder,
+                                    endpointInfo,
+                                    suppressLinkGeneration: false);
+                                endpoints.Add(subEndpoint);
+                            }
+
+                            List<RoutePatternPart> segmentParts = null; // Initialize only as needed
+                            var segment = newPathSegments[i];
+                            for (var j = 0; j < segment.Parts.Count; j++)
+                            {
+                                var part = segment.Parts[j];
+
+                                if (part.IsParameter &&
+                                    part is RoutePatternParameterPart parameterPart &&
+                                    action.RouteValues.ContainsKey(parameterPart.Name))
                                 {
-                                    var subPathSegments = newPathSegments.Take(i);
-
-                                    var subEndpoint = CreateEndpoint(
-                                        action,
-                                        endpointInfo.Name,
-                                        GetPattern(ref patternStringBuilder, subPathSegments),
-                                        subPathSegments,
-                                        endpointInfo.Defaults,
-                                        ++conventionalRouteOrder,
-                                        endpointInfo,
-                                        suppressLinkGeneration: false);
-                                    endpoints.Add(subEndpoint);
-                                }
-
-                                List<RoutePatternPart> segmentParts = null; // Initialize only as needed
-                                var segment = newPathSegments[i];
-                                for (var j = 0; j < segment.Parts.Count; j++)
-                                {
-                                    var part = segment.Parts[j];
-
-                                    if (part.IsParameter && part is RoutePatternParameterPart parameterPart && IsMvcParameter(parameterPart.Name))
+                                    if (segmentParts == null)
                                     {
-                                        if (segmentParts == null)
-                                        {
-                                            segmentParts = segment.Parts.ToList();
-                                        }
-
-                                        // Replace parameter with literal value
-                                        segmentParts[j] = RoutePatternFactory.LiteralPart(action.RouteValues[parameterPart.Name]);
+                                        segmentParts = segment.Parts.ToList();
                                     }
-                                }
 
-                                // A parameter part was replaced so replace segment with updated parts
-                                if (segmentParts != null)
-                                {
-                                    newPathSegments[i] = RoutePatternFactory.Segment(segmentParts);
+                                    // Replace parameter with literal value
+                                    segmentParts[j] = RoutePatternFactory.LiteralPart(action.RouteValues[parameterPart.Name]);
                                 }
                             }
 
-                            var endpoint = CreateEndpoint(
-                                action,
-                                endpointInfo.Name,
-                                GetPattern(ref patternStringBuilder, newPathSegments),
-                                newPathSegments,
-                                endpointInfo.Defaults,
-                                ++conventionalRouteOrder,
-                                endpointInfo,
-                                suppressLinkGeneration: false);
-                            endpoints.Add(endpoint);
+                            // A parameter part was replaced so replace segment with updated parts
+                            if (segmentParts != null)
+                            {
+                                newPathSegments[i] = RoutePatternFactory.Segment(segmentParts);
+                            }
                         }
+
+                        var endpoint = CreateEndpoint(
+                            action,
+                            endpointInfo.Name,
+                            GetPattern(ref patternStringBuilder, newPathSegments),
+                            newPathSegments,
+                            endpointInfo.Defaults,
+                            ++conventionalRouteOrder,
+                            endpointInfo,
+                            suppressLinkGeneration: false);
+                        endpoints.Add(endpoint);
                     }
                 }
                 else
@@ -190,18 +205,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             }
         }
 
-        private bool IsMvcParameter(string name)
-        {
-            if (string.Equals(name, "Area", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(name, "Controller", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(name, "Action", StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-
-            return false;
-        }
-
         private bool UseDefaultValuePlusRemainingSegementsOptional(
             int segmentIndex,
             ActionDescriptor action,
@@ -225,7 +228,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                             continue;
                         }
 
-                        if (IsMvcParameter(parameterPart.Name))
+                        if (action.RouteValues.ContainsKey(parameterPart.Name))
                         {
                             if (endpointInfo.MergedDefaults[parameterPart.Name] is string defaultValue
                                 && action.RouteValues.TryGetValue(parameterPart.Name, out var routeValue)
@@ -266,8 +269,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             {
                 // Action does not have a value for this routeKey, most likely because action is not in an area
                 // Check that the pattern does not have a parameter for the routeKey
-                var matchingParameter = endpointInfo.ParsedPattern.Parameters.SingleOrDefault(p => string.Equals(p.Name, routeKey, StringComparison.OrdinalIgnoreCase));
-                if (matchingParameter == null)
+                var matchingParameter = endpointInfo.ParsedPattern.GetParameter(routeKey);
+                if (matchingParameter == null &&
+                    (!endpointInfo.ParsedPattern.Defaults.TryGetValue(routeKey, out var value) ||
+                    !string.IsNullOrEmpty(Convert.ToString(value))))
                 {
                     return true;
                 }
@@ -279,7 +284,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     return true;
                 }
 
-                var matchingParameter = endpointInfo.ParsedPattern.Parameters.SingleOrDefault(p => string.Equals(p.Name, routeKey, StringComparison.OrdinalIgnoreCase));
+                var matchingParameter = endpointInfo.ParsedPattern.GetParameter(routeKey);
                 if (matchingParameter != null)
                 {
                     // Check that the value matches against constraints on that parameter
@@ -358,10 +363,12 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             object source,
             bool suppressLinkGeneration)
         {
-            var metadata = new List<object>();
-            // REVIEW: Used for debugging. Consider removing before release
-            metadata.Add(source);
-            metadata.Add(action);
+            var metadata = new List<object>
+            {
+                // REVIEW: Used for debugging. Consider removing before release
+                source,
+                action
+            };
 
             if (action.EndpointMetadata != null)
             {
