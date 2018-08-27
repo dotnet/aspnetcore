@@ -53,6 +53,10 @@ namespace Common
                                 return parts[3];
                         }
                     }
+                    else if (name.StartsWith("Microsoft.AspNetCore.Http"))
+                    {
+                        return "HttpAbstractions";
+                    }
                     else if (name.StartsWith("Microsoft.AspNetCore.", StringComparison.OrdinalIgnoreCase))
                     {
                         var parts = name.Split('.');
@@ -127,7 +131,7 @@ namespace Common
 
         public static string FindOwner(string name, IReporter reporter)
         {
-            if(Constants.BeQuiet)
+            if (Constants.BeQuiet)
             {
                 return "ryanbrandenburg";
             }
@@ -147,7 +151,7 @@ namespace Common
         /// <returns>The message of the error.</returns>
         public static string GetExceptionMessage(string fullErrorMsg)
         {
-            if(String.IsNullOrEmpty(fullErrorMsg))
+            if (String.IsNullOrEmpty(fullErrorMsg))
             {
                 throw new ArgumentNullException(nameof(fullErrorMsg));
             }
