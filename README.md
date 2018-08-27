@@ -3,12 +3,6 @@ KestrelHttpServer
 
 [![Join the chat at https://gitter.im/aspnet/KestrelHttpServer](https://badges.gitter.im/aspnet/KestrelHttpServer.svg)](https://gitter.im/aspnet/KestrelHttpServer?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-[![Travis build status][travis-badge]](https://travis-ci.org/aspnet/KestrelHttpServer/branches)
-[![AppVeyor build status][appveyor-badge]](https://ci.appveyor.com/project/aspnetci/KestrelHttpServer/branch/dev)
-
-[travis-badge]: https://img.shields.io/travis/aspnet/KestrelHttpServer.svg?label=travis-ci&branch=dev&style=flat-square
-[appveyor-badge]: https://img.shields.io/appveyor/ci/aspnetci/KestrelHttpServer/dev.svg?label=appveyor&style=flat-square
-
 This repo contains a cross-platform web server for ASP.NET Core.
 
 This project is part of ASP.NET Core. You can find samples, documentation and getting started instructions for ASP.NET Core at the [Home](https://github.com/aspnet/home) repo.
