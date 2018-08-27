@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Microsoft.AspNetCore.Testing.xunit;
-using Microsoft.Extensions.Logging;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
@@ -18,10 +17,21 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
     public class LoggingTests : IISFunctionalTestBase
     {
         private readonly PublishedSitesFixture _fixture;
+        private readonly string _logFolderPath;
 
         public LoggingTests(PublishedSitesFixture fixture)
         {
+            _logFolderPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
             _fixture = fixture;
+        }
+
+        public override void Dispose()
+        {
+            base.Dispose();
+            if (Directory.Exists(_logFolderPath))
+            {
+                Directory.Delete(_logFolderPath, true);
+            }
         }
 
         [ConditionalTheory]
@@ -31,35 +41,18 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         {
             var deploymentParameters = _fixture.GetBaseDeploymentParameters(publish: true);
 
-            deploymentParameters.WebConfigActionList.Add(
-                WebConfigHelpers.AddOrModifyAspNetCoreSection("stdoutLogEnabled", "true"));
-
-            var pathToLogs = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-            deploymentParameters.WebConfigActionList.Add(
-                WebConfigHelpers.AddOrModifyAspNetCoreSection("stdoutLogFile", Path.Combine(pathToLogs, "std")));
+            deploymentParameters.EnableLogging(_logFolderPath);
 
             var deploymentResult = await DeployAsync(deploymentParameters);
+            
+            await Helpers.AssertStarts(deploymentResult, path);
 
-            try
-            {
-                await Helpers.AssertStarts(deploymentResult, path);
+            StopServer();
 
-                StopServer();
+            var contents = File.ReadAllText(Helpers.GetExpectedLogName(deploymentResult, _logFolderPath));
 
-                var fileInDirectory = Directory.GetFiles(pathToLogs).Single(fileName => fileName.Contains("inprocess"));
-                var contents = File.ReadAllText(fileInDirectory);
-
-                Assert.NotNull(contents);
-                Assert.Contains("TEST MESSAGE", contents);
-            }
-            finally
-            {
-                RetryHelper.RetryOperation(
-                    () => Directory.Delete(pathToLogs, true),
-                    e => Logger.LogWarning($"Failed to delete directory : {e.Message}"),
-                    retryCount: 3,
-                    retryDelayMilliseconds: 100);
-            }
+            Assert.NotNull(contents);
+            Assert.Contains("TEST MESSAGE", contents);
         }
 
         [ConditionalFact]
@@ -75,6 +68,21 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             var deploymentResult = await DeployAsync(deploymentParameters);
 
             await Helpers.AssertStarts(deploymentResult, "HelloWorld");
+        }
+
+        [ConditionalFact]
+        public async Task OnlyOneFileCreatedWithProcessStartTime()
+        {
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(publish: true);
+
+            deploymentParameters.EnableLogging(_logFolderPath);
+
+            var deploymentResult = await DeployAsync(deploymentParameters);
+            await Helpers.AssertStarts(deploymentResult, "CheckLogFile");
+
+            StopServer();
+
+            Assert.Single(Directory.GetFiles(_logFolderPath), Helpers.GetExpectedLogName(deploymentResult, _logFolderPath));
         }
 
         [ConditionalFact]

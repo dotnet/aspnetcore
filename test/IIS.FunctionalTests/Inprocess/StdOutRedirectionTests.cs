@@ -73,8 +73,7 @@ namespace IIS.FunctionalTests.Inprocess
 
             StopServer();
 
-            var fileInDirectory = Directory.GetFiles(_logFolderPath).Single();
-            var contents = File.ReadAllText(fileInDirectory);
+            var contents = File.ReadAllText(Helpers.GetExpectedLogName(deploymentResult, _logFolderPath));
             var expectedString = "The specified framework 'Microsoft.NETCore.App', version '2.9.9' was not found.";
             EventLogHelpers.VerifyEventLogEvent(deploymentResult, TestSink, expectedString);
             Assert.Contains(expectedString, contents);
@@ -98,14 +97,10 @@ namespace IIS.FunctionalTests.Inprocess
 
             StopServer();
 
-            var filesInDirectory = Directory.GetFiles(_logFolderPath);
-            Assert.Equal(2, filesInDirectory.Length);
-            foreach (var file in filesInDirectory)
-            {
-                var contents = File.ReadAllText(file);
-                EventLogHelpers.VerifyEventLogEvent(deploymentResult, TestSink, "Invoked hostfxr");
-                Assert.Contains("Invoked hostfxr", contents);
-            }
+            var fileInDirectory = Directory.GetFiles(_logFolderPath).Single();
+            var contents = File.ReadAllText(fileInDirectory);
+            EventLogHelpers.VerifyEventLogEvent(deploymentResult, TestSink, "Invoked hostfxr");
+            Assert.Contains("Invoked hostfxr", contents);
         }
 
         [ConditionalTheory]
