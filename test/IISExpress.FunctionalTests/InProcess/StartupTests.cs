@@ -123,7 +123,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             deploymentParameters.ApplicationPublisher = null;
             // ReferenceTestTasks is workaround for https://github.com/dotnet/sdk/issues/2482
             deploymentParameters.AdditionalPublishParameters = "-p:RuntimeIdentifier=win7-x64 -p:UseAppHost=true -p:SelfContained=false -p:ReferenceTestTasks=false";
-            deploymentParameters.RestoreOnPublish = true;
             var deploymentResult = await DeployAsync(deploymentParameters);
 
             Assert.True(File.Exists(Path.Combine(deploymentResult.ContentRoot, "InProcessWebSite.exe")));
