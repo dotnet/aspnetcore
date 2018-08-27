@@ -16,8 +16,11 @@ namespace Microsoft.AspNetCore.Routing.Matching
     {
         // The algorthm we use only works for ASCII text. If we find non-ASCII text in the input
         // we need to reject it and let is be processed with a fallback technique.
-        public const int NotAscii = Int32.MinValue;
+        public const int NotAscii = int.MinValue;
 
+        // Creates a Func of (string path, int start, int length) => destination
+        // Not using PathSegment here because we don't want to mess with visibility checks and
+        // generating IL without it is easier.
         public static Func<string, int, int, int> Create(
             int defaultDestination,
             int exitDestination,
@@ -38,6 +41,21 @@ namespace Microsoft.AspNetCore.Routing.Matching
             return (Func<string, int, int, int>)method.CreateDelegate(typeof(Func<string, int, int, int>));
         }
 
+        // Internal for testing
+        internal static bool ShouldVectorize((string text, int destination)[] entries)
+        {
+            // There's no value in vectorizing the computation if we're on 32bit or
+            // if no string is long enough. We do the vectorized comparison with uint64 ulongs
+            // which isn't beneficial if they don't map to the native size of the CPU. The
+            // vectorized algorithm introduces additional overhead for casing.
+
+            // Vectorize by default on 64bit (allow override for testing)
+            return (IntPtr.Size == 8) && 
+
+            // Don't vectorize if all of the strings are small (prevents allocating unused locals)
+            entries.Any(e => e.text.Length >= 4);
+        }
+
         private static void GenerateMethodBody(
             ILGenerator il,
             int defaultDestination,
@@ -45,16 +63,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
             (string text, int destination)[] entries,
             bool? vectorize)
         {
-            // There's no value in vectorizing the computation if we're on 32bit or
-            // if no string is long enough. We do the vectorized comparison with uint64 ulongs
-            // which isn't beneficial if they don't map to the native size of the CPU. The
-            // vectorized algorithm introduces additional overhead for casing.
-            //
-            // Vectorize by default on 64bit (allow override for testing)
-            vectorize = vectorize ?? (IntPtr.Size == 8);
 
-            // Don't vectorize if all of the strings are small (prevents allocating unused locals)
-            vectorize &= entries.Any(e => e.text.Length >= 4);
+            vectorize = vectorize ?? ShouldVectorize(entries);
 
             // See comments on Locals for details
             var locals = new Locals(il, vectorize.Value);
@@ -428,32 +438,32 @@ namespace Microsoft.AspNetCore.Routing.Matching
             /// <summary>
             /// Holds current character when processing a character at a time.
             /// </summary>
-            public LocalBuilder UInt16Value { get; set; }
+            public LocalBuilder UInt16Value { get; }
 
             /// <summary>
             /// Holds current character when processing 4 characters at a time.
             /// </summary>
-            public LocalBuilder UInt64Value { get; set; }
+            public LocalBuilder UInt64Value { get; }
 
             /// <summary>
             /// Used to covert casing. See comments where it's used.
             /// </summary>
-            public LocalBuilder UInt64LowerIndicator { get; set; }
-
+            public LocalBuilder UInt64LowerIndicator { get; }
+            
             /// <summary>
             /// Used to covert casing. See comments where it's used.
             /// </summary>
-            public LocalBuilder UInt64UpperIndicator { get; set; }
+            public LocalBuilder UInt64UpperIndicator { get; }
 
             /// <summary>
             /// Holds a 'ref byte' reference to the current character (in bytes).
             /// </summary>
-            public LocalBuilder P { get; set; }
+            public LocalBuilder P { get; }
 
             /// <summary>
             /// Holds the relevant portion of the path as a Span[byte].
             /// </summary>
-            public LocalBuilder Span { get; set; }
+            public LocalBuilder Span { get; }
         }
 
         private class Labels
@@ -471,6 +481,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
         private class Methods
         {
+            // Caching because the methods won't change, if we're being called once we're likely to
+            // be called again.
             public static readonly Methods Instance = new Methods();
 
             private Methods()

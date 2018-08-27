@@ -54,6 +54,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
             return _getDestination(path, segment);
         }
         
+        // Used when we haven't yet initialized the IL trie. We defer compilation of the IL for startup
+        // performance.
         private int FallbackGetDestination(string path, PathSegment segment)
         {
             if (path.Length == 0)

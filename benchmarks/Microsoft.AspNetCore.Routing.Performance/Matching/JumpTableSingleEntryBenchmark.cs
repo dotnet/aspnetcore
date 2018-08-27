@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         {
             _implementation = new SingleEntryJumpTable(0, -1, "hello-world", 1);
             _prototype = new SingleEntryAsciiVectorizedJumpTable(0, -2, "hello-world", 1);
-            _trie = new ILEmitTrieJumpTable(0, -1, new [] { ("hello-world", 1), }, vectorize: false, _implementation);
+            _trie = new ILEmitTrieJumpTable(0, -1, new[] { ("hello-world", 1), }, vectorize: false, _implementation);
             _vectorTrie = new ILEmitTrieJumpTable(0, -1, new[] { ("hello-world", 1), }, vectorize: true, _implementation);
 
             _strings = new string[]
@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var segments = _segments;
 
             var destination = 0;
-            for (int i = 0; i < strings.Length; i++)
+            for (var i = 0; i < strings.Length; i++)
             {
                 destination = _trie.GetDestination(strings[i], segments[i]);
             }
@@ -131,7 +131,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var segments = _segments;
 
             var destination = 0;
-            for (int i = 0; i < strings.Length; i++)
+            for (var i = 0; i < strings.Length; i++)
             {
                 destination = _vectorTrie.GetDestination(strings[i], segments[i]);
             }
@@ -165,17 +165,16 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 _text = text;
                 _destination = destination;
 
-                int length = text.Length;
-                ReadOnlySpan<char> span = text.ToLowerInvariant().AsSpan();
-                ref byte p = ref Unsafe.As<char, byte>(ref MemoryMarshal.GetReference(span));
+                var length = text.Length;
+                var span = text.ToLowerInvariant().AsSpan();
+                ref var p = ref Unsafe.As<char, byte>(ref MemoryMarshal.GetReference(span));
 
                 _values = new ulong[length / 4];
-                for (int i = 0; i < length / 4; i++)
+                for (var i = 0; i < length / 4; i++)
                 {
                     _values[i] = Unsafe.ReadUnaligned<ulong>(ref p);
                     p = Unsafe.Add(ref p, 64);
                 }
-                
                 switch (length % 4)
                 {
                     case 1:
@@ -224,11 +223,11 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             public override int GetDestination(string path, PathSegment segment)
             {
-                int length = segment.Length;
-                ReadOnlySpan<char> span = path.AsSpan(segment.Start, length);
-                ref byte p = ref Unsafe.As<char, byte>(ref MemoryMarshal.GetReference(span));
+                var length = segment.Length;
+                var span = path.AsSpan(segment.Start, length);
+                ref var p = ref Unsafe.As<char, byte>(ref MemoryMarshal.GetReference(span));
 
-                int i = 0;
+                var i = 0;
                 while (length > 3)
                 {
                     var value = Unsafe.ReadUnaligned<ulong>(ref p);
@@ -238,10 +237,10 @@ namespace Microsoft.AspNetCore.Routing.Matching
                         return _defaultDestination;
                     }
 
-                    ulong ulongLowerIndicator = value + (0x0080008000800080UL - 0x0041004100410041UL);
-                    ulong ulongUpperIndicator = value + (0x0080008000800080UL - 0x005B005B005B005BUL);
-                    ulong ulongCombinedIndicator = (ulongLowerIndicator ^ ulongUpperIndicator) & 0x0080008000800080UL;
-                    ulong mask = (ulongCombinedIndicator) >> 2;
+                    var ulongLowerIndicator = value + (0x0080008000800080UL - 0x0041004100410041UL);
+                    var ulongUpperIndicator = value + (0x0080008000800080UL - 0x005B005B005B005BUL);
+                    var ulongCombinedIndicator = (ulongLowerIndicator ^ ulongUpperIndicator) & 0x0080008000800080UL;
+                    var mask = (ulongCombinedIndicator) >> 2;
 
                     value ^= mask;
 
@@ -259,7 +258,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 {
                     case 1:
                         {
-                            char c = Unsafe.ReadUnaligned<char>(ref p);
+                            var c = Unsafe.ReadUnaligned<char>(ref p);
                             if (c != _residue0Lower && c != _residue0Upper)
                             {
                                 return _defaultDestination;
@@ -270,7 +269,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
                     case 2:
                         {
-                            char c = Unsafe.ReadUnaligned<char>(ref p);
+                            var c = Unsafe.ReadUnaligned<char>(ref p);
                             if (c != _residue0Lower && c != _residue0Upper)
                             {
                                 return _defaultDestination;
@@ -288,7 +287,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
                     case 3:
                         {
-                            char c = Unsafe.ReadUnaligned<char>(ref p);
+                            var c = Unsafe.ReadUnaligned<char>(ref p);
                             if (c != _residue0Lower && c != _residue0Upper)
                             {
                                 return _defaultDestination;
