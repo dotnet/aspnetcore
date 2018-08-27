@@ -20,7 +20,7 @@ public:
 
     VOID Terminate()
     {
-        LOG_INFO("ASPNET_CORE_GLOBAL_MODULE::Terminate");
+        LOG_INFO(L"ASPNET_CORE_GLOBAL_MODULE::Terminate");
         // Remove the class from memory.
         delete this;
     }

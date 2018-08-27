@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit.Abstractions;
@@ -35,6 +36,13 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
         {
             _deployer = (IISDeployerBase)CreateDeployer(parameters);
             return (IISDeploymentResult)await _deployer.DeployAsync();
+        }
+
+        protected virtual async Task<IISDeploymentResult> StartAsync(IISDeploymentParameters parameters)
+        {
+            var result = await DeployAsync(parameters);
+            await result.AssertStarts();
+            return result;
         }
 
         public override void Dispose()

@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
@@ -46,7 +47,7 @@ namespace IISTestSite
         private async Task HostingEnvironment(HttpContext context)
         {
             var hostingEnv = context.RequestServices.GetService<IHostingEnvironment>();
-            
+
             await context.Response.WriteAsync("ContentRootPath "+hostingEnv.ContentRootPath + Environment.NewLine);
             await context.Response.WriteAsync("WebRootPath "+hostingEnv.WebRootPath + Environment.NewLine);
             await context.Response.WriteAsync("CurrentDirectory "+Environment.CurrentDirectory);
@@ -761,6 +762,11 @@ namespace IISTestSite
                 await context.Response.Body.FlushAsync();
             }
             await context.Response.WriteAsync("Response End");
+        }
+
+        private async Task CommandLineArgs(HttpContext context)
+        {
+            await context.Response.WriteAsync(string.Join("|", Environment.GetCommandLineArgs().Skip(1)));
         }
     }
 }

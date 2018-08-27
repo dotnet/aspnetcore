@@ -132,7 +132,7 @@ HRESULT PipeOutputManager::Stop()
             if (!LOG_LAST_ERROR_IF(GetExitCodeThread(m_hErrThread, &dwThreadStatus) == 0) &&
                 dwThreadStatus == STILL_ACTIVE)
             {
-                LOG_WARN("Thread reading stdout/err hit timeout, forcibly closing thread.");
+                LOG_WARN(L"Thread reading stdout/err hit timeout, forcibly closing thread.");
                 TerminateThread(m_hErrThread, STATUS_CONTROL_C_EXIT);
             }
         }

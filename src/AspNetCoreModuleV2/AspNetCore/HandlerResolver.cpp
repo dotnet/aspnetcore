@@ -108,7 +108,7 @@ HandlerResolver::LoadRequestHandlerAssembly(IHttpApplication &pApplication, Shim
             }
         }
 
-        LOG_INFOF("Loading request handler:  %S", handlerDllPath.c_str());
+        LOG_INFOF(L"Loading request handler:  '%ls'", handlerDllPath.c_str());
 
         hRequestHandlerDll = LoadLibrary(handlerDllPath.c_str());
         if (preventUnload)

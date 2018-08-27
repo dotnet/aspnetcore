@@ -14,14 +14,14 @@
 #define ASPNETCORE_DEBUG_FLAG_CONSOLE       0x00000008
 #define ASPNETCORE_DEBUG_FLAG_FILE          0x00000010
 
-#define LOG_INFO(...) DebugPrint(ASPNETCORE_DEBUG_FLAG_INFO, __VA_ARGS__)
-#define LOG_INFOF(...) DebugPrintf(ASPNETCORE_DEBUG_FLAG_INFO, __VA_ARGS__)
+#define LOG_INFO(...) DebugPrintW(ASPNETCORE_DEBUG_FLAG_INFO, __VA_ARGS__)
+#define LOG_INFOF(...) DebugPrintfW(ASPNETCORE_DEBUG_FLAG_INFO, __VA_ARGS__)
 
-#define LOG_WARN(...) DebugPrint(ASPNETCORE_DEBUG_FLAG_WARNING, __VA_ARGS__)
-#define LOG_WARNF(...) DebugPrintf(ASPNETCORE_DEBUG_FLAG_WARNING, __VA_ARGS__)
+#define LOG_WARN(...) DebugPrintW(ASPNETCORE_DEBUG_FLAG_WARNING, __VA_ARGS__)
+#define LOG_WARNF(...) DebugPrintfW(ASPNETCORE_DEBUG_FLAG_WARNING, __VA_ARGS__)
 
-#define LOG_ERROR(...) DebugPrint(ASPNETCORE_DEBUG_FLAG_ERROR, __VA_ARGS__)
-#define LOG_ERRORF(...) DebugPrintf(ASPNETCORE_DEBUG_FLAG_ERROR, __VA_ARGS__)
+#define LOG_ERROR(...) DebugPrintW(ASPNETCORE_DEBUG_FLAG_ERROR, __VA_ARGS__)
+#define LOG_ERRORF(...) DebugPrintfW(ASPNETCORE_DEBUG_FLAG_ERROR, __VA_ARGS__)
 
 VOID
 DebugInitialize(HMODULE hModule);
@@ -36,6 +36,20 @@ BOOL
 IsEnabled(
     DWORD   dwFlag
     );
+
+VOID
+DebugPrintW(
+    DWORD   dwFlag,
+    LPCWSTR  szString
+    );
+
+VOID
+DebugPrintfW(
+    DWORD   dwFlag,
+    LPCWSTR  szFormat,
+    ...
+    );
+
 
 VOID
 DebugPrint(

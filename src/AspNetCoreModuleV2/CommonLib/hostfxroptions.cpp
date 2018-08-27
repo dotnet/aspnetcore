@@ -33,6 +33,11 @@ HRESULT HOSTFXR_OPTIONS::Create(
                 knownDotnetLocation,
                 arguments);
 
+        LOG_INFOF(L"Parsed hostfxr options: dotnet location: '%ls' hostfxr path: '%ls' arguments:", knownDotnetLocation.c_str(), hostFxrDllPath.c_str());
+        for (size_t i = 0; i < arguments.size(); i++)
+        {
+            LOG_INFOF(L"Argument[%d] = '%ls'", i, arguments[i].c_str());
+        }
         ppWrapper = std::make_unique<HOSTFXR_OPTIONS>(knownDotnetLocation, hostFxrDllPath, arguments);
     }
     catch (HOSTFXR_UTILITY::StartupParametersResolutionException &resolutionException)
