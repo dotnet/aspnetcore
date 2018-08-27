@@ -3,10 +3,19 @@
   <PropertyGroup>
     <TargetFrameworks>$(StandardTestTfms)</TargetFrameworks>
     <RootNamespace>Microsoft.AspNetCore.Routing</RootNamespace>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <PropertyGroup>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <!-- 
+      RefEmit is supported in netcoreapp. We test on .NET Framework, but we don't support RefEmit in the product
+      on .NET Framework.
+    -->
+    <ILEmit Condition="'$(TargetFramework)'=='netcoreapp2.2'">true</ILEmit>
+    <DefineConstants Condition="'$(ILEmit)'=='true'">IL_EMIT;$(DefineConstants)</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,6 +28,7 @@
     <PackageReference Include="Microsoft.Extensions.Logging" Version="$(MicrosoftExtensionsLoggingPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.Logging.Testing" Version="$(MicrosoftExtensionsLoggingTestingPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.WebEncoders" Version="$(MicrosoftExtensionsWebEncodersPackageVersion)" />
+    <PackageReference Condition="'$(ILEmit)'=='true'" Include="System.Reflection.Emit.Lightweight" Version="$(SystemReflectionEmitPackageVersion)" PrivateAssets="All" />
   </ItemGroup>
 
 </Project>
