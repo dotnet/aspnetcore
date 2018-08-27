@@ -4,7 +4,7 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace HealthChecksSample
 {
-    // Simulates a health check for an  application dependency that takes a while to initialize.
+    // Simulates a health check for an application dependency that takes a while to initialize.
     // This is part of the readiness/liveness probe sample.
     public class SlowDependencyHealthCheck : IHealthCheck
     {

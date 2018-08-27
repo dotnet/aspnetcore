@@ -43,7 +43,7 @@ namespace HealthChecksSample
             //
             // In this example, the liveness check will us an 'identity' check that always returns healthy.
             //
-            // In this example, the readiness check will run all registered checks, include a check with an 
+            // In this example, the readiness check will run all registered checks, include a check with a 
             // long initialization time (15 seconds).
 
 
