@@ -439,7 +439,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 BadHttpRequestException.Throw(RequestRejectionReason.TooManyHeaders);
             }
-            var valueString = value.GetAsciiStringNonNullCharacters();
+            var valueString = value.GetAsciiOrUTF8StringNonNullCharacters();
 
             HttpRequestHeaders.Append(name, valueString);
         }

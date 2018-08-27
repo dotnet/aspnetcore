@@ -82,6 +82,41 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
+        public async Task TakeMessageHeadersSucceedsWhenHeaderValueContainsUTF8()
+        {
+            var headerName = "Header";
+            var headerValueBytes = new byte[] { 0x46, 0x72, 0x61, 0x6e, 0xc3, 0xa7, 0x6f, 0x69, 0x73 };
+            var headerValue = Encoding.UTF8.GetString(headerValueBytes);
+            _http1Connection.Reset();
+
+            await _application.Output.WriteAsync(Encoding.UTF8.GetBytes($"{headerName}: "));
+            await _application.Output.WriteAsync(headerValueBytes);
+            await _application.Output.WriteAsync(Encoding.UTF8.GetBytes("\r\n\r\n"));
+            var readableBuffer = (await _transport.Input.ReadAsync()).Buffer;
+
+            _http1Connection.TakeMessageHeaders(readableBuffer, out _consumed, out _examined);
+            _transport.Input.AdvanceTo(_consumed, _examined);
+
+            Assert.Equal(headerValue, _http1Connection.RequestHeaders[headerName]);
+        }
+
+        [Fact]
+        public async Task TakeMessageHeadersThrowsWhenHeaderValueContainsExtendedASCII()
+        {
+            var extendedAsciiEncoding = Encoding.GetEncoding("ISO-8859-1");
+            var headerName = "Header";
+            var headerValueBytes = new byte[] { 0x46, 0x72, 0x61, 0x6e, 0xe7, 0x6f, 0x69, 0x73 };
+            _http1Connection.Reset();
+
+            await _application.Output.WriteAsync(extendedAsciiEncoding.GetBytes($"{headerName}: "));
+            await _application.Output.WriteAsync(headerValueBytes);
+            await _application.Output.WriteAsync(extendedAsciiEncoding.GetBytes("\r\n\r\n"));
+            var readableBuffer = (await _transport.Input.ReadAsync()).Buffer;
+
+            var exception = Assert.Throws<InvalidOperationException>(() => _http1Connection.TakeMessageHeaders(readableBuffer, out _consumed, out _examined));
+        }
+
+        [Fact]
         public async Task TakeMessageHeadersThrowsWhenHeadersExceedTotalSizeLimit()
         {
             const string headerLine = "Header: value\r\n";

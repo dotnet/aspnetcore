@@ -304,7 +304,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         void IHttpHeadersHandler.OnHeader(Span<byte> name, Span<byte> value)
         {
-            _decodedHeaders[name.GetAsciiStringNonNullCharacters()] = value.GetAsciiStringNonNullCharacters();
+            _decodedHeaders[name.GetAsciiStringNonNullCharacters()] = value.GetAsciiOrUTF8StringNonNullCharacters();
         }
 
         protected async Task InitializeConnectionAsync(RequestDelegate application, int expectedSettingsLegnth = 6)
