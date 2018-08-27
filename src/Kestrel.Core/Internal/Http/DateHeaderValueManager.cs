@@ -22,14 +22,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         /// Initializes a new instance of the <see cref="DateHeaderValueManager"/> class.
         /// </summary>
         public DateHeaderValueManager()
-            : this(systemClock: new SystemClock())
+            : this(DateTimeOffset.UtcNow)
         {
         }
 
         // Internal for testing
-        internal DateHeaderValueManager(ISystemClock systemClock)
+        internal DateHeaderValueManager(DateTimeOffset initialUtcNow)
         {
-            SetDateValues(systemClock.UtcNow);
+            SetDateValues(initialUtcNow);
         }
 
         /// <summary>

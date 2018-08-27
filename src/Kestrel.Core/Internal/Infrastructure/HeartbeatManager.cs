@@ -11,9 +11,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         private readonly Action<KestrelConnection> _walkCallback;
         private DateTimeOffset _now;
 
-        public HeartbeatManager(ConnectionManager connectionManager)
+        public HeartbeatManager(ConnectionManager connectionManager, DateTimeOffset initialUtcNow)
         {
             _connectionManager = connectionManager;
+            _now = initialUtcNow;
             _walkCallback = WalkCallback;
         }
 

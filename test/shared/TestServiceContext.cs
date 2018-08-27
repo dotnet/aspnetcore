@@ -41,16 +41,17 @@ namespace Microsoft.AspNetCore.Testing
 
         public void InitializeHeartbeat()
         {
-            MockSystemClock = null;
-            SystemClock = new SystemClock();
-            DateHeaderValueManager = new DateHeaderValueManager(SystemClock);
-
-            var heartbeatManager = new HeartbeatManager(ConnectionManager);
+            var now = DateTimeOffset.UtcNow;
+            var heartbeatManager = new HeartbeatManager(ConnectionManager, now);
+            DateHeaderValueManager = new DateHeaderValueManager(now);
             Heartbeat = new Heartbeat(
                 new IHeartbeatHandler[] { DateHeaderValueManager, heartbeatManager },
-                SystemClock,
+                new SystemClock(),
                 DebuggerWrapper.Singleton,
                 Log);
+
+            MockSystemClock = null;
+            SystemClock = heartbeatManager;
         }
 
         private void Initialize(ILoggerFactory loggerFactory, IKestrelTrace kestrelTrace)
@@ -60,7 +61,7 @@ namespace Microsoft.AspNetCore.Testing
             Scheduler = PipeScheduler.ThreadPool;
             MockSystemClock = new MockSystemClock();
             SystemClock = MockSystemClock;
-            DateHeaderValueManager = new DateHeaderValueManager(MockSystemClock);
+            DateHeaderValueManager = new DateHeaderValueManager(MockSystemClock.UtcNow);
             ConnectionManager = new ConnectionManager(Log, ResourceCounter.Unlimited);
             HttpParser = new HttpParser<Http1ParsingHandler>(Log.IsEnabled(LogLevel.Information));
             ServerOptions = new KestrelServerOptions
