@@ -25,13 +25,13 @@ namespace Microsoft.AspNetCore.Hosting
     public class WebHostBuilder : IWebHostBuilder
     {
         private readonly HostingEnvironment _hostingEnvironment;
-        private readonly List<Action<WebHostBuilderContext, IServiceCollection>> _configureServicesDelegates;
+        private Action<WebHostBuilderContext, IServiceCollection> _configureServices;
 
         private IConfiguration _config;
         private WebHostOptions _options;
         private WebHostBuilderContext _context;
         private bool _webHostBuilt;
-        private List<Action<WebHostBuilderContext, IConfigurationBuilder>> _configureAppConfigurationBuilderDelegates;
+        private Action<WebHostBuilderContext, IConfigurationBuilder> _configureAppConfigurationBuilder;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WebHostBuilder"/> class.
@@ -39,8 +39,6 @@ namespace Microsoft.AspNetCore.Hosting
         public WebHostBuilder()
         {
             _hostingEnvironment = new HostingEnvironment();
-            _configureServicesDelegates = new List<Action<WebHostBuilderContext, IServiceCollection>>();
-            _configureAppConfigurationBuilderDelegates = new List<Action<WebHostBuilderContext, IConfigurationBuilder>>();
 
             _config = new ConfigurationBuilder()
                 .AddEnvironmentVariables(prefix: "ASPNETCORE_")
@@ -111,12 +109,7 @@ namespace Microsoft.AspNetCore.Hosting
         /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
         public IWebHostBuilder ConfigureServices(Action<WebHostBuilderContext, IServiceCollection> configureServices)
         {
-            if (configureServices == null)
-            {
-                throw new ArgumentNullException(nameof(configureServices));
-            }
-
-            _configureServicesDelegates.Add(configureServices);
+            _configureServices += configureServices;
             return this;
         }
 
@@ -131,12 +124,7 @@ namespace Microsoft.AspNetCore.Hosting
         /// </remarks>
         public IWebHostBuilder ConfigureAppConfiguration(Action<WebHostBuilderContext, IConfigurationBuilder> configureDelegate)
         {
-            if (configureDelegate == null)
-            {
-                throw new ArgumentNullException(nameof(configureDelegate));
-            }
-
-            _configureAppConfigurationBuilderDelegates.Add(configureDelegate);
+            _configureAppConfigurationBuilder += configureDelegate;
             return this;
         }
 
@@ -272,10 +260,7 @@ namespace Microsoft.AspNetCore.Hosting
                 .SetBasePath(_hostingEnvironment.ContentRootPath)
                 .AddConfiguration(_config);
 
-            foreach (var configureAppConfiguration in _configureAppConfigurationBuilderDelegates)
-            {
-                configureAppConfiguration(_context, builder);
-            }
+            _configureAppConfigurationBuilder?.Invoke(_context, builder);
 
             var configuration = builder.Build();
             services.AddSingleton<IConfiguration>(configuration);
@@ -329,10 +314,7 @@ namespace Microsoft.AspNetCore.Hosting
                 }
             }
 
-            foreach (var configureServices in _configureServicesDelegates)
-            {
-                configureServices(_context, services);
-            }
+            _configureServices?.Invoke(_context, services);
 
             return services;
         }
