@@ -370,13 +370,11 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             return httpContext;
         }
 
-        private static RouteEndpoint CreateEndpoint(ActionDescriptor action)
+        private static Endpoint CreateEndpoint(ActionDescriptor action)
         {
             var metadata = new List<object>() { action, };
-            return new RouteEndpoint(
+            return new Endpoint(
                 (context) => Task.CompletedTask,
-                RoutePatternFactory.Parse("/"),
-                0,
                 new EndpointMetadataCollection(metadata),
                 $"test: {action?.DisplayName}");
         }
