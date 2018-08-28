@@ -41,7 +41,7 @@
       "Microsoft.AspNetCore.DeveloperCertificates.XPlat": {
         "Exclusions": {
           "DOC_MISSING": {
-            "lib/netcoreapp2.2/Microsoft.AspNetCore.DeveloperCertificates.XPlat.dll": "Docs not required to shipoob package"
+            "lib/netcoreapp3.0/Microsoft.AspNetCore.DeveloperCertificates.XPlat.dll": "Docs not required to shipoob package"
           }
         }
       }
