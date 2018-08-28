@@ -88,6 +88,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                     }
                     else
                     {
+                        // This is unexpected.
+                        Log.ConnectionError(ConnectionId, ex);
+
                         inputError = ex;
                         outputError = ex;
                     }
@@ -107,7 +110,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
                     // We're done with the socket now
                     _socket.Dispose();
-                    ThreadPool.QueueUserWorkItem(state => ((LibuvConnection)state).CancelConnectionClosedToken(), this);
+                    ThreadPool.UnsafeQueueUserWorkItem(state => ((LibuvConnection)state).CancelConnectionClosedToken(), this);
                 }
             }
             catch (Exception e)
@@ -240,6 +243,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             }
             else
             {
+                // This is unexpected.
                 Log.ConnectionError(ConnectionId, uvError);
                 return new IOException(uvError.Message, uvError);
             }

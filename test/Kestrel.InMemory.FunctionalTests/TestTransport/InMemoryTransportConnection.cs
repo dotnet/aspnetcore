@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
 
             _isClosed = true;
 
-            ThreadPool.QueueUserWorkItem(state =>
+            ThreadPool.UnsafeQueueUserWorkItem(state =>
             {
                 var self = (InMemoryTransportConnection)state;
                 self._connectionClosedTokenSource.Cancel();

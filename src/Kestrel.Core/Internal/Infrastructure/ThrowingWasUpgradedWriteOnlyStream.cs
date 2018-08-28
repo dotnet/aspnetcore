@@ -8,15 +8,8 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
-    public class ThrowingWriteOnlyStream : WriteOnlyStream
+    public class ThrowingWasUpgradedWriteOnlyStream : WriteOnlyStream
     {
-        private readonly Exception _exception;
-
-        public ThrowingWriteOnlyStream(Exception exception)
-        {
-            _exception = exception;
-        }
-
         public override bool CanSeek => false;
 
         public override long Length => throw new NotSupportedException();
@@ -28,13 +21,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         }
 
         public override void Write(byte[] buffer, int offset, int count)
-            => throw _exception;
+            => throw new InvalidOperationException(CoreStrings.ResponseStreamWasUpgraded);
 
         public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
-            => throw _exception;
+            => throw new InvalidOperationException(CoreStrings.ResponseStreamWasUpgraded);
 
         public override void Flush()
-            => throw _exception;
+            => throw new InvalidOperationException(CoreStrings.ResponseStreamWasUpgraded);
 
         public override long Seek(long offset, SeekOrigin origin)
             => throw new NotSupportedException();
