@@ -88,6 +88,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                     }
                     else
                     {
+                        // This is unexpected.
+                        Log.ConnectionError(ConnectionId, ex);
+
                         inputError = ex;
                         outputError = ex;
                     }
@@ -240,6 +243,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             }
             else
             {
+                // This is unexpected.
                 Log.ConnectionError(ConnectionId, uvError);
                 return new IOException(uvError.Message, uvError);
             }

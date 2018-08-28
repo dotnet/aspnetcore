@@ -1212,7 +1212,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             var ex = new InvalidOperationException(CoreStrings.FormatHeaderNotAllowedOnResponse("Transfer-Encoding", StatusCode));
             if (!appCompleted)
             {
-                // Back out of header creation surface exeception in user code
+                // Back out of header creation surface exception in user code
                 _requestProcessingStatus = RequestProcessingStatus.AppStarted;
                 throw ex;
             }

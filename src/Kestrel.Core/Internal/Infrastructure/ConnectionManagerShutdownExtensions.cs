@@ -27,11 +27,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         public static async Task<bool> AbortAllConnectionsAsync(this ConnectionManager connectionManager)
         {
             var abortTasks = new List<Task>();
-            var canceledException = new ConnectionAbortedException(CoreStrings.ConnectionAbortedDuringServerShutdown);
 
             connectionManager.Walk(connection =>
             {
-                connection.TransportConnection.Abort(canceledException);
+                connection.TransportConnection.Abort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedDuringServerShutdown));
                 abortTasks.Add(connection.ExecutionTask);
             });
 
