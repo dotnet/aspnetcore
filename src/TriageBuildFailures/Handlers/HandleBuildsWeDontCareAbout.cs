@@ -16,7 +16,15 @@ namespace TriageBuildFailures.Handlers
     /// </remarks>
     public class HandleLowValueBuilds : HandleFailureBase
     {
-        private IEnumerable<string> LowValueBuilds = new string[] { "Lite_Infrastructure_AspNetCoreModuleSetup", "Releases_22xPublic_PbTestWindowsServer2012", "Benchmarks", "Setup_Ancm_IISIntegration", "Setup_Ancm_SignBinaries" };
+        private IEnumerable<string> LowValueBuilds = new string[] {
+            "Lite_Infrastructure_AspNetCoreModuleSetup",
+            // PB test
+            "Releases_22xPublic_PbTestUbuntu",
+            "Releases_22xPublic_PbTestWindowsServer2012",
+            "Benchmarks",
+            // ANCM
+            "Setup_Ancm_IISIntegration",
+            "Setup_Ancm_SignBinaries" };
 
         public override bool CanHandleFailure(TeamCityBuild build)
         {

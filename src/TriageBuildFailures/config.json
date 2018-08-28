@@ -160,6 +160,7 @@
       "Lite_MvcTest",
       "Lite_SignalR",
       "Lite_Razor",
+      "Lite_RazorLiveShare",
       "Lite_Templating",
       // Universe tests
       "Lite_MusicStoreTest",

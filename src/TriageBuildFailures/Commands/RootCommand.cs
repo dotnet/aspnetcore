@@ -47,7 +47,7 @@ namespace TriageBuildFailures.Commands
             {
                 await new Triage(GetConfig(), _reporter).TriageFailures();
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _reporter.Error(ex.ToString());
                 return 1;
@@ -142,10 +142,11 @@ namespace TriageBuildFailures.Commands
             _reporter.Output($"There were {failedCount} untriaged failures since {CutoffDate} and we handled them in {stopWatch.Elapsed.TotalMinutes} minutes. Let's get some coffee!");
         }
 
-        private static readonly IEnumerable<HandleFailureBase> Handlers = new List<HandleFailureBase> { new HandleLowValueBuilds(), new HandleNonAllowedBuilds(),
-                new HandleUniverseMovedOn(), new HandleTestFailures(),
-                new HandleBuildTimeFailures(), new HandleUnhandled() };
-        
+        private static readonly IEnumerable<HandleFailureBase> Handlers = new List<HandleFailureBase> {
+            new HandleLowValueBuilds(), new HandleNonAllowedBuilds(),
+            new HandleUniverseMovedOn(), new HandleTestFailures(),
+            new HandleBuildTimeFailures(), new HandleUnhandled() };
+
         /// <summary>
         /// Take the appropriate action for a CI failure.
         /// </summary>
