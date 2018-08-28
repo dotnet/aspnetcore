@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
                     // We're done with the socket now
                     _socket.Dispose();
-                    ThreadPool.QueueUserWorkItem(state => ((LibuvConnection)state).CancelConnectionClosedToken(), this);
+                    ThreadPool.UnsafeQueueUserWorkItem(state => ((LibuvConnection)state).CancelConnectionClosedToken(), this);
                 }
             }
             catch (Exception e)

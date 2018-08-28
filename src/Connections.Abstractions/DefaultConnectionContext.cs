@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Connections
 
         public override void Abort(ConnectionAbortedException abortReason)
         {
-            ThreadPool.QueueUserWorkItem(cts => ((CancellationTokenSource)cts).Cancel(), _connectionClosedTokenSource);
+            ThreadPool.UnsafeQueueUserWorkItem(cts => ((CancellationTokenSource)cts).Cancel(), _connectionClosedTokenSource);
         }
 
         public void Dispose()
