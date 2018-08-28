@@ -2,9 +2,9 @@ Markup block - Gen<None> - 32 - (0:0,0)
     Tag block - Gen<TagHelper> - 32 - (0:0,0) - p - ptaghelper
         StartTagAndEndTag - <p> ... </p>
         Markup span - Gen<Markup> - [Hello World ] - SpanEditHandler;Accepts:Any - (3:0,3) - Tokens:4
-            SyntaxKind.HtmlTextLiteral;[Hello];
+            SyntaxKind.Text;[Hello];
             SyntaxKind.Whitespace;[ ];
-            SyntaxKind.HtmlTextLiteral;[World];
+            SyntaxKind.Text;[World];
             SyntaxKind.Whitespace;[ ];
         Expression block - Gen<Expr> - 13 - (15:0,15)
             Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (15:0,15) - Tokens:1

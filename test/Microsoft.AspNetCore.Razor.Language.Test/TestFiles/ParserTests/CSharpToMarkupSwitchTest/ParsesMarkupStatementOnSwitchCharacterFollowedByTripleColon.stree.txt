@@ -14,7 +14,7 @@ Statement block - Gen<None> - 25 - (0:0,0)
         MetaCode span - Gen<None> - [:] - SpanEditHandler;Accepts:Any - (11:0,11) - Tokens:1
             SyntaxKind.Colon;[:];
         Markup span - Gen<Markup> - [::SometextLF] - SpanEditHandler;Accepts:None - (12:0,12) - Tokens:2
-            SyntaxKind.HtmlTextLiteral;[::Sometext];
+            SyntaxKind.Text;[::Sometext];
             SyntaxKind.NewLine;[LF];
     Code span - Gen<Stmt> - [}] - SpanEditHandler;Accepts:Any - (24:1,0) - Tokens:1
         SyntaxKind.RightBrace;[}];

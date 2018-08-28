@@ -2,28 +2,28 @@ Markup block - Gen<None> - 39 - (0:0,0)
     Tag block - Gen<None> - 39 - (0:0,0)
         Markup span - Gen<Markup> - [<a] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:2
             SyntaxKind.OpenAngle;[<];
-            SyntaxKind.HtmlTextLiteral;[a];
+            SyntaxKind.Text;[a];
         Markup block - Gen<Attr:(click), LF  (click)='@(2:0,2),'@(19:1,14)> - 18 - (2:0,2)
             Markup span - Gen<None> - [ LF  (click)='] - SpanEditHandler;Accepts:Any - (2:0,2) - Tokens:6
                 SyntaxKind.Whitespace;[ ];
                 SyntaxKind.NewLine;[LF];
                 SyntaxKind.Whitespace;[  ];
-                SyntaxKind.HtmlTextLiteral;[(click)];
+                SyntaxKind.Text;[(click)];
                 SyntaxKind.Equals;[=];
                 SyntaxKind.SingleQuote;['];
             Markup span - Gen<LitAttr:@(16:1,11)> - [Foo] - SpanEditHandler;Accepts:Any - (16:1,11) - Tokens:1
-                SyntaxKind.HtmlTextLiteral;[Foo];
+                SyntaxKind.Text;[Foo];
             Markup span - Gen<None> - ['] - SpanEditHandler;Accepts:Any - (19:1,14) - Tokens:1
                 SyntaxKind.SingleQuote;['];
         Markup block - Gen<Attr:(click),	LF(click)='@(20:1,15),'@(35:2,12)> - 16 - (20:1,15)
             Markup span - Gen<None> - [	LF(click)='] - SpanEditHandler;Accepts:Any - (20:1,15) - Tokens:5
                 SyntaxKind.Whitespace;[	];
                 SyntaxKind.NewLine;[LF];
-                SyntaxKind.HtmlTextLiteral;[(click)];
+                SyntaxKind.Text;[(click)];
                 SyntaxKind.Equals;[=];
                 SyntaxKind.SingleQuote;['];
             Markup span - Gen<LitAttr:@(32:2,9)> - [Bar] - SpanEditHandler;Accepts:Any - (32:2,9) - Tokens:1
-                SyntaxKind.HtmlTextLiteral;[Bar];
+                SyntaxKind.Text;[Bar];
             Markup span - Gen<None> - ['] - SpanEditHandler;Accepts:Any - (35:2,12) - Tokens:1
                 SyntaxKind.SingleQuote;['];
         Markup span - Gen<Markup> - [ />] - SpanEditHandler;Accepts:None - (36:2,13) - Tokens:3

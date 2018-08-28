@@ -12,7 +12,7 @@ Markup block - Gen<None> - 41 - (0:0,0)
                 unbound-required - Minimized
                 class - SingleQuotes
                     Markup span - Gen<Markup> - [btn] - SpanEditHandler;Accepts:Any - (33:0,33) - Tokens:1
-                        SyntaxKind.HtmlTextLiteral;[btn];
+                        SyntaxKind.Text;[btn];
         Code span - Gen<Stmt> - [] - SpanEditHandler;Accepts:Any - (40:0,40) - Tokens:1
             SyntaxKind.Unknown;[];
         MetaCode span - Gen<None> - [}] - SpanEditHandler;Accepts:None - (40:0,40) - Tokens:1

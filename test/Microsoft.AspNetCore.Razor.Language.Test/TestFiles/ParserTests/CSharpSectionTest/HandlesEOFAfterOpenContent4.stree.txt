@@ -18,4 +18,4 @@ Markup block - Gen<None> - 20 - (0:0,0)
             Markup span - Gen<Markup> - [LF abc] - SpanEditHandler;Accepts:Any - (14:0,14) - Tokens:3
                 SyntaxKind.NewLine;[LF];
                 SyntaxKind.Whitespace;[ ];
-                SyntaxKind.HtmlTextLiteral;[abc];
+                SyntaxKind.Text;[abc];

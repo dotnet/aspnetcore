@@ -4,10 +4,10 @@ Markup block - Gen<None> - 88 - (0:0,0)
         age - DoubleQuotes
             Markup block - Gen<None> - 14 - (13:0,13)
                 Code span - Gen<Expr> - [1] - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14 - (13:0,13) - Tokens:1
-                    SyntaxKind.HtmlTextLiteral;[1];
+                    SyntaxKind.Text;[1];
                 Code span - Gen<Expr> - [ +] - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14 - (14:0,14) - Tokens:2
                     SyntaxKind.Whitespace;[ ];
-                    SyntaxKind.HtmlTextLiteral;[+];
+                    SyntaxKind.Text;[+];
                 Markup block - Gen<None> - 7 - (16:0,16)
                     Code span - Gen<Expr> - [ ] - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14 - (16:0,16) - Tokens:1
                         SyntaxKind.Whitespace;[ ];
@@ -18,14 +18,14 @@ Markup block - Gen<None> - 88 - (0:0,0)
                             SyntaxKind.Identifier;[value];
                 Code span - Gen<Expr> - [ +] - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14 - (23:0,23) - Tokens:2
                     SyntaxKind.Whitespace;[ ];
-                    SyntaxKind.HtmlTextLiteral;[+];
+                    SyntaxKind.Text;[+];
                 Code span - Gen<Expr> - [ 2] - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14 - (25:0,25) - Tokens:2
                     SyntaxKind.Whitespace;[ ];
-                    SyntaxKind.HtmlTextLiteral;[2];
+                    SyntaxKind.Text;[2];
         birthday - SingleQuotes
             Markup block - Gen<None> - 46 - (39:0,39)
                 Code span - Gen<Expr> - [(bool)] - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14 - (39:0,39) - Tokens:1
-                    SyntaxKind.HtmlTextLiteral;[(bool)];
+                    SyntaxKind.Text;[(bool)];
                 Markup block - Gen<None> - 11 - (45:0,45)
                     Expression block - Gen<Expr> - 11 - (45:0,45)
                         Code span - Gen<Expr> - [@] - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14 - (45:0,45) - Tokens:1
@@ -45,10 +45,10 @@ Markup block - Gen<None> - 88 - (0:0,0)
                     Code span - Gen<None> - [@] - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14 - (60:0,60) - Tokens:1
                         SyntaxKind.Transition;[@];
                 Code span - Gen<Expr> - [DateTime] - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14 - (61:0,61) - Tokens:1
-                    SyntaxKind.HtmlTextLiteral;[DateTime];
+                    SyntaxKind.Text;[DateTime];
                 Code span - Gen<Expr> - [ :] - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14 - (69:0,69) - Tokens:2
                     SyntaxKind.Whitespace;[ ];
-                    SyntaxKind.HtmlTextLiteral;[:];
+                    SyntaxKind.Text;[:];
                 Markup block - Gen<None> - 14 - (71:0,71)
                     Code span - Gen<Expr> - [ ] - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14 - (71:0,71) - Tokens:1
                         SyntaxKind.Whitespace;[ ];

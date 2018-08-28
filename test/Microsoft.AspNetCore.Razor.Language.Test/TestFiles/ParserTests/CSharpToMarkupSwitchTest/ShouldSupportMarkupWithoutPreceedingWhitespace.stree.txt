@@ -20,13 +20,13 @@ Statement block - Gen<None> - 67 - (0:0,0)
         MetaCode span - Gen<None> - [:] - SpanEditHandler;Accepts:Any - (34:3,1) - Tokens:1
             SyntaxKind.Colon;[:];
         Markup span - Gen<Markup> - [BazLF] - SpanEditHandler;Accepts:None - (35:3,2) - Tokens:2
-            SyntaxKind.HtmlTextLiteral;[Baz];
+            SyntaxKind.Text;[Baz];
             SyntaxKind.NewLine;[LF];
     Markup block - Gen<None> - 7 - (40:4,0)
         Tag block - Gen<None> - 5 - (40:4,0)
             Markup span - Gen<Markup> - [<br/>] - SpanEditHandler;Accepts:None - (40:4,0) - Tokens:4
                 SyntaxKind.OpenAngle;[<];
-                SyntaxKind.HtmlTextLiteral;[br];
+                SyntaxKind.Text;[br];
                 SyntaxKind.ForwardSlash;[/];
                 SyntaxKind.CloseAngle;[>];
         Markup span - Gen<Markup> - [LF] - SpanEditHandler;Accepts:None - (45:4,5) - Tokens:1
@@ -35,15 +35,15 @@ Statement block - Gen<None> - 67 - (0:0,0)
         Tag block - Gen<None> - 3 - (47:5,0)
             Markup span - Gen<Markup> - [<a>] - SpanEditHandler;Accepts:None - (47:5,0) - Tokens:3
                 SyntaxKind.OpenAngle;[<];
-                SyntaxKind.HtmlTextLiteral;[a];
+                SyntaxKind.Text;[a];
                 SyntaxKind.CloseAngle;[>];
         Markup span - Gen<Markup> - [Foo] - SpanEditHandler;Accepts:Any - (50:5,3) - Tokens:1
-            SyntaxKind.HtmlTextLiteral;[Foo];
+            SyntaxKind.Text;[Foo];
         Tag block - Gen<None> - 4 - (53:5,6)
             Markup span - Gen<Markup> - [</a>] - SpanEditHandler;Accepts:None - (53:5,6) - Tokens:4
                 SyntaxKind.OpenAngle;[<];
                 SyntaxKind.ForwardSlash;[/];
-                SyntaxKind.HtmlTextLiteral;[a];
+                SyntaxKind.Text;[a];
                 SyntaxKind.CloseAngle;[>];
         Markup span - Gen<Markup> - [LF] - SpanEditHandler;Accepts:None - (57:5,10) - Tokens:1
             SyntaxKind.NewLine;[LF];
@@ -53,7 +53,7 @@ Statement block - Gen<None> - 67 - (0:0,0)
         MetaCode span - Gen<None> - [:] - SpanEditHandler;Accepts:Any - (60:6,1) - Tokens:1
             SyntaxKind.Colon;[:];
         Markup span - Gen<Markup> - [BarLF] - SpanEditHandler;Accepts:None - (61:6,2) - Tokens:2
-            SyntaxKind.HtmlTextLiteral;[Bar];
+            SyntaxKind.Text;[Bar];
             SyntaxKind.NewLine;[LF];
     Code span - Gen<Stmt> - [}] - SpanEditHandler;Accepts:None - (66:7,0) - Tokens:1
         SyntaxKind.RightBrace;[}];

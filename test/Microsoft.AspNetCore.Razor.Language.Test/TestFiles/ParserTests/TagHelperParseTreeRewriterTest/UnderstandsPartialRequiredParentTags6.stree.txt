@@ -20,5 +20,5 @@ Markup block - Gen<None> - 38 - (0:0,0)
             Markup span - Gen<Markup> - [</custom>] - SpanEditHandler;Accepts:Any - (25:0,25) - Tokens:4
                 SyntaxKind.OpenAngle;[<];
                 SyntaxKind.ForwardSlash;[/];
-                SyntaxKind.HtmlTextLiteral;[custom];
+                SyntaxKind.Text;[custom];
                 SyntaxKind.CloseAngle;[>];

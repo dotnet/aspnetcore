@@ -2,7 +2,7 @@ Markup block - Gen<None> - 25 - (0:0,0)
     Tag block - Gen<None> - 5 - (0:0,0)
         Markup span - Gen<Markup> - [<div>] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:3
             SyntaxKind.OpenAngle;[<];
-            SyntaxKind.HtmlTextLiteral;[div];
+            SyntaxKind.Text;[div];
             SyntaxKind.CloseAngle;[>];
     Tag block - Gen<TagHelper> - 7 - (5:0,5) - input - InputTagHelper
         StartTagOnly - <input>
@@ -12,5 +12,5 @@ Markup block - Gen<None> - 25 - (0:0,0)
         Markup span - Gen<Markup> - [</div>] - SpanEditHandler;Accepts:Any - (19:0,19) - Tokens:4
             SyntaxKind.OpenAngle;[<];
             SyntaxKind.ForwardSlash;[/];
-            SyntaxKind.HtmlTextLiteral;[div];
+            SyntaxKind.Text;[div];
             SyntaxKind.CloseAngle;[>];

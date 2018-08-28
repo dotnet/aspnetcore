@@ -2,7 +2,7 @@ Markup block - Gen<None> - 18 - (0:0,0)
     Tag block - Gen<None> - 5 - (0:0,0)
         Markup span - Gen<Markup> - [<foo>] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:3
             SyntaxKind.OpenAngle;[<];
-            SyntaxKind.HtmlTextLiteral;[foo];
+            SyntaxKind.Text;[foo];
             SyntaxKind.CloseAngle;[>];
     Tag block - Gen<None> - 13 - (5:0,5)
         Markup span - Gen<Markup> - [</!-- bar -->] - SpanEditHandler;Accepts:None - (5:0,5) - Tokens:9
@@ -11,7 +11,7 @@ Markup block - Gen<None> - 18 - (0:0,0)
             SyntaxKind.Bang;[!];
             SyntaxKind.DoubleHyphen;[--];
             SyntaxKind.Whitespace;[ ];
-            SyntaxKind.HtmlTextLiteral;[bar];
+            SyntaxKind.Text;[bar];
             SyntaxKind.Whitespace;[ ];
             SyntaxKind.DoubleHyphen;[--];
             SyntaxKind.CloseAngle;[>];

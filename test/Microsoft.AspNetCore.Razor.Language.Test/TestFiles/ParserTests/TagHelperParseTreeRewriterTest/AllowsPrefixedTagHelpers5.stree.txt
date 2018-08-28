@@ -4,11 +4,11 @@ Markup block - Gen<None> - 40 - (0:0,0)
         Tag block - Gen<None> - 10 - (9:0,9)
             Markup span - Gen<Markup> - [<th:my2th>] - SpanEditHandler;Accepts:Any - (9:0,9) - Tokens:3
                 SyntaxKind.OpenAngle;[<];
-                SyntaxKind.HtmlTextLiteral;[th:my2th];
+                SyntaxKind.Text;[th:my2th];
                 SyntaxKind.CloseAngle;[>];
         Tag block - Gen<None> - 11 - (19:0,19)
             Markup span - Gen<Markup> - [</th:my2th>] - SpanEditHandler;Accepts:Any - (19:0,19) - Tokens:4
                 SyntaxKind.OpenAngle;[<];
                 SyntaxKind.ForwardSlash;[/];
-                SyntaxKind.HtmlTextLiteral;[th:my2th];
+                SyntaxKind.Text;[th:my2th];
                 SyntaxKind.CloseAngle;[>];

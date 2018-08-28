@@ -26,8 +26,8 @@
 
   <!-- HTML -->
   <AbstractNode Name="HtmlSyntaxNode" Base="RazorSyntaxNode" />
-  <Node Name="HtmlTextSyntax" Base="HtmlSyntaxNode">
-    <Kind Name="HtmlText" />
+  <Node Name="HtmlTextLiteralSyntax" Base="HtmlSyntaxNode">
+    <Kind Name="HtmlTextLiteral" />
     <Field Name="TextTokens" Type="SyntaxList&lt;SyntaxToken&gt;" />
   </Node>
   

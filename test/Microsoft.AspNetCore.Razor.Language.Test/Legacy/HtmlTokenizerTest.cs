@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void Text_Is_Recognized()
         {
             TestTokenizer("foo-9309&smlkmb;::-3029022,.sdkq92384",
-                          SyntaxFactory.Token(SyntaxKind.HtmlTextLiteral, "foo-9309&smlkmb;::-3029022,.sdkq92384"));
+                          SyntaxFactory.Token(SyntaxKind.Text, "foo-9309&smlkmb;::-3029022,.sdkq92384"));
         }
 
         [Fact]
@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         [Fact]
         public void Transition_Is_Not_Recognized_Mid_Text_If_Surrounded_By_Alphanumeric_Characters()
         {
-            TestSingleToken("foo@bar", SyntaxKind.HtmlTextLiteral);
+            TestSingleToken("foo@bar", SyntaxKind.Text);
         }
 
         [Fact]
@@ -118,13 +118,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         [Fact]
         public void SingleHyphen_Is_Not_Recognized()
         {
-            TestSingleToken("-", SyntaxKind.HtmlTextLiteral);
+            TestSingleToken("-", SyntaxKind.Text);
         }
 
         [Fact]
         public void SingleHyphen_Mid_Text_Is_Not_Recognized_As_Separate_Token()
         {
-            TestSingleToken("foo-bar", SyntaxKind.HtmlTextLiteral);
+            TestSingleToken("foo-bar", SyntaxKind.Text);
         }
 
         [Fact]

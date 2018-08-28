@@ -18,11 +18,11 @@ Markup block - Gen<None> - 44 - (0:0,0)
             Tag block - Gen<None> - 31 - (12:0,12)
                 Markup span - Gen<Markup> - [<span] - SpanEditHandler;Accepts:Any - (12:0,12) - Tokens:2
                     SyntaxKind.OpenAngle;[<];
-                    SyntaxKind.HtmlTextLiteral;[span];
+                    SyntaxKind.Text;[span];
                 Markup block - Gen<Attr:foo, foo='@(17:0,17),'@(39:0,39)> - 23 - (17:0,17)
                     Markup span - Gen<None> - [ foo='] - SpanEditHandler;Accepts:Any - (17:0,17) - Tokens:4
                         SyntaxKind.Whitespace;[ ];
-                        SyntaxKind.HtmlTextLiteral;[foo];
+                        SyntaxKind.Text;[foo];
                         SyntaxKind.Equals;[=];
                         SyntaxKind.SingleQuote;['];
                     Markup block - Gen<DynAttr:@(23:0,23)> - 13 - (23:0,23)

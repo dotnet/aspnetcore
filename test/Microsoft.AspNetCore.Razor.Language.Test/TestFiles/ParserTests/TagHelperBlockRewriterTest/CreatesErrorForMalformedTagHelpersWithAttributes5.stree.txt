@@ -3,4 +3,4 @@ Markup block - Gen<None> - 13 - (0:0,0)
         StartTagAndEndTag - <p bar=false'
         bar - NoQuotes
             Markup span - Gen<Markup> - [false] - SpanEditHandler;Accepts:Any - (7:0,7) - Tokens:1
-                SyntaxKind.HtmlTextLiteral;[false];
+                SyntaxKind.Text;[false];

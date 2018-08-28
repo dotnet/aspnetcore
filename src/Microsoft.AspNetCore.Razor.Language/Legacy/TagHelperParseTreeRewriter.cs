@@ -800,7 +800,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 var token = childSpan.Tokens[i];
 
                 if (token != null &&
-                    (token.Kind == SyntaxKind.Whitespace || token.Kind == SyntaxKind.HtmlTextLiteral))
+                    (token.Kind == SyntaxKind.Whitespace || token.Kind == SyntaxKind.Text))
                 {
                     textToken = token;
                     break;

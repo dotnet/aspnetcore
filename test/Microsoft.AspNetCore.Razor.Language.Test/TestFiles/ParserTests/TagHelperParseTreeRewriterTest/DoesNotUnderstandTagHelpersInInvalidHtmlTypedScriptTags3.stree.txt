@@ -2,27 +2,27 @@ Markup block - Gen<None> - 51 - (0:0,0)
     Tag block - Gen<None> - 33 - (0:0,0)
         Markup span - Gen<Markup> - [<script] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:2
             SyntaxKind.OpenAngle;[<];
-            SyntaxKind.HtmlTextLiteral;[script];
+            SyntaxKind.Text;[script];
         Markup block - Gen<Attr:type, type='@(7:0,7),'@(31:0,31)> - 25 - (7:0,7)
             Markup span - Gen<None> - [ type='] - SpanEditHandler;Accepts:Any - (7:0,7) - Tokens:4
                 SyntaxKind.Whitespace;[ ];
-                SyntaxKind.HtmlTextLiteral;[type];
+                SyntaxKind.Text;[type];
                 SyntaxKind.Equals;[=];
                 SyntaxKind.SingleQuote;['];
             Markup span - Gen<LitAttr:@(14:0,14)> - [text/html] - SpanEditHandler;Accepts:Any - (14:0,14) - Tokens:3
-                SyntaxKind.HtmlTextLiteral;[text];
+                SyntaxKind.Text;[text];
                 SyntaxKind.ForwardSlash;[/];
-                SyntaxKind.HtmlTextLiteral;[html];
+                SyntaxKind.Text;[html];
             Markup span - Gen<LitAttr: @(23:0,23)> - [ invalid] - SpanEditHandler;Accepts:Any - (23:0,23) - Tokens:2
                 SyntaxKind.Whitespace;[ ];
-                SyntaxKind.HtmlTextLiteral;[invalid];
+                SyntaxKind.Text;[invalid];
             Markup span - Gen<None> - ['] - SpanEditHandler;Accepts:Any - (31:0,31) - Tokens:1
                 SyntaxKind.SingleQuote;['];
         Markup span - Gen<Markup> - [>] - SpanEditHandler;Accepts:Any - (32:0,32) - Tokens:1
             SyntaxKind.CloseAngle;[>];
     Markup span - Gen<Markup> - [<input />] - SpanEditHandler;Accepts:Any - (33:0,33) - Tokens:5
         SyntaxKind.OpenAngle;[<];
-        SyntaxKind.HtmlTextLiteral;[input];
+        SyntaxKind.Text;[input];
         SyntaxKind.Whitespace;[ ];
         SyntaxKind.ForwardSlash;[/];
         SyntaxKind.CloseAngle;[>];
@@ -30,5 +30,5 @@ Markup block - Gen<None> - 51 - (0:0,0)
         Markup span - Gen<Markup> - [</script>] - SpanEditHandler;Accepts:Any - (42:0,42) - Tokens:4
             SyntaxKind.OpenAngle;[<];
             SyntaxKind.ForwardSlash;[/];
-            SyntaxKind.HtmlTextLiteral;[script];
+            SyntaxKind.Text;[script];
             SyntaxKind.CloseAngle;[>];

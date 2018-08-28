@@ -32,15 +32,15 @@ Statement block - Gen<None> - 46 - (0:0,0)
         Tag block - Gen<None> - 3 - (32:0,32)
             Markup span - Gen<Markup> - [<p>] - SpanEditHandler;Accepts:None - (32:0,32) - Tokens:3
                 SyntaxKind.OpenAngle;[<];
-                SyntaxKind.HtmlTextLiteral;[p];
+                SyntaxKind.Text;[p];
                 SyntaxKind.CloseAngle;[>];
         Markup span - Gen<Markup> - [Foo] - SpanEditHandler;Accepts:Any - (35:0,35) - Tokens:1
-            SyntaxKind.HtmlTextLiteral;[Foo];
+            SyntaxKind.Text;[Foo];
         Tag block - Gen<None> - 4 - (38:0,38)
             Markup span - Gen<Markup> - [</p>] - SpanEditHandler;Accepts:None - (38:0,38) - Tokens:4
                 SyntaxKind.OpenAngle;[<];
                 SyntaxKind.ForwardSlash;[/];
-                SyntaxKind.HtmlTextLiteral;[p];
+                SyntaxKind.Text;[p];
                 SyntaxKind.CloseAngle;[>];
         Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:None - (42:0,42) - Tokens:1
             SyntaxKind.Whitespace;[ ];

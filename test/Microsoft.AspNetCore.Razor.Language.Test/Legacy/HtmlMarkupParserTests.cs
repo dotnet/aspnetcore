@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Test.Legacy
             get
             {
                 yield return new[] { SyntaxFactory.Token(SyntaxKind.DoubleHyphen, "--") };
-                yield return new[] { SyntaxFactory.Token(SyntaxKind.HtmlTextLiteral, "asdf") };
+                yield return new[] { SyntaxFactory.Token(SyntaxKind.Text, "asdf") };
                 yield return new[] { SyntaxFactory.Token(SyntaxKind.CloseAngle, ">") };
                 yield return new[] { SyntaxFactory.Token(SyntaxKind.OpenAngle, "<") };
                 yield return new[] { SyntaxFactory.Token(SyntaxKind.Bang, "!") };
@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Test.Legacy
         public void IsHyphen_ReturnsTrueForADashToken()
         {
             // Arrange
-            var dashToken = SyntaxFactory.Token(SyntaxKind.HtmlTextLiteral, "-");
+            var dashToken = SyntaxFactory.Token(SyntaxKind.Text, "-");
 
             // Act & Assert
             Assert.True(HtmlMarkupParser.IsHyphen(dashToken));
@@ -158,8 +158,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Test.Legacy
         public void IsCommentContentEndingInvalid_ReturnsFalseForAllowedContent()
         {
             // Arrange
-            var expectedToken1 = SyntaxFactory.Token(SyntaxKind.HtmlTextLiteral, "a");
-            var sequence = Enumerable.Range((int)'a', 26).Select(item => SyntaxFactory.Token(SyntaxKind.HtmlTextLiteral, ((char)item).ToString()));
+            var expectedToken1 = SyntaxFactory.Token(SyntaxKind.Text, "a");
+            var sequence = Enumerable.Range((int)'a', 26).Select(item => SyntaxFactory.Token(SyntaxKind.Text, ((char)item).ToString()));
 
             // Act & Assert
             Assert.False(HtmlMarkupParser.IsCommentContentEndingInvalid(sequence));
@@ -169,12 +169,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Test.Legacy
         public void IsCommentContentEndingInvalid_ReturnsTrueForDisallowedContent()
         {
             // Arrange
-            var expectedToken1 = SyntaxFactory.Token(SyntaxKind.HtmlTextLiteral, "a");
+            var expectedToken1 = SyntaxFactory.Token(SyntaxKind.Text, "a");
             var sequence = new[]
             {
                 SyntaxFactory.Token(SyntaxKind.OpenAngle, "<"),
                 SyntaxFactory.Token(SyntaxKind.Bang, "!"),
-                SyntaxFactory.Token(SyntaxKind.HtmlTextLiteral, "-")
+                SyntaxFactory.Token(SyntaxKind.Text, "-")
             };
 
             // Act & Assert
@@ -185,7 +185,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Test.Legacy
         public void IsCommentContentEndingInvalid_ReturnsFalseForEmptyContent()
         {
             // Arrange
-            var expectedToken1 = SyntaxFactory.Token(SyntaxKind.HtmlTextLiteral, "a");
+            var expectedToken1 = SyntaxFactory.Token(SyntaxKind.Text, "a");
             var sequence = Array.Empty<SyntaxToken>();
 
             // Act & Assert

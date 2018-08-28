@@ -141,11 +141,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
     }
   }
 
-  internal sealed partial class HtmlTextSyntax : HtmlSyntaxNode
+  internal sealed partial class HtmlTextLiteralSyntax : HtmlSyntaxNode
   {
     private readonly GreenNode _textTokens;
 
-    internal HtmlTextSyntax(SyntaxKind kind, GreenNode textTokens, RazorDiagnostic[] diagnostics, SyntaxAnnotation[] annotations)
+    internal HtmlTextLiteralSyntax(SyntaxKind kind, GreenNode textTokens, RazorDiagnostic[] diagnostics, SyntaxAnnotation[] annotations)
         : base(kind, diagnostics, annotations)
     {
         SlotCount = 1;
@@ -157,7 +157,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
     }
 
 
-    internal HtmlTextSyntax(SyntaxKind kind, GreenNode textTokens)
+    internal HtmlTextLiteralSyntax(SyntaxKind kind, GreenNode textTokens)
         : base(kind)
     {
         SlotCount = 1;
@@ -181,24 +181,24 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
 
     internal override SyntaxNode CreateRed(SyntaxNode parent, int position)
     {
-      return new Syntax.HtmlTextSyntax(this, parent, position);
+      return new Syntax.HtmlTextLiteralSyntax(this, parent, position);
     }
 
     public override TResult Accept<TResult>(SyntaxVisitor<TResult> visitor)
     {
-        return visitor.VisitHtmlText(this);
+        return visitor.VisitHtmlTextLiteral(this);
     }
 
     public override void Accept(SyntaxVisitor visitor)
     {
-        visitor.VisitHtmlText(this);
+        visitor.VisitHtmlTextLiteral(this);
     }
 
-    public HtmlTextSyntax Update(Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax.SyntaxList<SyntaxToken> textTokens)
+    public HtmlTextLiteralSyntax Update(Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax.SyntaxList<SyntaxToken> textTokens)
     {
         if (textTokens != TextTokens)
         {
-            var newNode = SyntaxFactory.HtmlText(textTokens);
+            var newNode = SyntaxFactory.HtmlTextLiteral(textTokens);
             var diags = GetDiagnostics();
             if (diags != null && diags.Length > 0)
                newNode = newNode.WithDiagnosticsGreen(diags);
@@ -213,12 +213,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
 
     internal override GreenNode SetDiagnostics(RazorDiagnostic[] diagnostics)
     {
-         return new HtmlTextSyntax(Kind, _textTokens, diagnostics, GetAnnotations());
+         return new HtmlTextLiteralSyntax(Kind, _textTokens, diagnostics, GetAnnotations());
     }
 
     internal override GreenNode SetAnnotations(SyntaxAnnotation[] annotations)
     {
-         return new HtmlTextSyntax(Kind, _textTokens, GetDiagnostics(), annotations);
+         return new HtmlTextLiteralSyntax(Kind, _textTokens, GetDiagnostics(), annotations);
     }
   }
 
@@ -1093,7 +1093,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
       return DefaultVisit(node);
     }
 
-    public virtual TResult VisitHtmlText(HtmlTextSyntax node)
+    public virtual TResult VisitHtmlTextLiteral(HtmlTextLiteralSyntax node)
     {
       return DefaultVisit(node);
     }
@@ -1157,7 +1157,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
       DefaultVisit(node);
     }
 
-    public virtual void VisitHtmlText(HtmlTextSyntax node)
+    public virtual void VisitHtmlTextLiteral(HtmlTextLiteralSyntax node)
     {
       DefaultVisit(node);
     }
@@ -1268,9 +1268,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
       return new RazorCommentBlockSyntax(SyntaxKind.RazorComment, startCommentTransition, startCommentStar, comment, endCommentStar, endCommentTransition);
     }
 
-    public static HtmlTextSyntax HtmlText(Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax.SyntaxList<SyntaxToken> textTokens)
+    public static HtmlTextLiteralSyntax HtmlTextLiteral(Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax.SyntaxList<SyntaxToken> textTokens)
     {
-      var result = new HtmlTextSyntax(SyntaxKind.HtmlText, textTokens.Node);
+      var result = new HtmlTextLiteralSyntax(SyntaxKind.HtmlTextLiteral, textTokens.Node);
 
       return result;
     }
@@ -1389,7 +1389,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
     {
         return new Type[] {
            typeof(RazorCommentBlockSyntax),
-           typeof(HtmlTextSyntax),
+           typeof(HtmlTextLiteralSyntax),
            typeof(CSharpTransitionSyntax),
            typeof(CSharpMetaCodeSyntax),
            typeof(CSharpCodeLiteralSyntax),

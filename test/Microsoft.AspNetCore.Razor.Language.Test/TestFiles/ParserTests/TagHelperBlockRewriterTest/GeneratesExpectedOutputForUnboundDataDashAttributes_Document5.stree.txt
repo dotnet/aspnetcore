@@ -4,7 +4,7 @@ Markup block - Gen<None> - 53 - (0:0,0)
         data-required - SingleQuotes
             Markup block - Gen<None> - 27 - (22:0,22)
                 Markup span - Gen<Markup> - [prefix ] - SpanEditHandler;Accepts:Any - (22:0,22) - Tokens:2
-                    SyntaxKind.HtmlTextLiteral;[prefix];
+                    SyntaxKind.Text;[prefix];
                     SyntaxKind.Whitespace;[ ];
                 Expression block - Gen<Expr> - 13 - (29:0,29)
                     Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (29:0,29) - Tokens:1
@@ -15,4 +15,4 @@ Markup block - Gen<None> - 53 - (0:0,0)
                         SyntaxKind.Identifier;[Now];
                 Markup span - Gen<Markup> - [ suffix] - SpanEditHandler;Accepts:Any - (42:0,42) - Tokens:2
                     SyntaxKind.Whitespace;[ ];
-                    SyntaxKind.HtmlTextLiteral;[suffix];
+                    SyntaxKind.Text;[suffix];

@@ -191,7 +191,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         public void IsDirectiveCompletableToken_ReturnsFalseForNonCSharpTokens()
         {
             // Arrange
-            var token = SyntaxFactory.Token(SyntaxKind.HtmlTextLiteral, string.Empty);
+            var token = SyntaxFactory.Token(SyntaxKind.Text, string.Empty);
 
             // Act
             var result = DefaultRazorCompletionFactsService.IsDirectiveCompletableToken(token);

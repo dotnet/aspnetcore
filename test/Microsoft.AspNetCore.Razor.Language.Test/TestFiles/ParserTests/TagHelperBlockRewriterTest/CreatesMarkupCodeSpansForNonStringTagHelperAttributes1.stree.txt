@@ -3,4 +3,4 @@ Markup block - Gen<None> - 19 - (0:0,0)
         SelfClosing - <person age="12" />
         age - DoubleQuotes
             Code span - Gen<Expr> - [12] - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14 - (13:0,13) - Tokens:1
-                SyntaxKind.HtmlTextLiteral;[12];
+                SyntaxKind.Text;[12];

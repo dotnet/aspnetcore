@@ -21,10 +21,10 @@ Markup block - Gen<None> - 46 - (0:0,0)
                                     SyntaxKind.Identifier;[Now];
                         Markup span - Gen<LitAttr: @(25:0,25)> - [ +] - SpanEditHandler;Accepts:Any - (25:0,25) - Tokens:2
                             SyntaxKind.Whitespace;[ ];
-                            SyntaxKind.HtmlTextLiteral;[+];
+                            SyntaxKind.Text;[+];
                         Markup span - Gen<LitAttr: @(27:0,27)> - [ 1] - SpanEditHandler;Accepts:Any - (27:0,27) - Tokens:2
                             SyntaxKind.Whitespace;[ ];
-                            SyntaxKind.HtmlTextLiteral;[1];
+                            SyntaxKind.Text;[1];
                 bound-int - Minimized
         Code span - Gen<Stmt> - [] - SpanEditHandler;Accepts:Any - (45:0,45) - Tokens:1
             SyntaxKind.Unknown;[];

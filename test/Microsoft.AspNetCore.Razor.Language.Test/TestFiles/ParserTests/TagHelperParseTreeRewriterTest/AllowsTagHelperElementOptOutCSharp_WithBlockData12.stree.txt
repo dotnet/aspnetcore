@@ -18,7 +18,7 @@ Markup block - Gen<None> - 42 - (0:0,0)
                         MetaCode span - Gen<None> - [!] - SpanEditHandler;Accepts:None - (15:0,15) - Tokens:1
                             SyntaxKind.Bang;[!];
                         Markup span - Gen<Markup> - [strong>] - SpanEditHandler;Accepts:None - (16:0,16) - Tokens:2
-                            SyntaxKind.HtmlTextLiteral;[strong];
+                            SyntaxKind.Text;[strong];
                             SyntaxKind.CloseAngle;[>];
         Markup block - Gen<None> - 13 - (23:0,23)
             Tag block - Gen<None> - 4 - (23:0,23)
@@ -27,13 +27,13 @@ Markup block - Gen<None> - 42 - (0:0,0)
                 MetaCode span - Gen<None> - [!] - SpanEditHandler;Accepts:None - (24:0,24) - Tokens:1
                     SyntaxKind.Bang;[!];
                 Markup span - Gen<Markup> - [p>] - SpanEditHandler;Accepts:None - (25:0,25) - Tokens:2
-                    SyntaxKind.HtmlTextLiteral;[p];
+                    SyntaxKind.Text;[p];
                     SyntaxKind.CloseAngle;[>];
             Tag block - Gen<None> - 9 - (27:0,27)
                 Markup span - Gen<Markup> - [</strong>] - SpanEditHandler;Accepts:None - (27:0,27) - Tokens:4
                     SyntaxKind.OpenAngle;[<];
                     SyntaxKind.ForwardSlash;[/];
-                    SyntaxKind.HtmlTextLiteral;[strong];
+                    SyntaxKind.Text;[strong];
                     SyntaxKind.CloseAngle;[>];
         Markup block - Gen<None> - 5 - (36:0,36)
             Tag block - Gen<None> - 5 - (36:0,36)
@@ -43,7 +43,7 @@ Markup block - Gen<None> - 42 - (0:0,0)
                 MetaCode span - Gen<None> - [!] - SpanEditHandler;Accepts:None - (38:0,38) - Tokens:1
                     SyntaxKind.Bang;[!];
                 Markup span - Gen<Markup> - [p>] - SpanEditHandler;Accepts:None - (39:0,39) - Tokens:2
-                    SyntaxKind.HtmlTextLiteral;[p];
+                    SyntaxKind.Text;[p];
                     SyntaxKind.CloseAngle;[>];
         Code span - Gen<Stmt> - [] - SpanEditHandler;Accepts:Any - (41:0,41) - Tokens:1
             SyntaxKind.Unknown;[];

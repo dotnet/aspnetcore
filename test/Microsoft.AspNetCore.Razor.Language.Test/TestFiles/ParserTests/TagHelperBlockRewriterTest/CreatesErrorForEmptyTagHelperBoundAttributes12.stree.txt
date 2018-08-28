@@ -5,4 +5,4 @@ Markup block - Gen<None> - 32 - (0:0,0)
             Code span - Gen<None> - [] - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14 - (12:0,12) - Tokens:0
         nAMe - SingleQuotes
             Markup span - Gen<Markup> - [john] - SpanEditHandler;Accepts:Any - (19:0,19) - Tokens:1
-                SyntaxKind.HtmlTextLiteral;[john];
+                SyntaxKind.Text;[john];

@@ -4,12 +4,12 @@ Markup block - Gen<None> - 20 - (0:0,0)
         bar - DoubleQuotes
             Markup block - Gen<None> - 12 - (8:0,8)
                 Markup span - Gen<Markup> - [false'] - SpanEditHandler;Accepts:Any - (8:0,8) - Tokens:2
-                    SyntaxKind.HtmlTextLiteral;[false];
+                    SyntaxKind.Text;[false];
                     SyntaxKind.SingleQuote;['];
                 Markup span - Gen<Markup> - [ ></p>] - SpanEditHandler;Accepts:Any - (14:0,14) - Tokens:6
                     SyntaxKind.Whitespace;[ ];
                     SyntaxKind.CloseAngle;[>];
                     SyntaxKind.OpenAngle;[<];
                     SyntaxKind.ForwardSlash;[/];
-                    SyntaxKind.HtmlTextLiteral;[p];
+                    SyntaxKind.Text;[p];
                     SyntaxKind.CloseAngle;[>];

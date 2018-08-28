@@ -153,11 +153,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
     }
   }
 
-  internal sealed partial class HtmlTextSyntax : HtmlSyntaxNode
+  internal sealed partial class HtmlTextLiteralSyntax : HtmlSyntaxNode
   {
     private SyntaxNode _textTokens;
 
-    internal HtmlTextSyntax(GreenNode green, SyntaxNode parent, int position)
+    internal HtmlTextLiteralSyntax(GreenNode green, SyntaxNode parent, int position)
         : base(green, parent, position)
     {
     }
@@ -189,19 +189,19 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
 
     public override TResult Accept<TResult>(SyntaxVisitor<TResult> visitor)
     {
-        return visitor.VisitHtmlText(this);
+        return visitor.VisitHtmlTextLiteral(this);
     }
 
     public override void Accept(SyntaxVisitor visitor)
     {
-        visitor.VisitHtmlText(this);
+        visitor.VisitHtmlTextLiteral(this);
     }
 
-    public HtmlTextSyntax Update(SyntaxList<SyntaxToken> textTokens)
+    public HtmlTextLiteralSyntax Update(SyntaxList<SyntaxToken> textTokens)
     {
         if (textTokens != TextTokens)
         {
-            var newNode = SyntaxFactory.HtmlText(textTokens);
+            var newNode = SyntaxFactory.HtmlTextLiteral(textTokens);
             var annotations = GetAnnotations();
             if (annotations != null && annotations.Length > 0)
                return newNode.WithAnnotations(annotations);
@@ -211,12 +211,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
         return this;
     }
 
-    public HtmlTextSyntax WithTextTokens(SyntaxList<SyntaxToken> textTokens)
+    public HtmlTextLiteralSyntax WithTextTokens(SyntaxList<SyntaxToken> textTokens)
     {
         return Update(textTokens);
     }
 
-    public HtmlTextSyntax AddTextTokens(params SyntaxToken[] items)
+    public HtmlTextLiteralSyntax AddTextTokens(params SyntaxToken[] items)
     {
         return WithTextTokens(this.TextTokens.AddRange(items));
     }

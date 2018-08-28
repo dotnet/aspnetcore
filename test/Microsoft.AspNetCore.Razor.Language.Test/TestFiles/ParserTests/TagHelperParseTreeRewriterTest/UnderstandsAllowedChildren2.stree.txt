@@ -1,9 +1,9 @@
 Markup block - Gen<None> - 17 - (0:0,0)
     Tag block - Gen<TagHelper> - 17 - (0:0,0) - p - PTagHelper
         StartTagAndEndTag - <p> ... </p>
-        SyntaxKind.HtmlText - [LF] - [3..5) - FullWidth: 2 - Slots: 1
+        SyntaxKind.HtmlTextLiteral - [LF] - [3..5) - FullWidth: 2 - Slots: 1
             SyntaxKind.NewLine;[LF];
         Tag block - Gen<TagHelper> - 6 - (5:1,0) - br - BRTagHelper
             SelfClosing - <br />
-        SyntaxKind.HtmlText - [LF] - [11..13) - FullWidth: 2 - Slots: 1
+        SyntaxKind.HtmlTextLiteral - [LF] - [11..13) - FullWidth: 2 - Slots: 1
             SyntaxKind.NewLine;[LF];

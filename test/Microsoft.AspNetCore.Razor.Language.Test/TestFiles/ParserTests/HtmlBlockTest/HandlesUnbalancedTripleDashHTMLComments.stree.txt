@@ -18,27 +18,27 @@ Markup block - Gen<None> - 68 - (0:0,0)
                     SyntaxKind.DoubleHyphen;[--];
                 Markup span - Gen<Markup> - [ Hello, I'm a comment that shouldn't break razor -] - SpanEditHandler;Accepts:Whitespace - (12:1,8) - Tokens:22
                     SyntaxKind.Whitespace;[ ];
-                    SyntaxKind.HtmlTextLiteral;[Hello,];
+                    SyntaxKind.Text;[Hello,];
                     SyntaxKind.Whitespace;[ ];
-                    SyntaxKind.HtmlTextLiteral;[I];
+                    SyntaxKind.Text;[I];
                     SyntaxKind.SingleQuote;['];
-                    SyntaxKind.HtmlTextLiteral;[m];
+                    SyntaxKind.Text;[m];
                     SyntaxKind.Whitespace;[ ];
-                    SyntaxKind.HtmlTextLiteral;[a];
+                    SyntaxKind.Text;[a];
                     SyntaxKind.Whitespace;[ ];
-                    SyntaxKind.HtmlTextLiteral;[comment];
+                    SyntaxKind.Text;[comment];
                     SyntaxKind.Whitespace;[ ];
-                    SyntaxKind.HtmlTextLiteral;[that];
+                    SyntaxKind.Text;[that];
                     SyntaxKind.Whitespace;[ ];
-                    SyntaxKind.HtmlTextLiteral;[shouldn];
+                    SyntaxKind.Text;[shouldn];
                     SyntaxKind.SingleQuote;['];
-                    SyntaxKind.HtmlTextLiteral;[t];
+                    SyntaxKind.Text;[t];
                     SyntaxKind.Whitespace;[ ];
-                    SyntaxKind.HtmlTextLiteral;[break];
+                    SyntaxKind.Text;[break];
                     SyntaxKind.Whitespace;[ ];
-                    SyntaxKind.HtmlTextLiteral;[razor];
+                    SyntaxKind.Text;[razor];
                     SyntaxKind.Whitespace;[ ];
-                    SyntaxKind.HtmlTextLiteral;[-];
+                    SyntaxKind.Text;[-];
                 Markup span - Gen<Markup> - [-->] - SpanEditHandler;Accepts:None - (62:1,58) - Tokens:2
                     SyntaxKind.DoubleHyphen;[--];
                     SyntaxKind.CloseAngle;[>];

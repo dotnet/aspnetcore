@@ -20,9 +20,9 @@ Markup block - Gen<None> - 28 - (0:0,0)
                 SyntaxKind.OpenAngle;[<];
                 SyntaxKind.QuestionMark;[?];
                 SyntaxKind.Whitespace;[ ];
-                SyntaxKind.HtmlTextLiteral;[xml];
+                SyntaxKind.Text;[xml];
                 SyntaxKind.Whitespace;[ ];
-                SyntaxKind.HtmlTextLiteral;[bleh];
+                SyntaxKind.Text;[bleh];
                 SyntaxKind.Whitespace;[ ];
                 SyntaxKind.QuestionMark;[?];
                 SyntaxKind.CloseAngle;[>];

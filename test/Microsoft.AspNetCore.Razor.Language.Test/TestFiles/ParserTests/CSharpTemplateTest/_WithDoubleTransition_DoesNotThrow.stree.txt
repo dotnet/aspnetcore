@@ -26,11 +26,11 @@ Statement block - Gen<None> - 74 - (0:0,0)
             Tag block - Gen<None> - 12 - (44:0,44)
                 Markup span - Gen<Markup> - [<p] - SpanEditHandler;Accepts:Any - (44:0,44) - Tokens:2
                     SyntaxKind.OpenAngle;[<];
-                    SyntaxKind.HtmlTextLiteral;[p];
+                    SyntaxKind.Text;[p];
                 Markup block - Gen<Attr:foo, foo='@(46:0,46),'@(54:0,54)> - 9 - (46:0,46)
                     Markup span - Gen<None> - [ foo='] - SpanEditHandler;Accepts:Any - (46:0,46) - Tokens:4
                         SyntaxKind.Whitespace;[ ];
-                        SyntaxKind.HtmlTextLiteral;[foo];
+                        SyntaxKind.Text;[foo];
                         SyntaxKind.Equals;[=];
                         SyntaxKind.SingleQuote;['];
                     Markup block - Gen<None> - 2 - (52:0,52)
@@ -43,9 +43,9 @@ Statement block - Gen<None> - 74 - (0:0,0)
                 Markup span - Gen<Markup> - [>] - SpanEditHandler;Accepts:None - (55:0,55) - Tokens:1
                     SyntaxKind.CloseAngle;[>];
             Markup span - Gen<Markup> - [Foo #] - SpanEditHandler;Accepts:Any - (56:0,56) - Tokens:3
-                SyntaxKind.HtmlTextLiteral;[Foo];
+                SyntaxKind.Text;[Foo];
                 SyntaxKind.Whitespace;[ ];
-                SyntaxKind.HtmlTextLiteral;[#];
+                SyntaxKind.Text;[#];
             Expression block - Gen<Expr> - 5 - (61:0,61)
                 Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (61:0,61) - Tokens:1
                     SyntaxKind.Transition;[@];
@@ -55,7 +55,7 @@ Statement block - Gen<None> - 74 - (0:0,0)
                 Markup span - Gen<Markup> - [</p>] - SpanEditHandler;Accepts:None - (66:0,66) - Tokens:4
                     SyntaxKind.OpenAngle;[<];
                     SyntaxKind.ForwardSlash;[/];
-                    SyntaxKind.HtmlTextLiteral;[p];
+                    SyntaxKind.Text;[p];
                     SyntaxKind.CloseAngle;[>];
     Code span - Gen<Stmt> - [); ] - SpanEditHandler;Accepts:Any - (70:0,70) - Tokens:3
         SyntaxKind.RightParenthesis;[)];

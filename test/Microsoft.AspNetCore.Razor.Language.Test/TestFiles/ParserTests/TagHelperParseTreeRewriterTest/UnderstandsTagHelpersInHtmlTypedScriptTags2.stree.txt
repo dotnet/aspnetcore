@@ -2,37 +2,37 @@ Markup block - Gen<None> - 76 - (0:0,0)
     Tag block - Gen<None> - 58 - (0:0,0)
         Markup span - Gen<Markup> - [<script] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:2
             SyntaxKind.OpenAngle;[<];
-            SyntaxKind.HtmlTextLiteral;[script];
+            SyntaxKind.Text;[script];
         Markup block - Gen<Attr:id, id='@(7:0,7),'@(21:0,21)> - 15 - (7:0,7)
             Markup span - Gen<None> - [ id='] - SpanEditHandler;Accepts:Any - (7:0,7) - Tokens:4
                 SyntaxKind.Whitespace;[ ];
-                SyntaxKind.HtmlTextLiteral;[id];
+                SyntaxKind.Text;[id];
                 SyntaxKind.Equals;[=];
                 SyntaxKind.SingleQuote;['];
             Markup span - Gen<LitAttr:@(12:0,12)> - [scriptTag] - SpanEditHandler;Accepts:Any - (12:0,12) - Tokens:1
-                SyntaxKind.HtmlTextLiteral;[scriptTag];
+                SyntaxKind.Text;[scriptTag];
             Markup span - Gen<None> - ['] - SpanEditHandler;Accepts:Any - (21:0,21) - Tokens:1
                 SyntaxKind.SingleQuote;['];
         Markup block - Gen<Attr:type, type='@(22:0,22),'@(38:0,38)> - 17 - (22:0,22)
             Markup span - Gen<None> - [ type='] - SpanEditHandler;Accepts:Any - (22:0,22) - Tokens:4
                 SyntaxKind.Whitespace;[ ];
-                SyntaxKind.HtmlTextLiteral;[type];
+                SyntaxKind.Text;[type];
                 SyntaxKind.Equals;[=];
                 SyntaxKind.SingleQuote;['];
             Markup span - Gen<LitAttr:@(29:0,29)> - [text/html] - SpanEditHandler;Accepts:Any - (29:0,29) - Tokens:3
-                SyntaxKind.HtmlTextLiteral;[text];
+                SyntaxKind.Text;[text];
                 SyntaxKind.ForwardSlash;[/];
-                SyntaxKind.HtmlTextLiteral;[html];
+                SyntaxKind.Text;[html];
             Markup span - Gen<None> - ['] - SpanEditHandler;Accepts:Any - (38:0,38) - Tokens:1
                 SyntaxKind.SingleQuote;['];
         Markup block - Gen<Attr:class, class='@(39:0,39),'@(56:0,56)> - 18 - (39:0,39)
             Markup span - Gen<None> - [ class='] - SpanEditHandler;Accepts:Any - (39:0,39) - Tokens:4
                 SyntaxKind.Whitespace;[ ];
-                SyntaxKind.HtmlTextLiteral;[class];
+                SyntaxKind.Text;[class];
                 SyntaxKind.Equals;[=];
                 SyntaxKind.SingleQuote;['];
             Markup span - Gen<LitAttr:@(47:0,47)> - [something] - SpanEditHandler;Accepts:Any - (47:0,47) - Tokens:1
-                SyntaxKind.HtmlTextLiteral;[something];
+                SyntaxKind.Text;[something];
             Markup span - Gen<None> - ['] - SpanEditHandler;Accepts:Any - (56:0,56) - Tokens:1
                 SyntaxKind.SingleQuote;['];
         Markup span - Gen<Markup> - [>] - SpanEditHandler;Accepts:Any - (57:0,57) - Tokens:1
@@ -43,5 +43,5 @@ Markup block - Gen<None> - 76 - (0:0,0)
         Markup span - Gen<Markup> - [</script>] - SpanEditHandler;Accepts:Any - (67:0,67) - Tokens:4
             SyntaxKind.OpenAngle;[<];
             SyntaxKind.ForwardSlash;[/];
-            SyntaxKind.HtmlTextLiteral;[script];
+            SyntaxKind.Text;[script];
             SyntaxKind.CloseAngle;[>];

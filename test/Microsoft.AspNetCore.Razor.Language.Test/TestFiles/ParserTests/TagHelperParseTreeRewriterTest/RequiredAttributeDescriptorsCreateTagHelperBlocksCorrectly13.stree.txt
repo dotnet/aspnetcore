@@ -11,10 +11,10 @@ Markup block - Gen<None> - 58 - (0:0,0)
                             SyntaxKind.Identifier;[DateTime];
                             SyntaxKind.Dot;[.];
                             SyntaxKind.Identifier;[Now];
-        SyntaxKind.HtmlText - [words and spaces] - [33..49) - FullWidth: 16 - Slots: 1
+        SyntaxKind.HtmlTextLiteral - [words and spaces] - [33..49) - FullWidth: 16 - Slots: 1
             SyntaxKind.List - [words and spaces] - [33..49) - FullWidth: 16 - Slots: 5
-                SyntaxKind.HtmlTextLiteral;[words];
+                SyntaxKind.Text;[words];
                 SyntaxKind.Whitespace;[ ];
-                SyntaxKind.HtmlTextLiteral;[and];
+                SyntaxKind.Text;[and];
                 SyntaxKind.Whitespace;[ ];
-                SyntaxKind.HtmlTextLiteral;[spaces];
+                SyntaxKind.Text;[spaces];

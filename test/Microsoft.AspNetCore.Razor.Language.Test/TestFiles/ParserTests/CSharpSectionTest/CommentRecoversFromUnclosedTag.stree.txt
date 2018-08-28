@@ -20,7 +20,7 @@ Markup block - Gen<None> - 33 - (0:0,0)
             Tag block - Gen<None> - 4 - (14:1,0)
                 Markup span - Gen<Markup> - [<aLF] - SpanEditHandler;Accepts:Any - (14:1,0) - Tokens:3
                     SyntaxKind.OpenAngle;[<];
-                    SyntaxKind.HtmlTextLiteral;[a];
+                    SyntaxKind.Text;[a];
                     SyntaxKind.NewLine;[LF];
             HtmlComment block - Gen<None> - 14 - (18:2,0)
                 Markup span - Gen<Markup> - [<!--] - SpanEditHandler;Accepts:None - (18:2,0) - Tokens:3

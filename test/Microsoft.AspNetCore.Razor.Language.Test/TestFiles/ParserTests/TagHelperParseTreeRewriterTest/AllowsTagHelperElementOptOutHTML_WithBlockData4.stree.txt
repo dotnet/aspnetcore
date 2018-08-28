@@ -5,15 +5,15 @@ Markup block - Gen<None> - 25 - (0:0,0)
         MetaCode span - Gen<None> - [!] - SpanEditHandler;Accepts:None - (1:0,1) - Tokens:1
             SyntaxKind.Bang;[!];
         Markup span - Gen<Markup> - [p>] - SpanEditHandler;Accepts:Any - (2:0,2) - Tokens:2
-            SyntaxKind.HtmlTextLiteral;[p];
+            SyntaxKind.Text;[p];
             SyntaxKind.CloseAngle;[>];
-    SyntaxKind.HtmlText - [words and spaces] - [4..20) - FullWidth: 16 - Slots: 1
+    SyntaxKind.HtmlTextLiteral - [words and spaces] - [4..20) - FullWidth: 16 - Slots: 1
         SyntaxKind.List - [words and spaces] - [4..20) - FullWidth: 16 - Slots: 5
-            SyntaxKind.HtmlTextLiteral;[words];
+            SyntaxKind.Text;[words];
             SyntaxKind.Whitespace;[ ];
-            SyntaxKind.HtmlTextLiteral;[and];
+            SyntaxKind.Text;[and];
             SyntaxKind.Whitespace;[ ];
-            SyntaxKind.HtmlTextLiteral;[spaces];
+            SyntaxKind.Text;[spaces];
     Tag block - Gen<None> - 5 - (20:0,20)
         Markup span - Gen<Markup> - [</] - SpanEditHandler;Accepts:Any - (20:0,20) - Tokens:2
             SyntaxKind.OpenAngle;[<];
@@ -21,5 +21,5 @@ Markup block - Gen<None> - 25 - (0:0,0)
         MetaCode span - Gen<None> - [!] - SpanEditHandler;Accepts:None - (22:0,22) - Tokens:1
             SyntaxKind.Bang;[!];
         Markup span - Gen<Markup> - [p>] - SpanEditHandler;Accepts:Any - (23:0,23) - Tokens:2
-            SyntaxKind.HtmlTextLiteral;[p];
+            SyntaxKind.Text;[p];
             SyntaxKind.CloseAngle;[>];

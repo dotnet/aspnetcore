@@ -5,6 +5,6 @@ Markup block - Gen<None> - 5 - (0:0,0)
         MetaCode span - Gen<None> - [!] - SpanEditHandler;Accepts:None - (1:0,1) - Tokens:1
             SyntaxKind.Bang;[!];
         Markup span - Gen<Markup> - [p /] - SpanEditHandler;Accepts:Any - (2:0,2) - Tokens:3
-            SyntaxKind.HtmlTextLiteral;[p];
+            SyntaxKind.Text;[p];
             SyntaxKind.Whitespace;[ ];
             SyntaxKind.ForwardSlash;[/];

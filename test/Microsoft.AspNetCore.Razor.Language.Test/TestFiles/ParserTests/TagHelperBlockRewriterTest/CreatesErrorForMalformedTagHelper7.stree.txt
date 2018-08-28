@@ -7,7 +7,7 @@ Markup block - Gen<None> - 16 - (0:0,0)
             SyntaxKind.OpenAngle;[<];
     Tag block - Gen<TagHelper> - 14 - (2:0,2) - strong - strongtaghelper
         StartTagAndEndTag - <strong>
-        SyntaxKind.HtmlText - [> ] - [10..12) - FullWidth: 2 - Slots: 1
+        SyntaxKind.HtmlTextLiteral - [> ] - [10..12) - FullWidth: 2 - Slots: 1
             SyntaxKind.List - [> ] - [10..12) - FullWidth: 2 - Slots: 2
                 SyntaxKind.CloseAngle;[>];
                 SyntaxKind.Whitespace;[ ];

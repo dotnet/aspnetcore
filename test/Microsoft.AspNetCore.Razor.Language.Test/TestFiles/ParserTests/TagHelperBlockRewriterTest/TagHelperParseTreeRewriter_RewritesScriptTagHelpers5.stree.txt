@@ -3,7 +3,7 @@ Markup block - Gen<None> - 41 - (0:0,0)
         SelfClosing - <script class="foo" style="color:red;" />
         class - DoubleQuotes
             Markup span - Gen<Markup> - [foo] - SpanEditHandler;Accepts:Any - (15:0,15) - Tokens:1
-                SyntaxKind.HtmlTextLiteral;[foo];
+                SyntaxKind.Text;[foo];
         style - DoubleQuotes
             Markup span - Gen<Markup> - [color:red;] - SpanEditHandler;Accepts:Any - (27:0,27) - Tokens:1
-                SyntaxKind.HtmlTextLiteral;[color:red;];
+                SyntaxKind.Text;[color:red;];

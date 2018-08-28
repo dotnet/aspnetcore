@@ -86,7 +86,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         {
             // Arrange
             var childBuilder = new SpanBuilder(SourceLocation.Zero);
-            childBuilder.Accept(SyntaxFactory.Token(SyntaxKind.HtmlTextLiteral, "hello"));
+            childBuilder.Accept(SyntaxFactory.Token(SyntaxKind.Text, "hello"));
             var child = childBuilder.Build();
 
             // Act

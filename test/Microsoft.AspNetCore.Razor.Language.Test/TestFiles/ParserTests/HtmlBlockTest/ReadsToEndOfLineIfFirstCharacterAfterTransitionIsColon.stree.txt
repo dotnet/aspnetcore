@@ -5,11 +5,11 @@ Markup block - Gen<None> - 19 - (0:0,0)
         SyntaxKind.Colon;[:];
     Markup span - Gen<Markup> - [<li>Foo Bar BazLF] - SpanEditHandler;Accepts:None - (2:0,2) - Tokens:9
         SyntaxKind.OpenAngle;[<];
-        SyntaxKind.HtmlTextLiteral;[li];
+        SyntaxKind.Text;[li];
         SyntaxKind.CloseAngle;[>];
-        SyntaxKind.HtmlTextLiteral;[Foo];
+        SyntaxKind.Text;[Foo];
         SyntaxKind.Whitespace;[ ];
-        SyntaxKind.HtmlTextLiteral;[Bar];
+        SyntaxKind.Text;[Bar];
         SyntaxKind.Whitespace;[ ];
-        SyntaxKind.HtmlTextLiteral;[Baz];
+        SyntaxKind.Text;[Baz];
         SyntaxKind.NewLine;[LF];

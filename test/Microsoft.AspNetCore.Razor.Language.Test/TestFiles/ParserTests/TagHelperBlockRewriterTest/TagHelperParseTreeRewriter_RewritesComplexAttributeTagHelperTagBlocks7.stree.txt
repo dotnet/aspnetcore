@@ -21,20 +21,20 @@ Markup block - Gen<None> - 122 - (0:0,0)
                             SyntaxKind.Identifier;[DateTime];
                             SyntaxKind.Dot;[.];
                             SyntaxKind.Identifier;[Now];
-        SyntaxKind.HtmlText - [Hello World ] - [47..59) - FullWidth: 12 - Slots: 1
+        SyntaxKind.HtmlTextLiteral - [Hello World ] - [47..59) - FullWidth: 12 - Slots: 1
             SyntaxKind.List - [Hello World ] - [47..59) - FullWidth: 12 - Slots: 4
-                SyntaxKind.HtmlTextLiteral;[Hello];
+                SyntaxKind.Text;[Hello];
                 SyntaxKind.Whitespace;[ ];
-                SyntaxKind.HtmlTextLiteral;[World];
+                SyntaxKind.Text;[World];
                 SyntaxKind.Whitespace;[ ];
         Tag block - Gen<None> - 30 - (59:0,59)
             Markup span - Gen<Markup> - [<strong] - SpanEditHandler;Accepts:Any - (59:0,59) - Tokens:2
                 SyntaxKind.OpenAngle;[<];
-                SyntaxKind.HtmlTextLiteral;[strong];
+                SyntaxKind.Text;[strong];
             Markup block - Gen<Attr:class, class="@(66:0,66),"@(87:0,87)> - 22 - (66:0,66)
                 Markup span - Gen<None> - [ class="] - SpanEditHandler;Accepts:Any - (66:0,66) - Tokens:4
                     SyntaxKind.Whitespace;[ ];
-                    SyntaxKind.HtmlTextLiteral;[class];
+                    SyntaxKind.Text;[class];
                     SyntaxKind.Equals;[=];
                     SyntaxKind.DoubleQuote;["];
                 Markup block - Gen<DynAttr:@(74:0,74)> - 13 - (74:0,74)
@@ -49,18 +49,18 @@ Markup block - Gen<None> - 122 - (0:0,0)
                     SyntaxKind.DoubleQuote;["];
             Markup span - Gen<Markup> - [>] - SpanEditHandler;Accepts:Any - (88:0,88) - Tokens:1
                 SyntaxKind.CloseAngle;[>];
-        SyntaxKind.HtmlText - [inside of strong tag] - [89..109) - FullWidth: 20 - Slots: 1
+        SyntaxKind.HtmlTextLiteral - [inside of strong tag] - [89..109) - FullWidth: 20 - Slots: 1
             SyntaxKind.List - [inside of strong tag] - [89..109) - FullWidth: 20 - Slots: 7
-                SyntaxKind.HtmlTextLiteral;[inside];
+                SyntaxKind.Text;[inside];
                 SyntaxKind.Whitespace;[ ];
-                SyntaxKind.HtmlTextLiteral;[of];
+                SyntaxKind.Text;[of];
                 SyntaxKind.Whitespace;[ ];
-                SyntaxKind.HtmlTextLiteral;[strong];
+                SyntaxKind.Text;[strong];
                 SyntaxKind.Whitespace;[ ];
-                SyntaxKind.HtmlTextLiteral;[tag];
+                SyntaxKind.Text;[tag];
         Tag block - Gen<None> - 9 - (109:0,109)
             Markup span - Gen<Markup> - [</strong>] - SpanEditHandler;Accepts:Any - (109:0,109) - Tokens:4
                 SyntaxKind.OpenAngle;[<];
                 SyntaxKind.ForwardSlash;[/];
-                SyntaxKind.HtmlTextLiteral;[strong];
+                SyntaxKind.Text;[strong];
                 SyntaxKind.CloseAngle;[>];

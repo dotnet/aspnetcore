@@ -13,15 +13,15 @@ Markup block - Gen<None> - 44 - (0:0,0)
                 MetaCode span - Gen<None> - [!] - SpanEditHandler;Accepts:None - (3:0,3) - Tokens:1
                     SyntaxKind.Bang;[!];
                 Markup span - Gen<Markup> - [p] - SpanEditHandler;Accepts:Any - (4:0,4) - Tokens:1
-                    SyntaxKind.HtmlTextLiteral;[p];
+                    SyntaxKind.Text;[p];
                 Markup block - Gen<Attr:class, class='@(5:0,5),'@(36:0,36)> - 32 - (5:0,5)
                     Markup span - Gen<None> - [ class='] - SpanEditHandler;Accepts:Any - (5:0,5) - Tokens:4
                         SyntaxKind.Whitespace;[ ];
-                        SyntaxKind.HtmlTextLiteral;[class];
+                        SyntaxKind.Text;[class];
                         SyntaxKind.Equals;[=];
                         SyntaxKind.SingleQuote;['];
                     Markup span - Gen<LitAttr:@(13:0,13)> - [btn1] - SpanEditHandler;Accepts:Any - (13:0,13) - Tokens:1
-                        SyntaxKind.HtmlTextLiteral;[btn1];
+                        SyntaxKind.Text;[btn1];
                     Markup block - Gen<DynAttr: @(17:0,17)> - 14 - (17:0,17)
                         Markup span - Gen<None> - [ ] - SpanEditHandler;Accepts:Any - (17:0,17) - Tokens:1
                             SyntaxKind.Whitespace;[ ];
@@ -34,7 +34,7 @@ Markup block - Gen<None> - 44 - (0:0,0)
                                 SyntaxKind.Identifier;[Now];
                     Markup span - Gen<LitAttr: @(31:0,31)> - [ btn2] - SpanEditHandler;Accepts:Any - (31:0,31) - Tokens:2
                         SyntaxKind.Whitespace;[ ];
-                        SyntaxKind.HtmlTextLiteral;[btn2];
+                        SyntaxKind.Text;[btn2];
                     Markup span - Gen<None> - ['] - SpanEditHandler;Accepts:Any - (36:0,36) - Tokens:1
                         SyntaxKind.SingleQuote;['];
                 Markup span - Gen<Markup> - [>] - SpanEditHandler;Accepts:None - (37:0,37) - Tokens:1
@@ -46,7 +46,7 @@ Markup block - Gen<None> - 44 - (0:0,0)
                 MetaCode span - Gen<None> - [!] - SpanEditHandler;Accepts:None - (40:0,40) - Tokens:1
                     SyntaxKind.Bang;[!];
                 Markup span - Gen<Markup> - [p>] - SpanEditHandler;Accepts:None - (41:0,41) - Tokens:2
-                    SyntaxKind.HtmlTextLiteral;[p];
+                    SyntaxKind.Text;[p];
                     SyntaxKind.CloseAngle;[>];
         Code span - Gen<Stmt> - [] - SpanEditHandler;Accepts:Any - (43:0,43) - Tokens:1
             SyntaxKind.Unknown;[];

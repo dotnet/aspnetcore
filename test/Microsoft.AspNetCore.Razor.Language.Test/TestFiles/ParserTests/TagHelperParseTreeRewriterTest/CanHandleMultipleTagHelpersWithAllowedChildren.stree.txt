@@ -3,10 +3,10 @@ Markup block - Gen<None> - 39 - (0:0,0)
         StartTagAndEndTag - <p> ... </p>
         Tag block - Gen<TagHelper> - 28 - (3:0,3) - strong - StrongTagHelper
             StartTagAndEndTag - <strong> ... </strong>
-            SyntaxKind.HtmlText - [Hello World] - [11..22) - FullWidth: 11 - Slots: 1
+            SyntaxKind.HtmlTextLiteral - [Hello World] - [11..22) - FullWidth: 11 - Slots: 1
                 SyntaxKind.List - [Hello World] - [11..22) - FullWidth: 11 - Slots: 3
-                    SyntaxKind.HtmlTextLiteral;[Hello];
+                    SyntaxKind.Text;[Hello];
                     SyntaxKind.Whitespace;[ ];
-                    SyntaxKind.HtmlTextLiteral;[World];
+                    SyntaxKind.Text;[World];
         Tag block - Gen<TagHelper> - 4 - (31:0,31) - br - BRTagHelper
             StartTagOnly - <br>

@@ -5,21 +5,21 @@ Markup block - Gen<None> - 63 - (0:0,0)
             Markup block - Gen<None> - 0 - (0:0,0)
         class - DoubleQuotes
             Markup span - Gen<Markup> - [btn] - SpanEditHandler;Accepts:Any - (21:0,21) - Tokens:1
-                SyntaxKind.HtmlTextLiteral;[btn];
-        SyntaxKind.HtmlText - [words] - [26..31) - FullWidth: 5 - Slots: 1
-            SyntaxKind.HtmlTextLiteral;[words];
+                SyntaxKind.Text;[btn];
+        SyntaxKind.HtmlTextLiteral - [words] - [26..31) - FullWidth: 5 - Slots: 1
+            SyntaxKind.Text;[words];
         Tag block - Gen<None> - 8 - (31:0,31)
             Markup span - Gen<Markup> - [<strong>] - SpanEditHandler;Accepts:Any - (31:0,31) - Tokens:3
                 SyntaxKind.OpenAngle;[<];
-                SyntaxKind.HtmlTextLiteral;[strong];
+                SyntaxKind.Text;[strong];
                 SyntaxKind.CloseAngle;[>];
-        SyntaxKind.HtmlText - [and] - [39..42) - FullWidth: 3 - Slots: 1
-            SyntaxKind.HtmlTextLiteral;[and];
+        SyntaxKind.HtmlTextLiteral - [and] - [39..42) - FullWidth: 3 - Slots: 1
+            SyntaxKind.Text;[and];
         Tag block - Gen<None> - 9 - (42:0,42)
             Markup span - Gen<Markup> - [</strong>] - SpanEditHandler;Accepts:Any - (42:0,42) - Tokens:4
                 SyntaxKind.OpenAngle;[<];
                 SyntaxKind.ForwardSlash;[/];
-                SyntaxKind.HtmlTextLiteral;[strong];
+                SyntaxKind.Text;[strong];
                 SyntaxKind.CloseAngle;[>];
-        SyntaxKind.HtmlText - [spaces] - [51..57) - FullWidth: 6 - Slots: 1
-            SyntaxKind.HtmlTextLiteral;[spaces];
+        SyntaxKind.HtmlTextLiteral - [spaces] - [51..57) - FullWidth: 6 - Slots: 1
+            SyntaxKind.Text;[spaces];

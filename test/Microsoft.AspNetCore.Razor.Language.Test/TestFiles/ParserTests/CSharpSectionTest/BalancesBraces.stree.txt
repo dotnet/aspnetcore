@@ -20,25 +20,25 @@ Markup block - Gen<None> - 67 - (0:0,0)
             Tag block - Gen<None> - 8 - (15:0,15)
                 Markup span - Gen<Markup> - [<script>] - SpanEditHandler;Accepts:Any - (15:0,15) - Tokens:3
                     SyntaxKind.OpenAngle;[<];
-                    SyntaxKind.HtmlTextLiteral;[script];
+                    SyntaxKind.Text;[script];
                     SyntaxKind.CloseAngle;[>];
             Markup span - Gen<Markup> - [(function foo() { return 1; })();] - SpanEditHandler;Accepts:Any - (23:0,23) - Tokens:11
-                SyntaxKind.HtmlTextLiteral;[(function];
+                SyntaxKind.Text;[(function];
                 SyntaxKind.Whitespace;[ ];
-                SyntaxKind.HtmlTextLiteral;[foo()];
+                SyntaxKind.Text;[foo()];
                 SyntaxKind.Whitespace;[ ];
-                SyntaxKind.HtmlTextLiteral;[{];
+                SyntaxKind.Text;[{];
                 SyntaxKind.Whitespace;[ ];
-                SyntaxKind.HtmlTextLiteral;[return];
+                SyntaxKind.Text;[return];
                 SyntaxKind.Whitespace;[ ];
-                SyntaxKind.HtmlTextLiteral;[1;];
+                SyntaxKind.Text;[1;];
                 SyntaxKind.Whitespace;[ ];
-                SyntaxKind.HtmlTextLiteral;[})();];
+                SyntaxKind.Text;[})();];
             Tag block - Gen<None> - 9 - (56:0,56)
                 Markup span - Gen<Markup> - [</script>] - SpanEditHandler;Accepts:Any - (56:0,56) - Tokens:4
                     SyntaxKind.OpenAngle;[<];
                     SyntaxKind.ForwardSlash;[/];
-                    SyntaxKind.HtmlTextLiteral;[script];
+                    SyntaxKind.Text;[script];
                     SyntaxKind.CloseAngle;[>];
             Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:Any - (65:0,65) - Tokens:1
                 SyntaxKind.Whitespace;[ ];

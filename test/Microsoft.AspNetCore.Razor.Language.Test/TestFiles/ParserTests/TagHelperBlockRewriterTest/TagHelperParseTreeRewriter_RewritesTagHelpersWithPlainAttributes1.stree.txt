@@ -3,7 +3,7 @@ Markup block - Gen<None> - 38 - (0:0,0)
         StartTagAndEndTag - <p class="foo" style="color:red;"> ... </p>
         class - DoubleQuotes
             Markup span - Gen<Markup> - [foo] - SpanEditHandler;Accepts:Any - (10:0,10) - Tokens:1
-                SyntaxKind.HtmlTextLiteral;[foo];
+                SyntaxKind.Text;[foo];
         style - DoubleQuotes
             Markup span - Gen<Markup> - [color:red;] - SpanEditHandler;Accepts:Any - (22:0,22) - Tokens:1
-                SyntaxKind.HtmlTextLiteral;[color:red;];
+                SyntaxKind.Text;[color:red;];

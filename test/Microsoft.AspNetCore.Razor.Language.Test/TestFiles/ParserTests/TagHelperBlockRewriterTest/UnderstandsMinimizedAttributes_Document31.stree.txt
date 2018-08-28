@@ -13,8 +13,8 @@ Markup block - Gen<None> - 43 - (0:0,0)
                             SyntaxKind.Identifier;[Now];
                 Markup span - Gen<LitAttr: @(23:0,23)> - [ +] - SpanEditHandler;Accepts:Any - (23:0,23) - Tokens:2
                     SyntaxKind.Whitespace;[ ];
-                    SyntaxKind.HtmlTextLiteral;[+];
+                    SyntaxKind.Text;[+];
                 Markup span - Gen<LitAttr: @(25:0,25)> - [ 1] - SpanEditHandler;Accepts:Any - (25:0,25) - Tokens:2
                     SyntaxKind.Whitespace;[ ];
-                    SyntaxKind.HtmlTextLiteral;[1];
+                    SyntaxKind.Text;[1];
         bound-int - Minimized

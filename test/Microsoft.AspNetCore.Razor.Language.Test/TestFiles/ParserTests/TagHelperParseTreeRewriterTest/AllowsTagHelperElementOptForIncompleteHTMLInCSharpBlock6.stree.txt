@@ -13,19 +13,19 @@ Markup block - Gen<None> - 19 - (0:0,0)
                 MetaCode span - Gen<None> - [!] - SpanEditHandler;Accepts:None - (3:0,3) - Tokens:1
                     SyntaxKind.Bang;[!];
                 Markup span - Gen<Markup> - [p] - SpanEditHandler;Accepts:Any - (4:0,4) - Tokens:1
-                    SyntaxKind.HtmlTextLiteral;[p];
+                    SyntaxKind.Text;[p];
                 Markup block - Gen<Attr:class, class="@(5:0,5),@(19:0,19)> - 14 - (5:0,5)
                     Markup span - Gen<None> - [ class="] - SpanEditHandler;Accepts:Any - (5:0,5) - Tokens:4
                         SyntaxKind.Whitespace;[ ];
-                        SyntaxKind.HtmlTextLiteral;[class];
+                        SyntaxKind.Text;[class];
                         SyntaxKind.Equals;[=];
                         SyntaxKind.DoubleQuote;["];
                     Markup span - Gen<LitAttr:@(13:0,13)> - [btn] - SpanEditHandler;Accepts:Any - (13:0,13) - Tokens:1
-                        SyntaxKind.HtmlTextLiteral;[btn];
+                        SyntaxKind.Text;[btn];
                     Markup block - Gen<None> - 2 - (16:0,16)
                         Markup span - Gen<LitAttr:@(16:0,16)> - [@] - SpanEditHandler;Accepts:None - (16:0,16) - Tokens:1
                             SyntaxKind.Transition;[@];
                         Markup span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (17:0,17) - Tokens:1
                             SyntaxKind.Transition;[@];
                     Markup span - Gen<LitAttr:@(18:0,18)> - [}] - SpanEditHandler;Accepts:Any - (18:0,18) - Tokens:1
-                        SyntaxKind.HtmlTextLiteral;[}];
+                        SyntaxKind.Text;[}];

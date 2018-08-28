@@ -9,15 +9,15 @@ Statement block - Gen<None> - 58 - (0:0,0)
         Tag block - Gen<None> - 3 - (8:0,8)
             Markup span - Gen<Markup> - [<p>] - SpanEditHandler;Accepts:None - (8:0,8) - Tokens:3
                 SyntaxKind.OpenAngle;[<];
-                SyntaxKind.HtmlTextLiteral;[p];
+                SyntaxKind.Text;[p];
                 SyntaxKind.CloseAngle;[>];
         Markup span - Gen<Markup> - [Bar] - SpanEditHandler;Accepts:Any - (11:0,11) - Tokens:1
-            SyntaxKind.HtmlTextLiteral;[Bar];
+            SyntaxKind.Text;[Bar];
         Tag block - Gen<None> - 4 - (14:0,14)
             Markup span - Gen<Markup> - [</p>] - SpanEditHandler;Accepts:None - (14:0,14) - Tokens:4
                 SyntaxKind.OpenAngle;[<];
                 SyntaxKind.ForwardSlash;[/];
-                SyntaxKind.HtmlTextLiteral;[p];
+                SyntaxKind.Text;[p];
                 SyntaxKind.CloseAngle;[>];
         Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:None - (18:0,18) - Tokens:1
             SyntaxKind.Whitespace;[ ];
@@ -33,15 +33,15 @@ Statement block - Gen<None> - 58 - (0:0,0)
         Tag block - Gen<None> - 3 - (32:0,32)
             Markup span - Gen<Markup> - [<p>] - SpanEditHandler;Accepts:None - (32:0,32) - Tokens:3
                 SyntaxKind.OpenAngle;[<];
-                SyntaxKind.HtmlTextLiteral;[p];
+                SyntaxKind.Text;[p];
                 SyntaxKind.CloseAngle;[>];
         Markup span - Gen<Markup> - [Baz] - SpanEditHandler;Accepts:Any - (35:0,35) - Tokens:1
-            SyntaxKind.HtmlTextLiteral;[Baz];
+            SyntaxKind.Text;[Baz];
         Tag block - Gen<None> - 4 - (38:0,38)
             Markup span - Gen<Markup> - [</p>] - SpanEditHandler;Accepts:None - (38:0,38) - Tokens:4
                 SyntaxKind.OpenAngle;[<];
                 SyntaxKind.ForwardSlash;[/];
-                SyntaxKind.HtmlTextLiteral;[p];
+                SyntaxKind.Text;[p];
                 SyntaxKind.CloseAngle;[>];
         Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:None - (42:0,42) - Tokens:1
             SyntaxKind.Whitespace;[ ];
@@ -52,15 +52,15 @@ Statement block - Gen<None> - 58 - (0:0,0)
         Tag block - Gen<None> - 3 - (48:0,48)
             Markup span - Gen<Markup> - [<p>] - SpanEditHandler;Accepts:None - (48:0,48) - Tokens:3
                 SyntaxKind.OpenAngle;[<];
-                SyntaxKind.HtmlTextLiteral;[p];
+                SyntaxKind.Text;[p];
                 SyntaxKind.CloseAngle;[>];
         Markup span - Gen<Markup> - [Boz] - SpanEditHandler;Accepts:Any - (51:0,51) - Tokens:1
-            SyntaxKind.HtmlTextLiteral;[Boz];
+            SyntaxKind.Text;[Boz];
         Tag block - Gen<None> - 4 - (54:0,54)
             Markup span - Gen<Markup> - [</p>] - SpanEditHandler;Accepts:None - (54:0,54) - Tokens:4
                 SyntaxKind.OpenAngle;[<];
                 SyntaxKind.ForwardSlash;[/];
-                SyntaxKind.HtmlTextLiteral;[p];
+                SyntaxKind.Text;[p];
                 SyntaxKind.CloseAngle;[>];
     Code span - Gen<Stmt> - [] - SpanEditHandler;Accepts:Any - (58:0,58) - Tokens:1
         SyntaxKind.Unknown;[];

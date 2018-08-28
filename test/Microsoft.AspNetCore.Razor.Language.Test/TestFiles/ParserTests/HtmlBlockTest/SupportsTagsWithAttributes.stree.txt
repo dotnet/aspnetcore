@@ -2,15 +2,15 @@ Markup block - Gen<None> - 48 - (0:0,0)
     Tag block - Gen<None> - 15 - (0:0,0)
         Markup span - Gen<Markup> - [<foo] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:2
             SyntaxKind.OpenAngle;[<];
-            SyntaxKind.HtmlTextLiteral;[foo];
+            SyntaxKind.Text;[foo];
         Markup block - Gen<Attr:bar, bar="@(4:0,4),"@(13:0,13)> - 10 - (4:0,4)
             Markup span - Gen<None> - [ bar="] - SpanEditHandler;Accepts:Any - (4:0,4) - Tokens:4
                 SyntaxKind.Whitespace;[ ];
-                SyntaxKind.HtmlTextLiteral;[bar];
+                SyntaxKind.Text;[bar];
                 SyntaxKind.Equals;[=];
                 SyntaxKind.DoubleQuote;["];
             Markup span - Gen<LitAttr:@(10:0,10)> - [baz] - SpanEditHandler;Accepts:Any - (10:0,10) - Tokens:1
-                SyntaxKind.HtmlTextLiteral;[baz];
+                SyntaxKind.Text;[baz];
             Markup span - Gen<None> - ["] - SpanEditHandler;Accepts:Any - (13:0,13) - Tokens:1
                 SyntaxKind.DoubleQuote;["];
         Markup span - Gen<Markup> - [>] - SpanEditHandler;Accepts:None - (14:0,14) - Tokens:1
@@ -18,19 +18,19 @@ Markup block - Gen<None> - 48 - (0:0,0)
     Tag block - Gen<None> - 5 - (15:0,15)
         Markup span - Gen<Markup> - [<biz>] - SpanEditHandler;Accepts:None - (15:0,15) - Tokens:3
             SyntaxKind.OpenAngle;[<];
-            SyntaxKind.HtmlTextLiteral;[biz];
+            SyntaxKind.Text;[biz];
             SyntaxKind.CloseAngle;[>];
     Tag block - Gen<None> - 16 - (20:0,20)
         Markup span - Gen<Markup> - [<boz] - SpanEditHandler;Accepts:Any - (20:0,20) - Tokens:2
             SyntaxKind.OpenAngle;[<];
-            SyntaxKind.HtmlTextLiteral;[boz];
+            SyntaxKind.Text;[boz];
         Markup block - Gen<Attr:zoop, zoop=@(24:0,24),@(34:0,34)> - 10 - (24:0,24)
             Markup span - Gen<None> - [ zoop=] - SpanEditHandler;Accepts:Any - (24:0,24) - Tokens:3
                 SyntaxKind.Whitespace;[ ];
-                SyntaxKind.HtmlTextLiteral;[zoop];
+                SyntaxKind.Text;[zoop];
                 SyntaxKind.Equals;[=];
             Markup span - Gen<LitAttr:@(30:0,30)> - [zork] - SpanEditHandler;Accepts:Any - (30:0,30) - Tokens:1
-                SyntaxKind.HtmlTextLiteral;[zork];
+                SyntaxKind.Text;[zork];
         Markup span - Gen<Markup> - [/>] - SpanEditHandler;Accepts:None - (34:0,34) - Tokens:2
             SyntaxKind.ForwardSlash;[/];
             SyntaxKind.CloseAngle;[>];
@@ -38,11 +38,11 @@ Markup block - Gen<None> - 48 - (0:0,0)
         Markup span - Gen<Markup> - [</biz>] - SpanEditHandler;Accepts:None - (36:0,36) - Tokens:4
             SyntaxKind.OpenAngle;[<];
             SyntaxKind.ForwardSlash;[/];
-            SyntaxKind.HtmlTextLiteral;[biz];
+            SyntaxKind.Text;[biz];
             SyntaxKind.CloseAngle;[>];
     Tag block - Gen<None> - 6 - (42:0,42)
         Markup span - Gen<Markup> - [</foo>] - SpanEditHandler;Accepts:None - (42:0,42) - Tokens:4
             SyntaxKind.OpenAngle;[<];
             SyntaxKind.ForwardSlash;[/];
-            SyntaxKind.HtmlTextLiteral;[foo];
+            SyntaxKind.Text;[foo];
             SyntaxKind.CloseAngle;[>];

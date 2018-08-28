@@ -1,27 +1,27 @@
 Markup block - Gen<None> - 53 - (0:0,0)
     Tag block - Gen<TagHelper> - 53 - (0:0,0) - p - PTagHelper
         StartTagAndEndTag - <p> ... </p>
-        SyntaxKind.HtmlText - [LF    ] - [3..9) - FullWidth: 6 - Slots: 1
+        SyntaxKind.HtmlTextLiteral - [LF    ] - [3..9) - FullWidth: 6 - Slots: 1
             SyntaxKind.List - [LF    ] - [3..9) - FullWidth: 6 - Slots: 2
                 SyntaxKind.NewLine;[LF];
                 SyntaxKind.Whitespace;[    ];
         Tag block - Gen<None> - 8 - (9:1,4)
             Markup span - Gen<Markup> - [<strong>] - SpanEditHandler;Accepts:Any - (9:1,4) - Tokens:3
                 SyntaxKind.OpenAngle;[<];
-                SyntaxKind.HtmlTextLiteral;[strong];
+                SyntaxKind.Text;[strong];
                 SyntaxKind.CloseAngle;[>];
-        SyntaxKind.HtmlText - [LF        HelloLF    ] - [17..38) - FullWidth: 21 - Slots: 1
+        SyntaxKind.HtmlTextLiteral - [LF        HelloLF    ] - [17..38) - FullWidth: 21 - Slots: 1
             SyntaxKind.List - [LF        HelloLF    ] - [17..38) - FullWidth: 21 - Slots: 5
                 SyntaxKind.NewLine;[LF];
                 SyntaxKind.Whitespace;[        ];
-                SyntaxKind.HtmlTextLiteral;[Hello];
+                SyntaxKind.Text;[Hello];
                 SyntaxKind.NewLine;[LF];
                 SyntaxKind.Whitespace;[    ];
         Tag block - Gen<None> - 9 - (38:3,4)
             Markup span - Gen<Markup> - [</strong>] - SpanEditHandler;Accepts:Any - (38:3,4) - Tokens:4
                 SyntaxKind.OpenAngle;[<];
                 SyntaxKind.ForwardSlash;[/];
-                SyntaxKind.HtmlTextLiteral;[strong];
+                SyntaxKind.Text;[strong];
                 SyntaxKind.CloseAngle;[>];
-        SyntaxKind.HtmlText - [LF] - [47..49) - FullWidth: 2 - Slots: 1
+        SyntaxKind.HtmlTextLiteral - [LF] - [47..49) - FullWidth: 2 - Slots: 1
             SyntaxKind.NewLine;[LF];

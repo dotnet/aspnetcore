@@ -2,19 +2,19 @@ Markup block - Gen<None> - 37 - (0:0,0)
     Tag block - Gen<None> - 37 - (0:0,0)
         Markup span - Gen<Markup> - [<a] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:2
             SyntaxKind.OpenAngle;[<];
-            SyntaxKind.HtmlTextLiteral;[a];
+            SyntaxKind.Text;[a];
         Markup block - Gen<Attr:[item], LF  [item]='@(2:0,2),'@(18:1,13)> - 17 - (2:0,2)
             Markup span - Gen<None> - [ LF  [item]='] - SpanEditHandler;Accepts:Any - (2:0,2) - Tokens:8
                 SyntaxKind.Whitespace;[ ];
                 SyntaxKind.NewLine;[LF];
                 SyntaxKind.Whitespace;[  ];
                 SyntaxKind.LeftBracket;[[];
-                SyntaxKind.HtmlTextLiteral;[item];
+                SyntaxKind.Text;[item];
                 SyntaxKind.RightBracket;[]];
                 SyntaxKind.Equals;[=];
                 SyntaxKind.SingleQuote;['];
             Markup span - Gen<LitAttr:@(15:1,10)> - [Foo] - SpanEditHandler;Accepts:Any - (15:1,10) - Tokens:1
-                SyntaxKind.HtmlTextLiteral;[Foo];
+                SyntaxKind.Text;[Foo];
             Markup span - Gen<None> - ['] - SpanEditHandler;Accepts:Any - (18:1,13) - Tokens:1
                 SyntaxKind.SingleQuote;['];
         Markup block - Gen<Attr:[item],	LF[item]='@(19:1,14),'@(33:2,11)> - 15 - (19:1,14)
@@ -22,12 +22,12 @@ Markup block - Gen<None> - 37 - (0:0,0)
                 SyntaxKind.Whitespace;[	];
                 SyntaxKind.NewLine;[LF];
                 SyntaxKind.LeftBracket;[[];
-                SyntaxKind.HtmlTextLiteral;[item];
+                SyntaxKind.Text;[item];
                 SyntaxKind.RightBracket;[]];
                 SyntaxKind.Equals;[=];
                 SyntaxKind.SingleQuote;['];
             Markup span - Gen<LitAttr:@(30:2,8)> - [Bar] - SpanEditHandler;Accepts:Any - (30:2,8) - Tokens:1
-                SyntaxKind.HtmlTextLiteral;[Bar];
+                SyntaxKind.Text;[Bar];
             Markup span - Gen<None> - ['] - SpanEditHandler;Accepts:Any - (33:2,11) - Tokens:1
                 SyntaxKind.SingleQuote;['];
         Markup span - Gen<Markup> - [ />] - SpanEditHandler;Accepts:None - (34:2,12) - Tokens:3

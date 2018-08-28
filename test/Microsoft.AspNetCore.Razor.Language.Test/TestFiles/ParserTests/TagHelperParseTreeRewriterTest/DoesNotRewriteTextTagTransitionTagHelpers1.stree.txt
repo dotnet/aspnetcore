@@ -1,8 +1,8 @@
 Markup block - Gen<None> - 24 - (0:0,0)
     Tag block - Gen<TagHelper> - 24 - (0:0,0) - text - texttaghelper
         StartTagAndEndTag - <text> ... </text>
-        SyntaxKind.HtmlText - [Hello World] - [6..17) - FullWidth: 11 - Slots: 1
+        SyntaxKind.HtmlTextLiteral - [Hello World] - [6..17) - FullWidth: 11 - Slots: 1
             SyntaxKind.List - [Hello World] - [6..17) - FullWidth: 11 - Slots: 3
-                SyntaxKind.HtmlTextLiteral;[Hello];
+                SyntaxKind.Text;[Hello];
                 SyntaxKind.Whitespace;[ ];
-                SyntaxKind.HtmlTextLiteral;[World];
+                SyntaxKind.Text;[World];

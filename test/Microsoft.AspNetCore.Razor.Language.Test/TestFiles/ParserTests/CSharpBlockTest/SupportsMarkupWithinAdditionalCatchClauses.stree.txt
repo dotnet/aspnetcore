@@ -84,15 +84,15 @@ Statement block - Gen<None> - 141 - (0:0,0)
         Tag block - Gen<None> - 3 - (129:0,129)
             Markup span - Gen<Markup> - [<p>] - SpanEditHandler;Accepts:None - (129:0,129) - Tokens:3
                 SyntaxKind.OpenAngle;[<];
-                SyntaxKind.HtmlTextLiteral;[p];
+                SyntaxKind.Text;[p];
                 SyntaxKind.CloseAngle;[>];
         Markup span - Gen<Markup> - [Foo] - SpanEditHandler;Accepts:Any - (132:0,132) - Tokens:1
-            SyntaxKind.HtmlTextLiteral;[Foo];
+            SyntaxKind.Text;[Foo];
         Tag block - Gen<None> - 4 - (135:0,135)
             Markup span - Gen<Markup> - [</p>] - SpanEditHandler;Accepts:None - (135:0,135) - Tokens:4
                 SyntaxKind.OpenAngle;[<];
                 SyntaxKind.ForwardSlash;[/];
-                SyntaxKind.HtmlTextLiteral;[p];
+                SyntaxKind.Text;[p];
                 SyntaxKind.CloseAngle;[>];
         Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:None - (139:0,139) - Tokens:1
             SyntaxKind.Whitespace;[ ];

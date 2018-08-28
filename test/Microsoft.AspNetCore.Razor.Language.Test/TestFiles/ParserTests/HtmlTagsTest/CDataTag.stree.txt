@@ -3,9 +3,9 @@ Markup block - Gen<None> - 16 - (0:0,0)
         SyntaxKind.OpenAngle;[<];
         SyntaxKind.Bang;[!];
         SyntaxKind.LeftBracket;[[];
-        SyntaxKind.HtmlTextLiteral;[CDATA];
+        SyntaxKind.Text;[CDATA];
         SyntaxKind.LeftBracket;[[];
-        SyntaxKind.HtmlTextLiteral;[Foo];
+        SyntaxKind.Text;[Foo];
         SyntaxKind.RightBracket;[]];
         SyntaxKind.RightBracket;[]];
         SyntaxKind.CloseAngle;[>];

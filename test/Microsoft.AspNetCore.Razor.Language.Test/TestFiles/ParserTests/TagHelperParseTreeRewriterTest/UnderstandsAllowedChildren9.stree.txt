@@ -1,17 +1,17 @@
 Markup block - Gen<None> - 51 - (0:0,0)
     Tag block - Gen<TagHelper> - 51 - (0:0,0) - p - PTagHelper
         StartTagAndEndTag - <p> ... </p>
-        SyntaxKind.HtmlText - [  ] - [3..5) - FullWidth: 2 - Slots: 1
+        SyntaxKind.HtmlTextLiteral - [  ] - [3..5) - FullWidth: 2 - Slots: 1
             SyntaxKind.Whitespace;[  ];
         Tag block - Gen<TagHelper> - 23 - (5:0,5) - strong - StrongTagHelper
             StartTagAndEndTag - <strong> ... </strong>
-            SyntaxKind.HtmlText - [Title:] - [13..19) - FullWidth: 6 - Slots: 1
-                SyntaxKind.HtmlTextLiteral;[Title:];
-        SyntaxKind.HtmlText - [  ] - [28..30) - FullWidth: 2 - Slots: 1
+            SyntaxKind.HtmlTextLiteral - [Title:] - [13..19) - FullWidth: 6 - Slots: 1
+                SyntaxKind.Text;[Title:];
+        SyntaxKind.HtmlTextLiteral - [  ] - [28..30) - FullWidth: 2 - Slots: 1
             SyntaxKind.Whitespace;[  ];
         Tag block - Gen<TagHelper> - 6 - (30:0,30) - br - BRTagHelper
             SelfClosing - <br />
-        SyntaxKind.HtmlText - [  Something] - [36..47) - FullWidth: 11 - Slots: 1
+        SyntaxKind.HtmlTextLiteral - [  Something] - [36..47) - FullWidth: 11 - Slots: 1
             SyntaxKind.List - [  Something] - [36..47) - FullWidth: 11 - Slots: 2
                 SyntaxKind.Whitespace;[  ];
-                SyntaxKind.HtmlTextLiteral;[Something];
+                SyntaxKind.Text;[Something];

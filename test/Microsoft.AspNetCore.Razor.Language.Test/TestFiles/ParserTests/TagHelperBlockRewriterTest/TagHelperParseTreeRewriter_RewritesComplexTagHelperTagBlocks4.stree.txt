@@ -2,9 +2,9 @@ Markup block - Gen<None> - 77 - (0:0,0)
     Tag block - Gen<TagHelper> - 77 - (0:0,0) - p - ptaghelper
         StartTagAndEndTag - <p> ... </p>
         Markup span - Gen<Markup> - [Hello World ] - SpanEditHandler;Accepts:Any - (3:0,3) - Tokens:4
-            SyntaxKind.HtmlTextLiteral;[Hello];
+            SyntaxKind.Text;[Hello];
             SyntaxKind.Whitespace;[ ];
-            SyntaxKind.HtmlTextLiteral;[World];
+            SyntaxKind.Text;[World];
             SyntaxKind.Whitespace;[ ];
         Statement block - Gen<None> - 58 - (15:0,15)
             Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (15:0,15) - Tokens:1
@@ -28,7 +28,7 @@ Markup block - Gen<None> - 77 - (0:0,0)
                 Tag block - Gen<TagHelper> - 10 - (36:0,36) - p - ptaghelper
                     StartTagAndEndTag - <p> ... </p>
                     Markup span - Gen<Markup> - [Foo] - SpanEditHandler;Accepts:Any - (39:0,39) - Tokens:1
-                        SyntaxKind.HtmlTextLiteral;[Foo];
+                        SyntaxKind.Text;[Foo];
                 Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:None - (46:0,46) - Tokens:1
                     SyntaxKind.Whitespace;[ ];
             Code span - Gen<Stmt> - [foo++; } while (foo<bar>);] - SpanEditHandler;Accepts:None - (47:0,47) - Tokens:15

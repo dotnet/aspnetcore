@@ -24,12 +24,12 @@ Statement block - Gen<None> - 161 - (0:0,0)
         Tag block - Gen<None> - 3 - (84:2,4)
             Markup span - Gen<Markup> - [<p>] - SpanEditHandler;Accepts:None - (84:2,4) - Tokens:3
                 SyntaxKind.OpenAngle;[<];
-                SyntaxKind.HtmlTextLiteral;[p];
+                SyntaxKind.Text;[p];
                 SyntaxKind.CloseAngle;[>];
         Markup span - Gen<Markup> - [LF        FooLF] - SpanEditHandler;Accepts:Any - (87:2,7) - Tokens:4
             SyntaxKind.NewLine;[LF];
             SyntaxKind.Whitespace;[        ];
-            SyntaxKind.HtmlTextLiteral;[Foo];
+            SyntaxKind.Text;[Foo];
             SyntaxKind.NewLine;[LF];
         Expression block - Gen<Expr> - 12 - (102:4,0)
             Code span - Gen<Stmt> - [        ] - SpanEditHandler;Accepts:Any - (102:4,0) - Tokens:1
@@ -45,7 +45,7 @@ Statement block - Gen<None> - 161 - (0:0,0)
             Markup span - Gen<Markup> - [</p>] - SpanEditHandler;Accepts:None - (120:5,4) - Tokens:4
                 SyntaxKind.OpenAngle;[<];
                 SyntaxKind.ForwardSlash;[/];
-                SyntaxKind.HtmlTextLiteral;[p];
+                SyntaxKind.Text;[p];
                 SyntaxKind.CloseAngle;[>];
         Markup span - Gen<Markup> - [LF] - SpanEditHandler;Accepts:None - (124:5,8) - Tokens:1
             SyntaxKind.NewLine;[LF];
@@ -57,7 +57,7 @@ Statement block - Gen<None> - 161 - (0:0,0)
         MetaCode span - Gen<None> - [:] - SpanEditHandler;Accepts:Any - (131:6,5) - Tokens:1
             SyntaxKind.Colon;[:];
         Markup span - Gen<Markup> - [Hello!LF] - SpanEditHandler;Accepts:None - (132:6,6) - Tokens:3
-            SyntaxKind.HtmlTextLiteral;[Hello];
+            SyntaxKind.Text;[Hello];
             SyntaxKind.Bang;[!];
             SyntaxKind.NewLine;[LF];
     Code span - Gen<Stmt> - [    var biz = boz;LF}] - SpanEditHandler;Accepts:Any - (140:7,0) - Tokens:11

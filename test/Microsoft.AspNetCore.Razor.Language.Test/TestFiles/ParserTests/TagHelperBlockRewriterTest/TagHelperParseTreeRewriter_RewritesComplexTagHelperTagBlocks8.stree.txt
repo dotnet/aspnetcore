@@ -2,7 +2,7 @@ Markup block - Gen<None> - 167 - (0:0,0)
     Tag block - Gen<TagHelper> - 167 - (0:0,0) - p - ptaghelper
         StartTagAndEndTag - <p> ... </p>
         Markup span - Gen<Markup> - [Hello ] - SpanEditHandler;Accepts:Any - (3:0,3) - Tokens:2
-            SyntaxKind.HtmlTextLiteral;[Hello];
+            SyntaxKind.Text;[Hello];
             SyntaxKind.Whitespace;[ ];
         Statement block - Gen<None> - 58 - (9:0,9)
             Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (9:0,9) - Tokens:1
@@ -26,7 +26,7 @@ Markup block - Gen<None> - 167 - (0:0,0)
                 Tag block - Gen<TagHelper> - 10 - (30:0,30) - p - ptaghelper
                     StartTagAndEndTag - <p> ... </p>
                     Markup span - Gen<Markup> - [Foo] - SpanEditHandler;Accepts:Any - (33:0,33) - Tokens:1
-                        SyntaxKind.HtmlTextLiteral;[Foo];
+                        SyntaxKind.Text;[Foo];
                 Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:None - (40:0,40) - Tokens:1
                     SyntaxKind.Whitespace;[ ];
             Code span - Gen<Stmt> - [foo++; } while (foo<bar>);] - SpanEditHandler;Accepts:None - (41:0,41) - Tokens:15
@@ -48,12 +48,12 @@ Markup block - Gen<None> - 167 - (0:0,0)
         Tag block - Gen<None> - 8 - (67:0,67)
             Markup span - Gen<Markup> - [<strong>] - SpanEditHandler;Accepts:Any - (67:0,67) - Tokens:3
                 SyntaxKind.OpenAngle;[<];
-                SyntaxKind.HtmlTextLiteral;[strong];
+                SyntaxKind.Text;[strong];
                 SyntaxKind.CloseAngle;[>];
         Markup span - Gen<Markup> - [inside of ] - SpanEditHandler;Accepts:Any - (75:0,75) - Tokens:4
-            SyntaxKind.HtmlTextLiteral;[inside];
+            SyntaxKind.Text;[inside];
             SyntaxKind.Whitespace;[ ];
-            SyntaxKind.HtmlTextLiteral;[of];
+            SyntaxKind.Text;[of];
             SyntaxKind.Whitespace;[ ];
         Statement block - Gen<None> - 58 - (85:0,85)
             Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (85:0,85) - Tokens:1
@@ -77,7 +77,7 @@ Markup block - Gen<None> - 167 - (0:0,0)
                 Tag block - Gen<TagHelper> - 10 - (106:0,106) - p - ptaghelper
                     StartTagAndEndTag - <p> ... </p>
                     Markup span - Gen<Markup> - [Foo] - SpanEditHandler;Accepts:Any - (109:0,109) - Tokens:1
-                        SyntaxKind.HtmlTextLiteral;[Foo];
+                        SyntaxKind.Text;[Foo];
                 Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:None - (116:0,116) - Tokens:1
                     SyntaxKind.Whitespace;[ ];
             Code span - Gen<Stmt> - [foo++; } while (foo<bar>);] - SpanEditHandler;Accepts:None - (117:0,117) - Tokens:15
@@ -96,15 +96,15 @@ Markup block - Gen<None> - 167 - (0:0,0)
                 SyntaxKind.GreaterThan;[>];
                 SyntaxKind.RightParenthesis;[)];
                 SyntaxKind.Semicolon;[;];
-        SyntaxKind.HtmlText - [ strong tag] - [143..154) - FullWidth: 11 - Slots: 1
+        SyntaxKind.HtmlTextLiteral - [ strong tag] - [143..154) - FullWidth: 11 - Slots: 1
             SyntaxKind.List - [ strong tag] - [143..154) - FullWidth: 11 - Slots: 4
                 SyntaxKind.Whitespace;[ ];
-                SyntaxKind.HtmlTextLiteral;[strong];
+                SyntaxKind.Text;[strong];
                 SyntaxKind.Whitespace;[ ];
-                SyntaxKind.HtmlTextLiteral;[tag];
+                SyntaxKind.Text;[tag];
         Tag block - Gen<None> - 9 - (154:0,154)
             Markup span - Gen<Markup> - [</strong>] - SpanEditHandler;Accepts:Any - (154:0,154) - Tokens:4
                 SyntaxKind.OpenAngle;[<];
                 SyntaxKind.ForwardSlash;[/];
-                SyntaxKind.HtmlTextLiteral;[strong];
+                SyntaxKind.Text;[strong];
                 SyntaxKind.CloseAngle;[>];

@@ -17,29 +17,29 @@ Markup block - Gen<None> - 76 - (0:0,0)
         Markup block - Gen<None> - 61 - (14:0,14)
             Markup span - Gen<Markup> - [ I really want to render a close brace, so here I go: ] - SpanEditHandler;Accepts:Any - (14:0,14) - Tokens:25
                 SyntaxKind.Whitespace;[ ];
-                SyntaxKind.HtmlTextLiteral;[I];
+                SyntaxKind.Text;[I];
                 SyntaxKind.Whitespace;[ ];
-                SyntaxKind.HtmlTextLiteral;[really];
+                SyntaxKind.Text;[really];
                 SyntaxKind.Whitespace;[ ];
-                SyntaxKind.HtmlTextLiteral;[want];
+                SyntaxKind.Text;[want];
                 SyntaxKind.Whitespace;[ ];
-                SyntaxKind.HtmlTextLiteral;[to];
+                SyntaxKind.Text;[to];
                 SyntaxKind.Whitespace;[ ];
-                SyntaxKind.HtmlTextLiteral;[render];
+                SyntaxKind.Text;[render];
                 SyntaxKind.Whitespace;[ ];
-                SyntaxKind.HtmlTextLiteral;[a];
+                SyntaxKind.Text;[a];
                 SyntaxKind.Whitespace;[ ];
-                SyntaxKind.HtmlTextLiteral;[close];
+                SyntaxKind.Text;[close];
                 SyntaxKind.Whitespace;[ ];
-                SyntaxKind.HtmlTextLiteral;[brace,];
+                SyntaxKind.Text;[brace,];
                 SyntaxKind.Whitespace;[ ];
-                SyntaxKind.HtmlTextLiteral;[so];
+                SyntaxKind.Text;[so];
                 SyntaxKind.Whitespace;[ ];
-                SyntaxKind.HtmlTextLiteral;[here];
+                SyntaxKind.Text;[here];
                 SyntaxKind.Whitespace;[ ];
-                SyntaxKind.HtmlTextLiteral;[I];
+                SyntaxKind.Text;[I];
                 SyntaxKind.Whitespace;[ ];
-                SyntaxKind.HtmlTextLiteral;[go:];
+                SyntaxKind.Text;[go:];
                 SyntaxKind.Whitespace;[ ];
             Expression block - Gen<Expr> - 6 - (68:0,68)
                 Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (68:0,68) - Tokens:1

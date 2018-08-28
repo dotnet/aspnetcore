@@ -2,27 +2,27 @@ Markup block - Gen<None> - 43 - (0:0,0)
     Tag block - Gen<None> - 43 - (0:0,0)
         Markup span - Gen<Markup> - [<a] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:2
             SyntaxKind.OpenAngle;[<];
-            SyntaxKind.HtmlTextLiteral;[a];
+            SyntaxKind.Text;[a];
         Markup block - Gen<Attr:*something, *somethingLF='@(2:0,2),'@(20:1,5)> - 19 - (2:0,2)
             Markup span - Gen<None> - [ *somethingLF='] - SpanEditHandler;Accepts:Any - (2:0,2) - Tokens:5
                 SyntaxKind.Whitespace;[ ];
-                SyntaxKind.HtmlTextLiteral;[*something];
+                SyntaxKind.Text;[*something];
                 SyntaxKind.NewLine;[LF];
                 SyntaxKind.Equals;[=];
                 SyntaxKind.SingleQuote;['];
             Markup span - Gen<LitAttr:@(17:1,2)> - [Foo] - SpanEditHandler;Accepts:Any - (17:1,2) - Tokens:1
-                SyntaxKind.HtmlTextLiteral;[Foo];
+                SyntaxKind.Text;[Foo];
             Markup span - Gen<None> - ['] - SpanEditHandler;Accepts:Any - (20:1,5) - Tokens:1
                 SyntaxKind.SingleQuote;['];
         Markup block - Gen<Attr:*something,	*something=LF'@(21:1,6),'@(39:2,4)> - 19 - (21:1,6)
             Markup span - Gen<None> - [	*something=LF'] - SpanEditHandler;Accepts:Any - (21:1,6) - Tokens:5
                 SyntaxKind.Whitespace;[	];
-                SyntaxKind.HtmlTextLiteral;[*something];
+                SyntaxKind.Text;[*something];
                 SyntaxKind.Equals;[=];
                 SyntaxKind.NewLine;[LF];
                 SyntaxKind.SingleQuote;['];
             Markup span - Gen<LitAttr:@(36:2,1)> - [Bar] - SpanEditHandler;Accepts:Any - (36:2,1) - Tokens:1
-                SyntaxKind.HtmlTextLiteral;[Bar];
+                SyntaxKind.Text;[Bar];
             Markup span - Gen<None> - ['] - SpanEditHandler;Accepts:Any - (39:2,4) - Tokens:1
                 SyntaxKind.SingleQuote;['];
         Markup span - Gen<Markup> - [ />] - SpanEditHandler;Accepts:None - (40:2,5) - Tokens:3

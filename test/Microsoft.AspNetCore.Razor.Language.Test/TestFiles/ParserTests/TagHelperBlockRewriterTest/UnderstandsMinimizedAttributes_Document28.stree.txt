@@ -3,5 +3,5 @@ Markup block - Gen<None> - 40 - (0:0,0)
         SelfClosing - <input class='btn' bound-required-int />
         class - SingleQuotes
             Markup span - Gen<Markup> - [btn] - SpanEditHandler;Accepts:Any - (14:0,14) - Tokens:1
-                SyntaxKind.HtmlTextLiteral;[btn];
+                SyntaxKind.Text;[btn];
         bound-required-int - Minimized

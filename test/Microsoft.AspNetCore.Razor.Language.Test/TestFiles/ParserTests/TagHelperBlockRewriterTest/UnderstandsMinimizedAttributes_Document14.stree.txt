@@ -3,4 +3,4 @@ Markup block - Gen<None> - 29 - (0:0,0)
         SelfClosing - <input int-prefix-value='3'/>
         int-prefix-value - SingleQuotes
             Code span - Gen<Expr> - [3] - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14 - (25:0,25) - Tokens:1
-                SyntaxKind.HtmlTextLiteral;[3];
+                SyntaxKind.Text;[3];

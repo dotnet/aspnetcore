@@ -2,11 +2,11 @@ Markup block - Gen<None> - 26 - (0:0,0)
     Tag block - Gen<None> - 26 - (0:0,0)
         Markup span - Gen<Markup> - [<a] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:2
             SyntaxKind.OpenAngle;[<];
-            SyntaxKind.HtmlTextLiteral;[a];
+            SyntaxKind.Text;[a];
         Markup block - Gen<Attr:href, href='@(2:0,2),'@(22:0,22)> - 21 - (2:0,2)
             Markup span - Gen<None> - [ href='] - SpanEditHandler;Accepts:Any - (2:0,2) - Tokens:4
                 SyntaxKind.Whitespace;[ ];
-                SyntaxKind.HtmlTextLiteral;[href];
+                SyntaxKind.Text;[href];
                 SyntaxKind.Equals;[=];
                 SyntaxKind.SingleQuote;['];
             Markup block - Gen<DynAttr:@(9:0,9)> - 4 - (9:0,9)
@@ -17,7 +17,7 @@ Markup block - Gen<None> - 26 - (0:0,0)
                         SyntaxKind.Identifier;[foo];
             Markup span - Gen<LitAttr: @(13:0,13)> - [ bar] - SpanEditHandler;Accepts:Any - (13:0,13) - Tokens:2
                 SyntaxKind.Whitespace;[ ];
-                SyntaxKind.HtmlTextLiteral;[bar];
+                SyntaxKind.Text;[bar];
             Markup block - Gen<DynAttr: @(17:0,17)> - 5 - (17:0,17)
                 Markup span - Gen<None> - [ ] - SpanEditHandler;Accepts:Any - (17:0,17) - Tokens:1
                     SyntaxKind.Whitespace;[ ];

@@ -4,7 +4,7 @@ Markup block - Gen<None> - 37 - (0:0,0)
         name - DoubleQuotes
             Markup block - Gen<None> - 19 - (14:0,14)
                 Markup span - Gen<Markup> - [Time:] - SpanEditHandler;Accepts:Any - (14:0,14) - Tokens:1
-                    SyntaxKind.HtmlTextLiteral;[Time:];
+                    SyntaxKind.Text;[Time:];
                 Markup block - Gen<None> - 14 - (19:0,19)
                     Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:Any - (19:0,19) - Tokens:1
                         SyntaxKind.Whitespace;[ ];

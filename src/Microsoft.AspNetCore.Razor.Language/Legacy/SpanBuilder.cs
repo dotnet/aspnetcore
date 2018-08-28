@@ -112,7 +112,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         private Syntax.GreenNode GetSyntaxNode(SyntaxKind syntaxKind)
         {
-            if (syntaxKind == SyntaxKind.HtmlText)
+            if (syntaxKind == SyntaxKind.HtmlTextLiteral)
             {
                 var textTokens = new SyntaxListBuilder<SyntaxToken>(SyntaxListBuilder.Create());
                 foreach (var token in Tokens)
@@ -126,7 +126,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     textTokens.Add(token);
                 }
                 var textResult = textTokens.ToList();
-                return SyntaxFactory.HtmlText(new SyntaxList<SyntaxToken>(textResult.Node));
+                return SyntaxFactory.HtmlTextLiteral(new SyntaxList<SyntaxToken>(textResult.Node));
             }
 
             return null;

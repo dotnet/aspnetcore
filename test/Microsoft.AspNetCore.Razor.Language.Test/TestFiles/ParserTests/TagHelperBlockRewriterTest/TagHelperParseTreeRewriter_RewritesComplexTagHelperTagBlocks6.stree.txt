@@ -23,7 +23,7 @@ Markup block - Gen<None> - 131 - (0:0,0)
                 Tag block - Gen<TagHelper> - 10 - (24:0,24) - p - ptaghelper
                     StartTagAndEndTag - <p> ... </p>
                     Markup span - Gen<Markup> - [Foo] - SpanEditHandler;Accepts:Any - (27:0,27) - Tokens:1
-                        SyntaxKind.HtmlTextLiteral;[Foo];
+                        SyntaxKind.Text;[Foo];
                 Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:None - (34:0,34) - Tokens:1
                     SyntaxKind.Whitespace;[ ];
             Code span - Gen<Stmt> - [foo++; } while (foo<bar>);] - SpanEditHandler;Accepts:None - (35:0,35) - Tokens:15
@@ -42,7 +42,7 @@ Markup block - Gen<None> - 131 - (0:0,0)
                 SyntaxKind.GreaterThan;[>];
                 SyntaxKind.RightParenthesis;[)];
                 SyntaxKind.Semicolon;[;];
-    SyntaxKind.HtmlText - [ ] - [65..66) - FullWidth: 1 - Slots: 1
+    SyntaxKind.HtmlTextLiteral - [ ] - [65..66) - FullWidth: 1 - Slots: 1
         SyntaxKind.Whitespace;[ ];
     Tag block - Gen<TagHelper> - 65 - (66:0,66) - p - ptaghelper
         StartTagAndEndTag - <p> ... </p>
@@ -68,7 +68,7 @@ Markup block - Gen<None> - 131 - (0:0,0)
                 Tag block - Gen<TagHelper> - 10 - (90:0,90) - p - ptaghelper
                     StartTagAndEndTag - <p> ... </p>
                     Markup span - Gen<Markup> - [Foo] - SpanEditHandler;Accepts:Any - (93:0,93) - Tokens:1
-                        SyntaxKind.HtmlTextLiteral;[Foo];
+                        SyntaxKind.Text;[Foo];
                 Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:None - (100:0,100) - Tokens:1
                     SyntaxKind.Whitespace;[ ];
             Code span - Gen<Stmt> - [foo++; } while (foo<bar>);] - SpanEditHandler;Accepts:None - (101:0,101) - Tokens:15

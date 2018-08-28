@@ -15,14 +15,14 @@ Markup block - Gen<None> - 34 - (0:0,0)
                 SyntaxKind.Identifier;[DateTime];
                 SyntaxKind.Dot;[.];
                 SyntaxKind.Identifier;[Now];
-        SyntaxKind.HtmlText - [/>] - [19..21) - FullWidth: 2 - Slots: 1
+        SyntaxKind.HtmlTextLiteral - [/>] - [19..21) - FullWidth: 2 - Slots: 1
             SyntaxKind.List - [/>] - [19..21) - FullWidth: 2 - Slots: 2
                 SyntaxKind.ForwardSlash;[/];
                 SyntaxKind.CloseAngle;[>];
         Tag block - Gen<None> - 8 - (21:0,21)
             Markup span - Gen<Markup> - [<strong>] - SpanEditHandler;Accepts:Any - (21:0,21) - Tokens:3
                 SyntaxKind.OpenAngle;[<];
-                SyntaxKind.HtmlTextLiteral;[strong];
+                SyntaxKind.Text;[strong];
                 SyntaxKind.CloseAngle;[>];
     Markup span - Gen<Markup> - [>] - SpanEditHandler;Accepts:Any - (33:0,33) - Tokens:1
         SyntaxKind.CloseAngle;[>];

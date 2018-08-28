@@ -2,24 +2,24 @@ Markup block - Gen<None> - 19 - (0:0,0)
     Tag block - Gen<None> - 4 - (0:0,0)
         Markup span - Gen<Markup> - [<li>] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:3
             SyntaxKind.OpenAngle;[<];
-            SyntaxKind.HtmlTextLiteral;[li];
+            SyntaxKind.Text;[li];
             SyntaxKind.CloseAngle;[>];
     Tag block - Gen<None> - 3 - (4:0,4)
         Markup span - Gen<Markup> - [<p>] - SpanEditHandler;Accepts:None - (4:0,4) - Tokens:3
             SyntaxKind.OpenAngle;[<];
-            SyntaxKind.HtmlTextLiteral;[p];
+            SyntaxKind.Text;[p];
             SyntaxKind.CloseAngle;[>];
     Markup span - Gen<Markup> - [Foo] - SpanEditHandler;Accepts:Any - (7:0,7) - Tokens:1
-        SyntaxKind.HtmlTextLiteral;[Foo];
+        SyntaxKind.Text;[Foo];
     Tag block - Gen<None> - 4 - (10:0,10)
         Markup span - Gen<Markup> - [</P>] - SpanEditHandler;Accepts:None - (10:0,10) - Tokens:4
             SyntaxKind.OpenAngle;[<];
             SyntaxKind.ForwardSlash;[/];
-            SyntaxKind.HtmlTextLiteral;[P];
+            SyntaxKind.Text;[P];
             SyntaxKind.CloseAngle;[>];
     Tag block - Gen<None> - 5 - (14:0,14)
         Markup span - Gen<Markup> - [</lI>] - SpanEditHandler;Accepts:None - (14:0,14) - Tokens:4
             SyntaxKind.OpenAngle;[<];
             SyntaxKind.ForwardSlash;[/];
-            SyntaxKind.HtmlTextLiteral;[lI];
+            SyntaxKind.Text;[lI];
             SyntaxKind.CloseAngle;[>];

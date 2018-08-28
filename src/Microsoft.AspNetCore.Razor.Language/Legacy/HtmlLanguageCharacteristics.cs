@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             switch (type)
             {
-                case SyntaxKind.HtmlTextLiteral:
+                case SyntaxKind.Text:
                     return Resources.HtmlToken_Text;
                 case SyntaxKind.Whitespace:
                     return Resources.HtmlToken_WhiteSpace;
@@ -106,9 +106,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 case KnownTokenType.CommentBody:
                     return SyntaxKind.RazorCommentLiteral;
                 case KnownTokenType.Identifier:
-                    return SyntaxKind.HtmlTextLiteral;
+                    return SyntaxKind.Text;
                 case KnownTokenType.Keyword:
-                    return SyntaxKind.HtmlTextLiteral;
+                    return SyntaxKind.Text;
                 case KnownTokenType.NewLine:
                     return SyntaxKind.NewLine;
                 case KnownTokenType.Transition:

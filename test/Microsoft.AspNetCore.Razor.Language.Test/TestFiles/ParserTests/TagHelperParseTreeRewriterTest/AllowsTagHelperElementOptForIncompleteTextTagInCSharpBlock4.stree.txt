@@ -13,12 +13,12 @@ Markup block - Gen<None> - 20 - (0:0,0)
                 MetaCode span - Gen<None> - [!] - SpanEditHandler;Accepts:None - (3:0,3) - Tokens:1
                     SyntaxKind.Bang;[!];
                 Markup span - Gen<Markup> - [text] - SpanEditHandler;Accepts:Any - (4:0,4) - Tokens:1
-                    SyntaxKind.HtmlTextLiteral;[text];
+                    SyntaxKind.Text;[text];
                 Markup block - Gen<Attr:class, class="@(8:0,8),@(20:0,20)> - 12 - (8:0,8)
                     Markup span - Gen<None> - [ class="] - SpanEditHandler;Accepts:Any - (8:0,8) - Tokens:4
                         SyntaxKind.Whitespace;[ ];
-                        SyntaxKind.HtmlTextLiteral;[class];
+                        SyntaxKind.Text;[class];
                         SyntaxKind.Equals;[=];
                         SyntaxKind.DoubleQuote;["];
                     Markup span - Gen<LitAttr:@(16:0,16)> - [btn}] - SpanEditHandler;Accepts:Any - (16:0,16) - Tokens:1
-                        SyntaxKind.HtmlTextLiteral;[btn}];
+                        SyntaxKind.Text;[btn}];

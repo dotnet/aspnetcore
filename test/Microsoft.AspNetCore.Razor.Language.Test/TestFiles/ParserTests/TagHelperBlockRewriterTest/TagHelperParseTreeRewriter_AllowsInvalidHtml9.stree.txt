@@ -4,7 +4,7 @@ Markup block - Gen<None> - 52 - (0:0,0)
             SyntaxKind.OpenAngle;[<];
             SyntaxKind.ForwardSlash;[/];
             SyntaxKind.Whitespace;[  ];
-    SyntaxKind.HtmlText - [/] - [4..5) - FullWidth: 1 - Slots: 1
+    SyntaxKind.HtmlTextLiteral - [/] - [4..5) - FullWidth: 1 - Slots: 1
         SyntaxKind.ForwardSlash;[/];
     Tag block - Gen<None> - 4 - (5:0,5)
         Markup span - Gen<Markup> - [<  >] - SpanEditHandler;Accepts:Any - (5:0,5) - Tokens:3
@@ -20,7 +20,7 @@ Markup block - Gen<None> - 52 - (0:0,0)
                 SyntaxKind.Identifier;[DateTime];
                 SyntaxKind.Dot;[.];
                 SyntaxKind.Identifier;[Now];
-        SyntaxKind.HtmlText - [ / >] - [25..29) - FullWidth: 4 - Slots: 1
+        SyntaxKind.HtmlTextLiteral - [ / >] - [25..29) - FullWidth: 4 - Slots: 1
             SyntaxKind.List - [ / >] - [25..29) - FullWidth: 4 - Slots: 4
                 SyntaxKind.Whitespace;[ ];
                 SyntaxKind.ForwardSlash;[/];
@@ -29,7 +29,7 @@ Markup block - Gen<None> - 52 - (0:0,0)
         Tag block - Gen<None> - 8 - (29:0,29)
             Markup span - Gen<Markup> - [<strong>] - SpanEditHandler;Accepts:Any - (29:0,29) - Tokens:3
                 SyntaxKind.OpenAngle;[<];
-                SyntaxKind.HtmlTextLiteral;[strong];
+                SyntaxKind.Text;[strong];
                 SyntaxKind.CloseAngle;[>];
     Tag block - Gen<None> - 11 - (41:0,41)
         Markup span - Gen<Markup> - [</        >] - SpanEditHandler;Accepts:Any - (41:0,41) - Tokens:4

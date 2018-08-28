@@ -12,4 +12,4 @@ Markup block - Gen<None> - 46 - (0:0,0)
                         SyntaxKind.Identifier;[Now];
                 Markup span - Gen<Markup> - [ suffix] - SpanEditHandler;Accepts:Any - (35:0,35) - Tokens:2
                     SyntaxKind.Whitespace;[ ];
-                    SyntaxKind.HtmlTextLiteral;[suffix];
+                    SyntaxKind.Text;[suffix];

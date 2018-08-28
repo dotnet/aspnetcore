@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Razor.Language
     {
         #region Nodes
         // HTML
-        HtmlText,
+        HtmlTextLiteral,
         HtmlDocument,
         HtmlDeclaration,
 
@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         Transition,
 
         // HTML
-        HtmlTextLiteral,
+        Text,
         OpenAngle,
         Bang,
         ForwardSlash,

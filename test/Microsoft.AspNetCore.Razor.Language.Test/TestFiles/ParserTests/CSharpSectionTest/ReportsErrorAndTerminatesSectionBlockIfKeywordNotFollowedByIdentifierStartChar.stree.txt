@@ -9,23 +9,23 @@ Markup block - Gen<None> - 25 - (0:0,0)
         Code span - Gen<None> - [ ] - SpanEditHandler;Accepts:Whitespace - (8:0,8) - Tokens:1
             SyntaxKind.Whitespace;[ ];
     Markup span - Gen<Markup> - [9 { ] - SpanEditHandler;Accepts:Any - (9:0,9) - Tokens:4
-        SyntaxKind.HtmlTextLiteral;[9];
+        SyntaxKind.Text;[9];
         SyntaxKind.Whitespace;[ ];
-        SyntaxKind.HtmlTextLiteral;[{];
+        SyntaxKind.Text;[{];
         SyntaxKind.Whitespace;[ ];
     Tag block - Gen<None> - 3 - (13:0,13)
         Markup span - Gen<Markup> - [<p>] - SpanEditHandler;Accepts:Any - (13:0,13) - Tokens:3
             SyntaxKind.OpenAngle;[<];
-            SyntaxKind.HtmlTextLiteral;[p];
+            SyntaxKind.Text;[p];
             SyntaxKind.CloseAngle;[>];
-    SyntaxKind.HtmlText - [Foo] - [16..19) - FullWidth: 3 - Slots: 1
-        SyntaxKind.HtmlTextLiteral;[Foo];
+    SyntaxKind.HtmlTextLiteral - [Foo] - [16..19) - FullWidth: 3 - Slots: 1
+        SyntaxKind.Text;[Foo];
     Tag block - Gen<None> - 4 - (19:0,19)
         Markup span - Gen<Markup> - [</p>] - SpanEditHandler;Accepts:Any - (19:0,19) - Tokens:4
             SyntaxKind.OpenAngle;[<];
             SyntaxKind.ForwardSlash;[/];
-            SyntaxKind.HtmlTextLiteral;[p];
+            SyntaxKind.Text;[p];
             SyntaxKind.CloseAngle;[>];
     Markup span - Gen<Markup> - [ }] - SpanEditHandler;Accepts:Any - (23:0,23) - Tokens:2
         SyntaxKind.Whitespace;[ ];
-        SyntaxKind.HtmlTextLiteral;[}];
+        SyntaxKind.Text;[}];

@@ -3,6 +3,6 @@ Markup block - Gen<None> - 26 - (0:0,0)
         StartTagOnly - <input type='text'>
         type - SingleQuotes
             Markup span - Gen<Markup> - [text] - SpanEditHandler;Accepts:Any - (13:0,13) - Tokens:1
-                SyntaxKind.HtmlTextLiteral;[text];
+                SyntaxKind.Text;[text];
     Tag block - Gen<TagHelper> - 7 - (19:0,19) - input - InputTagHelper
         StartTagOnly - <input>

@@ -2,13 +2,13 @@ Markup block - Gen<None> - 33 - (0:0,0)
     Tag block - Gen<None> - 6 - (0:0,0)
         Markup span - Gen<Markup> - [<text>] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:3
             SyntaxKind.OpenAngle;[<];
-            SyntaxKind.HtmlTextLiteral;[text];
+            SyntaxKind.Text;[text];
             SyntaxKind.CloseAngle;[>];
     Tag block - Gen<None> - 7 - (6:0,6)
         Markup span - Gen<Markup> - [</text ] - SpanEditHandler;Accepts:Any - (6:0,6) - Tokens:4
             SyntaxKind.OpenAngle;[<];
             SyntaxKind.ForwardSlash;[/];
-            SyntaxKind.HtmlTextLiteral;[text];
+            SyntaxKind.Text;[text];
             SyntaxKind.Whitespace;[ ];
     Comment block - Gen<RazorComment> - 19 - (13:0,13)
         Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (13:0,13) - Tokens:1

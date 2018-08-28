@@ -4,8 +4,8 @@ Markup block - Gen<None> - 23 - (0:0,0)
         bar - SingleQuotes
             Markup block - Gen<None> - 14 - (8:0,8)
                 Markup span - Gen<Markup> - [false] - SpanEditHandler;Accepts:Any - (8:0,8) - Tokens:1
-                    SyntaxKind.HtmlTextLiteral;[false];
+                    SyntaxKind.Text;[false];
                 Markup span - Gen<Markup> - [  <strong] - SpanEditHandler;Accepts:Any - (13:0,13) - Tokens:3
                     SyntaxKind.Whitespace;[  ];
                     SyntaxKind.OpenAngle;[<];
-                    SyntaxKind.HtmlTextLiteral;[strong];
+                    SyntaxKind.Text;[strong];

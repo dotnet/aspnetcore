@@ -12,10 +12,10 @@ Markup block - Gen<None> - 46 - (0:0,0)
                 string-prefix-value - SingleQuotes
                     Markup block - Gen<None> - 11 - (30:0,30)
                         Markup span - Gen<Markup> - [some] - SpanEditHandler;Accepts:Any - (30:0,30) - Tokens:1
-                            SyntaxKind.HtmlTextLiteral;[some];
+                            SyntaxKind.Text;[some];
                         Markup span - Gen<Markup> - [ string] - SpanEditHandler;Accepts:Any - (34:0,34) - Tokens:2
                             SyntaxKind.Whitespace;[ ];
-                            SyntaxKind.HtmlTextLiteral;[string];
+                            SyntaxKind.Text;[string];
         Code span - Gen<Stmt> - [] - SpanEditHandler;Accepts:Any - (45:0,45) - Tokens:1
             SyntaxKind.Unknown;[];
         MetaCode span - Gen<None> - [}] - SpanEditHandler;Accepts:None - (45:0,45) - Tokens:1

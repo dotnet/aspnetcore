@@ -8,5 +8,5 @@ Markup block - Gen<None> - 22 - (0:0,0)
             MetaCode span - Gen<None> - [!] - SpanEditHandler;Accepts:None - (10:0,10) - Tokens:1
                 SyntaxKind.Bang;[!];
             Markup span - Gen<Markup> - [p>] - SpanEditHandler;Accepts:Any - (11:0,11) - Tokens:2
-                SyntaxKind.HtmlTextLiteral;[p];
+                SyntaxKind.Text;[p];
                 SyntaxKind.CloseAngle;[>];

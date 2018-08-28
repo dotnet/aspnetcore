@@ -36,15 +36,15 @@ Markup block - Gen<None> - 44 - (0:0,0)
                     Tag block - Gen<None> - 3 - (30:0,30)
                         Markup span - Gen<Markup> - [<p>] - SpanEditHandler;Accepts:Any - (30:0,30) - Tokens:3
                             SyntaxKind.OpenAngle;[<];
-                            SyntaxKind.HtmlTextLiteral;[p];
+                            SyntaxKind.Text;[p];
                             SyntaxKind.CloseAngle;[>];
-                    SyntaxKind.HtmlText - [Foo] - [33..36) - FullWidth: 3 - Slots: 1
-                        SyntaxKind.HtmlTextLiteral;[Foo];
+                    SyntaxKind.HtmlTextLiteral - [Foo] - [33..36) - FullWidth: 3 - Slots: 1
+                        SyntaxKind.Text;[Foo];
                     Tag block - Gen<None> - 4 - (36:0,36)
                         Markup span - Gen<Markup> - [</p>] - SpanEditHandler;Accepts:Any - (36:0,36) - Tokens:4
                             SyntaxKind.OpenAngle;[<];
                             SyntaxKind.ForwardSlash;[/];
-                            SyntaxKind.HtmlTextLiteral;[p];
+                            SyntaxKind.Text;[p];
                             SyntaxKind.CloseAngle;[>];
                     Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:Any - (40:0,40) - Tokens:1
                         SyntaxKind.Whitespace;[ ];

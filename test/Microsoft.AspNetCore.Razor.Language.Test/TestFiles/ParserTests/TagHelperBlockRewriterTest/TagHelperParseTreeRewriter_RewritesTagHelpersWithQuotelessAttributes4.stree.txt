@@ -3,7 +3,7 @@ Markup block - Gen<None> - 96 - (0:0,0)
         StartTagAndEndTag - <p class=foo dynamic=@DateTime.Now> ... </p>
         class - NoQuotes
             Markup span - Gen<Markup> - [foo] - SpanEditHandler;Accepts:Any - (9:0,9) - Tokens:1
-                SyntaxKind.HtmlTextLiteral;[foo];
+                SyntaxKind.Text;[foo];
         dynamic - DoubleQuotes
             Markup block - Gen<None> - 13 - (21:0,21)
                 Markup block - Gen<DynAttr:@(21:0,21)> - 13 - (21:0,21)
@@ -14,15 +14,15 @@ Markup block - Gen<None> - 96 - (0:0,0)
                             SyntaxKind.Identifier;[DateTime];
                             SyntaxKind.Dot;[.];
                             SyntaxKind.Identifier;[Now];
-        SyntaxKind.HtmlText - [Hello] - [35..40) - FullWidth: 5 - Slots: 1
-            SyntaxKind.HtmlTextLiteral;[Hello];
-    SyntaxKind.HtmlText - [ ] - [44..45) - FullWidth: 1 - Slots: 1
+        SyntaxKind.HtmlTextLiteral - [Hello] - [35..40) - FullWidth: 5 - Slots: 1
+            SyntaxKind.Text;[Hello];
+    SyntaxKind.HtmlTextLiteral - [ ] - [44..45) - FullWidth: 1 - Slots: 1
         SyntaxKind.Whitespace;[ ];
     Tag block - Gen<TagHelper> - 51 - (45:0,45) - p - ptaghelper
         StartTagAndEndTag - <p style=color:red; dynamic=@DateTime.Now> ... </p>
         style - NoQuotes
             Markup span - Gen<Markup> - [color:red;] - SpanEditHandler;Accepts:Any - (54:0,54) - Tokens:1
-                SyntaxKind.HtmlTextLiteral;[color:red;];
+                SyntaxKind.Text;[color:red;];
         dynamic - DoubleQuotes
             Markup block - Gen<None> - 13 - (73:0,73)
                 Markup block - Gen<DynAttr:@(73:0,73)> - 13 - (73:0,73)
@@ -33,5 +33,5 @@ Markup block - Gen<None> - 96 - (0:0,0)
                             SyntaxKind.Identifier;[DateTime];
                             SyntaxKind.Dot;[.];
                             SyntaxKind.Identifier;[Now];
-        SyntaxKind.HtmlText - [World] - [87..92) - FullWidth: 5 - Slots: 1
-            SyntaxKind.HtmlTextLiteral;[World];
+        SyntaxKind.HtmlTextLiteral - [World] - [87..92) - FullWidth: 5 - Slots: 1
+            SyntaxKind.Text;[World];

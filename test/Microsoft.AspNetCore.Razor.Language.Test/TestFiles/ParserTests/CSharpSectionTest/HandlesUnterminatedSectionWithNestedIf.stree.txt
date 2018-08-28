@@ -37,17 +37,17 @@ Markup block - Gen<None> - 73 - (0:0,0)
                     Tag block - Gen<None> - 3 - (48:4,8)
                         Markup span - Gen<Markup> - [<p>] - SpanEditHandler;Accepts:None - (48:4,8) - Tokens:3
                             SyntaxKind.OpenAngle;[<];
-                            SyntaxKind.HtmlTextLiteral;[p];
+                            SyntaxKind.Text;[p];
                             SyntaxKind.CloseAngle;[>];
                     Markup span - Gen<Markup> - [Hello World] - SpanEditHandler;Accepts:Any - (51:4,11) - Tokens:3
-                        SyntaxKind.HtmlTextLiteral;[Hello];
+                        SyntaxKind.Text;[Hello];
                         SyntaxKind.Whitespace;[ ];
-                        SyntaxKind.HtmlTextLiteral;[World];
+                        SyntaxKind.Text;[World];
                     Tag block - Gen<None> - 4 - (62:4,22)
                         Markup span - Gen<Markup> - [</p>] - SpanEditHandler;Accepts:None - (62:4,22) - Tokens:4
                             SyntaxKind.OpenAngle;[<];
                             SyntaxKind.ForwardSlash;[/];
-                            SyntaxKind.HtmlTextLiteral;[p];
+                            SyntaxKind.Text;[p];
                             SyntaxKind.CloseAngle;[>];
                     Markup span - Gen<Markup> - [LF] - SpanEditHandler;Accepts:None - (66:4,26) - Tokens:1
                         SyntaxKind.NewLine;[LF];

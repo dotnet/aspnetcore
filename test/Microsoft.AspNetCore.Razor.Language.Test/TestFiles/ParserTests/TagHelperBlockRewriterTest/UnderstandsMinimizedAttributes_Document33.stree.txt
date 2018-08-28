@@ -14,10 +14,10 @@ Markup block - Gen<None> - 101 - (0:0,0)
                             SyntaxKind.Identifier;[Now];
                 Markup span - Gen<LitAttr: @(36:0,36)> - [ +] - SpanEditHandler;Accepts:Any - (36:0,36) - Tokens:2
                     SyntaxKind.Whitespace;[ ];
-                    SyntaxKind.HtmlTextLiteral;[+];
+                    SyntaxKind.Text;[+];
                 Markup span - Gen<LitAttr: @(38:0,38)> - [ 1] - SpanEditHandler;Accepts:Any - (38:0,38) - Tokens:2
                     SyntaxKind.Whitespace;[ ];
-                    SyntaxKind.HtmlTextLiteral;[1];
+                    SyntaxKind.Text;[1];
         bound-string - Minimized
         class - SingleQuotes
             Markup block - Gen<None> - 17 - (64:0,64)
@@ -31,8 +31,8 @@ Markup block - Gen<None> - 101 - (0:0,0)
                             SyntaxKind.Identifier;[Now];
                 Markup span - Gen<LitAttr: @(77:0,77)> - [ +] - SpanEditHandler;Accepts:Any - (77:0,77) - Tokens:2
                     SyntaxKind.Whitespace;[ ];
-                    SyntaxKind.HtmlTextLiteral;[+];
+                    SyntaxKind.Text;[+];
                 Markup span - Gen<LitAttr: @(79:0,79)> - [ 1] - SpanEditHandler;Accepts:Any - (79:0,79) - Tokens:2
                     SyntaxKind.Whitespace;[ ];
-                    SyntaxKind.HtmlTextLiteral;[1];
+                    SyntaxKind.Text;[1];
         bound-string - Minimized

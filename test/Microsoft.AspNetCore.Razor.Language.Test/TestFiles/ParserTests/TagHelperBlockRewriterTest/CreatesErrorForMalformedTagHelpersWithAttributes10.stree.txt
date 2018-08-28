@@ -3,4 +3,4 @@ Markup block - Gen<None> - 31 - (0:0,0)
         StartTagAndEndTag - <p class=btn" bar="foo"<strong>
         class - NoQuotes
             Markup span - Gen<Markup> - [btn] - SpanEditHandler;Accepts:Any - (9:0,9) - Tokens:1
-                SyntaxKind.HtmlTextLiteral;[btn];
+                SyntaxKind.Text;[btn];

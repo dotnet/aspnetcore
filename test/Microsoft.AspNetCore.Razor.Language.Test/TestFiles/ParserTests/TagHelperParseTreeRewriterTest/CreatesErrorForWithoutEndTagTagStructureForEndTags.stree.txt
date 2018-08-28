@@ -3,5 +3,5 @@ Markup block - Gen<None> - 8 - (0:0,0)
         Markup span - Gen<Markup> - [</input>] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:4
             SyntaxKind.OpenAngle;[<];
             SyntaxKind.ForwardSlash;[/];
-            SyntaxKind.HtmlTextLiteral;[input];
+            SyntaxKind.Text;[input];
             SyntaxKind.CloseAngle;[>];

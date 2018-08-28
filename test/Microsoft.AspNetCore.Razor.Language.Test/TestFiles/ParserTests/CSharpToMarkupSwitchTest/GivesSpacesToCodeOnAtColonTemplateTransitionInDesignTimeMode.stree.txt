@@ -12,12 +12,12 @@ Expression block - Gen<Expr> - 29 - (0:0,0)
                 SyntaxKind.Colon;[:];
             Markup span - Gen<Markup> - [<p>Foo</p>    LF] - SpanEditHandler;Accepts:None - (12:1,2) - Tokens:10
                 SyntaxKind.OpenAngle;[<];
-                SyntaxKind.HtmlTextLiteral;[p];
+                SyntaxKind.Text;[p];
                 SyntaxKind.CloseAngle;[>];
-                SyntaxKind.HtmlTextLiteral;[Foo];
+                SyntaxKind.Text;[Foo];
                 SyntaxKind.OpenAngle;[<];
                 SyntaxKind.ForwardSlash;[/];
-                SyntaxKind.HtmlTextLiteral;[p];
+                SyntaxKind.Text;[p];
                 SyntaxKind.CloseAngle;[>];
                 SyntaxKind.Whitespace;[    ];
                 SyntaxKind.NewLine;[LF];

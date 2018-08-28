@@ -6,11 +6,11 @@ Markup block - Gen<None> - 18 - (0:0,0)
             SyntaxKind.DoubleHyphen;[--];
         Markup span - Gen<Markup> - [<foo></bar>] - SpanEditHandler;Accepts:Whitespace - (4:0,4) - Tokens:7
             SyntaxKind.OpenAngle;[<];
-            SyntaxKind.HtmlTextLiteral;[foo];
+            SyntaxKind.Text;[foo];
             SyntaxKind.CloseAngle;[>];
             SyntaxKind.OpenAngle;[<];
             SyntaxKind.ForwardSlash;[/];
-            SyntaxKind.HtmlTextLiteral;[bar];
+            SyntaxKind.Text;[bar];
             SyntaxKind.CloseAngle;[>];
         Markup span - Gen<Markup> - [-->] - SpanEditHandler;Accepts:None - (15:0,15) - Tokens:2
             SyntaxKind.DoubleHyphen;[--];

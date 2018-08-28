@@ -78,9 +78,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // For the very first element, there will be no previous items, so null is expected
             var orderIndex = 0;
             Assert.Null(previousTokens.ElementAt(orderIndex++));
-            AssertTokenEqual(SyntaxFactory.Token(SyntaxKind.HtmlTextLiteral, "asdf"), previousTokens.ElementAt(orderIndex++));
+            AssertTokenEqual(SyntaxFactory.Token(SyntaxKind.Text, "asdf"), previousTokens.ElementAt(orderIndex++));
             AssertTokenEqual(SyntaxFactory.Token(SyntaxKind.DoubleHyphen, "--"), previousTokens.ElementAt(orderIndex++));
-            AssertTokenEqual(SyntaxFactory.Token(SyntaxKind.HtmlTextLiteral, "fvd"), previousTokens.ElementAt(orderIndex++));
+            AssertTokenEqual(SyntaxFactory.Token(SyntaxKind.Text, "fvd"), previousTokens.ElementAt(orderIndex++));
         }
 
         [Fact]
@@ -100,9 +100,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Assert
             Assert.False(tokenFound);
             Assert.Equal(3, tokens.Count);
-            AssertTokenEqual(SyntaxFactory.Token(SyntaxKind.HtmlTextLiteral, "fvd"), tokens.Pop());
+            AssertTokenEqual(SyntaxFactory.Token(SyntaxKind.Text, "fvd"), tokens.Pop());
             AssertTokenEqual(SyntaxFactory.Token(SyntaxKind.DoubleHyphen, "--"), tokens.Pop());
-            AssertTokenEqual(SyntaxFactory.Token(SyntaxKind.HtmlTextLiteral, "asdf"), tokens.Pop());
+            AssertTokenEqual(SyntaxFactory.Token(SyntaxKind.Text, "asdf"), tokens.Pop());
         }
 
         [Fact]
@@ -123,7 +123,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             Assert.True(tokenFound);
             Assert.Equal(2, tokens.Count);
             AssertTokenEqual(SyntaxFactory.Token(SyntaxKind.DoubleHyphen, "--"), tokens.Pop());
-            AssertTokenEqual(SyntaxFactory.Token(SyntaxKind.HtmlTextLiteral, "asdf"), tokens.Pop());
+            AssertTokenEqual(SyntaxFactory.Token(SyntaxKind.Text, "asdf"), tokens.Pop());
         }
 
         private static TestTokenizerBackedParser CreateContentTokenizer(string content)

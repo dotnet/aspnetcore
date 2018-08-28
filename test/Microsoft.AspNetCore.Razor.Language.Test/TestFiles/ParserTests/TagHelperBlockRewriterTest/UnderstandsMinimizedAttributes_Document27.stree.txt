@@ -4,4 +4,4 @@ Markup block - Gen<None> - 29 - (0:0,0)
         bound-int - Minimized
         class - SingleQuotes
             Markup span - Gen<Markup> - [btn] - SpanEditHandler;Accepts:Any - (20:0,20) - Tokens:1
-                SyntaxKind.HtmlTextLiteral;[btn];
+                SyntaxKind.Text;[btn];

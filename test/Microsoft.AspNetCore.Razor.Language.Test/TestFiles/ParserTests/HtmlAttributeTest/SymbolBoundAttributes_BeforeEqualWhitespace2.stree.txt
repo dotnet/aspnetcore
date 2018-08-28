@@ -2,29 +2,29 @@ Markup block - Gen<None> - 37 - (0:0,0)
     Tag block - Gen<None> - 37 - (0:0,0)
         Markup span - Gen<Markup> - [<a] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:2
             SyntaxKind.OpenAngle;[<];
-            SyntaxKind.HtmlTextLiteral;[a];
+            SyntaxKind.Text;[a];
         Markup block - Gen<Attr:[(item,, [(item,LF='@(2:0,2),'@(17:1,5)> - 16 - (2:0,2)
             Markup span - Gen<None> - [ [(item,LF='] - SpanEditHandler;Accepts:Any - (2:0,2) - Tokens:6
                 SyntaxKind.Whitespace;[ ];
                 SyntaxKind.LeftBracket;[[];
-                SyntaxKind.HtmlTextLiteral;[(item,];
+                SyntaxKind.Text;[(item,];
                 SyntaxKind.NewLine;[LF];
                 SyntaxKind.Equals;[=];
                 SyntaxKind.SingleQuote;['];
             Markup span - Gen<LitAttr:@(14:1,2)> - [Foo] - SpanEditHandler;Accepts:Any - (14:1,2) - Tokens:1
-                SyntaxKind.HtmlTextLiteral;[Foo];
+                SyntaxKind.Text;[Foo];
             Markup span - Gen<None> - ['] - SpanEditHandler;Accepts:Any - (17:1,5) - Tokens:1
                 SyntaxKind.SingleQuote;['];
         Markup block - Gen<Attr:[(item,,	[(item,=LF'@(18:1,6),'@(33:2,4)> - 16 - (18:1,6)
             Markup span - Gen<None> - [	[(item,=LF'] - SpanEditHandler;Accepts:Any - (18:1,6) - Tokens:6
                 SyntaxKind.Whitespace;[	];
                 SyntaxKind.LeftBracket;[[];
-                SyntaxKind.HtmlTextLiteral;[(item,];
+                SyntaxKind.Text;[(item,];
                 SyntaxKind.Equals;[=];
                 SyntaxKind.NewLine;[LF];
                 SyntaxKind.SingleQuote;['];
             Markup span - Gen<LitAttr:@(30:2,1)> - [Bar] - SpanEditHandler;Accepts:Any - (30:2,1) - Tokens:1
-                SyntaxKind.HtmlTextLiteral;[Bar];
+                SyntaxKind.Text;[Bar];
             Markup span - Gen<None> - ['] - SpanEditHandler;Accepts:Any - (33:2,4) - Tokens:1
                 SyntaxKind.SingleQuote;['];
         Markup span - Gen<Markup> - [ />] - SpanEditHandler;Accepts:None - (34:2,5) - Tokens:3

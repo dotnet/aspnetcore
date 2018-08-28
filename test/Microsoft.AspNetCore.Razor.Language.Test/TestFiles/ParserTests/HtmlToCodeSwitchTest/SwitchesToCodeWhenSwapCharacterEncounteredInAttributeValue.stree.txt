@@ -2,11 +2,11 @@ Markup block - Gen<None> - 18 - (0:0,0)
     Tag block - Gen<None> - 18 - (0:0,0)
         Markup span - Gen<Markup> - [<foo] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:2
             SyntaxKind.OpenAngle;[<];
-            SyntaxKind.HtmlTextLiteral;[foo];
+            SyntaxKind.Text;[foo];
         Markup block - Gen<Attr:bar, bar="@(4:0,4),"@(14:0,14)> - 11 - (4:0,4)
             Markup span - Gen<None> - [ bar="] - SpanEditHandler;Accepts:Any - (4:0,4) - Tokens:4
                 SyntaxKind.Whitespace;[ ];
-                SyntaxKind.HtmlTextLiteral;[bar];
+                SyntaxKind.Text;[bar];
                 SyntaxKind.Equals;[=];
                 SyntaxKind.DoubleQuote;["];
             Markup block - Gen<DynAttr:@(10:0,10)> - 4 - (10:0,10)

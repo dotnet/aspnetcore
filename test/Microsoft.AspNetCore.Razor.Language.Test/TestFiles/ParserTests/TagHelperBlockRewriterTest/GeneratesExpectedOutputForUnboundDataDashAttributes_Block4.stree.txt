@@ -20,7 +20,7 @@ Markup block - Gen<None> - 49 - (0:0,0)
                                 SyntaxKind.Identifier;[Now];
                         Markup span - Gen<Markup> - [ suffix] - SpanEditHandler;Accepts:Any - (37:0,37) - Tokens:2
                             SyntaxKind.Whitespace;[ ];
-                            SyntaxKind.HtmlTextLiteral;[suffix];
+                            SyntaxKind.Text;[suffix];
         Code span - Gen<Stmt> - [] - SpanEditHandler;Accepts:Any - (48:0,48) - Tokens:1
             SyntaxKind.Unknown;[];
         MetaCode span - Gen<None> - [}] - SpanEditHandler;Accepts:None - (48:0,48) - Tokens:1

@@ -8,7 +8,7 @@ Markup block - Gen<None> - 13 - (0:0,0)
             SyntaxKind.OpenAngle;[<];
     Tag block - Gen<TagHelper> - 9 - (3:0,3) - p - ptaghelper
         StartTagAndEndTag - <p> ... </p>
-        SyntaxKind.HtmlText - [/>] - [6..8) - FullWidth: 2 - Slots: 1
+        SyntaxKind.HtmlTextLiteral - [/>] - [6..8) - FullWidth: 2 - Slots: 1
             SyntaxKind.List - [/>] - [6..8) - FullWidth: 2 - Slots: 2
                 SyntaxKind.ForwardSlash;[/];
                 SyntaxKind.CloseAngle;[>];

@@ -2,17 +2,17 @@ Markup block - Gen<None> - 31 - (0:0,0)
     Tag block - Gen<None> - 5 - (0:0,0)
         Markup span - Gen<Markup> - [<foo>] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:3
             SyntaxKind.OpenAngle;[<];
-            SyntaxKind.HtmlTextLiteral;[foo];
+            SyntaxKind.Text;[foo];
             SyntaxKind.CloseAngle;[>];
-    SyntaxKind.HtmlText - [<?xml Hello World ?>] - [5..25) - FullWidth: 20 - Slots: 1
+    SyntaxKind.HtmlTextLiteral - [<?xml Hello World ?>] - [5..25) - FullWidth: 20 - Slots: 1
         SyntaxKind.List - [<?xml Hello World ?>] - [5..25) - FullWidth: 20 - Slots: 10
             SyntaxKind.OpenAngle;[<];
             SyntaxKind.QuestionMark;[?];
-            SyntaxKind.HtmlTextLiteral;[xml];
+            SyntaxKind.Text;[xml];
             SyntaxKind.Whitespace;[ ];
-            SyntaxKind.HtmlTextLiteral;[Hello];
+            SyntaxKind.Text;[Hello];
             SyntaxKind.Whitespace;[ ];
-            SyntaxKind.HtmlTextLiteral;[World];
+            SyntaxKind.Text;[World];
             SyntaxKind.Whitespace;[ ];
             SyntaxKind.QuestionMark;[?];
             SyntaxKind.CloseAngle;[>];
@@ -20,5 +20,5 @@ Markup block - Gen<None> - 31 - (0:0,0)
         Markup span - Gen<Markup> - [</foo>] - SpanEditHandler;Accepts:Any - (25:0,25) - Tokens:4
             SyntaxKind.OpenAngle;[<];
             SyntaxKind.ForwardSlash;[/];
-            SyntaxKind.HtmlTextLiteral;[foo];
+            SyntaxKind.Text;[foo];
             SyntaxKind.CloseAngle;[>];

@@ -191,7 +191,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
 
             // Output the Text token and return to the Data state to tokenize the next character (if there is one)
-            return Transition(HtmlTokenizerState.Data, EndToken(SyntaxKind.HtmlTextLiteral));
+            return Transition(HtmlTokenizerState.Data, EndToken(SyntaxKind.Text));
         }
 
         private SyntaxToken Token()

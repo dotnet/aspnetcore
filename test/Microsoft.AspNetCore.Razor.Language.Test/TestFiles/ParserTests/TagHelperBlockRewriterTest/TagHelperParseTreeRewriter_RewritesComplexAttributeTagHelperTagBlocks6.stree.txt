@@ -25,15 +25,15 @@ Markup block - Gen<None> - 171 - (0:0,0)
                             Tag block - Gen<None> - 6 - (31:0,31)
                                 Transition span - Gen<None> - [<text>] - SpanEditHandler;Accepts:None - (31:0,31) - Tokens:3
                                     SyntaxKind.OpenAngle;[<];
-                                    SyntaxKind.HtmlTextLiteral;[text];
+                                    SyntaxKind.Text;[text];
                                     SyntaxKind.CloseAngle;[>];
                             Markup span - Gen<Markup> - [Foo] - SpanEditHandler;Accepts:None - (37:0,37) - Tokens:1
-                                SyntaxKind.HtmlTextLiteral;[Foo];
+                                SyntaxKind.Text;[Foo];
                             Tag block - Gen<None> - 7 - (40:0,40)
                                 Transition span - Gen<None> - [</text>] - SpanEditHandler;Accepts:None - (40:0,40) - Tokens:4
                                     SyntaxKind.OpenAngle;[<];
                                     SyntaxKind.ForwardSlash;[/];
-                                    SyntaxKind.HtmlTextLiteral;[text];
+                                    SyntaxKind.Text;[text];
                                     SyntaxKind.CloseAngle;[>];
                         Code span - Gen<Stmt> - [ foo++; } while (foo<bar>);] - SpanEditHandler;Accepts:None - (47:0,47) - Tokens:16
                             SyntaxKind.Whitespace;[ ];
@@ -52,9 +52,9 @@ Markup block - Gen<None> - 171 - (0:0,0)
                             SyntaxKind.GreaterThan;[>];
                             SyntaxKind.RightParenthesis;[)];
                             SyntaxKind.Semicolon;[;];
-        SyntaxKind.HtmlText - [Hello] - [76..81) - FullWidth: 5 - Slots: 1
-            SyntaxKind.HtmlTextLiteral;[Hello];
-    SyntaxKind.HtmlText - [ ] - [85..86) - FullWidth: 1 - Slots: 1
+        SyntaxKind.HtmlTextLiteral - [Hello] - [76..81) - FullWidth: 5 - Slots: 1
+            SyntaxKind.Text;[Hello];
+    SyntaxKind.HtmlTextLiteral - [ ] - [85..86) - FullWidth: 1 - Slots: 1
         SyntaxKind.Whitespace;[ ];
     Tag block - Gen<TagHelper> - 85 - (86:0,86) - p - ptaghelper
         StartTagAndEndTag - <p style='@do { var foo = bar; <text>Foo</text> foo++; } while (foo<bar>);'> ... </p>
@@ -82,15 +82,15 @@ Markup block - Gen<None> - 171 - (0:0,0)
                             Tag block - Gen<None> - 6 - (117:0,117)
                                 Transition span - Gen<None> - [<text>] - SpanEditHandler;Accepts:None - (117:0,117) - Tokens:3
                                     SyntaxKind.OpenAngle;[<];
-                                    SyntaxKind.HtmlTextLiteral;[text];
+                                    SyntaxKind.Text;[text];
                                     SyntaxKind.CloseAngle;[>];
                             Markup span - Gen<Markup> - [Foo] - SpanEditHandler;Accepts:None - (123:0,123) - Tokens:1
-                                SyntaxKind.HtmlTextLiteral;[Foo];
+                                SyntaxKind.Text;[Foo];
                             Tag block - Gen<None> - 7 - (126:0,126)
                                 Transition span - Gen<None> - [</text>] - SpanEditHandler;Accepts:None - (126:0,126) - Tokens:4
                                     SyntaxKind.OpenAngle;[<];
                                     SyntaxKind.ForwardSlash;[/];
-                                    SyntaxKind.HtmlTextLiteral;[text];
+                                    SyntaxKind.Text;[text];
                                     SyntaxKind.CloseAngle;[>];
                         Code span - Gen<Stmt> - [ foo++; } while (foo<bar>);] - SpanEditHandler;Accepts:None - (133:0,133) - Tokens:16
                             SyntaxKind.Whitespace;[ ];
@@ -109,5 +109,5 @@ Markup block - Gen<None> - 171 - (0:0,0)
                             SyntaxKind.GreaterThan;[>];
                             SyntaxKind.RightParenthesis;[)];
                             SyntaxKind.Semicolon;[;];
-        SyntaxKind.HtmlText - [World] - [162..167) - FullWidth: 5 - Slots: 1
-            SyntaxKind.HtmlTextLiteral;[World];
+        SyntaxKind.HtmlTextLiteral - [World] - [162..167) - FullWidth: 5 - Slots: 1
+            SyntaxKind.Text;[World];

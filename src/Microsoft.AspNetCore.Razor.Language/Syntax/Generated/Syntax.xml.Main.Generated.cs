@@ -17,8 +17,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
       return DefaultVisit(node);
     }
 
-    /// <summary>Called when the visitor visits a HtmlTextSyntax node.</summary>
-    public virtual TResult VisitHtmlText(HtmlTextSyntax node)
+    /// <summary>Called when the visitor visits a HtmlTextLiteralSyntax node.</summary>
+    public virtual TResult VisitHtmlTextLiteral(HtmlTextLiteralSyntax node)
     {
       return DefaultVisit(node);
     }
@@ -92,8 +92,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
       DefaultVisit(node);
     }
 
-    /// <summary>Called when the visitor visits a HtmlTextSyntax node.</summary>
-    public virtual void VisitHtmlText(HtmlTextSyntax node)
+    /// <summary>Called when the visitor visits a HtmlTextLiteralSyntax node.</summary>
+    public virtual void VisitHtmlTextLiteral(HtmlTextLiteralSyntax node)
     {
       DefaultVisit(node);
     }
@@ -209,16 +209,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
       return SyntaxFactory.RazorCommentBlock(SyntaxFactory.Token(SyntaxKind.RazorCommentTransition), SyntaxFactory.Token(SyntaxKind.RazorCommentStar), default(SyntaxToken), SyntaxFactory.Token(SyntaxKind.RazorCommentStar), SyntaxFactory.Token(SyntaxKind.RazorCommentTransition));
     }
 
-    /// <summary>Creates a new HtmlTextSyntax instance.</summary>
-    public static HtmlTextSyntax HtmlText(SyntaxList<SyntaxToken> textTokens)
+    /// <summary>Creates a new HtmlTextLiteralSyntax instance.</summary>
+    public static HtmlTextLiteralSyntax HtmlTextLiteral(SyntaxList<SyntaxToken> textTokens)
     {
-      return (HtmlTextSyntax)InternalSyntax.SyntaxFactory.HtmlText(textTokens.Node.ToGreenList<InternalSyntax.SyntaxToken>()).CreateRed();
+      return (HtmlTextLiteralSyntax)InternalSyntax.SyntaxFactory.HtmlTextLiteral(textTokens.Node.ToGreenList<InternalSyntax.SyntaxToken>()).CreateRed();
     }
 
-    /// <summary>Creates a new HtmlTextSyntax instance.</summary>
-    public static HtmlTextSyntax HtmlText()
+    /// <summary>Creates a new HtmlTextLiteralSyntax instance.</summary>
+    public static HtmlTextLiteralSyntax HtmlTextLiteral()
     {
-      return SyntaxFactory.HtmlText(default(SyntaxList<SyntaxToken>));
+      return SyntaxFactory.HtmlTextLiteral(default(SyntaxList<SyntaxToken>));
     }
 
     /// <summary>Creates a new CSharpTransitionSyntax instance.</summary>

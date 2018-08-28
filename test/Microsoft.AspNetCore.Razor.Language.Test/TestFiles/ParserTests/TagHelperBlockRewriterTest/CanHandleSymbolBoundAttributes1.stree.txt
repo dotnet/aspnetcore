@@ -4,4 +4,4 @@ Markup block - Gen<None> - 30 - (0:0,0)
         bound - Minimized
         [item] - SingleQuotes
             Code span - Gen<Expr> - [items] - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14 - (18:0,18) - Tokens:1
-                SyntaxKind.HtmlTextLiteral;[items];
+                SyntaxKind.Text;[items];

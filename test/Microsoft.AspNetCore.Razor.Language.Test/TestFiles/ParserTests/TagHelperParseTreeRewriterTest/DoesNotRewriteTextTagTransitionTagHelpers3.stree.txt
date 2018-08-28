@@ -10,19 +10,19 @@ Markup block - Gen<None> - 34 - (0:0,0)
             Tag block - Gen<None> - 6 - (2:0,2)
                 Transition span - Gen<None> - [<text>] - SpanEditHandler;Accepts:None - (2:0,2) - Tokens:3
                     SyntaxKind.OpenAngle;[<];
-                    SyntaxKind.HtmlTextLiteral;[text];
+                    SyntaxKind.Text;[text];
                     SyntaxKind.CloseAngle;[>];
             Tag block - Gen<TagHelper> - 18 - (8:0,8) - p - ptaghelper
                 StartTagAndEndTag - <p> ... </p>
                 Markup span - Gen<Markup> - [Hello World] - SpanEditHandler;Accepts:Any - (11:0,11) - Tokens:3
-                    SyntaxKind.HtmlTextLiteral;[Hello];
+                    SyntaxKind.Text;[Hello];
                     SyntaxKind.Whitespace;[ ];
-                    SyntaxKind.HtmlTextLiteral;[World];
+                    SyntaxKind.Text;[World];
             Tag block - Gen<None> - 7 - (26:0,26)
                 Transition span - Gen<None> - [</text>] - SpanEditHandler;Accepts:None - (26:0,26) - Tokens:4
                     SyntaxKind.OpenAngle;[<];
                     SyntaxKind.ForwardSlash;[/];
-                    SyntaxKind.HtmlTextLiteral;[text];
+                    SyntaxKind.Text;[text];
                     SyntaxKind.CloseAngle;[>];
         Code span - Gen<Stmt> - [] - SpanEditHandler;Accepts:Any - (33:0,33) - Tokens:1
             SyntaxKind.Unknown;[];

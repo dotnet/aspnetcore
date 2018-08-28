@@ -16,7 +16,7 @@ Markup block - Gen<None> - 24 - (0:0,0)
             SyntaxKind.LeftBrace;[{];
         Markup block - Gen<None> - 9 - (14:0,14)
             Markup span - Gen<Markup> - [something] - SpanEditHandler;Accepts:Any - (14:0,14) - Tokens:1
-                SyntaxKind.HtmlTextLiteral;[something];
+                SyntaxKind.Text;[something];
         MetaCode span - Gen<None> - [}] - SpanEditHandler;Accepts:None - (23:0,23) - Tokens:1
             SyntaxKind.RightBrace;[}];
     Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (24:0,24) - Tokens:1

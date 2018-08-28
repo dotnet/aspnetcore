@@ -2,24 +2,24 @@ Markup block - Gen<None> - 30 - (0:0,0)
     Tag block - Gen<None> - 6 - (0:0,0)
         Transition span - Gen<None> - [<text>] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:3
             SyntaxKind.OpenAngle;[<];
-            SyntaxKind.HtmlTextLiteral;[text];
+            SyntaxKind.Text;[text];
             SyntaxKind.CloseAngle;[>];
     Markup span - Gen<Markup> - [Foo Bar ] - SpanEditHandler;Accepts:None - (6:0,6) - Tokens:4
-        SyntaxKind.HtmlTextLiteral;[Foo];
+        SyntaxKind.Text;[Foo];
         SyntaxKind.Whitespace;[ ];
-        SyntaxKind.HtmlTextLiteral;[Bar];
+        SyntaxKind.Text;[Bar];
         SyntaxKind.Whitespace;[ ];
     Tag block - Gen<None> - 5 - (14:0,14)
         Markup span - Gen<Markup> - [<foo>] - SpanEditHandler;Accepts:None - (14:0,14) - Tokens:3
             SyntaxKind.OpenAngle;[<];
-            SyntaxKind.HtmlTextLiteral;[foo];
+            SyntaxKind.Text;[foo];
             SyntaxKind.CloseAngle;[>];
     Markup span - Gen<Markup> - [ Baz] - SpanEditHandler;Accepts:Any - (19:0,19) - Tokens:2
         SyntaxKind.Whitespace;[ ];
-        SyntaxKind.HtmlTextLiteral;[Baz];
+        SyntaxKind.Text;[Baz];
     Tag block - Gen<None> - 7 - (23:0,23)
         Transition span - Gen<None> - [</text>] - SpanEditHandler;Accepts:None - (23:0,23) - Tokens:4
             SyntaxKind.OpenAngle;[<];
             SyntaxKind.ForwardSlash;[/];
-            SyntaxKind.HtmlTextLiteral;[text];
+            SyntaxKind.Text;[text];
             SyntaxKind.CloseAngle;[>];

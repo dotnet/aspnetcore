@@ -3,10 +3,10 @@ Markup block - Gen<None> - 73 - (0:0,0)
         SelfClosing - <person age="12" birthday="DateTime.Now" name="@@BoundStringAttribute" />
         age - DoubleQuotes
             Code span - Gen<Expr> - [12] - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14 - (13:0,13) - Tokens:1
-                SyntaxKind.HtmlTextLiteral;[12];
+                SyntaxKind.Text;[12];
         birthday - DoubleQuotes
             Code span - Gen<Expr> - [DateTime.Now] - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14 - (27:0,27) - Tokens:1
-                SyntaxKind.HtmlTextLiteral;[DateTime.Now];
+                SyntaxKind.Text;[DateTime.Now];
         name - DoubleQuotes
             Markup block - Gen<None> - 22 - (47:0,47)
                 Markup block - Gen<None> - 2 - (47:0,47)
@@ -15,4 +15,4 @@ Markup block - Gen<None> - 73 - (0:0,0)
                     Markup span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (48:0,48) - Tokens:1
                         SyntaxKind.Transition;[@];
                 Markup span - Gen<Markup> - [BoundStringAttribute] - SpanEditHandler;Accepts:Any - (49:0,49) - Tokens:1
-                    SyntaxKind.HtmlTextLiteral;[BoundStringAttribute];
+                    SyntaxKind.Text;[BoundStringAttribute];

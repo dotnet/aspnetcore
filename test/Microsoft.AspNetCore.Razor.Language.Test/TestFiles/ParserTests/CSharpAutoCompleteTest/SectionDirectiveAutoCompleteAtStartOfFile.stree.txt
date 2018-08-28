@@ -17,13 +17,13 @@ Directive block - Gen<Directive:{section;RazorBlock;Unrestricted} [RZ1006(16:0,1
         Tag block - Gen<None> - 3 - (19:1,0)
             Markup span - Gen<Markup> - [<p>] - SpanEditHandler;Accepts:Any - (19:1,0) - Tokens:3
                 SyntaxKind.OpenAngle;[<];
-                SyntaxKind.HtmlTextLiteral;[p];
+                SyntaxKind.Text;[p];
                 SyntaxKind.CloseAngle;[>];
-        SyntaxKind.HtmlText - [Foo] - [22..25) - FullWidth: 3 - Slots: 1
-            SyntaxKind.HtmlTextLiteral;[Foo];
+        SyntaxKind.HtmlTextLiteral - [Foo] - [22..25) - FullWidth: 3 - Slots: 1
+            SyntaxKind.Text;[Foo];
         Tag block - Gen<None> - 4 - (25:1,6)
             Markup span - Gen<Markup> - [</p>] - SpanEditHandler;Accepts:Any - (25:1,6) - Tokens:4
                 SyntaxKind.OpenAngle;[<];
                 SyntaxKind.ForwardSlash;[/];
-                SyntaxKind.HtmlTextLiteral;[p];
+                SyntaxKind.Text;[p];
                 SyntaxKind.CloseAngle;[>];

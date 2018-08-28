@@ -3,20 +3,20 @@ Markup block - Gen<None> - 45 - (0:0,0)
         StartTagAndEndTag - <p class="btn"> ... </p>
         class - DoubleQuotes
             Markup span - Gen<Markup> - [btn] - SpanEditHandler;Accepts:Any - (10:0,10) - Tokens:1
-                SyntaxKind.HtmlTextLiteral;[btn];
+                SyntaxKind.Text;[btn];
         Tag block - Gen<TagHelper> - 26 - (15:0,15) - p - pTagHelper
             StartTagAndEndTag - <p class="btn"> ... </p>
             class - DoubleQuotes
                 Markup span - Gen<Markup> - [btn] - SpanEditHandler;Accepts:Any - (25:0,25) - Tokens:1
-                    SyntaxKind.HtmlTextLiteral;[btn];
+                    SyntaxKind.Text;[btn];
             Tag block - Gen<None> - 3 - (30:0,30)
                 Markup span - Gen<Markup> - [<p>] - SpanEditHandler;Accepts:Any - (30:0,30) - Tokens:3
                     SyntaxKind.OpenAngle;[<];
-                    SyntaxKind.HtmlTextLiteral;[p];
+                    SyntaxKind.Text;[p];
                     SyntaxKind.CloseAngle;[>];
             Tag block - Gen<None> - 4 - (33:0,33)
                 Markup span - Gen<Markup> - [</p>] - SpanEditHandler;Accepts:Any - (33:0,33) - Tokens:4
                     SyntaxKind.OpenAngle;[<];
                     SyntaxKind.ForwardSlash;[/];
-                    SyntaxKind.HtmlTextLiteral;[p];
+                    SyntaxKind.Text;[p];
                     SyntaxKind.CloseAngle;[>];

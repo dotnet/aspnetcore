@@ -1,6 +1,6 @@
 Markup block - Gen<None> - 5 - (0:0,0)
     Markup span - Gen<Markup> - [foo ] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:2
-        SyntaxKind.HtmlTextLiteral;[foo];
+        SyntaxKind.Text;[foo];
         SyntaxKind.Whitespace;[ ];
     Expression block - Gen<Expr> - 1 - (4:0,4)
         Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (4:0,4) - Tokens:1

@@ -24,11 +24,11 @@ Markup block - Gen<None> - 77 - (0:0,0)
                             SyntaxKind.RightParenthesis;[)];
         birthday - DoubleQuotes
             Code span - Gen<Expr> - [DateTime.Now] - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14 - (34:0,34) - Tokens:1
-                SyntaxKind.HtmlTextLiteral;[DateTime.Now];
+                SyntaxKind.Text;[DateTime.Now];
         name - DoubleQuotes
             Markup block - Gen<None> - 19 - (54:0,54)
                 Markup span - Gen<Markup> - [Time:] - SpanEditHandler;Accepts:Any - (54:0,54) - Tokens:1
-                    SyntaxKind.HtmlTextLiteral;[Time:];
+                    SyntaxKind.Text;[Time:];
                 Markup block - Gen<None> - 14 - (59:0,59)
                     Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:Any - (59:0,59) - Tokens:1
                         SyntaxKind.Whitespace;[ ];

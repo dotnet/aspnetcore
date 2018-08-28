@@ -5,9 +5,9 @@ Markup block - Gen<None> - 10 - (0:0,0)
         MetaCode span - Gen<None> - [!] - SpanEditHandler;Accepts:None - (1:0,1) - Tokens:1
             SyntaxKind.Bang;[!];
         Markup span - Gen<Markup> - [p] - SpanEditHandler;Accepts:Any - (2:0,2) - Tokens:1
-            SyntaxKind.HtmlTextLiteral;[p];
+            SyntaxKind.Text;[p];
         Markup block - Gen<Attr:class, class=@(3:0,3),@(10:0,10)> - 7 - (3:0,3)
             Markup span - Gen<None> - [ class=] - SpanEditHandler;Accepts:Any - (3:0,3) - Tokens:3
                 SyntaxKind.Whitespace;[ ];
-                SyntaxKind.HtmlTextLiteral;[class];
+                SyntaxKind.Text;[class];
                 SyntaxKind.Equals;[=];

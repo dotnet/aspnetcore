@@ -11,23 +11,23 @@ Markup block - Gen<None> - 31 - (0:0,0)
         Code span - Gen<DirectiveToken {SectionName;Member;Opt:False}> - [foo] - DirectiveTokenEditHandler;Accepts:NonWhitespace - (9:0,9) - Tokens:1
             SyntaxKind.Identifier;[foo];
     Markup span - Gen<Markup> - [-bar { ] - SpanEditHandler;Accepts:Any - (12:0,12) - Tokens:4
-        SyntaxKind.HtmlTextLiteral;[-bar];
+        SyntaxKind.Text;[-bar];
         SyntaxKind.Whitespace;[ ];
-        SyntaxKind.HtmlTextLiteral;[{];
+        SyntaxKind.Text;[{];
         SyntaxKind.Whitespace;[ ];
     Tag block - Gen<None> - 3 - (19:0,19)
         Markup span - Gen<Markup> - [<p>] - SpanEditHandler;Accepts:Any - (19:0,19) - Tokens:3
             SyntaxKind.OpenAngle;[<];
-            SyntaxKind.HtmlTextLiteral;[p];
+            SyntaxKind.Text;[p];
             SyntaxKind.CloseAngle;[>];
-    SyntaxKind.HtmlText - [Foo] - [22..25) - FullWidth: 3 - Slots: 1
-        SyntaxKind.HtmlTextLiteral;[Foo];
+    SyntaxKind.HtmlTextLiteral - [Foo] - [22..25) - FullWidth: 3 - Slots: 1
+        SyntaxKind.Text;[Foo];
     Tag block - Gen<None> - 4 - (25:0,25)
         Markup span - Gen<Markup> - [</p>] - SpanEditHandler;Accepts:Any - (25:0,25) - Tokens:4
             SyntaxKind.OpenAngle;[<];
             SyntaxKind.ForwardSlash;[/];
-            SyntaxKind.HtmlTextLiteral;[p];
+            SyntaxKind.Text;[p];
             SyntaxKind.CloseAngle;[>];
     Markup span - Gen<Markup> - [ }] - SpanEditHandler;Accepts:Any - (29:0,29) - Tokens:2
         SyntaxKind.Whitespace;[ ];
-        SyntaxKind.HtmlTextLiteral;[}];
+        SyntaxKind.Text;[}];

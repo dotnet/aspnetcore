@@ -23,7 +23,7 @@ Markup block - Gen<None> - 65 - (0:0,0)
                 Tag block - Gen<TagHelper> - 10 - (24:0,24) - p - ptaghelper
                     StartTagAndEndTag - <p> ... </p>
                     Markup span - Gen<Markup> - [Foo] - SpanEditHandler;Accepts:Any - (27:0,27) - Tokens:1
-                        SyntaxKind.HtmlTextLiteral;[Foo];
+                        SyntaxKind.Text;[Foo];
                 Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:None - (34:0,34) - Tokens:1
                     SyntaxKind.Whitespace;[ ];
             Code span - Gen<Stmt> - [foo++; } while (foo<bar>);] - SpanEditHandler;Accepts:None - (35:0,35) - Tokens:15

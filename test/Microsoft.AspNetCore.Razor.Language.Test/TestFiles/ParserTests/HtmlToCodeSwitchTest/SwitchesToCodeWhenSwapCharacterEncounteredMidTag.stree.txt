@@ -2,7 +2,7 @@ Markup block - Gen<None> - 12 - (0:0,0)
     Tag block - Gen<None> - 12 - (0:0,0)
         Markup span - Gen<Markup> - [<foo ] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:3
             SyntaxKind.OpenAngle;[<];
-            SyntaxKind.HtmlTextLiteral;[foo];
+            SyntaxKind.Text;[foo];
             SyntaxKind.Whitespace;[ ];
         Expression block - Gen<Expr> - 4 - (5:0,5)
             Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (5:0,5) - Tokens:1

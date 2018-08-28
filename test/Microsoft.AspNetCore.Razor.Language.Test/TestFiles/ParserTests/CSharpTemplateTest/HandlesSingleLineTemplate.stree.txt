@@ -17,7 +17,7 @@ Statement block - Gen<None> - 23 - (0:0,0)
                 SyntaxKind.Colon;[:];
             Markup span - Gen<Markup> - [ barLF] - SpanEditHandler;Accepts:None - (14:0,14) - Tokens:3
                 SyntaxKind.Whitespace;[ ];
-                SyntaxKind.HtmlTextLiteral;[bar];
+                SyntaxKind.Text;[bar];
                 SyntaxKind.NewLine;[LF];
     Code span - Gen<Stmt> - [; ] - SpanEditHandler;Accepts:Any - (20:1,0) - Tokens:2
         SyntaxKind.Semicolon;[;];

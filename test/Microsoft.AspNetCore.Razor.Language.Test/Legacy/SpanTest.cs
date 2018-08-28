@@ -13,10 +13,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             // Arrange
             var builder = new SpanBuilder(SourceLocation.Zero);
-            builder.Accept(SyntaxFactory.Token(SyntaxKind.HtmlTextLiteral, "hello"));
+            builder.Accept(SyntaxFactory.Token(SyntaxKind.Text, "hello"));
             var span = builder.Build();
             var newBuilder = new SpanBuilder(SourceLocation.Zero);
-            newBuilder.Accept(SyntaxFactory.Token(SyntaxKind.HtmlTextLiteral, "hi"));
+            newBuilder.Accept(SyntaxFactory.Token(SyntaxKind.Text, "hi"));
             var originalLength = span.Length;
 
             // Act
@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             // Arrange
             var spanBuilder = new SpanBuilder(SourceLocation.Zero);
-            spanBuilder.Accept(SyntaxFactory.Token(SyntaxKind.HtmlTextLiteral, "hello"));
+            spanBuilder.Accept(SyntaxFactory.Token(SyntaxKind.Text, "hello"));
             var span = spanBuilder.Build();
             var blockBuilder = new BlockBuilder()
             {
@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             span.Parent = block;
             var originalBlockLength = block.Length;
             var newSpanBuilder = new SpanBuilder(SourceLocation.Zero);
-            newSpanBuilder.Accept(SyntaxFactory.Token(SyntaxKind.HtmlTextLiteral, "hi"));
+            newSpanBuilder.Accept(SyntaxFactory.Token(SyntaxKind.Text, "hi"));
 
             // Act
             span.ReplaceWith(newSpanBuilder);

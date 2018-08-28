@@ -2,14 +2,14 @@ Markup block - Gen<None> - 36 - (0:0,0)
     Tag block - Gen<None> - 8 - (0:0,0)
         Markup span - Gen<Markup> - [<script>] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:3
             SyntaxKind.OpenAngle;[<];
-            SyntaxKind.HtmlTextLiteral;[script];
+            SyntaxKind.Text;[script];
             SyntaxKind.CloseAngle;[>];
     Markup span - Gen<Markup> - [foo<bar baz='] - SpanEditHandler;Accepts:Any - (8:0,8) - Tokens:7
-        SyntaxKind.HtmlTextLiteral;[foo];
+        SyntaxKind.Text;[foo];
         SyntaxKind.OpenAngle;[<];
-        SyntaxKind.HtmlTextLiteral;[bar];
+        SyntaxKind.Text;[bar];
         SyntaxKind.Whitespace;[ ];
-        SyntaxKind.HtmlTextLiteral;[baz];
+        SyntaxKind.Text;[baz];
         SyntaxKind.Equals;[=];
         SyntaxKind.SingleQuote;['];
     Expression block - Gen<Expr> - 4 - (21:0,21)
@@ -24,5 +24,5 @@ Markup block - Gen<None> - 36 - (0:0,0)
         Markup span - Gen<Markup> - [</script>] - SpanEditHandler;Accepts:Any - (27:0,27) - Tokens:4
             SyntaxKind.OpenAngle;[<];
             SyntaxKind.ForwardSlash;[/];
-            SyntaxKind.HtmlTextLiteral;[script];
+            SyntaxKind.Text;[script];
             SyntaxKind.CloseAngle;[>];

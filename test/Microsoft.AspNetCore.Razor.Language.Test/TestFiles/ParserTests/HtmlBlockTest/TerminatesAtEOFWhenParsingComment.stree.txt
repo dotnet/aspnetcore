@@ -4,5 +4,5 @@ Markup block - Gen<None> - 9 - (0:0,0)
         SyntaxKind.Bang;[!];
         SyntaxKind.DoubleHyphen;[--];
         SyntaxKind.OpenAngle;[<];
-        SyntaxKind.HtmlTextLiteral;[foo];
+        SyntaxKind.Text;[foo];
         SyntaxKind.CloseAngle;[>];

@@ -8,14 +8,14 @@ Markup block - Gen<None> - 21 - (0:0,0)
             SyntaxKind.OpenAngle;[<];
     Tag block - Gen<TagHelper> - 17 - (3:0,3) - p - ptaghelper
         StartTagAndEndTag - <p> ... </p>
-        SyntaxKind.HtmlText - [/>] - [6..8) - FullWidth: 2 - Slots: 1
+        SyntaxKind.HtmlTextLiteral - [/>] - [6..8) - FullWidth: 2 - Slots: 1
             SyntaxKind.List - [/>] - [6..8) - FullWidth: 2 - Slots: 2
                 SyntaxKind.ForwardSlash;[/];
                 SyntaxKind.CloseAngle;[>];
         Tag block - Gen<None> - 8 - (8:0,8)
             Markup span - Gen<Markup> - [<strong>] - SpanEditHandler;Accepts:Any - (8:0,8) - Tokens:3
                 SyntaxKind.OpenAngle;[<];
-                SyntaxKind.HtmlTextLiteral;[strong];
+                SyntaxKind.Text;[strong];
                 SyntaxKind.CloseAngle;[>];
     Markup span - Gen<Markup> - [>] - SpanEditHandler;Accepts:Any - (20:0,20) - Tokens:1
         SyntaxKind.CloseAngle;[>];

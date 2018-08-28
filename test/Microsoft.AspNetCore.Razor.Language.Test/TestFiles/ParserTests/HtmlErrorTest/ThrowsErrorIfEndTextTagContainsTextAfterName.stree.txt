@@ -2,15 +2,15 @@ Markup block - Gen<None> - 21 - (0:0,0)
     Tag block - Gen<None> - 6 - (0:0,0)
         Transition span - Gen<None> - [<text>] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:3
             SyntaxKind.OpenAngle;[<];
-            SyntaxKind.HtmlTextLiteral;[text];
+            SyntaxKind.Text;[text];
             SyntaxKind.CloseAngle;[>];
     Tag block - Gen<None> - 15 - (6:0,6)
         Transition span - Gen<None> - [</text foo bar>] - SpanEditHandler;Accepts:Any - (6:0,6) - Tokens:8
             SyntaxKind.OpenAngle;[<];
             SyntaxKind.ForwardSlash;[/];
-            SyntaxKind.HtmlTextLiteral;[text];
+            SyntaxKind.Text;[text];
             SyntaxKind.Whitespace;[ ];
-            SyntaxKind.HtmlTextLiteral;[foo];
+            SyntaxKind.Text;[foo];
             SyntaxKind.Whitespace;[ ];
-            SyntaxKind.HtmlTextLiteral;[bar];
+            SyntaxKind.Text;[bar];
             SyntaxKind.CloseAngle;[>];

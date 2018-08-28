@@ -5,11 +5,11 @@ Statement block - Gen<None> - 120 - (0:0,0)
         Tag block - Gen<None> - 118 - (1:0,1)
             Markup span - Gen<Markup> - [<span] - SpanEditHandler;Accepts:Any - (1:0,1) - Tokens:2
                 SyntaxKind.OpenAngle;[<];
-                SyntaxKind.HtmlTextLiteral;[span];
+                SyntaxKind.Text;[span];
             Markup block - Gen<Attr:foo, foo='@(6:0,6),'@(20:0,20)> - 15 - (6:0,6)
                 Markup span - Gen<None> - [ foo='] - SpanEditHandler;Accepts:Any - (6:0,6) - Tokens:4
                     SyntaxKind.Whitespace;[ ];
-                    SyntaxKind.HtmlTextLiteral;[foo];
+                    SyntaxKind.Text;[foo];
                     SyntaxKind.Equals;[=];
                     SyntaxKind.SingleQuote;['];
                 Markup block - Gen<None> - 2 - (12:0,12)
@@ -36,7 +36,7 @@ Statement block - Gen<None> - 120 - (0:0,0)
             Markup block - Gen<Attr:bar, bar='@(21:0,21),'@(48:0,48)> - 28 - (21:0,21)
                 Markup span - Gen<None> - [ bar='] - SpanEditHandler;Accepts:Any - (21:0,21) - Tokens:4
                     SyntaxKind.Whitespace;[ ];
-                    SyntaxKind.HtmlTextLiteral;[bar];
+                    SyntaxKind.Text;[bar];
                     SyntaxKind.Equals;[=];
                     SyntaxKind.SingleQuote;['];
                 Markup block - Gen<DynAttr:@(27:0,27)> - 6 - (27:0,27)
@@ -71,7 +71,7 @@ Statement block - Gen<None> - 120 - (0:0,0)
             Markup block - Gen<Attr:baz, baz='@(49:0,49),'@(70:0,70)> - 22 - (49:0,49)
                 Markup span - Gen<None> - [ baz='] - SpanEditHandler;Accepts:Any - (49:0,49) - Tokens:4
                     SyntaxKind.Whitespace;[ ];
-                    SyntaxKind.HtmlTextLiteral;[baz];
+                    SyntaxKind.Text;[baz];
                     SyntaxKind.Equals;[=];
                     SyntaxKind.SingleQuote;['];
                 Markup block - Gen<DynAttr:@(55:0,55)> - 13 - (55:0,55)
@@ -92,7 +92,7 @@ Statement block - Gen<None> - 120 - (0:0,0)
             Markup block - Gen<Attr:bat, bat='@(71:0,71),'@(93:0,93)> - 23 - (71:0,71)
                 Markup span - Gen<None> - [ bat='] - SpanEditHandler;Accepts:Any - (71:0,71) - Tokens:4
                     SyntaxKind.Whitespace;[ ];
-                    SyntaxKind.HtmlTextLiteral;[bat];
+                    SyntaxKind.Text;[bat];
                     SyntaxKind.Equals;[=];
                     SyntaxKind.SingleQuote;['];
                 Markup block - Gen<DynAttr:@(77:0,77)> - 13 - (77:0,77)
@@ -114,7 +114,7 @@ Statement block - Gen<None> - 120 - (0:0,0)
             Markup block - Gen<Attr:zoo, zoo='@(94:0,94),'@(115:0,115)> - 22 - (94:0,94)
                 Markup span - Gen<None> - [ zoo='] - SpanEditHandler;Accepts:Any - (94:0,94) - Tokens:4
                     SyntaxKind.Whitespace;[ ];
-                    SyntaxKind.HtmlTextLiteral;[zoo];
+                    SyntaxKind.Text;[zoo];
                     SyntaxKind.Equals;[=];
                     SyntaxKind.SingleQuote;['];
                 Markup block - Gen<None> - 2 - (100:0,100)

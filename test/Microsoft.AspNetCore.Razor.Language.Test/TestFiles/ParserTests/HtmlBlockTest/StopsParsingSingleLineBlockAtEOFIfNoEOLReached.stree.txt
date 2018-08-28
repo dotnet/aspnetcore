@@ -4,6 +4,6 @@ Markup block - Gen<None> - 9 - (0:0,0)
     MetaCode span - Gen<None> - [:] - SpanEditHandler;Accepts:Any - (1:0,1) - Tokens:1
         SyntaxKind.Colon;[:];
     Markup span - Gen<Markup> - [foo bar] - SpanEditHandler;Accepts:Any - (2:0,2) - Tokens:3
-        SyntaxKind.HtmlTextLiteral;[foo];
+        SyntaxKind.Text;[foo];
         SyntaxKind.Whitespace;[ ];
-        SyntaxKind.HtmlTextLiteral;[bar];
+        SyntaxKind.Text;[bar];

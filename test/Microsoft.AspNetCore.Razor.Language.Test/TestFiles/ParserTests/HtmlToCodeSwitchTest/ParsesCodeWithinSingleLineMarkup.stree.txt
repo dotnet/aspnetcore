@@ -5,9 +5,9 @@ Markup block - Gen<None> - 20 - (0:0,0)
         SyntaxKind.Colon;[:];
     Markup span - Gen<Markup> - [<li>Foo ] - SpanEditHandler;Accepts:Any - (2:0,2) - Tokens:5
         SyntaxKind.OpenAngle;[<];
-        SyntaxKind.HtmlTextLiteral;[li];
+        SyntaxKind.Text;[li];
         SyntaxKind.CloseAngle;[>];
-        SyntaxKind.HtmlTextLiteral;[Foo];
+        SyntaxKind.Text;[Foo];
         SyntaxKind.Whitespace;[ ];
     Expression block - Gen<Expr> - 4 - (10:0,10)
         Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (10:0,10) - Tokens:1
@@ -16,5 +16,5 @@ Markup block - Gen<None> - 20 - (0:0,0)
             SyntaxKind.Identifier;[Bar];
     Markup span - Gen<Markup> - [ BazLF] - SpanEditHandler;Accepts:None - (14:0,14) - Tokens:3
         SyntaxKind.Whitespace;[ ];
-        SyntaxKind.HtmlTextLiteral;[Baz];
+        SyntaxKind.Text;[Baz];
         SyntaxKind.NewLine;[LF];

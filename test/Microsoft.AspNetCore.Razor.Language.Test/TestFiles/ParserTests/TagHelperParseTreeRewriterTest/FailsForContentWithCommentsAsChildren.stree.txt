@@ -7,19 +7,19 @@ Markup block - Gen<None> - 35 - (0:0,0)
                 SyntaxKind.Bang;[!];
                 SyntaxKind.DoubleHyphen;[--];
             Markup span - Gen<Markup> - [Hello] - SpanEditHandler;Accepts:Whitespace - (7:0,7) - Tokens:1
-                SyntaxKind.HtmlTextLiteral;[Hello];
+                SyntaxKind.Text;[Hello];
             Markup span - Gen<Markup> - [-->] - SpanEditHandler;Accepts:None - (12:0,12) - Tokens:2
                 SyntaxKind.DoubleHyphen;[--];
                 SyntaxKind.CloseAngle;[>];
         Markup span - Gen<Markup> - [asdf] - SpanEditHandler;Accepts:Any - (15:0,15) - Tokens:1
-            SyntaxKind.HtmlTextLiteral;[asdf];
+            SyntaxKind.Text;[asdf];
         HtmlComment block - Gen<None> - 12 - (19:0,19)
             Markup span - Gen<Markup> - [<!--] - SpanEditHandler;Accepts:None - (19:0,19) - Tokens:3
                 SyntaxKind.OpenAngle;[<];
                 SyntaxKind.Bang;[!];
                 SyntaxKind.DoubleHyphen;[--];
             Markup span - Gen<Markup> - [World] - SpanEditHandler;Accepts:Whitespace - (23:0,23) - Tokens:1
-                SyntaxKind.HtmlTextLiteral;[World];
+                SyntaxKind.Text;[World];
             Markup span - Gen<Markup> - [-->] - SpanEditHandler;Accepts:None - (28:0,28) - Tokens:2
                 SyntaxKind.DoubleHyphen;[--];
                 SyntaxKind.CloseAngle;[>];

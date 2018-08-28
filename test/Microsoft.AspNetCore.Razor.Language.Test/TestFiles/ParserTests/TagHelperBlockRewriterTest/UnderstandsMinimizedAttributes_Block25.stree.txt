@@ -11,7 +11,7 @@ Markup block - Gen<None> - 46 - (0:0,0)
                 SelfClosing - <input class='btn' bound-required-string />
                 class - SingleQuotes
                     Markup span - Gen<Markup> - [btn] - SpanEditHandler;Accepts:Any - (16:0,16) - Tokens:1
-                        SyntaxKind.HtmlTextLiteral;[btn];
+                        SyntaxKind.Text;[btn];
                 bound-required-string - Minimized
         Code span - Gen<Stmt> - [] - SpanEditHandler;Accepts:Any - (45:0,45) - Tokens:1
             SyntaxKind.Unknown;[];

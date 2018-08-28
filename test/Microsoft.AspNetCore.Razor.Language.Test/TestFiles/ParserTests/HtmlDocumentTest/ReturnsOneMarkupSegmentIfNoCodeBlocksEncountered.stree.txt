@@ -1,25 +1,25 @@
 Markup block - Gen<None> - 30 - (0:0,0)
     Markup span - Gen<Markup> - [Foo Baz] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:3
-        SyntaxKind.HtmlTextLiteral;[Foo];
+        SyntaxKind.Text;[Foo];
         SyntaxKind.Whitespace;[ ];
-        SyntaxKind.HtmlTextLiteral;[Baz];
+        SyntaxKind.Text;[Baz];
     HtmlComment block - Gen<None> - 10 - (7:0,7)
         Markup span - Gen<Markup> - [<!--] - SpanEditHandler;Accepts:None - (7:0,7) - Tokens:3
             SyntaxKind.OpenAngle;[<];
             SyntaxKind.Bang;[!];
             SyntaxKind.DoubleHyphen;[--];
         Markup span - Gen<Markup> - [Foo] - SpanEditHandler;Accepts:Whitespace - (11:0,11) - Tokens:1
-            SyntaxKind.HtmlTextLiteral;[Foo];
+            SyntaxKind.Text;[Foo];
         Markup span - Gen<Markup> - [-->] - SpanEditHandler;Accepts:None - (14:0,14) - Tokens:2
             SyntaxKind.DoubleHyphen;[--];
             SyntaxKind.CloseAngle;[>];
     Markup span - Gen<Markup> - [Bar] - SpanEditHandler;Accepts:Any - (17:0,17) - Tokens:1
-        SyntaxKind.HtmlTextLiteral;[Bar];
+        SyntaxKind.Text;[Bar];
     Markup span - Gen<Markup> - [<!--F> Qux] - SpanEditHandler;Accepts:Any - (20:0,20) - Tokens:7
         SyntaxKind.OpenAngle;[<];
         SyntaxKind.Bang;[!];
         SyntaxKind.DoubleHyphen;[--];
-        SyntaxKind.HtmlTextLiteral;[F];
+        SyntaxKind.Text;[F];
         SyntaxKind.CloseAngle;[>];
         SyntaxKind.Whitespace;[ ];
-        SyntaxKind.HtmlTextLiteral;[Qux];
+        SyntaxKind.Text;[Qux];

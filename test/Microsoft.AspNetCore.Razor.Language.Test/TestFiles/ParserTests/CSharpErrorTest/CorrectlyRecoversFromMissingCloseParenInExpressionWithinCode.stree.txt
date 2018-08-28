@@ -10,13 +10,13 @@ Statement block - Gen<None> - 29 - (0:0,0)
         Tag block - Gen<None> - 6 - (15:0,15)
             Markup span - Gen<Markup> - [<html>] - SpanEditHandler;Accepts:None - (15:0,15) - Tokens:3
                 SyntaxKind.OpenAngle;[<];
-                SyntaxKind.HtmlTextLiteral;[html];
+                SyntaxKind.Text;[html];
                 SyntaxKind.CloseAngle;[>];
         Tag block - Gen<None> - 7 - (21:0,21)
             Markup span - Gen<Markup> - [</html>] - SpanEditHandler;Accepts:None - (21:0,21) - Tokens:4
                 SyntaxKind.OpenAngle;[<];
                 SyntaxKind.ForwardSlash;[/];
-                SyntaxKind.HtmlTextLiteral;[html];
+                SyntaxKind.Text;[html];
                 SyntaxKind.CloseAngle;[>];
     Code span - Gen<Stmt> - [] - SpanEditHandler;Accepts:Any - (28:0,28) - Tokens:1
         SyntaxKind.Unknown;[];

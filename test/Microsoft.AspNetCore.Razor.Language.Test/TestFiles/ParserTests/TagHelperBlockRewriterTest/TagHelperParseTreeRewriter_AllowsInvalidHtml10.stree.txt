@@ -27,7 +27,7 @@ Markup block - Gen<None> - 42 - (0:0,0)
                 SyntaxKind.Identifier;[DateTime];
                 SyntaxKind.Dot;[.];
                 SyntaxKind.Identifier;[Now];
-        SyntaxKind.HtmlText - [ >] - [36..38) - FullWidth: 2 - Slots: 1
+        SyntaxKind.HtmlTextLiteral - [ >] - [36..38) - FullWidth: 2 - Slots: 1
             SyntaxKind.List - [ >] - [36..38) - FullWidth: 2 - Slots: 2
                 SyntaxKind.Whitespace;[ ];
                 SyntaxKind.CloseAngle;[>];

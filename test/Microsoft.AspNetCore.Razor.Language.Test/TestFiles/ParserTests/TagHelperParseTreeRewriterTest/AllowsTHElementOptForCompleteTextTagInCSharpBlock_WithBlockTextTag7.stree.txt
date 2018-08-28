@@ -13,7 +13,7 @@ Markup block - Gen<None> - 31 - (0:0,0)
                 MetaCode span - Gen<None> - [!] - SpanEditHandler;Accepts:None - (3:0,3) - Tokens:1
                     SyntaxKind.Bang;[!];
                 Markup span - Gen<Markup> - [text>] - SpanEditHandler;Accepts:None - (4:0,4) - Tokens:2
-                    SyntaxKind.HtmlTextLiteral;[text];
+                    SyntaxKind.Text;[text];
                     SyntaxKind.CloseAngle;[>];
             Tag block - Gen<TagHelper> - 13 - (9:0,9) - text - texttaghelper
                 StartTagAndEndTag - <text> ... </text>
@@ -24,7 +24,7 @@ Markup block - Gen<None> - 31 - (0:0,0)
                 MetaCode span - Gen<None> - [!] - SpanEditHandler;Accepts:None - (24:0,24) - Tokens:1
                     SyntaxKind.Bang;[!];
                 Markup span - Gen<Markup> - [text>] - SpanEditHandler;Accepts:None - (25:0,25) - Tokens:2
-                    SyntaxKind.HtmlTextLiteral;[text];
+                    SyntaxKind.Text;[text];
                     SyntaxKind.CloseAngle;[>];
         Code span - Gen<Stmt> - [] - SpanEditHandler;Accepts:Any - (30:0,30) - Tokens:1
             SyntaxKind.Unknown;[];

@@ -12,7 +12,7 @@ Markup block - Gen<None> - 60 - (0:0,0)
                         SyntaxKind.Identifier;[Now];
                 Markup span - Gen<Markup> - [ middle ] - SpanEditHandler;Accepts:Any - (35:0,35) - Tokens:3
                     SyntaxKind.Whitespace;[ ];
-                    SyntaxKind.HtmlTextLiteral;[middle];
+                    SyntaxKind.Text;[middle];
                     SyntaxKind.Whitespace;[ ];
                 Expression block - Gen<Expr> - 13 - (43:0,43)
                     Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (43:0,43) - Tokens:1

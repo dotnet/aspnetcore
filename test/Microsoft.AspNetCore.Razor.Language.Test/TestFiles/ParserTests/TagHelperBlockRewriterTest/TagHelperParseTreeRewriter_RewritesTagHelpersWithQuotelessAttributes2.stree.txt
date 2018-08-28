@@ -3,7 +3,7 @@ Markup block - Gen<None> - 67 - (0:0,0)
         StartTagAndEndTag - <p class=foo dynamic=@DateTime.Now style=color:red;> ... </p>
         class - NoQuotes
             Markup span - Gen<Markup> - [foo] - SpanEditHandler;Accepts:Any - (9:0,9) - Tokens:1
-                SyntaxKind.HtmlTextLiteral;[foo];
+                SyntaxKind.Text;[foo];
         dynamic - DoubleQuotes
             Markup block - Gen<None> - 13 - (21:0,21)
                 Markup block - Gen<DynAttr:@(21:0,21)> - 13 - (21:0,21)
@@ -16,9 +16,9 @@ Markup block - Gen<None> - 67 - (0:0,0)
                             SyntaxKind.Identifier;[Now];
         style - NoQuotes
             Markup span - Gen<Markup> - [color:red;] - SpanEditHandler;Accepts:Any - (41:0,41) - Tokens:1
-                SyntaxKind.HtmlTextLiteral;[color:red;];
-        SyntaxKind.HtmlText - [Hello World] - [52..63) - FullWidth: 11 - Slots: 1
+                SyntaxKind.Text;[color:red;];
+        SyntaxKind.HtmlTextLiteral - [Hello World] - [52..63) - FullWidth: 11 - Slots: 1
             SyntaxKind.List - [Hello World] - [52..63) - FullWidth: 11 - Slots: 3
-                SyntaxKind.HtmlTextLiteral;[Hello];
+                SyntaxKind.Text;[Hello];
                 SyntaxKind.Whitespace;[ ];
-                SyntaxKind.HtmlTextLiteral;[World];
+                SyntaxKind.Text;[World];

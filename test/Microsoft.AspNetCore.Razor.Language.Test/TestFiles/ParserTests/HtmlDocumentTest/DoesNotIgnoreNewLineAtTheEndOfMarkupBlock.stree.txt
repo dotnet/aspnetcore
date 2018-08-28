@@ -15,7 +15,7 @@ Markup block - Gen<None> - 15 - (0:0,0)
     Tag block - Gen<None> - 6 - (7:2,0)
         Markup span - Gen<Markup> - [<html>] - SpanEditHandler;Accepts:Any - (7:2,0) - Tokens:3
             SyntaxKind.OpenAngle;[<];
-            SyntaxKind.HtmlTextLiteral;[html];
+            SyntaxKind.Text;[html];
             SyntaxKind.CloseAngle;[>];
     Markup span - Gen<Markup> - [LF] - SpanEditHandler;Accepts:Any - (13:2,6) - Tokens:1
         SyntaxKind.NewLine;[LF];

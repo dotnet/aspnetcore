@@ -25,15 +25,15 @@ Markup block - Gen<None> - 153 - (0:0,0)
                             Tag block - Gen<None> - 6 - (31:0,31)
                                 Transition span - Gen<None> - [<text>] - SpanEditHandler;Accepts:None - (31:0,31) - Tokens:3
                                     SyntaxKind.OpenAngle;[<];
-                                    SyntaxKind.HtmlTextLiteral;[text];
+                                    SyntaxKind.Text;[text];
                                     SyntaxKind.CloseAngle;[>];
                             Markup span - Gen<Markup> - [Foo] - SpanEditHandler;Accepts:None - (37:0,37) - Tokens:1
-                                SyntaxKind.HtmlTextLiteral;[Foo];
+                                SyntaxKind.Text;[Foo];
                             Tag block - Gen<None> - 7 - (40:0,40)
                                 Transition span - Gen<None> - [</text>] - SpanEditHandler;Accepts:None - (40:0,40) - Tokens:4
                                     SyntaxKind.OpenAngle;[<];
                                     SyntaxKind.ForwardSlash;[/];
-                                    SyntaxKind.HtmlTextLiteral;[text];
+                                    SyntaxKind.Text;[text];
                                     SyntaxKind.CloseAngle;[>];
                         Code span - Gen<Stmt> - [ foo++; } while (foo<bar>);] - SpanEditHandler;Accepts:None - (47:0,47) - Tokens:16
                             SyntaxKind.Whitespace;[ ];
@@ -76,15 +76,15 @@ Markup block - Gen<None> - 153 - (0:0,0)
                             Tag block - Gen<None> - 6 - (104:0,104)
                                 Transition span - Gen<None> - [<text>] - SpanEditHandler;Accepts:None - (104:0,104) - Tokens:3
                                     SyntaxKind.OpenAngle;[<];
-                                    SyntaxKind.HtmlTextLiteral;[text];
+                                    SyntaxKind.Text;[text];
                                     SyntaxKind.CloseAngle;[>];
                             Markup span - Gen<Markup> - [Foo] - SpanEditHandler;Accepts:None - (110:0,110) - Tokens:1
-                                SyntaxKind.HtmlTextLiteral;[Foo];
+                                SyntaxKind.Text;[Foo];
                             Tag block - Gen<None> - 7 - (113:0,113)
                                 Transition span - Gen<None> - [</text>] - SpanEditHandler;Accepts:None - (113:0,113) - Tokens:4
                                     SyntaxKind.OpenAngle;[<];
                                     SyntaxKind.ForwardSlash;[/];
-                                    SyntaxKind.HtmlTextLiteral;[text];
+                                    SyntaxKind.Text;[text];
                                     SyntaxKind.CloseAngle;[>];
                         Code span - Gen<Stmt> - [ foo++; } while (foo<bar>);] - SpanEditHandler;Accepts:None - (120:0,120) - Tokens:16
                             SyntaxKind.Whitespace;[ ];

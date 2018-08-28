@@ -19,15 +19,15 @@ Statement block - Gen<None> - 33 - (0:0,0)
         Tag block - Gen<None> - 6 - (15:0,15)
             Transition span - Gen<None> - [<text>] - SpanEditHandler;Accepts:None - (15:0,15) - Tokens:3
                 SyntaxKind.OpenAngle;[<];
-                SyntaxKind.HtmlTextLiteral;[text];
+                SyntaxKind.Text;[text];
                 SyntaxKind.CloseAngle;[>];
         Markup span - Gen<Markup> - [;] - SpanEditHandler;Accepts:None - (21:0,21) - Tokens:1
-            SyntaxKind.HtmlTextLiteral;[;];
+            SyntaxKind.Text;[;];
         Tag block - Gen<None> - 7 - (22:0,22)
             Transition span - Gen<None> - [</text>] - SpanEditHandler;Accepts:None - (22:0,22) - Tokens:4
                 SyntaxKind.OpenAngle;[<];
                 SyntaxKind.ForwardSlash;[/];
-                SyntaxKind.HtmlTextLiteral;[text];
+                SyntaxKind.Text;[text];
                 SyntaxKind.CloseAngle;[>];
     Code span - Gen<Stmt> - [ } ] - SpanEditHandler;Accepts:Any - (29:0,29) - Tokens:3
         SyntaxKind.Whitespace;[ ];

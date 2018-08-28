@@ -5,7 +5,7 @@ Markup block - Gen<None> - 6 - (0:0,0)
         Markup block - Gen<None> - 2 - (1:0,1)
             Markup span - Gen<Markup> - [ p] - SpanEditHandler;Accepts:Any - (1:0,1) - Tokens:2
                 SyntaxKind.Whitespace;[ ];
-                SyntaxKind.HtmlTextLiteral;[p];
+                SyntaxKind.Text;[p];
         Markup span - Gen<Markup> - [ />] - SpanEditHandler;Accepts:Any - (3:0,3) - Tokens:3
             SyntaxKind.Whitespace;[ ];
             SyntaxKind.ForwardSlash;[/];

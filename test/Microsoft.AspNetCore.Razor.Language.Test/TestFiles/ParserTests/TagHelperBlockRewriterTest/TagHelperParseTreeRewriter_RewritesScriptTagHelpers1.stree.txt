@@ -3,9 +3,9 @@ Markup block - Gen<None> - 31 - (0:0,0)
         StartTagAndEndTag - <script> ... </script>
         Markup span - Gen<Markup> - [<script></foo>] - SpanEditHandler;Accepts:Any - (8:0,8) - Tokens:7
             SyntaxKind.OpenAngle;[<];
-            SyntaxKind.HtmlTextLiteral;[script];
+            SyntaxKind.Text;[script];
             SyntaxKind.CloseAngle;[>];
             SyntaxKind.OpenAngle;[<];
             SyntaxKind.ForwardSlash;[/];
-            SyntaxKind.HtmlTextLiteral;[foo];
+            SyntaxKind.Text;[foo];
             SyntaxKind.CloseAngle;[>];

@@ -1,5 +1,5 @@
 Markup block - Gen<None> - 7 - (0:0,0)
     Markup span - Gen<Markup> - [foo baz] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:3
-        SyntaxKind.HtmlTextLiteral;[foo];
+        SyntaxKind.Text;[foo];
         SyntaxKind.Whitespace;[ ];
-        SyntaxKind.HtmlTextLiteral;[baz];
+        SyntaxKind.Text;[baz];

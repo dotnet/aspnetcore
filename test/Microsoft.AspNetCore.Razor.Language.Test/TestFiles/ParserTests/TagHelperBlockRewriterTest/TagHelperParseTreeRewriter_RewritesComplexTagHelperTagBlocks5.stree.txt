@@ -8,7 +8,7 @@ Markup block - Gen<None> - 41 - (0:0,0)
                 SyntaxKind.Identifier;[DateTime];
                 SyntaxKind.Dot;[.];
                 SyntaxKind.Identifier;[Now];
-    SyntaxKind.HtmlText - [ ] - [20..21) - FullWidth: 1 - Slots: 1
+    SyntaxKind.HtmlTextLiteral - [ ] - [20..21) - FullWidth: 1 - Slots: 1
         SyntaxKind.Whitespace;[ ];
     Tag block - Gen<TagHelper> - 20 - (21:0,21) - p - ptaghelper
         StartTagAndEndTag - <p> ... </p>

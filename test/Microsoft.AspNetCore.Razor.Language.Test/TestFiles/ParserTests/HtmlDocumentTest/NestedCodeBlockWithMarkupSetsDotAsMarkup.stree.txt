@@ -29,7 +29,7 @@ Markup block - Gen<None> - 52 - (0:0,0)
                 Tag block - Gen<None> - 5 - (26:0,26)
                     Markup span - Gen<Markup> - [<div>] - SpanEditHandler;Accepts:None - (26:0,26) - Tokens:3
                         SyntaxKind.OpenAngle;[<];
-                        SyntaxKind.HtmlTextLiteral;[div];
+                        SyntaxKind.Text;[div];
                         SyntaxKind.CloseAngle;[>];
                 Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (31:0,31) - Tokens:1
                     SyntaxKind.Unknown;[];
@@ -39,12 +39,12 @@ Markup block - Gen<None> - 52 - (0:0,0)
                     Code span - Gen<Expr> - [something] - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14 - (32:0,32) - Tokens:1
                         SyntaxKind.Identifier;[something];
                 Markup span - Gen<Markup> - [.] - SpanEditHandler;Accepts:Any - (41:0,41) - Tokens:1
-                    SyntaxKind.HtmlTextLiteral;[.];
+                    SyntaxKind.Text;[.];
                 Tag block - Gen<None> - 6 - (42:0,42)
                     Markup span - Gen<Markup> - [</div>] - SpanEditHandler;Accepts:None - (42:0,42) - Tokens:4
                         SyntaxKind.OpenAngle;[<];
                         SyntaxKind.ForwardSlash;[/];
-                        SyntaxKind.HtmlTextLiteral;[div];
+                        SyntaxKind.Text;[div];
                         SyntaxKind.CloseAngle;[>];
                 Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:None - (48:0,48) - Tokens:1
                     SyntaxKind.Whitespace;[ ];

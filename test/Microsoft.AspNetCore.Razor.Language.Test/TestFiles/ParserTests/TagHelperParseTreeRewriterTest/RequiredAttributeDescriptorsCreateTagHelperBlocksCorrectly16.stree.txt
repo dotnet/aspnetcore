@@ -3,7 +3,7 @@ Markup block - Gen<None> - 33 - (0:0,0)
         SelfClosing - <p notRequired="a" class="btn" />
         notRequired - DoubleQuotes
             Markup span - Gen<Markup> - [a] - SpanEditHandler;Accepts:Any - (16:0,16) - Tokens:1
-                SyntaxKind.HtmlTextLiteral;[a];
+                SyntaxKind.Text;[a];
         class - DoubleQuotes
             Markup span - Gen<Markup> - [btn] - SpanEditHandler;Accepts:Any - (26:0,26) - Tokens:1
-                SyntaxKind.HtmlTextLiteral;[btn];
+                SyntaxKind.Text;[btn];

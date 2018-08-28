@@ -2,11 +2,11 @@ Markup block - Gen<None> - 17 - (0:0,0)
     Tag block - Gen<None> - 17 - (0:0,0)
         Markup span - Gen<Markup> - [<span] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:2
             SyntaxKind.OpenAngle;[<];
-            SyntaxKind.HtmlTextLiteral;[span];
+            SyntaxKind.Text;[span];
         Markup block - Gen<Attr:foo, foo='@(5:0,5),'@(13:0,13)> - 9 - (5:0,5)
             Markup span - Gen<None> - [ foo='] - SpanEditHandler;Accepts:Any - (5:0,5) - Tokens:4
                 SyntaxKind.Whitespace;[ ];
-                SyntaxKind.HtmlTextLiteral;[foo];
+                SyntaxKind.Text;[foo];
                 SyntaxKind.Equals;[=];
                 SyntaxKind.SingleQuote;['];
             Markup block - Gen<None> - 2 - (11:0,11)

@@ -17,20 +17,20 @@ Directive block - Gen<Directive:{section;RazorBlock;Unrestricted}> - 32 - (0:0,0
         Tag block - Gen<None> - 3 - (18:0,18)
             Markup span - Gen<Markup> - [<p>] - SpanEditHandler;Accepts:Any - (18:0,18) - Tokens:3
                 SyntaxKind.OpenAngle;[<];
-                SyntaxKind.HtmlTextLiteral;[p];
+                SyntaxKind.Text;[p];
                 SyntaxKind.CloseAngle;[>];
-        SyntaxKind.HtmlText - [F{o}o] - [21..26) - FullWidth: 5 - Slots: 1
+        SyntaxKind.HtmlTextLiteral - [F{o}o] - [21..26) - FullWidth: 5 - Slots: 1
             SyntaxKind.List - [F{o}o] - [21..26) - FullWidth: 5 - Slots: 5
-                SyntaxKind.HtmlTextLiteral;[F];
-                SyntaxKind.HtmlTextLiteral;[{];
-                SyntaxKind.HtmlTextLiteral;[o];
-                SyntaxKind.HtmlTextLiteral;[}];
-                SyntaxKind.HtmlTextLiteral;[o];
+                SyntaxKind.Text;[F];
+                SyntaxKind.Text;[{];
+                SyntaxKind.Text;[o];
+                SyntaxKind.Text;[}];
+                SyntaxKind.Text;[o];
         Tag block - Gen<None> - 4 - (26:0,26)
             Markup span - Gen<Markup> - [</p>] - SpanEditHandler;Accepts:Any - (26:0,26) - Tokens:4
                 SyntaxKind.OpenAngle;[<];
                 SyntaxKind.ForwardSlash;[/];
-                SyntaxKind.HtmlTextLiteral;[p];
+                SyntaxKind.Text;[p];
                 SyntaxKind.CloseAngle;[>];
         Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:Any - (30:0,30) - Tokens:1
             SyntaxKind.Whitespace;[ ];

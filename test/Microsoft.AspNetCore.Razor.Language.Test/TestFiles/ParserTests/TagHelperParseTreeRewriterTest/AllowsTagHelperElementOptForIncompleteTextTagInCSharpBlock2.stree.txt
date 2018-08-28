@@ -13,9 +13,9 @@ Markup block - Gen<None> - 11 - (0:0,0)
                 MetaCode span - Gen<None> - [!] - SpanEditHandler;Accepts:None - (3:0,3) - Tokens:1
                     SyntaxKind.Bang;[!];
                 Markup span - Gen<Markup> - [text /] - SpanEditHandler;Accepts:Any - (4:0,4) - Tokens:3
-                    SyntaxKind.HtmlTextLiteral;[text];
+                    SyntaxKind.Text;[text];
                     SyntaxKind.Whitespace;[ ];
                     SyntaxKind.ForwardSlash;[/];
                 Markup block - Gen<None> - 1 - (10:0,10)
                     Markup span - Gen<Markup> - [}] - SpanEditHandler;Accepts:Any - (10:0,10) - Tokens:1
-                        SyntaxKind.HtmlTextLiteral;[}];
+                        SyntaxKind.Text;[}];
