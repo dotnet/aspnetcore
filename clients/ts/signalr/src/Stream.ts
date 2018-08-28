@@ -45,6 +45,7 @@ export interface IStreamResult<T> {
  *
  * @typeparam T The type of the items being sent by the server.
  */
+// @ts-ignore: We can't remove this, it's a breaking change, but it's not used.
 export interface ISubscription<T> {
     /** Disconnects the {@link @aspnet/signalr.IStreamSubscriber} associated with this subscription from the stream. */
     dispose(): void;

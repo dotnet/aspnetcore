@@ -57,7 +57,7 @@ describe("HubConnection", () => {
                 });
             } finally {
                 // Close the connection
-                hubConnection.stop();
+                await hubConnection.stop();
             }
         });
     });
@@ -85,7 +85,7 @@ describe("HubConnection", () => {
 
             } finally {
                 // Close the connection
-                hubConnection.stop();
+                await hubConnection.stop();
             }
         });
 
@@ -107,7 +107,7 @@ describe("HubConnection", () => {
                 // message only contained handshake response
                 expect(protocolCalled).toEqual(false);
             } finally {
-                hubConnection.stop();
+                await hubConnection.stop();
             }
         });
 
@@ -130,7 +130,7 @@ describe("HubConnection", () => {
                 // message only contained handshake response
                 expect(protocolCalled).toEqual(false);
             } finally {
-                hubConnection.stop();
+                await hubConnection.stop();
             }
         });
 
@@ -158,7 +158,7 @@ describe("HubConnection", () => {
                 // left over data is the message pack message
                 expect(receivedProcotolData.byteLength).toEqual(102);
             } finally {
-                hubConnection.stop();
+                await hubConnection.stop();
             }
         });
 
@@ -177,7 +177,7 @@ describe("HubConnection", () => {
 
                 expect(receivedProcotolData).toEqual("{\"type\":6}" + TextMessageFormat.RecordSeparator);
             } finally {
-                hubConnection.stop();
+                await hubConnection.stop();
             }
         });
 
@@ -193,7 +193,7 @@ describe("HubConnection", () => {
 
                 await expect(invokePromise).rejects.toThrow("foo");
             } finally {
-                hubConnection.stop();
+                await hubConnection.stop();
             }
         });
 
@@ -209,7 +209,7 @@ describe("HubConnection", () => {
 
                 expect(await invokePromise).toBe("foo");
             } finally {
-                hubConnection.stop();
+                await hubConnection.stop();
             }
         });
 
@@ -221,7 +221,7 @@ describe("HubConnection", () => {
             connection.receiveHandshakeResponse();
 
             const invokePromise = hubConnection.invoke("testMethod");
-            hubConnection.stop();
+            await hubConnection.stop();
 
             expect(invokePromise).rejects.toThrow("Invocation canceled due to connection being closed.");
         });
@@ -239,7 +239,7 @@ describe("HubConnection", () => {
 
                 expect(invokePromise).rejects.toThrow("Connection lost");
             } finally {
-                hubConnection.stop();
+                await hubConnection.stop();
             }
         });
     });
@@ -268,7 +268,7 @@ describe("HubConnection", () => {
 
                 expect(warnings).toEqual(["No client method with the name 'message' found."]);
             } finally {
-                hubConnection.stop();
+                await hubConnection.stop();
             }
         });
 
@@ -300,7 +300,7 @@ describe("HubConnection", () => {
 
                 expect(warnings).toEqual(["No client method with the name 'message' found."]);
             } finally {
-                hubConnection.stop();
+                await hubConnection.stop();
             }
         });
 
@@ -336,7 +336,7 @@ describe("HubConnection", () => {
 
                 expect(count).toBe(2);
             } finally {
-                hubConnection.stop();
+                await hubConnection.stop();
             }
         });
 
@@ -372,7 +372,7 @@ describe("HubConnection", () => {
 
                 expect(count).toBe(3);
             } finally {
-                hubConnection.stop();
+                await hubConnection.stop();
             }
         });
 
@@ -397,7 +397,7 @@ describe("HubConnection", () => {
 
                 expect(count).toBe(1);
             } finally {
-                hubConnection.stop();
+                await hubConnection.stop();
             }
         });
 
@@ -420,7 +420,7 @@ describe("HubConnection", () => {
 
                 expect(value).toBe("test");
             } finally {
-                hubConnection.stop();
+                await hubConnection.stop();
             }
         });
 
@@ -435,7 +435,7 @@ describe("HubConnection", () => {
 
                 expect(closeError.message).toEqual("Server returned handshake error: Error!");
             } finally {
-                hubConnection.stop();
+                await hubConnection.stop();
             }
         });
 
@@ -459,7 +459,7 @@ describe("HubConnection", () => {
                 expect(isClosed).toEqual(true);
                 expect(closeError).toEqual(null);
             } finally {
-                hubConnection.stop();
+                await hubConnection.stop();
             }
         });
 
@@ -484,7 +484,7 @@ describe("HubConnection", () => {
                 expect(isClosed).toEqual(true);
                 expect(closeError.message).toEqual("Server returned an error on close: Error!");
             } finally {
-                hubConnection.stop();
+                await hubConnection.stop();
             }
         });
 
@@ -510,7 +510,7 @@ describe("HubConnection", () => {
                 expect(numInvocations1).toBe(1);
                 expect(numInvocations2).toBe(1);
             } finally {
-                hubConnection.stop();
+                await hubConnection.stop();
             }
         });
 
@@ -544,7 +544,7 @@ describe("HubConnection", () => {
 
                 expect(numInvocations).toBe(1);
             } finally {
-                hubConnection.stop();
+                await hubConnection.stop();
             }
         });
 
@@ -556,7 +556,7 @@ describe("HubConnection", () => {
                 hubConnection.on("message", (t) => { });
                 hubConnection.on("message", () => { });
             } finally {
-                hubConnection.stop();
+                await hubConnection.stop();
             }
         });
 
@@ -601,7 +601,7 @@ describe("HubConnection", () => {
                 hubConnection.off(null, () => { });
                 hubConnection.off(undefined, () => { });
             } finally {
-                hubConnection.stop();
+                await hubConnection.stop();
             }
         });
     });
@@ -627,9 +627,9 @@ describe("HubConnection", () => {
                 });
 
                 // Close the connection
-                hubConnection.stop();
+                await hubConnection.stop();
             } finally {
-                hubConnection.stop();
+                await hubConnection.stop();
             }
         });
 
@@ -647,7 +647,7 @@ describe("HubConnection", () => {
 
                 expect(observer.completed).rejects.toThrow("Error: foo");
             } finally {
-                hubConnection.stop();
+                await hubConnection.stop();
             }
         });
 
@@ -665,7 +665,7 @@ describe("HubConnection", () => {
 
                 expect(await observer.completed).toEqual([]);
             } finally {
-                hubConnection.stop();
+                await hubConnection.stop();
             }
         });
 
@@ -677,11 +677,11 @@ describe("HubConnection", () => {
                 const observer = new TestObserver();
                 hubConnection.stream<any>("testMethod")
                     .subscribe(observer);
-                hubConnection.stop();
+                await hubConnection.stop();
 
                 expect(observer.completed).rejects.toThrow("Error: Invocation canceled due to connection being closed.");
             } finally {
-                hubConnection.stop();
+                await hubConnection.stop();
             }
         });
 
@@ -699,7 +699,7 @@ describe("HubConnection", () => {
 
                 expect(observer.completed).rejects.toThrow("Error: Connection lost");
             } finally {
-                hubConnection.stop();
+                await hubConnection.stop();
             }
         });
 
@@ -725,7 +725,7 @@ describe("HubConnection", () => {
                 connection.receive({ type: MessageType.Completion, invocationId: connection.lastInvocationId });
                 expect(await observer.completed).toEqual([1, 2, 3]);
             } finally {
-                hubConnection.stop();
+                await hubConnection.stop();
             }
         });
 
@@ -740,7 +740,7 @@ describe("HubConnection", () => {
                 // triggers observer.error()
                 connection.onclose(new Error("Connection lost"));
             } finally {
-                hubConnection.stop();
+                await hubConnection.stop();
             }
         });
 
@@ -755,11 +755,11 @@ describe("HubConnection", () => {
                 // Expectation is connection.receive will not to throw
                 connection.receive({ type: MessageType.Completion, invocationId: connection.lastInvocationId });
             } finally {
-                hubConnection.stop();
+                await hubConnection.stop();
             }
         });
 
-        it("can be canceled", () => {
+        it("can be canceled", async () => {
             const connection = new TestConnection();
             const hubConnection = createHubConnection(connection);
             try {
@@ -785,7 +785,7 @@ describe("HubConnection", () => {
                     type: MessageType.CancelInvocation,
                 });
             } finally {
-                hubConnection.stop();
+                await hubConnection.stop();
             }
         });
     });
@@ -802,7 +802,7 @@ describe("HubConnection", () => {
                 connection.onclose();
                 expect(invocations).toBe(2);
             } finally {
-                hubConnection.stop();
+                await hubConnection.stop();
             }
         });
 
@@ -817,7 +817,7 @@ describe("HubConnection", () => {
                 connection.onclose(new Error("Test error."));
                 expect(error.message).toBe("Test error.");
             } finally {
-                hubConnection.stop();
+                await hubConnection.stop();
             }
         });
 
@@ -831,7 +831,7 @@ describe("HubConnection", () => {
                 connection.onclose();
                 // expect no errors
             } finally {
-                hubConnection.stop();
+                await hubConnection.stop();
             }
         });
     });
@@ -850,7 +850,7 @@ describe("HubConnection", () => {
 
                 expect(await invokePromise).toBe("foo");
             } finally {
-                hubConnection.stop();
+                await hubConnection.stop();
             }
         });
 
@@ -874,13 +874,13 @@ describe("HubConnection", () => {
                 await connection.receive({ type: MessageType.Ping });
                 await delay(50);
 
-                connection.stop();
+                await connection.stop();
 
                 const error = await p.promise;
 
                 expect(error).toBeUndefined();
             } finally {
-                hubConnection.stop();
+                await hubConnection.stop();
             }
         });
 
@@ -906,13 +906,13 @@ describe("HubConnection", () => {
                 await connection.receive({ type: MessageType.Ping });
                 await delay(50);
 
-                connection.stop();
+                await connection.stop();
 
                 const error = await p.promise;
 
                 expect(error).toBeUndefined();
             } finally {
-                hubConnection.stop();
+                await hubConnection.stop();
             }
         });
 
@@ -931,7 +931,7 @@ describe("HubConnection", () => {
 
                 expect(error).toEqual(new Error("Server timeout elapsed without receiving a message from the server."));
             } finally {
-                hubConnection.stop();
+                await hubConnection.stop();
             }
         });
     });

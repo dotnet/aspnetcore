@@ -19,7 +19,6 @@ export class LongPollingTransport implements ITransport {
     private readonly logMessageContent: boolean;
 
     private url: string;
-    private pollXhr: XMLHttpRequest;
     private pollAbort: AbortController;
     private shutdownTimer: any; // We use 'any' because this is an object in NodeJS. But it still gets passed to clearTimeout, so it doesn't really matter
     private shutdownTimeout: number;
@@ -84,6 +83,7 @@ export class LongPollingTransport implements ITransport {
             this.running = true;
         }
 
+        // tslint:disable-next-line:no-floating-promises
         this.poll(this.url, pollOptions, closeError);
         return Promise.resolve();
     }
@@ -188,7 +188,7 @@ export class LongPollingTransport implements ITransport {
             };
             const token = await this.accessTokenFactory();
             this.updateHeaderToken(deleteOptions, token);
-            const response = await this.httpClient.delete(this.url, deleteOptions);
+            await this.httpClient.delete(this.url, deleteOptions);
 
             this.logger.log(LogLevel.Trace, "(LongPolling transport) DELETE request accepted.");
         } finally {

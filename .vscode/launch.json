@@ -1,6 +1,7 @@
 {
     "version": "0.2.0",
     "configurations": [
+
         {
             "type": "node",
             "request": "launch",
@@ -17,6 +18,18 @@
             "address": "localhost",
             "port": 5858,
             "outFiles": []
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Jest - Current File",
+            "program": "${workspaceFolder}/clients/ts/common/node_modules/jest/bin/jest",
+            "cwd": "${workspaceFolder}/clients/ts",
+            "args": [
+                "${relativeFile}"
+            ],
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen"
         }
     ]
 }

@@ -41,7 +41,8 @@ export class WebSocketTransport implements ITransport {
                 webSocket.binaryType = "arraybuffer";
             }
 
-            webSocket.onopen = (event: Event) => {
+            // tslint:disable-next-line:variable-name
+            webSocket.onopen = (_event: Event) => {
                 this.logger.log(LogLevel.Information, `WebSocket connected to ${url}`);
                 this.webSocket = webSocket;
                 resolve();

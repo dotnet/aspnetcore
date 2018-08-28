@@ -7,7 +7,6 @@ import { IHttpConnectionOptions } from "../src/IHttpConnectionOptions";
 import { HttpTransportType, ITransport, TransferFormat } from "../src/ITransport";
 
 import { HttpError } from "../src/Errors";
-import { LogLevel } from "../src/ILogger";
 import { eachEndpointUrl, eachTransport } from "./Common";
 import { TestHttpClient } from "./TestHttpClient";
 import { PromiseSource } from "./Utils";
@@ -117,11 +116,13 @@ describe("HttpConnection", () => {
         const options: IHttpConnectionOptions = {
             ...commonOptions,
             httpClient: new TestHttpClient()
-                .on("POST", (r) => {
+                .on("POST", async () => {
+                    // tslint:disable-next-line:no-floating-promises
                     connection.stop();
                     return "{}";
                 })
-                .on("GET", (r) => {
+                .on("GET", async () => {
+                    // tslint:disable-next-line:no-floating-promises
                     connection.stop();
                     return "";
                 }),
@@ -267,7 +268,7 @@ describe("HttpConnection", () => {
             });
         }
 
-        it(`cannot be started if server's only transport (${HttpTransportType[requestedTransport]}) is masked out by the transport option`, async() => {
+        it(`cannot be started if server's only transport (${HttpTransportType[requestedTransport]}) is masked out by the transport option`, async () => {
             const negotiateResponse = {
                 availableTransports: [
                     { transport: "WebSockets", transferFormats: [ "Text", "Binary" ] },
