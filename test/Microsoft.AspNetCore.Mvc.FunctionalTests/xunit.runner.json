@@ -1,3 +1,4 @@
 {
-  "shadowCopy": false
+  "shadowCopy": false,
+  "longRunningTestSeconds": 60
 }
