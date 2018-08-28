@@ -46,15 +46,22 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             var eventLog = new EventLog("Application");
 
-            // Perf: only get the last 20 events from the event log.
             // Eventlog is already sorted based on time of event in ascending time.
-            // Add results in reverse order.
+            // Check results in reverse order.
             var expectedRegexEventLog = new Regex(expectedRegexMatchString);
             var processIdString = $"Process Id: {deploymentResult.HostProcess.Id}.";
 
-            for (var i = eventLog.Entries.Count - 1; i >= eventLog.Entries.Count - 20; i--)
+            // Event log messages round down to the nearest second, so subtract a second
+            var processStartTime = deploymentResult.HostProcess.StartTime.AddSeconds(-1);
+            for (var i = eventLog.Entries.Count - 1; i >= 0; i--)
             {
                 var eventLogEntry = eventLog.Entries[i];
+                if (eventLogEntry.TimeGenerated < processStartTime)
+                {
+                    // If event logs is older than the process start time, we didn't find a match.
+                    break;
+                }
+
                 if (eventLogEntry.ReplacementStrings == null ||
                     eventLogEntry.ReplacementStrings.Length < 3)
                 {
