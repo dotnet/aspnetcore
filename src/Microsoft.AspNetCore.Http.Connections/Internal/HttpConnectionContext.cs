@@ -88,6 +88,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
         public Task TransportTask { get; set; }
 
+        public Task PreviousPollTask { get; set; } = Task.CompletedTask;
+
         public Task ApplicationTask { get; set; }
 
         public DateTime LastSeenUtc { get; set; }
@@ -179,6 +181,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         public async Task DisposeAsync(bool closeGracefully = false)
         {
             Task disposeTask;
+
+            Cancellation?.Dispose();
 
             await StateLock.WaitAsync();
             try
