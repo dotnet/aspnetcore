@@ -5,8 +5,12 @@
     <IncludeSymbols>false</IncludeSymbols>
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <PackageTags>aspnetcore</PackageTags>
-    <Description>Microsoft.AspNetCore.App</Description>
     <EnableApiCheck>false</EnableApiCheck>
+    <PackageDescription>Provides a default set of API for building an ASP.NET Core application.
+
+This package requires the ASP.NET Core runtime. This runtime is installed by the .NET Core SDK,
+or can be acquired separately using installers available at https://aka.ms/dotnet-download.
+    </PackageDescription>
   </PropertyGroup>
 
   <ItemGroup>
