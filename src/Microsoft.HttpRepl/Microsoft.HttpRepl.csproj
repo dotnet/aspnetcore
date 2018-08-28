@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk;Microsoft.DotNet.GlobalTools.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <PackAsTool>true</PackAsTool>
+    <AssemblyName>dotnet-httprepl</AssemblyName>
+    <LangVersion>latest</LangVersion>
+    <Description>Command line tool to for making HTTP calls and viewing their results.</Description>
+    <PackageTags>dotnet;http;httprepl</PackageTags>
+
+    <!-- This is a requirement for Microsoft tool packages only. -->
+    <GenerateToolShims>true</GenerateToolShims>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="$(MicrosoftWebApiClientPackageVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.Repl\Microsoft.Repl.csproj" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <SignedPackageFile Include="tools/$(TargetFramework)/any/Microsoft.Repl.dll" Certificate="$(AssemblySigningCertName)" />
+    <SignedPackageFile Include="tools/$(TargetFramework)/any/Newtonsoft.Json.dll" Certificate="$(AssemblySigning3rdPartyCertName)" />
+    <SignedPackageFile Include="tools/$(TargetFramework)/any/Newtonsoft.Json.Bson.dll" Certificate="$(AssemblySigning3rdPartyCertName)" />
+    <SignedPackageFile Include="tools/$(TargetFramework)/any/System.Net.Http.Formatting.dll" Certificate="$(AssemblySigningCertName)" />
+  </ItemGroup>
+
+</Project>
