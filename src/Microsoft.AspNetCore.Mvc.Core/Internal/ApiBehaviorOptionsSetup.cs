@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Logging;
@@ -128,9 +129,16 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             return result;
         }
 
-        private static IActionResult ProblemDetailsInvalidModelStateResponse(ActionContext context)
+        internal static IActionResult ProblemDetailsInvalidModelStateResponse(ActionContext context)
         {
-            var result = new BadRequestObjectResult(new ValidationProblemDetails(context.ModelState));
+            var problemDetails = new ValidationProblemDetails(context.ModelState)
+            {
+                Status = StatusCodes.Status400BadRequest,
+            };
+
+            ProblemDetailsClientErrorFactory.SetTraceId(context, problemDetails);
+
+            var result = new BadRequestObjectResult(problemDetails);
 
             result.ContentTypes.Add("application/problem+json");
             result.ContentTypes.Add("application/problem+xml");

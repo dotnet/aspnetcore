@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -35,37 +36,48 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public async Task ActionsReturnBadRequest_WhenModelStateIsInvalid()
         {
             // Arrange
-            var contactModel = new Contact
+            using (new ActivityReplacer())
             {
-                Name = "Abc",
-                City = "Redmond",
-                State = "WA",
-                Zip = "Invalid",
-            };
-            var contactString = JsonConvert.SerializeObject(contactModel);
-
-            // Act
-            var response = await Client.PostAsJsonAsync("/contact", contactModel);
-
-            // Assert
-            await response.AssertStatusCodeAsync(HttpStatusCode.BadRequest);
-            Assert.Equal("application/problem+json", response.Content.Headers.ContentType.MediaType);
-            var problemDetails = JsonConvert.DeserializeObject<ValidationProblemDetails>(await response.Content.ReadAsStringAsync());
-            Assert.Collection(
-                problemDetails.Errors.OrderBy(kvp => kvp.Key),
-                kvp =>
+                var contactModel = new Contact
                 {
-                    Assert.Equal("Name", kvp.Key);
-                    var error = Assert.Single(kvp.Value);
-                    Assert.Equal("The field Name must be a string with a minimum length of 5 and a maximum length of 30.", error);
-                },
-                kvp =>
-                {
-                    Assert.Equal("Zip", kvp.Key);
-                    var error = Assert.Single(kvp.Value);
-                    Assert.Equal("The field Zip must match the regular expression '\\d{5}'.", error);
-                }
-            );
+                    Name = "Abc",
+                    City = "Redmond",
+                    State = "WA",
+                    Zip = "Invalid",
+                };
+                var contactString = JsonConvert.SerializeObject(contactModel);
+
+                // Act
+                var response = await Client.PostAsJsonAsync("/contact", contactModel);
+
+                // Assert
+                await response.AssertStatusCodeAsync(HttpStatusCode.BadRequest);
+                Assert.Equal("application/problem+json", response.Content.Headers.ContentType.MediaType);
+                var problemDetails = JsonConvert.DeserializeObject<ValidationProblemDetails>(await response.Content.ReadAsStringAsync());
+                Assert.Collection(
+                    problemDetails.Errors.OrderBy(kvp => kvp.Key),
+                    kvp =>
+                    {
+                        Assert.Equal("Name", kvp.Key);
+                        var error = Assert.Single(kvp.Value);
+                        Assert.Equal("The field Name must be a string with a minimum length of 5 and a maximum length of 30.", error);
+                    },
+                    kvp =>
+                    {
+                        Assert.Equal("Zip", kvp.Key);
+                        var error = Assert.Single(kvp.Value);
+                        Assert.Equal("The field Zip must match the regular expression '\\d{5}'.", error);
+                    }
+                );
+
+                Assert.Collection(
+                    problemDetails.Extensions,
+                    kvp =>
+                    {
+                        Assert.Equal("traceId", kvp.Key);
+                        Assert.Equal(Activity.Current.Id, kvp.Value);
+                    });
+            }
         }
 
         [Fact]
@@ -253,21 +265,31 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         [Fact]
         public async Task ClientErrorResultFilterExecutesForStatusCodeResults()
         {
-            // Act
-            var response = await Client.GetAsync("/contact/ActionReturningStatusCodeResult");
+            using (new ActivityReplacer())
+            {
+                // Act
+                var response = await Client.GetAsync("/contact/ActionReturningStatusCodeResult");
 
-            // Assert
-            await response.AssertStatusCodeAsync(HttpStatusCode.NotFound);
-            var content = await response.Content.ReadAsStringAsync();
-            var problemDetails = JsonConvert.DeserializeObject<ProblemDetails>(content);
-            Assert.Equal(404, problemDetails.Status);
+                // Assert
+                await response.AssertStatusCodeAsync(HttpStatusCode.NotFound);
+                var content = await response.Content.ReadAsStringAsync();
+                var problemDetails = JsonConvert.DeserializeObject<ProblemDetails>(content);
+                Assert.Equal(404, problemDetails.Status);
+                Assert.Collection(
+                    problemDetails.Extensions,
+                    kvp =>
+                    {
+                        Assert.Equal("traceId", kvp.Key);
+                        Assert.Equal(Activity.Current.Id, kvp.Value);
+                    });
+            }
         }
 
         [Fact]
         public async Task SerializingProblemDetails_IgnoresNullValuedProperties()
         {
             // Arrange
-            var expected = new[] { "status", "title", "type" };
+            var expected = new[] { "status", "title", "traceId", "type" };
 
             // Act
             var response = await Client.GetAsync("/contact/ActionReturningStatusCodeResult");
@@ -310,7 +332,14 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             Assert.Equal("Error", validationProblemDetails.Title);
             Assert.Equal(400, validationProblemDetails.Status);
-            Assert.Equal("27", validationProblemDetails.Extensions["tracking-id"]);
+            Assert.Collection(
+                validationProblemDetails.Extensions,
+                kvp =>
+                {
+                    Assert.Equal("tracking-id", kvp.Key);
+                    Assert.Equal("27", kvp.Value);
+                });
+
             Assert.Collection(
                 validationProblemDetails.Errors,
                 kvp =>

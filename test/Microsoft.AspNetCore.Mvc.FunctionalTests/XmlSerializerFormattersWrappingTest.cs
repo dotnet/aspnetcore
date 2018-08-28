@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -188,15 +189,23 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public async Task ProblemDetails_IsSerialized()
         {
             // Arrange
-            var expected = @"<ProblemDetails><Status>404</Status><Title>Not Found</Title><Type>https://tools.ietf.org/html/rfc7231#section-6.5.4</Type></ProblemDetails>";
+            using (new ActivityReplacer())
+            {
+                var expected = "<ProblemDetails>" +
+                    "<Status>404</Status>" +
+                    "<Title>Not Found</Title>" +
+                    "<Type>https://tools.ietf.org/html/rfc7231#section-6.5.4</Type>" +
+                    $"<traceId>{Activity.Current.Id}</traceId>" +
+                    "</ProblemDetails>";
 
-            // Act
-            var response = await Client.GetAsync("/api/XmlSerializerApi/ActionReturningClientErrorStatusCodeResult");
+                // Act
+                var response = await Client.GetAsync("/api/XmlSerializerApi/ActionReturningClientErrorStatusCodeResult");
 
-            // Assert
-            await response.AssertStatusCodeAsync(HttpStatusCode.NotFound);
-            var content = await response.Content.ReadAsStringAsync();
-            XmlAssert.Equal(expected, content);
+                // Assert
+                await response.AssertStatusCodeAsync(HttpStatusCode.NotFound);
+                var content = await response.Content.ReadAsStringAsync();
+                XmlAssert.Equal(expected, content);
+            }
         }
 
         [Fact]
@@ -219,16 +228,25 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public async Task ValidationProblemDetails_IsSerialized()
         {
             // Arrange
-            var expected = @"<ValidationProblemDetails><Status>400</Status><Title>One or more validation errors occurred.</Title>
-<MVC-Errors><State>The State field is required.</State></MVC-Errors></ValidationProblemDetails>";
+            using (new ActivityReplacer())
+            {
+                var expected = "<ValidationProblemDetails>" +
+               "<Status>400</Status>" +
+               "<Title>One or more validation errors occurred.</Title>" +
+               $"<traceId>{Activity.Current.Id}</traceId>" +
+               "<MVC-Errors>" +
+               "<State>The State field is required.</State>" +
+               "</MVC-Errors>" +
+               "</ValidationProblemDetails>";
 
-            // Act
-            var response = await Client.GetAsync("/api/XmlSerializerApi/ActionReturningValidationProblem");
+                // Act
+                var response = await Client.GetAsync("/api/XmlSerializerApi/ActionReturningValidationProblem");
 
-            // Assert
-            await response.AssertStatusCodeAsync(HttpStatusCode.BadRequest);
-            var content = await response.Content.ReadAsStringAsync();
-            XmlAssert.Equal(expected, content);
+                // Assert
+                await response.AssertStatusCodeAsync(HttpStatusCode.BadRequest);
+                var content = await response.Content.ReadAsStringAsync();
+                XmlAssert.Equal(expected, content);
+            }
         }
 
         [Fact]

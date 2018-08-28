@@ -2,12 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure
 {
     internal class ProblemDetailsClientErrorFactory : IClientErrorFactory
     {
+        private static readonly string TraceIdentifierKey = "traceId";
         private readonly ApiBehaviorOptions _options;
 
         public ProblemDetailsClientErrorFactory(IOptions<ApiBehaviorOptions> options)
@@ -28,6 +30,8 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             {
                 problemDetails.Title = errorData.Title;
                 problemDetails.Type = errorData.Link;
+
+                SetTraceId(actionContext, problemDetails);
             }
 
             return new ObjectResult(problemDetails)
@@ -39,6 +43,12 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                     "application/problem+xml",
                 },
             };
+        }
+
+        internal static void SetTraceId(ActionContext actionContext, ProblemDetails problemDetails)
+        {
+            var traceId = Activity.Current?.Id ?? actionContext.HttpContext.TraceIdentifier;
+            problemDetails.Extensions[TraceIdentifierKey] = traceId;
         }
     }
 }

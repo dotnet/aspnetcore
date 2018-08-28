@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <Compile Include="..\Microsoft.AspNetCore.Mvc.Formatters.Xml.Test\XmlAssert.cs" />
+    <Compile Include="..\Microsoft.AspNetCore.Mvc.Core.TestCommon\ActivityReplacer.cs" />
     <EmbeddedResource Include="compiler\resources\**\*" />
     <None Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
