@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Microsoft.HttpRepl": {
+      "commandName": "Project",
+      "commandLineArgs": "http://localhost"
+    }
+  }
+}
