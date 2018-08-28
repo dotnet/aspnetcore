@@ -174,7 +174,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                                         endpointInfo.Defaults,
                                         ++conventionalRouteOrder,
                                         endpointInfo,
-                                        suppressLinkGeneration: false);
+                                        suppressLinkGeneration: false,
+                                        suppressPathMatching: false);
                                     endpoints.Add(subEndpoint);
                                 }
 
@@ -213,7 +214,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                                 endpointInfo.Defaults,
                                 ++conventionalRouteOrder,
                                 endpointInfo,
-                                suppressLinkGeneration: false);
+                                suppressLinkGeneration: false,
+                                suppressPathMatching: false);
                             endpoints.Add(endpoint);
                         }
                     }
@@ -227,7 +229,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                             nonInlineDefaults: null,
                             action.AttributeRouteInfo.Order,
                             action.AttributeRouteInfo,
-                            suppressLinkGeneration: action.AttributeRouteInfo.SuppressLinkGeneration);
+                            suppressLinkGeneration: action.AttributeRouteInfo.SuppressLinkGeneration,
+                            suppressPathMatching: action.AttributeRouteInfo.SuppressPathMatching);
                         endpoints.Add(endpoint);
                     }
                 }
@@ -375,7 +378,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             object nonInlineDefaults,
             int order,
             object source,
-            bool suppressLinkGeneration)
+            bool suppressLinkGeneration,
+            bool suppressPathMatching)
         {
             RequestDelegate requestDelegate = (context) =>
             {
@@ -403,7 +407,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 routeName,
                 new RouteValueDictionary(action.RouteValues),
                 source,
-                suppressLinkGeneration);
+                suppressLinkGeneration,
+                suppressPathMatching);
 
             var endpoint = new RouteEndpoint(
                 requestDelegate,
@@ -420,12 +425,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             string routeName,
             RouteValueDictionary requiredValues,
             object source,
-            bool suppressLinkGeneration)
+            bool suppressLinkGeneration,
+            bool suppressPathMatching)
         {
             var metadata = new List<object>
             {
-                // REVIEW: Used for debugging. Consider removing before release
-                source,
                 action
             };
 
@@ -475,6 +479,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 metadata.Add(new SuppressLinkGenerationMetadata());
             }
 
+            if (suppressPathMatching)
+            {
+                metadata.Add(new SuppressMatchingMetadata());
+            }
+
             var metadataCollection = new EndpointMetadataCollection(metadata);
             return metadataCollection;
         }
@@ -500,7 +509,5 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 defaults[kvp.Key] = kvp.Value;
             }
         }
-
-        private class SuppressLinkGenerationMetadata : ISuppressLinkGenerationMetadata { }
     }
 }
