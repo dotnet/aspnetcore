@@ -23,6 +23,7 @@
     <MicrosoftAspNetCoreIdentityUIPackageVersion>2.1.3-rtm-30913</MicrosoftAspNetCoreIdentityUIPackageVersion>
     <MicrosoftAspNetCoreMvcPackageVersion>2.1.2-rtm-30913</MicrosoftAspNetCoreMvcPackageVersion>
     <MicrosoftAspNetCoreMvcRazorViewCompilationPackageVersion>2.1.1</MicrosoftAspNetCoreMvcRazorViewCompilationPackageVersion>
+    <MicrosoftAspNetCoreRazorDesignPackageVersion>2.1.1</MicrosoftAspNetCoreRazorDesignPackageVersion>
     <MicrosoftAspNetCorePackageVersion>2.1.3-rtm-30913</MicrosoftAspNetCorePackageVersion>
     <MicrosoftAspNetCoreSpaServicesExtensionsPackageVersion>2.1.1</MicrosoftAspNetCoreSpaServicesExtensionsPackageVersion>
     <MicrosoftAspNetCoreSpaServicesPackageVersion>2.1.1</MicrosoftAspNetCoreSpaServicesPackageVersion>

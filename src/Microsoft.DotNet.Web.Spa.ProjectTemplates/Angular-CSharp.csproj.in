@@ -15,12 +15,14 @@
 
   <ItemGroup Condition="'$(TargetFrameworkOverride)' == ''">
     <PackageReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="${MicrosoftAspNetCoreRazorDesignPackageVersion}" PrivateAssets="All" />
     <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="${MicrosoftAspNetCoreSpaServicesExtensionsPackageVersion}" />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFrameworkOverride)' != ''">
     <PackageReference Include="Microsoft.AspNetCore" Version="${MicrosoftAspNetCorePackageVersion}" />
     <PackageReference Include="Microsoft.AspNetCore.HttpsPolicy" Version="${MicrosoftAspNetCoreHttpsPolicyPackageVersion}" Condition="'$(NoHttps)' != 'True'"/>
     <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="${MicrosoftAspNetCoreMvcPackageVersion}" />
+    <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="${MicrosoftAspNetCoreRazorDesignPackageVersion}" PrivateAssets="All" />
     <PackageReference Include="Microsoft.AspNetCore.SpaServices" Version="${MicrosoftAspNetCoreSpaServicesPackageVersion}" />
     <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="${MicrosoftAspNetCoreSpaServicesExtensionsPackageVersion}" />
     <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="${MicrosoftAspNetCoreStaticFilesPackageVersion}" />

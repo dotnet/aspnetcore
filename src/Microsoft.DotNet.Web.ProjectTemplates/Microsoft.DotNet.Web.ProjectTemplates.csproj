@@ -24,6 +24,7 @@
       MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion=$(MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion);
       MicrosoftAspNetCoreMvcPackageVersion=$(MicrosoftAspNetCoreMvcPackageVersion);
       MicrosoftAspNetCoreMvcRazorViewCompilationPackageVersion=$(MicrosoftAspNetCoreMvcRazorViewCompilationPackageVersion);
+      MicrosoftAspNetCoreRazorDesignPackageVersion=$(MicrosoftAspNetCoreRazorDesignPackageVersion);
       MicrosoftAspNetCorePackageVersion=$(MicrosoftAspNetCorePackageVersion);
       MicrosoftAspNetCoreStaticFilesPackageVersion=$(MicrosoftAspNetCoreStaticFilesPackageVersion);
       MicrosoftEntityFrameworkCoreDesignPackageVersion=$(MicrosoftEntityFrameworkCoreDesignPackageVersion);
