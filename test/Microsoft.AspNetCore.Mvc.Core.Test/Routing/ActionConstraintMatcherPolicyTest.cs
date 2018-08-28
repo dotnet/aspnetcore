@@ -351,7 +351,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                     }
                 });
 
-            var actionDescriptorCollectionProvider = new ActionDescriptorCollectionProvider(
+            var actionDescriptorCollectionProvider = new DefaultActionDescriptorCollectionProvider(
                 new IActionDescriptorProvider[] { actionDescriptorProvider.Object, },
                 Enumerable.Empty<IActionDescriptorChangeProvider>());
 
@@ -370,13 +370,11 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             return httpContext;
         }
 
-        private static RouteEndpoint CreateEndpoint(ActionDescriptor action)
+        private static Endpoint CreateEndpoint(ActionDescriptor action)
         {
             var metadata = new List<object>() { action, };
-            return new RouteEndpoint(
+            return new Endpoint(
                 (context) => Task.CompletedTask,
-                RoutePatternFactory.Parse("/"),
-                0,
                 new EndpointMetadataCollection(metadata),
                 $"test: {action?.DisplayName}");
         }
@@ -400,7 +398,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 
         private static ActionConstraintCache GetActionConstraintCache(IActionConstraintProvider[] actionConstraintProviders = null)
         {
-            var descriptorProvider = new ActionDescriptorCollectionProvider(
+            var descriptorProvider = new DefaultActionDescriptorCollectionProvider(
                 Enumerable.Empty<IActionDescriptorProvider>(),
                 Enumerable.Empty<IActionDescriptorChangeProvider>());
             return new ActionConstraintCache(descriptorProvider, actionConstraintProviders.AsEnumerable() ?? new List<IActionConstraintProvider>());

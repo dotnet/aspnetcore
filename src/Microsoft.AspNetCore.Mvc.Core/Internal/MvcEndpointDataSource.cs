@@ -3,8 +3,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
@@ -13,25 +15,27 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
-using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Mvc.Internal
 {
     internal class MvcEndpointDataSource : EndpointDataSource
     {
-        private readonly object _lock = new object();
         private readonly IActionDescriptorCollectionProvider _actions;
         private readonly MvcEndpointInvokerFactory _invokerFactory;
         private readonly DefaultHttpContext _httpContextInstance;
-        private readonly IActionDescriptorChangeProvider[] _actionDescriptorChangeProviders;
 
+        // The following are protected by this lock for WRITES only. This pattern is similar
+        // to DefaultActionDescriptorChangeProvider - see comments there for details on 
+        // all of the threading behaviors.
+        private readonly object _lock = new object();
         private List<Endpoint> _endpoints;
+        private CancellationTokenSource _cancellationTokenSource;
+        private IChangeToken _changeToken;
 
         public MvcEndpointDataSource(
             IActionDescriptorCollectionProvider actions,
             MvcEndpointInvokerFactory invokerFactory,
-            IEnumerable<IActionDescriptorChangeProvider> actionDescriptorChangeProviders,
             IServiceProvider serviceProvider)
         {
             if (actions == null)
@@ -44,11 +48,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 throw new ArgumentNullException(nameof(invokerFactory));
             }
 
-            if (actionDescriptorChangeProviders == null)
-            {
-                throw new ArgumentNullException(nameof(actionDescriptorChangeProviders));
-            }
-
             if (serviceProvider == null)
             {
                 throw new ArgumentNullException(nameof(serviceProvider));
@@ -56,43 +55,102 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             _actions = actions;
             _invokerFactory = invokerFactory;
-            _actionDescriptorChangeProviders = actionDescriptorChangeProviders.ToArray();
             _httpContextInstance = new DefaultHttpContext() { RequestServices = serviceProvider };
 
             ConventionalEndpointInfos = new List<MvcEndpointInfo>();
+
+            // It's possible for someone to override the collection provider without providing
+            // change notifications. If that's the case we won't process changes.
+            if (actions is ActionDescriptorCollectionProvider collectionProviderWithChangeToken)
+            {
+                ChangeToken.OnChange(
+                    () => collectionProviderWithChangeToken.GetChangeToken(),
+                    UpdateEndpoints);
+            }
         }
 
-        private List<Endpoint> CreateEndpoints()
+        public List<MvcEndpointInfo> ConventionalEndpointInfos { get; }
+
+        public override IReadOnlyList<Endpoint> Endpoints
         {
-            var endpoints = new List<Endpoint>();
-            StringBuilder patternStringBuilder = null;
-
-            foreach (var action in _actions.ActionDescriptors.Items)
+            get
             {
-                if (action.AttributeRouteInfo == null)
-                {
-                    // In traditional conventional routing setup, the routes defined by a user have a static order
-                    // defined by how they are added into the list. We would like to maintain the same order when building
-                    // up the endpoints too.
-                    //
-                    // Start with an order of '1' for conventional routes as attribute routes have a default order of '0'.
-                    // This is for scenarios dealing with migrating existing Router based code to Endpoint Routing world.
-                    var conventionalRouteOrder = 0;
+                Initialize();
+                Debug.Assert(_changeToken != null);
+                Debug.Assert(_endpoints != null);
+                return _endpoints;
+            }
+        }
 
-                    // Check each of the conventional patterns to see if the action would be reachable
-                    // If the action and pattern are compatible then create an endpoint with the
-                    // area/controller/action parameter parts replaced with literals
-                    //
-                    // e.g. {controller}/{action} with HomeController.Index and HomeController.Login
-                    // would result in endpoints:
-                    // - Home/Index
-                    // - Home/Login
-                    foreach (var endpointInfo in ConventionalEndpointInfos)
+        public override IChangeToken GetChangeToken()
+        {
+            Initialize();
+            Debug.Assert(_changeToken != null);
+            Debug.Assert(_endpoints != null);
+            return _changeToken;
+        }
+
+        private void Initialize()
+        {
+            if (_endpoints == null)
+            {
+                lock (_lock)
+                {
+                    if (_endpoints == null)
                     {
-                        if (MatchRouteValue(action, endpointInfo, "Area")
-                            && MatchRouteValue(action, endpointInfo, "Controller")
-                            && MatchRouteValue(action, endpointInfo, "Action"))
+                        UpdateEndpoints();
+                    }
+                }
+            }
+        }
+
+        private void UpdateEndpoints()
+        {
+            lock (_lock)
+            {
+                var endpoints = new List<Endpoint>();
+                StringBuilder patternStringBuilder = null;
+
+                foreach (var action in _actions.ActionDescriptors.Items)
+                {
+                    if (action.AttributeRouteInfo == null)
+                    {
+                        // In traditional conventional routing setup, the routes defined by a user have a static order
+                        // defined by how they are added into the list. We would like to maintain the same order when building
+                        // up the endpoints too.
+                        //
+                        // Start with an order of '1' for conventional routes as attribute routes have a default order of '0'.
+                        // This is for scenarios dealing with migrating existing Router based code to Endpoint Routing world.
+                        var conventionalRouteOrder = 0;
+
+                        // Check each of the conventional patterns to see if the action would be reachable
+                        // If the action and pattern are compatible then create an endpoint with the
+                        // area/controller/action parameter parts replaced with literals
+                        //
+                        // e.g. {controller}/{action} with HomeController.Index and HomeController.Login
+                        // would result in endpoints:
+                        // - Home/Index
+                        // - Home/Login
+                        foreach (var endpointInfo in ConventionalEndpointInfos)
                         {
+                            // An 'endpointInfo' is applicable if:
+                            // 1. it has a parameter (or default value) for 'required' non-null route value
+                            // 2. it does not have a parameter (or default value) for 'required' null route value
+                            var isApplicable = true;
+                            foreach (var routeKey in action.RouteValues.Keys)
+                            {
+                                if (!MatchRouteValue(action, endpointInfo, routeKey))
+                                {
+                                    isApplicable = false;
+                                    break;
+                                }
+                            }
+
+                            if (!isApplicable)
+                            {
+                                continue;
+                            }
+
                             var newPathSegments = endpointInfo.ParsedPattern.PathSegments.ToList();
 
                             for (var i = 0; i < newPathSegments.Count; i++)
@@ -126,7 +184,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                                 {
                                     var part = segment.Parts[j];
 
-                                    if (part.IsParameter && part is RoutePatternParameterPart parameterPart && IsMvcParameter(parameterPart.Name))
+                                    if (part.IsParameter &&
+                                        part is RoutePatternParameterPart parameterPart &&
+                                        action.RouteValues.ContainsKey(parameterPart.Name))
                                     {
                                         if (segmentParts == null)
                                         {
@@ -157,23 +217,37 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                             endpoints.Add(endpoint);
                         }
                     }
+                    else
+                    {
+                        var endpoint = CreateEndpoint(
+                            action,
+                            action.AttributeRouteInfo.Name,
+                            action.AttributeRouteInfo.Template,
+                            RoutePatternFactory.Parse(action.AttributeRouteInfo.Template).PathSegments,
+                            nonInlineDefaults: null,
+                            action.AttributeRouteInfo.Order,
+                            action.AttributeRouteInfo,
+                            suppressLinkGeneration: action.AttributeRouteInfo.SuppressLinkGeneration);
+                        endpoints.Add(endpoint);
+                    }
                 }
-                else
-                {
-                    var endpoint = CreateEndpoint(
-                        action,
-                        action.AttributeRouteInfo.Name,
-                        action.AttributeRouteInfo.Template,
-                        RoutePatternFactory.Parse(action.AttributeRouteInfo.Template).PathSegments,
-                        nonInlineDefaults: null,
-                        action.AttributeRouteInfo.Order,
-                        action.AttributeRouteInfo,
-                        suppressLinkGeneration: action.AttributeRouteInfo.SuppressLinkGeneration);
-                    endpoints.Add(endpoint);
-                }
-            }
 
-            return endpoints;
+                // See comments in DefaultActionDescriptorCollectionProvider. These steps are done
+                // in a specific order to ensure callers always see a consistent state.
+
+                // Step 1 - capture old token
+                var oldCancellationTokenSource = _cancellationTokenSource;
+
+                // Step 2 - update endpoints
+                _endpoints = endpoints;
+
+                // Step 3 - create new change token
+                _cancellationTokenSource = new CancellationTokenSource();
+                _changeToken = new CancellationChangeToken(_cancellationTokenSource.Token);
+
+                // Step 4 - trigger old token
+                oldCancellationTokenSource?.Cancel();
+            }
 
             string GetPattern(ref StringBuilder sb, IEnumerable<RoutePatternPathSegment> segments)
             {
@@ -188,18 +262,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
                 return rawPattern;
             }
-        }
-
-        private bool IsMvcParameter(string name)
-        {
-            if (string.Equals(name, "Area", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(name, "Controller", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(name, "Action", StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-
-            return false;
         }
 
         private bool UseDefaultValuePlusRemainingSegementsOptional(
@@ -225,7 +287,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                             continue;
                         }
 
-                        if (IsMvcParameter(parameterPart.Name))
+                        if (action.RouteValues.ContainsKey(parameterPart.Name))
                         {
                             if (endpointInfo.MergedDefaults[parameterPart.Name] is string defaultValue
                                 && action.RouteValues.TryGetValue(parameterPart.Name, out var routeValue)
@@ -266,8 +328,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             {
                 // Action does not have a value for this routeKey, most likely because action is not in an area
                 // Check that the pattern does not have a parameter for the routeKey
-                var matchingParameter = endpointInfo.ParsedPattern.Parameters.SingleOrDefault(p => string.Equals(p.Name, routeKey, StringComparison.OrdinalIgnoreCase));
-                if (matchingParameter == null)
+                var matchingParameter = endpointInfo.ParsedPattern.GetParameter(routeKey);
+                if (matchingParameter == null &&
+                    (!endpointInfo.ParsedPattern.Defaults.TryGetValue(routeKey, out var value) ||
+                    !string.IsNullOrEmpty(Convert.ToString(value))))
                 {
                     return true;
                 }
@@ -279,7 +343,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     return true;
                 }
 
-                var matchingParameter = endpointInfo.ParsedPattern.Parameters.SingleOrDefault(p => string.Equals(p.Name, routeKey, StringComparison.OrdinalIgnoreCase));
+                var matchingParameter = endpointInfo.ParsedPattern.GetParameter(routeKey);
                 if (matchingParameter != null)
                 {
                     // Check that the value matches against constraints on that parameter
@@ -358,10 +422,12 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             object source,
             bool suppressLinkGeneration)
         {
-            var metadata = new List<object>();
-            // REVIEW: Used for debugging. Consider removing before release
-            metadata.Add(source);
-            metadata.Add(action);
+            var metadata = new List<object>
+            {
+                // REVIEW: Used for debugging. Consider removing before release
+                source,
+                action
+            };
 
             if (action.EndpointMetadata != null)
             {
@@ -434,49 +500,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 defaults[kvp.Key] = kvp.Value;
             }
         }
-
-        private IChangeToken GetCompositeChangeToken()
-        {
-            if (_actionDescriptorChangeProviders.Length == 1)
-            {
-                return _actionDescriptorChangeProviders[0].GetChangeToken();
-            }
-
-            var changeTokens = new IChangeToken[_actionDescriptorChangeProviders.Length];
-            for (var i = 0; i < _actionDescriptorChangeProviders.Length; i++)
-            {
-                changeTokens[i] = _actionDescriptorChangeProviders[i].GetChangeToken();
-            }
-
-            return new CompositeChangeToken(changeTokens);
-        }
-
-        public override IChangeToken GetChangeToken() => NullChangeToken.Singleton;
-
-        public override IReadOnlyList<Endpoint> Endpoints
-        {
-            get
-            {
-                // Want to initialize endpoints once and then cache while ensuring a null collection is never returned
-                // Local copy for thread safety + double check locking
-                var localEndpoints = _endpoints;
-                if (localEndpoints == null)
-                {
-                    lock (_lock)
-                    {
-                        localEndpoints = _endpoints;
-                        if (localEndpoints == null)
-                        {
-                            _endpoints = localEndpoints = CreateEndpoints();
-                        }
-                    }
-                }
-
-                return localEndpoints;
-            }
-        }
-
-        public List<MvcEndpointInfo> ConventionalEndpointInfos { get; }
 
         private class SuppressLinkGenerationMetadata : ISuppressLinkGenerationMetadata { }
     }

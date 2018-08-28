@@ -932,7 +932,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         private ControllerActionDescriptor InvokeActionSelector(RouteContext context)
         {
             var actionDescriptorProvider = GetActionDescriptorProvider();
-            var actionDescriptorCollectionProvider = new ActionDescriptorCollectionProvider(
+            var actionDescriptorCollectionProvider = new DefaultActionDescriptorCollectionProvider(
                 new[] { actionDescriptorProvider },
                 Enumerable.Empty<IActionDescriptorChangeProvider>());
 
@@ -1092,7 +1092,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
         private static ActionConstraintCache GetActionConstraintCache(IActionConstraintProvider[] actionConstraintProviders = null)
         {
-            var descriptorProvider = new ActionDescriptorCollectionProvider(
+            var descriptorProvider = new DefaultActionDescriptorCollectionProvider(
                 Enumerable.Empty<IActionDescriptorProvider>(),
                 Enumerable.Empty<IActionDescriptorChangeProvider>());
             return new ActionConstraintCache(descriptorProvider, actionConstraintProviders.AsEnumerable() ?? new List<IActionConstraintProvider>());
