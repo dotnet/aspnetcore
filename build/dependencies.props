@@ -22,6 +22,7 @@
     <MicrosoftAspNetCoreMvcPackageVersion>2.2.0-preview2-35051</MicrosoftAspNetCoreMvcPackageVersion>
     <MicrosoftAspNetCoreMvcRazorViewCompilationPackageVersion>2.2.0-preview2-35051</MicrosoftAspNetCoreMvcRazorViewCompilationPackageVersion>
     <MicrosoftAspNetCorePackageVersion>2.2.0-preview2-35051</MicrosoftAspNetCorePackageVersion>
+    <MicrosoftAspNetCoreRazorDesignPackageVersion>2.2.0-preview2-35051</MicrosoftAspNetCoreRazorDesignPackageVersion>
     <MicrosoftAspNetCoreSpaServicesExtensionsPackageVersion>2.2.0-preview2-35051</MicrosoftAspNetCoreSpaServicesExtensionsPackageVersion>
     <MicrosoftAspNetCoreSpaServicesPackageVersion>2.2.0-preview2-35051</MicrosoftAspNetCoreSpaServicesPackageVersion>
     <MicrosoftAspNetCoreStaticFilesPackageVersion>2.2.0-preview2-35051</MicrosoftAspNetCoreStaticFilesPackageVersion>
