@@ -1,6 +1,12 @@
 ﻿<Project>
   <PropertyGroup>
-    <VersionPrefix>2.2.0</VersionPrefix>
+    <DotNetMajorVersion>2</DotNetMajorVersion>
+    <DotNetMinorVersion>2</DotNetMinorVersion>
+    <DotNetPatchVersion>0</DotNetPatchVersion>
+    <VersionPrefix>$(DotNetMajorVersion).$(DotNetMinorVersion).$(DotNetPatchVersion)</VersionPrefix>
+    <AspNetCoreModuleVersionMajor>12</AspNetCoreModuleVersionMajor>
+    <AspNetCoreModuleVersionMinor>$(DotNetMajorVersion)</AspNetCoreModuleVersionMinor>
+    <AspNetCoreModuleVersionRevision>$(DotNetPatchVersion)</AspNetCoreModuleVersionRevision>
     <VersionSuffix>preview2</VersionSuffix>
     <PackageVersion Condition="'$(IsFinalBuild)' == 'true' AND '$(VersionSuffix)' == 'rtm' ">$(VersionPrefix)</PackageVersion>
     <PackageVersion Condition="'$(IsFinalBuild)' == 'true' AND '$(VersionSuffix)' != 'rtm' ">$(VersionPrefix)-$(VersionSuffix)-final</PackageVersion>
@@ -8,9 +14,6 @@
     <FeatureBranchVersionPrefix Condition="'$(FeatureBranchVersionPrefix)' == ''">a-</FeatureBranchVersionPrefix>
     <VersionSuffix Condition="'$(VersionSuffix)' != '' And '$(FeatureBranchVersionSuffix)' != ''">$(FeatureBranchVersionPrefix)$(VersionSuffix)-$([System.Text.RegularExpressions.Regex]::Replace('$(FeatureBranchVersionSuffix)', '[^\w-]', '-'))</VersionSuffix>
     <VersionSuffix Condition="'$(VersionSuffix)' != '' And '$(BuildNumber)' != ''">$(VersionSuffix)-$(BuildNumber)</VersionSuffix>
-    <AspNetCoreModuleVersionMajor>12</AspNetCoreModuleVersionMajor>
-    <AspNetCoreModuleVersionMinor>2</AspNetCoreModuleVersionMinor>
-    <AspNetCoreModuleVersionRevision>0</AspNetCoreModuleVersionRevision>
     <AspNetCoreModuleOutOfProcessVersion>2.0.0</AspNetCoreModuleOutOfProcessVersion>
   </PropertyGroup>
 </Project>
