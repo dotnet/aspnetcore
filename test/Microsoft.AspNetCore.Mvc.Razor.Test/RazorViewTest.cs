@@ -111,8 +111,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             var activator = new Mock<IRazorPageActivator>();
 
             var adapter = new TestDiagnosticListener();
-            var diagnosticSource = new DiagnosticListener("Microsoft.AspNetCore.Mvc.Razor");
-            diagnosticSource.SubscribeWithAdapter(adapter);
+            var diagnosticListener = new DiagnosticListener("Microsoft.AspNetCore.Mvc.Razor");
+            diagnosticListener.SubscribeWithAdapter(adapter);
 
             var view = new RazorView(
                 Mock.Of<IRazorViewEngine>(),
@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 new IRazorPage[0],
                 page,
                 new HtmlTestEncoder(),
-                diagnosticSource);
+                diagnosticListener);
 
             var viewContext = CreateViewContext(view);
             var expectedWriter = viewContext.Writer;

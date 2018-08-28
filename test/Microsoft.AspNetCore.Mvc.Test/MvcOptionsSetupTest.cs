@@ -264,7 +264,9 @@ namespace Microsoft.AspNetCore.Mvc
         {
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddSingleton(new ApplicationPartManager());
-            serviceCollection.AddSingleton<DiagnosticSource>(new DiagnosticListener("Microsoft.AspNetCore.Mvc"));
+            var diagnosticListener = new DiagnosticListener("Microsoft.AspNetCore.Mvc");
+            serviceCollection.AddSingleton<DiagnosticSource>(diagnosticListener);
+            serviceCollection.AddSingleton<DiagnosticListener>(diagnosticListener);
             serviceCollection.AddMvc();
             serviceCollection
                 .AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>()

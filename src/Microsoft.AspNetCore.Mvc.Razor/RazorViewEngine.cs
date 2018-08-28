@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         private readonly ILogger _logger;
         private readonly RazorViewEngineOptions _options;
         private readonly RazorProject _razorFileSystem;
-        private readonly DiagnosticSource _diagnosticSource;
+        private readonly DiagnosticListener _diagnosticListener;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RazorViewEngine" />.
@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             IOptions<RazorViewEngineOptions> optionsAccessor,
             RazorProject razorProject,
             ILoggerFactory loggerFactory,
-            DiagnosticSource diagnosticSource)
+            DiagnosticListener diagnosticListener)
         {
             _options = optionsAccessor.Value;
 
@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             _htmlEncoder = htmlEncoder;
             _logger = loggerFactory.CreateLogger<RazorViewEngine>();
             _razorFileSystem = razorProject;
-            _diagnosticSource = diagnosticSource;
+            _diagnosticListener = diagnosticListener;
             ViewLookupCache = new MemoryCache(new MemoryCacheOptions());
         }
 
@@ -93,9 +93,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             IOptions<RazorViewEngineOptions> optionsAccessor,
             RazorProjectFileSystem razorFileSystem,
             ILoggerFactory loggerFactory,
-            DiagnosticSource diagnosticSource)
+            DiagnosticListener diagnosticListener)
 #pragma warning disable CS0618 // Type or member is obsolete
-            : this (pageFactory, pageActivator, htmlEncoder, optionsAccessor, (RazorProject)razorFileSystem, loggerFactory, diagnosticSource)
+            : this (pageFactory, pageActivator, htmlEncoder, optionsAccessor, (RazorProject)razorFileSystem, loggerFactory, diagnosticListener)
 #pragma warning restore CS0618 // Type or member is obsolete
         {
         }
@@ -498,7 +498,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 viewStarts[i] = viewStartItem.PageFactory();
             }
 
-            var view = new RazorView(this, _pageActivator, viewStarts, page, _htmlEncoder, _diagnosticSource);
+            var view = new RazorView(this, _pageActivator, viewStarts, page, _htmlEncoder, _diagnosticListener);
             return ViewEngineResult.Found(viewName, view);
         }
 

@@ -16,55 +16,82 @@ namespace Microsoft.AspNetCore.Mvc
     internal static class MvcCoreDiagnosticSourceExtensions
     {
         public static void BeforeAction(
-            this DiagnosticSource diagnosticSource,
+            this DiagnosticListener diagnosticListener,
             ActionDescriptor actionDescriptor,
             HttpContext httpContext,
             RouteData routeData)
         {
-            Debug.Assert(diagnosticSource != null);
+            Debug.Assert(diagnosticListener != null);
             Debug.Assert(actionDescriptor != null);
             Debug.Assert(httpContext != null);
             Debug.Assert(routeData != null);
 
-            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeAction"))
+            // Inlinable fast-path check if Diagnositcs is enabled
+            if (diagnosticListener.IsEnabled())
             {
-                diagnosticSource.Write(
+                BeforeActionImpl(diagnosticListener, actionDescriptor, httpContext, routeData);
+            }
+        }
+
+        private static void BeforeActionImpl(DiagnosticListener diagnosticListener, ActionDescriptor actionDescriptor, HttpContext httpContext, RouteData routeData)
+        {
+            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeAction"))
+            {
+                diagnosticListener.Write(
                     "Microsoft.AspNetCore.Mvc.BeforeAction",
                     new { actionDescriptor, httpContext = httpContext, routeData = routeData });
             }
         }
 
         public static void AfterAction(
-            this DiagnosticSource diagnosticSource,
+            this DiagnosticListener diagnosticListener,
             ActionDescriptor actionDescriptor,
             HttpContext httpContext,
             RouteData routeData)
         {
-            Debug.Assert(diagnosticSource != null);
+            Debug.Assert(diagnosticListener != null);
             Debug.Assert(actionDescriptor != null);
             Debug.Assert(httpContext != null);
             Debug.Assert(routeData != null);
 
-            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.AfterAction"))
+            // Inlinable fast-path check if Diagnositcs is enabled
+            if (diagnosticListener.IsEnabled())
             {
-                diagnosticSource.Write(
+                AfterActionImpl(diagnosticListener, actionDescriptor, httpContext, routeData);
+            }
+        }
+
+        private static void AfterActionImpl(DiagnosticListener diagnosticListener, ActionDescriptor actionDescriptor, HttpContext httpContext, RouteData routeData)
+        {
+            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.AfterAction"))
+            {
+                diagnosticListener.Write(
                     "Microsoft.AspNetCore.Mvc.AfterAction",
                     new { actionDescriptor, httpContext = httpContext, routeData = routeData });
             }
         }
 
         public static void BeforeOnAuthorizationAsync(
-            this DiagnosticSource diagnosticSource,
+            this DiagnosticListener diagnosticListener,
             AuthorizationFilterContext authorizationContext,
             IAsyncAuthorizationFilter filter)
         {
-            Debug.Assert(diagnosticSource != null);
+            Debug.Assert(diagnosticListener != null);
             Debug.Assert(authorizationContext != null);
             Debug.Assert(filter != null);
 
-            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnAuthorization"))
+            // Inlinable fast-path check if Diagnositcs is enabled
+            if (diagnosticListener.IsEnabled())
             {
-                diagnosticSource.Write(
+                BeforeOnAuthorizationAsyncImpl(diagnosticListener, authorizationContext, filter);
+            }
+        }
+
+        private static void BeforeOnAuthorizationAsyncImpl(DiagnosticListener diagnosticListener, AuthorizationFilterContext authorizationContext, IAsyncAuthorizationFilter filter)
+        {
+            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnAuthorization"))
+            {
+                diagnosticListener.Write(
                     "Microsoft.AspNetCore.Mvc.BeforeOnAuthorization",
                     new
                     {
@@ -76,17 +103,26 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         public static void AfterOnAuthorizationAsync(
-            this DiagnosticSource diagnosticSource,
+            this DiagnosticListener diagnosticListener,
             AuthorizationFilterContext authorizationContext,
             IAsyncAuthorizationFilter filter)
         {
-            Debug.Assert(diagnosticSource != null);
+            Debug.Assert(diagnosticListener != null);
             Debug.Assert(authorizationContext != null);
             Debug.Assert(filter != null);
 
-            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnAuthorization"))
+            // Inlinable fast-path check if Diagnositcs is enabled
+            if (diagnosticListener.IsEnabled())
             {
-                diagnosticSource.Write(
+                AfterOnAuthorizationAsyncImpl(diagnosticListener, authorizationContext, filter);
+            }
+        }
+
+        private static void AfterOnAuthorizationAsyncImpl(DiagnosticListener diagnosticListener, AuthorizationFilterContext authorizationContext, IAsyncAuthorizationFilter filter)
+        {
+            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnAuthorization"))
+            {
+                diagnosticListener.Write(
                     "Microsoft.AspNetCore.Mvc.AfterOnAuthorization",
                     new
                     {
@@ -98,17 +134,26 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         public static void BeforeOnAuthorization(
-            this DiagnosticSource diagnosticSource,
+            this DiagnosticListener diagnosticListener,
             AuthorizationFilterContext authorizationContext,
             IAuthorizationFilter filter)
         {
-            Debug.Assert(diagnosticSource != null);
+            Debug.Assert(diagnosticListener != null);
             Debug.Assert(authorizationContext != null);
             Debug.Assert(filter != null);
 
-            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnAuthorization"))
+            // Inlinable fast-path check if Diagnositcs is enabled
+            if (diagnosticListener.IsEnabled())
             {
-                diagnosticSource.Write(
+                BeforeOnAuthorizationImpl(diagnosticListener, authorizationContext, filter);
+            }
+        }
+
+        private static void BeforeOnAuthorizationImpl(DiagnosticListener diagnosticListener, AuthorizationFilterContext authorizationContext, IAuthorizationFilter filter)
+        {
+            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnAuthorization"))
+            {
+                diagnosticListener.Write(
                     "Microsoft.AspNetCore.Mvc.BeforeOnAuthorization",
                     new
                     {
@@ -120,17 +165,26 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         public static void AfterOnAuthorization(
-            this DiagnosticSource diagnosticSource,
+            this DiagnosticListener diagnosticListener,
             AuthorizationFilterContext authorizationContext,
             IAuthorizationFilter filter)
         {
-            Debug.Assert(diagnosticSource != null);
+            Debug.Assert(diagnosticListener != null);
             Debug.Assert(authorizationContext != null);
             Debug.Assert(filter != null);
 
-            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnAuthorization"))
+            // Inlinable fast-path check if Diagnositcs is enabled
+            if (diagnosticListener.IsEnabled())
             {
-                diagnosticSource.Write(
+                AfterOnAuthorizationImpl(diagnosticListener, authorizationContext, filter);
+            }
+        }
+
+        private static void AfterOnAuthorizationImpl(DiagnosticListener diagnosticListener, AuthorizationFilterContext authorizationContext, IAuthorizationFilter filter)
+        {
+            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnAuthorization"))
+            {
+                diagnosticListener.Write(
                     "Microsoft.AspNetCore.Mvc.AfterOnAuthorization",
                     new
                     {
@@ -142,17 +196,26 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         public static void BeforeOnResourceExecution(
-            this DiagnosticSource diagnosticSource,
+            this DiagnosticListener diagnosticListener,
             ResourceExecutingContext resourceExecutingContext,
             IAsyncResourceFilter filter)
         {
-            Debug.Assert(diagnosticSource != null);
+            Debug.Assert(diagnosticListener != null);
             Debug.Assert(resourceExecutingContext != null);
             Debug.Assert(filter != null);
 
-            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnResourceExecution"))
+            // Inlinable fast-path check if Diagnositcs is enabled
+            if (diagnosticListener.IsEnabled())
             {
-                diagnosticSource.Write(
+                BeforeOnResourceExecutionImpl(diagnosticListener, resourceExecutingContext, filter);
+            }
+        }
+
+        private static void BeforeOnResourceExecutionImpl(DiagnosticListener diagnosticListener, ResourceExecutingContext resourceExecutingContext, IAsyncResourceFilter filter)
+        {
+            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnResourceExecution"))
+            {
+                diagnosticListener.Write(
                     "Microsoft.AspNetCore.Mvc.BeforeOnResourceExecution",
                     new
                     {
@@ -164,17 +227,26 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         public static void AfterOnResourceExecution(
-            this DiagnosticSource diagnosticSource,
+            this DiagnosticListener diagnosticListener,
             ResourceExecutedContext resourceExecutedContext,
             IAsyncResourceFilter filter)
         {
-            Debug.Assert(diagnosticSource != null);
+            Debug.Assert(diagnosticListener != null);
             Debug.Assert(resourceExecutedContext != null);
             Debug.Assert(filter != null);
 
-            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnResourceExecution"))
+            // Inlinable fast-path check if Diagnositcs is enabled
+            if (diagnosticListener.IsEnabled())
             {
-                diagnosticSource.Write(
+                AfterOnResourceExecutionImpl(diagnosticListener, resourceExecutedContext, filter);
+            }
+        }
+
+        private static void AfterOnResourceExecutionImpl(DiagnosticListener diagnosticListener, ResourceExecutedContext resourceExecutedContext, IAsyncResourceFilter filter)
+        {
+            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnResourceExecution"))
+            {
+                diagnosticListener.Write(
                     "Microsoft.AspNetCore.Mvc.AfterOnResourceExecution",
                     new
                     {
@@ -186,17 +258,26 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         public static void BeforeOnResourceExecuting(
-            this DiagnosticSource diagnosticSource,
+            this DiagnosticListener diagnosticListener,
             ResourceExecutingContext resourceExecutingContext,
             IResourceFilter filter)
         {
-            Debug.Assert(diagnosticSource != null);
+            Debug.Assert(diagnosticListener != null);
             Debug.Assert(resourceExecutingContext != null);
             Debug.Assert(filter != null);
 
-            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnResourceExecuting"))
+            // Inlinable fast-path check if Diagnositcs is enabled
+            if (diagnosticListener.IsEnabled())
             {
-                diagnosticSource.Write(
+                BeforeOnResourceExecutingImpl(diagnosticListener, resourceExecutingContext, filter);
+            }
+        }
+
+        private static void BeforeOnResourceExecutingImpl(DiagnosticListener diagnosticListener, ResourceExecutingContext resourceExecutingContext, IResourceFilter filter)
+        {
+            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnResourceExecuting"))
+            {
+                diagnosticListener.Write(
                     "Microsoft.AspNetCore.Mvc.BeforeOnResourceExecuting",
                     new
                     {
@@ -208,17 +289,26 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         public static void AfterOnResourceExecuting(
-            this DiagnosticSource diagnosticSource,
+            this DiagnosticListener diagnosticListener,
             ResourceExecutingContext resourceExecutingContext,
             IResourceFilter filter)
         {
-            Debug.Assert(diagnosticSource != null);
+            Debug.Assert(diagnosticListener != null);
             Debug.Assert(resourceExecutingContext != null);
             Debug.Assert(filter != null);
 
-            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnResourceExecuting"))
+            // Inlinable fast-path check if Diagnositcs is enabled
+            if (diagnosticListener.IsEnabled())
             {
-                diagnosticSource.Write(
+                AfterOnResourceExecutingImpl(diagnosticListener, resourceExecutingContext, filter);
+            }
+        }
+
+        private static void AfterOnResourceExecutingImpl(DiagnosticListener diagnosticListener, ResourceExecutingContext resourceExecutingContext, IResourceFilter filter)
+        {
+            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnResourceExecuting"))
+            {
+                diagnosticListener.Write(
                     "Microsoft.AspNetCore.Mvc.AfterOnResourceExecuting",
                     new
                     {
@@ -230,17 +320,26 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         public static void BeforeOnResourceExecuted(
-            this DiagnosticSource diagnosticSource,
+            this DiagnosticListener diagnosticListener,
             ResourceExecutedContext resourceExecutedContext,
             IResourceFilter filter)
         {
-            Debug.Assert(diagnosticSource != null);
+            Debug.Assert(diagnosticListener != null);
             Debug.Assert(resourceExecutedContext != null);
             Debug.Assert(filter != null);
 
-            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnResourceExecuted"))
+            // Inlinable fast-path check if Diagnositcs is enabled
+            if (diagnosticListener.IsEnabled())
             {
-                diagnosticSource.Write(
+                BeforeOnResourceExecutedImpl(diagnosticListener, resourceExecutedContext, filter);
+            }
+        }
+
+        private static void BeforeOnResourceExecutedImpl(DiagnosticListener diagnosticListener, ResourceExecutedContext resourceExecutedContext, IResourceFilter filter)
+        {
+            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnResourceExecuted"))
+            {
+                diagnosticListener.Write(
                     "Microsoft.AspNetCore.Mvc.BeforeOnResourceExecuted",
                     new
                     {
@@ -252,17 +351,26 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         public static void AfterOnResourceExecuted(
-            this DiagnosticSource diagnosticSource,
+            this DiagnosticListener diagnosticListener,
             ResourceExecutedContext resourceExecutedContext,
             IResourceFilter filter)
         {
-            Debug.Assert(diagnosticSource != null);
+            Debug.Assert(diagnosticListener != null);
             Debug.Assert(resourceExecutedContext != null);
             Debug.Assert(filter != null);
 
-            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnResourceExecuted"))
+            // Inlinable fast-path check if Diagnositcs is enabled
+            if (diagnosticListener.IsEnabled())
             {
-                diagnosticSource.Write(
+                AfterOnResourceExecutedImpl(diagnosticListener, resourceExecutedContext, filter);
+            }
+        }
+
+        private static void AfterOnResourceExecutedImpl(DiagnosticListener diagnosticListener, ResourceExecutedContext resourceExecutedContext, IResourceFilter filter)
+        {
+            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnResourceExecuted"))
+            {
+                diagnosticListener.Write(
                     "Microsoft.AspNetCore.Mvc.AfterOnResourceExecuted",
                     new
                     {
@@ -274,17 +382,26 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         public static void BeforeOnExceptionAsync(
-            this DiagnosticSource diagnosticSource,
+            this DiagnosticListener diagnosticListener,
             ExceptionContext exceptionContext,
             IAsyncExceptionFilter filter)
         {
-            Debug.Assert(diagnosticSource != null);
+            Debug.Assert(diagnosticListener != null);
             Debug.Assert(exceptionContext != null);
             Debug.Assert(filter != null);
 
-            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnException"))
+            // Inlinable fast-path check if Diagnositcs is enabled
+            if (diagnosticListener.IsEnabled())
             {
-                diagnosticSource.Write(
+                BeforeOnExceptionAsyncImpl(diagnosticListener, exceptionContext, filter);
+            }
+        }
+
+        private static void BeforeOnExceptionAsyncImpl(DiagnosticListener diagnosticListener, ExceptionContext exceptionContext, IAsyncExceptionFilter filter)
+        {
+            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnException"))
+            {
+                diagnosticListener.Write(
                     "Microsoft.AspNetCore.Mvc.BeforeOnException",
                     new
                     {
@@ -296,17 +413,26 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         public static void AfterOnExceptionAsync(
-            this DiagnosticSource diagnosticSource,
+            this DiagnosticListener diagnosticListener,
             ExceptionContext exceptionContext,
             IAsyncExceptionFilter filter)
         {
-            Debug.Assert(diagnosticSource != null);
+            Debug.Assert(diagnosticListener != null);
             Debug.Assert(exceptionContext != null);
             Debug.Assert(filter != null);
 
-            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnException"))
+            // Inlinable fast-path check if Diagnositcs is enabled
+            if (diagnosticListener.IsEnabled())
             {
-                diagnosticSource.Write(
+                AfterOnExceptionAsyncImpl(diagnosticListener, exceptionContext, filter);
+            }
+        }
+
+        private static void AfterOnExceptionAsyncImpl(DiagnosticListener diagnosticListener, ExceptionContext exceptionContext, IAsyncExceptionFilter filter)
+        {
+            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnException"))
+            {
+                diagnosticListener.Write(
                     "Microsoft.AspNetCore.Mvc.AfterOnException",
                     new
                     {
@@ -318,17 +444,26 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         public static void BeforeOnException(
-            this DiagnosticSource diagnosticSource,
+            this DiagnosticListener diagnosticListener,
             ExceptionContext exceptionContext,
             IExceptionFilter filter)
         {
-            Debug.Assert(diagnosticSource != null);
+            Debug.Assert(diagnosticListener != null);
             Debug.Assert(exceptionContext != null);
             Debug.Assert(filter != null);
 
-            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnException"))
+            // Inlinable fast-path check if Diagnositcs is enabled
+            if (diagnosticListener.IsEnabled())
             {
-                diagnosticSource.Write(
+                BeforeOnExceptionImpl(diagnosticListener, exceptionContext, filter);
+            }
+        }
+
+        private static void BeforeOnExceptionImpl(DiagnosticListener diagnosticListener, ExceptionContext exceptionContext, IExceptionFilter filter)
+        {
+            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnException"))
+            {
+                diagnosticListener.Write(
                     "Microsoft.AspNetCore.Mvc.BeforeOnException",
                     new
                     {
@@ -340,17 +475,26 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         public static void AfterOnException(
-            this DiagnosticSource diagnosticSource,
+            this DiagnosticListener diagnosticListener,
             ExceptionContext exceptionContext,
             IExceptionFilter filter)
         {
-            Debug.Assert(diagnosticSource != null);
+            Debug.Assert(diagnosticListener != null);
             Debug.Assert(exceptionContext != null);
             Debug.Assert(filter != null);
 
-            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnException"))
+            // Inlinable fast-path check if Diagnositcs is enabled
+            if (diagnosticListener.IsEnabled())
             {
-                diagnosticSource.Write(
+                AfterOnExceptionImpl(diagnosticListener, exceptionContext, filter);
+            }
+        }
+
+        private static void AfterOnExceptionImpl(DiagnosticListener diagnosticListener, ExceptionContext exceptionContext, IExceptionFilter filter)
+        {
+            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnException"))
+            {
+                diagnosticListener.Write(
                     "Microsoft.AspNetCore.Mvc.AfterOnException",
                     new
                     {
@@ -362,17 +506,26 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         public static void BeforeOnActionExecution(
-            this DiagnosticSource diagnosticSource,
+            this DiagnosticListener diagnosticListener,
             ActionExecutingContext actionExecutingContext,
             IAsyncActionFilter filter)
         {
-            Debug.Assert(diagnosticSource != null);
+            Debug.Assert(diagnosticListener != null);
             Debug.Assert(actionExecutingContext != null);
             Debug.Assert(filter != null);
 
-            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnActionExecution"))
+            // Inlinable fast-path check if Diagnositcs is enabled
+            if (diagnosticListener.IsEnabled())
             {
-                diagnosticSource.Write(
+                BeforeOnActionExecutionImpl(diagnosticListener, actionExecutingContext, filter);
+            }
+        }
+
+        private static void BeforeOnActionExecutionImpl(DiagnosticListener diagnosticListener, ActionExecutingContext actionExecutingContext, IAsyncActionFilter filter)
+        {
+            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnActionExecution"))
+            {
+                diagnosticListener.Write(
                     "Microsoft.AspNetCore.Mvc.BeforeOnActionExecution",
                     new
                     {
@@ -384,17 +537,26 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         public static void AfterOnActionExecution(
-            this DiagnosticSource diagnosticSource,
+            this DiagnosticListener diagnosticListener,
             ActionExecutedContext actionExecutedContext,
             IAsyncActionFilter filter)
         {
-            Debug.Assert(diagnosticSource != null);
+            Debug.Assert(diagnosticListener != null);
             Debug.Assert(actionExecutedContext != null);
             Debug.Assert(filter != null);
 
-            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnActionExecution"))
+            // Inlinable fast-path check if Diagnositcs is enabled
+            if (diagnosticListener.IsEnabled())
             {
-                diagnosticSource.Write(
+                AfterOnActionExecutionImpl(diagnosticListener, actionExecutedContext, filter);
+            }
+        }
+
+        private static void AfterOnActionExecutionImpl(DiagnosticListener diagnosticListener, ActionExecutedContext actionExecutedContext, IAsyncActionFilter filter)
+        {
+            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnActionExecution"))
+            {
+                diagnosticListener.Write(
                     "Microsoft.AspNetCore.Mvc.AfterOnActionExecution",
                     new
                     {
@@ -406,17 +568,26 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         public static void BeforeOnActionExecuting(
-            this DiagnosticSource diagnosticSource,
+            this DiagnosticListener diagnosticListener,
             ActionExecutingContext actionExecutingContext,
             IActionFilter filter)
         {
-            Debug.Assert(diagnosticSource != null);
+            Debug.Assert(diagnosticListener != null);
             Debug.Assert(actionExecutingContext != null);
             Debug.Assert(filter != null);
 
-            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnActionExecuting"))
+            // Inlinable fast-path check if Diagnositcs is enabled
+            if (diagnosticListener.IsEnabled())
             {
-                diagnosticSource.Write(
+                BeforeOnActionExecutingImpl(diagnosticListener, actionExecutingContext, filter);
+            }
+        }
+
+        private static void BeforeOnActionExecutingImpl(DiagnosticListener diagnosticListener, ActionExecutingContext actionExecutingContext, IActionFilter filter)
+        {
+            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnActionExecuting"))
+            {
+                diagnosticListener.Write(
                     "Microsoft.AspNetCore.Mvc.BeforeOnActionExecuting",
                     new
                     {
@@ -428,17 +599,26 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         public static void AfterOnActionExecuting(
-            this DiagnosticSource diagnosticSource,
+            this DiagnosticListener diagnosticListener,
             ActionExecutingContext actionExecutingContext,
             IActionFilter filter)
         {
-            Debug.Assert(diagnosticSource != null);
+            Debug.Assert(diagnosticListener != null);
             Debug.Assert(actionExecutingContext != null);
             Debug.Assert(filter != null);
 
-            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnActionExecuting"))
+            // Inlinable fast-path check if Diagnositcs is enabled
+            if (diagnosticListener.IsEnabled())
             {
-                diagnosticSource.Write(
+                AfterOnActionExecutingImpl(diagnosticListener, actionExecutingContext, filter);
+            }
+        }
+
+        private static void AfterOnActionExecutingImpl(DiagnosticListener diagnosticListener, ActionExecutingContext actionExecutingContext, IActionFilter filter)
+        {
+            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnActionExecuting"))
+            {
+                diagnosticListener.Write(
                     "Microsoft.AspNetCore.Mvc.AfterOnActionExecuting",
                     new
                     {
@@ -450,17 +630,26 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         public static void BeforeOnActionExecuted(
-            this DiagnosticSource diagnosticSource,
+            this DiagnosticListener diagnosticListener,
             ActionExecutedContext actionExecutedContext,
             IActionFilter filter)
         {
-            Debug.Assert(diagnosticSource != null);
+            Debug.Assert(diagnosticListener != null);
             Debug.Assert(actionExecutedContext != null);
             Debug.Assert(filter != null);
 
-            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnActionExecuted"))
+            // Inlinable fast-path check if Diagnositcs is enabled
+            if (diagnosticListener.IsEnabled())
             {
-                diagnosticSource.Write(
+                BeforeOnActionExecutedImpl(diagnosticListener, actionExecutedContext, filter);
+            }
+        }
+
+        private static void BeforeOnActionExecutedImpl(DiagnosticListener diagnosticListener, ActionExecutedContext actionExecutedContext, IActionFilter filter)
+        {
+            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnActionExecuted"))
+            {
+                diagnosticListener.Write(
                     "Microsoft.AspNetCore.Mvc.BeforeOnActionExecuted",
                     new
                     {
@@ -472,17 +661,26 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         public static void AfterOnActionExecuted(
-            this DiagnosticSource diagnosticSource,
+            this DiagnosticListener diagnosticListener,
             ActionExecutedContext actionExecutedContext,
             IActionFilter filter)
         {
-            Debug.Assert(diagnosticSource != null);
+            Debug.Assert(diagnosticListener != null);
             Debug.Assert(actionExecutedContext != null);
             Debug.Assert(filter != null);
 
-            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnActionExecuted"))
+            // Inlinable fast-path check if Diagnositcs is enabled
+            if (diagnosticListener.IsEnabled())
             {
-                diagnosticSource.Write(
+                AfterOnActionExecutedImpl(diagnosticListener, actionExecutedContext, filter);
+            }
+        }
+
+        private static void AfterOnActionExecutedImpl(DiagnosticListener diagnosticListener, ActionExecutedContext actionExecutedContext, IActionFilter filter)
+        {
+            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnActionExecuted"))
+            {
+                diagnosticListener.Write(
                     "Microsoft.AspNetCore.Mvc.AfterOnActionExecuted",
                     new
                     {
@@ -494,19 +692,28 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         public static void BeforeActionMethod(
-            this DiagnosticSource diagnosticSource,
+            this DiagnosticListener diagnosticListener,
             ActionContext actionContext,
             IDictionary<string, object> actionArguments,
             object controller)
         {
-            Debug.Assert(diagnosticSource != null);
+            Debug.Assert(diagnosticListener != null);
             Debug.Assert(actionContext != null);
             Debug.Assert(actionArguments != null);
             Debug.Assert(controller != null);
 
-            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeActionMethod"))
+            // Inlinable fast-path check if Diagnositcs is enabled
+            if (diagnosticListener.IsEnabled())
             {
-                diagnosticSource.Write(
+                BeforeActionMethodImpl(diagnosticListener, actionContext, actionArguments, controller);
+            }
+        }
+
+        private static void BeforeActionMethodImpl(DiagnosticListener diagnosticListener, ActionContext actionContext, IDictionary<string, object> actionArguments, object controller)
+        {
+            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeActionMethod"))
+            {
+                diagnosticListener.Write(
                     "Microsoft.AspNetCore.Mvc.BeforeActionMethod",
                     new
                     {
@@ -518,20 +725,29 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         public static void AfterActionMethod(
-            this DiagnosticSource diagnosticSource,
+            this DiagnosticListener diagnosticListener,
             ActionContext actionContext,
             IDictionary<string, object> actionArguments,
             object controller,
             IActionResult result)
         {
-            Debug.Assert(diagnosticSource != null);
+            Debug.Assert(diagnosticListener != null);
             Debug.Assert(actionContext != null);
             Debug.Assert(actionArguments != null);
             Debug.Assert(controller != null);
 
-            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.AfterActionMethod"))
+            // Inlinable fast-path check if Diagnositcs is enabled
+            if (diagnosticListener.IsEnabled())
             {
-                diagnosticSource.Write(
+                AfterActionMethodImpl(diagnosticListener, actionContext, actionArguments, controller, result);
+            }
+        }
+
+        private static void AfterActionMethodImpl(DiagnosticListener diagnosticListener, ActionContext actionContext, IDictionary<string, object> actionArguments, object controller, IActionResult result)
+        {
+            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.AfterActionMethod"))
+            {
+                diagnosticListener.Write(
                     "Microsoft.AspNetCore.Mvc.AfterActionMethod",
                     new
                     {
@@ -544,17 +760,26 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         public static void BeforeOnResultExecution(
-            this DiagnosticSource diagnosticSource,
+            this DiagnosticListener diagnosticListener,
             ResultExecutingContext resultExecutingContext,
             IAsyncResultFilter filter)
         {
-            Debug.Assert(diagnosticSource != null);
+            Debug.Assert(diagnosticListener != null);
             Debug.Assert(resultExecutingContext != null);
             Debug.Assert(filter != null);
 
-            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnResultExecution"))
+            // Inlinable fast-path check if Diagnositcs is enabled
+            if (diagnosticListener.IsEnabled())
             {
-                diagnosticSource.Write(
+                BeforeOnResultExecutionImpl(diagnosticListener, resultExecutingContext, filter);
+            }
+        }
+
+        private static void BeforeOnResultExecutionImpl(DiagnosticListener diagnosticListener, ResultExecutingContext resultExecutingContext, IAsyncResultFilter filter)
+        {
+            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnResultExecution"))
+            {
+                diagnosticListener.Write(
                     "Microsoft.AspNetCore.Mvc.BeforeOnResultExecution",
                     new
                     {
@@ -566,17 +791,26 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         public static void AfterOnResultExecution(
-            this DiagnosticSource diagnosticSource,
+            this DiagnosticListener diagnosticListener,
             ResultExecutedContext resultExecutedContext,
             IAsyncResultFilter filter)
         {
-            Debug.Assert(diagnosticSource != null);
+            Debug.Assert(diagnosticListener != null);
             Debug.Assert(resultExecutedContext != null);
             Debug.Assert(filter != null);
 
-            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnResultExecution"))
+            // Inlinable fast-path check if Diagnositcs is enabled
+            if (diagnosticListener.IsEnabled())
             {
-                diagnosticSource.Write(
+                AfterOnResultExecutionImpl(diagnosticListener, resultExecutedContext, filter);
+            }
+        }
+
+        private static void AfterOnResultExecutionImpl(DiagnosticListener diagnosticListener, ResultExecutedContext resultExecutedContext, IAsyncResultFilter filter)
+        {
+            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnResultExecution"))
+            {
+                diagnosticListener.Write(
                     "Microsoft.AspNetCore.Mvc.AfterOnResultExecution",
                     new
                     {
@@ -588,17 +822,26 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         public static void BeforeOnResultExecuting(
-            this DiagnosticSource diagnosticSource,
+            this DiagnosticListener diagnosticListener,
             ResultExecutingContext resultExecutingContext,
             IResultFilter filter)
         {
-            Debug.Assert(diagnosticSource != null);
+            Debug.Assert(diagnosticListener != null);
             Debug.Assert(resultExecutingContext != null);
             Debug.Assert(filter != null);
 
-            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnResultExecuting"))
+            // Inlinable fast-path check if Diagnositcs is enabled
+            if (diagnosticListener.IsEnabled())
             {
-                diagnosticSource.Write(
+                BeforeOnResultExecutingImpl(diagnosticListener, resultExecutingContext, filter);
+            }
+        }
+
+        private static void BeforeOnResultExecutingImpl(DiagnosticListener diagnosticListener, ResultExecutingContext resultExecutingContext, IResultFilter filter)
+        {
+            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnResultExecuting"))
+            {
+                diagnosticListener.Write(
                     "Microsoft.AspNetCore.Mvc.BeforeOnResultExecuting",
                     new
                     {
@@ -610,17 +853,26 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         public static void AfterOnResultExecuting(
-            this DiagnosticSource diagnosticSource,
+            this DiagnosticListener diagnosticListener,
             ResultExecutingContext resultExecutingContext,
             IResultFilter filter)
         {
-            Debug.Assert(diagnosticSource != null);
+            Debug.Assert(diagnosticListener != null);
             Debug.Assert(resultExecutingContext != null);
             Debug.Assert(filter != null);
 
-            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnResultExecuting"))
+            // Inlinable fast-path check if Diagnositcs is enabled
+            if (diagnosticListener.IsEnabled())
             {
-                diagnosticSource.Write(
+                AfterOnResultExecutingImpl(diagnosticListener, resultExecutingContext, filter);
+            }
+        }
+
+        private static void AfterOnResultExecutingImpl(DiagnosticListener diagnosticListener, ResultExecutingContext resultExecutingContext, IResultFilter filter)
+        {
+            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnResultExecuting"))
+            {
+                diagnosticListener.Write(
                     "Microsoft.AspNetCore.Mvc.AfterOnResultExecuting",
                     new
                     {
@@ -632,17 +884,26 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         public static void BeforeOnResultExecuted(
-            this DiagnosticSource diagnosticSource,
+            this DiagnosticListener diagnosticListener,
             ResultExecutedContext resultExecutedContext,
             IResultFilter filter)
         {
-            Debug.Assert(diagnosticSource != null);
+            Debug.Assert(diagnosticListener != null);
             Debug.Assert(resultExecutedContext != null);
             Debug.Assert(filter != null);
 
-            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnResultExecuted"))
+            // Inlinable fast-path check if Diagnositcs is enabled
+            if (diagnosticListener.IsEnabled())
             {
-                diagnosticSource.Write(
+                BeforeOnResultExecutedImpl(diagnosticListener, resultExecutedContext, filter);
+            }
+        }
+
+        private static void BeforeOnResultExecutedImpl(DiagnosticListener diagnosticListener, ResultExecutedContext resultExecutedContext, IResultFilter filter)
+        {
+            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnResultExecuted"))
+            {
+                diagnosticListener.Write(
                     "Microsoft.AspNetCore.Mvc.BeforeOnResultExecuted",
                     new
                     {
@@ -654,17 +915,26 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         public static void AfterOnResultExecuted(
-            this DiagnosticSource diagnosticSource,
+            this DiagnosticListener diagnosticListener,
             ResultExecutedContext resultExecutedContext,
             IResultFilter filter)
         {
-            Debug.Assert(diagnosticSource != null);
+            Debug.Assert(diagnosticListener != null);
             Debug.Assert(resultExecutedContext != null);
             Debug.Assert(filter != null);
 
-            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnResultExecuted"))
+            // Inlinable fast-path check if Diagnositcs is enabled
+            if (diagnosticListener.IsEnabled())
             {
-                diagnosticSource.Write(
+                AfterOnResultExecutedImpl(diagnosticListener, resultExecutedContext, filter);
+            }
+        }
+
+        private static void AfterOnResultExecutedImpl(DiagnosticListener diagnosticListener, ResultExecutedContext resultExecutedContext, IResultFilter filter)
+        {
+            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnResultExecuted"))
+            {
+                diagnosticListener.Write(
                     "Microsoft.AspNetCore.Mvc.AfterOnResultExecuted",
                     new
                     {
@@ -676,34 +946,52 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         public static void BeforeActionResult(
-            this DiagnosticSource diagnosticSource,
+            this DiagnosticListener diagnosticListener,
             ActionContext actionContext,
             IActionResult result)
         {
-            Debug.Assert(diagnosticSource != null);
+            Debug.Assert(diagnosticListener != null);
             Debug.Assert(actionContext != null);
             Debug.Assert(result != null);
 
-            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeActionResult"))
+            // Inlinable fast-path check if Diagnositcs is enabled
+            if (diagnosticListener.IsEnabled())
             {
-                diagnosticSource.Write(
+                BeforeActionResultImpl(diagnosticListener, actionContext, result);
+            }
+        }
+
+        private static void BeforeActionResultImpl(DiagnosticListener diagnosticListener, ActionContext actionContext, IActionResult result)
+        {
+            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeActionResult"))
+            {
+                diagnosticListener.Write(
                     "Microsoft.AspNetCore.Mvc.BeforeActionResult",
                     new { actionContext = actionContext, result = result });
             }
         }
 
         public static void AfterActionResult(
-            this DiagnosticSource diagnosticSource,
+            this DiagnosticListener diagnosticListener,
             ActionContext actionContext,
             IActionResult result)
         {
-            Debug.Assert(diagnosticSource != null);
+            Debug.Assert(diagnosticListener != null);
             Debug.Assert(actionContext != null);
             Debug.Assert(result != null);
 
-            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.AfterActionResult"))
+            // Inlinable fast-path check if Diagnositcs is enabled
+            if (diagnosticListener.IsEnabled())
             {
-                diagnosticSource.Write(
+                AfterActionResultImpl(diagnosticListener, actionContext, result);
+            }
+        }
+
+        private static void AfterActionResultImpl(DiagnosticListener diagnosticListener, ActionContext actionContext, IActionResult result)
+        {
+            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.AfterActionResult"))
+            {
+                diagnosticListener.Write(
                     "Microsoft.AspNetCore.Mvc.AfterActionResult",
                     new { actionContext = actionContext, result = result });
             }

@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// <param name="writerFactory">The <see cref="IHttpResponseStreamWriterFactory"/>.</param>
         /// <param name="viewEngine">The <see cref="ICompositeViewEngine"/>.</param>
         /// <param name="tempDataFactory">The <see cref="ITempDataDictionaryFactory"/>.</param>
-        /// <param name="diagnosticSource">The <see cref="DiagnosticSource"/>.</param>
+        /// <param name="diagnosticListener">The <see cref="DiagnosticListener"/>.</param>
         /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
         /// <param name="modelMetadataProvider">The <see cref="IModelMetadataProvider"/>.</param>
         public PartialViewResultExecutor(
@@ -38,10 +38,10 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             IHttpResponseStreamWriterFactory writerFactory,
             ICompositeViewEngine viewEngine,
             ITempDataDictionaryFactory tempDataFactory,
-            DiagnosticSource diagnosticSource,
+            DiagnosticListener diagnosticListener,
             ILoggerFactory loggerFactory,
             IModelMetadataProvider modelMetadataProvider)
-            : base(viewOptions, writerFactory, viewEngine, tempDataFactory, diagnosticSource, modelMetadataProvider)
+            : base(viewOptions, writerFactory, viewEngine, tempDataFactory, diagnosticListener, modelMetadataProvider)
         {
             if (loggerFactory == null)
             {

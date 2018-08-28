@@ -9,13 +9,25 @@ namespace Microsoft.AspNetCore.Mvc.Razor
     internal static class MvcRazorDiagnosticSourceExtensions
     {
         public static void BeforeViewPage(
-            this DiagnosticSource diagnosticSource,
+            this DiagnosticListener diagnosticListener,
             IRazorPage page,
             ViewContext viewContext)
         {
-            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.Razor.BeforeViewPage"))
+            // Inlinable fast-path check if Diagnositcs is enabled
+            if (diagnosticListener.IsEnabled())
             {
-                diagnosticSource.Write(
+                BeforeViewPageImpl(diagnosticListener, page, viewContext);
+            }
+        }
+
+        private static void BeforeViewPageImpl(
+            this DiagnosticListener diagnosticListener,
+            IRazorPage page,
+            ViewContext viewContext)
+        {
+            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.Razor.BeforeViewPage"))
+            {
+                diagnosticListener.Write(
                     "Microsoft.AspNetCore.Mvc.Razor.BeforeViewPage",
                     new
                     {
@@ -28,13 +40,25 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         }
 
         public static void AfterViewPage(
-            this DiagnosticSource diagnosticSource,
+            this DiagnosticListener diagnosticListener,
             IRazorPage page,
             ViewContext viewContext)
         {
-            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.Razor.AfterViewPage"))
+            // Inlinable fast-path check if Diagnositcs is enabled
+            if (diagnosticListener.IsEnabled())
             {
-                diagnosticSource.Write(
+                AfterViewPageImpl(diagnosticListener, page, viewContext);
+            }
+        }
+
+        private static void AfterViewPageImpl(
+            this DiagnosticListener diagnosticListener,
+            IRazorPage page,
+            ViewContext viewContext)
+        {
+            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.Razor.AfterViewPage"))
+            {
+                diagnosticListener.Write(
                     "Microsoft.AspNetCore.Mvc.Razor.AfterViewPage",
                     new
                     {

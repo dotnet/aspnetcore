@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// <param name="writerFactory">The <see cref="IHttpResponseStreamWriterFactory"/>.</param>
         /// <param name="viewEngine">The <see cref="ICompositeViewEngine"/>.</param>
         /// <param name="tempDataFactory">The <see cref="ITempDataDictionaryFactory"/>.</param>
-        /// <param name="diagnosticSource">The <see cref="DiagnosticSource"/>.</param>
+        /// <param name="diagnosticListener">The <see cref="DiagnosticListener"/>.</param>
         /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
         /// <param name="modelMetadataProvider">The <see cref="IModelMetadataProvider"/>.</param>
         public ViewResultExecutor(
@@ -38,10 +38,10 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             IHttpResponseStreamWriterFactory writerFactory,
             ICompositeViewEngine viewEngine,
             ITempDataDictionaryFactory tempDataFactory,
-            DiagnosticSource diagnosticSource,
+            DiagnosticListener diagnosticListener,
             ILoggerFactory loggerFactory,
             IModelMetadataProvider modelMetadataProvider)
-            : base(viewOptions, writerFactory, viewEngine, tempDataFactory, diagnosticSource, modelMetadataProvider)
+            : base(viewOptions, writerFactory, viewEngine, tempDataFactory, diagnosticListener, modelMetadataProvider)
         {
             if (loggerFactory == null)
             {
@@ -107,6 +107,25 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 }
             }
 
+            if (DiagnosticSource.IsEnabled())
+            {
+                OutputDiagnostics(actionContext, viewResult, viewName, stopwatch, result);
+            }
+
+            if (result.Success)
+            {
+                Logger.ViewFound(result.View, stopwatch.GetElapsedTime());
+            }
+            else
+            {
+                Logger.ViewNotFound(viewName, result.SearchedLocations);
+            }
+
+            return result;
+        }
+
+        private void OutputDiagnostics(ActionContext actionContext, ViewResult viewResult, string viewName, ValueStopwatch stopwatch, ViewEngineResult result)
+        {
             if (result.Success)
             {
                 if (DiagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.ViewFound"))
@@ -122,8 +141,6 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                             view = result.View,
                         });
                 }
-
-                Logger.ViewFound(result.View, stopwatch.GetElapsedTime());
             }
             else
             {
@@ -140,10 +157,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                             searchedLocations = result.SearchedLocations
                         });
                 }
-                Logger.ViewNotFound(viewName, result.SearchedLocations);
             }
-
-            return result;
         }
 
         /// <inheritdoc />

@@ -560,7 +560,7 @@ namespace Microsoft.AspNetCore.Mvc
             }
 
             var services = new ServiceCollection();
-            services.AddSingleton<DiagnosticSource>(diagnosticSource);
+            services.AddSingleton<DiagnosticListener>(diagnosticSource);
             services.AddSingleton<ViewComponentInvokerCache>();
             services.AddSingleton<ExpressionTextCache>();
             services.AddSingleton(Options.Create(new MvcViewOptions()));

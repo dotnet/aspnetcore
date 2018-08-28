@@ -235,10 +235,10 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
             var adapter = new TestDiagnosticListener();
 
-            var diagnosticSource = new DiagnosticListener("Test");
-            diagnosticSource.SubscribeWithAdapter(adapter);
+            var diagnosticListener = new DiagnosticListener("Test");
+            diagnosticListener.SubscribeWithAdapter(adapter);
 
-            var viewExecutor = CreateViewExecutor(diagnosticSource);
+            var viewExecutor = CreateViewExecutor(diagnosticListener);
 
             // Act
             await viewExecutor.ExecuteAsync(
@@ -351,11 +351,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             return view.Object;
         }
 
-        private ViewExecutor CreateViewExecutor(DiagnosticListener diagnosticSource = null)
+        private ViewExecutor CreateViewExecutor(DiagnosticListener diagnosticListener = null)
         {
-            if (diagnosticSource == null)
+            if (diagnosticListener == null)
             {
-                diagnosticSource = new DiagnosticListener("Test");
+                diagnosticListener = new DiagnosticListener("Test");
             }
 
             return new ViewExecutor(
@@ -363,7 +363,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 new TestHttpResponseStreamWriterFactory(),
                 new Mock<ICompositeViewEngine>(MockBehavior.Strict).Object,
                 new TempDataDictionaryFactory(new SessionStateTempDataProvider()),
-                diagnosticSource,
+                diagnosticListener,
                 new EmptyModelMetadataProvider());
         }
     }

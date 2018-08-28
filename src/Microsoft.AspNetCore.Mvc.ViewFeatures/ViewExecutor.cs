@@ -32,16 +32,16 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// <param name="writerFactory">The <see cref="IHttpResponseStreamWriterFactory"/>.</param>
         /// <param name="viewEngine">The <see cref="ICompositeViewEngine"/>.</param>
         /// <param name="tempDataFactory">The <see cref="ITempDataDictionaryFactory"/>.</param>
-        /// <param name="diagnosticSource">The <see cref="DiagnosticSource"/>.</param>
+        /// <param name="diagnosticListener">The <see cref="DiagnosticSource"/>.</param>
         /// <param name="modelMetadataProvider">The <see cref="IModelMetadataProvider" />.</param>
         public ViewExecutor(
             IOptions<MvcViewOptions> viewOptions,
             IHttpResponseStreamWriterFactory writerFactory,
             ICompositeViewEngine viewEngine,
             ITempDataDictionaryFactory tempDataFactory,
-            DiagnosticSource diagnosticSource,
+            DiagnosticListener diagnosticListener,
             IModelMetadataProvider modelMetadataProvider)
-            : this(writerFactory, viewEngine, diagnosticSource)
+            : this(writerFactory, viewEngine, diagnosticListener)
         {
             if (viewOptions == null)
             {
@@ -53,9 +53,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 throw new ArgumentNullException(nameof(tempDataFactory));
             }
 
-            if (diagnosticSource == null)
+            if (diagnosticListener == null)
             {
-                throw new ArgumentNullException(nameof(diagnosticSource));
+                throw new ArgumentNullException(nameof(diagnosticListener));
             }
 
             ViewOptions = viewOptions.Value;
@@ -68,11 +68,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// </summary>
         /// <param name="writerFactory">The <see cref="IHttpResponseStreamWriterFactory"/>.</param>
         /// <param name="viewEngine">The <see cref="ICompositeViewEngine"/>.</param>
-        /// <param name="diagnosticSource">The <see cref="System.Diagnostics.DiagnosticSource"/>.</param>
+        /// <param name="diagnosticListener">The <see cref="System.Diagnostics.DiagnosticListener"/>.</param>
         protected ViewExecutor(
             IHttpResponseStreamWriterFactory writerFactory,
             ICompositeViewEngine viewEngine,
-            DiagnosticSource diagnosticSource)
+            DiagnosticListener diagnosticListener)
         {
             if (writerFactory == null)
             {
@@ -84,20 +84,20 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 throw new ArgumentNullException(nameof(viewEngine));
             }
 
-            if (diagnosticSource == null)
+            if (diagnosticListener == null)
             {
-                throw new ArgumentNullException(nameof(diagnosticSource));
+                throw new ArgumentNullException(nameof(diagnosticListener));
             }
 
             WriterFactory = writerFactory;
             ViewEngine = viewEngine;
-            DiagnosticSource = diagnosticSource;
+            DiagnosticSource = diagnosticListener;
         }
 
         /// <summary>
         /// Gets the <see cref="DiagnosticSource"/>.
         /// </summary>
-        protected DiagnosticSource DiagnosticSource { get; }
+        protected DiagnosticListener DiagnosticSource { get; }
 
         /// <summary>
         /// Gets the <see cref="ITempDataDictionaryFactory"/>.

@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Builder
         {
             // Arrange
             var services = new ServiceCollection();
-            services.AddSingleton<DiagnosticSource>(new DiagnosticListener("Microsoft.AspNetCore"));
+            services.AddSingleton<DiagnosticListener>(new DiagnosticListener("Microsoft.AspNetCore"));
             services.AddLogging();
             services.AddMvcCore(o => o.EnableEndpointRouting = false);
             var serviceProvider = services.BuildServiceProvider();
@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Builder
         {
             // Arrange
             var services = new ServiceCollection();
-            services.AddSingleton<DiagnosticSource>(new DiagnosticListener("Microsoft.AspNetCore"));
+            services.AddSingleton<DiagnosticListener>(new DiagnosticListener("Microsoft.AspNetCore"));
             services.AddLogging();
             services.AddMvcCore(o => o.EnableEndpointRouting = true);
             var serviceProvider = services.BuildServiceProvider();

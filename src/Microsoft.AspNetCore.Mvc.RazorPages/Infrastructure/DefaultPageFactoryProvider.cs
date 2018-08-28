@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             IModelMetadataProvider metadataProvider,
             IUrlHelperFactory urlHelperFactory,
             IJsonHelper jsonHelper,
-            DiagnosticSource diagnosticSource,
+            DiagnosticListener diagnosticListener,
             HtmlEncoder htmlEncoder,
             IModelExpressionProvider modelExpressionProvider)
         {
@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             {
                 UrlHelperAccessor = context => urlHelperFactory.GetUrlHelper(context),
                 JsonHelperAccessor = context => jsonHelper,
-                DiagnosticSourceAccessor = context => diagnosticSource,
+                DiagnosticSourceAccessor = context => diagnosticListener,
                 HtmlEncoderAccessor = context => htmlEncoder,
                 ModelExpressionProviderAccessor = context => modelExpressionProvider,
             };

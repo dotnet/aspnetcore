@@ -11,21 +11,30 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
     internal static class MvcRazorPagesDiagnosticSourceExtensions
     {
         public static void BeforeHandlerMethod(
-            this DiagnosticSource diagnosticSource,
+            this DiagnosticListener diagnosticListener,
             ActionContext actionContext,
             HandlerMethodDescriptor handlerMethodDescriptor,
             IDictionary<string, object> arguments,
             object instance)
         {
-            Debug.Assert(diagnosticSource != null);
+            Debug.Assert(diagnosticListener != null);
             Debug.Assert(actionContext != null);
             Debug.Assert(handlerMethodDescriptor != null);
             Debug.Assert(arguments != null);
             Debug.Assert(instance != null);
 
-            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeHandlerMethod"))
+            // Inlinable fast-path check if Diagnositcs is enabled
+            if (diagnosticListener.IsEnabled())
             {
-                diagnosticSource.Write(
+                BeforeHandlerMethodImpl(diagnosticListener, actionContext, handlerMethodDescriptor, arguments, instance);
+            }
+        }
+
+        private static void BeforeHandlerMethodImpl(DiagnosticListener diagnosticListener, ActionContext actionContext, HandlerMethodDescriptor handlerMethodDescriptor, IDictionary<string, object> arguments, object instance)
+        {
+            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeHandlerMethod"))
+            {
+                diagnosticListener.Write(
                     "Microsoft.AspNetCore.Mvc.BeforeHandlerMethod",
                     new
                     {
@@ -38,22 +47,31 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         }
 
         public static void AfterHandlerMethod(
-            this DiagnosticSource diagnosticSource,
+            this DiagnosticListener diagnosticListener,
             ActionContext actionContext,
             HandlerMethodDescriptor handlerMethodDescriptor,
             IDictionary<string, object> arguments,
             object instance,
             IActionResult result)
         {
-            Debug.Assert(diagnosticSource != null);
+            Debug.Assert(diagnosticListener != null);
             Debug.Assert(actionContext != null);
             Debug.Assert(handlerMethodDescriptor != null);
             Debug.Assert(arguments != null);
             Debug.Assert(instance != null);
 
-            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.AfterHandlerMethod"))
+            // Inlinable fast-path check if Diagnositcs is enabled
+            if (diagnosticListener.IsEnabled())
             {
-                diagnosticSource.Write(
+                AfterHandlerMethodImpl(diagnosticListener, actionContext, handlerMethodDescriptor, arguments, instance, result);
+            }
+        }
+
+        private static void AfterHandlerMethodImpl(DiagnosticListener diagnosticListener, ActionContext actionContext, HandlerMethodDescriptor handlerMethodDescriptor, IDictionary<string, object> arguments, object instance, IActionResult result)
+        {
+            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.AfterHandlerMethod"))
+            {
+                diagnosticListener.Write(
                     "Microsoft.AspNetCore.Mvc.AfterHandlerMethod",
                     new
                     {
@@ -65,19 +83,28 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
                     });
             }
         }
-        
+
         public static void BeforeOnPageHandlerExecution(
-            this DiagnosticSource diagnosticSource,
+            this DiagnosticListener diagnosticListener,
             PageHandlerExecutingContext handlerExecutionContext,
             IAsyncPageFilter filter)
         {
-            Debug.Assert(diagnosticSource != null);
+            Debug.Assert(diagnosticListener != null);
             Debug.Assert(handlerExecutionContext != null);
             Debug.Assert(filter != null);
 
-            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnPageHandlerExecution"))
+            // Inlinable fast-path check if Diagnositcs is enabled
+            if (diagnosticListener.IsEnabled())
             {
-                diagnosticSource.Write(
+                BeforeOnPageHandlerExecutionImpl(diagnosticListener, handlerExecutionContext, filter);
+            }
+        }
+
+        private static void BeforeOnPageHandlerExecutionImpl(DiagnosticListener diagnosticListener, PageHandlerExecutingContext handlerExecutionContext, IAsyncPageFilter filter)
+        {
+            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnPageHandlerExecution"))
+            {
+                diagnosticListener.Write(
                     "Microsoft.AspNetCore.Mvc.BeforeOnPageHandlerExecution",
                     new
                     {
@@ -89,17 +116,26 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         }
 
         public static void AfterOnPageHandlerExecution(
-            this DiagnosticSource diagnosticSource,
+            this DiagnosticListener diagnosticListener,
             PageHandlerExecutedContext handlerExecutedContext,
             IAsyncPageFilter filter)
         {
-            Debug.Assert(diagnosticSource != null);
+            Debug.Assert(diagnosticListener != null);
             Debug.Assert(handlerExecutedContext != null);
             Debug.Assert(filter != null);
 
-            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnPageHandlerExecution"))
+            // Inlinable fast-path check if Diagnositcs is enabled
+            if (diagnosticListener.IsEnabled())
             {
-                diagnosticSource.Write(
+                AfterOnPageHandlerExecutionImpl(diagnosticListener, handlerExecutedContext, filter);
+            }
+        }
+
+        private static void AfterOnPageHandlerExecutionImpl(DiagnosticListener diagnosticListener, PageHandlerExecutedContext handlerExecutedContext, IAsyncPageFilter filter)
+        {
+            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnPageHandlerExecution"))
+            {
+                diagnosticListener.Write(
                     "Microsoft.AspNetCore.Mvc.AfterOnPageHandlerExecution",
                     new
                     {
@@ -111,17 +147,26 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         }
 
         public static void BeforeOnPageHandlerExecuting(
-            this DiagnosticSource diagnosticSource,
+            this DiagnosticListener diagnosticListener,
             PageHandlerExecutingContext handlerExecutingContext,
             IPageFilter filter)
         {
-            Debug.Assert(diagnosticSource != null);
+            Debug.Assert(diagnosticListener != null);
             Debug.Assert(handlerExecutingContext != null);
             Debug.Assert(filter != null);
 
-            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnPageHandlerExecuting"))
+            // Inlinable fast-path check if Diagnositcs is enabled
+            if (diagnosticListener.IsEnabled())
             {
-                diagnosticSource.Write(
+                BeforeOnPageHandlerExecutingImpl(diagnosticListener, handlerExecutingContext, filter);
+            }
+        }
+
+        private static void BeforeOnPageHandlerExecutingImpl(DiagnosticListener diagnosticListener, PageHandlerExecutingContext handlerExecutingContext, IPageFilter filter)
+        {
+            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnPageHandlerExecuting"))
+            {
+                diagnosticListener.Write(
                     "Microsoft.AspNetCore.Mvc.BeforeOnPageHandlerExecuting",
                     new
                     {
@@ -133,17 +178,26 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         }
 
         public static void AfterOnPageHandlerExecuting(
-            this DiagnosticSource diagnosticSource,
+            this DiagnosticListener diagnosticListener,
             PageHandlerExecutingContext handlerExecutingContext,
             IPageFilter filter)
         {
-            Debug.Assert(diagnosticSource != null);
+            Debug.Assert(diagnosticListener != null);
             Debug.Assert(handlerExecutingContext != null);
             Debug.Assert(filter != null);
 
-            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnPageHandlerExecuting"))
+            // Inlinable fast-path check if Diagnositcs is enabled
+            if (diagnosticListener.IsEnabled())
             {
-                diagnosticSource.Write(
+                AfterOnPageHandlerExecutingImpl(diagnosticListener, handlerExecutingContext, filter);
+            }
+        }
+
+        private static void AfterOnPageHandlerExecutingImpl(DiagnosticListener diagnosticListener, PageHandlerExecutingContext handlerExecutingContext, IPageFilter filter)
+        {
+            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnPageHandlerExecuting"))
+            {
+                diagnosticListener.Write(
                     "Microsoft.AspNetCore.Mvc.AfterOnPageHandlerExecuting",
                     new
                     {
@@ -155,17 +209,26 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         }
 
         public static void BeforeOnPageHandlerExecuted(
-            this DiagnosticSource diagnosticSource,
+            this DiagnosticListener diagnosticListener,
             PageHandlerExecutedContext handlerExecutedContext,
             IPageFilter filter)
         {
-            Debug.Assert(diagnosticSource != null);
+            Debug.Assert(diagnosticListener != null);
             Debug.Assert(handlerExecutedContext != null);
             Debug.Assert(filter != null);
 
-            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnPageHandlerExecuted"))
+            // Inlinable fast-path check if Diagnositcs is enabled
+            if (diagnosticListener.IsEnabled())
             {
-                diagnosticSource.Write(
+                BeforeOnPageHandlerExecutedImpl(diagnosticListener, handlerExecutedContext, filter);
+            }
+        }
+
+        private static void BeforeOnPageHandlerExecutedImpl(DiagnosticListener diagnosticListener, PageHandlerExecutedContext handlerExecutedContext, IPageFilter filter)
+        {
+            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnPageHandlerExecuted"))
+            {
+                diagnosticListener.Write(
                     "Microsoft.AspNetCore.Mvc.BeforeOnPageHandlerExecuted",
                     new
                     {
@@ -177,17 +240,26 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         }
 
         public static void AfterOnPageHandlerExecuted(
-            this DiagnosticSource diagnosticSource,
+            this DiagnosticListener diagnosticListener,
             PageHandlerExecutedContext handlerExecutedContext,
             IPageFilter filter)
         {
-            Debug.Assert(diagnosticSource != null);
+            Debug.Assert(diagnosticListener != null);
             Debug.Assert(handlerExecutedContext != null);
             Debug.Assert(filter != null);
 
-            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnPageHandlerExecuted"))
+            // Inlinable fast-path check if Diagnositcs is enabled
+            if (diagnosticListener.IsEnabled())
             {
-                diagnosticSource.Write(
+                AfterOnPageHandlerExecutedImpl(diagnosticListener, handlerExecutedContext, filter);
+            }
+        }
+
+        private static void AfterOnPageHandlerExecutedImpl(DiagnosticListener diagnosticListener, PageHandlerExecutedContext handlerExecutedContext, IPageFilter filter)
+        {
+            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnPageHandlerExecuted"))
+            {
+                diagnosticListener.Write(
                     "Microsoft.AspNetCore.Mvc.AfterOnPageHandlerExecuted",
                     new
                     {
@@ -199,17 +271,26 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         }
 
         public static void BeforeOnPageHandlerSelection(
-            this DiagnosticSource diagnosticSource,
+            this DiagnosticListener diagnosticListener,
             PageHandlerSelectedContext handlerSelectedContext,
             IAsyncPageFilter filter)
         {
-            Debug.Assert(diagnosticSource != null);
+            Debug.Assert(diagnosticListener != null);
             Debug.Assert(handlerSelectedContext != null);
             Debug.Assert(filter != null);
 
-            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnPageHandlerSelection"))
+            // Inlinable fast-path check if Diagnositcs is enabled
+            if (diagnosticListener.IsEnabled())
             {
-                diagnosticSource.Write(
+                BeforeOnPageHandlerSelectionImpl(diagnosticListener, handlerSelectedContext, filter);
+            }
+        }
+
+        private static void BeforeOnPageHandlerSelectionImpl(DiagnosticListener diagnosticListener, PageHandlerSelectedContext handlerSelectedContext, IAsyncPageFilter filter)
+        {
+            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnPageHandlerSelection"))
+            {
+                diagnosticListener.Write(
                     "Microsoft.AspNetCore.Mvc.BeforeOnPageHandlerSelection",
                     new
                     {
@@ -221,17 +302,26 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         }
 
         public static void AfterOnPageHandlerSelection(
-            this DiagnosticSource diagnosticSource,
+            this DiagnosticListener diagnosticListener,
             PageHandlerSelectedContext handlerSelectedContext,
             IAsyncPageFilter filter)
         {
-            Debug.Assert(diagnosticSource != null);
+            Debug.Assert(diagnosticListener != null);
             Debug.Assert(handlerSelectedContext != null);
             Debug.Assert(filter != null);
 
-            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnPageHandlerSelection"))
+            // Inlinable fast-path check if Diagnositcs is enabled
+            if (diagnosticListener.IsEnabled())
             {
-                diagnosticSource.Write(
+                AfterOnPageHandlerSelectionImpl(diagnosticListener, handlerSelectedContext, filter);
+            }
+        }
+
+        private static void AfterOnPageHandlerSelectionImpl(DiagnosticListener diagnosticListener, PageHandlerSelectedContext handlerSelectedContext, IAsyncPageFilter filter)
+        {
+            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnPageHandlerSelection"))
+            {
+                diagnosticListener.Write(
                     "Microsoft.AspNetCore.Mvc.AfterOnPageHandlerSelection",
                     new
                     {
@@ -243,17 +333,26 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         }
 
         public static void BeforeOnPageHandlerSelected(
-            this DiagnosticSource diagnosticSource,
+            this DiagnosticListener diagnosticListener,
             PageHandlerSelectedContext handlerSelectedContext,
             IPageFilter filter)
         {
-            Debug.Assert(diagnosticSource != null);
+            Debug.Assert(diagnosticListener != null);
             Debug.Assert(handlerSelectedContext != null);
             Debug.Assert(filter != null);
 
-            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnPageHandlerSelected"))
+            // Inlinable fast-path check if Diagnositcs is enabled
+            if (diagnosticListener.IsEnabled())
             {
-                diagnosticSource.Write(
+                BeforeOnPageHandlerSelectedImpl(diagnosticListener, handlerSelectedContext, filter);
+            }
+        }
+
+        private static void BeforeOnPageHandlerSelectedImpl(DiagnosticListener diagnosticListener, PageHandlerSelectedContext handlerSelectedContext, IPageFilter filter)
+        {
+            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnPageHandlerSelected"))
+            {
+                diagnosticListener.Write(
                     "Microsoft.AspNetCore.Mvc.BeforeOnPageHandlerSelected",
                     new
                     {
@@ -265,17 +364,26 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         }
 
         public static void AfterOnPageHandlerSelected(
-            this DiagnosticSource diagnosticSource,
+            this DiagnosticListener diagnosticListener,
             PageHandlerSelectedContext handlerSelectedContext,
             IPageFilter filter)
         {
-            Debug.Assert(diagnosticSource != null);
+            Debug.Assert(diagnosticListener != null);
             Debug.Assert(handlerSelectedContext != null);
             Debug.Assert(filter != null);
 
-            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnPageHandlerSelected"))
+            // Inlinable fast-path check if Diagnositcs is enabled
+            if (diagnosticListener.IsEnabled())
             {
-                diagnosticSource.Write(
+                AfterOnPageHandlerSelectedImpl(diagnosticListener, handlerSelectedContext, filter);
+            }
+        }
+
+        private static void AfterOnPageHandlerSelectedImpl(DiagnosticListener diagnosticListener, PageHandlerSelectedContext handlerSelectedContext, IPageFilter filter)
+        {
+            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnPageHandlerSelected"))
+            {
+                diagnosticListener.Write(
                     "Microsoft.AspNetCore.Mvc.AfterOnPageHandlerSelected",
                     new
                     {

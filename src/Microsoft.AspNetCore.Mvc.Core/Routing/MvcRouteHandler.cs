@@ -17,21 +17,21 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         private readonly IActionInvokerFactory _actionInvokerFactory;
         private readonly IActionSelector _actionSelector;
         private readonly ILogger _logger;
-        private readonly DiagnosticSource _diagnosticSource;
+        private readonly DiagnosticListener _diagnosticListener;
 
         public MvcRouteHandler(
             IActionInvokerFactory actionInvokerFactory,
             IActionSelector actionSelector,
-            DiagnosticSource diagnosticSource,
+            DiagnosticListener diagnosticListener,
             ILoggerFactory loggerFactory)
-            : this(actionInvokerFactory, actionSelector, diagnosticSource, loggerFactory, actionContextAccessor: null)
+            : this(actionInvokerFactory, actionSelector, diagnosticListener, loggerFactory, actionContextAccessor: null)
         {
         }
 
         public MvcRouteHandler(
             IActionInvokerFactory actionInvokerFactory,
             IActionSelector actionSelector,
-            DiagnosticSource diagnosticSource,
+            DiagnosticListener diagnosticListener,
             ILoggerFactory loggerFactory,
             IActionContextAccessor actionContextAccessor)
         {
@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 
             _actionInvokerFactory = actionInvokerFactory;
             _actionSelector = actionSelector;
-            _diagnosticSource = diagnosticSource;
+            _diagnosticListener = diagnosticListener;
             _logger = loggerFactory.CreateLogger<MvcRouteHandler>();
         }
 

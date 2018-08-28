@@ -12,13 +12,22 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
     internal static class MvcViewFeaturesDiagnosticSourceExtensions
     {
         public static void BeforeViewComponent(
-            this DiagnosticSource diagnosticSource,
+            this DiagnosticListener diagnosticListener,
             ViewComponentContext context,
             object viewComponent)
         {
-            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeViewComponent"))
+            // Inlinable fast-path check if Diagnositcs is enabled
+            if (diagnosticListener.IsEnabled())
             {
-                diagnosticSource.Write(
+                BeforeViewComponentImpl(diagnosticListener, context, viewComponent);
+            }
+        }
+
+        private static void BeforeViewComponentImpl(DiagnosticListener diagnosticListener, ViewComponentContext context, object viewComponent)
+        {
+            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeViewComponent"))
+            {
+                diagnosticListener.Write(
                 "Microsoft.AspNetCore.Mvc.BeforeViewComponent",
                 new
                 {
@@ -30,14 +39,23 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         }
 
         public static void AfterViewComponent(
-            this DiagnosticSource diagnosticSource,
+            this DiagnosticListener diagnosticListener,
             ViewComponentContext context,
             IViewComponentResult result,
             object viewComponent)
         {
-            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.AfterViewComponent"))
+            // Inlinable fast-path check if Diagnositcs is enabled
+            if (diagnosticListener.IsEnabled())
             {
-                diagnosticSource.Write(
+                AfterViewComponentImpl(diagnosticListener, context, result, viewComponent);
+            }
+        }
+
+        private static void AfterViewComponentImpl(DiagnosticListener diagnosticListener, ViewComponentContext context, IViewComponentResult result, object viewComponent)
+        {
+            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.AfterViewComponent"))
+            {
+                diagnosticListener.Write(
                 "Microsoft.AspNetCore.Mvc.AfterViewComponent",
                 new
                 {
@@ -50,13 +68,22 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         }
 
         public static void ViewComponentBeforeViewExecute(
-            this DiagnosticSource diagnosticSource,
+            this DiagnosticListener diagnosticListener,
             ViewComponentContext context,
             IView view)
         {
-            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.ViewComponentBeforeViewExecute"))
+            // Inlinable fast-path check if Diagnositcs is enabled
+            if (diagnosticListener.IsEnabled())
             {
-                diagnosticSource.Write(
+                ViewComponentBeforeViewExecuteImpl(diagnosticListener, context, view);
+            }
+        }
+
+        private static void ViewComponentBeforeViewExecuteImpl(DiagnosticListener diagnosticListener, ViewComponentContext context, IView view)
+        {
+            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.ViewComponentBeforeViewExecute"))
+            {
+                diagnosticListener.Write(
                     "Microsoft.AspNetCore.Mvc.ViewComponentBeforeViewExecute",
                     new
                     {
@@ -68,13 +95,22 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         }
 
         public static void ViewComponentAfterViewExecute(
-            this DiagnosticSource diagnosticSource,
+            this DiagnosticListener diagnosticListener,
             ViewComponentContext context,
             IView view)
         {
-            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.ViewComponentAfterViewExecute"))
+            // Inlinable fast-path check if Diagnositcs is enabled
+            if (diagnosticListener.IsEnabled())
             {
-                diagnosticSource.Write(
+                ViewComponentAfterViewExecuteImpl(diagnosticListener, context, view);
+            }
+        }
+
+        private static void ViewComponentAfterViewExecuteImpl(DiagnosticListener diagnosticListener, ViewComponentContext context, IView view)
+        {
+            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.ViewComponentAfterViewExecute"))
+            {
+                diagnosticListener.Write(
                     "Microsoft.AspNetCore.Mvc.ViewComponentAfterViewExecute",
                     new
                     {
@@ -86,42 +122,69 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         }
 
         public static void BeforeView(
-            this DiagnosticSource diagnosticSource,
+            this DiagnosticListener diagnosticListener,
             IView view,
             ViewContext viewContext)
         {
-            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeView"))
+            // Inlinable fast-path check if Diagnositcs is enabled
+            if (diagnosticListener.IsEnabled())
             {
-                diagnosticSource.Write(
+                BeforeViewImpl(diagnosticListener, view, viewContext);
+            }
+        }
+
+        private static void BeforeViewImpl(DiagnosticListener diagnosticListener, IView view, ViewContext viewContext)
+        {
+            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeView"))
+            {
+                diagnosticListener.Write(
                     "Microsoft.AspNetCore.Mvc.BeforeView",
                     new { view = view, viewContext = viewContext, });
             }
         }
 
         public static void AfterView(
-            this DiagnosticSource diagnosticSource,
+            this DiagnosticListener diagnosticListener,
             IView view,
             ViewContext viewContext)
         {
-            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.AfterView"))
+            // Inlinable fast-path check if Diagnositcs is enabled
+            if (diagnosticListener.IsEnabled())
             {
-                diagnosticSource.Write(
+                AfterViewImpl(diagnosticListener, view, viewContext);
+            }
+        }
+
+        private static void AfterViewImpl(DiagnosticListener diagnosticListener, IView view, ViewContext viewContext)
+        {
+            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.AfterView"))
+            {
+                diagnosticListener.Write(
                     "Microsoft.AspNetCore.Mvc.AfterView",
                     new { view = view, viewContext = viewContext, });
             }
         }
 
         public static void ViewFound(
-            this DiagnosticSource diagnosticSource,
+            this DiagnosticListener diagnosticListener,
             ActionContext actionContext,
             bool isMainPage,
             PartialViewResult viewResult,
             string viewName,
             IView view)
         {
-            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.ViewFound"))
+            // Inlinable fast-path check if Diagnositcs is enabled
+            if (diagnosticListener.IsEnabled())
             {
-                diagnosticSource.Write(
+                ViewFoundImpl(diagnosticListener, actionContext, isMainPage, viewResult, viewName, view);
+            }
+        }
+
+        private static void ViewFoundImpl(DiagnosticListener diagnosticListener, ActionContext actionContext, bool isMainPage, PartialViewResult viewResult, string viewName, IView view)
+        {
+            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.ViewFound"))
+            {
+                diagnosticListener.Write(
                     "Microsoft.AspNetCore.Mvc.ViewFound",
                     new
                     {
@@ -135,16 +198,25 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         }
 
         public static void ViewNotFound(
-            this DiagnosticSource diagnosticSource,
+            this DiagnosticListener diagnosticListener,
             ActionContext actionContext,
             bool isMainPage,
             PartialViewResult viewResult,
             string viewName,
             IEnumerable<string> searchedLocations)
         {
-            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.ViewNotFound"))
+            // Inlinable fast-path check if Diagnositcs is enabled
+            if (diagnosticListener.IsEnabled())
             {
-                diagnosticSource.Write(
+                ViewNotFoundImpl(diagnosticListener, actionContext, isMainPage, viewResult, viewName, searchedLocations);
+            }
+        }
+
+        private static void ViewNotFoundImpl(DiagnosticListener diagnosticListener, ActionContext actionContext, bool isMainPage, PartialViewResult viewResult, string viewName, IEnumerable<string> searchedLocations)
+        {
+            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.ViewNotFound"))
+            {
+                diagnosticListener.Write(
                     "Microsoft.AspNetCore.Mvc.ViewNotFound",
                     new
                     {

@@ -174,9 +174,9 @@ namespace Microsoft.Extensions.DependencyInjection
                 var optionsAccessor = s.GetRequiredService<IOptions<RazorViewEngineOptions>>();
                 var razorFileSystem = s.GetRequiredService<RazorProjectFileSystem>();
                 var loggerFactory = s.GetRequiredService<ILoggerFactory>();
-                var diagnosticSource = s.GetRequiredService<DiagnosticSource>();
+                var diagnosticListener = s.GetRequiredService<DiagnosticListener>();
 
-                var viewEngine = new RazorViewEngine(pageFactory, pageActivator, htmlEncoder, optionsAccessor, razorFileSystem, loggerFactory, diagnosticSource);
+                var viewEngine = new RazorViewEngine(pageFactory, pageActivator, htmlEncoder, optionsAccessor, razorFileSystem, loggerFactory, diagnosticListener);
                 return viewEngine;
             });
             services.TryAddSingleton<IViewCompilerProvider, RazorViewCompilerProvider>();

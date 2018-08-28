@@ -1,0 +1,17 @@
+[
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Mvc.Razor.RazorViewEngine : Microsoft.AspNetCore.Mvc.Razor.IRazorViewEngine",
+    "MemberId": "public .ctor(Microsoft.AspNetCore.Mvc.Razor.IRazorPageFactoryProvider pageFactory, Microsoft.AspNetCore.Mvc.Razor.IRazorPageActivator pageActivator, System.Text.Encodings.Web.HtmlEncoder htmlEncoder, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.Razor.RazorViewEngineOptions> optionsAccessor, Microsoft.AspNetCore.Razor.Language.RazorProject razorProject, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, System.Diagnostics.DiagnosticSource diagnosticSource)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Mvc.Razor.RazorViewEngine : Microsoft.AspNetCore.Mvc.Razor.IRazorViewEngine",
+    "MemberId": "public .ctor(Microsoft.AspNetCore.Mvc.Razor.IRazorPageFactoryProvider pageFactory, Microsoft.AspNetCore.Mvc.Razor.IRazorPageActivator pageActivator, System.Text.Encodings.Web.HtmlEncoder htmlEncoder, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.Razor.RazorViewEngineOptions> optionsAccessor, Microsoft.AspNetCore.Razor.Language.RazorProjectFileSystem razorFileSystem, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, System.Diagnostics.DiagnosticSource diagnosticSource)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Mvc.Razor.RazorView : Microsoft.AspNetCore.Mvc.ViewEngines.IView",
+    "MemberId": "public .ctor(Microsoft.AspNetCore.Mvc.Razor.IRazorViewEngine viewEngine, Microsoft.AspNetCore.Mvc.Razor.IRazorPageActivator pageActivator, System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Mvc.Razor.IRazorPage> viewStartPages, Microsoft.AspNetCore.Mvc.Razor.IRazorPage razorPage, System.Text.Encodings.Web.HtmlEncoder htmlEncoder, System.Diagnostics.DiagnosticSource diagnosticSource)",
+    "Kind": "Removal"
+  }
+]

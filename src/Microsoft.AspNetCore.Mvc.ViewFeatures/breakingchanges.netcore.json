@@ -1,16 +1,30 @@
 [
   {
+    "TypeId": "public class Microsoft.AspNetCore.Mvc.RemoteAttribute : System.ComponentModel.DataAnnotations.ValidationAttribute, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.IClientModelValidator",
+    "Kind": "Removal"
+  },
+  {
     "TypeId": "public class Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionaryControllerPropertyActivator : Microsoft.AspNetCore.Mvc.Internal.IControllerPropertyActivator",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Mvc.ViewFeatures.ViewExecutor",
+    "MemberId": "protected .ctor(Microsoft.AspNetCore.Mvc.Infrastructure.IHttpResponseStreamWriterFactory writerFactory, Microsoft.AspNetCore.Mvc.ViewEngines.ICompositeViewEngine viewEngine, System.Diagnostics.DiagnosticSource diagnosticSource)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Mvc.ViewFeatures.ViewExecutor",
+    "MemberId": "protected System.Diagnostics.DiagnosticSource get_DiagnosticSource()",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Mvc.ViewFeatures.ViewExecutor",
+    "MemberId": "public .ctor(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.MvcViewOptions> viewOptions, Microsoft.AspNetCore.Mvc.Infrastructure.IHttpResponseStreamWriterFactory writerFactory, Microsoft.AspNetCore.Mvc.ViewEngines.ICompositeViewEngine viewEngine, Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionaryFactory tempDataFactory, System.Diagnostics.DiagnosticSource diagnosticSource, Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider modelMetadataProvider)",
     "Kind": "Removal"
   },
   {
     "TypeId": "public class Microsoft.AspNetCore.Mvc.ViewComponents.DefaultViewComponentActivator : Microsoft.AspNetCore.Mvc.ViewComponents.IViewComponentActivator",
     "MemberId": "public .ctor(Microsoft.AspNetCore.Mvc.Internal.ITypeActivatorCache typeActivatorCache)",
-    "Kind": "Removal"
-  },
-  {
-    "TypeId": "public class Microsoft.AspNetCore.Mvc.ViewFeatures.DefaultValidationHtmlAttributeProvider : Microsoft.AspNetCore.Mvc.ViewFeatures.ValidationHtmlAttributeProvider",
-    "MemberId": "public .ctor(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.MvcViewOptions> optionsAccessor, Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider metadataProvider, Microsoft.AspNetCore.Mvc.Internal.ClientValidatorCache clientValidatorCache)",
     "Kind": "Removal"
   },
   {
@@ -44,7 +58,18 @@
     "Kind": "Removal"
   },
   {
-	"TypeId": "public class Microsoft.AspNetCore.Mvc.RemoteAttribute : System.ComponentModel.DataAnnotations.ValidationAttribute, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.IClientModelValidator",
-	"Kind": "Removal"
+    "TypeId": "public class Microsoft.AspNetCore.Mvc.ViewFeatures.DefaultValidationHtmlAttributeProvider : Microsoft.AspNetCore.Mvc.ViewFeatures.ValidationHtmlAttributeProvider",
+    "MemberId": "public .ctor(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.MvcViewOptions> optionsAccessor, Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider metadataProvider, Microsoft.AspNetCore.Mvc.Internal.ClientValidatorCache clientValidatorCache)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Mvc.ViewFeatures.PartialViewResultExecutor : Microsoft.AspNetCore.Mvc.ViewFeatures.ViewExecutor, Microsoft.AspNetCore.Mvc.Infrastructure.IActionResultExecutor<Microsoft.AspNetCore.Mvc.PartialViewResult>",
+    "MemberId": "public .ctor(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.MvcViewOptions> viewOptions, Microsoft.AspNetCore.Mvc.Infrastructure.IHttpResponseStreamWriterFactory writerFactory, Microsoft.AspNetCore.Mvc.ViewEngines.ICompositeViewEngine viewEngine, Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionaryFactory tempDataFactory, System.Diagnostics.DiagnosticSource diagnosticSource, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider modelMetadataProvider)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Mvc.ViewFeatures.ViewResultExecutor : Microsoft.AspNetCore.Mvc.ViewFeatures.ViewExecutor, Microsoft.AspNetCore.Mvc.Infrastructure.IActionResultExecutor<Microsoft.AspNetCore.Mvc.ViewResult>",
+    "MemberId": "public .ctor(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.MvcViewOptions> viewOptions, Microsoft.AspNetCore.Mvc.Infrastructure.IHttpResponseStreamWriterFactory writerFactory, Microsoft.AspNetCore.Mvc.ViewEngines.ICompositeViewEngine viewEngine, Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionaryFactory tempDataFactory, System.Diagnostics.DiagnosticSource diagnosticSource, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider modelMetadataProvider)",
+    "Kind": "Removal"
   }
 ]

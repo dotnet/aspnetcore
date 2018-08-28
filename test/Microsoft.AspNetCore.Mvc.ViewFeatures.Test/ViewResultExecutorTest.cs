@@ -206,12 +206,12 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         public void FindView_WritesDiagnostic_ViewFound()
         {
             // Arrange
-            var diagnosticSource = new DiagnosticListener("Test");
+            var diagnosticListener = new DiagnosticListener("Test");
             var listener = new TestDiagnosticListener();
-            diagnosticSource.SubscribeWithAdapter(listener);
+            diagnosticListener.SubscribeWithAdapter(listener);
 
             var context = GetActionContext();
-            var executor = GetViewExecutor(diagnosticSource);
+            var executor = GetViewExecutor(diagnosticListener);
 
             var viewName = "myview";
             var viewResult = new ViewResult
@@ -239,12 +239,12 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         public void FindView_WritesDiagnostic_ViewNotFound()
         {
             // Arrange
-            var diagnosticSource = new DiagnosticListener("Test");
+            var diagnosticListener = new DiagnosticListener("Test");
             var listener = new TestDiagnosticListener();
-            diagnosticSource.SubscribeWithAdapter(listener);
+            diagnosticListener.SubscribeWithAdapter(listener);
 
             var context = GetActionContext();
-            var executor = GetViewExecutor(diagnosticSource);
+            var executor = GetViewExecutor(diagnosticListener);
 
             var viewName = "myview";
             var viewEngine = new Mock<IViewEngine>(MockBehavior.Strict);
@@ -332,11 +332,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             return new ActionContext(new DefaultHttpContext(), routeData, new ControllerActionDescriptor() { ActionName = actionName });
         }
 
-        private ViewResultExecutor GetViewExecutor(DiagnosticListener diagnosticSource = null)
+        private ViewResultExecutor GetViewExecutor(DiagnosticListener diagnosticListener = null)
         {
-            if (diagnosticSource == null)
+            if (diagnosticListener == null)
             {
-                diagnosticSource = new DiagnosticListener("Test");
+                diagnosticListener = new DiagnosticListener("Test");
             }
 
             var viewEngine = new Mock<IViewEngine>(MockBehavior.Strict);
@@ -357,7 +357,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 new TestHttpResponseStreamWriterFactory(),
                 new CompositeViewEngine(options),
                 new TempDataDictionaryFactory(new SessionStateTempDataProvider()),
-                diagnosticSource,
+                diagnosticListener,
                 NullLoggerFactory.Instance,
                 new EmptyModelMetadataProvider());
 
