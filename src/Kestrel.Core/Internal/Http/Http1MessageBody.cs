@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                     var readableBuffer = result.Buffer;
                     var consumed = readableBuffer.Start;
-                    var examined = readableBuffer.End;
+                    var examined = readableBuffer.Start;
 
                     try
                     {
