@@ -326,31 +326,23 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             [Fact]
             public async Task SSEWontStartIfSuccessfulConnectionIsNotEstablished()
             {
-                bool ExpectedErrors(WriteContext writeContext)
-                {
-                    return writeContext.LoggerName == typeof(HttpConnection).FullName &&
-                           writeContext.EventId.Name == "ErrorStartingTransport";
-                }
+                // TODO: Add logging https://github.com/aspnet/SignalR/issues/2879
+                var httpHandler = new TestHttpMessageHandler();
 
-                using (StartVerifiableLog(out var loggerFactory, expectedErrorsFilter: ExpectedErrors))
+                httpHandler.OnGet("/?id=00000000-0000-0000-0000-000000000000", (_, __) =>
                 {
-                    var httpHandler = new TestHttpMessageHandler();
+                    return Task.FromResult(ResponseUtils.CreateResponse(HttpStatusCode.InternalServerError));
+                });
 
-                    httpHandler.OnGet("/?id=00000000-0000-0000-0000-000000000000", (_, __) =>
+                var sse = new ServerSentEventsTransport(new HttpClient(httpHandler));
+
+                await WithConnectionAsync(
+                    CreateConnection(httpHandler, transport: sse),
+                    async (connection) =>
                     {
-                        return Task.FromResult(ResponseUtils.CreateResponse(HttpStatusCode.InternalServerError));
+                        await Assert.ThrowsAsync<InvalidOperationException>(
+                            () => connection.StartAsync(TransferFormat.Text).OrTimeout());
                     });
-
-                    var sse = new ServerSentEventsTransport(new HttpClient(httpHandler));
-
-                    await WithConnectionAsync(
-                        CreateConnection(httpHandler, loggerFactory: loggerFactory, transport: sse),
-                        async (connection) =>
-                        {
-                            await Assert.ThrowsAsync<InvalidOperationException>(
-                                () => connection.StartAsync(TransferFormat.Text).OrTimeout());
-                        });
-                }
             }
 
             [Fact]

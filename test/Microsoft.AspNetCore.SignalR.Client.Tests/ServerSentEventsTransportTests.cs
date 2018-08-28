@@ -164,12 +164,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         [Fact]
         public async Task SSETransportStopsWithErrorIfSendingMessageFails()
         {
-            bool ExpectedErrors(WriteContext writeContext)
-            {
-                return writeContext.LoggerName == typeof(ServerSentEventsTransport).FullName &&
-                       writeContext.EventId.Name == "ErrorSending";
-            }
-
+            // TODO: Add logging https://github.com/aspnet/SignalR/issues/2879
             var eventStreamTcs = new TaskCompletionSource<object>();
             var copyToAsyncTcs = new TaskCompletionSource<int>();
 
@@ -198,9 +193,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 });
 
             using (var httpClient = new HttpClient(mockHttpHandler.Object))
-            using (StartVerifiableLog(out var loggerFactory, expectedErrorsFilter: ExpectedErrors))
             {
-                var sseTransport = new ServerSentEventsTransport(httpClient, loggerFactory);
+                var sseTransport = new ServerSentEventsTransport(httpClient);
 
                 await sseTransport.StartAsync(
                     new Uri("http://fakeuri.org"), TransferFormat.Text).OrTimeout();
