@@ -8,7 +8,6 @@ using System.IO.Pipelines;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.ExceptionServices;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Connections;
@@ -81,8 +80,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
             IPEndPoint endPoint = _endPointInformation.IPEndPoint;
 
             var listenSocket = new Socket(endPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-
-            EnableRebinding(listenSocket);
 
             // Kestrel expects IPv6Any to bind to both IPv6 and IPv4
             if (endPoint.Address == IPAddress.IPv6Any)
@@ -202,38 +199,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
             catch (Exception ex)
             {
                 _trace.LogCritical(ex, $"Unexpected exception in {nameof(SocketTransport)}.{nameof(HandleConnectionAsync)}.");
-            }
-        }
-
-        [DllImport("libc", SetLastError = true)]
-        private static extern int setsockopt(int socket, int level, int option_name, IntPtr option_value, uint option_len);
-
-        private const int SOL_SOCKET_OSX = 0xffff;
-        private const int SO_REUSEADDR_OSX = 0x0004;
-        private const int SOL_SOCKET_LINUX = 0x0001;
-        private const int SO_REUSEADDR_LINUX = 0x0002;
-
-        // Without setting SO_REUSEADDR on macOS and Linux, binding to a recently used endpoint can fail.
-        // https://github.com/dotnet/corefx/issues/24562
-        private unsafe void EnableRebinding(Socket listenSocket)
-        {
-            var optionValue = 1;
-            var setsockoptStatus = 0;
-
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            {
-                setsockoptStatus = setsockopt(listenSocket.Handle.ToInt32(), SOL_SOCKET_LINUX, SO_REUSEADDR_LINUX,
-                                              (IntPtr)(&optionValue), sizeof(int));
-            }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                setsockoptStatus = setsockopt(listenSocket.Handle.ToInt32(), SOL_SOCKET_OSX, SO_REUSEADDR_OSX,
-                                              (IntPtr)(&optionValue), sizeof(int));
-            }
-
-            if (setsockoptStatus != 0)
-            {
-                _trace.LogInformation("Setting SO_REUSEADDR failed with errno '{errno}'.", Marshal.GetLastWin32Error());
             }
         }
     }
