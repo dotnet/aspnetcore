@@ -140,9 +140,9 @@
             "dotnet-httprepl": {
                 "Exclusions": {
                     "ASSEMBLY_COMMIT_HASH": {
-                        "tools/netcoreapp2.1/any/Newtonsoft.Json.Bson.dll": "This assembly is not owned by us and does not follow our conventions.",
-                        "tools/netcoreapp2.1/any/Newtonsoft.Json.dll": "This assembly is not owned by us and does not follow our conventions.",
-                        "tools/netcoreapp2.1/any/System.Net.Http.Formatting.dll": "This assembly is not owned by us and does not follow our conventions."
+                        "tools/netcoreapp3.0/any/Newtonsoft.Json.Bson.dll": "This assembly is not owned by us and does not follow our conventions.",
+                        "tools/netcoreapp3.0/any/Newtonsoft.Json.dll": "This assembly is not owned by us and does not follow our conventions.",
+                        "tools/netcoreapp3.0/any/System.Net.Http.Formatting.dll": "This assembly is not owned by us and does not follow our conventions."
                     }
                 }
             },
