@@ -180,7 +180,15 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var actionDescriptorCollection = GetActionDescriptorCollection(
                 new { controller = "TestController", action = "TestAction", area = "TestArea" });
             var dataSource = CreateMvcEndpointDataSource(actionDescriptorCollection);
-            dataSource.ConventionalEndpointInfos.Add(CreateEndpointInfo(string.Empty, endpointInfoRoute));
+
+            var services = new ServiceCollection();
+            services.AddRouting();
+            services.AddSingleton(actionDescriptorCollection);
+
+            var routeOptionsSetup = new MvcCoreRouteOptionsSetup();
+            services.Configure<RouteOptions>(routeOptionsSetup.Configure);
+
+            dataSource.ConventionalEndpointInfos.Add(CreateEndpointInfo(string.Empty, endpointInfoRoute, serviceProvider: services.BuildServiceProvider()));
 
             // Act
             var endpoints = dataSource.Endpoints;
@@ -719,13 +727,13 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     Array.Empty<IActionDescriptorChangeProvider>());
             }
 
-            var serviceProviderMock = new Mock<IServiceProvider>();
-            serviceProviderMock.Setup(m => m.GetService(typeof(IActionDescriptorCollectionProvider))).Returns(actionDescriptorCollectionProvider);
+            var services = new ServiceCollection();
+            services.AddSingleton(actionDescriptorCollectionProvider);
 
             var dataSource = new MvcEndpointDataSource(
                 actionDescriptorCollectionProvider,
                 mvcEndpointInvokerFactory ?? new MvcEndpointInvokerFactory(new ActionInvokerFactory(Array.Empty<IActionInvokerProvider>())),
-                serviceProviderMock.Object);
+                services.BuildServiceProvider());
 
             return dataSource;
         }
@@ -735,15 +743,19 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             string template,
             RouteValueDictionary defaults = null,
             IDictionary<string, object> constraints = null,
-            RouteValueDictionary dataTokens = null)
+            RouteValueDictionary dataTokens = null,
+            IServiceProvider serviceProvider = null)
         {
-            var serviceCollection = new ServiceCollection();
-            serviceCollection.AddRouting();
+            if (serviceProvider == null)
+            {
+                var serviceCollection = new ServiceCollection();
+                serviceCollection.AddRouting();
 
-            var routeOptionsSetup = new MvcCoreRouteOptionsSetup();
-            serviceCollection.Configure<RouteOptions>(routeOptionsSetup.Configure);
+                var routeOptionsSetup = new MvcCoreRouteOptionsSetup();
+                serviceCollection.Configure<RouteOptions>(routeOptionsSetup.Configure);
 
-            var serviceProvider = serviceCollection.BuildServiceProvider();
+                serviceProvider = serviceCollection.BuildServiceProvider();
+            }
 
             var parameterPolicyFactory = serviceProvider.GetRequiredService<ParameterPolicyFactory>();
             return new MvcEndpointInfo(name, template, defaults, constraints, dataTokens, parameterPolicyFactory);
