@@ -59,7 +59,9 @@ namespace Cli.FunctionalTests.Util
             var sdkVersionString = Regex.Match(info, @"Version:\s*(\S+)").Groups[1].Value;
             var sdkVersion = SemanticVersion.Parse(sdkVersionString);
 
-            var runtimeVersionString = Regex.Match(info, @"Microsoft.NETCore.App\s*(\S+)").Groups[1].Value;
+            // Select highest version of Microsoft.NETCore.App which matches major and minor version of SDK
+            var runtimeVersionPattern = $@"Microsoft.NETCore.App\s*({sdkVersion.Major}.{sdkVersion.Minor}\S+)";
+            var runtimeVersionString = Regex.Match(info, runtimeVersionPattern, RegexOptions.RightToLeft).Groups[1].Value;
             var runtimeVersion = SemanticVersion.Parse(runtimeVersionString);
 
             // Supported version range is [2.1.300,2.2.100] (inclusive)
