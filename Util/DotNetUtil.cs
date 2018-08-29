@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -46,6 +46,11 @@ namespace Cli.FunctionalTests.Util
         public static string TargetFrameworkMoniker => $"netcoreapp{RuntimeVersion.Major}.{RuntimeVersion.Minor}";
 
         private static readonly HttpClient _httpClient = new HttpClient();
+
+        private static readonly IEnumerable<KeyValuePair<string, string>> _globalEnvironment = new KeyValuePair<string, string>[] {
+            // Ignore globally-installed .NET Core components
+            new KeyValuePair<string, string>("DOTNET_MULTILEVEL_LOOKUP", "false"),
+        };
 
         private static (SemanticVersion SdkVersion, SemanticVersion RuntimeVersion) GetVersions()
         {
@@ -151,7 +156,8 @@ namespace Cli.FunctionalTests.Util
         private static (Process Process, ConcurrentStringBuilder OutputBuilder, ConcurrentStringBuilder ErrorBuilder) StartDotNet(
             string arguments, string workingDirectory, IEnumerable<KeyValuePair<string, string>> environment = null)
         {
-            return StartProcess("dotnet", arguments, workingDirectory, environment);
+            var env = _globalEnvironment.Concat(environment ?? Enumerable.Empty<KeyValuePair<string, string>>());
+            return StartProcess("dotnet", arguments, workingDirectory, env);
         }
 
         private static (Process Process, ConcurrentStringBuilder OutputBuilder, ConcurrentStringBuilder ErrorBuilder) StartProcess(
