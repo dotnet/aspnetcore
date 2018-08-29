@@ -258,8 +258,9 @@ namespace Microsoft.AspNetCore.Identity
         /// <param name="securityStamp">The expected security stamp value.</param>
         /// <returns>True if the stamp matches the persisted value, otherwise it will return false.</returns>
         public virtual async Task<bool> ValidateSecurityStampAsync(TUser user, string securityStamp)
-            => user != null && UserManager.SupportsUserSecurityStamp
-            && securityStamp == await UserManager.GetSecurityStampAsync(user);
+            => user != null &&
+            // Only validate the security stamp if the store supports it
+            (!UserManager.SupportsUserSecurityStamp || securityStamp == await UserManager.GetSecurityStampAsync(user));
 
         /// <summary>
         /// Attempts to sign in the specified <paramref name="user"/> and <paramref name="password"/> combination
