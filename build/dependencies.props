@@ -13,6 +13,7 @@
     <MicrosoftExtensionsObjectPoolPackageVersion>3.0.0-alpha1-10352</MicrosoftExtensionsObjectPoolPackageVersion>
     <MicrosoftExtensionsOptionsPackageVersion>3.0.0-alpha1-10352</MicrosoftExtensionsOptionsPackageVersion>
     <MicrosoftExtensionsPrimitivesPackageVersion>3.0.0-alpha1-10352</MicrosoftExtensionsPrimitivesPackageVersion>
+    <MicrosoftExtensionsPropertyHelperSourcesPackageVersion>3.0.0-alpha1-10352</MicrosoftExtensionsPropertyHelperSourcesPackageVersion>
     <MicrosoftExtensionsWebEncodersSourcesPackageVersion>3.0.0-alpha1-10352</MicrosoftExtensionsWebEncodersSourcesPackageVersion>
     <MicrosoftNETCoreApp20PackageVersion>2.0.9</MicrosoftNETCoreApp20PackageVersion>
     <MicrosoftNETCoreApp21PackageVersion>2.1.2</MicrosoftNETCoreApp21PackageVersion>
