@@ -1,14 +1,17 @@
-﻿using AspNetCoreSdkTests.Templates;
-using AspNetCoreSdkTests.Util;
-using NuGet.Versioning;
-using NUnit.Framework;
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Runtime.InteropServices;
+using Cli.FunctionalTests.Templates;
+using Cli.FunctionalTests.Util;
+using NuGet.Versioning;
+using NUnit.Framework;
 
-namespace AspNetCoreSdkTests
+namespace Cli.FunctionalTests
 {
     [TestFixture]
     public class TemplateTests

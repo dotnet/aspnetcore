@@ -1,8 +1,10 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
-namespace AspNetCoreSdkTests
+namespace Cli.FunctionalTests
 {
     // https://docs.microsoft.com/en-us/dotnet/core/rid-catalog
     public class RuntimeIdentifier
