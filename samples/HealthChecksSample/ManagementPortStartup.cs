@@ -34,7 +34,7 @@ namespace HealthChecksSample
             // to the specified port. This is typically used in a container environment where you can expose
             // a port for monitoring services to have access to the service.
             // - In this case the management is configured in the launchSettings.json and passed through 
-            //  and environment variable
+            //  an environment variable
             // - Additionally, the server is also configured to listen to requests on the management port.
             app.UseHealthChecks("/health", port: Configuration["ManagementPort"]);
 

@@ -43,14 +43,14 @@ namespace HealthChecksSample
             //
             // In this example, the liveness check will us an 'identity' check that always returns healthy.
             //
-            // In this example, the readiness check will run all registered checks, include a check with an 
+            // In this example, the readiness check will run all registered checks, include a check with a 
             // long initialization time (15 seconds).
 
 
             // The readiness check uses all of the registered health checks (default)
             app.UseHealthChecks("/health/ready");
 
-            // The liveness check uses an 'identity' health check that always returns healty
+            // The liveness check uses an 'identity' health check that always returns healthy
             app.UseHealthChecks("/health/live", new HealthCheckOptions()
             {
                 // Filters the set of health checks run by this middleware
