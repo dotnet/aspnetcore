@@ -56,7 +56,9 @@ try {
       customLaunchers: {
         ChromeHeadlessNoSandbox: {
           base: 'ChromeHeadless',
-          flags: ['--no-sandbox']
+
+          // ChromeHeadless runs about 10x slower on Windows 7 machines without the --proxy switches below. Why? ¯\_(ツ)_/¯
+          flags: ["--no-sandbox", "--proxy-server='direct://'", "--proxy-bypass-list=*"]
         }
       },
     });

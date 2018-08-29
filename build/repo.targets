@@ -10,28 +10,14 @@
     </NPMPackage>
   </ItemGroup>
 
-  <PropertyGroup Condition="'$(JAVA_HOME)' != ''">
-    <!-- Determine the path we need to search to find javac.exe -->
-    <JavacPath Condition="'$(OS)' == 'Windows_NT'">$(JAVA_HOME)\bin\javac.exe</JavacPath>
-    <JavacPath Condition="'$(OS)' != 'Windows_NT'">$(JAVA_HOME)/bin/javac</JavacPath>
-
-    <HasJdk Condition="Exists('$(JavacPath)')">true</HasJdk>
-
+  <PropertyGroup>
     <!-- Pass the Java Package Version down to Gradle -->
     <GradleOptions>-PpackageVersion="$(JavaPackageVersion)"</GradleOptions>
     <!-- Disable gradle daemon on CI since the CI seems to try to wait for the daemon to shut down, which it doesn't do :) -->
     <GradleOptions Condition="'$(CI)' == 'true'">$(GradleOptions) -Dorg.gradle.daemon=false</GradleOptions>
+
+    <RequireJava Condition="'$(CI)' == 'true'">true</RequireJava>
   </PropertyGroup>
-
-  <Target Name="EnsureJdkInstalled" BeforeTargets="GetToolsets" Condition=" '$(SkipJavaClient)' != 'true' ">
-    <Error Text="The JDK is required to build the SignalR repo on CI. Set the JAVA_HOME environment variable to the installation of the JDK"
-            Condition="'$(HasJdk)' != 'true' AND '$(CI)' == 'true' " />
-    
-    <Warning Text="The JDK is required to build the SignalR Java client. No JDK could be found so this will be skipped. Set the JAVA_HOME environment variable to the installation of the JDK"
-        Condition="'$(HasJdk)' != 'true' AND '$(CI)' != 'true' " />
-
-    <Message Text="Using Java from $(JavacPath)" Importance="high" />
-  </Target>
 
   <PropertyGroup>
     <RestoreDependsOn>$(RestoreDependsOn);RestoreNpm</RestoreDependsOn>
@@ -58,7 +44,7 @@
     <Exec Command="npm run test:inner -- --no-color --configuration $(Configuration)" WorkingDirectory="$(RepositoryRoot)clients/ts/FunctionalTests" IgnoreStandardErrorWarningFormat="true" />
   </Target>
 
-  <Target Name="RunJavaTests" Condition="'$(HasJdk)' == 'true' AND '$(SkipJavaClient)' != 'true' ">
+  <Target Name="RunJavaTests" Condition="'$(HaveJava)' == 'true' AND '$(SkipJavaClient)' != 'true' ">
     <Message Text="Running Java client tests" Importance="high" />
     <Message Text="> gradlew $(GradleOptions) test" Importance="high" />
     <Exec Command="./gradlew $(GradleOptions) test" WorkingDirectory="$(RepositoryRoot)clients/java/signalr" IgnoreStandardErrorWarningFormat="true" />
@@ -66,7 +52,6 @@
 
   <PropertyGroup>
     <GetArtifactInfoDependsOn>$(GetArtifactInfoDependsOn);GetNpmArtifactInfo;GetJavaArtifactInfo</GetArtifactInfoDependsOn>
-    <PrepareDependsOn>$(PrepareDependsOn);GetNpmArtifactInfo;GetJavaArtifactInfo</PrepareDependsOn>
   </PropertyGroup>
 
   <Target Name="GetNpmArtifactInfo">
@@ -91,7 +76,7 @@
   </Target>
 
   <Target Name="GetJavaArtifactInfo">
-    <ItemGroup Condition=" '$(SkipJavaClient)' != 'true' ">
+    <ItemGroup Condition="'$(SkipJavaClient)' != 'true'">
       <ArtifactInfo Include="$(BuildDir)\%(Jars.Identity)">
         <ArtifactType>JavaJar</ArtifactType>
         <Version>$(JavaClientVersion)</Version>
@@ -109,6 +94,24 @@
   </Target>
 
   <PropertyGroup>
+    <PrepareDependsOn>DetectJava;$(PrepareDependsOn)</PrepareDependsOn>
+  </PropertyGroup>
+  <Target Name="DetectJava">
+    <Exec Command="./gradlew $(GradleOptions)" WorkingDirectory="$(RepositoryRoot)clients/java/signalr" IgnoreExitCode="true" IgnoreStandardErrorWarningFormat="true">
+      <Output TaskParameter="ExitCode" PropertyName="JavaDetectExitCode" />
+    </Exec>
+
+    <Error Text="Failed to detect Java Runtime Environment (JRE)" Condition="'$(JavaDetectExitCode)' != 0 And '$(RequireJava)' == 'true'" />
+    <Message Text="Failed to detect Java Runtime Environment (JRE). Skipping Java client build." Importance="high" Condition="'$(JavaDetectExitCode)' != 0 And '$(RequireJava)' != 'true'" />
+    <Message Text="Successfully detected Java Runtime Environment (JRE)" Importance="high" Condition="'$(JavaDetectExitCode)' == 0" />
+    <!-- The build could still fail if the JDK isn't installed, but we can't reliably detect that without a bunch more code -->
+
+    <PropertyGroup Condition="'$(JavaDetectExitCode)' == '0'">
+      <HaveJava>true</HaveJava>
+    </PropertyGroup>
+  </Target>
+
+  <PropertyGroup>
     <CompileDependsOn>Restore;BuildNPMPackages;$(CompileDependsOn);BuildJavaClient</CompileDependsOn>
   </PropertyGroup>
   <Target Name="BuildNPMPackages" DependsOnTargets="RestoreNpm;GetNpmArtifactInfo">
@@ -118,7 +121,7 @@
     <Exec Command="npm run build" WorkingDirectory="$(RepositoryRoot)clients/ts/FunctionalTests" IgnoreStandardErrorWarningFormat="true" />
   </Target>
 
-  <Target Name="BuildJavaClient" Condition="'$(HasJdk)' == 'true' AND '$(SkipJavaClient)' != 'true' " DependsOnTargets="GetJavaArtifactInfo">
+  <Target Name="BuildJavaClient" Condition="'$(HaveJava)' == 'true' AND '$(SkipJavaClient)' != 'true' " DependsOnTargets="GetJavaArtifactInfo">
     <Message Text="Building Java client" Importance="high" />
     <Message Text="> gradlew $(GradleOptions) compileJava" Importance="high" />
     <Exec Command="./gradlew $(GradleOptions) compileJava" WorkingDirectory="$(RepositoryRoot)clients/java/signalr" />
@@ -143,7 +146,7 @@
     <JavaBuildFiles Include="@(Jars);@(PomFile)"/>
   </ItemGroup>
 
-  <Target Name="PackJavaClient" Condition="'$(HasJdk)' == 'true' AND '$(SkipJavaClient)' != 'true' ">
+  <Target Name="PackJavaClient" Condition="'$(HaveJava)' == 'true' AND '$(SkipJavaClient)' != 'true' ">
     <Message Text="Packing Java client" Importance="high" />
     <Message Text="> gradlew $(GradleOptions) createPackage" Importance="high" />
     <Exec Command="./gradlew $(GradleOptions) createPackage" WorkingDirectory="$(RepositoryRoot)clients/java/signalr" />
