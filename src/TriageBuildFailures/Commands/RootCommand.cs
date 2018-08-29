@@ -144,8 +144,9 @@ namespace TriageBuildFailures.Commands
 
         private static readonly IEnumerable<HandleFailureBase> Handlers = new List<HandleFailureBase> {
             new HandleLowValueBuilds(), new HandleNonAllowedBuilds(),
-            new HandleUniverseMovedOn(), new HandleTestFailures(),
-            new HandleBuildTimeFailures(), new HandleUnhandled() };
+            new HandleUniverseMovedOn(), new HandleSnapshotDependency(),
+            new HandleTestFailures(), new HandleBuildTimeFailures(),
+            new HandleUnhandled() };
 
         /// <summary>
         /// Take the appropriate action for a CI failure.
