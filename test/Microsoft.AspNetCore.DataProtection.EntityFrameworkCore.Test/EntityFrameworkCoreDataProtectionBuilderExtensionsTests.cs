@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.Test
                 .AddDbContext<DataProtectionKeyContext>()
                 .AddDataProtection()
                 .PersistKeysToDbContext<DataProtectionKeyContext>();
-            var serviceProvider = serviceCollection.BuildServiceProvider();
+            var serviceProvider = serviceCollection.BuildServiceProvider(validateScopes: true);
             var keyManagementOptions = serviceProvider.GetRequiredService<IOptions<KeyManagementOptions>>();
             Assert.IsType<EntityFrameworkCoreXmlRepository<DataProtectionKeyContext>>(keyManagementOptions.Value.XmlRepository);
         }

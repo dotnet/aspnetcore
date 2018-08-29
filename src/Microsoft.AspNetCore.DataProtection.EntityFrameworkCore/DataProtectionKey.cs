@@ -1,9 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-
 namespace Microsoft.AspNetCore.DataProtection.EntityFrameworkCore
 {
     /// <summary>
@@ -14,8 +11,6 @@ namespace Microsoft.AspNetCore.DataProtection.EntityFrameworkCore
         /// <summary>
         /// The entity identifier of the <see cref="DataProtectionKey"/>.
         /// </summary>
-        [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
         /// <summary>
