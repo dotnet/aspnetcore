@@ -11,6 +11,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
     {
         public const int PageSize = 1024;
         private int _charIndex;
+        private List<char[]> _pages = new List<char[]>();
 
         public PagedCharBuffer(ICharBufferSource bufferSource)
         {
@@ -19,16 +20,18 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 
         public ICharBufferSource BufferSource { get; }
 
-        public IList<char[]> Pages { get; } = new List<char[]>();
+        public IList<char[]> Pages => _pages;
 
         public int Length
         {
             get
             {
                 var length = _charIndex;
-                for (var i = 0; i < Pages.Count - 1; i++)
+                var pages = _pages;
+                var fullPages = pages.Count - 1;
+                for (var i = 0; i < fullPages; i++)
                 {
-                    length += Pages[i].Length;
+                    length += pages[i].Length;
                 }
 
                 return length;
@@ -100,13 +103,14 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
         /// </summary>
         public void Clear()
         {
-            for (var i = Pages.Count - 1; i > 0; i--)
+            var pages = _pages;
+            for (var i = pages.Count - 1; i > 0; i--)
             {
-                var page = Pages[i];
+                var page = pages[i];
 
                 try
                 {
-                    Pages.RemoveAt(i);
+                    pages.RemoveAt(i);
                 }
                 finally
                 {
@@ -115,7 +119,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             }
 
             _charIndex = 0;
-            CurrentPage = Pages.Count > 0 ? Pages[0] : null;
+            CurrentPage = pages.Count > 0 ? pages[0] : null;
         }
 
         private char[] GetCurrentPage()
@@ -135,7 +139,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             try
             {
                 page = BufferSource.Rent(PageSize);
-                Pages.Add(page);
+                _pages.Add(page);
             }
             catch when (page != null)
             {
@@ -148,12 +152,14 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 
         public void Dispose()
         {
-            for (var i = 0; i < Pages.Count; i++)
+            var pages = _pages;
+            var count = pages.Count;
+            for (var i = 0; i < count; i++)
             {
-                BufferSource.Return(Pages[i]);
+                BufferSource.Return(pages[i]);
             }
 
-            Pages.Clear();
+            pages.Clear();
         }
     }
 }

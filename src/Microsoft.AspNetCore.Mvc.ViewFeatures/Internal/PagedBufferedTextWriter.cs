@@ -37,7 +37,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             }
 
             var pages = _charBuffer.Pages;
-            for (var i = 0; i < pages.Count; i++)
+            var count = pages.Count;
+            for (var i = 0; i < count; i++)
             {
                 var page = pages[i];
                 var pageLength = Math.Min(length, page.Length);
