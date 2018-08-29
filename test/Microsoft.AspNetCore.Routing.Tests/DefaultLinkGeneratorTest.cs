@@ -691,8 +691,10 @@ namespace Microsoft.AspNetCore.Routing
             Assert.Equal(expectedValues.OrderBy(kvp => kvp.Key), constraint.Values.OrderBy(kvp => kvp.Key));
         }
 
-        [Fact]
-        public void GetLink_InlineConstraints_Success()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void GetLink_InlineConstraints_Success(bool hasHttpContext)
         {
             // Arrange
             var endpoint = EndpointFactory.CreateRouteEndpoint(
@@ -700,7 +702,7 @@ namespace Microsoft.AspNetCore.Routing
                 defaults: new { controller = "Home", action = "Index" },
                 constraints: new { });
             var linkGenerator = CreateLinkGenerator(endpoint);
-            var httpContext = CreateHttpContext(new { });
+            var httpContext = hasHttpContext ? CreateHttpContext(new { }) : null;
 
             // Act
             var link = linkGenerator.GetLink(
@@ -732,8 +734,10 @@ namespace Microsoft.AspNetCore.Routing
             Assert.False(canGenerateLink);
         }
 
-        [Fact]
-        public void GetLink_InlineConstraints_OptionalParameter_ValuePresent()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void GetLink_InlineConstraints_OptionalParameter_ValuePresent(bool hasHttpContext)
         {
             // Arrange
             var endpoint = EndpointFactory.CreateRouteEndpoint(
@@ -741,7 +745,7 @@ namespace Microsoft.AspNetCore.Routing
                 defaults: new { controller = "Home", action = "Index" },
                 constraints: new { });
             var linkGenerator = CreateLinkGenerator(endpoint);
-            var httpContext = CreateHttpContext(ambientValues: new { });
+            var httpContext = hasHttpContext ? CreateHttpContext(new { }) : null;
 
             // Act
             var link = linkGenerator.GetLink(httpContext, new { action = "Index", controller = "Home", id = 98 });
@@ -789,8 +793,10 @@ namespace Microsoft.AspNetCore.Routing
             Assert.False(canGenerateLink);
         }
 
-        [Fact]
-        public void GetLink_InlineConstraints_MultipleInlineConstraints()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void GetLink_InlineConstraints_MultipleInlineConstraints(bool hasHttpContext)
         {
             // Arrange
             var endpoint = EndpointFactory.CreateRouteEndpoint(
@@ -798,7 +804,7 @@ namespace Microsoft.AspNetCore.Routing
                 defaults: new { controller = "Home", action = "Index" },
                 constraints: new { });
             var linkGenerator = CreateLinkGenerator(endpoint);
-            var httpContext = CreateHttpContext(ambientValues: new { });
+            var httpContext = hasHttpContext ? CreateHttpContext(new { }) : null;
 
             // Act
             var link = linkGenerator.GetLink(
@@ -809,8 +815,10 @@ namespace Microsoft.AspNetCore.Routing
             Assert.Equal("/Home/Index/14", link);
         }
 
-        [Fact]
-        public void GetLink_InlineConstraints_CompositeInlineConstraint_Fails()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void GetLink_InlineConstraints_CompositeInlineConstraint_Fails(bool hasHttpContext)
         {
             // Arrange
             var endpoint = EndpointFactory.CreateRouteEndpoint(
@@ -818,7 +826,7 @@ namespace Microsoft.AspNetCore.Routing
                 defaults: new { controller = "Home", action = "Index" },
                 constraints: new { });
             var linkGenerator = CreateLinkGenerator(endpoint);
-            var httpContext = CreateHttpContext(ambientValues: new { });
+            var httpContext = hasHttpContext ? CreateHttpContext(new { }) : null;
 
             // Act
             var canGenerateLink = linkGenerator.TryGetLink(
