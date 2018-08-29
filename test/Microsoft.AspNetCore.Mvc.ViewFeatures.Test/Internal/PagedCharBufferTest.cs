@@ -469,14 +469,14 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 
             // Assert - 1
             Assert.Equal(0, buffer.Length);
-            Assert.Equal(1, buffer.Pages.Count);
+            Assert.Single(buffer.Pages);
 
             // Act - 2
             buffer.Append("efgh");
 
             // Assert - 2
             Assert.Equal(4, buffer.Length);
-            Assert.Equal(1, buffer.Pages.Count);
+            Assert.Single(buffer.Pages);
             Assert.Equal(new[] { 'e', 'f', 'g', 'h' }, buffer.Pages[0].Take(buffer.Length));
         }
     }
