@@ -142,5 +142,14 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         {
             return dictionary.Keys.Select(k => new[] { k });
         }
+
+        public static string GetExpectedLogName(IISDeploymentResult deploymentResult, string logFolderPath)
+        {
+            var startTime = deploymentResult.HostProcess.StartTime.ToUniversalTime();
+            return Path.Combine(logFolderPath, $"std_{startTime.Year}{startTime.Month:D2}" +
+                $"{startTime.Day:D2}{startTime.Hour:D2}" +
+                $"{startTime.Minute:D2}{startTime.Second:D2}_" +
+                $"{deploymentResult.HostProcess.Id}.log");
+        }
     }
 }

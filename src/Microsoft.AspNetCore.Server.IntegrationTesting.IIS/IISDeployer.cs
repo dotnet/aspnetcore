@@ -254,6 +254,9 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                 }
 
                 HostProcess = Process.GetProcessById(workerProcess.ProcessId);
+                // cache the process start time for verifying log file name.
+                var _ = HostProcess.StartTime;
+
                 Logger.LogInformation("Site has started.");
             });
         }
