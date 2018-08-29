@@ -34,10 +34,15 @@ To get started with Blazor and build your first Blazor web app check out our [ge
 
 Prerequisites:
 - [Node.js](https://nodejs.org/) (>8.3)
+- Restore Git submodules by running the following command at the repo root:
+
+      git submodule update --init --recursive
 
 The Blazor repository uses the same set of build tools as the other ASP.NET Core projects. The [developer documentation](https://github.com/aspnet/Home/wiki/Building-from-source) for building is the authoritative guide. **Please read this document and check your PATH setup if you have trouble building or using Visual Studio**
 
 To build at the command line, run `build.cmd` or `build.sh` from the solution directory.
+
+If you get a build error similar to *The project file "(some path)\blazor\modules\jsinterop\src\Mono.WebAssembly.Interop\Mono.WebAssembly.Interop.csproj" was not found.*, it's because you didn't yet restore the Git submodules. Please see *Prerequisites* above.
 
 ## Run unit tests
 
@@ -62,13 +67,13 @@ Prerequisites:
 - Follow the steps [here](https://github.com/aspnet/Home/wiki/Building-from-source) to set up a local copy of dotnet
 - Visual Studio 2017 15.7 latest preview - [download](https://www.visualstudio.com/thank-you-downloading-visual-studio/?ch=pre&sku=Enterprise&rel=15)
 
-We recommend getting the latest preview version of Visual Studio and updating it frequently. The Blazor
-editing experience in Visual Studio depends on  new features of the Razor language tooling and
-will be updated frequently.
-
 When installing Visual Studio choose the following workloads:
 - ASP.NET and Web Development
 - Visual Studio extension development features
+
+Before attempting to open the Blazor repo in Visual Studio, restore Git submodules by running the following command at the repo root:
+
+    git submodule update --init --recursive
 
 If you have problems using Visual Studio with `Blazor.sln` please refer to the [developer documentation](https://github.com/aspnet/Home/wiki/Building-from-source).
 

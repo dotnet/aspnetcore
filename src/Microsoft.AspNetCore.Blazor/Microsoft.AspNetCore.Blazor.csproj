@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.JSInterop\Microsoft.JSInterop.csproj" />
+    <ProjectReference Include="..\..\modules\jsinterop\src\Microsoft.JSInterop\Microsoft.JSInterop.csproj" />
   </ItemGroup>
 
 </Project>

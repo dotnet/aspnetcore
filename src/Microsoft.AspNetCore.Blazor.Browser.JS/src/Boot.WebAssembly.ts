@@ -1,4 +1,4 @@
-import '../../Microsoft.JSInterop/JavaScriptRuntime/src/Microsoft.JSInterop';
+import '../../../modules/jsinterop/src/Microsoft.JSInterop.JS/src/Microsoft.JSInterop';
 import './GlobalExports';
 import * as Environment from './Environment';
 import { monoPlatform } from './Platform/Mono/MonoPlatform';

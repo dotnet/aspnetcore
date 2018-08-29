@@ -185,7 +185,7 @@ function addScriptTagsToDocument() {
     const meminitXHR = Module['memoryInitializerRequest'] = new XMLHttpRequest();
     meminitXHR.open('GET', `${monoRuntimeUrlBase}/mono.js.mem`);
     meminitXHR.responseType = 'arraybuffer';
-    meminitXHR.send(null);
+    meminitXHR.send(undefined);
   }
 
   const scriptElem = document.createElement('script');
@@ -283,7 +283,7 @@ function asyncLoad(url) {
       }
     };
     xhr.onerror = reject;
-    xhr.send(null);
+    xhr.send(undefined);
   });
 }
 

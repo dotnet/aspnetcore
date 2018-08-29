@@ -1,6 +1,7 @@
 init:
-- git config --global core.autocrlf true
+  - git config --global core.autocrlf true
 install:
+  - git submodule update --init --recursive
   - ps: Install-Product node 8 x64
 branches:
   only:
