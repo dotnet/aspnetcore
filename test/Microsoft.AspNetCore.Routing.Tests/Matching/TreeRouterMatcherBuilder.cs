@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.AspNetCore.Routing.Template;
+using Microsoft.AspNetCore.Routing.TestObjects;
 using Microsoft.AspNetCore.Routing.Tree;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.ObjectPool;
@@ -34,7 +35,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var builder = new TreeRouteBuilder(
                 NullLoggerFactory.Instance,
                 new DefaultObjectPool<UriBuildingContext>(new UriBuilderContextPooledObjectPolicy()),
-                new DefaultInlineConstraintResolver(Options.Create(new RouteOptions())));
+                new DefaultInlineConstraintResolver(Options.Create(new RouteOptions()), new TestServiceProvider()));
 
             var selector = new DefaultEndpointSelector(Array.Empty<MatcherPolicy>());
 

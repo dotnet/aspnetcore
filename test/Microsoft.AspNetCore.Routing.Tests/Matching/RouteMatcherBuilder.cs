@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing.Patterns;
+using Microsoft.AspNetCore.Routing.TestObjects;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Routing.Matching
@@ -18,7 +19,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
         public RouteMatcherBuilder()
         {
-            _constraintResolver = new DefaultInlineConstraintResolver(Options.Create(new RouteOptions()));
+            _constraintResolver = new DefaultInlineConstraintResolver(Options.Create(new RouteOptions()), new TestServiceProvider());
             _endpoints = new List<RouteEndpoint>();
         }
 

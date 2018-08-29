@@ -1842,7 +1842,7 @@ namespace Microsoft.AspNetCore.Routing
                 .SetupGet(o => o.Value)
                 .Returns(new RouteOptions());
 
-            return new DefaultInlineConstraintResolver(routeOptions.Object);
+            return new DefaultInlineConstraintResolver(routeOptions.Object, new TestServiceProvider());
         }
     }
 }

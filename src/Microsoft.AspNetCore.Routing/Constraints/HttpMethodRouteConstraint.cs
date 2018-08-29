@@ -41,16 +41,6 @@ namespace Microsoft.AspNetCore.Routing.Constraints
             RouteValueDictionary values,
             RouteDirection routeDirection)
         {
-            if (httpContext == null)
-            {
-                throw new ArgumentNullException(nameof(httpContext));
-            }
-
-            if (route == null)
-            {
-                throw new ArgumentNullException(nameof(route));
-            }
-
             if (routeKey == null)
             {
                 throw new ArgumentNullException(nameof(routeKey));
@@ -64,6 +54,12 @@ namespace Microsoft.AspNetCore.Routing.Constraints
             switch (routeDirection)
             {
                 case RouteDirection.IncomingRequest:
+                    // Only required for constraining incoming requests
+                    if (httpContext == null)
+                    {
+                        throw new ArgumentNullException(nameof(httpContext));
+                    }
+
                     return AllowedMethods.Contains(httpContext.Request.Method, StringComparer.OrdinalIgnoreCase);
 
                 case RouteDirection.UrlGeneration:
