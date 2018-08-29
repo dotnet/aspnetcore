@@ -67,6 +67,7 @@
     <PackageArtifact Include="Microsoft.AspNetCore.DataProtection.Abstractions" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.DataProtection.AzureKeyVault" Category="ship" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.DataProtection.AzureStorage" Category="ship" AllMetapackage="true"/>
+    <PackageArtifact Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.DataProtection.Extensions" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.DataProtection.Redis" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.DataProtection.SystemWeb" Category="ship" />
