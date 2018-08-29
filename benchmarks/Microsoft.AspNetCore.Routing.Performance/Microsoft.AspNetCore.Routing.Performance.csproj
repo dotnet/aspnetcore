@@ -36,6 +36,7 @@
     <Compile Include="..\..\test\Microsoft.AspNetCore.Routing.Tests\Matching\TreeRouterMatcherBuilder.cs">
       <Link>Matching\TreeRouterMatcherBuilder.cs</Link>
     </Compile>
+    <Compile Include="..\..\test\Microsoft.AspNetCore.Routing.Tests\TestObjects\TestServiceProvider.cs" Link="Matching\TestServiceProvider.cs" />
   </ItemGroup>
 
   <ItemGroup>
