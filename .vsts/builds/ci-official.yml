@@ -10,6 +10,10 @@ phases:
       SignType: real
       TeamName: AspNetCore
     beforeBuild:
+    - task: securedevelopmentteam.vss-secure-development-tools.build-task-policheck.PoliCheck@1
+      displayName: 'Run compliance check'
+      inputs:
+        targetType: F
     - task: ms-vseng.MicroBuildTasks.30666190-6959-11e5-9f96-f56098202fef.MicroBuildSigningPlugin@1
       displayName: Install CodeSigning plugin
       inputs:
