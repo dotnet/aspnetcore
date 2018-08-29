@@ -11,7 +11,6 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
     {
         public const int PageSize = 1024;
         private int _charIndex;
-        private List<char[]> _pages = new List<char[]>();
 
         public PagedCharBuffer(ICharBufferSource bufferSource)
         {
@@ -20,14 +19,15 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 
         public ICharBufferSource BufferSource { get; }
 
-        public IList<char[]> Pages => _pages;
+        // Strongly typed rather than IList for performance
+        public List<char[]> Pages { get; } = new List<char[]>(); 
 
         public int Length
         {
             get
             {
                 var length = _charIndex;
-                var pages = _pages;
+                var pages = Pages;
                 var fullPages = pages.Count - 1;
                 for (var i = 0; i < fullPages; i++)
                 {
@@ -103,7 +103,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
         /// </summary>
         public void Clear()
         {
-            var pages = _pages;
+            var pages = Pages;
             for (var i = pages.Count - 1; i > 0; i--)
             {
                 var page = pages[i];
@@ -139,7 +139,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             try
             {
                 page = BufferSource.Rent(PageSize);
-                _pages.Add(page);
+                Pages.Add(page);
             }
             catch when (page != null)
             {
@@ -152,7 +152,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 
         public void Dispose()
         {
-            var pages = _pages;
+            var pages = Pages;
             var count = pages.Count;
             for (var i = 0; i < count; i++)
             {
