@@ -274,6 +274,7 @@
     <PackageArtifact Include="Microsoft.Extensions.ObjectMethodExecutor.Sources" Category="noship" />
     <PackageArtifact Include="Microsoft.Extensions.ObjectPool" Category="ship" AppMetapackage="true" AllMetapackage="true" />
     <PackageArtifact Include="Microsoft.Extensions.Options.ConfigurationExtensions" Category="ship" AppMetapackage="true" AllMetapackage="true" />
+    <PackageArtifact Include="Microsoft.Extensions.Options.DataAnnotations" Category="ship" AppMetapackage="true" AllMetapackage="true" />
     <PackageArtifact Include="Microsoft.Extensions.Options" Category="ship" AppMetapackage="true" AllMetapackage="true" />
     <PackageArtifact Include="Microsoft.Extensions.ParameterDefaultValue.Sources" Category="noship" />
     <PackageArtifact Include="Microsoft.Extensions.Primitives" Category="ship" AppMetapackage="true" AllMetapackage="true" />
