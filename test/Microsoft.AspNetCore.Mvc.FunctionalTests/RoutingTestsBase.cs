@@ -1265,6 +1265,19 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(actionName, result.Action);
         }
 
+        [Fact]
+        public async Task CanRunMiddlewareAfterRouting()
+        {
+            // Act
+            var response = await Client.GetAsync("/afterrouting");
+
+            // Assert
+            await response.AssertStatusCodeAsync(HttpStatusCode.OK);
+            var content = await response.Content.ReadAsStringAsync();
+            Assert.Equal("Hello from middleware after routing", content);
+        }
+
+
         protected static LinkBuilder LinkFrom(string url)
         {
             return new LinkBuilder(url);

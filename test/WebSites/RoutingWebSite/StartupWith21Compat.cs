@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
@@ -47,6 +48,11 @@ namespace RoutingWebSite
                     "RouteWithOptionalSegment",
                     "{controller}/{action}/{path?}");
             });
+
+            app.Map("/afterrouting", b => b.Run(c =>
+            {
+                return c.Response.WriteAsync("Hello from middleware after routing");
+            }));
         }
     }
 }
