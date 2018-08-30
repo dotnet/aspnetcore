@@ -67,6 +67,7 @@
     <PackageArtifact Include="Microsoft.AspNetCore.DataProtection.Abstractions" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.DataProtection.AzureKeyVault" Category="ship" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.DataProtection.AzureStorage" Category="ship" AllMetapackage="true"/>
+    <PackageArtifact Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.DataProtection.Extensions" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.DataProtection.Redis" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.DataProtection.SystemWeb" Category="ship" />
@@ -198,10 +199,10 @@
     <PackageArtifact Include="Microsoft.CodeAnalysis.Remote.Razor" Category="shipoob" />
     <PackageArtifact Include="Microsoft.Data.Sqlite.Core" Category="ship" AllMetapackage="true" />
     <PackageArtifact Include="Microsoft.Data.Sqlite" Category="ship" AllMetapackage="true" />
-    <PackageArtifact Include="Microsoft.DotNet.Web.Client.ItemTemplates" Category="shipoob" />
-    <PackageArtifact Include="Microsoft.DotNet.Web.ItemTemplates" Category="shipoob" />
-    <PackageArtifact Include="Microsoft.DotNet.Web.ProjectTemplates.3.0" Category="shipoob" />
-    <PackageArtifact Include="Microsoft.DotNet.Web.Spa.ProjectTemplates" Category="shipoob" />
+    <PackageArtifact Include="Microsoft.DotNet.Web.Client.ItemTemplates" Category="ship" />
+    <PackageArtifact Include="Microsoft.DotNet.Web.ItemTemplates" Category="ship" />
+    <PackageArtifact Include="Microsoft.DotNet.Web.ProjectTemplates.3.0" Category="ship" />
+    <PackageArtifact Include="Microsoft.DotNet.Web.Spa.ProjectTemplates" Category="ship" />
     <PackageArtifact Include="Microsoft.EntityFrameworkCore.Abstractions" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.EntityFrameworkCore.Analyzers" Category="ship" Analyzer="true" AppMetapackage="true" AllMetapackage="true" />
     <PackageArtifact Include="Microsoft.EntityFrameworkCore.Cosmos.Sql" Category="ship"/>
