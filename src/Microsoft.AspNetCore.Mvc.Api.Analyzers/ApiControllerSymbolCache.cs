@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
             StatusCodeValueAttribute = compilation.GetTypeByMetadataName(ApiSymbolNames.StatusCodeValueAttribute);
 
             var statusCodeActionResult = compilation.GetTypeByMetadataName(ApiSymbolNames.IStatusCodeActionResult);
-            StatusCodeActionResultStatusProperty = (IPropertySymbol)statusCodeActionResult.GetMembers("StatusCode")[0];
+            StatusCodeActionResultStatusProperty = (IPropertySymbol)statusCodeActionResult?.GetMembers("StatusCode")[0];
 
             var disposable = compilation.GetSpecialType(SpecialType.System_IDisposable);
             var members = disposable.GetMembers(nameof(IDisposable.Dispose));
