@@ -31,7 +31,7 @@ class FetchData extends Component {
 
 function renderForecastsTable(props) {
   return (
-    <table className='table'>
+    <table className='table table-striped'>
       <thead>
         <tr>
           <th>Date</th>

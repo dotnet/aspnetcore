@@ -1,5 +1,5 @@
 ﻿import React, { Component } from 'react';
-import { Collapse, Nav, Navbar, NavbarBrand, NavbarToggler, NavItem, NavLink } from 'reactstrap';
+import { Collapse, Container, Navbar, NavbarBrand, NavbarToggler, NavItem, NavLink } from 'reactstrap';
 import './NavMenu.css';
 
 export class NavMenu extends Component {
@@ -10,7 +10,7 @@ export class NavMenu extends Component {
 
     this.toggleNavbar = this.toggleNavbar.bind(this);
     this.state = {
-      collapsed: false
+      collapsed: true
     };
   }
 
@@ -22,25 +22,27 @@ export class NavMenu extends Component {
 
   render() {
     return (
-      <div>
-        <Navbar color="faded" light>
-          <NavbarBrand href="/" className="mr-auto">Company.WebApplication1</NavbarBrand>
-          <NavbarToggler onClick={this.toggleNavbar} className="mr-2" />
-          <Collapse isOpen={!this.state.collapsed} navbar>
-            <Nav navbar>
-              <NavItem>
-                <NavLink href="/">Home</NavLink>
-              </NavItem>
-              <NavItem>
-                <NavLink href="/counter">Counter</NavLink>
-              </NavItem>
-              <NavItem>
-                <NavLink href="/fetch-data">Fetch data</NavLink>
-              </NavItem>
-            </Nav>
-          </Collapse>
+      <header>
+        <Navbar className="navbar-expand-sm navbar-toggleable-sm ng-white border-bottom box-shadow mb-3" light>
+          <Container>
+            <NavbarBrand href="/">Company.WebApplication1</NavbarBrand>
+            <NavbarToggler onClick={this.toggleNavbar} className="mr-2" />
+            <Collapse className="d-sm-inline-flex flex-sm-row-reverse" isOpen={!this.state.collapsed} navbar>
+              <ul className="navbar-nav flex-grow">
+                <NavItem>
+                  <NavLink className="text-dark" href="/">Home</NavLink>
+                </NavItem>
+                <NavItem>
+                  <NavLink className="text-dark" href="/counter">Counter</NavLink>
+                </NavItem>
+                <NavItem>
+                  <NavLink className="text-dark" href="/fetch-data">Fetch data</NavLink>
+                </NavItem>
+              </ul>
+            </Collapse>
+          </Container>
         </Navbar>
-      </div >
+      </header>
     );
   }
 }

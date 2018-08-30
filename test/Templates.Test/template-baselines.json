@@ -411,6 +411,20 @@
       "AuthOption": "MultiOrg"
     }
   },
+  "web": {
+    "None": {
+      "Template": "web",
+      "Arguments": "new web",
+      "Files": [
+        "appsettings.Development.json",
+        "appsettings.json",
+        "Program.cs",
+        "Startup.cs",
+        "Properties/launchSettings.json"
+      ],
+      "AuthOption": "None"
+    }
+  },
   "webapi": {
     "IndividualB2C": {
       "Template": "webapi",
