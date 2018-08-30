@@ -3,10 +3,11 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <IsPackable>false</IsPackable>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <LangVersion>latest</LangVersion>
+    <RestoreSources>
+      https://api.nuget.org/v3/index.json;
+      $(DotNetRestoreSources)
+    </RestoreSources>
   </PropertyGroup>
 
   <ItemGroup>
