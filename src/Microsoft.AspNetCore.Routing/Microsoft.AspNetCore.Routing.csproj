@@ -38,7 +38,5 @@ Microsoft.AspNetCore.Routing.RouteCollection</Description>
     <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="$(MicrosoftExtensionsObjectPoolPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="$(MicrosoftExtensionsOptionsPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.PropertyHelper.Sources" Version="$(MicrosoftExtensionsPropertyHelperSourcesPackageVersion)" PrivateAssets="All" />
-    <PackageReference Condition="'$(ILEmitBackendSaveAssemblies)'=='true'" Include="System.Reflection.Emit" Version="$(SystemReflectionEmitPackageVersion)" PrivateAssets="All" />
-    <PackageReference Condition="'$(ILEmit)'=='true'" Include="System.Reflection.Emit.Lightweight" Version="$(SystemReflectionEmitPackageVersion)" PrivateAssets="All" />
   </ItemGroup>
 </Project>
