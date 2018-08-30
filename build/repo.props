@@ -3,6 +3,7 @@
 
   <PropertyGroup>
     <EnableBenchmarkValidation>true</EnableBenchmarkValidation>
+    <VSTestVerboseOutput Condition="'$(CI)' == 'true'">true</VSTestVerboseOutput>
   </PropertyGroup>
 
   <ItemGroup>
