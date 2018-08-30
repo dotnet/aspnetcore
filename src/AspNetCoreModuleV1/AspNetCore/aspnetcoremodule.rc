@@ -3,6 +3,7 @@
 #include <windows.h>
 #include "version.h"
 #include "resource.h"
+#include "aspnetcore_msg.rc"
 /////////////////////////////////////////////////////////////////////////////
 // English (United States) resources
 
