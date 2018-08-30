@@ -222,6 +222,7 @@
     "System.Text.RegularExpressions.dll",
     "System.Threading.AccessControl.dll",
     "System.Threading.dll",
+    "System.Threading.Tasks.Extensions.dll",
     "System.Threading.Overlapped.dll",
     "System.Threading.Tasks.dll",
     "System.Threading.Tasks.Parallel.dll",
