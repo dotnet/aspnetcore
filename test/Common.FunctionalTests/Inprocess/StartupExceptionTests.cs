@@ -35,13 +35,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             deploymentParameters.WebConfigBasedEnvironmentVariables["ASPNETCORE_INPROCESS_STARTUP_VALUE"] = path;
             deploymentParameters.WebConfigBasedEnvironmentVariables["ASPNETCORE_INPROCESS_RANDOM_VALUE"] = randomNumberString;
 
-            var deploymentResult = await DeployAsync(deploymentParameters);
-
-            var response = await deploymentResult.HttpClient.GetAsync(path);
-
-            Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
-
-            StopServer();
+            await AssertFailsToStart(path, deploymentParameters);
 
             Assert.Contains(TestSink.Writes, context => context.Message.Contains($"Random number: {randomNumberString}"));
         }
@@ -56,6 +50,25 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.StartupExceptionWebsite, publish: true);
             deploymentParameters.WebConfigBasedEnvironmentVariables["ASPNETCORE_INPROCESS_STARTUP_VALUE"] = path;
 
+            await AssertFailsToStart(path, deploymentParameters);
+
+            Assert.Contains(TestSink.Writes, context => context.Message.Contains(new string('a', 4096)));
+        }
+
+        [ConditionalFact]
+        public async Task CheckValidConsoleFunctions()
+        {
+            var path = "CheckConsoleFunctions";
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.StartupExceptionWebsite, publish: true);
+            deploymentParameters.WebConfigBasedEnvironmentVariables["ASPNETCORE_INPROCESS_STARTUP_VALUE"] = path;
+
+            await AssertFailsToStart(path, deploymentParameters);
+
+            Assert.Contains(TestSink.Writes, context => context.Message.Contains("Is Console redirection: True"));
+        }
+
+        private async Task AssertFailsToStart(string path, IntegrationTesting.IIS.IISDeploymentParameters deploymentParameters)
+        {
             var deploymentResult = await DeployAsync(deploymentParameters);
 
             var response = await deploymentResult.HttpClient.GetAsync(path);
@@ -63,8 +76,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
 
             StopServer();
-
-            Assert.Contains(TestSink.Writes, context => context.Message.Contains(new string('a', 4096)));
         }
 
         [ConditionalFact]

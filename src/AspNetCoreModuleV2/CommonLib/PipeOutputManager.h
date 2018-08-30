@@ -39,6 +39,7 @@ private:
     SRWLOCK                         m_srwLock {};
     BOOL                            m_disposed;
     BOOL                            m_fEnableNativeRedirection;
+    BOOL                            m_fCreatedConsole;
     std::unique_ptr<StdWrapper>     stdoutWrapper;
     std::unique_ptr<StdWrapper>     stderrWrapper;
 };

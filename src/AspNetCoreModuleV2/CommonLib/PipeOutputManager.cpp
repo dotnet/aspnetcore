@@ -24,7 +24,8 @@ PipeOutputManager::PipeOutputManager(bool fEnableNativeLogging) :
     m_disposed(FALSE),
     m_fEnableNativeRedirection(fEnableNativeLogging),
     stdoutWrapper(nullptr),
-    stderrWrapper(nullptr)
+    stderrWrapper(nullptr),
+    m_fCreatedConsole(false)
 {
     InitializeSRWLock(&m_srwLock);
 }
@@ -42,6 +43,21 @@ HRESULT PipeOutputManager::Start()
     SECURITY_ATTRIBUTES     saAttr = { 0 };
     HANDLE                  hStdErrReadPipe;
     HANDLE                  hStdErrWritePipe;
+
+    // To make Console.* functions work, allocate a console
+    // in the current process.
+    if (!AllocConsole())
+    {
+        // ERROR_ACCESS_DENIED means there is a console already present.
+        if (GetLastError() != ERROR_ACCESS_DENIED)
+        {
+            RETURN_LAST_ERROR();
+        }
+    }
+    else
+    {
+        m_fCreatedConsole = true;
+    }
 
     RETURN_LAST_ERROR_IF(!CreatePipe(&hStdErrReadPipe, &hStdErrWritePipe, &saAttr, 0 /*nSize*/));
 
@@ -91,6 +107,11 @@ HRESULT PipeOutputManager::Stop()
     }
 
     m_disposed = true;
+
+    if (m_fCreatedConsole)
+    {
+        FreeConsole();
+    }
 
     // Both pipe wrappers duplicate the pipe writer handle
     // meaning we are fine to close the handle too.

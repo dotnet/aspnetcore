@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
+using System.Text;
 
 namespace IISTestSite
 {
@@ -40,6 +42,14 @@ namespace IISTestSite
             {
                 Console.Error.WriteLine(new string('a', 4096));
                 Console.Error.Flush();
+            }
+            else if (envVariable == "CheckConsoleFunctions")
+            {
+                // Call a bunch of console functions and make sure none return invalid handle.
+                Console.OutputEncoding = Encoding.UTF8;
+                Console.Title = "Test";
+                Console.WriteLine($"Is Console redirection: {Console.IsOutputRedirected}");
+                Console.BackgroundColor = ConsoleColor.Blue;
             }
         }
     }

@@ -27,13 +27,18 @@ LoggingHelpers::CreateLoggingProvider(
 
     try
     {
+        // Check if there is an existing active console window before redirecting
+        // Window == IISExpress with active console window, don't redirect to a pipe
+        // if true.
+        CONSOLE_SCREEN_BUFFER_INFO dummy;
+
         if (fIsLoggingEnabled)
         {
             auto manager = std::make_unique<FileOutputManager>(fEnableNativeLogging);
             hr = manager->Initialize(pwzStdOutFileName, pwzApplicationPath);
             outputManager = std::move(manager);
         }
-        else if (!GetConsoleWindow())
+        else if (!GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &dummy))
         {
             outputManager = std::make_unique<PipeOutputManager>(fEnableNativeLogging);
         }

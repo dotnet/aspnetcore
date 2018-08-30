@@ -20,7 +20,8 @@ FileOutputManager::FileOutputManager(bool fEnableNativeLogging) :
     m_disposed(false),
     stdoutWrapper(nullptr),
     stderrWrapper(nullptr),
-    m_fEnableNativeRedirection(fEnableNativeLogging)
+    m_fEnableNativeRedirection(fEnableNativeLogging),
+    m_fCreatedConsole(false)
 {
     InitializeSRWLock(&m_srwLock);
 }
@@ -49,6 +50,21 @@ FileOutputManager::Start()
     STRU struPath;
     FILETIME processCreationTime;
     FILETIME dummyFileTime;
+    
+    // To make Console.* functions work, allocate a console
+    // in the current process.
+    if (!AllocConsole())
+    {
+        // ERROR_ACCESS_DENIED means there is a console already present.
+        if (GetLastError() != ERROR_ACCESS_DENIED)
+        {
+            RETURN_LAST_ERROR();
+        }
+    }
+    else
+    {
+        m_fCreatedConsole = true;
+    }
 
     // Concatenate the log file name and application path
     RETURN_IF_FAILED(FILE_UTILITY::ConvertPathToFullPath(
@@ -128,6 +144,11 @@ FileOutputManager::Stop()
     }
 
     m_disposed = true;
+
+    if (m_fCreatedConsole)
+    {
+        RETURN_LAST_ERROR_IF(!FreeConsole());
+    }
 
     if (m_hLogFileHandle == INVALID_HANDLE_VALUE)
     {
