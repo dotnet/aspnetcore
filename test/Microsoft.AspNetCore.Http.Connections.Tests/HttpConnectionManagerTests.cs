@@ -314,6 +314,29 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             await tcs.Task.OrTimeout();
         }
 
+        [Fact]
+        public async Task ApplicationLifetimeCanStartBeforeHttpConnectionManagerInitialized()
+        {
+            var appLifetime = new TestApplicationLifetime();
+            appLifetime.Start();
+
+            var connectionManager = CreateConnectionManager(appLifetime);
+            var tcs = new TaskCompletionSource<object>();
+
+            var connection = connectionManager.CreateConnection(PipeOptions.Default, PipeOptions.Default);
+
+            connection.Application.Output.OnReaderCompleted((error, state) =>
+            {
+                tcs.TrySetResult(null);
+            },
+            null);
+
+            appLifetime.StopApplication();
+
+            // Connection should be disposed so this should complete immediately
+            await tcs.Task.OrTimeout();
+        }
+
         private static HttpConnectionManager CreateConnectionManager(IApplicationLifetime lifetime = null)
         {
             lifetime = lifetime ?? new EmptyApplicationLifetime();
