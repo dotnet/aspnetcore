@@ -130,10 +130,6 @@
 	path = modules/Mvc
 	url = https://github.com/aspnet/Mvc.git
 	branch = master
-[submodule "modules/MvcPrecompilation"]
-	path = modules/MvcPrecompilation
-	url = https://github.com/aspnet/MvcPrecompilation.git
-	branch = master
 [submodule "modules/Options"]
 	path = modules/Options
 	url = https://github.com/aspnet/Options.git

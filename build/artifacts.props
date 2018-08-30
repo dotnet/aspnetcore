@@ -123,7 +123,6 @@
     <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Localization" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X" Category="shipoob" />
     <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Razor.Extensions" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
-    <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Razor.ViewCompilation" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Razor" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.Mvc.RazorPages" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.Mvc.TagHelpers" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
