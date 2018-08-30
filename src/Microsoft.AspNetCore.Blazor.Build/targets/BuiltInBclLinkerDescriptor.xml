@@ -16,11 +16,10 @@
       <method signature="System.String CreateString(System.Char[],System.Int32,System.Int32)" />
       <method signature="System.String CreateString(System.Char*)" />
       <method signature="System.String CreateString(System.Char*,System.Int32,System.Int32)" />
-      <method signature="System.String CreateString(System.Byte*)" />
-      <method signature="System.String CreateString(System.Byte*,System.Int32,System.Int32)" />
-      <method signature="System.String CreateString(System.Byte*,System.Int32,System.Int32,System.Text.Encoding)" />
       <method signature="System.String CreateString(System.SByte*)" />
+      <method signature="System.String CreateString(System.SByte*,System.Int32,System.Int32)" />
       <method signature="System.String CreateString(System.SByte*,System.Int32,System.Int32,System.Text.Encoding)" />
+      <method signature="System.String CreateString(System.ReadOnlySpan`1&lt;System.Char&gt;)" />
     </type>
   </assembly>
 </linker>

@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
-using Microsoft.AspNetCore.Blazor.Browser.Http;
 using Microsoft.AspNetCore.Blazor.Browser.Services;
 using Microsoft.AspNetCore.Blazor.Services;
 using Microsoft.Extensions.DependencyInjection;
@@ -75,7 +74,7 @@ namespace Microsoft.AspNetCore.Blazor.Hosting
             {
                 // Creating the URI helper needs to wait until the JS Runtime is initialized, so defer it.
                 var uriHelper = s.GetRequiredService<IUriHelper>();
-                return new HttpClient(new BrowserHttpMessageHandler())
+                return new HttpClient
                 {
                     BaseAddress = new Uri(BrowserUriHelper.Instance.GetBaseUri())
                 };

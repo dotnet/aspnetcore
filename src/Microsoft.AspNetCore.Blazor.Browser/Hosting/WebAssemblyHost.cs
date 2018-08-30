@@ -2,8 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Net.Http;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Blazor.Browser.Http;
 using Microsoft.AspNetCore.Blazor.Browser.Rendering;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
@@ -36,6 +39,7 @@ namespace Microsoft.AspNetCore.Blazor.Hosting
             // JSRuntime in the 'root' execution context which implies that we want to do as part of a direct
             // call from Program.Main, and before any 'awaits'.
             JSRuntime.SetCurrentJSRuntime(_runtime);
+            SetBrowserHttpMessageHandlerAsDefault();
 
             var scopeFactory = Services.GetRequiredService<IServiceScopeFactory>();
             _scope = scopeFactory.CreateScope();
@@ -96,6 +100,36 @@ namespace Microsoft.AspNetCore.Blazor.Hosting
         public void Dispose()
         {
             (Services as IDisposable)?.Dispose();
+        }
+
+        private static void SetBrowserHttpMessageHandlerAsDefault()
+        {
+            // Within the Mono WebAssembly BCL, this is a special private static field
+            // that can be assigned to override the default handler
+            const string getHttpMessageHandlerFieldName = "GetHttpMessageHandler";
+            var getHttpMessageHandlerField = typeof(HttpClient).GetField(
+                getHttpMessageHandlerFieldName,
+                BindingFlags.Static | BindingFlags.NonPublic);
+
+            // getHttpMessageHandlerField will be null in tests, but nonnull when actually
+            // running under Mono WebAssembly
+            if (getHttpMessageHandlerField != null)
+            {
+                // Just in case you're not actually using HttpClient, defer the construction
+                // of the BrowserHttpMessageHandler
+                var handlerSingleton = new Lazy<HttpMessageHandler>(
+                    () => new BrowserHttpMessageHandler());
+                Func<HttpMessageHandler> handlerFactory = () => handlerSingleton.Value;
+                getHttpMessageHandlerField.SetValue(null, handlerFactory);
+            }
+            else
+            {
+                // We log a warning in case this ever happens at runtime (even though there's
+                // no obvious way it could be possible), but don't actually throw because that
+                // would break unit tests
+                Console.WriteLine("WARNING: Could not set default HttpMessageHandler because " +
+                    $"'{getHttpMessageHandlerFieldName}' was not found on '{typeof(HttpClient).FullName}'.");
+            }
         }
     }
 }
