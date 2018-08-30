@@ -89,6 +89,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var featureCollection = new FeatureCollection();
             featureCollection.Set<IEndpointFeature>(endpointFeature);
             featureCollection.Set<IRouteValuesFeature>(endpointFeature);
+            featureCollection.Set<IRoutingFeature>(endpointFeature);
 
             var httpContextMock = new Mock<HttpContext>();
             httpContextMock.Setup(m => m.Features).Returns(featureCollection);
@@ -691,28 +692,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var endpoint = Assert.Single(endpoints);
             var matcherEndpoint = Assert.IsType<RouteEndpoint>(endpoint);
             Assert.Equal("Blog/{*slug}", matcherEndpoint.RoutePattern.RawText);
-            AssertIsSubset(expectedDefaults, matcherEndpoint.RoutePattern.Defaults);
-        }
-
-        [Fact]
-        public void RequiredValues_HavingNull_AndNotPresentInDefaultValues_IsAddedToDefaultValues()
-        {
-            // Arrange
-            var requiredValues = new RouteValueDictionary(
-                new { area = (string)null, controller = "Foo", action = "Bar", page = (string)null });
-            var expectedDefaults = requiredValues;
-            var actionDescriptorCollection = GetActionDescriptorCollection(requiredValues: requiredValues);
-            var dataSource = CreateMvcEndpointDataSource(actionDescriptorCollection);
-            dataSource.ConventionalEndpointInfos.Add(
-                CreateEndpointInfo(string.Empty, "{controller=Home}/{action=Index}"));
-
-            // Act
-            var endpoints = dataSource.Endpoints;
-
-            // Assert
-            var endpoint = Assert.Single(endpoints);
-            var matcherEndpoint = Assert.IsType<RouteEndpoint>(endpoint);
-            Assert.Equal("Foo/Bar", matcherEndpoint.RoutePattern.RawText);
             AssertIsSubset(expectedDefaults, matcherEndpoint.RoutePattern.Defaults);
         }
 

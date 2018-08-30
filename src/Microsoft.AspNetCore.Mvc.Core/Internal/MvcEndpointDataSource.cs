@@ -174,6 +174,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                                         endpointInfo.Defaults,
                                         ++conventionalRouteOrder,
                                         endpointInfo,
+                                        endpointInfo.DataTokens,
                                         suppressLinkGeneration: false,
                                         suppressPathMatching: false);
                                     endpoints.Add(subEndpoint);
@@ -214,6 +215,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                                 endpointInfo.Defaults,
                                 ++conventionalRouteOrder,
                                 endpointInfo,
+                                endpointInfo.DataTokens,
                                 suppressLinkGeneration: false,
                                 suppressPathMatching: false);
                             endpoints.Add(endpoint);
@@ -229,6 +231,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                             nonInlineDefaults: null,
                             action.AttributeRouteInfo.Order,
                             action.AttributeRouteInfo,
+                            dataTokens: null,
                             suppressLinkGeneration: action.AttributeRouteInfo.SuppressLinkGeneration,
                             suppressPathMatching: action.AttributeRouteInfo.SuppressPathMatching);
                         endpoints.Add(endpoint);
@@ -378,20 +381,13 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             object nonInlineDefaults,
             int order,
             object source,
+            RouteValueDictionary dataTokens,
             bool suppressLinkGeneration,
             bool suppressPathMatching)
         {
             RequestDelegate requestDelegate = (context) =>
             {
-                var values = context.Features.Get<IRouteValuesFeature>().RouteValues;
-                var routeData = new RouteData();
-                foreach (var kvp in values)
-                {
-                    if (kvp.Value != null)
-                    {
-                        routeData.Values.Add(kvp.Key, kvp.Value);
-                    }
-                }
+                var routeData = context.GetRouteData();
 
                 var actionContext = new ActionContext(context, routeData, action);
 
@@ -407,6 +403,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 routeName,
                 new RouteValueDictionary(action.RouteValues),
                 source,
+                dataTokens,
                 suppressLinkGeneration,
                 suppressPathMatching);
 
@@ -425,6 +422,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             string routeName,
             RouteValueDictionary requiredValues,
             object source,
+            RouteValueDictionary dataTokens,
             bool suppressLinkGeneration,
             bool suppressPathMatching)
         {
@@ -436,6 +434,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             if (action.EndpointMetadata != null)
             {
                 metadata.AddRange(action.EndpointMetadata);
+            }
+
+            if (dataTokens != null)
+            {
+                metadata.Add(new DataTokensMetadata(dataTokens));
             }
 
             metadata.Add(new RouteValuesAddressMetadata(routeName, requiredValues));
@@ -506,7 +509,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         {
             foreach (var kvp in requiredValues)
             {
-                defaults[kvp.Key] = kvp.Value;
+                if (kvp.Value != null)
+                {
+                    defaults[kvp.Key] = kvp.Value;
+                }
             }
         }
     }

@@ -73,6 +73,30 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
+        public async Task DataTokens_ReturnsDataTokensForRoute()
+        {
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/DataTokensRoute/DataTokens/Index");
+
+            // Assert
+            var body = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<Dictionary<string, object>>(body);
+            Assert.Single(result, kvp => kvp.Key == "hasDataTokens" && ((bool)kvp.Value) == true);
+        }
+
+        [Fact]
+        public async Task DataTokens_ReturnsNoDataTokensForRoute()
+        {
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/DataTokens/Index");
+
+            // Assert
+            var body = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<Dictionary<string, object>>(body);
+            Assert.Empty(result);
+        }
+
+        [Fact]
         public virtual async Task ConventionalRoutedController_ActionIsReachable()
         {
             // Arrange & Act
