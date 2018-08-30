@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using BenchmarkDotNet.Attributes;
 
 namespace Microsoft.AspNetCore.Routing.Matching
@@ -15,12 +14,11 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
         private JumpTable _linearSearch;
         private JumpTable _dictionary;
-        private JumpTable _ascii;
-        private JumpTable _dictionaryLookup;
-        private JumpTable _customHashTable;
+        private JumpTable _trie;
+        private JumpTable _vectorTrie;
 
         // All factors of 100 to support sampling
-        [Params(2, 4, 5, 10, 25)]
+        [Params(2, 5, 10, 25, 50, 100)]
         public int Count;
 
         [GlobalSetup]
@@ -48,9 +46,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             _linearSearch = new LinearSearchJumpTable(0, -1, entries.ToArray());
             _dictionary = new DictionaryJumpTable(0, -1, entries.ToArray());
-            AsciiKeyedJumpTable.TryCreate(0, -1, entries, out _ascii);
-            _dictionaryLookup = new DictionaryLookupJumpTable(0, -1, entries.ToArray());
-            _customHashTable = new CustomHashTableJumpTable(0, -1, entries.ToArray());
+            _trie = new ILEmitTrieJumpTable(0, -1, entries.ToArray(), vectorize: false, _dictionary);
+            _vectorTrie = new ILEmitTrieJumpTable(0, -1, entries.ToArray(), vectorize: true, _dictionary);
         }
 
         // This baseline is similar to SingleEntryJumpTable. We just want
@@ -67,15 +64,24 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 var @string = strings[i];
                 var segment = segments[i];
 
-                destination = segment.Length == 0 ? -1 :
-                    segment.Length != @string.Length ? 1 :
-                    string.Compare(
+                if (segment.Length == 0)
+                {
+                    destination = -1;
+                }
+                else if (segment.Length != @string.Length)
+                {
+                    destination = 1;
+                }
+                else
+                {
+                    destination = string.Compare(
                         @string,
                         segment.Start,
                         @string,
                         0,
-                        @string.Length,
+                        segment.Length,
                         StringComparison.OrdinalIgnoreCase);
+                }
             }
 
             return destination;
@@ -112,7 +118,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         }
 
         [Benchmark(OperationsPerInvoke = 100)]
-        public int Ascii()
+        public int Trie()
         {
             var strings = _strings;
             var segments = _segments;
@@ -120,14 +126,14 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var destination = 0;
             for (var i = 0; i < strings.Length; i++)
             {
-                destination = _ascii.GetDestination(strings[i], segments[i]);
+                destination = _trie.GetDestination(strings[i], segments[i]);
             }
 
             return destination;
         }
 
         [Benchmark(OperationsPerInvoke = 100)]
-        public int DictionaryLookup()
+        public int VectorTrie()
         {
             var strings = _strings;
             var segments = _segments;
@@ -135,22 +141,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var destination = 0;
             for (var i = 0; i < strings.Length; i++)
             {
-                destination = _dictionaryLookup.GetDestination(strings[i], segments[i]);
-            }
-
-            return destination;
-        }
-
-        [Benchmark(OperationsPerInvoke = 100)]
-        public int CustomHashTable()
-        {
-            var strings = _strings;
-            var segments = _segments;
-
-            var destination = 0;
-            for (var i = 0; i < strings.Length; i++)
-            {
-                destination = _customHashTable.GetDestination(strings[i], segments[i]);
+                destination = _vectorTrie.GetDestination(strings[i], segments[i]);
             }
 
             return destination;
@@ -164,7 +155,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 var guid = Guid.NewGuid().ToString();
 
                 // Between 5 and 36 characters
-                var text = guid.Substring(0, Math.Max(5, Math.Min(count, 36)));
+                var text = guid.Substring(0, Math.Max(5, Math.Min(i, 36)));
                 if (char.IsDigit(text[0]))
                 {
                     // Convert first character to a letter.
