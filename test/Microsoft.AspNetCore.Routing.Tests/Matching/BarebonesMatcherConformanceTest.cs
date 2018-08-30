@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         internal override Matcher CreateMatcher(params RouteEndpoint[] endpoints)
         {
             var builder = new BarebonesMatcherBuilder();
-            for (int i = 0; i < endpoints.Length; i++)
+            for (var i = 0; i < endpoints.Length; i++)
             {
                 builder.AddEndpoint(endpoints[i]);
             }

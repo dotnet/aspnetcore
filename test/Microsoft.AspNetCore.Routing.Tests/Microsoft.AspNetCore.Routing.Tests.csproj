@@ -28,7 +28,6 @@
     <PackageReference Include="Microsoft.Extensions.Logging" Version="$(MicrosoftExtensionsLoggingPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.Logging.Testing" Version="$(MicrosoftExtensionsLoggingTestingPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.WebEncoders" Version="$(MicrosoftExtensionsWebEncodersPackageVersion)" />
-    <PackageReference Condition="'$(ILEmit)'=='true'" Include="System.Reflection.Emit.Lightweight" Version="$(SystemReflectionEmitPackageVersion)" PrivateAssets="All" />
   </ItemGroup>
 
 </Project>
