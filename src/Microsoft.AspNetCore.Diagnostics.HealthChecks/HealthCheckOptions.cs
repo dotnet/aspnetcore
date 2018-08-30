@@ -15,15 +15,19 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
     public class HealthCheckOptions
     {
         /// <summary>
-        /// Gets a set of health check names used to filter the set of health checks run.
+        /// Gets or sets a predicate that is used to filter the set of health checks executed.
         /// </summary>
         /// <remarks>
-        /// If <see cref="HealthCheckNames"/> is empty, the <see cref="HealthCheckMiddleware"/> will run all
+        /// If <see cref="Predicate"/> is <c>null</c>, the <see cref="HealthCheckMiddleware"/> will run all
         /// registered health checks - this is the default behavior. To run a subset of health checks,
-        /// add the names of the desired health checks.
+        /// provide a function that filters the set of checks.
         /// </remarks>
-        public ISet<string> HealthCheckNames { get; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        public Func<IHealthCheck, bool> Predicate { get; set; }
 
+        /// <summary>
+        /// Gets a dictionary mapping the <see cref="HealthCheckStatus"/> to an HTTP status code applied to the response.
+        /// This property can be used to configure the status codes returned for each status.
+        /// </summary>
         public IDictionary<HealthCheckStatus, int> ResultStatusCodes { get; } = new Dictionary<HealthCheckStatus, int>()
         {
             { HealthCheckStatus.Healthy, StatusCodes.Status200OK },

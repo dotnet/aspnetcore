@@ -68,7 +68,7 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Adds a new health check with the implementation.
+        /// Adds a new health check with the provided implementation.
         /// </summary>
         /// <param name="builder">The <see cref="IHealthChecksBuilder"/> to add the check to.</param>
         /// <param name="check">An <see cref="IHealthCheck"/> implementation.</param>
@@ -86,6 +86,28 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             builder.Services.AddSingleton<IHealthCheck>(check);
+            return builder;
+        }
+
+        /// <summary>
+        /// Adds a new health check as a transient dependency injected service with the provided type.
+        /// </summary>
+        /// <typeparam name="T">The health check implementation type.</typeparam>
+        /// <param name="builder">The <see cref="IHealthChecksBuilder"/>.</param>
+        /// <returns>The <see cref="IHealthChecksBuilder"/>.</returns>
+        /// <remarks>
+        /// This method will register a transient service of type <see cref="IHealthCheck"/> with the 
+        /// provided implementation type <typeparamref name="T"/>. Using this method to register a health
+        /// check allows you to register a health check that depends on transient and scoped services.
+        /// </remarks>
+        public static IHealthChecksBuilder AddCheck<T>(this IHealthChecksBuilder builder) where T : class, IHealthCheck
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            builder.Services.Add(ServiceDescriptor.Transient(typeof(IHealthCheck), typeof(T)));
             return builder;
         }
     }

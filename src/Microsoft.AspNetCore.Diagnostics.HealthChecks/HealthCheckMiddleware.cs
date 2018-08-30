@@ -16,7 +16,6 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
         private readonly RequestDelegate _next;
         private readonly HealthCheckOptions _healthCheckOptions;
         private readonly IHealthCheckService _healthCheckService;
-        private readonly IHealthCheck[] _checks;
 
         public HealthCheckMiddleware(
             RequestDelegate next,
@@ -41,8 +40,6 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
             _next = next;
             _healthCheckOptions = healthCheckOptions.Value;
             _healthCheckService = healthCheckService;
-
-            _checks = FilterHealthChecks(_healthCheckService.Checks, healthCheckOptions.Value.HealthCheckNames);
         }
 
         /// <summary>
@@ -58,7 +55,7 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
             }
 
             // Get results
-            var result = await _healthCheckService.CheckHealthAsync(_checks, httpContext.RequestAborted);
+            var result = await _healthCheckService.CheckHealthAsync(_healthCheckOptions.Predicate, httpContext.RequestAborted);
 
             // Map status to response code - this is customizable via options. 
             if (!_healthCheckOptions.ResultStatusCodes.TryGetValue(result.Status, out var statusCode))

@@ -15,7 +15,7 @@ namespace HealthChecksSample
         {
             _scenarios = new Dictionary<string, Type>(StringComparer.OrdinalIgnoreCase)
             {
-                { "", typeof(BasicStartup) },
+                { "", typeof(DBHealthStartup) },
                 { "basic", typeof(BasicStartup) },
                 { "writer", typeof(CustomWriterStartup) },
                 { "liveness", typeof(LivenessProbeStartup) },
@@ -48,6 +48,8 @@ namespace HealthChecksSample
                 .UseConfiguration(config)
                 .ConfigureLogging(builder =>
                 {
+                    builder.SetMinimumLevel(LogLevel.Trace);
+                    builder.AddConfiguration(config);
                     builder.AddConsole();
                 })
                 .UseKestrel()

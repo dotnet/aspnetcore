@@ -17,7 +17,6 @@ namespace HealthChecksSample
             // Registers required services for health checks
             services
                 .AddHealthChecks()
-                .AddCheck("identity", () => Task.FromResult(HealthCheckResult.Healthy()))
                 .AddCheck(new SlowDependencyHealthCheck());
         }
 
@@ -53,11 +52,8 @@ namespace HealthChecksSample
             // The liveness check uses an 'identity' health check that always returns healthy
             app.UseHealthChecks("/health/live", new HealthCheckOptions()
             {
-                // Filters the set of health checks run by this middleware
-                HealthCheckNames =
-                {
-                    "identity",
-                },
+                // Exclude all checks, just return a 200.
+                Predicate = (check) => false,
             });
 
             app.Run(async (context) =>

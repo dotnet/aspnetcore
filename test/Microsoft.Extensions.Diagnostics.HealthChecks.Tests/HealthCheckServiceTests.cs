@@ -3,7 +3,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
@@ -13,39 +15,29 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
     public class HealthCheckServiceTests
     {
         [Fact]
-        public void Constructor_BuildsDictionaryOfChecks()
-        {
-            // Arrange
-            var fooCheck = new HealthCheck("Foo", _ => Task.FromResult(HealthCheckResult.Healthy()));
-            var barCheck = new HealthCheck("Bar", _ => Task.FromResult(HealthCheckResult.Healthy()));
-            var bazCheck = new HealthCheck("Baz", _ => Task.FromResult(HealthCheckResult.Healthy()));
-            var checks = new[] { fooCheck, barCheck, bazCheck };
-
-            // Act
-            var service = new HealthCheckService(checks);
-
-            // Assert
-            Assert.Same(fooCheck, service.Checks["Foo"]);
-            Assert.Same(barCheck, service.Checks["Bar"]);
-            Assert.Same(bazCheck, service.Checks["Baz"]);
-            Assert.Equal(3, service.Checks.Count);
-        }
-
-        [Fact]
         public void Constructor_ThrowsUsefulExceptionForDuplicateNames()
         {
             // Arrange
-            var checks = new[]
-            {
-                new HealthCheck("Foo", _ => Task.FromResult(HealthCheckResult.Healthy())),
-                new HealthCheck("Foo", _ => Task.FromResult(HealthCheckResult.Healthy())),
-                new HealthCheck("Bar", _ => Task.FromResult(HealthCheckResult.Healthy())),
-                new HealthCheck("Baz", _ => Task.FromResult(HealthCheckResult.Healthy())),
-                new HealthCheck("Baz", _ => Task.FromResult(HealthCheckResult.Healthy())),
-            };
+            //
+            // Doing this the old fashioned way so we can verify that the exception comes
+            // from the constructor.
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddLogging();
+            serviceCollection.AddOptions();
+            serviceCollection.AddHealthChecks()
+                .AddCheck(new HealthCheck("Foo", _ => Task.FromResult(HealthCheckResult.Healthy())))
+                .AddCheck(new HealthCheck("Foo", _ => Task.FromResult(HealthCheckResult.Healthy())))
+                .AddCheck(new HealthCheck("Bar", _ => Task.FromResult(HealthCheckResult.Healthy())))
+                .AddCheck(new HealthCheck("Baz", _ => Task.FromResult(HealthCheckResult.Healthy())))
+                .AddCheck(new HealthCheck("Baz", _ => Task.FromResult(HealthCheckResult.Healthy())));
+
+            var services = serviceCollection.BuildServiceProvider();
+
+            var scopeFactory = services.GetRequiredService<IServiceScopeFactory>();
+            var logger = services.GetRequiredService<ILogger<HealthCheckService>>();
 
             // Act
-            var exception = Assert.Throws<ArgumentException>(() => new HealthCheckService(checks));
+            var exception = Assert.Throws<ArgumentException>(() => new HealthCheckService(scopeFactory, logger));
 
             // Assert
             Assert.Equal($"Duplicate health checks were registered with the name(s): Foo, Baz{Environment.NewLine}Parameter name: healthChecks", exception.Message);
@@ -67,15 +59,11 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
                 { DataKey, DataValue }
             };
 
-            var healthyCheck = new HealthCheck("HealthyCheck", _ => Task.FromResult(HealthCheckResult.Healthy(HealthyMessage, data)));
-            var degradedCheck = new HealthCheck("DegradedCheck", _ => Task.FromResult(HealthCheckResult.Degraded(DegradedMessage)));
-            var unhealthyCheck = new HealthCheck("UnhealthyCheck", _ => Task.FromResult(HealthCheckResult.Unhealthy(UnhealthyMessage, exception)));
-
-            var service = new HealthCheckService(new[]
+            var service = CreateHealthChecksService(b =>
             {
-                healthyCheck,
-                degradedCheck,
-                unhealthyCheck,
+                b.AddCheck("HealthyCheck", _ => Task.FromResult(HealthCheckResult.Healthy(HealthyMessage, data)));
+                b.AddCheck("DegradedCheck", _ => Task.FromResult(HealthCheckResult.Degraded(DegradedMessage)));
+                b.AddCheck("UnhealthyCheck", _ => Task.FromResult(HealthCheckResult.Unhealthy(UnhealthyMessage, exception)));
             });
 
             // Act
@@ -85,7 +73,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
             Assert.Collection(results.Results,
                 actual =>
                 {
-                    Assert.Equal(healthyCheck.Name, actual.Key);
+                    Assert.Equal("HealthyCheck", actual.Key);
                     Assert.Equal(HealthyMessage, actual.Value.Description);
                     Assert.Equal(HealthCheckStatus.Healthy, actual.Value.Status);
                     Assert.Null(actual.Value.Exception);
@@ -97,7 +85,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
                 },
                 actual =>
                 {
-                    Assert.Equal(degradedCheck.Name, actual.Key);
+                    Assert.Equal("DegradedCheck", actual.Key);
                     Assert.Equal(DegradedMessage, actual.Value.Description);
                     Assert.Equal(HealthCheckStatus.Degraded, actual.Value.Status);
                     Assert.Null(actual.Value.Exception);
@@ -105,7 +93,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
                 },
                 actual =>
                 {
-                    Assert.Equal(unhealthyCheck.Name, actual.Key);
+                    Assert.Equal("UnhealthyCheck", actual.Key);
                     Assert.Equal(UnhealthyMessage, actual.Value.Description);
                     Assert.Equal(HealthCheckStatus.Unhealthy, actual.Value.Status);
                     Assert.Same(exception, actual.Value.Exception);
@@ -114,7 +102,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
         }
 
         [Fact]
-        public async Task CheckAsync_RunsProvidedChecksAndAggregatesResultsAsync()
+        public async Task CheckAsync_RunsFilteredChecksAndAggregatesResultsAsync()
         {
             const string DataKey = "Foo";
             const string DataValue = "Bar";
@@ -129,28 +117,21 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
                 { DataKey, DataValue }
             };
 
-            var healthyCheck = new HealthCheck("HealthyCheck", _ => Task.FromResult(HealthCheckResult.Healthy(HealthyMessage, data)));
-            var degradedCheck = new HealthCheck("DegradedCheck", _ => Task.FromResult(HealthCheckResult.Degraded(DegradedMessage)));
-            var unhealthyCheck = new HealthCheck("UnhealthyCheck", _ => Task.FromResult(HealthCheckResult.Unhealthy(UnhealthyMessage, exception)));
-
-            var service = new HealthCheckService(new[]
+            var service = CreateHealthChecksService(b =>
             {
-                healthyCheck,
-                degradedCheck,
-                unhealthyCheck,
+                b.AddCheck("HealthyCheck", _ => Task.FromResult(HealthCheckResult.Healthy(HealthyMessage, data)));
+                b.AddCheck("DegradedCheck", _ => Task.FromResult(HealthCheckResult.Degraded(DegradedMessage)));
+                b.AddCheck("UnhealthyCheck", _ => Task.FromResult(HealthCheckResult.Unhealthy(UnhealthyMessage, exception)));
             });
 
             // Act
-            var results = await service.CheckHealthAsync(new[]
-            {
-                service.Checks["HealthyCheck"]
-            });
+            var results = await service.CheckHealthAsync(c => c.Name == "HealthyCheck");
 
             // Assert
             Assert.Collection(results.Results,
                 actual =>
                 {
-                    Assert.Equal(healthyCheck.Name, actual.Key);
+                    Assert.Equal("HealthyCheck", actual.Key);
                     Assert.Equal(HealthyMessage, actual.Value.Description);
                     Assert.Equal(HealthCheckStatus.Healthy, actual.Value.Status);
                     Assert.Null(actual.Value.Exception);
@@ -168,11 +149,12 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
             // Arrange
             var thrownException = new InvalidOperationException("Whoops!");
             var faultedException = new InvalidOperationException("Ohnoes!");
-            var service = new HealthCheckService(new[]
+
+            var service = CreateHealthChecksService(b =>
             {
-                new HealthCheck("Throws", ct => throw thrownException),
-                new HealthCheck("Faults", ct => Task.FromException<HealthCheckResult>(faultedException)),
-                new HealthCheck("Succeeds", ct => Task.FromResult(HealthCheckResult.Healthy())),
+                b.AddCheck("Throws", ct => throw thrownException);
+                b.AddCheck("Faults", ct => Task.FromException<HealthCheckResult>(faultedException));
+                b.AddCheck("Succeeds", ct => Task.FromResult(HealthCheckResult.Healthy()));
             });
 
             // Act
@@ -223,8 +205,15 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
                     });
                 return Task.FromResult(HealthCheckResult.Healthy());
             });
+
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
-            var service = new HealthCheckService(new[] { check }, loggerFactory.CreateLogger<HealthCheckService>());
+            var service = CreateHealthChecksService(b =>
+            {
+                // Override the logger factory for testing
+                b.Services.AddSingleton<ILoggerFactory>(loggerFactory);
+
+                b.AddCheck(check);
+            });
 
             // Act
             var results = await service.CheckHealthAsync();
@@ -241,9 +230,9 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
         public async Task CheckHealthAsync_ThrowsIfCheckReturnsUnknownStatusResult()
         {
             // Arrange
-            var service = new HealthCheckService(new[]
+            var service = CreateHealthChecksService(b =>
             {
-                new HealthCheck("Kaboom", ct => Task.FromResult(default(HealthCheckResult))),
+                b.AddCheck("Kaboom", ct => Task.FromResult(default(HealthCheckResult)));
             });
 
             // Act
@@ -251,6 +240,109 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
 
             // Assert
             Assert.Equal("Health check 'Kaboom' returned a result with a status of Unknown", ex.Message);
+        }
+
+        [Fact]
+        public async Task CheckHealthAsync_CheckCanDependOnTransientService()
+        {
+            // Arrange
+            var service = CreateHealthChecksService(b =>
+            {
+                b.Services.AddTransient<AnotherService>();
+
+                b.AddCheck<CheckWithServiceDependency>();
+            });
+
+            // Act
+            var results = await service.CheckHealthAsync();
+
+            // Assert
+            Assert.Collection(
+                results.Results,
+                actual =>
+                {
+                    Assert.Equal("Test", actual.Key);
+                    Assert.Equal(HealthCheckStatus.Healthy, actual.Value.Status);
+                });
+        }
+
+        [Fact]
+        public async Task CheckHealthAsync_CheckCanDependOnScopedService()
+        {
+            // Arrange
+            var service = CreateHealthChecksService(b =>
+            {
+                b.Services.AddScoped<AnotherService>();
+
+                b.AddCheck<CheckWithServiceDependency>();
+            });
+
+            // Act
+            var results = await service.CheckHealthAsync();
+
+            // Assert
+            Assert.Collection(
+                results.Results,
+                actual =>
+                {
+                    Assert.Equal("Test", actual.Key);
+                    Assert.Equal(HealthCheckStatus.Healthy, actual.Value.Status);
+                });
+        }
+
+        [Fact]
+        public async Task CheckHealthAsync_CheckCanDependOnSingletonService()
+        {
+            // Arrange
+            var service = CreateHealthChecksService(b =>
+            {
+                b.Services.AddSingleton<AnotherService>();
+
+                b.AddCheck<CheckWithServiceDependency>();
+            });
+
+            // Act
+            var results = await service.CheckHealthAsync();
+
+            // Assert
+            Assert.Collection(
+                results.Results,
+                actual =>
+                {
+                    Assert.Equal("Test", actual.Key);
+                    Assert.Equal(HealthCheckStatus.Healthy, actual.Value.Status);
+                });
+        }
+
+        private static HealthCheckService CreateHealthChecksService(Action<IHealthChecksBuilder> configure)
+        {
+            var services = new ServiceCollection();
+            services.AddLogging();
+            services.AddOptions();
+
+            var builder = services.AddHealthChecks();
+            if (configure != null)
+            {
+                configure(builder);
+            }
+
+            return (HealthCheckService)services.BuildServiceProvider(validateScopes: true).GetRequiredService<IHealthCheckService>();
+        }
+
+        private class AnotherService { }
+
+        private class CheckWithServiceDependency : IHealthCheck
+        {
+            public CheckWithServiceDependency(AnotherService _)
+            {
+            }
+
+            public string Name => "Test";
+
+            public Task<HealthCheckResult> CheckHealthAsync(CancellationToken cancellationToken = default)
+            {
+                return Task.FromResult(HealthCheckResult.Healthy());
+            }
         }
     }
 }

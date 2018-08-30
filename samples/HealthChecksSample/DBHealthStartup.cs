@@ -21,7 +21,6 @@ namespace HealthChecksSample
         {
             // Registers required services for health checks
             services.AddHealthChecks()
-
                 // Add a health check for a SQL database
                 .AddCheck(new SqlConnectionHealthCheck("MyDatabase", Configuration["ConnectionStrings:DefaultConnection"]));
         }
