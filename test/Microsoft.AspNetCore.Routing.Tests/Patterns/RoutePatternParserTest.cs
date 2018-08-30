@@ -665,7 +665,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                         return false;
                     }
 
-                    for (int i = 0; i < x.PathSegments.Count; i++)
+                    for (var i = 0; i < x.PathSegments.Count; i++)
                     {
                         if (x.PathSegments[i].Parts.Count != y.PathSegments[i].Parts.Count)
                         {
@@ -686,7 +686,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                         return false;
                     }
 
-                    for (int i = 0; i < x.Parameters.Count; i++)
+                    for (var i = 0; i < x.Parameters.Count; i++)
                     {
                         if (!Equals(x.Parameters[i], y.Parameters[i]))
                         {

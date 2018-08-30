@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var segments = _segments;
 
             int destination = 0;
-            for (int i = 0; i < strings.Length; i++)
+            for (var i = 0; i < strings.Length; i++)
             {
                 var @string = strings[i];
                 var segment = segments[i];
@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var segments = _segments;
 
             var destination = 0;
-            for (int i = 0; i < strings.Length; i++)
+            for (var i = 0; i < strings.Length; i++)
             {
                 destination = _implementation.GetDestination(strings[i], segments[i]);
             }
@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var segments = _segments;
 
             var destination = 0;
-            for (int i = 0; i < strings.Length; i++)
+            for (var i = 0; i < strings.Length; i++)
             {
                 destination = _prototype.GetDestination(strings[i], segments[i]);
             }
