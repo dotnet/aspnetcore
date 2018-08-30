@@ -22,7 +22,6 @@
     <MicrosoftAspNetCoreHttpPackageVersion>3.0.0-alpha1-10352</MicrosoftAspNetCoreHttpPackageVersion>
     <MicrosoftAspNetCoreHttpsPolicyPackageVersion>3.0.0-alpha1-10352</MicrosoftAspNetCoreHttpsPolicyPackageVersion>
     <MicrosoftAspNetCoreMvcPackageVersion>3.0.0-alpha1-10352</MicrosoftAspNetCoreMvcPackageVersion>
-    <MicrosoftAspNetCoreMvcRazorViewCompilationPackageVersion>3.0.0-alpha1-10352</MicrosoftAspNetCoreMvcRazorViewCompilationPackageVersion>
     <MicrosoftAspNetCoreMvcTestingPackageVersion>3.0.0-alpha1-10352</MicrosoftAspNetCoreMvcTestingPackageVersion>
     <MicrosoftAspNetCoreRazorDesignPackageVersion>3.0.0-alpha1-10352</MicrosoftAspNetCoreRazorDesignPackageVersion>
     <MicrosoftAspNetCoreRewritePackageVersion>3.0.0-alpha1-10352</MicrosoftAspNetCoreRewritePackageVersion>
