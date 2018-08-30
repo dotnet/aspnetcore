@@ -22,7 +22,6 @@
     <MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion>3.0.0-alpha1-10352</MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion>
     <MicrosoftAspNetCoreIdentityPackageVersion>3.0.0-alpha1-10352</MicrosoftAspNetCoreIdentityPackageVersion>
     <MicrosoftAspNetCoreMvcPackageVersion>3.0.0-alpha1-10352</MicrosoftAspNetCoreMvcPackageVersion>
-    <MicrosoftAspNetCoreMvcRazorViewCompilationPackageVersion>3.0.0-alpha1-10352</MicrosoftAspNetCoreMvcRazorViewCompilationPackageVersion>
     <MicrosoftAspNetCoreMvcTestingPackageVersion>3.0.0-alpha1-10352</MicrosoftAspNetCoreMvcTestingPackageVersion>
     <MicrosoftAspNetCorePackageVersion>3.0.0-alpha1-10352</MicrosoftAspNetCorePackageVersion>
     <MicrosoftAspNetCoreRewritePackageVersion>3.0.0-alpha1-10352</MicrosoftAspNetCoreRewritePackageVersion>
