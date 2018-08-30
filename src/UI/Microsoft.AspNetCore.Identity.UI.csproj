@@ -65,6 +65,7 @@
     <MSbuild Projects="$(MSBuildThisFile)"
              Targets="BuildForUI"
              Properties="
+             BuildProjectReferences=false;
              RazorCompileOnBuild=true;
              UIFrameworkVersion=%(UIFrameworkVersionMoniker.Identity);
              IntermediateOutputPath=$(IntermediateOutputPath)%(UIFrameworkVersionMoniker.Identity)\" />
