@@ -14,6 +14,7 @@ Microsoft.Extensions.Diagnostics.HealthChecks.IHealthChecksBuilder
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="$(MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="$(MicrosoftExtensionsLoggingAbstractionsPackageVersion)" />
+    <PackageReference Include="Microsoft.Extensions.ValueStopwatch.Sources" Version="$(MicrosoftExtensionsValueStopwatchSourcesPackageVersion)" PrivateAssets="All" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions\Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions.csproj" />

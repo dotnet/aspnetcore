@@ -31,6 +31,7 @@
     <MicrosoftExtensionsRazorViewsSourcesPackageVersion>2.2.0-preview1-34967</MicrosoftExtensionsRazorViewsSourcesPackageVersion>
     <MicrosoftExtensionsStackTraceSourcesPackageVersion>2.2.0-preview1-34967</MicrosoftExtensionsStackTraceSourcesPackageVersion>
     <MicrosoftExtensionsTypeNameHelperSourcesPackageVersion>2.2.0-preview1-34967</MicrosoftExtensionsTypeNameHelperSourcesPackageVersion>
+    <MicrosoftExtensionsValueStopwatchSourcesPackageVersion>2.2.0-preview1-34967</MicrosoftExtensionsValueStopwatchSourcesPackageVersion>
     <MicrosoftNETCoreApp20PackageVersion>2.0.9</MicrosoftNETCoreApp20PackageVersion>
     <MicrosoftNETCoreApp21PackageVersion>2.1.2</MicrosoftNETCoreApp21PackageVersion>
     <MicrosoftNETCoreApp22PackageVersion>2.2.0-preview1-26618-02</MicrosoftNETCoreApp22PackageVersion>
