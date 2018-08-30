@@ -1,25 +1,19 @@
-phases:
-- phase: Windows
-  queue:
-    name: DotNetCore-Windows
-    timeoutInMinutes: 120
-  variables:
-    CI: true
-  steps:
-  - task: NodeTool@0
-    displayName: Install Node 10.x
-    inputs:
-      versionSpec: 10.x
-  - powershell: <
-      test/Cli.FunctionalTests/run-tests.ps1
-        -AssetRootUrl $(PB_AssetRootUrl)
-        -RestoreSources $(PB_RestoreSource)
-        -PackageVersionsFile $(PB_PackageVersionPropsUrl)
-    condition: ne(variables['PB_SKipTests'], 'true')
-    displayName: Run e2e tests
-  - task: PublishTestResults@2
-    displayName: Publish test results
-    condition: always()
-    inputs:
-      testRunner: vstest
-      testResultsFiles: 'artifacts/logs/**/*.trx'
+trigger: none
+queue:
+  name: DotNetCore-Windows
+  timeoutInMinutes: 120
+steps:
+- task: NodeTool@0
+  displayName: Install Node 10.x
+  inputs:
+    versionSpec: 10.x
+- powershell: |
+    test/Cli.FunctionalTests/run-tests.ps1 -ci -ProdConManifestUrl $env:ProdConManifestUrl
+  condition: ne(variables['PB_SkipTests'], 'true')
+  displayName: Run E2E tests
+- task: PublishTestResults@2
+  displayName: Publish test results
+  condition: always()
+  inputs:
+    testRunner: vstest
+    testResultsFiles: 'artifacts/logs/**/*.trx'

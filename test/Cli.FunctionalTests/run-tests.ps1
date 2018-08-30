@@ -2,23 +2,32 @@
 .SYNOPSIS
 This script runs the tests in this project on complete build of the .NET Core CLI
 
+.PARAMETER ci
+This is a CI build
+
+.PARAMETER AccessTokenSuffix
+The access token for Azure blobs
+
 .PARAMETER AssetRootUrl
-The blob feed for the .NET Core CLI
+The blob feed for the .NET Core CLI. If not specified, it will determined automatically if possible.
 
 .PARAMETER RestoreSources
-A list of additional NuGet feeds
+A list of additional NuGet feeds.  If not specified, it will determined automatically if possible.
 
-.PARAMETER SdkVersion
-The version of the .NET Core CLI to test. If not specified, the version will be determined automatically if possible.
+.PARAMETER ProdConManifestUrl
+The prodcon build.xml file
 
-.PARAMETER PackageVersionsFile
-A URL or filepath to a list of package versions
+.PARAMETER ProcConChannel
+The prodcon channel to use if a build.xml file isn't set.
 #>
+
 param(
-    $AssetRootUrl = 'https://dotnetcli.blob.core.windows.net/dotnet',
-    $RestoreSources = 'https://dotnet.myget.org/F/dotnet-core/api/v3/index.json',
-    $SdkVersion = $null,
-    $PackageVersionsFile = $null
+    [switch]$ci,
+    $AssetRootUrl = $env:PB_AccessRootUrl,
+    $AccessTokenSuffix = $env:PB_AccessTokenSuffix,
+    $RestoreSources = $env:PB_RestoreSources,
+    $ProdConManifestUrl,
+    $ProcConChannel = 'release/2.2'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -27,41 +36,53 @@ Set-StrictMode -Version 1
 $repoRoot = Resolve-Path "$PSScriptRoot/../../"
 Import-Module "$repoRoot/scripts/common.psm1" -Scope Local -Force
 
-$AssetRootUrl = $AssetRootUrl.TrimEnd('/')
-
 Push-Location $PSScriptRoot
 try {
     New-Item -Type Directory "$PSScriptRoot/obj/" -ErrorAction Ignore | Out-Null
+    $sdkVersion = ''
 
-    $pkgPropsFile = $PackageVersionsFile
-    if ($PackageVersionsFile -like 'http*') {
-        $pkgPropsFile = "$PSScriptRoot/obj/packageversions.props"
-        Remove-Item $pkgPropsFile -ErrorAction Ignore
-        Invoke-WebRequest -UseBasicParsing $PackageVersionsFile -OutFile $pkgPropsFile
+    if (-not $ci -or $ProdConManifestUrl) {
+
+        if (-not $ProdConManifestUrl) {
+            Write-Host -ForegroundColor Magenta "Running tests for the latest ProdCon build"
+            $ProdConManifestUrl = "https://raw.githubusercontent.com/dotnet/versions/master/build-info/dotnet/product/cli/$ProcConChannel/build.xml"
+        }
+
+        [xml] $prodConManifest = Invoke-RestMethod $ProdConManifestUrl
+
+        $RestoreSources = $prodConManifest.OrchestratedBuild.Endpoint `
+            | ? { $_.Type -eq 'BlobFeed' } `
+            | select -first 1 -ExpandProperty Url
+
+        $AssetRootUrl = $RestoreSources -replace '/index.json', '/assets'
+
+        $sdkVersion = $prodConManifest.OrchestratedBuild.Build `
+            | ? { $_.Name -eq 'cli' } `
+            | select -first 1 -ExpandProperty ProductVersion
+    }
+    else {
+        if (-not $AssetRootUrl) {
+            Write-Error "Missing required parameter: AssetRootUrl"
+        }
+        $AssetRootUrl = $AssetRootUrl.TrimEnd('/')
+        [xml] $cli = Invoke-RestMethod "$AssetRootUrl/orchestration-metadata/manifests/cli.xml${AccessTokenSuffix}"
+        $sdkVersion = $cli.Build.ProductVersion
     }
 
-    if (-not $SdkVersion) {
-        $cliManifestUrl = "$AssetRootUrl/orchestration-metadata/manifests/cli.xml"
-        Write-Host "No SDK version was specified. Attempting to determine the version from $cliManifestUrl"
-        $cliXml = "$PSScriptRoot/obj/cli.xml"
-        Remove-Item $cliXml -ErrorAction Ignore
-        Invoke-WebRequest -UseBasicParsing $cliManifestUrl -OutFile $cliXml
-        [xml] $cli = Get-Content $cliXml
-        $SdkVersion = $cli.Build.ProductVersion
-    }
+    Write-Host "sdkVersion:      $sdkVersion"
+    Write-Host "AssetRootUrl:    $AssetRootUrl"
+    Write-Host "RestoreSources:  $RestoreSources"
 
-    Write-Host "SDK: $SdkVersion"
-
-    @{ sdk = @{ version = $SdkVersion } } | ConvertTo-Json | Set-Content "$PSScriptRoot/global.json"
+    @{ sdk = @{ version = $sdkVersion } } | ConvertTo-Json | Set-Content "$PSScriptRoot/global.json"
 
     $dotnetRoot = "$repoRoot/.dotnet"
     $dotnet = "$dotnetRoot/dotnet.exe"
 
-    if (-not (Test-Path "$dotnetRoot/sdk/$SdkVersion/dotnet.dll")) {
-        Remote-Item -Recurse -Force $dotnetRoot -ErrorAction Ignore | Out-Null
-        $cliUrl = "$AssetRootUrl/Sdk/$SdkVersion/dotnet-sdk-$SdkVersion-win-x64.zip"
+    if (-not (Test-Path "$dotnetRoot/sdk/$sdkVersion/dotnet.dll")) {
+        Remove-Item -Recurse -Force $dotnetRoot -ErrorAction Ignore | Out-Null
+        $cliUrl = "$AssetRootUrl/Sdk/$sdkVersion/dotnet-sdk-$sdkVersion-win-x64.zip"
         Write-Host "Downloading $cliUrl"
-        Invoke-WebRequest -UseBasicParsing $cliUrl -OutFile "$PSScriptRoot/obj/dotnet.zip"
+        Invoke-WebRequest -UseBasicParsing "${cliUrl}${AccessTokenSuffix}" -OutFile "$PSScriptRoot/obj/dotnet.zip"
         Expand-Archive "$PSScriptRoot/obj/dotnet.zip" -DestinationPath $dotnetRoot
     }
 
@@ -70,14 +91,13 @@ try {
     $env:DOTNET_MULTILEVEL_LOOKUP = 0
     $env:DOTNET_SKIP_FIRST_TIME_EXPERIENCE = 0
     $env:MSBuildSdksPath = ''
-    $env:PATH="$dotnetRoot;$env:PATH"
+    $env:PATH = "$dotnetRoot;$env:PATH"
 
     Invoke-Block { & $dotnet test `
-        --logger "console;verbosity=detailed" `
-        --logger "trx;LogFile=$repoRoot/artifacts/logs/e2etests.trx" `
-        "-p:DotNetRestoreSources=$RestoreSources" `
-        "-p:DotNetPackageVersionPropsPath=$pkgPropsFile" `
-        "-bl:$repoRoot/artifacts/logs/e2etests.binlog" }
+            --logger "console;verbosity=detailed" `
+            --logger "trx;LogFileName=$repoRoot/artifacts/logs/e2etests.trx" `
+            "-p:DotNetRestoreSources=$RestoreSources" `
+            "-bl:$repoRoot/artifacts/logs/e2etests.binlog" }
 }
 finally {
     Pop-Location
