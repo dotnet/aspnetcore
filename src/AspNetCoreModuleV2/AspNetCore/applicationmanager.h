@@ -8,8 +8,6 @@
 #include "exceptions.h"
 #include <unordered_map>
 
-#define DEFAULT_HASH_BUCKETS 17
-
 //
 // This class will manage the lifecycle of all Asp.Net Core applciation
 // It should be global singleton.

@@ -17,6 +17,8 @@
 #define CS_ASPNETCORE_PROCESS_EXE_PATH                   L"processPath"
 #define CS_ASPNETCORE_PROCESS_ARGUMENTS                  L"arguments"
 #define CS_ASPNETCORE_PROCESS_ARGUMENTS_DEFAULT          L""
+#define CS_ASPNETCORE_PROCESS_STARTUP_TIME_LIMIT         L"startupTimeLimit"
+#define CS_ASPNETCORE_PROCESS_SHUTDOWN_TIME_LIMIT        L"shutdownTimeLimit"
 #define CS_ASPNETCORE_HOSTING_MODEL_OUTOFPROCESS         L"outofprocess"
 #define CS_ASPNETCORE_HOSTING_MODEL_INPROCESS            L"inprocess"
 #define CS_ASPNETCORE_HOSTING_MODEL                      L"hostingModel"
@@ -31,10 +33,12 @@ public:
     virtual ~ConfigurationSection() = default;
     virtual std::optional<std::wstring> GetString(const std::wstring& name) const = 0;
     virtual std::optional<bool> GetBool(const std::wstring& name) const = 0;
+    virtual std::optional<DWORD> GetLong(const std::wstring& name) const = 0;
     virtual std::optional<DWORD> GetTimespan(const std::wstring& name) const = 0;
 
     std::wstring GetRequiredString(const std::wstring& name) const;
     bool GetRequiredBool(const std::wstring& name)  const;
+    DWORD GetRequiredLong(const std::wstring& name)  const;
     DWORD GetRequiredTimespan(const std::wstring& name)  const;
 
     virtual std::vector<std::pair<std::wstring, std::wstring>> GetKeyValuePairs(const std::wstring& name) const = 0;

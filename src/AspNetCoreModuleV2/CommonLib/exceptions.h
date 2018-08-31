@@ -3,10 +3,12 @@
 
 #pragma once
 
+#include <exception>
 #include <system_error>
 
 #include "debugutil.h"
 #include "StringHelpers.h"
+#include "InvalidOperationException.h"
 
 #define LOCATION_INFO_ENABLED TRUE
 
@@ -41,10 +43,10 @@
 #define FINISHED_LAST_ERROR_IF(condition)                       do { if (condition) { hr = LogLastError(LOCATION_INFO); goto Finished; }} while (0, 0)
 #define FINISHED_LAST_ERROR_IF_NULL(ptr)                        do { if ((ptr) == nullptr) { hr = LogLastError(LOCATION_INFO); goto Finished; }} while (0, 0)
 
-#define THROW_LAST_ERROR()                                      do { ThrowResultException(LogLastError(LOCATION_INFO)); } while (0, 0)
+#define THROW_LAST_ERROR()                                      do { ThrowResultException(LOCATION_INFO, LogLastError(LOCATION_INFO)); } while (0, 0)
 #define THROW_IF_FAILED(hr)                                     do { HRESULT __hrRet = hr; if (FAILED(__hrRet)) { ThrowResultException(LOCATION_INFO, __hrRet); }} while (0, 0)
-#define THROW_LAST_ERROR_IF(condition)                          do { if (condition) { ThrowResultException(LogLastError(LOCATION_INFO)); }} while (0, 0)
-#define THROW_LAST_ERROR_IF_NULL(ptr)                           do { if ((ptr) == nullptr) { ThrowResultException(LogLastError(LOCATION_INFO)); }} while (0, 0)
+#define THROW_LAST_ERROR_IF(condition)                          do { if (condition) { ThrowResultException(LOCATION_INFO, LogLastError(LOCATION_INFO)); }} while (0, 0)
+#define THROW_LAST_ERROR_IF_NULL(ptr)                           do { if ((ptr) == nullptr) { ThrowResultException(LOCATION_INFO, LogLastError(LOCATION_INFO)); }} while (0, 0)
 
 #define THROW_IF_NULL_ALLOC(ptr)                                Throw_IfNullAlloc(ptr)
 
@@ -151,4 +153,8 @@ template <typename PointerT> auto Throw_IfNullAlloc(PointerT pointer)
         throw std::bad_alloc();
     }
     return pointer;
+}
+__declspec(noinline) inline std::wstring GetUnexpectedExceptionMessage(std::runtime_error& ex)
+{
+    return format(L"Unexpected exception: %S", ex.what());
 }

@@ -48,10 +48,10 @@ public:
 
     static
     HRESULT Create(
-         _In_  PCWSTR pcwzExeLocation,
-         _In_  PCWSTR pcwzProcessPath,
-         _In_  PCWSTR pcwzApplicationPhysicalPath,
-         _In_  PCWSTR pcwzArguments,
+         _In_  const std::wstring& pcwzExeLocation,
+         _In_  const std::wstring& pcwzProcessPath,
+         _In_  const std::wstring& pcwzApplicationPhysicalPath,
+         _In_  const std::wstring& pcwzArguments,
          _Out_ std::unique_ptr<HOSTFXR_OPTIONS>& ppWrapper);
 
 private:

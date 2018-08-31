@@ -5,6 +5,7 @@ using System;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
+using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
@@ -23,19 +24,14 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [ConditionalTheory]
         [InlineData("CheckLogFile")]
         [InlineData("CheckErrLogFile")]
-        public async Task CheckStdoutWithRandomNumber(string path)
+        public async Task CheckStdoutWithRandomNumber(string mode)
         {
-            // Forcing publish for now to have parity between IIS and IISExpress
-            // Reason is because by default for IISExpress, we expect there to not be a web.config file.
-            // However, for IIS, we need a web.config file because the default on generated on publish
-            // doesn't include V2. We can remove the publish flag once IIS supports non-publish running
             var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.StartupExceptionWebsite, publish: true);
 
             var randomNumberString = new Random(Guid.NewGuid().GetHashCode()).Next(10000000).ToString();
-            deploymentParameters.WebConfigBasedEnvironmentVariables["ASPNETCORE_INPROCESS_STARTUP_VALUE"] = path;
-            deploymentParameters.WebConfigBasedEnvironmentVariables["ASPNETCORE_INPROCESS_RANDOM_VALUE"] = randomNumberString;
+            deploymentParameters.TransformArguments((a, _) => $"{a} {mode} {randomNumberString}");
 
-            await AssertFailsToStart(path, deploymentParameters);
+            await AssertFailsToStart(deploymentParameters);
 
             Assert.Contains(TestSink.Writes, context => context.Message.Contains($"Random number: {randomNumberString}"));
         }
@@ -45,12 +41,12 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [InlineData("CheckLargeStdOutWrites")]
         [InlineData("CheckOversizedStdErrWrites")]
         [InlineData("CheckOversizedStdOutWrites")]
-        public async Task CheckStdoutWithLargeWrites(string path)
+        public async Task CheckStdoutWithLargeWrites(string mode)
         {
             var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.StartupExceptionWebsite, publish: true);
-            deploymentParameters.WebConfigBasedEnvironmentVariables["ASPNETCORE_INPROCESS_STARTUP_VALUE"] = path;
+            deploymentParameters.TransformArguments((a, _) => $"{a} {mode}");
 
-            await AssertFailsToStart(path, deploymentParameters);
+            await AssertFailsToStart(deploymentParameters);
 
             Assert.Contains(TestSink.Writes, context => context.Message.Contains(new string('a', 4096)));
         }
@@ -58,20 +54,19 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [ConditionalFact]
         public async Task CheckValidConsoleFunctions()
         {
-            var path = "CheckConsoleFunctions";
             var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.StartupExceptionWebsite, publish: true);
-            deploymentParameters.WebConfigBasedEnvironmentVariables["ASPNETCORE_INPROCESS_STARTUP_VALUE"] = path;
+            deploymentParameters.TransformArguments((a, _) => $"{a} CheckConsoleFunctions");
 
-            await AssertFailsToStart(path, deploymentParameters);
+            await AssertFailsToStart(deploymentParameters);
 
             Assert.Contains(TestSink.Writes, context => context.Message.Contains("Is Console redirection: True"));
         }
 
-        private async Task AssertFailsToStart(string path, IntegrationTesting.IIS.IISDeploymentParameters deploymentParameters)
+        private async Task AssertFailsToStart(IntegrationTesting.IIS.IISDeploymentParameters deploymentParameters)
         {
             var deploymentResult = await DeployAsync(deploymentParameters);
 
-            var response = await deploymentResult.HttpClient.GetAsync(path);
+            var response = await deploymentResult.HttpClient.GetAsync("/");
 
             Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
 
@@ -92,5 +87,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             var responseText = await response.Content.ReadAsStringAsync();
             Assert.Contains("500.30 - ANCM In-Process Start Failure", responseText);
         }
+
     }
 }

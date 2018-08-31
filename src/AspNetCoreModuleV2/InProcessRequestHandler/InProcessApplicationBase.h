@@ -3,7 +3,6 @@
 
 #pragma once
 
-#include "application.h"
 #include "AppOfflineTrackingApplication.h"
 
 typedef INT(*hostfxr_main_fn) (CONST DWORD argc, CONST PCWSTR argv[]); // TODO these may need to be BSTRs
@@ -23,8 +22,5 @@ public:
 protected:
     BOOL m_fRecycleCalled;
     IHttpServer& m_pHttpServer;
-    // Allows to override call to hostfxr_main with custome callback
-    // used in testing
-    static hostfxr_main_fn          s_fMainCallback;
 };
 

@@ -56,10 +56,10 @@ HandlerResolver::LoadRequestHandlerAssembly(IHttpApplication &pApplication, Shim
             std::unique_ptr<IOutputManager> outputManager;
 
             RETURN_IF_FAILED(HOSTFXR_OPTIONS::Create(
-                NULL,
-                pConfiguration.QueryProcessPath().c_str(),
+                L"",
+                pConfiguration.QueryProcessPath(),
                 pApplication.GetApplicationPhysicalPath(),
-                pConfiguration.QueryArguments().c_str(),
+                pConfiguration.QueryArguments(),
                 options));
 
             location = options->GetDotnetExeLocation();

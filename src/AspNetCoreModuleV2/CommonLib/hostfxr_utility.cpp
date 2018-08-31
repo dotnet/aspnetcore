@@ -41,7 +41,7 @@ HOSTFXR_UTILITY::GetHostFxrParameters(
     }
     else if (!ends_with(expandedProcessPath, L".exe", true))
     {
-        throw StartupParametersResolutionException(format(L"Process path '%s' doesn't have '.exe' extension.", expandedProcessPath.c_str()));
+        throw InvalidOperationException(format(L"Process path '%s' doesn't have '.exe' extension.", expandedProcessPath.c_str()));
     }
 
     // Check if the absolute path is to dotnet or not.
@@ -51,7 +51,7 @@ HOSTFXR_UTILITY::GetHostFxrParameters(
 
         if (applicationArguments.empty())
         {
-            throw StartupParametersResolutionException(L"Application arguments are empty.");
+            throw InvalidOperationException(L"Application arguments are empty.");
         }
 
         if (dotnetExePath.empty())
@@ -92,7 +92,7 @@ HOSTFXR_UTILITY::GetHostFxrParameters(
             LOG_INFOF(L"Checking application.dll at '%ls'", applicationDllPath.c_str());
             if (!is_regular_file(applicationDllPath))
             {
-                throw StartupParametersResolutionException(format(L"Application .dll was not found at %s", applicationDllPath.c_str()));
+                throw InvalidOperationException(format(L"Application .dll was not found at %s", applicationDllPath.c_str()));
             }
 
             hostFxrDllPath = executablePath.parent_path() / "hostfxr.dll";
@@ -131,7 +131,7 @@ HOSTFXR_UTILITY::GetHostFxrParameters(
             // If the processPath file does not exist and it doesn't include dotnet.exe or dotnet
             // then it is an invalid argument.
             //
-            throw StartupParametersResolutionException(format(L"Executable was not found at '%s'", executablePath.c_str()));
+            throw InvalidOperationException(format(L"Executable was not found at '%s'", executablePath.c_str()));
         }
     }
 }
@@ -185,7 +185,7 @@ HOSTFXR_UTILITY::AppendArguments(
     auto pwzArgs = std::unique_ptr<LPWSTR[], LocalFreeDeleter>(CommandLineToArgvW(applicationArguments.c_str(), &argc));
     if (!pwzArgs)
     {
-        throw StartupParametersResolutionException(format(L"Unable parse command line arguments '%s'", applicationArguments.c_str()));
+        throw InvalidOperationException(format(L"Unable parse command line arguments '%s'", applicationArguments.c_str()));
     }
 
     for (int intArgsProcessed = 0; intArgsProcessed < argc; intArgsProcessed++)
@@ -246,7 +246,7 @@ HOSTFXR_UTILITY::GetAbsolutePathToDotnet(
     {
         LOG_INFOF(L"Absolute path to dotnet.exe was not found at '%ls'", requestedPath.c_str());
 
-        throw StartupParametersResolutionException(format(L"Could not find dotnet.exe at '%s'", processPath.c_str()));
+        throw InvalidOperationException(format(L"Could not find dotnet.exe at '%s'", processPath.c_str()));
     }
 
     const auto dotnetViaWhere = InvokeWhereToFindDotnet();
@@ -266,7 +266,7 @@ HOSTFXR_UTILITY::GetAbsolutePathToDotnet(
     }
 
     LOG_INFOF(L"dotnet.exe not found");
-    throw StartupParametersResolutionException(format(
+    throw InvalidOperationException(format(
         L"Could not find dotnet.exe at '%s' or using the system PATH environment variable."
         " Check that a valid path to dotnet is on the PATH and the bitness of dotnet matches the bitness of the IIS worker process.",
         processPath.c_str()));
@@ -284,14 +284,14 @@ HOSTFXR_UTILITY::GetAbsolutePathToHostFxr(
 
     if (!is_directory(hostFxrBase))
     {
-        throw StartupParametersResolutionException(format(L"Unable to find hostfxr directory at %s", hostFxrBase.c_str()));
+        throw InvalidOperationException(format(L"Unable to find hostfxr directory at %s", hostFxrBase.c_str()));
     }
 
     FindDotNetFolders(hostFxrBase, versionFolders);
 
     if (versionFolders.empty())
     {
-        throw StartupParametersResolutionException(format(L"Hostfxr directory '%s' doesn't contain any version subdirectories", hostFxrBase.c_str()));
+        throw InvalidOperationException(format(L"Hostfxr directory '%s' doesn't contain any version subdirectories", hostFxrBase.c_str()));
     }
 
     const auto highestVersion = FindHighestDotNetVersion(versionFolders);
@@ -299,7 +299,7 @@ HOSTFXR_UTILITY::GetAbsolutePathToHostFxr(
 
     if (!is_regular_file(hostFxrPath))
     {
-        throw StartupParametersResolutionException(format(L"hostfxr.dll not found at '%s'", hostFxrPath.c_str()));
+        throw InvalidOperationException(format(L"hostfxr.dll not found at '%s'", hostFxrPath.c_str()));
     }
 
     LOG_INFOF(L"hostfxr.dll located at '%ls'", hostFxrPath.c_str());

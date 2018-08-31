@@ -40,7 +40,7 @@ namespace InprocessTests
 
         IN_PROCESS_APPLICATION *app = new IN_PROCESS_APPLICATION(server, application, std::move(requestHandlerConfig), parameters.data(), 1);
 
-        ASSERT_STREQ(app->QueryExeLocation(), L"hello");
+        ASSERT_STREQ(app->QueryExeLocation().c_str(), L"hello");
     }
 
     TEST(InProcessTest, GeneratesVirtualPath)

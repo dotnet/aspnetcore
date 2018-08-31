@@ -51,7 +51,7 @@ namespace IIS.FunctionalTests.Inprocess
 
             StopServer();
 
-            EventLogHelpers.VerifyEventLogEvent(deploymentResult, TestSink,
+            EventLogHelpers.VerifyEventLogEvent(deploymentResult,
                 "The specified framework 'Microsoft.NETCore.App', version '2.9.9' was not found.");
         }
 
@@ -75,7 +75,7 @@ namespace IIS.FunctionalTests.Inprocess
 
             var contents = File.ReadAllText(Helpers.GetExpectedLogName(deploymentResult, _logFolderPath));
             var expectedString = "The specified framework 'Microsoft.NETCore.App', version '2.9.9' was not found.";
-            EventLogHelpers.VerifyEventLogEvent(deploymentResult, TestSink, expectedString);
+            EventLogHelpers.VerifyEventLogEvent(deploymentResult, expectedString);
             Assert.Contains(expectedString, contents);
         }
 
@@ -99,7 +99,7 @@ namespace IIS.FunctionalTests.Inprocess
 
             var fileInDirectory = Directory.GetFiles(_logFolderPath).Single();
             var contents = File.ReadAllText(fileInDirectory);
-            EventLogHelpers.VerifyEventLogEvent(deploymentResult, TestSink, "Invoked hostfxr");
+            EventLogHelpers.VerifyEventLogEvent(deploymentResult, "Invoked hostfxr");
             Assert.Contains("Invoked hostfxr", contents);
         }
 
@@ -124,7 +124,7 @@ namespace IIS.FunctionalTests.Inprocess
 
             StopServer();
 
-            EventLogHelpers.VerifyEventLogEvent(deploymentResult, TestSink, "Invoked hostfxr");
+            EventLogHelpers.VerifyEventLogEvent(deploymentResult, "Invoked hostfxr");
         }
 
         [ConditionalTheory]
@@ -153,7 +153,7 @@ namespace IIS.FunctionalTests.Inprocess
             var fileInDirectory = Directory.GetFiles(_logFolderPath).First();
             var contents = File.ReadAllText(fileInDirectory);
 
-            EventLogHelpers.VerifyEventLogEvent(deploymentResult, TestSink, "Invoked hostfxr");
+            EventLogHelpers.VerifyEventLogEvent(deploymentResult, "Invoked hostfxr");
             Assert.Contains("Invoked hostfxr", contents);
         }
 

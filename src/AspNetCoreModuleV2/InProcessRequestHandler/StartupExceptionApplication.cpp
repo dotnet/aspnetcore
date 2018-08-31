@@ -5,6 +5,6 @@
 
 HRESULT StartupExceptionApplication::CreateHandler(IHttpContext *pHttpContext, IREQUEST_HANDLER ** pRequestHandler)
 {
-    *pRequestHandler = new StartupExceptionHandler(pHttpContext, m_disableLogs, this);
+    *pRequestHandler = new StartupExceptionHandler(pHttpContext, m_disableLogs);
     return S_OK;
 }

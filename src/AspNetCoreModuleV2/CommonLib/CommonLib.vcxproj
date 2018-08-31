@@ -195,7 +195,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="application.h" />
-    <ClInclude Include="ConfigurationLoadException.h" />
     <ClInclude Include="ConfigurationSection.h" />
     <ClInclude Include="ConfigurationSource.h" />
     <ClInclude Include="config_utility.h" />
@@ -211,9 +210,11 @@
     <ClInclude Include="hostfxr_utility.h" />
     <ClInclude Include="iapplication.h" />
     <ClInclude Include="debugutil.h" />
+    <ClInclude Include="InvalidOperationException.h" />
     <ClInclude Include="IOutputManager.h" />
     <ClInclude Include="irequesthandler.h" />
     <ClInclude Include="LoggingHelpers.h" />
+    <ClInclude Include="ModuleHelpers.h" />
     <ClInclude Include="NonCopyable.h" />
     <ClInclude Include="NullOutputManager.h" />
     <ClInclude Include="PipeOutputManager.h" />

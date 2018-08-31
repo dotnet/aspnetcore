@@ -110,39 +110,25 @@ CreateApplication(
             return S_OK;
         }
 
-        const WebConfigConfigurationSource configurationSource(pServer->GetAdminManager(), *pHttpApplication);
-        auto pConfig = std::make_unique<InProcessOptions>(configurationSource);
-
-        BOOL disableStartupPage = pConfig->QueryDisableStartUpErrorPage();
-
-        auto pApplication = std::make_unique<IN_PROCESS_APPLICATION>(*pServer, *pHttpApplication, std::move(pConfig), pParameters, nParameters);
-
         // never create two inprocess applications in one process
         g_fInProcessApplicationCreated = true;
-        if (FAILED_LOG(pApplication->LoadManagedApplication()))
+
+        std::unique_ptr<IN_PROCESS_APPLICATION, IAPPLICATION_DELETER> inProcessApplication;
+        if (!FAILED_LOG(IN_PROCESS_APPLICATION::Start(*pServer, *pHttpApplication, pParameters, nParameters, inProcessApplication)))
         {
+            *ppApplication = inProcessApplication.release();
+        }
+        else
+        {
+            std::unique_ptr<InProcessOptions> options;
+            THROW_IF_FAILED(InProcessOptions::Create(*pServer, *pHttpApplication, options));
             // Set the currently running application to a fake application that returns startup exceptions.
-            auto pErrorApplication = std::make_unique<StartupExceptionApplication>(*pServer, *pHttpApplication, disableStartupPage);
+            auto pErrorApplication = std::make_unique<StartupExceptionApplication>(*pServer, *pHttpApplication, options->QueryDisableStartUpErrorPage());
 
             RETURN_IF_FAILED(pErrorApplication->StartMonitoringAppOffline());
             *ppApplication = pErrorApplication.release();
         }
-        else
-        {
-            RETURN_IF_FAILED(pApplication->StartMonitoringAppOffline());
-            *ppApplication = pApplication.release();
-        }
-    }
-    catch(ConfigurationLoadException &ex)
-    {
-        EventLog::Error(
-            ASPNETCORE_CONFIGURATION_LOAD_ERROR,
-            ASPNETCORE_CONFIGURATION_LOAD_ERROR_MSG,
-            ex.get_message().c_str());
-
-        RETURN_HR(E_FAIL);
+        return S_OK;
     }
     CATCH_RETURN();
-
-    return S_OK;
 }

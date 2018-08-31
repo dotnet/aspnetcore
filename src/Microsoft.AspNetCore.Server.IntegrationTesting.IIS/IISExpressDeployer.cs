@@ -483,7 +483,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
             }
             else
             {
-                throw new InvalidOperationException($"iisexpress Process {hostProcess.Id} crashed before shutdown was triggered.");
+                throw new InvalidOperationException($"iisexpress Process {hostProcess?.Id} crashed before shutdown was triggered.");
             }
         }
     }
