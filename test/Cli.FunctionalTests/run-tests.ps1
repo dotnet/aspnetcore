@@ -93,6 +93,9 @@ try {
     $env:MSBuildSdksPath = ''
     $env:PATH = "$dotnetRoot;$env:PATH"
 
+    # Required by the tests. It is assumed packages on this feed will end up on nuget.org
+    $env:NUGET_PACKAGE_SOURCE = $RestoreSources
+
     Invoke-Block { & $dotnet test `
             --logger "console;verbosity=detailed" `
             --logger "trx;LogFileName=$repoRoot/artifacts/logs/e2etests.trx" `
