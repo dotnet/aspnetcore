@@ -4,6 +4,7 @@
 using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing.Internal;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -76,6 +77,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
         }
 
         [Fact]
+        [ReplaceCulture]
         public void EmptyDefaultValue_WithOptionalParameter_Throws()
         {
             // Arrange
@@ -99,6 +101,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
         }
 
         [Fact]
+        [ReplaceCulture]
         public void NonEmptyDefaultValue_WithOptionalParameter_Throws()
         {
             // Arrange
