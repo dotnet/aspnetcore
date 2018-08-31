@@ -28,13 +28,27 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             // Don't do anything. We'll call FlushAsync.
         }
 
-        public override async Task FlushAsync()
+        public override Task FlushAsync() => FlushAsyncCore();
+
+        // private non-virtual for internal calling
+        private Task FlushAsyncCore()
         {
             var length = _charBuffer.Length;
             if (length == 0)
             {
-                return;
+
+                // If nothing sync buffered return CompletedTask,
+                // so we can fast-path skip async state-machine creation
+                return Task.CompletedTask;
             }
+
+            return FlushAsyncAwaited();
+        }
+
+        private async Task FlushAsyncAwaited()
+        {
+            var length = _charBuffer.Length;
+            Debug.Assert(length > 0);
 
             var pages = _charBuffer.Pages;
             var count = pages.Count;
@@ -89,21 +103,54 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             _charBuffer.Append(value);
         }
 
-        public override async Task WriteAsync(char value)
+        public override Task WriteAsync(char value)
         {
-            await FlushAsync();
+            var flushTask = FlushAsyncCore();
+
+            // FlushAsyncCore will return CompletedTask if nothing sync buffered
+            // Fast-path and skip async state-machine if only a single async operation
+            return ReferenceEquals(flushTask, Task.CompletedTask) ? 
+                _inner.WriteAsync(value) :
+                WriteAsyncAwaited(flushTask, value);
+        }
+
+        private async Task WriteAsyncAwaited(Task flushTask, char value)
+        {
+            await flushTask;
             await _inner.WriteAsync(value);
         }
 
-        public override async Task WriteAsync(char[] buffer, int index, int count)
+        public override Task WriteAsync(char[] buffer, int index, int count)
         {
-            await FlushAsync();
+            var flushTask = FlushAsyncCore();
+
+            // FlushAsyncCore will return CompletedTask if nothing sync buffered
+            // Fast-path and skip async state-machine if only a single async operation
+            return ReferenceEquals(flushTask, Task.CompletedTask) ?
+                _inner.WriteAsync(buffer, index, count) :
+                WriteAsyncAwaited(flushTask, buffer, index, count);
+        }
+
+        private async Task WriteAsyncAwaited(Task flushTask, char[] buffer, int index, int count)
+        {
+            await flushTask;
             await _inner.WriteAsync(buffer, index, count);
         }
 
-        public override async Task WriteAsync(string value)
+        public override Task WriteAsync(string value)
         {
-            await FlushAsync();
+            var flushTask = FlushAsyncCore();
+
+            // FlushAsyncCore will return CompletedTask if nothing sync buffered
+            // Fast-path and skip async state-machine if only a single async operation
+            return ReferenceEquals(flushTask, Task.CompletedTask) ?
+                _inner.WriteAsync(value) :
+                WriteAsyncAwaited(flushTask, value);
+        }
+
+        private async Task WriteAsyncAwaited(Task flushTask, string value)
+        {
+            await flushTask;
             await _inner.WriteAsync(value);
         }
 
