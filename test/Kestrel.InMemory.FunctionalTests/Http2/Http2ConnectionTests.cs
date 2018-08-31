@@ -1590,7 +1590,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public Task HEADERS_Received_TooManyHeaders_ConnectionError()
         {
-            // > MaxRequestHeaderCount (100
+            // > MaxRequestHeaderCount (100)
             var headers = new List<KeyValuePair<string, string>>();
             headers.AddRange(new []
             {
@@ -2064,7 +2064,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await SendSettingsAsync();
 
             var frame = await ExpectAsync(Http2FrameType.SETTINGS,
-                withLength: 6 * 2,
+                withLength: Http2Frame.SettingSize * 2,
                 withFlags: 0,
                 withStreamId: 0);
 

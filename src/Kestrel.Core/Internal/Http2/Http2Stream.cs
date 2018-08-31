@@ -160,6 +160,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 return true;
             }
 
+            // Approximate MaxRequestLineSize by totaling the required pseudo header field lengths.
+            var requestLineLength = _methodText.Length + Scheme.Length + hostText.Length + path.Length;
+            if (requestLineLength > ServiceContext.ServerOptions.Limits.MaxRequestLineSize)
+            {
+                ResetAndAbort(new ConnectionAbortedException(CoreStrings.BadRequest_RequestLineTooLong), Http2ErrorCode.PROTOCOL_ERROR);
+                return false;
+            }
+
             var queryIndex = path.IndexOf('?');
             QueryString = queryIndex == -1 ? string.Empty : path.Substring(queryIndex);
 
