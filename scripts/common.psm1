@@ -1,4 +1,6 @@
 $ErrorActionPreference = 'Stop'
+# Update the default TLS support to 1.2
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
 function Assert-Git {
     if (!(Get-Command git -ErrorAction Ignore)) {
