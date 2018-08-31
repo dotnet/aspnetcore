@@ -14,6 +14,16 @@ The blob feed for the .NET Core CLI. If not specified, it will determined automa
 .PARAMETER RestoreSources
 A list of additional NuGet feeds.  If not specified, it will determined automatically if possible.
 
+.PARAMETER TestRuntimeIdentifier
+Filter the tests by which RID they publish for. If empty (default), tests are run for
+* none (portable)
+* osx-x64
+* linux-x64
+* win-x64
+
+.PARAMETER HostRid
+The RID of the platform running the tests. (Determined automatically if possible)
+
 .PARAMETER ProdConManifestUrl
 The prodcon build.xml file
 
@@ -26,6 +36,9 @@ param(
     $AssetRootUrl = $env:PB_AccessRootUrl,
     $AccessTokenSuffix = $env:PB_AccessTokenSuffix,
     $RestoreSources = $env:PB_RestoreSources,
+    [ValidateSet('none', 'osx-x64', 'linux-x64', 'win-x64')]
+    $TestRuntimeIdentifier,
+    $HostRid,
     $ProdConManifestUrl,
     $ProcConChannel = 'release/2.2'
 )
@@ -36,12 +49,40 @@ Set-StrictMode -Version 1
 $repoRoot = Resolve-Path "$PSScriptRoot/../../"
 Import-Module "$repoRoot/scripts/common.psm1" -Scope Local -Force
 
+if (-not $HostRid) {
+    if (Test-Path Variable:/IsCoreCLR) {
+        $HostRid = if ($IsWindows) { 'win-x64' } `
+            elseif ($IsLinux) { 'linux-x64' } `
+            elseif ($IsMacOS) { 'osx-x64' }
+    }
+    else {
+        $HostRid = 'win-x64'
+    }
+}
+
+if (-not $HostRid) {
+    throw 'Could not determine which platform this script is running on. Add -HostRid $rid where $rid = the .NET Core SDK to install'
+}
+
+switch ($HostRid) {
+    'win-x64' {
+        $dotnetFileName = 'dotnet.exe'
+        $archiveExt = '.zip'
+    }
+    default {
+        $dotnetFileName = 'dotnet'
+        $archiveExt = '.tar.gz'
+    }
+}
+
 Push-Location $PSScriptRoot
 try {
     New-Item -Type Directory "$PSScriptRoot/obj/" -ErrorAction Ignore | Out-Null
     $sdkVersion = ''
 
     if (-not $ci -or $ProdConManifestUrl) {
+        # Workaround for pwsh 6 dumping progress info
+        $ProgressPreference = 'SilentlyContinue'
 
         if (-not $ProdConManifestUrl) {
             Write-Host -ForegroundColor Magenta "Running tests for the latest ProdCon build"
@@ -76,14 +117,21 @@ try {
     @{ sdk = @{ version = $sdkVersion } } | ConvertTo-Json | Set-Content "$PSScriptRoot/global.json"
 
     $dotnetRoot = "$repoRoot/.dotnet"
-    $dotnet = "$dotnetRoot/dotnet.exe"
+    $dotnet = "$dotnetRoot/$dotnetFileName"
 
     if (-not (Test-Path "$dotnetRoot/sdk/$sdkVersion/dotnet.dll")) {
         Remove-Item -Recurse -Force $dotnetRoot -ErrorAction Ignore | Out-Null
-        $cliUrl = "$AssetRootUrl/Sdk/$sdkVersion/dotnet-sdk-$sdkVersion-win-x64.zip"
+        $cliUrl = "$AssetRootUrl/Sdk/$sdkVersion/dotnet-sdk-$sdkVersion-$HostRid$archiveExt"
+        $cliArchiveFile = "$PSScriptRoot/obj/dotnet$archiveExt"
         Write-Host "Downloading $cliUrl"
-        Invoke-WebRequest -UseBasicParsing "${cliUrl}${AccessTokenSuffix}" -OutFile "$PSScriptRoot/obj/dotnet.zip"
-        Expand-Archive "$PSScriptRoot/obj/dotnet.zip" -DestinationPath $dotnetRoot
+        Invoke-WebRequest -UseBasicParsing "${cliUrl}${AccessTokenSuffix}" -OutFile $cliArchiveFile
+        if ($archiveExt -eq '.zip') {
+            Expand-Archive $cliArchiveFile -DestinationPath $dotnetRoot
+        }
+        else {
+            New-Item -Type Directory $dotnetRoot -ErrorAction Ignore | Out-Null
+            Invoke-Block { & tar xzf $cliArchiveFile -C $dotnetRoot }
+        }
     }
 
     # Set a clean test environment
@@ -96,11 +144,18 @@ try {
     # Required by the tests. It is assumed packages on this feed will end up on nuget.org
     $env:NUGET_PACKAGE_SOURCE = $RestoreSources
 
+    [string[]] $filterArgs = @()
+
+    if ($TestRuntimeIdentifier) {
+        $filterArgs += '--filter',"rid: $TestRuntimeIdentifier"
+    }
+
     Invoke-Block { & $dotnet test `
             --logger "console;verbosity=detailed" `
             --logger "trx;LogFileName=$repoRoot/artifacts/logs/e2etests.trx" `
             "-p:DotNetRestoreSources=$RestoreSources" `
-            "-bl:$repoRoot/artifacts/logs/e2etests.binlog" }
+            "-bl:$repoRoot/artifacts/logs/e2etests.binlog" `
+            @filterArgs }
 }
 finally {
     Pop-Location
