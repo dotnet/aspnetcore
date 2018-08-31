@@ -220,15 +220,29 @@ namespace Cli.FunctionalTests.Templates
                 },
                 { ("netcoreapp2.2", RuntimeIdentifier.None), () =>
                     _additionalFilesAfterPublish[("netcoreapp2.1", RuntimeIdentifier.None)]()
+                    .Concat(new[]
+                    {
+                        "appsettings.Development.json",
+                        "appsettings.json",
+                    })
                 },
                 { ("netcoreapp2.2", RuntimeIdentifier.Linux_x64), () =>
                     _additionalFilesAfterPublish[("netcoreapp2.1", RuntimeIdentifier.Linux_x64)]()
+                    .Except(new[]
+                    {
+                        "Microsoft.AspNetCore.Identity.UI.Views.dll",
+                    })
                     .Concat(new[]
                     {
+                        "appsettings.Development.json",
+                        "appsettings.json",
                         "Microsoft.AspNetCore.Diagnostics.HealthChecks.dll",
+                        "Microsoft.AspNetCore.Identity.UI.Views.V3.dll",
+                        "Microsoft.AspNetCore.Identity.UI.Views.V4.dll",
                         "Microsoft.AspNetCore.Server.IIS.dll",
                         "Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions.dll",
                         "Microsoft.Extensions.Diagnostics.HealthChecks.dll",
+                        "Microsoft.Extensions.Options.DataAnnotations.dll",
                     })
                 },
                 { ("netcoreapp2.2", RuntimeIdentifier.OSX_x64), () =>

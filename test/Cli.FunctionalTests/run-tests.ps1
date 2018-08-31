@@ -33,9 +33,9 @@ The prodcon channel to use if a build.xml file isn't set.
 
 param(
     [switch]$ci,
-    $AssetRootUrl = $env:PB_AccessRootUrl,
-    $AccessTokenSuffix = $env:PB_AccessTokenSuffix,
-    $RestoreSources = $env:PB_RestoreSources,
+    $AssetRootUrl = $env:PB_ASSETROOTURL,
+    $AccessTokenSuffix = $env:PB_ACCESSTOKENSUFFIX,
+    $RestoreSources = $env:PB_RESTORESOURCES,
     [ValidateSet('none', 'osx-x64', 'linux-x64', 'win-x64')]
     $TestRuntimeIdentifier,
     $HostRid,
@@ -138,7 +138,7 @@ try {
     $env:DOTNET_ROOT = $dotnetRoot
     $env:DOTNET_MULTILEVEL_LOOKUP = 0
     $env:DOTNET_SKIP_FIRST_TIME_EXPERIENCE = 0
-    $env:MSBuildSdksPath = ''
+    $env:MSBUILDSDKSPATH = ''
     $env:PATH = "$dotnetRoot;$env:PATH"
 
     # Required by the tests. It is assumed packages on this feed will end up on nuget.org
