@@ -26,7 +26,7 @@ namespace TriageBuildFailures.Handlers
         }
 
         private const string _BrokenBuildLabel = "Broken Build";
-        private static readonly IEnumerable<string> _Notifiers = new string[]{ "@Eilon", "@mkArtakMSFT", "@muratg" };
+        private static readonly IEnumerable<string> _Notifiers = new string[] { "@Eilon", "@mkArtakMSFT", "@muratg" };
 
         public override async Task HandleFailure(TeamCityBuild build)
         {
@@ -38,19 +38,20 @@ namespace TriageBuildFailures.Handlers
             var subject = $"{build.BuildName} failed";
             var applicableIssues = GetApplicableIssues(await issuesTask, subject);
 
-            if(applicableIssues.Count() > 0)
+            if (applicableIssues.Count() > 0)
             {
                 await CommentOnIssue(build, applicableIssues.First(), build.BuildName);
             }
-            else{
+            else
+            {
                 var body = $@"{build.BuildName} failed with the following errors:
 ```
 {ConstructErrorSummary(log)}
 ```
 {build.WebURL}
 
-CC {string.Join( ", ", _Notifiers)}";
-                var tags = new List<string>{ _BrokenBuildLabel };
+CC {string.Join(", ", _Notifiers)}";
+                var tags = new List<string> { _BrokenBuildLabel, BranchLabel(build.BranchName) };
 
                 await GHClient.CreateIssue(owner, repo, subject, body, tags);
             }
@@ -74,7 +75,7 @@ CC {string.Join( ", ", _Notifiers)}";
             var errMsgs = GetErrorsFromLog(log);
             var result = string.Join(Environment.NewLine, errMsgs);
             var maxErrSize = GitHubClientWrapper.MaxBodyLength / 2;
-            if(result.Length > maxErrSize)
+            if (result.Length > maxErrSize)
             {
                 result = result.Substring(0, maxErrSize);
             }

@@ -106,7 +106,7 @@ This test failed on {build.BranchName}.
 CC @{ GetManager(repo) }";
 
                     //TODO: We'd like to link the test history here but TC api doens't make it easy
-                    var tags = new List<string> { "test-failure" };
+                    var tags = new List<string> { GitHubClientWrapper.TestFailureTag, BranchLabel(build.BranchName) };
 
                     var issue = await GHClient.CreateIssue(owner, repo, subject, body, tags);
                     await GHClient.AddIssueToProject(issue, GHClient.Config.FlakyProjectColumn);

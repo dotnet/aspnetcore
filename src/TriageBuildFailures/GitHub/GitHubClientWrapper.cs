@@ -12,12 +12,12 @@ namespace TriageBuildFailures.GitHub
 {
     public class GitHubClientWrapper
     {
+        public const string TestFailureTag = "test-failure";
         public GitHubConfig Config { get; private set; }
         public GitHubClient Client { get; private set; }
         private IReporter _reporter;
         private static Random _random = new Random();
         private const string _tempFolder = "temp";
-
         private static readonly ProductHeaderValue ProductHeader = new ProductHeaderValue("rybrandeRAAS");
 
         public GitHubClientWrapper(GitHubConfig config, IReporter reporter)
@@ -67,9 +67,9 @@ namespace TriageBuildFailures.GitHub
             i.Title.StartsWith("Flaky", StringComparison.OrdinalIgnoreCase)
             || i.Title.StartsWith("flakey", StringComparison.OrdinalIgnoreCase)
             || i.Title.StartsWith("Test failure:", StringComparison.OrdinalIgnoreCase)
-            || i.Labels.Any(l => 
-                l.Name.Contains("Flaky", StringComparison.OrdinalIgnoreCase) 
-                || l.Name.Contains("test-failure", StringComparison.OrdinalIgnoreCase)));
+            || i.Labels.Any(l =>
+                l.Name.Contains("Flaky", StringComparison.OrdinalIgnoreCase)
+                || l.Name.Contains(TestFailureTag, StringComparison.OrdinalIgnoreCase)));
         }
 
         private bool IssuesOnHomeRepo(string repoName)
@@ -111,7 +111,7 @@ namespace TriageBuildFailures.GitHub
 
         public async Task<GithubIssue> CreateIssue(string owner, string repo, string subject, string body, IList<string> labels)
         {
-            if(IssuesOnHomeRepo(repo))
+            if (IssuesOnHomeRepo(repo))
             {
                 if (labels == null)
                 {

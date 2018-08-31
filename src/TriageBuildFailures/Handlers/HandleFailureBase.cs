@@ -49,13 +49,13 @@ namespace TriageBuildFailures.Handlers
                 }
             }
             var branchLabel = BranchLabel(build.BranchName);
-            if(!issue.Labels.Any(l => l.Name.Equals(branchLabel, StringComparison.OrdinalIgnoreCase)))
+            if (!issue.Labels.Any(l => l.Name.Equals(branchLabel, StringComparison.OrdinalIgnoreCase)))
             {
                 await GHClient.AddLabel(issue, branchLabel);
             }
         }
 
-        private static string BranchLabel(string branchName)
+        public static string BranchLabel(string branchName)
         {
             return $"Branch:{branchName}";
         }
