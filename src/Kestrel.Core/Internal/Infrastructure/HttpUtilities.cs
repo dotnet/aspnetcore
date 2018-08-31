@@ -29,6 +29,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         private const ulong _http10VersionLong = 3471766442030158920; // GetAsciiStringAsLong("HTTP/1.0"); const results in better codegen
         private const ulong _http11VersionLong = 3543824036068086856; // GetAsciiStringAsLong("HTTP/1.1"); const results in better codegen
 
+        private static readonly UTF8EncodingSealed HeaderValueEncoding = new UTF8EncodingSealed();
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void SetKnownMethod(ulong mask, ulong knownMethodUlong, HttpMethod knownMethod, int length)
         {
@@ -103,6 +105,41 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 }
             }
             return asciiString;
+        }
+
+        public static unsafe string GetAsciiOrUTF8StringNonNullCharacters(this Span<byte> span)
+        {
+            if (span.IsEmpty)
+            {
+                return string.Empty;
+            }
+
+            var resultString = new string('\0', span.Length);
+
+            fixed (char* output = resultString)
+            fixed (byte* buffer = &MemoryMarshal.GetReference(span))
+            {
+                // This version if AsciiUtilities returns null if there are any null (0 byte) characters
+                // in the string
+                if (!StringUtilities.TryGetAsciiString(buffer, output, span.Length))
+                {
+                    // null characters are considered invalid
+                    if (span.IndexOf((byte)0) != -1)
+                    {
+                        throw new InvalidOperationException();
+                    }
+
+                    try
+                    {
+                        resultString = HeaderValueEncoding.GetString(buffer, span.Length);
+                    }
+                    catch (DecoderFallbackException)
+                    {
+                        throw new InvalidOperationException();
+                    }
+                }
+            }
+            return resultString;
         }
 
         public static string GetAsciiStringEscaped(this Span<byte> span, int maxChars)
@@ -504,6 +541,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 // Cast to uint to change negative numbers to large numbers
                 // Check if less than 6 representing chars 'a' - 'f'
                 || (uint)((ch | 32) - 'a') < 6u;
+        }
+
+        // Allow for de-virtualization (see https://github.com/dotnet/coreclr/pull/9230)
+        private sealed class UTF8EncodingSealed : UTF8Encoding
+        {
+            public UTF8EncodingSealed() : base(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true) { }
+
+            public override byte[] GetPreamble() => Array.Empty<byte>();
         }
     }
 }
