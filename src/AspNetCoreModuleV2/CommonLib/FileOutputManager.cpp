@@ -20,8 +20,7 @@ FileOutputManager::FileOutputManager(bool fEnableNativeLogging) :
     m_disposed(false),
     stdoutWrapper(nullptr),
     stderrWrapper(nullptr),
-    m_fEnableNativeRedirection(fEnableNativeLogging),
-    m_fCreatedConsole(false)
+    m_fEnableNativeRedirection(fEnableNativeLogging)
 {
     InitializeSRWLock(&m_srwLock);
 }
@@ -60,10 +59,6 @@ FileOutputManager::Start()
         {
             RETURN_LAST_ERROR();
         }
-    }
-    else
-    {
-        m_fCreatedConsole = true;
     }
 
     // Concatenate the log file name and application path
@@ -144,11 +139,6 @@ FileOutputManager::Stop()
     }
 
     m_disposed = true;
-
-    if (m_fCreatedConsole)
-    {
-        RETURN_LAST_ERROR_IF(!FreeConsole());
-    }
 
     if (m_hLogFileHandle == INVALID_HANDLE_VALUE)
     {

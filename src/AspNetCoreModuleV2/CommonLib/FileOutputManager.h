@@ -35,7 +35,6 @@ private:
     STRA m_straFileContent;
     BOOL m_disposed;
     BOOL m_fEnableNativeRedirection;
-    BOOL m_fCreatedConsole;
     SRWLOCK m_srwLock{};
     std::unique_ptr<StdWrapper>    stdoutWrapper;
     std::unique_ptr<StdWrapper>    stderrWrapper;
