@@ -324,6 +324,29 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
         }
 
         [Fact]
+        public async Task CanListenWithoutPath_AcceptsRequest()
+        {
+            var builder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.UseHealthChecks(default);
+                })
+                .ConfigureServices(services =>
+                {
+                    services.AddHealthChecks();
+                });
+
+            var server = new TestServer(builder);
+            var client = server.CreateClient();
+
+            var response = await client.GetAsync("http://localhost:5001/health");
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("text/plain", response.Content.Headers.ContentType.ToString());
+            Assert.Equal("Healthy", await response.Content.ReadAsStringAsync());
+        }
+
+        [Fact]
         public async Task CanListenOnPort_AcceptsRequest_OnSpecifiedPort()
         {
             var builder = new WebHostBuilder()
@@ -344,6 +367,37 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
                     services.AddHealthChecks();
                 });
             
+            var server = new TestServer(builder);
+            var client = server.CreateClient();
+
+            var response = await client.GetAsync("http://localhost:5001/health");
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("text/plain", response.Content.Headers.ContentType.ToString());
+            Assert.Equal("Healthy", await response.Content.ReadAsStringAsync());
+        }
+
+        [Fact]
+        public async Task CanListenOnPortWithoutPath_AcceptsRequest_OnSpecifiedPort()
+        {
+            var builder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.Use(next => async (context) =>
+                    {
+                        // Need to fake setting the connection info. TestServer doesn't
+                        // do that, because it doesn't have a connection.
+                        context.Connection.LocalPort = context.Request.Host.Port.Value;
+                        await next(context);
+                    });
+
+                    app.UseHealthChecks(default, port: 5001);
+                })
+                .ConfigureServices(services =>
+                {
+                    services.AddHealthChecks();
+                });
+
             var server = new TestServer(builder);
             var client = server.CreateClient();
 
@@ -382,5 +436,7 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
 
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
+
+
     }
 }

@@ -35,11 +35,6 @@ namespace Microsoft.AspNetCore.Builder
                 throw new ArgumentNullException(nameof(app));
             }
 
-            if (!path.HasValue)
-            {
-                throw new ArgumentException("A URL path must be provided", nameof(path));
-            }
-
             UseHealthChecksCore(app, path, port: null, Array.Empty<object>());
             return app;
         }
@@ -62,11 +57,6 @@ namespace Microsoft.AspNetCore.Builder
             if (app == null)
             {
                 throw new ArgumentNullException(nameof(app));
-            }
-
-            if (!path.HasValue)
-            {
-                throw new ArgumentException("A URL path must be provided", nameof(path));
             }
 
             if (options == null)
@@ -101,11 +91,6 @@ namespace Microsoft.AspNetCore.Builder
                 throw new ArgumentNullException(nameof(app));
             }
 
-            if (!path.HasValue)
-            {
-                throw new ArgumentException("A URL path must be provided", nameof(path));
-            }
-
             UseHealthChecksCore(app, path, port, Array.Empty<object>());
             return app;
         }
@@ -131,11 +116,6 @@ namespace Microsoft.AspNetCore.Builder
             if (app == null)
             {
                 throw new ArgumentNullException(nameof(app));
-            }
-
-            if (!path.HasValue)
-            {
-                throw new ArgumentException("A URL path must be provided", nameof(path));
             }
 
             if (port == null)
@@ -173,11 +153,6 @@ namespace Microsoft.AspNetCore.Builder
                 throw new ArgumentNullException(nameof(app));
             }
 
-            if (!path.HasValue)
-            {
-                throw new ArgumentException("A URL path must be provided", nameof(path));
-            }
-
             if (options == null)
             {
                 throw new ArgumentNullException(nameof(options));
@@ -208,11 +183,6 @@ namespace Microsoft.AspNetCore.Builder
                 throw new ArgumentNullException(nameof(app));
             }
 
-            if (!path.HasValue)
-            {
-                throw new ArgumentException("A URL path must be provided", nameof(path));
-            }
-
             if (path == null)
             {
                 throw new ArgumentNullException(nameof(port));
@@ -241,8 +211,8 @@ namespace Microsoft.AspNetCore.Builder
             else
             {
                 app.MapWhen(
-                    c => c.Connection.LocalPort == port && c.Request.Path.StartsWithSegments(path),
-                    b => b.UseMiddleware<HealthCheckMiddleware>(args));
+                    c => c.Connection.LocalPort == port,
+                    b0 => b0.Map(path, b1 => b1.UseMiddleware<HealthCheckMiddleware>(args)));
             }
         }
     }
