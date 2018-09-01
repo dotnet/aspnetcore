@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
             _enumerator.MoveNext();
 
             var statusCodeLength = EncodeStatusCode(statusCode, buffer);
-            var done = Encode(buffer.Slice(statusCodeLength), out var headersLength);
+            var done = Encode(buffer.Slice(statusCodeLength), throwIfNoneEncoded: false, out var headersLength);
             length = statusCodeLength + headersLength;
 
             return done;
@@ -32,12 +32,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
 
         public bool Encode(Span<byte> buffer, out int length)
         {
+            return Encode(buffer, throwIfNoneEncoded: true, out length);
+        }
+
+        private bool Encode(Span<byte> buffer, bool throwIfNoneEncoded, out int length)
+        {
             length = 0;
 
             do
             {
                 if (!EncodeHeader(_enumerator.Current.Key, _enumerator.Current.Value, buffer.Slice(length), out var headerLength))
                 {
+                    if (length == 0 && throwIfNoneEncoded)
+                    {
+                        throw new HPackEncodingException(CoreStrings.HPackErrorNotEnoughBuffer);
+                    }
                     return false;
                 }
 

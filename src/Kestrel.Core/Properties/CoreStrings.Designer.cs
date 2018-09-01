@@ -2129,20 +2129,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             => GetString("GreaterThanZeroRequired");
 
         /// <summary>
-        /// The frame is too short to contain the fields indicated by the given flags.
-        /// </summary>
-        internal static string Http2FrameMissingFields
-        {
-            get => GetString("Http2FrameMissingFields");
-        }
-
-        /// <summary>
-        /// The frame is too short to contain the fields indicated by the given flags.
-        /// </summary>
-        internal static string FormatHttp2FrameMissingFields()
-            => GetString("Http2FrameMissingFields");
-
-        /// <summary>
         /// A value between {min} and {max} is required.
         /// </summary>
         internal static string ArgumentOutOfRange
@@ -2169,6 +2155,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// </summary>
         internal static string FormatHPackErrorDynamicTableSizeUpdateNotAtBeginningOfHeaderBlock()
             => GetString("HPackErrorDynamicTableSizeUpdateNotAtBeginningOfHeaderBlock");
+
+        /// <summary>
+        /// The given buffer was too small to encode any headers.
+        /// </summary>
+        internal static string HPackErrorNotEnoughBuffer
+        {
+            get => GetString("HPackErrorNotEnoughBuffer");
+        }
+
+        /// <summary>
+        /// The given buffer was too small to encode any headers.
+        /// </summary>
+        internal static string FormatHPackErrorNotEnoughBuffer()
+            => GetString("HPackErrorNotEnoughBuffer");
 
         private static string GetString(string name, params string[] formatterNames)
         {

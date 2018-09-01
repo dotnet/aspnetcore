@@ -12,36 +12,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
     */
     public partial class Http2Frame
     {
-        private const int PriorityWeightOffset = 4;
+        public int PriorityStreamDependency { get; set; }
 
-        public int PriorityStreamDependency
-        {
-            get => (int)Bitshifter.ReadUInt31BigEndian(Payload);
-            set => Bitshifter.WriteUInt31BigEndian(Payload, (uint)value);
-        }
+        public bool PriorityIsExclusive { get; set; }
 
-        public bool PriorityIsExclusive
-        {
-            get => (Payload[0] & 0x80) != 0;
-            set
-            {
-                if (value)
-                {
-                    Payload[0] |= 0x80;
-                }
-                else
-                {
-                    Payload[0] &= 0x7f;
-                }
-            }
-        }
-
-        public byte PriorityWeight
-        {
-            get => Payload[PriorityWeightOffset];
-            set => Payload[PriorityWeightOffset] = value;
-        }
-
+        public byte PriorityWeight { get; set; }
 
         public void PreparePriority(int streamId, int streamDependency, bool exclusive, byte weight)
         {

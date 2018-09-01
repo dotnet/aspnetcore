@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
     /* https://tools.ietf.org/html/rfc7540#section-6.10
@@ -21,7 +20,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public void PrepareContinuation(Http2ContinuationFrameFlags flags, int streamId)
         {
-            PayloadLength = (int)_maxFrameSize;
+            PayloadLength = 0;
             Type = Http2FrameType.CONTINUATION;
             ContinuationFlags = flags;
             StreamId = streamId;

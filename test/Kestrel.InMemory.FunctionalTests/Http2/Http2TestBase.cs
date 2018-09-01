@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.Buffers.Binary;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
@@ -11,6 +12,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
@@ -20,7 +22,6 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.AspNetCore.Connections;
 using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit;
@@ -51,6 +52,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         protected readonly Http2PeerSettings _clientSettings = new Http2PeerSettings();
         protected readonly HPackEncoder _hpackEncoder = new HPackEncoder();
         protected readonly HPackDecoder _hpackDecoder;
+        private readonly byte[] _headerEncodingBuffer = new byte[Http2PeerSettings.MinAllowedMaxFrameSize];
 
         protected readonly ConcurrentDictionary<int, TaskCompletionSource<object>> _runningStreams = new ConcurrentDictionary<int, TaskCompletionSource<object>>();
         protected readonly Dictionary<string, string> _receivedHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -315,7 +317,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await SendSettingsAsync();
 
             await ExpectAsync(Http2FrameType.SETTINGS,
-                withLength: expectedSettingsCount * Http2Frame.SettingSize,
+                withLength: expectedSettingsCount * Http2FrameReader.SettingSize,
                 withFlags: 0,
                 withStreamId: 0);
 
@@ -325,14 +327,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 withStreamId: 0);
         }
 
-        protected async Task StartStreamAsync(int streamId, IEnumerable<KeyValuePair<string, string>> headers, bool endStream)
+        protected Task StartStreamAsync(int streamId, IEnumerable<KeyValuePair<string, string>> headers, bool endStream)
         {
+            var writableBuffer = _pair.Application.Output;
             var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             _runningStreams[streamId] = tcs;
 
-            var frame = new Http2Frame(Http2PeerSettings.MinAllowedMaxFrameSize);
+            var frame = new Http2Frame();
             frame.PrepareHeaders(Http2HeadersFrameFlags.NONE, streamId);
-            var done = _hpackEncoder.BeginEncode(headers, frame.HeadersPayload, out var length);
+
+            var buffer = _headerEncodingBuffer.AsSpan();
+            var done = _hpackEncoder.BeginEncode(headers, buffer, out var length);
             frame.PayloadLength = length;
 
             if (done)
@@ -345,12 +350,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 frame.HeadersFlags |= Http2HeadersFrameFlags.END_STREAM;
             }
 
-            await SendAsync(frame.Raw);
+            Http2FrameWriter.WriteHeader(frame, writableBuffer);
+            writableBuffer.Write(buffer.Slice(0, length));
 
             while (!done)
             {
                 frame.PrepareContinuation(Http2ContinuationFrameFlags.NONE, streamId);
-                done = _hpackEncoder.Encode(frame.HeadersPayload, out length);
+
+                done = _hpackEncoder.Encode(buffer, out length);
                 frame.PayloadLength = length;
 
                 if (done)
@@ -358,77 +365,143 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                     frame.ContinuationFlags = Http2ContinuationFrameFlags.END_HEADERS;
                 }
 
-                await SendAsync(frame.Raw);
+                Http2FrameWriter.WriteHeader(frame, writableBuffer);
+                writableBuffer.Write(buffer.Slice(0, length));
             }
+
+            return FlushAsync(writableBuffer);
         }
 
-        protected async Task SendHeadersWithPaddingAsync(int streamId, IEnumerable<KeyValuePair<string, string>> headers, byte padLength, bool endStream)
+        /* https://tools.ietf.org/html/rfc7540#section-6.2
+            +---------------+
+            |Pad Length? (8)|
+            +-+-------------+-----------------------------------------------+
+            |                   Header Block Fragment (*)                 ...
+            +---------------------------------------------------------------+
+            |                           Padding (*)                       ...
+            +---------------------------------------------------------------+
+        */
+        protected Task SendHeadersWithPaddingAsync(int streamId, IEnumerable<KeyValuePair<string, string>> headers, byte padLength, bool endStream)
         {
+            var writableBuffer = _pair.Application.Output;
             var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             _runningStreams[streamId] = tcs;
 
-            var frame = new Http2Frame(Http2PeerSettings.MinAllowedMaxFrameSize);
+            var frame = new Http2Frame();
 
             frame.PrepareHeaders(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.PADDED, streamId);
             frame.HeadersPadLength = padLength;
 
-            _hpackEncoder.BeginEncode(headers, frame.HeadersPayload, out var length);
+            var extendedHeaderLength = 1; // Padding length field
+            var buffer = _headerEncodingBuffer.AsSpan();
+            var extendedHeader = buffer.Slice(0, extendedHeaderLength);
+            extendedHeader[0] = padLength;
+            var payload = buffer.Slice(extendedHeaderLength, buffer.Length - padLength - extendedHeaderLength);
 
-            frame.PayloadLength = 1 + length + padLength;
-            frame.Payload.Slice(1 + length).Fill(0);
+            _hpackEncoder.BeginEncode(headers, payload, out var length);
+            var padding = buffer.Slice(extendedHeaderLength + length, padLength);
+            padding.Fill(0);
+
+            frame.PayloadLength = extendedHeaderLength + length + padLength;
 
             if (endStream)
             {
                 frame.HeadersFlags |= Http2HeadersFrameFlags.END_STREAM;
             }
 
-            await SendAsync(frame.Raw);
+            Http2FrameWriter.WriteHeader(frame, writableBuffer);
+            writableBuffer.Write(buffer.Slice(0, frame.PayloadLength));
+            return FlushAsync(writableBuffer);
         }
 
-        protected async Task SendHeadersWithPriorityAsync(int streamId, IEnumerable<KeyValuePair<string, string>> headers, byte priority, int streamDependency, bool endStream)
+        /* https://tools.ietf.org/html/rfc7540#section-6.2
+            +-+-------------+-----------------------------------------------+
+            |E|                 Stream Dependency? (31)                     |
+            +-+-------------+-----------------------------------------------+
+            |  Weight? (8)  |
+            +-+-------------+-----------------------------------------------+
+            |                   Header Block Fragment (*)                 ...
+            +---------------------------------------------------------------+
+        */
+        protected Task SendHeadersWithPriorityAsync(int streamId, IEnumerable<KeyValuePair<string, string>> headers, byte priority, int streamDependency, bool endStream)
         {
+            var writableBuffer = _pair.Application.Output;
             var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             _runningStreams[streamId] = tcs;
 
-            var frame = new Http2Frame(Http2PeerSettings.MinAllowedMaxFrameSize);
+            var frame = new Http2Frame();
             frame.PrepareHeaders(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.PRIORITY, streamId);
             frame.HeadersPriorityWeight = priority;
             frame.HeadersStreamDependency = streamDependency;
 
-            _hpackEncoder.BeginEncode(headers, frame.HeadersPayload, out var length);
+            var extendedHeaderLength = 5; // stream dependency + weight
+            var buffer = _headerEncodingBuffer.AsSpan();
+            var extendedHeader = buffer.Slice(0, extendedHeaderLength);
+            Bitshifter.WriteUInt31BigEndian(extendedHeader, (uint)streamDependency);
+            extendedHeader[4] = priority;
+            var payload = buffer.Slice(extendedHeaderLength);
 
-            frame.PayloadLength = 5 + length;
+            _hpackEncoder.BeginEncode(headers, payload, out var length);
+
+            frame.PayloadLength = extendedHeaderLength + length;
 
             if (endStream)
             {
                 frame.HeadersFlags |= Http2HeadersFrameFlags.END_STREAM;
             }
 
-            await SendAsync(frame.Raw);
+            Http2FrameWriter.WriteHeader(frame, writableBuffer);
+            writableBuffer.Write(buffer.Slice(0, frame.PayloadLength));
+            return FlushAsync(writableBuffer);
         }
 
-        protected async Task SendHeadersWithPaddingAndPriorityAsync(int streamId, IEnumerable<KeyValuePair<string, string>> headers, byte padLength, byte priority, int streamDependency, bool endStream)
+        /* https://tools.ietf.org/html/rfc7540#section-6.2
+            +---------------+
+            |Pad Length? (8)|
+            +-+-------------+-----------------------------------------------+
+            |E|                 Stream Dependency? (31)                     |
+            +-+-------------+-----------------------------------------------+
+            |  Weight? (8)  |
+            +-+-------------+-----------------------------------------------+
+            |                   Header Block Fragment (*)                 ...
+            +---------------------------------------------------------------+
+            |                           Padding (*)                       ...
+            +---------------------------------------------------------------+
+        */
+        protected Task SendHeadersWithPaddingAndPriorityAsync(int streamId, IEnumerable<KeyValuePair<string, string>> headers, byte padLength, byte priority, int streamDependency, bool endStream)
         {
+            var writableBuffer = _pair.Application.Output;
             var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             _runningStreams[streamId] = tcs;
 
-            var frame = new Http2Frame(Http2PeerSettings.MinAllowedMaxFrameSize);
+            var frame = new Http2Frame();
             frame.PrepareHeaders(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.PADDED | Http2HeadersFrameFlags.PRIORITY, streamId);
             frame.HeadersPadLength = padLength;
             frame.HeadersPriorityWeight = priority;
             frame.HeadersStreamDependency = streamDependency;
 
-            _hpackEncoder.BeginEncode(headers, frame.HeadersPayload, out var length);
+            var extendedHeaderLength = 6; // pad length + stream dependency + weight
+            var buffer = _headerEncodingBuffer.AsSpan();
+            var extendedHeader = buffer.Slice(0, extendedHeaderLength);
+            extendedHeader[0] = padLength;
+            Bitshifter.WriteUInt31BigEndian(extendedHeader.Slice(1), (uint)streamDependency);
+            extendedHeader[5] = priority;
+            var payload = buffer.Slice(extendedHeaderLength, buffer.Length - padLength - extendedHeaderLength);
 
-            frame.PayloadLength = 6 + length + padLength;
-            frame.Payload.Slice(6 + length).Fill(0);
+            _hpackEncoder.BeginEncode(headers, payload, out var length);
+            var padding = buffer.Slice(extendedHeaderLength + length, padLength);
+            padding.Fill(0);
+
+            frame.PayloadLength = extendedHeaderLength + length + padLength;
 
             if (endStream)
             {
                 frame.HeadersFlags |= Http2HeadersFrameFlags.END_STREAM;
             }
 
-            await SendAsync(frame.Raw);
+            Http2FrameWriter.WriteHeader(frame, writableBuffer);
+            writableBuffer.Write(buffer.Slice(0, frame.PayloadLength));
+            return FlushAsync(writableBuffer);
         }
 
         protected Task WaitForAllStreamsAsync()
@@ -450,323 +523,427 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         protected Task SendPreambleAsync() => SendAsync(new ArraySegment<byte>(Http2Connection.ClientPreface));
 
-        protected Task SendSettingsAsync()
+        protected async Task SendSettingsAsync()
         {
-            var frame = new Http2Frame(Http2PeerSettings.MinAllowedMaxFrameSize);
-            frame.PrepareSettings(Http2SettingsFrameFlags.NONE, _clientSettings.GetNonProtocolDefaults());
-            return SendAsync(frame.Raw);
+            var writableBuffer = _pair.Application.Output;
+            var frame = new Http2Frame();
+            frame.PrepareSettings(Http2SettingsFrameFlags.NONE);
+            var settings = _clientSettings.GetNonProtocolDefaults();
+            var payload = new byte[settings.Count * Http2FrameReader.SettingSize];
+            frame.PayloadLength = payload.Length;
+            Http2FrameWriter.WriteSettings(settings, payload);
+            Http2FrameWriter.WriteHeader(frame, writableBuffer);
+            await SendAsync(payload);
         }
 
-        protected Task SendSettingsAckWithInvalidLengthAsync(int length)
+        protected async Task SendSettingsAckWithInvalidLengthAsync(int length)
         {
-            var frame = new Http2Frame(Http2PeerSettings.MinAllowedMaxFrameSize);
+            var writableBuffer = _pair.Application.Output;
+            var frame = new Http2Frame();
             frame.PrepareSettings(Http2SettingsFrameFlags.ACK);
             frame.PayloadLength = length;
-            return SendAsync(frame.Raw);
+            Http2FrameWriter.WriteHeader(frame, writableBuffer);
+            await SendAsync(new byte[length]);
         }
 
-        protected Task SendSettingsWithInvalidStreamIdAsync(int streamId)
+        protected async Task SendSettingsWithInvalidStreamIdAsync(int streamId)
         {
-            var frame = new Http2Frame(Http2PeerSettings.MinAllowedMaxFrameSize);
-            frame.PrepareSettings(Http2SettingsFrameFlags.NONE, _clientSettings.GetNonProtocolDefaults());
+            var writableBuffer = _pair.Application.Output;
+            var frame = new Http2Frame();
+            frame.PrepareSettings(Http2SettingsFrameFlags.NONE);
             frame.StreamId = streamId;
-            return SendAsync(frame.Raw);
+            var settings = _clientSettings.GetNonProtocolDefaults();
+            var payload = new byte[settings.Count * Http2FrameReader.SettingSize];
+            frame.PayloadLength = payload.Length;
+            Http2FrameWriter.WriteSettings(settings, payload);
+            Http2FrameWriter.WriteHeader(frame, writableBuffer);
+            await SendAsync(payload);
         }
 
-        protected Task SendSettingsWithInvalidLengthAsync(int length)
+        protected async Task SendSettingsWithInvalidLengthAsync(int length)
         {
-            var frame = new Http2Frame(Http2PeerSettings.MinAllowedMaxFrameSize);
-            frame.PrepareSettings(Http2SettingsFrameFlags.NONE, _clientSettings.GetNonProtocolDefaults());
+            var writableBuffer = _pair.Application.Output;
+            var frame = new Http2Frame();
+            frame.PrepareSettings(Http2SettingsFrameFlags.NONE);
+
             frame.PayloadLength = length;
-            return SendAsync(frame.Raw);
+            var payload = new byte[length];
+            Http2FrameWriter.WriteHeader(frame, writableBuffer);
+            await SendAsync(payload);
         }
 
-        protected Task SendSettingsWithInvalidParameterValueAsync(Http2SettingsParameter parameter, uint value)
+        protected async Task SendSettingsWithInvalidParameterValueAsync(Http2SettingsParameter parameter, uint value)
         {
-            var frame = new Http2Frame(Http2PeerSettings.MinAllowedMaxFrameSize);
+            var writableBuffer = _pair.Application.Output;
+            var frame = new Http2Frame();
             frame.PrepareSettings(Http2SettingsFrameFlags.NONE);
             frame.PayloadLength = 6;
+            var payload = new byte[Http2FrameReader.SettingSize];
+            payload[0] = (byte)((ushort)parameter >> 8);
+            payload[1] = (byte)(ushort)parameter;
+            payload[2] = (byte)(value >> 24);
+            payload[3] = (byte)(value >> 16);
+            payload[4] = (byte)(value >> 8);
+            payload[5] = (byte)value;
 
-            frame.Payload[0] = (byte)((ushort)parameter >> 8);
-            frame.Payload[1] = (byte)(ushort)parameter;
-            frame.Payload[2] = (byte)(value >> 24);
-            frame.Payload[3] = (byte)(value >> 16);
-            frame.Payload[4] = (byte)(value >> 8);
-            frame.Payload[5] = (byte)value;
-
-            return SendAsync(frame.Raw);
+            Http2FrameWriter.WriteHeader(frame, writableBuffer);
+            await SendAsync(payload);
         }
 
         protected Task SendPushPromiseFrameAsync()
         {
-            var frame = new Http2Frame(Http2PeerSettings.MinAllowedMaxFrameSize);
+            var writableBuffer = _pair.Application.Output;
+            var frame = new Http2Frame();
             frame.PayloadLength = 0;
             frame.Type = Http2FrameType.PUSH_PROMISE;
             frame.StreamId = 1;
-            return SendAsync(frame.Raw);
+
+            Http2FrameWriter.WriteHeader(frame, writableBuffer);
+            return FlushAsync(writableBuffer);
         }
 
         protected async Task<bool> SendHeadersAsync(int streamId, Http2HeadersFrameFlags flags, IEnumerable<KeyValuePair<string, string>> headers)
         {
-            var frame = new Http2Frame(Http2PeerSettings.MinAllowedMaxFrameSize);
+            var outputWriter = _pair.Application.Output;
+            var frame = new Http2Frame();
 
             frame.PrepareHeaders(flags, streamId);
-            var done = _hpackEncoder.BeginEncode(headers, frame.Payload, out var length);
+            var buffer = _headerEncodingBuffer.AsMemory();
+            var done = _hpackEncoder.BeginEncode(headers, buffer.Span, out var length);
             frame.PayloadLength = length;
 
-            await SendAsync(frame.Raw);
+            Http2FrameWriter.WriteHeader(frame, outputWriter);
+            await SendAsync(buffer.Span.Slice(0, length));
 
             return done;
         }
 
-        protected Task SendHeadersAsync(int streamId, Http2HeadersFrameFlags flags, byte[] headerBlock)
+        protected async Task SendHeadersAsync(int streamId, Http2HeadersFrameFlags flags, byte[] headerBlock)
         {
-            var frame = new Http2Frame(Http2PeerSettings.MinAllowedMaxFrameSize);
+            var outputWriter = _pair.Application.Output;
+            var frame = new Http2Frame();
 
             frame.PrepareHeaders(flags, streamId);
             frame.PayloadLength = headerBlock.Length;
-            headerBlock.CopyTo(frame.HeadersPayload);
 
-            return SendAsync(frame.Raw);
+            Http2FrameWriter.WriteHeader(frame, outputWriter);
+            await SendAsync(headerBlock);
         }
 
-        protected Task SendInvalidHeadersFrameAsync(int streamId, int payloadLength, byte padLength)
+        protected async Task SendInvalidHeadersFrameAsync(int streamId, int payloadLength, byte padLength)
         {
             Assert.True(padLength >= payloadLength, $"{nameof(padLength)} must be greater than or equal to {nameof(payloadLength)} to create an invalid frame.");
 
-            var frame = new Http2Frame(Http2PeerSettings.MinAllowedMaxFrameSize);
+            var outputWriter = _pair.Application.Output;
+            var frame = new Http2Frame();
 
             frame.PrepareHeaders(Http2HeadersFrameFlags.PADDED, streamId);
-            frame.Payload[0] = padLength;
-
-            // Set length last so .Payload can be written to
             frame.PayloadLength = payloadLength;
+            var payload = new byte[payloadLength];
+            if (payloadLength > 0)
+            {
+                payload[0] = padLength;
+            }
 
-            return SendAsync(frame.Raw);
+            Http2FrameWriter.WriteHeader(frame, outputWriter);
+            await SendAsync(payload);
         }
 
-        protected Task SendIncompleteHeadersFrameAsync(int streamId)
+        protected async Task SendIncompleteHeadersFrameAsync(int streamId)
         {
-            var frame = new Http2Frame(Http2PeerSettings.MinAllowedMaxFrameSize);
+            var outputWriter = _pair.Application.Output;
+            var frame = new Http2Frame();
 
             frame.PrepareHeaders(Http2HeadersFrameFlags.END_HEADERS, streamId);
             frame.PayloadLength = 3;
-
+            var payload = new byte[3];
             // Set up an incomplete Literal Header Field w/ Incremental Indexing frame,
             // with an incomplete new name
-            frame.Payload[0] = 0;
-            frame.Payload[1] = 2;
-            frame.Payload[2] = (byte)'a';
+            payload[0] = 0;
+            payload[1] = 2;
+            payload[2] = (byte)'a';
 
-            return SendAsync(frame.Raw);
+            Http2FrameWriter.WriteHeader(frame, outputWriter);
+            await SendAsync(payload);
         }
 
         protected async Task<bool> SendContinuationAsync(int streamId, Http2ContinuationFrameFlags flags)
         {
-            var frame = new Http2Frame(Http2PeerSettings.MinAllowedMaxFrameSize);
+            var outputWriter = _pair.Application.Output;
+            var frame = new Http2Frame();
 
             frame.PrepareContinuation(flags, streamId);
-            var done = _hpackEncoder.Encode(frame.Payload, out var length);
+            var buffer = _headerEncodingBuffer.AsMemory();
+            var done = _hpackEncoder.Encode(buffer.Span, out var length);
             frame.PayloadLength = length;
 
-            await SendAsync(frame.Raw);
+            Http2FrameWriter.WriteHeader(frame, outputWriter);
+            await SendAsync(buffer.Span.Slice(0, length));
 
             return done;
         }
 
         protected async Task SendContinuationAsync(int streamId, Http2ContinuationFrameFlags flags, byte[] payload)
         {
-            var frame = new Http2Frame(Http2PeerSettings.MinAllowedMaxFrameSize);
+            var outputWriter = _pair.Application.Output;
+            var frame = new Http2Frame();
 
             frame.PrepareContinuation(flags, streamId);
             frame.PayloadLength = payload.Length;
-            payload.CopyTo(frame.Payload);
 
-            await SendAsync(frame.Raw);
+            Http2FrameWriter.WriteHeader(frame, outputWriter);
+            await SendAsync(payload);
         }
 
         protected Task SendEmptyContinuationFrameAsync(int streamId, Http2ContinuationFrameFlags flags)
         {
-            var frame = new Http2Frame(Http2PeerSettings.MinAllowedMaxFrameSize);
+            var outputWriter = _pair.Application.Output;
+            var frame = new Http2Frame();
 
             frame.PrepareContinuation(flags, streamId);
             frame.PayloadLength = 0;
 
-            return SendAsync(frame.Raw);
+            Http2FrameWriter.WriteHeader(frame, outputWriter);
+            return FlushAsync(outputWriter);
         }
 
-        protected Task SendIncompleteContinuationFrameAsync(int streamId)
+        protected async Task SendIncompleteContinuationFrameAsync(int streamId)
         {
-            var frame = new Http2Frame(Http2PeerSettings.MinAllowedMaxFrameSize);
+            var outputWriter = _pair.Application.Output;
+            var frame = new Http2Frame();
 
             frame.PrepareContinuation(Http2ContinuationFrameFlags.END_HEADERS, streamId);
             frame.PayloadLength = 3;
-
+            var payload = new byte[3];
             // Set up an incomplete Literal Header Field w/ Incremental Indexing frame,
             // with an incomplete new name
-            frame.Payload[0] = 0;
-            frame.Payload[1] = 2;
-            frame.Payload[2] = (byte)'a';
+            payload[0] = 0;
+            payload[1] = 2;
+            payload[2] = (byte)'a';
 
-            return SendAsync(frame.Raw);
+            Http2FrameWriter.WriteHeader(frame, outputWriter);
+            await SendAsync(payload);
         }
 
-        protected Task SendDataAsync(int streamId, Span<byte> data, bool endStream)
+        protected Task SendDataAsync(int streamId, Memory<byte> data, bool endStream)
         {
-            var frame = new Http2Frame((uint)data.Length);
+            var outputWriter = _pair.Application.Output;
+            var frame = new Http2Frame();
 
             frame.PrepareData(streamId);
             frame.PayloadLength = data.Length;
             frame.DataFlags = endStream ? Http2DataFrameFlags.END_STREAM : Http2DataFrameFlags.NONE;
-            data.CopyTo(frame.DataPayload);
 
-            return SendAsync(frame.Raw);
+            Http2FrameWriter.WriteHeader(frame, outputWriter);
+            return SendAsync(data.Span);
         }
 
-        protected Task SendDataWithPaddingAsync(int streamId, Span<byte> data, byte padLength, bool endStream)
+        protected async Task SendDataWithPaddingAsync(int streamId, Memory<byte> data, byte padLength, bool endStream)
         {
-            var frame = new Http2Frame(Http2PeerSettings.MinAllowedMaxFrameSize);
+            var outputWriter = _pair.Application.Output;
+            var frame = new Http2Frame();
 
             frame.PrepareData(streamId, padLength);
             frame.PayloadLength = data.Length + 1 + padLength;
-            data.CopyTo(frame.DataPayload);
 
             if (endStream)
             {
                 frame.DataFlags |= Http2DataFrameFlags.END_STREAM;
             }
 
-            return SendAsync(frame.Raw);
+            Http2FrameWriter.WriteHeader(frame, outputWriter);
+            outputWriter.GetSpan(1)[0] = padLength;
+            outputWriter.Advance(1);
+            await SendAsync(data.Span);
+            await SendAsync(new byte[padLength]);
         }
 
         protected Task SendInvalidDataFrameAsync(int streamId, int frameLength, byte padLength)
         {
             Assert.True(padLength >= frameLength, $"{nameof(padLength)} must be greater than or equal to {nameof(frameLength)} to create an invalid frame.");
 
-            var frame = new Http2Frame(Http2PeerSettings.MinAllowedMaxFrameSize);
+            var outputWriter = _pair.Application.Output;
+            var frame = new Http2Frame();
 
             frame.PrepareData(streamId);
             frame.DataFlags = Http2DataFrameFlags.PADDED;
-            frame.Payload[0] = padLength;
-
-            // Set length last so .Payload can be written to
             frame.PayloadLength = frameLength;
+            var payload = new byte[frameLength];
+            if (frameLength > 0)
+            {
+                payload[0] = padLength;
+            }
 
-            return SendAsync(frame.Raw);
+            Http2FrameWriter.WriteHeader(frame, outputWriter);
+            return SendAsync(payload);
         }
 
         protected Task SendPingAsync(Http2PingFrameFlags flags)
         {
-            var pingFrame = new Http2Frame(Http2PeerSettings.MinAllowedMaxFrameSize);
+            var outputWriter = _pair.Application.Output;
+            var pingFrame = new Http2Frame();
             pingFrame.PreparePing(flags);
-            return SendAsync(pingFrame.Raw);
+            Http2FrameWriter.WriteHeader(pingFrame, outputWriter);
+            return SendAsync(new byte[8]); // Empty payload
         }
 
         protected Task SendPingWithInvalidLengthAsync(int length)
         {
-            var pingFrame = new Http2Frame(Http2PeerSettings.MinAllowedMaxFrameSize);
+            var outputWriter = _pair.Application.Output;
+            var pingFrame = new Http2Frame();
             pingFrame.PreparePing(Http2PingFrameFlags.NONE);
             pingFrame.PayloadLength = length;
-            return SendAsync(pingFrame.Raw);
+            Http2FrameWriter.WriteHeader(pingFrame, outputWriter);
+            return SendAsync(new byte[length]);
         }
 
         protected Task SendPingWithInvalidStreamIdAsync(int streamId)
         {
             Assert.NotEqual(0, streamId);
 
-            var pingFrame = new Http2Frame(Http2PeerSettings.MinAllowedMaxFrameSize);
+            var outputWriter = _pair.Application.Output;
+            var pingFrame = new Http2Frame();
             pingFrame.PreparePing(Http2PingFrameFlags.NONE);
             pingFrame.StreamId = streamId;
-            return SendAsync(pingFrame.Raw);
+            Http2FrameWriter.WriteHeader(pingFrame, outputWriter);
+            return SendAsync(new byte[pingFrame.PayloadLength]);
         }
 
+        /* https://tools.ietf.org/html/rfc7540#section-6.3
+            +-+-------------------------------------------------------------+
+            |E|                  Stream Dependency (31)                     |
+            +-+-------------+-----------------------------------------------+
+            |   Weight (8)  |
+            +-+-------------+
+        */
         protected Task SendPriorityAsync(int streamId, int streamDependency = 0)
         {
-            var priorityFrame = new Http2Frame(Http2PeerSettings.MinAllowedMaxFrameSize);
+            var outputWriter = _pair.Application.Output;
+            var priorityFrame = new Http2Frame();
             priorityFrame.PreparePriority(streamId, streamDependency: streamDependency, exclusive: false, weight: 0);
-            return SendAsync(priorityFrame.Raw);
+
+            var payload = new byte[priorityFrame.PayloadLength].AsSpan();
+            Bitshifter.WriteUInt31BigEndian(payload, (uint)streamDependency);
+            payload[4] = 0; // Weight
+
+            Http2FrameWriter.WriteHeader(priorityFrame, outputWriter);
+            return SendAsync(payload);
         }
 
         protected Task SendInvalidPriorityFrameAsync(int streamId, int length)
         {
-            var priorityFrame = new Http2Frame(Http2PeerSettings.MinAllowedMaxFrameSize);
+            var outputWriter = _pair.Application.Output;
+            var priorityFrame = new Http2Frame();
             priorityFrame.PreparePriority(streamId, streamDependency: 0, exclusive: false, weight: 0);
             priorityFrame.PayloadLength = length;
-            return SendAsync(priorityFrame.Raw);
+
+            Http2FrameWriter.WriteHeader(priorityFrame, outputWriter);
+            return SendAsync(new byte[length]);
         }
 
+        /* https://tools.ietf.org/html/rfc7540#section-6.4
+            +---------------------------------------------------------------+
+            |                        Error Code (32)                        |
+            +---------------------------------------------------------------+
+        */
         protected Task SendRstStreamAsync(int streamId)
         {
-            var rstStreamFrame = new Http2Frame(Http2PeerSettings.MinAllowedMaxFrameSize);
+            var outputWriter = _pair.Application.Output;
+            var rstStreamFrame = new Http2Frame();
             rstStreamFrame.PrepareRstStream(streamId, Http2ErrorCode.CANCEL);
-            return SendAsync(rstStreamFrame.Raw);
+            var payload = new byte[rstStreamFrame.PayloadLength];
+            BinaryPrimitives.WriteUInt32BigEndian(payload, (uint)Http2ErrorCode.CANCEL);
+
+            Http2FrameWriter.WriteHeader(rstStreamFrame, outputWriter);
+            return SendAsync(payload);
         }
 
         protected Task SendInvalidRstStreamFrameAsync(int streamId, int length)
         {
-            var frame = new Http2Frame(Http2PeerSettings.MinAllowedMaxFrameSize);
+            var outputWriter = _pair.Application.Output;
+            var frame = new Http2Frame();
             frame.PrepareRstStream(streamId, Http2ErrorCode.CANCEL);
             frame.PayloadLength = length;
-            return SendAsync(frame.Raw);
+            Http2FrameWriter.WriteHeader(frame, outputWriter);
+            return SendAsync(new byte[length]);
         }
 
         protected Task SendGoAwayAsync()
         {
-            var frame = new Http2Frame(Http2PeerSettings.MinAllowedMaxFrameSize);
+            var outputWriter = _pair.Application.Output;
+            var frame = new Http2Frame();
             frame.PrepareGoAway(0, Http2ErrorCode.NO_ERROR);
-            return SendAsync(frame.Raw);
+            Http2FrameWriter.WriteHeader(frame, outputWriter);
+            return SendAsync(new byte[frame.PayloadLength]);
         }
 
         protected Task SendInvalidGoAwayFrameAsync()
         {
-            var frame = new Http2Frame(Http2PeerSettings.MinAllowedMaxFrameSize);
+            var outputWriter = _pair.Application.Output;
+            var frame = new Http2Frame();
             frame.PrepareGoAway(0, Http2ErrorCode.NO_ERROR);
             frame.StreamId = 1;
-            return SendAsync(frame.Raw);
+            Http2FrameWriter.WriteHeader(frame, outputWriter);
+            return SendAsync(new byte[frame.PayloadLength]);
         }
 
         protected Task SendWindowUpdateAsync(int streamId, int sizeIncrement)
         {
-            var frame = new Http2Frame(Http2PeerSettings.MinAllowedMaxFrameSize);
+            var outputWriter = _pair.Application.Output;
+            var frame = new Http2Frame();
             frame.PrepareWindowUpdate(streamId, sizeIncrement);
-            return SendAsync(frame.Raw);
+            Http2FrameWriter.WriteHeader(frame, outputWriter);
+            var buffer = outputWriter.GetSpan(4);
+            Bitshifter.WriteUInt31BigEndian(buffer, (uint)sizeIncrement);
+            outputWriter.Advance(4);
+            return FlushAsync(outputWriter);
         }
 
         protected Task SendInvalidWindowUpdateAsync(int streamId, int sizeIncrement, int length)
         {
-            var frame = new Http2Frame(Http2PeerSettings.MinAllowedMaxFrameSize);
+            var outputWriter = _pair.Application.Output;
+            var frame = new Http2Frame();
             frame.PrepareWindowUpdate(streamId, sizeIncrement);
             frame.PayloadLength = length;
-            return SendAsync(frame.Raw);
+            Http2FrameWriter.WriteHeader(frame, outputWriter);
+            return SendAsync(new byte[length]);
         }
 
         protected Task SendUnknownFrameTypeAsync(int streamId, int frameType)
         {
-            var frame = new Http2Frame(Http2PeerSettings.MinAllowedMaxFrameSize);
+            var outputWriter = _pair.Application.Output;
+            var frame = new Http2Frame();
             frame.StreamId = streamId;
             frame.Type = (Http2FrameType)frameType;
             frame.PayloadLength = 0;
-            return SendAsync(frame.Raw);
+            Http2FrameWriter.WriteHeader(frame, outputWriter);
+            return FlushAsync(outputWriter);
         }
 
-        protected async Task<Http2Frame> ReceiveFrameAsync(uint maxFrameSize = Http2PeerSettings.DefaultMaxFrameSize)
+        protected async Task<Http2FrameWithPayload> ReceiveFrameAsync(uint maxFrameSize = Http2PeerSettings.DefaultMaxFrameSize)
         {
-            var frame = new Http2Frame(maxFrameSize);
+            var frame = new Http2FrameWithPayload();
 
             while (true)
             {
                 var result = await _pair.Application.Input.ReadAsync().AsTask().DefaultTimeout();
                 var buffer = result.Buffer;
                 var consumed = buffer.Start;
-                var examined = buffer.End;
+                var examined = buffer.Start;
 
                 try
                 {
                     Assert.True(buffer.Length > 0);
 
-                    if (Http2FrameReader.ReadFrame(buffer, frame, maxFrameSize, out consumed, out examined))
+                    if (Http2FrameReader.ReadFrame(buffer, frame, maxFrameSize, out var framePayload))
                     {
+                        consumed = examined = framePayload.End;
+                        frame.Payload = framePayload.ToArray();
                         return frame;
+                    }
+                    else
+                    {
+                        examined = buffer.End;
                     }
 
                     if (result.IsCompleted)
@@ -781,7 +958,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             }
         }
 
-        protected async Task<Http2Frame> ExpectAsync(Http2FrameType type, int withLength, byte withFlags, int withStreamId)
+        protected async Task<Http2FrameWithPayload> ExpectAsync(Http2FrameType type, int withLength, byte withFlags, int withStreamId)
         {
             var frame = await ReceiveFrameAsync((uint)withLength);
 
@@ -863,6 +1040,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 Assert.True(_receivedHeaders.TryGetValue(header.Key, out var value), header.Key);
                 Assert.Equal(header.Value, value, ignoreCase: true);
             }
+        }
+
+        public class Http2FrameWithPayload : Http2Frame
+        {
+            public Http2FrameWithPayload() : base()
+            {
+            }
+
+            // This does not contain extended headers
+            public Memory<byte> Payload { get; set; }
+
+            public ReadOnlySequence<byte> PayloadSequence => new ReadOnlySequence<byte>(Payload);
         }
     }
 }

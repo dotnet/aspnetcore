@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
     /* https://tools.ietf.org/html/rfc7540#section-4.1
@@ -18,51 +16,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
     */
     public partial class Http2Frame
     {
-        public const int HeaderLength = 9;
+        public int PayloadLength { get; set; }
 
-        private const int LengthOffset = 0;
-        private const int TypeOffset = 3;
-        private const int FlagsOffset = 4;
-        private const int StreamIdOffset = 5;
-        private const int PayloadOffset = 9;
+        public Http2FrameType Type { get; set; }
 
-        private uint _maxFrameSize;
+        public byte Flags { get; set; }
 
-        private readonly byte[] _data;
-
-        public Http2Frame(uint maxFrameSize)
-        {
-            _maxFrameSize = maxFrameSize;
-            _data = new byte[HeaderLength + _maxFrameSize];
-        }
-
-        public Span<byte> Raw => new Span<byte>(_data, 0, HeaderLength + PayloadLength);
-
-        public int PayloadLength
-        {
-            get => (int)Bitshifter.ReadUInt24BigEndian(_data.AsSpan(LengthOffset));
-            set => Bitshifter.WriteUInt24BigEndian(_data.AsSpan(LengthOffset), (uint)value);
-        }
-
-        public Http2FrameType Type
-        {
-            get => (Http2FrameType)_data[TypeOffset];
-            set => _data[TypeOffset] = (byte)value;
-        }
-
-        public byte Flags
-        {
-            get => _data[FlagsOffset];
-            set => _data[FlagsOffset] = value;
-        }
-
-        public int StreamId
-        {
-            get => (int)Bitshifter.ReadUInt31BigEndian(_data.AsSpan(StreamIdOffset));
-            set => Bitshifter.WriteUInt31BigEndian(_data.AsSpan(StreamIdOffset), (uint)value);
-        }
-
-        public Span<byte> Payload => new Span<byte>(_data, PayloadOffset, PayloadLength);
+        public int StreamId { get; set; }
 
         internal object ShowFlags()
         {
@@ -90,6 +50,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 default:
                     return $"0x{Flags:x}";
             }
+        }
+
+        public override string ToString()
+        {
+            return $"{Type} Stream: {StreamId} Length: {PayloadLength} Flags: {ShowFlags()}";
         }
     }
 }
