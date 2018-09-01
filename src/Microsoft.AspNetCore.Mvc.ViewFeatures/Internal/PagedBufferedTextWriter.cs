@@ -5,6 +5,7 @@ using System;
 using System.Buffers;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -30,7 +31,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 
         public override Task FlushAsync() => FlushAsyncCore();
 
-        // private non-virtual for internal calling
+        // private non-virtual for internal calling.
+        // It first does a fast check to see if async is necessary, we inline this check.
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private Task FlushAsyncCore()
         {
             var length = _charBuffer.Length;
