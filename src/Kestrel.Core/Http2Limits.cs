@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core
 {
@@ -11,11 +12,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
     public class Http2Limits
     {
         private int _maxStreamsPerConnection = 100;
-        private int _headerTableSize = MaxAllowedHeaderTableSize;
+        private int _headerTableSize = (int)Http2PeerSettings.DefaultHeaderTableSize;
         private int _maxFrameSize = MinAllowedMaxFrameSize;
 
         // These are limits defined by the RFC https://tools.ietf.org/html/rfc7540#section-4.2
-        public const int MaxAllowedHeaderTableSize = 4096;
         public const int MinAllowedMaxFrameSize = 16 * 1024;
         public const int MaxAllowedMaxFrameSize = 16 * 1024 * 1024 - 1;
 
@@ -50,9 +50,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             get => _headerTableSize;
             set
             {
-                if (value <= 0 || value > MaxAllowedHeaderTableSize)
+                if (value <= 0)
                 {
-                    throw new ArgumentOutOfRangeException(nameof(value), value, CoreStrings.FormatArgumentOutOfRange(0, MaxAllowedHeaderTableSize));
+                    throw new ArgumentOutOfRangeException(nameof(value), value, CoreStrings.GreaterThanZeroRequired);
                 }
 
                 _headerTableSize = value;

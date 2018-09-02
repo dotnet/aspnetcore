@@ -2100,7 +2100,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [InlineData(Http2SettingsParameter.SETTINGS_MAX_FRAME_SIZE, 16 * 1024 - 1, Http2ErrorCode.PROTOCOL_ERROR)]
         [InlineData(Http2SettingsParameter.SETTINGS_MAX_FRAME_SIZE, 16 * 1024 * 1024, Http2ErrorCode.PROTOCOL_ERROR)]
         [InlineData(Http2SettingsParameter.SETTINGS_MAX_FRAME_SIZE, uint.MaxValue, Http2ErrorCode.PROTOCOL_ERROR)]
-        [InlineData(Http2SettingsParameter.SETTINGS_HEADER_TABLE_SIZE, 4097, Http2ErrorCode.PROTOCOL_ERROR)]
         public async Task SETTINGS_Received_InvalidParameterValue_ConnectionError(Http2SettingsParameter parameter, uint value, Http2ErrorCode expectedErrorCode)
         {
             await InitializeConnectionAsync(_noopApplication);
@@ -2240,6 +2239,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 withStreamId: 1);
 
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+        }
+
+        [Fact]
+        public async Task SETTINGS_Received_ChangesHeaderTableSize()
+        {
+            await InitializeConnectionAsync(_noopApplication);
+
+            // Update client settings
+            _clientSettings.HeaderTableSize = 65536; // Chrome's default, larger than the 4kb spec default
+            await SendSettingsAsync();
+
+            // ACK
+            await ExpectAsync(Http2FrameType.SETTINGS,
+                withLength: 0,
+                withFlags: (byte)Http2SettingsFrameFlags.ACK,
+                withStreamId: 0);
+
+            await StopConnectionAsync(expectedLastStreamId: 0, ignoreNonGoAwayFrames: false);
         }
 
         [Fact]
