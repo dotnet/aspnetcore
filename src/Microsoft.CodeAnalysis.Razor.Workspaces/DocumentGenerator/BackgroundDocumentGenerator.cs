@@ -149,12 +149,35 @@ namespace Microsoft.CodeAnalysis.Razor
             // Access to the timer is protected by the lock in Enqueue and in Timer_Tick
             if (_timer == null)
             {
-                // Timer will fire after a fixed delay, but only once.
-                _timer = new Timer(Timer_Tick, null, Delay, Timeout.InfiniteTimeSpan);
+                // Don't capture asynclocals onto Timer
+                bool restoreFlow = false;
+                try
+                {
+                    if (!ExecutionContext.IsFlowSuppressed())
+                    {
+                        ExecutionContext.SuppressFlow();
+                        restoreFlow = true;
+                    }
+
+                    // Timer will fire after a fixed delay, but only once.
+                    _timer = new Timer(state => ((BackgroundDocumentGenerator)state).Timer_Tick(), this, Delay, Timeout.InfiniteTimeSpan);
+                }
+                finally
+                {
+                    if (restoreFlow)
+                    {
+                        ExecutionContext.RestoreFlow();
+                    }
+                }
             }
         }
 
-        private async void Timer_Tick(object state) // Yeah I know.
+        private void Timer_Tick()
+        {
+            _ = TimerTick();
+        }
+
+        private async Task TimerTick()
         {
             try
             {
@@ -208,7 +231,8 @@ namespace Microsoft.CodeAnalysis.Razor
             {
                 // This is something totally unexpected, let's just send it over to the workspace.
                 await Task.Factory.StartNew(
-                    () => _projectManager.ReportError(ex),
+                    (p) => ((ProjectSnapshotManagerBase)p).ReportError(ex),
+                    _projectManager,
                     CancellationToken.None,
                     TaskCreationOptions.None,
                     _foregroundDispatcher.ForegroundScheduler);
@@ -218,7 +242,8 @@ namespace Microsoft.CodeAnalysis.Razor
         private void ReportError(DocumentSnapshot document, Exception ex)
         {
             GC.KeepAlive(Task.Factory.StartNew(
-                () => _projectManager.ReportError(ex),
+                (p) => ((ProjectSnapshotManagerBase)p).ReportError(ex), 
+                _projectManager,
                 CancellationToken.None,
                 TaskCreationOptions.None,
                 _foregroundDispatcher.ForegroundScheduler));

@@ -213,8 +213,26 @@ namespace Microsoft.VisualStudio.Editor.Razor
             {
                 if (_idleTimer == null)
                 {
-                    // Timer will fire after a fixed delay, but only once.
-                    _idleTimer = new Timer(Timer_Tick, null, IdleDelay, Timeout.InfiniteTimeSpan);
+                    // Don't capture asynclocals onto Timer
+                    bool restoreFlow = false;
+                    try
+                    {
+                        if (!ExecutionContext.IsFlowSuppressed())
+                        {
+                            ExecutionContext.SuppressFlow();
+                            restoreFlow = true;
+                        }
+
+                        // Timer will fire after a fixed delay, but only once.
+                        _idleTimer = new Timer(state => ((DefaultVisualStudioRazorParser)state).Timer_Tick(), this, IdleDelay, Timeout.InfiniteTimeSpan);
+                    }
+                    finally
+                    {
+                        if (restoreFlow)
+                        {
+                            ExecutionContext.RestoreFlow();
+                        }
+                    }
                 }
             }
         }
@@ -337,7 +355,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             }
         }
 
-        private void Timer_Tick(object state)
+        private void Timer_Tick()
         {
             try
             {
