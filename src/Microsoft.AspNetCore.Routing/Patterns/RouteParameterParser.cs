@@ -22,14 +22,22 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
             if (parameter.Length == 0)
             {
-                return new RoutePatternParameterPart(string.Empty, null, RoutePatternParameterKind.Standard, Array.Empty<RoutePatternConstraintReference>());
+                return new RoutePatternParameterPart(string.Empty, null, RoutePatternParameterKind.Standard, Array.Empty<RoutePatternParameterPolicyReference>());
             }
 
             var startIndex = 0;
             var endIndex = parameter.Length - 1;
+            var encodeSlashes = true;
 
             var parameterKind = RoutePatternParameterKind.Standard;
-            if (parameter[0] == '*')
+
+            if (parameter.StartsWith("**", StringComparison.Ordinal))
+            {
+                encodeSlashes = false;
+                parameterKind = RoutePatternParameterKind.CatchAll;
+                startIndex += 2;
+            }
+            else if (parameter[0] == '*')
             {
                 parameterKind = RoutePatternParameterKind.CatchAll;
                 startIndex++;
@@ -79,16 +87,21 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                 defaultValue = parameter.Substring(currentIndex + 1, endIndex - currentIndex);
             }
 
-            return new RoutePatternParameterPart(parameterName, defaultValue, parameterKind, parseResults.Constraints.ToArray());
+            return new RoutePatternParameterPart(
+                parameterName,
+                defaultValue,
+                parameterKind,
+                parseResults.ParameterPolicies.ToArray(),
+                encodeSlashes);
         }
 
-        private static ConstraintParseResults ParseConstraints(
+        private static ParameterPolicyParseResults ParseConstraints(
             string text,
             string parameterName,
             int currentIndex,
             int endIndex)
         {
-            var constraints = new List<RoutePatternConstraintReference>();
+            var constraints = new List<RoutePatternParameterPolicyReference>();
             var state = ParseState.Start;
             var startIndex = currentIndex;
             do
@@ -121,7 +134,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                             case null:
                                 state = ParseState.End;
                                 var constraintText = text.Substring(startIndex, currentIndex - startIndex);
-                                constraints.Add(RoutePatternFactory.Constraint(constraintText));
+                                constraints.Add(RoutePatternFactory.ParameterPolicy(constraintText));
                                 break;
                             case ')':
                                 // Only consume a ')' token if
@@ -135,18 +148,18 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                                     case null:
                                         state = ParseState.End;
                                         constraintText = text.Substring(startIndex, currentIndex - startIndex + 1);
-                                        constraints.Add(RoutePatternFactory.Constraint(constraintText));
+                                        constraints.Add(RoutePatternFactory.ParameterPolicy(constraintText));
                                         break;
                                     case ':':
                                         state = ParseState.Start;
                                         constraintText = text.Substring(startIndex, currentIndex - startIndex + 1);
-                                        constraints.Add(RoutePatternFactory.Constraint(constraintText));
+                                        constraints.Add(RoutePatternFactory.ParameterPolicy(constraintText));
                                         startIndex = currentIndex + 1;
                                         break;
                                     case '=':
                                         state = ParseState.End;
                                         constraintText = text.Substring(startIndex, currentIndex - startIndex + 1);
-                                        constraints.Add(RoutePatternFactory.Constraint(constraintText));
+                                        constraints.Add(RoutePatternFactory.ParameterPolicy(constraintText));
                                         break;
                                 }
                                 break;
@@ -161,7 +174,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                                 if (indexOfClosingParantheses == -1)
                                 {
                                     constraintText = text.Substring(startIndex, currentIndex - startIndex);
-                                    constraints.Add(RoutePatternFactory.Constraint(constraintText));
+                                    constraints.Add(RoutePatternFactory.ParameterPolicy(constraintText));
 
                                     if (currentChar == ':')
                                     {
@@ -190,14 +203,14 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                                 var constraintText = text.Substring(startIndex, currentIndex - startIndex);
                                 if (constraintText.Length > 0)
                                 {
-                                    constraints.Add(RoutePatternFactory.Constraint(constraintText));
+                                    constraints.Add(RoutePatternFactory.ParameterPolicy(constraintText));
                                 }
                                 break;
                             case ':':
                                 constraintText = text.Substring(startIndex, currentIndex - startIndex);
                                 if (constraintText.Length > 0)
                                 {
-                                    constraints.Add(RoutePatternFactory.Constraint(constraintText));
+                                    constraints.Add(RoutePatternFactory.ParameterPolicy(constraintText));
                                 }
                                 startIndex = currentIndex + 1;
                                 break;
@@ -209,7 +222,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                                 constraintText = text.Substring(startIndex, currentIndex - startIndex);
                                 if (constraintText.Length > 0)
                                 {
-                                    constraints.Add(RoutePatternFactory.Constraint(constraintText));
+                                    constraints.Add(RoutePatternFactory.ParameterPolicy(constraintText));
                                 }
                                 currentIndex--;
                                 break;
@@ -221,7 +234,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
             } while (state != ParseState.End);
 
-            return new ConstraintParseResults(currentIndex, constraints);
+            return new ParameterPolicyParseResults(currentIndex, constraints);
         }
 
         private enum ParseState
@@ -232,16 +245,16 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             End
         }
 
-        private readonly struct ConstraintParseResults
+        private readonly struct ParameterPolicyParseResults
         {
             public readonly int CurrentIndex;
 
-            public readonly IReadOnlyList<RoutePatternConstraintReference> Constraints;
-            
-            public ConstraintParseResults(int currentIndex, IReadOnlyList<RoutePatternConstraintReference> constraints)
+            public readonly IReadOnlyList<RoutePatternParameterPolicyReference> ParameterPolicies;
+
+            public ParameterPolicyParseResults(int currentIndex, IReadOnlyList<RoutePatternParameterPolicyReference> parameterPolicies)
             {
                 CurrentIndex = currentIndex;
-                Constraints = constraints;
+                ParameterPolicies = parameterPolicies;
             }
         }
     }

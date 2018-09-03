@@ -3,15 +3,32 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Routing
 {
-    public class DefaultEndpointDataSource : EndpointDataSource
+    /// <summary>
+    /// Provides a collection of <see cref="Endpoint"/> instances.
+    /// </summary>
+    public sealed class DefaultEndpointDataSource : EndpointDataSource
     {
-        private readonly List<Endpoint> _endpoints; 
+        private readonly List<Endpoint> _endpoints;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DefaultEndpointDataSource" /> class.
+        /// </summary>
+        /// <param name="endpoints">The <see cref="Endpoint"/> instances that the data source will return.</param>
+        public DefaultEndpointDataSource(params Endpoint[] endpoints)
+            : this((IEnumerable<Endpoint>) endpoints)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DefaultEndpointDataSource" /> class.
+        /// </summary>
+        /// <param name="endpoints">The <see cref="Endpoint"/> instances that the data source will return.</param>
         public DefaultEndpointDataSource(IEnumerable<Endpoint> endpoints)
         {
             if (endpoints == null)
@@ -23,8 +40,16 @@ namespace Microsoft.AspNetCore.Routing
             _endpoints.AddRange(endpoints);
         }
 
+        /// <summary>
+        /// Gets a <see cref="IChangeToken"/> used to signal invalidation of cached <see cref="Endpoint"/>
+        /// instances.
+        /// </summary>
+        /// <returns>The <see cref="IChangeToken"/>.</returns>
         public override IChangeToken GetChangeToken() => NullChangeToken.Singleton;
 
+        /// <summary>
+        /// Returns a read-only collection of <see cref="Endpoint"/> instances.
+        /// </summary>
         public override IReadOnlyList<Endpoint> Endpoints => _endpoints;
     }
 }

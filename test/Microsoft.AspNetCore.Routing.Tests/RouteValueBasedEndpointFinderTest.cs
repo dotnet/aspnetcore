@@ -1,12 +1,13 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Routing.EndpointFinders;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Internal;
-using Microsoft.AspNetCore.Routing.Matchers;
+using Microsoft.AspNetCore.Routing.Matching;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.AspNetCore.Routing.TestObjects;
 using Microsoft.AspNetCore.Routing.Tree;
@@ -34,7 +35,7 @@ namespace Microsoft.AspNetCore.Routing
             Assert.NotNull(finder.NamedMatches);
             Assert.True(finder.NamedMatches.TryGetValue("named", out var namedMatches));
             var namedMatch = Assert.Single(namedMatches);
-            var actual = Assert.IsType<MatcherEndpoint>(namedMatch.Match.Entry.Data);
+            var actual = Assert.IsType<RouteEndpoint>(namedMatch.Match.Entry.Data);
             Assert.Same(endpoint2, actual);
         }
 
@@ -55,8 +56,8 @@ namespace Microsoft.AspNetCore.Routing
             Assert.NotNull(finder.NamedMatches);
             Assert.True(finder.NamedMatches.TryGetValue("named", out var namedMatches));
             Assert.Equal(2, namedMatches.Count);
-            Assert.Same(endpoint2, Assert.IsType<MatcherEndpoint>(namedMatches[0].Match.Entry.Data));
-            Assert.Same(endpoint3, Assert.IsType<MatcherEndpoint>(namedMatches[1].Match.Entry.Data));
+            Assert.Same(endpoint2, Assert.IsType<RouteEndpoint>(namedMatches[0].Match.Entry.Data));
+            Assert.Same(endpoint3, Assert.IsType<RouteEndpoint>(namedMatches[1].Match.Entry.Data));
         }
 
         [Fact]
@@ -76,31 +77,8 @@ namespace Microsoft.AspNetCore.Routing
             Assert.NotNull(finder.NamedMatches);
             Assert.True(finder.NamedMatches.TryGetValue("named", out var namedMatches));
             Assert.Equal(2, namedMatches.Count);
-            Assert.Same(endpoint2, Assert.IsType<MatcherEndpoint>(namedMatches[0].Match.Entry.Data));
-            Assert.Same(endpoint3, Assert.IsType<MatcherEndpoint>(namedMatches[1].Match.Entry.Data));
-        }
-
-        [Fact]
-        public void GetOutboundMatches_DoesNotGetNamedMatchesFor_EndpointsHaving_INameMetadata()
-        {
-            // Arrange
-            var endpoint1 = CreateEndpoint("/a");
-            var endpoint2 = CreateEndpoint("/a", routeName: "named");
-            var endpoint3 = CreateEndpoint(
-                "/b",
-                metadataCollection: new EndpointMetadataCollection(new[] { new NameMetadata("named") }));
-
-            // Act
-            var finder = CreateEndpointFinder(endpoint1, endpoint2);
-
-            // Assert
-            Assert.NotNull(finder.AllMatches);
-            Assert.Equal(2, finder.AllMatches.Count());
-            Assert.NotNull(finder.NamedMatches);
-            Assert.True(finder.NamedMatches.TryGetValue("named", out var namedMatches));
-            var namedMatch = Assert.Single(namedMatches);
-            var actual = Assert.IsType<MatcherEndpoint>(namedMatch.Match.Entry.Data);
-            Assert.Same(endpoint2, actual);
+            Assert.Same(endpoint2, Assert.IsType<RouteEndpoint>(namedMatches[0].Match.Entry.Data));
+            Assert.Same(endpoint3, Assert.IsType<RouteEndpoint>(namedMatches[1].Match.Entry.Data));
         }
 
         [Fact]
@@ -120,7 +98,7 @@ namespace Microsoft.AspNetCore.Routing
             // Assert 1
             Assert.NotNull(finder.AllMatches);
             var match = Assert.Single(finder.AllMatches);
-            var actual = Assert.IsType<MatcherEndpoint>(match.Entry.Data);
+            var actual = Assert.IsType<RouteEndpoint>(match.Entry.Data);
             Assert.Same(endpoint1, actual);
 
             // Arrange 2
@@ -150,22 +128,22 @@ namespace Microsoft.AspNetCore.Routing
                 finder.AllMatches,
                 (m) =>
                 {
-                    actual = Assert.IsType<MatcherEndpoint>(m.Entry.Data);
+                    actual = Assert.IsType<RouteEndpoint>(m.Entry.Data);
                     Assert.Same(endpoint1, actual);
                 },
                 (m) =>
                 {
-                    actual = Assert.IsType<MatcherEndpoint>(m.Entry.Data);
+                    actual = Assert.IsType<RouteEndpoint>(m.Entry.Data);
                     Assert.Same(endpoint2, actual);
                 },
                 (m) =>
                 {
-                    actual = Assert.IsType<MatcherEndpoint>(m.Entry.Data);
+                    actual = Assert.IsType<RouteEndpoint>(m.Entry.Data);
                     Assert.Same(endpoint3, actual);
                 },
                 (m) =>
                 {
-                    actual = Assert.IsType<MatcherEndpoint>(m.Entry.Data);
+                    actual = Assert.IsType<RouteEndpoint>(m.Entry.Data);
                     Assert.Same(endpoint4, actual);
                 });
         }
@@ -183,7 +161,7 @@ namespace Microsoft.AspNetCore.Routing
 
             // Act
             var foundEndpoints = finder.FindEndpoints(
-                new RouteValuesBasedEndpointFinderContext
+                new RouteValuesAddress
                 {
                     ExplicitValues = new RouteValueDictionary(new { id = 10 }),
                     AmbientValues = new RouteValueDictionary(new { controller = "Home", action = "Index" }),
@@ -212,7 +190,7 @@ namespace Microsoft.AspNetCore.Routing
 
             // Act
             var foundEndpoints = finder.FindEndpoints(
-                new RouteValuesBasedEndpointFinderContext
+                new RouteValuesAddress
                 {
                     ExplicitValues = new RouteValueDictionary(),
                     AmbientValues = new RouteValueDictionary(),
@@ -254,7 +232,7 @@ namespace Microsoft.AspNetCore.Routing
                 objectPool);
         }
 
-        private MatcherEndpoint CreateEndpoint(
+        private RouteEndpoint CreateEndpoint(
             string template,
             object defaults = null,
             object requiredValues = null,
@@ -264,38 +242,20 @@ namespace Microsoft.AspNetCore.Routing
         {
             if (metadataCollection == null)
             {
-                metadataCollection = EndpointMetadataCollection.Empty;
-                if (!string.IsNullOrEmpty(routeName))
+                var metadata = new List<object>();
+                if (!string.IsNullOrEmpty(routeName) || requiredValues != null)
                 {
-                    metadataCollection = new EndpointMetadataCollection(new[] { new RouteNameMetadata(routeName) });
+                    metadata.Add(new RouteValuesAddressMetadata(routeName, new RouteValueDictionary(requiredValues)));
                 }
+                metadataCollection = new EndpointMetadataCollection(metadata);
             }
 
-            return new MatcherEndpoint(
-                MatcherEndpoint.EmptyInvoker,
-                RoutePatternFactory.Parse(template, defaults, constraints: null),
-                new RouteValueDictionary(requiredValues),
+            return new RouteEndpoint(
+                TestConstants.EmptyRequestDelegate,
+                RoutePatternFactory.Parse(template, defaults, parameterPolicies: null),
                 order,
                 metadataCollection,
                 null);
-        }
-
-        private class RouteNameMetadata : IRouteNameMetadata
-        {
-            public RouteNameMetadata(string name)
-            {
-                Name = name;
-            }
-            public string Name { get; }
-        }
-
-        private class NameMetadata : INameMetadata
-        {
-            public NameMetadata(string name)
-            {
-                Name = name;
-            }
-            public string Name { get; }
         }
 
         private class CustomRouteValuesBasedEndpointFinder : RouteValuesBasedEndpointFinder
@@ -319,7 +279,5 @@ namespace Microsoft.AspNetCore.Routing
                 return matches;
             }
         }
-
-        private class SuppressLinkGenerationMetadata : ISuppressLinkGenerationMetadata { }
     }
 }

@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.AspNetCore.Routing.Template;
+using Microsoft.AspNetCore.Routing.TestObjects;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.ObjectPool;
@@ -38,7 +39,7 @@ namespace Microsoft.AspNetCore.Routing.Tree
             var expectedRouteGroup = CreateRouteGroup(0, "{parameter1=1}/{parameter2=2}/{parameter3=3}/{*parameter4=4}");
             var routeValueKeys = new[] { "parameter1", "parameter2", "parameter3", "parameter4" };
             var expectedRouteValues = new RouteValueDictionary();
-            for (int i = 0; i < routeValueKeys.Length; i++)
+            for (var i = 0; i < routeValueKeys.Length; i++)
             {
                 expectedRouteValues.Add(routeValueKeys[i], routeValues[i]);
             }
@@ -209,7 +210,7 @@ namespace Microsoft.AspNetCore.Routing.Tree
             var expectedRouteGroup = CreateRouteGroup(0, "{parameter1=1}/{parameter2=2}/{parameter3=3}/{parameter4=4}");
             var routeValueKeys = new[] { "parameter1", "parameter2", "parameter3", "parameter4" };
             var expectedRouteValues = new RouteValueDictionary();
-            for (int i = 0; i < routeValueKeys.Length; i++)
+            for (var i = 0; i < routeValueKeys.Length; i++)
             {
                 expectedRouteValues.Add(routeValueKeys[i], routeValues[i]);
             }
@@ -261,7 +262,7 @@ namespace Microsoft.AspNetCore.Routing.Tree
             var expectedRouteGroup = CreateRouteGroup(0, "{parameter1:int=1}/{parameter2:int=2}/{parameter3:int=3}/{parameter4:int=4}");
             var routeValueKeys = new[] { "parameter1", "parameter2", "parameter3", "parameter4" };
             var expectedRouteValues = new RouteValueDictionary();
-            for (int i = 0; i < routeValueKeys.Length; i++)
+            for (var i = 0; i < routeValueKeys.Length; i++)
             {
                 expectedRouteValues.Add(routeValueKeys[i], routeValues[i]);
             }
@@ -304,7 +305,7 @@ namespace Microsoft.AspNetCore.Routing.Tree
             var expectedRouteGroup = CreateRouteGroup(0, "{parameter1=1}/{parameter2=2}/{parameter3=3}/{*parameter4=4}");
             var routeValueKeys = new[] { "parameter1", "parameter2", "parameter3", "parameter4" };
             var expectedRouteValues = new RouteValueDictionary();
-            for (int i = 0; i < routeValueKeys.Length; i++)
+            for (var i = 0; i < routeValueKeys.Length; i++)
             {
                 expectedRouteValues.Add(routeValueKeys[i], routeValues[i]);
             }
@@ -2133,7 +2134,7 @@ namespace Microsoft.AspNetCore.Routing.Tree
             var optionsMock = new Mock<IOptions<RouteOptions>>();
             optionsMock.SetupGet(o => o.Value).Returns(options);
 
-            return new DefaultInlineConstraintResolver(optionsMock.Object);
+            return new DefaultInlineConstraintResolver(optionsMock.Object, new TestServiceProvider());
         }
 
         private static TreeRouteBuilder CreateBuilder()

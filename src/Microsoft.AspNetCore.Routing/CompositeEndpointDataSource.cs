@@ -7,15 +7,16 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
-using Microsoft.AspNetCore.Routing.EndpointConstraints;
-using Microsoft.AspNetCore.Routing.Matchers;
-using Microsoft.AspNetCore.Routing.Metadata;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Routing
 {
+    /// <summary>
+    /// Represents an <see cref="EndpointDataSource"/> whose values come from a collection of <see cref="EndpointDataSource"/> instances.
+    /// </summary>
     [DebuggerDisplay("{DebuggerDisplayString,nq}")]
-    public class CompositeEndpointDataSource : EndpointDataSource
+    public sealed class CompositeEndpointDataSource : EndpointDataSource
     {
         private readonly EndpointDataSource[] _dataSources;
         private readonly object _lock;
@@ -35,12 +36,20 @@ namespace Microsoft.AspNetCore.Routing
             _lock = new object();
         }
 
+        /// <summary>
+        /// Gets a <see cref="IChangeToken"/> used to signal invalidation of cached <see cref="Endpoint"/>
+        /// instances.
+        /// </summary>
+        /// <returns>The <see cref="IChangeToken"/>.</returns>
         public override IChangeToken GetChangeToken()
         {
             EnsureInitialized();
             return _consumerChangeToken;
         }
 
+        /// <summary>
+        /// Returns a read-only collection of <see cref="Endpoint"/> instances.
+        /// </summary>
         public override IReadOnlyList<Endpoint> Endpoints
         {
             get
@@ -123,37 +132,57 @@ namespace Microsoft.AspNetCore.Routing
                 var sb = new StringBuilder();
                 foreach (var endpoint in _endpoints)
                 {
-                    if (endpoint is MatcherEndpoint matcherEndpoint)
+                    if (endpoint is RouteEndpoint routeEndpoint)
                     {
-                        var template = matcherEndpoint.RoutePattern.RawText;
+                        var template = routeEndpoint.RoutePattern.RawText;
                         template = string.IsNullOrEmpty(template) ? "\"\"" : template;
                         sb.Append(template);
-                        var requiredValues = matcherEndpoint.RequiredValues.Select(kvp => $"{kvp.Key} = \"{kvp.Value ?? "null"}\"");
-                        sb.Append(", Required Values: new { ");
-                        sb.Append(string.Join(", ", requiredValues));
+                        sb.Append(", Defaults: new { ");
+                        sb.Append(string.Join(", ", FormatValues(routeEndpoint.RoutePattern.Defaults)));
                         sb.Append(" }");
-                        sb.Append(", Order:");
-                        sb.Append(matcherEndpoint.Order);
+                        var routeValuesAddressMetadata = routeEndpoint.Metadata.GetMetadata<IRouteValuesAddressMetadata>();
+                        sb.Append(", Route Name: ");
+                        sb.Append(routeValuesAddressMetadata?.Name);
+                        if (routeValuesAddressMetadata?.RequiredValues != null)
+                        {
+                            sb.Append(", Required Values: new { ");
+                            sb.Append(string.Join(", ", FormatValues(routeValuesAddressMetadata.RequiredValues)));
+                            sb.Append(" }");
+                        }
+                        sb.Append(", Order: ");
+                        sb.Append(routeEndpoint.Order);
 
-                        var httpMethodMetadata = matcherEndpoint.Metadata.GetMetadata<IHttpMethodMetadata>();
+                        var httpMethodMetadata = routeEndpoint.Metadata.GetMetadata<IHttpMethodMetadata>();
                         if (httpMethodMetadata != null)
                         {
-                            foreach (var httpMethod in httpMethodMetadata.HttpMethods)
-                            {
-                                sb.Append(", Http Methods: ");
-                                sb.Append(string.Join(", ", httpMethod));
-                            }
+                            sb.Append(", Http Methods: ");
+                            sb.Append(string.Join(", ", httpMethodMetadata.HttpMethods));
                         }
-
+                        sb.Append(", Display Name: ");
+                        sb.Append(routeEndpoint.DisplayName);
                         sb.AppendLine();
                     }
                     else
                     {
-                        sb.Append("Non-MatcherEndpoint. DisplayName:");
+                        sb.Append("Non-RouteEndpoint. DisplayName:");
                         sb.AppendLine(endpoint.DisplayName);
                     }
                 }
                 return sb.ToString();
+
+                IEnumerable<string> FormatValues(IEnumerable<KeyValuePair<string, object>> values)
+                {
+                    return values.Select(
+                        kvp =>
+                        {
+                            var value = "null";
+                            if (kvp.Value != null)
+                            {
+                                value = "\"" + kvp.Value.ToString() + "\"";
+                            }
+                            return kvp.Key + " = " + value;
+                        });
+                }
             }
         }
     }

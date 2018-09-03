@@ -3,11 +3,9 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Routing
@@ -15,7 +13,7 @@ namespace Microsoft.AspNetCore.Routing
     public class EndpointMiddlewareTest
     {
         [Fact]
-        public async Task Invoke_NoFeature_ThrowFriendlyErrorMessage()
+        public async Task Invoke_NoFeature_NoOps()
         {
             // Arrange
             var httpContext = new DefaultHttpContext();
@@ -23,22 +21,73 @@ namespace Microsoft.AspNetCore.Routing
 
             RequestDelegate next = (c) =>
             {
-                return Task.FromResult<object>(null);
+                return Task.CompletedTask;
             };
 
             var middleware = new EndpointMiddleware(NullLogger<EndpointMiddleware>.Instance, next);
 
             // Act
-            var invokeTask = middleware.Invoke(httpContext);
+            await middleware.Invoke(httpContext);
+
+            // Assert - does not throw
+        }
+
+        [Fact]
+        public async Task Invoke_NoEndpoint_NoOps()
+        {
+            // Arrange
+            var httpContext = new DefaultHttpContext();
+            httpContext.RequestServices = new ServiceProvider();
+
+            httpContext.Features.Set<IEndpointFeature>(new EndpointFeature()
+            {
+                Endpoint = null,
+            });
+
+            RequestDelegate next = (c) =>
+            {
+                return Task.CompletedTask;
+            };
+
+            var middleware = new EndpointMiddleware(NullLogger<EndpointMiddleware>.Instance, next);
+
+            // Act
+            await middleware.Invoke(httpContext);
+
+            // Assert - does not throw
+        }
+
+        [Fact]
+        public async Task Invoke_WithEndpoint_InvokesDelegate()
+        {
+            // Arrange
+            var httpContext = new DefaultHttpContext();
+            httpContext.RequestServices = new ServiceProvider();
+
+            var invoked = false;
+            RequestDelegate endpointFunc = (c) =>
+            {
+                invoked = true;
+                return Task.CompletedTask;
+            };
+
+            httpContext.Features.Set<IEndpointFeature>(new EndpointFeature()
+            {
+                Endpoint = new Endpoint(endpointFunc, EndpointMetadataCollection.Empty, "Test"),
+            });
+
+            RequestDelegate next = (c) =>
+            {
+                return Task.CompletedTask;
+            };
+
+            var middleware = new EndpointMiddleware(NullLogger<EndpointMiddleware>.Instance, next);
+
+            // Act
+            await middleware.Invoke(httpContext);
 
             // Assert
-            var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () => await invokeTask);
-
-            Assert.Equal(
-                "Unable to execute an endpoint because the GlobalRoutingMiddleware was not run for this request. " +
-                "Ensure GlobalRoutingMiddleware is added to the request execution pipeline before EndpointMiddleware " +
-                "in application startup code.",
-                ex.Message);
+            Assert.True(invoked);
         }
 
         private class ServiceProvider : IServiceProvider

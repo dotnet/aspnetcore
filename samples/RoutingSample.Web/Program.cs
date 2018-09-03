@@ -9,8 +9,8 @@ namespace RoutingSample.Web
 {
     public class Program
     {
-        public static readonly string GlobalRoutingScenario = "globalrouting";
-        public static readonly string RouterScenario = "router";
+        public const string EndpointRoutingScenario = "endpointrouting";
+        public const string RouterScenario = "router";
 
         public static void Main(string[] args)
         {
@@ -25,7 +25,7 @@ namespace RoutingSample.Web
             if (args.Length == 0)
             {
                 Console.WriteLine("Choose a sample to run:");
-                Console.WriteLine($"1. {GlobalRoutingScenario}");
+                Console.WriteLine($"1. {EndpointRoutingScenario}");
                 Console.WriteLine($"2. {RouterScenario}");
                 Console.WriteLine();
 
@@ -40,18 +40,18 @@ namespace RoutingSample.Web
             switch (scenario)
             {
                 case "1":
-                case "globalrouting":
-                    startupType = typeof(UseGlobalRoutingStartup);
+                case EndpointRoutingScenario:
+                    startupType = typeof(UseEndpointRoutingStartup);
                     break;
 
                 case "2":
-                case "router":
+                case RouterScenario:
                     startupType = typeof(UseRouterStartup);
                     break;
 
                 default:
                     Console.WriteLine($"unknown scenario {scenario}");
-                    Console.WriteLine($"usage: dotnet run -- ({GlobalRoutingScenario}|{RouterScenario})");
+                    Console.WriteLine($"usage: dotnet run -- ({EndpointRoutingScenario}|{RouterScenario})");
                     throw new InvalidOperationException();
 
             }

@@ -5,12 +5,22 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Routing.Constraints;
-using Microsoft.AspNetCore.Routing.Matchers;
+using Microsoft.AspNetCore.Routing.Matching;
 
 namespace Microsoft.AspNetCore.Routing.Patterns
 {
+    /// <summary>
+    /// Contains factory methods for creating <see cref="RoutePattern"/> and related types.
+    /// Use <see cref="Parse(string)"/> to parse a route pattern in
+    /// string format.
+    /// </summary>
     public static class RoutePatternFactory
     {
+        /// <summary>
+        /// Creates a <see cref="RoutePattern"/> from its string representation.
+        /// </summary>
+        /// <param name="pattern">The route pattern string to parse.</param>
+        /// <returns>The <see cref="RoutePattern"/>.</returns>
         public static RoutePattern Parse(string pattern)
         {
             if (pattern == null)
@@ -21,7 +31,23 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             return RoutePatternParser.Parse(pattern);
         }
 
-        public static RoutePattern Parse(string pattern, object defaults, object constraints)
+        /// <summary>
+        /// Creates a <see cref="RoutePattern"/> from its string representation along
+        /// with provided default values and parameter policies.
+        /// </summary>
+        /// <param name="pattern">The route pattern string to parse.</param>
+        /// <param name="defaults">
+        /// Additional default values to associated with the route pattern. May be null.
+        /// The provided object will be converted to key-value pairs using <see cref="RouteValueDictionary"/>
+        /// and then merged into the parsed route pattern.
+        /// </param>
+        /// <param name="parameterPolicies">
+        /// Additional parameter policies to associated with the route pattern. May be null.
+        /// The provided object will be converted to key-value pairs using <see cref="RouteValueDictionary"/>
+        /// and then merged into the parsed route pattern.
+        /// </param>
+        /// <returns>The <see cref="RoutePattern"/>.</returns>
+        public static RoutePattern Parse(string pattern, object defaults, object parameterPolicies)
         {
             if (pattern == null)
             {
@@ -29,9 +55,14 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             }
 
             var original = RoutePatternParser.Parse(pattern);
-            return Pattern(original.RawText, defaults, constraints, original.PathSegments);
+            return Pattern(original.RawText, defaults, parameterPolicies, original.PathSegments);
         }
 
+        /// <summary>
+        /// Creates a new <see cref="RoutePattern"/> from a collection of segments.
+        /// </summary>
+        /// <param name="segments">The collection of segments.</param>
+        /// <returns>The <see cref="RoutePattern"/>.</returns>
         public static RoutePattern Pattern(IEnumerable<RoutePatternPathSegment> segments)
         {
             if (segments == null)
@@ -42,6 +73,12 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             return PatternCore(null, null, null, segments);
         }
 
+        /// <summary>
+        /// Creates a new <see cref="RoutePattern"/> from a collection of segments.
+        /// </summary>
+        /// <param name="rawText">The raw text to associate with the route pattern. May be null.</param>
+        /// <param name="segments">The collection of segments.</param>
+        /// <returns>The <see cref="RoutePattern"/>.</returns>
         public static RoutePattern Pattern(string rawText, IEnumerable<RoutePatternPathSegment> segments)
         {
             if (segments == null)
@@ -52,9 +89,25 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             return PatternCore(rawText, null, null, segments);
         }
 
+        /// <summary>
+        /// Creates a <see cref="RoutePattern"/> from a collection of segments along
+        /// with provided default values and parameter policies.
+        /// </summary>
+        /// <param name="defaults">
+        /// Additional default values to associated with the route pattern. May be null.
+        /// The provided object will be converted to key-value pairs using <see cref="RouteValueDictionary"/>
+        /// and then merged into the route pattern.
+        /// </param>
+        /// <param name="parameterPolicies">
+        /// Additional parameter policies to associated with the route pattern. May be null.
+        /// The provided object will be converted to key-value pairs using <see cref="RouteValueDictionary"/>
+        /// and then merged into the route pattern.
+        /// </param>
+        /// <param name="segments">The collection of segments.</param>
+        /// <returns>The <see cref="RoutePattern"/>.</returns>
         public static RoutePattern Pattern(
             object defaults,
-            object constraints,
+            object parameterPolicies,
             IEnumerable<RoutePatternPathSegment> segments)
         {
             if (segments == null)
@@ -62,13 +115,30 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                 throw new ArgumentNullException(nameof(segments));
             }
 
-            return PatternCore(null, new RouteValueDictionary(defaults), new RouteValueDictionary(constraints), segments);
+            return PatternCore(null, new RouteValueDictionary(defaults), new RouteValueDictionary(parameterPolicies), segments);
         }
 
+        /// <summary>
+        /// Creates a <see cref="RoutePattern"/> from a collection of segments along
+        /// with provided default values and parameter policies.
+        /// </summary>
+        /// <param name="rawText">The raw text to associate with the route pattern.</param>
+        /// <param name="defaults">
+        /// Additional default values to associated with the route pattern. May be null.
+        /// The provided object will be converted to key-value pairs using <see cref="RouteValueDictionary"/>
+        /// and then merged into the route pattern.
+        /// </param>
+        /// <param name="parameterPolicies">
+        /// Additional parameter policies to associated with the route pattern. May be null.
+        /// The provided object will be converted to key-value pairs using <see cref="RouteValueDictionary"/>
+        /// and then merged into the route pattern.
+        /// </param>
+        /// <param name="segments">The collection of segments.</param>
+        /// <returns>The <see cref="RoutePattern"/>.</returns>
         public static RoutePattern Pattern(
             string rawText,
             object defaults,
-            object constraints,
+            object parameterPolicies,
             IEnumerable<RoutePatternPathSegment> segments)
         {
             if (segments == null)
@@ -76,9 +146,14 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                 throw new ArgumentNullException(nameof(segments));
             }
 
-            return PatternCore(rawText, new RouteValueDictionary(defaults), new RouteValueDictionary(constraints), segments);
+            return PatternCore(rawText, new RouteValueDictionary(defaults), new RouteValueDictionary(parameterPolicies), segments);
         }
 
+        /// <summary>
+        /// Creates a new <see cref="RoutePattern"/> from a collection of segments.
+        /// </summary>
+        /// <param name="segments">The collection of segments.</param>
+        /// <returns>The <see cref="RoutePattern"/>.</returns>
         public static RoutePattern Pattern(params RoutePatternPathSegment[] segments)
         {
             if (segments == null)
@@ -89,6 +164,12 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             return PatternCore(null, null, null, segments);
         }
 
+        /// <summary>
+        /// Creates a new <see cref="RoutePattern"/> from a collection of segments.
+        /// </summary>
+        /// <param name="rawText">The raw text to associate with the route pattern. May be null.</param>
+        /// <param name="segments">The collection of segments.</param>
+        /// <returns>The <see cref="RoutePattern"/>.</returns>
         public static RoutePattern Pattern(string rawText, params RoutePatternPathSegment[] segments)
         {
             if (segments == null)
@@ -99,9 +180,25 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             return PatternCore(rawText, null, null, segments);
         }
 
+        /// <summary>
+        /// Creates a <see cref="RoutePattern"/> from a collection of segments along
+        /// with provided default values and parameter policies.
+        /// </summary>
+        /// <param name="defaults">
+        /// Additional default values to associated with the route pattern. May be null.
+        /// The provided object will be converted to key-value pairs using <see cref="RouteValueDictionary"/>
+        /// and then merged into the route pattern.
+        /// </param>
+        /// <param name="parameterPolicies">
+        /// Additional parameter policies to associated with the route pattern. May be null.
+        /// The provided object will be converted to key-value pairs using <see cref="RouteValueDictionary"/>
+        /// and then merged into the route pattern.
+        /// </param>
+        /// <param name="segments">The collection of segments.</param>
+        /// <returns>The <see cref="RoutePattern"/>.</returns>
         public static RoutePattern Pattern(
             object defaults,
-            object constraints,
+            object parameterPolicies,
             params RoutePatternPathSegment[] segments)
         {
             if (segments == null)
@@ -109,13 +206,30 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                 throw new ArgumentNullException(nameof(segments));
             }
 
-            return PatternCore(null, new RouteValueDictionary(defaults), new RouteValueDictionary(constraints), segments);
+            return PatternCore(null, new RouteValueDictionary(defaults), new RouteValueDictionary(parameterPolicies), segments);
         }
 
+        /// <summary>
+        /// Creates a <see cref="RoutePattern"/> from a collection of segments along
+        /// with provided default values and parameter policies.
+        /// </summary>
+        /// <param name="rawText">The raw text to associate with the route pattern.</param>
+        /// <param name="defaults">
+        /// Additional default values to associated with the route pattern. May be null.
+        /// The provided object will be converted to key-value pairs using <see cref="RouteValueDictionary"/>
+        /// and then merged into the route pattern.
+        /// </param>
+        /// <param name="parameterPolicies">
+        /// Additional parameter policies to associated with the route pattern. May be null.
+        /// The provided object will be converted to key-value pairs using <see cref="RouteValueDictionary"/>
+        /// and then merged into the route pattern.
+        /// </param>
+        /// <param name="segments">The collection of segments.</param>
+        /// <returns>The <see cref="RoutePattern"/>.</returns>
         public static RoutePattern Pattern(
             string rawText,
             object defaults,
-            object constraints,
+            object parameterPolicies,
             params RoutePatternPathSegment[] segments)
         {
             if (segments == null)
@@ -123,21 +237,21 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                 throw new ArgumentNullException(nameof(segments));
             }
 
-            return PatternCore(rawText, new RouteValueDictionary(defaults), new RouteValueDictionary(constraints), segments);
+            return PatternCore(rawText, new RouteValueDictionary(defaults), new RouteValueDictionary(parameterPolicies), segments);
         }
 
         private static RoutePattern PatternCore(
             string rawText,
             IDictionary<string, object> defaults,
-            IDictionary<string, object> constraints,
+            IDictionary<string, object> parameterPolicies,
             IEnumerable<RoutePatternPathSegment> segments)
         {
-            // We want to merge the segment data with the 'out of line' defaults and constraints.
+            // We want to merge the segment data with the 'out of line' defaults and parameter policies.
             //
             // This means that for parameters that have 'out of line' defaults we will modify
-            // the parameter to contain the default (same story for constraints).
+            // the parameter to contain the default (same story for parameter policies).
             //
-            // We also maintain a collection of defaults and constraints that will also
+            // We also maintain a collection of defaults and parameter policies that will also
             // contain the values that don't match a parameter.
             //
             // It's important that these two views of the data are consistent. We don't want
@@ -152,14 +266,16 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                 }
             }
 
-            var updatedConstraints = new Dictionary<string, List<RoutePatternConstraintReference>>(StringComparer.OrdinalIgnoreCase);
-            if (constraints != null)
+            var updatedParameterPolicies = new Dictionary<string, List<RoutePatternParameterPolicyReference>>(StringComparer.OrdinalIgnoreCase);
+            if (parameterPolicies != null)
             {
-                foreach (var kvp in constraints)
+                foreach (var kvp in parameterPolicies)
                 {
-                    updatedConstraints.Add(kvp.Key, new List<RoutePatternConstraintReference>()
+                    updatedParameterPolicies.Add(kvp.Key, new List<RoutePatternParameterPolicyReference>()
                     {
-                        Constraint(kvp.Value),
+                        kvp.Value is IParameterPolicy parameterPolicy
+                            ? ParameterPolicy(parameterPolicy)
+                            : Constraint(kvp.Value), // Constraint will convert string values into regex constraints
                     });
                 }
             }
@@ -170,7 +286,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             {
                 var segment = VisitSegment(updatedSegments[i]);
                 updatedSegments[i] = segment;
-                
+
                 for (var j = 0; j < segment.Parts.Count; j++)
                 {
                     if (segment.Parts[j] is RoutePatternParameterPart parameter)
@@ -183,20 +299,36 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             return new RoutePattern(
                 rawText,
                 updatedDefaults,
-                updatedConstraints.ToDictionary(kvp => kvp.Key, kvp => (IReadOnlyList<RoutePatternConstraintReference>)kvp.Value.ToArray()),
-                parameters.ToArray(),
-                updatedSegments.ToArray());
+                updatedParameterPolicies.ToDictionary(kvp => kvp.Key, kvp => (IReadOnlyList<RoutePatternParameterPolicyReference>)kvp.Value.ToArray()),
+                parameters,
+                updatedSegments);
 
             RoutePatternPathSegment VisitSegment(RoutePatternPathSegment segment)
             {
-                var updatedParts = new RoutePatternPart[segment.Parts.Count];
+                RoutePatternPart[] updatedParts = null;
                 for (var i = 0; i < segment.Parts.Count; i++)
                 {
                     var part = segment.Parts[i];
-                    updatedParts[i] = VisitPart(part);
+                    var updatedPart = VisitPart(part);
+
+                    if (part != updatedPart)
+                    {
+                        if (updatedParts == null)
+                        {
+                            updatedParts = segment.Parts.ToArray();
+                        }
+
+                        updatedParts[i] = updatedPart;
+                    }
                 }
 
-                return SegmentCore(updatedParts);
+                if (updatedParts == null)
+                {
+                    // Segment has not changed
+                    return segment;
+                }
+
+                return new RoutePatternPathSegment(updatedParts);
             }
 
             RoutePatternPart VisitPart(RoutePatternPart part)
@@ -211,7 +343,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
                 if (updatedDefaults.TryGetValue(parameter.Name, out var newDefault))
                 {
-                    if (parameter.Default != null)
+                    if (parameter.Default != null && !Equals(newDefault, parameter.Default))
                     {
                         var message = Resources.FormatTemplateRoute_CannotHaveDefaultValueSpecifiedInlineAndExplicitly(parameter.Name);
                         throw new InvalidOperationException(message);
@@ -225,32 +357,46 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
                     @default = newDefault;
                 }
-                
+
                 if (parameter.Default != null)
                 {
-                    updatedDefaults.Add(parameter.Name, parameter.Default);
+                    updatedDefaults[parameter.Name] = parameter.Default;
                 }
 
-                if (!updatedConstraints.TryGetValue(parameter.Name, out var parameterConstraints) &&
-                    parameter.Constraints.Count > 0)
+                if (!updatedParameterPolicies.TryGetValue(parameter.Name, out var parameterConstraints) &&
+                    parameter.ParameterPolicies.Count > 0)
                 {
-                    parameterConstraints = new List<RoutePatternConstraintReference>();
-                    updatedConstraints.Add(parameter.Name, parameterConstraints);
+                    parameterConstraints = new List<RoutePatternParameterPolicyReference>();
+                    updatedParameterPolicies.Add(parameter.Name, parameterConstraints);
                 }
 
-                if (parameter.Constraints.Count > 0)
+                if (parameter.ParameterPolicies.Count > 0)
                 {
-                    parameterConstraints.AddRange(parameter.Constraints);
+                    parameterConstraints.AddRange(parameter.ParameterPolicies);
+                }
+
+                if (Equals(parameter.Default, @default)
+                    && parameter.ParameterPolicies.Count == 0
+                    && (parameterConstraints?.Count ?? 0) == 0)
+                {
+                    // Part has not changed
+                    return part;
                 }
 
                 return ParameterPartCore(
                     parameter.Name,
                     @default,
                     parameter.ParameterKind,
-                    (IEnumerable<RoutePatternConstraintReference>)parameterConstraints ?? Array.Empty<RoutePatternConstraintReference>());
+                    (IEnumerable<RoutePatternParameterPolicyReference>)parameterConstraints ?? Array.Empty<RoutePatternParameterPolicyReference>(),
+                    parameter.EncodeSlashes);
             }
         }
-
+        /// <summary>
+        /// Creates a <see cref="RoutePatternPathSegment"/> from the provided collection
+        /// of parts.
+        /// </summary>
+        /// <param name="parts">The collection of parts.</param>
+        /// <returns>The <see cref="RoutePatternPathSegment"/>.</returns>
         public static RoutePatternPathSegment Segment(IEnumerable<RoutePatternPart> parts)
         {
             if (parts == null)
@@ -261,6 +407,12 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             return SegmentCore(parts);
         }
 
+        /// <summary>
+        /// Creates a <see cref="RoutePatternPathSegment"/> from the provided collection
+        /// of parts.
+        /// </summary>
+        /// <param name="parts">The collection of parts.</param>
+        /// <returns>The <see cref="RoutePatternPathSegment"/>.</returns>
         public static RoutePatternPathSegment Segment(params RoutePatternPart[] parts)
         {
             if (parts == null)
@@ -276,6 +428,12 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             return new RoutePatternPathSegment(parts.ToArray());
         }
 
+        /// <summary>
+        /// Creates a <see cref="RoutePatternLiteralPart"/> from the provided text
+        /// content.
+        /// </summary>
+        /// <param name="content">The text content.</param>
+        /// <returns>The <see cref="RoutePatternLiteralPart"/>.</returns>
         public static RoutePatternLiteralPart LiteralPart(string content)
         {
             if (string.IsNullOrEmpty(content))
@@ -296,6 +454,12 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             return new RoutePatternLiteralPart(content);
         }
 
+        /// <summary>
+        /// Creates a <see cref="RoutePatternSeparatorPart"/> from the provided text
+        /// content.
+        /// </summary>
+        /// <param name="content">The text content.</param>
+        /// <returns>The <see cref="RoutePatternSeparatorPart"/>.</returns>
         public static RoutePatternSeparatorPart SeparatorPart(string content)
         {
             if (string.IsNullOrEmpty(content))
@@ -311,6 +475,11 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             return new RoutePatternSeparatorPart(content);
         }
 
+        /// <summary>
+        /// Creates a <see cref="RoutePatternParameterPart"/> from the provided parameter name.
+        /// </summary>
+        /// <param name="parameterName">The parameter name.</param>
+        /// <returns>The <see cref="RoutePatternParameterPart"/>.</returns>
         public static RoutePatternParameterPart ParameterPart(string parameterName)
         {
             if (string.IsNullOrEmpty(parameterName))
@@ -327,9 +496,16 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                 parameterName: parameterName,
                 @default: null,
                 parameterKind: RoutePatternParameterKind.Standard,
-                constraints: Array.Empty<RoutePatternConstraintReference>());
+                parameterPolicies: Array.Empty<RoutePatternParameterPolicyReference>());
         }
-        
+
+        /// <summary>
+        /// Creates a <see cref="RoutePatternParameterPart"/> from the provided parameter name
+        /// and default value.
+        /// </summary>
+        /// <param name="parameterName">The parameter name.</param>
+        /// <param name="default">The parameter default value. May be <c>null</c>.</param>
+        /// <returns>The <see cref="RoutePatternParameterPart"/>.</returns>
         public static RoutePatternParameterPart ParameterPart(string parameterName, object @default)
         {
             if (string.IsNullOrEmpty(parameterName))
@@ -346,9 +522,17 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                 parameterName: parameterName,
                 @default: @default,
                 parameterKind: RoutePatternParameterKind.Standard,
-                constraints: Array.Empty<RoutePatternConstraintReference>());
+                parameterPolicies: Array.Empty<RoutePatternParameterPolicyReference>());
         }
 
+        /// <summary>
+        /// Creates a <see cref="RoutePatternParameterPart"/> from the provided parameter name
+        /// and default value, and parameter kind.
+        /// </summary>
+        /// <param name="parameterName">The parameter name.</param>
+        /// <param name="default">The parameter default value. May be <c>null</c>.</param>
+        /// <param name="parameterKind">The parameter kind.</param>
+        /// <returns>The <see cref="RoutePatternParameterPart"/>.</returns>
         public static RoutePatternParameterPart ParameterPart(
             string parameterName,
             object @default,
@@ -373,14 +557,23 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                 parameterName: parameterName,
                 @default: @default,
                 parameterKind: parameterKind,
-                constraints: Array.Empty<RoutePatternConstraintReference>());
+                parameterPolicies: Array.Empty<RoutePatternParameterPolicyReference>());
         }
 
+        /// <summary>
+        /// Creates a <see cref="RoutePatternParameterPart"/> from the provided parameter name
+        /// and default value, parameter kind, and parameter policies.
+        /// </summary>
+        /// <param name="parameterName">The parameter name.</param>
+        /// <param name="default">The parameter default value. May be <c>null</c>.</param>
+        /// <param name="parameterKind">The parameter kind.</param>
+        /// <param name="parameterPolicies">The parameter policies to associated with the parameter.</param>
+        /// <returns>The <see cref="RoutePatternParameterPart"/>.</returns>
         public static RoutePatternParameterPart ParameterPart(
             string parameterName,
             object @default,
             RoutePatternParameterKind parameterKind,
-            IEnumerable<RoutePatternConstraintReference> constraints)
+            IEnumerable<RoutePatternParameterPolicyReference> parameterPolicies)
         {
             if (string.IsNullOrEmpty(parameterName))
             {
@@ -397,23 +590,32 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                 throw new ArgumentNullException(Resources.TemplateRoute_OptionalCannotHaveDefaultValue, nameof(parameterKind));
             }
 
-            if (constraints == null)
+            if (parameterPolicies == null)
             {
-                throw new ArgumentNullException(nameof(constraints));
+                throw new ArgumentNullException(nameof(parameterPolicies));
             }
 
             return ParameterPartCore(
                 parameterName: parameterName,
                 @default: @default,
                 parameterKind: parameterKind,
-                constraints: constraints);
+                parameterPolicies: parameterPolicies);
         }
 
+        /// <summary>
+        /// Creates a <see cref="RoutePatternParameterPart"/> from the provided parameter name
+        /// and default value, parameter kind, and parameter policies.
+        /// </summary>
+        /// <param name="parameterName">The parameter name.</param>
+        /// <param name="default">The parameter default value. May be <c>null</c>.</param>
+        /// <param name="parameterKind">The parameter kind.</param>
+        /// <param name="parameterPolicies">The parameter policies to associated with the parameter.</param>
+        /// <returns>The <see cref="RoutePatternParameterPart"/>.</returns>
         public static RoutePatternParameterPart ParameterPart(
             string parameterName,
             object @default,
             RoutePatternParameterKind parameterKind,
-            params RoutePatternConstraintReference[] constraints)
+            params RoutePatternParameterPolicyReference[] parameterPolicies)
         {
             if (string.IsNullOrEmpty(parameterName))
             {
@@ -430,94 +632,146 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                 throw new ArgumentNullException(Resources.TemplateRoute_OptionalCannotHaveDefaultValue, nameof(parameterKind));
             }
 
-            if (constraints == null)
+            if (parameterPolicies == null)
             {
-                throw new ArgumentNullException(nameof(constraints));
+                throw new ArgumentNullException(nameof(parameterPolicies));
             }
 
             return ParameterPartCore(
                 parameterName: parameterName,
                 @default: @default,
                 parameterKind: parameterKind,
-                constraints: constraints);
+                parameterPolicies: parameterPolicies);
         }
 
         private static RoutePatternParameterPart ParameterPartCore(
             string parameterName,
             object @default,
             RoutePatternParameterKind parameterKind,
-            IEnumerable<RoutePatternConstraintReference> constraints)
+            IEnumerable<RoutePatternParameterPolicyReference> parameterPolicies)
         {
-            return new RoutePatternParameterPart(parameterName, @default, parameterKind, constraints.ToArray());
+            return ParameterPartCore(parameterName, @default, parameterKind, parameterPolicies, encodeSlashes: true);
         }
 
-        public static RoutePatternConstraintReference Constraint(object constraint)
+        private static RoutePatternParameterPart ParameterPartCore(
+            string parameterName,
+            object @default,
+            RoutePatternParameterKind parameterKind,
+            IEnumerable<RoutePatternParameterPolicyReference> parameterPolicies,
+            bool encodeSlashes)
+        {
+            return new RoutePatternParameterPart(
+                parameterName,
+                @default,
+                parameterKind,
+                parameterPolicies.ToArray(),
+                encodeSlashes);
+        }
+
+        /// <summary>
+        /// Creates a <see cref="RoutePatternParameterPolicyReference"/> from the provided contraint.
+        /// </summary>
+        /// <param name="constraint">
+        /// The constraint object, which must be of type <see cref="IRouteConstraint"/>
+        /// or <see cref="string"/>. If the constraint object is a <see cref="string"/>
+        /// then it will be tranformed into an instance of <see cref="RegexRouteConstraint"/>.
+        /// </param>
+        /// <returns>The <see cref="RoutePatternParameterPolicyReference"/>.</returns>
+        public static RoutePatternParameterPolicyReference Constraint(object constraint)
         {
             // Similar to RouteConstraintBuilder
-            if (constraint is IRouteConstraint routeConstraint)
+            if (constraint is IRouteConstraint policy)
             {
-                return ConstraintCore(routeConstraint);
-            }
-            else if (constraint is MatchProcessor matchProcessor)
-            {
-                return ConstraintCore(matchProcessor);
+                return ParameterPolicyCore(policy);
             }
             else if (constraint is string content)
             {
-                return ConstraintCore(new RegexRouteConstraint("^(" + content + ")$"));
+                return ParameterPolicyCore(new RegexRouteConstraint("^(" + content + ")$"));
             }
             else
             {
                 throw new InvalidOperationException(Resources.FormatRoutePattern_InvalidConstraintReference(
                     constraint ?? "null",
-                    typeof(IRouteConstraint),
-                    typeof(MatchProcessor)));
+                    typeof(IRouteConstraint)));
             }
         }
 
-        public static RoutePatternConstraintReference Constraint(IRouteConstraint constraint)
+        /// <summary>
+        /// Creates a <see cref="RoutePatternParameterPolicyReference"/> from the provided constraint.
+        /// </summary>
+        /// <param name="constraint">
+        /// The constraint object.
+        /// </param>
+        /// <returns>The <see cref="RoutePatternParameterPolicyReference"/>.</returns>
+        public static RoutePatternParameterPolicyReference Constraint(IRouteConstraint constraint)
         {
             if (constraint == null)
             {
                 throw new ArgumentNullException(nameof(constraint));
             }
 
-            return ConstraintCore(constraint);
+            return ParameterPolicyCore(constraint);
         }
 
-        public static RoutePatternConstraintReference Constraint(MatchProcessor matchProcessor)
-        {
-            if (matchProcessor == null)
-            {
-                throw new ArgumentNullException(nameof(matchProcessor));
-            }
-
-            return ConstraintCore(matchProcessor);
-        }
-
-        public static RoutePatternConstraintReference Constraint(string constraint)
+        /// <summary>
+        /// Creates a <see cref="RoutePatternParameterPolicyReference"/> from the provided constraint.
+        /// </summary>
+        /// <param name="constraint">
+        /// The constraint text, which will be resolved by <see cref="ParameterPolicyFactory"/>.
+        /// </param>
+        /// <returns>The <see cref="RoutePatternParameterPolicyReference"/>.</returns>
+        public static RoutePatternParameterPolicyReference Constraint(string constraint)
         {
             if (string.IsNullOrEmpty(constraint))
             {
                 throw new ArgumentException(Resources.Argument_NullOrEmpty, nameof(constraint));
             }
 
-            return ConstraintCore(constraint);
+            return ParameterPolicyCore(constraint);
         }
 
-        private static RoutePatternConstraintReference ConstraintCore(string constraint)
+        /// <summary>
+        /// Creates a <see cref="RoutePatternParameterPolicyReference"/> from the provided object.
+        /// </summary>
+        /// <param name="parameterPolicy">
+        /// The parameter policy object.
+        /// </param>
+        /// <returns>The <see cref="RoutePatternParameterPolicyReference"/>.</returns>
+        public static RoutePatternParameterPolicyReference ParameterPolicy(IParameterPolicy parameterPolicy)
         {
-            return new RoutePatternConstraintReference(constraint);
+            if (parameterPolicy == null)
+            {
+                throw new ArgumentNullException(nameof(parameterPolicy));
+            }
+
+            return ParameterPolicyCore(parameterPolicy);
         }
 
-        private static RoutePatternConstraintReference ConstraintCore(IRouteConstraint constraint)
+        /// <summary>
+        /// Creates a <see cref="RoutePatternParameterPolicyReference"/> from the provided object.
+        /// </summary>
+        /// <param name="parameterPolicy">
+        /// The parameter policy text, which will be resolved by <see cref="ParameterPolicyFactory"/>.
+        /// </param>
+        /// <returns>The <see cref="RoutePatternParameterPolicyReference"/>.</returns>
+        public static RoutePatternParameterPolicyReference ParameterPolicy(string parameterPolicy)
         {
-            return new RoutePatternConstraintReference(constraint);
+            if (string.IsNullOrEmpty(parameterPolicy))
+            {
+                throw new ArgumentException(Resources.Argument_NullOrEmpty, nameof(parameterPolicy));
+            }
+
+            return ParameterPolicyCore(parameterPolicy);
         }
 
-        private static RoutePatternConstraintReference ConstraintCore(MatchProcessor matchProcessor)
+        private static RoutePatternParameterPolicyReference ParameterPolicyCore(string parameterPolicy)
         {
-            return new RoutePatternConstraintReference(matchProcessor);
+            return new RoutePatternParameterPolicyReference(parameterPolicy);
+        }
+
+        private static RoutePatternParameterPolicyReference ParameterPolicyCore(IParameterPolicy parameterPolicy)
+        {
+            return new RoutePatternParameterPolicyReference(parameterPolicy);
         }
     }
 }

@@ -4,6 +4,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Routing
@@ -31,26 +32,18 @@ namespace Microsoft.AspNetCore.Routing
 
         public async Task Invoke(HttpContext httpContext)
         {
-            var feature = httpContext.Features.Get<IEndpointFeature>();
-            if (feature == null)
+            var endpoint = httpContext.Features.Get<IEndpointFeature>()?.Endpoint;
+            if (endpoint?.RequestDelegate != null)
             {
-                var message = $"Unable to execute an endpoint because the {nameof(GlobalRoutingMiddleware)} was not run for this request. " +
-                    $"Ensure {nameof(GlobalRoutingMiddleware)} is added to the request execution pipeline before {nameof(EndpointMiddleware)} in application startup code.";
-
-                throw new InvalidOperationException(message);
-            }
-
-            if (feature.Invoker != null)
-            {
-                Log.ExecutingEndpoint(_logger, feature.Endpoint);
+                Log.ExecutingEndpoint(_logger, endpoint);
 
                 try
                 {
-                    await feature.Invoker(_next)(httpContext);
+                    await endpoint.RequestDelegate(httpContext);
                 }
                 finally
                 {
-                    Log.ExecutedEndpoint(_logger, feature.Endpoint);
+                    Log.ExecutedEndpoint(_logger, endpoint);
                 }
 
                 return;

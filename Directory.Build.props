@@ -18,6 +18,6 @@
     <PackageSigningCertName>MicrosoftNuGet</PackageSigningCertName>
     <PublicSign Condition="'$(OS)' != 'Windows_NT'">true</PublicSign>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <LangVersion>7.2</LangVersion>
+    <LangVersion>7.3</LangVersion>
   </PropertyGroup>
 </Project>

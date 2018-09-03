@@ -22,7 +22,7 @@
   "PlaintextDispatcher": {
     "Path": "/plaintext"
   },
-  "PlaintextGlobalRouting": {
+  "PlaintextEndpointRouting": {
     "Path": "/plaintext"
   }
 }

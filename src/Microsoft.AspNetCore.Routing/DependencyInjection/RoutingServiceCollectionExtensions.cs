@@ -3,11 +3,8 @@
 
 using System;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.AspNetCore.Routing.Constraints;
-using Microsoft.AspNetCore.Routing.EndpointConstraints;
-using Microsoft.AspNetCore.Routing.EndpointFinders;
 using Microsoft.AspNetCore.Routing.Internal;
-using Microsoft.AspNetCore.Routing.Matchers;
+using Microsoft.AspNetCore.Routing.Matching;
 using Microsoft.AspNetCore.Routing.Tree;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
@@ -65,25 +62,20 @@ namespace Microsoft.Extensions.DependencyInjection
             //
             // Default matcher implementation
             //
-            services.TryAddSingleton<MatchProcessorFactory, DefaultMatchProcessorFactory>();
+            services.TryAddSingleton<ParameterPolicyFactory, DefaultParameterPolicyFactory>();
             services.TryAddSingleton<MatcherFactory, DfaMatcherFactory>();
             services.TryAddTransient<DfaMatcherBuilder>();
+            services.TryAddSingleton<DfaGraphWriter>();
 
             // Link generation related services
-            services.TryAddSingleton<IEndpointFinder<string>, NameBasedEndpointFinder>();
-            services.TryAddSingleton<IEndpointFinder<RouteValuesBasedEndpointFinderContext>, RouteValuesBasedEndpointFinder>();
+            services.TryAddSingleton<IEndpointFinder<RouteValuesAddress>, RouteValuesBasedEndpointFinder>();
             services.TryAddSingleton<LinkGenerator, DefaultLinkGenerator>();
-            
+
             //
             // Endpoint Selection
             //
-            services.TryAddSingleton<EndpointSelector, EndpointConstraintEndpointSelector>();
-            services.TryAddSingleton<EndpointConstraintCache>();
+            services.TryAddSingleton<EndpointSelector, DefaultEndpointSelector>();
             services.TryAddEnumerable(ServiceDescriptor.Singleton<MatcherPolicy, HttpMethodMatcherPolicy>());
-
-            // Will be cached by the EndpointSelector
-            services.TryAddEnumerable(
-                ServiceDescriptor.Transient<IEndpointConstraintProvider, DefaultEndpointConstraintProvider>());
 
             return services;
         }

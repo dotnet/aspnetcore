@@ -467,10 +467,10 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         /// <summary>
-        /// Invalid constraint '{0}'. A constraint must be of type 'string', '{1}', or '{2}'.
+        /// Invalid constraint '{0}'. A constraint must be of type 'string' or '{1}'.
         /// </summary>
-        internal static string FormatRoutePattern_InvalidConstraintReference(object p0, object p1, object p2)
-            => string.Format(CultureInfo.CurrentCulture, GetString("RoutePattern_InvalidConstraintReference"), p0, p1, p2);
+        internal static string FormatRoutePattern_InvalidConstraintReference(object p0, object p1)
+            => string.Format(CultureInfo.CurrentCulture, GetString("RoutePattern_InvalidConstraintReference"), p0, p1);
 
         /// <summary>
         /// Invalid constraint '{0}' for parameter '{1}'. A constraint must be of type 'string', '{2}', or '{3}'.
