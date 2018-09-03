@@ -118,6 +118,34 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
         }
 
         [Fact]
+        public void CanFollowLinkToTargetBlankClick()
+        {
+            try
+            {
+                SetUrlViaPushState("/");
+
+                var app = MountTestComponent<TestRouter>(); 
+
+                app.FindElement(By.LinkText("Target (_blank)")).Click();
+
+                WaitAssert.Equal(2, () => Browser.WindowHandles.Count);
+            }
+            finally
+            {
+                // Closing newly opened windows if a new one was opened
+                while (Browser.WindowHandles.Count > 1)
+                {
+                    Browser.SwitchTo().Window(Browser.WindowHandles.Last());
+                    Browser.Close();
+                }
+
+                // Needed otherwise Selenium tries to direct subsequent commands
+                // to the tab that has already been closed
+                Browser.SwitchTo().Window(Browser.WindowHandles.First());
+            }
+        }
+
+        [Fact]
         public void CanFollowLinkToOtherPageDoesNotOpenNewWindow()
         {
             SetUrlViaPushState("/");
