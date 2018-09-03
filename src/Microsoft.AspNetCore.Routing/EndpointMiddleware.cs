@@ -32,26 +32,18 @@ namespace Microsoft.AspNetCore.Routing
 
         public async Task Invoke(HttpContext httpContext)
         {
-            var feature = httpContext.Features.Get<IEndpointFeature>();
-            if (feature == null)
+            var endpoint = httpContext.Features.Get<IEndpointFeature>()?.Endpoint;
+            if (endpoint?.RequestDelegate != null)
             {
-                var message = $"Unable to execute an endpoint because the {nameof(EndpointRoutingMiddleware)} was not run for this request. " +
-                    $"Ensure {nameof(EndpointRoutingMiddleware)} is added to the request execution pipeline before {nameof(EndpointMiddleware)} in application startup code.";
-
-                throw new InvalidOperationException(message);
-            }
-
-            if (feature.Endpoint?.RequestDelegate != null)
-            {
-                Log.ExecutingEndpoint(_logger, feature.Endpoint);
+                Log.ExecutingEndpoint(_logger, endpoint);
 
                 try
                 {
-                    await feature.Endpoint.RequestDelegate(httpContext);
+                    await endpoint.RequestDelegate(httpContext);
                 }
                 finally
                 {
-                    Log.ExecutedEndpoint(_logger, feature.Endpoint);
+                    Log.ExecutedEndpoint(_logger, endpoint);
                 }
 
                 return;

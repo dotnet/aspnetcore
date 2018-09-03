@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Builder.Internal;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit;
@@ -50,7 +51,7 @@ namespace Microsoft.AspNetCore.Builder
         }
 
         [Fact]
-        public async Task UseEndpointRouting_ServicesRegistered_SetsFeature()
+        public async Task UseEndpointRouting_ServicesRegistered_NoMatch_DoesNotSetFeature()
         {
             // Arrange
             var services = CreateServices();
@@ -66,7 +67,36 @@ namespace Microsoft.AspNetCore.Builder
             await appFunc(httpContext);
 
             // Assert
-            Assert.NotNull(httpContext.Features.Get<IEndpointFeature>());
+            Assert.Null(httpContext.Features.Get<IEndpointFeature>());
+        }
+
+        [Fact]
+        public async Task UseEndpointRouting_ServicesRegistered_Match_DoesNotSetsFeature()
+        {
+            // Arrange
+            var endpoint = new RouteEndpoint(
+                TestConstants.EmptyRequestDelegate,
+                RoutePatternFactory.Parse("{*p}"),
+                0,
+                EndpointMetadataCollection.Empty,
+                "Test");
+
+            var services = CreateServices(endpoint);
+
+            var app = new ApplicationBuilder(services);
+
+            app.UseEndpointRouting();
+
+            var appFunc = app.Build();
+            var httpContext = new DefaultHttpContext();
+
+            // Act
+            await appFunc(httpContext);
+
+            // Assert
+            var feature = httpContext.Features.Get<IEndpointFeature>();
+            Assert.NotNull(feature);
+            Assert.Same(endpoint, feature.Endpoint);
         }
 
         [Fact]
@@ -89,7 +119,7 @@ namespace Microsoft.AspNetCore.Builder
         }
 
         [Fact]
-        public async Task UseEndpoint_ServicesRegisteredAndEndpointRoutingRegistered_SetsFeature()
+        public async Task UseEndpoint_ServicesRegisteredAndEndpointRoutingRegistered_NoMatch_DoesNotSetFeature()
         {
             // Arrange
             var services = CreateServices();
@@ -106,7 +136,7 @@ namespace Microsoft.AspNetCore.Builder
             await appFunc(httpContext);
 
             // Assert
-            Assert.NotNull(httpContext.Features.Get<IEndpointFeature>());
+            Assert.Null(httpContext.Features.Get<IEndpointFeature>());
         }
 
         [Fact]
@@ -129,13 +159,15 @@ namespace Microsoft.AspNetCore.Builder
             Assert.Equal("Test endpoint", endpointBuilder.DisplayName);
         }
 
-        private IServiceProvider CreateServices()
+        private IServiceProvider CreateServices(params Endpoint[] endpoints)
         {
             var services = new ServiceCollection();
 
             services.AddLogging();
             services.AddOptions();
             services.AddRouting();
+
+            services.AddSingleton<EndpointDataSource>(new DefaultEndpointDataSource(endpoints));
 
             return services.BuildServiceProvider();
         }

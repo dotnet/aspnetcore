@@ -55,10 +55,7 @@ namespace Microsoft.AspNetCore.Routing
 
         public async Task Invoke(HttpContext httpContext)
         {
-            // For back-compat EndpointRouteValuesFeature implements IEndpointFeature, IRouteValuesFeature and IRoutingFeature
             var feature = new EndpointFeature();
-
-            SetEndpointFeature(httpContext, feature);
 
             // There's an inherent race condition between waiting for init and accessing the matcher
             // this is OK because once `_matcher` is initialized, it will not be set to null again.
@@ -67,6 +64,10 @@ namespace Microsoft.AspNetCore.Routing
             await matcher.MatchAsync(httpContext, feature);
             if (feature.Endpoint != null)
             {
+                // Set the endpoint feature only on success. This means we won't overwrite any
+                // existing state for related features unless we did something.
+                SetEndpointFeature(httpContext, feature);
+
                 Log.MatchSuccess(_logger, feature);
             }
             else
@@ -79,11 +80,8 @@ namespace Microsoft.AspNetCore.Routing
 
         private static void SetEndpointFeature(HttpContext httpContext, EndpointFeature feature)
         {
-            // An IRouteValuesFeature might have already been set
-            // Copy its RouteValues collection if present
-            var currentRouteValuesFeature = httpContext.Features.Get<IRouteValuesFeature>();
-            feature.RouteValues = currentRouteValuesFeature?.RouteValues;
-
+            // For back-compat EndpointRouteValuesFeature implements IEndpointFeature,
+            // IRouteValuesFeature and IRoutingFeature
             httpContext.Features.Set<IRoutingFeature>(feature);
             httpContext.Features.Set<IRouteValuesFeature>(feature);
             httpContext.Features.Set<IEndpointFeature>(feature);
