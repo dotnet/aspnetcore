@@ -15,6 +15,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         private readonly ConcurrentDictionary<string, ILogger> _serverLoggers;
         private readonly ILogger _scopeLogger;
         private readonly object _lock;
+        private bool _disposed;
 
         public ServerLogScope(ServerFixture serverFixture, ILoggerFactory loggerFactory, IDisposable wrappedDisposable)
         {
@@ -45,11 +46,15 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             ILogger logger;
 
-            // There maybe thready safety issues in logging when creating multiple loggers at the same time
-            // https://github.com/aspnet/Logging/issues/810
             lock (_lock)
             {
+                if (_disposed)
+                {
+                    return;
+                }
+
                 // Create (or get) a logger with the same name as the server logger
+                // Call in the lock to avoid ODE where LoggerFactory could be disposed by the wrapped disposable
                 logger = _serverLoggers.GetOrAdd(write.LoggerName, loggerName => _loggerFactory.CreateLogger(loggerName));
             }
 
@@ -62,7 +67,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             _scopeLogger.LogInformation("Server log scope stopped.");
 
-            _wrappedDisposable?.Dispose();
+            lock (_lock)
+            {
+                _wrappedDisposable?.Dispose();
+                _disposed = true;
+            }
         }
     }
 }
