@@ -38,12 +38,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 switch (setting.Parameter)
                 {
                     case Http2SettingsParameter.SETTINGS_HEADER_TABLE_SIZE:
-                        if (value > Http2Limits.MaxAllowedHeaderTableSize)
-                        {
-                            throw new Http2SettingsParameterOutOfRangeException(Http2SettingsParameter.SETTINGS_HEADER_TABLE_SIZE,
-                                lowerBound: 0,
-                                upperBound: Http2Limits.MaxAllowedHeaderTableSize);
-                        }
                         HeaderTableSize = value;
                         break;
                     case Http2SettingsParameter.SETTINGS_ENABLE_PUSH:
