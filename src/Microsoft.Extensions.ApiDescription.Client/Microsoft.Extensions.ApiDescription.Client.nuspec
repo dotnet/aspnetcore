@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>$id$</id>
+    <authors>$authors$</authors>
+    <copyright>$copyright$</copyright>
+    <description>$description$</description>
+    <developmentDependency>true</developmentDependency>
+    <iconUrl>$iconUrl$</iconUrl>
+    <licenseUrl>$licenseUrl$</licenseUrl>
+    <minClientVersion>2.8</minClientVersion>
+    <owners>$owners$</owners>
+    <projectUrl>$projectUrl$</projectUrl>
+    <repository type="git" url="$repositoryUrl$" commit="$repositoryCommit$" />
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <tags>$tags$</tags>
+    <version>$version$</version>
+    <dependencies>
+      <dependency id="NSwag.MSBuild" version="11.18.6" include="runtime,build,native,contentfiles,analyzers" />
+    </dependencies>
+  </metadata>
+
+  <files>
+    <file src="bin\$configuration$\**" target="tasks" exclude="**\Microsoft.Build.*.dll" />
+    <file src="build\*.*" target="build" />
+    <file src="buildMultiTargeting\*.*" target="buildMultiTargeting" />
+  </files>
+</package>

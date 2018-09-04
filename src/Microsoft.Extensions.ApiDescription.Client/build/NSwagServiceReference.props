@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<Project>
+  <PropertyGroup>
+    <NSwagDocumentGeneratorDependsOn>
+      _NSwagDocumentGenerator_GetMetadata;
+      _NSwagDocumentGenerator_Core;
+      _NSwagDocumentGenerator_SetMetadata
+    </NSwagDocumentGeneratorDependsOn>
+    <NSwagCSharpCodeGeneratorDependsOn>
+      _NSwagCSharpCodeGenerator_GetMetadata;
+      _NSwagCSharpCodeGenerator_Core;
+      _NSwagCSharpCodeGenerator_SetMetadata
+    </NSwagCSharpCodeGeneratorDependsOn>
+    <NSwagTypeScriptCodeGeneratorDependsOn>
+      _NSwagTypeScriptCodeGenerator_GetMetadata;
+      _NSwagTypeScriptCodeGenerator_Core;
+      _NSwagTypeScriptCodeGenerator_SetMetadata
+    </NSwagTypeScriptCodeGeneratorDependsOn>
+  </PropertyGroup>
+</Project>

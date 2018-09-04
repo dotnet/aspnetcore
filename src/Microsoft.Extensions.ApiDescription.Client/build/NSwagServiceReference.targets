@@ -1,0 +1,131 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<Project>
+  <!-- ServiceProjectReference support -->
+
+  <Target Name="_NSwagDocumentGenerator_GetMetadata">
+    <ItemGroup>
+      <_NSwagTemporary Remove="@(_NSwagTemporary)" />
+      <_NSwagTemporary Include="@(ServiceProjectReference -> WithMetadataValue('DocumentGenerator', 'NSwag'))">
+        <Options
+            Condition="'%(ServiceFileReference.Options)' == '' AND '$(NSwagDocumentGeneratorDefaultOptions)' != ''">$(NSwagDocumentGeneratorDefaultOptions)</Options>
+      </_NSwagTemporary>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_NSwagDocumentGenerator_Core" Inputs="%(_NSwagTemporary.ProjectTargetPath)" Outputs="%(_NSwagTemporary.DocumentPath)">
+    <!-- aspnetcore2swagger -->
+    <PropertyGroup>
+      <_Command>$(NSwagExe_Core21) aspnetcore2swagger /Configuration:$(Configuration) /NoBuild:true</_Command>
+    </PropertyGroup>
+
+    <Message Importance="high" Text="%0A$(_Command) /Project:%(FullPath) /output:%(DocumentPath) /TargetFramework:%(TargetFramework) %(_NSwagTemporary.Options)" />
+    <Exec IgnoreExitCode="$([System.IO.File]::Exists('%(DocumentPath)'))"
+        Command="$(_Command) /Project:%(FullPath) /output:%(DocumentPath) /TargetFramework:%(TargetFramework) %(_NSwagTemporary.Options)" />
+
+    <PropertyGroup>
+      <_Command />
+    </PropertyGroup>
+  </Target>
+
+  <!--
+    Separate from _NSwagDocumentGenerator_Core to ensure ServiceFileReference items are complete even if
+    ServiceProjectReference items are not built in any batch.
+  -->
+  <Target Name="_NSwagDocumentGenerator_SetMetadata" Condition="'@(_NSwagTemporary)' != ''">
+    <ItemGroup>
+      <ServiceFileReference Remove="@(_NSwagTemporary -> '%(DocumentPath)')" />
+      <ServiceFileReference Include="@(_NSwagTemporary -> '%(DocumentPath)')" SourceProject="%(_NSwagTemporary.FullPath)" />
+      <_NSwagTemporary Remove="@(_NSwagTemporary)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="NSwagDocumentGenerator" DependsOnTargets="$(NSwagDocumentGeneratorDependsOn)" />
+
+  <!-- ServiceFileReference support for C# -->
+
+  <Target Name="_NSwagCSharpCodeGenerator_GetMetadata">
+    <ItemGroup>
+      <_NSwagTemporary Remove="@(_NSwagTemporary)" />
+      <_NSwagTemporary Include="@(ServiceFileReference -> WithMetadataValue('CodeGenerator', 'NSwagCSharp'))">
+        <Options
+          Condition="'%(ServiceFileReference.Options)' == '' AND '$(NSwagCSharpCodeGeneratorDefaultOptions)' != ''">$(NSwagCSharpCodeGeneratorDefaultOptions)</Options>
+      </_NSwagTemporary>
+      <_NSwagTemporary Update="@(_NSwagTemporary)">
+        <OutputPath Condition="'%(_NSwagTemporary.OutputPath)' == ''">$(ServiceFileReferenceDirectory)%(ClassName).cs</OutputPath>
+      </_NSwagTemporary>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_NSwagCSharpCodeGenerator_Core" Inputs="%(_NSwagTemporary.FullPath)" Outputs="%(OutputPath)">
+    <PropertyGroup>
+      <_Command>$(NSwagExe_Core21) swagger2csclient /namespace:$(NSwagCSharpCodeGeneratorNamespace)</_Command>
+    </PropertyGroup>
+
+    <Message Importance="high" Text="%0A$(_Command) /className:%(ClassName) /input:%(FullPath) /output:%(OutputPath) %(_NSwagTemporary.Options)" />
+    <Exec IgnoreExitCode="$([System.IO.File]::Exists('%(OutputPath)'))"
+      Command="$(_Command) /className:%(ClassName) /input:%(FullPath) /output:%(OutputPath) %(_NSwagTemporary.Options)" />
+
+    <PropertyGroup>
+      <_Command />
+    </PropertyGroup>
+  </Target>
+
+  <!--
+    Separate from _NSwagCSharpCodeGenerator_Core to ensure Compile items are complete even if ServiceFileReference
+    items are both written outside the project and not included in a batch.
+  -->
+  <Target Name="_NSwagCSharpCodeGenerator_SetMetadata" Condition="'@(_NSwagTemporary)' != ''">
+    <Message Importance="high" Text="%0A_NSwagCSharpCodeGenerator_SetMetadata: @(_NSwagTemporary -> '%(OutputPath)')" />
+    <Message Importance="high" Text="_NSwagCSharpCodeGenerator_SetMetadata: '%(OutputPath)' '%(FullPath)' '%(_NSwagTemporary.SourceProject)' '%(_NSwagTemporary.SourceUrl)'" />
+    <ItemGroup>
+      <Compile Remove="@(_NSwagTemporary -> '%(OutputPath)')" />
+      <Compile Include="@(_NSwagTemporary -> '%(OutputPath)')" />
+      <_NSwagTemporary Remove="@(_NSwagTemporary)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="NSwagCSharpCodeGenerator" DependsOnTargets="$(NSwagCSharpCodeGeneratorDependsOn)" />
+
+  <!-- ServiceFileReference support for TypeScript -->
+
+  <Target Name="_NSwagTypeScriptCodeGenerator_GetMetadata">
+    <ItemGroup>
+      <_NSwagTemporary Remove="@(_NSwagTemporary)" />
+      <_NSwagTemporary Include="@(ServiceFileReference -> WithMetadataValue('CodeGenerator', 'NSwagTypeScript'))">
+        <Options
+          Condition="'%(ServiceFileReference.Options)' == '' AND '$(NSwagTypeScriptCodeGeneratorDefaultOptions)' != ''">$(NSwagTypeScriptCodeGeneratorDefaultOptions)</Options>
+      </_NSwagTemporary>
+      <_NSwagTemporary Update="@(_NSwagTemporary)">
+        <OutputPath Condition="'%(_NSwagTemporary.OutputPath)' == ''">$(ServiceFileReferenceDirectory)%(ClassName).ts</OutputPath>
+      </_NSwagTemporary>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_NSwagTypeScriptCodeGenerator_Core" Inputs="%(_NSwagTemporary.FullPath)" Outputs="%(OutputPath)">
+    <PropertyGroup>
+      <_Command>$(NSwagExe_Core21) swagger2tsclient /namespace:$(NSwagTypeScriptCodeGeneratorNamespace)</_Command>
+    </PropertyGroup>
+
+    <Message Importance="high" Text="%0A$(_Command) /className:%(ClassName) /input:%(FullPath) /output:%(OutputPath) %(_NSwagTemporary.Options)" />
+    <Exec IgnoreExitCode="$([System.IO.File]::Exists('%(OutputPath)'))"
+      Command="$(_Command) /className:%(ClassName) /input:%(FullPath) /output:%(OutputPath) %(_NSwagTemporary.Options)" />
+
+    <PropertyGroup>
+      <_Command />
+    </PropertyGroup>
+  </Target>
+
+  <!--
+    Separate from _NSwagTypeScriptCodeGenerator_Core to ensure Compile items are complete even if ServiceFileReference
+    items are both written outside the project and not included in a batch.
+  -->
+  <Target Name="_NSwagTypeScriptCodeGenerator_SetMetadata" Condition="'@(_NSwagTemporary)' != ''">
+    <ItemGroup>
+      <TypeScriptCompile Remove="@(_NSwagTemporary -> '%(OutputPath)')" />
+      <TypeScriptCompile Include="@(_NSwagTemporary -> '%(OutputPath)')" />
+      <_NSwagTemporary Remove="@(_NSwagTemporary)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="NSwagTypeScriptCodeGenerator" DependsOnTargets="$(NSwagTypeScriptCodeGeneratorDependsOn)" />
+</Project>

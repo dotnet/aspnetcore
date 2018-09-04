@@ -1,0 +1,32 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!-- Collect properties only in inner build. Execute unconditionally before WriteServiceProjectReferenceMetadata. -->
+  <Target Name="GetServiceProjectReferenceMetadata"
+      BeforeTargets="WriteServiceProjectReferenceMetadataCore"
+      Condition="'$(TargetFramework)' != ''"
+      Returns="@(ServiceProjectReferenceMetadata)">
+    <ItemGroup Condition="'$(TargetFramework)' != ''">
+      <ServiceProjectReferenceMetadata Include="DefaultDocumentName: $(DefaultServiceProjectDocumentName)" />
+      <ServiceProjectReferenceMetadata Include="DefaultMethod: $(DefaultServiceProjectMethod)" />
+      <ServiceProjectReferenceMetadata Include="DefaultService: $(DefaultServiceProjectService)" />
+      <ServiceProjectReferenceMetadata Include="DefaultUri: $(DefaultServiceProjectUri)" />
+
+      <ServiceProjectReferenceMetadata Include="AssemblyPath: $(TargetPath)" />
+      <ServiceProjectReferenceMetadata Include="Configuration: $(Configuration)" />
+      <ServiceProjectReferenceMetadata Include="ExtensionsPath: $(MSBuildProjectExtensionsPath)" />
+      <ServiceProjectReferenceMetadata Include="RuntimeIdentifier: $(RuntimeIdentifier)" />
+      <ServiceProjectReferenceMetadata Include="TargetFramework: $(TargetFramework)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="WriteServiceProjectReferenceMetadata" Returns="@(ServiceProjectReferenceMetadata)">
+    <MSBuild Condition="'$(TargetFramework)' == ''"
+      Projects="$(MSBuildProjectFile)"
+      Targets="WriteServiceProjectReferenceMetadata"
+      Properties="TargetFramework=$(TargetFrameworks.Split(';')[0]);ServiceProjectReferenceMetadataFile=$(ServiceProjectReferenceMetadataFile)" />
+
+    <WriteLinesToFile Condition="'$(TargetFramework)' != ''"
+        File="$(ServiceProjectReferenceMetadataPath)"
+        Lines="@(ServiceProjectReferenceMetadata)" />
+  </Target>
+</Project>

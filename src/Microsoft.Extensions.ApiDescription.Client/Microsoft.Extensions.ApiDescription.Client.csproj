@@ -1,0 +1,46 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <!-- Execute PopulateNuspec fairly late. -->
+    <GenerateNuspecDependsOn>$(GenerateNuspecDependsOn);PopulateNuspec</GenerateNuspecDependsOn>
+
+    <!-- Do not complain about lack of lib folder. -->
+    <NoPackageAnalysis>true</NoPackageAnalysis>
+
+    <Description>MSBuild tasks and targets for code generation</Description>
+    <EnableApiCheck>false</EnableApiCheck>
+    <IsPackable>false</IsPackable>
+    <NuspecFile>$(MSBuildProjectName).nuspec</NuspecFile>
+    <PackageTags>Build Tasks;msbuild;DownloadFile;GetFilenameFromUri;code generation</PackageTags>
+    <RootNamespace>GenerationTasks</RootNamespace>
+    <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="ServiceProjectReferenceMetadata.targets" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildUtilitiesCorePackageVersion)" />
+    <PackageReference Condition="'$(TargetFramework)' == 'net461'" Include="System.Net.Http" Version="$(SystemNetHttpPackageVersion)" />
+  </ItemGroup>
+
+  <Target Name="PopulateNuspec">
+    <PropertyGroup>
+      <NuspecProperties>
+        id=$(PackageId);
+        authors=$(Authors);
+        configuration=$(Configuration);
+        copyright=$(Copyright);
+        description=$(PackageDescription);
+        iconUrl=$(PackageIconUrl);
+        licenseUrl=$(PackageLicenseUrl);
+        owners=$(Company);
+        projectUrl=$(PackageProjectUrl);
+        repositoryCommit=$(RepositoryCommit);
+        repositoryUrl=$(RepositoryUrl);
+        tags=$(PackageTags.Replace(';', ' '));
+        version=$(PackageVersion);
+      </NuspecProperties>
+    </PropertyGroup>
+  </Target>
+</Project>

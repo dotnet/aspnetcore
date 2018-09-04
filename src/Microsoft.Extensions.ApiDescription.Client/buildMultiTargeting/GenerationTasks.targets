@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<Project>
+  <!-- ServiceProjectReference support -->
+
+  <Target Name="ServiceProjectReferenceGenerator">
+    <MsBuild Projects="$(MSBuildProjectFile)"
+      Targets="ServiceProjectReferenceGenerator"
+      Properties="TargetFramework=$(TargetFrameworks.Split(';')[0])"
+      RemoveProperties="TargetFrameworks;RuntimeIdentifier" />
+  </Target>
+
+  <!-- ServiceUriReference support -->
+
+  <Target Name="ServiceUriReferenceGenerator">
+    <MsBuild Projects="$(MSBuildProjectFile)"
+      Targets="ServiceUriReferenceGenerator"
+      Properties="TargetFramework=$(TargetFrameworks.Split(';')[0])"
+      RemoveProperties="TargetFrameworks;RuntimeIdentifier" />
+  </Target>
+
+  <!-- ServiceFileReference support -->
+
+  <Target Name="ServiceFileReferenceGenerator" BeforeTargets="BeforeCompile">
+    <MsBuild Projects="$(MSBuildProjectFile)"
+      Targets="ServiceFileReferenceGenerator"
+      Properties="TargetFramework=$(TargetFrameworks.Split(';')[0])"
+      RemoveProperties="TargetFrameworks;RuntimeIdentifier" />
+  </Target>
+</Project>

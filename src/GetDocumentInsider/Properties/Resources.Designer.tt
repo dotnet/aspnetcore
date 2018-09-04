@@ -1,0 +1,6 @@
+<#
+    Session["ResourceFile"] = "Resources.resx";
+    Session["AccessModifier"] = "internal";
+    Session["NoDiagnostics"] = true;
+#>
+<#@ include file="..\..\tools\Resources.tt" #>

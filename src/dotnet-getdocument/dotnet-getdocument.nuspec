@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>$id$</id>
+    <version>$version$</version>
+    <authors>$authors$</authors>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <licenseUrl>$licenseUrl$</licenseUrl>
+    <projectUrl>$projectUrl$</projectUrl>
+    <iconUrl>$iconUrl$</iconUrl>
+    <description>$description$</description>
+    <copyright>$copyright$</copyright>
+    <tags>$tags$</tags>
+    <packageTypes>
+      <packageType name="$packageType$" />
+    </packageTypes>
+    <repository type="git" url="$repositoryUrl$" commit="$repositoryCommit$" />
+  </metadata>
+
+  <files>
+    <file src="$InsiderNet461Output$" target="tools\$targetFramework$\any\net461" />
+    <file src="$InsiderNet461X86Output$" target="tools\$targetFramework$\any\net461-x86" />
+    <file src="$InsiderNetCoreOutput$" target="tools\$targetFramework$\any\netcoreapp2.0" />
+    <file src="$Output$" target="tools\$targetFramework$\any" />
+    <!-- file src="$OutputShims$" target="tools\$targetFramework$\any\shims" / -->
+    <file src="$SettingsFile$" target="tools\$targetFramework$\any" />
+  </files>
+</package>
