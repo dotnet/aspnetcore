@@ -9,7 +9,7 @@
 class WebConfigConfigurationSource: public ConfigurationSource
 {
 public:
-    WebConfigConfigurationSource(IAppHostAdminManager *pAdminManager, IHttpApplication &pHttpApplication)
+    WebConfigConfigurationSource(IAppHostAdminManager *pAdminManager, const IHttpApplication &pHttpApplication) noexcept
         : m_manager(pAdminManager),
           m_application(pHttpApplication)
     {
@@ -19,5 +19,5 @@ public:
 
 private:
     CComPtr<IAppHostAdminManager> m_manager;
-    IHttpApplication &m_application;
+    const IHttpApplication &m_application;
 };

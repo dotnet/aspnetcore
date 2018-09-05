@@ -15,19 +15,33 @@ template<typename ... Args>
 [[nodiscard]]
 std::wstring format(const std::wstring& format, Args ... args)
 {
-    const size_t size = swprintf(nullptr, 0, format.c_str(), args ...) + 1; // Extra char for '\0'
-    std::unique_ptr<wchar_t[]> formattedBuffer(new wchar_t[size]);
-    swprintf(formattedBuffer.get(), size, format.c_str(), args ... );
-    return std::wstring(formattedBuffer.get(), formattedBuffer.get() + size - 1);
+    std::wstring result;
+    if (!format.empty())
+    {
+        const size_t size = swprintf(nullptr, 0, format.c_str(), args ...); // Extra char for '\0'
+        result.resize(size + 1);
+        if (swprintf(result.data(), result.size(), format.c_str(), args ... ) == -1)
+        {
+            throw std::system_error(std::error_code(errno, std::system_category()));
+        }
+    }
+    return result;
 }
 
 template<typename ... Args>
 [[nodiscard]]
 std::string format(const std::string& format, Args ... args)
 {
-    const size_t size = snprintf(nullptr, 0, format.c_str(), args ...) + 1; // Extra char for '\0'
-    std::unique_ptr<char[]> formattedBuffer(new char[size]);
-    snprintf(formattedBuffer.get(), size, format.c_str(), args ... );
-    return std::string(formattedBuffer.get(), formattedBuffer.get() + size - 1);
+    std::string result;
+    if (!format.empty())
+    {
+        const size_t size = snprintf(nullptr, 0, format.c_str(), args ...); // Extra char for '\0'
+        result.resize(size + 1);
+        if (snprintf(result.data(), result.size(), format.c_str(), args ... ) == -1)
+        {
+            throw std::system_error(std::error_code(errno, std::system_category()));
+        }
+    }
+    return result;
 }
 

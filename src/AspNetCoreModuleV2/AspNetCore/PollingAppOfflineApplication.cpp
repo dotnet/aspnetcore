@@ -44,12 +44,12 @@ PollingAppOfflineApplication::CheckAppOffline()
 }
 
 
-std::filesystem::path PollingAppOfflineApplication::GetAppOfflineLocation(IHttpApplication& pApplication)
+std::filesystem::path PollingAppOfflineApplication::GetAppOfflineLocation(const IHttpApplication& pApplication)
 {
     return std::filesystem::path(pApplication.GetApplicationPhysicalPath()) / "app_offline.htm";
 }
 
-bool PollingAppOfflineApplication::FileExists(const std::filesystem::path& path)
+bool PollingAppOfflineApplication::FileExists(const std::filesystem::path& path) noexcept
 {
     std::error_code ec;
     return is_regular_file(path, ec) || ec.value() == ERROR_SHARING_VIOLATION;

@@ -6,6 +6,10 @@
 
 #include "stringu.h"
 #include "ntassert.h"
+#include <CodeAnalysis/Warnings.h>
+
+#pragma warning( push )
+#pragma warning ( disable : ALL_CODE_ANALYSIS_WARNINGS )
 
 /*++
   class MULTISZ:
@@ -221,5 +225,6 @@ SplitCommaDelimitedString(
     MULTISZ *                   pmszList
 );
 
-#endif // !_MULTISZ_HXX_
+#pragma warning( pop )
 
+#endif // !_MULTISZ_HXX_

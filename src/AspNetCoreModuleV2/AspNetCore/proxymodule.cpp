@@ -5,31 +5,40 @@
 
 #include "applicationmanager.h"
 #include "applicationinfo.h"
-#include "acache.h"
 #include "exceptions.h"
 
 extern BOOL         g_fInShutdown;
 
 __override
+
+ASPNET_CORE_PROXY_MODULE_FACTORY::ASPNET_CORE_PROXY_MODULE_FACTORY(std::shared_ptr<APPLICATION_MANAGER> applicationManager) noexcept
+    :m_pApplicationManager(std::move(applicationManager))
+{
+}
+
 HRESULT
 ASPNET_CORE_PROXY_MODULE_FACTORY::GetHttpModule(
     CHttpModule **      ppModule,
     IModuleAllocator *  pAllocator
 )
 {
-    try
+    
+    #pragma warning( push )
+    #pragma warning ( disable : 26409 ) // Disable "Avoid using new"
+    *ppModule = new (pAllocator) ASPNET_CORE_PROXY_MODULE(m_pApplicationManager);
+    #pragma warning( push )
+    if (*ppModule == nullptr)
     {
-        *ppModule = THROW_IF_NULL_ALLOC(new (pAllocator) ASPNET_CORE_PROXY_MODULE());;
-        return S_OK;
+        return E_OUTOFMEMORY;
     }
-    CATCH_RETURN();
+    return S_OK;
 }
 
 __override
 VOID
 ASPNET_CORE_PROXY_MODULE_FACTORY::Terminate(
     VOID
-)
+) noexcept
 /*++
 
 Routine description:
@@ -46,12 +55,13 @@ Return value:
 
 --*/
 {
-    ALLOC_CACHE_HANDLER::StaticTerminate();
     delete this;
 }
 
-ASPNET_CORE_PROXY_MODULE::ASPNET_CORE_PROXY_MODULE(
-) : m_pApplicationInfo(nullptr), m_pHandler(nullptr)
+ASPNET_CORE_PROXY_MODULE::ASPNET_CORE_PROXY_MODULE(std::shared_ptr<APPLICATION_MANAGER> applicationManager) noexcept 
+    : m_pApplicationManager(std::move(applicationManager)),
+      m_pApplicationInfo(nullptr),
+      m_pHandler(nullptr)
 {
 }
 
@@ -64,6 +74,7 @@ ASPNET_CORE_PROXY_MODULE::OnExecuteRequestHandler(
 {
     HRESULT hr = S_OK;
     REQUEST_NOTIFICATION_STATUS retVal = RQ_NOTIFICATION_CONTINUE;
+
     try
     {
 
@@ -72,14 +83,12 @@ ASPNET_CORE_PROXY_MODULE::OnExecuteRequestHandler(
             FINISHED(HRESULT_FROM_WIN32(ERROR_SERVER_SHUTDOWN_IN_PROGRESS));
         }
 
-        auto pApplicationManager = APPLICATION_MANAGER::GetInstance();
-
-        FINISHED_IF_FAILED(pApplicationManager->GetOrCreateApplicationInfo(
+        FINISHED_IF_FAILED(m_pApplicationManager->GetOrCreateApplicationInfo(
             *pHttpContext,
             m_pApplicationInfo));
 
         std::unique_ptr<IAPPLICATION, IAPPLICATION_DELETER> pApplication;
-        FINISHED_IF_FAILED(m_pApplicationInfo->GetOrCreateApplication(pHttpContext, pApplication));
+        FINISHED_IF_FAILED(m_pApplicationInfo->GetOrCreateApplication(*pHttpContext, pApplication));
 
         IREQUEST_HANDLER* pHandler;
         // Create RequestHandler and process the request
@@ -94,7 +103,7 @@ ASPNET_CORE_PROXY_MODULE::OnExecuteRequestHandler(
     }
 
 Finished:
-    if (LOG_IF_FAILED(hr))
+    if (FAILED(LOG_IF_FAILED(hr)))
     {
         retVal = RQ_NOTIFICATION_FINISH_REQUEST;
         if (hr == HRESULT_FROM_WIN32(ERROR_SERVER_SHUTDOWN_IN_PROGRESS))

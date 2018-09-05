@@ -38,7 +38,7 @@ HRESULT AppOfflineTrackingApplication::StartMonitoringAppOflineImpl()
 {
     if (m_fileWatcher)
     {
-        RETURN_IF_FAILED(E_UNEXPECTED);
+        RETURN_HR(E_UNEXPECTED);
     }
 
     m_fileWatcher = std::make_unique<FILE_WATCHER>();

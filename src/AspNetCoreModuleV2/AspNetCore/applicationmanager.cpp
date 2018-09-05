@@ -11,9 +11,6 @@
 
 extern BOOL         g_fInShutdown;
 
-// The application manager is a singleton across ANCM.
-APPLICATION_MANAGER* APPLICATION_MANAGER::sm_pApplicationManager = NULL;
-
 //
 // Retrieves the application info from the application manager
 // Will create the application info if it isn't initalized

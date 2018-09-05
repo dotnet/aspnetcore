@@ -14,11 +14,12 @@
 #include "resources.h"
 #include "ConfigurationLoadException.h"
 #include "WebConfigConfigurationSource.h"
+#include "ModuleHelpers.h"
 
 const PCWSTR HandlerResolver::s_pwzAspnetcoreInProcessRequestHandlerName = L"aspnetcorev2_inprocess.dll";
 const PCWSTR HandlerResolver::s_pwzAspnetcoreOutOfProcessRequestHandlerName = L"aspnetcorev2_outofprocess.dll";
 
-HandlerResolver::HandlerResolver(HMODULE hModule, IHttpServer &pServer)
+HandlerResolver::HandlerResolver(HMODULE hModule, const IHttpServer &pServer)
     : m_hModule(hModule),
       m_pServer(pServer),
       m_loadedApplicationHostingModel(HOSTING_UNKNOWN)
@@ -27,11 +28,11 @@ HandlerResolver::HandlerResolver(HMODULE hModule, IHttpServer &pServer)
 }
 
 HRESULT
-HandlerResolver::LoadRequestHandlerAssembly(IHttpApplication &pApplication, ShimOptions& pConfiguration, std::unique_ptr<ApplicationFactory>& pApplicationFactory)
+HandlerResolver::LoadRequestHandlerAssembly(const IHttpApplication &pApplication, const ShimOptions& pConfiguration, std::unique_ptr<ApplicationFactory>& pApplicationFactory)
 {
-    HRESULT hr;
-    PCWSTR              pstrHandlerDllName;
-    bool preventUnload;
+    HRESULT hr = S_OK;
+    PCWSTR pstrHandlerDllName = nullptr;
+    bool preventUnload = false;
     if (pConfiguration.QueryHostingModel() == APP_HOSTING_MODEL::HOSTING_IN_PROCESS)
     {
         preventUnload = false;
@@ -76,7 +77,7 @@ HandlerResolver::LoadRequestHandlerAssembly(IHttpApplication &pApplication, Shim
             hr = FindNativeAssemblyFromHostfxr(*options.get(), pstrHandlerDllName, handlerDllPath);
             outputManager->Stop();
 
-            if (FAILED(hr) && m_hHostFxrDll != NULL)
+            if (FAILED(hr) && m_hHostFxrDll != nullptr)
             {
                 STRA content;
                 STRU struStdMsg;
@@ -119,7 +120,7 @@ HandlerResolver::LoadRequestHandlerAssembly(IHttpApplication &pApplication, Shim
         RETURN_LAST_ERROR_IF_NULL(hRequestHandlerDll);
     }
 
-    auto pfnAspNetCoreCreateApplication = reinterpret_cast<PFN_ASPNETCORE_CREATE_APPLICATION>(GetProcAddress(hRequestHandlerDll, "CreateApplication"));
+    auto pfnAspNetCoreCreateApplication = ModuleHelpers::GetKnownProcAddress<PFN_ASPNETCORE_CREATE_APPLICATION>(hRequestHandlerDll, "CreateApplication");
     RETURN_LAST_ERROR_IF_NULL(pfnAspNetCoreCreateApplication);
 
     pApplicationFactory = std::make_unique<ApplicationFactory>(hRequestHandlerDll.release(), location, pfnAspNetCoreCreateApplication);
@@ -127,7 +128,7 @@ HandlerResolver::LoadRequestHandlerAssembly(IHttpApplication &pApplication, Shim
 }
 
 HRESULT
-HandlerResolver::GetApplicationFactory(IHttpApplication &pApplication, std::unique_ptr<ApplicationFactory>& pApplicationFactory)
+HandlerResolver::GetApplicationFactory(const IHttpApplication &pApplication, std::unique_ptr<ApplicationFactory>& pApplicationFactory)
 {
     try
     {
@@ -189,7 +190,7 @@ void HandlerResolver::ResetHostingModel()
 
 HRESULT
 HandlerResolver::FindNativeAssemblyFromGlobalLocation(
-    ShimOptions& pConfiguration,
+    const ShimOptions& pConfiguration,
     PCWSTR pstrHandlerDllName,
     std::wstring& handlerDllPath
 )
@@ -225,20 +226,20 @@ HandlerResolver::FindNativeAssemblyFromGlobalLocation(
 //
 HRESULT
 HandlerResolver::FindNativeAssemblyFromHostfxr(
-    HOSTFXR_OPTIONS& hostfxrOptions,
+    const HOSTFXR_OPTIONS& hostfxrOptions,
     PCWSTR libraryName,
     std::wstring& handlerDllPath
 )
 {
     std::wstring   struNativeSearchPaths;
-    size_t         intIndex;
+    size_t         intIndex = 0;
     size_t         intPrevIndex = 0;
     DWORD          dwBufferSize = s_initialGetNativeSearchDirectoriesBufferSize;
     DWORD          dwRequiredBufferSize = 0;
 
     RETURN_LAST_ERROR_IF_NULL(m_hHostFxrDll = LoadLibraryW(hostfxrOptions.GetHostFxrLocation().c_str()));
 
-    auto pFnHostFxrSearchDirectories = reinterpret_cast<hostfxr_get_native_search_directories_fn>(GetProcAddress(m_hHostFxrDll, "hostfxr_get_native_search_directories"));
+    const auto pFnHostFxrSearchDirectories = ModuleHelpers::GetKnownProcAddress<hostfxr_get_native_search_directories_fn>(m_hHostFxrDll, "hostfxr_get_native_search_directories");
     if (pFnHostFxrSearchDirectories == nullptr)
     {
         EventLog::Error(

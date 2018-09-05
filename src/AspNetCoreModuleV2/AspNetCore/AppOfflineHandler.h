@@ -9,7 +9,7 @@
 class AppOfflineHandler: public REQUEST_HANDLER
 {
 public:
-    AppOfflineHandler(IHttpContext* pContext, const std::string appOfflineContent)
+    AppOfflineHandler(IHttpContext& pContext, const std::string appOfflineContent)
         : m_pContext(pContext),
           m_strAppOfflineContent(appOfflineContent)
     {
@@ -18,6 +18,6 @@ public:
     REQUEST_NOTIFICATION_STATUS OnExecuteRequestHandler() override;
 
 private:
-    IHttpContext* m_pContext;
+    IHttpContext& m_pContext;
     std::string m_strAppOfflineContent;
 };

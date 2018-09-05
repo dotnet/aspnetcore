@@ -50,7 +50,7 @@ EventLog::LogEventF(
     _In_ WORD    dwEventInfoType,
     _In_ DWORD   dwEventId,
     _In_ LPCWSTR pstrMsg,
-    va_list argsList
+    _In_ va_list argsList
 )
 {
     STACK_STRU ( strEventMsg, 256 );

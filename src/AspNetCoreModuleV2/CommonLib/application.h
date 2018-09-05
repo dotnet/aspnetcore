@@ -58,7 +58,7 @@ public:
     }
 
     VOID
-    ReferenceApplication() override
+    ReferenceApplication() noexcept override
     {
         DBG_ASSERT(m_cRefs > 0);
 
@@ -66,7 +66,7 @@ public:
     }
 
     VOID
-    DereferenceApplication() override
+    DereferenceApplication() noexcept override
     {
         DBG_ASSERT(m_cRefs > 0);
 
@@ -77,25 +77,25 @@ public:
     }
 
     const std::wstring&
-    QueryApplicationId() const
+    QueryApplicationId() const noexcept
     {
         return m_applicationId;
     }
 
     const std::wstring&
-    QueryApplicationPhysicalPath() const
+    QueryApplicationPhysicalPath() const noexcept
     {
         return m_applicationPhysicalPath;
     }
 
     const std::wstring&
-    QueryApplicationVirtualPath() const
+    QueryApplicationVirtualPath() const noexcept
     {
         return m_applicationVirtualPath;
     }
 
     const std::wstring&
-    QueryConfigPath() const
+    QueryConfigPath() const noexcept
     {
         return m_applicationConfigPath;
     }

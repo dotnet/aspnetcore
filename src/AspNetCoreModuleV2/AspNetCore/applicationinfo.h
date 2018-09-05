@@ -12,7 +12,7 @@
 
 extern BOOL     g_fRecycleProcessCalled;
 
-class APPLICATION_INFO
+class APPLICATION_INFO: NonCopyable
 {
 public:
 
@@ -29,16 +29,16 @@ public:
         InitializeSRWLock(&m_applicationLock);
     }
 
-    ~APPLICATION_INFO();
+    ~APPLICATION_INFO() = default;
 
-    std::wstring&
-    QueryApplicationInfoKey()
+    const std::wstring&
+    QueryApplicationInfoKey() const noexcept
     {
         return m_strInfoKey;
     }
 
-    std::wstring&
-    QueryConfigPath()
+    const std::wstring&
+    QueryConfigPath() const noexcept
     {
         return m_strConfigPath;
     }
@@ -48,7 +48,7 @@ public:
 
     HRESULT
     GetOrCreateApplication(
-        IHttpContext *pHttpContext,
+        IHttpContext& pHttpContext,
         std::unique_ptr<IAPPLICATION, IAPPLICATION_DELETER>& pApplication
     );
 

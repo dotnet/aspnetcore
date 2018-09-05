@@ -174,7 +174,7 @@ FileOutputManager::Stop()
 
     if (li.LowPart == 0 || li.HighPart > 0)
     {
-        RETURN_IF_FAILED(HRESULT_FROM_WIN32(ERROR_FILE_INVALID));
+        RETURN_HR(HRESULT_FROM_WIN32(ERROR_FILE_INVALID));
     }
 
     dwFilePointer = SetFilePointer(m_hLogFileHandle, 0, NULL, FILE_BEGIN);

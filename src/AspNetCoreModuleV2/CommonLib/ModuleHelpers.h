@@ -14,7 +14,26 @@ public:
     void IncrementCurrentModuleRefCount(HandleWrapper<ModuleHandleTraits> &handle)
     {
         WCHAR path[MAX_PATH];
-        THROW_LAST_ERROR_IF(!GetModuleFileName(g_hModule, path, sizeof(path)));
+        
+#pragma warning( push )
+#pragma warning ( disable : 26485 ) // Calling WinAPI causes expected array to pointer decay
+
+        THROW_LAST_ERROR_IF(!GetModuleFileName(g_hModule, path, MAX_PATH));
         THROW_LAST_ERROR_IF(!GetModuleHandleEx(0, path, &handle));
+
+#pragma warning( pop )
+    }
+
+    template<typename Func>
+    static
+    Func GetKnownProcAddress(HMODULE hModule, LPCSTR lpProcName) {
+        
+#pragma warning( push )
+#pragma warning ( disable : 26490 ) // Disable Don't use reinterpret_cast 
+        auto proc = reinterpret_cast<Func>(GetProcAddress(hModule, lpProcName));
+#pragma warning( pop )
+
+        THROW_LAST_ERROR_IF (!proc);
+        return proc;
     }
 };

@@ -3,6 +3,9 @@
 
 #include "precomp.h"
 
+#pragma warning( push )
+#pragma warning ( disable : ALL_CODE_ANALYSIS_WARNINGS )
+
 LONG    ALLOC_CACHE_HANDLER::sm_nFillPattern = 0xACA50000;
 HANDLE  ALLOC_CACHE_HANDLER::sm_hHeap;
 
@@ -441,3 +444,5 @@ Finished:
 
     return fRet;
 }
+
+#pragma warning( pop )

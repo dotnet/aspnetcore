@@ -13,14 +13,9 @@
 #include "ServerErrorApplication.h"
 #include "AppOfflineApplication.h"
 
-APPLICATION_INFO::~APPLICATION_INFO()
-{
-    ShutDownApplication(/* fServerInitiated */ false);
-}
-
 HRESULT
 APPLICATION_INFO::GetOrCreateApplication(
-    IHttpContext *pHttpContext,
+    IHttpContext& pHttpContext,
     std::unique_ptr<IAPPLICATION, IAPPLICATION_DELETER>& pApplication
 )
 {
@@ -28,7 +23,7 @@ APPLICATION_INFO::GetOrCreateApplication(
 
     SRWExclusiveLock lock(m_applicationLock);
 
-    auto& httpApplication = *pHttpContext->GetApplication();
+    auto& httpApplication = *pHttpContext.GetApplication();
 
     if (m_pApplication != nullptr)
     {
@@ -51,7 +46,10 @@ APPLICATION_INFO::GetOrCreateApplication(
     if (AppOfflineApplication::ShouldBeStarted(httpApplication))
     {
         LOG_INFO(L"Detected app_offline file, creating polling application");
+        #pragma warning( push )
+        #pragma warning ( disable : 26409 ) // Disable "Avoid using new", using custom deleter here
         m_pApplication.reset(new AppOfflineApplication(httpApplication));
+        #pragma warning( pop )
     }
     else
     {
@@ -77,8 +75,11 @@ Finished:
             ASPNETCORE_EVENT_ADD_APPLICATION_ERROR_MSG,
             httpApplication.GetApplicationId(),
             hr);
-
+        
+        #pragma warning( push )
+        #pragma warning ( disable : 26409 ) // Disable "Avoid using new", using custom deleter here
         m_pApplication.reset(new ServerErrorApplication(httpApplication, hr));
+        #pragma warning( pop )
     }
 
     if (m_pApplication)

@@ -19,25 +19,6 @@ class APPLICATION_MANAGER
 {
 public:
 
-    static
-    APPLICATION_MANAGER*
-    GetInstance()
-    {
-        assert(sm_pApplicationManager);
-        return sm_pApplicationManager;
-    }
-
-    static
-    VOID
-    Cleanup()
-    {
-        if(sm_pApplicationManager != NULL)
-        {
-            delete sm_pApplicationManager;
-            sm_pApplicationManager = NULL;
-        }
-    }
-
     HRESULT
     GetOrCreateApplicationInfo(
         _In_ IHttpContext& pHttpContext,
@@ -51,16 +32,7 @@ public:
 
     VOID
     ShutDown();
-
-    static HRESULT StaticInitialize(HMODULE hModule, IHttpServer& pHttpServer)
-    {
-        assert(!sm_pApplicationManager);
-        sm_pApplicationManager = new APPLICATION_MANAGER(hModule, pHttpServer);
-        return S_OK;
-    }
-
-
-private:
+    
     APPLICATION_MANAGER(HMODULE hModule, IHttpServer& pHttpServer) :
                             m_pApplicationInfoHash(NULL),
                             m_fDebugInitialize(FALSE),
@@ -70,8 +42,9 @@ private:
         InitializeSRWLock(&m_srwLock);
     }
 
+private:
+
     std::unordered_map<std::wstring, std::shared_ptr<APPLICATION_INFO>>      m_pApplicationInfoHash;
-    static APPLICATION_MANAGER *sm_pApplicationManager;
     SRWLOCK                     m_srwLock {};
     BOOL                        m_fDebugInitialize;
     IHttpServer                &m_pHttpServer;

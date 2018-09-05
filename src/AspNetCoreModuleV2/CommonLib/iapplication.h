@@ -44,7 +44,7 @@ public:
     HRESULT
     CreateHandler(
         _In_  IHttpContext       *pHttpContext,
-        _Out_ IREQUEST_HANDLER  **pRequestHandler) = 0;
+        _Outptr_ IREQUEST_HANDLER  **pRequestHandler) = 0;
 };
 
 struct IAPPLICATION_DELETER
