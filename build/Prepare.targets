@@ -9,7 +9,7 @@
     https://youtrack.jetbrains.com/issue/TW-19132
     -->
     <ItemGroup>
-      <_ArtifactDirectories Include="$(FullSymbolsOutputPath);$(SignedMPacksOutputPath);$(SignedOobArchivePath);$(SharedFxOutputPath);$(PackagesOutputPath);$(SignedOobArchivePath)" />
+      <_ArtifactDirectories Include="$(SignedMPacksOutputPath);$(SignedOobArchivePath);$(SharedFxOutputPath);$(PackagesOutputPath);$(SignedOobArchivePath)" />
     </ItemGroup>
     <MakeDir Directories="@(_ArtifactDirectories)" />
     <Touch Files="%(_ArtifactDirectories.Identity).teamcitykeep" AlwaysCreate="true" />
@@ -46,8 +46,6 @@
     <Warning Text="No MPacks found for signing." Condition="'@(UnsignedMPacks)'==''" />
 
     <MSBuild Projects="@(_UnzipProject)" BuildInParallel="true" Targets="_ExtractZipFile" />
-
-    <RepoTasks.RenameEncodedFolders RootDirectory="$(UnsignedPackagesPath)" />
 
     <RemoveDir Directories="@(PoliCheckPackages->'$(PoliCheckPath)%(Filename)\_rels')" />
     <Delete Files="@(PoliCheckPackages->'$(PoliCheckPath)%(Filename)\[Content_Types].xml')" />

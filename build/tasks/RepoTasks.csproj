@@ -3,14 +3,10 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <RestoreAdditionalProjectSources>https://dotnet.myget.org/F/symreader-converter/api/v3/index.json</RestoreAdditionalProjectSources>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="NuGet.Packaging" Version="$(NuGetInMSBuildVersion)" />
-
-    <!-- See https://github.com/dotnet/symreader-converter -->
-    <PackageReference Include="Microsoft.DiaSymReader.Pdb2Pdb" Version="$(MicrosoftDiaSymReaderPdb2PdbPackageVersion)" />
    </ItemGroup>
 
   <Import Project="$(RepoTasksSdkPath)\Sdk.targets" Condition="'$(RepoTasksSdkPath)' != '' "/>

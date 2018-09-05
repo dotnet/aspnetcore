@@ -14,7 +14,6 @@
     <SignedVSIXPath>$(ArtifactsDir)Signed\VSIX\</SignedVSIXPath>
     <SignedMPacksOutputPath>$(ArtifactsDir)Signed\MPacks\</SignedMPacksOutputPath>
     <SignedOobArchivePath>$(ArtifactsDir)Signed\OobArchives\</SignedOobArchivePath>
-    <FullSymbolsOutputPath>$(ArtifactsDir)FullSymbols\</FullSymbolsOutputPath>
 
     <!-- Working directories -->
     <PoliCheckPath>$(IntermediateDir)policheck\</PoliCheckPath>
@@ -46,14 +45,6 @@
   <PropertyGroup>
     <ESRPClientExe>\\aspnetci\share\esrpclient.1.0.27\tools\EsrpClient.exe</ESRPClientExe>
     <ESRPApplicationId>f616b396-be72-40d2-98fd-d7c2e4041560</ESRPApplicationId>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <PublishToVSDrop>false</PublishToVSDrop>
-  </PropertyGroup>
-
-  <PropertyGroup Condition=" '$(LocalBuild)' != 'true' ">
-    <PublishToVSDrop Condition=" $(PublishType.Contains('vsdrop')) ">true</PublishToVSDrop>
   </PropertyGroup>
 
 </Project>
