@@ -21,6 +21,8 @@ namespace TriageBuildFailures.Handlers
             // PB test
             "Releases_22xPublic_PbTestUbuntu",
             "Releases_22xPublic_PbTestWindowsServer2012",
+            "Releases_22xPublic_PbTestMacOSSierra",
+            "Releases_22xPublic_PbTestMacOSHighSierra",
             "Benchmarks",
             // ANCM
             "Setup_Ancm_IISIntegration",
