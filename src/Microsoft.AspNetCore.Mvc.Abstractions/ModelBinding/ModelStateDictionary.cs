@@ -147,7 +147,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         {
             get
             {
-                return ValidationState == ModelValidationState.Valid || ValidationState == ModelValidationState.Skipped;
+                var state = ValidationState;
+                return state == ModelValidationState.Valid || state == ModelValidationState.Skipped;
             }
         }
 
