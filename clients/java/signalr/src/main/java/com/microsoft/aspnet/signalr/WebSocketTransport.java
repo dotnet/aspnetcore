@@ -5,6 +5,9 @@ package com.microsoft.aspnet.signalr;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 
@@ -13,35 +16,42 @@ public class WebSocketTransport implements Transport {
     private OnReceiveCallBack onReceiveCallBack;
     private URI url;
     private Logger logger;
+    private Map<String, String> headers;
 
     private static final String HTTP = "http";
     private static final String HTTPS = "https";
     private static final String WS = "ws";
     private static final String WSS = "wss";
 
-    public WebSocketTransport(String url, Logger logger) throws URISyntaxException {
+    public WebSocketTransport(String url, Logger logger, Map<String, String> headers) throws URISyntaxException {
         this.url = formatUrl(url);
         this.logger = logger;
+        this.headers = headers;
     }
 
-    public URI getUrl(){
+    public WebSocketTransport(String url, Logger logger) throws URISyntaxException {
+        this(url, logger, null);
+    }
+
+    public URI getUrl() {
         return url;
     }
 
     private URI formatUrl(String url) throws URISyntaxException {
-        if(url.startsWith(HTTPS)){
+        if (url.startsWith(HTTPS)) {
             url = WSS + url.substring(HTTPS.length());
-        }
-        else if(url.startsWith(HTTP)){
+        } else if (url.startsWith(HTTP)) {
             url = WS + url.substring(HTTP.length());
         }
+
         return new URI(url);
     }
 
     @Override
     public void start() throws Exception {
         logger.log(LogLevel.Debug, "Starting Websocket connection.");
-        webSocketClient = createWebSocket();
+        webSocketClient = createWebSocket(headers);
+
         if (!webSocketClient.connectBlocking()) {
             String errorMessage = "There was an error starting the Websockets transport.";
             logger.log(LogLevel.Debug, errorMessage);
@@ -72,31 +82,31 @@ public class WebSocketTransport implements Transport {
         logger.log(LogLevel.Information, "WebSocket connection stopped");
     }
 
-    private WebSocketClient createWebSocket() {
-        return new WebSocketClient(url) {
-             @Override
-             public void onOpen(ServerHandshake handshakedata) {
-                 System.out.println("Connected to " + url);
-             }
+    private WebSocketClient createWebSocket(Map<String, String> headers) {
+        return new WebSocketClient(url, headers) {
+            @Override
+            public void onOpen(ServerHandshake handshakedata) {
+                System.out.println("Connected to " + url);
+            }
 
-             @Override
-             public void onMessage(String message) {
-                 try {
-                     onReceive(message);
-                 } catch (Exception e) {
-                     e.printStackTrace();
-                 }
-             }
+            @Override
+            public void onMessage(String message) {
+                try {
+                    onReceive(message);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
 
-             @Override
-             public void onClose(int code, String reason, boolean remote) {
+            @Override
+            public void onClose(int code, String reason, boolean remote) {
                 System.out.println("Connection Closed");
-             }
+            }
 
-             @Override
-             public void onError(Exception ex) {
+            @Override
+            public void onError(Exception ex) {
                 System.out.println("Error: " + ex.getMessage());
-             }
-         };
+            }
+        };
     }
 }

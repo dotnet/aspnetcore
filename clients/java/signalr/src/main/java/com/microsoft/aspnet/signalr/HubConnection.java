@@ -5,9 +5,11 @@ package com.microsoft.aspnet.signalr;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
-import java.net.URISyntaxException;
+
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 
 public class HubConnection {
@@ -22,8 +24,14 @@ public class HubConnection {
     private HubConnectionState connectionState = HubConnectionState.DISCONNECTED;
     private Logger logger;
     private List<Consumer<Exception>> onClosedCallbackList;
+    private boolean skipNegotiate = false;
+    private NegotiateResponse negotiateResponse;
+    private String accessToken;
+    private Map<String, String> headers = new HashMap<>();
 
-    public HubConnection(String url, Transport transport, Logger logger){
+    private static int MAX_NEGOTIATE_ATTEMPTS = 100;
+
+    public HubConnection(String url, Transport transport, Logger logger, boolean skipNegotiate) {
         this.url = url;
         this.protocol = new JsonHubProtocol();
 
@@ -32,7 +40,7 @@ public class HubConnection {
         } else {
             this.logger = new NullLogger();
         }
-
+        this.skipNegotiate = skipNegotiate;
         this.callback = (payload) -> {
 
             if (!handshakeReceived) {
@@ -56,16 +64,16 @@ public class HubConnection {
             HubMessage[] messages = protocol.parseMessages(payload);
 
             for (HubMessage message : messages) {
-                logger.log(LogLevel.Debug,"Received message of type %s", message.getMessageType());
+                logger.log(LogLevel.Debug, "Received message of type %s", message.getMessageType());
                 switch (message.getMessageType()) {
                     case INVOCATION:
-                        InvocationMessage invocationMessage = (InvocationMessage)message;
+                        InvocationMessage invocationMessage = (InvocationMessage) message;
                         if (handlers.containsKey(invocationMessage.target)) {
-                            ArrayList<Object> args = gson.fromJson((JsonArray)invocationMessage.arguments[0], (new ArrayList<>()).getClass());
+                            ArrayList<Object> args = gson.fromJson((JsonArray) invocationMessage.arguments[0], (new ArrayList<>()).getClass());
                             List<ActionBase> actions = handlers.get(invocationMessage.target);
                             if (actions != null) {
                                 logger.log(LogLevel.Debug, "Invoking handlers for target %s", invocationMessage.target);
-                                for (ActionBase action: actions) {
+                                for (ActionBase action : actions) {
                                     action.invoke(args.toArray());
                                 }
                             }
@@ -75,7 +83,7 @@ public class HubConnection {
                         break;
                     case CLOSE:
                         logger.log(LogLevel.Information, "Close message received from server.");
-                        CloseMessage closeMessage = (CloseMessage)message;
+                        CloseMessage closeMessage = (CloseMessage) message;
                         stop(closeMessage.getError());
                         break;
                     case PING:
@@ -92,20 +100,23 @@ public class HubConnection {
             }
         };
 
-        if (transport == null){
-            try {
-                this.transport = new WebSocketTransport(this.url, this.logger);
-            } catch (URISyntaxException e) {
-                e.printStackTrace();
-            }
-        } else {
+        if (transport != null) {
             this.transport = transport;
         }
     }
 
+    public HubConnection(String url, Transport transport, Logger logger) {
+        this(url, transport, logger, false);
+    }
+
+    public HubConnection(String url, Transport transport, boolean skipNegotiate) {
+        this(url, transport, new NullLogger(), skipNegotiate);
+    }
+
     /**
      * Initializes a new instance of the {@link HubConnection} class.
-     * @param url The url of the SignalR server to connect to.
+     *
+     * @param url       The url of the SignalR server to connect to.
      * @param transport The {@link Transport} that the client will use to communicate with the server.
      */
     public HubConnection(String url, Transport transport) {
@@ -114,6 +125,7 @@ public class HubConnection {
 
     /**
      * Initializes a new instance of the {@link HubConnection} class.
+     *
      * @param url The url of the SignalR server to connect to.
      */
     public HubConnection(String url) {
@@ -122,15 +134,17 @@ public class HubConnection {
 
     /**
      * Initializes a new instance of the {@link HubConnection} class.
-     * @param url The url of the SignalR server to connect to.
+     *
+     * @param url      The url of the SignalR server to connect to.
      * @param logLevel The minimum level of messages to log.
      */
-    public HubConnection(String url, LogLevel logLevel){
+    public HubConnection(String url, LogLevel logLevel) {
         this(url, null, new ConsoleLogger(logLevel));
     }
 
     /**
      * Indicates the state of the {@link HubConnection} to the server.
+     *
      * @return HubConnection state enum.
      */
     public HubConnectionState getConnectionState() {
@@ -139,14 +153,47 @@ public class HubConnection {
 
     /**
      * Starts a connection to the server.
+     *
      * @throws Exception An error occurred while connecting.
      */
     public void start() throws Exception {
         if (connectionState != HubConnectionState.DISCONNECTED) {
             return;
         }
+        if (!skipNegotiate) {
+            int negotiateAttempts = 0;
+            do {
+                accessToken = (negotiateResponse == null) ? null : negotiateResponse.getAccessToken();
+                negotiateResponse = Negotiate.processNegotiate(url, accessToken);
+
+                if (negotiateResponse.getConnectionId() != null) {
+                    if (url.contains("?")) {
+                        url = url + "&id=" + negotiateResponse.getConnectionId();
+                    } else {
+                        url = url + "?id=" + negotiateResponse.getConnectionId();
+                    }
+                }
+
+                if (negotiateResponse.getAccessToken() != null) {
+                    this.headers.put("Authorization", "Bearer " + negotiateResponse.getAccessToken());
+                }
+
+                if (negotiateResponse.getRedirectUrl() != null) {
+                    url = this.negotiateResponse.getRedirectUrl();
+                }
+
+                negotiateAttempts++;
+            } while (negotiateResponse.getRedirectUrl() != null && negotiateAttempts < MAX_NEGOTIATE_ATTEMPTS);
+            if (!negotiateResponse.getAvailableTransports().contains("WebSockets")) {
+                throw new HubException("There were no compatible transports on the server.");
+            }
+        }
 
         logger.log(LogLevel.Debug, "Starting HubConnection");
+        if (transport == null) {
+            transport = new WebSocketTransport(url, logger, headers);
+        }
+
         transport.setOnReceive(this.callback);
         transport.start();
         String handshake = HandshakeProtocol.createHandshakeRequestMessage(new HandshakeRequestMessage(protocol.getName(), protocol.getVersion()));
@@ -163,8 +210,8 @@ public class HubConnection {
             return;
         }
 
-        if(errorMessage != null) {
-            logger.log(LogLevel.Error , "HubConnection disconnected with an error %s.", errorMessage);
+        if (errorMessage != null) {
+            logger.log(LogLevel.Error, "HubConnection disconnected with an error %s.", errorMessage);
         } else {
             logger.log(LogLevel.Debug, "Stopping HubConnection.");
         }
@@ -172,9 +219,9 @@ public class HubConnection {
         transport.stop();
         connectionState = HubConnectionState.DISCONNECTED;
         logger.log(LogLevel.Information, "HubConnection stopped.");
-        if (onClosedCallbackList != null){
+        if (onClosedCallbackList != null) {
             HubException hubException = new HubException(errorMessage);
-            for (Consumer<Exception> callback: onClosedCallbackList) {
+            for (Consumer<Exception> callback : onClosedCallbackList) {
                 callback.accept(hubException);
             }
         }
@@ -190,8 +237,9 @@ public class HubConnection {
     /**
      * Invokes a hub method on the server using the specified method name.
      * Does not wait for a response from the receiver.
+     *
      * @param method The name of the server method to invoke.
-     * @param args The arguments to be passed to the method.
+     * @param args   The arguments to be passed to the method.
      * @throws Exception If there was an error while sending.
      */
     public void send(String method, Object... args) throws Exception {
@@ -207,7 +255,8 @@ public class HubConnection {
 
     /**
      * Registers a handler that will be invoked when the hub method with the specified method name is invoked.
-     * @param target The name of the hub method to define.
+     *
+     * @param target   The name of the hub method to define.
      * @param callback The handler that will be raised when the hub method is invoked.
      * @return A {@link Subscription} that can be disposed to unsubscribe from the hub method.
      */
@@ -220,10 +269,11 @@ public class HubConnection {
 
     /**
      * Registers a handler that will be invoked when the hub method with the specified method name is invoked.
-     * @param target The name of the hub method to define.
+     *
+     * @param target   The name of the hub method to define.
      * @param callback The handler that will be raised when the hub method is invoked.
-     * @param param1 The first parameter.
-     * @param <T1> The first argument type.
+     * @param param1   The first parameter.
+     * @param <T1>     The first argument type.
      * @return A {@link Subscription} that can be disposed to unsubscribe from the hub method.
      */
     public <T1> Subscription on(String target, Action1<T1> callback, Class<T1> param1) {
@@ -235,12 +285,13 @@ public class HubConnection {
 
     /**
      * Registers a handler that will be invoked when the hub method with the specified method name is invoked.
-     * @param target The name of the hub method to define.
+     *
+     * @param target   The name of the hub method to define.
      * @param callback The handler that will be raised when the hub method is invoked.
-     * @param param1 The first parameter.
-     * @param param2 The second parameter.
-     * @param <T1> The first parameter type.
-     * @param <T2> The second parameter type.
+     * @param param1   The first parameter.
+     * @param param2   The second parameter.
+     * @param <T1>     The first parameter type.
+     * @param <T2>     The second parameter type.
      * @return A {@link Subscription} that can be disposed to unsubscribe from the hub method.
      */
     public <T1, T2> Subscription on(String target, Action2<T1, T2> callback, Class<T1> param1, Class<T2> param2) {
@@ -254,14 +305,15 @@ public class HubConnection {
 
     /**
      * Registers a handler that will be invoked when the hub method with the specified method name is invoked.
-     * @param target The name of the hub method to define.
+     *
+     * @param target   The name of the hub method to define.
      * @param callback The handler that will be raised when the hub method is invoked.
-     * @param param1 The first parameter.
-     * @param param2 The second parameter.
-     * @param param3 The third parameter.
-     * @param <T1> The first parameter type.
-     * @param <T2> The second parameter type.
-     * @param <T3> The third parameter type.
+     * @param param1   The first parameter.
+     * @param param2   The second parameter.
+     * @param param3   The third parameter.
+     * @param <T1>     The first parameter type.
+     * @param <T2>     The second parameter type.
+     * @param <T3>     The third parameter type.
      * @return A {@link Subscription} that can be disposed to unsubscribe from the hub method.
      */
     public <T1, T2, T3> Subscription on(String target, Action3<T1, T2, T3> callback,
@@ -276,16 +328,17 @@ public class HubConnection {
 
     /**
      * Registers a handler that will be invoked when the hub method with the specified method name is invoked.
-     * @param target The name of the hub method to define.
+     *
+     * @param target   The name of the hub method to define.
      * @param callback The handler that will be raised when the hub method is invoked.
-     * @param param1 The first parameter.
-     * @param param2 The second parameter.
-     * @param param3 The third parameter.
-     * @param param4 The fourth parameter.
-     * @param <T1> The first parameter type.
-     * @param <T2> The second parameter type.
-     * @param <T3> The third parameter type.
-     * @param <T4> The fourth parameter type.
+     * @param param1   The first parameter.
+     * @param param2   The second parameter.
+     * @param param3   The third parameter.
+     * @param param4   The fourth parameter.
+     * @param <T1>     The first parameter type.
+     * @param <T2>     The second parameter type.
+     * @param <T3>     The third parameter type.
+     * @param <T4>     The fourth parameter type.
      * @return A {@link Subscription} that can be disposed to unsubscribe from the hub method.
      */
     public <T1, T2, T3, T4> Subscription on(String target, Action4<T1, T2, T3, T4> callback,
@@ -300,18 +353,19 @@ public class HubConnection {
 
     /**
      * Registers a handler that will be invoked when the hub method with the specified method name is invoked.
-     * @param target The name of the hub method to define.
+     *
+     * @param target   The name of the hub method to define.
      * @param callback The handler that will be raised when the hub method is invoked.
-     * @param param1 The first parameter.
-     * @param param2 The second parameter.
-     * @param param3 The third parameter.
-     * @param param4 The fourth parameter.
-     * @param param5 The fifth parameter.
-     * @param <T1> The first parameter type.
-     * @param <T2> The second parameter type.
-     * @param <T3> The third parameter type.
-     * @param <T4> The fourth parameter type.
-     * @param <T5> The fifth parameter type.
+     * @param param1   The first parameter.
+     * @param param2   The second parameter.
+     * @param param3   The third parameter.
+     * @param param4   The fourth parameter.
+     * @param param5   The fifth parameter.
+     * @param <T1>     The first parameter type.
+     * @param <T2>     The second parameter type.
+     * @param <T3>     The third parameter type.
+     * @param <T4>     The fourth parameter type.
+     * @param <T5>     The fifth parameter type.
      * @return A {@link Subscription} that can be disposed to unsubscribe from the hub method.
      */
     public <T1, T2, T3, T4, T5> Subscription on(String target, Action5<T1, T2, T3, T4, T5> callback,
@@ -327,27 +381,28 @@ public class HubConnection {
 
     /**
      * Registers a handler that will be invoked when the hub method with the specified method name is invoked.
-     * @param target The name of the hub method to define.
+     *
+     * @param target   The name of the hub method to define.
      * @param callback The handler that will be raised when the hub method is invoked.
-     * @param param1 The first parameter.
-     * @param param2 The second parameter.
-     * @param param3 The third parameter.
-     * @param param4 The fourth parameter.
-     * @param param5 The fifth parameter.
-     * @param param6 The sixth parameter.
-     * @param <T1> The first parameter type.
-     * @param <T2> The second parameter type.
-     * @param <T3> The third parameter type.
-     * @param <T4> The fourth parameter type.
-     * @param <T5> The fifth parameter type.
-     * @param <T6> The sixth parameter type.
+     * @param param1   The first parameter.
+     * @param param2   The second parameter.
+     * @param param3   The third parameter.
+     * @param param4   The fourth parameter.
+     * @param param5   The fifth parameter.
+     * @param param6   The sixth parameter.
+     * @param <T1>     The first parameter type.
+     * @param <T2>     The second parameter type.
+     * @param <T3>     The third parameter type.
+     * @param <T4>     The fourth parameter type.
+     * @param <T5>     The fifth parameter type.
+     * @param <T6>     The sixth parameter type.
      * @return A {@link Subscription} that can be disposed to unsubscribe from the hub method.
      */
     public <T1, T2, T3, T4, T5, T6> Subscription on(String target, Action6<T1, T2, T3, T4, T5, T6> callback,
                                                     Class<T1> param1, Class<T2> param2, Class<T3> param3, Class<T4> param4, Class<T5> param5, Class<T6> param6) {
         ActionBase action = params -> {
             callback.invoke(param1.cast(params[0]), param2.cast(params[1]), param3.cast(params[2]), param4.cast(params[3]),
-                    param5.cast(params[4]) ,param6.cast(params[5]));
+                    param5.cast(params[4]), param6.cast(params[5]));
         };
         handlers.put(target, action);
         logger.log(LogLevel.Trace, "Registering handler for client method: %s", target);
@@ -356,29 +411,30 @@ public class HubConnection {
 
     /**
      * Registers a handler that will be invoked when the hub method with the specified method name is invoked.
-     * @param target The name of the hub method to define.
+     *
+     * @param target   The name of the hub method to define.
      * @param callback The handler that will be raised when the hub method is invoked.
-     * @param param1 The first parameter.
-     * @param param2 The second parameter.
-     * @param param3 The third parameter.
-     * @param param4 The fourth parameter.
-     * @param param5 The fifth parameter.
-     * @param param6 The sixth parameter.
-     * @param param7 The seventh parameter.
-     * @param <T1> The first parameter type.
-     * @param <T2> The second parameter type.
-     * @param <T3> The third parameter type.
-     * @param <T4> The fourth parameter type.
-     * @param <T5> The fifth parameter type.
-     * @param <T6> The sixth parameter type.
-     * @param <T7> The seventh parameter type.
+     * @param param1   The first parameter.
+     * @param param2   The second parameter.
+     * @param param3   The third parameter.
+     * @param param4   The fourth parameter.
+     * @param param5   The fifth parameter.
+     * @param param6   The sixth parameter.
+     * @param param7   The seventh parameter.
+     * @param <T1>     The first parameter type.
+     * @param <T2>     The second parameter type.
+     * @param <T3>     The third parameter type.
+     * @param <T4>     The fourth parameter type.
+     * @param <T5>     The fifth parameter type.
+     * @param <T6>     The sixth parameter type.
+     * @param <T7>     The seventh parameter type.
      * @return A {@link Subscription} that can be disposed to unsubscribe from the hub method.
      */
     public <T1, T2, T3, T4, T5, T6, T7> Subscription on(String target, Action7<T1, T2, T3, T4, T5, T6, T7> callback,
                                                         Class<T1> param1, Class<T2> param2, Class<T3> param3, Class<T4> param4, Class<T5> param5, Class<T6> param6, Class<T7> param7) {
         ActionBase action = params -> {
             callback.invoke(param1.cast(params[0]), param2.cast(params[1]), param3.cast(params[2]), param4.cast(params[3]),
-                    param5.cast(params[4]) ,param6.cast(params[5]), param7.cast(params[6]));
+                    param5.cast(params[4]), param6.cast(params[5]), param7.cast(params[6]));
         };
         handlers.put(target, action);
         logger.log(LogLevel.Trace, "Registering handler for client method: %s", target);
@@ -387,31 +443,32 @@ public class HubConnection {
 
     /**
      * Registers a handler that will be invoked when the hub method with the specified method name is invoked.
-     * @param target The name of the hub method to define.
+     *
+     * @param target   The name of the hub method to define.
      * @param callback The handler that will be raised when the hub method is invoked.
-     * @param param1 The first parameter.
-     * @param param2 The second parameter.
-     * @param param3 The third parameter.
-     * @param param4 The fourth parameter.
-     * @param param5 The fifth parameter.
-     * @param param6 The sixth parameter.
-     * @param param7 The seventh parameter.
-     * @param param8 The eighth parameter
-     * @param <T1> The first parameter type.
-     * @param <T2> The second parameter type.
-     * @param <T3> The third parameter type.
-     * @param <T4> The fourth parameter type.
-     * @param <T5> The fifth parameter type.
-     * @param <T6> The sixth parameter type.
-     * @param <T7> The seventh parameter type.
-     * @param <T8> The eighth parameter type.
+     * @param param1   The first parameter.
+     * @param param2   The second parameter.
+     * @param param3   The third parameter.
+     * @param param4   The fourth parameter.
+     * @param param5   The fifth parameter.
+     * @param param6   The sixth parameter.
+     * @param param7   The seventh parameter.
+     * @param param8   The eighth parameter
+     * @param <T1>     The first parameter type.
+     * @param <T2>     The second parameter type.
+     * @param <T3>     The third parameter type.
+     * @param <T4>     The fourth parameter type.
+     * @param <T5>     The fifth parameter type.
+     * @param <T6>     The sixth parameter type.
+     * @param <T7>     The seventh parameter type.
+     * @param <T8>     The eighth parameter type.
      * @return A {@link Subscription} that can be disposed to unsubscribe from the hub method.
      */
     public <T1, T2, T3, T4, T5, T6, T7, T8> Subscription on(String target, Action8<T1, T2, T3, T4, T5, T6, T7, T8> callback,
-                                                        Class<T1> param1, Class<T2> param2, Class<T3> param3, Class<T4> param4, Class<T5> param5, Class<T6> param6, Class<T7> param7, Class<T8> param8) {
+                                                            Class<T1> param1, Class<T2> param2, Class<T3> param3, Class<T4> param4, Class<T5> param5, Class<T6> param6, Class<T7> param7, Class<T8> param8) {
         ActionBase action = params -> {
             callback.invoke(param1.cast(params[0]), param2.cast(params[1]), param3.cast(params[2]), param4.cast(params[3]),
-                    param5.cast(params[4]) ,param6.cast(params[5]), param7.cast(params[6]), param8.cast(params[7]));
+                    param5.cast(params[4]), param6.cast(params[5]), param7.cast(params[6]), param8.cast(params[7]));
         };
         handlers.put(target, action);
         logger.log(LogLevel.Trace, "Registering handler for client method: %s", target);
@@ -420,15 +477,16 @@ public class HubConnection {
 
     /**
      * Removes all handlers associated with the method with the specified method name.
+     *
      * @param name The name of the hub method from which handlers are being removed.
      */
     public void remove(String name) {
         handlers.remove(name);
-        logger.log(LogLevel.Trace, "Removing handlers for client method %s" , name);
+        logger.log(LogLevel.Trace, "Removing handlers for client method %s", name);
     }
 
     public void onClosed(Consumer<Exception> callback) {
-        if (onClosedCallbackList == null){
+        if (onClosedCallbackList == null) {
             onClosedCallbackList = new ArrayList<>();
         }
 
