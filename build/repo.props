@@ -37,12 +37,4 @@
     <ESRPClientConfigFile>$(MSBuildThisFileDirectory)esrpconfig.json</ESRPClientConfigFile>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <PublishToVSDrop>false</PublishToVSDrop>
-  </PropertyGroup>
-
-  <PropertyGroup Condition=" '$(LocalBuild)' != 'true' ">
-    <PublishToVSDrop Condition=" $(PublishType.Contains('vsdrop')) ">true</PublishToVSDrop>
-  </PropertyGroup>
-
 </Project>
