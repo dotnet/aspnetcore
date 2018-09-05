@@ -4,15 +4,15 @@
     <AspNetCoreMinorVersion>2</AspNetCoreMinorVersion>
     <AspNetCorePatchVersion>0</AspNetCorePatchVersion>
     <VersionPrefix>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).$(AspNetCorePatchVersion)</VersionPrefix>
-    <PrereleaseVersionLabel>preview2</PrereleaseVersionLabel>
+    <PrereleaseVersionLabel>preview3</PrereleaseVersionLabel>
     <BuildNumber Condition="'$(BuildNumber)' == ''">t000</BuildNumber>
 
     <!-- The 'human friendly' version to display in installers. In pre-release builds, this might be "2.0.7 Preview 2" -->
-    <PackageBrandingVersion>$(VersionPrefix) Preview 2</PackageBrandingVersion>
+    <PackageBrandingVersion>$(VersionPrefix) Preview 3</PackageBrandingVersion>
     <PackageBrandingVersion Condition=" '$(IsFinalBuild)' != 'true' ">$(PackageBrandingVersion) Build $(BuildNumber)</PackageBrandingVersion>
 
     <ExperimentalVersionPrefix>0.2.0</ExperimentalVersionPrefix>
-    <ExperimentalVersionSuffix>preview2</ExperimentalVersionSuffix>
+    <ExperimentalVersionSuffix>preview3</ExperimentalVersionSuffix>
 
     <PackageVersionSuffix Condition=" '$(IsFinalBuild)' != 'true' AND '$(PrereleaseVersionLabel)' != '' ">$(PrereleaseVersionLabel)</PackageVersionSuffix>
     <PackageVersionSuffix Condition=" '$(IsFinalBuild)' != 'true' AND '$(BuildNumber)' != '' ">$(PackageVersionSuffix)-$(BuildNumber)</PackageVersionSuffix>
