@@ -1,4 +1,10 @@
 init:
+  # Reset dynamic port range from AppVeyor setting (1025-65535) to Windows default (49152-65535),
+  # to prevent conflicts with ANCM random ports (1025-48000).
+  - netsh int ipv4 show dynamicport tcp
+  - netsh int ipv4 set dynamic tcp start=49152 num=16384
+  - netsh int ipv4 show dynamicport tcp
+
   - git config --global core.autocrlf true
 branches:
   only:
