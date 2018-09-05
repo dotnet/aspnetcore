@@ -73,7 +73,7 @@
   </PropertyGroup>
   <Target Name="PreCreateVsixContainer" BeforeTargets="CreateVsixContainer">
     <ItemGroup>
-      <VSIXSourceItem Include="..\..\Artifacts\Build\Microsoft.AspNetCore.Blazor.Templates.*.nupkg">
+      <VSIXSourceItem Include="$(PackageOutputPath)Microsoft.AspNetCore.Blazor.Templates.*.nupkg">
         <VSIXSubPath>ProjectTemplates\</VSIXSubPath>
       </VSIXSourceItem>
       <VSIXSourceItem Include="Templates.pkgdef" />
