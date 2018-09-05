@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Blazor.BuildTools.Cli.Commands;
@@ -17,6 +17,7 @@ namespace Microsoft.AspNetCore.Blazor.BuildTools
             app.HelpOption("-?|-h|--help");
 
             app.Command("checknodejs", CheckNodeJsInstalledCommand.Command);
+            app.Command("ilwipe", ILWipeCommand.Command);
 
             if (args.Length > 0)
             {

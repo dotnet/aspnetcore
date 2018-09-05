@@ -21,9 +21,6 @@
 
   <Import Project="$(MSBuildThisFileDirectory)targets/All.props" />
   <Import Project="$(MSBuildThisFileDirectory)targets/All.targets" />
-  <Import Project="$(MSBuildThisFileDirectory)../mono/mono.targets" />
-
-  <Target Name="ProvisionMono" DependsOnTargets="OptimizeMono" BeforeTargets="BuildBlazorBuildBinary" />
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="$(RazorPackageVersion)"/>
@@ -37,9 +34,11 @@
   <Target
     Name="BuildBlazorBuildBinary"
     BeforeTargets="BlazorGenerateDeclaration">
-    <!-- Ensures this project is built before the consuming project, but without
+    <!-- Ensures these projects are built before the consuming project, but without
          adding a runtime dependency on the .dll (to be equivalent to a <PackageDependency>
          given that the packed version of this project wouldn't add a .dll reference) -->
+    <MSBuild Projects="$(MSBuildThisFileDirectory)..\Microsoft.AspNetCore.Blazor.BuildTools\Microsoft.AspNetCore.Blazor.BuildTools.csproj" Targets="Build" />
+    <MSBuild Projects="$(MSBuildThisFileDirectory)..\mono\mono.csproj" Targets="Build" />
     <MSBuild Projects="$(MSBuildThisFileDirectory)Microsoft.AspNetCore.Blazor.Build.csproj" Targets="Build" />
   </Target>
 

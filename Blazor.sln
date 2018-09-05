@@ -8,9 +8,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{B867E038-B3CE-43E3-9292-61568C46CDEB}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "mono", "mono", "{7B5CAAB1-A3EB-44F7-87E3-A13ED89FC17D}"
-	ProjectSection(SolutionItems) = preProject
-		src\mono\mono.targets = src\mono\mono.targets
-	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MonoSanity", "samples\MonoSanity\MonoSanity.csproj", "{7C53BB6B-5906-4753-B507-C9FCC2F7E5B7}"
 EndProject
@@ -124,6 +121,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "modules", "modules", "{F380B6B6-9486-42BC-9B24-C388F8BF13A3}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.JSInterop.Test", "modules\jsinterop\test\Microsoft.JSInterop.Test\Microsoft.JSInterop.Test.csproj", "{ECF02708-4CA4-44B3-B23F-274F4B417FA5}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "mono", "src\mono\mono.csproj", "{DEEAE26E-D00C-4A3C-BE12-7A51A63CE55E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -456,6 +455,14 @@ Global
 		{ECF02708-4CA4-44B3-B23F-274F4B417FA5}.Release|Any CPU.Build.0 = Release|Any CPU
 		{ECF02708-4CA4-44B3-B23F-274F4B417FA5}.ReleaseNoVSIX|Any CPU.ActiveCfg = Release|Any CPU
 		{ECF02708-4CA4-44B3-B23F-274F4B417FA5}.ReleaseNoVSIX|Any CPU.Build.0 = Release|Any CPU
+		{DEEAE26E-D00C-4A3C-BE12-7A51A63CE55E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DEEAE26E-D00C-4A3C-BE12-7A51A63CE55E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DEEAE26E-D00C-4A3C-BE12-7A51A63CE55E}.DebugNoVSIX|Any CPU.ActiveCfg = Debug|Any CPU
+		{DEEAE26E-D00C-4A3C-BE12-7A51A63CE55E}.DebugNoVSIX|Any CPU.Build.0 = Debug|Any CPU
+		{DEEAE26E-D00C-4A3C-BE12-7A51A63CE55E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DEEAE26E-D00C-4A3C-BE12-7A51A63CE55E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DEEAE26E-D00C-4A3C-BE12-7A51A63CE55E}.ReleaseNoVSIX|Any CPU.ActiveCfg = Release|Any CPU
+		{DEEAE26E-D00C-4A3C-BE12-7A51A63CE55E}.ReleaseNoVSIX|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -512,6 +519,7 @@ Global
 		{4A5D7F9D-9CED-44C1-983E-054D8E99A292} = {1386F99B-3862-40C2-B24D-796C07DC7921}
 		{1386F99B-3862-40C2-B24D-796C07DC7921} = {F380B6B6-9486-42BC-9B24-C388F8BF13A3}
 		{ECF02708-4CA4-44B3-B23F-274F4B417FA5} = {ADA3AE29-F6DE-49F6-8C7C-B321508CAE8E}
+		{DEEAE26E-D00C-4A3C-BE12-7A51A63CE55E} = {7B5CAAB1-A3EB-44F7-87E3-A13ED89FC17D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {504DA352-6788-4DC0-8705-82167E72A4D3}

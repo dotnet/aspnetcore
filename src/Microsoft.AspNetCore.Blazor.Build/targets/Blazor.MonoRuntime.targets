@@ -157,6 +157,9 @@
     </PropertyGroup>
 
     <ItemGroup Label="Static content to copy to the output folder">
+      <MonoAsmjsFile Include="$(MonoAsmjsRuntimePath)**/*.*" />
+      <MonoWasmFile Include="$(MonoWasmRuntimePath)**/*.*" />
+      <BlazorJsFile Include="$(BlazorJsPath)" />
       <BlazorItemOutput Include="@(MonoAsmjsFile)">
         <TargetOutputPath>$(TargetDir)$(BaseBlazorRuntimeAsmjsOutputPath)%(FileName)%(Extension)</TargetOutputPath>
         <Type>AsmJs</Type>
@@ -424,9 +427,10 @@
     4) Add the file we just created to the list of file writes, to support incremental builds.
     -->
     <ItemGroup>
+      <_MonoBaseClassLibraryFolder Include="$(MonoBaseClassLibraryPath);$(MonoBaseClassLibraryFacadesPath)" />
       <_BlazorAssembliesToLink Include="@(_BlazorDependencyInput->'-a &quot;%(Identity)&quot;')" />
       <_BlazorAssembliesToLink Include="@(IntermediateAssembly->'-a &quot;%(FullPath)&quot;')" />
-      <_BlazorFolderLookupPaths Include="@(MonoBaseClassLibraryFolder->'-d &quot;%(Identity)&quot;')" />
+      <_BlazorFolderLookupPaths Include="@(_MonoBaseClassLibraryFolder->'-d &quot;%(Identity)&quot;')" />
       <_BlazorAssemblyDescriptorFiles
         Include="@(BlazorLinkerDescriptor->'-x &quot;%(FullPath)&quot;')" Condition="'@(BlazorLinkerDescriptor)' != ''" />
     </ItemGroup>

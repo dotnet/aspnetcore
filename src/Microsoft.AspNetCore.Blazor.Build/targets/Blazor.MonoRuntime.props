@@ -25,13 +25,4 @@
     <BlazorBootJsonOutputPath>$(BaseBlazorRuntimeOutputPath)$(BlazorBootJsonName)</BlazorBootJsonOutputPath>
   </PropertyGroup>
 
-  <ItemGroup>
-    <MonoBCLFile Include="$(MonoBaseClassLibraryPath)*.dll" />
-    <MonoBCLFacadeFile Include="$(MonoBaseClassLibraryFacadesPath)*.dll" />
-    <MonoAsmjsFile Include="$(MonoAsmjsRuntimePath)**/*.*" />
-    <MonoWasmFile Include="$(MonoWasmRuntimePath)**/*.*" />
-    <BlazorJsFile Include="$(BlazorJsPath)" />
-    <MonoBaseClassLibraryFolder Include="$(MonoBaseClassLibraryPath);$(MonoBaseClassLibraryFacadesPath)" />
-  </ItemGroup>
-
 </Project>
