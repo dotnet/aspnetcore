@@ -22,6 +22,7 @@
   </ItemGroup>
 
   <PropertyGroup>
+    <SignOutput Condition=" '$(SignType)' != '' ">true</SignOutput>
     <DarkToolPath>$(WixExtDir)dark.exe</DarkToolPath>
   </PropertyGroup>
 

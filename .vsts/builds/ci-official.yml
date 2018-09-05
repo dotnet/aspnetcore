@@ -18,11 +18,26 @@ phases:
   variables:
     CI: true
     DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+
+    # This variable is required by MicroBuildSigningPlugin to determine permissions for codesigning.
+    TeamName: AspNetCore
+
+    # SignType = { test, real }
+    # This is prefixed underscore because variables automatically become environment variables (and therefore MSBuild properties),
+    # and this one was causing issues in MSBuild projects which use the $(SignType) MSbuild prop.
+    _SignType: real
+
   steps:
   - task: NodeTool@0
     displayName: Install Node 10.x
     inputs:
       versionSpec: 10.x
+  - task: MicroBuildSigningPlugin@1
+    displayName: Install MicroBuild plugin
+    condition: and(succeeded(), in(variables['_SignType'], 'test', 'real'))
+    inputs:
+      signType: $(_SignType)
+      zipSources: false
   # TODO: configure build.cmd to build both x64 and x86 in one invocation
   # TODO build.cmd -ci
   - script: build.cmd /p:SkipTests=true /p:Configuration=$(BuildConfiguration) /p:BuildNumber=$(Build.BuildNumber) /t:Build /t:BuildSharedFx /p:SharedFxRID=win-x64 /t:BuildFallbackArchive
@@ -34,6 +49,7 @@ phases:
       -GitCredential '$(dn-bot-devdiv-build-rw-code-rw)'
       -Config $(BuildConfiguration)
       -BuildNumber $(Build.BuildNumber)
+      -SignType $(_SignType)
     displayName: Build ANCM installers
   # TODO: configure harvesting to run as a part of build.cmd
   - powershell: >
@@ -42,6 +58,7 @@ phases:
       -x86 artifacts/runtime/aspnetcore-runtime-internal-2.2.0-preview2-$(Build.BuildNumber)-win-x86.zip
       -Config $(BuildConfiguration)
       -BuildNumber $(Build.BuildNumber)
+      -SignType $(_SignType)
     displayName: Build Windows installers
   - task: PublishTestResults@2
     displayName: Publish test results
@@ -56,6 +73,9 @@ phases:
       pathtoPublish: ./artifacts/
       artifactName: artifacts-Windows-Release
       artifactType: Container
+  - task: MicroBuildCleanup@1
+    displayName: Cleanup MicroBuild tasks
+    condition: always()
 
 - phase: macOS
   dependsOn: Windows
