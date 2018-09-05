@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
 
         public const string HtmlHelperPartialExtensionsType = "Microsoft.AspNetCore.Mvc.Rendering.HtmlHelperPartialExtensions";
 
-        public const string IApiBehaviorMetadata = "Microsoft.AspNetCore.Mvc.Internal.IApiBehaviorMetadata";
+        public const string IApiBehaviorMetadata = "Microsoft.AspNetCore.Mvc.IApiBehaviorMetadata";
 
         public const string IBinderTypeProviderMetadata = "Microsoft.AspNetCore.Mvc.ModelBinding.IBinderTypeProviderMetadata";
 

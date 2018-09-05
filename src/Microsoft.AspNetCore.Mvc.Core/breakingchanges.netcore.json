@@ -1,0 +1,6 @@
+[
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Mvc.ApiControllerAttribute : Microsoft.AspNetCore.Mvc.ControllerAttribute, Microsoft.AspNetCore.Mvc.Internal.IApiBehaviorMetadata",
+    "Kind": "Removal"
+  }
+]

@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <summary>
         /// Initializes a new instance of <see cref="ProducesErrorResponseTypeAttribute"/>.
         /// </summary>
-        /// <param name="type">The error type.</param>
+        /// <param name="type">The error type. Use <see cref="void"/> to indicate the absence of a default error type.</param>
         public ProducesErrorResponseTypeAttribute(Type type)
         {
             Type = type ?? throw new ArgumentNullException(nameof(type));
