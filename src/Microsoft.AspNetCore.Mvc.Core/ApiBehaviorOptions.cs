@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Mvc
     /// </summary>
     public class ApiBehaviorOptions : IEnumerable<ICompatibilitySwitch>
     {
-        private readonly CompatibilitySwitch<bool> _suppressUseClientErrorFactory;
+        private readonly CompatibilitySwitch<bool> _suppressMapClientErrors;
         private readonly CompatibilitySwitch<bool> _suppressUseValidationProblemDetailsForInvalidModelStateResponses;
         private readonly ICompatibilitySwitch[] _switches;
 
@@ -26,11 +26,11 @@ namespace Microsoft.AspNetCore.Mvc
         /// </summary>
         public ApiBehaviorOptions()
         {
-            _suppressUseClientErrorFactory = new CompatibilitySwitch<bool>(nameof(SuppressUseClientErrorFactory));
+            _suppressMapClientErrors = new CompatibilitySwitch<bool>(nameof(SuppressMapClientErrors));
             _suppressUseValidationProblemDetailsForInvalidModelStateResponses = new CompatibilitySwitch<bool>(nameof(SuppressUseValidationProblemDetailsForInvalidModelStateResponses));
             _switches = new[]
             {
-                _suppressUseClientErrorFactory,
+                _suppressMapClientErrors,
                 _suppressUseValidationProblemDetailsForInvalidModelStateResponses,
             };
         }
@@ -71,12 +71,16 @@ namespace Microsoft.AspNetCore.Mvc
         public bool SuppressConsumesConstraintForFormFileParameters { get; set; }
 
         /// <summary>
-        /// Gets or sets a value that determines if controllers with <see cref="ApiControllerAttribute"/> use <see cref="ClientErrorFactory"/>
-        /// to transform certain certain client errors.
+        /// Gets or sets a value that determines if controllers with <see cref="ApiControllerAttribute"/>
+        /// transform certain certain client errors.
         /// <para>
-        /// When <c>false</c>, <see cref="ClientErrorFactory"/> is used to transform <see cref="IClientErrorActionResult"/> to the value
-        /// specified by the factory. In the default case, this converts <see cref="StatusCodeResult"/> instances to an <see cref="ObjectResult"/>
-        /// with <see cref="ProblemDetails"/>.
+        /// When <c>false</c>, a result filter is added to API controller actions that transforms <see cref="IClientErrorActionResult"/>.
+        /// By default, <see cref="ClientErrorMapping"/> is used to map <see cref="IClientErrorActionResult"/> to a
+        /// <see cref="ProblemDetails"/> instance (returned as the value for <see cref="ObjectResult"/>).
+        /// </para>
+        /// <para>
+        /// To customize the output of the filter (for e.g. to return a different error type), register a custom
+        /// implementation of of <see cref="IClientErrorFactory"/> in the service collection.
         /// </para>
         /// </summary>
         /// <value>
@@ -102,11 +106,11 @@ namespace Microsoft.AspNetCore.Mvc
         /// higher then this setting will have the value <see langword="true"/> unless explicitly configured.
         /// </para>
         /// </remarks>
-        public bool SuppressUseClientErrorFactory
+        public bool SuppressMapClientErrors
         {
             // Note: When compatibility switches are removed in 3.0, this property should be retained as a regular boolean property.
-            get => _suppressUseClientErrorFactory.Value;
-            set => _suppressUseClientErrorFactory.Value = value;
+            get => _suppressMapClientErrors.Value;
+            set => _suppressMapClientErrors.Value = value;
         }
 
         /// <summary>
@@ -148,11 +152,15 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         /// <summary>
-        /// Gets a map of HTTP status codes to <see cref="IActionResult"/> factories.
-        /// Configured factories are used when <see cref="SuppressUseClientErrorFactory"/> is <see langword="false"/>.
+        /// Gets a map of HTTP status codes to <see cref="ClientErrorData"/>. Configured values
+        /// are used to transform <see cref="IClientErrorActionResult"/> to an <see cref="ObjectResult"/>
+        /// instance where the <see cref="ObjectResult.Value"/> is <see cref="ProblemDetails"/>.
+        /// <para>
+        /// Use of this feature can be disabled by resetting <see cref="SuppressMapClientErrors"/>.
+        /// </para>
         /// </summary>
-        public IDictionary<int, Func<ActionContext, IActionResult>> ClientErrorFactory { get; } =
-            new Dictionary<int, Func<ActionContext, IActionResult>>();
+        public IDictionary<int, ClientErrorData> ClientErrorMapping { get; } =
+            new Dictionary<int, ClientErrorData>();
 
         IEnumerator<ICompatibilitySwitch> IEnumerable<ICompatibilitySwitch>.GetEnumerator()
         {

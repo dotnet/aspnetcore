@@ -128,7 +128,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal("From Header - HelloWorld", body);
         }
 
-        [Fact(Skip = "https://github.com/aspnet/Routing/issues/721")]
+        [Fact]
         public async Task ActionModelSuppressedForPathMatching_CannotBeRouted()
         {
             // Arrange & Act

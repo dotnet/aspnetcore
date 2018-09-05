@@ -123,7 +123,7 @@ namespace Microsoft.CodeAnalysis
             return false;
         }
 
-        private static bool HasAttribute(this ISymbol symbol, ITypeSymbol attribute)
+        public static bool HasAttribute(this ISymbol symbol, ITypeSymbol attribute)
         {
             foreach (var declaredAttribute in symbol.GetAttributes())
             {

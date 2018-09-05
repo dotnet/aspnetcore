@@ -2,6 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
+using System.Linq;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
@@ -28,7 +31,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
-        public void Configure_AddsClientErrorFactories()
+        public void Configure_AddsClientErrorMappings()
         {
             // Arrange
             var expected = new[] { 400, 401, 403, 404, 406, 409, 415, 422, };
@@ -41,7 +44,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             optionsSetup.Configure(options);
 
             // Assert
-            Assert.Equal(expected, options.ClientErrorFactory.Keys);
+            Assert.Equal(expected, options.ClientErrorMapping.Keys);
         }
 
         [Fact]
@@ -96,6 +99,65 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             // Assert
             Assert.Same(expected, options.InvalidModelStateResponseFactory);
+        }
+
+        [Fact]
+        public void ProblemDetailsInvalidModelStateResponse_ReturnsBadRequestWithProblemDetails()
+        {
+            // Arrange
+            var actionContext = new ActionContext
+            {
+                HttpContext = new DefaultHttpContext { TraceIdentifier = "42" },
+            };
+
+            // Act
+            var result = ApiBehaviorOptionsSetup.ProblemDetailsInvalidModelStateResponse(actionContext);
+
+            // Assert
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal(new[] { "application/problem+json", "application/problem+xml" }, badRequest.ContentTypes.OrderBy(c => c));
+
+            var problemDetails = Assert.IsType<ValidationProblemDetails>(badRequest.Value);
+            Assert.Equal(400, problemDetails.Status);
+        }
+
+        [Fact]
+        public void ProblemDetailsInvalidModelStateResponse_SetsTraceId()
+        {
+            // Arrange
+            using (new ActivityReplacer())
+            {
+                var actionContext = new ActionContext
+                {
+                    HttpContext = new DefaultHttpContext { TraceIdentifier = "42" },
+                };
+
+                // Act
+                var result = ApiBehaviorOptionsSetup.ProblemDetailsInvalidModelStateResponse(actionContext);
+
+                // Assert
+                var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+                var problemDetails = Assert.IsType<ValidationProblemDetails>(badRequest.Value);
+                Assert.Equal(Activity.Current.Id, problemDetails.Extensions["traceId"]);
+            }
+        }
+
+        [Fact]
+        public void ProblemDetailsInvalidModelStateResponse_SetsTraceIdFromRequest_IfActivityIsNull()
+        {
+            // Arrange
+            var actionContext = new ActionContext
+            {
+                HttpContext = new DefaultHttpContext { TraceIdentifier = "42" },
+            };
+
+            // Act
+            var result = ApiBehaviorOptionsSetup.ProblemDetailsInvalidModelStateResponse(actionContext);
+
+            // Assert
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+            var problemDetails = Assert.IsType<ValidationProblemDetails>(badRequest.Value);
+            Assert.Equal("42", problemDetails.Extensions["traceId"]);
         }
     }
 }

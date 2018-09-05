@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -182,6 +183,86 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                 "<key2>key2-error</key2></SerializableErrorWrapper><SerializableErrorWrapper><key3>key1-error</key3>" +
                 "<key4>key2-error</key4></SerializableErrorWrapper></ArrayOfSerializableErrorWrapper>",
                 result);
+        }
+
+        [Fact]
+        public async Task ProblemDetails_IsSerialized()
+        {
+            // Arrange
+            using (new ActivityReplacer())
+            {
+                var expected = "<ProblemDetails>" +
+                    "<Status>404</Status>" +
+                    "<Title>Not Found</Title>" +
+                    "<Type>https://tools.ietf.org/html/rfc7231#section-6.5.4</Type>" +
+                    $"<traceId>{Activity.Current.Id}</traceId>" +
+                    "</ProblemDetails>";
+
+                // Act
+                var response = await Client.GetAsync("/api/XmlSerializerApi/ActionReturningClientErrorStatusCodeResult");
+
+                // Assert
+                await response.AssertStatusCodeAsync(HttpStatusCode.NotFound);
+                var content = await response.Content.ReadAsStringAsync();
+                XmlAssert.Equal(expected, content);
+            }
+        }
+
+        [Fact]
+        public async Task ProblemDetails_WithExtensionMembers_IsSerialized()
+        {
+            // Arrange
+            var expected = @"<ProblemDetails><Instance>instance</Instance><Status>404</Status><Title>title</Title>
+<Correlation>correlation</Correlation><Accounts>Account1 Account2</Accounts></ProblemDetails>";
+
+            // Act
+            var response = await Client.GetAsync("/api/XmlSerializerApi/ActionReturningProblemDetails");
+
+            // Assert
+            await response.AssertStatusCodeAsync(HttpStatusCode.NotFound);
+            var content = await response.Content.ReadAsStringAsync();
+            XmlAssert.Equal(expected, content);
+        }
+
+        [Fact]
+        public async Task ValidationProblemDetails_IsSerialized()
+        {
+            // Arrange
+            using (new ActivityReplacer())
+            {
+                var expected = "<ValidationProblemDetails>" +
+               "<Status>400</Status>" +
+               "<Title>One or more validation errors occurred.</Title>" +
+               $"<traceId>{Activity.Current.Id}</traceId>" +
+               "<MVC-Errors>" +
+               "<State>The State field is required.</State>" +
+               "</MVC-Errors>" +
+               "</ValidationProblemDetails>";
+
+                // Act
+                var response = await Client.GetAsync("/api/XmlSerializerApi/ActionReturningValidationProblem");
+
+                // Assert
+                await response.AssertStatusCodeAsync(HttpStatusCode.BadRequest);
+                var content = await response.Content.ReadAsStringAsync();
+                XmlAssert.Equal(expected, content);
+            }
+        }
+
+        [Fact]
+        public async Task ValidationProblemDetails_WithExtensionMembers_IsSerialized()
+        {
+            // Arrange
+            var expected = @"<ValidationProblemDetails><Detail>some detail</Detail><Status>400</Status><Title>One or more validation errors occurred.</Title>
+<Type>some type</Type><CorrelationId>correlation</CorrelationId><MVC-Errors><Error1>ErrorValue</Error1></MVC-Errors></ValidationProblemDetails>";
+
+            // Act
+            var response = await Client.GetAsync("/api/XmlSerializerApi/ActionReturningValidationDetailsWithMetadata");
+
+            // Assert
+            await response.AssertStatusCodeAsync(HttpStatusCode.BadRequest);
+            var content = await response.Content.ReadAsStringAsync();
+            XmlAssert.Equal(expected, content);
         }
     }
 }

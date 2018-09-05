@@ -309,6 +309,247 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 });
         }
 
+        [Fact]
+        public void GetApiResponseTypes_UsesErrorType_ForClientErrors()
+        {
+            // Arrange
+            var errorType = typeof(InvalidTimeZoneException);
+            var actionDescriptor = GetControllerActionDescriptor(
+                 typeof(GetApiResponseTypes_ReturnsResponseTypesFromDefaultConventionsController),
+                 nameof(GetApiResponseTypes_ReturnsResponseTypesFromDefaultConventionsController.DeleteBase));
+            actionDescriptor.Properties[typeof(ApiConventionResult)] = new ApiConventionResult(new IApiResponseMetadataProvider[]
+            {
+                new ProducesResponseTypeAttribute(200),
+                new ProducesResponseTypeAttribute(404),
+                new ProducesResponseTypeAttribute(415),
+            });
+
+            actionDescriptor.Properties[typeof(ProducesErrorResponseTypeAttribute)] = new ProducesErrorResponseTypeAttribute(errorType);
+
+            var provider = GetProvider();
+
+            // Act
+            var result = provider.GetApiResponseTypes(actionDescriptor);
+
+            // Assert
+            Assert.Collection(
+                result.OrderBy(r => r.StatusCode),
+                responseType =>
+                {
+                    Assert.Equal(200, responseType.StatusCode);
+                    Assert.Equal(typeof(BaseModel), responseType.Type);
+                    Assert.Collection(
+                        responseType.ApiResponseFormats,
+                        format => Assert.Equal("application/json", format.MediaType));
+                },
+                responseType =>
+                {
+                    Assert.Equal(404, responseType.StatusCode);
+                    Assert.Equal(errorType, responseType.Type);
+                    Assert.False(responseType.IsDefaultResponse);
+                    Assert.Collection(
+                        responseType.ApiResponseFormats,
+                        format => Assert.Equal("application/json", format.MediaType));
+                },
+                responseType =>
+                {
+                    Assert.Equal(415, responseType.StatusCode);
+                    Assert.Equal(errorType, responseType.Type);
+                    Assert.False(responseType.IsDefaultResponse);
+                    Assert.Collection(
+                        responseType.ApiResponseFormats,
+                        format => Assert.Equal("application/json", format.MediaType));
+                });
+        }
+
+        [Fact]
+        public void GetApiResponseTypes_UsesErrorType_ForDefaultResponse()
+        {
+            // Arrange
+            var errorType = typeof(ProblemDetails);
+            var actionDescriptor = GetControllerActionDescriptor(
+                 typeof(GetApiResponseTypes_ReturnsResponseTypesFromDefaultConventionsController),
+                 nameof(GetApiResponseTypes_ReturnsResponseTypesFromDefaultConventionsController.DeleteBase));
+            actionDescriptor.Properties[typeof(ApiConventionResult)] = new ApiConventionResult(new IApiResponseMetadataProvider[]
+            {
+                new ProducesResponseTypeAttribute(200),
+                new ProducesDefaultResponseTypeAttribute(),
+            });
+
+            actionDescriptor.Properties[typeof(ProducesErrorResponseTypeAttribute)] = new ProducesErrorResponseTypeAttribute(errorType);
+
+            var provider = GetProvider();
+
+            // Act
+            var result = provider.GetApiResponseTypes(actionDescriptor);
+
+            // Assert
+            Assert.Collection(
+                result.OrderBy(r => r.StatusCode),
+                responseType =>
+                {
+                    Assert.Equal(errorType, responseType.Type);
+                    Assert.True(responseType.IsDefaultResponse);
+                    Assert.Collection(
+                        responseType.ApiResponseFormats,
+                        format => Assert.Equal("application/json", format.MediaType));
+                },
+                responseType =>
+                {
+                    Assert.Equal(200, responseType.StatusCode);
+                    Assert.Equal(typeof(BaseModel), responseType.Type);
+                    Assert.Collection(
+                        responseType.ApiResponseFormats,
+                        format => Assert.Equal("application/json", format.MediaType));
+                });
+        }
+
+        [Fact]
+        public void GetApiResponseTypes_DoesNotUseErrorType_IfSpecified()
+        {
+            // Arrange
+            var errorType = typeof(InvalidTimeZoneException);
+            var actionDescriptor = GetControllerActionDescriptor(
+                 typeof(GetApiResponseTypes_ReturnsResponseTypesFromDefaultConventionsController),
+                 nameof(GetApiResponseTypes_ReturnsResponseTypesFromDefaultConventionsController.DeleteBase));
+            actionDescriptor.Properties[typeof(ApiConventionResult)] = new ApiConventionResult(new IApiResponseMetadataProvider[]
+            {
+                new ProducesResponseTypeAttribute(200),
+                new ProducesResponseTypeAttribute(typeof(DivideByZeroException), 415),
+                new ProducesDefaultResponseTypeAttribute(typeof(DivideByZeroException)),
+            });
+
+            actionDescriptor.Properties[typeof(ProducesErrorResponseTypeAttribute)] = new ProducesErrorResponseTypeAttribute(errorType);
+
+            var provider = GetProvider();
+
+            // Act
+            var result = provider.GetApiResponseTypes(actionDescriptor);
+
+            // Assert
+            Assert.Collection(
+                result.OrderBy(r => r.StatusCode),
+                responseType =>
+                {
+                    Assert.Equal(typeof(DivideByZeroException), responseType.Type);
+                    Assert.True(responseType.IsDefaultResponse);
+                    Assert.Collection(
+                        responseType.ApiResponseFormats,
+                        format => Assert.Equal("application/json", format.MediaType));
+                },
+                responseType =>
+                {
+                    Assert.Equal(200, responseType.StatusCode);
+                    Assert.Equal(typeof(BaseModel), responseType.Type);
+                    Assert.Collection(
+                        responseType.ApiResponseFormats,
+                        format => Assert.Equal("application/json", format.MediaType));
+                },
+                responseType =>
+                {
+                    Assert.Equal(415, responseType.StatusCode);
+                    Assert.Equal(typeof(DivideByZeroException), responseType.Type);
+                    Assert.False(responseType.IsDefaultResponse);
+                    Assert.Collection(
+                        responseType.ApiResponseFormats,
+                        format => Assert.Equal("application/json", format.MediaType));
+                });
+        }
+
+        [Fact]
+        public void GetApiResponseTypes_DoesNotUseErrorType_ForNonClientErrors()
+        {
+            // Arrange
+            var actionDescriptor = GetControllerActionDescriptor(
+                 typeof(GetApiResponseTypes_ReturnsResponseTypesFromDefaultConventionsController),
+                 nameof(GetApiResponseTypes_ReturnsResponseTypesFromDefaultConventionsController.DeleteBase));
+            actionDescriptor.Properties[typeof(ApiConventionResult)] = new ApiConventionResult(new IApiResponseMetadataProvider[]
+            {
+                new ProducesResponseTypeAttribute(201),
+                new ProducesResponseTypeAttribute(300),
+                new ProducesResponseTypeAttribute(500),
+            });
+
+            actionDescriptor.Properties[typeof(ProducesErrorResponseTypeAttribute)] = new ProducesErrorResponseTypeAttribute(typeof(InvalidTimeZoneException));
+
+            var provider = GetProvider();
+
+            // Act
+            var result = provider.GetApiResponseTypes(actionDescriptor);
+
+            // Assert
+            Assert.Collection(
+                result.OrderBy(r => r.StatusCode),
+                responseType =>
+                {
+                    Assert.Equal(201, responseType.StatusCode);
+                    Assert.Equal(typeof(BaseModel), responseType.Type);
+                    Assert.Collection(
+                        responseType.ApiResponseFormats,
+                        format => Assert.Equal("application/json", format.MediaType));
+                },
+                responseType =>
+                {
+                    Assert.Equal(300, responseType.StatusCode);
+                    Assert.Equal(typeof(void), responseType.Type);
+                    Assert.Empty(responseType.ApiResponseFormats);
+                },
+                responseType =>
+                {
+                    Assert.Equal(500, responseType.StatusCode);
+                    Assert.Equal(typeof(void), responseType.Type);
+                    Assert.Empty(responseType.ApiResponseFormats);
+                });
+        }
+
+        [Fact]
+        public void GetApiResponseTypes_AllowsUsingVoid()
+        {
+            // Arrange
+            var actionDescriptor = GetControllerActionDescriptor(
+                 typeof(GetApiResponseTypes_ReturnsResponseTypesFromDefaultConventionsController),
+                 nameof(GetApiResponseTypes_ReturnsResponseTypesFromDefaultConventionsController.DeleteBase));
+            actionDescriptor.Properties[typeof(ApiConventionResult)] = new ApiConventionResult(new IApiResponseMetadataProvider[]
+            {
+                new ProducesResponseTypeAttribute(typeof(InvalidCastException), 400),
+                new ProducesResponseTypeAttribute(415),
+                new ProducesDefaultResponseTypeAttribute(),
+            });
+
+            actionDescriptor.Properties[typeof(ProducesErrorResponseTypeAttribute)] = new ProducesErrorResponseTypeAttribute(typeof(void));
+
+            var provider = GetProvider();
+
+            // Act
+            var result = provider.GetApiResponseTypes(actionDescriptor);
+
+            // Assert
+            Assert.Collection(
+                result.OrderBy(r => r.StatusCode),
+                responseType =>
+                {
+                    Assert.True(responseType.IsDefaultResponse);
+                    Assert.Equal(typeof(void), responseType.Type);
+                    Assert.Empty(responseType.ApiResponseFormats);
+                },
+                responseType =>
+                {
+                    Assert.Equal(400, responseType.StatusCode);
+                    Assert.Equal(typeof(InvalidCastException), responseType.Type);
+                    Assert.False(responseType.IsDefaultResponse);
+                    Assert.Collection(
+                        responseType.ApiResponseFormats,
+                        format => Assert.Equal("application/json", format.MediaType));
+                },
+                responseType =>
+                {
+                    Assert.Equal(415, responseType.StatusCode);
+                    Assert.Equal(typeof(void), responseType.Type);
+                    Assert.False(responseType.IsDefaultResponse);
+                    Assert.Empty(responseType.ApiResponseFormats);
+                });
+        }
+
         private static ApiResponseTypeProvider GetProvider()
         {
             var mvcOptions = new MvcOptions

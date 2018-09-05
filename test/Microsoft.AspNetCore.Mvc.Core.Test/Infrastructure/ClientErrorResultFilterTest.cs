@@ -32,35 +32,25 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         }
 
         [Fact]
-        public void OnResultExecuting_DoesNothing_IfStatusCodeDoesNotExistInApiBehaviorOptions()
+        public void OnResultExecuting_DoesNothing_IfTransformedValueIsNull()
         {
             // Arrange
             var actionResult = new NotFoundResult();
             var context = GetContext(actionResult);
-            var filter = GetFilter(new ApiBehaviorOptions());
+            var factory = new Mock<IClientErrorFactory>();
+            factory
+                .Setup(f => f.GetClientError(It.IsAny<ActionContext>(), It.IsAny<IClientErrorActionResult>()))
+                .Returns((IActionResult)null)
+                .Verifiable();
+
+            var filter = new ClientErrorResultFilter(factory.Object, NullLogger<ClientErrorResultFilter>.Instance);
 
             // Act
             filter.OnResultExecuting(context);
 
             // Assert
             Assert.Same(actionResult, context.Result);
-        }
-
-        [Fact]
-        public void OnResultExecuting_DoesNothing_IfResultDoesNotHaveStatusCode()
-        {
-            // Arrange
-            var actionResult = new Mock<IActionResult>()
-                .As<IClientErrorActionResult>()
-                .Object;
-            var context = GetContext(actionResult);
-            var filter = GetFilter(new ApiBehaviorOptions());
-
-            // Act
-            filter.OnResultExecuting(context);
-
-            // Assert
-            Assert.Same(actionResult, context.Result);
+            factory.Verify();
         }
 
         [Fact]
@@ -78,18 +68,12 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             Assert.Same(Result, context.Result);
         }
 
-        private static ClientErrorResultFilter GetFilter(ApiBehaviorOptions options = null)
+        private static ClientErrorResultFilter GetFilter()
         {
-            var apiBehaviorOptions = options ?? GetOptions();
-            var filter = new ClientErrorResultFilter(apiBehaviorOptions, NullLogger<ClientErrorResultFilter>.Instance);
-            return filter;
-        }
+            var factory = Mock.Of<IClientErrorFactory>(
+                f => f.GetClientError(It.IsAny<ActionContext>(), It.IsAny<IClientErrorActionResult>()) == Result);
 
-        private static ApiBehaviorOptions GetOptions()
-        {
-            var apiBehaviorOptions = new ApiBehaviorOptions();
-            apiBehaviorOptions.ClientErrorFactory[404] = _ => Result;
-            return apiBehaviorOptions;
+            return new ClientErrorResultFilter(factory, NullLogger<ClientErrorResultFilter>.Instance);
         }
 
         private static ResultExecutingContext GetContext(IActionResult actionResult)

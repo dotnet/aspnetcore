@@ -33,6 +33,18 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         [Fact]
         public Task CodeFixAddsFullyQualifiedProducesResponseType() => RunTest();
 
+        [Fact]
+        public Task CodeFixAddsNumericLiteralForNonExistingStatusCodeConstants() => RunTest();
+
+        [Fact]
+        public Task CodeFixAddsStatusCodesFromMethodParameters() => RunTest();
+
+        [Fact]
+        public Task CodeFixAddsStatusCodesFromConstructorParameters() => RunTest();
+
+        [Fact]
+        public Task CodeFixAddsStatusCodesFromObjectInitializer() => RunTest();
+
         private async Task RunTest([CallerMemberName] string testMethod = "")
         {
             // Arrange

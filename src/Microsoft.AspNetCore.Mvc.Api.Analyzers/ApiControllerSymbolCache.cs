@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using Microsoft.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
@@ -23,6 +24,11 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
             NonControllerAttribute = compilation.GetTypeByMetadataName(ApiSymbolNames.NonControllerAttribute);
             ProducesDefaultResponseTypeAttribute = compilation.GetTypeByMetadataName(ApiSymbolNames.ProducesDefaultResponseTypeAttribute);
             ProducesResponseTypeAttribute = compilation.GetTypeByMetadataName(ApiSymbolNames.ProducesResponseTypeAttribute);
+
+            StatusCodeValueAttribute = compilation.GetTypeByMetadataName(ApiSymbolNames.StatusCodeValueAttribute);
+
+            var statusCodeActionResult = compilation.GetTypeByMetadataName(ApiSymbolNames.IStatusCodeActionResult);
+            StatusCodeActionResultStatusProperty = (IPropertySymbol)statusCodeActionResult?.GetMembers("StatusCode")[0];
 
             var disposable = compilation.GetSpecialType(SpecialType.System_IDisposable);
             var members = disposable.GetMembers(nameof(IDisposable.Dispose));
@@ -47,6 +53,8 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
 
         public IMethodSymbol IDisposableDispose { get; }
 
+        public IPropertySymbol StatusCodeActionResultStatusProperty { get; }
+
         public ITypeSymbol ModelStateDictionary { get; }
 
         public INamedTypeSymbol NonActionAttribute { get; }
@@ -56,5 +64,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         public INamedTypeSymbol ProducesDefaultResponseTypeAttribute { get; }
 
         public INamedTypeSymbol ProducesResponseTypeAttribute { get; }
+
+        public INamedTypeSymbol StatusCodeValueAttribute { get; }
     }
 }

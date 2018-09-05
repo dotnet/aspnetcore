@@ -89,6 +89,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var featureCollection = new FeatureCollection();
             featureCollection.Set<IEndpointFeature>(endpointFeature);
             featureCollection.Set<IRouteValuesFeature>(endpointFeature);
+            featureCollection.Set<IRoutingFeature>(endpointFeature);
 
             var httpContextMock = new Mock<HttpContext>();
             httpContextMock.Setup(m => m.Features).Returns(featureCollection);
@@ -180,7 +181,15 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var actionDescriptorCollection = GetActionDescriptorCollection(
                 new { controller = "TestController", action = "TestAction", area = "TestArea" });
             var dataSource = CreateMvcEndpointDataSource(actionDescriptorCollection);
-            dataSource.ConventionalEndpointInfos.Add(CreateEndpointInfo(string.Empty, endpointInfoRoute));
+
+            var services = new ServiceCollection();
+            services.AddRouting();
+            services.AddSingleton(actionDescriptorCollection);
+
+            var routeOptionsSetup = new MvcCoreRouteOptionsSetup();
+            services.Configure<RouteOptions>(routeOptionsSetup.Configure);
+
+            dataSource.ConventionalEndpointInfos.Add(CreateEndpointInfo(string.Empty, endpointInfoRoute, serviceProvider: services.BuildServiceProvider()));
 
             // Act
             var endpoints = dataSource.Endpoints;
@@ -686,28 +695,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             AssertIsSubset(expectedDefaults, matcherEndpoint.RoutePattern.Defaults);
         }
 
-        [Fact]
-        public void RequiredValues_HavingNull_AndNotPresentInDefaultValues_IsAddedToDefaultValues()
-        {
-            // Arrange
-            var requiredValues = new RouteValueDictionary(
-                new { area = (string)null, controller = "Foo", action = "Bar", page = (string)null });
-            var expectedDefaults = requiredValues;
-            var actionDescriptorCollection = GetActionDescriptorCollection(requiredValues: requiredValues);
-            var dataSource = CreateMvcEndpointDataSource(actionDescriptorCollection);
-            dataSource.ConventionalEndpointInfos.Add(
-                CreateEndpointInfo(string.Empty, "{controller=Home}/{action=Index}"));
-
-            // Act
-            var endpoints = dataSource.Endpoints;
-
-            // Assert
-            var endpoint = Assert.Single(endpoints);
-            var matcherEndpoint = Assert.IsType<RouteEndpoint>(endpoint);
-            Assert.Equal("Foo/Bar", matcherEndpoint.RoutePattern.RawText);
-            AssertIsSubset(expectedDefaults, matcherEndpoint.RoutePattern.Defaults);
-        }
-
         private MvcEndpointDataSource CreateMvcEndpointDataSource(
             IActionDescriptorCollectionProvider actionDescriptorCollectionProvider = null,
             MvcEndpointInvokerFactory mvcEndpointInvokerFactory = null)
@@ -719,13 +706,13 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     Array.Empty<IActionDescriptorChangeProvider>());
             }
 
-            var serviceProviderMock = new Mock<IServiceProvider>();
-            serviceProviderMock.Setup(m => m.GetService(typeof(IActionDescriptorCollectionProvider))).Returns(actionDescriptorCollectionProvider);
+            var services = new ServiceCollection();
+            services.AddSingleton(actionDescriptorCollectionProvider);
 
             var dataSource = new MvcEndpointDataSource(
                 actionDescriptorCollectionProvider,
                 mvcEndpointInvokerFactory ?? new MvcEndpointInvokerFactory(new ActionInvokerFactory(Array.Empty<IActionInvokerProvider>())),
-                serviceProviderMock.Object);
+                services.BuildServiceProvider());
 
             return dataSource;
         }
@@ -735,15 +722,19 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             string template,
             RouteValueDictionary defaults = null,
             IDictionary<string, object> constraints = null,
-            RouteValueDictionary dataTokens = null)
+            RouteValueDictionary dataTokens = null,
+            IServiceProvider serviceProvider = null)
         {
-            var serviceCollection = new ServiceCollection();
-            serviceCollection.AddRouting();
+            if (serviceProvider == null)
+            {
+                var serviceCollection = new ServiceCollection();
+                serviceCollection.AddRouting();
 
-            var routeOptionsSetup = new MvcCoreRouteOptionsSetup();
-            serviceCollection.Configure<RouteOptions>(routeOptionsSetup.Configure);
+                var routeOptionsSetup = new MvcCoreRouteOptionsSetup();
+                serviceCollection.Configure<RouteOptions>(routeOptionsSetup.Configure);
 
-            var serviceProvider = serviceCollection.BuildServiceProvider();
+                serviceProvider = serviceCollection.BuildServiceProvider();
+            }
 
             var parameterPolicyFactory = serviceProvider.GetRequiredService<ParameterPolicyFactory>();
             return new MvcEndpointInfo(name, template, defaults, constraints, dataTokens, parameterPolicyFactory);

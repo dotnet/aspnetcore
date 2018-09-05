@@ -257,6 +257,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<IActionResultExecutor<RedirectToRouteResult>, RedirectToRouteResultExecutor>();
             services.TryAddSingleton<IActionResultExecutor<RedirectToPageResult>, RedirectToPageResultExecutor>();
             services.TryAddSingleton<IActionResultExecutor<ContentResult>, ContentResultExecutor>();
+            services.TryAddSingleton<IClientErrorFactory, ProblemDetailsClientErrorFactory>();
 
             //
             // Route Handlers

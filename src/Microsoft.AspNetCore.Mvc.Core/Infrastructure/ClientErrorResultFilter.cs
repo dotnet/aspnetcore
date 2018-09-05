@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.Extensions.Logging;
@@ -11,7 +10,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 {
     internal class ClientErrorResultFilter : IAlwaysRunResultFilter, IOrderedFilter
     {
-        private readonly IDictionary<int, Func<ActionContext, IActionResult>> _clientErrorFactory;
+        private readonly IClientErrorFactory _clientErrorFactory;
         private readonly ILogger<ClientErrorResultFilter> _logger;
 
         /// <summary>
@@ -20,10 +19,10 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         public int Order => -2000;
 
         public ClientErrorResultFilter(
-            ApiBehaviorOptions apiBehaviorOptions,
+            IClientErrorFactory clientErrorFactory,
             ILogger<ClientErrorResultFilter> logger)
         {
-            _clientErrorFactory = apiBehaviorOptions?.ClientErrorFactory ?? throw new ArgumentNullException(nameof(apiBehaviorOptions));
+            _clientErrorFactory = clientErrorFactory ?? throw new ArgumentNullException(nameof(clientErrorFactory));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -38,16 +37,19 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (context.Result is IClientErrorActionResult clientErrorActionResult &&
-                clientErrorActionResult.StatusCode is int statusCode &&
-                _clientErrorFactory.TryGetValue(statusCode, out var factory))
+            if (!(context.Result is IClientErrorActionResult clientError))
             {
-                var result = factory(context);
-
-                _logger.TransformingClientError(context.Result.GetType(), result?.GetType(), statusCode);
-
-                context.Result = factory(context);
+                return;
             }
+
+            var result = _clientErrorFactory.GetClientError(context, clientError);
+            if (result == null)
+            {
+                return;
+            }
+
+            _logger.TransformingClientError(context.Result.GetType(), result?.GetType(), clientError.StatusCode);
+            context.Result = result;
         }
     }
 }

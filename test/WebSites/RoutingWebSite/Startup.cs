@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,12 +25,19 @@ namespace RoutingWebSite
         {
             app.UseMvc(routes =>
             {
+                routes.MapRoute(
+                    "DataTokensRoute",
+                    "DataTokensRoute/{controller}/{action}",
+                    defaults: null,
+                    constraints: new { controller = "DataTokens" },
+                    dataTokens: new { hasDataTokens = true });
+
                 routes.MapAreaRoute(
-                   "flightRoute",
-                   "adminRoute",
-                   "{area:exists}/{controller}/{action}",
-                   new { controller = "Home", action = "Index" },
-                   new { area = "Travel" });
+                    "flightRoute",
+                    "adminRoute",
+                    "{area:exists}/{controller}/{action}",
+                    defaults: new { controller = "Home", action = "Index" },
+                    constraints: new { area = "Travel" });
 
                 routes.MapRoute(
                     "ActionAsMethod",
@@ -40,6 +48,11 @@ namespace RoutingWebSite
                     "RouteWithOptionalSegment",
                     "{controller}/{action}/{path?}");
             });
+
+            app.Map("/afterrouting", b => b.Run(c =>
+            {
+                return c.Response.WriteAsync("Hello from middleware after routing");
+            }));
         }
     }
 }

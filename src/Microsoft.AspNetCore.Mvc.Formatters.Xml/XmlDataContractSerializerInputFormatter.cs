@@ -46,8 +46,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             _serializerSettings = new DataContractSerializerSettings();
 
-            WrapperProviderFactories = new List<IWrapperProviderFactory>();
-            WrapperProviderFactories.Add(new SerializableErrorWrapperProviderFactory());
+            WrapperProviderFactories = WrapperProviderFactoriesExtensions.GetDefaultProviderFactories();
         }
 
         /// <summary>
