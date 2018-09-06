@@ -592,12 +592,23 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             // Start with the current node as the root.
             var work = new List<DfaNode>() { node, };
+            List<DfaNode> previousWork = null;
             for (var i = 0; i < _nodeBuilders.Length; i++)
             {
                 var nodeBuilder = _nodeBuilders[i];
 
                 // Build a list of each 
-                var nextWork = new List<DfaNode>();
+                List<DfaNode> nextWork;
+                if (previousWork == null)
+                {
+                    nextWork = new List<DfaNode>();
+                }
+                else
+                {
+                    // Reuse previous collection for the next collection
+                    previousWork.Clear();
+                    nextWork = previousWork;
+                }
 
                 for (var j = 0; j < work.Count; j++)
                 {
@@ -639,6 +650,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                     parent.Matches?.Clear();
                 }
 
+                previousWork = work;
                 work = nextWork;
             }
         }
