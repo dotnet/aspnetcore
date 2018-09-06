@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.AspNetCore.Routing.Matching;
@@ -16,6 +18,12 @@ namespace Microsoft.AspNetCore.Routing.Patterns
     /// </summary>
     public static class RoutePatternFactory
     {
+        private static readonly IReadOnlyDictionary<string, object> EmptyDefaultsDictionary =
+            new ReadOnlyDictionary<string, object>(new Dictionary<string, object>());
+
+        private static readonly IReadOnlyDictionary<string, IReadOnlyList<RoutePatternParameterPolicyReference>> EmptyPoliciesDictionary =
+            new ReadOnlyDictionary<string, IReadOnlyList<RoutePatternParameterPolicyReference>>(new Dictionary<string, IReadOnlyList<RoutePatternParameterPolicyReference>>());
+
         /// <summary>
         /// Creates a <see cref="RoutePattern"/> from its string representation.
         /// </summary>
@@ -242,8 +250,8 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
         private static RoutePattern PatternCore(
             string rawText,
-            IDictionary<string, object> defaults,
-            IDictionary<string, object> parameterPolicies,
+            RouteValueDictionary defaults,
+            RouteValueDictionary parameterPolicies,
             IEnumerable<RoutePatternPathSegment> segments)
         {
             // We want to merge the segment data with the 'out of line' defaults and parameter policies.
@@ -257,18 +265,22 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             // It's important that these two views of the data are consistent. We don't want
             // values specified out of line to have a different behavior.
 
-            var updatedDefaults = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
-            if (defaults != null)
+            Dictionary<string, object> updatedDefaults = null;
+            if (defaults != null && defaults.Count > 0)
             {
+                updatedDefaults = new Dictionary<string, object>(defaults.Count, StringComparer.OrdinalIgnoreCase);
+
                 foreach (var kvp in defaults)
                 {
                     updatedDefaults.Add(kvp.Key, kvp.Value);
                 }
             }
 
-            var updatedParameterPolicies = new Dictionary<string, List<RoutePatternParameterPolicyReference>>(StringComparer.OrdinalIgnoreCase);
-            if (parameterPolicies != null)
+            Dictionary<string, List<RoutePatternParameterPolicyReference>> updatedParameterPolicies = null;
+            if (parameterPolicies != null && parameterPolicies.Count > 0)
             {
+                updatedParameterPolicies = new Dictionary<string, List<RoutePatternParameterPolicyReference>>(parameterPolicies.Count, StringComparer.OrdinalIgnoreCase);
+
                 foreach (var kvp in parameterPolicies)
                 {
                     updatedParameterPolicies.Add(kvp.Key, new List<RoutePatternParameterPolicyReference>()
@@ -280,7 +292,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                 }
             }
 
-            var parameters = new List<RoutePatternParameterPart>();
+            List<RoutePatternParameterPart> parameters = null;
             var updatedSegments = segments.ToArray();
             for (var i = 0; i < updatedSegments.Length; i++)
             {
@@ -291,6 +303,11 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                 {
                     if (segment.Parts[j] is RoutePatternParameterPart parameter)
                     {
+                        if (parameters == null)
+                        {
+                            parameters = new List<RoutePatternParameterPart>();
+                        }
+
                         parameters.Add(parameter);
                     }
                 }
@@ -298,9 +315,11 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
             return new RoutePattern(
                 rawText,
-                updatedDefaults,
-                updatedParameterPolicies.ToDictionary(kvp => kvp.Key, kvp => (IReadOnlyList<RoutePatternParameterPolicyReference>)kvp.Value.ToArray()),
-                parameters,
+                updatedDefaults ?? EmptyDefaultsDictionary,
+                updatedParameterPolicies != null
+                    ? updatedParameterPolicies.ToDictionary(kvp => kvp.Key, kvp => (IReadOnlyList<RoutePatternParameterPolicyReference>)kvp.Value.ToArray())
+                    : EmptyPoliciesDictionary,
+                (IReadOnlyList<RoutePatternParameterPart>)parameters ?? Array.Empty<RoutePatternParameterPart>(),
                 updatedSegments);
 
             RoutePatternPathSegment VisitSegment(RoutePatternPathSegment segment)
@@ -341,7 +360,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                 var parameter = (RoutePatternParameterPart)part;
                 var @default = parameter.Default;
 
-                if (updatedDefaults.TryGetValue(parameter.Name, out var newDefault))
+                if (updatedDefaults != null && updatedDefaults.TryGetValue(parameter.Name, out var newDefault))
                 {
                     if (parameter.Default != null && !Equals(newDefault, parameter.Default))
                     {
@@ -360,12 +379,23 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
                 if (parameter.Default != null)
                 {
+                    if (updatedDefaults == null)
+                    {
+                        updatedDefaults = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+                    }
+
                     updatedDefaults[parameter.Name] = parameter.Default;
                 }
 
-                if (!updatedParameterPolicies.TryGetValue(parameter.Name, out var parameterConstraints) &&
+                List<RoutePatternParameterPolicyReference> parameterConstraints = null;
+                if ((updatedParameterPolicies == null || !updatedParameterPolicies.TryGetValue(parameter.Name, out parameterConstraints)) &&
                     parameter.ParameterPolicies.Count > 0)
                 {
+                    if (updatedParameterPolicies == null)
+                    {
+                        updatedParameterPolicies = new Dictionary<string, List<RoutePatternParameterPolicyReference>>(StringComparer.OrdinalIgnoreCase);
+                    }
+
                     parameterConstraints = new List<RoutePatternParameterPolicyReference>();
                     updatedParameterPolicies.Add(parameter.Name, parameterConstraints);
                 }
@@ -391,6 +421,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                     parameter.EncodeSlashes);
             }
         }
+
         /// <summary>
         /// Creates a <see cref="RoutePatternPathSegment"/> from the provided collection
         /// of parts.

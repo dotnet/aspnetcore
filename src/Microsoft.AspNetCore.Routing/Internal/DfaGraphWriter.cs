@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             // Assign each node a sequential index.
             var visited = new Dictionary<DfaNode, int>();
             
-            var tree = builder.BuildDfaTree();
+            var tree = builder.BuildDfaTree(includeLabel: true);
 
             writer.WriteLine("digraph DFA {");
             tree.Visit(WriteNode);
@@ -64,9 +64,12 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 // We can safely index into visited because this is a post-order traversal,
                 // all of the children of this node are already in the dictionary.
 
-                foreach (var literal in node.Literals)
+                if (node.Literals != null)
                 {
-                    writer.WriteLine($"{label} -> {visited[literal.Value]} [label=\"/{literal.Key}\"]");
+                    foreach (var literal in node.Literals)
+                    {
+                        writer.WriteLine($"{label} -> {visited[literal.Value]} [label=\"/{literal.Key}\"]");
+                    }
                 }
 
                 if (node.Parameters != null)
@@ -79,9 +82,12 @@ namespace Microsoft.AspNetCore.Routing.Internal
                     writer.WriteLine($"{label} -> {visited[node.CatchAll]} [label=\"/**\"]");
                 }
 
-                foreach (var policy in node.PolicyEdges)
+                if (node.PolicyEdges != null)
                 {
-                    writer.WriteLine($"{label} -> {visited[policy.Value]} [label=\"{policy.Key}\"]");
+                    foreach (var policy in node.PolicyEdges)
+                    {
+                        writer.WriteLine($"{label} -> {visited[policy.Value]} [label=\"{policy.Key}\"]");
+                    }
                 }
 
                 writer.WriteLine($"{label} [label=\"{node.Label}\"]");
