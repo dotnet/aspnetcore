@@ -8,6 +8,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks.Sources;
+using Microsoft.AspNetCore.Connections;
 
 namespace Microsoft.AspNetCore.Server.IIS.Core.IO
 {
@@ -103,7 +104,8 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
                 _result = bytes;
                 if (hr != NativeMethods.HR_OK)
                 {
-                    _exception = new IOException("Native IO operation failed", Marshal.GetExceptionForHR(hr));
+                    // Treat all errors as the client disconnect
+                    _exception = new ConnectionResetException("The client has disconnected", Marshal.GetExceptionForHR(hr));
                 }
             }
             else
