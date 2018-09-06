@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 }
                 if (string.IsNullOrEmpty(key))
                 {
-                    ThrowInvalidEmtpyHeaderName();
+                    ThrowInvalidEmptyHeaderName();
                 }
                 if (value.Count == 0)
                 {
@@ -177,7 +177,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
             if (string.IsNullOrEmpty(key))
             {
-                ThrowInvalidEmtpyHeaderName();
+                ThrowInvalidEmptyHeaderName();
             }
 
             if (value.Count > 0 && !AddValueFast(key, value))
@@ -457,7 +457,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             throw new InvalidOperationException(CoreStrings.FormatInvalidAsciiOrControlChar(string.Format("0x{0:X4}", (ushort)ch)));
         }
 
-        private static void ThrowInvalidEmtpyHeaderName()
+        private static void ThrowInvalidEmptyHeaderName()
         {
             throw new InvalidOperationException(CoreStrings.InvalidEmptyHeaderName);
         }

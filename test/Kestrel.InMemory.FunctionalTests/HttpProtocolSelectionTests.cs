@@ -35,11 +35,34 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
-        public Task Server_Http2Only_Cleartext_Success()
+        public async Task Server_Http2Only_Cleartext_Success()
         {
             // Expect a SETTINGS frame (type 0x4) with default settings
-            return TestSuccess(HttpProtocols.Http2, Encoding.ASCII.GetString(Http2Connection.ClientPreface),
-                "\x00\x00\x06\x04\x00\x00\x00\x00\x00\x00\x03\x00\x00\x00\x64");
+            var expected = new byte[]
+            {
+                0x00, 0x00, 0x0C, // Payload Length (6 * settings count)
+                0x04, 0x00, 0x00, 0x00, 0x00, 0x00, // SETTINGS frame (type 0x04)
+                0x00, 0x03, 0x00, 0x00, 0x00, 0x64, // Connection limit
+                0x00, 0x06, 0x00, 0x00, 0x80, 0x00 // Header size limit
+            };
+            var testContext = new TestServiceContext(LoggerFactory);
+            var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
+            {
+                Protocols = HttpProtocols.Http2
+            };
+
+            using (var server = new TestServer(context => Task.CompletedTask, testContext, listenOptions))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(Encoding.ASCII.GetString(Http2Connection.ClientPreface));
+                    // Can't use Receive when expecting binary data
+                    var actual = new byte[expected.Length];
+                    var read = await connection.Stream.ReadAsync(actual, 0, actual.Length);
+                    Assert.Equal(expected.Length, read);
+                    Assert.Equal(expected, actual);
+                }
+            }
         }
 
         private async Task TestSuccess(HttpProtocols serverProtocols, string request, string expectedResponse)

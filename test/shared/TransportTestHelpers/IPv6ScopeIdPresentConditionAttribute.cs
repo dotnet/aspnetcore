@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 return NetworkInterface.GetAllNetworkInterfaces()
                     .Where(iface => iface.OperationalStatus == OperationalStatus.Up)
                     .SelectMany(iface => iface.GetIPProperties().UnicastAddresses)
-                    .Any(addrInfo => addrInfo.Address.AddressFamily == AddressFamily.InterNetworkV6 && addrInfo.Address.ScopeId != 0);
+                    .Any(addressInfo => addressInfo.Address.AddressFamily == AddressFamily.InterNetworkV6 && addressInfo.Address.ScopeId != 0);
             }
             catch (SocketException)
             {

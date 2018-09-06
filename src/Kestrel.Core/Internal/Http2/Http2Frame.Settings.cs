@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
     */
     public partial class Http2Frame
     {
-        private const int SettingSize = 6; // 2 bytes for the id, 4 bytes for the value.
+        internal const int SettingSize = 6; // 2 bytes for the id, 4 bytes for the value.
 
         public Http2SettingsFrameFlags SettingsFlags
         {

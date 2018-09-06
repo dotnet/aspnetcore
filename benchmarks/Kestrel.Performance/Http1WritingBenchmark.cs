@@ -22,8 +22,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         // Standard completed task
         private static readonly Func<object, Task> _syncTaskFunc = (obj) => Task.CompletedTask;
         // Non-standard completed task
-        private static readonly Task _psuedoAsyncTask = Task.FromResult(27);
-        private static readonly Func<object, Task> _psuedoAsyncTaskFunc = (obj) => _psuedoAsyncTask;
+        private static readonly Task _pseudoAsyncTask = Task.FromResult(27);
+        private static readonly Func<object, Task> _pseudoAsyncTaskFunc = (obj) => _pseudoAsyncTask;
 
         private TestHttp1Connection _http1Connection;
         private DuplexPipe.DuplexPipePair _pair;
@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
                         _http1Connection.OnStarting(_syncTaskFunc, null);
                         break;
                     case Startup.Async:
-                        _http1Connection.OnStarting(_psuedoAsyncTaskFunc, null);
+                        _http1Connection.OnStarting(_pseudoAsyncTaskFunc, null);
                         break;
                 }
             }

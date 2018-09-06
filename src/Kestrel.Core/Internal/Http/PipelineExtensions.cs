@@ -177,7 +177,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             const int Shift16Shift24 = (1 << 16) | (1 << 24);
             const int Shift8Identity = (1 << 8) | (1);
 
-            // Encode as bytes upto the first non-ASCII byte and return count encoded
+            // Encode as bytes up to the first non-ASCII byte and return count encoded
             int i = 0;
             // Use Intrinsic switch
             if (IntPtr.Size == 8) // 64 bit

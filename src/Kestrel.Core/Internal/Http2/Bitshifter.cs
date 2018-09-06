@@ -8,7 +8,7 @@ using System.Runtime.CompilerServices;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
-    // Mimics BinaryPrimities with oddly sized units
+    // Mimics BinaryPrimitives with oddly sized units
     internal class Bitshifter
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

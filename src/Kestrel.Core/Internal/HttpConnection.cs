@@ -465,7 +465,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
                         if (rate < minRequestBodyDataRate.BytesPerSecond && !Debugger.IsAttached)
                         {
-                            Log.RequestBodyMininumDataRateNotSatisfied(_context.ConnectionId, _http1Connection.TraceIdentifier, minRequestBodyDataRate.BytesPerSecond);
+                            Log.RequestBodyMinimumDataRateNotSatisfied(_context.ConnectionId, _http1Connection.TraceIdentifier, minRequestBodyDataRate.BytesPerSecond);
                             RequestTimedOut = true;
                             _http1Connection.SendTimeoutResponse();
                         }
@@ -492,7 +492,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 if (_writeTimingWrites > 0 && timestamp > _writeTimingTimeoutTimestamp && !Debugger.IsAttached)
                 {
                     RequestTimedOut = true;
-                    Log.ResponseMininumDataRateNotSatisfied(_http1Connection.ConnectionIdFeature, _http1Connection.TraceIdentifier);
+                    Log.ResponseMinimumDataRateNotSatisfied(_http1Connection.ConnectionIdFeature, _http1Connection.TraceIdentifier);
                     Abort(new ConnectionAbortedException(CoreStrings.ConnectionTimedBecauseResponseMininumDataRateNotSatisfied));
                 }
             }

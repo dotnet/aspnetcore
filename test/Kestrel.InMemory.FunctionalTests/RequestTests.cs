@@ -7,6 +7,7 @@ using System.IO;
 using System.IO.Pipelines;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
@@ -52,6 +53,73 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                 Assert.False(requestBodyPersisted);
                 Assert.False(responseBodyPersisted);
+            }
+        }
+
+        [Fact]
+        public async Task RequestBodyReadAsyncCanBeCancelled()
+        {
+            var helloTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var cts = new CancellationTokenSource();
+
+            using (var server = new TestServer(async context =>
+            {
+                var buffer = new byte[1024];
+                try
+                {
+
+                    int read = await context.Request.Body.ReadAsync(buffer, 0, buffer.Length, cts.Token);
+
+                    Assert.Equal("Hello ", Encoding.UTF8.GetString(buffer, 0, read));
+
+                    helloTcs.TrySetResult(null);
+                }
+                catch (Exception ex)
+                {
+                    // This shouldn't fail
+                    helloTcs.TrySetException(ex);
+                }
+
+                try
+                {
+                    await context.Request.Body.ReadAsync(buffer, 0, buffer.Length, cts.Token);
+
+                    context.Response.ContentLength = 12;
+                    await context.Response.WriteAsync("Read success");
+                }
+                catch (OperationCanceledException)
+                {
+                    context.Response.ContentLength = 14;
+                    await context.Response.WriteAsync("Read cancelled");
+                }
+
+            }, new TestServiceContext(LoggerFactory)))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "POST / HTTP/1.1",
+                        "Host:",
+                        "Connection: keep-alive",
+                        "Content-Length: 11",
+                        "",
+                        "");
+
+                    await connection.Send("Hello ");
+
+                    await helloTcs.Task;
+
+                    // Cancel the body after hello is read
+                    cts.Cancel();
+
+                    await connection.Send("World");
+
+                    await connection.Receive($"HTTP/1.1 200 OK",
+                           $"Date: {server.Context.DateHeaderValue}",
+                           "Content-Length: 14",
+                           "",
+                           "Read cancelled");
+                }
             }
         }
 

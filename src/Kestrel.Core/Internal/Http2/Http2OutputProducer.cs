@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             Dispose();
         }
 
-        public Task WriteAsync<T>(Func<PipeWriter, T, long> callback, T state)
+        public Task WriteAsync<T>(Func<PipeWriter, T, long> callback, T state, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }

@@ -562,7 +562,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                 await body.StopAsync();
 
-                // Add some more data. Checking for cancelation and exiting the loop
+                // Add some more data. Checking for cancellation and exiting the loop
                 // should take priority over reading this data.
                 input.Add("b");
 

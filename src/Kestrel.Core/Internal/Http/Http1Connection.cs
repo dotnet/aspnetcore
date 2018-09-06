@@ -356,7 +356,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             else if (_requestTargetForm != HttpRequestTarget.OriginForm)
             {
                 // Tail call
-                ValidateNonOrginHostHeader(hostText);
+                ValidateNonOriginHostHeader(hostText);
             }
             else if (!HttpUtilities.IsHostHeaderValid(hostText))
             {
@@ -364,7 +364,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        private void ValidateNonOrginHostHeader(string hostText)
+        private void ValidateNonOriginHostHeader(string hostText)
         {
             if (_requestTargetForm == HttpRequestTarget.AuthorityForm)
             {

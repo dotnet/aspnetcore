@@ -269,7 +269,7 @@ namespace CodeGenerator
                 PrimaryHeader = responsePrimaryHeaders.Contains("Content-Length")
             }})
             .ToArray();
-            // 63 for reponseHeaders as it steals one bit for Content-Length in CopyTo(ref MemoryPoolIterator output)
+            // 63 for responseHeaders as it steals one bit for Content-Length in CopyTo(ref MemoryPoolIterator output)
             Debug.Assert(responseHeaders.Length <= 63);
             Debug.Assert(responseHeaders.Max(x => x.Index) <= 62);
 

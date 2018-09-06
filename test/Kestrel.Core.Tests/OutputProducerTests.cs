@@ -5,6 +5,7 @@ using System;
 using System.Buffers;
 using System.IO.Pipelines;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
@@ -31,7 +32,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public void WritesNoopAfterConnectionCloses()
+        public async Task WritesNoopAfterConnectionCloses()
         {
             var pipeOptions = new PipeOptions
             (
@@ -48,12 +49,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                 var called = false;
 
-                socketOutput.Write((buffer, state) =>
+                await socketOutput.WriteAsync((buffer, state) =>
                 {
                     called = true;
                     return 0;
                 },
-                0);
+                0,
+                default);
 
                 Assert.False(called);
             }

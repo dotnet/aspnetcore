@@ -155,6 +155,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                 }
             }
+            catch (OperationCanceledException)
+            {
+                // TryRead can throw OperationCanceledException https://github.com/dotnet/corefx/issues/32029
+                // beacuse of buggy logic, this works around that for now
+            }
             catch (BadHttpRequestException ex)
             {
                 // At this point, the response has already been written, so this won't result in a 4XX response;
@@ -567,8 +572,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     var extensionCursor = extensionCursorPosition.Value;
                     var charsToByteCRExclusive = buffer.Slice(0, extensionCursor).Length;
 
-                    var sufixBuffer = buffer.Slice(extensionCursor);
-                    if (sufixBuffer.Length < 2)
+                    var suffixBuffer = buffer.Slice(extensionCursor);
+                    if (suffixBuffer.Length < 2)
                     {
                         consumed = extensionCursor;
                         examined = buffer.End;
@@ -576,16 +581,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         return;
                     }
 
-                    sufixBuffer = sufixBuffer.Slice(0, 2);
-                    var sufixSpan = sufixBuffer.ToSpan();
+                    suffixBuffer = suffixBuffer.Slice(0, 2);
+                    var sufixSpan = suffixBuffer.ToSpan();
 
                     if (sufixSpan[1] == '\n')
                     {
                         // We consumed the \r\n at the end of the extension, so switch modes.
                         _mode = _inputLength > 0 ? Mode.Data : Mode.Trailer;
 
-                        consumed = sufixBuffer.End;
-                        examined = sufixBuffer.End;
+                        consumed = suffixBuffer.End;
+                        examined = suffixBuffer.End;
                         AddAndCheckConsumedBytes(charsToByteCRExclusive + 2);
                     }
                     else

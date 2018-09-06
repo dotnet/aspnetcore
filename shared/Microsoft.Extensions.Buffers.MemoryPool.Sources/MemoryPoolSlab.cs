@@ -7,7 +7,7 @@ namespace System.Buffers
 {
     /// <summary>
     /// Slab tracking object used by the byte buffer memory pool. A slab is a large allocation which is divided into smaller blocks. The
-    /// individual blocks are then treated as independant array segments.
+    /// individual blocks are then treated as independent array segments.
     /// </summary>
     internal class MemoryPoolSlab : IDisposable
     {

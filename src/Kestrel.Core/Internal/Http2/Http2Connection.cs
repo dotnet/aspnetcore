@@ -75,6 +75,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private RequestHeaderParsingState _requestHeaderParsingState;
         private PseudoHeaderFields _parsedPseudoHeaderFields;
         private Http2HeadersFrameFlags _headerFlags;
+        private int _totalParsedHeaderSize;
         private bool _isMethodConnect;
         private readonly object _stateLock = new object();
         private int _highestOpenedStreamId;
@@ -92,6 +93,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             _serverSettings.HeaderTableSize = (uint)context.ServiceContext.ServerOptions.Limits.Http2.HeaderTableSize;
             _hpackDecoder = new HPackDecoder((int)_serverSettings.HeaderTableSize);
             _incomingFrame = new Http2Frame(_serverSettings.MaxFrameSize);
+            _serverSettings.MaxHeaderListSize = (uint)context.ServiceContext.ServerOptions.Limits.MaxRequestHeadersTotalSize;
         }
 
         public string ConnectionId => _context.ConnectionId;
@@ -888,6 +890,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             _parsedPseudoHeaderFields = PseudoHeaderFields.None;
             _headerFlags = Http2HeadersFrameFlags.NONE;
             _isMethodConnect = false;
+            _totalParsedHeaderSize = 0;
         }
 
         private void ThrowIfIncomingFrameSentToIdleStream()
@@ -934,7 +937,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                         Input.CancelPendingRead();
                     }
 
-
                     if (_state != Http2ConnectionState.Open)
                     {
                         // Complete the task waiting on all streams to finish
@@ -944,15 +946,57 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
         }
 
+        // We can't throw a Http2StreamErrorException here, it interrupts the header decompression state and may corrupt subsequent header frames on other streams.
+        // For now these either need to be connection errors or BadRequests. If we want to downgrade any of them to stream errors later then we need to
+        // rework the flow so that the remaining headers are drained and the decompression state is maintained.
         public void OnHeader(Span<byte> name, Span<byte> value)
         {
+            // https://tools.ietf.org/html/rfc7540#section-6.5.2
+            // "The value is based on the uncompressed size of header fields, including the length of the name and value in octets plus an overhead of 32 octets for each header field.";
+            _totalParsedHeaderSize += HeaderField.RfcOverhead + name.Length + value.Length;
+            if (_totalParsedHeaderSize > _context.ServiceContext.ServerOptions.Limits.MaxRequestHeadersTotalSize)
+            {
+                throw new Http2ConnectionErrorException(CoreStrings.BadRequest_HeadersExceedMaxTotalSize, Http2ErrorCode.PROTOCOL_ERROR);
+            }
+
             ValidateHeader(name, value);
-            _currentHeadersStream.OnHeader(name, value);
+            try
+            {
+                // Drop trailers for now. Adding them to the request headers is not thread safe.
+                // https://github.com/aspnet/KestrelHttpServer/issues/2051
+                if (_requestHeaderParsingState != RequestHeaderParsingState.Trailers)
+                {
+                    // Throws BadReqeust for header count limit breaches.
+                    // Throws InvalidOperation for bad encoding.
+                    _currentHeadersStream.OnHeader(name, value);
+                }
+            }
+            catch (BadHttpRequestException bre)
+            {
+                throw new Http2ConnectionErrorException(bre.Message, Http2ErrorCode.PROTOCOL_ERROR);
+            }
+            catch (InvalidOperationException)
+            {
+                throw new Http2ConnectionErrorException(CoreStrings.BadRequest_MalformedRequestInvalidHeaders, Http2ErrorCode.PROTOCOL_ERROR);
+            }
         }
 
         private void ValidateHeader(Span<byte> name, Span<byte> value)
         {
             // http://httpwg.org/specs/rfc7540.html#rfc.section.8.1.2.1
+            /*
+               Intermediaries that process HTTP requests or responses (i.e., any
+               intermediary not acting as a tunnel) MUST NOT forward a malformed
+               request or response.  Malformed requests or responses that are
+               detected MUST be treated as a stream error (Section 5.4.2) of type
+               PROTOCOL_ERROR.
+
+               For malformed requests, a server MAY send an HTTP response prior to
+               closing or resetting the stream.  Clients MUST NOT accept a malformed
+               response.  Note that these requirements are intended to protect
+               against several types of common attacks against HTTP; they are
+               deliberately strict because being permissive can expose
+               implementations to these vulnerabilities.*/
             if (IsPseudoHeaderField(name, out var headerField))
             {
                 if (_requestHeaderParsingState == RequestHeaderParsingState.Headers)
@@ -960,7 +1004,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     // All pseudo-header fields MUST appear in the header block before regular header fields.
                     // Any request or response that contains a pseudo-header field that appears in a header
                     // block after a regular header field MUST be treated as malformed (Section 8.1.2.6).
-                    throw new Http2StreamErrorException(_currentHeadersStream.StreamId, CoreStrings.Http2ErrorPseudoHeaderFieldAfterRegularHeaders, Http2ErrorCode.PROTOCOL_ERROR);
+                    throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorPseudoHeaderFieldAfterRegularHeaders, Http2ErrorCode.PROTOCOL_ERROR);
                 }
 
                 if (_requestHeaderParsingState == RequestHeaderParsingState.Trailers)
@@ -975,21 +1019,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 {
                     // Endpoints MUST treat a request or response that contains undefined or invalid pseudo-header
                     // fields as malformed (Section 8.1.2.6).
-                    throw new Http2StreamErrorException(_currentHeadersStream.StreamId, CoreStrings.Http2ErrorUnknownPseudoHeaderField, Http2ErrorCode.PROTOCOL_ERROR);
+                    throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorUnknownPseudoHeaderField, Http2ErrorCode.PROTOCOL_ERROR);
                 }
 
                 if (headerField == PseudoHeaderFields.Status)
                 {
                     // Pseudo-header fields defined for requests MUST NOT appear in responses; pseudo-header fields
                     // defined for responses MUST NOT appear in requests.
-                    throw new Http2StreamErrorException(_currentHeadersStream.StreamId, CoreStrings.Http2ErrorResponsePseudoHeaderField, Http2ErrorCode.PROTOCOL_ERROR);
+                    throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorResponsePseudoHeaderField, Http2ErrorCode.PROTOCOL_ERROR);
                 }
 
                 if ((_parsedPseudoHeaderFields & headerField) == headerField)
                 {
                     // http://httpwg.org/specs/rfc7540.html#rfc.section.8.1.2.3
                     // All HTTP/2 requests MUST include exactly one valid value for the :method, :scheme, and :path pseudo-header fields
-                    throw new Http2StreamErrorException(_currentHeadersStream.StreamId, CoreStrings.Http2ErrorDuplicatePseudoHeaderField, Http2ErrorCode.PROTOCOL_ERROR);
+                    throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorDuplicatePseudoHeaderField, Http2ErrorCode.PROTOCOL_ERROR);
                 }
 
                 if (headerField == PseudoHeaderFields.Method)
@@ -1006,7 +1050,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
             if (IsConnectionSpecificHeaderField(name, value))
             {
-                throw new Http2StreamErrorException(_currentHeadersStream.StreamId, CoreStrings.Http2ErrorConnectionSpecificHeaderField, Http2ErrorCode.PROTOCOL_ERROR);
+                throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorConnectionSpecificHeaderField, Http2ErrorCode.PROTOCOL_ERROR);
             }
 
             // http://httpwg.org/specs/rfc7540.html#rfc.section.8.1.2
@@ -1021,7 +1065,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     }
                     else
                     {
-                        throw new Http2StreamErrorException(_currentHeadersStream.StreamId, CoreStrings.Http2ErrorHeaderNameUppercase, Http2ErrorCode.PROTOCOL_ERROR);
+                        throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorHeaderNameUppercase, Http2ErrorCode.PROTOCOL_ERROR);
                     }
                 }
             }

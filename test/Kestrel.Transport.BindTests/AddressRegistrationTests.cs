@@ -211,7 +211,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             RunTestWithStaticPort(port => RegisterAddresses_Success($"{addressInput}:{port}", testUrls, port));
 
         [Fact]
-        public async Task RegisterHttpAddress_UpradedToHttpsByConfigureEndpointDefaults()
+        public async Task RegisterHttpAddress_UpgradedToHttpsByConfigureEndpointDefaults()
         {
             var hostBuilder = TransportSelector.GetWebHostBuilder()
                 .UseKestrel(serverOptions =>
@@ -676,14 +676,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [Theory]
         [InlineData("ftp://localhost")]
         [InlineData("ssh://localhost")]
-        public void ThrowsForUnsupportedAddressFromHosting(string addr)
+        public void ThrowsForUnsupportedAddressFromHosting(string address)
         {
             TestApplicationErrorLogger.IgnoredExceptions.Add(typeof(InvalidOperationException));
 
             var hostBuilder = TransportSelector.GetWebHostBuilder()
                 .ConfigureServices(AddTestLogging)
                 .UseKestrel()
-                .UseUrls(addr)
+                .UseUrls(address)
                 .Configure(ConfigureEchoAddress);
 
             using (var host = hostBuilder.Build())
@@ -786,7 +786,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                 using (var socket = new Socket(AddressFamily.InterNetworkV6, SocketType.Stream, ProtocolType.Tcp))
                 {
-                    // Bind first to IPv6Any to ensure both the IPv4 and IPv6 ports are avaiable.
+                    // Bind first to IPv6Any to ensure both the IPv4 and IPv6 ports are available.
                     socket.Bind(new IPEndPoint(IPAddress.IPv6Any, 0));
                     socket.Listen(0);
                     port = ((IPEndPoint)socket.LocalEndPoint).Port;
