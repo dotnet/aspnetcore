@@ -249,8 +249,14 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                     else
                     {
                         _hostProcess = process;
+
+                        // Ensure iisexpress.exe is killed if test process termination is non-graceful.
+                        // Prevents locked files when stop debugging unit test.
+                        ProcessTracker.Add(_hostProcess);
+
                         // cache the process start time for verifying log file name.
                         var _ = _hostProcess.StartTime;
+
                         Logger.LogInformation("Started iisexpress successfully. Process Id : {processId}, Port: {port}", _hostProcess.Id, port);
                         return (url: url, hostExitToken: hostExitTokenSource.Token);
                     }

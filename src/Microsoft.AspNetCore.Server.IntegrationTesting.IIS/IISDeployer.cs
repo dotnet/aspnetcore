@@ -254,6 +254,11 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                 }
 
                 HostProcess = Process.GetProcessById(workerProcess.ProcessId);
+
+                // Ensure w3wp.exe is killed if test process termination is non-graceful.
+                // Prevents locked files when stop debugging unit test.
+                ProcessTracker.Add(HostProcess);
+
                 // cache the process start time for verifying log file name.
                 var _ = HostProcess.StartTime;
 
