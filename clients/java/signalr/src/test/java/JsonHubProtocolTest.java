@@ -103,7 +103,7 @@ public class JsonHubProtocolTest {
     @Test
     public void ParseSingleUnsupportedStreamItemMessage() {
         exceptionRule.expect(UnsupportedOperationException.class);
-        exceptionRule.expectMessage("Support for streaming is not yet available");
+        exceptionRule.expectMessage("The message type STREAM_ITEM is not supported yet.");
         String stringifiedMessage = "{\"type\":2,\"Id\":1,\"Item\":42}\u001E";
         HubMessage[] messages = jsonHubProtocol.parseMessages(stringifiedMessage);
     }
@@ -111,8 +111,25 @@ public class JsonHubProtocolTest {
     @Test
     public void ParseSingleUnsupportedStreamInvocationMessage() {
         exceptionRule.expect(UnsupportedOperationException.class);
-        exceptionRule.expectMessage("Support for streaming is not yet available");
+        exceptionRule.expectMessage("The message type STREAM_INVOCATION is not supported yet.");
         String stringifiedMessage = "{\"type\":4,\"Id\":1,\"target\":\"test\",\"arguments\":[42]}\u001E";
+
+        HubMessage[] messages = jsonHubProtocol.parseMessages(stringifiedMessage);
+    }
+
+    @Test
+    public void ParseSingleUnsupportedCancelInvocationMessage() {
+        exceptionRule.expect(UnsupportedOperationException.class);
+        exceptionRule.expectMessage("The message type CANCEL_INVOCATION is not supported yet.");
+        String stringifiedMessage = "{\"type\":5,\"invocationId\":123}\u001E";
+        HubMessage[] messages = jsonHubProtocol.parseMessages(stringifiedMessage);
+    }
+
+    @Test
+    public void ParseSingleUnsupportedCompletionMessage() {
+        exceptionRule.expect(UnsupportedOperationException.class);
+        exceptionRule.expectMessage("The message type COMPLETION is not supported yet.");
+        String stringifiedMessage = "{\"type\":3,\"invocationId\":123}\u001E";
         HubMessage[] messages = jsonHubProtocol.parseMessages(stringifiedMessage);
     }
 

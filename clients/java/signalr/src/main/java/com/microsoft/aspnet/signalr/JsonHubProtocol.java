@@ -47,16 +47,10 @@ public class JsonHubProtocol implements HubProtocol {
                     hubMessages.add(new InvocationMessage(target, new Object[] {args}));
                     break;
                 case STREAM_ITEM:
-                    throw new UnsupportedOperationException("Support for streaming is not yet available");
                 case COMPLETION:
-                    //Don't care yet
-                    break;
                 case STREAM_INVOCATION:
-                    //Don't care yet;
-                    throw new UnsupportedOperationException("Support for streaming is not yet available");
                 case CANCEL_INVOCATION:
-                    // Not tracking invocations yet
-                    break;
+                    throw new UnsupportedOperationException(String.format("The message type %s is not supported yet.", messageType));
                 case PING:
                     //Ping
                     hubMessages.add(new PingMessage());
