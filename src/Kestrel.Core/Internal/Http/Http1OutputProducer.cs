@@ -73,23 +73,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return WriteAsync(Constants.EmptyData, cancellationToken);
         }
 
-        public void Write<T>(Func<PipeWriter, T, long> callback, T state)
-        {
-            lock (_contextLock)
-            {
-                if (_completed)
-                {
-                    return;
-                }
-
-                var buffer = _pipeWriter;
-                var bytesCommitted = callback(buffer, state);
-                _unflushedBytes += bytesCommitted;
-                _totalBytesCommitted += bytesCommitted;
-            }
-        }
-
-        public Task WriteAsync<T>(Func<PipeWriter, T, long> callback, T state)
+        public Task WriteAsync<T>(Func<PipeWriter, T, long> callback, T state, CancellationToken cancellationToken)
         {
             lock (_contextLock)
             {
@@ -104,7 +88,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 _totalBytesCommitted += bytesCommitted;
             }
 
-            return FlushAsync();
+            return FlushAsync(cancellationToken);
         }
 
         public void WriteResponseHeaders(int statusCode, string reasonPhrase, HttpResponseHeaders responseHeaders)

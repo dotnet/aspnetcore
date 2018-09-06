@@ -303,12 +303,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                     Assert.NotEmpty(completeQueue);
 
                     // Add more bytes to the write-behind buffer to prevent the next write from
-                    outputProducer.Write((writableBuffer, state) =>
+                    _ = outputProducer.WriteAsync((writableBuffer, state) =>
                     {
                         writableBuffer.Write(state);
                         return state.Count;
                     },
-                    halfWriteBehindBuffer);
+                    halfWriteBehindBuffer,
+                    default);
 
                     // Act
                     var writeTask2 = outputProducer.WriteDataAsync(halfWriteBehindBuffer);
