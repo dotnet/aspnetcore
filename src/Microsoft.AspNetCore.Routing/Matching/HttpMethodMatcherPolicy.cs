@@ -362,7 +362,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             public override int GetHashCode()
             {
                 var hash = new HashCodeCombiner();
-                hash.Add(IsCorsPreflightRequest);
+                hash.Add(IsCorsPreflightRequest ? 1 : 0);
                 hash.Add(HttpMethod, StringComparer.Ordinal);
                 return hash;
             }
