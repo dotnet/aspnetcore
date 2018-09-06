@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             // Since we're doing a BFS we will process each 'level' of the tree in stages
             // this list will hold the set of items we need to process at the current
             // stage.
-            var work = new List<(RouteEndpoint endpoint, List<DfaNode> parents)>();
+            var work = new List<(RouteEndpoint endpoint, List<DfaNode> parents)>(_endpoints.Count);
             List<(RouteEndpoint endpoint, List<DfaNode> parents)> previousWork = null;
 
             var root = new DfaNode() { PathDepth = 0, Label = "/" };
@@ -290,38 +290,13 @@ namespace Microsoft.AspNetCore.Routing.Matching
             maxSegmentCount++;
 
             var states = new DfaState[stateCount];
-            var tableBuilders = new (JumpTableBuilder pathBuilder, PolicyJumpTableBuilder policyBuilder)[stateCount];
-            AddNode(root, states, tableBuilders);
+            var exitDestination = stateCount - 1;
+            AddNode(root, states, exitDestination);
 
-            var exit = stateCount - 1;
-            states[exit] = new DfaState(Array.Empty<Candidate>(), null, null);
-            tableBuilders[exit] = (new JumpTableBuilder() { DefaultDestination = exit, ExitDestination = exit, }, null);
-
-            for (var i = 0; i < tableBuilders.Length; i++)
-            {
-                if (tableBuilders[i].pathBuilder?.DefaultDestination == JumpTableBuilder.InvalidDestination)
-                {
-                    tableBuilders[i].pathBuilder.DefaultDestination = exit;
-                }
-
-                if (tableBuilders[i].pathBuilder?.ExitDestination == JumpTableBuilder.InvalidDestination)
-                {
-                    tableBuilders[i].pathBuilder.ExitDestination = exit;
-                }
-
-                if (tableBuilders[i].policyBuilder?.ExitDestination == JumpTableBuilder.InvalidDestination)
-                {
-                    tableBuilders[i].policyBuilder.ExitDestination = exit;
-                }
-            }
-
-            for (var i = 0; i < states.Length; i++)
-            {
-                states[i] = new DfaState(
-                    states[i].Candidates,
-                    tableBuilders[i].pathBuilder?.Build(),
-                    tableBuilders[i].policyBuilder?.Build());
-            }
+            states[exitDestination] = new DfaState(
+                Array.Empty<Candidate>(),
+                JumpTableBuilder.Build(exitDestination, exitDestination, null),
+                null);
 
             return new DfaMatcher(_selector, states, maxSegmentCount);
         }
@@ -329,29 +304,26 @@ namespace Microsoft.AspNetCore.Routing.Matching
         private int AddNode(
             DfaNode node,
             DfaState[] states,
-            (JumpTableBuilder pathBuilder, PolicyJumpTableBuilder policyBuilder)[] tableBuilders)
+            int exitDestination)
         {
             node.Matches?.Sort(_comparer);
 
             var currentStateIndex = _stateIndex;
 
-            var candidates = CreateCandidates(node.Matches);
-            states[currentStateIndex] = new DfaState(candidates, null, null);
-
-            var pathBuilder = new JumpTableBuilder();
-            tableBuilders[currentStateIndex] = (pathBuilder, null);
+            var currentDefaultDestination = exitDestination;
+            var currentExitDestination = exitDestination;
+            (string text, int destination)[] pathEntries = null;
+            PolicyJumpTableEdge[] policyEntries = null;
 
             if (node.Literals != null)
             {
+                pathEntries = new (string text, int destination)[node.Literals.Count];
+
+                var index = 0;
                 foreach (var kvp in node.Literals)
                 {
-                    if (kvp.Key == null)
-                    {
-                        continue;
-                    }
-
                     var transition = Transition(kvp.Value);
-                    pathBuilder.AddEntry(kvp.Key, transition);
+                    pathEntries[index++] = (kvp.Key, transition);
                 }
             }
 
@@ -361,38 +333,42 @@ namespace Microsoft.AspNetCore.Routing.Matching
             {
                 // This node has a single transition to but it should accept zero-width segments
                 // this can happen when a node only has catchall parameters.
-                pathBuilder.DefaultDestination = Transition(node.Parameters);
-                pathBuilder.ExitDestination = pathBuilder.DefaultDestination;
+                currentExitDestination = currentDefaultDestination = Transition(node.Parameters);
             }
             else if (node.Parameters != null && node.CatchAll != null)
             {
                 // This node has a separate transition for zero-width segments
                 // this can happen when a node has both parameters and catchall parameters.
-                pathBuilder.DefaultDestination = Transition(node.Parameters);
-                pathBuilder.ExitDestination = Transition(node.CatchAll);
+                currentDefaultDestination = Transition(node.Parameters);
+                currentExitDestination = Transition(node.CatchAll);
             }
             else if (node.Parameters != null)
             {
                 // This node has paramters but no catchall.
-                pathBuilder.DefaultDestination = Transition(node.Parameters);
+                currentDefaultDestination = Transition(node.Parameters);
             }
             else if (node.CatchAll != null)
             {
                 // This node has a catchall but no parameters
-                pathBuilder.DefaultDestination = Transition(node.CatchAll);
-                pathBuilder.ExitDestination = pathBuilder.DefaultDestination;
+                currentExitDestination = currentDefaultDestination = Transition(node.CatchAll);
             }
 
             if (node.PolicyEdges != null && node.PolicyEdges.Count > 0)
             {
-                var policyBuilder = new PolicyJumpTableBuilder(node.NodeBuilder);
-                tableBuilders[currentStateIndex] = (pathBuilder, policyBuilder);
+                policyEntries = new PolicyJumpTableEdge[node.PolicyEdges.Count];
 
+                var index = 0;
                 foreach (var kvp in node.PolicyEdges)
                 {
-                    policyBuilder.AddEntry(kvp.Key, Transition(kvp.Value));
+                    policyEntries[index++] = new PolicyJumpTableEdge(kvp.Key, Transition(kvp.Value));
                 }
             }
+
+            var candidates = CreateCandidates(node.Matches);
+            states[currentStateIndex] = new DfaState(
+                candidates,
+                JumpTableBuilder.Build(currentDefaultDestination, currentExitDestination, pathEntries),
+                BuildPolicy(currentExitDestination, node.NodeBuilder, policyEntries));
 
             return currentStateIndex;
 
@@ -406,9 +382,19 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 else
                 {
                     _stateIndex++;
-                    return AddNode(next, states, tableBuilders);
+                    return AddNode(next, states, exitDestination);
                 }
             }
+        }
+
+        private static PolicyJumpTable BuildPolicy(int exitDestination, INodeBuilderPolicy nodeBuilder, PolicyJumpTableEdge[] policyEntries)
+        {
+            if (policyEntries == null)
+            {
+                return null;
+            }
+
+            return nodeBuilder.BuildJumpTable(exitDestination, policyEntries);
         }
 
         // Builds an array of candidates for a node, assigns a 'score' for each

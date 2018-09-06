@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             //
             // For now we're just building up the set of keys. We don't add any endpoints
             // to lists now because we don't want ordering problems.
-            var allHttpMethods = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var allHttpMethods = new List<string>();
             var edges = new Dictionary<EdgeKey, List<Endpoint>>();
             for (var i = 0; i < endpoints.Count; i++)
             {
@@ -120,10 +120,15 @@ namespace Microsoft.AspNetCore.Routing.Matching
                     // Also if it's not the *any* method key, then track it.
                     if (!string.Equals(AnyMethod, httpMethod, StringComparison.OrdinalIgnoreCase))
                     {
-                        allHttpMethods.Add(httpMethod);
+                        if (!ContainsHttpMethod(allHttpMethods, httpMethod))
+                        {
+                            allHttpMethods.Add(httpMethod);
+                        }
                     }
                 }
             }
+
+            allHttpMethods.Sort(StringComparer.OrdinalIgnoreCase);
 
             // Now in a second loop, add endpoints to these lists. We've enumerated all of
             // the states, so we want to see which states this endpoint matches.
@@ -185,7 +190,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             if (!edges.TryGetValue(new EdgeKey(AnyMethod, false), out var matches))
             {
                 // Methods sorted for testability.
-                var endpoint = CreateRejectionEndpoint(allHttpMethods.OrderBy(m => m));
+                var endpoint = CreateRejectionEndpoint(allHttpMethods);
                 matches = new List<Endpoint>() { endpoint, };
                 edges[new EdgeKey(AnyMethod, false)] = matches;
             }
@@ -259,6 +264,19 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 },
                 EndpointMetadataCollection.Empty,
                 Http405EndpointDisplayName);
+        }
+
+        private static bool ContainsHttpMethod(List<string> httpMethods, string httpMethod)
+        {
+            for (var i = 0; i < httpMethods.Count; i++)
+            {
+                if (StringComparer.OrdinalIgnoreCase.Equals(httpMethods[i], httpMethod))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private class HttpMethodPolicyJumpTable : PolicyJumpTable
