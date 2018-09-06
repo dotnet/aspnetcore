@@ -21,10 +21,10 @@ namespace IISTestSite
             {
                 // Semicolons are appended to env variables; removing them.
                 case "CheckLargeStdOutWrites":
-                    Console.WriteLine(new string('a', 4096));
+                    Console.WriteLine(new string('a', 30000));
                     break;
                 case "CheckLargeStdErrWrites":
-                    Console.Error.WriteLine(new string('a', 4096));
+                    Console.Error.WriteLine(new string('a', 30000));
                     Console.Error.Flush();
                     break;
                 case "CheckLogFile":
@@ -35,17 +35,16 @@ namespace IISTestSite
                     Console.Error.Flush();
                     break;
                 case "CheckOversizedStdErrWrites":
-                    Console.WriteLine(new string('a', 5000));
+                    Console.WriteLine(new string('a', 31000));
                     break;
                 case "CheckOversizedStdOutWrites":
-                    Console.Error.WriteLine(new string('a', 4096));
+                    Console.Error.WriteLine(new string('a', 31000));
                     Console.Error.Flush();
                     break;
                 case "Hang":
                     Thread.Sleep(Timeout.Infinite);
                     break;
                 case "HangOnStop":
-                    
                     var host = new WebHostBuilder()
                         .UseIIS()
                         .UseStartup<Startup>()
@@ -60,6 +59,7 @@ namespace IISTestSite
                     Console.Title = "Test";
                     Console.WriteLine($"Is Console redirection: {Console.IsOutputRedirected}");
                     Console.BackgroundColor = ConsoleColor.Blue;
+                    Console.WriteLine("彡⾔");
                     break;
             }
 

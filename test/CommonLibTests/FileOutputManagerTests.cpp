@@ -33,9 +33,8 @@ namespace FileOutManagerStartupTests
             PCWSTR expected = L"test";
 
             auto tempDirectory = TempDirectory();
-            FileOutputManager* pManager = new FileOutputManager;
+            FileOutputManager* pManager = new FileOutputManager(fileNamePrefix, tempDirectory.path());
 
-            pManager->Initialize(fileNamePrefix.c_str(), tempDirectory.path().c_str());
             {
                 FileManagerWrapper wrapper(pManager);
 
@@ -69,89 +68,84 @@ namespace FileOutManagerOutputTests
 {
     TEST(FileOutManagerOutputTest, StdOut)
     {
-        PCSTR expected = "test";
+        PCWSTR expected = L"test";
 
         auto tempDirectory = TempDirectory();
 
-        FileOutputManager* pManager = new FileOutputManager;
-        pManager->Initialize(L"", tempDirectory.path().c_str());
+        FileOutputManager* pManager = new FileOutputManager(L"", tempDirectory.path());
         {
             FileManagerWrapper wrapper(pManager);
 
-            fprintf(stdout, expected);
+            fwprintf(stdout, expected);
             pManager->Stop();
 
-            STRA straContent;
-            ASSERT_TRUE(pManager->GetStdOutContent(&straContent));
+            auto output = pManager->GetStdOutContent();
+            ASSERT_FALSE(output.empty());
 
-            ASSERT_STREQ(straContent.QueryStr(), expected);
+            ASSERT_STREQ(output.c_str(), expected);
         }
     }
 
     TEST(FileOutManagerOutputTest, StdErr)
     {
-        PCSTR expected = "test";
+        PCWSTR expected = L"test";
 
         auto tempDirectory = TempDirectory();
 
-        FileOutputManager* pManager = new FileOutputManager;
-        pManager->Initialize(L"", tempDirectory.path().c_str());
+        FileOutputManager* pManager = new FileOutputManager(L"", tempDirectory.path().c_str());
         {
             FileManagerWrapper wrapper(pManager);
 
-            fprintf(stderr, expected);
+            fwprintf(stderr, expected);
             pManager->Stop();
 
-            STRA straContent;
-            ASSERT_TRUE(pManager->GetStdOutContent(&straContent));
+            auto output = pManager->GetStdOutContent();
+            ASSERT_FALSE(output.empty());
 
-            ASSERT_STREQ(straContent.QueryStr(), expected);
+            ASSERT_STREQ(output.c_str(), expected);
         }
     }
 
     TEST(FileOutManagerOutputTest, CapAt30KB)
     {
-        PCSTR expected = "hello world";
+        PCWSTR expected = L"hello world";
 
         auto tempDirectory = TempDirectory();
 
-        FileOutputManager* pManager = new FileOutputManager;
-        pManager->Initialize(L"", tempDirectory.path().c_str());
+        FileOutputManager* pManager = new FileOutputManager(L"", tempDirectory.path());
         {
             FileManagerWrapper wrapper(pManager);
 
             for (int i = 0; i < 3000; i++)
             {
-                printf(expected);
+                wprintf(expected);
             }
             pManager->Stop();
-            STRA straContent;
-            ASSERT_TRUE(pManager->GetStdOutContent(&straContent));
+            auto output = pManager->GetStdOutContent();
+            ASSERT_FALSE(output.empty());
 
-            ASSERT_EQ(straContent.QueryCCH(), 30000);
+            ASSERT_EQ(output.size(), 30000);
         }
     }
 
-
     TEST(FileOutManagerOutputTest, StartStopRestoresCorrectly)
     {
-        PCSTR expected = "test";
+        PCWSTR expected = L"test";
 
         auto tempDirectory = TempDirectory();
 
         for (int i = 0; i < 10; i++)
         {
-            FileOutputManager* pManager = new FileOutputManager;
-            pManager->Initialize(L"", tempDirectory.path().c_str());
+            FileOutputManager* pManager = new FileOutputManager(L"", tempDirectory.path());
             {
                 FileManagerWrapper wrapper(pManager);
 
-                printf(expected);
+                wprintf(expected);
                 pManager->Stop();
-                STRA straContent;
-                ASSERT_TRUE(pManager->GetStdOutContent(&straContent));
+                auto output = pManager->GetStdOutContent();
+                ASSERT_FALSE(output.empty());
 
-                ASSERT_STREQ(straContent.QueryStr(), expected);
+                ASSERT_STREQ(output.c_str(), expected);
             }
         }
     }

@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             await AssertFailsToStart(deploymentParameters);
 
-            Assert.Contains(TestSink.Writes, context => context.Message.Contains(new string('a', 4096)));
+            Assert.Contains(TestSink.Writes, context => context.Message.Contains(new string('a', 30000)));
         }
 
         [ConditionalFact]

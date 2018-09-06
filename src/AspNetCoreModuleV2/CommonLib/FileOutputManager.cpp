@@ -9,18 +9,18 @@
 #include "SRWExclusiveLock.h"
 #include "file_utility.h"
 #include "StdWrapper.h"
+#include "StringHelpers.h"
 
 extern HINSTANCE    g_hModule;
 
-FileOutputManager::FileOutputManager() :
-    FileOutputManager(/* fEnableNativeLogging */ true) { }
+FileOutputManager::FileOutputManager(std::wstring pwzStdOutLogFileName, std::wstring  pwzApplicationPath) :
+    FileOutputManager(pwzStdOutLogFileName, pwzApplicationPath, /* fEnableNativeLogging */ true) { }
 
-FileOutputManager::FileOutputManager(bool fEnableNativeLogging) :
+FileOutputManager::FileOutputManager(std::wstring  pwzStdOutLogFileName, std::wstring  pwzApplicationPath, bool fEnableNativeLogging) :
+    BaseOutputManager(fEnableNativeLogging),
     m_hLogFileHandle(INVALID_HANDLE_VALUE),
-    m_disposed(false),
-    stdoutWrapper(nullptr),
-    stderrWrapper(nullptr),
-    m_fEnableNativeRedirection(fEnableNativeLogging)
+    m_applicationPath(pwzApplicationPath),
+    m_stdOutLogFileName(pwzStdOutLogFileName)
 {
     InitializeSRWLock(&m_srwLock);
 }
@@ -30,23 +30,13 @@ FileOutputManager::~FileOutputManager()
     FileOutputManager::Stop();
 }
 
-HRESULT
-FileOutputManager::Initialize(PCWSTR pwzStdOutLogFileName, PCWSTR pwzApplicationPath)
-{
-    RETURN_IF_FAILED(m_wsApplicationPath.Copy(pwzApplicationPath));
-    RETURN_IF_FAILED(m_wsStdOutLogFileName.Copy(pwzStdOutLogFileName));
-
-    return S_OK;
-}
-
 // Start redirecting stdout and stderr into the file handle.
 // Uses sttimer to continuously flush output into the file.
-HRESULT
+void
 FileOutputManager::Start()
 {
     SYSTEMTIME systemTime;
     SECURITY_ATTRIBUTES saAttr = { 0 };
-    STRU struPath;
     FILETIME processCreationTime;
     FILETIME dummyFileTime;
     
@@ -54,48 +44,38 @@ FileOutputManager::Start()
     // in the current process.
     if (!AllocConsole())
     {
-        // ERROR_ACCESS_DENIED means there is a console already present.
-        if (GetLastError() != ERROR_ACCESS_DENIED)
-        {
-            RETURN_LAST_ERROR();
-        }
+        THROW_LAST_ERROR_IF(GetLastError() != ERROR_ACCESS_DENIED);
     }
 
     // Concatenate the log file name and application path
-    RETURN_IF_FAILED(FILE_UTILITY::ConvertPathToFullPath(
-        m_wsStdOutLogFileName.QueryStr(),
-        m_wsApplicationPath.QueryStr(),
-        &struPath));
+    auto logPath = m_applicationPath / m_stdOutLogFileName;
+    create_directories(logPath.parent_path());
 
-    RETURN_IF_FAILED(FILE_UTILITY::EnsureDirectoryPathExist(struPath.QueryStr()));
-
-
-    // TODO fix string as it is incorrect
-    RETURN_LAST_ERROR_IF(!GetProcessTimes(
+    THROW_LAST_ERROR_IF(!GetProcessTimes(
         GetCurrentProcess(), 
         &processCreationTime, 
         &dummyFileTime, 
         &dummyFileTime, 
         &dummyFileTime));
-    RETURN_LAST_ERROR_IF(!FileTimeToSystemTime(&processCreationTime, &systemTime));
 
-    RETURN_IF_FAILED(
-        m_struLogFilePath.SafeSnwprintf(L"%s_%d%02d%02d%02d%02d%02d_%d.log",
-            struPath.QueryStr(),
-            systemTime.wYear,
-            systemTime.wMonth,
-            systemTime.wDay,
-            systemTime.wHour,
-            systemTime.wMinute,
-            systemTime.wSecond,
-            GetCurrentProcessId()));
+    THROW_LAST_ERROR_IF(!FileTimeToSystemTime(&processCreationTime, &systemTime));
+
+    m_logFilePath = format(L"%s_%d%02d%02d%02d%02d%02d_%d.log",
+        logPath.c_str(),
+        systemTime.wYear,
+        systemTime.wMonth,
+        systemTime.wDay,
+        systemTime.wHour,
+        systemTime.wMinute,
+        systemTime.wSecond,
+        GetCurrentProcessId());
 
     saAttr.nLength = sizeof(SECURITY_ATTRIBUTES);
     saAttr.bInheritHandle = TRUE;
     saAttr.lpSecurityDescriptor = NULL;
 
     // Create the file with both READ and WRITE.
-    m_hLogFileHandle = CreateFileW(m_struLogFilePath.QueryStr(),
+    m_hLogFileHandle = CreateFileW(m_logFilePath.c_str(),
         FILE_READ_DATA | FILE_WRITE_DATA,
         FILE_SHARE_READ,
         &saAttr,
@@ -103,22 +83,18 @@ FileOutputManager::Start()
         FILE_ATTRIBUTE_NORMAL,
         nullptr);
 
-    RETURN_LAST_ERROR_IF(m_hLogFileHandle == INVALID_HANDLE_VALUE);
+    THROW_LAST_ERROR_IF(m_hLogFileHandle == INVALID_HANDLE_VALUE);
 
-    stdoutWrapper = std::make_unique<StdWrapper>(stdout, STD_OUTPUT_HANDLE, m_hLogFileHandle, m_fEnableNativeRedirection);
-    stderrWrapper = std::make_unique<StdWrapper>(stderr, STD_ERROR_HANDLE, m_hLogFileHandle, m_fEnableNativeRedirection);
+    stdoutWrapper = std::make_unique<StdWrapper>(stdout, STD_OUTPUT_HANDLE, m_hLogFileHandle, m_enableNativeRedirection);
+    stderrWrapper = std::make_unique<StdWrapper>(stderr, STD_ERROR_HANDLE, m_hLogFileHandle, m_enableNativeRedirection);
 
     stdoutWrapper->StartRedirection();
     stderrWrapper->StartRedirection();
-
-    return S_OK;
 }
 
-
-HRESULT
+void
 FileOutputManager::Stop()
 {
-    STRA     straStdOutput;
     CHAR            pzFileContents[MAX_FILE_READ_SIZE] = { 0 };
     DWORD           dwNumBytesRead;
     LARGE_INTEGER   li = { 0 };
@@ -128,75 +104,77 @@ FileOutputManager::Stop()
 
     if (m_disposed)
     {
-        return S_OK;
+        return;
     }
 
     SRWExclusiveLock lock(m_srwLock);
 
     if (m_disposed)
     {
-        return S_OK;
+        return;
     }
 
     m_disposed = true;
 
     if (m_hLogFileHandle == INVALID_HANDLE_VALUE)
     {
-        return HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND);
+        THROW_HR(HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND));
     }
 
     FlushFileBuffers(m_hLogFileHandle);
 
     if (stdoutWrapper != nullptr)
     {
-        RETURN_IF_FAILED(stdoutWrapper->StopRedirection());
+        THROW_IF_FAILED(stdoutWrapper->StopRedirection());
     }
 
     if (stderrWrapper != nullptr)
     {
-        RETURN_IF_FAILED(stderrWrapper->StopRedirection());
+        THROW_IF_FAILED(stderrWrapper->StopRedirection());
     }
 
     // delete empty log file
-    handle = FindFirstFile(m_struLogFilePath.QueryStr(), &fileData);
+    handle = FindFirstFile(m_logFilePath.c_str(), &fileData);
     if (handle != INVALID_HANDLE_VALUE &&
         handle != NULL &&
         fileData.nFileSizeHigh == 0 &&
         fileData.nFileSizeLow == 0) // skip check of nFileSizeHigh
     {
         FindClose(handle);
-        LOG_LAST_ERROR_IF(!DeleteFile(m_struLogFilePath.QueryStr()));
+        LOG_LAST_ERROR_IF(!DeleteFile(m_logFilePath.c_str()));
+        return;
     }
 
     // Read the first 30Kb from the file and store it in a buffer.
     // By doing this, we can close the handle to the file and be done with it.
-    RETURN_LAST_ERROR_IF(!GetFileSizeEx(m_hLogFileHandle, &li));
+    THROW_LAST_ERROR_IF(!GetFileSizeEx(m_hLogFileHandle, &li));
 
-    if (li.LowPart == 0 || li.HighPart > 0)
+    if (li.HighPart > 0)
     {
-        RETURN_HR(HRESULT_FROM_WIN32(ERROR_FILE_INVALID));
+        THROW_HR(HRESULT_FROM_WIN32(ERROR_FILE_INVALID));
     }
 
     dwFilePointer = SetFilePointer(m_hLogFileHandle, 0, NULL, FILE_BEGIN);
 
-    RETURN_LAST_ERROR_IF(dwFilePointer == INVALID_SET_FILE_POINTER);
+    THROW_LAST_ERROR_IF(dwFilePointer == INVALID_SET_FILE_POINTER);
 
-    RETURN_LAST_ERROR_IF(!ReadFile(m_hLogFileHandle, pzFileContents, MAX_FILE_READ_SIZE, &dwNumBytesRead, NULL));
+    THROW_LAST_ERROR_IF(!ReadFile(m_hLogFileHandle, pzFileContents, MAX_FILE_READ_SIZE, &dwNumBytesRead, NULL));
 
-    m_straFileContent.Copy(pzFileContents, dwNumBytesRead);
+    m_stdOutContent = to_wide_string(std::string(pzFileContents, dwNumBytesRead), GetConsoleOutputCP());
 
-    // printf will fail in in full IIS
-    if (printf(m_straFileContent.QueryStr()) != -1)
+    auto content = GetStdOutContent();
+    if (!content.empty())
     {
-        // Need to flush contents for the new stdout and stderr
-        _flushall();
+        // printf will fail in in full IIS
+        if (wprintf(content.c_str()) != -1)
+        {
+            // Need to flush contents for the new stdout and stderr
+            _flushall();
+        }
     }
-
-    return S_OK;
 }
 
-bool FileOutputManager::GetStdOutContent(STRA* struStdOutput)
+std::wstring FileOutputManager::GetStdOutContent()
 {
-    struStdOutput->Copy(m_straFileContent);
-    return m_straFileContent.QueryCCH() > 0;
+    return m_stdOutContent;
 }

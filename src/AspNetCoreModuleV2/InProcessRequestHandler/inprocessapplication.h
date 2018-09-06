@@ -5,8 +5,8 @@
 
 #include <thread>
 #include "InProcessApplicationBase.h"
-#include "IOutputManager.h"
 #include "InProcessOptions.h"
+#include "BaseOutputManager.h"
 
 class IN_PROCESS_HANDLER;
 typedef REQUEST_NOTIFICATION_STATUS(WINAPI * PFN_REQUEST_HANDLER) (IN_PROCESS_HANDLER* pInProcessHandler, void* pvRequestHandlerContext);
@@ -155,7 +155,7 @@ private:
 
     static IN_PROCESS_APPLICATION*  s_Application;
 
-    std::unique_ptr<IOutputManager> m_pLoggerProvider;
+    std::unique_ptr<BaseOutputManager> m_pLoggerProvider;
 
     inline static const LPCSTR      s_exeLocationParameterName = "InProcessExeLocation";
 

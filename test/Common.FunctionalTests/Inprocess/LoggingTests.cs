@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
@@ -68,6 +69,10 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             var deploymentResult = await DeployAsync(deploymentParameters);
 
             await Helpers.AssertStarts(deploymentResult, "HelloWorld");
+
+            StopServer();
+            EventLogHelpers.VerifyEventLogEvent(deploymentResult, "Could not start stdout redirection in (.*)aspnetcorev2.dll. Exception message: HRESULT 0x80070003");
+            EventLogHelpers.VerifyEventLogEvent(deploymentResult, "Could not stop stdout redirection in (.*)aspnetcorev2.dll. Exception message: HRESULT 0x80070002");
         }
 
         [ConditionalFact]
@@ -220,6 +225,48 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             var logContents = ReadLogs(Path.Combine(deploymentResult.ContentRoot, "aspnetcore-debug.log"));
             Assert.Contains("FORWARDING_HANDLER::", logContents);
+        }
+
+        [ConditionalFact]
+        public async Task CheckUnicodePipe()
+        {
+            var path = "CheckConsoleFunctions";
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.StartupExceptionWebsite, publish: true);
+            deploymentParameters.TransformArguments((a, _) => $"{a} {path}");
+
+            var deploymentResult = await DeployAsync(deploymentParameters);
+
+            var response = await deploymentResult.HttpClient.GetAsync(path);
+
+            Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+
+            StopServer();
+            EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessThreadExitStdOut(deploymentResult, "12", "(.*)彡⾔(.*)"));
+        }
+
+        [ConditionalFact]
+        public async Task CheckUTF8File()
+        {
+            var path = "CheckConsoleFunctions";
+
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.StartupExceptionWebsite, publish: true);
+            deploymentParameters.TransformArguments((a, _) => $"{a} {path}");
+
+            deploymentParameters.EnableLogging(_logFolderPath);
+
+            var deploymentResult = await DeployAsync(deploymentParameters);
+
+            var response = await deploymentResult.HttpClient.GetAsync(path);
+
+            Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+
+            StopServer();
+
+            var contents = File.ReadAllText(Helpers.GetExpectedLogName(deploymentResult, _logFolderPath));
+
+            Assert.Contains("彡⾔", contents);
+
+            EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessThreadExitStdOut(deploymentResult, "12", "(.*)彡⾔(.*)"));
         }
 
         private static string ReadLogs(string logPath)

@@ -199,6 +199,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="application.h" />
+    <ClInclude Include="baseoutputmanager.h" />
     <ClInclude Include="ConfigurationSection.h" />
     <ClInclude Include="ConfigurationSource.h" />
     <ClInclude Include="config_utility.h" />

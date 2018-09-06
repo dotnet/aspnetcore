@@ -121,7 +121,11 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         {
             return $"Application '/LM/W3SVC/1/ROOT' with physical root '{EscapedContentRoot(deploymentResult)}' hit unexpected managed background thread exit, exit code = '{code}'.";
         }
-        
+        public static string InProcessThreadExitStdOut(IISDeploymentResult deploymentResult, string code, string output)
+        {
+            return $"Application '/LM/W3SVC/1/ROOT' with physical root '{EscapedContentRoot(deploymentResult)}' hit unexpected managed background thread exit, exit code = '{code}'. Last 4KB characters of captured stdout and stderr logs:\r\n{output}";
+        }
+
         public static string FailedToStartApplication(IISDeploymentResult deploymentResult, string code)
         {
             return $"Failed to start application '/LM/W3SVC/1/ROOT', ErrorCode '{code}'.";

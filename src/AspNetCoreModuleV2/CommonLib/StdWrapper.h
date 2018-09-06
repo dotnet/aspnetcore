@@ -18,7 +18,7 @@ private:
     int m_previousFileDescriptor;
     FILE* m_stdStream;
     DWORD m_stdHandleNumber;
-    BOOL m_fEnableNativeRedirection;
+    BOOL m_enableNativeRedirection;
     HANDLE m_handleToRedirectTo;
     FILE* m_redirectedFile;
 };

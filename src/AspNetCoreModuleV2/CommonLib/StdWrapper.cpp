@@ -12,7 +12,7 @@ StdWrapper::StdWrapper(FILE* stdStream, DWORD stdHandleNumber, HANDLE handleToRe
     : m_previousFileDescriptor(0),
     m_stdStream(stdStream),
     m_stdHandleNumber(stdHandleNumber),
-    m_fEnableNativeRedirection(fEnableNativeRedirection),
+    m_enableNativeRedirection(fEnableNativeRedirection),
     m_handleToRedirectTo(handleToRedirectTo),
     m_redirectedFile(nullptr)
 {
@@ -48,7 +48,7 @@ StdWrapper::StartRedirection()
         m_previousFileDescriptor = _dup(_fileno(m_stdStream));
     }
 
-    if (!m_fEnableNativeRedirection)
+    if (!m_enableNativeRedirection)
     {
         RETURN_LAST_ERROR_IF(!SetStdHandle(m_stdHandleNumber, m_handleToRedirectTo));
 
@@ -122,7 +122,7 @@ StdWrapper::StopRedirection() const
 
     RETURN_LAST_ERROR_IF(!SetStdHandle(m_stdHandleNumber, reinterpret_cast<HANDLE>(_get_osfhandle(m_previousFileDescriptor))));
 
-    if (!m_fEnableNativeRedirection)
+    if (!m_enableNativeRedirection)
     {
         return S_OK;
     }

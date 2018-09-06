@@ -3,11 +3,11 @@
 
 #pragma once
 
-#include "IOutputManager.h"
 #include "StdWrapper.h"
 #include "stringu.h"
+#include "BaseOutputManager.h"
 
-class PipeOutputManager : public IOutputManager
+class PipeOutputManager : public BaseOutputManager
 {
     // Timeout to be used if a thread never exits
     #define PIPE_OUTPUT_THREAD_TIMEOUT 2000
@@ -19,9 +19,9 @@ public:
     PipeOutputManager(bool fEnableNativeLogging);
     ~PipeOutputManager();
 
-    HRESULT Start() override;
-    HRESULT Stop() override;
-    bool GetStdOutContent(STRA* straStdOutput) override;
+    void Start() override;
+    void Stop() override;
+    std::wstring GetStdOutContent() override;
 
     // Thread functions
     void ReadStdErrHandleInternal();
@@ -32,13 +32,7 @@ private:
 
     HANDLE                          m_hErrReadPipe;
     HANDLE                          m_hErrWritePipe;
-    STRU                            m_struLogFilePath;
     HANDLE                          m_hErrThread;
-    CHAR                            m_pzFileContents[MAX_PIPE_READ_SIZE] = { 0 };
-    DWORD                           m_dwStdErrReadTotal;
-    SRWLOCK                         m_srwLock {};
-    BOOL                            m_disposed;
-    BOOL                            m_fEnableNativeRedirection;
-    std::unique_ptr<StdWrapper>     stdoutWrapper;
-    std::unique_ptr<StdWrapper>     stderrWrapper;
+    CHAR                            m_pipeContents[MAX_PIPE_READ_SIZE] = { 0 };
+    DWORD                           m_numBytesReadTotal;
 };
