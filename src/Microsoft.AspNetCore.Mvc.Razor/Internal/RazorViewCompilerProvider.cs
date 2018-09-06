@@ -80,7 +80,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 #pragma warning restore CS0618 // Type or member is obsolete
                 feature.ViewDescriptors,
                 _compilationMemoryCacheProvider.CompilationMemoryCache,
-                _logger);
+                _logger)
+            {
+                AllowRecompilingViewsOnFileChange = _viewEngineOptions.AllowRecompilingViewsOnFileChange,
+            };
         }
     }
 }

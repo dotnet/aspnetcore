@@ -159,6 +159,9 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IConfigureOptions<RazorViewEngineOptions>, RazorViewEngineOptionsSetup>());
 
+            services.TryAddEnumerable(
+                ServiceDescriptor.Transient<IPostConfigureOptions<RazorViewEngineOptions>, RazorViewEngineOptionsSetup>());
+
             services.TryAddSingleton<
                 IRazorViewEngineFileProviderAccessor,
                 DefaultRazorViewEngineFileProviderAccessor>();

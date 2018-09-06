@@ -40,6 +40,25 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             // Assert
             Assert.Same(result1, result2);
             Assert.Null(result1.ViewAttribute);
+            Assert.Empty(result1.ExpirationTokens);
+        }
+
+        [Fact]
+        public async Task CompileAsync_ReturnsResultWithExpirationToken_WhenWatchingForFileChanges()
+        {
+            // Arrange
+            var path = "/file/does-not-exist";
+            var fileProvider = new TestFileProvider();
+            var viewCompiler = GetViewCompiler(fileProvider);
+            viewCompiler.AllowRecompilingViewsOnFileChange = true;
+
+            // Act
+            var result1 = await viewCompiler.CompileAsync(path);
+            var result2 = await viewCompiler.CompileAsync(path);
+
+            // Assert
+            Assert.Same(result1, result2);
+            Assert.Null(result1.ViewAttribute);
             Assert.Collection(
                 result1.ExpirationTokens,
                 token => Assert.Equal(fileProvider.GetChangeToken(path), token));
@@ -53,6 +72,24 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             var fileProvider = new TestFileProvider();
             fileProvider.AddFile(path, "Content");
             var viewCompiler = GetViewCompiler(fileProvider);
+
+            // Act
+            var result = await viewCompiler.CompileAsync(path);
+
+            // Assert
+            Assert.NotNull(result.ViewAttribute);
+            Assert.Empty(result.ExpirationTokens);
+        }
+
+        [Fact]
+        public async Task CompileAsync_AddsChangeTokensForViewStartsIfFileExists_WhenWatchingForFileChanges()
+        {
+            // Arrange
+            var path = "/file/exists/FilePath.cshtml";
+            var fileProvider = new TestFileProvider();
+            fileProvider.AddFile(path, "Content");
+            var viewCompiler = GetViewCompiler(fileProvider);
+            viewCompiler.AllowRecompilingViewsOnFileChange = true;
 
             // Act
             var result = await viewCompiler.CompileAsync(path);
@@ -92,13 +129,40 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         }
 
         [Fact]
-        public async Task CompileAsync_InvalidatesCache_IfChangeTokenExpires()
+        public async Task CompileAsync_DoesNotInvalidCache_IfChangeTokenChanges()
         {
             // Arrange
             var path = "/Views/Home/Index.cshtml";
             var fileProvider = new TestFileProvider();
             var fileInfo = fileProvider.AddFile(path, "some content");
             var viewCompiler = GetViewCompiler(fileProvider);
+            var changeToken = fileProvider.Watch(path);
+
+            // Act 1
+            var result1 = await viewCompiler.CompileAsync(path);
+
+            // Assert 1
+            Assert.NotNull(result1.ViewAttribute);
+
+            // Act 2
+            fileProvider.DeleteFile(path);
+            fileProvider.GetChangeToken(path).HasChanged = true;
+            viewCompiler.Compile = _ => throw new Exception("Can't call me");
+            var result2 = await viewCompiler.CompileAsync(path);
+
+            // Assert 2
+            Assert.Same(result1, result2);
+        }
+
+        [Fact]
+        public async Task CompileAsync_InvalidatesCache_IfChangeTokenExpires_WhenWatchingForFileChanges()
+        {
+            // Arrange
+            var path = "/Views/Home/Index.cshtml";
+            var fileProvider = new TestFileProvider();
+            var fileInfo = fileProvider.AddFile(path, "some content");
+            var viewCompiler = GetViewCompiler(fileProvider);
+            viewCompiler.AllowRecompilingViewsOnFileChange = true;
 
             // Act 1
             var result1 = await viewCompiler.CompileAsync(path);
@@ -125,6 +189,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             var fileProvider = new TestFileProvider();
             var fileInfo = fileProvider.AddFile(path, "some content");
             var viewCompiler = GetViewCompiler(fileProvider);
+            viewCompiler.AllowRecompilingViewsOnFileChange = true;
             var expected2 = new CompiledViewDescriptor();
 
             // Act 1
@@ -151,6 +216,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             var fileProvider = new TestFileProvider();
             var fileInfo = fileProvider.AddFile(path, "some content");
             var viewCompiler = GetViewCompiler(fileProvider);
+            viewCompiler.AllowRecompilingViewsOnFileChange = true;
             var expected2 = new CompiledViewDescriptor();
 
             // Act 1
@@ -327,6 +393,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             };
 
             var viewCompiler = GetViewCompiler(fileProvider, precompiledViews: new[] { precompiledView });
+            viewCompiler.AllowRecompilingViewsOnFileChange = true;
 
             // Act
             var result = await viewCompiler.CompileAsync(path);
@@ -371,7 +438,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         }
 
         [Fact]
-        public async Task CompileAsync_PrecompiledViewWithChecksum_CanRecompile()
+        public async Task CompileAsync_PrecompiledViewWithChecksum_DoesNotAddExpirationTokens()
         {
             // Arrange
             var path = "/Views/Home/Index.cshtml";
@@ -392,11 +459,43 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 
             var viewCompiler = GetViewCompiler(fileProvider, precompiledViews: new[] { precompiledView });
 
+            // Act
+            var result = await viewCompiler.CompileAsync(path);
+
+            // Assert
+            Assert.Same(precompiledView.Item, result.Item);
+            Assert.Empty(result.ExpirationTokens);
+        }
+
+        [Fact]
+        public async Task CompileAsync_PrecompiledViewWithChecksum_CanRecompile()
+        {
+            // Arrange
+            var path = "/Views/Home/Index.cshtml";
+
+            var fileProvider = new TestFileProvider();
+            var fileInfo = fileProvider.AddFile(path, "some content");
+
+            var expected2 = new CompiledViewDescriptor();
+
+            var precompiledView = new CompiledViewDescriptor
+            {
+                RelativePath = path,
+                Item = new TestRazorCompiledItem(typeof(string), "mvc.1.0.view", path, new object[]
+                {
+                    new RazorSourceChecksumAttribute("SHA1", GetChecksum("some content"), path),
+                }),
+            };
+
+            var viewCompiler = GetViewCompiler(fileProvider, precompiledViews: new[] { precompiledView });
+            viewCompiler.AllowRecompilingViewsOnFileChange = true;
+
             // Act - 1
             var result = await viewCompiler.CompileAsync(path);
 
             // Assert - 1
             Assert.Same(precompiledView.Item, result.Item);
+            Assert.NotEmpty(result.ExpirationTokens);
 
             // Act - 2
             fileInfo.Content = "some other content";
@@ -427,6 +526,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             };
 
             var viewCompiler = GetViewCompiler(fileProvider, precompiledViews: new[] { precompiledView });
+            viewCompiler.AllowRecompilingViewsOnFileChange = true;
 
             // Act - 1
             var result = await viewCompiler.CompileAsync(path);
@@ -463,6 +563,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             };
 
             var viewCompiler = GetViewCompiler(fileProvider, precompiledViews: new[] { precompiledView });
+            viewCompiler.AllowRecompilingViewsOnFileChange = true;
             viewCompiler.Compile = _ => expected1;
 
             // Act - 1
@@ -504,6 +605,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             };
 
             var viewCompiler = GetViewCompiler(fileProvider, precompiledViews: new[] { precompiledView });
+            viewCompiler.AllowRecompilingViewsOnFileChange = true;
 
             // Act - 1
             var result = await viewCompiler.CompileAsync(path);
