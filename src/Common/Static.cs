@@ -115,6 +115,10 @@ namespace Common
                     {
                         return "IISIntegration";
                     }
+                    else if (name.StartsWith("Microsoft.Extensions.Options"))
+                    {
+                        return "Options";
+                    }
                     else if (name.StartsWith("System.Buffers.Tests", StringComparison.OrdinalIgnoreCase) ||
                              name.StartsWith("System.IO.Pipelines.Tests", StringComparison.OrdinalIgnoreCase) ||
                              name.StartsWith("Microsoft.Extensions.Internal.Test", StringComparison.OrdinalIgnoreCase))
