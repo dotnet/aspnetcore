@@ -6,9 +6,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing.Internal;
-using Microsoft.AspNetCore.Routing.Matching;
 using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -17,14 +17,17 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Routing
 {
-    internal class DefaultLinkGenerator : LinkGenerator
+    internal sealed class DefaultLinkGenerator : LinkGenerator
     {
-        private readonly static char[] UrlQueryDelimiters = new char[] { '?', '#' };
+        private static readonly char[] UrlQueryDelimiters = new char[] { '?', '#' };
         private readonly ParameterPolicyFactory _parameterPolicyFactory;
         private readonly ObjectPool<UriBuildingContext> _uriBuildingContextPool;
         private readonly ILogger<DefaultLinkGenerator> _logger;
         private readonly IServiceProvider _serviceProvider;
-        private readonly RouteOptions _options;
+
+        // A LinkOptions object initialized with the values from RouteOptions
+        // Used when the user didn't specify something more global.
+        private readonly LinkOptions _globalLinkOptions;
 
         public DefaultLinkGenerator(
             ParameterPolicyFactory parameterPolicyFactory,
@@ -35,73 +38,218 @@ namespace Microsoft.AspNetCore.Routing
         {
             _parameterPolicyFactory = parameterPolicyFactory;
             _uriBuildingContextPool = uriBuildingContextPool;
-            _options = routeOptions.Value;
             _logger = logger;
             _serviceProvider = serviceProvider;
+
+            _globalLinkOptions = new LinkOptions()
+            {
+                AppendTrailingSlash = routeOptions.Value.AppendTrailingSlash,
+                LowercaseQueryStrings = routeOptions.Value.LowercaseQueryStrings,
+                LowercaseUrls = routeOptions.Value.LowercaseUrls,
+            };
         }
 
-        public override bool TryGetLink(
-            HttpContext httpContext,
-            string routeName,
-            object values,
-            LinkOptions options,
-            out string link)
-        {
-            return TryGetLinkByRouteValues(
-               httpContext,
-               routeName,
-               values,
-               options,
-               out link);
-        }
-
-        public override bool TryGetLinkByAddress<TAddress>(
+        public override string GetPathByAddress<TAddress>(
             HttpContext httpContext,
             TAddress address,
-            object values,
-            LinkOptions options,
-            out string link)
+            RouteValueDictionary values,
+            FragmentString fragment = default,
+            LinkOptions options = null)
         {
-            return TryGetLinkByAddressInternal(
-                httpContext,
-                address,
-                explicitValues: values,
-                ambientValues: GetAmbientValues(httpContext),
-                options,
-                out link);
+            if (httpContext == null)
+            {
+                throw new ArgumentNullException(nameof(httpContext));
+            }
+
+            var endpoints = GetEndpoints(address);
+            if (endpoints.Count == 0)
+            {
+                return null;
+            }
+
+            return GetPathByEndpoints(
+                endpoints,
+                GetAmbientValues(httpContext),
+                values,
+                httpContext.Request.PathBase,
+                fragment,
+                options);
         }
 
-        public override LinkGenerationTemplate GetTemplate(HttpContext httpContext, string routeName, object values)
+        public override string GetPathByAddress<TAddress>(
+            TAddress address,
+            RouteValueDictionary values,
+            PathString pathBase = default,
+            FragmentString fragment = default,
+            LinkOptions options = null)
         {
-            var ambientValues = GetAmbientValues(httpContext);
-            var explicitValues = new RouteValueDictionary(values);
+            var endpoints = GetEndpoints(address);
+            if (endpoints.Count == 0)
+            {
+                return null;
+            }
 
-            return GetTemplateInternal(
-                httpContext,
-                new RouteValuesAddress
-                {
-                    RouteName = routeName,
-                    ExplicitValues = explicitValues,
-                    AmbientValues = ambientValues
-                },
-                ambientValues,
-                explicitValues,
-                values);
+            return GetPathByEndpoints(
+                endpoints,
+                ambientValues: null,
+                values,
+                pathBase,
+                fragment,
+                options);
         }
 
-        public override LinkGenerationTemplate GetTemplateByAddress<TAddress>(
+        public override string GetUriByAddress<TAddress>(
             HttpContext httpContext,
-            TAddress address)
+            TAddress address,
+            RouteValueDictionary values,
+            FragmentString fragment = default,
+            LinkOptions options = null)
         {
-            return GetTemplateInternal(httpContext, address, values: null);
+            if (httpContext == null)
+            {
+                throw new ArgumentNullException(nameof(httpContext));
+            }
+
+            var endpoints = GetEndpoints(address);
+            if (endpoints.Count == 0)
+            {
+                return null;
+            }
+
+            return GetUriByEndpoints(
+                endpoints,
+                GetAmbientValues(httpContext),
+                values,
+                httpContext.Request.Scheme,
+                httpContext.Request.Host,
+                httpContext.Request.PathBase,
+                fragment,
+                options);
         }
 
-        internal string MakeLink(
+        public override string GetUriByAddress<TAddress>(
+            TAddress address,
+            RouteValueDictionary values,
+            string scheme,
+            HostString host,
+            PathString pathBase = default,
+            FragmentString fragment = default,
+            LinkOptions options = null)
+        {
+            if (!host.HasValue)
+            {
+                throw new ArgumentNullException(nameof(host));
+            }
+
+            var endpoints = GetEndpoints(address);
+            if (endpoints.Count == 0)
+            {
+                return null;
+            }
+
+            return GetUriByEndpoints(
+                endpoints,
+                ambientValues: null,
+                values,
+                scheme,
+                host,
+                pathBase,
+                fragment,
+                options);
+        }
+
+        public override LinkGenerationTemplate GetTemplateByAddress<TAddress>(TAddress address)
+        {
+            var endpoints = GetEndpoints(address);
+            if (endpoints.Count == 0)
+            {
+                return null;
+            }
+
+            return new DefaultLinkGenerationTemplate(this, endpoints);
+        }
+
+        private List<RouteEndpoint> GetEndpoints<TAddress>(TAddress address)
+        {
+            var addressingScheme = _serviceProvider.GetRequiredService<IEndpointFinder<TAddress>>();
+            return addressingScheme.FindEndpoints(address).OfType<RouteEndpoint>().ToList();
+        }
+
+        // Also called from DefaultLinkGenerationTemplate
+        public string GetPathByEndpoints(
+            List<RouteEndpoint> endpoints,
+            RouteValueDictionary ambientValues,
+            RouteValueDictionary values,
+            PathString pathBase,
+            FragmentString fragment,
+            LinkOptions options)
+        {
+            for (var i = 0; i < endpoints.Count; i++)
+            {
+                var endpoint = endpoints[i];
+                if (TryProcessTemplate(
+                    httpContext: null,
+                    endpoint,
+                    ambientValues: ambientValues,
+                    values,
+                    options,
+                    out var result))
+                {
+
+                    return UriHelper.BuildRelative(
+                        pathBase,
+                        result.path,
+                        result.query,
+                        fragment);
+                }
+            }
+
+            return null;
+        }
+
+        // Also called from DefaultLinkGenerationTemplate
+        public string GetUriByEndpoints(
+            List<RouteEndpoint> endpoints,
+            RouteValueDictionary ambientValues,
+            RouteValueDictionary values,
+            string scheme,
+            HostString host,
+            PathString pathBase,
+            FragmentString fragment,
+            LinkOptions options)
+        {
+            for (var i = 0; i < endpoints.Count; i++)
+            {
+                var endpoint = endpoints[i];
+                if (TryProcessTemplate(
+                    httpContext: null,
+                    endpoint,
+                    ambientValues: ambientValues,
+                    values,
+                    options,
+                    out var result))
+                {
+                    return UriHelper.BuildAbsolute(
+                        scheme,
+                        host,
+                        pathBase,
+                        result.path,
+                        result.query,
+                        fragment);
+                }
+            }
+
+            return null;
+        }
+
+        // Internal for testing
+        internal bool TryProcessTemplate(
             HttpContext httpContext,
             RouteEndpoint endpoint,
             RouteValueDictionary ambientValues,
             RouteValueDictionary explicitValues,
-            LinkOptions options)
+            LinkOptions options,
+            out (PathString path, QueryString query) result)
         {
             var templateBinder = new TemplateBinder(
                 UrlEncoder.Default,
@@ -117,118 +265,22 @@ namespace Microsoft.AspNetCore.Routing
             if (templateValuesResult == null)
             {
                 // We're missing one of the required values for this route.
-                return null;
+                result = default;
+                return false;
             }
 
             if (!MatchesConstraints(httpContext, endpoint, templateValuesResult.CombinedValues))
             {
-                return null;
+                result = default;
+                return false;
             }
 
-            var url = templateBinder.BindValues(templateValuesResult.AcceptedValues);
-            return Normalize(url, options);
-        }
-
-        private bool TryGetLinkByRouteValues(
-            HttpContext httpContext,
-            string routeName,
-            object values,
-            LinkOptions options,
-            out string link)
-        {
-            var ambientValues = GetAmbientValues(httpContext);
-
-            var address = new RouteValuesAddress
-            {
-                RouteName = routeName,
-                ExplicitValues = new RouteValueDictionary(values),
-                AmbientValues = ambientValues
-            };
-
-            return TryGetLinkByAddressInternal(
-                httpContext,
-                address,
-                explicitValues: values,
-                ambientValues: ambientValues,
-                options,
-                out link);
-        }
-
-        private bool TryGetLinkByAddressInternal<TAddress>(
-            HttpContext httpContext,
-            TAddress address,
-            object explicitValues,
-            RouteValueDictionary ambientValues,
-            LinkOptions options,
-            out string link)
-        {
-            link = null;
-
-            var endpoints = FindEndpoints(address);
-            if (endpoints == null)
+            if (!templateBinder.TryBindValues(templateValuesResult.AcceptedValues, options, _globalLinkOptions, out result))
             {
                 return false;
             }
 
-            foreach (var endpoint in endpoints)
-            {
-                link = MakeLink(
-                    httpContext,
-                    endpoint,
-                    ambientValues,
-                    new RouteValueDictionary(explicitValues),
-                    options);
-
-                if (link != null)
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        private LinkGenerationTemplate GetTemplateInternal<TAddress>(
-            HttpContext httpContext,
-            TAddress address,
-            object values)
-        {
-            var endpoints = FindEndpoints(address);
-            if (endpoints == null)
-            {
-                return null;
-            }
-
-            var ambientValues = GetAmbientValues(httpContext);
-            var explicitValues = new RouteValueDictionary(values);
-
-            return new DefaultLinkGenerationTemplate(
-                this,
-                endpoints,
-                httpContext,
-                explicitValues,
-                ambientValues);
-        }
-
-        private LinkGenerationTemplate GetTemplateInternal<TAddress>(
-            HttpContext httpContext,
-            TAddress address,
-            RouteValueDictionary ambientValues,
-            RouteValueDictionary explicitValues,
-            object values)
-        {
-            var endpoints = FindEndpoints(address);
-            if (endpoints == null)
-            {
-                return null;
-            }
-
-            return new DefaultLinkGenerationTemplate(
-                this,
-                endpoints,
-                httpContext,
-                explicitValues,
-                ambientValues);
+            return true;
         }
 
         private bool MatchesConstraints(
@@ -260,75 +312,10 @@ namespace Microsoft.AspNetCore.Routing
             return true;
         }
 
-        private string Normalize(string url, LinkOptions options)
+        // Also called from DefaultLinkGenerationTemplate
+        public static RouteValueDictionary GetAmbientValues(HttpContext httpContext)
         {
-            var lowercaseUrls = options?.LowercaseUrls ?? _options.LowercaseUrls;
-            var lowercaseQueryStrings = options?.LowercaseQueryStrings ?? _options.LowercaseQueryStrings;
-            var appendTrailingSlash = options?.AppendTrailingSlash ?? _options.AppendTrailingSlash;
-
-            if (!string.IsNullOrEmpty(url) && (lowercaseUrls || appendTrailingSlash))
-            {
-                var indexOfSeparator = url.IndexOfAny(UrlQueryDelimiters);
-                var urlWithoutQueryString = url;
-                var queryString = string.Empty;
-
-                if (indexOfSeparator != -1)
-                {
-                    urlWithoutQueryString = url.Substring(0, indexOfSeparator);
-                    queryString = url.Substring(indexOfSeparator);
-                }
-
-                if (lowercaseUrls)
-                {
-                    urlWithoutQueryString = urlWithoutQueryString.ToLowerInvariant();
-                }
-
-                if (lowercaseUrls && lowercaseQueryStrings)
-                {
-                    queryString = queryString.ToLowerInvariant();
-                }
-
-                if (appendTrailingSlash && !urlWithoutQueryString.EndsWith("/", StringComparison.Ordinal))
-                {
-                    urlWithoutQueryString += "/";
-                }
-
-                // queryString will contain the delimiter ? or # as the first character, so it's safe to append.
-                url = urlWithoutQueryString + queryString;
-            }
-
-            return url;
-        }
-
-        private RouteValueDictionary GetAmbientValues(HttpContext httpContext)
-        {
-            if (httpContext != null)
-            {
-                var feature = httpContext.Features.Get<IRouteValuesFeature>();
-                if (feature != null)
-                {
-                    return feature.RouteValues;
-                }
-            }
-            return new RouteValueDictionary();
-        }
-
-        private IEnumerable<RouteEndpoint> FindEndpoints<TAddress>(TAddress address)
-        {
-            var finder = _serviceProvider.GetRequiredService<IEndpointFinder<TAddress>>();
-            var endpoints = finder.FindEndpoints(address);
-            if (endpoints == null)
-            {
-                return null;
-            }
-
-            var routeEndpoints = endpoints.OfType<RouteEndpoint>();
-            if (!routeEndpoints.Any())
-            {
-                return null;
-            }
-
-            return routeEndpoints;
+            return httpContext?.Features.Get<IRouteValuesFeature>()?.RouteValues;
         }
     }
 }

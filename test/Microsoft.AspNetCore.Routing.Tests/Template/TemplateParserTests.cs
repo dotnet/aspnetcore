@@ -502,6 +502,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         [InlineData(@"{p1:regex(([}])\w+}")] // Not escaped }
         [InlineData(@"{p1:regex(^\d{{3}}-\d{{3}}-\d{{4}$)}")] // Not escaped }
         [InlineData(@"{p1:regex(abc)")]
+        [ReplaceCulture]
         public void Parse_RegularExpressions_Invalid(string template)
         {
             // Act and Assert
@@ -514,6 +515,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         [Theory]
         [InlineData(@"{p1:regex(^\d{{3}}-\d{{3}}-\d{{{4}}$)}")] // extra {
         [InlineData(@"{p1:regex(^\d{{3}}-\d{{3}}-\d{4}}$)}")] // Not escaped {
+        [ReplaceCulture]
         public void Parse_RegularExpressions_Unescaped(string template)
         {
             // Act and Assert
@@ -529,6 +531,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         [InlineData("{p1?}{p2?}", "p1", "{p2?}")]
         [InlineData("{p1}.{p2?})", "p2", ")")]
         [InlineData("{foorb?}-bar-{z}", "foorb", "-bar-")]
+        [ReplaceCulture]
         public void Parse_ComplexSegment_OptionalParameter_NotTheLastPart(
             string template,
             string parameter,
@@ -548,6 +551,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         [InlineData("..{p2?}", "..")]
         [InlineData("{p1}.abc.{p2?}", ".abc.")]
         [InlineData("{p1}{p2?}", "{p1}")]
+        [ReplaceCulture]
         public void Parse_ComplexSegment_OptionalParametersSeperatedByPeriod_Invalid(string template, string parameter)
         {
             // Act and Assert
@@ -559,6 +563,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
+        [ReplaceCulture]
         public void InvalidTemplate_WithRepeatedParameter()
         {
             var ex = ExceptionAssert.Throws<ArgumentException>(
@@ -574,6 +579,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         [InlineData("{{p1}")]
         [InlineData("{p1}}")]
         [InlineData("p1}}p2{")]
+        [ReplaceCulture]
         public void InvalidTemplate_WithMismatchedBraces(string template)
         {
             ExceptionAssert.Throws<ArgumentException>(
@@ -584,6 +590,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
+        [ReplaceCulture]
         public void InvalidTemplate_CannotHaveCatchAllInMultiSegment()
         {
             ExceptionAssert.Throws<ArgumentException>(
@@ -594,6 +601,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
+        [ReplaceCulture]
         public void InvalidTemplate_CannotHaveMoreThanOneCatchAll()
         {
             ExceptionAssert.Throws<ArgumentException>(
@@ -604,6 +612,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
+        [ReplaceCulture]
         public void InvalidTemplate_CannotHaveMoreThanOneCatchAllInMultiSegment()
         {
             ExceptionAssert.Throws<ArgumentException>(
@@ -614,6 +623,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
+        [ReplaceCulture]
         public void InvalidTemplate_CannotHaveCatchAllWithNoName()
         {
             ExceptionAssert.Throws<ArgumentException>(
@@ -635,6 +645,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         [InlineData("{p{{}", "p{")]
         [InlineData("{p}}}", "p}")]
         [InlineData("{p/}", "p/")]
+        [ReplaceCulture]
         public void ParseRouteParameter_ThrowsIf_ParameterContainsSpecialCharacters(
             string template,
             string parameterName)
@@ -652,6 +663,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
+        [ReplaceCulture]
         public void InvalidTemplate_CannotHaveConsecutiveOpenBrace()
         {
             ExceptionAssert.Throws<ArgumentException>(
@@ -662,6 +674,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
+        [ReplaceCulture]
         public void InvalidTemplate_CannotHaveConsecutiveCloseBrace()
         {
             ExceptionAssert.Throws<ArgumentException>(
@@ -672,6 +685,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
+        [ReplaceCulture]
         public void InvalidTemplate_SameParameterTwiceThrows()
         {
             ExceptionAssert.Throws<ArgumentException>(
@@ -682,6 +696,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
+        [ReplaceCulture]
         public void InvalidTemplate_SameParameterTwiceAndOneCatchAllThrows()
         {
             ExceptionAssert.Throws<ArgumentException>(
@@ -692,6 +707,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
+        [ReplaceCulture]
         public void InvalidTemplate_InvalidParameterNameWithCloseBracketThrows()
         {
             ExceptionAssert.Throws<ArgumentException>(
@@ -702,6 +718,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
+        [ReplaceCulture]
         public void InvalidTemplate_InvalidParameterNameWithOpenBracketThrows()
         {
             ExceptionAssert.Throws<ArgumentException>(
@@ -711,6 +728,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
+        [ReplaceCulture]
         public void InvalidTemplate_InvalidParameterNameWithEmptyNameThrows()
         {
             ExceptionAssert.Throws<ArgumentException>(
@@ -723,6 +741,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
+        [ReplaceCulture]
         public void InvalidTemplate_InvalidParameterNameWithQuestionThrows()
         {
             ExceptionAssert.Throws<ArgumentException>(
@@ -735,6 +754,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
+        [ReplaceCulture]
         public void InvalidTemplate_ConsecutiveSeparatorsSlashSlashThrows()
         {
             ExceptionAssert.Throws<ArgumentException>(
@@ -745,6 +765,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
+        [ReplaceCulture]
         public void InvalidTemplate_WithCatchAllNotAtTheEndThrows()
         {
             ExceptionAssert.Throws<ArgumentException>(
@@ -755,6 +776,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
+        [ReplaceCulture]
         public void InvalidTemplate_RepeatedParametersThrows()
         {
             ExceptionAssert.Throws<ArgumentException>(
@@ -777,6 +799,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
+        [ReplaceCulture]
         public void InvalidTemplate_CannotStartWithTilde()
         {
             ExceptionAssert.Throws<ArgumentException>(
@@ -786,6 +809,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
+        [ReplaceCulture]
         public void InvalidTemplate_CannotContainQuestionMark()
         {
             ExceptionAssert.Throws<ArgumentException>(
@@ -796,6 +820,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
+        [ReplaceCulture]
         public void InvalidTemplate_ParameterCannotContainQuestionMark_UnlessAtEnd()
         {
             ExceptionAssert.Throws<ArgumentException>(
@@ -808,6 +833,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
+        [ReplaceCulture]
         public void InvalidTemplate_CatchAllMarkedOptional()
         {
             ExceptionAssert.Throws<ArgumentException>(

@@ -103,13 +103,13 @@ namespace RoutingSample.Web
                         response.StatusCode = 200;
                         response.ContentType = "text/plain";
                         return response.WriteAsync(
-                            "Link: " + linkGenerator.GetLink(httpContext, "WithSingleAsteriskCatchAll", new { }));
+                            "Link: " + linkGenerator.GetPathByRouteValues(httpContext, "WithSingleAsteriskCatchAll", new { }));
                     },
                     "/WithSingleAsteriskCatchAll/{*path}",
                     "WithSingleAsteriskCatchAll",
                     new object[]
                     {
-                        new RouteValuesAddressMetadata(name: "WithSingleAsteriskCatchAll", requiredValues: new RouteValueDictionary()),
+                        new RouteValuesAddressMetadata(routeName: "WithSingleAsteriskCatchAll", requiredValues: new RouteValueDictionary()),
                     });
                 builder.MapEndpoint(
                     (httpContext) =>
@@ -120,13 +120,13 @@ namespace RoutingSample.Web
                         response.StatusCode = 200;
                         response.ContentType = "text/plain";
                         return response.WriteAsync(
-                            "Link: " + linkGenerator.GetLink(httpContext, "WithDoubleAsteriskCatchAll", new { }));
+                            "Link: " + linkGenerator.GetPathByRouteValues(httpContext, "WithDoubleAsteriskCatchAll", new { }));
                     },
                     "/WithDoubleAsteriskCatchAll/{**path}",
                     "WithDoubleAsteriskCatchAll",
                     new object[]
                     {
-                        new RouteValuesAddressMetadata(name: "WithDoubleAsteriskCatchAll", requiredValues: new RouteValueDictionary())
+                        new RouteValuesAddressMetadata(routeName: "WithDoubleAsteriskCatchAll", requiredValues: new RouteValueDictionary())
                     });
             });
 

@@ -57,9 +57,10 @@ namespace Microsoft.AspNetCore.Routing.LinkGeneration
         [Benchmark]
         public void EndpointRouting()
         {
-            var actualUrl = _linkGenerator.GetLink(
+            var actualUrl = _linkGenerator.GetPathByRouteValues(
                 _requestContext.HttpContext,
-                values: new RouteValueDictionary(_lookUpValues));
+                routeName: null,
+                values: _lookUpValues);
 
             AssertUrl("/repos/aspnet/routing/issues/comments/20202", actualUrl);
         }

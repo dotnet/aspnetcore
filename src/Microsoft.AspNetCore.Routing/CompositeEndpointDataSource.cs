@@ -142,7 +142,7 @@ namespace Microsoft.AspNetCore.Routing
                         sb.Append(" }");
                         var routeValuesAddressMetadata = routeEndpoint.Metadata.GetMetadata<IRouteValuesAddressMetadata>();
                         sb.Append(", Route Name: ");
-                        sb.Append(routeValuesAddressMetadata?.Name);
+                        sb.Append(routeValuesAddressMetadata?.RouteName);
                         if (routeValuesAddressMetadata?.RequiredValues != null)
                         {
                             sb.Append(", Required Values: new { ");

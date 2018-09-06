@@ -147,7 +147,7 @@ namespace Microsoft.AspNetCore.Routing
                 RequiredLinkValues = new RouteValueDictionary(routeValuesAddressMetadata?.RequiredValues),
                 RouteTemplate = new RouteTemplate(endpoint.RoutePattern),
                 Data = endpoint,
-                RouteName = routeValuesAddressMetadata?.Name,
+                RouteName = routeValuesAddressMetadata?.RouteName,
             };
             entry.Defaults = new RouteValueDictionary(endpoint.RoutePattern.Defaults);
             return entry;

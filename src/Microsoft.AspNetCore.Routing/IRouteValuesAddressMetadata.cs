@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Routing
 {
     public interface IRouteValuesAddressMetadata
     {
-        string Name { get; }
+        string RouteName { get; }
         IReadOnlyDictionary<string, object> RequiredValues { get; }
     }
 }
