@@ -50,7 +50,7 @@ public class HubConnection {
                 if (handshakeResponse.error != null) {
                     String errorMessage = "Error in handshake " + handshakeResponse.error;
                     logger.log(LogLevel.Error, errorMessage);
-                    throw new Exception(errorMessage);
+                    throw new HubException(errorMessage);
                 }
                 handshakeReceived = true;
 

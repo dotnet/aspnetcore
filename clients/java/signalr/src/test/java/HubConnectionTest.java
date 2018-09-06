@@ -14,6 +14,9 @@ import static org.junit.Assert.*;
 public class HubConnectionTest {
     private static final String RECORD_SEPARATOR = "\u001e";
 
+    @Rule
+    public ExpectedException exceptionRule = ExpectedException.none();
+
     @Test
     public void checkHubConnectionState() throws Exception {
         Transport mockTransport = new MockTransport();
@@ -38,6 +41,18 @@ public class HubConnectionTest {
         mockTransport.receiveMessage("{\"type\":7,\"error\": \"There was an error\"}" + RECORD_SEPARATOR);
 
         assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
+    }
+
+    @Test
+    public void HubConnectionReceiveHandshakeResponseWithError() throws Exception {
+        exceptionRule.expect(HubException.class);
+        exceptionRule.expectMessage("Requested protocol 'messagepack' is not available.");
+
+        MockTransport mockTransport = new MockTransport();
+        HubConnection hubConnection = new HubConnection("http://example.com", mockTransport);
+
+        hubConnection.start();
+        mockTransport.receiveMessage("{\"error\": \"Requested protocol 'messagepack' is not available.\"}" + RECORD_SEPARATOR);
     }
 
     @Test
@@ -672,9 +687,6 @@ public class HubConnectionTest {
         hubConnection.stop();
         assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
     }
-
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
 
     @Test
     public void CannotSendBeforeStart() throws Exception {
