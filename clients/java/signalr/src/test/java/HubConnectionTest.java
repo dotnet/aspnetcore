@@ -49,10 +49,10 @@ public class HubConnectionTest {
         exceptionRule.expectMessage("Requested protocol 'messagepack' is not available.");
 
         MockTransport mockTransport = new MockTransport();
-        HubConnection hubConnection = new HubConnection("http://example.com", mockTransport);
+        HubConnection hubConnection = new HubConnection("http://example.com", mockTransport, true);
 
         hubConnection.start();
-        mockTransport.receiveMessage("{\"error\": \"Requested protocol 'messagepack' is not available.\"}" + RECORD_SEPARATOR);
+        mockTransport.receiveMessage("{\"error\":\"Requested protocol 'messagepack' is not available.\"}" + RECORD_SEPARATOR);
     }
 
     @Test
