@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.DataProtection
         }
     }
 }
-#elif NETCOREAPP2_2
+#elif NETCOREAPP3_0
 #else
 #error Target framework needs to be updated
 #endif

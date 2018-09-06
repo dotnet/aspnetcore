@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
             ExceptionAssert2.ThrowsCryptographicException(() =>
                 AnonymousImpersonation.Run(() => decryptor.Decrypt(encryptedXmlInfo.EncryptedElement)));
         }
-#elif NETCOREAPP2_2
+#elif NETCOREAPP3_0
 #else
 #error Target framework needs to be updated
 #endif

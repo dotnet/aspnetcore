@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Cryptography.KeyDerivation
     {
 
 #if NET461
-#elif NETCOREAPP2_2
+#elif NETCOREAPP3_0
         // The 'numBytesRequested' parameters below are chosen to exercise code paths where
         // this value straddles the digest length of the PRF. We only use 5 iterations so
         // that our unit tests are fast.
