@@ -26,6 +26,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
         private readonly List<(RoutePatternPathSegment pathSegment, int segmentIndex)> _complexSegments;
         private readonly List<KeyValuePair<string, IRouteConstraint>> _constraints;
 
+        private int _stateIndex;
+
         public DfaMatcherBuilder(
             ParameterPolicyFactory parameterPolicyFactory,
             EndpointSelector selector,
@@ -273,22 +275,29 @@ namespace Microsoft.AspNetCore.Routing.Matching
         {
             var root = BuildDfaTree();
 
+            // State count is the number of nodes plus an exit state
+            var stateCount = 1;
             var maxSegmentCount = 0;
-            root.Visit((node) => maxSegmentCount = Math.Max(maxSegmentCount, node.PathDepth));
+            root.Visit((node) =>
+            {
+                stateCount++;
+                maxSegmentCount = Math.Max(maxSegmentCount, node.PathDepth);
+            });
+            _stateIndex = 0;
 
             // The max segment count is the maximum path-node-depth +1. We need
             // the +1 to capture any additional content after the 'last' segment.
             maxSegmentCount++;
 
-            var states = new List<DfaState>();
-            var tableBuilders = new List<(JumpTableBuilder pathBuilder, PolicyJumpTableBuilder policyBuilder)>();
+            var states = new DfaState[stateCount];
+            var tableBuilders = new (JumpTableBuilder pathBuilder, PolicyJumpTableBuilder policyBuilder)[stateCount];
             AddNode(root, states, tableBuilders);
 
-            var exit = states.Count;
-            states.Add(new DfaState(Array.Empty<Candidate>(), null, null));
-            tableBuilders.Add((new JumpTableBuilder() { DefaultDestination = exit, ExitDestination = exit, }, null));
+            var exit = stateCount - 1;
+            states[exit] = new DfaState(Array.Empty<Candidate>(), null, null);
+            tableBuilders[exit] = (new JumpTableBuilder() { DefaultDestination = exit, ExitDestination = exit, }, null);
 
-            for (var i = 0; i < tableBuilders.Count; i++)
+            for (var i = 0; i < tableBuilders.Length; i++)
             {
                 if (tableBuilders[i].pathBuilder?.DefaultDestination == JumpTableBuilder.InvalidDestination)
                 {
@@ -306,31 +315,31 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 }
             }
 
-            for (var i = 0; i < states.Count; i++)
+            for (var i = 0; i < states.Length; i++)
             {
                 states[i] = new DfaState(
-                    states[i].Candidates, 
+                    states[i].Candidates,
                     tableBuilders[i].pathBuilder?.Build(),
                     tableBuilders[i].policyBuilder?.Build());
             }
 
-            return new DfaMatcher(_selector, states.ToArray(), maxSegmentCount);
+            return new DfaMatcher(_selector, states, maxSegmentCount);
         }
 
         private int AddNode(
             DfaNode node,
-            List<DfaState> states,
-            List<(JumpTableBuilder pathBuilder, PolicyJumpTableBuilder policyBuilder)> tableBuilders)
+            DfaState[] states,
+            (JumpTableBuilder pathBuilder, PolicyJumpTableBuilder policyBuilder)[] tableBuilders)
         {
             node.Matches?.Sort(_comparer);
 
-            var stateIndex = states.Count;
+            var currentStateIndex = _stateIndex;
 
             var candidates = CreateCandidates(node.Matches);
-            states.Add(new DfaState(candidates, null, null));
+            states[currentStateIndex] = new DfaState(candidates, null, null);
 
             var pathBuilder = new JumpTableBuilder();
-            tableBuilders.Add((pathBuilder, null));
+            tableBuilders[currentStateIndex] = (pathBuilder, null);
 
             if (node.Literals != null)
             {
@@ -377,7 +386,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             if (node.PolicyEdges != null && node.PolicyEdges.Count > 0)
             {
                 var policyBuilder = new PolicyJumpTableBuilder(node.NodeBuilder);
-                tableBuilders[stateIndex] = (pathBuilder, policyBuilder);
+                tableBuilders[currentStateIndex] = (pathBuilder, policyBuilder);
 
                 foreach (var kvp in node.PolicyEdges)
                 {
@@ -385,12 +394,20 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 }
             }
 
-            return stateIndex;
+            return currentStateIndex;
 
             int Transition(DfaNode next)
             {
                 // Break cycles
-                return ReferenceEquals(node, next) ? stateIndex : AddNode(next, states, tableBuilders);
+                if (ReferenceEquals(node, next))
+                {
+                    return _stateIndex;
+                }
+                else
+                {
+                    _stateIndex++;
+                    return AddNode(next, states, tableBuilders);
+                }
             }
         }
 
