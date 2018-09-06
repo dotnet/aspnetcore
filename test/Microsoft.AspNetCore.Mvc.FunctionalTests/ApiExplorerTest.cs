@@ -1359,7 +1359,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task ApiConvention_ForActionWtihApiConventionMethod()
+        public async Task ApiConvention_ForActionWithApiConventionMethod()
         {
             // Arrange
             var expectedMediaTypes = new[] { "application/json", "application/xml", "text/json", "text/xml" };

@@ -251,7 +251,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         }
 
         [Fact]
-        public void CreateHandlerMethods_CopiesParameterDecriptorsFromParameterModel()
+        public void CreateHandlerMethods_CopiesParameterDescriptorsFromParameterModel()
         {
             // Arrange
             var actionDescriptor = new PageActionDescriptor();

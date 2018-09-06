@@ -377,7 +377,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var matcherEndpoint = Assert.IsType<RouteEndpoint>(endpoint);
             var routeValuesAddressNameMetadata = matcherEndpoint.Metadata.GetMetadata<IRouteValuesAddressMetadata>();
             Assert.NotNull(routeValuesAddressNameMetadata);
-            Assert.Equal(string.Empty, routeValuesAddressNameMetadata.Name);
+            Assert.Equal(string.Empty, routeValuesAddressNameMetadata.RouteName);
         }
 
         [Fact]
@@ -402,7 +402,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     var matcherEndpoint = Assert.IsType<RouteEndpoint>(ep);
                     var routeValuesAddressMetadata = matcherEndpoint.Metadata.GetMetadata<IRouteValuesAddressMetadata>();
                     Assert.NotNull(routeValuesAddressMetadata);
-                    Assert.Equal("namedRoute", routeValuesAddressMetadata.Name);
+                    Assert.Equal("namedRoute", routeValuesAddressMetadata.RouteName);
                     Assert.Equal("named/Home/Index/{id?}", matcherEndpoint.RoutePattern.RawText);
                 },
                 (ep) =>
@@ -410,7 +410,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     var matcherEndpoint = Assert.IsType<RouteEndpoint>(ep);
                     var routeValuesAddressMetadata = matcherEndpoint.Metadata.GetMetadata<IRouteValuesAddressMetadata>();
                     Assert.NotNull(routeValuesAddressMetadata);
-                    Assert.Equal("namedRoute", routeValuesAddressMetadata.Name);
+                    Assert.Equal("namedRoute", routeValuesAddressMetadata.RouteName);
                     Assert.Equal("named/Products/Details/{id?}", matcherEndpoint.RoutePattern.RawText);
                 });
         }

@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 "testController",
                 "testAction");
             actionDescriptor.RouteValues.Add("randomKey", "testRandom");
-            var descriptorCollectionProvider = CreateActionDesciprtorCollectionProvider(actionDescriptor);
+            var descriptorCollectionProvider = CreateActionDescriptorCollectionProvider(actionDescriptor);
 
             var services = new ServiceCollection();
             services.AddRouting();
@@ -214,7 +214,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 "testAction");
             actionDescriptor.RouteValues.Add("randomKey", "testRandom");
 
-            var provider = CreateActionDesciprtorCollectionProvider(actionDescriptor);
+            var provider = CreateActionDescriptorCollectionProvider(actionDescriptor);
 
             var constraint = new KnownRouteValueConstraint(provider);
 
@@ -235,7 +235,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 
         private static HttpContext GetHttpContext(ActionDescriptor actionDescriptor, bool setupRequestServices = true)
         {
-            var descriptorCollectionProvider = CreateActionDesciprtorCollectionProvider(actionDescriptor);
+            var descriptorCollectionProvider = CreateActionDescriptorCollectionProvider(actionDescriptor);
 
             var context = new Mock<HttpContext>();
             if (setupRequestServices)
@@ -247,7 +247,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             return context.Object;
         }
 
-        private static IActionDescriptorCollectionProvider CreateActionDesciprtorCollectionProvider(ActionDescriptor actionDescriptor)
+        private static IActionDescriptorCollectionProvider CreateActionDescriptorCollectionProvider(ActionDescriptor actionDescriptor)
         {
             var actionProvider = new Mock<IActionDescriptorProvider>(MockBehavior.Strict);
 

@@ -201,6 +201,68 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             }
         }
 
+        /// <summary>
+        /// Generates a URI from the provided components.
+        /// </summary>
+        /// <param name="protocol">The URI scheme/protocol.</param>
+        /// <param name="host">The URI host.</param>
+        /// <param name="path">The URI path and remaining portions (path, query, and fragment).</param>
+        /// <returns>
+        /// An absolute URI if the <paramref name="protocol"/> or <paramref name="host"/> is specified, otherwise generates a
+        /// URI with an absolute path.
+        /// </returns>
+        protected string GenerateUrl(string protocol, string host, string path)
+        {
+            // This method is similar to GenerateUrl, but it's used for EndpointRouting. It ignores pathbase and fragment
+            // because those have already been incorporated.
+            if (path == null)
+            {
+                return null;
+            }
+
+            // Perf: In most of the common cases, GenerateUrl is called with a null protocol, host and fragment.
+            // In such cases, we might not need to build any URL as the url generated is mostly same as the virtual path available in pathData.
+            // For such common cases, this FastGenerateUrl method saves a string allocation per GenerateUrl call.
+            string url;
+            if (TryFastGenerateUrl(protocol, host, path, fragment: null, out url))
+            {
+                return url;
+            }
+
+            var builder = GetStringBuilder();
+            try
+            {
+                if (string.IsNullOrEmpty(protocol) && string.IsNullOrEmpty(host))
+                {
+                    AppendPathAndFragment(builder, pathBase: null, path, fragment: null);
+
+                    // We're returning a partial URL (just path + query + fragment), but we still want it to be rooted.
+                    if (builder.Length == 0 || builder[0] != '/')
+                    {
+                        builder.Insert(0, '/');
+                    }
+                }
+                else
+                {
+                    protocol = string.IsNullOrEmpty(protocol) ? "http" : protocol;
+                    builder.Append(protocol);
+
+                    builder.Append("://");
+
+                    host = string.IsNullOrEmpty(host) ? ActionContext.HttpContext.Request.Host.Value : host;
+                    builder.Append(host);
+                    AppendPathAndFragment(builder, pathBase: null, path, fragment: null);
+                }
+
+                return builder.ToString();
+            }
+            finally
+            {
+                // Clear the StringBuilder so that it can reused for the next call.
+                builder.Clear();
+            }
+        }
+
         // for unit testing
         internal static void AppendPathAndFragment(StringBuilder builder, PathString pathBase, string virtualPath, string fragment)
         {

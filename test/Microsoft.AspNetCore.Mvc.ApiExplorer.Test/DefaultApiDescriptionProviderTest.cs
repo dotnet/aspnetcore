@@ -1565,10 +1565,10 @@ namespace Microsoft.AspNetCore.Mvc.Description
         }
 
         [Fact]
-        public void GetApiDescription_ParameterDescription_RedundentMetadata_NotMergedWithParent()
+        public void GetApiDescription_ParameterDescription_RedundantMetadata_NotMergedWithParent()
         {
             // Arrange
-            var action = CreateActionDescriptor(nameof(AcceptsRedundentMetadata));
+            var action = CreateActionDescriptor(nameof(AcceptsRedundantMetadata));
             var parameterDescriptor = action.Parameters.Single();
 
             // Act
@@ -1590,7 +1590,7 @@ namespace Microsoft.AspNetCore.Mvc.Description
         }
 
         [Fact]
-        public void GetApiDescription_ParameterDescription_RedundentMetadata_WithParameterMetadata()
+        public void GetApiDescription_ParameterDescription_RedundantMetadata_WithParameterMetadata()
         {
             // Arrange
             var action = CreateActionDescriptor(nameof(AcceptsPerson));
@@ -2081,7 +2081,7 @@ namespace Microsoft.AspNetCore.Mvc.Description
         {
         }
 
-        private void AcceptsRedundentMetadata([FromQuery] RedundentMetadata r)
+        private void AcceptsRedundantMetadata([FromQuery] RedundentMetadata r)
         {
         }
 

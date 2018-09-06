@@ -1422,7 +1422,7 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary`1[AspNetCore.InjectedPa
         }
 
         [Fact]
-        public async Task ViewDataAvaialableInPageFilter_AfterHandlerMethod_ReturnsPageResult()
+        public async Task ViewDataAwaitableInPageFilter_AfterHandlerMethod_ReturnsPageResult()
         {
             // Act
             var content = await Client.GetStringAsync("http://localhost/Pages/ViewDataAvailableAfterHandlerExecuted");

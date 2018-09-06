@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 
         public bool IsFull => Count == Capacity;
 
-        // Very common trival method; nudge it to inline https://github.com/aspnet/Mvc/pull/8339
+        // Very common trivial method; nudge it to inline https://github.com/aspnet/Mvc/pull/8339
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Append(ViewBufferValue value) => Buffer[Count++] = value;
     }

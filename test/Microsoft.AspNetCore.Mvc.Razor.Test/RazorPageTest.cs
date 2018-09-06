@@ -303,7 +303,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
 
                     Assert.Equal(1, bufferScope.CreatedBuffers.Count);
                     Assert.Equal(0, bufferScope.ReturnedBuffers.Count);
-                    v.Write("Level:1-A"); // Creates a new buffer for the taghelper.
+                    v.Write("Level:1-A"); // Creates a new buffer for the TagHelper.
                     Assert.Equal(2, bufferScope.CreatedBuffers.Count);
                     Assert.Equal(0, bufferScope.ReturnedBuffers.Count);
 
@@ -318,7 +318,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
 
                     Assert.Equal(2, bufferScope.CreatedBuffers.Count);
                     Assert.Equal(0, bufferScope.ReturnedBuffers.Count);
-                    v.Write(outputLevel1); // Writing the taghelper to output returns a buffer.
+                    v.Write(outputLevel1); // Writing the TagHelper to output returns a buffer.
                     Assert.Equal(2, bufferScope.CreatedBuffers.Count);
                     Assert.Equal(1, bufferScope.ReturnedBuffers.Count);
                 }
@@ -335,7 +335,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
 
                     Assert.Equal(2, bufferScope.CreatedBuffers.Count);
                     Assert.Equal(1, bufferScope.ReturnedBuffers.Count);
-                    v.Write("Level:1-B"); // Creates a new buffer for the taghelper.
+                    v.Write("Level:1-B"); // Creates a new buffer for the TagHelper.
                     Assert.Equal(3, bufferScope.CreatedBuffers.Count);
                     Assert.Equal(1, bufferScope.ReturnedBuffers.Count);
 
@@ -351,7 +351,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
 
                         Assert.Equal(3, bufferScope.CreatedBuffers.Count);
                         Assert.Equal(1, bufferScope.ReturnedBuffers.Count);
-                        v.Write("Level:2"); // Creates a new buffer for the taghelper.
+                        v.Write("Level:2"); // Creates a new buffer for the TagHelper.
                         Assert.Equal(4, bufferScope.CreatedBuffers.Count);
                         Assert.Equal(1, bufferScope.ReturnedBuffers.Count);
 
@@ -366,7 +366,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
 
                         Assert.Equal(4, bufferScope.CreatedBuffers.Count);
                         Assert.Equal(1, bufferScope.ReturnedBuffers.Count);
-                        v.Write(outputLevel2); // Writing the taghelper to output returns a buffer.
+                        v.Write(outputLevel2); // Writing the TagHelper to output returns a buffer.
                         Assert.Equal(4, bufferScope.CreatedBuffers.Count);
                         Assert.Equal(2, bufferScope.ReturnedBuffers.Count);
                     }
@@ -382,7 +382,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
 
                     Assert.Equal(4, bufferScope.CreatedBuffers.Count);
                     Assert.Equal(2, bufferScope.ReturnedBuffers.Count);
-                    v.Write(outputLevel1); // Writing the taghelper to output returns a buffer.
+                    v.Write(outputLevel1); // Writing the TagHelper to output returns a buffer.
                     Assert.Equal(4, bufferScope.CreatedBuffers.Count);
                     Assert.Equal(3, bufferScope.ReturnedBuffers.Count);
                 }

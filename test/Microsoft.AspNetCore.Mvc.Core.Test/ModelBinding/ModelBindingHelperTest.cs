@@ -607,7 +607,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         }
 
         [Fact]
-        public async Task TryUpdataModel_ModelTypeDifferentFromModel_Throws()
+        public async Task TryUpdateModel_ModelTypeDifferentFromModel_Throws()
         {
             // Arrange
             var metadataProvider = new EmptyModelMetadataProvider();

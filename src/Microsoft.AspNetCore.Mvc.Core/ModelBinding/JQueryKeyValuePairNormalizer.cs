@@ -9,7 +9,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
-    // Normalizes keys, in a keyvaluepair collection, from jQuery format to a format that MVC understands.
+    // Normalizes keys, in a KeyValuePair collection, from jQuery format to a format that MVC understands.
     internal static class JQueryKeyValuePairNormalizer
     {
         public static IDictionary<string, StringValues> GetValues(

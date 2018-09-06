@@ -138,10 +138,12 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             ActionModel action)
         {
             var defaultControllerConstraints = Enumerable.Empty<IActionConstraintMetadata>();
+            var defaultControllerEndpointMetadata = Enumerable.Empty<object>();
             if (controller.Selectors.Count > 0)
             {
                 defaultControllerConstraints = controller.Selectors[0].ActionConstraints
                     .Where(constraint => !(constraint is IRouteTemplateProvider));
+                defaultControllerEndpointMetadata = controller.Selectors[0].EndpointMetadata;
             }
 
             var actionDescriptors = new List<ControllerActionDescriptor>();
@@ -164,8 +166,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
                 AddActionConstraints(actionDescriptor, actionSelector, controllerConstraints);
 
-                // REVIEW: Need to get metadata from controller
-                actionDescriptor.EndpointMetadata = actionSelector.EndpointMetadata.ToList();
+                // Metadata for the action is more significant so order it before the controller metadata
+                var actionDescriptorMetadata = actionSelector.EndpointMetadata.ToList();
+                actionDescriptorMetadata.AddRange(defaultControllerEndpointMetadata);
+
+                actionDescriptor.EndpointMetadata = actionDescriptorMetadata;
             }
 
             return actionDescriptors;

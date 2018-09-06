@@ -404,7 +404,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(expected2, response2.Trim());
 
             // Act - 3
-            // Resend the cookiesless request and cached result from the first response.
+            // Resend the cookieless request and cached result from the first response.
             var response3 = await Client.GetStringAsync("/catalog/cart?correlationid=3");
 
             // Assert - 3

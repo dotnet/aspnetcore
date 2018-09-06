@@ -520,7 +520,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         public void OnProvidersExecuting_UsesTheFirstDescriptorForEachPath()
         {
             // ViewsFeature may contain duplicate entries for the same Page - for instance when an app overloads a library's views.
-            // It picks the first entry for each path. In the ordinary case, this should ensure that the app's Razor Pages are prefered
+            // It picks the first entry for each path. In the ordinary case, this should ensure that the app's Razor Pages are preferred
             // to a Razor Page added by a library.
 
             // Arrange

@@ -1316,7 +1316,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             {
                 { model, new ValidationStateEntry() }
             };
-            var method = GetType().GetMethod(nameof(Validate_Throws_ForTopLeveleMetadataData), BindingFlags.NonPublic | BindingFlags.Instance);
+            var method = GetType().GetMethod(nameof(Validate_Throws_ForTopLevelMetadataData), BindingFlags.NonPublic | BindingFlags.Instance);
             var metadata = MetadataProvider.GetMetadataForParameter(method.GetParameters()[0]);
 
             // Act & Assert
@@ -1465,7 +1465,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             void DoSomething();
         }
 
-        private void Validate_Throws_ForTopLeveleMetadataData(DepthObject depthObject) { }
+        private void Validate_Throws_ForTopLevelMetadataData(DepthObject depthObject) { }
 
         // Custom validation attribute that returns multiple entries in ValidationResult.MemberNames and those member
         // names are indexers. An example scenario is an attribute that confirms all entries in a list are unique.

@@ -159,7 +159,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         }
 
         [Fact]
-        public void IsNameMatch_WithPrefix_ReturnsFalse_IfNameIsNotProperPrfix()
+        public void IsNameMatch_WithPrefix_ReturnsFalse_IfNameIsNotProperPrefix()
         {
             // Arrange
             var name = "Postman";
@@ -303,7 +303,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         }
 
         [Fact]
-        public async Task IsTypeMatch_WithAssinableFrom_ReturnsTrueForDerived()
+        public async Task IsTypeMatch_WithAssignableFrom_ReturnsTrueForDerived()
         {
             // Arrange
             var compilation = await GetCompilationAsync();
@@ -320,7 +320,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         }
 
         [Fact]
-        public async Task IsTypeMatch_WithAssinableFrom_ReturnsFalseForBaseTypes()
+        public async Task IsTypeMatch_WithAssignableFrom_ReturnsFalseForBaseTypes()
         {
             // Arrange
             var compilation = await GetCompilationAsync();
@@ -336,7 +336,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         }
 
         [Fact]
-        public async Task IsTypeMatch_WithAssinableFrom_ReturnsFalseForUnrelated()
+        public async Task IsTypeMatch_WithAssignableFrom_ReturnsFalseForUnrelated()
         {
             // Arrange
             var compilation = await GetCompilationAsync();
@@ -396,7 +396,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         }
 
         [Fact]
-        public Task IsMatch_ReturnsTrue_IfMethodNameAndParametersMatchs()
+        public Task IsMatch_ReturnsTrue_IfMethodNameAndParametersMatches()
         {
             // Arrange
             var methodName = nameof(TestController.Get);

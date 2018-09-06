@@ -181,7 +181,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         {
             private List<Action<BindingMetadata>> _bindingActions = new List<Action<BindingMetadata>>();
             private List<Action<DisplayMetadata>> _displayActions = new List<Action<DisplayMetadata>>();
-            private List<Action<ValidationMetadata>> _valiationActions = new List<Action<ValidationMetadata>>();
+            private List<Action<ValidationMetadata>> _validationActions = new List<Action<ValidationMetadata>>();
 
             private readonly ModelMetadataIdentity _key;
 
@@ -216,7 +216,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             {
                 if (_key.Equals(context.Key))
                 {
-                    foreach (var action in _valiationActions)
+                    foreach (var action in _validationActions)
                     {
                         action(context.ValidationMetadata);
                     }
@@ -237,7 +237,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             public IMetadataBuilder ValidationDetails(Action<ValidationMetadata> action)
             {
-                _valiationActions.Add(action);
+                _validationActions.Add(action);
                 return this;
             }
         }
