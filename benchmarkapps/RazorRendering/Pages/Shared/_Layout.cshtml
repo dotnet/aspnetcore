@@ -1,0 +1,31 @@
+@model Pages.Page
+
+@RenderSection("Subcategories")
+<div class="dialog-title-icon @Model.PageIcon"></div>
+<div class="dialog-title">@Model.PageTitle</div>
+@{
+    var hasTabs = IsSectionDefined("Tabs");
+}
+<div class="dialog-body@(hasTabs ? "-tabs" : "")">
+    @if (hasTabs)
+    {
+        <div class="dialog-tabs">
+            @RenderSection("Tabs", required: false)
+        </div>
+    }
+    <div class="dialog-parch-bottom@(hasTabs ? " tabs" : "")">
+        <div id="contentScroll" tabindex="20" class="dialog-parch-scroll@(hasTabs ? " tabs" : "")">
+            <div class="dialog-parch-left">
+                <div class="dialog-parch-right">
+                    <div id="contentWindow" class="dialog-parch@(hasTabs ? " tabs" : "")">
+                        @RenderBody()
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="dialog-parch-shadow@(hasTabs ? " tabs" : "")"></div>
+    </div>
+</div>
+<div class="dialog-close-icon icon_close"></div>
+<div class="dialog-bottom-left-edge"></div>
+<div class="dialog-bottom-edge"></div>
