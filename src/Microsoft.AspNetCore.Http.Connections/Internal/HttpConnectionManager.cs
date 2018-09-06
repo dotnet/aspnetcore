@@ -10,7 +10,6 @@ using System.IO;
 using System.IO.Pipelines;
 using System.Net.WebSockets;
 using System.Security.Cryptography;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Internal;
@@ -36,9 +35,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         {
             _logger = loggerFactory.CreateLogger<HttpConnectionManager>();
             _connectionLogger = loggerFactory.CreateLogger<HttpConnectionContext>();
+            _nextHeartbeat = new TimerAwaitable(_heartbeatTickRate, _heartbeatTickRate);
+
+            // Register these last as the callbacks could run immediately
             appLifetime.ApplicationStarted.Register(() => Start());
             appLifetime.ApplicationStopping.Register(() => CloseConnections());
-            _nextHeartbeat = new TimerAwaitable(_heartbeatTickRate, _heartbeatTickRate);
         }
 
         public void Start()

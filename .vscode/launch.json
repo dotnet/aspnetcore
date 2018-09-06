@@ -1,7 +1,16 @@
 {
     "version": "0.2.0",
     "configurations": [
-
+        {
+            "type": "java",
+            "name": "Java - Debug (Launch)",
+            "request": "launch",
+            "cwd": "${workspaceFolder}/clients/java/",
+            "console": "externalTerminal",
+            "stopOnEntry": false,
+            "mainClass": "com.microsoft.aspnet.signalr.Chat",
+            "args": ""
+        },
         {
             "type": "node",
             "request": "attach",
