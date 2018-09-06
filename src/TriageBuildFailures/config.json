@@ -110,7 +110,8 @@
       },
       {
         "Name": "StaticFiles",
-        "IssuesOnHomeRepo": true
+        "IssuesOnHomeRepo": true,
+        "Manager": "muratg"
       },
       {
         "Name": "Templating",
