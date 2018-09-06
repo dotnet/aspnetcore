@@ -203,7 +203,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
         }
 
         [Fact]
-        public void GetDescriptors_CopiesEndPointMetadataFromModel()
+        public void GetDescriptors_CopiesEndpointMetadataFromModel()
         {
             // Arrange
             var expected = new object();

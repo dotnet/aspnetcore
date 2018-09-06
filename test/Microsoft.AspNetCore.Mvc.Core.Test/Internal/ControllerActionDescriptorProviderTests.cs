@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
@@ -253,6 +254,33 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
+        public void GetDescriptors_EndpointMetadata_ContainsAttributesFromActionAndController()
+        {
+            // Arrange & Act
+            var descriptors = GetDescriptors(
+                typeof(AuthorizeController).GetTypeInfo());
+
+            // Assert
+            Assert.Equal(2, descriptors.Count());
+
+            var anonymousAction = Assert.Single(descriptors, a => a.RouteValues["action"] == "AllowAnonymousAction");
+
+            Assert.NotNull(anonymousAction.EndpointMetadata);
+
+            Assert.Collection(anonymousAction.EndpointMetadata,
+                metadata => Assert.IsType<AllowAnonymousAttribute>(metadata),
+                metadata => Assert.IsType<AuthorizeAttribute>(metadata));
+
+            var authorizeAction = Assert.Single(descriptors, a => a.RouteValues["action"] == "AuthorizeAction");
+
+            Assert.NotNull(authorizeAction.EndpointMetadata);
+
+            Assert.Collection(authorizeAction.EndpointMetadata,
+                metadata => Assert.Equal("ActionPolicy", Assert.IsType<AuthorizeAttribute>(metadata).Policy),
+                metadata => Assert.Equal("ControllerPolicy", Assert.IsType<AuthorizeAttribute>(metadata).Policy));
+        }
+
+        [Fact]
         public void GetDescriptors_ActionWithHttpMethods_AddedToEndpointMetadata()
         {
             // Arrange & Act
@@ -272,7 +300,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
                     Assert.False(httpMethodMetadata.AcceptCorsPreflight);
                     Assert.Equal("GET", Assert.Single(httpMethodMetadata.HttpMethods));
-                });
+                },
+                metadata => Assert.IsType<RouteAttribute>(metadata));
         }
 
         [Fact]
@@ -1863,6 +1892,16 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         {
             [HttpGet("AttributeRoute")]
             public void AttributeRoutedAction() { }
+        }
+
+        [Authorize("ControllerPolicy")]
+        private class AuthorizeController
+        {
+            [AllowAnonymous]
+            public void AllowAnonymousAction() { }
+
+            [Authorize("ActionPolicy")]
+            public void AuthorizeAction() { }
         }
 
         private class EmptyController
