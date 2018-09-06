@@ -6,7 +6,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.ApiDescription.Client.Properties;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -21,7 +20,7 @@ namespace Microsoft.Extensions.ApiDescription.Client.Commands
             var entryPointType = assembly.EntryPoint?.DeclaringType;
             if (entryPointType == null)
             {
-                Reporter.WriteError(Resources.MissingEntryPoint(context.AssemblyPath));
+                Reporter.WriteError(Resources.FormatMissingEntryPoint(context.AssemblyPath));
                 return 2;
             }
 
@@ -68,9 +67,9 @@ namespace Microsoft.Extensions.ApiDescription.Client.Commands
                 GetDocumentCommand.FallbackService :
                 context.Service;
 
-            Reporter.WriteInformation(Resources.UsingDocument(documentName));
-            Reporter.WriteInformation(Resources.UsingMethod(methodName));
-            Reporter.WriteInformation(Resources.UsingService(serviceName));
+            Reporter.WriteInformation(Resources.FormatUsingDocument(documentName));
+            Reporter.WriteInformation(Resources.FormatUsingMethod(methodName));
+            Reporter.WriteInformation(Resources.FormatUsingService(serviceName));
 
             try
             {
@@ -93,7 +92,7 @@ namespace Microsoft.Extensions.ApiDescription.Client.Commands
 
                 if (!success)
                 {
-                    var message = Resources.MethodInvocationFailed(methodName, serviceName, documentName);
+                    var message = Resources.FormatMethodInvocationFailed(methodName, serviceName, documentName);
                     if (string.IsNullOrEmpty(context.Uri) && !File.Exists(context.Output))
                     {
                         Reporter.WriteError(message);
@@ -126,7 +125,7 @@ namespace Microsoft.Extensions.ApiDescription.Client.Commands
         {
 
             Debug.Assert(!string.IsNullOrEmpty(context.Uri));
-            Reporter.WriteInformation(Resources.UsingUri(context.Uri));
+            Reporter.WriteInformation(Resources.FormatUsingUri(context.Uri));
 
             var httpClient = server.CreateClient();
             await DownloadFileCore.DownloadAsync(

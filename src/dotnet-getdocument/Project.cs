@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using Microsoft.Extensions.ApiDescription.Client.Properties;
 using IODirectory = System.IO.Directory;
 
 namespace Microsoft.Extensions.ApiDescription.Client
@@ -82,7 +81,7 @@ namespace Microsoft.Extensions.ApiDescription.Client
             {
                 using (var output = File.OpenWrite(propsPath))
                 {
-                    Reporter.WriteVerbose(Resources.WritingFile(propsPath));
+                    Reporter.WriteVerbose(Resources.FormatWritingFile(propsPath));
                     input.CopyTo(output);
                 }
             }
@@ -93,7 +92,7 @@ namespace Microsoft.Extensions.ApiDescription.Client
                 using (var output = File.OpenWrite(targetsPath))
                 {
                     // NB: Copy always in case it changes
-                    Reporter.WriteVerbose(Resources.WritingFile(targetsPath));
+                    Reporter.WriteVerbose(Resources.FormatWritingFile(targetsPath));
                     input.CopyTo(output);
                 }
             }
@@ -171,17 +170,17 @@ namespace Microsoft.Extensions.ApiDescription.Client
 
             if (string.IsNullOrEmpty(project.AssemblyPath))
             {
-                throw new CommandException(Resources.GetMetadataValueFailed(nameof(AssemblyPath), "TargetPath"));
+                throw new CommandException(Resources.FormatGetMetadataValueFailed(nameof(AssemblyPath), "TargetPath"));
             }
 
             if (string.IsNullOrEmpty(project.Directory))
             {
-                throw new CommandException(Resources.GetMetadataValueFailed(nameof(Directory), "ProjectDir"));
+                throw new CommandException(Resources.FormatGetMetadataValueFailed(nameof(Directory), "ProjectDir"));
             }
 
             if (string.IsNullOrEmpty(project.OutputPath))
             {
-                throw new CommandException(Resources.GetMetadataValueFailed(nameof(OutputPath), "OutDir"));
+                throw new CommandException(Resources.FormatGetMetadataValueFailed(nameof(OutputPath), "OutDir"));
             }
 
             if (!Path.IsPathRooted(project.Directory))

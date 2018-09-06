@@ -4,7 +4,6 @@
 using System;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.Extensions.ApiDescription.Client.Commands;
-using Microsoft.Extensions.ApiDescription.Client.Properties;
 
 namespace Microsoft.Extensions.ApiDescription.Client
 {

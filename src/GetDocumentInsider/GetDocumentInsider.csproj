@@ -17,23 +17,4 @@
     <Compile Include="../Microsoft.Extensions.ApiDescription.Client/ILogWrapper.cs" />
     <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="$(MicrosoftAspNetCoreTestHost20PackageVersion)" />
   </ItemGroup>
-
-  <ItemGroup>
-    <None Update="Properties/Resources.Designer.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-    </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Update="Properties/Resources.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Resources.Designer.tt</DependentUpon>
-    </Compile>
-  </ItemGroup>
 </Project>

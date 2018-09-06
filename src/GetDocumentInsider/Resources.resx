@@ -124,7 +124,7 @@
     <value>Show JSON output.</value>
   </data>
   <data name="MissingOption" xml:space="preserve">
-    <value>Missing required option '--{option}'.</value>
+    <value>Missing required option '--{0}'.</value>
   </data>
   <data name="NoColorDescription" xml:space="preserve">
     <value>Do not colorize output.</value>
@@ -136,22 +136,22 @@
     <value>Prefix console output with logging level.</value>
   </data>
   <data name="UsingApplicationBase" xml:space="preserve">
-    <value>Using application base '{appBase}'.</value>
+    <value>Using application base '{0}'.</value>
   </data>
   <data name="UsingAssembly" xml:space="preserve">
-    <value>Using assembly '{assembly}'.</value>
+    <value>Using assembly '{0}'.</value>
   </data>
   <data name="UsingConfigurationFile" xml:space="preserve">
-    <value>Using configuration file '{config}'.</value>
+    <value>Using configuration file '{0}'.</value>
   </data>
   <data name="VerboseDescription" xml:space="preserve">
     <value>Show verbose output.</value>
   </data>
   <data name="WritingFile" xml:space="preserve">
-    <value>Writing '{file}'...</value>
+    <value>Writing '{0}'...</value>
   </data>
   <data name="UsingWorkingDirectory" xml:space="preserve">
-    <value>Using working directory '{workingDirectory}'.</value>
+    <value>Using working directory '{0}'.</value>
   </data>
   <data name="ToolsDirectoryDescription" xml:space="preserve">
     <value>Location from which inside man was copied (in the .NET Framework case) or loaded.</value>
@@ -160,33 +160,33 @@
     <value>The URI to download the document from.</value>
   </data>
   <data name="MethodDescription" xml:space="preserve">
-    <value>The name of the method to invoke on the '--service' instance. Default value '{defaultMethod}'.</value>
+    <value>The name of the method to invoke on the '--service' instance. Default value '{0}'.</value>
   </data>
   <data name="ServiceDescription" xml:space="preserve">
-    <value>The qualified name of the service type to retrieve from dependency injection. Default value '{defaultService}'.</value>
+    <value>The qualified name of the service type to retrieve from dependency injection. Default value '{0}'.</value>
   </data>
   <data name="MissingOptions" xml:space="preserve">
-    <value>Missing required option '--{option1}' or '--{option2}'.</value>
+    <value>Missing required option '--{0}' or '--{1}'.</value>
   </data>
   <data name="DocumentDescription" xml:space="preserve">
-    <value>The name of the document to pass to the '--method' method. Default value '{defaultDocumentName}'.</value>
+    <value>The name of the document to pass to the '--method' method. Default value '{0}'.</value>
   </data>
   <data name="UsingDocument" xml:space="preserve">
-    <value>Using document name '{documentName}'.</value>
+    <value>Using document name '{0}'.</value>
   </data>
   <data name="UsingMethod" xml:space="preserve">
-    <value>Using method '{method}'.</value>
+    <value>Using method '{0}'.</value>
   </data>
   <data name="UsingService" xml:space="preserve">
-    <value>Using service '{service}'.</value>
+    <value>Using service '{0}'.</value>
   </data>
   <data name="UsingUri" xml:space="preserve">
-    <value>Using URI '{uri}'.</value>
+    <value>Using URI '{0}'.</value>
   </data>
   <data name="MethodInvocationFailed" xml:space="preserve">
-    <value>Method '{method}' of service '{service}' failed to generate document '{documentName}'.</value>
+    <value>Method '{0}' of service '{1}' failed to generate document '{2}'.</value>
   </data>
   <data name="MissingEntryPoint" xml:space="preserve">
-    <value>Assembly '{assemblyPath}' does not contain an entry point.</value>
+    <value>Assembly '{0}' does not contain an entry point.</value>
   </data>
 </root>
