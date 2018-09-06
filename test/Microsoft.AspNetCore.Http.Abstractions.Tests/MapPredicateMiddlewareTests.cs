@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Builder.Extensions
 
     public class MapPredicateMiddlewareTests
     {
-        private static readonly Predicate NotImplementedPredicate = new Predicate(envionment => { throw new NotImplementedException(); });
+        private static readonly Predicate NotImplementedPredicate = new Predicate(environment => { throw new NotImplementedException(); });
 
         private static Task Success(HttpContext context)
         {

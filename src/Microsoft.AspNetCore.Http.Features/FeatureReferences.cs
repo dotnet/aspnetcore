@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Http.Features
             }
             else if (flush)
             {
-                // Cache was cleared, but item retrived from current Collection for version
+                // Cache was cleared, but item retrieved from current Collection for version
                 // so use passed in revision rather than making another virtual call
                 Revision = revision;
             }

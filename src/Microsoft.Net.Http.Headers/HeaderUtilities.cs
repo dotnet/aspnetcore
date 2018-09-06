@@ -143,7 +143,7 @@ namespace Microsoft.Net.Http.Headers
                 }
             }
 
-            // Since we never re-use a "found" value in 'y', we expecte 'alreadyFound' to have all fields set to 'true'.
+            // Since we never re-use a "found" value in 'y', we expected 'alreadyFound' to have all fields set to 'true'.
             // Otherwise the two collections can't be equal and we should not get here.
             Contract.Assert(Contract.ForAll(alreadyFound, value => { return value; }),
                 "Expected all values in 'alreadyFound' to be true since collections are considered equal.");

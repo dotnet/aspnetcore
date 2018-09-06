@@ -221,7 +221,7 @@ namespace Microsoft.AspNetCore.Http.Features
                             //
                             // value
 
-                            // Do not limit the key name length here because the mulipart headers length limit is already in effect.
+                            // Do not limit the key name length here because the multipart headers length limit is already in effect.
                             var key = formDataSection.Name;
                             var value = await formDataSection.GetValueAsync();
 

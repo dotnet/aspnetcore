@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <summary>
         /// Returns the scheme that will be used by default for <see cref="IAuthenticationService.SignOutAsync(HttpContext, string, AuthenticationProperties)"/>.
         /// This is typically specified via <see cref="AuthenticationOptions.DefaultSignOutScheme"/>.
-        /// Otherwise this will fallback to <see cref="GetDefaultSignInSchemeAsync"/> if that supoorts sign out.
+        /// Otherwise this will fallback to <see cref="GetDefaultSignInSchemeAsync"/> if that supports sign out.
         /// </summary>
         /// <returns>The scheme that will be used by default for <see cref="IAuthenticationService.SignOutAsync(HttpContext, string, AuthenticationProperties)"/>.</returns>
         public virtual Task<AuthenticationScheme> GetDefaultSignOutSchemeAsync()
