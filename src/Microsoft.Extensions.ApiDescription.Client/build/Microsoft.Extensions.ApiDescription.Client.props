@@ -6,49 +6,32 @@
     <_ApiDescriptionTasksAssemblyPath>$(MSBuildThisFileDirectory)/../tasks/$(_ApiDescriptionTasksAssemblyTarget)/Microsoft.Extensions.ApiDescription.Client.dll</_ApiDescriptionTasksAssemblyPath>
     <_ApiDescriptionTasksAssemblyTarget />
   </PropertyGroup>
+  <UsingTask TaskName="GetCurrentItems" AssemblyFile="$(_ApiDescriptionTasksAssemblyPath)" />
   <UsingTask TaskName="GetFileReferenceMetadata" AssemblyFile="$(_ApiDescriptionTasksAssemblyPath)" />
   <UsingTask TaskName="GetProjectReferenceMetadata" AssemblyFile="$(_ApiDescriptionTasksAssemblyPath)" />
   <UsingTask TaskName="GetUriReferenceMetadata" AssemblyFile="$(_ApiDescriptionTasksAssemblyPath)" />
   <UsingTask TaskName="Microsoft.Extensions.ApiDescription.Client.DownloadFile" AssemblyFile="$(_ApiDescriptionTasksAssemblyPath)" />
 
+  <!-- Settings users may update as they see fit. -->
   <PropertyGroup>
-    <ServiceProjectReferenceCheckIfNewer Condition="'$(ServiceProjectReferenceCheckIfNewer)' == ''">true</ServiceProjectReferenceCheckIfNewer>
+    <ServiceProjectReferenceCheckIfNewer
+        Condition="'$(ServiceProjectReferenceCheckIfNewer)' == ''">true</ServiceProjectReferenceCheckIfNewer>
     <ServiceProjectReferenceDirectory
-      Condition="'$(ServiceProjectReferenceDirectory)' != ''">$([MSBuild]::EnsureTrailingSlash('$(ServiceProjectReferenceDirectory)'))</ServiceProjectReferenceDirectory>
+        Condition="'$(ServiceProjectReferenceDirectory)' != ''">$([MSBuild]::EnsureTrailingSlash('$(ServiceProjectReferenceDirectory)'))</ServiceProjectReferenceDirectory>
 
-    <ServiceUriReferenceCheckIfNewer Condition="'$(ServiceUriReferenceCheckIfNewer)' == ''">true</ServiceUriReferenceCheckIfNewer>
+    <ServiceUriReferenceCheckIfNewer
+        Condition="'$(ServiceUriReferenceCheckIfNewer)' == ''">true</ServiceUriReferenceCheckIfNewer>
     <ServiceUriReferenceDirectory
-      Condition="'$(ServiceUriReferenceDirectory)' != ''">$([MSBuild]::EnsureTrailingSlash('$(ServiceUriReferenceDirectory)'))</ServiceUriReferenceDirectory>
+        Condition="'$(ServiceUriReferenceDirectory)' != ''">$([MSBuild]::EnsureTrailingSlash('$(ServiceUriReferenceDirectory)'))</ServiceUriReferenceDirectory>
 
-    <ServiceFileReferenceCheckIfNewer Condition="'$(ServiceFileReferenceCheckIfNewer)' == ''">true</ServiceFileReferenceCheckIfNewer>
+    <ServiceFileReferenceCheckIfNewer
+        Condition="'$(ServiceFileReferenceCheckIfNewer)' == ''">true</ServiceFileReferenceCheckIfNewer>
     <ServiceFileReferenceDirectory
-      Condition="'$(ServiceFileReferenceDirectory)' != ''">$([MSBuild]::EnsureTrailingSlash('$(ServiceFileReferenceDirectory)'))</ServiceFileReferenceDirectory>
-    <ServiceFileReferenceCSharpNamespace Condition="'$(ServiceFileReferenceCSharpNamespace)' == ''">$(RootNamespace)</ServiceFileReferenceCSharpNamespace>
-    <ServiceFileReferenceTypeScriptNamespace Condition="'$(ServiceFileReferenceTypeScriptNamespace)' == ''">$(RootNamespace)</ServiceFileReferenceTypeScriptNamespace>
-
-    <DefaultDocumentGeneratorDependsOn>
-      _DefaultDocumentGenerator_GetMetadata;
-      _DefaultDocumentGenerator_Core;
-      _DefaultDocumentGenerator_SetMetadata
-    </DefaultDocumentGeneratorDependsOn>
-    <ServiceProjectReferenceGeneratorDependsOn>
-      _ServiceProjectReferenceGenerator_GetTargetFramework;
-      _ServiceProjectReferenceGenerator_GetProjectTargetPath;
-      _ServiceProjectReferenceGenerator_Restore;
-      _ServiceProjectReferenceGenerator_Build;
-      _ServiceProjectReferenceGenerator_Core
-    </ServiceProjectReferenceGeneratorDependsOn>
-    <ServiceUriReferenceGeneratorDependsOn>
-      _ServiceUriReferenceGenerator_GetMetadata;
-      _ServiceUriReferenceGenerator_Core
-    </ServiceUriReferenceGeneratorDependsOn>
-    <ServiceFileReferenceGeneratorDependsOn>
-      _CheckServiceReferences;
-      ServiceProjectReferenceGenerator;
-      ServiceUriReferenceGenerator;
-      _ServiceFileReferenceGenerator_GetMetadata;
-      _ServiceFileReferenceGenerator_Core
-    </ServiceFileReferenceGeneratorDependsOn>
+        Condition="'$(ServiceFileReferenceDirectory)' != ''">$([MSBuild]::EnsureTrailingSlash('$(ServiceFileReferenceDirectory)'))</ServiceFileReferenceDirectory>
+    <ServiceFileReferenceCSharpNamespace
+        Condition="'$(ServiceFileReferenceCSharpNamespace)' == ''">$(RootNamespace)</ServiceFileReferenceCSharpNamespace>
+    <ServiceFileReferenceTypeScriptNamespace
+        Condition="'$(ServiceFileReferenceTypeScriptNamespace)' == ''">$(RootNamespace)</ServiceFileReferenceTypeScriptNamespace>
   </PropertyGroup>
 
   <!--
@@ -59,6 +42,33 @@
     <ServiceProjectReference>
       <!-- Name of the API description document generator. -->
       <DocumentGenerator>Default</DocumentGenerator>
+
+      <!-- Server project metadata which is likely applicable to all document generators. -->
+
+      <!--
+        Full path of the project's generated assembly. Corresponds to $(TargetPath). Because common code builds server
+        projects, file exists prior to document generator invocation.
+      -->
+      <ProjectAssemblyPath />
+      <!-- Server project's chosen configuration. Likely matches client project's configuration. -->
+      <ProjectConfiguration />
+      <!--
+        Server project's extensions path. Corresponds to $(MSBuildProjectExtensionsPath). User must set this if
+        server project's value is not 'obj/'.
+      -->
+      <ProjectExtensionsPath />
+      <!-- Runtime identifier to use when building the server project. -->
+      <ProjectRuntimeIdentifier />
+      <!-- Server project's target framework. Defaults to $(TargetFramewok) or first of $(TargetFrameworks). -->
+      <ProjectTargetFramework />
+
+      <!-- Metadata specific to the Default document generator (though other document generators are free to use it). -->
+
+      <!--
+        Options added to Default document generator tool's command line. Defaults to
+        $(DefaultDocumentGeneratorDefaultOptions) if that is set in the client project.
+      -->
+      <DefaultDocumentGeneratorOptions />
       <!--
         Name of the document to generate. Passed to the %(Method) when using Default document generator. Default is set
         in server project, falling back to "v1".
@@ -84,36 +94,19 @@
         the %(Service) fails. Default is set in server project and metadata has no further fallback.
       -->
       <Uri />
-
-      <!--
-        Full path of the project's generated assembly. Corresponds to $(TargetPath). Because common code builds server
-        projects, file exists prior to document generator invocation.
-      -->
-      <ProjectAssemblyPath />
-      <!-- Server project's chosen configuration. Likely matches client project's configuration. -->
-      <ProjectConfiguration />
-      <!--
-        Server project's extensions path. Corresponds to $(MSBuildProjectExtensionsPath). Must set this if project's
-        value is not 'obj/'.
-      -->
-      <ProjectExtensionsPath />
-      <!-- Runtime identifier to use when building the server project. -->
-      <ProjectRuntimeIdentifier />
-      <!-- Server project's target framework. Defaults to $(TargetFramewok) or first of $(TargetFrameworks). -->
-      <ProjectTargetFramework />
     </ServiceProjectReference>
 
     <ServiceUriReference>
       <!--
         Full path where the API description document is placed. Default filename is based on %(Identity).
-        Filenames and relative paths (if explicitly set) are combined with $(ServiceProjectReferenceDirectory).
+        Filenames and relative paths (if explicitly set) are combined with $(ServiceUriReferenceDirectory).
       -->
       <DocumentPath />
     </ServiceUriReference>
 
     <ServiceFileReference>
-      <!-- Name of the class to generate. -->
-      <ClassName>%(Filename)Client</ClassName>
+      <!-- Name of the class to generate. Defaults to %(Filename)Client but with an uppercase first letter. -->
+      <ClassName />
       <!-- Code generator to use. Required. -->
       <CodeGenerator />
       <!--
@@ -124,7 +117,7 @@
       <!--
         Path to place generated code. Code generator may interpret path as a filename or directory. Default filename or
         folder name is %(ClassName).[cs|ts]. Filenames and relative paths (if explicitly set) are combined with
-        $(ServiceProjectReferenceDirectory).
+        $(ServiceFileReferenceDirectory).
       -->
       <OutputPath />
     </ServiceFileReference>

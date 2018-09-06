@@ -52,6 +52,8 @@ namespace Microsoft.Extensions.ApiDescription.Client
                     outputPath = className + (isTypeScript ? ".ts" : ".cs");
                 }
 
+                // Add metadata which may be used as a property and passed to an inner build.
+                newItem.SetMetadata("SerializedMetadata", MetadataSerializer.SerializeMetadata(newItem));
                 outputPath = GetFullPath(outputPath);
                 newItem.SetMetadata("OutputPath", outputPath);
             }

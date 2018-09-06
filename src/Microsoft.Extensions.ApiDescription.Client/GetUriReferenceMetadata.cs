@@ -95,7 +95,7 @@ namespace Microsoft.Extensions.ApiDescription.Client
                 }
 
                 documentPath = GetFullPath(documentPath);
-                newItem.SetMetadata("DocumentPath", documentPath);
+                MetadataSerializer.SetMetadata(newItem, "DocumentPath", documentPath);
             }
 
             Outputs = outputs.ToArray();

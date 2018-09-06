@@ -61,18 +61,21 @@ namespace Microsoft.Extensions.ApiDescription.Client
                 if (string.IsNullOrEmpty(@namespace))
                 {
                     @namespace = isTypeScript ? CSharpNamespace : TypeScriptNamespace;
-                    newItem.SetMetadata("Namespace", @namespace);
+                    MetadataSerializer.SetMetadata(newItem, "Namespace", @namespace);
                 }
 
                 var outputPath = item.GetMetadata("OutputPath");
                 if (string.IsNullOrEmpty(outputPath))
                 {
                     var className = item.GetMetadata("ClassName");
-                    outputPath = className + (isTypeScript ? ".ts" : ".cs");
+                    outputPath = $"{className}{(isTypeScript ? ".ts" : ".cs")}";
                 }
 
                 outputPath = GetFullPath(outputPath);
-                newItem.SetMetadata("OutputPath", outputPath);
+                MetadataSerializer.SetMetadata(newItem, "OutputPath", outputPath);
+
+                // Add metadata which may be used as a property and passed to an inner build.
+                newItem.SetMetadata("SerializedMetadata", MetadataSerializer.SerializeMetadata(newItem));
             }
 
             Outputs = outputs.ToArray();
