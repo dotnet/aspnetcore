@@ -1,6 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="no"?>
 <Project>
-  <Import Project="NSwagServiceReference.targets" />
   <Target Name="_CheckServiceReferences">
     <Error Condition="'@(ServiceProjectReference)' != '' AND '%(ServiceProjectReference.CodeGenerator)' == ''"
         Text="ServiceProjectReference items '@(ServiceProjectReference)' lack CodeGenerator metadata." />
