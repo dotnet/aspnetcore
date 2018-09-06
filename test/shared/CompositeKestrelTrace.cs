@@ -153,16 +153,16 @@ namespace Microsoft.AspNetCore.Testing
             _trace2.RequestBodyDrainTimedOut(connectionId, traceIdentifier);
         }
 
-        public void RequestBodyMininumDataRateNotSatisfied(string connectionId, string traceIdentifier, double rate)
+        public void RequestBodyMinimumDataRateNotSatisfied(string connectionId, string traceIdentifier, double rate)
         {
-            _trace1.RequestBodyMininumDataRateNotSatisfied(connectionId, traceIdentifier, rate);
-            _trace2.RequestBodyMininumDataRateNotSatisfied(connectionId, traceIdentifier, rate);
+            _trace1.RequestBodyMinimumDataRateNotSatisfied(connectionId, traceIdentifier, rate);
+            _trace2.RequestBodyMinimumDataRateNotSatisfied(connectionId, traceIdentifier, rate);
         }
 
-        public void ResponseMininumDataRateNotSatisfied(string connectionId, string traceIdentifier)
+        public void ResponseMinimumDataRateNotSatisfied(string connectionId, string traceIdentifier)
         {
-            _trace1.ResponseMininumDataRateNotSatisfied(connectionId, traceIdentifier);
-            _trace2.ResponseMininumDataRateNotSatisfied(connectionId, traceIdentifier);
+            _trace1.ResponseMinimumDataRateNotSatisfied(connectionId, traceIdentifier);
+            _trace2.ResponseMinimumDataRateNotSatisfied(connectionId, traceIdentifier);
         }
 
         public void ApplicationAbortedConnection(string connectionId, string traceIdentifier)

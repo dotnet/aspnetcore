@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
     public class ConfigurationReaderTests
     {
         [Fact]
-        public void ReadCertificatesWhenNoCertificatsSection_ReturnsEmptyCollection()
+        public void ReadCertificatesWhenNoCertificatesSection_ReturnsEmptyCollection()
         {
             var config = new ConfigurationBuilder().AddInMemoryCollection().Build();
             var reader = new ConfigurationReader(config);

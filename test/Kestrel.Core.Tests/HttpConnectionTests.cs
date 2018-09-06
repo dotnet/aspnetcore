@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _httpConnection.Debugger = mockDebugger.Object;
             var bytesPerSecond = 100;
             var mockLogger = new Mock<IKestrelTrace>();
-            mockLogger.Setup(l => l.RequestBodyMininumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<double>())).Throws(new InvalidOperationException("Should not log"));
+            mockLogger.Setup(l => l.RequestBodyMinimumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<double>())).Throws(new InvalidOperationException("Should not log"));
 
             TickBodyWithMinimumDataRate(mockLogger.Object, bytesPerSecond);
 
@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             // Timed out
             Assert.True(_httpConnection.RequestTimedOut);
             mockLogger.Verify(logger =>
-                logger.RequestBodyMininumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>(), bytesPerSecond), Times.Once);
+                logger.RequestBodyMinimumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>(), bytesPerSecond), Times.Once);
         }
 
         private void TickBodyWithMinimumDataRate(IKestrelTrace logger, int bytesPerSecond)
@@ -155,7 +155,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             // Not timed out
             Assert.False(_httpConnection.RequestTimedOut);
             mockLogger.Verify(logger =>
-                logger.RequestBodyMininumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>(), bytesPerSecond), Times.Never);
+                logger.RequestBodyMinimumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>(), bytesPerSecond), Times.Never);
 
             // Tick after grace period w/ low data rate
             now += TimeSpan.FromSeconds(2);
@@ -165,7 +165,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             // Timed out
             Assert.True(_httpConnection.RequestTimedOut);
             mockLogger.Verify(logger =>
-                logger.RequestBodyMininumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>(), bytesPerSecond), Times.Once);
+                logger.RequestBodyMinimumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>(), bytesPerSecond), Times.Once);
         }
 
         [Fact]
@@ -202,7 +202,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             // Not timed out
             Assert.False(_httpConnection.RequestTimedOut);
             mockLogger.Verify(logger =>
-                logger.RequestBodyMininumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>(), bytesPerSecond), Times.Never);
+                logger.RequestBodyMinimumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>(), bytesPerSecond), Times.Never);
 
             // Data rate: 150 bytes/second
             now += TimeSpan.FromSeconds(1);
@@ -212,7 +212,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             // Not timed out
             Assert.False(_httpConnection.RequestTimedOut);
             mockLogger.Verify(logger =>
-                logger.RequestBodyMininumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>(), bytesPerSecond), Times.Never);
+                logger.RequestBodyMinimumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>(), bytesPerSecond), Times.Never);
 
             // Data rate: 120 bytes/second
             now += TimeSpan.FromSeconds(1);
@@ -222,7 +222,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             // Not timed out
             Assert.False(_httpConnection.RequestTimedOut);
             mockLogger.Verify(logger =>
-                logger.RequestBodyMininumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>(), bytesPerSecond), Times.Never);
+                logger.RequestBodyMinimumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>(), bytesPerSecond), Times.Never);
 
             // Data rate: 100 bytes/second
             now += TimeSpan.FromSeconds(1);
@@ -232,7 +232,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             // Not timed out
             Assert.False(_httpConnection.RequestTimedOut);
             mockLogger.Verify(logger =>
-                logger.RequestBodyMininumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>(), bytesPerSecond), Times.Never);
+                logger.RequestBodyMinimumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>(), bytesPerSecond), Times.Never);
 
             // Data rate: ~85 bytes/second
             now += TimeSpan.FromSeconds(1);
@@ -242,7 +242,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             // Timed out
             Assert.True(_httpConnection.RequestTimedOut);
             mockLogger.Verify(logger =>
-                logger.RequestBodyMininumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>(), bytesPerSecond), Times.Once);
+                logger.RequestBodyMinimumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>(), bytesPerSecond), Times.Once);
         }
 
         [Fact]
@@ -285,7 +285,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             // Not timed out
             Assert.False(_httpConnection.RequestTimedOut);
             mockLogger.Verify(
-                logger => logger.RequestBodyMininumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<double>()),
+                logger => logger.RequestBodyMinimumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<double>()),
                 Times.Never);
 
             // Resume at 6.5s
@@ -299,7 +299,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             // Not timed out
             Assert.False(_httpConnection.RequestTimedOut);
             mockLogger.Verify(
-                logger => logger.RequestBodyMininumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<double>()),
+                logger => logger.RequestBodyMinimumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<double>()),
                 Times.Never);
 
             // Tick at 10s, expected counted time is 7s, expected data rate drops below 100 bytes/second
@@ -309,7 +309,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             // Timed out
             Assert.True(_httpConnection.RequestTimedOut);
             mockLogger.Verify(
-                logger => logger.RequestBodyMininumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<double>()),
+                logger => logger.RequestBodyMinimumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<double>()),
                 Times.Once);
         }
 
@@ -341,7 +341,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             // Not timed out
             Assert.False(_httpConnection.RequestTimedOut);
             mockLogger.Verify(
-                logger => logger.RequestBodyMininumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<double>()),
+                logger => logger.RequestBodyMinimumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<double>()),
                 Times.Never);
 
             // Pause at 2.25s
@@ -360,7 +360,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             // Not timed out
             Assert.False(_httpConnection.RequestTimedOut);
             mockLogger.Verify(
-                logger => logger.RequestBodyMininumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<double>()),
+                logger => logger.RequestBodyMinimumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<double>()),
                 Times.Never);
 
             // Tick at 4s, expected counted time is 4s, expected data rate drops below 100 bytes/second
@@ -370,7 +370,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             // Timed out
             Assert.True(_httpConnection.RequestTimedOut);
             mockLogger.Verify(
-                logger => logger.RequestBodyMininumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<double>()),
+                logger => logger.RequestBodyMinimumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<double>()),
                 Times.Once);
         }
 
@@ -539,7 +539,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public async Task WriteTimingAbortsConnectionWhenRepeadtedSmallWritesDoNotCompleteWithMinimumDataRate()
+        public async Task WriteTimingAbortsConnectionWhenRepeatedSmallWritesDoNotCompleteWithMinimumDataRate()
         {
             var systemClock = new MockSystemClock();
             var minResponseDataRate = new MinDataRate(bytesPerSecond: 100, gracePeriod: TimeSpan.FromSeconds(5));

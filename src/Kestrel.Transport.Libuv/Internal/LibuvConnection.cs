@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             (handle, status, state) => ReadCallback(handle, status, state);
 
         private static readonly Func<UvStreamHandle, int, object, LibuvFunctions.uv_buf_t> _allocCallback =
-            (handle, suggestedsize, state) => AllocCallback(handle, suggestedsize, state);
+            (handle, suggestedSize, state) => AllocCallback(handle, suggestedSize, state);
 
         private readonly UvStreamHandle _socket;
         private readonly CancellationTokenSource _connectionClosedTokenSource = new CancellationTokenSource();

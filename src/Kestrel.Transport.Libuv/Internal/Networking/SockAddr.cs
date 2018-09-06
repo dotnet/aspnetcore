@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
             int family = (int)_field0;
             if (PlatformApis.IsDarwin)
             {
-                // see explaination in example 4
+                // see explanation in example 4
                 family = family >> 8;
             }
             family = family & 0xFF;

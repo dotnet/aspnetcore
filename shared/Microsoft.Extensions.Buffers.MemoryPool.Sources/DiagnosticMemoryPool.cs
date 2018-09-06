@@ -24,7 +24,7 @@ namespace System.Buffers
 
         private readonly List<Exception> _blockAccessExceptions;
 
-        private readonly TaskCompletionSource<object> _allBlocksRetuned;
+        private readonly TaskCompletionSource<object> _allBlocksReturned;
 
         private int _totalBlocks;
 
@@ -40,7 +40,7 @@ namespace System.Buffers
             _rentTracking = rentTracking;
             _blocks = new HashSet<DiagnosticPoolBlock>();
             _syncObj = new object();
-            _allBlocksRetuned = new TaskCompletionSource<object>();
+            _allBlocksReturned = new TaskCompletionSource<object>();
             _blockAccessExceptions = new List<Exception>();
         }
 
@@ -138,11 +138,11 @@ namespace System.Buffers
         {
             if (_blockAccessExceptions.Any())
             {
-                _allBlocksRetuned.SetException(CreateAccessExceptions());
+                _allBlocksReturned.SetException(CreateAccessExceptions());
             }
             else
             {
-                _allBlocksRetuned.SetResult(null);
+                _allBlocksReturned.SetResult(null);
             }
         }
 
@@ -153,8 +153,8 @@ namespace System.Buffers
 
         public async Task WhenAllBlocksReturnedAsync(TimeSpan timeout)
         {
-            var task = await Task.WhenAny(_allBlocksRetuned.Task, Task.Delay(timeout));
-            if (task != _allBlocksRetuned.Task)
+            var task = await Task.WhenAny(_allBlocksReturned.Task, Task.Delay(timeout));
+            if (task != _allBlocksReturned.Task)
             {
                 MemoryPoolThrowHelper.ThrowInvalidOperationException_BlocksWereNotReturnedInTime(_totalBlocks - _blocks.Count, _totalBlocks, _blocks.ToArray());
             }

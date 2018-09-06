@@ -470,7 +470,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                 var mockKestrelTrace = new Mock<IKestrelTrace>();
                 mockKestrelTrace
-                    .Setup(trace => trace.ResponseMininumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>()))
+                    .Setup(trace => trace.ResponseMinimumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>()))
                     .Callback(() => responseRateTimeoutMessageLogged.SetResult(null));
                 mockKestrelTrace
                     .Setup(trace => trace.ConnectionStop(It.IsAny<string>()))
@@ -560,7 +560,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             var mockKestrelTrace = new Mock<IKestrelTrace>();
             mockKestrelTrace
-                .Setup(trace => trace.ResponseMininumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>()))
+                .Setup(trace => trace.ResponseMinimumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>()))
                 .Callback(() => responseRateTimeoutMessageLogged.SetResult(null));
             mockKestrelTrace
                 .Setup(trace => trace.ConnectionStop(It.IsAny<string>()))
@@ -645,7 +645,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             var mockKestrelTrace = new Mock<IKestrelTrace>();
             mockKestrelTrace
-                .Setup(trace => trace.ResponseMininumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>()))
+                .Setup(trace => trace.ResponseMinimumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>()))
                 .Callback(() => responseRateTimeoutMessageLogged.SetResult(null));
             mockKestrelTrace
                 .Setup(trace => trace.ConnectionStop(It.IsAny<string>()))
@@ -779,7 +779,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     await AssertStreamCompleted(connection.Stream, minTotalOutputSize, targetBytesPerSecond);
                     await appFuncCompleted.Task.DefaultTimeout();
 
-                    mockKestrelTrace.Verify(t => t.ResponseMininumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>()), Times.Never());
+                    mockKestrelTrace.Verify(t => t.ResponseMinimumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>()), Times.Never());
                     mockKestrelTrace.Verify(t => t.ConnectionStop(It.IsAny<string>()), Times.Once());
                     Assert.False(requestAborted);
                 }
@@ -854,7 +854,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     var targetBytesPerSecond = responseSize / 4;
                     await AssertStreamCompleted(connection.Stream, minTotalOutputSize, targetBytesPerSecond);
 
-                    mockKestrelTrace.Verify(t => t.ResponseMininumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>()), Times.Never());
+                    mockKestrelTrace.Verify(t => t.ResponseMinimumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>()), Times.Never());
                     mockKestrelTrace.Verify(t => t.ConnectionStop(It.IsAny<string>()), Times.Once());
                     Assert.False(requestAborted);
                 }

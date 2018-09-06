@@ -29,9 +29,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl
 
         public void Advance(int bytes)
         {
-            var connectionSucess = _connectionLevelFlowControl.TryAdvance(bytes);
+            var connectionSuccess = _connectionLevelFlowControl.TryAdvance(bytes);
 
-            Debug.Assert(connectionSucess, "Connection-level input flow control should never be aborted.");
+            Debug.Assert(connectionSuccess, "Connection-level input flow control should never be aborted.");
 
             if (!_streamLevelFlowControl.TryAdvance(bytes))
             {
@@ -78,9 +78,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl
 
         private void UpdateConnectionWindow(int bytes)
         {
-            var connectionSucess = _connectionLevelFlowControl.TryUpdateWindow(bytes, out var connectionWindowUpdateSize);
+            var connectionSuccess = _connectionLevelFlowControl.TryUpdateWindow(bytes, out var connectionWindowUpdateSize);
 
-            Debug.Assert(connectionSucess, "Connection-level input flow control should never be aborted.");
+            Debug.Assert(connectionSuccess, "Connection-level input flow control should never be aborted.");
 
             if (connectionWindowUpdateSize > 0)
             {
