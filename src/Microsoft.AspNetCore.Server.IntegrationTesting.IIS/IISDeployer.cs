@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                     !IISDeploymentParameters.HandlerSettings.ContainsKey("debugFile"))
                 {
                     _debugLogFile = Path.GetTempFileName();
-                    IISDeploymentParameters.HandlerSettings["debugLevel"] = "4";
+                    IISDeploymentParameters.HandlerSettings["debugLevel"] = "file";
                     IISDeploymentParameters.HandlerSettings["debugFile"] = _debugLogFile;
                 }
 

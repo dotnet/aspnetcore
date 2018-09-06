@@ -3,17 +3,19 @@
 
 #include "debugutil.h"
 
+#include <array>
 #include <string>
 #include "dbgutil.h"
 #include "stringu.h"
 #include "stringa.h"
-#include "dbgutil.h"
 #include "Environment.h"
 #include "SRWExclusiveLock.h"
 #include "exceptions.h"
 #include "atlbase.h"
 #include "config_utility.h"
 #include "StringHelpers.h"
+#include "aspnetcore_msg.h"
+#include "EventLog.h"
 
 inline HANDLE g_logFile = INVALID_HANDLE_VALUE;
 inline HMODULE g_hModule;
@@ -23,7 +25,7 @@ HRESULT
 PrintDebugHeader()
 {
     // Major, minor are stored in dwFileVersionMS field and patch, build in dwFileVersionLS field as pair of 32 bit numbers
-    DebugPrintfW(ASPNETCORE_DEBUG_FLAG_INFO, L"Initializing logs for '%ls'. %ls. %ls.",
+    LOG_INFOF(L"Initializing logs for '%ls'. %ls. %ls.",
         GetModuleName().c_str(),
         GetProcessIdString().c_str(),
         GetVersionInfoString().c_str()
@@ -94,26 +96,6 @@ void SetDebugFlags(const std::wstring &debugValue)
 {
     try
     {
-        if (!debugValue.empty() && debugValue.find_first_not_of(L"0123456789") == std::wstring::npos)
-        {
-            const auto value = std::stoi(debugValue);
-
-            if (value >= 1) DEBUG_FLAGS_VAR |= ASPNETCORE_DEBUG_FLAG_ERROR;
-            if (value >= 2) DEBUG_FLAGS_VAR |= ASPNETCORE_DEBUG_FLAG_WARNING;
-            if (value >= 3) DEBUG_FLAGS_VAR |= ASPNETCORE_DEBUG_FLAG_INFO;
-            if (value >= 4) DEBUG_FLAGS_VAR |= ASPNETCORE_DEBUG_FLAG_CONSOLE;
-            if (value >= 5) DEBUG_FLAGS_VAR |= ASPNETCORE_DEBUG_FLAG_FILE;
-
-            return;
-        }
-    }
-    catch (...)
-    {
-        // ignore
-    }
-
-    try
-    {
         std::wstringstream stringStream(debugValue);
         std::wstring flag;
 
@@ -122,14 +104,16 @@ void SetDebugFlags(const std::wstring &debugValue)
             if (_wcsnicmp(flag.c_str(), L"error", wcslen(L"error")) == 0) DEBUG_FLAGS_VAR |= DEBUG_FLAGS_ERROR;
             if (_wcsnicmp(flag.c_str(), L"warning", wcslen(L"warning")) == 0) DEBUG_FLAGS_VAR |= DEBUG_FLAGS_WARN;
             if (_wcsnicmp(flag.c_str(), L"info", wcslen(L"info")) == 0) DEBUG_FLAGS_VAR |= DEBUG_FLAGS_INFO;
+            if (_wcsnicmp(flag.c_str(), L"trace", wcslen(L"trace")) == 0) DEBUG_FLAGS_VAR |= DEBUG_FLAGS_TRACE;
             if (_wcsnicmp(flag.c_str(), L"console", wcslen(L"console")) == 0) DEBUG_FLAGS_VAR |= ASPNETCORE_DEBUG_FLAG_CONSOLE;
             if (_wcsnicmp(flag.c_str(), L"file", wcslen(L"file")) == 0) DEBUG_FLAGS_VAR |= ASPNETCORE_DEBUG_FLAG_FILE;
+            if (_wcsnicmp(flag.c_str(), L"eventlog", wcslen(L"eventlog")) == 0) DEBUG_FLAGS_VAR |= ASPNETCORE_DEBUG_FLAG_EVENTLOG;
         }
 
-        // If file or console is enabled but level is not set, enable all levels
+        // If file or console is enabled but level is not set, enable levels up to info
         if (DEBUG_FLAGS_VAR != 0 && (DEBUG_FLAGS_VAR & DEBUG_FLAGS_ANY) == 0)
         {
-            DEBUG_FLAGS_VAR |= DEBUG_FLAGS_ANY;
+            DEBUG_FLAGS_VAR |= DEBUG_FLAGS_INFO;
         }
     }
     catch (...)
@@ -209,7 +193,7 @@ DebugInitialize(HMODULE hModule)
 
     try
     {
-        SetDebugFlags(Environment::GetEnvironmentVariableValue(L"ASPNETCORE_MODULE_DEBUG").value_or(L"0"));
+        SetDebugFlags(Environment::GetEnvironmentVariableValue(L"ASPNETCORE_MODULE_DEBUG").value_or(L""));
     }
     catch (...)
     {
@@ -343,6 +327,24 @@ DebugPrintW(
                 WriteFileEncoded(CP_UTF8, g_logFile, strOutput.QueryStr());
                 FlushFileBuffers(g_logFile);
             }
+        }
+
+        if (IsEnabled(ASPNETCORE_DEBUG_FLAG_EVENTLOG))
+        {
+            WORD eventType;
+            switch (dwFlag)
+            {
+                case ASPNETCORE_DEBUG_FLAG_ERROR: 
+                    eventType = EVENTLOG_ERROR_TYPE;
+                    break;
+                case ASPNETCORE_DEBUG_FLAG_WARNING: 
+                    eventType = EVENTLOG_WARNING_TYPE;
+                    break;
+                default: 
+                    eventType = EVENTLOG_INFORMATION_TYPE;
+                    break;
+            }
+            EventLog::LogEventNoTrace(eventType, ASPNETCORE_EVENT_DEBUG_LOG, strOutput.QueryStr());
         }
     }
 }

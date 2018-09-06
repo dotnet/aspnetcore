@@ -115,7 +115,7 @@ Finished:
 // Global initialization routine for OutOfProcess
 //
 HRESULT
-EnsureOutOfProcessInitializtion()
+EnsureOutOfProcessInitializtion(IHttpApplication *pHttpApplication)
 {
 
     DBG_ASSERT(g_pHttpServer);
@@ -202,6 +202,8 @@ EnsureOutOfProcessInitializtion()
         FINISHED_IF_FAILED(ALLOC_CACHE_HANDLER::StaticInitialize());
         FINISHED_IF_FAILED(FORWARDING_HANDLER::StaticInitialize(g_fEnableReferenceCountTracing));
         FINISHED_IF_FAILED(WEBSOCKET_HANDLER::StaticInitialize(g_fEnableReferenceCountTracing));
+
+        DebugInitializeFromConfig(*g_pHttpServer, *pHttpApplication);
     }
 Finished:
     if (FAILED(hr))
@@ -255,7 +257,7 @@ CreateApplication(
     RETURN_IF_FAILED(REQUESTHANDLER_CONFIG::CreateRequestHandlerConfig(pServer, pHttpApplication, &pConfig));
     std::unique_ptr<REQUESTHANDLER_CONFIG> pRequestHandlerConfig(pConfig);
 
-    RETURN_IF_FAILED(EnsureOutOfProcessInitializtion());
+    RETURN_IF_FAILED(EnsureOutOfProcessInitializtion(pHttpApplication));
 
     std::unique_ptr<OUT_OF_PROCESS_APPLICATION> pApplication = std::make_unique<OUT_OF_PROCESS_APPLICATION>(*pHttpApplication, std::move(pRequestHandlerConfig));
 

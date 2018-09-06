@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
     {
         public static void AddDebugLogToWebConfig(this IISDeploymentParameters parameters, string filename)
         {
-            parameters.HandlerSettings["debugLevel"] = "4";
+            parameters.HandlerSettings["debugLevel"] = "file";
             parameters.HandlerSettings["debugFile"] = filename;
         }
 

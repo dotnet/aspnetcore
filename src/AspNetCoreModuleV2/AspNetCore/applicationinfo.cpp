@@ -98,7 +98,7 @@ APPLICATION_INFO::ShutDownApplication(bool fServerInitiated)
 
     if (m_pApplication)
     {
-        LOG_ERRORF(L"Stopping application '%ls'", QueryApplicationInfoKey().c_str());
+        LOG_INFOF(L"Stopping application '%ls'", QueryApplicationInfoKey().c_str());
         m_pApplication ->Stop(fServerInitiated);
         m_pApplication = nullptr;
         m_pApplicationFactory = nullptr;

@@ -59,6 +59,13 @@ public:
        _va_end(args);
     }
 
+    static
+    bool
+    LogEventNoTrace(
+        _In_ WORD    dwEventInfoType,
+        _In_ DWORD   dwEventId,
+        _In_ LPCWSTR pstrMsg);
+
 private:
     static
     VOID
