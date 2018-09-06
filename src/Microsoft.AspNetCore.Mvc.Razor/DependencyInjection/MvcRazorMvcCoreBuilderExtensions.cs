@@ -81,7 +81,7 @@ namespace Microsoft.Extensions.DependencyInjection
             // ViewFeature items have precedence semantics - when two views have the same path \ identifier,
             // the one that appears earlier in the list wins. Therefore the ordering of
             // RazorCompiledItemFeatureProvider and ViewsFeatureProvider is pertinent - any view compiled
-            // using the Sdk will be prefered to views compiled using MvcPrecompilation.
+            // using the Sdk will be preferred to views compiled using MvcPrecompilation.
             if (!builder.PartManager.FeatureProviders.OfType<RazorCompiledItemFeatureProvider>().Any())
             {
                 builder.PartManager.FeatureProviders.Add(new RazorCompiledItemFeatureProvider());

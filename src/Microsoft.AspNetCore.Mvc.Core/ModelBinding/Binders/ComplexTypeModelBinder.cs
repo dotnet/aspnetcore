@@ -256,7 +256,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             //
             //      If a property does not have a binding source, then it's fair game for any value provider.
             //
-            // If any property meets the above conditions and has a value from valueproviders, then we'll
+            // If any property meets the above conditions and has a value from ValueProviders, then we'll
             // create the model and try to bind it. OR if ALL properties of the model have a greedy source,
             // then we go ahead and create it.
             //

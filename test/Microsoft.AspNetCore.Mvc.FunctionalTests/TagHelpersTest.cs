@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task ReregisteringAntiforgeryTokenInsideFormTagHelper_DoesNotAddDuplicateAntiforgeryTokenFields()
+        public async Task ReRegisteringAntiforgeryTokenInsideFormTagHelper_DoesNotAddDuplicateAntiforgeryTokenFields()
         {
             // Arrange
             var expectedMediaType = MediaTypeHeaderValue.Parse("text/html; charset=utf-8");

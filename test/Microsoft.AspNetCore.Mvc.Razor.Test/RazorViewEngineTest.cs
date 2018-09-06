@@ -749,7 +749,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         }
 
         [Fact]
-        public void FindView_NoramlizesPaths_ReturnedByViewLocationExpanders()
+        public void FindView_NormalizesPaths_ReturnedByViewLocationExpanders()
         {
             // Arrange
             var pageFactory = new Mock<IRazorPageFactoryProvider>();
@@ -2040,8 +2040,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 routeData.Values.Add(kvp.Key, kvp.Value);
             }
 
-            var actionDesciptor = new ActionDescriptor();
-            return new ActionContext(httpContext, routeData, actionDesciptor);
+            var actionDescriptor = new ActionDescriptor();
+            return new ActionContext(httpContext, routeData, actionDescriptor);
         }
 
         private static ActionContext GetActionContextWithActionDescriptor(

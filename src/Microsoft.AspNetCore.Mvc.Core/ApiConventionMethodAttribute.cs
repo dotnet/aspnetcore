@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Mvc
             }
             else if (methods.Length > 1)
             {
-                throw new ArgumentException(Resources.FormatApiConventionMethod_AmbigiousMethodName(methodName, conventionType), nameof(methodName));
+                throw new ArgumentException(Resources.FormatApiConventionMethod_AmbiguousMethodName(methodName, conventionType), nameof(methodName));
             }
 
             return methods[0];

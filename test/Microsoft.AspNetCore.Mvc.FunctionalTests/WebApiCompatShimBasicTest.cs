@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task ActionThrowsHttpResponseException_EnsureGlobalHttpresponseExceptionActionFilter_IsInvoked()
+        public async Task ActionThrowsHttpResponseException_EnsureGlobalHttpResponseExceptionActionFilter_IsInvoked()
         {
             // Arrange & Act
             var response = await Client.GetAsync(

@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure
 {
-    public class ProblemDetalsClientErrorFactoryTest
+    public class ProblemDetailsClientErrorFactoryTest
     {
         [Fact]
         public void GetClientError_ReturnsProblemDetails_IfNoMappingWasFound()

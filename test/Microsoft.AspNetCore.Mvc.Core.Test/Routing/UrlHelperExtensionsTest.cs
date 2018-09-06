@@ -340,7 +340,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test.Routing
         }
 
         [Fact]
-        public void Page_UsesValueFromRouteValueIfPageHandlerIsNotExplicitySpecified()
+        public void Page_UsesValueFromRouteValueIfPageHandlerIsNotExplicitlySpecified()
         {
             // Arrange
             UrlRouteContext actual = null;

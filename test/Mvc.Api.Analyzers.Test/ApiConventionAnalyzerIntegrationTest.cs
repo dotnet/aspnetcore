@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
 {
     public class ApiConventionAnalyzerIntegrationTest
     {
-        private MvcDiagnosticAnalyzerRunner Executor { get; } = new ApiCoventionWith1006DiagnosticEnabledRunner();
+        private MvcDiagnosticAnalyzerRunner Executor { get; } = new ApiConventionWith1006DiagnosticEnabledRunner();
 
         [Fact]
         public Task NoDiagnosticsAreReturned_ForNonApiController()
@@ -129,9 +129,9 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
                     Assert.Equal(string.Format(descriptor.MessageFormat.ToString(), args), diagnostic.GetMessage());
                 });
         }
-        private class ApiCoventionWith1006DiagnosticEnabledRunner : MvcDiagnosticAnalyzerRunner
+        private class ApiConventionWith1006DiagnosticEnabledRunner : MvcDiagnosticAnalyzerRunner
         {
-            public ApiCoventionWith1006DiagnosticEnabledRunner() : base(new ApiConventionAnalyzer())
+            public ApiConventionWith1006DiagnosticEnabledRunner() : base(new ApiConventionAnalyzer())
             {
             }
 

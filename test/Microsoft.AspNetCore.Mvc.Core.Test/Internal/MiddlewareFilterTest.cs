@@ -36,13 +36,13 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         {
             // Arrange
             Task requestDelegate(HttpContext context) => Task.FromResult(true);
-            var middlwareFilter = new MiddlewareFilter(requestDelegate);
+            var middlewareFilter = new MiddlewareFilter(requestDelegate);
             var httpContext = new DefaultHttpContext();
             var resourceExecutingContext = GetResourceExecutingContext(httpContext);
             var resourceExecutionDelegate = GetResourceExecutionDelegate(httpContext);
 
             // Act
-            await middlwareFilter.OnResourceExecutionAsync(resourceExecutingContext, resourceExecutionDelegate);
+            await middlewareFilter.OnResourceExecutionAsync(resourceExecutingContext, resourceExecutionDelegate);
 
             // Assert
             var feature = resourceExecutingContext.HttpContext.Features.Get<IMiddlewareFilterFeature>();
@@ -398,7 +398,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                       logger,
                       diagnosticSource,
                       mapper,
-                      CreatControllerContext(actionContext, valueProviderFactories, maxAllowedErrorsInModelState),
+                      CreateControllerContext(actionContext, valueProviderFactories, maxAllowedErrorsInModelState),
                       CreateCacheEntry((ControllerActionDescriptor)actionContext.ActionDescriptor, controllerFactory),
                       filters)
             {
@@ -420,7 +420,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 return ObjectMethodExecutor.Create(actionDescriptor.MethodInfo, actionDescriptor.ControllerTypeInfo);
             }
 
-            private static ControllerContext CreatControllerContext(
+            private static ControllerContext CreateControllerContext(
                 ActionContext actionContext,
                 IReadOnlyList<IValueProviderFactory> valueProviderFactories,
                 int maxAllowedErrorsInModelState)

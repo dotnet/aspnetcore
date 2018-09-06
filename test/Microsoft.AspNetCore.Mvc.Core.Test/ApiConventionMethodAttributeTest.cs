@@ -85,14 +85,14 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         [Fact]
-        public void Constructor_ThrowsIfMethodIsAmbigous()
+        public void Constructor_ThrowsIfMethodIsAmbiguous()
         {
             // Arrange
             var methodName = typeof(ConventionWithProducesAttribute).FullName + '.' + nameof(ConventionWithProducesAttribute.Get);
             var attribute = typeof(ProducesAttribute);
             var type = typeof(TestConventions);
 
-            var expected = $"Method name 'Method' is ambigous for convention type '{type}'. More than one method found with the name 'Method'.";
+            var expected = $"Method name 'Method' is ambiguous for convention type '{type}'. More than one method found with the name 'Method'.";
 
             // Act & Assert
             ExceptionAssert.ThrowsArgument(

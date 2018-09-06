@@ -6,11 +6,11 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Microsoft.AspNetCore.Mvc
 {
     /// <summary>
-    /// Specifies the version compatibility of runtime behaviors configured by <see cref="MvcOptions"/>. 
+    /// Specifies the version compatibility of runtime behaviors configured by <see cref="MvcOptions"/>.
     /// </summary>
     /// <remarks>
     /// <para>
-    /// The best way to set a compatibility version is by using 
+    /// The best way to set a compatibility version is by using
     /// <see cref="MvcCoreMvcBuilderExtensions.SetCompatibilityVersion"/> or
     /// <see cref="MvcCoreMvcCoreBuilderExtensions.SetCompatibilityVersion"/> in your application's
     /// <c>ConfigureServices</c> method.
@@ -20,32 +20,32 @@ namespace Microsoft.AspNetCore.Mvc
     /// public class Startup
     /// {
     ///     ...
-    ///     
+    ///
     ///     public void ConfigureServices(IServiceCollection services)
     ///     {
     ///         services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
     ///     }
-    ///     
+    ///
     ///     ...
     /// }
     /// </code>
     /// </example>
     /// </para>
     /// <para>
-    /// Setting compatiblity version to a specific version will change the default values of various
-    /// settings to match a particular minor release of ASP.NET Core MVC. 
+    /// Setting compatibility version to a specific version will change the default values of various
+    /// settings to match a particular minor release of ASP.NET Core MVC.
     /// </para>
     /// </remarks>
     public enum CompatibilityVersion
     {
         /// <summary>
-        /// Sets the default value of settings on <see cref="MvcOptions"/> to match the behavior of 
+        /// Sets the default value of settings on <see cref="MvcOptions"/> to match the behavior of
         /// ASP.NET Core MVC 2.0.
         /// </summary>
         Version_2_0,
 
         /// <summary>
-        /// Sets the default value of settings on <see cref="MvcOptions"/> to match the behavior of 
+        /// Sets the default value of settings on <see cref="MvcOptions"/> to match the behavior of
         /// ASP.NET Core MVC 2.1.
         /// </summary>
         /// <remarks>

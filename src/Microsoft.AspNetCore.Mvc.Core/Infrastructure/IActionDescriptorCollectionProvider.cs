@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
     ///</para>
     ///<para>
     /// To be reactively notified of changes, downcast to <see cref="ActionDescriptorCollectionProvider"/> and
-    /// subcribe to the change token returned from <see cref="ActionDescriptorCollectionProvider.GetChangeToken"/>
+    /// subscribe to the change token returned from <see cref="ActionDescriptorCollectionProvider.GetChangeToken"/>
     /// using <see cref="ChangeToken.OnChange(System.Func{IChangeToken}, System.Action)"/>.
     /// </para>
     /// <para>

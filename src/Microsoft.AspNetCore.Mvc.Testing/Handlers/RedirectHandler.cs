@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing.Handlers
         /// <summary>
         /// Creates a new instance of <see cref="RedirectHandler"/>.
         /// </summary>
-        /// <param name="maxRedirects">The maximun number of redirect responses to follow. It must be
+        /// <param name="maxRedirects">The maximum number of redirect responses to follow. It must be
         /// equal or greater than 0.</param>
         public RedirectHandler(int maxRedirects)
         {

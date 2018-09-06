@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             Assert.Same(DiagnosticSource, instance.DiagnosticSource);
             Assert.Same(HtmlEncoder, instance.HtmlEncoder);
 
-            // When we don't have a model property, the activator will just leave viewdata alone.
+            // When we don't have a model property, the activator will just leave ViewData alone.
             Assert.NotNull(viewContext.ViewData);
         }
 

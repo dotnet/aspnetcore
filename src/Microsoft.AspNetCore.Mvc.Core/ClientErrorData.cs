@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// </summary>
         /// <remarks>
         /// By default, this maps to <see cref="ProblemDetails.Title"/> and should not change
-        /// between multiple occurences of the same error.
+        /// between multiple occurrences of the same error.
         /// </remarks>
         public string Title { get; set; }
     }

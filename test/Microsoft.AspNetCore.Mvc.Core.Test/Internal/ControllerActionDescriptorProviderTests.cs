@@ -1175,7 +1175,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         [Theory]
         [InlineData("A", typeof(ApiExplorerEnabledConventionalRoutedController))]
         [InlineData("A", typeof(ApiExplorerEnabledActionConventionalRoutedController))]
-        public void ApiExplorer_ThrowsForContentionalRouting(string actionName, Type type)
+        public void ApiExplorer_ThrowsForConventionalRouting(string actionName, Type type)
         {
             // Arrange
             var assemblyName = type.GetTypeInfo().Assembly.GetName().Name;

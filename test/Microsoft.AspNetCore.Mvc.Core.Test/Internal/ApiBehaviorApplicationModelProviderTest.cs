@@ -227,7 +227,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
-        public void InferBindingSourceForParameter_ReturnsPath_IfParameterAppearsInAnyRoutes_MulitpleRoutes()
+        public void InferBindingSourceForParameter_ReturnsPath_IfParameterAppearsInAnyRoutes_MultipleRoutes()
         {
             // Arrange
             var actionName = nameof(ParameterBindingController.ParameterInMultipleRoutes);
@@ -1112,7 +1112,7 @@ Environment.NewLine + "int b";
         }
 
         [Fact]
-        public void DiscoverErrorResponseType_UsesValueFromApiErrorTypeAttribute_SpecifiedOnControllerAsssembly()
+        public void DiscoverErrorResponseType_UsesValueFromApiErrorTypeAttribute_SpecifiedOnControllerAssembly()
         {
             // Arrange
             var expected = typeof(InvalidEnumArgumentException);

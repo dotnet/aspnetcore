@@ -1555,7 +1555,7 @@ namespace Microsoft.AspNetCore.Mvc
             var invoker = CreateInvoker(
                 new IFilterMetadata[]
                 {
-                    resourceFilter1.Object, // This filter should see the result retured from resourceFilter2
+                    resourceFilter1.Object, // This filter should see the result returned from resourceFilter2
                     resourceFilter2.Object, // This filter will short circuit
                     resourceFilter3.Object, // This shouldn't run - it will throw if it does
                     exceptionFilter.Object, // This shouldn't run - it will throw if it does
@@ -1603,7 +1603,7 @@ namespace Microsoft.AspNetCore.Mvc
             var invoker = CreateInvoker(
                 new IFilterMetadata[]
                 {
-                    resourceFilter1.Object, // This filter should see the result retured from resourceFilter2
+                    resourceFilter1.Object, // This filter should see the result returned from resourceFilter2
                     resourceFilter2.Object, // This filter will short circuit
                     resourceFilter3.Object, // This shouldn't run - it will throw if it does
                     exceptionFilter.Object, // This shouldn't run - it will throw if it does
@@ -1653,7 +1653,7 @@ namespace Microsoft.AspNetCore.Mvc
             var invoker = CreateInvoker(
                 new IFilterMetadata[]
                 {
-                    resourceFilter1.Object, // This filter should see the result retured from resourceFilter2
+                    resourceFilter1.Object, // This filter should see the result returned from resourceFilter2
                     resourceFilter2.Object,
                     resourceFilter3.Object, // This shouldn't run - it will throw if it does
                     resultFilter.Object // This shouldn't run - it will throw if it does

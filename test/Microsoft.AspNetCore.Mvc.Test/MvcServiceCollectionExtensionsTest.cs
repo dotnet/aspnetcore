@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Mvc
             services.AddSingleton<IHostingEnvironment>(GetHostingEnvironment());
 
             // Register a mock implementation of each service, AddMvcServices should add another implementation.
-            foreach (var serviceType in MutliRegistrationServiceTypes)
+            foreach (var serviceType in MultiRegistrationServiceTypes)
             {
                 var mockType = typeof(Mock<>).MakeGenericType(serviceType.Key);
                 services.Add(ServiceDescriptor.Transient(serviceType.Key, mockType));
@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Mvc
             services.AddMvc();
 
             // Assert
-            foreach (var serviceType in MutliRegistrationServiceTypes)
+            foreach (var serviceType in MultiRegistrationServiceTypes)
             {
                 AssertServiceCountEquals(services, serviceType.Key, serviceType.Value.Length + 1);
 
@@ -163,7 +163,7 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         [Fact]
-        public void AddMvcTwice_DoesNotAddDuplicateFramewokrParts()
+        public void AddMvcTwice_DoesNotAddDuplicateFrameworkParts()
         {
             // Arrange
             var mvcRazorAssembly = typeof(UrlResolutionTagHelper).GetTypeInfo().Assembly;
@@ -323,7 +323,7 @@ namespace Microsoft.AspNetCore.Mvc
                 services.AddSingleton<IHostingEnvironment>(GetHostingEnvironment());
                 services.AddMvc();
 
-                var multiRegistrationServiceTypes = MutliRegistrationServiceTypes;
+                var multiRegistrationServiceTypes = MultiRegistrationServiceTypes;
                 return services
                     .Where(sd => !multiRegistrationServiceTypes.Keys.Contains(sd.ServiceType))
                     .Where(sd => sd.ServiceType.GetTypeInfo().Assembly.FullName.Contains("Mvc"))
@@ -331,7 +331,7 @@ namespace Microsoft.AspNetCore.Mvc
             }
         }
 
-        private Dictionary<Type, Type[]> MutliRegistrationServiceTypes
+        private Dictionary<Type, Type[]> MultiRegistrationServiceTypes
         {
             get
             {

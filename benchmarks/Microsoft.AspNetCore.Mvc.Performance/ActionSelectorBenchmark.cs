@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.Mvc.Performance
 
                 var state = routeContext.RouteData.PushState(MockRouter.Instance, routeValues, null);
 
-                var actual = NaiveSelectCandiates(_actions, routeContext.RouteData.Values);
+                var actual = NaiveSelectCandidates(_actions, routeContext.RouteData.Values);
                 Verify(expected, actual);
 
                 state.Restore();
@@ -113,7 +113,7 @@ namespace Microsoft.AspNetCore.Mvc.Performance
         }
 
         // A naive implementation we can use to generate match data for inputs, and for a baseline.
-        private static IReadOnlyList<ActionDescriptor> NaiveSelectCandiates(ActionDescriptor[] actions, RouteValueDictionary routeValues)
+        private static IReadOnlyList<ActionDescriptor> NaiveSelectCandidates(ActionDescriptor[] actions, RouteValueDictionary routeValues)
         {
             var results = new List<ActionDescriptor>();
             for (var i = 0; i < actions.Length; i++)
@@ -175,7 +175,7 @@ namespace Microsoft.AspNetCore.Mvc.Performance
             {
                 var action = actions[i];
                 var routeValues = new RouteValueDictionary(action.RouteValues);
-                var matches = NaiveSelectCandiates(actions, routeValues);
+                var matches = NaiveSelectCandidates(actions, routeValues);
                 if (matches.Count == 0)
                 {
                     throw new InvalidOperationException("This should have at least one match.");
@@ -193,7 +193,7 @@ namespace Microsoft.AspNetCore.Mvc.Performance
                 // Make one of the route values not match.
                 routeValues[routeValues.First().Key] = ((string)routeValues.First().Value) + "fkdkfdkkf";
 
-                var matches = NaiveSelectCandiates(actions, routeValues);
+                var matches = NaiveSelectCandidates(actions, routeValues);
                 if (matches.Count != 0)
                 {
                     throw new InvalidOperationException("This should have 0 matches.");

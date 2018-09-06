@@ -146,10 +146,10 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
             for (var i = 0; i < expectedOutput.Attributes.Count; i++)
             {
-                var expectedAtribute = expectedOutput.Attributes[i];
+                var expectedAttribute = expectedOutput.Attributes[i];
                 var actualAttribute = output.Attributes[i];
-                Assert.Equal(expectedAtribute.Name, actualAttribute.Name);
-                Assert.Equal(expectedAtribute.Value.ToString(), actualAttribute.Value.ToString());
+                Assert.Equal(expectedAttribute.Name, actualAttribute.Name);
+                Assert.Equal(expectedAttribute.Value.ToString(), actualAttribute.Value.ToString());
             }
         }
 

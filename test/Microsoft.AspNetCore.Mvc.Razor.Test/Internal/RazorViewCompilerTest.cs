@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         [InlineData(@"Areas\Finances\Views\Home\Index.cshtml")]
         [InlineData(@"\Areas\Finances\Views\Home\Index.cshtml")]
         [InlineData(@"\Areas\Finances\Views/Home\Index.cshtml")]
-        public async Task CompileAsync_NormalizesPathSepartorForPaths(string relativePath)
+        public async Task CompileAsync_NormalizesPathSeparatorForPaths(string relativePath)
         {
             // Arrange
             var viewPath = "/Areas/Finances/Views/Home/Index.cshtml";
@@ -731,7 +731,7 @@ this should fail";
         }
 
         [Fact]
-        public void Compile_InvokessCallback()
+        public void Compile_InvokesCallback()
         {
             // Arrange
             var content = "public class MyTestType  {}";

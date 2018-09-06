@@ -110,7 +110,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
         }
 
         [Fact]
-        public void HasProperSuppportedMediaTypes()
+        public void HasProperSupportedMediaTypes()
         {
             // Arrange & Act
             var formatter = new XmlDataContractSerializerInputFormatter(new MvcOptions());
@@ -123,7 +123,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
         }
 
         [Fact]
-        public void HasProperSuppportedEncodings()
+        public void HasProperSupportedEncodings()
         {
             // Arrange & Act
             var formatter = new XmlDataContractSerializerInputFormatter(new MvcOptions());

@@ -140,11 +140,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             // Arrange
             var tempDataNull = false;
             var viewDataNull = false;
-            var deligateHit = false;
+            var delegateHit = false;
 
             var view = CreateView(async (v) =>
             {
-                deligateHit = true;
+                delegateHit = true;
                 tempDataNull = v.TempData == null;
                 viewDataNull = v.ViewData == null;
 
@@ -174,7 +174,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
             // Assert
             Assert.Equal(200, context.Response.StatusCode);
-            Assert.True(deligateHit);
+            Assert.True(delegateHit);
             Assert.False(viewDataNull);
             Assert.False(tempDataNull);
         }

@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             // from either the set of known precompiled views, or by being compiled.
             _cache = cache;
 
-            // We need to validate that the all of the precompiled views are unique by path (case-insenstive).
+            // We need to validate that the all of the precompiled views are unique by path (case-insensitive).
             // We do this because there's no good way to canonicalize paths on windows, and it will create
             // problems when deploying to linux. Rather than deal with these issues, we just don't support
             // views that differ only by case.
@@ -293,7 +293,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                 _logger.ViewCompilerCouldNotFindFileAtPath(normalizedPath);
 
                 // If the file doesn't exist, we can't do compilation right now - we still want to cache
-                // the fact that we tried. This will allow us to retrigger compilation if the view file
+                // the fact that we tried. This will allow us to re-trigger compilation if the view file
                 // is added.
                 return new ViewCompilerWorkItem()
                 {

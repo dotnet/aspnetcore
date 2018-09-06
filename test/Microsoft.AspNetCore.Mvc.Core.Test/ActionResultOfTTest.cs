@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Mvc
         public void Convert_InfersDeclaredTypeFromActionResultTypeParameter()
         {
             // Arrange
-            var value = new DeriviedItem();
+            var value = new DerivedItem();
             var actionResultOfT = new ActionResult<BaseItem>(value);
             var convertToActionResult = (IConvertToActionResult)actionResultOfT;
 
@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Mvc
         {
         }
 
-        private class DeriviedItem : BaseItem
+        private class DerivedItem : BaseItem
         {
         }
     }

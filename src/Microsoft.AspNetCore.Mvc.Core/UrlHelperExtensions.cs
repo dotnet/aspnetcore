@@ -462,7 +462,7 @@ namespace Microsoft.AspNetCore.Mvc
                 if (!routeValues.ContainsKey("handler") &&
                     ambientValues.TryGetValue("handler", out var handler))
                 {
-                    // Clear out formaction unless it's explicitly specified in the routeValues.
+                    // Clear out form action unless it's explicitly specified in the routeValues.
                     routeValues["handler"] = null;
                 }
             }
