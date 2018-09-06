@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Internal;
@@ -75,7 +76,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         {
             foreach (var controller in context.Result.Controllers)
             {
-                if (!controller.Attributes.OfType<IApiBehaviorMetadata>().Any())
+                if (!IsApiController(controller))
                 {
                     continue;
                 }
@@ -122,6 +123,18 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 
                 return false;
             }
+        }
+
+        private static bool IsApiController(ControllerModel controller)
+        {
+            if (controller.Attributes.OfType<IApiBehaviorMetadata>().Any())
+            {
+                return true;
+            }
+
+            var controllerAssembly = controller.ControllerType.Assembly;
+            var assemblyAttributes = controllerAssembly.GetCustomAttributes();
+            return assemblyAttributes.OfType<IApiBehaviorMetadata>().Any();
         }
     }
 }

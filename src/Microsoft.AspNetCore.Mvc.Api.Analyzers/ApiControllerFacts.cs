@@ -25,7 +25,8 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
                 return false;
             }
 
-            if (!method.ContainingType.HasAttribute(symbolCache.IApiBehaviorMetadata, inherit: true))
+            if (!method.ContainingType.HasAttribute(symbolCache.IApiBehaviorMetadata, inherit: true) &&
+                !method.ContainingAssembly.HasAttribute(symbolCache.IApiBehaviorMetadata))
             {
                 return false;
             }
