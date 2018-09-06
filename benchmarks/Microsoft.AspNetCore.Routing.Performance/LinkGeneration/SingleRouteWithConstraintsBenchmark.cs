@@ -56,17 +56,17 @@ namespace Microsoft.AspNetCore.Routing.LinkGeneration
         [Benchmark]
         public void EndpointRouting()
         {
-            var actualUrl = _linkGenerator.GetLink(
+            var actualUrl = _linkGenerator.GetPathByRouteValues(
                 _requestContext.HttpContext,
-                values: new RouteValueDictionary(
-                    new
-                    {
-                        controller = "Customers",
-                        action = "Details",
-                        category = "Administration",
-                        region = "US",
-                        id = 10
-                    }));
+                routeName: null,
+                values: new
+                {
+                    controller = "Customers",
+                    action = "Details",
+                    category = "Administration",
+                    region = "US",
+                    id = 10
+                });
 
             AssertUrl("/Customers/Details/Administration/US/10", actualUrl);
         }

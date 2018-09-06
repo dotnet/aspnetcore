@@ -11,19 +11,19 @@ namespace Microsoft.AspNetCore.Routing
     [DebuggerDisplay("{DebuggerToString(),nq}")]
     public sealed class RouteValuesAddressMetadata : IRouteValuesAddressMetadata
     {
-        public RouteValuesAddressMetadata(string name, IReadOnlyDictionary<string, object> requiredValues)
+        public RouteValuesAddressMetadata(string routeName, IReadOnlyDictionary<string, object> requiredValues)
         {
-            Name = name;
+            RouteName = routeName;
             RequiredValues = requiredValues;
         }
 
-        public string Name { get; }
+        public string RouteName { get; }
 
         public IReadOnlyDictionary<string, object> RequiredValues { get; }
 
         internal string DebuggerToString()
         {
-            return $"Name: {Name} - Required values: {string.Join(", ", FormatValues(RequiredValues))}";
+            return $"Name: {RouteName} - Required values: {string.Join(", ", FormatValues(RequiredValues))}";
 
             IEnumerable<string> FormatValues(IEnumerable<KeyValuePair<string, object>> values)
             {

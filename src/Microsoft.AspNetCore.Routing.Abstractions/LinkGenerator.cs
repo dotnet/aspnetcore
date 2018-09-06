@@ -1,463 +1,121 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Routing
 {
     /// <summary>
-    /// Defines a contract to generate URLs to endpoints.
+    /// Defines a contract to generate absolute and related URIs based on endpoint routing.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Generating URIs in endpoint routing occurs in two phases. First, an address is bound to a list of
+    /// endpoints that match the address. Secondly, each endpoint's <c>RoutePattern</c> is evaluated, until 
+    /// a route pattern that matches the supplied values is found. The resulting output is combined with
+    /// the other URI parts supplied to the link generator and returned.
+    /// </para>
+    /// <para>
+    /// The methods provided by the <see cref="LinkGenerator"/> type are general infrastructure, and support
+    /// the standard link generator functionality for any type of address. The most convenient way to use 
+    /// <see cref="LinkGenerator"/> is through extension methods that perform operations for a specific
+    /// address type.
+    /// </para>
+    /// </remarks>
     public abstract class LinkGenerator
     {
         /// <summary>
-        /// Generates a URL with an absolute path from the specified route values.
+        /// Generates a URI with an absolute path based on the provided values.
         /// </summary>
-        /// <param name="values">An object that contains route values.</param>
-        /// <returns>The generated URL.</returns>
-        public string GetLink(object values)
-        {
-            return GetLink(httpContext: null, routeName: null, values, options: null);
-        }
-
-        /// <summary>
-        /// Generates a URL with an absolute path from the specified route values and link options.
-        /// </summary>
-        /// <param name="values">An object that contains route values.</param>
-        /// <param name="options">The <see cref="LinkOptions"/>.</param>
-        /// <returns>The generated URL.</returns>
-        public string GetLink(object values, LinkOptions options)
-        {
-            return GetLink(httpContext: null, routeName: null, values, options);
-        }
-
-        /// <summary>
-        /// Generates a URL with an absolute path from the specified route values.
-        /// A return value indicates whether the operation succeeded.
-        /// </summary>
-        /// <param name="values">An object that contains route values.</param>
-        /// <param name="link">The generated URL.</param>
-        /// <returns><c>true</c> if a URL was generated successfully; otherwise, <c>false</c>.</returns>
-        public bool TryGetLink(object values, out string link)
-        {
-            return TryGetLink(httpContext: null, routeName: null, values, options: null, out link);
-        }
-
-        /// <summary>
-        /// Generates a URL with an absolute path from the specified route values and link options.
-        /// A return value indicates whether the operation succeeded.
-        /// </summary>
-        /// <param name="values">An object that contains route values.</param>
-        /// <param name="options">The <see cref="LinkOptions"/>.</param>
-        /// <param name="link">The generated URL.</param>
-        /// <returns><c>true</c> if a URL was generated successfully; otherwise, <c>false</c>.</returns>
-        public bool TryGetLink(object values, LinkOptions options, out string link)
-        {
-            return TryGetLink(httpContext: null, routeName: null, values, options, out link);
-        }
-
-        /// <summary>
-        /// Generates a URL with an absolute path from the specified route values.
-        /// </summary>
-        /// <param name="httpContext">The <see cref="HttpContext"/> associated with current request.</param>
-        /// <param name="values">An object that contains route values.</param>
-        /// <returns>The generated URL.</returns>
-        public string GetLink(HttpContext httpContext, object values)
-        {
-            return GetLink(httpContext, routeName: null, values, options: null);
-        }
-
-        /// <summary>
-        /// Generates a URL with an absolute path from the specified route values.
-        /// A return value indicates whether the operation succeeded.
-        /// </summary>
-        /// <param name="httpContext">The <see cref="HttpContext"/> associated with current request.</param>
-        /// <param name="values">An object that contains route values.</param>
-        /// <param name="link">The generated URL.</param>
-        /// <returns><c>true</c> if a URL was generated successfully; otherwise, <c>false</c>.</returns>
-        public bool TryGetLink(HttpContext httpContext, object values, out string link)
-        {
-            return TryGetLink(httpContext, routeName: null, values, options: null, out link);
-        }
-
-        /// <summary>
-        /// Generates a URL with an absolute path from the specified route values and link options.
-        /// </summary>
-        /// <param name="httpContext">The <see cref="HttpContext"/> associated with current request.</param>
-        /// <param name="values">An object that contains route values.</param>
-        /// <param name="options">The <see cref="LinkOptions"/>.</param>
-        /// <returns>The generated URL.</returns>
-        public string GetLink(HttpContext httpContext, object values, LinkOptions options)
-        {
-            return GetLink(httpContext, routeName: null, values, options);
-        }
-
-        /// <summary>
-        /// Generates a URL with an absolute path from the specified route values and link options.
-        /// A return value indicates whether the operation succeeded.
-        /// </summary>
-        /// <param name="httpContext">The <see cref="HttpContext"/> associated with current request.</param>
-        /// <param name="values">An object that contains route values.</param>
-        /// <param name="options">The <see cref="LinkOptions"/>.</param>
-        /// <param name="link">The generated URL.</param>
-        /// <returns><c>true</c> if a URL was generated successfully; otherwise, <c>false</c>.</returns>
-        public bool TryGetLink(HttpContext httpContext, object values, LinkOptions options, out string link)
-        {
-            return TryGetLink(httpContext, routeName: null, values, options, out link);
-        }
-
-        /// <summary>
-        /// Generates a URL with an absolute path from the specified route name and route values.
-        /// </summary>
-        /// <param name="routeName">The name of the route to generate the URL to.</param>
-        /// <param name="values">An object that contains route values.</param>
-        /// <returns>The generated URL.</returns>
-        public string GetLink(string routeName, object values)
-        {
-            return GetLink(httpContext: null, routeName, values, options: null);
-        }
-
-        /// <summary>
-        /// Generates a URL with an absolute path from the specified route name and route values.
-        /// A return value indicates whether the operation succeeded.
-        /// </summary>
-        /// <param name="routeName">The name of the route to generate the URL to.</param>
-        /// <param name="values">An object that contains route values.</param>
-        /// <param name="link">The generated URL.</param>
-        /// <returns><c>true</c> if a URL was generated successfully; otherwise, <c>false</c>.</returns>
-        public bool TryGetLink(string routeName, object values, out string link)
-        {
-            return TryGetLink(httpContext: null, routeName, values, options: null, out link);
-        }
-
-        /// <summary>
-        /// Generates a URL with an absolute path from the specified route name and route values.
-        /// </summary>
-        /// <param name="routeName">The name of the route to generate the URL to.</param>
-        /// <param name="values">An object that contains route values.</param>
-        /// <param name="options">The <see cref="LinkOptions"/>.</param>
-        /// <returns>The generated URL.</returns>
-        public string GetLink(string routeName, object values, LinkOptions options)
-        {
-            return GetLink(httpContext: null, routeName, values, options);
-        }
-
-        /// <summary>
-        /// Generates a URL with an absolute path from the specified route name, route values and link options.
-        /// A return value indicates whether the operation succeeded.
-        /// </summary>
-        /// <param name="routeName">The name of the route to generate the URL to.</param>
-        /// <param name="values">An object that contains route values.</param>
-        /// <param name="options">The <see cref="LinkOptions"/>.</param>
-        /// <param name="link">The generated URL.</param>
-        /// <returns><c>true</c> if a URL was generated successfully; otherwise, <c>false</c>.</returns>
-        public bool TryGetLink(string routeName, object values, LinkOptions options, out string link)
-        {
-            return TryGetLink(httpContext: null, routeName, values, options, out link);
-        }
-
-        /// <summary>
-        /// Generates a URL with an absolute path from the specified route name and route values.
-        /// </summary>
-        /// <param name="routeName">The name of the route to generate the URL to.</param>
-        /// <param name="httpContext">The <see cref="HttpContext"/> associated with current request.</param>
-        /// <param name="values">An object that contains route values.</param>
-        /// <returns>The generated URL.</returns>
-        public string GetLink(HttpContext httpContext, string routeName, object values)
-        {
-            return GetLink(httpContext, routeName, values, options: null);
-        }
-
-        /// <summary>
-        /// Generates a URL with an absolute path from the specified route name and route values.
-        /// A return value indicates whether the operation succeeded.
-        /// </summary>
-        /// <param name="httpContext">The <see cref="HttpContext"/> associated with current request.</param>
-        /// <param name="routeName">The name of the route to generate the URL to.</param>
-        /// <param name="values">An object that contains route values.</param>
-        /// <param name="link">The generated URL.</param>
-        /// <returns><c>true</c> if a URL was generated successfully; otherwise, <c>false</c>.</returns>
-        public bool TryGetLink(HttpContext httpContext, string routeName, object values, out string link)
-        {
-            return TryGetLink(httpContext, routeName, values, options: null, out link);
-        }
-
-        /// <summary>
-        /// Generates a URL with an absolute path from the specified route name, route values and link options.
-        /// </summary>
-        /// <param name="routeName">The name of the route to generate the URL to.</param>
-        /// <param name="httpContext">The <see cref="HttpContext"/> associated with current request.</param>
-        /// <param name="values">An object that contains route values.</param>
-        /// <param name="options">The <see cref="LinkOptions"/>.</param>
-        /// <returns>The generated URL.</returns>
-        public string GetLink(HttpContext httpContext, string routeName, object values, LinkOptions options)
-        {
-            if (TryGetLink(httpContext, routeName, values, options, out var link))
-            {
-                return link;
-            }
-
-            throw new InvalidOperationException("Could not find a matching endpoint to generate a link.");
-        }
-
-        /// <summary>
-        /// Generates a URL with an absolute path from the specified route name, route values and link options.
-        /// A return value indicates whether the operation succeeded.
-        /// </summary>
-        /// <param name="httpContext">The <see cref="HttpContext"/> associated with current request.</param>
-        /// <param name="routeName">The name of the route to generate the URL to.</param>
-        /// <param name="values">An object that contains route values.</param>
-        /// <param name="options">The <see cref="LinkOptions"/>.</param>
-        /// <param name="link">The generated URL.</param>
-        /// <returns><c>true</c> if a URL was generated successfully; otherwise, <c>false</c>.</returns>
-        public abstract bool TryGetLink(
-            HttpContext httpContext,
-            string routeName,
-            object values,
-            LinkOptions options,
-            out string link);
-
-        /// <summary>
-        /// Generates a URL with an absolute path from the specified lookup information and route values.
-        /// This lookup information is used to find endpoints using a registered 'IEndpointFinder&lt;TAddress&gt;'.
-        /// </summary>
-        /// <typeparam name="TAddress">The address type to look up endpoints.</typeparam>
-        /// <param name="address">The information used to look up endpoints for generating a URL.</param>
-        /// <param name="values">An object that contains route values.</param>
-        /// <returns>The generated URL.</returns>
-        public string GetLinkByAddress<TAddress>(TAddress address, object values)
-        {
-            return GetLinkByAddress(httpContext: null, address, values, options: null);
-        }
-
-        /// <summary>
-        /// Generates a URL with an absolute path from the specified lookup information and route values.
-        /// This lookup information is used to find endpoints using a registered 'IEndpointFinder&lt;TAddress&gt;'.
-        /// A return value indicates whether the operation succeeded.
-        /// </summary>
-        /// <typeparam name="TAddress">The address type to look up endpoints.</typeparam>
-        /// <param name="address">The information used to look up endpoints for generating a URL.</param>
-        /// <param name="values">An object that contains route values.</param>
-        /// <param name="link">The generated URL.</param>
-        /// <returns><c>true</c> if a URL was generated successfully; otherwise, <c>false</c>.</returns>
-        public bool TryGetLinkByAddress<TAddress>(TAddress address, object values, out string link)
-        {
-            return TryGetLinkByAddress(address, values, options: null, out link);
-        }
-
-        /// <summary>
-        /// Generates a URL with an absolute path from the specified lookup information, route values and link options.
-        /// This lookup information is used to find endpoints using a registered 'IEndpointFinder&lt;TAddress&gt;'.
-        /// </summary>
-        /// <typeparam name="TAddress">The address type to look up endpoints.</typeparam>
-        /// <param name="address">The information used to look up endpoints for generating a URL.</param>
-        /// <param name="values">An object that contains route values.</param>
-        /// <param name="options">The <see cref="LinkOptions"/>.</param>
-        /// <returns>The generated URL.</returns>
-        public string GetLinkByAddress<TAddress>(TAddress address, object values, LinkOptions options)
-        {
-            return GetLinkByAddress(httpContext: null, address, values, options);
-        }
-
-        /// <summary>
-        /// Generates a URL with an absolute path from the specified lookup information, route values and link options.
-        /// This lookup information is used to find endpoints using a registered 'IEndpointFinder&lt;TAddress&gt;'.
-        /// A return value indicates whether the operation succeeded.
-        /// </summary>
-        /// <typeparam name="TAddress">The address type to look up endpoints.</typeparam>
-        /// <param name="address">The information used to look up endpoints for generating a URL.</param>
-        /// <param name="values">An object that contains route values.</param>
-        /// <param name="options">The <see cref="LinkOptions"/>.</param>
-        /// <param name="link">The generated URL.</param>
-        /// <returns><c>true</c> if a URL was generated successfully; otherwise, <c>false</c>.</returns>
-        public bool TryGetLinkByAddress<TAddress>(
-            TAddress address,
-            object values,
-            LinkOptions options,
-            out string link)
-        {
-            return TryGetLinkByAddress(httpContext: null, address, values, options, out link);
-        }
-
-        /// <summary>
-        /// Generates a URL with an absolute path from the specified lookup information, route values and link options.
-        /// This lookup information is used to find endpoints using a registered 'IEndpointFinder&lt;TAddress&gt;'.
-        /// </summary>
-        /// <typeparam name="TAddress">The address type to look up endpoints.</typeparam>
-        /// <param name="address">The information used to look up endpoints for generating a URL.</param>
-        /// <param name="httpContext">The <see cref="HttpContext"/> associated with current request.</param>
-        /// <param name="values">An object that contains route values.</param>
-        /// <returns>The generated URL.</returns>
-        public string GetLinkByAddress<TAddress>(HttpContext httpContext, TAddress address, object values)
-        {
-            return GetLinkByAddress(httpContext, address, values, options: null);
-        }
-
-        /// <summary>
-        /// Generates a URL with an absolute path from the specified lookup information and route values.
-        /// This lookup information is used to find endpoints using a registered 'IEndpointFinder&lt;TAddress&gt;'.
-        /// A return value indicates whether the operation succeeded.
-        /// </summary>
-        /// <typeparam name="TAddress">The address type to look up endpoints.</typeparam>
-        /// <param name="address">The information used to look up endpoints for generating a URL.</param>
-        /// <param name="httpContext">The <see cref="HttpContext"/> associated with current request.</param>
-        /// <param name="values">An object that contains route values.</param>
-        /// <param name="link">The generated URL.</param>
-        /// <returns><c>true</c> if a URL was generated successfully; otherwise, <c>false</c>.</returns>
-        public bool TryGetLinkByAddress<TAddress>(
+        /// <typeparam name="TAddress">The address type.</typeparam>
+        /// <param name="httpContext">The <see cref="HttpContext"/> associated with the current request.</param>
+        /// <param name="address">The address value. Used to resolve endpoints.</param>
+        /// <param name="values">The route values. Used to expand parameters in the route template. Optional.</param>
+        /// <param name="fragment">An optional URI fragment. Appended to the resulting URI.</param>
+        /// <param name="options">
+        /// An optional <see cref="LinkOptions"/>. Settings on provided object override the settings with matching
+        /// names from <c>RouteOptions</c>.
+        /// </param>
+        /// <returns>A URI with an absolute path, or <c>null</c>.</returns>
+        public abstract string GetPathByAddress<TAddress>(
             HttpContext httpContext,
             TAddress address,
-            object values,
-            out string link)
-        {
-            return TryGetLinkByAddress(httpContext, address, values, options: null, out link);
-        }
+            RouteValueDictionary values,
+            FragmentString fragment = default,
+            LinkOptions options = default);
 
         /// <summary>
-        /// Generates a URL with an absolute path from the specified lookup information, route values and link options.
-        /// This lookup information is used to find endpoints using a registered 'IEndpointFinder&lt;TAddress&gt;'.
+        /// Generates a URI with an absolute path based on the provided values.
         /// </summary>
-        /// <typeparam name="TAddress">The address type to look up endpoints.</typeparam>
-        /// <param name="address">The information used to look up endpoints for generating a URL.</param>
-        /// <param name="httpContext">The <see cref="HttpContext"/> associated with current request.</param>
-        /// <param name="values">An object that contains route values.</param>
-        /// <param name="options">The <see cref="LinkOptions"/>.</param>
-        /// <returns>The generated URL.</returns>
-        public string GetLinkByAddress<TAddress>(
+        /// <typeparam name="TAddress">The address type.</typeparam>
+        /// <param name="address">The address value. Used to resolve endpoints.</param>
+        /// <param name="values">The route values. Used to expand parameters in the route template. Optional.</param>
+        /// <param name="pathBase">An optional URI path base. Prepended to the path in the resulting URI.</param>
+        /// <param name="fragment">An optional URI fragment. Appended to the resulting URI.</param>
+        /// <param name="options">
+        /// An optional <see cref="LinkOptions"/>. Settings on provided object override the settings with matching
+        /// names from <c>RouteOptions</c>.
+        /// </param>
+        /// <returns>A URI with an absolute path, or <c>null</c>.</returns>
+        public abstract string GetPathByAddress<TAddress>(
+            TAddress address,
+            RouteValueDictionary values,
+            PathString pathBase = default,
+            FragmentString fragment = default,
+            LinkOptions options = default);
+
+        /// <summary>
+        /// Generates an absolute URI based on the provided values.
+        /// </summary>
+        /// <typeparam name="TAddress">The address type.</typeparam>
+        /// <param name="httpContext">The <see cref="HttpContext"/> associated with the current request.</param>
+        /// <param name="address">The address value. Used to resolve endpoints.</param>
+        /// <param name="values">The route values. Used to expand parameters in the route template. Optional.</param>
+        /// <param name="fragment">An optional URI fragment. Appended to the resulting URI.</param>
+        /// <param name="options">
+        /// An optional <see cref="LinkOptions"/>. Settings on provided object override the settings with matching
+        /// names from <c>RouteOptions</c>.
+        /// </param>
+        /// <returns>A URI with an absolute path, or <c>null</c>.</returns>
+        public abstract string GetUriByAddress<TAddress>(
             HttpContext httpContext,
             TAddress address,
-            object values,
-            LinkOptions options)
-        {
-            if (TryGetLinkByAddress(httpContext, address, values, options, out var link))
-            {
-                return link;
-            }
-
-            throw new InvalidOperationException("Could not find a matching endpoint to generate a link.");
-        }
+            RouteValueDictionary values,
+            FragmentString fragment = default,
+            LinkOptions options = default);
 
         /// <summary>
-        /// Generates a URL with an absolute path from the specified lookup information, route values and link options.
-        /// This lookup information is used to find endpoints using a registered 'IEndpointFinder&lt;TAddress&gt;'.
-        /// A return value indicates whether the operation succeeded.
+        /// Generates an absolute URI based on the provided values.
         /// </summary>
-        /// <typeparam name="TAddress">The address type to look up endpoints.</typeparam>
-        /// <param name="address">The information used to look up endpoints for generating a URL.</param>
-        /// <param name="httpContext">The <see cref="HttpContext"/> associated with current request.</param>
-        /// <param name="values">An object that contains route values.</param>
-        /// <param name="options">The <see cref="LinkOptions"/>.</param>
-        /// <param name="link">The generated URL.</param>
-        /// <returns><c>true</c> if a URL was generated successfully; otherwise, <c>false</c>.</returns>
-        public abstract bool TryGetLinkByAddress<TAddress>(
-            HttpContext httpContext,
+        /// <typeparam name="TAddress">The address type.</typeparam>
+        /// <param name="address">The address value. Used to resolve endpoints.</param>
+        /// <param name="values">The route values. Used to expand parameters in the route template. Optional.</param>
+        /// <param name="scheme">The URI scheme, applied to the resulting URI.</param>
+        /// <param name="host">The URI host/authority, applied to the resulting URI.</param>
+        /// <param name="pathBase">An optional URI path base. Prepended to the path in the resulting URI.</param>
+        /// <param name="fragment">An optional URI fragment. Appended to the resulting URI.</param>
+        /// <param name="options">
+        /// An optional <see cref="LinkOptions"/>. Settings on provided object override the settings with matching
+        /// names from <c>RouteOptions</c>.
+        /// </param>
+        /// <returns>An absolute URI, or <c>null</c>.</returns>
+        public abstract string GetUriByAddress<TAddress>(
             TAddress address,
-            object values,
-            LinkOptions options,
-            out string link);
+            RouteValueDictionary values,
+            string scheme,
+            HostString host,
+            PathString pathBase = default,
+            FragmentString fragment = default,
+            LinkOptions options = default);
 
         /// <summary>
-        /// Gets a <see cref="LinkGenerationTemplate"/> to generate a URL from the specified route values.
-        /// This template object holds information of the endpoint(s) that were found and which can later be used to
-        /// generate a URL using the <see cref="LinkGenerationTemplate.MakeUrl(object, LinkOptions)"/> api.
+        /// Gets a <see cref="LinkGenerationTemplate"/> based on the provided <paramref name="address"/>.
         /// </summary>
-        /// <param name="values">
-        /// An object that contains route values. These values are used to lookup endpoint(s).
-        /// </param>
+        /// <typeparam name="TAddress">The address type.</typeparam>
+        /// <param name="address">The address value. Used to resolve endpoints.</param>
         /// <returns>
-        /// If an endpoint(s) was found successfully, then this returns a template object representing that,
-        /// <c>null</c> otherwise.
+        /// A <see cref="LinkGenerationTemplate"/> if one or more endpoints matching the address can be found, otherwise <c>null</c>.
         /// </returns>
-        public LinkGenerationTemplate GetTemplate(object values)
-        {
-            return GetTemplate(httpContext: null, routeName: null, values);
-        }
-
-        /// <summary>
-        /// Gets a <see cref="LinkGenerationTemplate"/> to generate a URL from the specified route name and route values.
-        /// This template object holds information of the endpoint(s) that were found and which can later be used to
-        /// generate a URL using the <see cref="LinkGenerationTemplate.MakeUrl(object, LinkOptions)"/> api.
-        /// </summary>
-        /// <param name="routeName">The name of the route to generate the URL to.</param>
-        /// <param name="values">
-        /// An object that contains route values. These values are used to lookup for endpoint(s).
-        /// </param>
-        /// <returns>
-        /// If an endpoint(s) was found successfully, then this returns a template object representing that,
-        /// <c>null</c> otherwise.
-        /// </returns>
-        public LinkGenerationTemplate GetTemplate(string routeName, object values)
-        {
-            return GetTemplate(httpContext: null, routeName, values);
-        }
-
-        /// <summary>
-        /// Gets a <see cref="LinkGenerationTemplate"/> to generate a URL from the specified route values.
-        /// This template object holds information of the endpoint(s) that were found and which can later be used to
-        /// generate a URL using the <see cref="LinkGenerationTemplate.MakeUrl(object, LinkOptions)"/> api.
-        /// </summary>
-        /// <param name="httpContext">The <see cref="HttpContext"/> associated with current request.</param>
-        /// <param name="values">
-        /// An object that contains route values. These values are used to lookup for endpoint(s).
-        /// </param>
-        /// <returns>
-        /// If an endpoint(s) was found successfully, then this returns a template object representing that,
-        /// <c>null</c> otherwise.
-        /// </returns>
-        public LinkGenerationTemplate GetTemplate(HttpContext httpContext, object values)
-        {
-            return GetTemplate(httpContext, routeName: null, values);
-        }
-
-        /// <summary>
-        /// Gets a <see cref="LinkGenerationTemplate"/> to generate a URL from the specified route name and route values.
-        /// This template object holds information of the endpoint(s) that were found and which can later be used to
-        /// generate a URL using the <see cref="LinkGenerationTemplate.MakeUrl(object, LinkOptions)"/> api.
-        /// </summary>
-        /// <param name="httpContext">The <see cref="HttpContext"/> associated with current request.</param>
-        /// <param name="routeName">The name of the route to generate the URL to.</param>
-        /// <param name="values">
-        /// An object that contains route values. These values are used to lookup for endpoint(s).
-        /// </param>
-        /// <returns>
-        /// If an endpoint(s) was found successfully, then this returns a template object representing that,
-        /// <c>null</c> otherwise.
-        /// </returns>
-        public abstract LinkGenerationTemplate GetTemplate(HttpContext httpContext, string routeName, object values);
-
-        /// <summary>
-        /// Gets a <see cref="LinkGenerationTemplate"/> to generate a URL from the specified lookup information.
-        /// This template object holds information of the endpoint(s) that were found and which can later be used to
-        /// generate a URL using the <see cref="LinkGenerationTemplate.MakeUrl(object, LinkOptions)"/> api.
-        /// The lookup information is used to find endpoints using a registered 'IEndpointFinder&lt;TAddress&gt;'.
-        /// </summary>
-        /// <typeparam name="TAddress">The address type to look up endpoints.</typeparam>
-        /// <param name="address">The information used to look up endpoints for creating a template.</param>
-        /// <returns>
-        /// If an endpoint(s) was found successfully, then this returns a template object representing that,
-        /// <c>null</c> otherwise.
-        /// </returns>
-        public LinkGenerationTemplate GetTemplateByAddress<TAddress>(TAddress address)
-        {
-            return GetTemplateByAddress(httpContext: null, address);
-        }
-
-        /// <summary>
-        /// Gets a <see cref="LinkGenerationTemplate"/> to generate a URL from the specified lookup information.
-        /// This template object holds information of the endpoint(s) that were found and which can later be used to
-        /// generate a URL using the <see cref="LinkGenerationTemplate.MakeUrl(object, LinkOptions)"/> api.
-        /// The lookup information is used to find endpoints using a registered 'IEndpointFinder&lt;TAddress&gt;'.
-        /// </summary>
-        /// <typeparam name="TAddress">The address type to look up endpoints.</typeparam>
-        /// <param name="address">The information used to look up endpoints for creating a template.</param>
-        /// <param name="httpContext">The <see cref="HttpContext"/> associated with current request.</param>
-        /// <returns>
-        /// If an endpoint(s) was found successfully, then this returns a template object representing that,
-        /// <c>null</c> otherwise.
-        /// </returns>
-        public abstract LinkGenerationTemplate GetTemplateByAddress<TAddress>(
-            HttpContext httpContext,
-            TAddress address);
+        public abstract LinkGenerationTemplate GetTemplateByAddress<TAddress>(TAddress address);
     }
 }

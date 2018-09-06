@@ -1,62 +1,98 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing.Matching;
 
 namespace Microsoft.AspNetCore.Routing
 {
-    internal class DefaultLinkGenerationTemplate : LinkGenerationTemplate
+    internal sealed class DefaultLinkGenerationTemplate : LinkGenerationTemplate
     {
-        public DefaultLinkGenerationTemplate(
-            DefaultLinkGenerator linkGenerator,
-            IEnumerable<RouteEndpoint> endpoints,
-            HttpContext httpContext,
-            RouteValueDictionary explicitValues,
-            RouteValueDictionary ambientValues)
+        public DefaultLinkGenerationTemplate(DefaultLinkGenerator linkGenerator, List<RouteEndpoint> endpoints)
         {
             LinkGenerator = linkGenerator;
             Endpoints = endpoints;
-            HttpContext = httpContext;
-            EarlierExplicitValues = explicitValues;
-            AmbientValues = ambientValues;
         }
 
-        internal DefaultLinkGenerator LinkGenerator { get; }
+        public DefaultLinkGenerator LinkGenerator { get; }
 
-        internal IEnumerable<RouteEndpoint> Endpoints { get; }
+        public List<RouteEndpoint> Endpoints { get; }
 
-        internal HttpContext HttpContext { get; }
-
-        internal RouteValueDictionary EarlierExplicitValues { get; }
-
-        internal RouteValueDictionary AmbientValues { get; }
-
-        public override string MakeUrl(object values, LinkOptions options)
+        public override string GetPath(
+            HttpContext httpContext,
+            object values,
+            FragmentString fragment = default,
+            LinkOptions options = null)
         {
-            var currentValues = new RouteValueDictionary(values);
-            var mergedValuesDictionary = new RouteValueDictionary(EarlierExplicitValues);
-
-            foreach (var kvp in currentValues)
+            if (httpContext == null)
             {
-                mergedValuesDictionary[kvp.Key] = kvp.Value;
+                throw new ArgumentNullException(nameof(httpContext));
             }
 
-            foreach (var endpoint in Endpoints)
+            return LinkGenerator.GetPathByEndpoints(
+                Endpoints,
+                DefaultLinkGenerator.GetAmbientValues(httpContext),
+                new RouteValueDictionary(values),
+                httpContext.Request.PathBase,
+                fragment,
+                options);
+        }
+
+        public override string GetPath(
+            object values,
+            PathString pathBase = default,
+            FragmentString fragment = default,
+            LinkOptions options = null)
+        {
+            return LinkGenerator.GetPathByEndpoints(
+                Endpoints,
+                ambientValues: null,
+                new RouteValueDictionary(values),
+                pathBase,
+                fragment,
+                options);
+        }
+
+        public override string GetUri(
+            HttpContext httpContext,
+            object values,
+            FragmentString fragment = default,
+            LinkOptions options = null)
+        {
+            if (httpContext == null)
             {
-                var link = LinkGenerator.MakeLink(
-                    HttpContext,
-                    endpoint,
-                    AmbientValues,
-                    mergedValuesDictionary,
-                    options);
-                if (link != null)
-                {
-                    return link;
-                }
+                throw new ArgumentNullException(nameof(httpContext));
             }
-            return null;
+
+            return LinkGenerator.GetUriByEndpoints(
+                Endpoints,
+                DefaultLinkGenerator.GetAmbientValues(httpContext),
+                new RouteValueDictionary(values),
+                httpContext.Request.Scheme,
+                httpContext.Request.Host,
+                httpContext.Request.PathBase,
+                fragment,
+                options);
+        }
+
+        public override string GetUri(
+            object values,
+            string scheme,
+            HostString host,
+            PathString pathBase = default,
+            FragmentString fragment = default,
+            LinkOptions options = null)
+        {
+            return LinkGenerator.GetUriByEndpoints(
+                Endpoints,
+                ambientValues: null,
+                new RouteValueDictionary(values),
+                scheme,
+                host,
+                pathBase,
+                fragment,
+                options);
         }
     }
 }

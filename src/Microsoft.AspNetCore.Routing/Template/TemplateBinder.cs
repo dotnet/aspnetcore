@@ -160,12 +160,48 @@ namespace Microsoft.AspNetCore.Routing.Template
         public string BindValues(RouteValueDictionary acceptedValues)
         {
             var context = _pool.Get();
-            var result = BindValues(context, acceptedValues);
-            _pool.Return(context);
-            return result;
+
+            try
+            {
+                return TryBindValuesCore(context, acceptedValues) ? context.ToString() : null;
+            }
+            finally
+            {
+                _pool.Return(context);
+            }
         }
 
-        private string BindValues(UriBuildingContext context, RouteValueDictionary acceptedValues)
+        // Step 2: If the route is a match generate the appropriate URI
+        internal bool TryBindValues(
+            RouteValueDictionary acceptedValues,
+            LinkOptions options,
+            LinkOptions globalOptions,
+            out (PathString path, QueryString query) result)
+        {
+            var context = _pool.Get();
+
+            context.AppendTrailingSlash = options?.AppendTrailingSlash ?? globalOptions.AppendTrailingSlash ?? false;
+            context.LowercaseQueryStrings = options?.LowercaseQueryStrings ?? globalOptions.LowercaseQueryStrings ?? false;
+            context.LowercaseUrls = options?.LowercaseUrls ?? globalOptions.LowercaseUrls ?? false;
+
+            try
+            {
+                if (TryBindValuesCore(context, acceptedValues))
+                {
+                    result = (context.ToPathString(), context.ToQueryString());
+                    return true;
+                }
+
+                result = default;
+                return false;
+            }
+            finally
+            {
+                _pool.Return(context);
+            }
+        }
+
+        private bool TryBindValuesCore(UriBuildingContext context, RouteValueDictionary acceptedValues)
         {
             for (var i = 0; i < _pattern.PathSegments.Count; i++)
             {
@@ -182,14 +218,14 @@ namespace Microsoft.AspNetCore.Routing.Template
                     {
                         if (!context.Accept(literalPart.Content))
                         {
-                            return null;
+                            return false;
                         }
                     }
                     else if (part is RoutePatternSeparatorPart separatorPart)
                     {
                         if (!context.Accept(separatorPart.Content))
                         {
-                            return null;
+                            return false;
                         }
                     }
                     else if (part is RoutePatternParameterPart parameterPart)
@@ -216,7 +252,7 @@ namespace Microsoft.AspNetCore.Routing.Template
                             // we won't necessarily add it to the URI we generate.
                             if (!context.Buffer(converted))
                             {
-                                return null;
+                                return false;
                             }
                         }
                         else
@@ -237,7 +273,7 @@ namespace Microsoft.AspNetCore.Routing.Template
                                 }
                                 else
                                 {
-                                    return null;
+                                    return false;
                                 }
                             }
                         }
@@ -262,26 +298,33 @@ namespace Microsoft.AspNetCore.Routing.Template
                 {
                     foreach (var value in values)
                     {
-                        wroteFirst |= AddParameterToContext(context, kvp.Key, value, wroteFirst);
+                        wroteFirst |= AddQueryKeyValueToContext(context, kvp.Key, value, wroteFirst);
                     }
                 }
                 else
                 {
-                    wroteFirst |= AddParameterToContext(context, kvp.Key, kvp.Value, wroteFirst);
+                    wroteFirst |= AddQueryKeyValueToContext(context, kvp.Key, kvp.Value, wroteFirst);
                 }
             }
-            return context.ToString();
+
+            return true;
         }
 
-        private bool AddParameterToContext(UriBuildingContext context, string key, object value, bool wroteFirst)
+        private bool AddQueryKeyValueToContext(UriBuildingContext context, string key, object value, bool wroteFirst)
         {
             var converted = Convert.ToString(value, CultureInfo.InvariantCulture);
             if (!string.IsNullOrEmpty(converted))
             {
-                context.Writer.Write(wroteFirst ? '&' : '?');
-                _urlEncoder.Encode(context.Writer, key);
-                context.Writer.Write('=');
-                _urlEncoder.Encode(context.Writer, converted);
+                if (context.LowercaseQueryStrings)
+                {
+                    key = key.ToLowerInvariant();
+                    converted = converted.ToLowerInvariant();
+                }
+
+                context.QueryWriter.Write(wroteFirst ? '&' : '?');
+                _urlEncoder.Encode(context.QueryWriter, key);
+                context.QueryWriter.Write('=');
+                _urlEncoder.Encode(context.QueryWriter, converted);
                 return true;
             }
             return false;

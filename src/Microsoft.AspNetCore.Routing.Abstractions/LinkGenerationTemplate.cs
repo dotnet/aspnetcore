@@ -1,29 +1,90 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.AspNetCore.Http;
+
 namespace Microsoft.AspNetCore.Routing
 {
     /// <summary>
     /// Defines a contract to generate a URL from a template.
     /// </summary>
+    /// <remarks>
+    /// A <see cref="LinkGenerationTemplate"/> can be created from <see cref="LinkGenerator.GetTemplateByAddress{TAddress}(TAddress)"/>
+    /// by supplying an address value which has matching endpoints. The returned <see cref="LinkGenerationTemplate"/>
+    /// will be bound to the endpoints matching the address that was originally provided.
+    /// </remarks>
     public abstract class LinkGenerationTemplate
     {
         /// <summary>
-        /// Generates a URL with an absolute path from the specified route values.
+        /// Generates a URI with an absolute path based on the provided values.
         /// </summary>
-        /// <param name="values">An object that contains route values.</param>
-        /// <returns>The generated URL.</returns>
-        public string MakeUrl(object values)
-        {
-            return MakeUrl(values, options: null);
-        }
+        /// <param name="httpContext">The <see cref="HttpContext"/> associated with the current request.</param>
+        /// <param name="values">The route values. Used to expand parameters in the route template. Optional.</param>
+        /// <param name="fragment">An optional URI fragment. Appended to the resulting URI.</param>
+        /// <param name="options">
+        /// An optional <see cref="LinkOptions"/>. Settings on provided object override the settings with matching
+        /// names from <c>RouteOptions</c>.
+        /// </param>
+        /// <returns>A URI with an absolute path, or <c>null</c>.</returns>
+        public abstract string GetPath(
+            HttpContext httpContext,
+            object values,
+            FragmentString fragment = default,
+            LinkOptions options = default);
 
         /// <summary>
-        /// Generates a URL with an absolute path from the specified route values and link options.
+        /// Generates a URI with an absolute path based on the provided values.
         /// </summary>
-        /// <param name="values">An object that contains route values.</param>
-        /// <param name="options">The <see cref="LinkOptions"/>.</param>
-        /// <returns>The generated URL.</returns>
-        public abstract string MakeUrl(object values, LinkOptions options);
+        /// <param name="values">The route values. Used to expand parameters in the route template. Optional.</param>
+        /// <param name="pathBase">An optional URI path base. Prepended to the path in the resulting URI.</param>
+        /// <param name="fragment">An optional URI fragment. Appended to the resulting URI.</param>
+        /// <param name="options">
+        /// An optional <see cref="LinkOptions"/>. Settings on provided object override the settings with matching
+        /// names from <c>RouteOptions</c>.
+        /// </param>
+        /// <returns>A URI with an absolute path, or <c>null</c>.</returns>
+        public abstract string GetPath(
+            object values,
+            PathString pathBase = default,
+            FragmentString fragment = default,
+            LinkOptions options = default);
+
+        /// <summary>
+        /// Generates an absolute URI based on the provided values.
+        /// </summary>
+        /// <param name="httpContext">The <see cref="HttpContext"/> associated with the current request.</param>
+        /// <param name="values">The route values. Used to expand parameters in the route template. Optional.</param>
+        /// <param name="fragment">An optional URI fragment. Appended to the resulting URI.</param>
+        /// <param name="options">
+        /// An optional <see cref="LinkOptions"/>. Settings on provided object override the settings with matching
+        /// names from <c>RouteOptions</c>.
+        /// </param>
+        /// <returns>A URI with an absolute path, or <c>null</c>.</returns>
+        public abstract string GetUri(
+            HttpContext httpContext,
+            object values,
+            FragmentString fragment = default,
+            LinkOptions options = default);
+
+        /// <summary>
+        /// Generates an absolute URI based on the provided values.
+        /// </summary>
+        /// <param name="values">The route values. Used to expand parameters in the route template. Optional.</param>
+        /// <param name="scheme">The URI scheme, applied to the resulting URI.</param>
+        /// <param name="host">The URI host/authority, applied to the resulting URI.</param>
+        /// <param name="pathBase">An optional URI path base. Prepended to the path in the resulting URI.</param>
+        /// <param name="fragment">An optional URI fragment. Appended to the resulting URI.</param>
+        /// <param name="options">
+        /// An optional <see cref="LinkOptions"/>. Settings on provided object override the settings with matching
+        /// names from <c>RouteOptions</c>.
+        /// </param>
+        /// <returns>An absolute URI, or <c>null</c>.</returns>
+        public abstract string GetUri(
+            object values,
+            string scheme,
+            HostString host,
+            PathString pathBase = default,
+            FragmentString fragment = default,
+            LinkOptions options = default);
     }
 }

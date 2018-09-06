@@ -103,13 +103,13 @@ namespace RoutingSample.Web
                             response.StatusCode = 200;
                             response.ContentType = "text/plain";
                             return response.WriteAsync(
-                                "Link: " + linkGenerator.GetLink(httpContext, "WithSingleAsteriskCatchAll", new { }));
+                                "Link: " + linkGenerator.GetPathByRouteValues(httpContext, "WithSingleAsteriskCatchAll", new { }));
                         },
                         RoutePatternFactory.Parse("/WithSingleAsteriskCatchAll/{*path}"),
                         0,
                         new EndpointMetadataCollection(
                             new RouteValuesAddressMetadata(
-                                name: "WithSingleAsteriskCatchAll",
+                                routeName: "WithSingleAsteriskCatchAll",
                                 requiredValues: new RouteValueDictionary())),
                         "WithSingleAsteriskCatchAll"),
                     new RouteEndpoint((httpContext) =>
@@ -120,13 +120,13 @@ namespace RoutingSample.Web
                             response.StatusCode = 200;
                             response.ContentType = "text/plain";
                             return response.WriteAsync(
-                                "Link: " + linkGenerator.GetLink(httpContext, "WithDoubleAsteriskCatchAll", new { }));
+                                "Link: " + linkGenerator.GetPathByRouteValues(httpContext, "WithDoubleAsteriskCatchAll", new { }));
                         },
                         RoutePatternFactory.Parse("/WithDoubleAsteriskCatchAll/{**path}"),
                         0,
                         new EndpointMetadataCollection(
                             new RouteValuesAddressMetadata(
-                                name: "WithDoubleAsteriskCatchAll",
+                                routeName: "WithDoubleAsteriskCatchAll",
                                 requiredValues: new RouteValueDictionary())),
                         "WithDoubleAsteriskCatchAll"),
                 });
