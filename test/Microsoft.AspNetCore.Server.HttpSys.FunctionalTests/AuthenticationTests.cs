@@ -346,7 +346,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
-        [ConditionalTheory]
+        [ConditionalTheory(Skip = "https://github.com/aspnet/HttpSysServer/issues/474")]
         [InlineData(AuthenticationSchemes.Negotiate)]
         [InlineData(AuthenticationSchemes.NTLM)]
         // [InlineData(AuthenticationSchemes.Digest)] // Not implemented
