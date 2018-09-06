@@ -66,9 +66,9 @@ namespace Microsoft.AspNetCore.Http
         public abstract IQueryCollection Query { get; set; }
 
         /// <summary>
-        /// Gets or sets the RequestProtocol.
+        /// Gets or sets the request protocol (e.g. HTTP/1.1).
         /// </summary>
-        /// <returns>The RequestProtocol.</returns>
+        /// <returns>The request protocol.</returns>
         public abstract string Protocol { get; set; }
 
         /// <summary>
