@@ -13,6 +13,7 @@ param(
     [Alias("x64")]
     [string]$Runtime64Zip,
     [string]$BuildNumber = 't000',
+    [string]$SignType = '',
 
     [string]$AccessTokenSuffix = $null,
     [string]$AssetRootUrl = $null,
@@ -80,7 +81,8 @@ try {
             "-p:SharedFrameworkHarvestRootPath=$repoRoot/obj/sfx/" `
             "-p:Configuration=$Configuration" `
             "-p:BuildNumber=$BuildNumber" `
-            -bl `
+            "-p:SignType=$SignType" `
+            "-bl:$repoRoot/artifacts/logs/installers.msbuild.binlog" `
             @msbuildArgs
     }
 }

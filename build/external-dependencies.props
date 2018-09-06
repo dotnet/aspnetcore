@@ -150,7 +150,7 @@
     <ExternalDependency Include="System.Diagnostics.EventLog" Version="$(SystemDiagnosticsEventLogPackageVersion)" />
     <ExternalDependency Include="System.IdentityModel.Tokens.Jwt" Version="$(SystemIdentityModelTokensJwtPackageVersion)" />
     <ExternalDependency Include="System.Interactive.Async" Version="$(SystemInteractiveAsyncPackageVersion)" />
-    <ExternalDependency Include="System.IO.Pipelines" Version="$(SystemIOPipelinesPackageVersion)" />
+    <ExternalDependency Include="System.IO.Pipelines" Version="$(SystemIOPipelinesPackageVersion)" AppMetapackage="true" AllMetapackage="true" MetapackageVersionRangeType="Minimum" />
     <ExternalDependency Include="System.Memory" Version="$(SystemMemoryPackageVersion)" />
     <ExternalDependency Include="System.Net.Http.WinHttpHandler" Version="$(SystemNetHttpWinHttpHandlerPackageVersion)" />
     <ExternalDependency Include="System.Net.Http" Version="$(SystemNetHttpPackageVersion)" />

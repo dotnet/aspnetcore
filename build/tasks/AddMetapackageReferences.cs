@@ -89,7 +89,10 @@ namespace RepoTasks
                     continue;
                 }
 
-                var packageVersionValue = GetDependencyVersion(dependencyVersionType, packageName, packageVersion);
+                var packageVersionValue =
+                    Enum.TryParse<VersionRangeType>(package.GetMetadata("MetapackageVersionRangeType"), out var packageVersionType)
+                    ? GetDependencyVersion(packageVersionType, packageName, packageVersion)
+                    : GetDependencyVersion(dependencyVersionType, packageName, packageVersion);
 
                 Log.LogMessage(MessageImportance.High, $" - Package: {packageName} Version: {packageVersionValue}");
 

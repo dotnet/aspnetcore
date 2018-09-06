@@ -9,7 +9,8 @@ param(
     [string]$Configuration = 'Release',
     [string]$DepsZip,
     [string]$BuildNumber = 't000',
-    [string]$AncmSourceBranch = 'master'
+    [string]$AncmSourceBranch = 'master',
+    [string]$SignType = ''
 )
 
 $ErrorActionPreference = 'Stop'
@@ -102,7 +103,9 @@ try {
             "-p:WixTasksPath=$wixToolSetRoot\wixtasks.dll" `
             "-p:WixNativeCATargetsPath=$wixToolSetRoot\sdk\wix.nativeca.targets" `
             "-p:Configuration=$Configuration" `
-            "-p:BuildNumber=$BuildNumber"
+            "-p:BuildNumber=$BuildNumber" `
+            "-p:SignType=$SignType" `
+            "-bl:$repoRoot/artifacts/logs/ancn.msbuild.binlog"
     }
 
     $outputPath = "$repoRoot/artifacts/bin/$Configuration/installers/en-US/"
