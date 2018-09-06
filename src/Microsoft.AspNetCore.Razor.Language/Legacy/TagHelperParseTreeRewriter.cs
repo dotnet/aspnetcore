@@ -137,8 +137,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 // scope. Block scopes are special cases in Razor such as @<p> would cause an error because there's no
                 // matching end </p> tag in the template block scope and therefore doesn't make sense as a tag helper.
                 BuildMalformedTagHelpers(_trackerStack.Count - activeTrackers, errorSink);
-
-                Debug.Assert(activeTrackers == _trackerStack.Count);
             }
 
             BuildCurrentlyTrackedBlock();
