@@ -2403,7 +2403,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 
         [Fact]
-        public async Task MutableObjectModelBinder_WithRequiredProperty_NoData_CustomPrefix_GetsErros()
+        public async Task MutableObjectModelBinder_WithRequiredProperty_NoData_CustomPrefix_GetsErrors()
         {
             // Arrange
             var parameter = new ParameterDescriptor()
@@ -2507,7 +2507,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 
         [Fact]
-        public async Task MutableObjectModelBinder_WithRequiredCollectionProperty_NoData_GetsErros()
+        public async Task MutableObjectModelBinder_WithRequiredCollectionProperty_NoData_GetsErrors()
         {
             // Arrange
             var parameter = new ParameterDescriptor()
@@ -2555,7 +2555,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 
         [Fact]
-        public async Task MutableObjectModelBinder_WithRequiredCollectionProperty_NoData_CustomPrefix_GetsErros()
+        public async Task MutableObjectModelBinder_WithRequiredCollectionProperty_NoData_CustomPrefix_GetsErrors()
         {
             // Arrange
             var parameter = new ParameterDescriptor()

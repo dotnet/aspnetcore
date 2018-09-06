@@ -151,7 +151,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         }
 
         [Fact]
-        public void IsNameMatch_WithPrefix_ReturnsFalse_IfNameIsNotProperPrfix()
+        public void IsNameMatch_WithPrefix_ReturnsFalse_IfNameIsNotProperPrefix()
         {
             // Arrange
             var name = "Postman";
@@ -386,7 +386,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         }
 
         [Fact]
-        public void IsMatch_ReturnsTrue_IfMethodNameAndParametersMatchs()
+        public void IsMatch_ReturnsTrue_IfMethodNameAndParametersMatches()
         {
             // Arrange
             var method = typeof(TestController).GetMethod(nameof(TestController.Get));

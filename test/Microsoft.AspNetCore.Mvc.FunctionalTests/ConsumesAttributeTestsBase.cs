@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         [Theory]
         [InlineData("application/json")]
         [InlineData("text/json")]
-        public async Task ActionLevelAttribute_OveridesClassLevel(string requestContentType)
+        public async Task ActionLevelAttribute_OverridesClassLevel(string requestContentType)
         {
             // Arrange
             var input = "{SampleString:\"" + requestContentType + "\"}";

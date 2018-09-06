@@ -365,7 +365,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
                     // We also want to add the same (as in reference equality) list of actions to the ordinal entries.
                     // We'll keep updating `entries` to include all of the actions in the same equivalence class -
-                    // meaning, all conventionally routed actions for which the route values are equalignoring case.
+                    // meaning, all conventionally routed actions for which the route values are equal ignoring case.
                     //
                     // `entries` will appear in `OrdinalIgnoreCaseEntries` exactly once and in `OrdinalEntries` once
                     // for each variation of casing that we've seen.

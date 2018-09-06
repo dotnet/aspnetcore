@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             var cacheEntry = GetCacheEntry(modelType);
 
             // We're relying on a safe race-condition for Properties - take care only
-            // to set the value onces the properties are fully-initialized.
+            // to set the value once the properties are fully-initialized.
             if (cacheEntry.Details.Properties == null)
             {
                 var key = ModelMetadataIdentity.ForType(modelType);

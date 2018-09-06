@@ -1023,7 +1023,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 
         [Fact]
-        public async Task Validation_StringLengthAttribute_OnProperyOfCollectionElement_Valid()
+        public async Task Validation_StringLengthAttribute_OnPropertyOfCollectionElement_Valid()
         {
             // Arrange
             var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
@@ -1060,7 +1060,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 
         [Fact]
-        public async Task Validation_StringLengthAttribute_OnProperyOfCollectionElement_Invalid()
+        public async Task Validation_StringLengthAttribute_OnPropertyOfCollectionElement_Invalid()
         {
             // Arrange
             var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
@@ -1100,7 +1100,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 
         [Fact]
-        public async Task Validation_StringLengthAttribute_OnProperyOfCollectionElement_NoData()
+        public async Task Validation_StringLengthAttribute_OnPropertyOfCollectionElement_NoData()
         {
             // Arrange
             var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
@@ -1701,7 +1701,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         // basically result in clearing out all model errors, which is BAD.
         //
         // The fix is to treat non-user-input as have a key of null, which means that the MSD
-        // isn't even examined when it comes to supressing validation.
+        // isn't even examined when it comes to suppressing validation.
         [Fact]
         public async Task CancellationToken_WithEmptyPrefix_DoesNotSuppressUnrelatedErrors()
         {

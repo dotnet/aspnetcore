@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             // from either the set of known precompiled views, or by being compiled.
             _cache = cache;
 
-            // We need to validate that the all of the precompiled views are unique by path (case-insenstive).
+            // We need to validate that the all of the precompiled views are unique by path (case-insensitive).
             // We do this because there's no good way to canonicalize paths on windows, and it will create
             // problems when deploying to linux. Rather than deal with these issues, we just don't support
             // views that differ only by case.
@@ -115,6 +115,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                 logger.ViewCompilerNoCompiledViewsFound();
             }
         }
+
+        public bool AllowRecompilingViewsOnFileChange { get; set; }
 
         /// <inheritdoc />
         public Task<CompiledViewDescriptor> CompileAsync(string relativePath)
@@ -254,16 +256,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 
                 // Used to validate and recompile
                 NormalizedPath = normalizedPath,
-                ExpirationTokens = new List<IChangeToken>(),
-            };
 
-            var checksums = precompiledView.Item.GetChecksumMetadata();
-            for (var i = 0; i < checksums.Count; i++)
-            {
-                // We rely on Razor to provide the right set of checksums. Trust the compiler, it has to do a good job,
-                // so it probably will.
-                item.ExpirationTokens.Add(_fileProvider.Watch(checksums[i].Identifier));
-            }
+                ExpirationTokens = GetExpirationTokens(precompiledView),
+            };
 
             // We also need to create a new descriptor, because the original one doesn't have expiration tokens on
             // it. These will be used by the view location cache, which is like an L1 cache for views (this class is
@@ -282,10 +277,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 
         private ViewCompilerWorkItem CreateRuntimeCompilationWorkItem(string normalizedPath)
         {
-            var expirationTokens = new List<IChangeToken>()
+            IList<IChangeToken> expirationTokens = Array.Empty<IChangeToken>();
+
+            if (AllowRecompilingViewsOnFileChange)
             {
-                _fileProvider.Watch(normalizedPath),
-            };
+                var changeToken = _fileProvider.Watch(normalizedPath);
+                expirationTokens = new List<IChangeToken> { changeToken };
+            }
 
             var projectItem = _projectEngine.FileSystem.GetItem(normalizedPath);
             if (!projectItem.Exists)
@@ -293,7 +291,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                 _logger.ViewCompilerCouldNotFindFileAtPath(normalizedPath);
 
                 // If the file doesn't exist, we can't do compilation right now - we still want to cache
-                // the fact that we tried. This will allow us to retrigger compilation if the view file
+                // the fact that we tried. This will allow us to re-trigger compilation if the view file
                 // is added.
                 return new ViewCompilerWorkItem()
                 {
@@ -313,9 +311,46 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 
             _logger.ViewCompilerFoundFileToCompile(normalizedPath);
 
+            GetChangeTokensFromImports(expirationTokens, projectItem);
+
+            return new ViewCompilerWorkItem()
+            {
+                SupportsCompilation = true,
+
+                NormalizedPath = normalizedPath,
+                ExpirationTokens = expirationTokens,
+            };
+        }
+
+        private IList<IChangeToken> GetExpirationTokens(CompiledViewDescriptor precompiledView)
+        {
+            if (!AllowRecompilingViewsOnFileChange)
+            {
+                return Array.Empty<IChangeToken>();
+            }
+
+            var checksums = precompiledView.Item.GetChecksumMetadata();
+            var expirationTokens = new List<IChangeToken>(checksums.Count);
+
+            for (var i = 0; i < checksums.Count; i++)
+            {
+                // We rely on Razor to provide the right set of checksums. Trust the compiler, it has to do a good job,
+                // so it probably will.
+                expirationTokens.Add(_fileProvider.Watch(checksums[i].Identifier));
+            }
+
+            return expirationTokens;
+        }
+
+        private void GetChangeTokensFromImports(IList<IChangeToken> expirationTokens, RazorProjectItem projectItem)
+        {
+            if (!AllowRecompilingViewsOnFileChange)
+            {
+                return;
+            }
+
             // OK this means we can do compilation. For now let's just identify the other files we need to watch
             // so we can create the cache entry. Compilation will happen after we release the lock.
-
             var importFeature = _projectEngine.ProjectFeatures.OfType<IImportProjectFeature>().FirstOrDefault();
 
             // There should always be an import feature unless someone has misconfigured their RazorProjectEngine.
@@ -330,14 +365,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             {
                 expirationTokens.Add(_fileProvider.Watch(physicalImport.FilePath));
             }
-
-            return new ViewCompilerWorkItem()
-            {
-                SupportsCompilation = true,
-
-                NormalizedPath = normalizedPath,
-                ExpirationTokens = expirationTokens,
-            };
         }
 
         protected virtual CompiledViewDescriptor CompileAndEmit(string relativePath)

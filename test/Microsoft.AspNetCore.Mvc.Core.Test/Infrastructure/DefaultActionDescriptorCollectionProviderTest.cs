@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         }
 
         [Fact]
-        public void ActionDescriptors_UpdatesAndResubscripes_WhenChangeTokenTriggers()
+        public void ActionDescriptors_UpdatesAndResubscribes_WhenChangeTokenTriggers()
         {
             // Arrange
             var actionDescriptorProvider = new Mock<IActionDescriptorProvider>();

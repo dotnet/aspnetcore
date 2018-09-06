@@ -186,12 +186,12 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             Assert.NotEqual(cachedKeyHashCode1, hashCode2);
         }
 
-        private static MemberExpressionCacheKey GetKey<TResult>(Expression<Func<TestModel, TResult>> expresssion)
-            => GetKey<TestModel, TResult>(expresssion);
+        private static MemberExpressionCacheKey GetKey<TResult>(Expression<Func<TestModel, TResult>> expression)
+            => GetKey<TestModel, TResult>(expression);
 
-        private static MemberExpressionCacheKey GetKey<TModel, TResult>(Expression<Func<TModel, TResult>> expresssion)
+        private static MemberExpressionCacheKey GetKey<TModel, TResult>(Expression<Func<TModel, TResult>> expression)
         {
-            var memberExpression = Assert.IsAssignableFrom<MemberExpression>(expresssion.Body);
+            var memberExpression = Assert.IsAssignableFrom<MemberExpression>(expression.Body);
             return new MemberExpressionCacheKey(typeof(TModel), memberExpression);
         }
 

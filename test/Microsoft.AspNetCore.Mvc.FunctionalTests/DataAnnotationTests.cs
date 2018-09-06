@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         private const string EnumUrl = "http://localhost/Enum/Enum";
 
         [Fact]
-        public async Task DataAnnotationLocalizionOfEnums_FromDataAnnotationLocalizerProvider()
+        public async Task DataAnnotationLocalizationOfEnums_FromDataAnnotationLocalizerProvider()
         {
             // Arrange & Act
             var response = await Client.GetAsync(EnumUrl);

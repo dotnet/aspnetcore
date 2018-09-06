@@ -8,6 +8,7 @@ using System.Threading;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 using Microsoft.AspNetCore.Mvc.Razor.Internal;
 using Microsoft.AspNetCore.Mvc.Routing;
@@ -749,7 +750,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         }
 
         [Fact]
-        public void FindView_NoramlizesPaths_ReturnedByViewLocationExpanders()
+        public void FindView_NormalizesPaths_ReturnedByViewLocationExpanders()
         {
             // Arrange
             var pageFactory = new Mock<IRazorPageFactoryProvider>();
@@ -1979,7 +1980,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             IEnumerable<string> areaViewLocationFormats = null,
             IEnumerable<string> pageViewLocationFormats = null)
         {
-            var optionsSetup = new RazorViewEngineOptionsSetup(Mock.Of<IHostingEnvironment>());
+            var optionsSetup = new RazorViewEngineOptionsSetup(
+                Mock.Of<IHostingEnvironment>(),
+                NullLoggerFactory.Instance,
+                Options.Create(new MvcCompatibilityOptions()));
 
             var options = new RazorViewEngineOptions();
             optionsSetup.Configure(options);
@@ -2040,8 +2044,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 routeData.Values.Add(kvp.Key, kvp.Value);
             }
 
-            var actionDesciptor = new ActionDescriptor();
-            return new ActionContext(httpContext, routeData, actionDesciptor);
+            var actionDescriptor = new ActionDescriptor();
+            return new ActionContext(httpContext, routeData, actionDescriptor);
         }
 
         private static ActionContext GetActionContextWithActionDescriptor(

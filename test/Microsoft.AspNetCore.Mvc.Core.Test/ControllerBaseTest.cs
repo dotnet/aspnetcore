@@ -1027,10 +1027,10 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             // Arrange
             var controller = new TestableController();
             var pageName = "/Page-Name";
-            var routeVaues = new { key = "value" };
+            var routeValues = new { key = "value" };
 
             // Act
-            var result = controller.RedirectToPage(pageName, routeVaues);
+            var result = controller.RedirectToPage(pageName, routeValues);
 
             // Assert
             Assert.IsType<RedirectToPageResult>(result);

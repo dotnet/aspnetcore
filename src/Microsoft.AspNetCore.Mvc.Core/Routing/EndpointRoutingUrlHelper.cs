@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 
@@ -51,46 +52,41 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 throw new ArgumentNullException(nameof(urlActionContext));
             }
 
-            var valuesDictionary = GetValuesDictionary(urlActionContext.Values);
+            var values = GetValuesDictionary(urlActionContext.Values);
 
             if (urlActionContext.Action == null)
             {
-                if (!valuesDictionary.ContainsKey("action") &&
+                if (!values.ContainsKey("action") &&
                     AmbientValues.TryGetValue("action", out var action))
                 {
-                    valuesDictionary["action"] = action;
+                    values["action"] = action;
                 }
             }
             else
             {
-                valuesDictionary["action"] = urlActionContext.Action;
+                values["action"] = urlActionContext.Action;
             }
 
             if (urlActionContext.Controller == null)
             {
-                if (!valuesDictionary.ContainsKey("controller") &&
+                if (!values.ContainsKey("controller") &&
                     AmbientValues.TryGetValue("controller", out var controller))
                 {
-                    valuesDictionary["controller"] = controller;
+                    values["controller"] = controller;
                 }
             }
             else
             {
-                valuesDictionary["controller"] = urlActionContext.Controller;
+                values["controller"] = urlActionContext.Controller;
             }
 
-            var successfullyGeneratedLink = _linkGenerator.TryGetLink(
+
+            var path = _linkGenerator.GetPathByRouteValues(
                 ActionContext.HttpContext,
-                valuesDictionary,
-                out var link);
-            if (!successfullyGeneratedLink)
-            {
-                //TODO: log here
-
-                return null;
-            }
-
-            return GenerateUrl(urlActionContext.Protocol, urlActionContext.Host, link, urlActionContext.Fragment);
+                routeName: null,
+                values,
+                new FragmentString(urlActionContext.Fragment == null ? null : "#" + urlActionContext.Fragment));
+            return GenerateUrl(urlActionContext.Protocol, urlActionContext.Host, path);
         }
 
         /// <inheritdoc />
@@ -101,20 +97,12 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 throw new ArgumentNullException(nameof(routeContext));
             }
 
-            var valuesDictionary = routeContext.Values as RouteValueDictionary ?? GetValuesDictionary(routeContext.Values);
-
-            var successfullyGeneratedLink = _linkGenerator.TryGetLink(
+            var path = _linkGenerator.GetPathByRouteValues(
                 ActionContext.HttpContext,
                 routeContext.RouteName,
-                valuesDictionary,
-                out var link);
-
-            if (!successfullyGeneratedLink)
-            {
-                return null;
-            }
-
-            return GenerateUrl(routeContext.Protocol, routeContext.Host, link, routeContext.Fragment);
+                routeContext.Values,
+                new FragmentString(routeContext.Fragment == null ? null : "#" + routeContext.Fragment));
+            return GenerateUrl(routeContext.Protocol, routeContext.Host, path);
         }
     }
 }

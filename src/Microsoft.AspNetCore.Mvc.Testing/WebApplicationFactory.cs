@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing
         /// <see cref="WebApplicationFactoryContentRootAttribute"/> on the assembly containing the functional tests with
         /// a key equal to the <typeparamref name="TEntryPoint"/> assembly <see cref="Assembly.FullName"/>.
         /// In case an attribute with the right key can't be found, <see cref="WebApplicationFactory{TEntryPoint}"/>
-        /// will fall back to searching for a solution file (*.sln) and then appending <typeparamref name="TEntryPoint"/> asembly name
+        /// will fall back to searching for a solution file (*.sln) and then appending <typeparamref name="TEntryPoint"/> assembly name
         /// to the solution directory. The application root directory will be used to discover views and content files.
         /// </para>
         /// <para>

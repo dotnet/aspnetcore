@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         private readonly DefaultHttpContext _httpContextInstance;
 
         // The following are protected by this lock for WRITES only. This pattern is similar
-        // to DefaultActionDescriptorChangeProvider - see comments there for details on 
+        // to DefaultActionDescriptorChangeProvider - see comments there for details on
         // all of the threading behaviors.
         private readonly object _lock = new object();
         private List<Endpoint> _endpoints;
@@ -162,7 +162,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                                 // - /Home/Index/{id?}
                                 // - /Home
                                 // - /
-                                if (UseDefaultValuePlusRemainingSegementsOptional(i, action, endpointInfo, newPathSegments))
+                                if (UseDefaultValuePlusRemainingSegmentsOptional(i, action, endpointInfo, newPathSegments))
                                 {
                                     var subPathSegments = newPathSegments.Take(i);
 
@@ -270,7 +270,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             }
         }
 
-        private bool UseDefaultValuePlusRemainingSegementsOptional(
+        private bool UseDefaultValuePlusRemainingSegmentsOptional(
             int segmentIndex,
             ActionDescriptor action,
             MvcEndpointInfo endpointInfo,

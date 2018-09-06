@@ -384,7 +384,7 @@ Hello from /Pages/Shared/";
         }
 
         [Fact]
-        public async Task AllowAnonymouseToPageConvention_CanBeAppliedToAreaPages()
+        public async Task AllowAnonymousToPageConvention_CanBeAppliedToAreaPages()
         {
             // Act
             var response = await Client.GetStringAsync("/Accounts/RequiresAuth/AllowAnonymous");
@@ -395,7 +395,7 @@ Hello from /Pages/Shared/";
 
         // These test is important as it covers a feature that allows razor pages to use a different
         // model at runtime that wasn't known at compile time. Like a non-generic model used at compile
-        // time and overrided at runtime with a closed-generic model that performs the actual implementation.
+        // time and overriden at runtime with a closed-generic model that performs the actual implementation.
         // An example of this is how the Identity UI library defines a base page model in their views,
         // like how the Register.cshtml view defines its model as RegisterModel and then, at runtime it replaces
         // that model with RegisterModel<TUser> where TUser is the type of the user used to configure identity.
@@ -506,7 +506,7 @@ Hello from /Pages/Shared/";
         }
 
         [Fact]
-        public async Task ViewDataAttributes_SetInPageModel_AreTransferedToLayout()
+        public async Task ViewDataAttributes_SetInPageModel_AreTransferredToLayout()
         {
             // Arrange
             var document = await Client.GetHtmlDocumentAsync("/ViewData/ViewDataInPage");
@@ -526,7 +526,7 @@ Hello from /Pages/Shared/";
         }
 
         [Fact]
-        public async Task ViewDataAttributes_SetInPageWithoutModel_AreTransferedToLayout()
+        public async Task ViewDataAttributes_SetInPageWithoutModel_AreTransferredToLayout()
         {
             // Arrange
             var document = await Client.GetHtmlDocumentAsync("/ViewData/ViewDataInPageWithoutModel");

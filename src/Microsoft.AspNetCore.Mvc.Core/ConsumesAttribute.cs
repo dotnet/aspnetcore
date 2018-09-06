@@ -189,7 +189,7 @@ namespace Microsoft.AspNetCore.Mvc
             // If there are multiple IConsumeActionConstraints which are defined at the class and
             // at the action level, the one closest to the action overrides the others. To ensure this
             // we take advantage of the fact that ConsumesAttribute is both an IActionFilter and an
-            // IConsumeActionConstraint. Since filterdescriptor collection is ordered (the last filter is the one
+            // IConsumeActionConstraint. Since FilterDescriptor collection is ordered (the last filter is the one
             // closest to the action), we apply this constraint only if there is no IConsumeActionConstraint after this.
             return actionDescriptor.FilterDescriptors.Last(
                 filter => filter.Filter is IConsumesActionConstraint).Filter == this;

@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Mvc
         [InlineData("application/json")]
         [InlineData("application/json;Parameter1=12")]
         [InlineData("text/xml")]
-        public void ActionConstraint_Accept_MatchesForMachingRequestContentType(string contentType)
+        public void ActionConstraint_Accept_MatchesForMatchingRequestContentType(string contentType)
         {
             // Arrange
             var constraint = new ConsumesAttribute("application/json", "text/xml");

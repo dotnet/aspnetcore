@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -85,7 +84,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
             return new CompositeChangeToken(changeTokens);
         }
-        
+
         private void Initialize()
         {
             // Using double-checked locking on initialization because we fire change token callbacks
@@ -134,7 +133,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 // Consumers who poll will observe a new action descriptor collection at step 2 - they will see
                 // the new collection and ignore the change token.
                 //
-                // Consumers who listen to the change token will requery at step 4 - they will see the new collection
+                // Consumers who listen to the change token will re-query at step 4 - they will see the new collection
                 // and new change token.
                 //
                 // Anyone who acquires the collection and change token between steps 2 and 3 will be notified of

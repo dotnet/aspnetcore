@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc
     public class ValidationProblemDetails : ProblemDetails
     {
         /// <summary>
-        /// Intializes a new instance of <see cref="ValidationProblemDetails"/>.
+        /// Initializes a new instance of <see cref="ValidationProblemDetails"/>.
         /// </summary>
         public ValidationProblemDetails()
         {

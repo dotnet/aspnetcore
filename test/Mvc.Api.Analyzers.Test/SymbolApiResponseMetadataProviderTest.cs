@@ -258,7 +258,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         [Fact]
         public Task GetResponseMetadata_IgnoresAttributesWithIncorrectStatusCodeType()
         {
-            return GetResponseMetadata_WorksForInvalidOrUnsupportedAttribues(
+            return GetResponseMetadata_WorksForInvalidOrUnsupportedAttributes(
                 nameof(GetResponseMetadata_ControllerActionWithAttributes),
                 nameof(GetResponseMetadata_ControllerActionWithAttributes.ActionWithProducesResponseTypeWithIncorrectStatusCodeType));
         }
@@ -266,12 +266,12 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         [Fact]
         public Task GetResponseMetadata_IgnoresDerivedAttributesWithoutPropertyOnConstructorArguments()
         {
-            return GetResponseMetadata_WorksForInvalidOrUnsupportedAttribues(
+            return GetResponseMetadata_WorksForInvalidOrUnsupportedAttributes(
                 nameof(GetResponseMetadata_ControllerActionWithAttributes),
                 nameof(GetResponseMetadata_ControllerActionWithAttributes.ActionWithCustomProducesResponseTypeAttributeWithoutArguments));
         }
 
-        private async Task GetResponseMetadata_WorksForInvalidOrUnsupportedAttribues(string typeName, string methodName)
+        private async Task GetResponseMetadata_WorksForInvalidOrUnsupportedAttributes(string typeName, string methodName)
         {
             // Arrange
             var compilation = await GetResponseMetadataCompilation();

@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         /// <summary>
-        /// Intializes a new instance of <see cref="ActionResult{TValue}"/> using the specified <see cref="ActionResult"/>.
+        /// Initializes a new instance of <see cref="ActionResult{TValue}"/> using the specified <see cref="ActionResult"/>.
         /// </summary>
         /// <param name="result">The <see cref="ActionResult"/>.</param>
         public ActionResult(ActionResult result)

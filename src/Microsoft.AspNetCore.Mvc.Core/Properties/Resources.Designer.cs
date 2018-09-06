@@ -1509,18 +1509,18 @@ namespace Microsoft.AspNetCore.Mvc.Core
             => string.Format(CultureInfo.CurrentCulture, GetString("ApiConvention_UnsupportedAttributesOnConvention"), p0, p1, p2);
 
         /// <summary>
-        /// Method name '{0}' is ambigous for convention type '{1}'. More than one method found with the name '{0}'.
+        /// Method name '{0}' is ambiguous for convention type '{1}'. More than one method found with the name '{0}'.
         /// </summary>
-        internal static string ApiConventionMethod_AmbigiousMethodName
+        internal static string ApiConventionMethod_AmbiguousMethodName
         {
-            get => GetString("ApiConventionMethod_AmbigiousMethodName");
+            get => GetString("ApiConventionMethod_AmbiguousMethodName");
         }
 
         /// <summary>
-        /// Method name '{0}' is ambigous for convention type '{1}'. More than one method found with the name '{0}'.
+        /// Method name '{0}' is ambiguous for convention type '{1}'. More than one method found with the name '{0}'.
         /// </summary>
-        internal static string FormatApiConventionMethod_AmbigiousMethodName(object p0, object p1)
-            => string.Format(CultureInfo.CurrentCulture, GetString("ApiConventionMethod_AmbigiousMethodName"), p0, p1);
+        internal static string FormatApiConventionMethod_AmbiguousMethodName(object p0, object p1)
+            => string.Format(CultureInfo.CurrentCulture, GetString("ApiConventionMethod_AmbiguousMethodName"), p0, p1);
 
         /// <summary>
         /// A method named '{0}' was not found on convention type '{1}'.

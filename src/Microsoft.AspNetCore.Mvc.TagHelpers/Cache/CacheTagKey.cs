@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Cache
     public class CacheTagKey : IEquatable<CacheTagKey>
     {
         private static readonly char[] AttributeSeparator = new[] { ',' };
-        private static readonly Func<IRequestCookieCollection, string, string> CookieAcccessor = (c, key) => c[key];
+        private static readonly Func<IRequestCookieCollection, string, string> CookieAccessor = (c, key) => c[key];
         private static readonly Func<IHeaderDictionary, string, string> HeaderAccessor = (c, key) => c[key];
         private static readonly Func<IQueryCollection, string, string> QueryAccessor = (c, key) => c[key];
         private static readonly Func<RouteValueDictionary, string, string> RouteValueAccessor = (c, key) => c[key]?.ToString();
@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Cache
             _expiresOn = tagHelper.ExpiresOn;
             _expiresSliding = tagHelper.ExpiresSliding;
             _varyBy = tagHelper.VaryBy;
-            _cookies = ExtractCollection(tagHelper.VaryByCookie, request.Cookies, CookieAcccessor);
+            _cookies = ExtractCollection(tagHelper.VaryByCookie, request.Cookies, CookieAccessor);
             _headers = ExtractCollection(tagHelper.VaryByHeader, request.Headers, HeaderAccessor);
             _queries = ExtractCollection(tagHelper.VaryByQuery, request.Query, QueryAccessor);
             _routeValues = ExtractCollection(tagHelper.VaryByRoute, tagHelper.ViewContext.RouteData.Values, RouteValueAccessor);

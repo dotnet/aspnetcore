@@ -1021,10 +1021,10 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
             // Arrange
             var pageModel = new TestPageModel();
             var pageName = "/Page-Name";
-            var routeVaues = new { key = "value" };
+            var routeValues = new { key = "value" };
 
             // Act
-            var result = pageModel.RedirectToPage(pageName, routeVaues);
+            var result = pageModel.RedirectToPage(pageName, routeValues);
 
             // Assert
             Assert.IsType<RedirectToPageResult>(result);

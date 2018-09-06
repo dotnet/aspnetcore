@@ -467,7 +467,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
         [Theory]
         [MemberData(nameof(DerivedInputFormattersThrowingNonInputFormatterException))]
-        public async Task BindModel_DerivedXmlInputFormatters_ThrowingNonInputFormatingException_AddsErrorToModelState(
+        public async Task BindModel_DerivedXmlInputFormatters_ThrowingNonInputFormattingException_AddsErrorToModelState(
             IInputFormatter formatter,
             string contentType,
             InputFormatterExceptionPolicy inputFormatterExceptionPolicy)

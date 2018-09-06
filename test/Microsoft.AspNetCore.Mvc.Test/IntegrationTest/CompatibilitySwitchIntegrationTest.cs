@@ -1,11 +1,14 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Formatters;
+using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.IntegrationTest
@@ -32,6 +35,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTest
             var jsonOptions = services.GetRequiredService<IOptions<MvcJsonOptions>>().Value;
             var razorPagesOptions = services.GetRequiredService<IOptions<RazorPagesOptions>>().Value;
             var apiBehaviorOptions = services.GetRequiredService<IOptions<ApiBehaviorOptions>>().Value;
+            var razorViewEngineOptions = services.GetRequiredService<IOptions<RazorViewEngineOptions>>().Value;
 
             // Assert
             Assert.False(mvcOptions.AllowCombiningAuthorizeFilters);
@@ -44,6 +48,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTest
             Assert.Null(mvcOptions.MaxValidationDepth);
             Assert.True(apiBehaviorOptions.SuppressUseValidationProblemDetailsForInvalidModelStateResponses);
             Assert.True(apiBehaviorOptions.SuppressMapClientErrors);
+            Assert.True(razorViewEngineOptions.AllowRecompilingViewsOnFileChange);
         }
 
         [Fact]
@@ -61,6 +66,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTest
             var jsonOptions = services.GetRequiredService<IOptions<MvcJsonOptions>>().Value;
             var razorPagesOptions = services.GetRequiredService<IOptions<RazorPagesOptions>>().Value;
             var apiBehaviorOptions = services.GetRequiredService<IOptions<ApiBehaviorOptions>>().Value;
+            var razorViewEngineOptions = services.GetRequiredService<IOptions<RazorViewEngineOptions>>().Value;
 
             // Assert
             Assert.True(mvcOptions.AllowCombiningAuthorizeFilters);
@@ -73,6 +79,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTest
             Assert.Null(mvcOptions.MaxValidationDepth);
             Assert.True(apiBehaviorOptions.SuppressUseValidationProblemDetailsForInvalidModelStateResponses);
             Assert.True(apiBehaviorOptions.SuppressMapClientErrors);
+            Assert.True(razorViewEngineOptions.AllowRecompilingViewsOnFileChange);
         }
 
         [Fact]
@@ -90,6 +97,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTest
             var jsonOptions = services.GetRequiredService<IOptions<MvcJsonOptions>>().Value;
             var razorPagesOptions = services.GetRequiredService<IOptions<RazorPagesOptions>>().Value;
             var apiBehaviorOptions = services.GetRequiredService<IOptions<ApiBehaviorOptions>>().Value;
+            var razorViewEngineOptions = services.GetRequiredService<IOptions<RazorViewEngineOptions>>().Value;
 
             // Assert
             Assert.True(mvcOptions.AllowCombiningAuthorizeFilters);
@@ -102,6 +110,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTest
             Assert.Equal(32, mvcOptions.MaxValidationDepth);
             Assert.False(apiBehaviorOptions.SuppressUseValidationProblemDetailsForInvalidModelStateResponses);
             Assert.False(apiBehaviorOptions.SuppressMapClientErrors);
+            Assert.False(razorViewEngineOptions.AllowRecompilingViewsOnFileChange);
         }
 
         [Fact]
@@ -119,6 +128,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTest
             var jsonOptions = services.GetRequiredService<IOptions<MvcJsonOptions>>().Value;
             var razorPagesOptions = services.GetRequiredService<IOptions<RazorPagesOptions>>().Value;
             var apiBehaviorOptions = services.GetRequiredService<IOptions<ApiBehaviorOptions>>().Value;
+            var razorViewEngineOptions = services.GetRequiredService<IOptions<RazorViewEngineOptions>>().Value;
 
             // Assert
             Assert.True(mvcOptions.AllowCombiningAuthorizeFilters);
@@ -131,11 +141,13 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTest
             Assert.Equal(32, mvcOptions.MaxValidationDepth);
             Assert.False(apiBehaviorOptions.SuppressUseValidationProblemDetailsForInvalidModelStateResponses);
             Assert.False(apiBehaviorOptions.SuppressMapClientErrors);
+            Assert.False(razorViewEngineOptions.AllowRecompilingViewsOnFileChange);
         }
 
         // This just does the minimum needed to be able to resolve these options.
         private static void AddHostingServices(IServiceCollection serviceCollection)
         {
+            serviceCollection.AddSingleton(Mock.Of<IHostingEnvironment>());
             serviceCollection.AddLogging();
             serviceCollection.AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>();
         }
