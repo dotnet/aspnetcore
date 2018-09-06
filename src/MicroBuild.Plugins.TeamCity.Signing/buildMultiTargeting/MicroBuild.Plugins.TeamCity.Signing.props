@@ -1,0 +1,6 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!-- The regular per-target import file defines common properties and defaults that signing requires
+       even in the cross-targeting build. -->
+  <Import Project="..\build\$(MSBuildThisFile)" />
+</Project>

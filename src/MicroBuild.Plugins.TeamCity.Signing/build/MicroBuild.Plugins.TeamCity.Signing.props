@@ -1,0 +1,32 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- This file is a copy of MicroBuild.Plugins.Signing with a few modifications for a different task name. -->
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <!-- Set a property that indicates the SignFiles target is defined, so projects can conditionally
+         depend on it when this plugin is installed without failing the build when it's not. -->
+    <MicroBuild_SigningTargetsImported>true</MicroBuild_SigningTargetsImported>
+    <MicroBuild_SigningEnabled Condition=" '$(SignType)' == 'real' OR '$(SignType)' == 'test' ">true</MicroBuild_SigningEnabled>
+
+    <_SignTaskAssemblyTfm Condition="'$(MSBuildRuntimeType)' == 'Core'">netcoreapp2.0</_SignTaskAssemblyTfm>
+    <_SignTaskAssemblyTfm Condition="'$(MSBuildRuntimeType)' != 'Core'">net461</_SignTaskAssemblyTfm>
+    <TeamCitySigningTaskAssembly>$(MSBuildThisFileDirectory)..\tasks\$(_SignTaskAssemblyTfm)\MicroBuild.Plugins.TeamCity.Signing.dll</TeamCitySigningTaskAssembly>
+  </PropertyGroup>
+
+  <ItemDefinitionGroup>
+    <SignCabs>
+      <Authenticode>Microsoft</Authenticode>
+    </SignCabs>
+    <SignMsi>
+      <Authenticode>MicrosoftSHA1</Authenticode>
+    </SignMsi>
+    <SignBundle>
+      <Authenticode>Microsoft</Authenticode>
+    </SignBundle>
+    <SignBundleEngine>
+      <Authenticode>Microsoft</Authenticode>
+    </SignBundleEngine>
+    <SignNuGetPackFiles>
+      <Authenticode>NuGet</Authenticode>
+    </SignNuGetPackFiles>
+  </ItemDefinitionGroup>
+</Project>

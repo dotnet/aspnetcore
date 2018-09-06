@@ -1,0 +1,110 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- This file is a copy of MicroBuild.Plugins.Signing.targets, with a few modifications to use our task instead o theirs.-->
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!-- If this isn't a multi-targeting project, we need to be prepared to sign pack files anyway.
+       This is implemented by the cross-targeting .targets file since multi-targeting projects need it there. -->
+  <Import Project="..\buildMultiTargeting\$(MSBuildThisFile)" Condition=" '$(TargetFrameworks)' == '' " />
+
+  <UsingTask TaskName="MicroBuild.Plugins.TeamCity.Signing.SignFiles" AssemblyFile="$(TeamCitySigningTaskAssembly)" />
+
+  <!-- The FilesToSign item group should be defined in a each project file, or in a *.signproj that is invoked
+  separately after the other projects have build
+
+  Example:
+  <ItemGroup>
+    <FilesToSign Include="$(OutDir)\foo.dll">
+        <Authenticode>AuthenticodeCertFriendlyName</Authenticode>
+        <StrongName>StrongNameCertFriendlyName</StrongName>
+    </FilesToSign>
+  </ItemGroup>
+  -->
+
+  <!-- This task will execute at the end of the build for each project if signing is enabled and there are files that
+  should be signed for this project -->
+  <Target Name="SignFiles"
+          Condition=" '$(MicroBuild_SigningEnabled)' == 'true' "
+          DependsOnTargets="@(SignFilesDependsOn)"
+          AfterTargets="AfterBuild">
+
+    <PropertyGroup>
+      <CodeSignJobName Condition="'$(CodeSignJobName)' == ''">$(MSBuildProjectName)/$(TargetFramework)</CodeSignJobName>
+    </PropertyGroup>
+
+    <!-- Apply the @(FilesToSign) condition check to the task and not the target so that @(SignFilesDependsOn) targets
+         can add to @(FilesToSign) and have that cause this target to run. -->
+    <SignFiles Files="@(FilesToSign)" 
+               Type="$(SignType)" 
+               BinariesDirectory="$(OutDir)" 
+               IntermediatesDirectory="$(IntermediateOutputPath)" 
+               ApplicationId="$(CodeSignApplicationId)" 
+               JobName="$(CodeSignJobName)"
+               LogOutputDir="$(LogOutputDir)"
+               Condition=" '@(FilesToSign)' != '' " />
+  </Target>
+
+  <!-- This target will execute just before a VSIX is created to ensure any inputs that
+       are to be signed are signed before the VSIX picks them up. -->
+  <Target Name="SignVsixContentFiles"
+          Condition=" '$(MicroBuild_SigningEnabled)' == 'true' "
+          DependsOnTargets="@(SignFilesDependsOn)"
+          BeforeTargets="CreateVsixContainer">
+    <ItemGroup>
+      <!-- Determine the intersection of @(FilesToSign) and @(VSIXSourceItem) -->
+      <VSIXSourceItemToSign Include="@(FilesToSign)"
+                            Condition=" '@(FilesToSign)' == '@(VSIXSourceItem)' and %(Identity) != '' " />
+    </ItemGroup>
+    <ItemGroup>
+      <!-- Do not sign them again in the SignFiles target. -->
+      <FilesToSign Remove="@(VSIXSourceItemToSign)" />
+    </ItemGroup>
+    <SignFiles Files="@(VSIXSourceItemToSign)"
+               Type="$(SignType)" 
+               BinariesDirectory="$(OutDir)" 
+               IntermediatesDirectory="$(IntermediateOutputPath)" 
+               ApplicationId="$(CodeSignApplicationId)"
+               JobName="$(MSBuildProjectName)/Vsix"
+               LogOutputDir="$(LogOutputDir)"
+               Condition=" '@(VSIXSourceItemToSign)' != '' " />
+  </Target>
+
+  <!-- Override the standard WiX targets so that we can sign WiX outputs. This targets file in the plugin must be loaded after the WiX targets are loaded -->
+  <Target Name="SignCabs" Condition="'$(MicroBuild_SigningEnabled)' == 'true' AND '@(SignCabs)' != '' AND '$(NonShipping)' != 'true'">
+    <SignFiles Files="@(SignCabs)" 
+               Type="$(SignType)" 
+               BinariesDirectory="$(OutDir)" 
+               IntermediatesDirectory="$(IntermediateOutputPath)" 
+               ApplicationId="$(CodeSignApplicationId)" 
+               JobName="$(MSBuildProjectName)/Cabs"
+               LogOutputDir="$(LogOutputDir)"/>
+  </Target>
+
+  <Target Name="SignMsi" Condition="'$(MicroBuild_SigningEnabled)' == 'true' AND '@(SignMsi)' != '' AND '$(NonShipping)' != 'true'">
+    <SignFiles Files="@(SignMsi)" 
+               Type="$(SignType)" 
+               BinariesDirectory="$(OutDir)" 
+               IntermediatesDirectory="$(IntermediateOutputPath)" 
+               ApplicationId="$(CodeSignApplicationId)" 
+               JobName="$(MSBuildProjectName)/Msi"
+               LogOutputDir="$(LogOutputDir)" />
+  </Target>
+
+  <Target Name="SignBundleEngine" Condition="'$(MicroBuild_SigningEnabled)' == 'true' AND '@(SignBundleEngine)' != '' AND '$(NonShipping)' != 'true'">
+    <SignFiles Files="@(SignBundleEngine)" 
+               Type="$(SignType)" 
+               BinariesDirectory="$(OutDir)" 
+               IntermediatesDirectory="$(IntermediateOutputPath)" 
+               ApplicationId="$(CodeSignApplicationId)" 
+               JobName="$(MSBuildProjectName)/BundleEngine"
+               LogOutputDir="$(LogOutputDir)" />
+  </Target>
+
+  <Target Name="SignBundle" Condition="'$(MicroBuild_SigningEnabled)' == 'true' AND '@(SignBundle)' != '' AND '$(NonShipping)' != 'true'">
+    <SignFiles Files="@(SignBundle)" 
+               Type="$(SignType)" 
+               BinariesDirectory="$(OutDir)" 
+               IntermediatesDirectory="$(IntermediateOutputPath)" 
+               ApplicationId="$(CodeSignApplicationId)" 
+               JobName="$(MSBuildProjectName)/Bundle"
+               LogOutputDir="$(LogOutputDir)" />
+  </Target>
+</Project>

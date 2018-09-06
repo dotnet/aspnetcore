@@ -1,6 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <Import Project="$(RepoTasksSdkPath)\Sdk.props" Condition="'$(RepoTasksSdkPath)' != '' "/>
-  <Import Project="..\dependencies.props" />
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
@@ -10,7 +9,7 @@
     <PackageReference Include="NuGet.Packaging" Version="$(NuGetInMSBuildVersion)" />
 
     <!-- See https://aka.ms/esrpclient -->
-    <PackageReference Include="ESRPClient" Version="$(ESRPClientVersion)" />
+    <PackageReference Include="ESRPClient" Version="$(ESRPClientPackageVersion)" />
 
     <!-- See https://devdiv.visualstudio.com/DevDiv/_packaging?feed=WebTools&package=SignChec&protocolType=NuGet&_a=package  -->
     <PackageReference Include="SignCheck" Version="$(SignCheckVersion)" />

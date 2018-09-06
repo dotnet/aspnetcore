@@ -1,0 +1,9 @@
+<Project>
+
+  <PropertyGroup>
+    <BuildNumber Condition=" '$(BuildNumber)' == '' ">0</BuildNumber>
+    <VersionPrefix>1.0.0</VersionPrefix>
+    <VersionSuffix>build.$(BuildNumber)</VersionSuffix>
+  </PropertyGroup>
+  
+</Project>

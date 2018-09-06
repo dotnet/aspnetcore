@@ -10,8 +10,6 @@ namespace Microsoft.Build.OOB.ESRP
 {
     public class CreateSignManifests : Task
     {
-        private OperationsJson _operationsJson;
-
         [Required]
         public string ApplicationId
         {
@@ -68,35 +66,12 @@ namespace Microsoft.Build.OOB.ESRP
             set;
         }
 
-        public string OpusInfo
-        {
-            get;
-            set;
-        }
-
-        public string OpusName
-        {
-            get;
-            set;
-        }
 
         [Output]
         public string OutputJson
         {
             get;
             set;
-        }
-
-        public OperationsJson OperationsJson
-        {
-            get
-            {
-                if (_operationsJson == null)
-                {
-                    _operationsJson = new OperationsJson(OpusInfo, OpusName);
-                }
-                return _operationsJson;
-            }
         }
 
         [Output]
@@ -135,7 +110,7 @@ namespace Microsoft.Build.OOB.ESRP
 
                 foreach (var keyCode in KeyCodes)
                 {
-                    if (!OperationsJson.ContainsKey(keyCode.ItemSpec))
+                    if (!OperationsJson.Instance.ContainsKey(keyCode.ItemSpec))
                     {
                         Log.LogError(String.Format("Unknown KeyCode: {0}", keyCode.ItemSpec));
                     }
@@ -259,7 +234,7 @@ namespace Microsoft.Build.OOB.ESRP
 
                 foreach (var kc in kcb.KeyCodes.Split(';'))
                 {
-                    var o = OperationsJson[kc];
+                    var o = OperationsJson.Instance[kc];
                     operations.AddRange(o);
                 }
 
@@ -292,7 +267,7 @@ namespace Microsoft.Build.OOB.ESRP
 
             foreach (var kc in KeyCodes)
             {
-                var o = OperationsJson[kc.ItemSpec];
+                var o = OperationsJson.Instance[kc.ItemSpec];
                 operations.AddRange(o);
             }
 

@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!-- We DON'T want to import the per-target .targets file here because it will sign per-target files like pre-existing @(FilesToSign)
+       and we don't want to repeat signing those at the cross-targeting level.
+       For purposes of sharing .targets, the per-target .targets file imports THIS one, since this file is harmless in per-target framework builds. -->
+
+  <!-- Bump up the version in the condition if necessary.  See the props file for more info. -->
+  <UsingTask TaskName="MicroBuild.Plugins.TeamCity.Signing.SignFiles" AssemblyFile="$(TeamCitySigningTaskAssembly)" />
+
+  <Target Name="SignNuGetPackage"
+          Condition=" '$(MicroBuild_NuPkgSigningEnabled)' != 'false' and '$(MicroBuild_SigningEnabled)' == 'true' and '$(IsPackable)' == 'true' and '$(NonShipping)' != 'true' "
+          DependsOnTargets="@(SignNuGetPackageDependsOn)"
+          AfterTargets="Pack">
+    <ItemGroup>
+      <SignNuGetPackFiles Include="@(NuGetPackOutput)"
+                          Condition=" '%(Extension)' == '.nupkg' " />
+    </ItemGroup>
+
+    <PropertyGroup>
+      <CodeSignPackageJobName Condition="'$(CodeSignPackageJobName)' == ''">$(MSBuildProjectName)/NuGet</CodeSignPackageJobName>
+    </PropertyGroup>
+
+    <SignFiles Files="@(SignNuGetPackFiles)"
+               Type="$(SignType)"
+               BinariesDirectory="$(PackageOutputPath)"
+               IntermediatesDirectory="$(IntermediateOutputPath)"
+               ApplicationId="$(CodeSignApplicationId)"
+               JobName="$(CodeSignPackageJobName)"
+               LogOutputDir="$(LogOutputDir)"
+               Condition=" '@(SignNuGetPackFiles)' != '' " />
+  </Target>
+
+</Project>

@@ -17,7 +17,7 @@
     <NuGetPackagesPath Condition=" '$(NuGetPackagesPath)' == '' AND '$(HOME)' != '' ">$(HOME)\.nuget\packages\</NuGetPackagesPath>
     <NuGetPackagesPath>$([MSBuild]::NormalizeDirectory($(NuGetPackagesPath)))</NuGetPackagesPath>
 
-    <ESRPClientToolPath>$(NuGetPackagesPath)esrpclient\$(ESRPClientVersion)\tools\EsrpClient.exe</ESRPClientToolPath>
+    <ESRPClientToolPath>$(NuGetPackagesPath)esrpclient\$(ESRPClientPackageVersion)\tools\EsrpClient.exe</ESRPClientToolPath>
     <SignCheckToolPath>$(NuGetPackagesPath)signcheck\$(SignCheckVersion)\tools\SignCheck.exe</SignCheckToolPath>
   </PropertyGroup>
 

@@ -3,7 +3,10 @@
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
   <PropertyGroup Label="Package Versions">
-    <ESRPClientVersion>1.1.2</ESRPClientVersion>
+    <ESRPClientPackageVersion>1.1.2</ESRPClientPackageVersion>
+    <MicrosoftBuildFrameworkPackageVersion>15.6.85</MicrosoftBuildFrameworkPackageVersion>
+    <MicrosoftBuildUtilitiesCorePackageVersion>15.6.85</MicrosoftBuildUtilitiesCorePackageVersion>
+    <NewtonsoftJsonPackageVersion>9.0.1</NewtonsoftJsonPackageVersion>
     <SignCheckVersion>1.0.110</SignCheckVersion>
   </PropertyGroup>
   <Import Project="$(DotNetPackageVersionPropsPath)" Condition=" '$(DotNetPackageVersionPropsPath)' != '' " />

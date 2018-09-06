@@ -1,0 +1,40 @@
+<Project>
+  <Import Project="dependencies.props" />
+
+  <PropertyGroup>
+    <DisableDefaultTargets>true</DisableDefaultTargets>
+    <DepsDirectory>$(RepositoryRoot).deps\</DepsDirectory>
+    <UnsignedPackagesDir>$(DepsDirectory)build\</UnsignedPackagesDir>
+    <ToolsPath>$(RepositoryRoot)tools\</ToolsPath>
+    <ZipExePath>$(ToolsPath)7Za.exe</ZipExePath>
+    <CodeSignProjectDirectory>$(RepositoryRoot)src\CodeSign\</CodeSignProjectDirectory>
+    <SignCheckExclusionFile>$(MSBuildThisFileDirectory)signcheck.exclusions.txt</SignCheckExclusionFile>
+    <GenerateSignRequest>false</GenerateSignRequest>
+
+    <!-- Output -->
+    <SignedOutputPath>$(ArtifactsDir)Signed\</SignedOutputPath>
+    <PackagesOutputPath>$(SignedOutputPath)Packages\</PackagesOutputPath>
+    <SharedFxOutputPath>$(SignedOutputPath)SharedFx\</SharedFxOutputPath>
+    <SignedVSIXPath>$(SignedOutputPath)VSIX\</SignedVSIXPath>
+    <SignedMPacksOutputPath>$(SignedOutputPath)MPacks\</SignedMPacksOutputPath>
+    <SignedOobArchivePath>$(SignedOutputPath)OobArchives\</SignedOobArchivePath>
+
+    <!-- Working directories -->
+    <PoliCheckPath>$(IntermediateDir)policheck\</PoliCheckPath>
+    <UnsignedPackagesPath>$(IntermediateDir)UnsignedPackages\</UnsignedPackagesPath>
+    <UnsignedPackagesWithSignedBinariesPath>$(IntermediateDir)UnsignedPackagesWithSignedBinaries\</UnsignedPackagesWithSignedBinariesPath>
+    <UnsignedVSIXPath>$(IntermediateDir)UnsignedVSIX\</UnsignedVSIXPath>
+    <UnsignedSharedFxPath>$(IntermediateDir)SharedFx\</UnsignedSharedFxPath>
+    <UnsignedOobArchivePath>$(IntermediateDir)UnsignedOobArchives\</UnsignedOobArchivePath>
+    <UnsignedVSIXWithSignedBinariesPath>$(IntermediateDir)UnsignedVSIXWithSignedBinaries\</UnsignedVSIXWithSignedBinariesPath>
+    <UnsignedBinariesPath>$(IntermediateDir)FilesToSign\</UnsignedBinariesPath>
+    <UnsignedMPacksPath>$(IntermediateDir)UnsignedMPacks\</UnsignedMPacksPath>
+  </PropertyGroup>
+
+  <!-- Properties for ESRP signing -->
+  <PropertyGroup>
+    <ESRPApplicationId>f616b396-be72-40d2-98fd-d7c2e4041560</ESRPApplicationId>
+    <ESRPClientConfigFile>$(MSBuildThisFileDirectory)esrpconfig.json</ESRPClientConfigFile>
+  </PropertyGroup>
+
+</Project>

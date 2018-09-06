@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>MicroBuild.Plugins.TeamCity.Signing</id>
+    <version>$version$</version>
+    <authors>Microsoft</authors>
+    <owners>Microsoft</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Submits code signing jobs via ESRPClient. Designed for the TeamCity CI environment.</description>
+    <dependencies>
+      <dependency id="MicroBuild.Core.Sentinel" version="1.0.0" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="$esrpDir$" target="tasks\ESRPClient\" />
+    <file src="build\**\*" target="build\" />
+    <file src="buildMultiTargeting\**\*" target="buildMultiTargeting\" />
+    <file src="bin\$Configuration$\net461\*" target="tasks\net461\" />
+    <file src="bin\$Configuration$\netcoreapp2.0\*" target="tasks\netcoreapp2.0\" />
+  </files>
+</package>

@@ -1,22 +1,3 @@
 <Project>
-  <Import Project="Prepare.targets" />
-  <Import Project="Policheck.targets" />
-  <Import Project="Sign.targets" />
-  <Import Project="Verify.targets" />
-
-  <!-- packages required to implement the targets in this file-->
-  <PropertyGroup>
-    <PrepareDependsOn>$(PrepareDependsOn);PrepareArtifactDirectories;VerifyUnsignedPackages;ExtractInputs;Policheck</PrepareDependsOn>
-    <PackageDependsOn>$(PackageDependsOn);Sign</PackageDependsOn>
-    <VerifyDependsOn>$(VerifyDependsOn);VerifySignedPackages</VerifyDependsOn>
-  </PropertyGroup>
-
-  <Target Name="LocalBuild" DependsOnTargets="SetupLocalBuild;Package" />
-
-  <Target Name="SetupLocalBuild">
-    <PropertyGroup>
-      <LocalBuild>true</LocalBuild>
-    </PropertyGroup>
-  </Target>
-
+  <Import Project="legacy.repo.targets" Condition="'$(LegacySigning)' == 'true'" />
 </Project>

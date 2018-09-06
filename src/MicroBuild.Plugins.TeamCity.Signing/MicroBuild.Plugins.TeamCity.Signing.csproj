@@ -1,0 +1,43 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netcoreapp2.0;net461</TargetFrameworks>
+    <NuspecFile>$(MSBuildThisFileDirectory)$(MSBuildProjectName).nuspec</NuspecFile>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <IncludeSymbols>false</IncludeSymbols>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\build\tasks\ESRP\**\*.cs" Link="ESRP\%(RecursiveDir)%(FileName)%(Extension)" />
+    <Compile Include="..\..\build\tasks\LinqExtensions.cs" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp2.0'">
+    <PackageReference Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildFrameworkPackageVersion)" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildUtilitiesCorePackageVersion)" PrivateAssets="All" />
+  </ItemGroup>
+  
+  <ItemGroup Condition="'$(TargetFramework)' == 'net461'">
+    <Reference Include="Microsoft.Build.Tasks.v4.0" Pack="false" />
+    <Reference Include="Microsoft.Build.Framework" Pack="false" />
+    <Reference Include="Microsoft.Build.Utilities.v4.0" Pack="false" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonPackageVersion)" PrivateAssets="All" Publish="true" />
+    <PackageReference Include="ESRPClient" Version="$(ESRPClientPackageVersion)" PrivateAssets="All" Publish="true" />
+  </ItemGroup>
+
+  <Target Name="SetPackageProperties" BeforeTargets="GenerateNuspec">
+    <PropertyGroup>
+      <ESRPFilesPath>$(NuGetPackageRoot)esrpclient\$(ESRPClientPackageVersion)\tools\</ESRPFilesPath>
+      <NuspecProperties>
+        version=$(PackageVersion);
+        configuration=$(Configuration);
+        esrpDir=$(ESRPFilesPath)
+      </NuspecProperties>
+    </PropertyGroup>
+  </Target>
+
+</Project>

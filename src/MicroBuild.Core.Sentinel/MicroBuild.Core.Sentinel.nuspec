@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>MicroBuild.Core.Sentinel</id>
+    <version>1.0.0</version>
+    <authors>Microsoft</authors>
+    <owners>Microsoft</owners>
+    <projectUrl>https://devdiv.visualstudio.com/DefaultCollection/Engineering/_git/MicroBuild</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>MicroBuild sentinel package which is a dependency of all MicroBuild plugins so that they can be easily located on disk</description>
+    <releaseNotes>Initial publish of the sentinel package.</releaseNotes>
+    <copyright>Copyright Microsoft 2015</copyright>
+    <tags>MicroBuild</tags>
+  </metadata>
+  <files>
+    <file src="sentinel.txt" target="/" />
+  </files>
+</package>
