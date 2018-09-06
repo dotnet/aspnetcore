@@ -381,7 +381,7 @@
     <Warning Condition="'$(SignType)' != 'real'"
       Text="Skipping sign check because SignType != real" />
     <Exec Condition="'$(SignType)' == 'real'"
-      Command="$(SignCheckToolPath) -x $(SignCheckExclusionFile) --error-log-file $(LogOutputDir)signcheck.error.log --recursive --generate-exclusions-file $(LogOutputDir)signcheck.exclusions.g.txt -v Detailed -i $(SignedOutputPath)"
+      Command="$(SignCheckToolPath) --verify-jar -x $(SignCheckExclusionFile) --error-log-file $(LogOutputDir)signcheck.error.log --recursive --generate-exclusions-file $(LogOutputDir)signcheck.exclusions.g.txt -v Detailed -i $(SignedOutputPath)"
       StandardOutputImportance="Normal" />
   </Target>
 
