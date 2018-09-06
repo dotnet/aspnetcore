@@ -17,6 +17,7 @@ public:
 
     std::optional<std::wstring> GetString(const std::wstring& name) const override;
     std::optional<bool> GetBool(const std::wstring& name) const override;
+    std::optional<DWORD> GetLong(const std::wstring& name) const override;
     std::optional<DWORD> GetTimespan(const std::wstring& name) const override;
     std::vector<std::pair<std::wstring, std::wstring>> GetKeyValuePairs(const std::wstring& name) const override;
 

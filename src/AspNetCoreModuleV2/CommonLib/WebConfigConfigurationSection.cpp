@@ -28,6 +28,17 @@ std::optional<bool> WebConfigConfigurationSection::GetBool(const std::wstring& n
     return std::make_optional(result);
 }
 
+std::optional<DWORD> WebConfigConfigurationSection::GetLong(const std::wstring& name) const
+{
+    DWORD result;
+    if (FAILED_LOG(GetElementDWORDProperty(m_element, name.c_str(), &result)))
+    {
+        return std::nullopt;
+    }
+
+    return std::make_optional(result);
+}
+
 std::optional<DWORD> WebConfigConfigurationSection::GetTimespan(const std::wstring& name) const
 {
     ULONGLONG result;

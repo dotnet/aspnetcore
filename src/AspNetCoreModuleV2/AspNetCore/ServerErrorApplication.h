@@ -17,13 +17,14 @@ public:
 
     ~ServerErrorApplication() = default;
 
-    HRESULT CreateHandler(IHttpContext * pHttpContext, IREQUEST_HANDLER ** pRequestHandler) override
+    HRESULT CreateHandler(IHttpContext *pHttpContext, IREQUEST_HANDLER ** pRequestHandler) override
     {
-        *pRequestHandler = new ServerErrorHandler(pHttpContext, m_HR);
+        auto handler = std::make_unique<ServerErrorHandler>(*pHttpContext, m_HR);
+        *pRequestHandler = handler.release();
         return S_OK;
     }
 
-    HRESULT OnAppOfflineFound() override { return S_OK; }
+    HRESULT OnAppOfflineFound() noexcept override { return S_OK; }
 private:
     HRESULT m_HR;
 };

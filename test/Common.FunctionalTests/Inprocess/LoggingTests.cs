@@ -200,17 +200,44 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             }
         }
 
-        private static void AssertLogs(string logPath)
+        [ConditionalFact]
+        public async Task DebugLogsAreWrittenToEventLog()
+        {
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(publish: true);
+            deploymentParameters.HandlerSettings["debugLevel"] = "file,eventlog";
+            var deploymentResult = await StartAsync(deploymentParameters);
+            StopServer();
+            EventLogHelpers.VerifyEventLogEvent(deploymentResult, @"\[aspnetcorev2.dll\] Initializing logs for .*?Description: IIS ASP.NET Core Module V2");
+        }
+
+        [ConditionalFact]
+        public async Task OutOfProcessReadsLogConfiguration()
+        {
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(hostingModel:HostingModel.OutOfProcess, publish: true);
+            deploymentParameters.HandlerSettings["debugLevel"] = "file,trace";
+            deploymentParameters.HandlerSettings["debugFile"] = "";
+            var deploymentResult = await StartAsync(deploymentParameters);
+
+            var logContents = ReadLogs(Path.Combine(deploymentResult.ContentRoot, "aspnetcore-debug.log"));
+            Assert.Contains("FORWARDING_HANDLER::", logContents);
+        }
+
+        private static string ReadLogs(string logPath)
         {
             using (var stream = File.Open(logPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
             using (var streamReader = new StreamReader(stream))
             {
-                var logContents = streamReader.ReadToEnd();
-                Assert.Contains("[aspnetcorev2.dll]", logContents);
-                Assert.Contains("[aspnetcorev2_inprocess.dll]", logContents);
-                Assert.Contains("Description: IIS ASP.NET Core Module V2. Commit:", logContents);
-                Assert.Contains("Description: IIS ASP.NET Core Module V2 Request Handler. Commit:", logContents);
+                return streamReader.ReadToEnd();
             }
+        }
+
+        private static void AssertLogs(string logPath)
+        {
+            var logContents = ReadLogs(logPath);
+            Assert.Contains("[aspnetcorev2.dll]", logContents);
+            Assert.Contains("[aspnetcorev2_inprocess.dll]", logContents);
+            Assert.Contains("Description: IIS ASP.NET Core Module V2. Commit:", logContents);
+            Assert.Contains("Description: IIS ASP.NET Core Module V2 Request Handler. Commit:", logContents);
         }
     }
 }

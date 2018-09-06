@@ -1,9 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
-#pragma warning (disable : 4267)
 
 #include "precomp.h"
+
+#pragma warning( push )
+#pragma warning ( disable : 4267 ALL_CODE_ANALYSIS_WARNINGS )
 
 STRU::STRU(
     VOID
@@ -1199,25 +1201,17 @@ STRU::ExpandEnvironmentVariables(
     __out STRU *                  pstrExpandedString
     )
 /*++
-
 Routine Description:
-
     Expand the environment variables in a string
-
 Arguments:
-
     pszString - String with environment variables to expand
     pstrExpandedString - Receives expanded string on success
-
 Return Value:
-
     HRESULT
-
 --*/
 {
     HRESULT                 hr              = S_OK;
     DWORD                   cchNewSize      = 0;
-
     if ( pszString == NULL ||
          pstrExpandedString == NULL )
     {
@@ -1225,7 +1219,6 @@ Return Value:
         hr = HRESULT_FROM_WIN32( ERROR_INVALID_PARAMETER );
         goto Exit;
     }
-
     cchNewSize = ExpandEnvironmentStrings( pszString,
                                            pstrExpandedString->QueryStr(),
                                            pstrExpandedString->QuerySizeCCH() );
@@ -1234,7 +1227,6 @@ Return Value:
         hr = HRESULT_FROM_WIN32( GetLastError() );
         goto Exit;
     }
-
     if ( cchNewSize > pstrExpandedString->QuerySizeCCH() )
     {
         hr = pstrExpandedString->Resize(
@@ -1244,13 +1236,11 @@ Return Value:
         {
             goto Exit;
         }
-
         cchNewSize = ExpandEnvironmentStrings(
             pszString,
             pstrExpandedString->QueryStr(),
             pstrExpandedString->QuerySizeCCH()
             );
-
         if ( cchNewSize == 0 ||
              cchNewSize > pstrExpandedString->QuerySizeCCH() )
         {
@@ -1258,14 +1248,10 @@ Return Value:
             goto Exit;
         }
     }
-
     pstrExpandedString->SyncWithBuffer();
-
     hr = S_OK;
-
 Exit:
-
     return hr;
 }
 
-#pragma warning(default:4267)
+#pragma warning( pop )

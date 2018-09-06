@@ -5,6 +5,7 @@
 
 #include <string>
 #include "ConfigurationSource.h"
+#include "WebConfigConfigurationSource.h"
 
 class InProcessOptions: NonCopyable
 {
@@ -60,12 +61,22 @@ public:
     DWORD
     QueryStartupTimeLimitInMS() const
     {
+        if (IsDebuggerPresent())
+        {
+            return INFINITE;
+        }
+
         return m_dwStartupTimeLimitInMS;
     }
 
     DWORD
     QueryShutdownTimeLimitInMS() const
     {
+        if (IsDebuggerPresent())
+        {
+            return INFINITE;
+        }
+
         return m_dwShutdownTimeLimitInMS;
     }
 
@@ -76,6 +87,12 @@ public:
     }
 
     InProcessOptions(const ConfigurationSource &configurationSource);
+    
+    static
+    HRESULT InProcessOptions::Create(
+        IHttpServer& pServer,
+        IHttpApplication& pHttpApplication,
+        std::unique_ptr<InProcessOptions>& options);
 
 private:
     std::wstring                   m_strArguments;

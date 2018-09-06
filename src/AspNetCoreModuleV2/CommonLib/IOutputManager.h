@@ -14,7 +14,7 @@ public:
     Start() = 0;
 
     virtual
-    ~IOutputManager() {};
+    ~IOutputManager() = default;
 
     virtual
     bool

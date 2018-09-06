@@ -18,37 +18,37 @@ class ShimOptions: NonCopyable
 {
 public:
     const std::wstring&
-    QueryProcessPath() const
+    QueryProcessPath() const noexcept
     {
         return m_strProcessPath;
     }
 
     const std::wstring&
-    QueryArguments() const
+    QueryArguments() const noexcept
     {
         return m_strArguments;
     }
 
     APP_HOSTING_MODEL
-    QueryHostingModel() const
+    QueryHostingModel() const noexcept
     {
         return m_hostingModel;
     }
 
     const std::wstring&
-    QueryHandlerVersion() const
+    QueryHandlerVersion() const noexcept
     {
         return m_strHandlerVersion;
     }
 
     BOOL
-    QueryStdoutLogEnabled() const
+    QueryStdoutLogEnabled() const noexcept
     {
         return m_fStdoutLogEnabled;
     }
 
     const std::wstring&
-    QueryStdoutLogFile() const
+    QueryStdoutLogFile() const noexcept
     {
         return m_struStdoutLogFile;
     }

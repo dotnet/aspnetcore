@@ -5,10 +5,9 @@
 
 extern BOOL         g_fInShutdown;
 
-ASPNET_CORE_GLOBAL_MODULE::ASPNET_CORE_GLOBAL_MODULE(
-    APPLICATION_MANAGER* pApplicationManager)
+ASPNET_CORE_GLOBAL_MODULE::ASPNET_CORE_GLOBAL_MODULE(std::shared_ptr<APPLICATION_MANAGER> pApplicationManager) noexcept
+    :m_pApplicationManager(std::move(pApplicationManager))
 {
-    m_pApplicationManager = pApplicationManager;
 }
 
 //
@@ -30,11 +29,8 @@ ASPNET_CORE_GLOBAL_MODULE::OnGlobalStopListening(
         return GL_NOTIFICATION_CONTINUE;
     }
 
-    DBG_ASSERT(m_pApplicationManager);
-    // we should let application manager to shutdown all allication
-    // and dereference it as some requests may still reference to application manager
     m_pApplicationManager->ShutDown();
-    m_pApplicationManager = NULL;
+    m_pApplicationManager = nullptr;
 
     // Return processing to the pipeline.
     return GL_NOTIFICATION_CONTINUE;
@@ -59,13 +55,13 @@ ASPNET_CORE_GLOBAL_MODULE::OnGlobalConfigurationChange(
     LOG_INFOF(L"ASPNET_CORE_GLOBAL_MODULE::OnGlobalConfigurationChange '%ls'", pwszChangePath);
 
     // Test for an error.
-    if (NULL != pwszChangePath &&
+    if (nullptr != pwszChangePath &&
         _wcsicmp(pwszChangePath, L"MACHINE") != 0 &&
         _wcsicmp(pwszChangePath, L"MACHINE/WEBROOT") != 0)
     {
-        if (m_pApplicationManager != NULL)
+        if (m_pApplicationManager)
         {
-            m_pApplicationManager->RecycleApplicationFromManager(pwszChangePath);
+            m_pApplicationManager->RecycleApplicationFromManager(pwszChangePath);   
         }
     }
 

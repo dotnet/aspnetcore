@@ -4,7 +4,11 @@
 #pragma once
 
 #include "buffer.h"
+#include <CodeAnalysis/Warnings.h>
 #include <strsafe.h>
+
+#pragma warning( push )
+#pragma warning ( disable : ALL_CODE_ANALYSIS_WARNINGS )
 
 class STRU
 {
@@ -349,13 +353,12 @@ public:
         __in PCWSTR pwszFormatString,
         va_list     argsList
     );
-
+    
     static
     HRESULT  ExpandEnvironmentVariables(
         __in PCWSTR                  pszString,
         __out STRU *                 pstrExpandedString
     );
-
 private:
 
     //
@@ -425,3 +428,4 @@ MakePathCanonicalizationProof(
     IN PCWSTR               pszName,
     OUT STRU *              pstrPath
 );
+#pragma warning( pop )

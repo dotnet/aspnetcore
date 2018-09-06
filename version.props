@@ -5,7 +5,7 @@
     <DotNetPatchVersion>0</DotNetPatchVersion>
     <VersionPrefix>$(DotNetMajorVersion).$(DotNetMinorVersion).$(DotNetPatchVersion)</VersionPrefix>
     <AspNetCoreModuleVersionMajor>13</AspNetCoreModuleVersionMajor>
-    <AspNetCoreModuleVersionMinor>$(DotNetMajorVersion)</AspNetCoreModuleVersionMinor>
+    <AspNetCoreModuleVersionMinor>$(DotNetMinorVersion)</AspNetCoreModuleVersionMinor>
     <AspNetCoreModuleVersionRevision>$(DotNetPatchVersion)</AspNetCoreModuleVersionRevision>
     <VersionSuffix>alpha1</VersionSuffix>
     <PackageVersion Condition="'$(IsFinalBuild)' == 'true' AND '$(VersionSuffix)' == 'rtm' ">$(VersionPrefix)</PackageVersion>

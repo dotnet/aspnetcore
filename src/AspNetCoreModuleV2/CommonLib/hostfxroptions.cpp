@@ -9,18 +9,19 @@
 #include "EventLog.h"
 
 HRESULT HOSTFXR_OPTIONS::Create(
-        _In_ PCWSTR         pcwzDotnetExePath,
-        _In_ PCWSTR         pcwzProcessPath,
-        _In_ PCWSTR         pcwzApplicationPhysicalPath,
-        _In_ PCWSTR         pcwzArguments,
+        _In_ const std::wstring& pcwzDotnetExePath,
+        _In_ const std::wstring& pcwzProcessPath,
+        _In_ const std::wstring& pcwzApplicationPhysicalPath,
+        _In_ const std::wstring& pcwzArguments,
         _Out_ std::unique_ptr<HOSTFXR_OPTIONS>& ppWrapper)
 {
     std::filesystem::path knownDotnetLocation;
 
-    if (pcwzDotnetExePath != nullptr)
+    if (!pcwzDotnetExePath.empty())
     {
         knownDotnetLocation = pcwzDotnetExePath;
     }
+
     try
     {
         std::filesystem::path hostFxrDllPath;
@@ -40,17 +41,25 @@ HRESULT HOSTFXR_OPTIONS::Create(
         }
         ppWrapper = std::make_unique<HOSTFXR_OPTIONS>(knownDotnetLocation, hostFxrDllPath, arguments);
     }
-    catch (HOSTFXR_UTILITY::StartupParametersResolutionException &resolutionException)
+    catch (InvalidOperationException &ex)
     {
-        OBSERVE_CAUGHT_EXCEPTION();
-
         EventLog::Error(
             ASPNETCORE_EVENT_INPROCESS_START_ERROR,
             ASPNETCORE_EVENT_INPROCESS_START_ERROR_MSG,
-            pcwzApplicationPhysicalPath,
-            resolutionException.get_message().c_str());
+            pcwzApplicationPhysicalPath.c_str(),
+            ex.as_wstring().c_str());
 
-        return E_FAIL;
+        RETURN_CAUGHT_EXCEPTION();
+    }
+    catch (std::runtime_error &ex)
+    {
+        EventLog::Error(
+            ASPNETCORE_EVENT_INPROCESS_START_ERROR,
+            ASPNETCORE_EVENT_INPROCESS_START_ERROR_MSG,
+            pcwzApplicationPhysicalPath.c_str(),
+            GetUnexpectedExceptionMessage(ex).c_str());
+
+        RETURN_CAUGHT_EXCEPTION();
     }
     CATCH_RETURN();
 

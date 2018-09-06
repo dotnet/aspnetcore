@@ -26,6 +26,16 @@ bool ConfigurationSection::GetRequiredBool(const std::wstring& name) const
     return result.value();
 }
 
+DWORD ConfigurationSection::GetRequiredLong(const std::wstring& name) const
+{
+    auto result = GetLong(name);
+    if (!result.has_value())
+    {
+        ThrowRequiredException(name);
+    }
+    return result.value();
+}
+
 DWORD ConfigurationSection::GetRequiredTimespan(const std::wstring& name) const
 {
     auto result = GetTimespan(name);

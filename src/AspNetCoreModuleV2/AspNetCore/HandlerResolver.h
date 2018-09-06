@@ -13,17 +13,17 @@
 class HandlerResolver
 {
 public:
-    HandlerResolver(HMODULE hModule, IHttpServer &pServer);
-    HRESULT GetApplicationFactory(IHttpApplication &pApplication, std::unique_ptr<ApplicationFactory>& pApplicationFactory);
+    HandlerResolver(HMODULE hModule, const IHttpServer &pServer);
+    HRESULT GetApplicationFactory(const IHttpApplication &pApplication, std::unique_ptr<ApplicationFactory>& pApplicationFactory);
     void ResetHostingModel();
 
 private:
-    HRESULT LoadRequestHandlerAssembly(IHttpApplication &pApplication, ShimOptions& pConfiguration, std::unique_ptr<ApplicationFactory>& pApplicationFactory);
-    HRESULT FindNativeAssemblyFromGlobalLocation(ShimOptions& pConfiguration, PCWSTR libraryName, std::wstring& handlerDllPath);
-    HRESULT FindNativeAssemblyFromHostfxr(HOSTFXR_OPTIONS& hostfxrOptions, PCWSTR libraryName, std::wstring& handlerDllPath);
+    HRESULT LoadRequestHandlerAssembly(const IHttpApplication &pApplication, const ShimOptions& pConfiguration, std::unique_ptr<ApplicationFactory>& pApplicationFactory);
+    HRESULT FindNativeAssemblyFromGlobalLocation(const ShimOptions& pConfiguration, PCWSTR libraryName, std::wstring& handlerDllPath);
+    HRESULT FindNativeAssemblyFromHostfxr(const HOSTFXR_OPTIONS& hostfxrOptions, PCWSTR libraryName, std::wstring& handlerDllPath);
 
     HMODULE m_hModule;
-    IHttpServer &m_pServer;
+    const IHttpServer &m_pServer;
 
     SRWLOCK      m_requestHandlerLoadLock {};
     std::wstring m_loadedApplicationId;

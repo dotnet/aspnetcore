@@ -3,10 +3,12 @@
 
 #pragma once
 
+#include <exception>
 #include <system_error>
 
 #include "debugutil.h"
 #include "StringHelpers.h"
+#include "InvalidOperationException.h"
 
 #define LOCATION_INFO_ENABLED TRUE
 
@@ -29,22 +31,38 @@
 #define OBSERVE_CAUGHT_EXCEPTION()                              CaughtExceptionHResult(LOCATION_INFO);
 #define RETURN_CAUGHT_EXCEPTION()                               return CaughtExceptionHResult(LOCATION_INFO);
 
-#define RETURN_HR(hr)                                           do { HRESULT __hrRet = hr; if (FAILED(__hrRet)) { LogHResultFailed(LOCATION_INFO, __hrRet); } return __hrRet; } while (0, 0)
+#define _CHECK_FAILED(expr)                                     __pragma(warning(push)) \
+    __pragma(warning(disable:4127)) /*disable condition is const warning*/ \
+    FAILED(expr) \
+    __pragma(warning(pop))
+
+#define _HR_RET(hr)                                             __pragma(warning(push)) \
+    __pragma(warning(disable:26498)) /*disable constexpr warning */ \
+    const HRESULT __hrRet = hr; \
+    __pragma(warning(pop))
+
+#define RETURN_HR(hr)                                           do { _HR_RET(hr); if (_CHECK_FAILED(__hrRet)) { LogHResultFailed(LOCATION_INFO, __hrRet); } return __hrRet; } while (0, 0)
 #define RETURN_LAST_ERROR()                                     do { return LogLastError(LOCATION_INFO); } while (0, 0)
-#define RETURN_IF_FAILED(hr)                                    do { HRESULT __hrRet = hr; if (FAILED(__hrRet)) { LogHResultFailed(LOCATION_INFO, __hrRet); return __hrRet; }} while (0, 0)
+#define RETURN_IF_FAILED(hr)                                    do { _HR_RET(hr); if (FAILED(__hrRet)) { LogHResultFailed(LOCATION_INFO, __hrRet); return __hrRet; }} while (0, 0)
 #define RETURN_LAST_ERROR_IF(condition)                         do { if (condition) { return LogLastError(LOCATION_INFO); }} while (0, 0)
 #define RETURN_LAST_ERROR_IF_NULL(ptr)                          do { if ((ptr) == nullptr) { return LogLastError(LOCATION_INFO); }} while (0, 0)
 
-#define FINISHED(hrr)                                           do { HRESULT __hrRet = hrr; LogHResultFailed(LOCATION_INFO, __hrRet); hr = __hrRet; goto Finished; } while (0, 0)
-#define FINISHED_IF_FAILED(hrr)                                 do { HRESULT __hrRet = hrr; if (FAILED(__hrRet)) { LogHResultFailed(LOCATION_INFO, __hrRet); hr = __hrRet; goto Finished; }} while (0, 0)
-#define FINISHED_IF_NULL_ALLOC(ptr)                             do { if ((ptr) == nullptr) { hr = LogHResultFailed(LOCATION_INFO, E_OUTOFMEMORY); goto Finished; }} while (0, 0)
-#define FINISHED_LAST_ERROR_IF(condition)                       do { if (condition) { hr = LogLastError(LOCATION_INFO); goto Finished; }} while (0, 0)
-#define FINISHED_LAST_ERROR_IF_NULL(ptr)                        do { if ((ptr) == nullptr) { hr = LogLastError(LOCATION_INFO); goto Finished; }} while (0, 0)
+#define _GOTO_FINISHED()                                        __pragma(warning(push)) \
+    __pragma(warning(disable:26438)) /*disable avoid goto warning*/ \
+    goto Finished \
+    __pragma(warning(pop))
 
-#define THROW_LAST_ERROR()                                      do { ThrowResultException(LogLastError(LOCATION_INFO)); } while (0, 0)
-#define THROW_IF_FAILED(hr)                                     do { HRESULT __hrRet = hr; if (FAILED(__hrRet)) { ThrowResultException(LOCATION_INFO, __hrRet); }} while (0, 0)
-#define THROW_LAST_ERROR_IF(condition)                          do { if (condition) { ThrowResultException(LogLastError(LOCATION_INFO)); }} while (0, 0)
-#define THROW_LAST_ERROR_IF_NULL(ptr)                           do { if ((ptr) == nullptr) { ThrowResultException(LogLastError(LOCATION_INFO)); }} while (0, 0)
+
+#define FINISHED(hrr)                                           do { _HR_RET(hrr); if (_CHECK_FAILED(__hrRet)) { LogHResultFailed(LOCATION_INFO, __hrRet); } hr = __hrRet; _GOTO_FINISHED(); } while (0, 0) 
+#define FINISHED_IF_FAILED(hrr)                                 do { _HR_RET(hrr); if (FAILED(__hrRet)) { LogHResultFailed(LOCATION_INFO, __hrRet); hr = __hrRet; _GOTO_FINISHED(); }} while (0, 0)
+#define FINISHED_IF_NULL_ALLOC(ptr)                             do { if ((ptr) == nullptr) { hr = LogHResultFailed(LOCATION_INFO, E_OUTOFMEMORY); _GOTO_FINISHED(); }} while (0, 0)
+#define FINISHED_LAST_ERROR_IF(condition)                       do { if (condition) { hr = LogLastError(LOCATION_INFO); _GOTO_FINISHED(); }} while (0, 0)
+#define FINISHED_LAST_ERROR_IF_NULL(ptr)                        do { if ((ptr) == nullptr) { hr = LogLastError(LOCATION_INFO); _GOTO_FINISHED(); }} while (0, 0)
+
+#define THROW_LAST_ERROR()                                      do { ThrowResultException(LOCATION_INFO, LogLastError(LOCATION_INFO)); } while (0, 0)
+#define THROW_IF_FAILED(hr)                                     do { _HR_RET(hr); if (FAILED(__hrRet)) { ThrowResultException(LOCATION_INFO, __hrRet); }} while (0, 0)
+#define THROW_LAST_ERROR_IF(condition)                          do { if (condition) { ThrowResultException(LOCATION_INFO, LogLastError(LOCATION_INFO)); }} while (0, 0)
+#define THROW_LAST_ERROR_IF_NULL(ptr)                           do { if ((ptr) == nullptr) { ThrowResultException(LOCATION_INFO, LogLastError(LOCATION_INFO)); }} while (0, 0)
 
 #define THROW_IF_NULL_ALLOC(ptr)                                Throw_IfNullAlloc(ptr)
 
@@ -55,21 +73,24 @@
 #define SUCCEEDED_LOG(hr)                                       SUCCEEDED(LOG_IF_FAILED(hr))
 #define FAILED_LOG(hr)                                          FAILED(LOG_IF_FAILED(hr))
 
-
 class ResultException: public std::runtime_error
 {
 public:
-    explicit ResultException(HRESULT hr, LOCATION_ARGUMENTS_ONLY) :
+    ResultException(HRESULT hr, LOCATION_ARGUMENTS_ONLY) :
         runtime_error(format("HRESULT 0x%x returned at " LOCATION_FORMAT, hr, LOCATION_CALL_ONLY)),
         m_hr(hr)
     {
     }
 
-    HRESULT GetResult() const { return m_hr; }
+    HRESULT GetResult() const noexcept { return m_hr; }
 
 private:
-    HRESULT m_hr;
+    
+#pragma warning( push )
+#pragma warning ( disable : 26495 ) // bug in CA: m_hr is reported as uninitialized
+    const HRESULT m_hr = S_OK;
 };
+#pragma warning( pop )
 
  __declspec(noinline) inline VOID ReportUntypedException(LOCATION_ARGUMENTS_ONLY)
 {
@@ -96,7 +117,7 @@ private:
     return condition;
 }
 
- __declspec(noinline) inline VOID ReportException(LOCATION_ARGUMENTS std::exception& exception)
+ __declspec(noinline) inline VOID ReportException(LOCATION_ARGUMENTS const std::exception& exception)
 {
     DebugPrintf(ASPNETCORE_DEBUG_FLAG_ERROR, "Exception '%s' caught at " LOCATION_FORMAT, exception.what(), LOCATION_CALL_ONLY);
 }
@@ -120,12 +141,12 @@ __declspec(noinline) inline HRESULT CaughtExceptionHResult(LOCATION_ARGUMENTS_ON
     {
         return E_OUTOFMEMORY;
     }
-    catch (ResultException& exception)
+    catch (const ResultException& exception)
     {
         ReportException(LOCATION_CALL exception);
         return exception.GetResult();
     }
-    catch (std::exception& exception)
+    catch (const std::exception& exception)
     {
         ReportException(LOCATION_CALL exception);
         return HRESULT_FROM_WIN32(ERROR_UNHANDLED_EXCEPTION);
@@ -151,4 +172,8 @@ template <typename PointerT> auto Throw_IfNullAlloc(PointerT pointer)
         throw std::bad_alloc();
     }
     return pointer;
+}
+__declspec(noinline) inline std::wstring GetUnexpectedExceptionMessage(const std::runtime_error& ex)
+{
+    return format(L"Unexpected exception: %S", ex.what());
 }

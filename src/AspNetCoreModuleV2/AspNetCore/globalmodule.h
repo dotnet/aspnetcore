@@ -5,20 +5,18 @@
 
 #include "applicationmanager.h"
 
-class ASPNET_CORE_GLOBAL_MODULE : public CGlobalModule
+class ASPNET_CORE_GLOBAL_MODULE : NonCopyable, public CGlobalModule
 {
 
 public:
 
     ASPNET_CORE_GLOBAL_MODULE(
-        APPLICATION_MANAGER* pApplicationManager
-    );
+        std::shared_ptr<APPLICATION_MANAGER> pApplicationManager
+    ) noexcept;
 
-    ~ASPNET_CORE_GLOBAL_MODULE()
-    {
-    }
+    virtual ~ASPNET_CORE_GLOBAL_MODULE() = default;
 
-    VOID Terminate()
+    VOID Terminate() override
     {
         LOG_INFO(L"ASPNET_CORE_GLOBAL_MODULE::Terminate");
         // Remove the class from memory.
@@ -28,13 +26,13 @@ public:
     GLOBAL_NOTIFICATION_STATUS
     OnGlobalStopListening(
         _In_ IGlobalStopListeningProvider * pProvider
-    );
+    ) override;
 
     GLOBAL_NOTIFICATION_STATUS
     OnGlobalConfigurationChange(
         _In_ IGlobalConfigurationChangeProvider * pProvider
-    );
+    ) override;
 
 private:
-    APPLICATION_MANAGER * m_pApplicationManager;
+    std::shared_ptr<APPLICATION_MANAGER> m_pApplicationManager;
 };

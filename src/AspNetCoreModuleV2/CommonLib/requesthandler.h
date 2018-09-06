@@ -14,13 +14,13 @@ class REQUEST_HANDLER: public virtual IREQUEST_HANDLER
 
 public:
     VOID
-    ReferenceRequestHandler() override
+    ReferenceRequestHandler() noexcept override 
     {
         InterlockedIncrement(&m_cRefs);
     }
 
     VOID
-    DereferenceRequestHandler() override
+    DereferenceRequestHandler() noexcept override
     {
         DBG_ASSERT(m_cRefs != 0);
 

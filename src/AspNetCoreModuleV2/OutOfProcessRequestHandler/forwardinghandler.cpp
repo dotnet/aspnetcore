@@ -48,10 +48,7 @@ FORWARDING_HANDLER::FORWARDING_HANDLER(
     m_pW3Context(pW3Context),
     m_pApplication(pApplication)
 {
-#ifdef DEBUG
-    DebugPrintf(ASPNETCORE_DEBUG_FLAG_INFO,
-        "FORWARDING_HANDLER::FORWARDING_HANDLER");
-#endif
+    LOG_TRACE(L"FORWARDING_HANDLER::FORWARDING_HANDLER");
 
     m_fWebSocketSupported = m_pApplication->QueryWebsocketStatus();
     InitializeSRWLock(&m_RequestLock);
@@ -65,10 +62,8 @@ FORWARDING_HANDLER::~FORWARDING_HANDLER(
     //
     m_Signature = FORWARDING_HANDLER_SIGNATURE_FREE;
 
-#ifdef DEBUG
-    DebugPrintf(ASPNETCORE_DEBUG_FLAG_INFO,
-        "FORWARDING_HANDLER::~FORWARDING_HANDLER");
-#endif
+    LOG_TRACE(L"FORWARDING_HANDLER::~FORWARDING_HANDLER");
+
     //
     // RemoveRequest() should already have been called and m_pDisconnect
     // has been freed or m_pDisconnect was never initialized.
@@ -309,10 +304,9 @@ FORWARDING_HANDLER::OnExecuteRequestHandler()
         reinterpret_cast<DWORD_PTR>(static_cast<PVOID>(this))))
     {
         hr = HRESULT_FROM_WIN32(GetLastError());
-#ifdef DEBUG
-        DebugPrintf(ASPNETCORE_DEBUG_FLAG_INFO,
-            "FORWARDING_HANDLER::OnExecuteRequestHandler, Send request failed");
-#endif
+
+        LOG_TRACE(L"FORWARDING_HANDLER::OnExecuteRequestHandler, Send request failed");
+
         // FREB log
         if (ANCMEvents::ANCM_REQUEST_FORWARD_FAIL::IsEnabled(m_pW3Context->GetTraceContext()))
         {
@@ -460,10 +454,8 @@ REQUEST_NOTIFICATION_STATUS
 
     if (m_RequestStatus == FORWARDER_RECEIVED_WEBSOCKET_RESPONSE)
     {
-#ifdef DEBUG
-        DebugPrintf(ASPNETCORE_DEBUG_FLAG_INFO,
-            "FORWARDING_HANDLER::OnAsyncCompletion, Send completed for 101 response");
-#endif
+        LOG_TRACE(L"FORWARDING_HANDLER::OnAsyncCompletion, Send completed for 101 response");
+
         //
         // This should be the write completion of the 101 response.
         //
@@ -696,10 +688,7 @@ Finished:
     //
     // Do not use this object after dereferencing it, it may be gone.
     //
-#ifdef DEBUG
-    DebugPrintf(ASPNETCORE_DEBUG_FLAG_INFO,
-        "FORWARDING_HANDLER::OnAsyncCompletion Done %d", retVal);
-#endif
+    LOG_TRACEF(L"FORWARDING_HANDLER::OnAsyncCompletion Done %d", retVal);
     return retVal;
 }
 
@@ -1336,10 +1325,8 @@ None
             dwInternetStatus);
     }
 
-#ifdef DEBUG
-    DebugPrintf(ASPNETCORE_DEBUG_FLAG_INFO,
-        "FORWARDING_HANDLER::OnWinHttpCompletionInternal %x -- %d --%p\n", dwInternetStatus, GetCurrentThreadId(), m_pW3Context);
-#endif
+    LOG_TRACEF(L"FORWARDING_HANDLER::OnWinHttpCompletionInternal %x -- %d --%p\n", dwInternetStatus, GetCurrentThreadId(), m_pW3Context);
+
     //
     // Exclusive lock on the winhttp handle to protect from a client disconnect/
     // server stop closing the handle while we are using it.
@@ -2751,10 +2738,7 @@ FORWARDING_HANDLER::TerminateRequest(
     // a winhttp callback on the same thread and we donot want to
     // acquire the lock again
 
-#ifdef DEBUG
-    DebugPrintf(ASPNETCORE_DEBUG_FLAG_INFO,
-        "FORWARDING_HANDLER::TerminateRequest %d --%p\n", GetCurrentThreadId(), m_pW3Context);
-#endif // DEBUG
+    LOG_TRACEF(L"FORWARDING_HANDLER::TerminateRequest %d --%p\n", GetCurrentThreadId(), m_pW3Context);
 
     if (!m_fHttpHandleInClose)
     {

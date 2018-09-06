@@ -64,7 +64,7 @@ TEST(ParseHostFxrArguments, ProvideNoArgs_InvalidArgs)
         struHostFxrDllLocation,
         struExeLocation,
         bstrArray), // args array.
-        HOSTFXR_UTILITY::StartupParametersResolutionException);
+        InvalidOperationException);
 }
 
 TEST(GetAbsolutePathToDotnetFromProgramFiles, BackupWorks)
@@ -118,5 +118,5 @@ TEST(GetHostFxrArguments, InvalidParams)
         struHostFxrDllLocation,
         struExeLocation,
         bstrArray), // args array.
-        HOSTFXR_UTILITY::StartupParametersResolutionException);
+        InvalidOperationException);
 }

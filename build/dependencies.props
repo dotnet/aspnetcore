@@ -8,6 +8,7 @@
     <MicrosoftAspNetCoreAllPackageVersion>3.0.0-alpha1-10400</MicrosoftAspNetCoreAllPackageVersion>
     <MicrosoftAspNetCoreAuthenticationCorePackageVersion>3.0.0-alpha1-10400</MicrosoftAspNetCoreAuthenticationCorePackageVersion>
     <MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>3.0.0-alpha1-10400</MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>
+    <MicrosoftAspNetCoreConnectionsAbstractionsPackageVersion>3.0.0-alpha1-10400</MicrosoftAspNetCoreConnectionsAbstractionsPackageVersion>
     <MicrosoftAspNetCoreHostingAbstractionsPackageVersion>3.0.0-alpha1-10400</MicrosoftAspNetCoreHostingAbstractionsPackageVersion>
     <MicrosoftAspNetCoreHostingPackageVersion>3.0.0-alpha1-10400</MicrosoftAspNetCoreHostingPackageVersion>
     <MicrosoftAspNetCoreHttpExtensionsPackageVersion>3.0.0-alpha1-10400</MicrosoftAspNetCoreHttpExtensionsPackageVersion>

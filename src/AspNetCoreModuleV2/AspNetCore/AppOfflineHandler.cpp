@@ -7,8 +7,8 @@
 
 REQUEST_NOTIFICATION_STATUS AppOfflineHandler::OnExecuteRequestHandler()
 {
-    HTTP_DATA_CHUNK   DataChunk;
-    IHttpResponse* pResponse = m_pContext->GetResponse();
+    HTTP_DATA_CHUNK   DataChunk {};
+    auto pResponse = m_pContext.GetResponse();
 
     DBG_ASSERT(pResponse);
 

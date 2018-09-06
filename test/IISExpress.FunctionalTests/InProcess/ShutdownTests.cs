@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Net.Http;
+using System.Net.Sockets;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
@@ -26,16 +27,42 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         public async Task ServerShutsDownWhenMainExits()
         {
             var parameters = _fixture.GetBaseDeploymentParameters(publish: true);
-            var result = await DeployAsync(parameters);
+            var deploymentResult = await DeployAsync(parameters);
             try
             {
-                await result.HttpClient.GetAsync("/Shutdown");
+                await deploymentResult.HttpClient.GetAsync("/Shutdown");
             }
             catch (HttpRequestException ex) when (ex.InnerException is IOException)
             {
                 // Server might close a connection before request completes
             }
-            Assert.True(result.HostShutdownToken.WaitHandle.WaitOne(TimeoutExtensions.DefaultTimeout));
+
+            deploymentResult.AssertWorkerProcessStop();
+        }
+
+
+        [ConditionalFact]
+        public async Task ServerShutsDownWhenMainExitsStress()
+        {
+            var parameters = _fixture.GetBaseDeploymentParameters(publish: true);
+            var deploymentResult = await StartAsync(parameters);
+
+            var load = Helpers.StressLoad(deploymentResult.HttpClient, "/HelloWorld", response => {
+                var statusCode = (int)response.StatusCode;
+                Assert.True(statusCode == 200 || statusCode == 503, "Status code was " + statusCode);
+            });
+
+            try
+            {
+                await deploymentResult.HttpClient.GetAsync("/Shutdown");
+                await load;
+            }
+            catch (HttpRequestException ex) when (ex.InnerException is IOException | ex.InnerException is SocketException)
+            {
+                // Server might close a connection before request completes
+            }
+
+            deploymentResult.AssertWorkerProcessStop();
         }
 
         [ConditionalFact]

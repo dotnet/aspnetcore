@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
 using System.Reflection;
@@ -14,7 +15,9 @@ using System.Xml.XPath;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
+using Microsoft.AspNetCore.Server.IntegrationTesting.Common;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -29,39 +32,33 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         internal static string HostableWebCoreLocation => Environment.ExpandEnvironmentVariables($@"%windir%\system32\inetsrv\{HWebCoreDll}");
         internal static string BasePath => Path.GetDirectoryName(new Uri(typeof(TestServer).Assembly.CodeBase).AbsolutePath);
-        internal static string InProcessHandlerLocation => Path.Combine(BasePath, InProcessHandlerDll);
 
         internal static string AspNetCoreModuleLocation => Path.Combine(BasePath, AspNetCoreModuleDll);
 
         private static readonly SemaphoreSlim WebCoreLock = new SemaphoreSlim(1, 1);
 
-        // Currently this is hardcoded in HostableWebCore.config
-        private static readonly int BasePort = 50691;
-        private static readonly Uri BaseUri = new Uri("http://localhost:" + BasePort);
+        private static readonly int PortRetryCount = 10;
 
         private readonly TaskCompletionSource<object> _startedTaskCompletionSource = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
         private readonly Action<IApplicationBuilder> _appBuilder;
         private readonly ILoggerFactory _loggerFactory;
         private readonly hostfxr_main_fn _hostfxrMainFn;
-
-        public HttpClient HttpClient { get; }
-        public TestConnection CreateConnection() => new TestConnection(BasePort);
+        
+        private Uri BaseUri => new Uri("http://localhost:" + _currentPort);
+        public HttpClient HttpClient { get; private set; }
+        public TestConnection CreateConnection() => new TestConnection(_currentPort);
 
         private IWebHost _host;
 
         private string _appHostConfigPath;
+        private int _currentPort;
 
         private TestServer(Action<IApplicationBuilder> appBuilder, ILoggerFactory loggerFactory)
         {
             _hostfxrMainFn = Main;
             _appBuilder = appBuilder;
             _loggerFactory = loggerFactory;
-
-            HttpClient = new HttpClient(new LoggingHandler(new SocketsHttpHandler(), _loggerFactory.CreateLogger<TestServer>()))
-            {
-                BaseAddress = BaseUri
-            };
         }
 
         public static async Task<TestServer> Create(Action<IApplicationBuilder> appBuilder, ILoggerFactory loggerFactory)
@@ -83,19 +80,45 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         {
             LoadLibrary(HostableWebCoreLocation);
             _appHostConfigPath = Path.GetTempFileName();
+            
+            set_main_handler(_hostfxrMainFn);
 
+            Retry(() =>
+            {
+                _currentPort = TestPortHelper.GetNextPort();
+
+                InitializeConfig(_currentPort);
+
+                var startResult = WebCoreActivate(_appHostConfigPath, null, "Instance");
+                if (startResult != 0)
+                {
+                    throw new InvalidOperationException($"Error while running WebCoreActivate: {startResult} on port {_currentPort}");
+                }
+            }, PortRetryCount);
+
+            HttpClient = new HttpClient(new LoggingHandler(new SocketsHttpHandler(), _loggerFactory.CreateLogger<TestServer>()))
+            {
+                BaseAddress = BaseUri
+            };
+        }
+
+        private void InitializeConfig(int port)
+        {
             var webHostConfig = XDocument.Load(Path.GetFullPath("HostableWebCore.config"));
             webHostConfig.XPathSelectElement("/configuration/system.webServer/globalModules/add[@name='AspNetCoreModuleV2']")
                 .SetAttributeValue("image", AspNetCoreModuleLocation);
+
+            var siteElement = webHostConfig.Root
+                .RequiredElement("system.applicationHost")
+                .RequiredElement("sites")
+                .RequiredElement("site");
+
+            siteElement
+                .RequiredElement("bindings")
+                .RequiredElement("binding")
+                .SetAttributeValue("bindingInformation", $":{port}:localhost");
+
             webHostConfig.Save(_appHostConfigPath);
-
-            set_main_handler(_hostfxrMainFn);
-
-            var startResult = WebCoreActivate(_appHostConfigPath, null, "Instance");
-            if (startResult != 0)
-            {
-                throw new InvalidOperationException($"Error while running WebCoreActivate: {startResult}");
-            }
         }
 
         private int Main(IntPtr argc, IntPtr argv)
@@ -157,5 +180,25 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         [DllImport("kernel32", SetLastError=true, CharSet = CharSet.Ansi)]
         private static extern IntPtr LoadLibrary([MarshalAs(UnmanagedType.LPStr)] string lpFileName);
+
+        private void Retry(Action func, int attempts)
+        {
+            var exceptions = new List<Exception>();
+
+            for (var attempt = 0; attempt < attempts; attempt++)
+            {
+                try
+                {
+                    func();
+                    return;
+                }
+                catch (Exception e)
+                {
+                    exceptions.Add(e);
+                }
+            }
+
+            throw new AggregateException(exceptions);
+        }
     }
 }

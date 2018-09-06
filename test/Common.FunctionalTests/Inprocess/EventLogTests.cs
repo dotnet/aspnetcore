@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             StopServer();
 
-            EventLogHelpers.VerifyEventLogEvent(deploymentResult, TestSink, "Application '.+' started the coreclr in-process successfully.");
+            EventLogHelpers.VerifyEventLogEvent(deploymentResult, "Application '.+' started the coreclr in-process successfully.");
         }
 
         [ConditionalFact]
@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             StopServer();
 
-            EventLogHelpers.VerifyEventLogEvent(deploymentResult, TestSink, "Application '.+' has shutdown.");
+            EventLogHelpers.VerifyEventLogEvent(deploymentResult, "Application '.+' has shutdown.");
         }
     }
 }

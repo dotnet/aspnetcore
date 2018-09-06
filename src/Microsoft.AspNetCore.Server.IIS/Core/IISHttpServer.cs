@@ -20,9 +20,9 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
     {
         private const string WebSocketVersionString = "WEBSOCKET_VERSION";
 
-        private static NativeMethods.PFN_REQUEST_HANDLER _requestHandler = HandleRequest;
-        private static NativeMethods.PFN_SHUTDOWN_HANDLER _shutdownHandler = HandleShutdown;
-        private static NativeMethods.PFN_ASYNC_COMPLETION _onAsyncCompletion = OnAsyncCompletion;
+        private static readonly NativeMethods.PFN_REQUEST_HANDLER _requestHandler = HandleRequest;
+        private static readonly NativeMethods.PFN_SHUTDOWN_HANDLER _shutdownHandler = HandleShutdown;
+        private static readonly NativeMethods.PFN_ASYNC_COMPLETION _onAsyncCompletion = OnAsyncCompletion;
 
         private IISContextFactory _iisContextFactory;
         private readonly MemoryPool<byte> _memoryPool = new SlabMemoryPool();
@@ -147,15 +147,24 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
         private static NativeMethods.REQUEST_NOTIFICATION_STATUS HandleRequest(IntPtr pInProcessHandler, IntPtr pvRequestContext)
         {
-            // Unwrap the server so we can create an http context and process the request
-            var server = (IISHttpServer)GCHandle.FromIntPtr(pvRequestContext).Target;
-            Interlocked.Increment(ref server._outstandingRequests);
+            IISHttpServer server = null;
+            try
+            {
+                // Unwrap the server so we can create an http context and process the request
+                server = (IISHttpServer)GCHandle.FromIntPtr(pvRequestContext).Target;
+                Interlocked.Increment(ref server._outstandingRequests);
 
-            var context = server._iisContextFactory.CreateHttpContext(pInProcessHandler);
+                var context = server._iisContextFactory.CreateHttpContext(pInProcessHandler);
 
-            ThreadPool.QueueUserWorkItem(state => _ = HandleRequest((IISHttpContext)state), context);
+                ThreadPool.QueueUserWorkItem(state => _ = HandleRequest((IISHttpContext)state), context);
+                return NativeMethods.REQUEST_NOTIFICATION_STATUS.RQ_NOTIFICATION_PENDING;
+            }
+            catch (Exception ex)
+            {
+                server?._logger.LogError(0, ex, $"Unexpected exception in static {nameof(IISHttpServer)}.{nameof(HandleRequest)}.");
 
-            return NativeMethods.REQUEST_NOTIFICATION_STATUS.RQ_NOTIFICATION_PENDING;
+                return NativeMethods.REQUEST_NOTIFICATION_STATUS.RQ_NOTIFICATION_FINISH_REQUEST;
+            }
         }
 
         private static async Task HandleRequest(IISHttpContext context)
@@ -167,7 +176,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             }
             catch (Exception ex)
             {
-                context.Server._logger.LogError("Exception in ProcessRequestAsync", ex);
+                context.Server._logger.LogError(0, ex, $"Unexpected exception in {nameof(IISHttpServer)}.{nameof(HandleRequest)}.");
             }
             finally
             {
@@ -177,16 +186,34 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
         private static bool HandleShutdown(IntPtr pvRequestContext)
         {
-            var server = (IISHttpServer)GCHandle.FromIntPtr(pvRequestContext).Target;
-            server._applicationLifetime.StopApplication();
+            IISHttpServer server = null;
+            try
+            {
+                server = (IISHttpServer)GCHandle.FromIntPtr(pvRequestContext).Target;
+                server._applicationLifetime.StopApplication();
+            }
+            catch (Exception ex)
+            {
+                server?._logger.LogError(0, ex, $"Unexpected exception in {nameof(IISHttpServer)}.{nameof(HandleShutdown)}.");
+            }
             return true;
         }
 
         private static NativeMethods.REQUEST_NOTIFICATION_STATUS OnAsyncCompletion(IntPtr pvManagedHttpContext, int hr, int bytes)
         {
-            var context = (IISHttpContext)GCHandle.FromIntPtr(pvManagedHttpContext).Target;
-            context.OnAsyncCompletion(hr, bytes);
-            return NativeMethods.REQUEST_NOTIFICATION_STATUS.RQ_NOTIFICATION_PENDING;
+            IISHttpContext context = null;
+            try
+            {
+                context = (IISHttpContext)GCHandle.FromIntPtr(pvManagedHttpContext).Target;
+                context.OnAsyncCompletion(hr, bytes);
+                return NativeMethods.REQUEST_NOTIFICATION_STATUS.RQ_NOTIFICATION_PENDING;
+            }
+            catch (Exception ex)
+            {
+                context?.Server._logger.LogError(0, ex, $"Unexpected exception in {nameof(IISHttpServer)}.{nameof(OnAsyncCompletion)}.");
+
+                return NativeMethods.REQUEST_NOTIFICATION_STATUS.RQ_NOTIFICATION_FINISH_REQUEST;
+            }
         }
 
         private static void CompleteRequest(IISHttpContext context, bool result)

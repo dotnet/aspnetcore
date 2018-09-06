@@ -4,7 +4,10 @@
 #pragma once
 
 #include <crtdbg.h>
+#include <CodeAnalysis/Warnings.h>
 
+#pragma warning( push )
+#pragma warning ( disable : ALL_CODE_ANALYSIS_WARNINGS )
 
 //
 // BUFFER_T class shouldn't be used directly. Use BUFFER specialization class instead.
@@ -269,3 +272,5 @@ C_ASSERT( sizeof(VOID*) <= sizeof(ULONGLONG) );
 
 #define INLINE_BUFFER_INIT( _name )     \
     _name( (BYTE*)__aqw##_name, sizeof( __aqw##_name ) )
+
+#pragma warning( pop )

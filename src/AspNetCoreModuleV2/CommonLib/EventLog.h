@@ -5,6 +5,18 @@
 
 #include "resources.h"
 
+#define _va_start(ap, x) \
+    __pragma(warning(push)) \
+    __pragma(warning(disable:26481 26492)) /*Don't use pointer arithmetic. Don't use const_cast to cast away const.*/ \
+    va_start(ap, x) \
+    __pragma(warning(pop))
+
+#define _va_end(args) \
+    __pragma(warning(push)) \
+    __pragma(warning(disable:26477)) /*Use 'nullptr' rather than 0 or NULL*/ \
+    va_end(args) \
+    __pragma(warning(pop))
+
 class EventLog
 {
 public:
@@ -16,9 +28,9 @@ public:
         ...)
     {
        va_list args;
-       va_start(args, pstrMsg);
+       _va_start(args, pstrMsg);
        LogEventF(EVENTLOG_ERROR_TYPE, dwEventId, pstrMsg, args);
-       va_end(args);
+       _va_end(args);
     }
 
     static
@@ -29,9 +41,9 @@ public:
         ...)
     {
        va_list args;
-       va_start(args, pstrMsg);
+       _va_start(args, pstrMsg);
        LogEventF(EVENTLOG_INFORMATION_TYPE, dwEventId, pstrMsg, args);
-       va_end(args);
+       _va_end(args);
     }
 
     static
@@ -42,10 +54,17 @@ public:
         ...)
     {
        va_list args;
-       va_start(args, pstrMsg);
+       _va_start(args, pstrMsg);
        LogEventF(EVENTLOG_WARNING_TYPE, dwEventId, pstrMsg, args);
-       va_end(args);
+       _va_end(args);
     }
+
+    static
+    bool
+    LogEventNoTrace(
+        _In_ WORD    dwEventInfoType,
+        _In_ DWORD   dwEventId,
+        _In_ LPCWSTR pstrMsg);
 
 private:
     static

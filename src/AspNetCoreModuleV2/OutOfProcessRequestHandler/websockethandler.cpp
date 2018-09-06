@@ -47,7 +47,7 @@ WEBSOCKET_HANDLER::WEBSOCKET_HANDLER() :
     _fHandleClosed(FALSE),
     _fReceivedCloseMsg(FALSE)
 {
-    DebugPrintf (ASPNETCORE_DEBUG_FLAG_INFO, "WEBSOCKET_HANDLER::WEBSOCKET_HANDLER");
+    LOG_TRACE(L"WEBSOCKET_HANDLER::WEBSOCKET_HANDLER");
 
     InitializeCriticalSectionAndSpinCount(&_RequestLock, 1000);
     InsertRequest();
@@ -58,7 +58,7 @@ WEBSOCKET_HANDLER::Terminate(
     VOID
     )
 {
-    DebugPrintf (ASPNETCORE_DEBUG_FLAG_INFO, "WEBSOCKET_HANDLER::Terminate");
+    LOG_TRACE(L"WEBSOCKET_HANDLER::Terminate");
     if (!_fHandleClosed)
     {
     RemoveRequest();
@@ -212,8 +212,7 @@ WEBSOCKET_HANDLER::IndicateCompletionToIIS(
 
 --*/
 {
-    DebugPrintf(ASPNETCORE_DEBUG_FLAG_INFO,
-        "WEBSOCKET_HANDLER::IndicateCompletionToIIS called %d", _dwOutstandingIo);
+    LOG_TRACEF(L"WEBSOCKET_HANDLER::IndicateCompletionToIIS called %d", _dwOutstandingIo);
 
     //
     // close Websocket handle. This will triger a WinHttp callback
@@ -223,8 +222,7 @@ WEBSOCKET_HANDLER::IndicateCompletionToIIS(
     //
     if (_hWebSocketRequest != NULL && _dwOutstandingIo == 0)
     {
-        DebugPrintf(ASPNETCORE_DEBUG_FLAG_INFO,
-            "WEBSOCKET_HANDLER::IndicateCompletionToIIS");
+        LOG_TRACE(L"WEBSOCKET_HANDLER::IndicateCompletionToIIS");
 
         _pHandler->SetStatus(FORWARDER_DONE);
         _fHandleClosed = TRUE;
@@ -262,8 +260,7 @@ Routine Description:
     _pHandler = pHandler;
 
     EnterCriticalSection(&_RequestLock);
-    DebugPrintf(ASPNETCORE_DEBUG_FLAG_INFO,
-        "WEBSOCKET_HANDLER::ProcessRequest");
+    LOG_TRACEF(L"WEBSOCKET_HANDLER::ProcessRequest");
 
     //
     // Cache the points to IHttpContext3
@@ -359,8 +356,7 @@ Finished:
 
     if (FAILED_LOG(hr))
     {
-        DebugPrintf (ASPNETCORE_DEBUG_FLAG_ERROR,
-            "Process Request Failed with HR=%08x", hr);
+        LOG_ERRORF(L"Process Request Failed with HR=%08x", hr);
     }
 
     return hr;
@@ -385,8 +381,7 @@ Routine Description:
     BOOL    fFinalFragment;
     BOOL    fClose;
 
-    DebugPrintf(ASPNETCORE_DEBUG_FLAG_INFO,
-        "WEBSOCKET_HANDLER::DoIisWebSocketReceive");
+    LOG_TRACE(L"WEBSOCKET_HANDLER::DoIisWebSocketReceive");
 
     IncrementOutstandingIo();
 
@@ -403,8 +398,7 @@ Routine Description:
     if (FAILED_LOG(hr))
     {
         DecrementOutstandingIo();
-        DebugPrintf(ASPNETCORE_DEBUG_FLAG_ERROR,
-            "WEBSOCKET_HANDLER::DoIisWebSocketSend failed with %08x", hr);
+        LOG_ERRORF(L"WEBSOCKET_HANDLER::DoIisWebSocketSend failed with %08x", hr);
     }
 
     return hr;
@@ -426,8 +420,7 @@ Routine Description:
     HRESULT hr = S_OK;
     DWORD   dwError = NO_ERROR;
 
-    DebugPrintf(ASPNETCORE_DEBUG_FLAG_INFO,
-        "WEBSOCKET_HANDLER::DoWinHttpWebSocketReceive");
+    LOG_TRACE(L"WEBSOCKET_HANDLER::DoWinHttpWebSocketReceive");
 
     IncrementOutstandingIo();
 
@@ -442,8 +435,7 @@ Routine Description:
     {
         DecrementOutstandingIo();
         hr = HRESULT_FROM_WIN32(dwError);
-        DebugPrintf(ASPNETCORE_DEBUG_FLAG_ERROR,
-            "WEBSOCKET_HANDLER::DoWinHttpWebSocketReceive failed with %08x", hr);
+        LOG_ERRORF(L"WEBSOCKET_HANDLER::DoWinHttpWebSocketReceive failed with %08x", hr);
     }
 
     return hr;
@@ -467,8 +459,7 @@ Routine Description:
     BOOL    fFinalFragment = FALSE;
     BOOL    fClose = FALSE;
 
-    DebugPrintf(ASPNETCORE_DEBUG_FLAG_INFO,
-        "WEBSOCKET_HANDLER::DoIisWebSocketSend %d", eBufferType);
+    LOG_TRACEF(L"WEBSOCKET_HANDLER::DoIisWebSocketSend %d", eBufferType);
 
     if (eBufferType == WINHTTP_WEB_SOCKET_CLOSE_BUFFER_TYPE)
     {
@@ -558,8 +549,7 @@ Routine Description:
 Finished:
     if (FAILED_LOG(hr))
     {
-        DebugPrintf(ASPNETCORE_DEBUG_FLAG_ERROR,
-            "WEBSOCKET_HANDLER::DoIisWebSocketSend failed with %08x", hr);
+        LOG_ERRORF(L"WEBSOCKET_HANDLER::DoIisWebSocketSend failed with %08x", hr);
     }
 
     return hr;
@@ -581,8 +571,7 @@ Routine Description:
     DWORD       dwError = NO_ERROR;
     HRESULT     hr = S_OK;
 
-    DebugPrintf(ASPNETCORE_DEBUG_FLAG_INFO,
-        "WEBSOCKET_HANDLER::DoWinHttpWebSocketSend, %d", eBufferType);
+    LOG_TRACEF(L"WEBSOCKET_HANDLER::DoWinHttpWebSocketSend, %d", eBufferType);
 
     if (eBufferType == WINHTTP_WEB_SOCKET_CLOSE_BUFFER_TYPE)
     {
@@ -627,8 +616,7 @@ Routine Description:
             // Call will complete asynchronously, return.
             // ignore error.
             //
-            DebugPrintf(ASPNETCORE_DEBUG_FLAG_INFO,
-                "WEBSOCKET_HANDLER::DoWinhttpWebSocketSend IO_PENDING");
+            LOG_TRACE(L"WEBSOCKET_HANDLER::DoWinhttpWebSocketSend IO_PENDING");
 
             dwError = NO_ERROR;
         }
@@ -639,8 +627,7 @@ Routine Description:
                 //
                 // Call completed synchronously.
                 //
-                DebugPrintf(ASPNETCORE_DEBUG_FLAG_INFO,
-                "WEBSOCKET_HANDLER::DoWinhttpWebSocketSend Shutdown successful.");
+                LOG_TRACE(L"WEBSOCKET_HANDLER::DoWinhttpWebSocketSend Shutdown successful.");
             }
         }
     }
@@ -666,8 +653,7 @@ Routine Description:
 Finished:
     if (FAILED_LOG(hr))
     {
-        DebugPrintf(ASPNETCORE_DEBUG_FLAG_ERROR,
-            "WEBSOCKET_HANDLER::DoWinHttpWebSocketSend failed with %08x", hr);
+        LOG_ERRORF(L"WEBSOCKET_HANDLER::DoWinHttpWebSocketSend failed with %08x", hr);
     }
 
     return hr;
@@ -755,8 +741,7 @@ Routine Description:
     BOOL                    fLocked = FALSE;
     CleanupReason           cleanupReason = CleanupReasonUnknown;
 
-    DebugPrintf(ASPNETCORE_DEBUG_FLAG_INFO,
-        "WEBSOCKET_HANDLER::OnWinHttpSendComplete");
+    LOG_TRACE(L"WEBSOCKET_HANDLER::OnWinHttpSendComplete");
 
     if (_fCleanupInProgress)
     {
@@ -792,8 +777,7 @@ Finished:
     {
         Cleanup (cleanupReason);
 
-        DebugPrintf (ASPNETCORE_DEBUG_FLAG_ERROR,
-            "WEBSOCKET_HANDLER::OnWinsockSendComplete failed with HR=%08x", hr);
+        LOG_ERRORF(L"WEBSOCKET_HANDLER::OnWinsockSendComplete failed with HR=%08x", hr);
     }
 
     //
@@ -810,8 +794,7 @@ WEBSOCKET_HANDLER::OnWinHttpShutdownComplete(
     VOID
     )
 {
-    DebugPrintf(ASPNETCORE_DEBUG_FLAG_INFO,
-        "WEBSOCKET_HANDLER::OnWinHttpShutdownComplete --%p", _pHandler);
+    LOG_TRACEF(L"WEBSOCKET_HANDLER::OnWinHttpShutdownComplete --%p", _pHandler);
 
     DecrementOutstandingIo();
 
@@ -825,8 +808,7 @@ WEBSOCKET_HANDLER::OnWinHttpIoError(
 {
     HRESULT hr = HRESULT_FROM_WIN32(pCompletionStatus->AsyncResult.dwError);
 
-    DebugPrintf(ASPNETCORE_DEBUG_FLAG_ERROR,
-        "WEBSOCKET_HANDLER::OnWinHttpIoError HR = %08x, Operation = %d",
+    LOG_ERRORF(L"WEBSOCKET_HANDLER::OnWinHttpIoError HR = %08x, Operation = %d",
         hr, pCompletionStatus->AsyncResult.dwResult);
 
     Cleanup(ServerDisconnect);
@@ -858,8 +840,7 @@ Routine Description:
     BOOL     fLocked = FALSE;
     CleanupReason cleanupReason = CleanupReasonUnknown;
 
-    DebugPrintf(ASPNETCORE_DEBUG_FLAG_INFO,
-        "WEBSOCKET_HANDLER::OnWinHttpReceiveComplete --%p", _pHandler);
+    LOG_TRACEF(L"WEBSOCKET_HANDLER::OnWinHttpReceiveComplete --%p", _pHandler);
 
     if (_fCleanupInProgress)
     {
@@ -893,8 +874,7 @@ Finished:
     {
         Cleanup (cleanupReason);
 
-        DebugPrintf (ASPNETCORE_DEBUG_FLAG_ERROR,
-            "WEBSOCKET_HANDLER::OnWinsockReceiveComplete failed with HR=%08x", hr);
+        LOG_ERRORF(L"WEBSOCKET_HANDLER::OnWinsockReceiveComplete failed with HR=%08x", hr);
     }
 
     //
@@ -929,7 +909,7 @@ Routine Description:
 
     UNREFERENCED_PARAMETER(cbIo);
 
-    DebugPrintf(ASPNETCORE_DEBUG_FLAG_INFO, "WEBSOCKET_HANDLER::OnIisSendComplete");
+    LOG_TRACE(L"WEBSOCKET_HANDLER::OnIisSendComplete");
 
     if (FAILED_LOG(hrCompletion))
     {
@@ -974,8 +954,7 @@ Finished:
     {
         Cleanup (cleanupReason);
 
-        DebugPrintf (ASPNETCORE_DEBUG_FLAG_ERROR,
-            "WEBSOCKET_HANDLER::OnIisSendComplete failed with HR=%08x", hr);
+        LOG_ERRORF(L"WEBSOCKET_HANDLER::OnIisSendComplete failed with HR=%08x", hr);
     }
 
     //
@@ -1014,8 +993,7 @@ Routine Description:
     CleanupReason cleanupReason = CleanupReasonUnknown;
     WINHTTP_WEB_SOCKET_BUFFER_TYPE  BufferType;
 
-    DebugPrintf(ASPNETCORE_DEBUG_FLAG_INFO,
-        "WEBSOCKET_HANDLER::OnIisReceiveComplete");
+    LOG_TRACE(L"WEBSOCKET_HANDLER::OnIisReceiveComplete");
 
     if (FAILED_LOG(hrCompletion))
     {
@@ -1065,8 +1043,7 @@ Finished:
     {
         Cleanup (cleanupReason);
 
-        DebugPrintf (ASPNETCORE_DEBUG_FLAG_ERROR,
-            "WEBSOCKET_HANDLER::OnIisReceiveComplete failed with HR=%08x", hr);
+        LOG_ERRORF(L"WEBSOCKET_HANDLER::OnIisReceiveComplete failed with HR=%08x", hr);
     }
 
     //
@@ -1097,8 +1074,7 @@ Arguments:
 --*/
 {
     BOOL    fLocked = FALSE;
-    DebugPrintf(ASPNETCORE_DEBUG_FLAG_INFO,
-        "WEBSOCKET_HANDLER::Cleanup Initiated with reason %d", reason);
+    LOG_TRACEF(L"WEBSOCKET_HANDLER::Cleanup Initiated with reason %d", reason);
 
     if (_fCleanupInProgress)
     {

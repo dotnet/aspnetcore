@@ -5,6 +5,7 @@
 
 #include <array>
 #include <string>
+#include <utility>
 #include "iapplication.h"
 #include "HandleWrapper.h"
 
@@ -21,9 +22,9 @@ HRESULT
 class ApplicationFactory
 {
 public:
-    ApplicationFactory(HMODULE hRequestHandlerDll, std::wstring location, PFN_ASPNETCORE_CREATE_APPLICATION pfnAspNetCoreCreateApplication):
+    ApplicationFactory(HMODULE hRequestHandlerDll, std::wstring location, PFN_ASPNETCORE_CREATE_APPLICATION pfnAspNetCoreCreateApplication) noexcept:
         m_pfnAspNetCoreCreateApplication(pfnAspNetCoreCreateApplication),
-        m_location(location),
+        m_location(std::move(location)),
         m_hRequestHandlerDll(hRequestHandlerDll)
     {
     }
@@ -31,10 +32,10 @@ public:
     HRESULT Execute(
         _In_  IHttpServer           *pServer,
         _In_  IHttpApplication      *pHttpApplication,
-        _Out_ IAPPLICATION         **pApplication) const
+        _Outptr_ IAPPLICATION       **pApplication) const noexcept
     {
         std::array<APPLICATION_PARAMETER, 1> parameters {
-            {"InProcessExeLocation", reinterpret_cast<const void*>(m_location.data())}
+            {"InProcessExeLocation", m_location.data()}
         };
         return m_pfnAspNetCoreCreateApplication(pServer, pHttpApplication, parameters.data(), static_cast<DWORD>(parameters.size()), pApplication);
     }

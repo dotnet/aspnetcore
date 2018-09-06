@@ -2,44 +2,75 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
+using System.Text;
+using System.Threading;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 
 namespace IISTestSite
 {
     public static class Program
     {
-        public static void Main(string[] args)
+        public static int Main(string[] args)
         {
-            var envVariable = Environment.GetEnvironmentVariable("ASPNETCORE_INPROCESS_STARTUP_VALUE");
-            var randomNumber = Environment.GetEnvironmentVariable("ASPNETCORE_INPROCESS_RANDOM_VALUE");
+            var mode = args.FirstOrDefault();
 
-            // Semicolons are appended to env variables; removing them.
-            if (envVariable == "CheckLargeStdOutWrites")
+            switch (mode)
             {
-                Console.WriteLine(new string('a', 4096));
-            }
-            else if (envVariable == "CheckLargeStdErrWrites")
-            {
-                Console.Error.WriteLine(new string('a', 4096));
-                Console.Error.Flush();
-            }
-            else if (envVariable == "CheckLogFile")
-            {
-                Console.WriteLine($"Random number: {randomNumber}");
-            }
-            else if (envVariable == "CheckErrLogFile")
-            {
-                Console.Error.WriteLine($"Random number: {randomNumber}");
-                Console.Error.Flush();
-            }
-            else if (envVariable == "CheckOversizedStdErrWrites")
-            {
-                Console.WriteLine(new string('a', 5000));
+                // Semicolons are appended to env variables; removing them.
+                case "CheckLargeStdOutWrites":
+                    Console.WriteLine(new string('a', 4096));
+                    break;
+                case "CheckLargeStdErrWrites":
+                    Console.Error.WriteLine(new string('a', 4096));
+                    Console.Error.Flush();
+                    break;
+                case "CheckLogFile":
+                    Console.WriteLine($"Random number: {args[1]}");
+                    break;
+                case "CheckErrLogFile":
+                    Console.Error.WriteLine($"Random number: {args[1]}");
+                    Console.Error.Flush();
+                    break;
+                case "CheckOversizedStdErrWrites":
+                    Console.WriteLine(new string('a', 5000));
+                    break;
+                case "CheckOversizedStdOutWrites":
+                    Console.Error.WriteLine(new string('a', 4096));
+                    Console.Error.Flush();
+                    break;
+                case "Hang":
+                    Thread.Sleep(Timeout.Infinite);
+                    break;
+                case "HangOnStop":
+                    
+                    var host = new WebHostBuilder()
+                        .UseIIS()
+                        .UseStartup<Startup>()
+                        .Build();
+                    host.Run();
 
+                    Thread.Sleep(Timeout.Infinite);
+                    break;
+                case "CheckConsoleFunctions":
+                    // Call a bunch of console functions and make sure none return invalid handle.
+                    Console.OutputEncoding = Encoding.UTF8;
+                    Console.Title = "Test";
+                    Console.WriteLine($"Is Console redirection: {Console.IsOutputRedirected}");
+                    Console.BackgroundColor = ConsoleColor.Blue;
+                    break;
             }
-            else if (envVariable == "CheckOversizedStdOutWrites")
+
+            return 12;
+        }
+
+        public partial class Startup
+        {
+            public void Configure(IApplicationBuilder app)
             {
-                Console.Error.WriteLine(new string('a', 4096));
-                Console.Error.Flush();
+                app.Run(async context => await context.Response.WriteAsync("OK"));
             }
         }
     }

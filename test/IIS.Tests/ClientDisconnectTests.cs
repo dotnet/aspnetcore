@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging.Testing;
@@ -17,7 +18,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
     public class ClientDisconnectTests : LoggedTest
     {
          
-        [ConditionalFact(Skip = "See: https://github.com/aspnet/IISIntegration/issues/1075")]
+        [ConditionalFact]
         public async Task WritesSucceedAfterClientDisconnect()
         {
             var requestStartedCompletionSource = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -49,7 +50,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             }
         }
 
-        [ConditionalFact(Skip = "See: https://github.com/aspnet/IISIntegration/issues/1075")]
+        [ConditionalFact]
         public async Task ReadThrowsAfterClientDisconnect()
         {
             var requestStartedCompletionSource = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -82,8 +83,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 await requestCompletedCompletionSource.Task.TimeoutAfterDefault();
             }
 
-            Assert.IsType<IOException>(exception);
-            Assert.Equal("Native IO operation failed", exception.Message);
+            Assert.IsType<ConnectionResetException>(exception);
+            Assert.Equal("The client has disconnected", exception.Message);
         }
 
         [ConditionalFact(Skip = "See: https://github.com/aspnet/IISIntegration/issues/1075")]
@@ -126,7 +127,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 Assert.IsType<OperationCanceledException>(exception);
             }
         }
-
         [ConditionalFact(Skip = "See: https://github.com/aspnet/IISIntegration/issues/1075")]
         public async Task ReaderThrowsCancelledException()
         {
@@ -161,6 +161,46 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 }
                 Assert.IsType<OperationCanceledException>(exception);
             }
+        }
+
+        [ConditionalFact]
+        public async Task ReaderThrowsResetExceptionOnInvalidBody()
+        {
+            var requestCompletedCompletionSource = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            Exception exception = null;
+
+            var data = new byte[1024];
+            using (var testServer = await TestServer.Create(async ctx =>
+            {
+                try
+                {
+                    await ctx.Request.Body.ReadAsync(data);
+                }
+                catch (Exception e)
+                {
+                    exception = e;
+                }
+
+                requestCompletedCompletionSource.SetResult(true);
+            }, LoggerFactory))
+            {
+                using (var connection = testServer.CreateConnection())
+                {
+                    await connection.Send(
+                        "POST / HTTP/1.1",
+                        "Transfer-Encoding: chunked",
+                        "Host: localhost",
+                        "Connection: close",
+                        "",
+                        "ZZZ",
+                        "");
+                    await requestCompletedCompletionSource.Task.TimeoutAfterDefault();
+                }
+            }
+
+            Assert.IsType<ConnectionResetException>(exception);
+            Assert.Equal("The client has disconnected", exception.Message);
         }
 
         private static async Task SendContentLength1Post(TestConnection connection)

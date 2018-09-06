@@ -3,6 +3,9 @@
 
 #pragma once
 
+#pragma warning( push )
+#pragma warning ( disable : 26451 )
+
 template<typename T>
 class PER_CPU
 {
@@ -303,3 +306,5 @@ Return:
 
     return S_OK;
 }
+
+#pragma warning( pop )

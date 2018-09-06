@@ -43,6 +43,17 @@ HRESULT PipeOutputManager::Start()
     HANDLE                  hStdErrReadPipe;
     HANDLE                  hStdErrWritePipe;
 
+    // To make Console.* functions work, allocate a console
+    // in the current process.
+    if (!AllocConsole())
+    {
+        // ERROR_ACCESS_DENIED means there is a console already present.
+        if (GetLastError() != ERROR_ACCESS_DENIED)
+        {
+            RETURN_LAST_ERROR();
+        }
+    }
+
     RETURN_LAST_ERROR_IF(!CreatePipe(&hStdErrReadPipe, &hStdErrWritePipe, &saAttr, 0 /*nSize*/));
 
     m_hErrReadPipe = hStdErrReadPipe;

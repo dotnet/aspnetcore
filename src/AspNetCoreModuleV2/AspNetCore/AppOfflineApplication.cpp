@@ -11,7 +11,8 @@ HRESULT AppOfflineApplication::CreateHandler(IHttpContext* pHttpContext, IREQUES
 {
     try
     {
-        *pRequestHandler = new AppOfflineHandler(pHttpContext, m_strAppOfflineContent);
+        auto handler = std::make_unique<AppOfflineHandler>(*pHttpContext, m_strAppOfflineContent);
+        *pRequestHandler = handler.release();
     }
     CATCH_RETURN();
 
@@ -44,9 +45,9 @@ HRESULT AppOfflineApplication::OnAppOfflineFound()
     if (li.LowPart > 0)
     {
         DWORD bytesRead = 0;
-        std::string pszBuff(li.LowPart + 1, '\0');
+        std::string pszBuff(static_cast<size_t>(li.LowPart) + 1, '\0');
 
-        RETURN_LAST_ERROR_IF(!ReadFile(handle, pszBuff.data(), li.LowPart, &bytesRead, NULL));
+        RETURN_LAST_ERROR_IF(!ReadFile(handle, pszBuff.data(), li.LowPart, &bytesRead, nullptr));
         pszBuff.resize(bytesRead);
 
         m_strAppOfflineContent = pszBuff;
@@ -55,7 +56,7 @@ HRESULT AppOfflineApplication::OnAppOfflineFound()
     return S_OK;
 }
 
-bool AppOfflineApplication::ShouldBeStarted(IHttpApplication& pApplication)
+bool AppOfflineApplication::ShouldBeStarted(const IHttpApplication& pApplication)
 {
     return FileExists(GetAppOfflineLocation(pApplication));
 }

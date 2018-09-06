@@ -184,7 +184,7 @@ http_get_application_properties(
         return E_FAIL;
     }
 
-    auto pConfiguration = pInProcessApplication->QueryConfig();
+    const auto& pConfiguration = pInProcessApplication->QueryConfig();
 
     pIISCofigurationData->pInProcessApplication = pInProcessApplication;
     pIISCofigurationData->pwzFullApplicationPath = SysAllocString(pInProcessApplication->QueryApplicationPhysicalPath().c_str());

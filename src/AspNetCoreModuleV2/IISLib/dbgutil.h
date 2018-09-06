@@ -21,19 +21,21 @@
 // Debug error levels for DEBUG_FLAGS_VAR.
 //
 
-#define DEBUG_FLAG_INFO     0x00000001
-#define DEBUG_FLAG_WARN     0x00000002
-#define DEBUG_FLAG_ERROR    0x00000004
+#define DEBUG_FLAG_TRACE    0x00000001
+#define DEBUG_FLAG_INFO     0x00000002
+#define DEBUG_FLAG_WARN     0x00000004
+#define DEBUG_FLAG_ERROR    0x00000008
 
 //
 // Predefined error level values. These are backwards from the
 // windows definitions.
 //
 
+#define DEBUG_FLAGS_TRACE   (DEBUG_FLAG_ERROR | DEBUG_FLAG_WARN | DEBUG_FLAG_INFO | DEBUG_FLAG_TRACE)
 #define DEBUG_FLAGS_INFO    (DEBUG_FLAG_ERROR | DEBUG_FLAG_WARN | DEBUG_FLAG_INFO)
 #define DEBUG_FLAGS_WARN    (DEBUG_FLAG_ERROR | DEBUG_FLAG_WARN)
 #define DEBUG_FLAGS_ERROR   (DEBUG_FLAG_ERROR)
-#define DEBUG_FLAGS_ANY     (DEBUG_FLAG_INFO | DEBUG_FLAG_WARN | DEBUG_FLAG_ERROR)
+#define DEBUG_FLAGS_ANY     (DEBUG_FLAG_INFO | DEBUG_FLAG_WARN | DEBUG_FLAG_ERROR | DEBUG_FLAG_TRACE)
 
 //
 // Global variables to control tracing. Generally per module

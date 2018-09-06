@@ -40,9 +40,7 @@ public:
     ) override;
     
     IHttpContext*
-    QueryHttpContext(
-        VOID
-    ) const
+    QueryHttpContext() const
     {
         return m_pW3Context;
     }
@@ -53,9 +51,7 @@ public:
     );
 
     VOID
-    IndicateManagedRequestComplete(
-        VOID
-    );
+    IndicateManagedRequestComplete();
 
     VOID
     SetAsyncCompletionStatus(
@@ -68,11 +64,11 @@ public:
 
     static
     HRESULT
-    StaticInitialize(VOID);
+    StaticInitialize();
 
     static
     void
-    StaticTerminate(VOID);
+    StaticTerminate();
 
 private:
     REQUEST_NOTIFICATION_STATUS

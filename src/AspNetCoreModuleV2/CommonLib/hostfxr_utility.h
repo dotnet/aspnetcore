@@ -29,20 +29,6 @@ public:
         std::vector<std::wstring>       &arguments
     );
 
-    class StartupParametersResolutionException: public std::runtime_error
-    {
-        public:
-            StartupParametersResolutionException(std::wstring msg)
-                : runtime_error("Startup parameter resulution error occured"), message(std::move(msg))
-            {
-            }
-
-            std::wstring get_message() const { return message; }
-
-        private:
-            std::wstring message;
-    };
-
     static
     void
     AppendArguments(
@@ -96,7 +82,7 @@ private:
 
     struct LocalFreeDeleter
     {
-         void operator ()(LPWSTR* ptr) const
+         void operator ()(_In_ LPWSTR* ptr) const
          {
              LocalFree(ptr);
          }
