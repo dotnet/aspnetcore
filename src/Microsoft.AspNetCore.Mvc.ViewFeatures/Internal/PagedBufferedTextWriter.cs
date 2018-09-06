@@ -39,7 +39,6 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             var length = _charBuffer.Length;
             if (length == 0)
             {
-
                 // If nothing sync buffered return CompletedTask,
                 // so we can fast-path skip async state-machine creation
                 return Task.CompletedTask;
