@@ -3,7 +3,7 @@
 
 using Microsoft.DotNet.Cli.CommandLine;
 
-namespace GetDocument.Commands
+namespace Microsoft.Extensions.ApiDescription.Client.Commands
 {
     internal class HelpCommandBase : CommandBase
     {

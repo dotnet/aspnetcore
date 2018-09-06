@@ -3,10 +3,10 @@
 
 using System;
 using System.Text;
-using GetDocument.Commands;
 using Microsoft.DotNet.Cli.CommandLine;
+using Microsoft.Extensions.ApiDescription.Client.Commands;
 
-namespace GetDocument
+namespace Microsoft.Extensions.ApiDescription.Client
 {
     internal static class Program
     {
@@ -33,7 +33,7 @@ namespace GetDocument
                 if (ex is CommandException
                     || ex is CommandParsingException
                     || (ex is WrappedException wrappedException
-                        && wrappedException.Type == "GetDocument.Design.OperationException"))
+                        && wrappedException.Type == "Microsoft.Extensions.ApiDescription.Client.Design.OperationException"))
                 {
                     Reporter.WriteVerbose(ex.ToString());
                 }

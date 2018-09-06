@@ -3,18 +3,10 @@
 
 using System.Reflection;
 
-namespace GetDocument
+namespace Microsoft.Extensions.ApiDescription.Client
 {
-    /// <summary>
-    ///     This API supports the GetDocument infrastructure and is not intended to be used
-    ///     directly from your code. This API may change or be removed in future releases.
-    /// </summary>
-    public static class ProductInfo
+    internal static class ProductInfo
     {
-        /// <summary>
-        ///     This API supports the GetDocument infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
         public static string GetVersion()
             => typeof(ProductInfo)
                 .Assembly

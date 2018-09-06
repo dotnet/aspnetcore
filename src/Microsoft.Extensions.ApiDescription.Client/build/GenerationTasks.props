@@ -2,15 +2,15 @@
 <Project>
   <Import Project="NSwagServiceReference.props" />
   <PropertyGroup>
-    <_GenerationTasksAssemblyTarget Condition="'$(MSBuildRuntimeType)' == 'Core'">netstandard2.0</_GenerationTasksAssemblyTarget>
-    <_GenerationTasksAssemblyTarget Condition="'$(MSBuildRuntimeType)' != 'Core'">net461</_GenerationTasksAssemblyTarget>
-    <_GenerationTasksAssemblyPath>$(MSBuildThisFileDirectory)/../tasks/$(_GenerationTasksAssemblyTarget)/GenerationTasks.dll</_GenerationTasksAssemblyPath>
-    <_GenerationTasksAssemblyTarget />
+    <_ApiDescriptionTasksAssemblyTarget Condition="'$(MSBuildRuntimeType)' == 'Core'">netstandard2.0</_ApiDescriptionTasksAssemblyTarget>
+    <_ApiDescriptionTasksAssemblyTarget Condition="'$(MSBuildRuntimeType)' != 'Core'">net461</_ApiDescriptionTasksAssemblyTarget>
+    <_ApiDescriptionTasksAssemblyPath>$(MSBuildThisFileDirectory)/../tasks/$(_ApiDescriptionTasksAssemblyTarget)/Microsoft.Extensions.ApiDescription.Client.dll</_ApiDescriptionTasksAssemblyPath>
+    <_ApiDescriptionTasksAssemblyTarget />
   </PropertyGroup>
-  <UsingTask TaskName="GenerationTasks.GetFileReferenceMetadata" AssemblyFile="$(_GenerationTasksAssemblyPath)" />
-  <UsingTask TaskName="GenerationTasks.GetProjectReferenceMetadata" AssemblyFile="$(_GenerationTasksAssemblyPath)" />
-  <UsingTask TaskName="GenerationTasks.GetUriReferenceMetadata" AssemblyFile="$(_GenerationTasksAssemblyPath)" />
-  <UsingTask TaskName="GenerationTasks.DownloadFile" AssemblyFile="$(_GenerationTasksAssemblyPath)" />
+  <UsingTask TaskName="GetFileReferenceMetadata" AssemblyFile="$(_ApiDescriptionTasksAssemblyPath)" />
+  <UsingTask TaskName="GetProjectReferenceMetadata" AssemblyFile="$(_ApiDescriptionTasksAssemblyPath)" />
+  <UsingTask TaskName="GetUriReferenceMetadata" AssemblyFile="$(_ApiDescriptionTasksAssemblyPath)" />
+  <UsingTask TaskName="Microsoft.Extensions.ApiDescription.Client.DownloadFile" AssemblyFile="$(_ApiDescriptionTasksAssemblyPath)" />
 
   <PropertyGroup>
     <ServiceProjectReferenceCheckIfNewer Condition="'$(ServiceProjectReferenceCheckIfNewer)' == ''">true</ServiceProjectReferenceCheckIfNewer>

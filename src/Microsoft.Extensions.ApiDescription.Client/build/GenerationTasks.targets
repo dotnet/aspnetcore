@@ -184,9 +184,9 @@
       <_Temporary Remove="@(_Temporary)" />
     </ItemGroup>
 
-    <GenerationTasks.GetUriReferenceMetadata DocumentDirectory="$(ServiceUriReferenceDirectory)" Inputs="@(ServiceUriReference)">
+    <GetUriReferenceMetadata DocumentDirectory="$(ServiceUriReferenceDirectory)" Inputs="@(ServiceUriReference)">
       <Output TaskParameter="Outputs" ItemName="_Temporary" />
-    </GenerationTasks.GetUriReferenceMetadata>
+    </GetUriReferenceMetadata>
 
     <ItemGroup>
       <ServiceUriReference Remove="@(ServiceUriReference)" />
@@ -196,7 +196,7 @@
   </Target>
 
   <Target Name="_ServiceUriReferenceGenerator_Core" Condition="'@(ServiceUriReference)' != ''">
-    <GenerationTasks.DownloadFile Uri="%(ServiceUriReference.Identity)"
+    <Microsoft.Extensions.ApiDescription.Client.DownloadFile Uri="%(ServiceUriReference.Identity)"
         DestinationPath="%(DocumentPath)"
         Overwrite="$(ServiceUriReferenceCheckIfNewer)" />
 
@@ -215,9 +215,9 @@
       <_Temporary Remove="@(_Temporary)" />
     </ItemGroup>
 
-    <GenerationTasks.GetFileReferenceMetadata DocumentDirectory="$(ServiceFileReferenceDirectory)" Inputs="@(ServiceFileReference)">
+    <GetFileReferenceMetadata DocumentDirectory="$(ServiceFileReferenceDirectory)" Inputs="@(ServiceFileReference)">
       <Output TaskParameter="Outputs" ItemName="_Temporary" />
-    </GenerationTasks.GetFileReferenceMetadata>
+    </GetFileReferenceMetadata>
 
     <ItemGroup>
       <ServiceFileReference Remove="@(ServiceFileReference)" />

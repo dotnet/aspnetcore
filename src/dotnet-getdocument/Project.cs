@@ -5,14 +5,14 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using GetDocument.Properties;
+using Microsoft.Extensions.ApiDescription.Client.Properties;
 using IODirectory = System.IO.Directory;
 
-namespace GetDocument
+namespace Microsoft.Extensions.ApiDescription.Client
 {
     internal class Project
     {
-        private const string MSBuildResourceName = "GetDocument.ServiceProjectReferenceMetadata";
+        private const string MSBuildResourceName = "Microsoft.Extensions.ApiDescription.Client.ServiceProjectReferenceMetadata";
 
         private Project()
         {

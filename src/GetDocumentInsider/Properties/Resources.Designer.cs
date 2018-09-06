@@ -5,7 +5,7 @@ using System.Reflection;
 using System.Resources;
 using JetBrains.Annotations;
 
-namespace GetDocument.Properties
+namespace Microsoft.Extensions.ApiDescription.Client.Properties
 {
     /// <summary>
     ///		This API supports the GetDocument infrastructure and is not intended to be used
@@ -14,7 +14,7 @@ namespace GetDocument.Properties
     internal static class Resources
     {
         private static readonly ResourceManager _resourceManager
-            = new ResourceManager("GetDocument.Properties.Resources", typeof(Resources).GetTypeInfo().Assembly);
+            = new ResourceManager("Microsoft.Extensions.ApiDescription.Client.Properties.Resources", typeof(Resources).GetTypeInfo().Assembly);
 
         /// <summary>
         ///     The assembly to use.

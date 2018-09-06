@@ -3,4 +3,4 @@
     Session["AccessModifier"] = "internal";
     Session["NoDiagnostics"] = true;
 #>
-<#@ include file="..\..\tools\Resources.tt" #>
+<#@ include file="..\..\..\tools\Resources.tt" #>

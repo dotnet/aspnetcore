@@ -3,7 +3,7 @@
 
 using System;
 
-namespace GetDocument
+namespace Microsoft.Extensions.ApiDescription.Client
 {
     internal class WrappedException : Exception
     {

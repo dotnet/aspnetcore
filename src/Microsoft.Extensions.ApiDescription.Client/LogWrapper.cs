@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.Build.Utilities;
 
-namespace GenerationTasks
+namespace Microsoft.Extensions.ApiDescription.Client
 {
     internal class LogWrapper : ILogWrapper
     {

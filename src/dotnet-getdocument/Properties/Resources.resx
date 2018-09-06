@@ -121,7 +121,7 @@
     <value>The configuration to use.</value>
   </data>
   <data name="CommandFullName" xml:space="preserve">
-    <value>dotnet getdocument</value>
+    <value>dotnet-getdocument</value>
   </data>
   <data name="FrameworkDescription" xml:space="preserve">
     <value>The target framework.</value>
@@ -136,10 +136,10 @@
     <value>More than one project was found in directory '{projectDirectory}'. Specify one using its file name.</value>
   </data>
   <data name="NETCoreApp1Project" xml:space="preserve">
-    <value>Project '{Project}' targets framework '.NETCoreApp' version '{targetFrameworkVersion}'. This version of the GetDocument Command-line Tool only supports version 2.0 or higher.</value>
+    <value>Project '{Project}' targets framework '.NETCoreApp' version '{targetFrameworkVersion}'. This version of the dotnet-getdocument tool only supports version 2.0 or higher.</value>
   </data>
   <data name="NETStandardProject" xml:space="preserve">
-    <value>Project '{Project}' targets framework '.NETStandard'. There is no runtime associated with this framework, and projects targeting it cannot be executed directly. To use the GetDocument Command-line Tool with this project, add an executable project targeting .NET Core or .NET Framework that references this project and specify it using the --project option; or, update this project to target .NET Core and / or .NET Framework.</value>
+    <value>Project '{Project}' targets framework '.NETStandard'. There is no runtime associated with this framework, and projects targeting it cannot be executed directly. To use the dotnet-getdocument tool with this project, add an executable project targeting .NET Core or .NET Framework that references this project and specify it using the --project option; or, update this project to target .NET Core and / or .NET Framework.</value>
   </data>
   <data name="NoColorDescription" xml:space="preserve">
     <value>Do not colorize output.</value>
@@ -163,7 +163,7 @@
     <value>The runtime identifier to use.</value>
   </data>
   <data name="UnsupportedFramework" xml:space="preserve">
-    <value>Project '{Project}' targets framework '{targetFramework}'. The GetDocument Command-line Tool does not support this framework.</value>
+    <value>Project '{Project}' targets framework '{targetFramework}'. The dotnet-getdocument tool does not support this framework.</value>
   </data>
   <data name="UsingProject" xml:space="preserve">
     <value>Using project '{project}'.</value>

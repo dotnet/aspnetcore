@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace GetDocument.Commands
+namespace Microsoft.Extensions.ApiDescription.Client.Commands
 {
     [Serializable]
     public class GetDocumentCommandContext

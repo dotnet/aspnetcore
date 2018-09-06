@@ -1,7 +1,6 @@
 ﻿using System;
-using GenerationTasks;
 
-namespace GetDocument
+namespace Microsoft.Extensions.ApiDescription.Client
 {
     public class LogWrapper : ILogWrapper
     {

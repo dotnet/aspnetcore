@@ -6,7 +6,7 @@ using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace GenerationTasks
+namespace Microsoft.Extensions.ApiDescription.Client
 {
     internal static class DownloadFileCore
     {

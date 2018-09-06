@@ -6,12 +6,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.Versioning;
-using GetDocument.Properties;
 using Microsoft.DotNet.Cli.CommandLine;
+using Microsoft.Extensions.ApiDescription.Client.Properties;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace GetDocument.Commands
+namespace Microsoft.Extensions.ApiDescription.Client.Commands
 {
     internal class InvokeCommand : HelpCommandBase
     {

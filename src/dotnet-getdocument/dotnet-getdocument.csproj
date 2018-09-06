@@ -16,7 +16,7 @@
     <OutputType>Exe</OutputType>
     <PackAsTool>true</PackAsTool>
     <PackageTags>GetDocument;command line;command-line;tool</PackageTags>
-    <RootNamespace>GetDocument</RootNamespace>
+    <RootNamespace>Microsoft.Extensions.ApiDescription.Client</RootNamespace>
     <TargetFramework>netcoreapp2.1</TargetFramework>
   </PropertyGroup>
 

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace GenerationTasks
+namespace Microsoft.Extensions.ApiDescription.Client
 {
     internal interface ILogWrapper
     {

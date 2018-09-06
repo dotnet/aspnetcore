@@ -5,7 +5,7 @@ using System.Reflection;
 using System.Resources;
 using JetBrains.Annotations;
 
-namespace GetDocument.Properties
+namespace Microsoft.Extensions.ApiDescription.Client.Properties
 {
     /// <summary>
     ///		This API supports the GetDocument infrastructure and is not intended to be used
@@ -14,7 +14,7 @@ namespace GetDocument.Properties
     internal static class Resources
     {
         private static readonly ResourceManager _resourceManager
-            = new ResourceManager("GetDocument.Properties.Resources", typeof(Resources).GetTypeInfo().Assembly);
+            = new ResourceManager("Microsoft.Extensions.ApiDescription.Client.Properties.Resources", typeof(Resources).GetTypeInfo().Assembly);
 
         /// <summary>
         ///     The configuration to use.
@@ -23,7 +23,7 @@ namespace GetDocument.Properties
             => GetString("ConfigurationDescription");
 
         /// <summary>
-        ///     dotnet getdocument
+        ///     dotnet-getdocument
         /// </summary>
         public static string CommandFullName
             => GetString("CommandFullName");
@@ -55,7 +55,7 @@ namespace GetDocument.Properties
                 projectDirectory);
 
         /// <summary>
-        ///     Project '{Project}' targets framework '.NETCoreApp' version '{targetFrameworkVersion}'. This version of the GetDocument Command-line Tool only supports version 2.0 or higher.
+        ///     Project '{Project}' targets framework '.NETCoreApp' version '{targetFrameworkVersion}'. This version of the dotnet-getdocument tool only supports version 2.0 or higher.
         /// </summary>
         public static string NETCoreApp1Project([CanBeNull] object Project, [CanBeNull] object targetFrameworkVersion)
             => string.Format(
@@ -63,7 +63,7 @@ namespace GetDocument.Properties
                 Project, targetFrameworkVersion);
 
         /// <summary>
-        ///     Project '{Project}' targets framework '.NETStandard'. There is no runtime associated with this framework, and projects targeting it cannot be executed directly. To use the GetDocument Command-line Tool with this project, add an executable project targeting .NET Core or .NET Framework that references this project and specify it using the --project option; or, update this project to target .NET Core and / or .NET Framework.
+        ///     Project '{Project}' targets framework '.NETStandard'. There is no runtime associated with this framework, and projects targeting it cannot be executed directly. To use the dotnet-getdocument tool with this project, add an executable project targeting .NET Core or .NET Framework that references this project and specify it using the --project option; or, update this project to target .NET Core and / or .NET Framework.
         /// </summary>
         public static string NETStandardProject([CanBeNull] object Project)
             => string.Format(
@@ -115,7 +115,7 @@ namespace GetDocument.Properties
             => GetString("RuntimeDescription");
 
         /// <summary>
-        ///     Project '{Project}' targets framework '{targetFramework}'. The GetDocument Command-line Tool does not support this framework.
+        ///     Project '{Project}' targets framework '{targetFramework}'. The dotnet-getdocument tool does not support this framework.
         /// </summary>
         public static string UnsupportedFramework([CanBeNull] object Project, [CanBeNull] object targetFramework)
             => string.Format(

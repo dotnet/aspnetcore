@@ -4,14 +4,13 @@ using System.IO;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using GenerationTasks;
-using GetDocument.Properties;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.ApiDescription.Client.Properties;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace GetDocument.Commands
+namespace Microsoft.Extensions.ApiDescription.Client.Commands
 {
     internal class GetDocumentCommandWorker
     {

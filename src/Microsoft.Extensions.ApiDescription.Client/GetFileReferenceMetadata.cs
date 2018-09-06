@@ -4,7 +4,7 @@ using System.IO;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
-namespace GenerationTasks
+namespace Microsoft.Extensions.ApiDescription.Client
 {
     /// <summary>
     /// Adds or corrects Namespace and OutputPath metadata in ServiceFileReference items.
