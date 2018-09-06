@@ -1,6 +1,13 @@
 <!-- Targets for making .wixproj better. -->
 <Project>
 
+  <ItemDefinitionGroup>
+    <SignMsi>
+      <!-- Override the MicroBuild default which still uses MicrosoftSHA1 -->
+      <Authenticode>Microsoft</Authenticode>
+    </SignMsi>
+  </ItemDefinitionGroup>
+
   <ItemGroup>
     <Compile Include="**\*.wxs" Exclude="obj\**\*;bin\**\*" />
     <EmbeddedResource Include="**\*.wxl" Exclude="obj\**\*;bin**\*;" />
