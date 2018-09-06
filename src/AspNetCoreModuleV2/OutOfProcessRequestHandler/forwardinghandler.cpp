@@ -24,8 +24,8 @@ RESPONSE_HEADER_HASH *      FORWARDING_HANDLER::sm_pResponseHeaderHash = NULL;
 
 FORWARDING_HANDLER::FORWARDING_HANDLER(
     _In_ IHttpContext                  *pW3Context,
-    _In_ OUT_OF_PROCESS_APPLICATION    *pApplication
-) : IREQUEST_HANDLER(),
+    _In_ std::unique_ptr<OUT_OF_PROCESS_APPLICATION, IAPPLICATION_DELETER> pApplication
+) : REQUEST_HANDLER(),
     m_Signature(FORWARDING_HANDLER_SIGNATURE),
     m_RequestStatus(FORWARDER_START),
     m_fClientDisconnected(FALSE),
@@ -46,7 +46,7 @@ FORWARDING_HANDLER::FORWARDING_HANDLER(
     m_fServerResetConn(FALSE),
     m_cRefs(1),
     m_pW3Context(pW3Context),
-    m_pApplication(pApplication)
+    m_pApplication(std::move(pApplication))
 {
     LOG_TRACE(L"FORWARDING_HANDLER::FORWARDING_HANDLER");
 
@@ -100,7 +100,6 @@ FORWARDING_HANDLER::OnExecuteRequestHandler()
     IHttpRequest               *pRequest = m_pW3Context->GetRequest();
     IHttpResponse              *pResponse = m_pW3Context->GetResponse();
     IHttpConnection            *pClientConnection = NULL;
-    OUT_OF_PROCESS_APPLICATION *pApplication = NULL;
     PROTOCOL_CONFIG            *pProtocol = &sm_ProtocolConfig;
     SERVER_PROCESS             *pServerProcess = NULL;
 
@@ -128,14 +127,13 @@ FORWARDING_HANDLER::OnExecuteRequestHandler()
         goto Failure;
     }
 
-    pApplication = static_cast<OUT_OF_PROCESS_APPLICATION*> (m_pApplication);
-    if (pApplication == NULL)
+    if (m_pApplication == NULL)
     {
         hr = E_INVALIDARG;
         goto Failure;
     }
 
-    hr = pApplication->GetProcess(&pServerProcess);
+    hr = m_pApplication->GetProcess(&pServerProcess);
     if (FAILED_LOG(hr))
     {
         fFailedToStartKestrel = TRUE;

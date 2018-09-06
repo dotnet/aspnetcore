@@ -72,7 +72,7 @@ OUT_OF_PROCESS_APPLICATION::CreateHandler(
         SetWebsocketStatus(pHttpContext);
     }
 
-    pHandler = new FORWARDING_HANDLER(pHttpContext, this);
+    pHandler = new FORWARDING_HANDLER(pHttpContext, ::ReferenceApplication(this));
     *pRequestHandler = pHandler;
     return S_OK;
 }

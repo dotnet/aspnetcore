@@ -10,7 +10,7 @@
 class AppOfflineApplication: public PollingAppOfflineApplication
 {
 public:
-    AppOfflineApplication(IHttpApplication& pApplication)
+    AppOfflineApplication(const IHttpApplication& pApplication)
         : PollingAppOfflineApplication(pApplication, PollingAppOfflineApplicationMode::StopWhenRemoved)
     {
         CheckAppOffline();

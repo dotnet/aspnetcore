@@ -59,8 +59,7 @@ IN_PROCESS_HANDLER::OnExecuteRequestHandler()
 
         return RQ_NOTIFICATION_FINISH_REQUEST;
     }
-    else if (m_pApplication->QueryStatus() != APPLICATION_STATUS::RUNNING || m_pApplication->
-        QueryBlockCallbacksIntoManaged())
+    else if (m_pApplication->QueryBlockCallbacksIntoManaged())
     {
         return ServerShutdownMessage();
     }

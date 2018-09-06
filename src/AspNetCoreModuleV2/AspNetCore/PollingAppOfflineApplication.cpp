@@ -8,15 +8,20 @@
 #include "HandleWrapper.h"
 #include "exceptions.h"
 
-APPLICATION_STATUS PollingAppOfflineApplication::QueryStatus()
+HRESULT PollingAppOfflineApplication::TryCreateHandler(_In_ IHttpContext* pHttpContext, _Outptr_result_maybenull_ IREQUEST_HANDLER** pRequestHandler)
 {
     CheckAppOffline();
-    return APPLICATION::QueryStatus();
+    return LOG_IF_FAILED(APPLICATION::TryCreateHandler(pHttpContext, pRequestHandler));
 }
 
 void
 PollingAppOfflineApplication::CheckAppOffline()
 {
+    if (m_fStopCalled)
+    {
+        return;
+    }
+
     const auto ulCurrentTime = GetTickCount64();
     //
     // we only care about app offline presented. If not, it means the application has started

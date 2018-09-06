@@ -32,13 +32,13 @@ public:
     ~APPLICATION_INFO() = default;
 
     const std::wstring&
-    QueryApplicationInfoKey() const noexcept
+    QueryApplicationInfoKey() noexcept
     {
         return m_strInfoKey;
     }
 
     const std::wstring&
-    QueryConfigPath() const noexcept
+    QueryConfigPath() noexcept
     {
         return m_strConfigPath;
     }
@@ -47,11 +47,10 @@ public:
     ShutDownApplication(bool fServerInitiated);
 
     HRESULT
-    GetOrCreateApplication(
+    CreateHandler(
         IHttpContext& pHttpContext,
-        std::unique_ptr<IAPPLICATION, IAPPLICATION_DELETER>& pApplication
-    );
-
+        std::unique_ptr<IREQUEST_HANDLER, IREQUEST_HANDLER_DELETER>& pHandler);
+    
     bool ConfigurationPathApplies(const std::wstring& path)
     {
         // We need to check that the last character of the config path
@@ -68,6 +67,15 @@ public:
     }
 
 private:
+    
+    HRESULT
+    TryCreateHandler(
+        IHttpContext& pHttpContext,
+        std::unique_ptr<IREQUEST_HANDLER, IREQUEST_HANDLER_DELETER>& pHandler);
+
+    HRESULT
+    CreateApplication(const IHttpApplication& pHttpApplication);
+
     IHttpServer            &m_pServer;
     HandlerResolver        &m_handlerResolver;
 

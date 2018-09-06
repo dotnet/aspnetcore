@@ -7,7 +7,6 @@
 #include "iapplication.h"
 #include "ntassert.h"
 #include "SRWExclusiveLock.h"
-#include "SRWSharedLock.h"
 
 class APPLICATION : public IAPPLICATION
 {
@@ -16,6 +15,26 @@ public:
     APPLICATION(const APPLICATION&) = delete;
     const APPLICATION& operator=(const APPLICATION&) = delete;
 
+    HRESULT
+    TryCreateHandler(
+        _In_  IHttpContext       *pHttpContext,
+        _Outptr_result_maybenull_ IREQUEST_HANDLER  **pRequestHandler) override
+    {
+        *pRequestHandler = nullptr;
+
+        if (m_fStopCalled)
+        {
+            return S_FALSE;
+        }
+
+        return CreateHandler(pHttpContext, pRequestHandler);
+    }
+
+    virtual
+    HRESULT
+    CreateHandler(
+        _In_ IHttpContext       *pHttpContext,
+        _Outptr_opt_ IREQUEST_HANDLER  **pRequestHandler) = 0;
 
     APPLICATION(const IHttpApplication& pHttpApplication)
         : m_fStopCalled(false),
@@ -28,12 +47,6 @@ public:
         m_applicationVirtualPath = ToVirtualPath(m_applicationConfigPath);
     }
 
-    APPLICATION_STATUS
-    QueryStatus() override
-    {
-        SRWSharedLock stateLock(m_stateLock);
-        return m_fStopCalled ? APPLICATION_STATUS::RECYCLED : APPLICATION_STATUS::RUNNING;
-    }
 
     VOID
     Stop(bool fServerInitiated) override
