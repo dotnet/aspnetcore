@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             _endpoints.Add(endpoint);
         }
 
-        public DfaNode BuildDfaTree()
+        public DfaNode BuildDfaTree(bool includeLabel = false)
         {
             // We build the tree by doing a BFS over the list of entries. This is important
             // because a 'parameter' node can also traverse the same paths that literal nodes
@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var work = new List<(RouteEndpoint endpoint, List<DfaNode> parents)>(_endpoints.Count);
             List<(RouteEndpoint endpoint, List<DfaNode> parents)> previousWork = null;
 
-            var root = new DfaNode() { PathDepth = 0, Label = "/" };
+            var root = new DfaNode() { PathDepth = 0, Label = includeLabel ? "/" : null };
 
             // To prepare for this we need to compute the max depth, as well as
             // a seed list of items to process (entry, root).
@@ -149,7 +149,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                                 next = new DfaNode()
                                 {
                                     PathDepth = parent.PathDepth + 1,
-                                    Label = parent.Label + literal + "/",
+                                    Label = includeLabel ? parent.Label + literal + "/" : null,
                                 };
                                 parent.AddLiteral(literal, next);
                             }
@@ -180,7 +180,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                                 parent.CatchAll = new DfaNode()
                                 {
                                     PathDepth = parent.PathDepth + 1,
-                                    Label = parent.Label + "{*...}/",
+                                    Label = includeLabel ? parent.Label + "{*...}/" : null,
                                 };
 
                                 // The catchall node just loops.
@@ -197,7 +197,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                                 parent.Parameters = new DfaNode()
                                 {
                                     PathDepth = parent.PathDepth + 1,
-                                    Label = parent.Label + "{...}/",
+                                    Label = includeLabel ? parent.Label + "{...}/" : null,
                                 };
                             }
 
@@ -219,7 +219,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                                 parent.Parameters = new DfaNode()
                                 {
                                     PathDepth = parent.PathDepth + 1,
-                                    Label = parent.Label + "{...}/",
+                                    Label = includeLabel ? parent.Label + "{...}/" : null,
                                 };
                             }
 
@@ -273,7 +273,13 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
         public override Matcher Build()
         {
-            var root = BuildDfaTree();
+#if DEBUG
+            var includeLabel = true;
+#else
+            var includeLabel = false;
+#endif
+
+            var root = BuildDfaTree(includeLabel);
 
             // State count is the number of nodes plus an exit state
             var stateCount = 1;
@@ -613,7 +619,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
                         var next = new DfaNode()
                         {
-                            Label = parent.Label + " " + edge.State.ToString(),
+                            // If parent label is null then labels are not being included
+                            Label = (parent.Label != null) ? parent.Label + " " + edge.State.ToString() : null,
                         };
 
                         if (edge.Endpoints.Count > 0)

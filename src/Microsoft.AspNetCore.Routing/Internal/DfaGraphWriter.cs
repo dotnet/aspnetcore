@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             // Assign each node a sequential index.
             var visited = new Dictionary<DfaNode, int>();
             
-            var tree = builder.BuildDfaTree();
+            var tree = builder.BuildDfaTree(includeLabel: true);
 
             writer.WriteLine("digraph DFA {");
             tree.Visit(WriteNode);

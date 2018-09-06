@@ -195,9 +195,14 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 edges[new EdgeKey(AnyMethod, false)] = matches;
             }
 
-            return edges
-                .Select(kvp => new PolicyNodeEdge(kvp.Key, kvp.Value))
-                .ToArray();
+            var policyNodeEdges = new PolicyNodeEdge[edges.Count];
+            var index = 0;
+            foreach (var kvp in edges)
+            {
+                policyNodeEdges[index++] = new PolicyNodeEdge(kvp.Key, kvp.Value);
+            }
+
+            return policyNodeEdges;
 
             (IReadOnlyList<string> httpMethods, bool acceptCorsPreflight) GetHttpMethods(Endpoint e)
             {
