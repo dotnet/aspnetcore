@@ -4,11 +4,15 @@
   </PropertyGroup>
   <PropertyGroup Label="Package Versions">
     <InternalAspNetCoreSdkPackageVersion>3.0.0-alpha1-20180821.3</InternalAspNetCoreSdkPackageVersion>
+    <MicrosoftAspNetCoreAspNetCoreModulePackageVersion>3.0.0-alpha1-10400</MicrosoftAspNetCoreAspNetCoreModulePackageVersion>
+    <MicrosoftAspNetCoreAspNetCoreModuleV2PackageVersion>3.0.0-alpha1-10400</MicrosoftAspNetCoreAspNetCoreModuleV2PackageVersion>
     <MicrosoftAspNetCoreDiagnosticsPackageVersion>3.0.0-alpha1-10400</MicrosoftAspNetCoreDiagnosticsPackageVersion>
     <MicrosoftAspNetCoreHostFilteringPackageVersion>3.0.0-alpha1-10400</MicrosoftAspNetCoreHostFilteringPackageVersion>
     <MicrosoftAspNetCoreHostingPackageVersion>3.0.0-alpha1-10400</MicrosoftAspNetCoreHostingPackageVersion>
     <MicrosoftAspNetCoreRoutingPackageVersion>3.0.0-alpha1-10400</MicrosoftAspNetCoreRoutingPackageVersion>
     <MicrosoftAspNetCoreServerIISIntegrationPackageVersion>3.0.0-alpha1-10400</MicrosoftAspNetCoreServerIISIntegrationPackageVersion>
+    <MicrosoftAspNetCoreServerIISPackageVersion>3.0.0-alpha1-10400</MicrosoftAspNetCoreServerIISPackageVersion>
+    <MicrosoftAspNetCoreServerIntegrationTestingIISPackageVersion>3.0.0-alpha1-10400</MicrosoftAspNetCoreServerIntegrationTestingIISPackageVersion>
     <MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>0.7.0-alpha1-10400</MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>
     <MicrosoftAspNetCoreServerKestrelHttpsPackageVersion>3.0.0-alpha1-10400</MicrosoftAspNetCoreServerKestrelHttpsPackageVersion>
     <MicrosoftAspNetCoreServerKestrelPackageVersion>3.0.0-alpha1-10400</MicrosoftAspNetCoreServerKestrelPackageVersion>

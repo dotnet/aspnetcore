@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
@@ -165,6 +166,42 @@ namespace Microsoft.AspNetCore.Tests
             }
         }
 
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+        public async Task RunsInIISExpressInProcess()
+        {
+            var applicationName = "CreateDefaultBuilderApp";
+            var deploymentParameters = new DeploymentParameters(Path.Combine(_testSitesPath, applicationName), ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64)
+            {
+                TargetFramework = "netcoreapp2.2",
+                HostingModel =  HostingModel.InProcess,
+                AncmVersion = AncmVersion.AspNetCoreModuleV2
+            };
+            
+            SetEnvironmentVariables(deploymentParameters, "Development");
+
+            using (var deployer = IISApplicationDeployerFactory.Create(deploymentParameters, LoggerFactory))
+            {
+                var deploymentResult = await deployer.DeployAsync();
+                var response = await RetryHelper.RetryRequest(() => deploymentResult.HttpClient.GetAsync(string.Empty), Logger, deploymentResult.HostShutdownToken, retryCount: 5);
+
+                var responseText = await response.Content.ReadAsStringAsync();
+                try
+                {
+                    // Assert server is IISExpress
+                    Assert.Equal("Microsoft-IIS/10.0", response.Headers.Server.ToString());
+                    // The application name will be sent in response when all asserts succeed in the test app.
+                    Assert.Equal(applicationName, responseText);
+                }
+                catch (XunitException)
+                {
+                    Logger.LogWarning(response.ToString());
+                    Logger.LogWarning(responseText);
+                    throw;
+                }
+            }
+        }
+
         private async Task ExecuteStartOrStartWithTest(Func<DeploymentResult, Task<HttpResponseMessage>> getResponse, string applicationName)
         {
             await ExecuteTestApp(applicationName, async (deploymentResult, logger) =>
@@ -197,17 +234,22 @@ namespace Microsoft.AspNetCore.Tests
 
                 if (setTestEnvVars)
                 {
-                    deploymentParameters.EnvironmentVariables.Add(new KeyValuePair<string, string>("aspnetcore_environment", environment));
-                    deploymentParameters.EnvironmentVariables.Add(new KeyValuePair<string, string>("envKey", "envValue"));
+                    SetEnvironmentVariables(deploymentParameters, environment);
                 }
 
-                using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, loggerFactory))
+                using (var deployer = IISApplicationDeployerFactory.Create(deploymentParameters, loggerFactory))
                 {
                     var deploymentResult = await deployer.DeployAsync();
 
                     await assertAction(deploymentResult, logger);
                 }
             }
+        }
+
+        private static void SetEnvironmentVariables(DeploymentParameters deploymentParameters, string environment)
+        {
+            deploymentParameters.EnvironmentVariables.Add(new KeyValuePair<string, string>("aspnetcore_environment", environment));
+            deploymentParameters.EnvironmentVariables.Add(new KeyValuePair<string, string>("envKey", "envValue"));
         }
 
         private static string GetTestSitesPath()
