@@ -277,6 +277,38 @@ namespace Microsoft.AspNetCore.Routing
             Assert.Equal(string.Empty, result.query.ToUriComponent());
         }
 
+        // Regression test for aspnet/Routing#435
+        //
+        // In this issue we used to lowercase URLs after parameters were encoded, meaning that if a character needed
+        // encoding (such as a cyrillic character, it would not be encoded).
+        [Fact]
+        public void TryProcessTemplate_GeneratesLowercaseUrl_SetOnRouteOptions_CanLowercaseCharactersThatNeedEncoding()
+        {
+            // Arrange
+            var endpoint = EndpointFactory.CreateRouteEndpoint("{controller}/{action}");
+            var linkGenerator = CreateLinkGenerator(new RouteOptions() { LowercaseUrls = true }, endpoints: new[] { endpoint, });
+            var httpContext = CreateHttpContext(ambientValues: new { controller = "Home" });
+
+            // Act
+            var success = linkGenerator.TryProcessTemplate(
+                httpContext: httpContext,
+                endpoint: endpoint,
+                ambientValues: DefaultLinkGenerator.GetAmbientValues(httpContext),
+                explicitValues: new RouteValueDictionary(new { action = "П" }), // Cryillic uppercase Pe
+                options: null,
+                out var result);
+
+            // Assert
+            Assert.True(success);
+            Assert.Equal("/home/%D0%BF", result.path.ToUriComponent());
+            Assert.Equal(string.Empty, result.query.ToUriComponent());
+
+            // Convert back to decoded.
+            //
+            // This is Cyrillic lowercase Pe (not an n).
+            Assert.Equal("/home/п", PathString.FromUriComponent(result.path.ToUriComponent()).Value);
+        }
+
         [Fact]
         public void TryProcessTemplate_GeneratesLowercaseQueryString_SetOnRouteOptions()
         {
