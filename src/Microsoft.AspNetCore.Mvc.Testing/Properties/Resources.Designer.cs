@@ -38,6 +38,20 @@ namespace Microsoft.AspNetCore.Mvc.Testing
         internal static string FormatMissingDepsFile(object p0, object p1)
             => string.Format(CultureInfo.CurrentCulture, GetString("MissingDepsFile"), p0, p1);
 
+        /// <summary>
+        /// The provided Type '{0}' does not belong to an assembly with an entry point. A common cause for this error is providing a Type from a class library.
+        /// </summary>
+        internal static string InvalidAssemblyEntryPoint
+        {
+            get => GetString("InvalidAssemblyEntryPoint");
+        }
+
+        /// <summary>
+        /// The provided Type '{0}' does not belong to an assembly with an entry point. A common cause for this error is providing a Type from a class library.
+        /// </summary>
+        internal static string FormatInvalidAssemblyEntryPoint(string p0)
+            => string.Format(CultureInfo.CurrentCulture, GetString("InvalidAssemblyEntryPoint"), p0);
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);
