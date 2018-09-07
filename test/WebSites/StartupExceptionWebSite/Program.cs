@@ -44,6 +44,8 @@ namespace IISTestSite
                 case "Hang":
                     Thread.Sleep(Timeout.Infinite);
                     break;
+                case "Throw":
+                    throw new InvalidOperationException("Program.Main exception");
                 case "HangOnStop":
                     var host = new WebHostBuilder()
                         .UseIIS()
