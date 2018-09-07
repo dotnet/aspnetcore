@@ -24,8 +24,7 @@ namespace Microsoft.AspNetCore.Routing
         /// <param name="routeOptions">
         /// Accessor for <see cref="RouteOptions"/> containing the constraints of interest.
         /// </param>
-        // TODO: Temporarily remove obsolete attribute to unblock build
-        //[Obsolete("This constructor is obsolete. Use DefaultInlineConstraintResolver.ctor(IOptions<RouteOptions>, IServiceProvider) instead.")]
+        [Obsolete("This constructor is obsolete. Use DefaultInlineConstraintResolver.ctor(IOptions<RouteOptions>, IServiceProvider) instead.")]
         public DefaultInlineConstraintResolver(IOptions<RouteOptions> routeOptions)
         {
             _inlineConstraintMap = routeOptions.Value.ConstraintMap;
