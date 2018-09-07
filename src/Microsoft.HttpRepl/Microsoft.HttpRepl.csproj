@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk;Microsoft.DotNet.GlobalTools.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -8,9 +8,8 @@
     <LangVersion>latest</LangVersion>
     <Description>Command line tool to for making HTTP calls and viewing their results.</Description>
     <PackageTags>dotnet;http;httprepl</PackageTags>
-
     <!-- This is a requirement for Microsoft tool packages only. -->
-    <GenerateToolShims>true</GenerateToolShims>
+    <PackAsToolShimRuntimeIdentifiers>win-x64;win-x86</PackAsToolShimRuntimeIdentifiers>
   </PropertyGroup>
 
   <ItemGroup>
@@ -20,7 +19,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.Repl\Microsoft.Repl.csproj" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <SignedPackageFile Include="tools/$(TargetFramework)/any/Microsoft.Repl.dll" Certificate="$(AssemblySigningCertName)" />
     <SignedPackageFile Include="tools/$(TargetFramework)/any/Newtonsoft.Json.dll" Certificate="$(AssemblySigning3rdPartyCertName)" />
