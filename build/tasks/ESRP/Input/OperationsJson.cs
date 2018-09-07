@@ -46,7 +46,7 @@ namespace Microsoft.Build.OOB.ESRP
         }
 
         // Classic ID: 25, 67
-        public static readonly Operations[] MicrosoftSN = new Operations[]
+        public static Operations[] MicrosoftSN => new Operations[]
         {
             new Operations
             {
@@ -61,7 +61,7 @@ namespace Microsoft.Build.OOB.ESRP
         };
 
         // Classic ID: 72
-        public static readonly Operations[] MicrosoftSharedLibrariesSN = new Operations[]
+        public static Operations[] MicrosoftSharedLibrariesSN => new Operations[]
         {
             new Operations
             {
@@ -76,7 +76,7 @@ namespace Microsoft.Build.OOB.ESRP
         };
 
         // Classic ID: 400
-        public static readonly Operations[] MicrosoftAuthentiCodeSha2 = new Operations[]
+        public static Operations[] MicrosoftAuthentiCodeSha2 => new Operations[]
         {
             new Operations
             {
@@ -99,7 +99,7 @@ namespace Microsoft.Build.OOB.ESRP
         };
 
         // Classic ID: 401
-        public static readonly Operations[] MicrosoftAuthentiCodeSha1Sha2 = new Operations[]
+        public static Operations[] MicrosoftAuthentiCodeSha1Sha2 => new Operations[]
         {
             new Operations
             {
@@ -139,7 +139,7 @@ namespace Microsoft.Build.OOB.ESRP
         };
 
         // Classic ID: 402
-        public static readonly Operations[] MicrosoftAuthentiCodeSha2HashSha1 = new Operations[]
+        public static Operations[] MicrosoftAuthentiCodeSha2HashSha1 => new Operations[]
         {
             new Operations
             {
@@ -161,7 +161,7 @@ namespace Microsoft.Build.OOB.ESRP
         };
 
         // Classic ID: N/A
-        public static readonly Operations[] MicrosoftNuGet = new Operations[]
+        public static Operations[] MicrosoftNuGet => new Operations[]
         {
             new Operations
             {
@@ -176,7 +176,7 @@ namespace Microsoft.Build.OOB.ESRP
         };
 
         // Classic ID: 160
-        public static readonly Operations[] MicrosoftOpc = new Operations[]
+        public static Operations[] MicrosoftOpc => new Operations[]
         {
             new Operations
             {
@@ -191,7 +191,7 @@ namespace Microsoft.Build.OOB.ESRP
         };
 
         // Classic ID: 100040160
-        public static readonly Operations[] MicrosoftOpc2 = new Operations[]
+        public static Operations[] MicrosoftOpc2 => new Operations[]
         {
             new Operations
             {
@@ -210,7 +210,7 @@ namespace Microsoft.Build.OOB.ESRP
         };
 
         // Classic ID: 135020002
-        public static readonly Operations[] Microsoft3rdPartyAppComponent = new Operations[]
+        public static Operations[] Microsoft3rdPartyAppComponent => new Operations[]
         {
             new Operations
             {
@@ -234,7 +234,7 @@ namespace Microsoft.Build.OOB.ESRP
         };
 
         // Classic ID: 135020001
-        public static readonly Operations[] Microsoft3rdPartyAppComponentDual = new Operations[]
+        public static Operations[] Microsoft3rdPartyAppComponentDual => new Operations[]
         {
             new Operations
             {
@@ -274,7 +274,7 @@ namespace Microsoft.Build.OOB.ESRP
             }
         };
 
-        public static readonly Operations[] MicrosoftJava = new Operations[]
+        public static Operations[] MicrosoftJava => new Operations[]
         {
             new Operations
             {
