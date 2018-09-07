@@ -55,7 +55,7 @@ namespace Microsoft.HttpRepl.Commands
             }
         }
 
-        protected override CommandInputSpecification InputSpec { get; } = CommandInputSpecification.Create("config").Finish();
+        public override CommandInputSpecification InputSpec { get; } = CommandInputSpecification.Create("config").Finish();
 
         protected override string GetHelpDetails(IShellState shellState, HttpState programState, DefaultCommandInput<ICoreParseResult> commandInput, ICoreParseResult parseResult)
         {

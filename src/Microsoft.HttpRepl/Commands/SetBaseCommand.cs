@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Sockets;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Repl;
@@ -80,7 +81,12 @@ namespace Microsoft.HttpRepl.Commands
         {
             if (parseResult.Sections.Count > 1 && string.Equals(parseResult.Sections[0], Name, StringComparison.OrdinalIgnoreCase) && string.Equals(parseResult.Sections[1], SubCommand, StringComparison.OrdinalIgnoreCase))
             {
-                return Description;
+                var helpText = new StringBuilder();
+                helpText.Append("Usage: ".Bold());
+                helpText.AppendLine($"set base [uri]");
+                helpText.AppendLine();
+                helpText.AppendLine(Description);
+                return helpText.ToString();
             }
 
             return null;

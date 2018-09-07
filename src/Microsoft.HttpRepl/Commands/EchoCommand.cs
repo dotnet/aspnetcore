@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Repl;
@@ -37,11 +38,16 @@ namespace Microsoft.HttpRepl.Commands
             return Task.CompletedTask;
         }
 
-        protected override CommandInputSpecification InputSpec { get; } = CommandInputSpecification.Create("echo").ExactArgCount(1).Finish();
+        public override CommandInputSpecification InputSpec { get; } = CommandInputSpecification.Create("echo").ExactArgCount(1).Finish();
 
         protected override string GetHelpDetails(IShellState shellState, HttpState programState, DefaultCommandInput<ICoreParseResult> commandInput, ICoreParseResult parseResult)
         {
-            return "Turns request echoing on or off";
+            var helpText = new StringBuilder();
+            helpText.Append("Usage: ".Bold());
+            helpText.AppendLine($"echo [on|off]");
+            helpText.AppendLine();
+            helpText.AppendLine($"Turns request echoing on or off. When request echoing is on we will display a text representation of requests made by the CLI.");
+            return helpText.ToString();
         }
 
         public override string GetHelpSummary(IShellState shellState, HttpState programState)

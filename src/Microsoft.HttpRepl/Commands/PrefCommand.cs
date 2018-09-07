@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.HttpRepl.Preferences;
@@ -42,19 +43,86 @@ namespace Microsoft.HttpRepl.Commands
 
         protected override string GetHelpDetails(IShellState shellState, HttpState programState, DefaultCommandInput<ICoreParseResult> commandInput, ICoreParseResult parseResult)
         {
+            var helpText = new StringBuilder();
+            helpText.Append("Usage: ".Bold());
+
             if (commandInput.Arguments.Count == 0 || !_allowedSubcommands.Contains(commandInput.Arguments[0]?.Text))
             {
-                return "pref [get/set] {setting} [{value}] - Get or sets a preference to a particular value";
+                helpText.AppendLine("pref [get/set] {setting} [{value}] - Get or sets a preference to a particular value");
             }
-
-            if (string.Equals(commandInput.Arguments[0].Text, "get", StringComparison.OrdinalIgnoreCase))
+            else if (string.Equals(commandInput.Arguments[0].Text, "get", StringComparison.OrdinalIgnoreCase))
             {
-                return "pref get [{setting}] - Gets the value of the specified preference or lists all preferences if no preference is specified";
+                helpText.AppendLine("pref get [{setting}] - Gets the value of the specified preference or lists all preferences if no preference is specified");
             }
             else
             {
-                return "pref set {setting} [{value}] - Sets (or clears if value is not specified) the value of the specified preference";
+                helpText.AppendLine("pref set {setting} [{value}] - Sets (or clears if value is not specified) the value of the specified preference");
             }
+
+            helpText.AppendLine();
+            helpText.AppendLine("Current Default Preferences:");
+            foreach (var pref in programState.DefaultPreferences)
+            {
+                var val = pref.Value;
+                if (pref.Key.Contains("colors"))
+                {
+                    val = GetColor(val);
+                }
+                helpText.AppendLine($"{pref.Key,-50}{val}");
+            }
+            helpText.AppendLine();
+            helpText.AppendLine("Current Preferences:");
+            foreach (var pref in programState.Preferences)
+            {
+                var val = pref.Value;
+                if (pref.Key.Contains("colors"))
+                {
+                    val = GetColor(val);
+                }
+                helpText.AppendLine($"{pref.Key,-50}{val}");
+            }
+
+            return helpText.ToString();
+        }
+
+        private static string GetColor(string value)
+        {
+            if (value.Contains("Bold"))
+            {
+                value = value.Bold();
+            }
+
+            if (value.Contains("Yellow"))
+            {
+                value = value.Yellow();
+            }
+
+            if (value.Contains("Cyan"))
+            {
+                value = value.Cyan();
+            }
+
+            if (value.Contains("Magenta"))
+            {
+                value = value.Magenta();
+            }
+
+            if (value.Contains("Green"))
+            {
+                value = value.Green();
+            }
+
+            if (value.Contains("White"))
+            {
+                value = value.White();
+            }
+
+            if (value.Contains("Black"))
+            {
+                value = value.Black();
+            }
+
+            return value;
         }
 
         protected override Task ExecuteAsync(IShellState shellState, HttpState programState, DefaultCommandInput<ICoreParseResult> commandInput, ICoreParseResult parseResult, CancellationToken cancellationToken)
@@ -123,7 +191,7 @@ namespace Microsoft.HttpRepl.Commands
             return Task.CompletedTask;
         }
 
-        protected override CommandInputSpecification InputSpec { get; } = CommandInputSpecification.Create("pref")
+        public override CommandInputSpecification InputSpec { get; } = CommandInputSpecification.Create("pref")
             .MinimumArgCount(1)
             .MaximumArgCount(3)
             .Finish();

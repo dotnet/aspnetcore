@@ -5,11 +5,13 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.HttpRepl.Preferences;
 using Microsoft.Repl;
 using Microsoft.Repl.Commanding;
+using Microsoft.Repl.ConsoleHandling;
 using Microsoft.Repl.Parsing;
 
 namespace Microsoft.HttpRepl.Commands
@@ -118,19 +120,24 @@ namespace Microsoft.HttpRepl.Commands
 
 
 
-        protected override CommandInputSpecification InputSpec { get; } = CommandInputSpecification.Create("ls").AlternateName("dir")
+        public override CommandInputSpecification InputSpec { get; } = CommandInputSpecification.Create("ls").AlternateName("dir")
             .MaximumArgCount(1)
             .WithOption(new CommandOptionSpecification(RecursiveOption, maximumOccurrences: 1, acceptsValue: true, forms: new[] {"-r", "--recursive"}))
             .Finish();
 
         protected override string GetHelpDetails(IShellState shellState, HttpState programState, DefaultCommandInput<ICoreParseResult> commandInput, ICoreParseResult parseResult)
         {
-            return "Lists the contents of a directory";
+            var helpText = new StringBuilder();
+            helpText.Append("Usage: ".Bold());
+            helpText.AppendLine($"ls [Options]");
+            helpText.AppendLine();
+            helpText.AppendLine($"Displays the known routes at the current location. Requires a Swagger document to be set.");
+            return helpText.ToString();
         }
 
         public override string GetHelpSummary(IShellState shellState, HttpState programState)
         {
-            return "ls - Performs a directory listing";
+            return "ls - List known routes for the current location";
         }
 
         protected override IEnumerable<string> GetArgumentSuggestionsForText(IShellState shellState, HttpState programState, ICoreParseResult parseResult, DefaultCommandInput<ICoreParseResult> commandInput, string normalCompletionString)
