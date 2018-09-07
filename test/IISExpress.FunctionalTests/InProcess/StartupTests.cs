@@ -145,6 +145,24 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 EventLogHelpers.InProcessFailedToStart(deploymentResult, "CLR worker thread exited prematurely"),
                 EventLogHelpers.InProcessThreadException(deploymentResult, ".*?Application is running inside IIS process but is not configured to use IIS server"));
         }
+
+        [ConditionalFact]
+        public async Task LogsStartupExceptionExitError()
+        {
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.StartupExceptionWebsite, publish: true);
+            deploymentParameters.TransformArguments((a, _) => $"{a} Throw");
+            
+            var deploymentResult = await DeployAsync(deploymentParameters);
+
+            var response = await deploymentResult.HttpClient.GetAsync("/");
+            Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+
+            StopServer();
+
+            EventLogHelpers.VerifyEventLogEvents(deploymentResult,
+                EventLogHelpers.InProcessFailedToStart(deploymentResult, "CLR worker thread exited prematurely"),
+                EventLogHelpers.InProcessThreadException(deploymentResult, ", exception code = '0xe0434352'"));
+        }
         
         [ConditionalFact]
         public async Task LogsUnexpectedThreadExitError()
