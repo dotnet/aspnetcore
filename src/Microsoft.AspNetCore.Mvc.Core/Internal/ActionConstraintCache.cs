@@ -192,14 +192,43 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                         for (var i = 0; i < _actions.Items.Count; i++)
                         {
                             var action = _actions.Items[i];
-                            if (action.ActionConstraints?.Count > 0)
+                            if (action.ActionConstraints?.Count > 0 && HasSignificantActionConstraint(action))
                             {
+                                // We need to check for some specific action constraint implementations.
+                                // We've implemented consumes, and HTTP method support inside endpoint routing, so 
+                                // we don't need to run an 'action constraint phase' if those are the only constraints.
                                 found = true;
                                 break;
                             }
                         }
 
                         _hasActionConstraints = found;
+
+                        bool HasSignificantActionConstraint(ActionDescriptor action)
+                        {
+                            for (var i = 0; i < action.ActionConstraints.Count; i++)
+                            {
+                                var actionConstraint = action.ActionConstraints[i];
+                                if (actionConstraint.GetType() == typeof(HttpMethodActionConstraint))
+                                {
+                                    // This one is OK, we implement this in endpoint routing.
+                                }
+                                else if (actionConstraint.GetType().FullName == "Microsoft.AspNetCore.Mvc.Cors.Internal.CorsHttpMethodActionConstraint")
+                                {
+                                    // This one is OK, we implement this in endpoint routing.
+                                }
+                                else if (actionConstraint.GetType() == typeof(ConsumesAttribute))
+                                {
+                                    // This one is OK, we implement this in endpoint routing.
+                                }
+                                else
+                                {
+                                    return true;
+                                }
+                            }
+
+                            return false;
+                        }
                     }
 
                     return _hasActionConstraints.Value;

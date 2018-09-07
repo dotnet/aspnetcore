@@ -7,16 +7,17 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
+using Microsoft.AspNetCore.Mvc.Cors.Internal;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Matching;
-using Microsoft.AspNetCore.Routing.Patterns;
 using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Routing
 {
+    // These tests are intentionally in Mvc.Test so we can also test the CORS action constraint.
     public class ActionConstraintMatcherPolicyTest
     {
         [Fact]
@@ -49,7 +50,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             {
                 ActionConstraints = new List<IActionConstraintMetadata>()
                 {
-                    new HttpMethodActionConstraint(new string[] { "POST" }),
+                    new BooleanConstraint() { Pass = true, },
                 },
                 Parameters = new List<ParameterDescriptor>(),
             };
@@ -334,6 +335,76 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             Assert.True(candidateSet[0].IsValidCandidate);
             Assert.False(candidateSet[1].IsValidCandidate);
             Assert.False(candidateSet[2].IsValidCandidate);
+        }
+
+        [Fact]
+        public void ShouldRunActionConstraints_IgnoresIgnorableConstraints()
+        {
+            // Arrange
+            var actions = new ActionDescriptor[]
+            {
+                new ActionDescriptor()
+                {
+
+                },
+                new ActionDescriptor()
+                {
+                    ActionConstraints = new List<IActionConstraintMetadata>()
+                    {
+                        new HttpMethodActionConstraint(new[]{ "GET", }),
+                    },
+                },
+                new ActionDescriptor()
+                {
+                    ActionConstraints = new List<IActionConstraintMetadata>()
+                    {
+                        new ConsumesAttribute("text/json"),
+                    },
+                },
+                new ActionDescriptor()
+                {
+                    ActionConstraints = new List<IActionConstraintMetadata>()
+                    {
+                        new CorsHttpMethodActionConstraint(new HttpMethodActionConstraint(new[]{ "GET", })),
+                    },
+                },
+            };
+
+            var selector = CreateSelector(actions);
+
+            // Act
+            var result = selector.ShouldRunActionConstraints;
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void ShouldRunActionConstraints_RunsForArbitraryActionConstraint()
+        {
+            // Arrange
+            var actions = new ActionDescriptor[]
+            {
+                new ActionDescriptor()
+                {
+
+                },
+                new ActionDescriptor()
+                {
+                    ActionConstraints = new List<IActionConstraintMetadata>()
+                    {
+                        new BooleanConstraint(),
+                    },
+                },
+            };
+
+            var selector = CreateSelector(actions);
+
+            // Act
+            var result = selector.ShouldRunActionConstraints;
+
+            // Assert
+            Assert.True(result);
         }
 
         private ActionConstraintMatcherPolicy CreateSelector(ActionDescriptor[] actions)
