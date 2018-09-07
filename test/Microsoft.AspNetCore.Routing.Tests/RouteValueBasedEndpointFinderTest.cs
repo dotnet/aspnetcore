@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.AspNetCore.Routing.TestObjects;
 using Microsoft.AspNetCore.Routing.Tree;
-using Microsoft.Extensions.ObjectPool;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Routing
@@ -83,13 +82,9 @@ namespace Microsoft.AspNetCore.Routing
             // Arrange 1
             var endpoint1 = CreateEndpoint("/a");
             var dynamicDataSource = new DynamicEndpointDataSource(new[] { endpoint1 });
-            var objectPoolProvider = new DefaultObjectPoolProvider();
-            var objectPool = objectPoolProvider.Create(new UriBuilderContextPooledObjectPolicy());
 
             // Act 1
-            var finder = new CustomRouteValuesBasedEndpointFinder(
-                new CompositeEndpointDataSource(new[] { dynamicDataSource }),
-                objectPool);
+            var finder = new CustomRouteValuesBasedEndpointFinder(new CompositeEndpointDataSource(new[] { dynamicDataSource }));
 
             // Assert 1
             Assert.NotNull(finder.AllMatches);
@@ -218,14 +213,9 @@ namespace Microsoft.AspNetCore.Routing
             return CreateEndpointFinder(new DefaultEndpointDataSource(endpoints));
         }
 
-        private CustomRouteValuesBasedEndpointFinder CreateEndpointFinder(params EndpointDataSource[] endpointDataSources)
+        private CustomRouteValuesBasedEndpointFinder CreateEndpointFinder(params EndpointDataSource[] dataSources)
         {
-            var objectPoolProvider = new DefaultObjectPoolProvider();
-            var objectPool = objectPoolProvider.Create(new UriBuilderContextPooledObjectPolicy());
-
-            return new CustomRouteValuesBasedEndpointFinder(
-                new CompositeEndpointDataSource(endpointDataSources),
-                objectPool);
+            return new CustomRouteValuesBasedEndpointFinder(new CompositeEndpointDataSource(dataSources));
         }
 
         private RouteEndpoint CreateEndpoint(
@@ -256,10 +246,8 @@ namespace Microsoft.AspNetCore.Routing
 
         private class CustomRouteValuesBasedEndpointFinder : RouteValuesBasedEndpointFinder
         {
-            public CustomRouteValuesBasedEndpointFinder(
-                CompositeEndpointDataSource endpointDataSource,
-                ObjectPool<UriBuildingContext> objectPool)
-                : base(endpointDataSource, objectPool)
+            public CustomRouteValuesBasedEndpointFinder(CompositeEndpointDataSource dataSource)
+                : base(dataSource)
             {
             }
 

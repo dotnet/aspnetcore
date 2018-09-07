@@ -60,8 +60,7 @@ namespace RoutingSample.Web
             return new WebHostBuilder()
                 .UseKestrel()
                 .UseIISIntegration()
-                .UseStartup(startupType)
-                .ConfigureLogging(l => l.AddConsole().SetMinimumLevel(LogLevel.Debug));
+                .UseStartup(startupType);
         }
     }
 }
