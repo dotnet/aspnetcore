@@ -8998,4 +8998,235 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
     }
+
+    public partial class HttpResponseTrailers
+    {
+        private static byte[] _headerBytes = new byte[]
+        {
+            13,10,69,84,97,103,58,32,
+        };
+
+        private long _bits = 0;
+        private HeaderReferences _headers;
+
+
+        
+        public StringValues HeaderETag
+        {
+            get
+            {
+                StringValues value;
+                if ((_bits & 1L) != 0)
+                {
+                    value = _headers._ETag;
+                }
+                return value;
+            }
+            set
+            {
+                _bits |= 1L;
+                _headers._ETag = value; 
+            }
+        }
+
+        protected override int GetCountFast()
+        {
+            return (_contentLength.HasValue ? 1 : 0 ) + BitCount(_bits) + (MaybeUnknown?.Count ?? 0);
+        }
+
+        protected override bool TryGetValueFast(string key, out StringValues value)
+        {
+            switch (key.Length)
+            {
+                case 4:
+                    {
+                        if ("ETag".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        {
+                            if ((_bits & 1L) != 0)
+                            {
+                                value = _headers._ETag;
+                                return true;
+                            }
+                            return false;
+                        }
+                    }
+                    break;
+            }
+
+            return MaybeUnknown?.TryGetValue(key, out value) ?? false;
+        }
+
+        protected override void SetValueFast(string key, in StringValues value)
+        {
+            ValidateHeaderValueCharacters(value);
+            switch (key.Length)
+            {
+                case 4:
+                    {
+                        if ("ETag".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        {
+                            _bits |= 1L;
+                            _headers._ETag = value;
+                            return;
+                        }
+                    }
+                    break;
+            }
+
+            SetValueUnknown(key, value);
+        }
+
+        protected override bool AddValueFast(string key, in StringValues value)
+        {
+            ValidateHeaderValueCharacters(value);
+            switch (key.Length)
+            {
+                case 4:
+                    {
+                        if ("ETag".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        {
+                            if ((_bits & 1L) == 0)
+                            {
+                                _bits |= 1L;
+                                _headers._ETag = value;
+                                return true;
+                            }
+                            return false;
+                        }
+                    }
+                    break;
+            }
+
+            Unknown.Add(key, value);
+            // Return true, above will throw and exit for false
+            return true;
+        }
+
+        protected override bool RemoveFast(string key)
+        {
+            switch (key.Length)
+            {
+                case 4:
+                    {
+                        if ("ETag".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        {
+                            if ((_bits & 1L) != 0)
+                            {
+                                _bits &= ~1L;
+                                _headers._ETag = default(StringValues);
+                                return true;
+                            }
+                            return false;
+                        }
+                    }
+                    break;
+            }
+
+            return MaybeUnknown?.Remove(key) ?? false;
+        }
+
+        protected override void ClearFast()
+        {
+            MaybeUnknown?.Clear();
+            _contentLength = null;
+            var tempBits = _bits;
+            _bits = 0;
+            if(HttpHeaders.BitCount(tempBits) > 12)
+            {
+                _headers = default(HeaderReferences);
+                return;
+            }
+            
+            if ((tempBits & 1L) != 0)
+            {
+                _headers._ETag = default(StringValues);
+                if((tempBits & ~1L) == 0)
+                {
+                    return;
+                }
+                tempBits &= ~1L;
+            }
+            
+        }
+
+        protected override bool CopyToFast(KeyValuePair<string, StringValues>[] array, int arrayIndex)
+        {
+            if (arrayIndex < 0)
+            {
+                return false;
+            }
+            
+                if ((_bits & 1L) != 0)
+                {
+                    if (arrayIndex == array.Length)
+                    {
+                        return false;
+                    }
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("ETag", _headers._ETag);
+                    ++arrayIndex;
+                }
+                if (_contentLength.HasValue)
+                {
+                    if (arrayIndex == array.Length)
+                    {
+                        return false;
+                    }
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Content-Length", HeaderUtilities.FormatNonNegativeInt64(_contentLength.Value));
+                    ++arrayIndex;
+                }
+            ((ICollection<KeyValuePair<string, StringValues>>)MaybeUnknown)?.CopyTo(array, arrayIndex);
+
+            return true;
+        }
+        
+        
+
+        private struct HeaderReferences
+        {
+            public StringValues _ETag;
+            
+        }
+
+        public partial struct Enumerator
+        {
+            public bool MoveNext()
+            {
+                switch (_state)
+                {
+                    
+                    case 0:
+                        goto state0;
+                    
+                    case 1:
+                        goto state1;
+                    default:
+                        goto state_default;
+                }
+                
+                state0:
+                    if ((_bits & 1L) != 0)
+                    {
+                        _current = new KeyValuePair<string, StringValues>("ETag", _collection._headers._ETag);
+                        _state = 1;
+                        return true;
+                    }
+                
+                state1:
+                    if (_collection._contentLength.HasValue)
+                    {
+                        _current = new KeyValuePair<string, StringValues>("Content-Length", HeaderUtilities.FormatNonNegativeInt64(_collection._contentLength.Value));
+                        _state = 2;
+                        return true;
+                    }
+                state_default:
+                    if (!_hasUnknown || !_unknownEnumerator.MoveNext())
+                    {
+                        _current = default(KeyValuePair<string, StringValues>);
+                        return false;
+                    }
+                    _current = _unknownEnumerator.Current;
+                    return true;
+            }
+        }
+    }
 }

@@ -24,6 +24,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private static readonly Type IFormFeatureType = typeof(IFormFeature);
         private static readonly Type IHttpUpgradeFeatureType = typeof(IHttpUpgradeFeature);
         private static readonly Type IHttp2StreamIdFeatureType = typeof(IHttp2StreamIdFeature);
+        private static readonly Type IHttpResponseTrailersFeatureType = typeof(IHttpResponseTrailersFeature);
         private static readonly Type IResponseCookiesFeatureType = typeof(IResponseCookiesFeature);
         private static readonly Type IItemsFeatureType = typeof(IItemsFeature);
         private static readonly Type ITlsConnectionFeatureType = typeof(ITlsConnectionFeature);
@@ -46,6 +47,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private object _currentIFormFeature;
         private object _currentIHttpUpgradeFeature;
         private object _currentIHttp2StreamIdFeature;
+        private object _currentIHttpResponseTrailersFeature;
         private object _currentIResponseCookiesFeature;
         private object _currentIItemsFeature;
         private object _currentITlsConnectionFeature;
@@ -79,6 +81,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _currentIFormFeature = null;
             _currentIHttpUpgradeFeature = null;
             _currentIHttp2StreamIdFeature = null;
+            _currentIHttpResponseTrailersFeature = null;
             _currentIResponseCookiesFeature = null;
             _currentIItemsFeature = null;
             _currentITlsConnectionFeature = null;
@@ -183,6 +186,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     feature = _currentIHttp2StreamIdFeature;
                 }
+                else if (key == IHttpResponseTrailersFeatureType)
+                {
+                    feature = _currentIHttpResponseTrailersFeature;
+                }
                 else if (key == IResponseCookiesFeatureType)
                 {
                     feature = _currentIResponseCookiesFeature;
@@ -279,6 +286,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     _currentIHttp2StreamIdFeature = value;
                 }
+                else if (key == IHttpResponseTrailersFeatureType)
+                {
+                    _currentIHttpResponseTrailersFeature = value;
+                }
                 else if (key == IResponseCookiesFeatureType)
                 {
                     _currentIResponseCookiesFeature = value;
@@ -372,6 +383,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             else if (typeof(TFeature) == typeof(IHttp2StreamIdFeature))
             {
                 feature = (TFeature)_currentIHttp2StreamIdFeature;
+            }
+            else if (typeof(TFeature) == typeof(IHttpResponseTrailersFeature))
+            {
+                feature = (TFeature)_currentIHttpResponseTrailersFeature;
             }
             else if (typeof(TFeature) == typeof(IResponseCookiesFeature))
             {
@@ -473,6 +488,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 _currentIHttp2StreamIdFeature = feature;
             }
+            else if (typeof(TFeature) == typeof(IHttpResponseTrailersFeature))
+            {
+                _currentIHttpResponseTrailersFeature = feature;
+            }
             else if (typeof(TFeature) == typeof(IResponseCookiesFeature))
             {
                 _currentIResponseCookiesFeature = feature;
@@ -564,6 +583,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             if (_currentIHttp2StreamIdFeature != null)
             {
                 yield return new KeyValuePair<Type, object>(IHttp2StreamIdFeatureType, _currentIHttp2StreamIdFeature);
+            }
+            if (_currentIHttpResponseTrailersFeature != null)
+            {
+                yield return new KeyValuePair<Type, object>(IHttpResponseTrailersFeatureType, _currentIHttpResponseTrailersFeature);
             }
             if (_currentIResponseCookiesFeature != null)
             {

@@ -107,6 +107,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             LoggerMessage.Define<string, Http2FrameType, int, int, object>(LogLevel.Trace, new EventId(37, nameof(Http2FrameReceived)),
                 @"Connection id ""{ConnectionId}"" sending {type} frame for stream ID {id} with length {length} and flags {flags}");
 
+        private static readonly Action<ILogger, string, int, Exception> _hpackEncodingError =
+            LoggerMessage.Define<string, int>(LogLevel.Information, new EventId(38, nameof(HPackEncodingError)),
+                @"Connection id ""{ConnectionId}"": HPACK encoding error while encoding headers for stream ID {StreamId}.");
+
         protected readonly ILogger _logger;
 
         public KestrelTrace(ILogger logger)
@@ -252,6 +256,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         public virtual void HPackDecodingError(string connectionId, int streamId, HPackDecodingException ex)
         {
             _hpackDecodingError(_logger, connectionId, streamId, ex);
+        }
+
+        public virtual void HPackEncodingError(string connectionId, int streamId, HPackEncodingException ex)
+        {
+            _hpackEncodingError(_logger, connectionId, streamId, ex);
         }
 
         public void Http2FrameReceived(string connectionId, Http2Frame frame)

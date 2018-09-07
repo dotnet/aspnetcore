@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 using Xunit;
@@ -1341,6 +1342,223 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
+        public async Task ResponseTrailers_WithoutData_Sent()
+        {
+            await InitializeConnectionAsync(context =>
+            {
+                context.Response.AppendTrailer("CustomName", "Custom Value");
+                return Task.CompletedTask;
+            });
+
+            await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
+
+            var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 55,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1);
+
+            var trailersFrame = await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 25,
+                withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
+                withStreamId: 1);
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+
+            _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: true, handler: this);
+
+            Assert.Equal(3, _decodedHeaders.Count);
+            Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+            Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
+
+            _decodedHeaders.Clear();
+
+            _hpackDecoder.Decode(trailersFrame.PayloadSequence, endHeaders: true, handler: this);
+
+            Assert.Single(_decodedHeaders);
+            Assert.Equal("Custom Value", _decodedHeaders["CustomName"]);
+        }
+
+        [Fact]
+        public async Task ResponseTrailers_WithData_Sent()
+        {
+            await InitializeConnectionAsync(async context =>
+            {
+                await context.Response.WriteAsync("Hello World");
+                context.Response.AppendTrailer("CustomName", "Custom Value");
+            });
+
+            await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
+
+            var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 37,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1);
+
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 11,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 1);
+
+            var trailersFrame = await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 25,
+                withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
+                withStreamId: 1);
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+
+            _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: true, handler: this);
+
+            Assert.Equal(2, _decodedHeaders.Count);
+            Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+
+            _decodedHeaders.Clear();
+
+            _hpackDecoder.Decode(trailersFrame.PayloadSequence, endHeaders: true, handler: this);
+
+            Assert.Single(_decodedHeaders);
+            Assert.Equal("Custom Value", _decodedHeaders["CustomName"]);
+        }
+
+        [Fact]
+        public async Task ResponseTrailers_WithContinuation_Sent()
+        {
+            var largeHeader = new string('a', 1024 * 3);
+            await InitializeConnectionAsync(async context =>
+            {
+                await context.Response.WriteAsync("Hello World");
+                // The first five fill the first frame
+                context.Response.AppendTrailer("CustomName0", largeHeader);
+                context.Response.AppendTrailer("CustomName1", largeHeader);
+                context.Response.AppendTrailer("CustomName2", largeHeader);
+                context.Response.AppendTrailer("CustomName3", largeHeader);
+                context.Response.AppendTrailer("CustomName4", largeHeader);
+                // This one spills over to the next frame
+                context.Response.AppendTrailer("CustomName5", largeHeader);
+            });
+
+            await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
+
+            var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 37,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1);
+
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 11,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 1);
+
+            var trailersFrame = await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 15440,
+                withFlags: (byte)Http2HeadersFrameFlags.END_STREAM,
+                withStreamId: 1);
+
+            var trailersContinuationFrame = await ExpectAsync(Http2FrameType.CONTINUATION,
+                withLength: 3088,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1);
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+
+            _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: true, handler: this);
+
+            Assert.Equal(2, _decodedHeaders.Count);
+            Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+
+            _decodedHeaders.Clear();
+
+            _hpackDecoder.Decode(trailersFrame.PayloadSequence, endHeaders: false, handler: this);
+
+            Assert.Equal(5, _decodedHeaders.Count);
+            Assert.Equal(largeHeader, _decodedHeaders["CustomName0"]);
+            Assert.Equal(largeHeader, _decodedHeaders["CustomName1"]);
+            Assert.Equal(largeHeader, _decodedHeaders["CustomName2"]);
+            Assert.Equal(largeHeader, _decodedHeaders["CustomName3"]);
+            Assert.Equal(largeHeader, _decodedHeaders["CustomName4"]);
+
+            _decodedHeaders.Clear();
+
+            _hpackDecoder.Decode(trailersContinuationFrame.PayloadSequence, endHeaders: true, handler: this);
+
+            Assert.Single(_decodedHeaders);
+            Assert.Equal(largeHeader, _decodedHeaders["CustomName5"]);
+        }
+
+        [Fact]
+        public async Task ResponseTrailers_WithNonAscii_Throws()
+        {
+            await InitializeConnectionAsync(async context =>
+            {
+                await context.Response.WriteAsync("Hello World");
+                Assert.Throws<InvalidOperationException>(() => context.Response.AppendTrailer("Custom你好Name", "Custom Value"));
+                Assert.Throws<InvalidOperationException>(() => context.Response.AppendTrailer("CustomName", "Custom 你好 Value"));
+            });
+
+            await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
+
+            var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 37,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1);
+
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 11,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 1);
+
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 0,
+                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withStreamId: 1);
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+
+            _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: true, handler: this);
+
+            Assert.Equal(2, _decodedHeaders.Count);
+            Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        }
+
+        [Fact]
+        public async Task ResponseTrailers_TooLong_Throws()
+        {
+            await InitializeConnectionAsync(async context =>
+            {
+                await context.Response.WriteAsync("Hello World");
+                context.Response.AppendTrailer("too_long", new string('a', (int)Http2PeerSettings.DefaultMaxFrameSize));
+            });
+
+            await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
+
+            var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 37,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1);
+
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 11,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 1);
+
+            var goAway = await ExpectAsync(Http2FrameType.GOAWAY,
+                withLength: 8,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 0);
+
+            VerifyGoAway(goAway, 1, Http2ErrorCode.INTERNAL_ERROR);
+
+            _pair.Application.Output.Complete();
+            await _connectionTask;
+
+            var message = Assert.Single(TestApplicationErrorLogger.Messages, m => m.Exception is HPackEncodingException);
+            Assert.Contains(CoreStrings.HPackErrorNotEnoughBuffer, message.Exception.Message);
+        }
+
+        [Fact]
         public async Task ApplicationException_BeforeFirstWrite_Sends500()
         {
             var headers = new[]
@@ -1750,6 +1968,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             var message = await appFinished.Task.DefaultTimeout();
             Assert.Equal(CoreStrings.HPackErrorNotEnoughBuffer, message);
+
+            // Just the StatusCode gets written before aborting in the continuation frame
+            await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 37,
+                withFlags: (byte)Http2HeadersFrameFlags.NONE,
+                withStreamId: 1);
+
+            _pair.Application.Output.Complete();
+
+            await WaitForConnectionErrorAsync<HPackEncodingException>(ignoreNonGoAwayFrames: false, expectedLastStreamId: 1, Http2ErrorCode.INTERNAL_ERROR,
+                CoreStrings.HPackErrorNotEnoughBuffer);
         }
     }
 }

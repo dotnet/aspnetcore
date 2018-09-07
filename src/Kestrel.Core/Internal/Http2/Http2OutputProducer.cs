@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         // This should only be accessed via the FrameWriter. The connection-level output flow control is protected by the
         // FrameWriter's connection-level write lock.
         private readonly StreamOutputFlowControl _flowControl;
-
+        private readonly Http2Stream _stream;
         private readonly object _dataWriterLock = new object();
         private readonly Pipe _dataPipe;
         private readonly Task _dataWriteProcessingTask;
@@ -37,11 +37,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             Http2FrameWriter frameWriter,
             StreamOutputFlowControl flowControl,
             ITimeoutControl timeoutControl,
-            MemoryPool<byte> pool)
+            MemoryPool<byte> pool,
+            Http2Stream stream)
         {
             _streamId = streamId;
             _frameWriter = frameWriter;
             _flowControl = flowControl;
+            _stream = stream;
             _dataPipe = CreateDataPipe(pool);
             _flusher = new TimingPipeFlusher(_dataPipe.Writer, timeoutControl);
             _dataWriteProcessingTask = ProcessDataWrites();
@@ -200,7 +202,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 {
                     readResult = await _dataPipe.Reader.ReadAsync();
 
-                    await _frameWriter.WriteDataAsync(_streamId, _flowControl, readResult.Buffer, endStream: readResult.IsCompleted);
+                    if (readResult.IsCompleted && _stream.Trailers?.Count > 0)
+                    {
+                        if (readResult.Buffer.Length > 0)
+                        {
+                            await _frameWriter.WriteDataAsync(_streamId, _flowControl, readResult.Buffer, endStream: false);
+                        }
+
+                        await _frameWriter.WriteResponseTrailers(_streamId, _stream.Trailers);
+                    }
+                    else
+                    {
+                        await _frameWriter.WriteDataAsync(_streamId, _flowControl, readResult.Buffer, endStream: readResult.IsCompleted);
+                    }
 
                     _dataPipe.Reader.AdvanceTo(readResult.Buffer.End);
                 } while (!readResult.IsCompleted);

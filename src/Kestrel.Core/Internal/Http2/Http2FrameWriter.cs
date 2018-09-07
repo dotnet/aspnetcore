@@ -31,6 +31,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private readonly PipeWriter _outputWriter;
         private bool _aborted;
         private readonly ConnectionContext _connectionContext;
+        private readonly Http2Connection _http2Connection;
         private readonly OutputFlowControl _connectionOutputFlowControl;
         private readonly string _connectionId;
         private readonly IKestrelTrace _log;
@@ -41,6 +42,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         public Http2FrameWriter(
             PipeWriter outputPipeWriter,
             ConnectionContext connectionContext,
+            Http2Connection http2Connection,
             OutputFlowControl connectionOutputFlowControl,
             ITimeoutControl timeoutControl,
             string connectionId,
@@ -48,6 +50,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         {
             _outputWriter = outputPipeWriter;
             _connectionContext = connectionContext;
+            _http2Connection = http2Connection;
             _connectionOutputFlowControl = connectionOutputFlowControl;
             _connectionId = connectionId;
             _log = log;
@@ -157,39 +160,69 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     _outgoingFrame.PrepareHeaders(Http2HeadersFrameFlags.NONE, streamId);
                     var buffer = _headerEncodingBuffer.AsSpan();
                     var done = _hpackEncoder.BeginEncode(statusCode, EnumerateHeaders(headers), buffer, out var payloadLength);
-
-                    _outgoingFrame.PayloadLength = payloadLength;
-
-                    if (done)
-                    {
-                        _outgoingFrame.HeadersFlags = Http2HeadersFrameFlags.END_HEADERS;
-                    }
-
-                    WriteHeaderUnsynchronized();
-                    _outputWriter.Write(buffer.Slice(0, payloadLength));
-
-                    while (!done)
-                    {
-                        _outgoingFrame.PrepareContinuation(Http2ContinuationFrameFlags.NONE, streamId);
-
-                        done = _hpackEncoder.Encode(buffer, out payloadLength);
-                        _outgoingFrame.PayloadLength = payloadLength;
-
-                        if (done)
-                        {
-                            _outgoingFrame.ContinuationFlags = Http2ContinuationFrameFlags.END_HEADERS;
-                        }
-
-                        WriteHeaderUnsynchronized();
-                        _outputWriter.Write(buffer.Slice(0, payloadLength));
-                    }
+                    FinishWritingHeaders(streamId, payloadLength, done);
                 }
                 catch (HPackEncodingException hex)
                 {
-                    // Header errors are fatal to the connection. We don't have a direct way to signal this to the Http2Connection.
-                    _connectionContext.Abort(new ConnectionAbortedException("", hex));
-                    throw new InvalidOperationException("", hex); // Report the error to the user if this was the first write.
+                    _log.HPackEncodingError(_connectionId, streamId, hex);
+                    _http2Connection.Abort(new ConnectionAbortedException(hex.Message, hex));
+                    throw new InvalidOperationException(hex.Message, hex); // Report the error to the user if this was the first write.
                 }
+            }
+        }
+
+        public Task WriteResponseTrailers(int streamId, HttpResponseTrailers headers)
+        {
+            lock (_writeLock)
+            {
+                if (_completed)
+                {
+                    return Task.CompletedTask;
+                }
+
+                try
+                {
+                    _outgoingFrame.PrepareHeaders(Http2HeadersFrameFlags.END_STREAM, streamId);
+                    var buffer = _headerEncodingBuffer.AsSpan();
+                    var done = _hpackEncoder.BeginEncode(EnumerateHeaders(headers), buffer, out var payloadLength);
+                    FinishWritingHeaders(streamId, payloadLength, done);
+                }
+                catch (HPackEncodingException hex)
+                {
+                    _log.HPackEncodingError(_connectionId, streamId, hex);
+                    _http2Connection.Abort(new ConnectionAbortedException(hex.Message, hex));
+                }
+
+                return _flusher.FlushAsync();
+            }
+        }
+
+        private void FinishWritingHeaders(int streamId, int payloadLength, bool done)
+        {
+            var buffer = _headerEncodingBuffer.AsSpan();
+            _outgoingFrame.PayloadLength = payloadLength;
+            if (done)
+            {
+                _outgoingFrame.HeadersFlags |= Http2HeadersFrameFlags.END_HEADERS;
+            }
+
+            WriteHeaderUnsynchronized();
+            _outputWriter.Write(buffer.Slice(0, payloadLength));
+
+            while (!done)
+            {
+                _outgoingFrame.PrepareContinuation(Http2ContinuationFrameFlags.NONE, streamId);
+
+                done = _hpackEncoder.Encode(buffer, out payloadLength);
+                _outgoingFrame.PayloadLength = payloadLength;
+
+                if (done)
+                {
+                    _outgoingFrame.ContinuationFlags = Http2ContinuationFrameFlags.END_HEADERS;
+                }
+
+                WriteHeaderUnsynchronized();
+                _outputWriter.Write(buffer.Slice(0, payloadLength));
             }
         }
 

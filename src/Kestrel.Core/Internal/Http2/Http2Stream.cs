@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 _context.ServerPeerSettings.InitialWindowSize / 2);
 
             _outputFlowControl = new StreamOutputFlowControl(context.ConnectionOutputFlowControl, context.ClientPeerSettings.InitialWindowSize);
-            _http2Output = new Http2OutputProducer(context.StreamId, context.FrameWriter, _outputFlowControl, context.TimeoutControl, context.MemoryPool);
+            _http2Output = new Http2OutputProducer(context.StreamId, context.FrameWriter, _outputFlowControl, context.TimeoutControl, context.MemoryPool, this);
 
             RequestBodyPipe = CreateRequestBodyPipe(_context.ServerPeerSettings.InitialWindowSize);
             Output = _http2Output;
@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         protected override void OnReset()
         {
-            ResetIHttp2StreamIdFeature();
+            ResetHttp2Features();
         }
 
         protected override void OnRequestProcessingEnded()
