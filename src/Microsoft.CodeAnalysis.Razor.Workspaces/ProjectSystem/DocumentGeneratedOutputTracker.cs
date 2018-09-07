@@ -111,7 +111,14 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             var projectEngine = project.GetProjectEngine();
 
-            return projectEngine.ProcessDesignTime(documentSource, importSources, tagHelpers);
+            var codeDocument = projectEngine.ProcessDesignTime(documentSource, importSources, tagHelpers);
+            var csharpDocument = codeDocument.GetCSharpDocument();
+            if (document is DefaultDocumentSnapshot defaultDocument)
+            {
+                defaultDocument.State.HostDocument.GeneratedCodeContainer.SetOutput(csharpDocument, defaultDocument);
+            }
+
+            return codeDocument;
         }
 
         private async Task<RazorSourceDocument> GetRazorSourceDocumentAsync(DocumentSnapshot document)

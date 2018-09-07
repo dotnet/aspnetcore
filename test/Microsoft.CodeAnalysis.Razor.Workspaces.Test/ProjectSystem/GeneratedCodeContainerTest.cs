@@ -20,10 +20,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 ";
             var sourceText = SourceText.From(content);
             var codeDocument = GetCodeDocument(content);
-            var generatedCode = codeDocument.GetCSharpDocument().GeneratedCode;
-
-            var container = new GeneratedCodeContainer();
-            container.SetOutput(sourceText, codeDocument);
+            var csharpDocument = codeDocument.GetCSharpDocument();
+            var generatedCode = csharpDocument.GeneratedCode;
 
             // TODO: Make writing these tests a little less manual.
             // Position of `SomeProperty` in the generated code.
@@ -34,7 +32,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             var expectedLineSpan = new LinePositionSpan(new LinePosition(2, 22), new LinePosition(2, 34));
 
             // Act
-            var result = container.TryGetLinePositionSpan(span, out var lineSpan);
+            var result = GeneratedCodeContainer.TryGetLinePositionSpan(span, sourceText, csharpDocument, out var lineSpan);
 
             // Assert
             Assert.True(result);
@@ -52,17 +50,15 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 ";
             var sourceText = SourceText.From(content);
             var codeDocument = GetCodeDocument(content);
-            var generatedCode = codeDocument.GetCSharpDocument().GeneratedCode;
-
-            var container = new GeneratedCodeContainer();
-            container.SetOutput(sourceText, codeDocument);
+            var csharpDocument = codeDocument.GetCSharpDocument();
+            var generatedCode = csharpDocument.GeneratedCode;
 
             // Position of `ExecuteAsync` in the generated code.
             var symbol = "ExecuteAsync";
             var span = new TextSpan(generatedCode.IndexOf(symbol), symbol.Length);
 
             // Act
-            var result = container.TryGetLinePositionSpan(span, out var lineSpan);
+            var result = GeneratedCodeContainer.TryGetLinePositionSpan(span, sourceText, csharpDocument, out var lineSpan);
 
             // Assert
             Assert.False(result);

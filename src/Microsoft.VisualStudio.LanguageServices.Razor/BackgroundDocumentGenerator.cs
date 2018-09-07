@@ -187,12 +187,6 @@ namespace Microsoft.CodeAnalysis.Razor
 
                 OnCompletingBackgroundWork();
 
-                await Task.Factory.StartNew(
-                    () => ReportUpdates(work),
-                    CancellationToken.None,
-                    TaskCreationOptions.None,
-                    _foregroundDispatcher.ForegroundScheduler);
-
                 lock (_work)
                 {
                     // Resetting the timer allows another batch of work to start.
@@ -216,22 +210,6 @@ namespace Microsoft.CodeAnalysis.Razor
                     CancellationToken.None,
                     TaskCreationOptions.None,
                     _foregroundDispatcher.ForegroundScheduler);
-            }
-        }
-
-        private void ReportUpdates(KeyValuePair<DocumentKey, DocumentSnapshot>[] work)
-        {
-            for (var i = 0; i < work.Length; i++)
-            {
-                var key = work[i].Key;
-                var document = work[i].Value;
-
-                if (document.TryGetText(out var source) &&
-                    document.TryGetGeneratedOutput(out var output))
-                {
-                    var container = ((DefaultDocumentSnapshot)document).State.GeneratedCodeContainer;
-                    container.SetOutput(source, output);
-                }
             }
         }
 

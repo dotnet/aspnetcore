@@ -2,32 +2,89 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.CodeAnalysis.Text;
-using Microsoft.CodeAnalysis.Experiment;
-using Microsoft.AspNetCore.Razor.Language;
-using System.Collections.Immutable;
-using System.Threading.Tasks;
-using System.Threading;
 using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Diagnostics;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.CodeAnalysis.Experiment;
+using Microsoft.CodeAnalysis.Text;
 
 namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 {
     internal class GeneratedCodeContainer : IDocumentServiceFactory, ISpanMapper
     {
+        public event EventHandler<TextChangeEventArgs> GeneratedCodeChanged;
+
+        private SourceText _source;
+        private VersionStamp _sourceVersion;
+        private RazorCSharpDocument _output;
+        private DocumentSnapshot _latestDocument;
+
+        private readonly object _setOutputLock = new object();
         private readonly TextContainer _textContainer;
 
         public GeneratedCodeContainer()
         {
-            _textContainer = new TextContainer();
+            _textContainer = new TextContainer(_setOutputLock);
+            _textContainer.TextChanged += TextContainer_TextChanged;
         }
 
-        public SourceText Source { get; private set; }
+        public SourceText Source
+        {
+            get
+            {
+                lock (_setOutputLock)
+                {
+                    return _source;
+                }
+            }
+        }
 
-        public VersionStamp SourceVersion { get; private set; }
+        public VersionStamp SourceVersion
+        {
+            get
+            {
+                lock (_setOutputLock)
+                {
+                    return _sourceVersion;
+                }
+            }
+        }
 
-        public RazorCSharpDocument Output { get; private set; }
+        public RazorCSharpDocument Output
+        {
+            get
+            {
+                lock (_setOutputLock)
+                {
+                    return _output;
+                }
+            }
+        }
 
-        public SourceTextContainer SourceTextContainer => _textContainer;
+        public DocumentSnapshot LatestDocument
+        {
+            get
+            {
+                lock (_setOutputLock)
+                {
+                    return _latestDocument;
+                }
+            }
+        }
+
+        public SourceTextContainer SourceTextContainer
+        {
+            get
+            {
+                lock (_setOutputLock)
+                {
+                    return _textContainer;
+                }
+            }
+        }
 
         public TService GetService<TService>()
         {
@@ -39,28 +96,59 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             return default(TService);
         }
 
-        public void SetOutput(SourceText source, RazorCodeDocument codeDocument)
+        public void SetOutput(RazorCSharpDocument csharpDocument, DefaultDocumentSnapshot document)
         {
-            Source = source;
-            Output = codeDocument.GetCSharpDocument();
+            lock (_setOutputLock)
+            {
+                if (!document.TryGetTextVersion(out var version))
+                {
+                    Debug.Fail("The text version should have already been evaluated.");
+                    return;
+                }
 
-            _textContainer.SetText(SourceText.From(Output.GeneratedCode));
+                var newerVersion = SourceVersion.GetNewerVersion(version);
+                if (newerVersion == SourceVersion)
+                {
+                    // Latest document is newer than the provided document.
+                    return;
+                }
+
+                if (!document.TryGetText(out var source))
+                {
+                    Debug.Fail("The text should have already been evaluated.");
+                    return;
+                }
+
+                _source = source;
+                _sourceVersion = version;
+                _output = csharpDocument;
+                _latestDocument = document;
+                _textContainer.SetText(SourceText.From(Output.GeneratedCode));
+            }
         }
 
         public Task<ImmutableArray<SpanMapResult>> MapSpansAsync(
-                Document document,
-                IEnumerable<TextSpan> spans,
-                CancellationToken cancellationToken)
+            Document document,
+            IEnumerable<TextSpan> spans,
+            CancellationToken cancellationToken)
         {
-            if (Output == null)
+            RazorCSharpDocument output;
+            SourceText source;
+            lock (_setOutputLock)
             {
-                return Task.FromResult(ImmutableArray<SpanMapResult>.Empty);
+                if (Output == null)
+                {
+                    return Task.FromResult(ImmutableArray<SpanMapResult>.Empty);
+                }
+
+                output = Output;
+                source = Source;
             }
 
             var results = ImmutableArray.CreateBuilder<SpanMapResult>();
             foreach (var span in spans)
             {
-                if (TryGetLinePositionSpan(span, out var linePositionSpan))
+                if (TryGetLinePositionSpan(span, source, output, out var linePositionSpan))
                 {
                     results.Add(new SpanMapResult(document, linePositionSpan));
                 }
@@ -70,11 +158,11 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         }
 
         // Internal for testing.
-        internal bool TryGetLinePositionSpan(TextSpan span, out LinePositionSpan linePositionSpan)
+        internal static bool TryGetLinePositionSpan(TextSpan span, SourceText source, RazorCSharpDocument output, out LinePositionSpan linePositionSpan)
         {
-            for (var i = 0; i < Output.SourceMappings.Count; i++)
+            for (var i = 0; i < output.SourceMappings.Count; i++)
             {
-                var mapping = Output.SourceMappings[i];
+                var mapping = output.SourceMappings[i];
                 if (span.Length > mapping.GeneratedSpan.Length)
                 {
                     // If the length of the generated span is smaller they can't match. A C# expression
@@ -94,7 +182,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 {
                     // This span mapping contains the span.
                     var adjusted = new TextSpan(original.Start + leftOffset, (original.End + rightOffset) - (original.Start + leftOffset));
-                    linePositionSpan = Source.Lines.GetLinePositionSpan(adjusted);
+                    linePositionSpan = source.Lines.GetLinePositionSpan(adjusted);
                     return true;
                 }
             }
@@ -103,15 +191,22 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             return false;
         }
 
+        private void TextContainer_TextChanged(object sender, TextChangeEventArgs args)
+        {
+            GeneratedCodeChanged?.Invoke(this, args);
+        }
+
         private class TextContainer : SourceTextContainer
         {
             public override event EventHandler<TextChangeEventArgs> TextChanged;
 
+            private readonly object _outerLock;
             private SourceText _currentText;
 
-            public TextContainer()
+            public TextContainer(object outerLock)
                 : this(SourceText.From(string.Empty))
             {
+                _outerLock = outerLock;
             }
 
             public TextContainer(SourceText sourceText)
@@ -124,7 +219,16 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 _currentText = sourceText;
             }
 
-            public override SourceText CurrentText => _currentText;
+            public override SourceText CurrentText
+            {
+                get
+                {
+                    lock (_outerLock)
+                    {
+                        return _currentText;
+                    }
+                }
+            }
 
             public void SetText(SourceText sourceText)
             {
@@ -133,10 +237,14 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                     throw new ArgumentNullException(nameof(sourceText));
                 }
 
-                var e = new TextChangeEventArgs(_currentText, sourceText);
-                _currentText = sourceText;
+                lock (_outerLock)
+                {
 
-                TextChanged?.Invoke(this, e);
+                    var e = new TextChangeEventArgs(_currentText, sourceText);
+                    _currentText = sourceText;
+
+                    TextChanged?.Invoke(this, e);
+                }
             }
         }
     }
