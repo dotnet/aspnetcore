@@ -1,0 +1,140 @@
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System.Linq;
+using Microsoft.AspNetCore.Http;
+using Xunit;
+
+namespace Microsoft.AspNetCore.Routing
+{
+    // Integration tests for GetXyzByName. These are basic because important behavioral details
+    // are covered elsewhere.
+    //
+    // Does not cover template processing in detail, those scenarios are validated by TemplateBinderTests
+    // and DefaultLinkGeneratorProcessTemplateTest
+    //
+    // Does not cover the EndpointNameEndpointFinder in detail. see EndpointNameEndpointFinderTest
+    public class LinkGeneratorEndpointNameExtensionsTest : LinkGeneratorTestBase
+    {
+        [Fact]
+        public void GetPathByName_WithoutHttpContext_WithPathBaseAndFragment()
+        {
+            // Arrange
+            var endpoint1 = EndpointFactory.CreateRouteEndpoint("some-endpoint/{p}",  metadata: new[] { new EndpointNameMetadata("name1"), });
+            var endpoint2 = EndpointFactory.CreateRouteEndpoint("some#-other-endpoint/{p}", metadata: new[] { new EndpointNameMetadata("name2"), });
+
+            var linkGenerator = CreateLinkGenerator(endpoint1, endpoint2);
+
+            var values = new { p = "In?dex", query = "some?query", };
+
+            // Act
+            var path = linkGenerator.GetPathByName(
+                endpointName: "name2",
+                values,
+                new PathString("/Foo/Bar?encodeme?"),
+                new FragmentString("#Fragment?"),
+                new LinkOptions() { AppendTrailingSlash = true, });
+
+            // Assert
+            Assert.Equal("/Foo/Bar%3Fencodeme%3F/some%23-other-endpoint/In%3Fdex/?query=some%3Fquery#Fragment?", path);
+        }
+
+        [Fact]
+        public void GetPathByName_WithHttpContext_WithPathBaseAndFragment()
+        {
+            // Arrange
+            var endpoint1 = EndpointFactory.CreateRouteEndpoint("some-endpoint/{p}", metadata: new[] { new EndpointNameMetadata("name1"), });
+            var endpoint2 = EndpointFactory.CreateRouteEndpoint("some#-other-endpoint/{p}", metadata: new[] { new EndpointNameMetadata("name2"), });
+
+            var linkGenerator = CreateLinkGenerator(endpoint1, endpoint2);
+
+            var httpContext = CreateHttpContext();
+            httpContext.Request.PathBase = new PathString("/Foo/Bar?encodeme?");
+
+            var values = new { p = "In?dex", query = "some?query", };
+
+            // Act
+            var path = linkGenerator.GetPathByName(
+                httpContext,
+                endpointName: "name2",
+                values,
+                new FragmentString("#Fragment?"),
+                new LinkOptions() { AppendTrailingSlash = true, });
+
+            // Assert
+            Assert.Equal("/Foo/Bar%3Fencodeme%3F/some%23-other-endpoint/In%3Fdex/?query=some%3Fquery#Fragment?", path);
+        }
+
+        [Fact]
+        public void GetUriByRouteValues_WithoutHttpContext_WithPathBaseAndFragment()
+        {
+            // Arrange
+            var endpoint1 = EndpointFactory.CreateRouteEndpoint("some-endpoint/{p}", metadata: new[] { new EndpointNameMetadata("name1"), });
+            var endpoint2 = EndpointFactory.CreateRouteEndpoint("some#-other-endpoint/{p}", metadata: new[] { new EndpointNameMetadata("name2"), });
+
+            var linkGenerator = CreateLinkGenerator(endpoint1, endpoint2);
+
+            var values = new { p = "In?dex", query = "some?query", };
+
+            // Act
+            var path = linkGenerator.GetUriByName(
+                endpointName: "name2",
+                values,
+                "http",
+                new HostString("example.com"),
+                new PathString("/Foo/Bar?encodeme?"),
+                new FragmentString("#Fragment?"),
+                new LinkOptions() { AppendTrailingSlash = true, });
+
+            // Assert
+            Assert.Equal("http://example.com/Foo/Bar%3Fencodeme%3F/some%23-other-endpoint/In%3Fdex/?query=some%3Fquery#Fragment?", path);
+        }
+
+        [Fact]
+        public void GetUriByName_WithHttpContext_WithPathBaseAndFragment()
+        {
+            // Arrange
+            var endpoint1 = EndpointFactory.CreateRouteEndpoint("some-endpoint/{p}", metadata: new[] { new EndpointNameMetadata("name1"), });
+            var endpoint2 = EndpointFactory.CreateRouteEndpoint("some#-other-endpoint/{p}", metadata: new[] { new EndpointNameMetadata("name2"), });
+
+            var linkGenerator = CreateLinkGenerator(endpoint1, endpoint2);
+
+            var httpContext = CreateHttpContext();
+            httpContext.Request.Scheme = "http";
+            httpContext.Request.Host = new HostString("example.com");
+            httpContext.Request.PathBase = new PathString("/Foo/Bar?encodeme?");
+
+            var values = new { p = "In?dex", query = "some?query", };
+
+            // Act
+            var uri = linkGenerator.GetUriByName(
+                httpContext,
+                endpointName: "name2",
+                values,
+                new FragmentString("#Fragment?"),
+                new LinkOptions() { AppendTrailingSlash = true, });
+
+            // Assert
+            Assert.Equal("http://example.com/Foo/Bar%3Fencodeme%3F/some%23-other-endpoint/In%3Fdex/?query=some%3Fquery#Fragment?", uri);
+        }
+
+        [Fact]
+        public void GetTemplateByName_CreatesTemplate()
+        {
+            // Arrange
+            var endpoint1 = EndpointFactory.CreateRouteEndpoint("some-endpoint/{p}", metadata: new[] { new EndpointNameMetadata("name1"), });
+            var endpoint2 = EndpointFactory.CreateRouteEndpoint("some#-other-endpoint/{p}", metadata: new[] { new EndpointNameMetadata("name2"), });
+
+            var linkGenerator = CreateLinkGenerator(endpoint1, endpoint2);
+
+            // Act
+            var template = linkGenerator.GetTemplateByName(endpointName: "name2");
+
+            // Assert
+            Assert.NotNull(template);
+            Assert.Collection(
+                Assert.IsType<DefaultLinkGenerationTemplate>(template).Endpoints.Cast<RouteEndpoint>().OrderBy(e => e.RoutePattern.RawText),
+                e => Assert.Same(endpoint2, e));
+        }
+    }
+}

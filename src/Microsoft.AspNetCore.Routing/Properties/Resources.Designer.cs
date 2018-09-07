@@ -459,7 +459,7 @@ namespace Microsoft.AspNetCore.Routing
             => string.Format(CultureInfo.CurrentCulture, GetString("ConstraintMustBeStringOrConstraint"), p0, p1, p2);
 
         /// <summary>
-        /// Invalid constraint '{0}'. A constraint must be of type 'string', '{1}', or '{2}'.
+        /// Invalid constraint '{0}'. A constraint must be of type 'string' or '{1}'.
         /// </summary>
         internal static string RoutePattern_InvalidConstraintReference
         {
@@ -513,6 +513,34 @@ namespace Microsoft.AspNetCore.Routing
         /// </summary>
         internal static string FormatRoutePattern_InvalidStringConstraintReference(object p0, object p1, object p2, object p3)
             => string.Format(CultureInfo.CurrentCulture, GetString("RoutePattern_InvalidStringConstraintReference"), p0, p1, p2, p3);
+
+        /// <summary>
+        /// Endpoints with endpoint name '{0}':
+        /// </summary>
+        internal static string DuplicateEndpointNameEntry
+        {
+            get => GetString("DuplicateEndpointNameEntry");
+        }
+
+        /// <summary>
+        /// Endpoints with endpoint name '{0}':
+        /// </summary>
+        internal static string FormatDuplicateEndpointNameEntry(object p0)
+            => string.Format(CultureInfo.CurrentCulture, GetString("DuplicateEndpointNameEntry"), p0);
+
+        /// <summary>
+        /// The following endpoints with a duplicate endpoint name were found.
+        /// </summary>
+        internal static string DuplicateEndpointNameHeader
+        {
+            get => GetString("DuplicateEndpointNameHeader");
+        }
+
+        /// <summary>
+        /// The following endpoints with a duplicate endpoint name were found.
+        /// </summary>
+        internal static string FormatDuplicateEndpointNameHeader()
+            => GetString("DuplicateEndpointNameHeader");
 
         private static string GetString(string name, params string[] formatterNames)
         {

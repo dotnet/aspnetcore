@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Xunit;
 
@@ -96,7 +97,7 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         [Fact]
-        public void GetUri_WithHttpContext_WithPathBaseAndFragment()
+        public void GetUriByRouteValues_WithHttpContext_WithPathBaseAndFragment()
         {
             // Arrange
             var endpoint1 = EndpointFactory.CreateRouteEndpoint(
@@ -123,6 +124,32 @@ namespace Microsoft.AspNetCore.Routing
 
             // Assert
             Assert.Equal("http://example.com/Foo/Bar%3Fencodeme%3F/Home/In%3Fdex/?query=some%3Fquery#Fragment?", uri);
+        }
+
+        [Fact]
+        public void GetTemplateByRouteValues_CreatesTemplate()
+        {
+            // Arrange
+            var endpoint1 = EndpointFactory.CreateRouteEndpoint(
+                "{controller}/{action}/{id}",
+                metadata: new[] { new RouteValuesAddressMetadata(routeName: null, new RouteValueDictionary(new { controller = "Home", action = "In?dex", })) });
+            var endpoint2 = EndpointFactory.CreateRouteEndpoint(
+                "{controller}/{action}/{id?}",
+                metadata: new[] { new RouteValuesAddressMetadata(routeName: null, new RouteValueDictionary(new { controller = "Home", action = "In?dex", })) });
+
+            var linkGenerator = CreateLinkGenerator(endpoint1, endpoint2);
+
+            // Act
+            var template = linkGenerator.GetTemplateByRouteValues(
+                routeName: null,
+                values: new RouteValueDictionary(new { controller = "Home", action = "In?dex", query = "some?query" }));
+
+            // Assert
+            Assert.NotNull(template);
+            Assert.Collection(
+                Assert.IsType<DefaultLinkGenerationTemplate>(template).Endpoints.Cast<RouteEndpoint>().OrderBy(e => e.RoutePattern.RawText),
+                e => Assert.Same(endpoint2, e),
+                e => Assert.Same(endpoint1, e));
         }
     }
 }
