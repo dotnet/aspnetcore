@@ -10,18 +10,18 @@ class IOutputManager
 {
 public:
     virtual
-    HRESULT
+    void
     Start() = 0;
 
     virtual
     ~IOutputManager() = default;
 
     virtual
-    bool
-    GetStdOutContent(STRA* struStdOutput) = 0;
+    std::wstring
+    GetStdOutContent() = 0;
 
     virtual
-    HRESULT
+    void
     Stop() = 0;
 };
 

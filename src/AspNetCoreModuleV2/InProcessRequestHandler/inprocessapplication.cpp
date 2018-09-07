@@ -207,7 +207,7 @@ IN_PROCESS_APPLICATION::ExecuteApplication()
                 QueryApplicationPhysicalPath().c_str(),
                 m_pLoggerProvider));
 
-            LOG_IF_FAILED(m_pLoggerProvider->Start());
+            m_pLoggerProvider->TryStartRedirection();
         }
 
         // There can only ever be a single instance of .NET Core
@@ -246,7 +246,7 @@ IN_PROCESS_APPLICATION::ExecuteApplication()
         // At this point CLR thread either finished or timed out, abandon it.
         m_clrThread.detach();
 
-        LOG_IF_FAILED(m_pLoggerProvider->Stop());
+        m_pLoggerProvider->TryStopRedirection();
 
         if (m_fStopCalled)
         {
@@ -391,8 +391,6 @@ IN_PROCESS_APPLICATION::ExecuteClr(const std::shared_ptr<ExecuteClrContext>& con
 VOID
 IN_PROCESS_APPLICATION::ClrThreadEntryPoint(const std::shared_ptr<ExecuteClrContext> &context)
 {
-    LOG_INFO(L"Starting CLR thread");
-
     // Keep aspnetcorev2_inprocess.dll loaded while this thread is running
     // this is required because thread might be abandoned
     HandleWrapper<ModuleHandleTraits> moduleHandle;
@@ -441,14 +439,11 @@ IN_PROCESS_APPLICATION::SetEnvironmentVariablesOnWorkerProcess()
 VOID
 IN_PROCESS_APPLICATION::UnexpectedThreadExit(const ExecuteClrContext& context) const
 {
-    STRA straStdErrOutput;
-    STRU struStdMsg;
-    auto hasStdOut =  m_pLoggerProvider->GetStdOutContent(&straStdErrOutput) &&
-        SUCCEEDED(struStdMsg.CopyA(straStdErrOutput.QueryStr()));
+    auto content = m_pLoggerProvider->GetStdOutContent();
 
     if (context.m_exceptionCode != 0)
     {
-        if (hasStdOut)
+        if (!content.empty())
         {
             EventLog::Error(
                 ASPNETCORE_EVENT_INPROCESS_THREAD_EXCEPTION,
@@ -456,7 +451,7 @@ IN_PROCESS_APPLICATION::UnexpectedThreadExit(const ExecuteClrContext& context) c
                 QueryApplicationId().c_str(),
                 QueryApplicationPhysicalPath().c_str(),
                 context.m_exceptionCode,
-                struStdMsg.QueryStr());
+                content.c_str());
         }
         else
         {
@@ -476,7 +471,8 @@ IN_PROCESS_APPLICATION::UnexpectedThreadExit(const ExecuteClrContext& context) c
     // This will be a common place for errors as it means the hostfxr_main returned
     // or there was an exception.
     //
-    if (hasStdOut)
+
+    if (!content.empty())
     {
         EventLog::Error(
             ASPNETCORE_EVENT_INPROCESS_THREAD_EXIT_STDOUT,
@@ -484,7 +480,7 @@ IN_PROCESS_APPLICATION::UnexpectedThreadExit(const ExecuteClrContext& context) c
             QueryApplicationId().c_str(),
             QueryApplicationPhysicalPath().c_str(),
             context.m_exitCode,
-            struStdMsg.QueryStr());
+            content.c_str());
     }
     else
     {

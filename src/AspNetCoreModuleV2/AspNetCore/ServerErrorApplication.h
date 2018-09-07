@@ -9,7 +9,7 @@
 class ServerErrorApplication : public PollingAppOfflineApplication
 {
 public:
-    ServerErrorApplication(IHttpApplication& pApplication, HRESULT hr)
+    ServerErrorApplication(const IHttpApplication& pApplication, HRESULT hr)
         : m_HR(hr),
         PollingAppOfflineApplication(pApplication, PollingAppOfflineApplicationMode::StopWhenAdded)
     {

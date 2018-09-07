@@ -11,6 +11,9 @@ bool ends_with(const std::wstring &source, const std::wstring &suffix, bool igno
 [[nodiscard]]
 bool equals_ignore_case(const std::wstring& s1, const std::wstring& s2);
 
+[[nodiscard]]
+std::wstring to_wide_string(const std::string &source, const unsigned int codePage);
+
 template<typename ... Args>
 [[nodiscard]]
 std::wstring format(const std::wstring& format, Args ... args)

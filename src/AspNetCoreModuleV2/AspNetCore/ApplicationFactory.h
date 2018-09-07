@@ -13,7 +13,7 @@ typedef
 HRESULT
 (WINAPI * PFN_ASPNETCORE_CREATE_APPLICATION)(
     _In_  IHttpServer           *pServer,
-    _In_  IHttpApplication      *pHttpApplication,
+    _In_  const IHttpApplication * pHttpApplication,
     _In_  APPLICATION_PARAMETER *pParameters,
     _In_  DWORD                  nParameters,
     _Out_ IAPPLICATION         **pApplication
@@ -31,7 +31,7 @@ public:
 
     HRESULT Execute(
         _In_  IHttpServer           *pServer,
-        _In_  IHttpApplication      *pHttpApplication,
+        _In_  const IHttpApplication *pHttpApplication,
         _Outptr_ IAPPLICATION       **pApplication) const noexcept
     {
         std::array<APPLICATION_PARAMETER, 1> parameters {

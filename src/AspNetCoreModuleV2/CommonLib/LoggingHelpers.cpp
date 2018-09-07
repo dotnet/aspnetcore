@@ -3,7 +3,6 @@
 
 #include "stdafx.h"
 #include "LoggingHelpers.h"
-#include "IOutputManager.h"
 #include "FileOutputManager.h"
 #include "PipeOutputManager.h"
 #include "NullOutputManager.h"
@@ -11,6 +10,9 @@
 #include <Windows.h>
 #include <io.h>
 #include "ntassert.h"
+#include "exceptions.h"
+#include "EventLog.h"
+#include "BaseOutputManager.h"
 
 HRESULT
 LoggingHelpers::CreateLoggingProvider(
@@ -18,7 +20,7 @@ LoggingHelpers::CreateLoggingProvider(
     bool fEnableNativeLogging,
     PCWSTR pwzStdOutFileName,
     PCWSTR pwzApplicationPath,
-    std::unique_ptr<IOutputManager>& outputManager
+    std::unique_ptr<BaseOutputManager>& outputManager
 )
 {
     HRESULT hr = S_OK;
@@ -34,8 +36,7 @@ LoggingHelpers::CreateLoggingProvider(
 
         if (fIsLoggingEnabled)
         {
-            auto manager = std::make_unique<FileOutputManager>(fEnableNativeLogging);
-            hr = manager->Initialize(pwzStdOutFileName, pwzApplicationPath);
+            auto manager = std::make_unique<FileOutputManager>(pwzStdOutFileName, pwzApplicationPath, fEnableNativeLogging);
             outputManager = std::move(manager);
         }
         else if (!GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &dummy))

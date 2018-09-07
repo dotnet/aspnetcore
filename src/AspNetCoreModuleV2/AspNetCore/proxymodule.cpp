@@ -87,13 +87,7 @@ ASPNET_CORE_PROXY_MODULE::OnExecuteRequestHandler(
             *pHttpContext,
             m_pApplicationInfo));
 
-        std::unique_ptr<IAPPLICATION, IAPPLICATION_DELETER> pApplication;
-        FINISHED_IF_FAILED(m_pApplicationInfo->GetOrCreateApplication(*pHttpContext, pApplication));
-
-        IREQUEST_HANDLER* pHandler;
-        // Create RequestHandler and process the request
-        FINISHED_IF_FAILED(pApplication->CreateHandler(pHttpContext, &pHandler));
-        m_pHandler.reset(pHandler);
+        FINISHED_IF_FAILED(m_pApplicationInfo->CreateHandler(*pHttpContext, m_pHandler));
 
         retVal = m_pHandler->OnExecuteRequestHandler();
     }

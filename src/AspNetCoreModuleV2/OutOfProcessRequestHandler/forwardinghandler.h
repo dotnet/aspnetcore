@@ -22,7 +22,7 @@ class FORWARDING_HANDLER : public REQUEST_HANDLER
 public:
     FORWARDING_HANDLER(
         _In_ IHttpContext *pW3Context,
-        _In_ OUT_OF_PROCESS_APPLICATION  *pApplication
+        _In_ std::unique_ptr<OUT_OF_PROCESS_APPLICATION, IAPPLICATION_DELETER> pApplication
     );
 
     ~FORWARDING_HANDLER();
@@ -238,6 +238,6 @@ private:
 
     mutable LONG                        m_cRefs;
     IHttpContext*                       m_pW3Context;
-    OUT_OF_PROCESS_APPLICATION*         m_pApplication;
+    std::unique_ptr<OUT_OF_PROCESS_APPLICATION, IAPPLICATION_DELETER> m_pApplication;
     HTTP_MODULE_ID                      m_pModuleId;
 };

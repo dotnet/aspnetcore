@@ -1,12 +1,14 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
-#include "stdafx.h"
 #include "PipeOutputManager.h"
-#include "exceptions.h"
+
+#include "stdafx.h"
+#include "Exceptions.h"
 #include "SRWExclusiveLock.h"
 #include "StdWrapper.h"
 #include "ntassert.h"
+#include "StringHelpers.h"
 
 #define LOG_IF_DUPFAIL(err) do { if (err == -1) { LOG_IF_FAILED(HRESULT_FROM_WIN32(_doserrno)); } } while (0, 0);
 #define LOG_IF_ERRNO(err) do { if (err != 0) { LOG_IF_FAILED(HRESULT_FROM_WIN32(_doserrno)); } } while (0, 0);
@@ -17,16 +19,12 @@ PipeOutputManager::PipeOutputManager()
 }
 
 PipeOutputManager::PipeOutputManager(bool fEnableNativeLogging) :
+    BaseOutputManager(fEnableNativeLogging),
     m_hErrReadPipe(INVALID_HANDLE_VALUE),
     m_hErrWritePipe(INVALID_HANDLE_VALUE),
     m_hErrThread(nullptr),
-    m_dwStdErrReadTotal(0),
-    m_disposed(FALSE),
-    m_fEnableNativeRedirection(fEnableNativeLogging),
-    stdoutWrapper(nullptr),
-    stderrWrapper(nullptr)
+    m_numBytesReadTotal(0)
 {
-    InitializeSRWLock(&m_srwLock);
 }
 
 PipeOutputManager::~PipeOutputManager()
@@ -37,7 +35,7 @@ PipeOutputManager::~PipeOutputManager()
 // Start redirecting stdout and stderr into a pipe
 // Continuously read the pipe on a background thread
 // until Stop is called.
-HRESULT PipeOutputManager::Start()
+void PipeOutputManager::Start()
 {
     SECURITY_ATTRIBUTES     saAttr = { 0 };
     HANDLE                  hStdErrReadPipe;
@@ -50,17 +48,17 @@ HRESULT PipeOutputManager::Start()
         // ERROR_ACCESS_DENIED means there is a console already present.
         if (GetLastError() != ERROR_ACCESS_DENIED)
         {
-            RETURN_LAST_ERROR();
+            THROW_LAST_ERROR();
         }
     }
 
-    RETURN_LAST_ERROR_IF(!CreatePipe(&hStdErrReadPipe, &hStdErrWritePipe, &saAttr, 0 /*nSize*/));
+    THROW_LAST_ERROR_IF(!CreatePipe(&hStdErrReadPipe, &hStdErrWritePipe, &saAttr, 0 /*nSize*/));
 
     m_hErrReadPipe = hStdErrReadPipe;
     m_hErrWritePipe = hStdErrWritePipe;
 
-    stdoutWrapper = std::make_unique<StdWrapper>(stdout, STD_OUTPUT_HANDLE, hStdErrWritePipe, m_fEnableNativeRedirection);
-    stderrWrapper = std::make_unique<StdWrapper>(stderr, STD_ERROR_HANDLE, hStdErrWritePipe, m_fEnableNativeRedirection);
+    stdoutWrapper = std::make_unique<StdWrapper>(stdout, STD_OUTPUT_HANDLE, hStdErrWritePipe, m_enableNativeRedirection);
+    stderrWrapper = std::make_unique<StdWrapper>(stderr, STD_ERROR_HANDLE, hStdErrWritePipe, m_enableNativeRedirection);
 
     LOG_IF_FAILED(stdoutWrapper->StartRedirection());
     LOG_IF_FAILED(stderrWrapper->StartRedirection());
@@ -74,9 +72,7 @@ HRESULT PipeOutputManager::Start()
         0,          // default creation flags
         nullptr);      // receive thread identifier
 
-    RETURN_LAST_ERROR_IF_NULL(m_hErrThread);
-
-    return S_OK;
+    THROW_LAST_ERROR_IF_NULL(m_hErrThread);
 }
 
 // Stop redirecting stdout and stderr into a pipe
@@ -84,21 +80,20 @@ HRESULT PipeOutputManager::Start()
 // and prints any output that was captured in the pipe.
 // If more than 30Kb was written to the pipe, that output will
 // be thrown away.
-HRESULT PipeOutputManager::Stop()
+void PipeOutputManager::Stop()
 {
     DWORD    dwThreadStatus = 0;
-    STRA     straStdOutput;
 
     if (m_disposed)
     {
-        return S_OK;
+        return;
     }
 
     SRWExclusiveLock lock(m_srwLock);
 
     if (m_disposed)
     {
-        return S_OK;
+        return;
     }
 
     m_disposed = true;
@@ -108,7 +103,7 @@ HRESULT PipeOutputManager::Stop()
     if (m_hErrWritePipe != INVALID_HANDLE_VALUE)
     {
         // Flush the pipe writer before closing to capture all output
-        RETURN_LAST_ERROR_IF(!FlushFileBuffers(m_hErrWritePipe));
+        THROW_LAST_ERROR_IF(!FlushFileBuffers(m_hErrWritePipe));
         CloseHandle(m_hErrWritePipe);
         m_hErrWritePipe = INVALID_HANDLE_VALUE;
     }
@@ -163,33 +158,22 @@ HRESULT PipeOutputManager::Stop()
 
     // If we captured any output, relog it to the original stdout
     // Useful for the IIS Express scenario as it is running with stdout and stderr
-    if (GetStdOutContent(&straStdOutput))
+    m_stdOutContent = to_wide_string(std::string(m_pipeContents, m_numBytesReadTotal), GetConsoleOutputCP());
+
+    if (!m_stdOutContent.empty())
     {
         // printf will fail in in full IIS
-        if (printf(straStdOutput.QueryStr()) != -1)
+        if (wprintf(m_stdOutContent.c_str()) != -1)
         {
             // Need to flush contents for the new stdout and stderr
             _flushall();
         }
     }
-
-    return S_OK;
 }
 
-bool PipeOutputManager::GetStdOutContent(STRA* straStdOutput)
+std::wstring PipeOutputManager::GetStdOutContent()
 {
-    bool fLogged = false;
-
-    // TODO consider returning the file contents rather than copying.
-    if (m_dwStdErrReadTotal > 0)
-    {
-        if (SUCCEEDED(straStdOutput->Copy(m_pzFileContents, m_dwStdErrReadTotal)))
-        {
-            fLogged = TRUE;
-        }
-    }
-
-    return fLogged;
+    return m_stdOutContent;
 }
 
 void
@@ -211,13 +195,13 @@ PipeOutputManager::ReadStdErrHandleInternal()
     {
         // Fill a maximum of MAX_PIPE_READ_SIZE into a buffer.
         if (ReadFile(m_hErrReadPipe,
-            &m_pzFileContents[m_dwStdErrReadTotal],
-            MAX_PIPE_READ_SIZE - m_dwStdErrReadTotal,
+            &m_pipeContents[m_numBytesReadTotal],
+            MAX_PIPE_READ_SIZE - m_numBytesReadTotal,
             &dwNumBytesRead,
             nullptr))
         {
-            m_dwStdErrReadTotal += dwNumBytesRead;
-            if (m_dwStdErrReadTotal >= MAX_PIPE_READ_SIZE)
+            m_numBytesReadTotal += dwNumBytesRead;
+            if (m_numBytesReadTotal >= MAX_PIPE_READ_SIZE)
             {
                 break;
             }

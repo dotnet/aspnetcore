@@ -15,6 +15,7 @@
 #include "ConfigurationLoadException.h"
 #include "WebConfigConfigurationSource.h"
 #include "ModuleHelpers.h"
+#include "BaseOutputManager.h"
 
 const PCWSTR HandlerResolver::s_pwzAspnetcoreInProcessRequestHandlerName = L"aspnetcorev2_inprocess.dll";
 const PCWSTR HandlerResolver::s_pwzAspnetcoreOutOfProcessRequestHandlerName = L"aspnetcorev2_outofprocess.dll";
@@ -54,7 +55,7 @@ HandlerResolver::LoadRequestHandlerAssembly(const IHttpApplication &pApplication
         if (pConfiguration.QueryHostingModel() == APP_HOSTING_MODEL::HOSTING_IN_PROCESS)
         {
             std::unique_ptr<HOSTFXR_OPTIONS> options;
-            std::unique_ptr<IOutputManager> outputManager;
+            std::unique_ptr<BaseOutputManager> outputManager;
 
             RETURN_IF_FAILED(HOSTFXR_OPTIONS::Create(
                 L"",
@@ -72,28 +73,21 @@ HandlerResolver::LoadRequestHandlerAssembly(const IHttpApplication &pApplication
                 pApplication.GetApplicationPhysicalPath(),
                 outputManager));
 
-            outputManager->Start();
+            outputManager->TryStartRedirection();
 
             hr = FindNativeAssemblyFromHostfxr(*options.get(), pstrHandlerDllName, handlerDllPath);
-            outputManager->Stop();
+
+            outputManager->TryStopRedirection();
 
             if (FAILED(hr) && m_hHostFxrDll != nullptr)
             {
-                STRA content;
-                STRU struStdMsg;
-
-                outputManager->GetStdOutContent(&content);
-                if (content.QueryCCH() > 0)
-                {
-                    struStdMsg.CopyA(content.QueryStr());
-                }
+                auto output = outputManager->GetStdOutContent();
 
                 EventLog::Error(
                     ASPNETCORE_EVENT_GENERAL_ERROR,
                     ASPNETCORE_EVENT_INPROCESS_RH_ERROR_MSG,
                     handlerDllPath.empty()? s_pwzAspnetcoreInProcessRequestHandlerName : handlerDllPath.c_str(),
-                    struStdMsg.QueryStr());
-
+                    output.c_str());
             }
         }
         else

@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "IOutputManager.h"
+#include "BaseOutputManager.h"
 
 class LoggingHelpers
 {
@@ -16,7 +16,7 @@ public:
         bool fEnableNativeLogging,
         PCWSTR pwzStdOutFileName,
         PCWSTR pwzApplicationPath,
-        std::unique_ptr<IOutputManager>& outputManager
+        std::unique_ptr<BaseOutputManager>& outputManager
     );
 };
 

@@ -6,12 +6,6 @@
 #include <memory>
 #include "irequesthandler.h"
 
-enum APPLICATION_STATUS
-{
-    RUNNING,
-    RECYCLED,
-};
-
 struct APPLICATION_PARAMETER
 {
     LPCSTR pzName;
@@ -29,10 +23,6 @@ public:
     ~IAPPLICATION() = 0 { };
 
     virtual
-    APPLICATION_STATUS
-    QueryStatus() = 0;
-
-    virtual
     VOID
     ReferenceApplication() = 0;
 
@@ -42,7 +32,7 @@ public:
 
     virtual
     HRESULT
-    CreateHandler(
+    TryCreateHandler(
         _In_  IHttpContext       *pHttpContext,
         _Outptr_ IREQUEST_HANDLER  **pRequestHandler) = 0;
 };

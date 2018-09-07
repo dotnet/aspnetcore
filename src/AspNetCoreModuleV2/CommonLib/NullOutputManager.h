@@ -5,7 +5,7 @@
 
 #include "stdafx.h"
 
-class NullOutputManager : public IOutputManager
+class NullOutputManager : public BaseOutputManager
 {
 public:
 
@@ -13,19 +13,17 @@ public:
 
     ~NullOutputManager() = default;
 
-    HRESULT Start()
+    void Start()
     {
-        return S_OK;
     }
 
-    HRESULT Stop()
+    void Stop()
     {
-        return S_OK;
     }
 
-    bool GetStdOutContent(STRA*)
+    std::wstring GetStdOutContent()
     {
-        return false;
+        return L"";
     }
 };
 
