@@ -1308,6 +1308,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
                 new DefaultObjectPoolProvider().Create(new UriBuilderContextPooledObjectPolicy()),
                 RoutePatternFactory.Parse(template),
                 defaults,
+                requiredKeys: defaults.Keys,
                 parameterPolicyFactory);
 
             // Act

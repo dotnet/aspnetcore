@@ -44,6 +44,13 @@ namespace Microsoft.AspNetCore.Routing.LinkGeneration
         }
 
         [Benchmark(Baseline = true)]
+        public void Baseline()
+        {
+            var url = $"/repos/{_lookUpValues["owner"]}/{_lookUpValues["repo"]}/issues/comments/{_lookUpValues["commentId"]}";
+            AssertUrl("/repos/aspnet/routing/issues/comments/20202", url);
+        }
+
+        [Benchmark]
         public void TreeRouter()
         {
             var virtualPathData = _treeRouter.GetVirtualPath(new VirtualPathContext(

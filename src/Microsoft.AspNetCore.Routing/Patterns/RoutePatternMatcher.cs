@@ -193,10 +193,14 @@ namespace Microsoft.AspNetCore.Routing
             // Copy all remaining default values to the route data
             foreach (var kvp in Defaults)
             {
+#if RVD_TryAdd
+                values.TryAdd(kvp.Key, kvp.Value);
+#else
                 if (!values.ContainsKey(kvp.Key))
                 {
                     values.Add(kvp.Key, kvp.Value);
                 }
+#endif
             }
 
             return true;

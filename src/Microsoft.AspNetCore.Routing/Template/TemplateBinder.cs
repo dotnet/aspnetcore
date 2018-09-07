@@ -6,6 +6,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Internal;
@@ -18,11 +20,17 @@ namespace Microsoft.AspNetCore.Routing.Template
     {
         private readonly UrlEncoder _urlEncoder;
         private readonly ObjectPool<UriBuildingContext> _pool;
+        private readonly ParameterPolicyFactory _parameterPolicyFactory;
 
         private readonly RouteValueDictionary _defaults;
-        private readonly ParameterPolicyFactory _parameterPolicyFactory;
-        private readonly RouteValueDictionary _filters;
+        private readonly KeyValuePair<string, object>[] _filters;
         private readonly RoutePattern _pattern;
+        private readonly string[] _requiredKeys;
+
+        // A pre-allocated template for the 'known' route values that this template binder uses.
+        //
+        // We always make a copy of this and operate on the copy, so that we don't mutate shared state.
+        private readonly KeyValuePair<string, object>[] _slots;
 
         /// <summary>
         /// Creates a new instance of <see cref="TemplateBinder"/>.
@@ -36,7 +44,7 @@ namespace Microsoft.AspNetCore.Routing.Template
             ObjectPool<UriBuildingContext> pool,
             RouteTemplate template,
             RouteValueDictionary defaults)
-            : this(urlEncoder, pool, template?.ToRoutePattern(), defaults, parameterPolicyFactory: null)
+            : this(urlEncoder, pool, template?.ToRoutePattern(), defaults, requiredKeys: null, parameterPolicyFactory: null)
         {
         }
 
@@ -46,13 +54,15 @@ namespace Microsoft.AspNetCore.Routing.Template
         /// <param name="urlEncoder">The <see cref="UrlEncoder"/>.</param>
         /// <param name="pool">The <see cref="ObjectPool{T}"/>.</param>
         /// <param name="pattern">The <see cref="RoutePattern"/> to bind values to.</param>
-        /// <param name="defaults">The default values for <paramref name="pattern"/>.</param>
+        /// <param name="defaults">The default values for <paramref name="pattern"/>. Optional.</param>
+        /// <param name="requiredKeys">Keys used to determine if the ambient values apply. Optional.</param>
         /// <param name="parameterPolicyFactory">The <see cref="ParameterPolicyFactory"/>.</param>
         public TemplateBinder(
             UrlEncoder urlEncoder,
             ObjectPool<UriBuildingContext> pool,
             RoutePattern pattern,
             RouteValueDictionary defaults,
+            IEnumerable<string> requiredKeys,
             ParameterPolicyFactory parameterPolicyFactory)
         {
             if (urlEncoder == null)
@@ -75,33 +85,68 @@ namespace Microsoft.AspNetCore.Routing.Template
             _pattern = pattern;
             _defaults = defaults;
             _parameterPolicyFactory = parameterPolicyFactory;
+            _requiredKeys = requiredKeys?.ToArray() ?? Array.Empty<string>();
+
+            for (var i = 0; i < _requiredKeys.Length; i++)
+            {
+                var requiredKey = _requiredKeys[i];
+                if (_pattern.GetParameter(requiredKey) != null)
+                {
+                    throw new InvalidOperationException(
+                        $"The parameter {requiredKey} can not be used as a required key since it appears as " +
+                        $"a parameter in the route pattern.");
+                }
+            }
 
             // Any default that doesn't have a corresponding parameter is a 'filter' and if a value
             // is provided for that 'filter' it must match the value in defaults.
-            _filters = new RouteValueDictionary(_defaults);
+            var filters = new RouteValueDictionary(_defaults);
             foreach (var parameter in _pattern.Parameters)
             {
-                _filters.Remove(parameter.Name);
+                filters.Remove(parameter.Name);
             }
+
+            _filters = filters.ToArray();
+            
+            _slots = AssignSlots(_pattern, _filters);
         }
 
         // Step 1: Get the list of values we're going to try to use to match and generate this URI
         public TemplateValuesResult GetValues(RouteValueDictionary ambientValues, RouteValueDictionary values)
         {
-            return GetValues(ambientValues: ambientValues, explicitValues: values, requiredKeys: null);
-        }
+            // Make a new copy of the slots array, we'll use this as 'scratch' space
+            // and then the RVD will take ownership of it.
+            var slots = new KeyValuePair<string, object>[_slots.Length];
+            Array.Copy(_slots, 0, slots, 0, slots.Length);
 
-        internal TemplateValuesResult GetValues(
-            RouteValueDictionary ambientValues,
-            RouteValueDictionary explicitValues,
-            IEnumerable<string> requiredKeys)
-        {
-            var context = new TemplateBindingContext(_defaults);
+            // Keeping track of the number of 'values' and 'ambient values' we've processed can be used to avoid doing
+            // some expensive 'merge' operations later.
+            var valueProcessedCount = 0;
+            var ambientValueProcessedCount = 0;
 
-            var canCopyParameterAmbientValues = true;
+            // Start by copying all of the values out of the 'values' and into the slots. There's no success
+            // case where we *don't* use all of the 'values' so there's no reason not to do this up front
+            // to avoid visiting the values dictionary again and again.
+            for (var i = 0; i < slots.Length; i++)
+            {
+                var key = slots[i].Key;
+                if (values.TryGetValue(key, out var value))
+                {
+                    // We will need to know later if the value in the 'values' was an null value.
+                    // This affects how we process ambient values. Since the 'slots' are initialized
+                    // with null values, we use the null-object-pattern to track 'explicit null', which means that
+                    // null means omitted.
+                    value = IsRoutePartNonEmpty(value) ? value : SentinullValue.Instance;
+                    slots[i] = new KeyValuePair<string, object>(key, value);
 
-            // In case a route template is not parameterized, we do not know what the required parameters are, so look
-            // at required values of an endpoint to get the key names and then use them to decide if ambient values
+                    // Track the count of processed values - this allows a fast path later.
+                    valueProcessedCount++;
+                }
+            }
+
+            // In Endpoint Routing, patterns can have logical parameters that appear 'to the left' of
+            // the route template. This governs whether or not the template can be selected (they act like
+            // filters), and whether the remaining ambient values should be used.
             // should be used.
             // For example, in case of MVC it flattens out a route template like below
             //  {controller}/{action}/{id?}
@@ -110,52 +155,198 @@ namespace Microsoft.AspNetCore.Routing.Template
             //  defaults: new { controller = "Products", action = "Index" },
             //  requiredValues: new { controller = "Products", action = "Index" }
             // In the above example, "controller" and "action" are no longer parameters.
-            if (requiredKeys != null)
+            var copyAmbientValues = ambientValues != null;
+            if (copyAmbientValues)
             {
-                canCopyParameterAmbientValues = CanCopyParameterAmbientValues(
-                    ambientValues: ambientValues,
-                    explicitValues: explicitValues,
-                    requiredKeys);
+                var requiredKeys = _requiredKeys;
+                for (var i = 0; i < requiredKeys.Length; i++)
+                {
+                    // For each required key, the values and ambient values need to have the same value.
+                    var key = requiredKeys[i];
+                    var hasExplicitValue = values.TryGetValue(key, out var value);
+
+                    if (ambientValues == null || !ambientValues.TryGetValue(key, out var ambientValue))
+                    {
+                        ambientValue = null;
+                    }
+                    else
+                    {
+                        // Track the count of processed ambient values - this allows a fast path later.
+                        ambientValueProcessedCount++;
+                    }
+
+                    if (hasExplicitValue)
+                    {
+                        // Note that we don't increment valueProcessedCount here. We expect required values
+                        // to also be filters, which are tracked when we populate 'slots'.
+                        if (!RoutePartsEqual(value, ambientValue))
+                        {
+                            copyAmbientValues = false;
+                            break;
+                        }
+                    }
+                }
             }
 
-            if (canCopyParameterAmbientValues)
+            // We can now process the rest of the parameters (from left to right) and copy the ambient
+            // values as long as the conditions are met.
+            //
+            // Find out which entries in the URI are valid for the URI we want to generate.
+            // If the URI had ordered parameters a="1", b="2", c="3" and the new values
+            // specified that b="9", then we need to invalidate everything after it. The new
+            // values should then be a="1", b="9", c=<no value>.
+            //
+            // We also handle the case where a parameter is optional but has no value - we shouldn't
+            // accept additional parameters that appear *after* that parameter.
+            var parameters = _pattern.Parameters;
+            var parameterCount = _pattern.Parameters.Count;
+            for (var i = 0; i < parameterCount; i++)
             {
-                // Copy ambient values when no explicit values are provided
-                CopyParameterAmbientValues(
-                    ambientValues: ambientValues,
-                    explicitValues: explicitValues,
-                    context);
-            }
+                var key = slots[i].Key;
+                var value = slots[i].Value;
 
-            // Add all remaining new values to the list of values we will use for URI generation
-            CopyNonParamaterExplicitValues(explicitValues, context);
+                // Whether or not the value was explicitly provided is signficant when comparing
+                // ambient values. Remember that we're using a special sentinel value so that we
+                // can tell the difference between an omitted value and an explicitly specified null.
+                var hasExplicitValue = value != null;
 
-            // Accept all remaining default values if they match a required parameter
-            CopyParameterDefaultValues(context);
+                var hasAmbientValue = false;
+                var ambientValue = (object)null;
 
-            if (!AllRequiredParametersHaveValue(context))
-            {
-                return null;
+                var parameter = parameters[i];
+
+                if (copyAmbientValues)
+                {
+                    hasAmbientValue = ambientValues != null && ambientValues.TryGetValue(key, out ambientValue);
+                    if (hasAmbientValue)
+                    {
+                        // Track the count of processed ambient values - this allows a fast path later.
+                        ambientValueProcessedCount++;
+                    }
+
+                    if (hasExplicitValue && hasAmbientValue && !RoutePartsEqual(ambientValue, value))
+                    {
+                        // Stop copying current values when we find one that doesn't match
+                        copyAmbientValues = false;
+                    }
+
+                    if (!hasExplicitValue &&
+                        !hasAmbientValue &&
+                        _defaults?.ContainsKey(parameter.Name) != true)
+                    {
+                        // This is an unsatisfied parameter value and there are no defaults. We might still
+                        // be able to generate a URL but we should stop 'accepting' ambient values.
+                        //
+                        // This might be a case like:
+                        //  template: a/{b?}/{c?}
+                        //  ambient: { c = 17 }
+                        //  values: { }
+                        //
+                        // We can still generate a URL from this ("/a") but we shouldn't accept 'c' because
+                        // we can't use it.
+                        // 
+                        // In the example above we should fall into this block for 'b'.
+                        copyAmbientValues = false;
+                    }
+                }
+
+                // If the parameter is a match, add it to the list of values we will use for URI generation
+                if (hasExplicitValue && !ReferenceEquals(value, SentinullValue.Instance))
+                {
+                    // Already has a value in the list, do nothing
+                }
+                else if (copyAmbientValues && hasAmbientValue)
+                {
+                    slots[i] = new KeyValuePair<string, object>(key, ambientValue);
+                }
+                else if (parameter.IsOptional || parameter.IsCatchAll)
+                {
+                    // Value isn't needed for optional or catchall parameters - wipe out the key, so it 
+                    // will be omitted from the RVD.
+                    slots[i] = default;
+                }
+                else if (_defaults != null && _defaults.TryGetValue(parameter.Name, out var defaultValue))
+                {
+
+                    // Add the default value only if there isn't already a new value for it and
+                    // only if it actually has a default value.
+                    slots[i] = new KeyValuePair<string, object>(key, defaultValue);
+                }
+                else
+                {
+                    // If we get here, this parameter needs a value, but doesn't have one. This is a
+                    // failure case.
+                    return null;
+                }
             }
 
             // Any default values that don't appear as parameters are treated like filters. Any new values
             // provided must match these defaults.
-            if (!FiltersMatch(explicitValues))
+            var filters = _filters;
+            for (var i = 0; i < filters.Length; i++)
             {
-                return null;
+                var key = filters[i].Key;
+                var value = slots[i + parameterCount].Value;
+
+                // We use a sentinel value here so we can track the different between omission and explicit null.
+                // 'real null' means that the value was omitted.
+                var hasExplictValue = value != null;
+                if (hasExplictValue)
+                {
+                    // If there is a non-parameterized value in the route and there is a
+                    // new value for it and it doesn't match, this route won't match.
+                    if (!RoutePartsEqual(value, filters[i].Value))
+                    {
+                        return null;
+                    }
+                }
+                else
+                {
+                    // If no value was provided, then blank out this slot so that it doesn't show up in accepted values.
+                    slots[i + parameterCount] = default;
+                }
             }
 
-            // Add any ambient values that don't match parameters - they need to be visible to constraints
-            // but they will ignored by link generation.
-            var combinedValues = new RouteValueDictionary(context.AcceptedValues);
-            CopyNonParameterAmbientValues(
-               ambientValues: ambientValues,
-               combinedValues: combinedValues,
-               context);
+            // At this point we've captured all of the 'known' route values, but we have't
+            // handled an extra route values that were provided in 'values'. These all
+            // need to be included in the accepted values.
+            var acceptedValues = RouteValueDictionary.FromArray(slots);
+
+            if (valueProcessedCount < values.Count)
+            {
+                // There are some values in 'value' that are unaccounted for, merge them into
+                // the dictionary.
+                foreach (var kvp in values)
+                {
+                    if (!_defaults.ContainsKey(kvp.Key))
+                    {
+#if RVD_TryAdd
+                        acceptedValues.TryAdd(kvp.Key, kvp.Value);
+#else
+                        if (!acceptedValues.ContainsKey(kvp.Key))
+                        {
+                            acceptedValues.Add(kvp.Key, kvp.Value);
+                        }
+#endif
+                    }
+                }
+            }
+
+            // Currently this copy is required because BindValues will mutate the accepted values :(
+            var combinedValues = new RouteValueDictionary(acceptedValues);
+            if (ambientValueProcessedCount < (ambientValues?.Count ?? 0))
+            {
+                // Add any ambient values that don't match parameters - they need to be visible to constraints
+                // but they will ignored by link generation.
+                CopyNonParameterAmbientValues(
+                   ambientValues: ambientValues,
+                   acceptedValues: acceptedValues,
+                   combinedValues: combinedValues);
+            }
 
             return new TemplateValuesResult()
             {
-                AcceptedValues = context.AcceptedValues,
+                AcceptedValues = acceptedValues,
                 CombinedValues = combinedValues,
             };
         }
@@ -362,8 +553,8 @@ namespace Microsoft.AspNetCore.Routing.Template
         /// <returns>True if the object are equal, otherwise false.</returns>
         public static bool RoutePartsEqual(object a, object b)
         {
-            var sa = a as string;
-            var sb = b as string;
+            var sa = a as string ?? (ReferenceEquals(SentinullValue.Instance, a) ? string.Empty : null);
+            var sb = b as string ?? (ReferenceEquals(SentinullValue.Instance, b) ? string.Empty : null);
 
             // In case of strings, consider empty and null the same.
             // Since null cannot tell us the type, consider it to be a string if the other value is a string.
@@ -391,190 +582,31 @@ namespace Microsoft.AspNetCore.Routing.Template
             }
         }
 
-        private static bool IsRoutePartNonEmpty(object routePart)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static bool IsRoutePartNonEmpty(object part)
         {
-            var routePartString = routePart as string;
-            if (routePartString == null)
+            if (part == null)
             {
-                return routePart != null;
+                return false;
             }
-            else
+
+            if (ReferenceEquals(SentinullValue.Instance, part))
             {
-                return routePartString.Length > 0;
+                return false;
             }
-        }
 
-        private bool CanCopyParameterAmbientValues(
-            RouteValueDictionary ambientValues,
-            RouteValueDictionary explicitValues,
-            IEnumerable<string> requiredKeys)
-        {
-            foreach (var keyName in requiredKeys)
+            if (part is string stringPart && stringPart.Length == 0)
             {
-                if (!explicitValues.TryGetValue(keyName, out var explicitValue))
-                {
-                    continue;
-                }
-
-                object ambientValue = null;
-                var hasAmbientValue = ambientValues != null &&
-                    ambientValues.TryGetValue(keyName, out ambientValue);
-
-                // This indicates an explicit value was provided whose key does not exist in ambient values
-                // Example: Link from controller-action to a page or vice versa.
-                if (!hasAmbientValue)
-                {
-                    return false;
-                }
-
-                if (!RoutePartsEqual(ambientValue, explicitValue))
-                {
-                    return false;
-                }
+                return false;
             }
-            return true;
-        }
 
-        private void CopyParameterAmbientValues(
-            RouteValueDictionary ambientValues,
-            RouteValueDictionary explicitValues,
-            TemplateBindingContext context)
-        {
-            // Find out which entries in the URI are valid for the URI we want to generate.
-            // If the URI had ordered parameters a="1", b="2", c="3" and the new values
-            // specified that b="9", then we need to invalidate everything after it. The new
-            // values should then be a="1", b="9", c=<no value>.
-            //
-            // We also handle the case where a parameter is optional but has no value - we shouldn't
-            // accept additional parameters that appear *after* that parameter.
-
-            for (var i = 0; i < _pattern.Parameters.Count; i++)
-            {
-                var parameter = _pattern.Parameters[i];
-
-                // If it's a parameter subsegment, examine the current value to see if it matches the new value
-                var parameterName = parameter.Name;
-
-                var hasExplicitValue = explicitValues.TryGetValue(parameterName, out var explicitValue);
-
-                object ambientValue = null;
-                var hasAmbientValue = ambientValues != null &&
-                    ambientValues.TryGetValue(parameterName, out ambientValue);
-
-                if (hasExplicitValue && hasAmbientValue && !RoutePartsEqual(ambientValue, explicitValue))
-                {
-                    // Stop copying current values when we find one that doesn't match
-                    break;
-                }
-
-                if (!hasExplicitValue &&
-                    !hasAmbientValue &&
-                    _defaults?.ContainsKey(parameter.Name) != true)
-                {
-                    // This is an unsatisfied parameter value and there are no defaults. We might still
-                    // be able to generate a URL but we should stop 'accepting' ambient values.
-                    //
-                    // This might be a case like:
-                    //  template: a/{b?}/{c?}
-                    //  ambient: { c = 17 }
-                    //  values: { }
-                    //
-                    // We can still generate a URL from this ("/a") but we shouldn't accept 'c' because
-                    // we can't use it.
-                    // 
-                    // In the example above we should fall into this block for 'b'.
-                    break;
-                }
-
-                // If the parameter is a match, add it to the list of values we will use for URI generation
-                if (hasExplicitValue)
-                {
-                    if (IsRoutePartNonEmpty(explicitValue))
-                    {
-                        context.Accept(parameterName, explicitValue);
-                    }
-                }
-                else if (hasAmbientValue)
-                {
-                    context.Accept(parameterName, ambientValue);
-                }
-            }
-        }
-
-        private void CopyNonParamaterExplicitValues(RouteValueDictionary explicitValues, TemplateBindingContext context)
-        {
-            foreach (var kvp in explicitValues)
-            {
-                if (IsRoutePartNonEmpty(kvp.Value))
-                {
-                    context.Accept(kvp.Key, kvp.Value);
-                }
-            }
-        }
-
-        private void CopyParameterDefaultValues(TemplateBindingContext context)
-        {
-            for (var i = 0; i < _pattern.Parameters.Count; i++)
-            {
-                var parameter = _pattern.Parameters[i];
-                if (parameter.IsOptional || parameter.IsCatchAll)
-                {
-                    continue;
-                }
-
-                if (context.NeedsValue(parameter.Name))
-                {
-                    // Add the default value only if there isn't already a new value for it and
-                    // only if it actually has a default value, which we determine based on whether
-                    // the parameter value is required.
-                    context.AcceptDefault(parameter.Name);
-                }
-            }
-        }
-
-        private bool AllRequiredParametersHaveValue(TemplateBindingContext context)
-        {
-            for (var i = 0; i < _pattern.Parameters.Count; i++)
-            {
-                var parameter = _pattern.Parameters[i];
-                if (parameter.IsOptional || parameter.IsCatchAll)
-                {
-                    continue;
-                }
-
-                if (!context.AcceptedValues.ContainsKey(parameter.Name))
-                {
-                    // We don't have a value for this parameter, so we can't generate a url.
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        private bool FiltersMatch(RouteValueDictionary explicitValues)
-        {
-            foreach (var filter in _filters)
-            {
-                var parameter = _pattern.GetParameter(filter.Key);
-                if (parameter != null)
-                {
-                    continue;
-                }
-
-                if (explicitValues.TryGetValue(filter.Key, out var value) && !RoutePartsEqual(value, filter.Value))
-                {
-                    // If there is a non-parameterized value in the route and there is a
-                    // new value for it and it doesn't match, this route won't match.
-                    return false;
-                }
-            }
             return true;
         }
 
         private void CopyNonParameterAmbientValues(
             RouteValueDictionary ambientValues,
-            RouteValueDictionary combinedValues,
-            TemplateBindingContext context)
+            RouteValueDictionary acceptedValues,
+            RouteValueDictionary combinedValues)
         {
             if (ambientValues == null)
             {
@@ -586,7 +618,7 @@ namespace Microsoft.AspNetCore.Routing.Template
                 if (IsRoutePartNonEmpty(kvp.Value))
                 {
                     var parameter = _pattern.GetParameter(kvp.Key);
-                    if (parameter == null && !context.AcceptedValues.ContainsKey(kvp.Key))
+                    if (parameter == null && !acceptedValues.ContainsKey(kvp.Key))
                     {
                         combinedValues.Add(kvp.Key, kvp.Value);
                     }
@@ -594,51 +626,34 @@ namespace Microsoft.AspNetCore.Routing.Template
             }
         }
 
-        [DebuggerDisplay("{DebuggerToString(),nq}")]
-        private struct TemplateBindingContext
+        private static KeyValuePair<string, object>[] AssignSlots(RoutePattern pattern, KeyValuePair<string, object>[] filters)
         {
-            private readonly RouteValueDictionary _defaults;
-            private readonly RouteValueDictionary _acceptedValues;
+            var slots = new KeyValuePair<string, object>[pattern.Parameters.Count + filters.Length];
 
-            public TemplateBindingContext(RouteValueDictionary defaults)
+            for (var i = 0; i < pattern.Parameters.Count; i++)
             {
-                _defaults = defaults;
-
-                _acceptedValues = new RouteValueDictionary();
+                slots[i] = new KeyValuePair<string, object>(pattern.Parameters[i].Name, null);
             }
 
-            public RouteValueDictionary AcceptedValues
+            for (var i = 0; i < filters.Length; i++)
             {
-                get { return _acceptedValues; }
+                slots[i + pattern.Parameters.Count] = new KeyValuePair<string, object>(filters[i].Key, null);
             }
 
-            public void Accept(string key, object value)
+            return slots;
+        }
+
+        // This represents an 'explicit null' in the slots array. 
+        [DebuggerDisplay("explicit null")]
+        private class SentinullValue
+        {
+            public static object Instance = new SentinullValue();
+
+            private SentinullValue()
             {
-                if (!_acceptedValues.ContainsKey(key))
-                {
-                    _acceptedValues.Add(key, value);
-                }
             }
 
-            public void AcceptDefault(string key)
-            {
-                Debug.Assert(!_acceptedValues.ContainsKey(key));
-
-                if (_defaults != null && _defaults.TryGetValue(key, out var value))
-                {
-                    _acceptedValues.Add(key, value);
-                }
-            }
-
-            public bool NeedsValue(string key)
-            {
-                return !_acceptedValues.ContainsKey(key);
-            }
-
-            private string DebuggerToString()
-            {
-                return string.Format("{{Accepted: '{0}'}}", string.Join(", ", _acceptedValues.Keys));
-            }
+            public override string ToString() => string.Empty;
         }
     }
 }

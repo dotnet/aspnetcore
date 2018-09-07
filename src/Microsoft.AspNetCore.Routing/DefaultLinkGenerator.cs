@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -29,8 +30,15 @@ namespace Microsoft.AspNetCore.Routing
         // Used when the user didn't specify something more global.
         private readonly LinkOptions _globalLinkOptions;
 
+        // Caches TemplateBinder instances
+        private readonly DataSourceDependentCache<ConcurrentDictionary<RouteEndpoint, TemplateBinder>> _cache;
+
+        // Used to initialize TemplateBinder instances
+        private readonly Func<RouteEndpoint, TemplateBinder> _createTemplateBinder;
+
         public DefaultLinkGenerator(
             ParameterPolicyFactory parameterPolicyFactory,
+            CompositeEndpointDataSource dataSource,
             ObjectPool<UriBuildingContext> uriBuildingContextPool,
             IOptions<RouteOptions> routeOptions,
             ILogger<DefaultLinkGenerator> logger,
@@ -40,6 +48,18 @@ namespace Microsoft.AspNetCore.Routing
             _uriBuildingContextPool = uriBuildingContextPool;
             _logger = logger;
             _serviceProvider = serviceProvider;
+
+            // We cache TemplateBinder instances per-Endpoint for performance, but we want to wipe out
+            // that cache is the endpoints change so that we don't allow unbounded memory growth.
+            _cache = new DataSourceDependentCache<ConcurrentDictionary<RouteEndpoint, TemplateBinder>>(dataSource, (_) =>
+            {
+                // We don't eagerly fill this cache because there's no real reason to. Unlike URL matching, we don't
+                // need to build a big data structure up front to be correct.
+                return new ConcurrentDictionary<RouteEndpoint, TemplateBinder>();
+            });
+
+            // Cached to avoid per-call allocation of a delegate on lookup.
+            _createTemplateBinder = CreateTemplateBinder;
 
             _globalLinkOptions = new LinkOptions()
             {
@@ -258,6 +278,20 @@ namespace Microsoft.AspNetCore.Routing
             return null;
         }
 
+        private TemplateBinder CreateTemplateBinder(RouteEndpoint endpoint)
+        {
+            return new TemplateBinder(
+                UrlEncoder.Default,
+                _uriBuildingContextPool,
+                endpoint.RoutePattern,
+                new RouteValueDictionary(endpoint.RoutePattern.Defaults),
+                endpoint.Metadata.GetMetadata<IRouteValuesAddressMetadata>()?.RequiredValues.Keys,
+                _parameterPolicyFactory);
+        }
+
+        // Internal for testing
+        internal TemplateBinder GetTemplateBinder(RouteEndpoint endpoint) => _cache.EnsureInitialized().GetOrAdd(endpoint, _createTemplateBinder);
+
         // Internal for testing
         internal bool TryProcessTemplate(
             HttpContext httpContext,
@@ -267,18 +301,9 @@ namespace Microsoft.AspNetCore.Routing
             LinkOptions options,
             out (PathString path, QueryString query) result)
         {
-            var templateBinder = new TemplateBinder(
-                UrlEncoder.Default,
-                _uriBuildingContextPool,
-                endpoint.RoutePattern,
-                new RouteValueDictionary(endpoint.RoutePattern.Defaults),
-				_parameterPolicyFactory);
+            var templateBinder = GetTemplateBinder(endpoint);
 
-            var routeValuesAddressMetadata = endpoint.Metadata.GetMetadata<IRouteValuesAddressMetadata>();
-            var templateValuesResult = templateBinder.GetValues(
-                ambientValues: ambientValues,
-                explicitValues: explicitValues,
-                requiredKeys: routeValuesAddressMetadata?.RequiredValues.Keys);
+            var templateValuesResult = templateBinder.GetValues(ambientValues, explicitValues);
             if (templateValuesResult == null)
             {
                 // We're missing one of the required values for this route.
