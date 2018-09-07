@@ -9,13 +9,5 @@
     <PackageVersion Condition="'$(IsFinalBuild)' == 'true' AND '$(VersionSuffix)' != 'rtm' ">$(VersionPrefix)-$(VersionSuffix)-final</PackageVersion>
     <VersionSuffix Condition="'$(VersionSuffix)' != '' And '$(FeatureBranchVersionSuffix)' != ''">$(FeatureBranchVersionPrefix)$(VersionSuffix)-$([System.Text.RegularExpressions.Regex]::Replace('$(FeatureBranchVersionSuffix)', '[^\w-]', '-'))</VersionSuffix>
     <VersionSuffix Condition="'$(VersionSuffix)' != '' And '$(BuildNumber)' != ''">$(VersionSuffix)-$(BuildNumber)</VersionSuffix>
-
-    <ExperimentalVersionPrefix>0.2.0</ExperimentalVersionPrefix>
-    <ExperimentalVersionSuffix>preview3</ExperimentalVersionSuffix>
-
-    <ExperimentalPackageVersion Condition="'$(IsFinalBuild)' == 'true' AND '$(ExperimentalVersionSuffix)' == 'rtm' ">$(ExperimentalVersionPrefix)</ExperimentalPackageVersion>
-    <ExperimentalPackageVersion Condition="'$(IsFinalBuild)' == 'true' AND '$(ExperimentalVersionSuffix)' != 'rtm' ">$(ExperimentalVersionPrefix)-$(ExperimentalVersionSuffix)-final</ExperimentalPackageVersion>
-    <ExperimentalVersionSuffix Condition="'$(ExperimentalVersionSuffix)' != '' And '$(FeatureBranchVersionSuffix)' != ''">$(FeatureBranchVersionPrefix)$(ExperimentalVersionSuffix)-$([System.Text.RegularExpressions.Regex]::Replace('$(FeatureBranchVersionSuffix)', '[^\w-]', '-'))</ExperimentalVersionSuffix>
-    <ExperimentalVersionSuffix Condition="'$(ExperimentalVersionSuffix)' != '' And '$(BuildNumber)' != ''">$(ExperimentalVersionSuffix)-$(BuildNumber)</ExperimentalVersionSuffix>
   </PropertyGroup>
 </Project>
