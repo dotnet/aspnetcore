@@ -18,7 +18,7 @@ public class Subscription {
 
     public void unsubscribe() {
         List<ActionBase> actions = this.handlers.get(target);
-        if (actions != null){
+        if (actions != null) {
             actions.remove(action);
         }
     }

@@ -31,4 +31,3 @@ public class CallbackMap {
         handlers.remove(key);
     }
 }
-

@@ -17,7 +17,7 @@ public class ConsoleLogger implements Logger {
 
     @Override
     public void log(LogLevel logLevel, String message) {
-        if(logLevel.value >= this.logLevel.value){
+        if (logLevel.value >= this.logLevel.value) {
             String timeStamp = dateFormat.format(new Date());
             message = String.format("[%s] [%s] %s", timeStamp, logLevel, message);
             switch (logLevel) {

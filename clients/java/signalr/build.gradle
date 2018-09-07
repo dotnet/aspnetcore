@@ -1,6 +1,7 @@
 plugins {
     id 'java'
     id 'maven'
+    id "com.diffplug.gradle.spotless" version "3.14.0"
 }
 
 group 'com.microsoft.aspnet'
@@ -19,6 +20,25 @@ dependencies {
     implementation "org.java-websocket:Java-WebSocket:1.3.8"
     implementation 'com.google.code.gson:gson:2.8.5'
     implementation 'com.squareup.okhttp3:okhttp:3.11.0'
+}
+
+spotless {
+    java {
+        licenseHeader '// Copyright (c) .NET Foundation. All rights reserved.\n' +
+                '// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.\n\n' // License header
+
+        importOrder 'java', 'javax', 'org', 'com', 'com.diffplug', ''	// A sequence of package names
+
+        replace      'Not enough space after if', 'if(', 'if ('
+        replace      'Not enough space after )', '){', ') {'
+        replace      'Not enough space after for', 'for(', 'for ('
+        replace      'Not enough space after while', 'while (', 'while ('
+        replace      'Not enough space after switch', 'switch(', 'switch ('
+        replaceRegex 'Too much space after if', 'if +\\(', 'if ('
+        trimTrailingWhitespace()
+        indentWithSpaces(4)
+        removeUnusedImports() // removes any unused imports
+    }
 }
 
 task sourceJar(type: Jar) {

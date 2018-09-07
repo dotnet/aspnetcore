@@ -25,4 +25,3 @@ public interface HubProtocol {
      */
     String writeMessage(HubMessage message);
 }
-
