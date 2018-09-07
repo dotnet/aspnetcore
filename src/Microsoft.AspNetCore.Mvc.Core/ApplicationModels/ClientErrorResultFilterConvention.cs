@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                 return;
             }
 
-            
+
             action.Filters.Add(_filterFactory);
         }
 

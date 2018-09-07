@@ -387,7 +387,7 @@ Environment.NewLine + "int b";
             // Arrange
             var actionName = nameof(ParameterBindingController.ComplexTypeModelWithCancellationToken);
 
-            // Use the default set of ModelMetadataProviders so we get metadata details for CancellationToken. 
+            // Use the default set of ModelMetadataProviders so we get metadata details for CancellationToken.
             var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
             var context = GetContext(typeof(ParameterBindingController), modelMetadataProvider);
             var controllerModel = Assert.Single(context.Result.Controllers);
@@ -750,7 +750,7 @@ Environment.NewLine + "int b";
         }
 
         private static ActionModel GetActionModel(
-            Type controllerType, 
+            Type controllerType,
             string actionName,
             IModelMetadataProvider modelMetadataProvider = null)
         {

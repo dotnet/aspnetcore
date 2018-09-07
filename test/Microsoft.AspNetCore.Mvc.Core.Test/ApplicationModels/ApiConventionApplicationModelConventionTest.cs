@@ -16,38 +16,6 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
     public class ApiConventionApplicationModelConventionTest
     {
         [Fact]
-        public void Apply_DoesNotAddConventionItem_IfActionHasProducesResponseTypeAttribute()
-        {
-            // Arrange
-            var actionModel = GetActionModel(nameof(TestController.Delete));
-            actionModel.Filters.Add(new ProducesResponseTypeAttribute(200));
-
-            var convention = GetConvention();
-
-            // Act
-            convention.Apply(actionModel);
-
-            // Assert
-            Assert.DoesNotContain(typeof(ApiConventionResult), actionModel.Properties.Keys);
-        }
-
-        [Fact]
-        public void Apply_DoesNotAddConventionItem_IfActionHasProducesAttribute()
-        {
-            // Arrange
-            var actionModel = GetActionModel(nameof(TestController.Delete));
-            actionModel.Filters.Add(new ProducesAttribute(typeof(object)));
-
-            var convention = GetConvention();
-
-            // Act
-            convention.Apply(actionModel);
-
-            // Assert
-            Assert.DoesNotContain(typeof(ApiConventionResult), actionModel.Properties.Keys);
-        }
-
-        [Fact]
         public void Apply_DoesNotAddConventionItem_IfNoConventionMatches()
         {
             // Arrange

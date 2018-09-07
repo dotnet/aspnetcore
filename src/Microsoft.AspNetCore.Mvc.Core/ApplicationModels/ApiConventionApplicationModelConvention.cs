@@ -54,12 +54,6 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 
         private static void DiscoverApiConvention(ActionModel action)
         {
-            if (action.Filters.OfType<IApiResponseMetadataProvider>().Any())
-            {
-                // If an action already has providers, don't discover any from conventions.
-                return;
-            }
-
             var controller = action.Controller;
             var apiConventionAttributes = controller.Attributes.OfType<ApiConventionTypeAttribute>().ToArray();
             if (apiConventionAttributes.Length == 0)

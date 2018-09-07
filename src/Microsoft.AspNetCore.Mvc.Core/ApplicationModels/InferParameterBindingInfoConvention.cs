@@ -11,7 +11,7 @@ using Resources = Microsoft.AspNetCore.Mvc.Core.Resources;
 namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 {
     /// <summary>
-    /// A <see cref="IControllerModelConvention"/> that 
+    /// A <see cref="IControllerModelConvention"/> that
     /// <list type="bullet">
     /// <item>infers binding sources for parameters</item>
     /// <item><see cref="BindingInfo.BinderModelName"/> for bound properties and parameters.</item>
