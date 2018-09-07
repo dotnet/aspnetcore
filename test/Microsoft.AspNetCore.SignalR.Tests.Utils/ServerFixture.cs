@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             _lifetime.ApplicationStopped.Register(() =>
             {
                 _logger.LogInformation("Test server shut down");
-                _logToken.Dispose();
+                _logToken?.Dispose();
             });
         }
 
