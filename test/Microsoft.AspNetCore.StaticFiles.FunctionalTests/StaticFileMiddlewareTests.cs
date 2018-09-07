@@ -13,22 +13,23 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting.Common;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.StaticFiles
 {
-    public class StaticFileMiddlewareTests
+    public class StaticFileMiddlewareTests : LoggedTest
     {
         [Fact]
         public async Task ReturnsNotFoundWithoutWwwroot()
         {
             var builder = new WebHostBuilder()
+                .ConfigureServices(services => services.AddSingleton(LoggerFactory))
                 .UseKestrel()
                 .Configure(app => app.UseStaticFiles());
 
@@ -47,6 +48,7 @@ namespace Microsoft.AspNetCore.StaticFiles
         public async Task FoundFile_LastModifiedTrimsSeconds()
         {
             var builder = new WebHostBuilder()
+                .ConfigureServices(services => services.AddSingleton(LoggerFactory))
                 .UseKestrel()
                 .UseWebRoot(AppContext.BaseDirectory)
                 .Configure(app => app.UseStaticFiles());
@@ -87,6 +89,7 @@ namespace Microsoft.AspNetCore.StaticFiles
         private async Task FoundFile_Served(string baseUrl, string baseDir, string requestUrl)
         {
             var builder = new WebHostBuilder()
+                .ConfigureServices(services => services.AddSingleton(LoggerFactory))
                 .UseKestrel()
                 .UseWebRoot(Path.Combine(AppContext.BaseDirectory, baseDir))
                 .Configure(app => app.UseStaticFiles(new StaticFileOptions()
@@ -124,6 +127,7 @@ namespace Microsoft.AspNetCore.StaticFiles
         public async Task HeadFile_HeadersButNotBodyServed(string baseUrl, string baseDir, string requestUrl)
         {
             var builder = new WebHostBuilder()
+                .ConfigureServices(services => services.AddSingleton(LoggerFactory))
                 .UseKestrel()
                 .UseWebRoot(Path.Combine(AppContext.BaseDirectory, baseDir))
                 .Configure(app => app.UseStaticFiles(new StaticFileOptions()
@@ -181,6 +185,7 @@ namespace Microsoft.AspNetCore.StaticFiles
             var responseComplete = new ManualResetEvent(false);
             Exception exception = null;
             var builder = new WebHostBuilder()
+                .ConfigureServices(services => services.AddSingleton(LoggerFactory))
                 .UseWebRoot(Path.Combine(AppContext.BaseDirectory))
                 .Configure(app =>
                 {
