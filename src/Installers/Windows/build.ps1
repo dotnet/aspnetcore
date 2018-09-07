@@ -2,7 +2,7 @@
 # This script requires internal-only access to the code which generates ANCM installers.
 #
 
-#requires -version 4
+#requires -version 5
 [cmdletbinding()]
 param(
     [string]$Configuration = 'Debug',
