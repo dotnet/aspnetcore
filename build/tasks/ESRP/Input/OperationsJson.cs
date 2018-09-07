@@ -30,7 +30,7 @@ namespace Microsoft.Build.OOB.ESRP
             {
                 _operationsJson.TryGetValue(key, out var value);
 
-                return value;
+                return value ?? throw new InvalidOperationException($"Could not find operations for keycode {key}");
             }
         }
 
