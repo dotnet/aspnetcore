@@ -197,6 +197,7 @@
       "Releases_22xPublic_CoherencePackageCacheLinux",
       "Releases_22xPublic_Publish",
       "Releases_22xPublic_PbTestWindowsServer2012",
+      "Releases_22xPublic_RuntimeStoreInstallers",
       // Maintenance builds
       "Maintenance_Backup"
     ]
