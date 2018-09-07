@@ -1,12 +1,15 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-import com.microsoft.aspnet.signalr.NullLogger;
-import com.microsoft.aspnet.signalr.Transport;
-import com.microsoft.aspnet.signalr.WebSocketTransport;
+package com.microsoft.aspnet.signalr.test;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+
+import com.microsoft.aspnet.signalr.NullLogger;
+import com.microsoft.aspnet.signalr.Transport;
+import com.microsoft.aspnet.signalr.WebSocketTransport;
 
 public class WebSocketTransportTest {
 

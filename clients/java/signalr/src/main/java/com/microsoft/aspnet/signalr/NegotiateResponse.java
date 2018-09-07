@@ -3,12 +3,12 @@
 
 package com.microsoft.aspnet.signalr;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-
-import java.util.HashSet;
-import java.util.Set;
 
 public class NegotiateResponse {
     private String connectionId;
@@ -49,4 +49,3 @@ public class NegotiateResponse {
         return accessToken;
     }
 }
-

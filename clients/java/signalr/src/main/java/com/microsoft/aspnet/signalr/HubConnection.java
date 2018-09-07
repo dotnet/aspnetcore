@@ -3,14 +3,14 @@
 
 package com.microsoft.aspnet.signalr;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
+
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
 
 public class HubConnection {
     private String url;

@@ -3,13 +3,13 @@
 
 package com.microsoft.aspnet.signalr;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class JsonHubProtocol implements HubProtocol {
     private final JsonParser jsonParser = new JsonParser();
@@ -57,7 +57,7 @@ public class JsonHubProtocol implements HubProtocol {
                     break;
                 case CLOSE:
                     CloseMessage closeMessage;
-                    if (jsonMessage.has("error")){
+                    if (jsonMessage.has("error")) {
                         String error = jsonMessage.get("error").getAsString();
                         closeMessage = new CloseMessage(error);
                     } else {

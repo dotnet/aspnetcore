@@ -9,12 +9,12 @@ public class HandshakeProtocol {
     public static Gson gson = new Gson();
     private static final String RECORD_SEPARATOR = "\u001e";
 
-    public static String createHandshakeRequestMessage(HandshakeRequestMessage message){
+    public static String createHandshakeRequestMessage(HandshakeRequestMessage message) {
         // The handshake request is always in the JSON format
         return gson.toJson(message) + RECORD_SEPARATOR;
     }
 
-    public static HandshakeResponseMessage parseHandshakeResponse(String message){
+    public static HandshakeResponseMessage parseHandshakeResponse(String message) {
         return gson.fromJson(message, HandshakeResponseMessage.class);
     }
 }

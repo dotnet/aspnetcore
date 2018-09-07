@@ -1,12 +1,15 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+package com.microsoft.aspnet.signalr.test;
+
+import static org.junit.Assert.*;
+
+import org.junit.Test;
+
 import com.microsoft.aspnet.signalr.HandshakeProtocol;
 import com.microsoft.aspnet.signalr.HandshakeRequestMessage;
 import com.microsoft.aspnet.signalr.HandshakeResponseMessage;
-import org.junit.Test;
-
-import static org.junit.Assert.*;
 
 public class HandshakeProtocolTest {
 

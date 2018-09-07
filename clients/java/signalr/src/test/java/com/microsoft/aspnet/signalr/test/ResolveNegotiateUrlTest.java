@@ -1,15 +1,18 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-import com.microsoft.aspnet.signalr.Negotiate;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+package com.microsoft.aspnet.signalr.test;
+
+import static org.junit.Assert.assertEquals;
 
 import java.util.Arrays;
 import java.util.Collection;
 
-import static org.junit.Assert.assertEquals;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+
+import com.microsoft.aspnet.signalr.Negotiate;
 
 @RunWith(Parameterized.class)
 public class ResolveNegotiateUrlTest {

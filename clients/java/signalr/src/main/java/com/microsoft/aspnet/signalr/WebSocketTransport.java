@@ -5,7 +5,6 @@ package com.microsoft.aspnet.signalr;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.HashMap;
 import java.util.Map;
 
 import org.java_websocket.client.WebSocketClient;
