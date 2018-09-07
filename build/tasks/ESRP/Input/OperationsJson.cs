@@ -1,26 +1,34 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Build.OOB.ESRP
 {
     public class OperationsJson
     {
-        private Dictionary<string, Operations[]> _operationsJson;
+        private readonly Dictionary<string, Operations[]> _operationsJson =  new Dictionary<string, Operations[]>(StringComparer.OrdinalIgnoreCase)
+        {
+            { "MicrosoftSN", MicrosoftSN },
+            { "MicrosoftSharedLibrariesSN", MicrosoftSharedLibrariesSN },
+            { "MicrosoftAuthentiCodeSha2", MicrosoftAuthentiCodeSha2 },
+            { "MicrosoftAuthentiCodeSha1Sha2", MicrosoftAuthentiCodeSha1Sha2 },
+            { "MicrosoftAuthentiCodeSha2HashSha1", MicrosoftAuthentiCodeSha2HashSha1 },
+            { "MicrosoftNuGet", MicrosoftNuGet },
+            { "MicrosoftOpc", MicrosoftOpc },
+            { "MicrosoftOpc2", MicrosoftOpc2 },
+            { "Microsoft3rdPartyAppComponent", Microsoft3rdPartyAppComponent },
+            { "Microsoft3rdPartyAppComponentDual", Microsoft3rdPartyAppComponentDual },
+            { "MicrosoftJava", MicrosoftJava },
+        };
 
-        public static readonly string DefaultOpusName = "Microsoft";
-        public static readonly string DefaultOpusInfo = "https://www.microsoft.com/";
+        public const string DefaultOpusName = "Microsoft";
+        public const string DefaultOpusInfo = "https://www.microsoft.com/";
 
         public Operations[] this[string key]
         {
             get
             {
-                if (_operationsJson == null)
-                {
-                    InitOperations();
-                }
-
-                Operations[] value = null;
-                _operationsJson.TryGetValue(key, out value);
+                _operationsJson.TryGetValue(key, out var value);
 
                 return value;
             }
@@ -30,29 +38,11 @@ namespace Microsoft.Build.OOB.ESRP
 
         private OperationsJson()
         {
-            InitOperations();
         }
 
         public bool ContainsKey(string key)
         {
             return _operationsJson.ContainsKey(key);
-        }
-
-        private void InitOperations()
-        {
-            _operationsJson = new Dictionary<string, Operations[]> {
-                { "MicrosoftSN", MicrosoftSN },
-                { "MicrosoftSharedLibrariesSN", MicrosoftSharedLibrariesSN },
-                { "MicrosoftAuthentiCodeSha2", MicrosoftAuthentiCodeSha2 },
-                { "MicrosoftAuthentiCodeSha1Sha2", MicrosoftAuthentiCodeSha1Sha2 },
-                { "MicrosoftAuthentiCodeSha2HashSha1", MicrosoftAuthentiCodeSha2HashSha1 },
-                { "MicrosoftNuGet", MicrosoftNuGet },
-                { "MicrosoftOpc", MicrosoftOpc },
-                { "MicrosoftOpc2", MicrosoftOpc2 },
-                { "Microsoft3rdPartyAppComponent", Microsoft3rdPartyAppComponent },
-                { "Microsoft3rdPartyAppComponentDual", Microsoft3rdPartyAppComponentDual },
-                { "MicrosoftJava", MicrosoftJava },
-            };
         }
 
         // Classic ID: 25, 67
