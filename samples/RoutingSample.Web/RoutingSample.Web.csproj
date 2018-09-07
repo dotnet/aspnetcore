@@ -10,6 +10,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="$(MicrosoftExtensionsLoggingConsolePackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Server.IISIntegration" Version="$(MicrosoftAspNetCoreServerIISIntegrationPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="$(MicrosoftAspNetCoreServerKestrelPackageVersion)" />
   </ItemGroup>

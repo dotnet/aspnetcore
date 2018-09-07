@@ -4,6 +4,7 @@
 using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace RoutingSample.Web
 {
@@ -59,7 +60,8 @@ namespace RoutingSample.Web
             return new WebHostBuilder()
                 .UseKestrel()
                 .UseIISIntegration()
-                .UseStartup(startupType);
+                .UseStartup(startupType)
+                .ConfigureLogging(l => l.AddConsole().SetMinimumLevel(LogLevel.Debug));
         }
     }
 }
