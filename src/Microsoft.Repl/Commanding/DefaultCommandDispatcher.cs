@@ -156,7 +156,7 @@ namespace Microsoft.Repl.Commanding
                 }
 
                 shellState.ConsoleManager.Error.WriteLine("No matching command found".Red().Bold());
-                shellState.ConsoleManager.Error.WriteLine("Execute 'help' to se available commands".Red().Bold());
+                shellState.ConsoleManager.Error.WriteLine("Execute 'help' to see available commands".Red().Bold());
             }
         }
 
