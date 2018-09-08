@@ -130,62 +130,10 @@ namespace Microsoft.AspNetCore.Testing
         public async Task ReceiveEnd(params string[] lines)
         {
             await Receive(lines).ConfigureAwait(false);
-            ShutdownSend();
             var ch = new char[128];
             var count = await _reader.ReadAsync(ch, 0, 128).TimeoutAfter(Timeout).ConfigureAwait(false);
             var text = new string(ch, 0, count);
             Assert.Equal("", text);
-        }
-
-        public async Task ReceiveForcedEnd(params string[] lines)
-        {
-            await Receive(lines).ConfigureAwait(false);
-
-            try
-            {
-                var ch = new char[128];
-                var count = await _reader.ReadAsync(ch, 0, 128).TimeoutAfter(Timeout).ConfigureAwait(false);
-                var text = new string(ch, 0, count);
-                Assert.Equal("", text);
-            }
-            catch (IOException)
-            {
-                // The server is forcefully closing the connection so an IOException:
-                // "Unable to read data from the transport connection: An existing connection was forcibly closed by the remote host."
-                // isn't guaranteed but not unexpected.
-            }
-        }
-
-        public async Task ReceiveStartsWith(string prefix, int maxLineLength = 1024)
-        {
-            var actual = new char[maxLineLength];
-            var offset = 0;
-
-            while (offset < maxLineLength)
-            {
-                // Read one char at a time so we don't read past the end of the line.
-                var task = _reader.ReadAsync(actual, offset, 1);
-                if (!Debugger.IsAttached)
-                {
-                    task = task.TimeoutAfter(Timeout);
-                }
-                var count = await task.ConfigureAwait(false);
-                if (count == 0)
-                {
-                    break;
-                }
-
-                Assert.True(count == 1);
-                offset++;
-
-                if (actual[offset - 1] == '\n')
-                {
-                    break;
-                }
-            }
-
-            var actualLine = new string(actual, 0, offset);
-            Assert.StartsWith(prefix, actualLine);
         }
 
         public async Task WaitForConnectionClose()

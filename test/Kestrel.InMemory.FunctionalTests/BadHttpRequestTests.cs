@@ -183,7 +183,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "GET /\x0D\0x0ALocation:http://www.contoso.com/ HTTP/1.1",
                         "Host:\r\n\r\n");
 
-                    await client.ReceiveStartsWith("HTTP/1.1 400");
+                    await client.Receive("HTTP/1.1 400");
                 }
             }
         }
@@ -225,7 +225,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 ""
             };
 
-            await connection.ReceiveForcedEnd(lines.Where(f => f != null).ToArray());
+            await connection.ReceiveEnd(lines.Where(f => f != null).ToArray());
         }
 
         public static TheoryData<string, string> InvalidRequestLineData

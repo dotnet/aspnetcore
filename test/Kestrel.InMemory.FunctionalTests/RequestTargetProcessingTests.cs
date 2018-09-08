@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "Host:",
                         "",
                         "");
-                    await connection.ReceiveEnd(
+                    await connection.Receive(
                         "HTTP/1.1 200 OK",
                         $"Date: {testContext.DateHeaderValue}",
                         "Content-Length: 11",
@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "Host:",
                         "",
                         "");
-                    await connection.ReceiveEnd(
+                    await connection.Receive(
                         "HTTP/1.1 200 OK",
                         $"Date: {testContext.DateHeaderValue}",
                         "Content-Length: 11",
@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         $"Host: {host}",
                         "",
                         "");
-                    await connection.ReceiveEnd(
+                    await connection.Receive(
                         "HTTP/1.1 200 OK",
                         $"Date: {testContext.DateHeaderValue}",
                         "Content-Length: 11",

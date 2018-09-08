@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
 using Microsoft.AspNetCore.Testing;
@@ -76,7 +77,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     await connection.Receive(
                         "HTTP/1.1 408 Request Timeout",
                         "");
-                    await connection.ReceiveForcedEnd(
+                    await connection.ReceiveEnd(
                         "Connection: close",
                         $"Date: {serviceContext.DateHeaderValue}",
                         "Content-Length: 0",
@@ -92,6 +93,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             // This test requires a real clock since we can't control when the drain timeout is set
             var serviceContext = new TestServiceContext(LoggerFactory);
             serviceContext.InitializeHeartbeat();
+
+            // Ensure there's still a constant date header value.
+            serviceContext.DateHeaderValueManager = new DateHeaderValueManager();
 
             var appRunningEvent = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
@@ -114,13 +118,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                     await appRunningEvent.Task.DefaultTimeout();
 
-                    await connection.Receive(
+                    // Disconnects after response completes due to the timeout
+                    await connection.ReceiveEnd(
                         "HTTP/1.1 200 OK",
-                        "");
-                    await connection.ReceiveStartsWith(
-                        "Date: ");
-                    // Disconnected due to the timeout
-                    await connection.ReceiveForcedEnd(
+                        $"Date: {serviceContext.DateHeaderValue}",
                         "Content-Length: 0",
                         "",
                         "");
@@ -188,7 +189,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     await connection.Receive(
                         "HTTP/1.1 200 OK",
                         "");
-                    await connection.ReceiveForcedEnd(
+                    await connection.ReceiveEnd(
                         $"Date: {serviceContext.DateHeaderValue}",
                         "Content-Length: 12",
                         "",

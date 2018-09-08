@@ -159,7 +159,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     "",
                     "");
 
-                await connection.ReceiveForcedEnd(
+                await connection.ReceiveEnd(
                     "HTTP/1.1 400 Bad Request",
                     "Connection: close",
                     $"Date: {server.Context.DateHeaderValue}",
@@ -205,7 +205,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     "Connection: Upgrade",
                     "",
                     "");
-                await connection.ReceiveForcedEnd(
+                await connection.ReceiveEnd(
                     "HTTP/1.1 400 Bad Request",
                     "Connection: close",
                     $"Date: {server.Context.DateHeaderValue}",

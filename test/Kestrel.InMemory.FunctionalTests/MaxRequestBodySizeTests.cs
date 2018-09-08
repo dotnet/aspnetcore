@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "Content-Length: " + (globalMaxRequestBodySize + 1),
                         "",
                         "");
-                    await connection.ReceiveForcedEnd(
+                    await connection.ReceiveEnd(
                         "HTTP/1.1 413 Payload Too Large",
                         "Connection: close",
                         $"Date: {server.Context.DateHeaderValue}",
@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "Content-Length: " + (perRequestMaxRequestBodySize + 1),
                         "",
                         "");
-                    await connection.ReceiveForcedEnd(
+                    await connection.ReceiveEnd(
                         "HTTP/1.1 413 Payload Too Large",
                         "Connection: close",
                         $"Date: {server.Context.DateHeaderValue}",
@@ -157,7 +157,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "Content-Length: 1",
                         "",
                         "");
-                    await connection.ReceiveForcedEnd(
+                    await connection.ReceiveEnd(
                         "HTTP/1.1 200 OK",
                         $"Date: {server.Context.DateHeaderValue}",
                         "Content-Length: 0",
@@ -246,7 +246,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         $"Date: {server.Context.DateHeaderValue}",
                         "",
                         "");
-                    await connection.ReceiveForcedEnd();
+                    await connection.ReceiveEnd();
                 }
             }
 
@@ -279,7 +279,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "Content-Length: " + (new KestrelServerLimits().MaxRequestBodySize + 1),
                         "",
                         "");
-                    await connection.ReceiveForcedEnd(
+                    await connection.ReceiveEnd(
                         "HTTP/1.1 413 Payload Too Large",
                         "Connection: close",
                         $"Date: {server.Context.DateHeaderValue}",
@@ -326,7 +326,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "Transfer-Encoding: chunked",
                         "",
                         chunkedPayload);
-                    await connection.ReceiveForcedEnd(
+                    await connection.ReceiveEnd(
                         "HTTP/1.1 413 Payload Too Large",
                         "Connection: close",
                         $"Date: {server.Context.DateHeaderValue}",
@@ -435,7 +435,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "Transfer-Encoding: chunked",
                         "",
                         chunkedPayload);
-                    await connection.ReceiveForcedEnd(
+                    await connection.ReceiveEnd(
                         "HTTP/1.1 200 OK",
                         $"Date: {server.Context.DateHeaderValue}",
                         "Content-Length: 0",
@@ -478,7 +478,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "Transfer-Encoding: chunked",
                         "",
                         "1\r\n");
-                    await connection.ReceiveForcedEnd(
+                    await connection.ReceiveEnd(
                         "HTTP/1.1 413 Payload Too Large",
                         "Connection: close",
                         $"Date: {server.Context.DateHeaderValue}",
