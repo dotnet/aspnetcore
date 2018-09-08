@@ -149,14 +149,20 @@ namespace Microsoft.AspNetCore.Testing
             Assert.Equal(expected, new string(actual, 0, offset));
         }
 
-        public async Task ReceiveEnd(params string[] lines)
+        public Task ReceiveEnd(params string[] lines)
+            => ReceiveEnd(false, lines);
+
+        public async Task ReceiveEnd(bool ignoreResponse, params string[] lines)
         {
             await Receive(lines).ConfigureAwait(false);
             _socket.Shutdown(SocketShutdown.Send);
             var ch = new char[128];
             var count = await _reader.ReadAsync(ch, 0, 128).TimeoutAfter(Timeout).ConfigureAwait(false);
-            var text = new string(ch, 0, count);
-            Assert.Equal("", text);
+            if (!ignoreResponse)
+            {
+                var text = new string(ch, 0, count);
+                Assert.Equal("", text);
+            }
         }
 
         public async Task ReceiveForcedEnd(params string[] lines)

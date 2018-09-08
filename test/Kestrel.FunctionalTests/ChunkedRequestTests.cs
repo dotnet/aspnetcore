@@ -678,7 +678,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                     connection.Socket.Shutdown(SocketShutdown.Send);
 
-                    await connection.ReceiveEnd();
+                    await connection.ReceiveEnd(ignoreResponse: true);
 
                     var badReqEx = await exTcs.Task.TimeoutAfter(TestConstants.DefaultTimeout);
                     Assert.Equal(RequestRejectionReason.UnexpectedEndOfRequestContent, badReqEx.Reason);
