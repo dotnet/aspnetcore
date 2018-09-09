@@ -60,6 +60,12 @@ namespace Microsoft.Extensions.DependencyInjection
             });
 
             //
+            // Endpoint Infrastructure
+            //
+            services.TryAddSingleton<EndpointDataSource, BuilderEndpointDataSource>();
+            services.TryAddSingleton<EndpointDataSourceBuilder, DefaultEndpointDataSourceBuilder>();
+
+            //
             // Default matcher implementation
             //
             services.TryAddSingleton<ParameterPolicyFactory, DefaultParameterPolicyFactory>();
