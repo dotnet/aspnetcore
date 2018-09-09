@@ -5,34 +5,34 @@
   <!-- This files is typically managed by automation. Execute 'run.ps1 upgrade deps' to update these variables to the last-known-good versions. -->
   <PropertyGroup Label="Package Versions">
     <BenchmarkDotNetPackageVersion>0.10.13</BenchmarkDotNetPackageVersion>
-    <InternalAspNetCoreAnalyzersPackageVersion>2.2.0-preview2-35143</InternalAspNetCoreAnalyzersPackageVersion>
-    <InternalAspNetCoreSdkPackageVersion>2.2.0-preview1-20180821.1</InternalAspNetCoreSdkPackageVersion>
+    <InternalAspNetCoreAnalyzersPackageVersion>2.2.0-preview3-35202</InternalAspNetCoreAnalyzersPackageVersion>
+    <InternalAspNetCoreSdkPackageVersion>2.2.0-preview1-20180907.8</InternalAspNetCoreSdkPackageVersion>
     <LibuvPackageVersion>1.10.0</LibuvPackageVersion>
-    <MicrosoftAspNetCoreAllPackageVersion>2.2.0-preview2-35143</MicrosoftAspNetCoreAllPackageVersion>
-    <MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>2.2.0-preview2-35143</MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>
-    <MicrosoftAspNetCoreCertificatesGenerationSourcesPackageVersion>2.2.0-preview2-35143</MicrosoftAspNetCoreCertificatesGenerationSourcesPackageVersion>
-    <MicrosoftAspNetCoreHostingAbstractionsPackageVersion>2.2.0-preview2-35143</MicrosoftAspNetCoreHostingAbstractionsPackageVersion>
-    <MicrosoftAspNetCoreHostingPackageVersion>2.2.0-preview2-35143</MicrosoftAspNetCoreHostingPackageVersion>
-    <MicrosoftAspNetCoreHttpAbstractionsPackageVersion>2.2.0-preview2-35143</MicrosoftAspNetCoreHttpAbstractionsPackageVersion>
-    <MicrosoftAspNetCoreHttpFeaturesPackageVersion>2.2.0-preview2-35143</MicrosoftAspNetCoreHttpFeaturesPackageVersion>
-    <MicrosoftAspNetCoreHttpPackageVersion>2.2.0-preview2-35143</MicrosoftAspNetCoreHttpPackageVersion>
-    <MicrosoftAspNetCoreTestingPackageVersion>2.2.0-preview2-35143</MicrosoftAspNetCoreTestingPackageVersion>
-    <MicrosoftAspNetCoreWebUtilitiesPackageVersion>2.2.0-preview2-35143</MicrosoftAspNetCoreWebUtilitiesPackageVersion>
-    <MicrosoftExtensionsActivatorUtilitiesSourcesPackageVersion>2.2.0-preview2-35143</MicrosoftExtensionsActivatorUtilitiesSourcesPackageVersion>
-    <MicrosoftExtensionsConfigurationBinderPackageVersion>2.2.0-preview2-35143</MicrosoftExtensionsConfigurationBinderPackageVersion>
-    <MicrosoftExtensionsConfigurationCommandLinePackageVersion>2.2.0-preview2-35143</MicrosoftExtensionsConfigurationCommandLinePackageVersion>
-    <MicrosoftExtensionsConfigurationJsonPackageVersion>2.2.0-preview2-35143</MicrosoftExtensionsConfigurationJsonPackageVersion>
-    <MicrosoftExtensionsDependencyInjectionPackageVersion>2.2.0-preview2-35143</MicrosoftExtensionsDependencyInjectionPackageVersion>
-    <MicrosoftExtensionsLoggingAbstractionsPackageVersion>2.2.0-preview2-35143</MicrosoftExtensionsLoggingAbstractionsPackageVersion>
-    <MicrosoftExtensionsLoggingConsolePackageVersion>2.2.0-preview2-35143</MicrosoftExtensionsLoggingConsolePackageVersion>
-    <MicrosoftExtensionsLoggingPackageVersion>2.2.0-preview2-35143</MicrosoftExtensionsLoggingPackageVersion>
-    <MicrosoftExtensionsLoggingTestingPackageVersion>2.2.0-preview2-35143</MicrosoftExtensionsLoggingTestingPackageVersion>
-    <MicrosoftExtensionsOptionsPackageVersion>2.2.0-preview2-35143</MicrosoftExtensionsOptionsPackageVersion>
+    <MicrosoftAspNetCoreAllPackageVersion>2.2.0-preview3-35202</MicrosoftAspNetCoreAllPackageVersion>
+    <MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>2.2.0-preview3-35202</MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>
+    <MicrosoftAspNetCoreCertificatesGenerationSourcesPackageVersion>2.2.0-preview3-35202</MicrosoftAspNetCoreCertificatesGenerationSourcesPackageVersion>
+    <MicrosoftAspNetCoreHostingAbstractionsPackageVersion>2.2.0-preview3-35202</MicrosoftAspNetCoreHostingAbstractionsPackageVersion>
+    <MicrosoftAspNetCoreHostingPackageVersion>2.2.0-preview3-35202</MicrosoftAspNetCoreHostingPackageVersion>
+    <MicrosoftAspNetCoreHttpAbstractionsPackageVersion>2.2.0-preview3-35202</MicrosoftAspNetCoreHttpAbstractionsPackageVersion>
+    <MicrosoftAspNetCoreHttpFeaturesPackageVersion>2.2.0-preview3-35202</MicrosoftAspNetCoreHttpFeaturesPackageVersion>
+    <MicrosoftAspNetCoreHttpPackageVersion>2.2.0-preview3-35202</MicrosoftAspNetCoreHttpPackageVersion>
+    <MicrosoftAspNetCoreTestingPackageVersion>2.2.0-preview3-35202</MicrosoftAspNetCoreTestingPackageVersion>
+    <MicrosoftAspNetCoreWebUtilitiesPackageVersion>2.2.0-preview3-35202</MicrosoftAspNetCoreWebUtilitiesPackageVersion>
+    <MicrosoftExtensionsActivatorUtilitiesSourcesPackageVersion>2.2.0-preview3-35202</MicrosoftExtensionsActivatorUtilitiesSourcesPackageVersion>
+    <MicrosoftExtensionsConfigurationBinderPackageVersion>2.2.0-preview3-35202</MicrosoftExtensionsConfigurationBinderPackageVersion>
+    <MicrosoftExtensionsConfigurationCommandLinePackageVersion>2.2.0-preview3-35202</MicrosoftExtensionsConfigurationCommandLinePackageVersion>
+    <MicrosoftExtensionsConfigurationJsonPackageVersion>2.2.0-preview3-35202</MicrosoftExtensionsConfigurationJsonPackageVersion>
+    <MicrosoftExtensionsDependencyInjectionPackageVersion>2.2.0-preview3-35202</MicrosoftExtensionsDependencyInjectionPackageVersion>
+    <MicrosoftExtensionsLoggingAbstractionsPackageVersion>2.2.0-preview3-35202</MicrosoftExtensionsLoggingAbstractionsPackageVersion>
+    <MicrosoftExtensionsLoggingConsolePackageVersion>2.2.0-preview3-35202</MicrosoftExtensionsLoggingConsolePackageVersion>
+    <MicrosoftExtensionsLoggingPackageVersion>2.2.0-preview3-35202</MicrosoftExtensionsLoggingPackageVersion>
+    <MicrosoftExtensionsLoggingTestingPackageVersion>2.2.0-preview3-35202</MicrosoftExtensionsLoggingTestingPackageVersion>
+    <MicrosoftExtensionsOptionsPackageVersion>2.2.0-preview3-35202</MicrosoftExtensionsOptionsPackageVersion>
     <MicrosoftInternalAspNetCoreH2SpecAllPackageVersion>2.1.1</MicrosoftInternalAspNetCoreH2SpecAllPackageVersion>
     <MicrosoftNETCoreApp20PackageVersion>2.0.9</MicrosoftNETCoreApp20PackageVersion>
-    <MicrosoftNETCoreApp21PackageVersion>2.1.2</MicrosoftNETCoreApp21PackageVersion>
-    <MicrosoftNETCoreApp22PackageVersion>2.2.0-preview1-26618-02</MicrosoftNETCoreApp22PackageVersion>
-    <MicrosoftNetHttpHeadersPackageVersion>2.2.0-preview2-35143</MicrosoftNetHttpHeadersPackageVersion>
+    <MicrosoftNETCoreApp21PackageVersion>2.1.3</MicrosoftNETCoreApp21PackageVersion>
+    <MicrosoftNETCoreApp22PackageVersion>2.2.0-preview2-26905-02</MicrosoftNETCoreApp22PackageVersion>
+    <MicrosoftNetHttpHeadersPackageVersion>2.2.0-preview3-35202</MicrosoftNetHttpHeadersPackageVersion>
     <MicrosoftNETTestSdkPackageVersion>15.6.1</MicrosoftNETTestSdkPackageVersion>
     <MoqPackageVersion>4.7.49</MoqPackageVersion>
     <NETStandardLibrary20PackageVersion>2.0.3</NETStandardLibrary20PackageVersion>
