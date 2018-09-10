@@ -12,9 +12,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         public const bool DefaultEnablePush = true;
         public const uint DefaultMaxConcurrentStreams = uint.MaxValue;
         public const uint DefaultInitialWindowSize = 65535;
-        public const uint DefaultMaxFrameSize = Http2Limits.MinAllowedMaxFrameSize;
+        public const uint DefaultMaxFrameSize = MinAllowedMaxFrameSize;
         public const uint DefaultMaxHeaderListSize = uint.MaxValue;
         public const uint MaxWindowSize = int.MaxValue;
+        internal const int MinAllowedMaxFrameSize = 16 * 1024;
+        internal const int MaxAllowedMaxFrameSize = 16 * 1024 * 1024 - 1;
 
         public uint HeaderTableSize { get; set; } = DefaultHeaderTableSize;
 
@@ -64,11 +66,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                         InitialWindowSize = value;
                         break;
                     case Http2SettingsParameter.SETTINGS_MAX_FRAME_SIZE:
-                        if (value < Http2Limits.MinAllowedMaxFrameSize || value > Http2Limits.MaxAllowedMaxFrameSize)
+                        if (value < MinAllowedMaxFrameSize || value > MaxAllowedMaxFrameSize)
                         {
                             throw new Http2SettingsParameterOutOfRangeException(Http2SettingsParameter.SETTINGS_MAX_FRAME_SIZE,
-                                lowerBound: Http2Limits.MinAllowedMaxFrameSize,
-                                upperBound: Http2Limits.MaxAllowedMaxFrameSize);
+                                lowerBound: MinAllowedMaxFrameSize,
+                                upperBound: MaxAllowedMaxFrameSize);
                         }
 
                         MaxFrameSize = value;

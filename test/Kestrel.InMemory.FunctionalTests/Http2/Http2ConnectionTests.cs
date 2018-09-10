@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         private static readonly byte[] _worldBytes = Encoding.ASCII.GetBytes("world");
         private static readonly byte[] _helloWorldBytes = Encoding.ASCII.GetBytes("hello, world");
         private static readonly byte[] _noData = new byte[0];
-        private static readonly byte[] _maxData = Encoding.ASCII.GetBytes(new string('a', Http2Limits.MinAllowedMaxFrameSize));
+        private static readonly byte[] _maxData = Encoding.ASCII.GetBytes(new string('a', Http2PeerSettings.MinAllowedMaxFrameSize));
 
         [Fact]
         public async Task Frame_Received_OverMaxSize_FrameError()
@@ -84,20 +84,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await InitializeConnectionAsync(_echoApplication);
 
             await StartStreamAsync(1, _browserRequestHeaders, endStream: false);
-            uint length = Http2Limits.MinAllowedMaxFrameSize + 1;
+            uint length = Http2PeerSettings.MinAllowedMaxFrameSize + 1;
             await SendDataAsync(1, new byte[length].AsSpan(), endStream: true);
 
             await WaitForConnectionErrorAsync<Http2ConnectionErrorException>(
                 ignoreNonGoAwayFrames: true,
                 expectedLastStreamId: 1,
                 expectedErrorCode: Http2ErrorCode.FRAME_SIZE_ERROR,
-                expectedErrorMessage: CoreStrings.FormatHttp2ErrorFrameOverLimit(length, Http2Limits.MinAllowedMaxFrameSize));
+                expectedErrorMessage: CoreStrings.FormatHttp2ErrorFrameOverLimit(length, Http2PeerSettings.MinAllowedMaxFrameSize));
         }
 
         [Fact]
         public async Task ServerSettings_ChangesRequestMaxFrameSize()
         {
-            var length = Http2Limits.MinAllowedMaxFrameSize + 10;
+            var length = Http2PeerSettings.MinAllowedMaxFrameSize + 10;
             _connectionContext.ServiceContext.ServerOptions.Limits.Http2.MaxFrameSize = length;
             _connection = new Http2Connection(_connectionContext);
 
@@ -112,11 +112,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 withStreamId: 1);
             // The client's settings is still defaulted to Http2PeerSettings.MinAllowedMaxFrameSize so the echo response will come back in two separate frames
             await ExpectAsync(Http2FrameType.DATA,
-                withLength: Http2Limits.MinAllowedMaxFrameSize,
+                withLength: Http2PeerSettings.MinAllowedMaxFrameSize,
                 withFlags: (byte)Http2DataFrameFlags.NONE,
                 withStreamId: 1);
             await ExpectAsync(Http2FrameType.DATA,
-                withLength: length - Http2Limits.MinAllowedMaxFrameSize,
+                withLength: length - Http2PeerSettings.MinAllowedMaxFrameSize,
                 withFlags: (byte)Http2DataFrameFlags.NONE,
                 withStreamId: 1);
             await ExpectAsync(Http2FrameType.DATA,
@@ -2139,7 +2139,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             await InitializeConnectionAsync(_noopApplication);
 
-            var frame = new Http2Frame(Http2Limits.MinAllowedMaxFrameSize);
+            var frame = new Http2Frame(Http2PeerSettings.MinAllowedMaxFrameSize);
             frame.PrepareSettings(Http2SettingsFrameFlags.ACK);
             await SendAsync(frame.Raw);
 
@@ -2262,7 +2262,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             // This includes the default response headers such as :status, etc
             var defaultResponseHeaderLength = 37;
-            var headerValueLength = Http2Limits.MinAllowedMaxFrameSize;
+            var headerValueLength = Http2PeerSettings.MinAllowedMaxFrameSize;
             // First byte is always 0
             // Second byte is the length of header name which is 1
             // Third byte is the header name which is A/B

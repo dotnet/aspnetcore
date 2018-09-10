@@ -13,11 +13,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
     {
         private int _maxStreamsPerConnection = 100;
         private int _headerTableSize = (int)Http2PeerSettings.DefaultHeaderTableSize;
-        private int _maxFrameSize = MinAllowedMaxFrameSize;
-
-        // These are limits defined by the RFC https://tools.ietf.org/html/rfc7540#section-4.2
-        public const int MinAllowedMaxFrameSize = 16 * 1024;
-        public const int MaxAllowedMaxFrameSize = 16 * 1024 * 1024 - 1;
+        private int _maxFrameSize = (int)Http2PeerSettings.DefaultMaxFrameSize;
 
         /// <summary>
         /// Limits the number of concurrent request streams per HTTP/2 connection. Excess streams will be refused.
@@ -42,7 +38,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// <summary>
         /// Limits the size of the header compression table, in octets, the HPACK decoder on the server can use.
         /// <para>
-        /// Defaults to 4096
+        /// Value must be greater than 0, defaults to 4096
         /// </para>
         /// </summary>
         public int HeaderTableSize
@@ -62,7 +58,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// <summary>
         /// Indicates the size of the largest frame payload that is allowed to be received, in octets. The size must be between 2^14 and 2^24-1.
         /// <para>
-        /// Defaults to 2^14 (16,384)
+        /// Value must be between 2^14 and 2^24, defaults to 2^14 (16,384)
         /// </para>
         /// </summary>
         public int MaxFrameSize
@@ -70,9 +66,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             get => _maxFrameSize;
             set
             {
-                if (value < MinAllowedMaxFrameSize || value > MaxAllowedMaxFrameSize)
+                if (value < Http2PeerSettings.MinAllowedMaxFrameSize || value > Http2PeerSettings.MaxAllowedMaxFrameSize)
                 {
-                    throw new ArgumentOutOfRangeException(nameof(value), value, CoreStrings.FormatArgumentOutOfRange(MinAllowedMaxFrameSize, MaxAllowedMaxFrameSize));
+                    throw new ArgumentOutOfRangeException(nameof(value), value, CoreStrings.FormatArgumentOutOfRange(Http2PeerSettings.MinAllowedMaxFrameSize, Http2PeerSettings.MaxAllowedMaxFrameSize));
                 }
 
                 _maxFrameSize = value;

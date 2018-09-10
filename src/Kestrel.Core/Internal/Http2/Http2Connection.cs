@@ -606,7 +606,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             return Task.CompletedTask;
         }
 
-        private async Task ProcessSettingsFrameAsync()
+        private Task ProcessSettingsFrameAsync()
         {
             if (_currentHeadersStream != null)
             {
@@ -625,7 +625,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorSettingsAckLengthNotZero, Http2ErrorCode.FRAME_SIZE_ERROR);
                 }
 
-                return;
+                return Task.CompletedTask;
             }
 
             if (_incomingFrame.PayloadLength % 6 != 0)
@@ -642,7 +642,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 _clientSettings.Update(_incomingFrame.GetSettings());
 
                 // Ack before we update the windows, they could send data immediately.
-                await _frameWriter.WriteSettingsAckAsync();
+                var ackTask =  _frameWriter.WriteSettingsAckAsync();
 
                 if (_clientSettings.MaxFrameSize != previousMaxFrameSize)
                 {
@@ -665,6 +665,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                         }
                     }
                 }
+
+                return ackTask;
             }
             catch (Http2SettingsParameterOutOfRangeException ex)
             {

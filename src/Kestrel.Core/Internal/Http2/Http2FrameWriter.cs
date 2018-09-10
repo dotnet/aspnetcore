@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         // Literal Header Field without Indexing - Indexed Name (Index 8 - :status)
         private static readonly byte[] _continueBytes = new byte[] { 0x08, 0x03, (byte)'1', (byte)'0', (byte)'0' };
 
-        private uint _maxFrameSize = Http2Limits.MinAllowedMaxFrameSize;
+        private uint _maxFrameSize = Http2PeerSettings.MinAllowedMaxFrameSize;
         private Http2Frame _outgoingFrame;
         private readonly object _writeLock = new object();
         private readonly HPackEncoder _hpackEncoder = new HPackEncoder();

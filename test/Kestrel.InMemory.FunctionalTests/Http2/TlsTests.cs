@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.Http2
 
         private async Task<Http2Frame> ReceiveFrameAsync(PipeReader reader)
         {
-            var frame = new Http2Frame(Http2Limits.MinAllowedMaxFrameSize);
+            var frame = new Http2Frame(Http2PeerSettings.MinAllowedMaxFrameSize);
 
             while (true)
             {
