@@ -179,6 +179,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             {
                 throw new XunitException($"The resource {baselineClassifiedSpansFileName} was not found.");
             }
+            else
+            {
+                var classifiedSpanBaseline = classifiedSpanFile.ReadAllText().Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+                ClassifiedSpanVerifier.Verify(root, filePath, classifiedSpanBaseline);
+            }
 
             // Verify tag helper spans
             var tagHelperSpanFile = TestFile.Create(baselineTagHelperSpansFileName, GetType().GetTypeInfo().Assembly);
