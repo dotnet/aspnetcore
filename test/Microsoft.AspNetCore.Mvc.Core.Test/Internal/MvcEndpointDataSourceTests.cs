@@ -711,8 +711,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             var dataSource = new MvcEndpointDataSource(
                 actionDescriptorCollectionProvider,
-                mvcEndpointInvokerFactory ?? new MvcEndpointInvokerFactory(new ActionInvokerFactory(Array.Empty<IActionInvokerProvider>())),
-                services.BuildServiceProvider());
+                mvcEndpointInvokerFactory ?? new MvcEndpointInvokerFactory(new ActionInvokerFactory(Array.Empty<IActionInvokerProvider>())));
 
             return dataSource;
         }

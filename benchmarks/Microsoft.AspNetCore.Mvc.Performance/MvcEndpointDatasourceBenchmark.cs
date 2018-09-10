@@ -110,8 +110,7 @@ namespace Microsoft.AspNetCore.Mvc.Performance
         {
             var dataSource = new MvcEndpointDataSource(
                 actionDescriptorCollectionProvider,
-                new MvcEndpointInvokerFactory(new ActionInvokerFactory(Array.Empty<IActionInvokerProvider>())),
-                new MockServiceProvider());
+                new MvcEndpointInvokerFactory(new ActionInvokerFactory(Array.Empty<IActionInvokerProvider>())));
 
             return dataSource;
         }
@@ -124,14 +123,6 @@ namespace Microsoft.AspNetCore.Mvc.Performance
             }
 
             public ActionDescriptorCollection ActionDescriptors { get; }
-        }
-
-        private class MockServiceProvider : IServiceProvider
-        {
-            public object GetService(Type serviceType)
-            {
-                throw new NotImplementedException();
-            }
         }
 
         private class MockParameterPolicyFactory : ParameterPolicyFactory
