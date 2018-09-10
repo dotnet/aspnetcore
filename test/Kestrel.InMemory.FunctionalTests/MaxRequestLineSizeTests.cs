@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 using (var connection = server.CreateConnection())
                 {
                     await connection.Send(request);
-                    await connection.ReceiveEnd(
+                    await connection.Receive(
                         "HTTP/1.1 200 OK",
                         $"Date: {server.Context.DateHeaderValue}",
                         "Transfer-Encoding: chunked",
@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 using (var connection = server.CreateConnection())
                 {
                     await connection.SendAll(requestLine);
-                    await connection.ReceiveForcedEnd(
+                    await connection.ReceiveEnd(
                         "HTTP/1.1 414 URI Too Long",
                         "Connection: close",
                         $"Date: {server.Context.DateHeaderValue}",

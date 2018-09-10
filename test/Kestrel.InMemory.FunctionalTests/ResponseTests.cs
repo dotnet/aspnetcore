@@ -340,7 +340,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "gg");
 
-                    await connection.ReceiveForcedEnd(
+                    await connection.ReceiveEnd(
                         "HTTP/1.1 200 OK",
                         $"Date: {server.Context.DateHeaderValue}",
                         "Content-Length: 0",
@@ -372,7 +372,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "Transfer-Encoding: chunked",
                         "",
                         "gg");
-                    await connection.ReceiveForcedEnd(
+                    await connection.ReceiveEnd(
                         "HTTP/1.1 200 OK",
                         $"Date: {server.Context.DateHeaderValue}",
                         "Content-Length: 0",
@@ -573,7 +573,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "Host:",
                         "",
                         "");
-                    await connection.ReceiveForcedEnd(
+                    await connection.ReceiveEnd(
                         $"HTTP/1.1 200 OK",
                         $"Date: {server.Context.DateHeaderValue}",
                         "Content-Length: 11",
@@ -611,7 +611,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "Host:",
                         "",
                         "");
-                    await connection.ReceiveForcedEnd(
+                    await connection.ReceiveEnd(
                         $"HTTP/1.1 500 Internal Server Error",
                         "Connection: close",
                         $"Date: {server.Context.DateHeaderValue}",
@@ -646,7 +646,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "Host:",
                         "",
                         "");
-                    await connection.ReceiveForcedEnd(
+                    await connection.ReceiveEnd(
                         $"HTTP/1.1 500 Internal Server Error",
                         "Connection: close",
                         $"Date: {server.Context.DateHeaderValue}",
@@ -1029,7 +1029,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                     flushed.SetResult(null);
 
-                    await connection.ReceiveEnd("hello, world");
+                    await connection.Receive("hello, world");
                 }
             }
         }
@@ -1093,7 +1093,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "Host:",
                         "",
                         "");
-                    await connection.ReceiveForcedEnd(
+                    await connection.ReceiveEnd(
                         "HTTP/1.1 200 OK",
                         "Connection: close",
                         $"Date: {server.Context.DateHeaderValue}",
@@ -1109,7 +1109,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "Connection: keep-alive",
                         "",
                         "");
-                    await connection.ReceiveForcedEnd(
+                    await connection.ReceiveEnd(
                         "HTTP/1.1 200 OK",
                         "Connection: close",
                         $"Date: {server.Context.DateHeaderValue}",
@@ -1139,7 +1139,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "Host:",
                         "",
                         "");
-                    await connection.ReceiveForcedEnd(
+                    await connection.ReceiveEnd(
                         "HTTP/1.1 200 OK",
                         "Connection: keep-alive",
                         $"Date: {server.Context.DateHeaderValue}",
@@ -1155,7 +1155,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "Connection: keep-alive",
                         "",
                         "");
-                    await connection.ReceiveForcedEnd(
+                    await connection.ReceiveEnd(
                         "HTTP/1.1 200 OK",
                         "Connection: keep-alive",
                         $"Date: {server.Context.DateHeaderValue}",
@@ -1199,7 +1199,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "Host:",
                         "",
                         "");
-                    await connection.ReceiveEnd(
+                    await connection.Receive(
                         "HTTP/1.1 200 OK",
                         $"Date: {server.Context.DateHeaderValue}",
                         $"Transfer-Encoding: {responseTransferEncoding}",
@@ -1436,7 +1436,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     // This will receive a success response because the server flushed the response
                     // before reading the malformed chunk header in the request, but then it will close
                     // the connection.
-                    await connection.ReceiveForcedEnd(
+                    await connection.ReceiveEnd(
                         "HTTP/1.1 200 OK",
                         $"Date: {server.Context.DateHeaderValue}",
                         "Content-Length: 0",
@@ -1548,7 +1548,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     // If 100 Continue sets HttpProtocol.HasResponseStarted to true,
                     // a success response will be produced before the server sees the
                     // bad chunk header above, making this test fail.
-                    await connection.ReceiveForcedEnd(
+                    await connection.ReceiveEnd(
                         "HTTP/1.1 400 Bad Request",
                         "Connection: close",
                         $"Date: {server.Context.DateHeaderValue}",
@@ -1650,7 +1650,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "Connection: keep-alive",
                         "",
                         "");
-                    await connection.ReceiveEnd(
+                    await connection.Receive(
                         "HTTP/1.1 200 OK",
                         $"Date: {testContext.DateHeaderValue}",
                         "Content-Length: 0",
@@ -1723,7 +1723,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "Host:",
                         "",
                         "");
-                    await connection.ReceiveEnd(
+                    await connection.Receive(
                         "HTTP/1.1 200 OK",
                         $"Date: {testContext.DateHeaderValue}",
                         "",
@@ -1769,7 +1769,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "Content-Length: 3",
                         "",
                         "200");
-                    await connection.ReceiveEnd(
+                    await connection.Receive(
                         "HTTP/1.1 204 No Content",
                         $"Date: {testContext.DateHeaderValue}",
                         "",
@@ -1809,7 +1809,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "Connection: Upgrade",
                         "",
                         "");
-                    await connection.ReceiveForcedEnd(
+                    await connection.ReceiveEnd(
                         "HTTP/1.1 101 Switching Protocols",
                         "Connection: Upgrade",
                         $"Date: {testContext.DateHeaderValue}",
@@ -1824,7 +1824,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "Connection: keep-alive, Upgrade",
                         "",
                         "");
-                    await connection.ReceiveForcedEnd(
+                    await connection.ReceiveEnd(
                         "HTTP/1.1 101 Switching Protocols",
                         "Connection: Upgrade",
                         $"Date: {testContext.DateHeaderValue}",
@@ -1866,7 +1866,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "Connection: close",
                         "",
                         "");
-                    await connection.ReceiveForcedEnd(
+                    await connection.ReceiveEnd(
                         "HTTP/1.1 500 Internal Server Error",
                         $"Date: {testContext.DateHeaderValue}",
                         "Content-Length: 0",
@@ -1923,7 +1923,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "Host:",
                         "",
                         "");
-                    await connection.ReceiveEnd(
+                    await connection.Receive(
                         "HTTP/1.1 500 Internal Server Error",
                         $"Date: {testContext.DateHeaderValue}",
                         "Content-Length: 0",
@@ -1977,7 +1977,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "Host:",
                         "",
                         "");
-                    await connection.ReceiveEnd(
+                    await connection.Receive(
                         "HTTP/1.1 200 OK",
                         $"Date: {testContext.DateHeaderValue}",
                         "Content-Length: 11",
@@ -2020,7 +2020,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "Host:",
                         "",
                         "");
-                    await connection.ReceiveForcedEnd(
+                    await connection.ReceiveEnd(
                         "HTTP/1.1 200 OK",
                         $"Date: {testContext.DateHeaderValue}",
                         "Content-Length: 11",
@@ -2061,7 +2061,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "Host:",
                         "",
                         "");
-                    await connection.ReceiveForcedEnd(
+                    await connection.ReceiveEnd(
                         "HTTP/1.1 200 OK",
                         $"Date: {testContext.DateHeaderValue}",
                         "Content-Length: 11",
@@ -2093,7 +2093,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "GET / HTTP/1.0",
                         "",
                         "");
-                    await connection.ReceiveForcedEnd(
+                    await connection.ReceiveEnd(
                         "HTTP/1.1 200 OK",
                         "Connection: close",
                         $"Date: {testContext.DateHeaderValue}",
@@ -2124,7 +2124,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "Content-Length: 1",
                         "",
                         "");
-                    await connection.ReceiveForcedEnd();
+                    await connection.ReceiveEnd();
                 }
             }
         }
@@ -2165,7 +2165,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "Host:",
                         "",
                         "");
-                    await connection.ReceiveEnd(
+                    await connection.Receive(
                         "HTTP/1.1 200 OK",
                         $"Date: {testContext.DateHeaderValue}",
                         "Content-Length: 0",
@@ -2214,7 +2214,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "Host:",
                         "",
                         "");
-                    await connection.ReceiveEnd(
+                    await connection.Receive(
                         "HTTP/1.1 200 OK",
                         $"Date: {testContext.DateHeaderValue}",
                         $"Content-Length: {response.Length}",
@@ -2265,7 +2265,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "Host:",
                         "",
                         "");
-                    await connection.ReceiveEnd(
+                    await connection.Receive(
                         "HTTP/1.1 200 OK",
                         $"Date: {testContext.DateHeaderValue}",
                         $"Content-Length: {response.Length}",
@@ -2461,7 +2461,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                         if (expectedClientStatusCode == HttpStatusCode.OK)
                         {
-                            await connection.ReceiveForcedEnd(
+                            await connection.ReceiveEnd(
                                 "HTTP/1.1 200 OK",
                                 $"Date: {server.Context.DateHeaderValue}",
                                 "Content-Length: 0",
@@ -2470,7 +2470,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         }
                         else
                         {
-                            await connection.ReceiveForcedEnd(
+                            await connection.ReceiveEnd(
                                 "HTTP/1.1 400 Bad Request",
                                 "Connection: close",
                                 $"Date: {server.Context.DateHeaderValue}",

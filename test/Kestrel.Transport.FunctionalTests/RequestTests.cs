@@ -174,6 +174,52 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         [Fact]
+        public async Task CanHandleMultipleConcurrentRequests()
+        {
+            var requestNumber = 0;
+            var ensureConcurrentReqeustTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            using (var server = new TestServer(async context =>
+            {
+                if (Interlocked.Increment(ref requestNumber) == 1)
+                {
+                    await ensureConcurrentReqeustTcs.Task.DefaultTimeout();
+                }
+                else
+                {
+                    ensureConcurrentReqeustTcs.SetResult(null);
+                }
+            }, new TestServiceContext(LoggerFactory)))
+            {
+                using (var connection1 = server.CreateConnection())
+                using (var connection2 = server.CreateConnection())
+                {
+                    await connection1.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "",
+                        "");
+                    await connection2.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "",
+                        "");
+
+                    await connection1.Receive($"HTTP/1.1 200 OK",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "");
+                    await connection2.Receive($"HTTP/1.1 200 OK",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "");
+                }
+            }
+        }
+
+        [Fact]
         public async Task ConnectionResetPriorToRequestIsLoggedAsDebug()
         {
             var connectionStarted = new SemaphoreSlim(0);
@@ -575,7 +621,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         "");
 
                     await connectionClosedTcs.Task.DefaultTimeout();
-                    await connection.ReceiveForcedEnd();
+
+                    try
+                    {
+                        await connection.ReceiveEnd();
+                    }
+                    catch (IOException)
+                    {
+                        // The server is forcefully closing the connection so an IOException:
+                        // "Unable to read data from the transport connection: An existing connection was forcibly closed by the remote host."
+                        // isn't guaranteed but not unexpected.
+                    }
                 }
             }
         }

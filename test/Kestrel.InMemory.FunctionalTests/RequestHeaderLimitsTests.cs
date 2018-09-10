@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 using (var connection = server.CreateConnection())
                 {
                     await connection.Send($"GET / HTTP/1.1\r\n{headers}\r\n");
-                    await connection.ReceiveEnd(
+                    await connection.Receive(
                         "HTTP/1.1 200 OK",
                         $"Date: {server.Context.DateHeaderValue}",
                         "Transfer-Encoding: chunked",
@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 using (var connection = server.CreateConnection())
                 {
                     await connection.Send($"GET / HTTP/1.1\r\n{headers}\r\n");
-                    await connection.ReceiveEnd(
+                    await connection.Receive(
                         "HTTP/1.1 200 OK",
                         $"Date: {server.Context.DateHeaderValue}",
                         "Transfer-Encoding: chunked",
@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 using (var connection = server.CreateConnection())
                 {
                     await connection.SendAll($"GET / HTTP/1.1\r\n{headers}\r\n");
-                    await connection.ReceiveForcedEnd(
+                    await connection.ReceiveEnd(
                         "HTTP/1.1 431 Request Header Fields Too Large",
                         "Connection: close",
                         $"Date: {server.Context.DateHeaderValue}",
@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 using (var connection = server.CreateConnection())
                 {
                     await connection.SendAll($"GET / HTTP/1.1\r\n{headers}\r\n");
-                    await connection.ReceiveForcedEnd(
+                    await connection.ReceiveEnd(
                         "HTTP/1.1 431 Request Header Fields Too Large",
                         "Connection: close",
                         $"Date: {server.Context.DateHeaderValue}",
