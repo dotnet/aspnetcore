@@ -197,6 +197,7 @@
     <PackageArtifact Include="Microsoft.EntityFrameworkCore.Specification.Tests" Category="ship" />
     <PackageArtifact Include="Microsoft.EntityFrameworkCore.Sqlite.Core" Category="ship" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.EntityFrameworkCore.Sqlite" Category="ship" AllMetapackage="true"/>
+    <PackageArtifact Include="Microsoft.EntityFrameworkCore.Sqlite.NetTopologySuite" Category="ship"/>
     <PackageArtifact Include="Microsoft.EntityFrameworkCore.SqlServer" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.EntityFrameworkCore.SqlServer.NetTopologySuite" Category="ship"/>
     <PackageArtifact Include="Microsoft.EntityFrameworkCore.Tools" Category="ship" AppMetapackage="true" AllMetapackage="true" />
