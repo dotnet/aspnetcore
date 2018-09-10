@@ -13,8 +13,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="../Microsoft.Extensions.ApiDescription.Client/DownloadFileCore.cs" />
-    <Compile Include="../Microsoft.Extensions.ApiDescription.Client/ILogWrapper.cs" />
     <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="$(MicrosoftAspNetCoreTestHost20PackageVersion)" />
   </ItemGroup>
 </Project>
