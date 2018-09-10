@@ -26,13 +26,13 @@ foreach ($contentDir in $contentDirs) {
     $siteCss = Join-Path $cssFolder "site.css"
     $siteMinCss = Join-Path $cssFolder "site.min.css"
     if (Test-Path $siteCss) {
-        npm uglifycss $siteCss > $siteMinCss
+        uglifycss $siteCss > $siteMinCss
     }
 
     $jsFolder = Join-Path $wwwRoot "js"
     $siteJs = Join-Path $jsFolder "site.js"
     $siteMinJs = Join-Path $jsFolder "site.min.js"
     if (Test-Path $siteJs) {
-        npm uglifyjs $siteJs --output $siteMinJs
+        uglifyjs $siteJs --output $siteMinJs
     }
 }
