@@ -35,6 +35,9 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         // Run really late.
         public override int Order => 100000;
 
+        // Internal for testing
+        internal bool ShouldRunActionConstraints => _actionConstraintCache.CurrentCache.HasActionConstraints;
+
         public Task ApplyAsync(HttpContext httpContext, EndpointFeature endpointFeature, CandidateSet candidateSet)
         {
             // PERF: we can skip over action constraints if there aren't any app-wide.
@@ -42,8 +45,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             // Running action constraints (or just checking for them) in a candidate set
             // is somewhat expensive compared to other routing operations. This should only
             // happen if user-code adds action constraints.
-            var actions = _actionConstraintCache.CurrentCache;
-            if (actions.HasActionConstraints)
+            if (ShouldRunActionConstraints)
             {
                 ApplyActionConstraints(httpContext, candidateSet);
             }
