@@ -13,7 +13,7 @@ namespace TriageBuildFailures.Handlers
     /// </summary>
     public class HandleUniverseMovedOn : HandleFailureBase
     {
-        private IEnumerable<string> UpdateUniverseBuilds = new string[] { "Coherence_UpdateUniverse", "Releases_21Public_UpdateUniverse" };
+        private IEnumerable<string> UpdateUniverseBuilds = new string[] { "Coherence_UpdateUniverse", "Releases_21Public_UpdateUniverse", "Releases_22xPublic_UpdateUniverse" };
         private const string UniverseMovedOn = "error: failed to push some refs to 'git@github.com:aspnet/Universe.git'";
 
         public override bool CanHandleFailure(TeamCityBuild build)

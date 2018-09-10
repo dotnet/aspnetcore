@@ -44,6 +44,9 @@
         "IssuesOnHomeRepo": true
       },
       {
+        "Name": "DotNetTools"
+      },
+      {
         "Name": "EntityFrameworkCore",
         "Manager": "ajcvickers"
       },
