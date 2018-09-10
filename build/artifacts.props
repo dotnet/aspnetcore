@@ -112,7 +112,6 @@
     <PackageArtifact Include="Microsoft.AspNetCore.Localization" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.MiddlewareAnalysis" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Abstractions" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
-    <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Analyzers.Experimental" Category="shipoob" Analyzer="true" />
     <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Analyzers" Category="ship" Analyzer="true" AppMetapackage="true" AllMetapackage="true" />
     <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Api.Analyzers" Category="ship" Analyzer="true" />
     <PackageArtifact Include="Microsoft.AspNetCore.Mvc.ApiExplorer" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
@@ -214,6 +213,7 @@
     <PackageArtifact Include="Microsoft.EntityFrameworkCore.Specification.Tests" Category="ship" />
     <PackageArtifact Include="Microsoft.EntityFrameworkCore.Sqlite.Core" Category="ship" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.EntityFrameworkCore.Sqlite" Category="ship" AllMetapackage="true"/>
+    <PackageArtifact Include="Microsoft.EntityFrameworkCore.Sqlite.NetTopologySuite" Category="ship"/>
     <PackageArtifact Include="Microsoft.EntityFrameworkCore.SqlServer" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.EntityFrameworkCore.SqlServer.NetTopologySuite" Category="ship"/>
     <PackageArtifact Include="Microsoft.EntityFrameworkCore.Tools" Category="ship" AppMetapackage="true" AllMetapackage="true" />

@@ -107,6 +107,7 @@
     <ExternalDependency Include="Microsoft.Web.Xdt" Version="$(MicrosoftWebXdtPackageVersion)" />
     <ExternalDependency Include="Microsoft.Web.Administration" Version="$(MicrosoftWebAdministrationPackageVersion)" />
     <ExternalDependency Include="Microsoft.Win32.Registry" Version="$(MicrosoftWin32RegistryPackageVersion)" />
+    <ExternalDependency Include="mod_spatialite" Version="$(mod_spatialitePackageVersion)" />
     <ExternalDependency Include="Mono.Addins" Version="$(MonoAddinsPackageVersion)" />
     <ExternalDependency Include="MonoDevelop.Sdk" Version="$(MonoDevelopSdkPackageVersion)" />
     <ExternalDependency Include="Moq" Version="$(MoqPackageVersion)" />
@@ -118,6 +119,7 @@
     <ExternalDependency Include="NETStandard.Library" Version="$(NETStandardLibrary20PackageVersion)" VariableName="NETStandardLibrary20PackageVersion" />
 
     <ExternalDependency Include="NetTopologySuite.Core" Version="$(NetTopologySuiteCorePackageVersion)" />
+    <ExternalDependency Include="NetTopologySuite.IO.SpatiaLite" Version="$(NetTopologySuiteIOSpatiaLitePackageVersion)" />
 
     <!-- This version should be used by runtime packages -->
     <ExternalDependency Include="Newtonsoft.Json" Version="$(NewtonsoftJsonPackageVersion)" />
