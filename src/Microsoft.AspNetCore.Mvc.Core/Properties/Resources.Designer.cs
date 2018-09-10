@@ -795,7 +795,7 @@ namespace Microsoft.AspNetCore.Mvc.Core
             => GetString("ModelBinderUtil_ModelMetadataCannotBeNull");
 
         /// <summary>
-        /// A value for the '{0}' property was not provided.
+        /// A value for the '{0}' parameter or property was not provided.
         /// </summary>
         internal static string ModelBinding_MissingBindRequiredMember
         {
@@ -803,7 +803,7 @@ namespace Microsoft.AspNetCore.Mvc.Core
         }
 
         /// <summary>
-        /// A value for the '{0}' property was not provided.
+        /// A value for the '{0}' parameter or property was not provided.
         /// </summary>
         internal static string FormatModelBinding_MissingBindRequiredMember(object p0)
             => string.Format(CultureInfo.CurrentCulture, GetString("ModelBinding_MissingBindRequiredMember"), p0);

@@ -45,9 +45,33 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         /// The <see cref="IDictionary{TKey, TValue}"/> of binders to use for binding properties.
         /// </param>
         /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
+        /// <remarks>
+        /// The binder will not add an error for an unbound top-level model even if
+        /// <see cref="ModelMetadata.IsBindingRequired"/> is <see langword="true"/>.
+        /// </remarks>
         public ComplexTypeModelBinder(
             IDictionary<ModelMetadata, IModelBinder> propertyBinders,
             ILoggerFactory loggerFactory)
+            : this(propertyBinders, loggerFactory, allowValidatingTopLevelNodes: false)
+        {
+        }
+
+        /// <summary>
+        /// Creates a new <see cref="ComplexTypeModelBinder"/>.
+        /// </summary>
+        /// <param name="propertyBinders">
+        /// The <see cref="IDictionary{TKey, TValue}"/> of binders to use for binding properties.
+        /// </param>
+        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
+        /// <param name="allowValidatingTopLevelNodes">
+        /// Indication that validation of top-level models is enabled. If <see langword="true"/> and
+        /// <see cref="ModelMetadata.IsBindingRequired"/> is <see langword="true"/> for a top-level model, the binder
+        /// adds a <see cref="ModelStateDictionary"/> error when the model is not bound.
+        /// </param>
+        public ComplexTypeModelBinder(
+            IDictionary<ModelMetadata, IModelBinder> propertyBinders,
+            ILoggerFactory loggerFactory,
+            bool allowValidatingTopLevelNodes)
         {
             if (propertyBinders == null)
             {
@@ -61,7 +85,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
             _propertyBinders = propertyBinders;
             _logger = loggerFactory.CreateLogger<ComplexTypeModelBinder>();
+            AllowValidatingTopLevelNodes = allowValidatingTopLevelNodes;
         }
+
+        // Internal for testing.
+        internal bool AllowValidatingTopLevelNodes { get; }
 
         /// <inheritdoc />
         public Task BindModelAsync(ModelBindingContext bindingContext)
@@ -91,9 +119,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 bindingContext.Model = CreateModel(bindingContext);
             }
 
-            for (var i = 0; i < bindingContext.ModelMetadata.Properties.Count; i++)
+            var modelMetadata = bindingContext.ModelMetadata;
+            var attemptedPropertyBinding = false;
+            for (var i = 0; i < modelMetadata.Properties.Count; i++)
             {
-                var property = bindingContext.ModelMetadata.Properties[i];
+                var property = modelMetadata.Properties[i];
                 if (!CanBindProperty(bindingContext, property))
                 {
                     continue;
@@ -127,13 +157,30 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
                 if (result.IsModelSet)
                 {
+                    attemptedPropertyBinding = true;
                     SetProperty(bindingContext, modelName, property, result);
                 }
                 else if (property.IsBindingRequired)
                 {
+                    attemptedPropertyBinding = true;
                     var message = property.ModelBindingMessageProvider.MissingBindRequiredValueAccessor(fieldName);
                     bindingContext.ModelState.TryAddModelError(modelName, message);
                 }
+            }
+
+            // Have we created a top-level model despite an inability to bind anything in said model and a lack of
+            // other IsBindingRequired errors? Does that violate [BindRequired] on the model? This case occurs when
+            // 1. The top-level model has no public settable properties.
+            // 2. All properties in a [BindRequired] model have [BindNever] or are otherwise excluded from binding.
+            // 3. No data exists for any property.
+            if (AllowValidatingTopLevelNodes &&
+                !attemptedPropertyBinding &&
+                bindingContext.IsTopLevelObject &&
+                modelMetadata.IsBindingRequired)
+            {
+                var messageProvider = modelMetadata.ModelBindingMessageProvider;
+                var message = messageProvider.MissingBindRequiredValueAccessor(bindingContext.FieldName);
+                bindingContext.ModelState.TryAddModelError(bindingContext.ModelName, message);
             }
 
             bindingContext.Result = ModelBindingResult.Success(bindingContext.Model);

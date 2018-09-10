@@ -2123,7 +2123,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Null(entry.RawValue);
             Assert.Null(entry.AttemptedValue);
             var error = Assert.Single(modelState["Customer"].Errors);
-            Assert.Equal("A value for the 'Customer' property was not provided.", error.ErrorMessage);
+            Assert.Equal("A value for the 'Customer' parameter or property was not provided.", error.ErrorMessage);
         }
 
         [Fact]
@@ -2245,7 +2245,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Null(entry.RawValue);
             Assert.Null(entry.AttemptedValue);
             var error = Assert.Single(modelState["parameter.Customer.Name"].Errors);
-            Assert.Equal("A value for the 'Name' property was not provided.", error.ErrorMessage);
+            Assert.Equal("A value for the 'Name' parameter or property was not provided.", error.ErrorMessage);
         }
 
         [Fact]
@@ -2299,7 +2299,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Null(entry.RawValue);
             Assert.Null(entry.AttemptedValue);
             var error = Assert.Single(modelState["Customer.Name"].Errors);
-            Assert.Equal("A value for the 'Name' property was not provided.", error.ErrorMessage);
+            Assert.Equal("A value for the 'Name' parameter or property was not provided.", error.ErrorMessage);
         }
 
         [Fact]
@@ -2357,7 +2357,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Null(entry.RawValue);
             Assert.Null(entry.AttemptedValue);
             var error = Assert.Single(modelState["customParameter.Customer.Name"].Errors);
-            Assert.Equal("A value for the 'Name' property was not provided.", error.ErrorMessage);
+            Assert.Equal("A value for the 'Name' parameter or property was not provided.", error.ErrorMessage);
         }
 
         private class Order12
@@ -2411,7 +2411,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Null(entry.RawValue);
             Assert.Null(entry.AttemptedValue);
             var error = Assert.Single(modelState["ProductName"].Errors);
-            Assert.Equal("A value for the 'ProductName' property was not provided.", error.ErrorMessage);
+            Assert.Equal("A value for the 'ProductName' parameter or property was not provided.", error.ErrorMessage);
         }
 
         [Fact]
@@ -2463,7 +2463,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Null(entry.RawValue);
             Assert.Null(entry.AttemptedValue);
             var error = Assert.Single(modelState["customParameter.ProductName"].Errors);
-            Assert.Equal("A value for the 'ProductName' property was not provided.", error.ErrorMessage);
+            Assert.Equal("A value for the 'ProductName' parameter or property was not provided.", error.ErrorMessage);
         }
 
         [Fact]
@@ -2563,7 +2563,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Null(entry.RawValue);
             Assert.Null(entry.AttemptedValue);
             var error = Assert.Single(modelState["OrderIds"].Errors);
-            Assert.Equal("A value for the 'OrderIds' property was not provided.", error.ErrorMessage);
+            Assert.Equal("A value for the 'OrderIds' parameter or property was not provided.", error.ErrorMessage);
         }
 
         [Fact]
@@ -2615,7 +2615,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Null(entry.RawValue);
             Assert.Null(entry.AttemptedValue);
             var error = Assert.Single(modelState["customParameter.OrderIds"].Errors);
-            Assert.Equal("A value for the 'OrderIds' property was not provided.", error.ErrorMessage);
+            Assert.Equal("A value for the 'OrderIds' parameter or property was not provided.", error.ErrorMessage);
         }
 
         [Fact]
