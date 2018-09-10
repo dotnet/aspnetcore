@@ -215,8 +215,18 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                         // Cancel the previous request
                         connection.Cancellation?.Cancel();
 
-                        // Wait for the previous request to drain
-                        await connection.PreviousPollTask;
+                        try
+                        {
+                            // Wait for the previous request to drain
+                            await connection.PreviousPollTask;
+                        }
+                        catch (OperationCanceledException)
+                        {
+                            // Previous poll canceled due to connection closing, close this poll too
+                            context.Response.ContentType = "text/plain";
+                            context.Response.StatusCode = StatusCodes.Status204NoContent;
+                            return;
+                        }
 
                         connection.PreviousPollTask = currentRequestTcs.Task;
                     }
@@ -286,6 +296,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                         // If the status code is a 204 it means the connection is done
                         if (context.Response.StatusCode == StatusCodes.Status204NoContent)
                         {
+                            // Cancel current request to release any waiting poll and let dispose aquire the lock
+                            currentRequestTcs.TrySetCanceled();
+
                             // We should be able to safely dispose because there's no more data being written
                             // We don't need to wait for close here since we've already waited for both sides
                             await _manager.DisposeAndRemoveAsync(connection, closeGracefully: false);
