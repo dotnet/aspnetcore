@@ -23,7 +23,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
     {
         private readonly IActionDescriptorCollectionProvider _actions;
         private readonly MvcEndpointInvokerFactory _invokerFactory;
-        private readonly DefaultHttpContext _httpContextInstance;
 
         // The following are protected by this lock for WRITES only. This pattern is similar
         // to DefaultActionDescriptorChangeProvider - see comments there for details on
@@ -35,8 +34,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         public MvcEndpointDataSource(
             IActionDescriptorCollectionProvider actions,
-            MvcEndpointInvokerFactory invokerFactory,
-            IServiceProvider serviceProvider)
+            MvcEndpointInvokerFactory invokerFactory)
         {
             if (actions == null)
             {
@@ -48,14 +46,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 throw new ArgumentNullException(nameof(invokerFactory));
             }
 
-            if (serviceProvider == null)
-            {
-                throw new ArgumentNullException(nameof(serviceProvider));
-            }
-
             _actions = actions;
             _invokerFactory = invokerFactory;
-            _httpContextInstance = new DefaultHttpContext() { RequestServices = serviceProvider };
 
             ConventionalEndpointInfos = new List<MvcEndpointInfo>();
 
@@ -358,7 +350,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     {
                         foreach (var constraint in constraints)
                         {
-                            if (!constraint.Match(_httpContextInstance, NullRouter.Instance, routeKey, new RouteValueDictionary(action.RouteValues), RouteDirection.IncomingRequest))
+                            if (!constraint.Match(httpContext: null, NullRouter.Instance, routeKey, new RouteValueDictionary(action.RouteValues), RouteDirection.IncomingRequest))
                             {
                                 // Did not match constraint
                                 return false;
