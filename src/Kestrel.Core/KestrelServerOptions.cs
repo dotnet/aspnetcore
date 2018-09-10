@@ -103,6 +103,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         internal void ApplyEndpointDefaults(ListenOptions listenOptions)
         {
             listenOptions.KestrelServerOptions = this;
+            ConfigurationLoader?.ApplyConfigurationDefaults(listenOptions);
             EndpointDefaults(listenOptions);
         }
 
