@@ -29,7 +29,25 @@ function Save-TeamCityBackup() {
     $webClient = new-object System.Net.WebClient
     $webClient.Headers["Authorization"] = "Basic $authInfo"
 
-    $webClient.DownloadFile($TeamCityURL, $targetFolder + $fileName)
+    $retries = 3
+    $secondsDelay = 60
+    $retrycount = 0
+    $completed = $false
+
+    while (-not $completed) {
+    try{
+        $webClient.DownloadFile($TeamCityURL, $targetFolder + $fileName)
+        $completed = $true
+    } catch {
+        if ($retrycount -ge $retries) {
+            Write-Host "Backup download failed the max of $retries times"
+            throw
+        } else {
+            Write-Host "Command failed. Retrying in $secondsDelay seconds."
+            Start-Sleep $secondsDelay
+            $retrycount++ 
+        }
+    }
 }
 
 function Invoke-TeamCityRequest() {
