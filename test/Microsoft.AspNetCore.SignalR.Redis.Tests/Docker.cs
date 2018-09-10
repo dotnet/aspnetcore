@@ -93,6 +93,9 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
 
         public void Stop(ILogger logger)
         {
+            // Get logs from Redis container before stopping the container
+            RunProcessAndThrowIfFailed(_path, $"logs {_dockerContainerName}", logger, TimeSpan.FromSeconds(5));
+
             logger.LogInformation("Stopping docker container");
             RunProcessAndThrowIfFailed(_path, $"stop {_dockerContainerName}", logger, TimeSpan.FromSeconds(5));
         }
