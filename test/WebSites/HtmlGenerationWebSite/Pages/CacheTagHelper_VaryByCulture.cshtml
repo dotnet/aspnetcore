@@ -1,4 +1,5 @@
 @page
+@addTagHelper *, HtmlGenerationWebSite
 @using System.Globalization
 @functions
 {
@@ -9,6 +10,6 @@
 <h2 id="culture">@CultureInfo.CurrentCulture</h2>
 <h2 id="ui-culture">@CultureInfo.CurrentUICulture</h2>
 <span id="correlation-id">@CorrelationId</span>
-<cache vary-by-culture="true" vary-by-query="varyByQueryKey">
+<test-cache vary-by-culture="true" vary-by-query="varyByQueryKey">
     <span id="cached-correlation-id">@CorrelationId</span>
-</cache>
+</test-cache>
