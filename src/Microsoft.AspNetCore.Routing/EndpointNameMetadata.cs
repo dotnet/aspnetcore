@@ -15,6 +15,10 @@ namespace Microsoft.AspNetCore.Routing
     /// </remarks>
     public class EndpointNameMetadata : IEndpointNameMetadata
     {
+        /// <summary>
+        /// Creates a new <see cref="EndpointNameMetadata"/> with the provided endpoint name.
+        /// </summary>
+        /// <param name="endpointName">The endpoint name.</param>
         public EndpointNameMetadata(string endpointName)
         {
             if (endpointName == null)
