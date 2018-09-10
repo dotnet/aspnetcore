@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             TimeSpan? timeout = null,
             MSBuildProcessKind msBuildProcessKind = MSBuildProcessKind.Dotnet)
         {
-            timeout = timeout ?? TimeSpan.FromSeconds(60);
+            timeout = timeout ?? TimeSpan.FromSeconds(120);
 
             var processStartInfo = new ProcessStartInfo()
             {
@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
                 // This is a timeout.
                 process.Kill();
-                throw new TimeoutException($"command '${process.StartInfo.FileName} {process.StartInfo.Arguments}' timed out after {timeout}.");
+                throw new TimeoutException($"command '${process.StartInfo.FileName} {process.StartInfo.Arguments}' timed out after {timeout}. Output: {output.ToString()}");
             });
 
             var waitTask = Task.Run(() =>
