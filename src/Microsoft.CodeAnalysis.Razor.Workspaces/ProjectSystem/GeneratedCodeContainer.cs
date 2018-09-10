@@ -18,7 +18,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         public event EventHandler<TextChangeEventArgs> GeneratedCodeChanged;
 
         private SourceText _source;
-        private VersionStamp _sourceVersion;
+        private VersionStamp? _sourceVersion;
         private RazorCSharpDocument _output;
         private DocumentSnapshot _latestDocument;
 
@@ -48,7 +48,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             {
                 lock (_setOutputLock)
                 {
-                    return _sourceVersion;
+                    return _sourceVersion.Value;
                 }
             }
         }
@@ -106,8 +106,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                     return;
                 }
 
-                var newerVersion = SourceVersion.GetNewerVersion(version);
-                if (newerVersion == SourceVersion)
+                if (_sourceVersion.HasValue && _sourceVersion == SourceVersion.GetNewerVersion(version))
                 {
                     // Latest document is newer than the provided document.
                     return;
