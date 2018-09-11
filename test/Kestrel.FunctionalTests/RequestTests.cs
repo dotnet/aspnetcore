@@ -1302,7 +1302,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 await appFuncCompleted.Task.DefaultTimeout();
             }
 
-            mockKestrelTrace.Verify(t => t.ConnectionStop(It.IsAny<string>()), Times.Once());
+            mockKestrelTrace.Verify(t => t.ConnectionStop(It.IsAny<string>()), Times.AtMostOnce());
         }
 
         [Theory]
@@ -1357,7 +1357,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 await Assert.ThrowsAnyAsync<IOException>(() => readTcs.Task).DefaultTimeout();
             }
 
-            mockKestrelTrace.Verify(t => t.ConnectionStop(It.IsAny<string>()), Times.Once());
+            mockKestrelTrace.Verify(t => t.ConnectionStop(It.IsAny<string>()), Times.AtMostOnce());
         }
 
         [Theory]

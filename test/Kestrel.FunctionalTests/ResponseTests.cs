@@ -2427,7 +2427,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 await Assert.ThrowsAnyAsync<OperationCanceledException>(() => writeTcs.Task).DefaultTimeout();
             }
 
-            mockKestrelTrace.Verify(t => t.ConnectionStop(It.IsAny<string>()), Times.Once());
+            mockKestrelTrace.Verify(t => t.ConnectionStop(It.IsAny<string>()), Times.AtMostOnce());
             Assert.True(requestAborted);
         }
 
@@ -3174,7 +3174,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     await appFuncCompleted.Task.DefaultTimeout();
 
                     mockKestrelTrace.Verify(t => t.ResponseMininumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>()), Times.Never());
-                    mockKestrelTrace.Verify(t => t.ConnectionStop(It.IsAny<string>()), Times.Once());
+                    mockKestrelTrace.Verify(t => t.ConnectionStop(It.IsAny<string>()), Times.AtMostOnce());
                     Assert.False(requestAborted);
                 }
             }
@@ -3249,7 +3249,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     await AssertStreamCompleted(connection.Reader.BaseStream, minTotalOutputSize, targetBytesPerSecond);
 
                     mockKestrelTrace.Verify(t => t.ResponseMininumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>()), Times.Never());
-                    mockKestrelTrace.Verify(t => t.ConnectionStop(It.IsAny<string>()), Times.Once());
+                    mockKestrelTrace.Verify(t => t.ConnectionStop(It.IsAny<string>()), Times.AtMostOnce());
                     Assert.False(requestAborted);
                 }
             }
