@@ -24,6 +24,7 @@
     <IntermediateInstaller Include="osx-x64" FileExt=".tar.gz" />
     <IntermediateInstaller Include="linux-x64" FileExt=".tar.gz" />
     <IntermediateInstaller Include="linux-arm" FileExt=".tar.gz" />
+    <IntermediateInstaller Include="linux-arm64" FileExt=".tar.gz" />
     <IntermediateInstaller Include="linux-musl-x64" FileExt=".tar.gz" />
 
     <NativeInstaller Include="win-x86" FileExt=".exe" />
@@ -33,6 +34,7 @@
     <NativeInstaller Include="osx-x64" FileExt=".tar.gz" />
     <NativeInstaller Include="linux-x64" FileExt=".tar.gz" />
     <NativeInstaller Include="linux-arm" FileExt=".tar.gz" />
+    <NativeInstaller Include="linux-arm64" FileExt=".tar.gz" />
     <NativeInstaller Include="linux-musl-x64" FileExt=".tar.gz" />
     <NativeInstaller Include="x64" FileExt=".deb" />
     <NativeInstaller Include="x64" FileExt=".rpm" />
@@ -52,7 +54,7 @@
       Arch="x86"
       Feed="$(DotNetAssetRootUrl)"
       FeedCredential="$(DotNetAssetRootAccessTokenSuffix)" />
-    
+
       <!--
         The build doesn't support compiling the shared runtime on one machine along with running tests,
         so this is enables installing the shared runtime from a previous build.

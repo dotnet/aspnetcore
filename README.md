@@ -56,6 +56,7 @@ Microsoft.AspNetCore              | [![][metapackage-myget-badge]][metapackage-m
 [win-x86-exe]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/master/aspnetcore-runtime-latest-win-x86.exe
 [linux-x64-tar]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/master/aspnetcore-runtime-latest-linux-x64.tar.gz
 [linux-arm-tar]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/master/aspnetcore-runtime-latest-linux-arm.tar.gz
+[linux-arm64-tar]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/master/aspnetcore-runtime-latest-linux-arm64.tar.gz
 [osx-x64-tar]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/master/aspnetcore-runtime-latest-osx-x64.tar.gz
 [debian-x64-deb]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/master/aspnetcore-runtime-latest-x64.deb
 [redhat-x64-rpm]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/master/aspnetcore-runtime-latest-x64.rpm
@@ -94,6 +95,7 @@ macOS (x64)           | [Archive (tar.gz)][osx-x64-tar]                         
 Linux (x64)<br>_(for glibc based OS - most common)_ | [Archive (tar.gz)][linux-x64-tar]                                | [Archive (tar.gz)][linux-x64-tar-rel-22] | [Archive (tar.gz)][linux-x64-tar-rel-21]
 Linux (x64 - musl)<br>_(for musl based OS, such as Alpine Linux)_ | [Archive (tar.gz)][linux-musl-x64-tar]                           | [Archive (tar.gz)][linux-musl-x64-tar-rel-22] | [Archive (tar.gz)][linux-musl-x64-tar-rel-21]
 Linux (arm32)         | [Archive (tar.gz)][linux-arm-tar]                                | [Archive (tar.gz)][linux-arm-tar-rel-22] | [Archive (tar.gz)][linux-arm-tar-rel-21]
+Linux (arm64)         | [Archive (tar.gz)][linux-arm64-tar]                                | |
 Debian/Ubuntu (x64)   | [Installer (deb)][debian-x64-deb]                                | [Installer (deb)][debian-x64-deb-rel-22] | [Installer (deb)][debian-x64-deb-rel-21]
 RedHat/Fedora (x64)   | [Installer (rpm)][redhat-x64-rpm]                                | [Installer (rpm)][redhat-x64-rpm-rel-22] | [Installer (rpm)][redhat-x64-rpm-rel-21]
 

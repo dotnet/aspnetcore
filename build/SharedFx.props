@@ -74,6 +74,7 @@
     <NonWindowsSharedFxRIDs Include="linux-musl-x64" />
     <NonWindowsSharedFxRIDs Include="linux-x64" />
     <NonWindowsSharedFxRIDs Include="linux-arm" CrossGen="false" />
+    <NonWindowsSharedFxRIDs Include="linux-arm64" CrossGen="false" />
     <AllSharedFxRIDs Include="@(WindowsSharedFxRIDs);@(NonWindowsSharedFxRIDs)"/>
   </ItemGroup>
 </Project>
