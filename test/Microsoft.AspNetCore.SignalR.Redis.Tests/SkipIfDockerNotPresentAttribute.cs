@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
             if(Docker.Default != null)
             {
                 // Docker is present, but is it working?
-                if (Docker.Default.RunCommand("ps", out var output) != 0)
+                if (Docker.Default.RunCommand("ps", "docker ps", out var output) != 0)
                 {
                     SkipReason = $"Failed to invoke test command 'docker ps'. Output: {output}";
                 }

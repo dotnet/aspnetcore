@@ -16,6 +16,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
         private static readonly string _exeSuffix = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".exe" : string.Empty;
 
         private static readonly string _dockerContainerName = "redisTestContainer";
+        private static readonly string _dockerMonitorContainerName = _dockerContainerName + "Monitor";
         private static readonly Lazy<Docker> _instance = new Lazy<Docker>(Create);
 
         public static Docker Default => _instance.Value;
@@ -37,7 +38,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
 
             var docker = new Docker(location);
 
-            docker.RunCommand("info --format '{{.OSType}}'", out var output);
+            docker.RunCommand("info --format '{{.OSType}}'", "docker info", out var output);
 
             if (!string.Equals(output.Trim('\'', '"', '\r', '\n', ' '), "linux"))
             {
@@ -74,43 +75,49 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
             logger.LogInformation("Starting docker container");
 
             // stop container if there is one, could be from a previous test run, ignore failures
-            RunProcess(_path, $"stop {_dockerContainerName}", logger, TimeSpan.FromSeconds(5), out var output);
+            RunProcessAndWait(_path, $"stop {_dockerMonitorContainerName}", "docker stop", logger, TimeSpan.FromSeconds(15), out var _);
+            RunProcessAndWait(_path, $"stop {_dockerContainerName}", "docker stop", logger, TimeSpan.FromSeconds(15), out var output);
 
             // create and run docker container, remove automatically when stopped, map 6379 from the container to 6379 localhost
             // use static name 'redisTestContainer' so if the container doesn't get removed we don't keep adding more
             // use redis base docker image
             // 20 second timeout to allow redis image to be downloaded, should be a rare occurance, only happening when a new version is released
-            RunProcessAndThrowIfFailed(_path, $"run --rm -p 6379:6379 --name {_dockerContainerName} -d redis", logger, TimeSpan.FromSeconds(20));
+            RunProcessAndThrowIfFailed(_path, $"run --rm -p 6379:6379 --name {_dockerContainerName} -d redis", "redis", logger, TimeSpan.FromSeconds(20));
 
             // inspect the redis docker image and extract the IPAddress. Necessary when running tests from inside a docker container, spinning up a new docker container for redis
             // outside the current container requires linking the networks (difficult to automate) or using the IP:Port combo
-            RunProcess(_path, "inspect --format=\"{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}\" " + _dockerContainerName, logger, TimeSpan.FromSeconds(5), out output);
+            RunProcessAndWait(_path, "inspect --format=\"{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}\" " + _dockerContainerName, "docker ipaddress", logger, TimeSpan.FromSeconds(5), out output);
             output = output.Trim().Replace(Environment.NewLine, "");
 
             // variable used by Startup.cs
             Environment.SetEnvironmentVariable("REDIS_CONNECTION", $"{output}:6379");
+
+            var (monitorProcess, monitorOutput) = RunProcess(_path, $"run -i --name {_dockerMonitorContainerName} --link {_dockerContainerName}:redis --rm redis redis-cli -h redis -p 6379", "redis monitor", logger);
+            monitorProcess.StandardInput.WriteLine("MONITOR");
+            monitorProcess.StandardInput.Flush();
         }
 
         public void Stop(ILogger logger)
         {
             // Get logs from Redis container before stopping the container
-            RunProcessAndThrowIfFailed(_path, $"logs {_dockerContainerName}", logger, TimeSpan.FromSeconds(5));
+            RunProcessAndThrowIfFailed(_path, $"logs {_dockerContainerName}", "docker logs", logger, TimeSpan.FromSeconds(5));
 
             logger.LogInformation("Stopping docker container");
-            RunProcessAndThrowIfFailed(_path, $"stop {_dockerContainerName}", logger, TimeSpan.FromSeconds(5));
+            RunProcessAndWait(_path, $"stop {_dockerMonitorContainerName}", "docker stop", logger, TimeSpan.FromSeconds(15), out var _);
+            RunProcessAndWait(_path, $"stop {_dockerContainerName}", "docker stop", logger, TimeSpan.FromSeconds(15), out var _);
         }
 
-        public int RunCommand(string commandAndArguments, out string output) =>
-            RunCommand(commandAndArguments, NullLogger.Instance, out output);
+        public int RunCommand(string commandAndArguments, string prefix, out string output) =>
+            RunCommand(commandAndArguments, prefix, NullLogger.Instance, out output);
 
-        public int RunCommand(string commandAndArguments, ILogger logger, out string output)
+        public int RunCommand(string commandAndArguments, string prefix, ILogger logger, out string output)
         {
-            return RunProcess(_path, commandAndArguments, logger, TimeSpan.FromSeconds(5), out output);
+            return RunProcessAndWait(_path, commandAndArguments, prefix, logger, TimeSpan.FromSeconds(5), out output);
         }
 
-        private static void RunProcessAndThrowIfFailed(string fileName, string arguments, ILogger logger, TimeSpan timeout)
+        private static void RunProcessAndThrowIfFailed(string fileName, string arguments, string prefix, ILogger logger, TimeSpan timeout)
         {
-            var exitCode = RunProcess(fileName, arguments, logger, timeout, out var output);
+            var exitCode = RunProcessAndWait(fileName, arguments, prefix, logger, timeout, out var output);
 
             if (exitCode != 0)
             {
@@ -118,39 +125,9 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
             }
         }
 
-        private static int RunProcess(string fileName, string arguments, ILogger logger, TimeSpan timeout, out string output)
+        private static int RunProcessAndWait(string fileName, string arguments, string prefix, ILogger logger, TimeSpan timeout, out string output)
         {
-            var process = new Process
-            {
-                StartInfo = new ProcessStartInfo
-                {
-                    FileName = fileName,
-                    Arguments = arguments,
-                    UseShellExecute = false,
-                    RedirectStandardError = true,
-                    RedirectStandardOutput = true
-                },
-                EnableRaisingEvents = true
-            };
-
-            var exitCode = 0;
-            var lines = new ConcurrentQueue<string>();
-            process.Exited += (_, __) => exitCode = process.ExitCode;
-            process.OutputDataReceived += (_, a) =>
-            {
-                LogIfNotNull(logger.LogInformation, "stdout: {0}", a.Data);
-                lines.Enqueue(a.Data);
-            };
-            process.ErrorDataReceived += (_, a) =>
-            {
-                LogIfNotNull(logger.LogError, "stderr: {0}", a.Data);
-                lines.Enqueue(a.Data);
-            };
-
-            process.Start();
-
-            process.BeginErrorReadLine();
-            process.BeginOutputReadLine();
+            var (process, lines) = RunProcess(fileName, arguments, prefix, logger);
 
             if (!process.WaitForExit((int)timeout.TotalMilliseconds))
             {
@@ -163,7 +140,45 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
 
             output = string.Join(Environment.NewLine, lines);
 
-            return exitCode;
+            return process.ExitCode;
+        }
+
+        private static (Process, ConcurrentQueue<string>) RunProcess(string fileName, string arguments, string prefix, ILogger logger)
+        {
+            var process = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = fileName,
+                    Arguments = arguments,
+                    UseShellExecute = false,
+                    RedirectStandardError = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardInput = true
+                },
+                EnableRaisingEvents = true
+            };
+
+            var exitCode = 0;
+            var lines = new ConcurrentQueue<string>();
+            process.Exited += (_, __) => exitCode = process.ExitCode;
+            process.OutputDataReceived += (_, a) =>
+            {
+                LogIfNotNull(logger.LogInformation, $"'{prefix}' stdout: {{0}}", a.Data);
+                lines.Enqueue(a.Data);
+            };
+            process.ErrorDataReceived += (_, a) =>
+            {
+                LogIfNotNull(logger.LogError, $"'{prefix}' stderr: {{0}}", a.Data);
+                lines.Enqueue(a.Data);
+            };
+
+            process.Start();
+
+            process.BeginErrorReadLine();
+            process.BeginOutputReadLine();
+
+            return (process, lines);
         }
 
         private static void LogIfNotNull(Action<string, object[]> logger, string message, string data)
