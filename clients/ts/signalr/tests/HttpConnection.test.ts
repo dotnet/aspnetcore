@@ -12,7 +12,7 @@ import { EventSourceConstructor, WebSocketConstructor } from "../src/Polyfills";
 
 import { eachEndpointUrl, eachTransport, VerifyLogger } from "./Common";
 import { TestHttpClient } from "./TestHttpClient";
-import { PromiseSource, registerUnhandledRejectionHandler } from "./Utils";
+import { PromiseSource, registerUnhandledRejectionHandler, SyncPoint } from "./Utils";
 
 const commonOptions: IHttpConnectionOptions = {
     logger: NullLogger.instance,
@@ -320,8 +320,30 @@ describe("HttpConnection", () => {
 
     for (const [val, name] of [[null, "null"], [undefined, "undefined"], [0, "0"]]) {
         it(`can be started when transport mask is ${name}`, async () => {
+            let websocketOpen: (() => any) | null = null;
+            const sync: SyncPoint = new SyncPoint();
+            const websocket = class WebSocket {
+                constructor() {
+                    this._onopen = null;
+                }
+                // tslint:disable-next-line:variable-name
+                private _onopen: ((this: WebSocket, ev: Event) => any) | null;
+                public get onopen(): ((this: WebSocket, ev: Event) => any) | null {
+                    return this._onopen;
+                }
+                public set onopen(onopen: ((this: WebSocket, ev: Event) => any) | null) {
+                    this._onopen = onopen;
+                    websocketOpen = () => this._onopen!({} as Event);
+                    sync.continue();
+                }
+
+                public close(): void {
+                }
+            };
+
             await VerifyLogger.run(async (logger) => {
                 const options: IHttpConnectionOptions = {
+                    WebSocket: websocket as any,
                     ...commonOptions,
                     httpClient: new TestHttpClient()
                         .on("POST", () => defaultNegotiateResponse)
@@ -333,7 +355,10 @@ describe("HttpConnection", () => {
 
                 const connection = new HttpConnection("http://tempuri.org", options);
 
-                await connection.start(TransferFormat.Text);
+                const startPromise = connection.start(TransferFormat.Text);
+                await sync.waitToContinue();
+                websocketOpen!();
+                await startPromise;
 
                 await connection.stop();
             });
@@ -359,10 +384,18 @@ describe("HttpConnection", () => {
     });
 
     it("does not send negotiate request if WebSockets transport requested explicitly and skipNegotiation is true", async () => {
+        const websocket = class WebSocket {
+            constructor() {
+                throw new Error("WebSocket constructor called.");
+            }
+        };
         await VerifyLogger.run(async (logger) => {
             const options: IHttpConnectionOptions = {
+                WebSocket: websocket as any,
                 ...commonOptions,
-                httpClient: new TestHttpClient(),
+                httpClient: new TestHttpClient()
+                    .on("POST", () => { throw new Error("Should not be called"); })
+                    .on("GET", () => { throw new Error("Should not be called"); }),
                 logger,
                 skipNegotiation: true,
                 transport: HttpTransportType.WebSockets,
@@ -371,9 +404,9 @@ describe("HttpConnection", () => {
             const connection = new HttpConnection("http://tempuri.org", options);
             await expect(connection.start(TransferFormat.Text))
                 .rejects
-                .toThrow("'WebSocket' is not supported in your environment.");
+                .toThrow("WebSocket constructor called.");
         },
-        "Failed to start the connection: Error: 'WebSocket' is not supported in your environment.");
+        "Failed to start the connection: Error: WebSocket constructor called.");
     });
 
     it("does not start non WebSockets transport if requested explicitly and skipNegotiation is true", async () => {
@@ -603,118 +636,10 @@ describe("HttpConnection", () => {
         });
     });
 
-    it("does not select ServerSentEvents transport when not available in environment", async () => {
-        await VerifyLogger.run(async (logger) => {
-            const serverSentEventsTransport = { transport: "ServerSentEvents", transferFormats: ["Text"] };
-
-            const options: IHttpConnectionOptions = {
-                ...commonOptions,
-                httpClient: new TestHttpClient()
-                    .on("POST", () => ({ connectionId: "42", availableTransports: [serverSentEventsTransport] })),
-                logger,
-            } as IHttpConnectionOptions;
-
-            const connection = new HttpConnection("http://tempuri.org", options);
-
-            await expect(connection.start(TransferFormat.Text))
-                .rejects
-                .toThrow("Unable to initialize any of the available transports.");
-        },
-        "Failed to start the connection: Error: Unable to initialize any of the available transports.");
-    });
-
-    it("does not select WebSockets transport when not available in environment", async () => {
-        await VerifyLogger.run(async (logger) => {
-            const webSocketsTransport = { transport: "WebSockets", transferFormats: ["Text"] };
-
-            const options: IHttpConnectionOptions = {
-                ...commonOptions,
-                httpClient: new TestHttpClient()
-                    .on("POST", () => ({ connectionId: "42", availableTransports: [webSocketsTransport] })),
-                logger,
-            } as IHttpConnectionOptions;
-
-            const connection = new HttpConnection("http://tempuri.org", options);
-
-            await expect(connection.start(TransferFormat.Text))
-                .rejects
-                .toThrow("Unable to initialize any of the available transports.");
-        },
-        "Failed to start the connection: Error: Unable to initialize any of the available transports.");
-    });
-
     describe(".constructor", () => {
         it("throws if no Url is provided", async () => {
             // Force TypeScript to let us call the constructor incorrectly :)
             expect(() => new (HttpConnection as any)()).toThrowError("The 'url' argument is required.");
-        });
-
-        it("uses global WebSocket if defined", async () => {
-            await VerifyLogger.run(async (logger) => {
-                // tslint:disable-next-line:no-string-literal
-                global["WebSocket"] = class WebSocket {
-                    constructor() {
-                        throw new Error("WebSocket constructor called.");
-                    }
-                };
-
-                const options: IHttpConnectionOptions = {
-                    ...commonOptions,
-                    logger,
-                    skipNegotiation: true,
-                    transport: HttpTransportType.WebSockets,
-                } as IHttpConnectionOptions;
-
-                const connection = new HttpConnection("http://tempuri.org", options);
-
-                await expect(connection.start())
-                    .rejects
-                    .toThrow("WebSocket constructor called.");
-
-                // tslint:disable-next-line:no-string-literal
-                delete global["WebSocket"];
-            },
-            "Failed to start the connection: Error: WebSocket constructor called.");
-        });
-
-        it("uses global EventSource if defined", async () => {
-            await VerifyLogger.run(async (logger) => {
-                let eventSourceConstructorCalled: boolean = false;
-                // tslint:disable-next-line:no-string-literal
-                global["EventSource"] = class EventSource {
-                    constructor() {
-                        eventSourceConstructorCalled = true;
-                        throw new Error("EventSource constructor called.");
-                    }
-                };
-
-                const options: IHttpConnectionOptions = {
-                    ...commonOptions,
-                    httpClient: new TestHttpClient().on("POST", () => {
-                        return {
-                            availableTransports: [
-                                { transport: "ServerSentEvents", transferFormats: ["Text"] },
-                            ],
-                            connectionId: defaultConnectionId,
-                        };
-                    }),
-                    logger,
-                    transport: HttpTransportType.ServerSentEvents,
-                } as IHttpConnectionOptions;
-
-                const connection = new HttpConnection("http://tempuri.org", options);
-
-                await expect(connection.start(TransferFormat.Text))
-                    .rejects
-                    .toThrow("Unable to initialize any of the available transports.");
-
-                expect(eventSourceConstructorCalled).toEqual(true);
-
-                // tslint:disable-next-line:no-string-literal
-                delete global["EventSource"];
-            },
-            "Failed to start the transport 'ServerSentEvents': Error: EventSource constructor called.",
-            "Failed to start the connection: Error: Unable to initialize any of the available transports.");
         });
 
         it("uses EventSource constructor from options if provided", async () => {

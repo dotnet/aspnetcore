@@ -1,4 +1,4 @@
-import { ChildProcess, spawn } from "child_process";
+import { ChildProcess, execSync, spawn } from "child_process";
 import { EOL } from "os";
 import { Readable } from "stream";
 
@@ -9,6 +9,7 @@ import { promisify } from "util";
 import * as karma from "karma";
 
 import * as _debug from "debug";
+
 const debug = _debug("signalr-functional-tests:run");
 
 const ARTIFACTS_DIR = path.resolve(__dirname, "..", "..", "..", "..", "artifacts");
@@ -156,6 +157,22 @@ function runKarma(karmaConfig) {
     });
 }
 
+function runJest(url: string) {
+    const jestPath = path.resolve(__dirname, "..", "..", "common", "node_modules", "jest", "bin", "jest.js");
+    const configPath = path.resolve(__dirname, "..", "func.jest.config.js");
+
+    console.log("Starting Node tests using Jest.");
+    try {
+        execSync(`"${process.execPath}" "${jestPath}" --config "${configPath}"`, { env: { SERVER_URL: url }, timeout: 200000 });
+        return 0;
+    } catch (error) {
+        console.log(error.message);
+        console.log(error.stderr);
+        console.log(error.stdout);
+        return error.status;
+    }
+}
+
 (async () => {
     try {
         // Check if we got any browsers
@@ -223,7 +240,12 @@ function runKarma(karmaConfig) {
         conf.client.args = ["--server", url];
 
         const results = await runKarma(conf);
-        process.exit(results.exitCode);
+
+        const jestExit = runJest(url);
+
+        console.log(`karma exit code: ${results.exitCode}`);
+        console.log(`jest exit code: ${jestExit}`);
+        process.exit(results.exitCode !== 0 ? results.exitCode : jestExit);
     } catch (e) {
         console.error(e);
         process.exit(1);

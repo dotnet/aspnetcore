@@ -72,6 +72,9 @@ module.exports = function (modulePath, browserBaseName, options) {
             }),
             // ES6 Promise uses this module in certain circumstances but we don't need it.
             new webpack.IgnorePlugin(/vertx/),
+            new webpack.IgnorePlugin(/NodeHttpClient/),
+            new webpack.IgnorePlugin(/eventsource/),
+            new webpack.IgnorePlugin(/websocket/),
         ],
         externals: options.externals,
     };

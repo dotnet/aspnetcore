@@ -36,6 +36,12 @@
     "src/**/*"
   ],
   "devDependencies": {
-    "es6-promise": "^4.2.2"
+    "es6-promise": "^4.2.2",
+    "@types/websocket": "^0.0.40",
+    "@types/eventsource": "^1.0.2"
+  },
+  "dependencies": {
+    "websocket": "^1.0.26",
+    "eventsource": "^1.0.7"
   }
 }

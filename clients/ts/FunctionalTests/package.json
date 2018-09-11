@@ -31,7 +31,8 @@
     "karma-sourcemap-loader": "^0.3.7",
     "karma-summary-reporter": "^1.5.0",
     "ts-node": "^4.1.0",
-    "typescript": "^3.0.1"
+    "typescript": "^3.0.1",
+    "websocket": " ^1.0.26"
   },
   "scripts": {
     "clean": "node ../common/node_modules/rimraf/bin.js ./wwwroot/dist ./obj/js",
@@ -40,7 +41,7 @@
     "build:webpack": "node ../common/node_modules/webpack-cli/bin/cli.js",
     "build:parent": "cd .. && npm run build",
     "pretest": "npm run build:parent && npm run build && dotnet build --no-restore",
-    "test": "npm run test:local --",
+    "test": "tsc --noEmit && npm run test:local --",
     "test:inner": "npm run build && dotnet build && npm run test:local --",
     "test:local": "ts-node --project ./scripts/tsconfig.json ./scripts/run-tests.ts",
     "test:all": "ts-node --project ./scripts/tsconfig.json ./scripts/run-tests.ts --all-browsers",

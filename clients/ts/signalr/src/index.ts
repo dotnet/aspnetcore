@@ -8,7 +8,8 @@ export const VERSION: string = "0.0.0-DEV_BUILD";
 // Everything that users need to access must be exported here. Including interfaces.
 export { AbortSignal } from "./AbortController";
 export { AbortError, HttpError, TimeoutError } from "./Errors";
-export { DefaultHttpClient, HttpClient, HttpRequest, HttpResponse } from "./HttpClient";
+export { HttpClient, HttpRequest, HttpResponse } from "./HttpClient";
+export { DefaultHttpClient } from "./DefaultHttpClient";
 export { IHttpConnectionOptions } from "./IHttpConnectionOptions";
 export { HubConnection, HubConnectionState } from "./HubConnection";
 export { HubConnectionBuilder } from "./HubConnectionBuilder";
