@@ -20,6 +20,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Xunit;
@@ -767,6 +768,36 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                 Assert.Equal(ipv4endPointAddress, await HttpClientSlim.GetStringAsync(ipv4endPointAddress));
                 Assert.Equal(ipv6endPointAddress, await HttpClientSlim.GetStringAsync(ipv6endPointAddress));
+            }
+        }
+
+        [Theory]
+        [InlineData("http1", HttpProtocols.Http1)]
+        [InlineData("http2", HttpProtocols.Http2)]
+        [InlineData("http1AndHttp2", HttpProtocols.Http1AndHttp2)]
+        public void EndpointDefaultsConfig_CanSetProtocolForUrlsConfig(string input, HttpProtocols expected)
+        {
+            KestrelServerOptions capturedOptions = null;
+            var hostBuilder = TransportSelector.GetWebHostBuilder()
+                .UseKestrel(options =>
+                {
+                    var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+                    {
+                        new KeyValuePair<string, string>("EndpointDefaults:Protocols", input),
+                    }).Build();
+                    options.Configure(config);
+
+                    capturedOptions = options;
+                })
+                .ConfigureServices(AddTestLogging)
+                .UseUrls("http://127.0.0.1:0")
+                .Configure(ConfigureEchoAddress);
+
+            using (var host = hostBuilder.Build())
+            {
+                host.Start();
+                Assert.Single(capturedOptions.ListenOptions);
+                Assert.Equal(expected, capturedOptions.ListenOptions[0].Protocols);
             }
         }
 
