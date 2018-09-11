@@ -3,7 +3,7 @@
 
 package com.microsoft.aspnet.signalr;
 
-public interface Transport {
+interface Transport {
     void start() throws Exception;
     void send(String message) throws Exception;
     void setOnReceive(OnReceiveCallBack callback);

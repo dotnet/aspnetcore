@@ -10,7 +10,7 @@ import java.util.Map;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 
-public class WebSocketTransport implements Transport {
+class WebSocketTransport implements Transport {
     private WebSocketClient webSocketClient;
     private OnReceiveCallBack onReceiveCallBack;
     private URI url;

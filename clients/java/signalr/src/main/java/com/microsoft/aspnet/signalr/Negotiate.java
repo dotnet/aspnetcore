@@ -10,7 +10,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-public class Negotiate {
+class Negotiate {
 
     public static NegotiateResponse processNegotiate(String url) throws IOException {
         return processNegotiate(url, null);
