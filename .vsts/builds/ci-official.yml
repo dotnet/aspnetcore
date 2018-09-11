@@ -73,6 +73,13 @@ phases:
       pathtoPublish: ./artifacts/
       artifactName: artifacts-Windows-Release
       artifactType: Container
+  # Detect OSS Components in use in the product. Only needs to run on one OS in the matrix.
+  - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
+    displayName: 'Component Detection'
+    inputs:
+      # This funky GUID represents the product "ASP.NET and EF Core"
+      governanceProduct: 'c641993b-8380-e811-80c3-0004ffb4789e'
+      snapshotForceEnabled: true
   - task: MicroBuildCleanup@1
     displayName: Cleanup MicroBuild tasks
     condition: always()
