@@ -24,12 +24,13 @@ namespace Microsoft.AspNetCore.Builder
         /// Configures the middleware pipeline to work with Blazor.
         /// </summary>
         /// <typeparam name="TProgram">Any type from the client app project. This is used to identify the client app assembly.</typeparam>
-        /// <param name="app"></param>
-        public static void UseBlazor<TProgram>(
+        /// <param name="app">The <see cref="IApplicationBuilder"/>.</param>
+        /// <returns>The <see cref="IApplicationBuilder"/>.</returns>
+        public static IApplicationBuilder UseBlazor<TProgram>(
             this IApplicationBuilder app)
         {
             var clientAssemblyInServerBinDir = typeof(TProgram).Assembly;
-            app.UseBlazor(new BlazorOptions
+            return app.UseBlazor(new BlazorOptions
             {
                 ClientAssemblyPath = clientAssemblyInServerBinDir.Location,
             });
@@ -38,9 +39,10 @@ namespace Microsoft.AspNetCore.Builder
         /// <summary>
         /// Configures the middleware pipeline to work with Blazor.
         /// </summary>
-        /// <param name="app"></param>
-        /// <param name="options"></param>
-        public static void UseBlazor(
+        /// <param name="app">The <see cref="IApplicationBuilder"/>.</param>
+        /// <param name="options">Options to configure the middleware.</param>
+        /// <returns>The <see cref="IApplicationBuilder"/>.</returns>
+        public static IApplicationBuilder UseBlazor(
             this IApplicationBuilder app,
             BlazorOptions options)
         {
@@ -108,6 +110,8 @@ namespace Microsoft.AspNetCore.Builder
                     spa.Options.DefaultPageStaticFileOptions = indexHtmlStaticFileOptions;
                 });
             });
+
+            return app;
         }
 
         private static string FindIndexHtmlFile(BlazorConfig config)

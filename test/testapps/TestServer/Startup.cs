@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Blazor.Server;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -39,7 +40,14 @@ namespace TestServer
             // Mount the server-side Blazor app on /subdir
             app.Map("/subdir", subdirApp =>
             {
-                subdirApp.UseServerSideBlazor<BasicTestApp.Startup>();
+                // The following two lines are equivalent to:
+                //     subdirApp.UseServerSideBlazor<BasicTestApp.Startup>();
+                // However it's expressed using UseSignalR+UseBlazor as a way of checking that
+                // we're not relying on any extra magic inside UseServerSideBlazor, since it's
+                // important that people can set up these bits of middleware manually (e.g., to
+                // swap in UseAzureSignalR instead of UseSignalR).
+                subdirApp.UseSignalR(route => route.MapHub<BlazorHub>(BlazorHub.DefaultPath));
+                subdirApp.UseBlazor<BasicTestApp.Startup>();
             });
         }
 

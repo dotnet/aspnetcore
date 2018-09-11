@@ -2,32 +2,36 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Blazor.Browser.Rendering;
-using Microsoft.AspNetCore.Blazor.Builder;
 using Microsoft.AspNetCore.Blazor.Rendering;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Blazor.Server.Circuits
 {
     internal class DefaultCircuitFactory : CircuitFactory
     {
         private readonly IServiceScopeFactory _scopeFactory;
+        private readonly DefaultCircuitFactoryOptions _options;
 
-        public DefaultCircuitFactory(IServiceScopeFactory scopeFactory)
+        public DefaultCircuitFactory(
+            IServiceScopeFactory scopeFactory,
+            IOptions<DefaultCircuitFactoryOptions> options)
         {
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
             _scopeFactory = scopeFactory ?? throw new ArgumentNullException(nameof(scopeFactory));
-
-            StartupActions = new Dictionary<PathString, Action<IBlazorApplicationBuilder>>();
+            _options = options.Value;
         }
-
-        public Dictionary<PathString, Action<IBlazorApplicationBuilder>> StartupActions { get; }
 
         public override CircuitHost CreateCircuitHost(HttpContext httpContext, IClientProxy client)
         {
-            if (!StartupActions.TryGetValue(httpContext.Request.Path, out var config))
+            if (!_options.StartupActions.TryGetValue(httpContext.Request.Path, out var config))
             {
                 var message = $"Could not find a Blazor startup action for request path {httpContext.Request.Path}";
                 throw new InvalidOperationException(message);

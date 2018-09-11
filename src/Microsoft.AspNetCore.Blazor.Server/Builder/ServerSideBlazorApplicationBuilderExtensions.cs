@@ -2,15 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNetCore.Blazor.Builder;
-using Microsoft.AspNetCore.Blazor.Hosting;
-using Microsoft.AspNetCore.Blazor.Server.Circuits;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Blazor.Server;
+using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Builder
 {
     /// <summary>
     /// Extension methods to configure an <see cref="IApplicationBuilder"/> for Server-Side Blazor.
+    /// These are just shorthand for combining UseSignalR with UseBlazor.
     /// </summary>
     public static class ServerSideBlazorApplicationBuilderExtensions
     {
@@ -20,94 +19,58 @@ namespace Microsoft.AspNetCore.Builder
         /// <param name="builder">The <see cref="IApplicationBuilder"/>.</param>
         /// <typeparam name="TStartup">A Blazor startup type.</typeparam>
         /// <returns>The <see cref="IApplicationBuilder"/>.</returns>
-        public static IApplicationBuilder UseServerSideBlazor<TStartup>(this IApplicationBuilder builder)
+        public static IApplicationBuilder UseServerSideBlazor<TStartup>(
+            this IApplicationBuilder builder)
         {
             if (builder == null)
             {
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            return UseServerSideBlazor(builder, typeof(TStartup));
+            // WARNING: Don't add extra setup logic here. It's important for
+            // UseServerSideBlazor just to be shorthand for UseSignalR+UseBlazor,
+            // so that people who want to call those two manually instead can
+            // also do so. That's needed for people using Azure SignalR.
+
+            // TODO: Also allow configuring the endpoint path.
+            return UseSignalRWithBlazorHub(builder, BlazorHub.DefaultPath)
+                .UseBlazor<TStartup>();
         }
 
         /// <summary>
         /// Registers Server-Side Blazor in the pipeline.
         /// </summary>
         /// <param name="builder">The <see cref="IApplicationBuilder"/>.</param>
-        /// <param name="startupType">A Blazor startup type.</param>
-        /// <returns>The <see cref="IApplicationBuilder"/>.</returns>
-        public static IApplicationBuilder UseServerSideBlazor(
-            this IApplicationBuilder builder,
-            Type startupType)
-        {
-            if (builder == null)
-            {
-                throw new ArgumentNullException(nameof(builder));
-            }
-
-            if (startupType == null)
-            {
-                throw new ArgumentNullException(nameof(startupType));
-            }
-
-            var startup = builder.ApplicationServices.GetRequiredService(startupType);
-            var wrapper = new ConventionBasedStartup(startup);
-            Action<IBlazorApplicationBuilder> configure = (b) =>
-            {
-                wrapper.Configure(b, b.Services);
-            };
-
-            UseServerSideBlazorCore(builder, configure);
-
-            builder.UseBlazor(new BlazorOptions()
-            {
-                ClientAssemblyPath = startupType.Assembly.Location,
-            });
-
-            return builder;
-        }
-
-        /// <summary>
-        /// Registers middleware for Server-Side Blazor.
-        /// </summary>
-        /// <param name="builder">The <see cref="IApplicationBuilder"/>.</param>
         /// <param name="options">A <see cref="BlazorOptions"/> instance used to configure the Blazor file provider.</param>
-        /// <param name="startupAction">A delegate used to configure the renderer.</param>
         /// <returns>The <see cref="IApplicationBuilder"/>.</returns>
         public static IApplicationBuilder UseServerSideBlazor(
             this IApplicationBuilder builder,
-            BlazorOptions options,
-            Action<IBlazorApplicationBuilder> startupAction)
+            BlazorOptions options)
         {
             if (builder == null)
             {
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            if (startupAction == null)
+            if (options == null)
             {
-                throw new ArgumentNullException(nameof(startupAction));
+                throw new ArgumentNullException(nameof(options));
             }
 
-            UseServerSideBlazorCore(builder, startupAction);
+            // WARNING: Don't add extra setup logic here. It's important for
+            // UseServerSideBlazor just to be shorthand for UseSignalR+UseBlazor,
+            // so that people who want to call those two manually instead can
+            // also do so. That's needed for people using Azure SignalR.
 
-            builder.UseBlazor(options);
-
-            return builder;
+            // TODO: Also allow configuring the endpoint path.
+            return UseSignalRWithBlazorHub(builder, BlazorHub.DefaultPath)
+                .UseBlazor(options);
         }
 
-        private static IApplicationBuilder UseServerSideBlazorCore(
-            IApplicationBuilder builder,
-            Action<IBlazorApplicationBuilder> configure)
+        private static IApplicationBuilder UseSignalRWithBlazorHub(
+            IApplicationBuilder builder, PathString path)
         {
-            var endpoint = "/_blazor";
-
-            var factory = (DefaultCircuitFactory)builder.ApplicationServices.GetRequiredService<CircuitFactory>();
-            factory.StartupActions.Add(endpoint, configure);
-
-            builder.UseSignalR(route => route.MapHub<BlazorHub>(endpoint));
-
-            return builder;
+            return builder.UseSignalR(route => route.MapHub<BlazorHub>(BlazorHub.DefaultPath));
         }
     }
 }
