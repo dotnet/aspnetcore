@@ -106,6 +106,15 @@ namespace Microsoft.AspNetCore.Blazor.Razor {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Specifies the parameter name for the &apos;{0}&apos; lambda expression..
+        /// </summary>
+        internal static string ChildContentParameterName_Documentation {
+            get {
+                return ResourceManager.GetString("ChildContentParameterName_Documentation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Sets the &apos;{0}&apos; attribute to the provided string or delegate value. A delegate value should be of type &apos;{1}&apos;..
         /// </summary>
         internal static string EventHandlerTagHelper_Documentation {

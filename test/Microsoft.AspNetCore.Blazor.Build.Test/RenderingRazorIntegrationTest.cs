@@ -600,14 +600,14 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         public enum MyEnum { FirstValue, SecondValue }
 
         [Fact]
-        public void RazorTemplate_CanBeUsedFromRazorCode()
+        public void RazorTemplate_NonGeneric_CanBeUsedFromRazorCode()
         {
             // Arrange
             var component = CompileToComponent(@"
-@{ RenderFragment<string> template = @<div>@context.ToLower()</div>; }
+@{ RenderFragment template = @<div>@(""Hello, World!"".ToLower())</div>; }
 @for (var i = 0; i < 3; i++)
 {
-    @template.WithValue(""Hello, World!"");
+    @template;
 }
 ");
 
@@ -626,11 +626,75 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         }
 
         [Fact]
-        public void RazorTemplate_CanBeUsedFromMethod()
+        public void RazorTemplate_Generic_CanBeUsedFromRazorCode()
         {
             // Arrange
             var component = CompileToComponent(@"
-@(Repeat(@<div>@context.ToLower()</div>, ""Hello, World!"", 3))
+@{ RenderFragment<string> template = (context) => @<div>@context.ToLower()</div>; }
+@for (var i = 0; i < 3; i++)
+{
+    @template(""Hello, World!"");
+}
+");
+
+            // Act
+            var frames = GetRenderTree(component);
+
+            // Assert
+            Assert.Collection(
+                frames,
+                frame => AssertFrame.Element(frame, "div", 2, 0),
+                frame => AssertFrame.Text(frame, "hello, world!", 1),
+                frame => AssertFrame.Element(frame, "div", 2, 0),
+                frame => AssertFrame.Text(frame, "hello, world!", 1),
+                frame => AssertFrame.Element(frame, "div", 2, 0),
+                frame => AssertFrame.Text(frame, "hello, world!", 1));
+        }
+
+        [Fact]
+        public void RazorTemplate_NonGeneric_CanBeUsedFromMethod()
+        {
+            // Arrange
+            var component = CompileToComponent(@"
+@(Repeat(@<div>@(""Hello, World!"".ToLower())</div>, 3))
+
+@functions {
+    RenderFragment Repeat(RenderFragment template, int count)
+    {
+        return (b) =>
+        {
+            for (var i = 0; i < count; i++)
+            {
+                b.AddContent(i, template);
+            }
+        };
+    }
+}");
+
+            // Act
+            var frames = GetRenderTree(component);
+
+            // Assert
+            //
+            // The sequence numbers start at 1 here because there is an AddContent(0, Repeat(....) call
+            // that precedes the definition of the lambda. Sequence numbers for the lambda are allocated
+            // from the same logical sequence as the surrounding code.
+            Assert.Collection(
+                frames,
+                frame => AssertFrame.Element(frame, "div", 2, 1),
+                frame => AssertFrame.Text(frame, "hello, world!", 2),
+                frame => AssertFrame.Element(frame, "div", 2, 1),
+                frame => AssertFrame.Text(frame, "hello, world!", 2),
+                frame => AssertFrame.Element(frame, "div", 2, 1),
+                frame => AssertFrame.Text(frame, "hello, world!", 2));
+        }
+
+        [Fact]
+        public void RazorTemplate_Generic_CanBeUsedFromMethod()
+        {
+            // Arrange
+            var component = CompileToComponent(@"
+@(Repeat((context) => @<div>@context.ToLower()</div>, ""Hello, World!"", 3))
 
 @functions {
     RenderFragment Repeat<T>(RenderFragment<T> template, T value, int count)
@@ -639,7 +703,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         {
             for (var i = 0; i < count; i++)
             {
-                template(b, value);
+                b.AddContent(i, template, value);
             }
         };
     }

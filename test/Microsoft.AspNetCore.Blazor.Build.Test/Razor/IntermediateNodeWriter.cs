@@ -18,6 +18,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
         IExtensionIntermediateNodeVisitor<HtmlBlockIntermediateNode>,
         IExtensionIntermediateNodeVisitor<ComponentExtensionNode>,
         IExtensionIntermediateNodeVisitor<ComponentAttributeExtensionNode>,
+        IExtensionIntermediateNodeVisitor<ComponentChildContentIntermediateNode>,
         IExtensionIntermediateNodeVisitor<RouteAttributeExtensionNode>,
         IExtensionIntermediateNodeVisitor<RefExtensionNode>
     {
@@ -283,6 +284,11 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
         void IExtensionIntermediateNodeVisitor<ComponentAttributeExtensionNode>.VisitExtension(ComponentAttributeExtensionNode node)
         {
             WriteContentNode(node, node.AttributeName, node.PropertyName);
+        }
+
+        void IExtensionIntermediateNodeVisitor<ComponentChildContentIntermediateNode>.VisitExtension(ComponentChildContentIntermediateNode node)
+        {
+            WriteContentNode(node, node.AttributeName);
         }
 
         void IExtensionIntermediateNodeVisitor<RouteAttributeExtensionNode>.VisitExtension(RouteAttributeExtensionNode node)

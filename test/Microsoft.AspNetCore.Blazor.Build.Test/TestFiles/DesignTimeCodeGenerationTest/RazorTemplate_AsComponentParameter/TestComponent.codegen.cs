@@ -31,7 +31,7 @@ global::System.Object __typeHelper = "*, TestAssembly";
 
 #line default
 #line hidden
-            (builder2, context) => {
+            (builder2) => {
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
                                       __o = context.Name;
 

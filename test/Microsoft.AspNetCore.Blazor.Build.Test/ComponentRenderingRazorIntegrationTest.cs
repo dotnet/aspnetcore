@@ -586,7 +586,7 @@ namespace Test
 
             var component = CompileToComponent(@"
 @addTagHelper ""*, TestAssembly""
-@{ RenderFragment<string> template = @<div>@context.ToLower()</div>; }
+@{ RenderFragment<string> template = (context) => @<div>@context.ToLower()</div>; }
 <Repeater Count=3 Value=""Hello, World!"" Template=""template"" />
 ");
 

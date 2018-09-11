@@ -18,5 +18,5 @@ Document -
                     ComponentAttributeExtensionNode -  - ParamAfter - 
                         HtmlContent - (94:1,63 [5] x:\dir\subdir\Test\TestComponent.cshtml)
                             IntermediateToken - (94:1,63 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Html - after
-            CSharpCode - (119:3,12 [44] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (119:3,12 [44] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    private Test.MyComponent myInstance;\n
+            CSharpCode - (119:3,12 [104] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (119:3,12 [104] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    private Test.MyComponent myInstance;\n    public void Foo() { System.GC.KeepAlive(myInstance); }\n

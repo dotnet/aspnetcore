@@ -22,23 +22,23 @@ Document -
                     IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
                 HtmlContent - (31:0,31 [2] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (31:0,31 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
-                CSharpCode - (35:1,2 [41] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (35:1,2 [41] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp -  RenderFragment<Test.Context> template = 
-                Template - (77:1,44 [48] x:\dir\subdir\Test\TestComponent.cshtml)
-                    HtmlElement - (77:1,44 [50] x:\dir\subdir\Test\TestComponent.cshtml) - li
-                        HtmlContent - (81:1,48 [1] x:\dir\subdir\Test\TestComponent.cshtml)
-                            IntermediateToken - (81:1,48 [1] x:\dir\subdir\Test\TestComponent.cshtml) - Html - #
-                        CSharpExpression - (83:1,50 [13] x:\dir\subdir\Test\TestComponent.cshtml)
-                            IntermediateToken - (83:1,50 [13] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - context.Index
-                        HtmlContent - (96:1,63 [3] x:\dir\subdir\Test\TestComponent.cshtml)
-                            IntermediateToken - (96:1,63 [3] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \-
-                        CSharpExpression - (100:1,67 [22] x:\dir\subdir\Test\TestComponent.cshtml)
-                            IntermediateToken - (100:1,67 [22] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - context.Item.ToLower()
-                CSharpCode - (127:1,94 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (127:1,94 [2] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - ; 
-                ComponentExtensionNode - (132:2,0 [35] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent - Test.MyComponent
-                    ComponentAttributeExtensionNode - (155:2,23 [9] x:\dir\subdir\Test\TestComponent.cshtml) - Template - Template
-                        CSharpExpression - (156:2,24 [8] x:\dir\subdir\Test\TestComponent.cshtml)
-                            IntermediateToken - (156:2,24 [8] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - template
-                HtmlContent - (167:2,35 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (167:2,35 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+                CSharpCode - (35:1,2 [54] x:\dir\subdir\Test\TestComponent.cshtml)
+                    IntermediateToken - (35:1,2 [54] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp -  RenderFragment<Test.Context> template = (context) => 
+                Template - (90:1,57 [48] x:\dir\subdir\Test\TestComponent.cshtml)
+                    HtmlElement - (90:1,57 [50] x:\dir\subdir\Test\TestComponent.cshtml) - li
+                        HtmlContent - (94:1,61 [1] x:\dir\subdir\Test\TestComponent.cshtml)
+                            IntermediateToken - (94:1,61 [1] x:\dir\subdir\Test\TestComponent.cshtml) - Html - #
+                        CSharpExpression - (96:1,63 [13] x:\dir\subdir\Test\TestComponent.cshtml)
+                            IntermediateToken - (96:1,63 [13] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - context.Index
+                        HtmlContent - (109:1,76 [3] x:\dir\subdir\Test\TestComponent.cshtml)
+                            IntermediateToken - (109:1,76 [3] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \-
+                        CSharpExpression - (113:1,80 [22] x:\dir\subdir\Test\TestComponent.cshtml)
+                            IntermediateToken - (113:1,80 [22] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - context.Item.ToLower()
+                CSharpCode - (140:1,107 [2] x:\dir\subdir\Test\TestComponent.cshtml)
+                    IntermediateToken - (140:1,107 [2] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - ; 
+                ComponentExtensionNode - (145:2,0 [35] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent - Test.MyComponent
+                    ComponentAttributeExtensionNode - (168:2,23 [9] x:\dir\subdir\Test\TestComponent.cshtml) - Template - Template
+                        CSharpExpression - (169:2,24 [8] x:\dir\subdir\Test\TestComponent.cshtml)
+                            IntermediateToken - (169:2,24 [8] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - template
+                HtmlContent - (180:2,35 [2] x:\dir\subdir\Test\TestComponent.cshtml)
+                    IntermediateToken - (180:2,35 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n

@@ -28,7 +28,7 @@ global::System.Object __typeHelper = "*, TestAssembly";
             base.BuildRenderTree(builder);
             __o = new System.Action<Microsoft.AspNetCore.Blazor.UIEventArgs>(
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
-                        (e) => { Increment(); }
+                        e => { Increment(); }
 
 #line default
 #line hidden

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -17,12 +17,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
 
         public IEnumerable<RefExtensionNode> Captures => Children.OfType<RefExtensionNode>();
 
-        public IEnumerable<IntermediateNode> Body => Children.Where(c =>
-        {
-            return
-                c as ComponentAttributeExtensionNode == null &&
-                c as RefExtensionNode == null;
-        });
+        public IEnumerable<ComponentChildContentIntermediateNode> ChildContents => Children.OfType<ComponentChildContentIntermediateNode>();
 
         public override IntermediateNodeCollection Children { get; } = new IntermediateNodeCollection();
 
@@ -82,7 +77,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 }
 
                 builder.Append(">");
-                builder.Append(Body.Any() ? "..." : string.Empty);
+                builder.Append(ChildContents.Any() ? "..." : string.Empty);
                 builder.Append("</");
                 builder.Append(TagName);
                 builder.Append(">");

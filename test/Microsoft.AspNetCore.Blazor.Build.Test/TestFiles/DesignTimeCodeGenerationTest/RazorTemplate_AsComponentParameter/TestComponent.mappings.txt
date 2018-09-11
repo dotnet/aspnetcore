@@ -10,16 +10,16 @@ Generated Location: (1039:29,2 [35] )
 
 Source Location: (77:1,44 [12] x:\dir\subdir\Test\TestComponent.cshtml)
 |context.Name|
-Generated Location: (1240:35,44 [12] )
+Generated Location: (1231:35,44 [12] )
 |context.Name|
 
 Source Location: (95:1,62 [2] x:\dir\subdir\Test\TestComponent.cshtml)
 |; |
-Generated Location: (1414:41,62 [2] )
+Generated Location: (1405:41,62 [2] )
 |; |
 
 Source Location: (130:2,30 [8] x:\dir\subdir\Test\TestComponent.cshtml)
 |template|
-Generated Location: (1610:47,30 [8] )
+Generated Location: (1601:47,30 [8] )
 |template|
 

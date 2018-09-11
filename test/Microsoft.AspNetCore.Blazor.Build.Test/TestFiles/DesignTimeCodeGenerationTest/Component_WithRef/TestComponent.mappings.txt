@@ -8,16 +8,14 @@ Source Location: (70:1,39 [10] x:\dir\subdir\Test\TestComponent.cshtml)
 Generated Location: (1223:32,39 [10] )
 |myInstance|
 
-Source Location: (119:3,12 [133] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (119:3,12 [104] x:\dir\subdir\Test\TestComponent.cshtml)
 |
-    Test.MyComponent myInstance;
-
-    void DoSomething() { myInstance.GetHashCode(); } // Avoid 'assigned but not used' warning
+    private Test.MyComponent myInstance;
+    public void Foo() { System.GC.KeepAlive(myInstance); }
 |
-Generated Location: (1407:39,12 [133] )
+Generated Location: (1407:39,12 [104] )
 |
-    Test.MyComponent myInstance;
-
-    void DoSomething() { myInstance.GetHashCode(); } // Avoid 'assigned but not used' warning
+    private Test.MyComponent myInstance;
+    public void Foo() { System.GC.KeepAlive(myInstance); }
 |
 

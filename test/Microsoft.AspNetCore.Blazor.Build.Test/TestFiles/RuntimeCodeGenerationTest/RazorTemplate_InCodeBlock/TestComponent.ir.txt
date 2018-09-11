@@ -10,13 +10,13 @@ Document -
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 CSharpCode - 
                     IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
-                CSharpCode - (2:0,2 [33] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (2:0,2 [33] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    RenderFragment<Person> p = 
-                Template - (36:1,32 [23] x:\dir\subdir\Test\TestComponent.cshtml)
-                    HtmlElement - (36:1,32 [24] x:\dir\subdir\Test\TestComponent.cshtml) - div
-                        CSharpExpression - (42:1,38 [12] x:\dir\subdir\Test\TestComponent.cshtml)
-                            IntermediateToken - (42:1,38 [12] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - context.Name
-                CSharpCode - (60:1,56 [3] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (60:1,56 [3] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - ;\n
-            CSharpCode - (78:3,12 [76] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (78:3,12 [76] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    class Person\n    {\n        public string Name { get; set; }\n    }\n
+                CSharpCode - (2:0,2 [45] x:\dir\subdir\Test\TestComponent.cshtml)
+                    IntermediateToken - (2:0,2 [45] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    RenderFragment<Person> p = (person) => 
+                Template - (48:1,44 [22] x:\dir\subdir\Test\TestComponent.cshtml)
+                    HtmlElement - (48:1,44 [23] x:\dir\subdir\Test\TestComponent.cshtml) - div
+                        CSharpExpression - (54:1,50 [11] x:\dir\subdir\Test\TestComponent.cshtml)
+                            IntermediateToken - (54:1,50 [11] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - person.Name
+                CSharpCode - (71:1,67 [3] x:\dir\subdir\Test\TestComponent.cshtml)
+                    IntermediateToken - (71:1,67 [3] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - ;\n
+            CSharpCode - (89:3,12 [76] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (89:3,12 [76] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    class Person\n    {\n        public string Name { get; set; }\n    }\n

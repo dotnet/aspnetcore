@@ -38,9 +38,8 @@ global::System.Object __typeHelper = "*, TestAssembly";
         #pragma warning restore 1998
 #line 4 "x:\dir\subdir\Test\TestComponent.cshtml"
             
-    Test.MyComponent myInstance;
-
-    void DoSomething() { myInstance.GetHashCode(); } // Avoid 'assigned but not used' warning
+    private Test.MyComponent myInstance;
+    public void Foo() { System.GC.KeepAlive(myInstance); }
 
 #line default
 #line hidden

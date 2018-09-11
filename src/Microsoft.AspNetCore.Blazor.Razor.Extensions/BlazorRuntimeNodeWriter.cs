@@ -65,7 +65,6 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             {
                 if (node.Children[i] is IntermediateToken token && token.IsCSharp)
                 {
-                    _scopeStack.IncrementCurrentScopeChildCount(context);
                     context.AddSourceMappingFor(token);
                     context.CodeWriter.Write(token.Content);
                 }
@@ -100,7 +99,6 @@ namespace Microsoft.AspNetCore.Blazor.Razor
 
             // Since we're not in the middle of writing an element, this must evaluate as some
             // text to display
-            _scopeStack.IncrementCurrentScopeChildCount(context);
             context.CodeWriter
                 .WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{nameof(BlazorApi.RenderTreeBuilder.AddContent)}")
                 .Write((_sourceSequence++).ToString())
@@ -161,8 +159,6 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 throw new ArgumentNullException(nameof(node));
             }
 
-            _scopeStack.IncrementCurrentScopeChildCount(context);
-
             context.CodeWriter
                 .WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{nameof(BlazorApi.RenderTreeBuilder.AddMarkupContent)}")
                 .Write((_sourceSequence++).ToString())
@@ -182,8 +178,6 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             {
                 throw new ArgumentNullException(nameof(node));
             }
-
-            _scopeStack.IncrementCurrentScopeChildCount(context);
 
             context.CodeWriter
                 .WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{nameof(BlazorApi.RenderTreeBuilder.OpenElement)}")
@@ -267,7 +261,6 @@ namespace Microsoft.AspNetCore.Blazor.Razor
 
             // Text node
             var content = GetHtmlContent(node);
-            _scopeStack.IncrementCurrentScopeChildCount(context);
             context.CodeWriter
                 .WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{nameof(BlazorApi.RenderTreeBuilder.AddContent)}")
                 .Write((_sourceSequence++).ToString())
@@ -303,9 +296,6 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 throw new ArgumentNullException(nameof(node));
             }
 
-            // The start tag counts as a child from a markup point of view.
-            _scopeStack.IncrementCurrentScopeChildCount(context);
-
             // builder.OpenComponent<TComponent>(42);
             context.CodeWriter.Write(_scopeStack.BuilderVarName);
             context.CodeWriter.Write(".");
@@ -321,21 +311,16 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             {
                 context.RenderNode(attribute);
             }
-
-            _scopeStack.OpenComponentScope(node.TagName);
-            foreach (var child in node.Body)
+            
+            foreach (var childContent in node.ChildContents)
             {
-                context.RenderNode(child);
+                context.RenderNode(childContent);
             }
-            _scopeStack.CloseScope(context);
 
             foreach (var capture in node.Captures)
             {
                 context.RenderNode(capture);
             }
-
-            // The close tag counts as a child from a markup point of view.
-            _scopeStack.IncrementCurrentScopeChildCount(context);
 
             // builder.OpenComponent<TComponent>(42);
             context.CodeWriter.Write(_scopeStack.BuilderVarName);
@@ -383,34 +368,12 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 var content = string.Join(string.Empty, GetHtmlTokens(htmlNode).Select(t => t.Content));
                 context.CodeWriter.WriteStringLiteral(content);
             }
-            else if (node.Children.Count == 1 && node.Children[0] is TemplateIntermediateNode template)
-            {
-                // Templates are represented as lambdas assignable for RenderFragment<T> (for some T).
-                // We don't have a type to write down unless its bound to a stronly typed attribute.
-                // That's OK because the compiler gives an error if we can't type check it.
-
-                // If we have a parameter type, then add a type check.
-                if (node.BoundAttribute != null && !node.BoundAttribute.IsWeaklyTyped())
-                {
-                    context.CodeWriter.Write(BlazorApi.RuntimeHelpers.TypeCheck);
-                    context.CodeWriter.Write("<");
-                    context.CodeWriter.Write(node.BoundAttribute.TypeName);
-                    context.CodeWriter.Write(">");
-                    context.CodeWriter.Write("(");
-                }
-
-                context.RenderNode(template);
-
-                if (node.BoundAttribute != null && !node.BoundAttribute.IsWeaklyTyped())
-                {
-                    context.CodeWriter.Write(")");
-                }
-            }
             else
             {
                 // See comments in BlazorDesignTimeNodeWriter for a description of the cases that are possible.
                 var tokens = GetCSharpTokens(node);
-                if (node.BoundAttribute?.IsDelegateProperty() ?? false)
+                if ((node.BoundAttribute?.IsDelegateProperty() ?? false) ||
+                    (node.BoundAttribute?.IsChildContentProperty() ?? false))
                 {
                     context.CodeWriter.Write("new ");
                     context.CodeWriter.Write(node.BoundAttribute.TypeName);
@@ -425,7 +388,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 }
                 else
                 {
-                    if (node.BoundAttribute != null && !node.BoundAttribute.IsWeaklyTyped())
+                    if (NeedsTypeCheck(node))
                     {
                         context.CodeWriter.Write(BlazorApi.RuntimeHelpers.TypeCheck);
                         context.CodeWriter.Write("<");
@@ -439,7 +402,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                         context.CodeWriter.Write(tokens[i].Content);
                     }
 
-                    if (node.BoundAttribute != null && !node.BoundAttribute.IsWeaklyTyped())
+                    if (NeedsTypeCheck(node))
                     {
                         context.CodeWriter.Write(")");
                     }
@@ -460,6 +423,35 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 // We generally expect all children to be HTML, this is here just in case.
                 return html.FindDescendantNodes<IntermediateToken>().Where(t => t.IsHtml).ToArray();
             }
+
+            bool NeedsTypeCheck(ComponentAttributeExtensionNode n)
+            {
+                return node.BoundAttribute != null && !node.BoundAttribute.IsWeaklyTyped();
+            }
+        }
+
+        public override void WriteComponentChildContent(CodeRenderingContext context, ComponentChildContentIntermediateNode node)
+        {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (node == null)
+            {
+                throw new ArgumentNullException(nameof(node));
+            }
+
+            _scopeStack.OpenComponentScope(
+                context,
+                node.AttributeName,
+                node.TypeName,
+                node.IsParameterized ? node.ParameterName : null);
+            for (var i = 0; i < node.Children.Count; i++)
+            {
+                context.RenderNode(node.Children[i]);
+            }
+            _scopeStack.CloseScope(context);
         }
 
         public override void WriteTemplate(CodeRenderingContext context, TemplateIntermediateNode node)
@@ -474,11 +466,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 throw new ArgumentNullException(nameof(node));
             }
 
-            // Since the user doesn't write this name themselves, we have to use something hardcoded
-            // and predicatable.
-            const string VariableName = "context";
-
-            _scopeStack.OpenTemplateScope(context, VariableName);
+            _scopeStack.OpenTemplateScope(context);
             context.RenderChildren(node);
             _scopeStack.CloseScope(context);
         }

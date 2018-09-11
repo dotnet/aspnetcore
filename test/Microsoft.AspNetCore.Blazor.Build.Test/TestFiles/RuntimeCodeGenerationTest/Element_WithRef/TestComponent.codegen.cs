@@ -33,6 +33,7 @@ namespace Test
 #line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
             
     private Microsoft.AspNetCore.Blazor.ElementRef myElem;
+    public void Foo() { System.GC.KeepAlive(myElem); }
 
 #line default
 #line hidden

@@ -11,12 +11,13 @@ Document -
                 CSharpCode - 
                     IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
                 ComponentExtensionNode - (31:1,0 [96] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent - Test.MyComponent
-                    HtmlContent - (76:1,45 [11] x:\dir\subdir\Test\TestComponent.cshtml)
-                        IntermediateToken - (76:1,45 [11] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n    Some 
-                    HtmlBlock -  - <el>further</el> content\n
+                    ComponentChildContent -  - ChildContent
+                        HtmlContent - (76:1,45 [11] x:\dir\subdir\Test\TestComponent.cshtml)
+                            IntermediateToken - (76:1,45 [11] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n    Some 
+                        HtmlBlock -  - <el>further</el> content\n
                     RefExtensionNode - (49:1,18 [10] x:\dir\subdir\Test\TestComponent.cshtml) - myInstance - Test.MyComponent
                     ComponentAttributeExtensionNode -  - SomeProp - 
                         HtmlContent - (71:1,40 [3] x:\dir\subdir\Test\TestComponent.cshtml)
                             IntermediateToken - (71:1,40 [3] x:\dir\subdir\Test\TestComponent.cshtml) - Html - val
-            CSharpCode - (143:5,12 [44] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (143:5,12 [44] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    private Test.MyComponent myInstance;\n
+            CSharpCode - (143:5,12 [104] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (143:5,12 [104] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    private Test.MyComponent myInstance;\n    public void Foo() { System.GC.KeepAlive(myInstance); }\n

@@ -28,14 +28,14 @@ global::System.Object __typeHelper = "*, TestAssembly";
             base.BuildRenderTree(builder);
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
   
-    RenderFragment<Person> p = 
+    RenderFragment<Person> p = (person) => 
 
 #line default
 #line hidden
-            (builder2, context) => {
+            (builder2) => {
                 __o = Microsoft.AspNetCore.Blazor.Components.RuntimeHelpers.TypeCheck<System.String>(
 #line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
-                                                         context.Name
+                                                                     person.Name
 
 #line default
 #line hidden
@@ -45,7 +45,7 @@ global::System.Object __typeHelper = "*, TestAssembly";
                 ));
             }
 #line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
-                                                                              ;
+                                                                                         ;
 
 #line default
 #line hidden

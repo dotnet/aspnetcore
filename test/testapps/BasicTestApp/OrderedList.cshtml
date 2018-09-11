@@ -4,7 +4,7 @@
     }
     @foreach (var item in Items)
     {
-        @Template.WithValue(new Context() { Index = index++, Item = item, });
+        @Template(new Context() { Index = index++, Item = item, });
     }
 </ol>
 

@@ -22,15 +22,15 @@ Document -
                     IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
                 HtmlContent - (31:0,31 [2] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (31:0,31 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
-                CSharpCode - (35:1,2 [33] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (35:1,2 [33] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    RenderFragment<Person> p = 
-                Template - (69:2,32 [46] x:\dir\subdir\Test\TestComponent.cshtml)
-                    HtmlElement - (69:2,32 [46] x:\dir\subdir\Test\TestComponent.cshtml) - div
-                        ComponentExtensionNode - (74:2,37 [35] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent - Test.MyComponent
-                            ComponentAttributeExtensionNode - (93:2,56 [13] x:\dir\subdir\Test\TestComponent.cshtml) - Name - Name
-                                CSharpExpression - (94:2,57 [12] x:\dir\subdir\Test\TestComponent.cshtml)
-                                    IntermediateToken - (94:2,57 [12] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - context.Name
-                CSharpCode - (115:2,78 [3] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (115:2,78 [3] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - ;\n
-            CSharpCode - (133:4,12 [76] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (133:4,12 [76] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    class Person\n    {\n        public string Name { get; set; }\n    }\n
+                CSharpCode - (35:1,2 [45] x:\dir\subdir\Test\TestComponent.cshtml)
+                    IntermediateToken - (35:1,2 [45] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    RenderFragment<Person> p = (person) => 
+                Template - (81:2,44 [45] x:\dir\subdir\Test\TestComponent.cshtml)
+                    HtmlElement - (81:2,44 [45] x:\dir\subdir\Test\TestComponent.cshtml) - div
+                        ComponentExtensionNode - (86:2,49 [34] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent - Test.MyComponent
+                            ComponentAttributeExtensionNode - (105:2,68 [12] x:\dir\subdir\Test\TestComponent.cshtml) - Name - Name
+                                CSharpExpression - (106:2,69 [11] x:\dir\subdir\Test\TestComponent.cshtml)
+                                    IntermediateToken - (106:2,69 [11] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - person.Name
+                CSharpCode - (126:2,89 [3] x:\dir\subdir\Test\TestComponent.cshtml)
+                    IntermediateToken - (126:2,89 [3] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - ;\n
+            CSharpCode - (144:4,12 [76] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (144:4,12 [76] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    class Person\n    {\n        public string Name { get; set; }\n    }\n

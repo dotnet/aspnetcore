@@ -20,5 +20,5 @@ Document -
                     HtmlAttribute -  - attributeafter=" - "
                         HtmlAttributeValue - (60:0,60 [5] x:\dir\subdir\Test\TestComponent.cshtml) - 
                             IntermediateToken - (60:0,60 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Html - after
-            CSharpCode - (95:2,12 [62] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (95:2,12 [62] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    private Microsoft.AspNetCore.Blazor.ElementRef myElem;\n
+            CSharpCode - (95:2,12 [118] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (95:2,12 [118] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    private Microsoft.AspNetCore.Blazor.ElementRef myElem;\n    public void Foo() { System.GC.KeepAlive(myElem); }\n

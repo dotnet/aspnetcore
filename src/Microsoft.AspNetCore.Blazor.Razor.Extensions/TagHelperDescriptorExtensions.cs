@@ -1,8 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 
 using System;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Razor.Language;
 
 namespace Microsoft.AspNetCore.Blazor.Razor
@@ -81,6 +82,18 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             return result;
         }
 
+        public static bool IsChildContentTagHelper(this TagHelperDescriptor tagHelper)
+        {
+            if (tagHelper == null)
+            {
+                throw new ArgumentNullException(nameof(tagHelper));
+            }
+
+            return
+                tagHelper.Metadata.TryGetValue(BlazorMetadata.SpecialKindKey, out var value) &&
+                string.Equals(value, BlazorMetadata.ChildContent.TagHelperKind, StringComparison.Ordinal);
+        }
+
         public static bool IsComponentTagHelper(this TagHelperDescriptor tagHelper)
         {
             if (tagHelper == null)
@@ -124,6 +137,28 @@ namespace Microsoft.AspNetCore.Blazor.Razor
 
             tagHelper.Metadata.TryGetValue(BlazorMetadata.EventHandler.EventArgsType, out var result);
             return result;
+        }
+
+        /// <summary>
+        /// Gets the set of component attributes that can accept child content (<c>RenderFragment</c> or <c>RenderFragment{T}</c>).
+        /// </summary>
+        /// <param name="tagHelper">The <see cref="TagHelperDescriptor"/>.</param>
+        /// <returns>The child content attributes</returns>
+        public static IEnumerable<BoundAttributeDescriptor> GetChildContentProperties(this TagHelperDescriptor tagHelper)
+        {
+            if (tagHelper == null)
+            {
+                throw new ArgumentNullException(nameof(tagHelper));
+            }
+
+            for (var i = 0; i < tagHelper.BoundAttributes.Count; i++)
+            {
+                var attribute = tagHelper.BoundAttributes[i];
+                if (attribute.IsChildContentProperty())
+                {
+                    yield return attribute;
+                }
+            }
         }
     }
 }

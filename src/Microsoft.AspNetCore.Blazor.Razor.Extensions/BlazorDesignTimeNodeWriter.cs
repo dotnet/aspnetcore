@@ -348,18 +348,23 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 context.RenderNode(attribute);
             }
 
-            // We need to be aware of the blazor scope-tracking concept in design-time code generation
-            // because each component creates a lambda scope for its child content.
-            //
-            // We're hacking it a bit here by just forcing every component to have an empty lambda
-            _scopeStack.OpenComponentScope(node.TagName);
-            _scopeStack.IncrementCurrentScopeChildCount(context);
-
-            foreach (var child in node.Body)
+            if (node.ChildContents.Any())
             {
-                context.RenderNode(child);
+                foreach (var childContent in node.ChildContents)
+                {
+                    context.RenderNode(childContent);
+                }
             }
-            _scopeStack.CloseScope(context);
+            else
+            {
+                // We eliminate 'empty' child content when building the tree so that usage like
+                // '<MyComponent>\r\n</MyComponent>' doesn't create a child content.
+                //
+                // Consider what would happen if the user's cursor was inside the element. At
+                // design -time we want to render an empty lambda to provide proper scoping
+                // for any code that the user types.
+                context.RenderNode(new ComponentChildContentIntermediateNode());
+            }
 
             foreach (var capture in node.Captures)
             {
@@ -398,34 +403,6 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             {
                 // Do nothing
             }
-            else if (node.Children.Count == 1 && node.Children[0] is TemplateIntermediateNode template)
-            {
-                // Templates are represented as lambdas assignable for RenderFragment<T> (for some T).
-                // We don't have a type to write down unless its bound to a stronly typed attribute.
-                // That's OK because the compiler gives an error if we can't type check it.
-                context.CodeWriter.Write(DesignTimeVariable);
-                context.CodeWriter.Write(" = ");
-
-                // If we have a parameter type, then add a type check.
-                if (NeedsTypeCheck(node))
-                {
-                    context.CodeWriter.Write(BlazorApi.RuntimeHelpers.TypeCheck);
-                    context.CodeWriter.Write("<");
-                    context.CodeWriter.Write(node.BoundAttribute.TypeName);
-                    context.CodeWriter.Write(">");
-                    context.CodeWriter.Write("(");
-                }
-
-                context.RenderNode(template);
-
-                if (NeedsTypeCheck(node))
-                {
-                    context.CodeWriter.Write(")");
-                }
-
-                context.CodeWriter.Write(";");
-                context.CodeWriter.WriteLine();
-            }
             else
             {
                 // There are a few different forms that could be used to contain all of the tokens, but we don't really care
@@ -440,7 +417,8 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 // Of a list of tokens directly in the attribute.
                 var tokens = GetCSharpTokens(node);
 
-                if (node.BoundAttribute?.IsDelegateProperty() ?? false)
+                if ((node.BoundAttribute?.IsDelegateProperty() ?? false) ||
+                    (node.BoundAttribute?.IsChildContentProperty() ?? false))
                 {
                     // We always surround the expression with the delegate constructor. This makes type
                     // inference inside lambdas, and method group conversion do the right thing.
@@ -502,6 +480,30 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             }
         }
 
+        public override void WriteComponentChildContent(CodeRenderingContext context, ComponentChildContentIntermediateNode node)
+        {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (node == null)
+            {
+                throw new ArgumentNullException(nameof(node));
+            }
+
+            _scopeStack.OpenComponentScope(
+                context,
+                node.AttributeName,
+                node.TypeName,
+                node.IsParameterized ? node.ParameterName : null);
+            for (var i = 0; i < node.Children.Count; i++)
+            {
+                context.RenderNode(node.Children[i]);
+            }
+            _scopeStack.CloseScope(context);
+        }
+
         public override void WriteTemplate(CodeRenderingContext context, TemplateIntermediateNode node)
         {
             if (context == null)
@@ -514,11 +516,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 throw new ArgumentNullException(nameof(node));
             }
 
-            // Since the user doesn't write this name themselves, we have to use something hardcoded
-            // and predicatable.
-            const string VariableName = "context";
-
-            _scopeStack.OpenTemplateScope(context, VariableName);
+            _scopeStack.OpenTemplateScope(context);
             context.RenderChildren(node);
             _scopeStack.CloseScope(context);
         }

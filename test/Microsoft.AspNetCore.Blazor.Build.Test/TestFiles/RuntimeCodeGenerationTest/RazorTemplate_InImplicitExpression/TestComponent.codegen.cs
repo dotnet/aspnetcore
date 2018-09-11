@@ -15,7 +15,7 @@ namespace Test
         protected override void BuildRenderTree(Microsoft.AspNetCore.Blazor.RenderTree.RenderTreeBuilder builder)
         {
             base.BuildRenderTree(builder);
-            builder.AddContent(0, RenderPerson((builder2, context) => {
+            builder.AddContent(0, RenderPerson((builder2) => {
                 builder2.OpenElement(1, "div");
                 builder2.AddContent(2, context.Name);
                 builder2.CloseElement();

@@ -16,11 +16,11 @@ namespace Test
         {
             base.BuildRenderTree(builder);
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
-   RenderFragment<Test.Context> template = 
+   RenderFragment<Test.Context> template = (context) => 
 
 #line default
 #line hidden
-            (builder2, context) => {
+            (builder2) => {
                 builder2.OpenElement(0, "li");
                 builder2.AddContent(1, "#");
                 builder2.AddContent(2, context.Index);
@@ -29,7 +29,7 @@ namespace Test
                 builder2.CloseElement();
             }
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
-                                                                                              ; 
+                                                                                                           ; 
 
 #line default
 #line hidden

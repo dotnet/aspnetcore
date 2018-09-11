@@ -10,22 +10,23 @@ Document -
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 CSharpCode - 
                     IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
-                CSharpCode - (35:1,2 [33] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (35:1,2 [33] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    RenderFragment<Person> p = 
-                Template - (69:2,32 [46] x:\dir\subdir\Test\TestComponent.cshtml)
-                    HtmlElement - (69:2,32 [46] x:\dir\subdir\Test\TestComponent.cshtml) - div
-                        ComponentExtensionNode - (74:2,37 [35] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent - Test.MyComponent
-                            ComponentAttributeExtensionNode - (93:2,56 [13] x:\dir\subdir\Test\TestComponent.cshtml) - Name - Name
-                                CSharpExpression - (94:2,57 [12] x:\dir\subdir\Test\TestComponent.cshtml)
-                                    IntermediateToken - (94:2,57 [12] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - context.Name
-                CSharpCode - (115:2,78 [3] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (115:2,78 [3] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - ;\n
-                ComponentExtensionNode - (121:4,0 [49] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent - Test.MyComponent
-                    HtmlContent - (134:4,13 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                        IntermediateToken - (134:4,13 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
-                    CSharpExpression - (138:5,2 [15] x:\dir\subdir\Test\TestComponent.cshtml)
-                        IntermediateToken - (138:5,2 [15] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - "hello, world!"
-                    HtmlContent - (154:5,18 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                        IntermediateToken - (154:5,18 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
-            CSharpCode - (186:8,12 [76] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (186:8,12 [76] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    class Person\n    {\n        public string Name { get; set; }\n    }\n
+                CSharpCode - (35:1,2 [45] x:\dir\subdir\Test\TestComponent.cshtml)
+                    IntermediateToken - (35:1,2 [45] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    RenderFragment<Person> p = (person) => 
+                Template - (81:2,44 [45] x:\dir\subdir\Test\TestComponent.cshtml)
+                    HtmlElement - (81:2,44 [45] x:\dir\subdir\Test\TestComponent.cshtml) - div
+                        ComponentExtensionNode - (86:2,49 [34] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent - Test.MyComponent
+                            ComponentAttributeExtensionNode - (105:2,68 [12] x:\dir\subdir\Test\TestComponent.cshtml) - Name - Name
+                                CSharpExpression - (106:2,69 [11] x:\dir\subdir\Test\TestComponent.cshtml)
+                                    IntermediateToken - (106:2,69 [11] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - person.Name
+                CSharpCode - (126:2,89 [3] x:\dir\subdir\Test\TestComponent.cshtml)
+                    IntermediateToken - (126:2,89 [3] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - ;\n
+                ComponentExtensionNode - (132:4,0 [49] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent - Test.MyComponent
+                    ComponentChildContent -  - ChildContent
+                        HtmlContent - (145:4,13 [2] x:\dir\subdir\Test\TestComponent.cshtml)
+                            IntermediateToken - (145:4,13 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+                        CSharpExpression - (149:5,2 [15] x:\dir\subdir\Test\TestComponent.cshtml)
+                            IntermediateToken - (149:5,2 [15] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - "hello, world!"
+                        HtmlContent - (165:5,18 [2] x:\dir\subdir\Test\TestComponent.cshtml)
+                            IntermediateToken - (165:5,18 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+            CSharpCode - (197:8,12 [76] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (197:8,12 [76] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    class Person\n    {\n        public string Name { get; set; }\n    }\n

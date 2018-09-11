@@ -22,11 +22,11 @@ Document -
                     IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
                 HtmlContent - (29:0,29 [2] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (29:0,29 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
-                ComponentExtensionNode - (31:1,0 [51] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent - Test.MyComponent
-                    ComponentAttributeExtensionNode - (53:1,22 [26] x:\dir\subdir\Test\TestComponent.cshtml) - OnClick - OnClick
-                        CSharpExpression - (54:1,23 [25] x:\dir\subdir\Test\TestComponent.cshtml)
-                            IntermediateToken - (55:1,24 [23] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - (e) => { Increment(); }
-                HtmlContent - (82:1,51 [4] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (82:1,51 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n\n
-            CSharpCode - (98:3,12 [87] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (98:3,12 [87] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    private int counter;\n    private void Increment() {\n        counter++;\n    }\n
+                ComponentExtensionNode - (31:1,0 [49] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent - Test.MyComponent
+                    ComponentAttributeExtensionNode - (53:1,22 [24] x:\dir\subdir\Test\TestComponent.cshtml) - OnClick - OnClick
+                        CSharpExpression - (54:1,23 [23] x:\dir\subdir\Test\TestComponent.cshtml)
+                            IntermediateToken - (55:1,24 [21] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - e => { Increment(); }
+                HtmlContent - (80:1,49 [4] x:\dir\subdir\Test\TestComponent.cshtml)
+                    IntermediateToken - (80:1,49 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n\n
+            CSharpCode - (96:3,12 [87] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (96:3,12 [87] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    private int counter;\n    private void Increment() {\n        counter++;\n    }\n

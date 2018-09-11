@@ -3,38 +3,38 @@ Source Location: (14:0,14 [17] x:\dir\subdir\Test\TestComponent.cshtml)
 Generated Location: (558:16,37 [17] )
 |"*, TestAssembly"|
 
-Source Location: (35:1,2 [33] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (35:1,2 [45] x:\dir\subdir\Test\TestComponent.cshtml)
 |
-    RenderFragment<Person> p = |
-Generated Location: (1039:29,2 [33] )
+    RenderFragment<Person> p = (person) => |
+Generated Location: (1039:29,2 [45] )
 |
-    RenderFragment<Person> p = |
+    RenderFragment<Person> p = (person) => |
 
-Source Location: (94:2,57 [12] x:\dir\subdir\Test\TestComponent.cshtml)
-|context.Name|
-Generated Location: (1354:37,57 [12] )
-|context.Name|
+Source Location: (106:2,69 [11] x:\dir\subdir\Test\TestComponent.cshtml)
+|person.Name|
+Generated Location: (1369:37,69 [11] )
+|person.Name|
 
-Source Location: (115:2,78 [3] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (126:2,89 [3] x:\dir\subdir\Test\TestComponent.cshtml)
 |;
 |
-Generated Location: (1723:47,78 [3] )
+Generated Location: (1748:47,89 [3] )
 |;
 |
 
-Source Location: (138:5,2 [15] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (149:5,2 [15] x:\dir\subdir\Test\TestComponent.cshtml)
 |"hello, world!"|
-Generated Location: (1929:53,6 [15] )
+Generated Location: (1954:53,6 [15] )
 |"hello, world!"|
 
-Source Location: (186:8,12 [76] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (197:8,12 [76] x:\dir\subdir\Test\TestComponent.cshtml)
 |
     class Person
     {
         public string Name { get; set; }
     }
 |
-Generated Location: (2122:62,12 [76] )
+Generated Location: (2147:62,12 [76] )
 |
     class Person
     {

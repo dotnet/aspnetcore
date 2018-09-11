@@ -32,7 +32,7 @@ Document -
                             IntermediateToken - (94:1,63 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Html - after
                 HtmlContent - (103:1,72 [4] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (103:1,72 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n\n
-                HtmlContent - (253:7,1 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (253:7,1 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
-            CSharpCode - (119:3,12 [133] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (119:3,12 [133] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    Test.MyComponent myInstance;\n\n    void DoSomething() { myInstance.GetHashCode(); } // Avoid 'assigned but not used' warning\n
+                HtmlContent - (224:6,1 [2] x:\dir\subdir\Test\TestComponent.cshtml)
+                    IntermediateToken - (224:6,1 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+            CSharpCode - (119:3,12 [104] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (119:3,12 [104] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    private Test.MyComponent myInstance;\n    public void Foo() { System.GC.KeepAlive(myInstance); }\n

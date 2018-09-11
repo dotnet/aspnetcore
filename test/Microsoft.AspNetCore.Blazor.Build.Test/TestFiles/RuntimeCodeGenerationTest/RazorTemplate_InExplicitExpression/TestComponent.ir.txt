@@ -10,12 +10,12 @@ Document -
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 CSharpCode - 
                     IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
-                CSharpExpression - (2:0,2 [37] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (2:0,2 [13] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - RenderPerson(
-                    Template - (16:0,16 [23] x:\dir\subdir\Test\TestComponent.cshtml)
-                        HtmlElement - (16:0,16 [24] x:\dir\subdir\Test\TestComponent.cshtml) - div
-                            CSharpExpression - (22:0,22 [12] x:\dir\subdir\Test\TestComponent.cshtml)
-                                IntermediateToken - (22:0,22 [12] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - context.Name
-                    IntermediateToken - (40:0,40 [1] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - )
-            CSharpCode - (56:1,12 [138] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (56:1,12 [138] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    class Person\n    {\n        public string Name { get; set; }\n    }\n\n    object RenderPerson(RenderFragment<Person> p) => null;\n
+                CSharpExpression - (2:0,2 [48] x:\dir\subdir\Test\TestComponent.cshtml)
+                    IntermediateToken - (2:0,2 [25] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - RenderPerson((person) => 
+                    Template - (28:0,28 [22] x:\dir\subdir\Test\TestComponent.cshtml)
+                        HtmlElement - (28:0,28 [23] x:\dir\subdir\Test\TestComponent.cshtml) - div
+                            CSharpExpression - (34:0,34 [11] x:\dir\subdir\Test\TestComponent.cshtml)
+                                IntermediateToken - (34:0,34 [11] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - person.Name
+                    IntermediateToken - (51:0,51 [1] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - )
+            CSharpCode - (67:1,12 [138] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (67:1,12 [138] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    class Person\n    {\n        public string Name { get; set; }\n    }\n\n    object RenderPerson(RenderFragment<Person> p) => null;\n

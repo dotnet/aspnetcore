@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             for (var i = 0; i < visitor.Candidates.Count; i++)
             {
                 var candidate = visitor.Candidates[i];
-                candidate.Parent.Diagnostics.Add(BlazorDiagnosticFactory.CreateTemplate_InvalidLocation(candidate.Node.Source));
+                candidate.Parent.Diagnostics.Add(BlazorDiagnosticFactory.Create_TemplateInvalidLocation(candidate.Node.Source));
 
                 // Remove the offending node since we don't know how to render it. This means that the user won't get C#
                 // completion at this location, which is fine because it's inside an HTML attribute.

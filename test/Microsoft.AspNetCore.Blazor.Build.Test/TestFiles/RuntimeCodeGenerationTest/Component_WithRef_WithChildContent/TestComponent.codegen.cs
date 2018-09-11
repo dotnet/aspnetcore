@@ -36,6 +36,7 @@ namespace Test
 #line 6 "x:\dir\subdir\Test\TestComponent.cshtml"
             
     private Test.MyComponent myInstance;
+    public void Foo() { System.GC.KeepAlive(myInstance); }
 
 #line default
 #line hidden

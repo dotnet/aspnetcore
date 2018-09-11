@@ -24,19 +24,19 @@ namespace Test
             base.BuildRenderTree(builder);
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
   
-    RenderFragment<Person> p = 
+    RenderFragment<Person> p = (person) => 
 
 #line default
 #line hidden
-            (builder2, context) => {
+            (builder2) => {
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
-                                __o = context.Name;
+                                            __o = person.Name;
 
 #line default
 #line hidden
             }
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
-                                                        ;
+                                                                   ;
 
 #line default
 #line hidden

@@ -31,7 +31,7 @@ Document -
                             IntermediateToken - (60:0,60 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Html - after
                 HtmlContent - (79:0,79 [4] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (79:0,79 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n\n
-                HtmlContent - (243:6,1 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (243:6,1 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
-            CSharpCode - (95:2,12 [147] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (95:2,12 [147] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    Microsoft.AspNetCore.Blazor.ElementRef myElem;\n\n    void DoSomething() { myElem.GetHashCode(); } // Avoid 'assigned but not used' warning\n
+                HtmlContent - (214:5,1 [2] x:\dir\subdir\Test\TestComponent.cshtml)
+                    IntermediateToken - (214:5,1 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+            CSharpCode - (95:2,12 [118] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (95:2,12 [118] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    private Microsoft.AspNetCore.Blazor.ElementRef myElem;\n    public void Foo() { System.GC.KeepAlive(myElem); }\n

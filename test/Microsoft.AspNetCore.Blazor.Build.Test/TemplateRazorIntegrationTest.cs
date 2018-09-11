@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Blazor.Build.Test
 {
-    public class TemplateRazorIntegrationTest : RazorBaselineIntegrationTestBase
+    public class TemplateRazorIntegrationTest : RazorIntegrationTestBase
     {
         // Razor doesn't parse this as a template, we don't need much special handling for
         // it because it will just be invalid in general.

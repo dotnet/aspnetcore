@@ -3,12 +3,14 @@ Source Location: (49:1,18 [10] x:\dir\subdir\Test\TestComponent.cshtml)
 Generated Location: (1131:27,18 [10] )
 |myInstance|
 
-Source Location: (143:5,12 [44] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (143:5,12 [104] x:\dir\subdir\Test\TestComponent.cshtml)
 |
     private Test.MyComponent myInstance;
+    public void Foo() { System.GC.KeepAlive(myInstance); }
 |
-Generated Location: (1385:37,12 [44] )
+Generated Location: (1385:37,12 [104] )
 |
     private Test.MyComponent myInstance;
+    public void Foo() { System.GC.KeepAlive(myInstance); }
 |
 

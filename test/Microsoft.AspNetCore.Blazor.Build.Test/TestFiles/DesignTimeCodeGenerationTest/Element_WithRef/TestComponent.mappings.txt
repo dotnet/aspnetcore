@@ -3,16 +3,14 @@ Source Location: (36:0,36 [6] x:\dir\subdir\Test\TestComponent.cshtml)
 Generated Location: (956:25,36 [6] )
 |myElem|
 
-Source Location: (95:2,12 [147] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (95:2,12 [118] x:\dir\subdir\Test\TestComponent.cshtml)
 |
-    Microsoft.AspNetCore.Blazor.ElementRef myElem;
-
-    void DoSomething() { myElem.GetHashCode(); } // Avoid 'assigned but not used' warning
+    private Microsoft.AspNetCore.Blazor.ElementRef myElem;
+    public void Foo() { System.GC.KeepAlive(myElem); }
 |
-Generated Location: (1158:32,12 [147] )
+Generated Location: (1158:32,12 [118] )
 |
-    Microsoft.AspNetCore.Blazor.ElementRef myElem;
-
-    void DoSomething() { myElem.GetHashCode(); } // Avoid 'assigned but not used' warning
+    private Microsoft.AspNetCore.Blazor.ElementRef myElem;
+    public void Foo() { System.GC.KeepAlive(myElem); }
 |
 

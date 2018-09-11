@@ -507,6 +507,33 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
                 e => Assert.Equal("#3 - c", e.Text));
         }
 
+        [Fact]
+        public void CanRenderMultipleChildContent()
+        {
+            var appElement = MountTestComponent<MultipleChildContent>();
+
+            var table = appElement.FindElement(By.TagName("table"));
+
+            var thead = table.FindElement(By.TagName("thead"));
+            Assert.Collection(
+                thead.FindElements(By.TagName("th")),
+                e => Assert.Equal("Col1", e.Text),
+                e => Assert.Equal("Col2", e.Text),
+                e => Assert.Equal("Col3", e.Text));
+
+            var tfoot = table.FindElement(By.TagName("tfoot"));
+            Assert.Empty(tfoot.FindElements(By.TagName("td")));
+
+            var toggle = appElement.FindElement(By.Id("toggle"));
+            toggle.Click();
+
+            Assert.Collection(
+                tfoot.FindElements(By.TagName("td")),
+                e => Assert.Equal("The", e.Text),
+                e => Assert.Equal("", e.Text),
+                e => Assert.Equal("End", e.Text));
+        }
+
         static IAlert SwitchToAlert(IWebDriver driver)
         {
             try

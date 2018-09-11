@@ -189,7 +189,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             if (template != null)
             {
                 // See comments in TemplateDiagnosticPass
-                node.Diagnostics.Add(BlazorDiagnosticFactory.CreateTemplate_InvalidLocation(template.Source));
+                node.Diagnostics.Add(BlazorDiagnosticFactory.Create_TemplateInvalidLocation(template.Source));
                 return new[] { new IntermediateToken() { Kind = TokenKind.CSharp, Content = string.Empty, }, };
             }
 

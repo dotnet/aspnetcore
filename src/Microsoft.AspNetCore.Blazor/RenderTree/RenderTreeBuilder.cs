@@ -112,13 +112,7 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
         {
             if (fragment != null)
             {
-                // We surround the fragment with a region delimiter to indicate that the
-                // sequence numbers inside the fragment are unrelated to the sequence numbers
-                // outside it. If we didn't do this, the diffing logic might produce inefficient
-                // diffs depending on how the sequence numbers compared.
-                OpenRegion(sequence);
-                fragment(this, value);
-                CloseRegion();
+                AddContent(sequence, fragment(value));
             }
         }
 

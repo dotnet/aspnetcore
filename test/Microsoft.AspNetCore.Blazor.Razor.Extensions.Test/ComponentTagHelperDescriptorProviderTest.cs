@@ -3,11 +3,10 @@
 
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Razor;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Blazor.Razor.Extensions
+namespace Microsoft.AspNetCore.Blazor.Razor
 {
     public class ComponentTagHelperDescriptorProviderTest : BaseTagHelperDescriptorProviderTest
     {
@@ -311,6 +310,198 @@ namespace Test
             Assert.False(attribute.IsEnum);
             Assert.False(attribute.IsStringProperty);
             Assert.True(attribute.IsDelegateProperty());
+            Assert.False(attribute.IsChildContentProperty());
+        }
+
+        [Fact]
+        public void Execute_RenderFragmentProperty_CreatesDescriptors()
+        {
+            // Arrange
+
+            var compilation = BaseCompilation.AddSyntaxTrees(Parse(@"
+using Microsoft.AspNetCore.Blazor;
+using Microsoft.AspNetCore.Blazor.Components;
+
+namespace Test
+{
+    public class MyComponent : BlazorComponent
+    {
+        [Parameter]
+        RenderFragment ChildContent2 { get; set; }
+    }
+}
+
+"));
+
+            Assert.Empty(compilation.GetDiagnostics());
+
+            var context = TagHelperDescriptorProviderContext.Create();
+            context.SetCompilation(compilation);
+
+            var provider = new ComponentTagHelperDescriptorProvider();
+
+            // Act
+            provider.Execute(context);
+
+            // Assert
+            var components = ExcludeBuiltInComponents(context);
+            var component = Assert.Single(components, c => c.IsComponentTagHelper());
+
+            Assert.Equal("TestAssembly", component.AssemblyName);
+            Assert.Equal("Test.MyComponent", component.Name);
+
+            var attribute = Assert.Single(component.BoundAttributes);
+            Assert.Equal("ChildContent2", attribute.Name);
+            Assert.Equal("Microsoft.AspNetCore.Blazor.RenderFragment", attribute.TypeName);
+
+            Assert.False(attribute.HasIndexer);
+            Assert.False(attribute.IsBooleanProperty);
+            Assert.False(attribute.IsEnum);
+            Assert.False(attribute.IsStringProperty);
+            Assert.False(attribute.IsDelegateProperty()); // We treat RenderFragment as separate from generalized delegates
+            Assert.True(attribute.IsChildContentProperty());
+            Assert.False(attribute.IsParameterizedChildContentProperty());
+
+            var childContent = Assert.Single(components, c => c.IsChildContentTagHelper());
+
+            Assert.Equal("TestAssembly", childContent.AssemblyName);
+            Assert.Equal("Test.MyComponent.ChildContent2", childContent.Name);
+
+            Assert.Empty(childContent.BoundAttributes);
+        }
+
+        [Fact]
+        public void Execute_RenderFragmentOfTProperty_CreatesDescriptor()
+        {
+            // Arrange
+
+            var compilation = BaseCompilation.AddSyntaxTrees(Parse(@"
+using Microsoft.AspNetCore.Blazor;
+using Microsoft.AspNetCore.Blazor.Components;
+
+namespace Test
+{
+    public class MyComponent : BlazorComponent
+    {
+        [Parameter]
+        RenderFragment<string> ChildContent2 { get; set; }
+    }
+}
+
+"));
+
+            Assert.Empty(compilation.GetDiagnostics());
+
+            var context = TagHelperDescriptorProviderContext.Create();
+            context.SetCompilation(compilation);
+
+            var provider = new ComponentTagHelperDescriptorProvider();
+
+            // Act
+            provider.Execute(context);
+
+            // Assert
+            var components = ExcludeBuiltInComponents(context);
+            var component = Assert.Single(components, c => c.IsComponentTagHelper());
+
+            Assert.Equal("TestAssembly", component.AssemblyName);
+            Assert.Equal("Test.MyComponent", component.Name);
+
+            var attribute = Assert.Single(component.BoundAttributes);
+            Assert.Equal("ChildContent2", attribute.Name);
+            Assert.Equal("Microsoft.AspNetCore.Blazor.RenderFragment<System.String>", attribute.TypeName);
+
+            Assert.False(attribute.HasIndexer);
+            Assert.False(attribute.IsBooleanProperty);
+            Assert.False(attribute.IsEnum);
+            Assert.False(attribute.IsStringProperty);
+            Assert.False(attribute.IsDelegateProperty()); // We treat RenderFragment as separate from generalized delegates
+            Assert.True(attribute.IsChildContentProperty());
+            Assert.True(attribute.IsParameterizedChildContentProperty());
+
+            var childContent = Assert.Single(components, c => c.IsChildContentTagHelper());
+
+            Assert.Equal("TestAssembly", childContent.AssemblyName);
+            Assert.Equal("Test.MyComponent.ChildContent2", childContent.Name);
+
+            // A RenderFragment<T> tag helper has a parameter to allow you to set the lambda parameter name.
+            var contextAttribute = Assert.Single(childContent.BoundAttributes);
+            Assert.Equal("Context", contextAttribute.Name);
+            Assert.Equal("System.String", contextAttribute.TypeName);
+            Assert.Equal("Specifies the parameter name for the 'ChildContent2' lambda expression.", contextAttribute.Documentation);
+        }
+
+        [Fact]
+        public void Execute_MultipleRenderFragmentProperties_CreatesDescriptor()
+        {
+            // Arrange
+
+            var compilation = BaseCompilation.AddSyntaxTrees(Parse(@"
+using Microsoft.AspNetCore.Blazor;
+using Microsoft.AspNetCore.Blazor.Components;
+
+namespace Test
+{
+    public class MyComponent : BlazorComponent
+    {
+        [Parameter]
+        RenderFragment ChildContent { get; set; }
+
+        [Parameter]
+        RenderFragment<string> Header { get; set; }
+
+        [Parameter]
+        RenderFragment<string> Footer { get; set; }
+    }
+}
+
+"));
+
+            Assert.Empty(compilation.GetDiagnostics());
+
+            var context = TagHelperDescriptorProviderContext.Create();
+            context.SetCompilation(compilation);
+
+            var provider = new ComponentTagHelperDescriptorProvider();
+
+            // Act
+            provider.Execute(context);
+
+            // Assert
+            var components = ExcludeBuiltInComponents(context);
+            var component = Assert.Single(components, c => c.IsComponentTagHelper());
+
+            Assert.Equal("TestAssembly", component.AssemblyName);
+            Assert.Equal("Test.MyComponent", component.Name);
+
+            Assert.Collection(
+                component.BoundAttributes.OrderBy(a => a.Name),
+                a =>
+                {
+                    Assert.Equal("ChildContent", a.Name);
+                    Assert.Equal("Microsoft.AspNetCore.Blazor.RenderFragment", a.TypeName);
+                    Assert.True(a.IsChildContentProperty());
+                },
+                a =>
+                {
+                    Assert.Equal("Footer", a.Name);
+                    Assert.Equal("Microsoft.AspNetCore.Blazor.RenderFragment<System.String>", a.TypeName);
+                    Assert.True(a.IsChildContentProperty());
+                },
+                a =>
+                {
+                    Assert.Equal("Header", a.Name);
+                    Assert.Equal("Microsoft.AspNetCore.Blazor.RenderFragment<System.String>", a.TypeName);
+                    Assert.True(a.IsChildContentProperty());
+                });
+
+
+            var childContents = components.Where(c => c.IsChildContentTagHelper()).OrderBy(c => c.Name);
+            Assert.Collection(
+                childContents,
+                c => Assert.Equal("Test.MyComponent.ChildContent", c.Name),
+                c => Assert.Equal("Test.MyComponent.Footer", c.Name),
+                c => Assert.Equal("Test.MyComponent.Header", c.Name));
         }
 
         [Fact] // This component has lots of properties that don't become components.

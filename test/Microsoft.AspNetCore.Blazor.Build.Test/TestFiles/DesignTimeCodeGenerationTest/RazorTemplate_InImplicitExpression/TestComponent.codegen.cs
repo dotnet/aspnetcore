@@ -23,7 +23,7 @@ namespace Test
         {
             base.BuildRenderTree(builder);
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
-__o = RenderPerson((builder2, context) => {
+__o = RenderPerson((builder2) => {
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                __o = context.Name;
 

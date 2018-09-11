@@ -26,19 +26,39 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             _stack.Push(new ScopeEntry(tagName, ScopeKind.Element));
         }
 
-        public void OpenComponentScope(string tagName)
+        public void OpenComponentScope(CodeRenderingContext context, string name, string type, string parameterName)
         {
-            _stack.Push(new ScopeEntry(tagName, ScopeKind.Component));
+            var scope = new ScopeEntry(name, ScopeKind.Component);
+            _stack.Push(scope);
+
+            var blazorNodeWriter = (BlazorNodeWriter)context.NodeWriter;
+            blazorNodeWriter.BeginWriteAttribute(context.CodeWriter, name);
+            OffsetBuilderVarNumber(1);
+
+            // Writes code that looks like:
+            //
+            // builder.AddAttribute(0, "{name}", ({type})((__builder) => { ... }));
+            // OR
+            // builder.AddAttribute(0, "{name}", ({type})((context) => (__builder) => { ... }));
+
+            context.CodeWriter.Write($"({type})(");
+
+            if (parameterName != null)
+            {
+                context.CodeWriter.Write($"({parameterName}) => ");
+            }
+
+            scope.LambdaScope = context.CodeWriter.BuildLambda(BuilderVarName);
         }
 
-        public void OpenTemplateScope(CodeRenderingContext context, string variableName)
+        public void OpenTemplateScope(CodeRenderingContext context)
         {
             var currentScope = new ScopeEntry("__template", ScopeKind.Template);
             _stack.Push(currentScope);
 
             // Templates always get a lambda scope, because they are defined as a lambda.
             OffsetBuilderVarNumber(1);
-            currentScope.LambdaScope = context.CodeWriter.BuildLambda(BuilderVarName, variableName);
+            currentScope.LambdaScope = context.CodeWriter.BuildLambda(BuilderVarName);
 
         }
 
@@ -61,27 +81,6 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             }
         }
 
-        public void IncrementCurrentScopeChildCount(CodeRenderingContext context)
-        {
-            if (_stack.Count > 0)
-            {
-                var currentScope = _stack.Peek();
-
-                if (currentScope.Kind == ScopeKind.Component && currentScope.ChildCount == 0)
-                {
-                    // When we're about to insert the first child into a component,
-                    // it's time to open a new lambda
-                    var blazorNodeWriter = (BlazorNodeWriter)context.NodeWriter;
-                    blazorNodeWriter.BeginWriteAttribute(context.CodeWriter, BlazorApi.RenderTreeBuilder.ChildContent);
-                    OffsetBuilderVarNumber(1);
-                    context.CodeWriter.Write($"({BlazorApi.RenderFragment.FullTypeName})(");
-                    currentScope.LambdaScope = context.CodeWriter.BuildLambda(BuilderVarName);
-                }
-
-                currentScope.ChildCount++;
-            }
-        }
-
         private void OffsetBuilderVarNumber(int delta)
         {
             _builderVarNumber += delta;
@@ -92,19 +91,19 @@ namespace Microsoft.AspNetCore.Blazor.Razor
 
         private class ScopeEntry
         {
-            public readonly string TagName;
+            public readonly string Name;
             public ScopeKind Kind;
             public int ChildCount;
             public IDisposable LambdaScope;
 
-            public ScopeEntry(string tagName, ScopeKind kind)
+            public ScopeEntry(string name, ScopeKind kind)
             {
-                TagName = tagName;
+                Name = name;
                 Kind = kind;
                 ChildCount = 0;
             }
 
-            public override string ToString() => $"<{TagName}> ({Kind})";
+            public override string ToString() => $"<{Name}> ({Kind})";
         }
 
         private enum ScopeKind

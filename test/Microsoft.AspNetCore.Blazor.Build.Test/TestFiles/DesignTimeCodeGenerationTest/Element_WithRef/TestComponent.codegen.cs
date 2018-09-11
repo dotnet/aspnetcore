@@ -31,9 +31,8 @@ namespace Test
         #pragma warning restore 1998
 #line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
             
-    Microsoft.AspNetCore.Blazor.ElementRef myElem;
-
-    void DoSomething() { myElem.GetHashCode(); } // Avoid 'assigned but not used' warning
+    private Microsoft.AspNetCore.Blazor.ElementRef myElem;
+    public void Foo() { System.GC.KeepAlive(myElem); }
 
 #line default
 #line hidden

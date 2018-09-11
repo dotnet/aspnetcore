@@ -3,12 +3,14 @@ Source Location: (36:0,36 [6] x:\dir\subdir\Test\TestComponent.cshtml)
 Generated Location: (931:22,36 [6] )
 |myElem|
 
-Source Location: (95:2,12 [62] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (95:2,12 [118] x:\dir\subdir\Test\TestComponent.cshtml)
 |
     private Microsoft.AspNetCore.Blazor.ElementRef myElem;
+    public void Foo() { System.GC.KeepAlive(myElem); }
 |
-Generated Location: (1206:33,12 [62] )
+Generated Location: (1206:33,12 [118] )
 |
     private Microsoft.AspNetCore.Blazor.ElementRef myElem;
+    public void Foo() { System.GC.KeepAlive(myElem); }
 |
 

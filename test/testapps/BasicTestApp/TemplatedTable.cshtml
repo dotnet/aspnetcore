@@ -1,0 +1,41 @@
+<table>
+    @if (Header != null)
+    {
+        <thead>
+            @Header
+        </thead>
+    }
+    <tbody>
+        @for (var i  = 0; i < Items.Count; i++)
+        {
+            var item = Items[i];
+            @ItemTemplate(item)
+        }
+
+    </tbody>
+    @if (Footer != null)
+    {
+        <tfoot>@Footer</tfoot>
+    }
+</table>
+
+@functions {
+    [Parameter]
+    RenderFragment Header { get; set; }
+
+    [Parameter]
+    RenderFragment<Item> ItemTemplate { get; set; }
+
+    [Parameter]
+    RenderFragment Footer { get; set; }
+
+    [Parameter]
+    IReadOnlyList<Item> Items { get; set; }
+
+    public class Item
+    {
+        public string Col1 { get; set; }
+        public string Col2 { get; set; }
+        public string Col3 { get; set; }
+    }
+}

@@ -17,17 +17,17 @@ namespace Test
             base.BuildRenderTree(builder);
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
   
-    RenderFragment<Person> p = 
+    RenderFragment<Person> p = (person) => 
 
 #line default
 #line hidden
-            (builder2, context) => {
+            (builder2) => {
                 builder2.OpenElement(0, "div");
-                builder2.AddContent(1, context.Name);
+                builder2.AddContent(1, person.Name);
                 builder2.CloseElement();
             }
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
-                                                        ;
+                                                                   ;
 
 #line default
 #line hidden

@@ -27,24 +27,24 @@ global::System.Object __typeHelper = "*, TestAssembly";
         {
             base.BuildRenderTree(builder);
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
-   RenderFragment<Test.Context> template = 
+   RenderFragment<Test.Context> template = (context) => 
 
 #line default
 #line hidden
-            (builder2, context) => {
+            (builder2) => {
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
-                                            __o = context.Index;
+                                                         __o = context.Index;
 
 #line default
 #line hidden
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
-                                                             __o = context.Item.ToLower();
+                                                                          __o = context.Item.ToLower();
 
 #line default
 #line hidden
             }
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
-                                                                                              ; 
+                                                                                                           ; 
 
 #line default
 #line hidden

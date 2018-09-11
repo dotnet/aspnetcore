@@ -17,19 +17,19 @@ namespace Test
             base.BuildRenderTree(builder);
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
   
-    RenderFragment<Person> p = 
+    RenderFragment<Person> p = (person) => 
 
 #line default
 #line hidden
-            (builder2, context) => {
+            (builder2) => {
                 builder2.OpenElement(0, "div");
                 builder2.OpenComponent<Test.MyComponent>(1);
-                builder2.AddAttribute(2, "Name", Microsoft.AspNetCore.Blazor.Components.RuntimeHelpers.TypeCheck<System.String>(context.Name));
+                builder2.AddAttribute(2, "Name", Microsoft.AspNetCore.Blazor.Components.RuntimeHelpers.TypeCheck<System.String>(person.Name));
                 builder2.CloseComponent();
                 builder2.CloseElement();
             }
 #line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
-                                                                              ;
+                                                                                         ;
 
 #line default
 #line hidden

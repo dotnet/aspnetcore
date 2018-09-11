@@ -11,4 +11,5 @@ Document -
                 CSharpCode - 
                     IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
                 ComponentExtensionNode - (31:1,0 [47] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent - Test.MyComponent
-                    HtmlBlock -  - <child>hello</child>
+                    ComponentChildContent -  - ChildContent
+                        HtmlBlock -  - <child>hello</child>

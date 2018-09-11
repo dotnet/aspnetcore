@@ -8,6 +8,7 @@ namespace Test
     using System.Linq;
     using System.Threading.Tasks;
     using Microsoft.AspNetCore.Blazor;
+    using Microsoft.AspNetCore.Blazor.Components;
     public class TestComponent : Microsoft.AspNetCore.Blazor.Components.BlazorComponent
     {
         #pragma warning disable 1998
@@ -17,10 +18,9 @@ namespace Test
             builder.OpenElement(0, "input");
             builder.AddAttribute(1, "onclick", Microsoft.AspNetCore.Blazor.Components.BindMethods.GetEventHandlerValue<Microsoft.AspNetCore.Blazor.UIMouseEventArgs>(OnClick));
             builder.CloseElement();
-            builder.AddContent(2, "\n");
         }
         #pragma warning restore 1998
-#line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
+#line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
             
     void OnClick(UIMouseEventArgs e) {
     }

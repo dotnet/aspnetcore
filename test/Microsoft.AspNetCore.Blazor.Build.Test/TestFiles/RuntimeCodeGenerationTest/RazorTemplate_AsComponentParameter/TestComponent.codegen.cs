@@ -20,7 +20,7 @@ namespace Test
 
 #line default
 #line hidden
-            (builder2, context) => {
+            (builder2) => {
                 builder2.OpenElement(0, "div");
                 builder2.AddContent(1, context.Name);
                 builder2.CloseElement();

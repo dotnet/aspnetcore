@@ -23,14 +23,15 @@ Document -
                 HtmlContent - (29:0,29 [2] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (29:0,29 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
                 ComponentExtensionNode - (31:1,0 [91] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent - Test.MyComponent
-                    HtmlContent - (57:1,26 [9] x:\dir\subdir\Test\TestComponent.cshtml)
-                        IntermediateToken - (57:1,26 [9] x:\dir\subdir\Test\TestComponent.cshtml) - Html - Some text
-                    HtmlElement - (66:1,35 [42] x:\dir\subdir\Test\TestComponent.cshtml) - some-child
-                        HtmlAttribute -  -  - 
-                            HtmlAttributeValue -  - 
-                                IntermediateToken -  - Html - 1
-                        HtmlContent - (84:1,53 [11] x:\dir\subdir\Test\TestComponent.cshtml)
-                            IntermediateToken - (84:1,53 [11] x:\dir\subdir\Test\TestComponent.cshtml) - Html - Nested text
+                    ComponentChildContent -  - ChildContent
+                        HtmlContent - (57:1,26 [9] x:\dir\subdir\Test\TestComponent.cshtml)
+                            IntermediateToken - (57:1,26 [9] x:\dir\subdir\Test\TestComponent.cshtml) - Html - Some text
+                        HtmlElement - (66:1,35 [42] x:\dir\subdir\Test\TestComponent.cshtml) - some-child
+                            HtmlAttribute -  -  - 
+                                HtmlAttributeValue -  - 
+                                    IntermediateToken -  - Html - 1
+                            HtmlContent - (84:1,53 [11] x:\dir\subdir\Test\TestComponent.cshtml)
+                                IntermediateToken - (84:1,53 [11] x:\dir\subdir\Test\TestComponent.cshtml) - Html - Nested text
                     ComponentAttributeExtensionNode - (52:1,21 [3] x:\dir\subdir\Test\TestComponent.cshtml) - MyAttr - MyAttr
                         HtmlContent - (52:1,21 [3] x:\dir\subdir\Test\TestComponent.cshtml)
                             IntermediateToken - (52:1,21 [3] x:\dir\subdir\Test\TestComponent.cshtml) - Html - abc
