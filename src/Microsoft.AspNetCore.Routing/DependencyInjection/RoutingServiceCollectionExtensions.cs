@@ -74,8 +74,9 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<DfaGraphWriter>();
 
             // Link generation related services
-            services.TryAddSingleton<IEndpointFinder<RouteValuesAddress>, RouteValuesBasedEndpointFinder>();
             services.TryAddSingleton<LinkGenerator, DefaultLinkGenerator>();
+            services.TryAddSingleton<IEndpointFinder<string>, EndpointNameEndpointFinder>();
+            services.TryAddSingleton<IEndpointFinder<RouteValuesAddress>, RouteValuesBasedEndpointFinder>();
 
             //
             // Endpoint Selection

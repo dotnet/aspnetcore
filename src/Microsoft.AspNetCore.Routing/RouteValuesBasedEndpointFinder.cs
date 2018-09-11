@@ -6,33 +6,27 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Internal;
-using Microsoft.AspNetCore.Routing.Matching;
 using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.AspNetCore.Routing.Tree;
-using Microsoft.Extensions.ObjectPool;
 
 namespace Microsoft.AspNetCore.Routing
 {
     internal class RouteValuesBasedEndpointFinder : IEndpointFinder<RouteValuesAddress>
     {
-        private readonly CompositeEndpointDataSource _endpointDataSource;
-        private readonly ObjectPool<UriBuildingContext> _objectPool;
+        private readonly CompositeEndpointDataSource _dataSource;
         private LinkGenerationDecisionTree _allMatchesLinkGenerationTree;
         private IDictionary<string, List<OutboundMatchResult>> _namedMatchResults;
 
-        public RouteValuesBasedEndpointFinder(
-            CompositeEndpointDataSource endpointDataSource,
-            ObjectPool<UriBuildingContext> objectPool)
+        public RouteValuesBasedEndpointFinder(CompositeEndpointDataSource dataSource)
         {
-            _endpointDataSource = endpointDataSource;
-            _objectPool = objectPool;
+            _dataSource = dataSource;
 
             // Build initial matches
             BuildOutboundMatches();
 
             // Register for changes in endpoints
             Extensions.Primitives.ChangeToken.OnChange(
-                _endpointDataSource.GetChangeToken,
+                _dataSource.GetChangeToken,
                 HandleChange);
         }
 
@@ -68,7 +62,7 @@ namespace Microsoft.AspNetCore.Routing
             // re-register the callback as the change token is one time use only and a new change token
             // is produced every time
             Extensions.Primitives.ChangeToken.OnChange(
-                _endpointDataSource.GetChangeToken,
+                _dataSource.GetChangeToken,
                 HandleChange);
         }
 
@@ -104,7 +98,7 @@ namespace Microsoft.AspNetCore.Routing
             var namedOutboundMatchResults = new Dictionary<string, List<OutboundMatchResult>>(
                 StringComparer.OrdinalIgnoreCase);
 
-            var endpoints = _endpointDataSource.Endpoints.OfType<RouteEndpoint>();
+            var endpoints = _dataSource.Endpoints.OfType<RouteEndpoint>();
             foreach (var endpoint in endpoints)
             {
                 // Do not consider an endpoint for link generation if the following marker metadata is on it

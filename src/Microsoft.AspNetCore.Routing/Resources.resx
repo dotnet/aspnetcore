@@ -225,4 +225,10 @@
   <data name="RoutePattern_InvalidStringConstraintReference" xml:space="preserve">
     <value>Invalid constraint type '{0}' registered as '{1}'. A constraint  type must either implement '{2}', or inherit from '{3}'.</value>
   </data>
+  <data name="DuplicateEndpointNameEntry" xml:space="preserve">
+    <value>Endpoints with endpoint name '{0}':</value>
+  </data>
+  <data name="DuplicateEndpointNameHeader" xml:space="preserve">
+    <value>The following endpoints with a duplicate endpoint name were found.</value>
+  </data>
 </root>
