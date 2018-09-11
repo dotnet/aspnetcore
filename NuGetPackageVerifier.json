@@ -1,7 +1,16 @@
 {
-    "Default": {
-        "rules": [
-            "DefaultCompositeRule"
-        ]
+  "Default": {
+    "rules": [
+        "DefaultCompositeRule"
+    ],
+    "packages": {
+      "Microsoft.Extensions.ApiDescription.Client": {
+        "Exclusions": {
+          "BUILD_ITEMS_FRAMEWORK": {
+            "*": "Package includes tool with different target frameworks."
+          }
+        }
+      }
     }
+  }
 }

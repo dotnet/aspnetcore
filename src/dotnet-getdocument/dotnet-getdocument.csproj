@@ -1,89 +1,25 @@
 <Project Sdk="Internal.AspNetCore.Sdk">
   <PropertyGroup>
-    <!-- Execute PopulateNuspec fairly late. -->
-    <GenerateNuspecDependsOn>$(GenerateNuspecDependsOn);PopulateNuspec</GenerateNuspecDependsOn>
-
     <AssemblyName>dotnet-getdocument</AssemblyName>
     <Description>GetDocument Command-line Tool outside man</Description>
     <EnableApiCheck>false</EnableApiCheck>
-    <GenerateToolShims>true</GenerateToolShims>
-    <IncludeSource>false</IncludeSource>
     <IsPackable>false</IsPackable>
-    <NuspecFile>$(MSBuildProjectName).nuspec</NuspecFile>
     <OutputType>Exe</OutputType>
-    <PackAsTool>true</PackAsTool>
-    <PackageTags>GetDocument;command line;command-line;tool</PackageTags>
     <RootNamespace>Microsoft.Extensions.ApiDescription.Client</RootNamespace>
     <TargetFramework>netcoreapp2.1</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="../GetDocumentInsider/AnsiConsole.cs" />
-    <Compile Include="../GetDocumentInsider/AnsiConstants.cs" />
-    <Compile Include="../GetDocumentInsider/AnsiTextWriter.cs" />
+    <Compile Include="../GetDocumentInsider/Ansi*.cs" />
     <Compile Include="../GetDocumentInsider/CommandException.cs" />
     <Compile Include="../GetDocumentInsider/CommandLineUtils/*.cs" LinkBase="CommandLineUtils" />
     <Compile Include="../GetDocumentInsider/Commands/CommandBase.cs" Link="Commands/CommandBase.cs" />
     <Compile Include="../GetDocumentInsider/Commands/HelpCommandBase.cs" Link="Commands/HelpCommandBase.cs" />
     <Compile Include="../GetDocumentInsider/ProductInfo.cs" />
     <Compile Include="../GetDocumentInsider/Reporter.cs" />
-  </ItemGroup>
 
-  <ItemGroup>
-    <EmbeddedResource Include="ServiceProjectReferenceMetadata.*" />
-  </ItemGroup>
+    <EmbeddedResource Include="ServiceProjectReferenceMetadata.targets" />
 
-  <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonPackageVersion)" />
   </ItemGroup>
-
-  <ItemGroup>
-    <!-- Additional files to be code signed -->
-    <SignedPackageFile Include="tools/netcoreapp2.1/any/tools/net461/any/GetDocument.Insider.exe" Certificate="$(AssemblySigningCertName)" />
-    <SignedPackageFile Include="tools/netcoreapp2.1/any/tools/net461/win-x86/GetDocument.Insider.exe" Certificate="$(AssemblySigningCertName)" />
-    <SignedPackageFile Include="tools/netcoreapp2.1/any/tools/netcoreapp2.0/any/GetDocument.Insider.dll" Certificate="$(AssemblySigningCertName)" />
-
-    <!-- Third-party assemblies should be signed with the 3PartyDual certificate -->
-    <SignedPackageFile Include="tools/netcoreapp2.1/any/Newtonsoft.Json.dll" Certificate="3PartyDual" />
-  </ItemGroup>
-
-  <Target Name="PopulateNuspec" DependsOnTargets="Build">
-    <ItemGroup>
-      <_Temporary Remove="@(Temporary)" />
-      <_Temporary Include="../GetDocumentInsider/GetDocumentInsider.csproj" Properties="TargetFramework=net461" />
-      <_Temporary Include="../GetDocumentInsider/GetDocumentInsider.csproj" Properties="TargetFramework=net461;Platform=x86" />
-      <_Temporary Include="../GetDocumentInsider/GetDocumentInsider.csproj" Properties="TargetFramework=netcoreapp2.0" />
-    </ItemGroup>
-
-    <MSBuild Projects="../GetDocumentInsider/GetDocumentInsider.csproj" RemoveProperties="RuntimeIdentifier;TargetFramework" Targets="Restore" />
-    <MSBuild Projects="@(_Temporary)" BuildInParallel="$(BuildInParallel)" RemoveProperties="RuntimeIdentifier" Targets="Publish" />
-
-    <ItemGroup>
-      <_Temporary Remove="@(_Temporary)" />
-    </ItemGroup>
-
-    <PropertyGroup>
-      <NuspecProperties>
-        authors=$(Authors);
-        copyright=$(Copyright);
-        description=$(Description);
-        iconUrl=$(PackageIconUrl);
-        id=$(PackageId);
-        InsiderNet461Output=..\GetDocumentInsider\bin\$(Configuration)\net461\publish\*;
-        InsiderNet461X86Output=..\GetDocumentInsider\bin\x86\$(Configuration)\net461\publish\*;
-        InsiderNetCoreOutput=..\GetDocumentInsider\bin\$(Configuration)\netcoreapp2.0\publish\*;
-        licenseUrl=$(PackageLicenseUrl);
-        Output=$(PublishDir)**\*;
-        OutputShims=$(IntermediateOutputPath)shims\**\*;
-        packageType=$(PackageType);
-        projectUrl=$(PackageProjectUrl);
-        repositoryCommit=$(RepositoryCommit);
-        repositoryUrl=$(RepositoryUrl);
-        SettingsFile=$(_ToolsSettingsFilePath);
-        tags=$(PackageTags.Replace(';', ' '));
-        targetFramework=$(TargetFramework);
-        version=$(PackageVersion);
-      </NuspecProperties>
-    </PropertyGroup>
-  </Target>
 </Project>

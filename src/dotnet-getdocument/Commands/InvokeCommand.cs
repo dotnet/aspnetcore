@@ -159,12 +159,6 @@ namespace Microsoft.Extensions.ApiDescription.Client.Commands
                     args.Add(project.DefaultService);
                 }
 
-                if (!(args.Contains("--uri") || string.IsNullOrEmpty(project.DefaultUri)))
-                {
-                    args.Add("--uri");
-                    args.Add(project.DefaultUri);
-                }
-
                 if (_output.HasValue())
                 {
                     args.Add("--output");

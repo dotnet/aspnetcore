@@ -21,7 +21,5 @@ namespace Microsoft.Extensions.ApiDescription.Client.Commands
         public string Output { get; set; }
 
         public string Service { get; set; }
-
-        public string Uri { get; set; }
     }
 }

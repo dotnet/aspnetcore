@@ -25,20 +25,6 @@ namespace Microsoft.Extensions.ApiDescription.Client
             => GetString("AssemblyDescription");
 
         /// <summary>
-        /// Show JSON output.
-        /// </summary>
-        internal static string JsonDescription
-        {
-            get => GetString("JsonDescription");
-        }
-
-        /// <summary>
-        /// Show JSON output.
-        /// </summary>
-        internal static string FormatJsonDescription()
-            => GetString("JsonDescription");
-
-        /// <summary>
         /// Missing required option '--{0}'.
         /// </summary>
         internal static string MissingOption
@@ -95,48 +81,6 @@ namespace Microsoft.Extensions.ApiDescription.Client
             => GetString("PrefixDescription");
 
         /// <summary>
-        /// Using application base '{0}'.
-        /// </summary>
-        internal static string UsingApplicationBase
-        {
-            get => GetString("UsingApplicationBase");
-        }
-
-        /// <summary>
-        /// Using application base '{0}'.
-        /// </summary>
-        internal static string FormatUsingApplicationBase(object p0)
-            => string.Format(CultureInfo.CurrentCulture, GetString("UsingApplicationBase"), p0);
-
-        /// <summary>
-        /// Using assembly '{0}'.
-        /// </summary>
-        internal static string UsingAssembly
-        {
-            get => GetString("UsingAssembly");
-        }
-
-        /// <summary>
-        /// Using assembly '{0}'.
-        /// </summary>
-        internal static string FormatUsingAssembly(object p0)
-            => string.Format(CultureInfo.CurrentCulture, GetString("UsingAssembly"), p0);
-
-        /// <summary>
-        /// Using configuration file '{0}'.
-        /// </summary>
-        internal static string UsingConfigurationFile
-        {
-            get => GetString("UsingConfigurationFile");
-        }
-
-        /// <summary>
-        /// Using configuration file '{0}'.
-        /// </summary>
-        internal static string FormatUsingConfigurationFile(object p0)
-            => string.Format(CultureInfo.CurrentCulture, GetString("UsingConfigurationFile"), p0);
-
-        /// <summary>
         /// Show verbose output.
         /// </summary>
         internal static string VerboseDescription
@@ -151,34 +95,6 @@ namespace Microsoft.Extensions.ApiDescription.Client
             => GetString("VerboseDescription");
 
         /// <summary>
-        /// Writing '{0}'...
-        /// </summary>
-        internal static string WritingFile
-        {
-            get => GetString("WritingFile");
-        }
-
-        /// <summary>
-        /// Writing '{0}'...
-        /// </summary>
-        internal static string FormatWritingFile(object p0)
-            => string.Format(CultureInfo.CurrentCulture, GetString("WritingFile"), p0);
-
-        /// <summary>
-        /// Using working directory '{0}'.
-        /// </summary>
-        internal static string UsingWorkingDirectory
-        {
-            get => GetString("UsingWorkingDirectory");
-        }
-
-        /// <summary>
-        /// Using working directory '{0}'.
-        /// </summary>
-        internal static string FormatUsingWorkingDirectory(object p0)
-            => string.Format(CultureInfo.CurrentCulture, GetString("UsingWorkingDirectory"), p0);
-
-        /// <summary>
         /// Location from which inside man was copied (in the .NET Framework case) or loaded.
         /// </summary>
         internal static string ToolsDirectoryDescription
@@ -191,20 +107,6 @@ namespace Microsoft.Extensions.ApiDescription.Client
         /// </summary>
         internal static string FormatToolsDirectoryDescription()
             => GetString("ToolsDirectoryDescription");
-
-        /// <summary>
-        /// The URI to download the document from.
-        /// </summary>
-        internal static string UriDescription
-        {
-            get => GetString("UriDescription");
-        }
-
-        /// <summary>
-        /// The URI to download the document from.
-        /// </summary>
-        internal static string FormatUriDescription()
-            => GetString("UriDescription");
 
         /// <summary>
         /// The name of the method to invoke on the '--service' instance. Default value '{0}'.
@@ -233,20 +135,6 @@ namespace Microsoft.Extensions.ApiDescription.Client
         /// </summary>
         internal static string FormatServiceDescription(object p0)
             => string.Format(CultureInfo.CurrentCulture, GetString("ServiceDescription"), p0);
-
-        /// <summary>
-        /// Missing required option '--{0}' or '--{1}'.
-        /// </summary>
-        internal static string MissingOptions
-        {
-            get => GetString("MissingOptions");
-        }
-
-        /// <summary>
-        /// Missing required option '--{0}' or '--{1}'.
-        /// </summary>
-        internal static string FormatMissingOptions(object p0, object p1)
-            => string.Format(CultureInfo.CurrentCulture, GetString("MissingOptions"), p0, p1);
 
         /// <summary>
         /// The name of the document to pass to the '--method' method. Default value '{0}'.
@@ -303,20 +191,6 @@ namespace Microsoft.Extensions.ApiDescription.Client
         /// </summary>
         internal static string FormatUsingService(object p0)
             => string.Format(CultureInfo.CurrentCulture, GetString("UsingService"), p0);
-
-        /// <summary>
-        /// Using URI '{0}'.
-        /// </summary>
-        internal static string UsingUri
-        {
-            get => GetString("UsingUri");
-        }
-
-        /// <summary>
-        /// Using URI '{0}'.
-        /// </summary>
-        internal static string FormatUsingUri(object p0)
-            => string.Format(CultureInfo.CurrentCulture, GetString("UsingUri"), p0);
 
         /// <summary>
         /// Method '{0}' of service '{1}' failed to generate document '{2}'.

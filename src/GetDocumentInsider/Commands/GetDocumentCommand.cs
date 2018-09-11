@@ -17,13 +17,11 @@ namespace Microsoft.Extensions.ApiDescription.Client.Commands
         internal const string FallbackDocumentName = "v1";
         internal const string FallbackMethod = "Generate";
         internal const string FallbackService = "Microsoft.Extensions.ApiDescription.IDocumentProvider";
-        private const string WorkerType = "Microsoft.Extensions.ApiDescription.Client.Commands.GetDocumentCommandWorker";
 
         private CommandOption _documentName;
         private CommandOption _method;
         private CommandOption _output;
         private CommandOption _service;
-        private CommandOption _uri;
 
         public override void Configure(CommandLineApplication command)
         {
@@ -35,7 +33,6 @@ namespace Microsoft.Extensions.ApiDescription.Client.Commands
             _method = command.Option("--method <Name>", Resources.FormatMethodDescription(FallbackMethod));
             _output = command.Option("--output <Path>", Resources.OutputDescription);
             _service = command.Option("--service <QualifiedName>", Resources.FormatServiceDescription(FallbackService));
-            _uri = command.Option("--uri <URI>", Resources.UriDescription);
         }
 
         protected override void Validate()
@@ -131,12 +128,9 @@ namespace Microsoft.Extensions.ApiDescription.Client.Commands
 #error target frameworks need to be updated.
 #endif
 
-            // Now safe to reference TestHost type.
+            // Now safe to reference the application's code.
             try
             {
-                var workerType = thisAssembly.GetType(WorkerType, throwOnError: true);
-                var methodInfo = workerType.GetMethod("Process", BindingFlags.Public | BindingFlags.Static);
-
                 var assemblyPath = AssemblyPath.Value();
                 var context = new GetDocumentCommandContext
                 {
@@ -147,10 +141,9 @@ namespace Microsoft.Extensions.ApiDescription.Client.Commands
                     Method = _method.Value(),
                     Output = _output.Value(),
                     Service = _service.Value(),
-                    Uri = _uri.Value(),
                 };
 
-                return (int)methodInfo.Invoke(obj: null, parameters: new[] { context });
+                return GetDocumentCommandWorker.Process(context);
             }
             catch (Exception ex)
             {

@@ -277,7 +277,7 @@ namespace Microsoft.Extensions.ApiDescription.Client
             => string.Format(CultureInfo.CurrentCulture, GetString("WritingFile"), p0);
 
         /// <summary>
-        /// Project output not found and --no-build was specified. Project must be up-to-date when using the --no-build option.
+        /// Project output not found. Project must be up-to-date when using this tool.
         /// </summary>
         internal static string MustBuild
         {
@@ -285,7 +285,7 @@ namespace Microsoft.Extensions.ApiDescription.Client
         }
 
         /// <summary>
-        /// Project output not found and --no-build was specified. Project must be up-to-date when using the --no-build option.
+        /// Project output not found. Project must be up-to-date when using this tool.
         /// </summary>
         internal static string FormatMustBuild()
             => GetString("MustBuild");

@@ -2,15 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics;
 using System.IO;
 using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Extensions.ApiDescription.Client.Commands
 {
@@ -34,25 +29,10 @@ namespace Microsoft.Extensions.ApiDescription.Client.Commands
             }
 
             var success = TryProcess(context, services);
-            if (!success && string.IsNullOrEmpty(context.Uri))
+            if (!success)
             {
-                return 4;
-            }
-
-            var builder = GetBuilder(entryPointType, context.AssemblyPath, context.AssemblyName);
-            if (builder == null)
-            {
-                return 5;
-            }
-
-            // Mute the HttpsRedirectionMiddleware warning about HTTPS configuration.
-            builder.ConfigureLogging(loggingBuilder => loggingBuilder.AddFilter(
-                "Microsoft.AspNetCore.HttpsPolicy.HttpsRedirectionMiddleware",
-                LogLevel.Error));
-
-            using (var server = new TestServer(builder))
-            {
-                ProcessAsync(context, server).Wait();
+                // As part of the aspnet/Mvc#8425 fix, return 4 here.
+                return 0;
             }
 
             return 0;
@@ -95,15 +75,9 @@ namespace Microsoft.Extensions.ApiDescription.Client.Commands
 
                 if (!success)
                 {
+                    // As part of the aspnet/Mvc#8425 fix, make this an error unless the file already exists.
                     var message = Resources.FormatMethodInvocationFailed(methodName, serviceName, documentName);
-                    if (string.IsNullOrEmpty(context.Uri) && !File.Exists(context.Output))
-                    {
-                        Reporter.WriteError(message);
-                    }
-                    else
-                    {
-                        Reporter.WriteWarning(message);
-                    }
+                    Reporter.WriteWarning(message);
                 }
 
                 return success;
@@ -111,33 +85,12 @@ namespace Microsoft.Extensions.ApiDescription.Client.Commands
             catch (Exception ex)
             {
                 var message = FormatException(ex);
-                if (string.IsNullOrEmpty(context.Uri) && !File.Exists(context.Output))
-                {
-                    Reporter.WriteError(message);
-                }
-                else
-                {
-                    Reporter.WriteWarning(message);
-                }
+
+                // As part of the aspnet/Mvc#8425 fix, make this an error unless the file already exists.
+                Reporter.WriteWarning(message);
 
                 return false;
             }
-        }
-
-        public static async Task ProcessAsync(GetDocumentCommandContext context, TestServer server)
-        {
-
-            Debug.Assert(!string.IsNullOrEmpty(context.Uri));
-            Reporter.WriteInformation(Resources.FormatUsingUri(context.Uri));
-
-            var httpClient = server.CreateClient();
-            await DownloadFileCore.DownloadAsync(
-                context.Uri,
-                context.Output,
-                httpClient,
-                new LogWrapper(),
-                CancellationToken.None,
-                timeoutSeconds: 60);
         }
 
         // TODO: Use Microsoft.AspNetCore.Hosting.WebHostBuilderFactory.Sources once we have dev feed available.
@@ -203,54 +156,7 @@ namespace Microsoft.Extensions.ApiDescription.Client.Commands
                 }
             }
 
-            // Startup
-            return new WebHostBuilder().UseStartup(assemblyName).Build().Services;
-        }
-
-        // TODO: Use Microsoft.AspNetCore.Hosting.WebHostBuilderFactory.Sources once we have dev feed available.
-        private static IWebHostBuilder GetBuilder(Type entryPointType, string assemblyPath, string assemblyName)
-        {
-            var methodInfo = entryPointType.GetMethod("BuildWebHost");
-            if (methodInfo != null)
-            {
-                // BuildWebHost cannot be used. Fall through, most likely to Startup fallback.
-                Reporter.WriteWarning(
-                    "BuildWebHost method cannot be used. Falling back to minimal Startup configuration.");
-            }
-
-            methodInfo = entryPointType.GetMethod("CreateWebHostBuilder");
-            if (methodInfo != null)
-            {
-                // CreateWebHostBuilder
-                var parameters = methodInfo.GetParameters();
-                if (!methodInfo.IsStatic ||
-                    parameters.Length != 1 ||
-                    typeof(string[]) != parameters[0].ParameterType ||
-                    typeof(IWebHostBuilder) != methodInfo.ReturnType)
-                {
-                    Reporter.WriteError(
-                        "CreateWebHostBuilder method found in {assemblyPath} does not have expected signature.");
-
-                    return null;
-                }
-
-                try
-                {
-                    var args = new[] { Array.Empty<string>() };
-                    var builder = (IWebHostBuilder)methodInfo.Invoke(obj: null, parameters: args);
-
-                    return builder;
-                }
-                catch (Exception ex)
-                {
-                    Reporter.WriteError($"CreateWebHostBuilder method threw: {FormatException(ex)}");
-
-                    return null;
-                }
-            }
-
-            // Startup
-            return new WebHostBuilder().UseStartup(assemblyName);
+            return null;
         }
 
         private static string FormatException(Exception exception)

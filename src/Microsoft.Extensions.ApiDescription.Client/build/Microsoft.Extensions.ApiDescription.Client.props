@@ -93,11 +93,6 @@
         Default is set in server project, falling back to "Microsoft.Extensions.ApiDescription.IDocumentProvider".
       -->
       <Service />
-      <!--
-        URI from which Default document generator should download the document. Used only if invoking the %(Method) on
-        the %(Service) fails. Default is set in server project and metadata has no further fallback.
-      -->
-      <Uri />
     </ServiceProjectReference>
 
     <ServiceUriReference>

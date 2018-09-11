@@ -8,21 +8,52 @@
 
     <Description>MSBuild tasks and targets for code generation</Description>
     <EnableApiCheck>false</EnableApiCheck>
-    <IsPackable>false</IsPackable>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <IncludeSource>false</IncludeSource>
+    <IncludeSymbols>false</IncludeSymbols>
     <NuspecFile>$(MSBuildProjectName).nuspec</NuspecFile>
-    <PackageTags>Build Tasks;msbuild;DownloadFile;GetFilenameFromUri;code generation</PackageTags>
+    <PackageTags>Build Tasks;MSBuild;Swagger;Open API;code generation; Web API client</PackageTags>
     <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="../GetDocumentInsider/DownloadFileCore.cs" />
-    <Compile Include="../GetDocumentInsider/ILogWrapper.cs" />
-    <EmbeddedResource Include="ServiceProjectReferenceMetadata.targets" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core"
+        Version="$(MicrosoftBuildUtilitiesCorePackageVersion)" />
+    <PackageReference Include="System.Net.Http"
+        Condition="'$(TargetFramework)' == 'net461'"
+        Version="$(SystemNetHttpPackageVersion)" />
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildUtilitiesCorePackageVersion)" />
-    <PackageReference Condition="'$(TargetFramework)' == 'net461'" Include="System.Net.Http" Version="$(SystemNetHttpPackageVersion)" />
+  <ItemGroup Condition="'$(TargetFramework)' != ''">
+    <SignedPackageFile Include="$(TargetPath)">
+      <Certificate>$(AssemblySigningCertName)</Certificate>
+      <PackagePath>tasks/$(TargetFramework)/$(TargetFileName)</PackagePath>
+      <StrongName>$(AssemblySigningStrongName)</StrongName>
+    </SignedPackageFile>
+  </ItemGroup>
+
+  <!-- Add other signed files in a single inner build, avoiding duplications in this multi-TFM project. -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+    <SignedPackageFile Include="../dotnet-getdocument/bin/$(Configuration)/netcoreapp2.1/dotnet-getdocument.dll">
+      <Certificate>$(AssemblySigningCertName)</Certificate>
+      <PackagePath>tools/dotnet-getdocument.dll</PackagePath>
+      <StrongName>$(AssemblySigningStrongName)</StrongName>
+    </SignedPackageFile>
+    <SignedPackageFile Include="../GetDocumentInsider/bin/$(Configuration)/net461/GetDocument.Insider.exe">
+      <Certificate>$(AssemblySigningCertName)</Certificate>
+      <PackagePath>tools/net461/GetDocument.Insider.exe</PackagePath>
+      <StrongName>$(AssemblySigningStrongName)</StrongName>
+    </SignedPackageFile>
+    <SignedPackageFile Include="../GetDocumentInsider/bin/x86/$(Configuration)/net461/GetDocument.Insider.exe">
+      <Certificate>$(AssemblySigningCertName)</Certificate>
+      <PackagePath>tools/net461-x86/GetDocument.Insider.exe</PackagePath>
+      <StrongName>$(AssemblySigningStrongName)</StrongName>
+    </SignedPackageFile>
+    <SignedPackageFile Include="../GetDocumentInsider/bin/$(Configuration)/netcoreapp2.0/GetDocument.Insider.dll">
+      <Certificate>$(AssemblySigningCertName)</Certificate>
+      <PackagePath>tools/netcoreapp2.0/GetDocument.Insider.exe</PackagePath>
+      <StrongName>$(AssemblySigningStrongName)</StrongName>
+    </SignedPackageFile>
   </ItemGroup>
 
   <Target Name="PopulateNuspec">

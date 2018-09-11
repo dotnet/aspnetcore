@@ -175,7 +175,7 @@
     <value>Writing '{0}'...</value>
   </data>
   <data name="MustBuild" xml:space="preserve">
-    <value>Project output not found and --no-build was specified. Project must be up-to-date when using the --no-build option.</value>
+    <value>Project output not found. Project must be up-to-date when using this tool.</value>
   </data>
   <data name="OutputDescription" xml:space="preserve">
     <value>The file to write the result to.</value>

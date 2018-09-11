@@ -12,17 +12,19 @@
     <owners>$owners$</owners>
     <projectUrl>$projectUrl$</projectUrl>
     <repository type="git" url="$repositoryUrl$" commit="$repositoryCommit$" />
-    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
     <tags>$tags$</tags>
     <version>$version$</version>
-    <dependencies>
-      <dependency id="NSwag.MSBuild" version="11.18.6" include="runtime,build,native,contentfiles,analyzers" />
-    </dependencies>
   </metadata>
 
   <files>
-    <file src="bin\$configuration$\**" target="tasks" exclude="**\Microsoft.Build.*.dll" />
-    <file src="build\*.*" target="build" />
-    <file src="buildMultiTargeting\*.*" target="buildMultiTargeting" />
+    <file src="build\*" target="build" />
+    <file src="buildMultiTargeting\*" target="buildMultiTargeting" />
+    <file src="bin\$configuration$\net461\Microsoft.Extensions.ApiDescription.Client.*" target="tasks\net461" />
+    <file src="bin\$configuration$\netstandard2.0\Microsoft.Extensions.ApiDescription.Client.*" target="tasks\netstandard2.0" />
+    <file src="..\dotnet-getdocument\bin\$configuration$\netcoreapp2.1\dotnet-getdocument.*" target="tools" />
+    <file src="..\GetDocumentInsider\bin\$configuration$\net461\GetDocument.Insider.*" target="tools\net461" />
+    <file src="..\GetDocumentInsider\bin\x86\$configuration$\net461\GetDocument.Insider.*" target="tools\net461-x86" />
+    <file src="..\GetDocumentInsider\bin\$configuration$\netcoreapp2.0\GetDocument.Insider.*" target="tools\netcoreapp2.0" />
   </files>
 </package>

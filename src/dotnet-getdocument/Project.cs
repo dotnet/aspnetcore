@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -11,7 +12,8 @@ namespace Microsoft.Extensions.ApiDescription.Client
 {
     internal class Project
     {
-        private const string MSBuildResourceName = "Microsoft.Extensions.ApiDescription.Client.ServiceProjectReferenceMetadata";
+        private const string ResourceFilename = "ServiceProjectReferenceMetadata.targets";
+        private const string MSBuildResourceName = "Microsoft.Extensions.ApiDescription.Client." + ResourceFilename;
 
         private Project()
         {
@@ -33,8 +35,6 @@ namespace Microsoft.Extensions.ApiDescription.Client
 
         public string DefaultService { get; private set; }
 
-        public string DefaultUri { get; private set; }
-
         public string DepsPath { get; private set; }
 
         public string Directory { get; private set; }
@@ -53,41 +53,36 @@ namespace Microsoft.Extensions.ApiDescription.Client
 
         public string RuntimeFrameworkVersion { get; private set; }
 
+        public string RuntimeIdentifier { get; private set; }
+
         public string TargetFramework { get; private set; }
 
         public string TargetFrameworkMoniker { get; private set; }
 
         public static Project FromFile(
-            string file,
+            string projectFile,
             string buildExtensionsDirectory,
             string framework = null,
             string configuration = null,
             string runtime = null)
         {
-            Debug.Assert(!string.IsNullOrEmpty(file), "file is null or empty.");
+            if (string.IsNullOrEmpty(projectFile))
+            {
+                throw new ArgumentNullException(nameof(projectFile));
+            }
 
             if (string.IsNullOrEmpty(buildExtensionsDirectory))
             {
-                buildExtensionsDirectory = Path.Combine(Path.GetDirectoryName(file), "obj");
+                buildExtensionsDirectory = Path.Combine(Path.GetDirectoryName(projectFile), "obj");
             }
 
             IODirectory.CreateDirectory(buildExtensionsDirectory);
 
             var assembly = typeof(Project).Assembly;
-            var propsPath = Path.Combine(
+            var targetsPath = Path.Combine(
                 buildExtensionsDirectory,
-                Path.GetFileName(file) + ".ServiceProjectReferenceMetadata.props");
-            using (var input = assembly.GetManifestResourceStream($"{MSBuildResourceName}.props"))
-            {
-                using (var output = File.OpenWrite(propsPath))
-                {
-                    Reporter.WriteVerbose(Resources.FormatWritingFile(propsPath));
-                    input.CopyTo(output);
-                }
-            }
-
-            var targetsPath = Path.ChangeExtension(propsPath, ".targets");
-            using (var input = assembly.GetManifestResourceStream($"{MSBuildResourceName}.targets"))
+                $"{Path.GetFileName(projectFile)}.{ResourceFilename}");
+            using (var input = assembly.GetManifestResourceStream(MSBuildResourceName))
             {
                 using (var output = File.OpenWrite(targetsPath))
                 {
@@ -101,32 +96,29 @@ namespace Microsoft.Extensions.ApiDescription.Client
             var metadataPath = Path.GetTempFileName();
             try
             {
-                var propertyArg = "/property:ServiceProjectReferenceMetadataPath=" + metadataPath;
-                if (!string.IsNullOrEmpty(framework))
-                {
-                    propertyArg += ";TargetFramework=" + framework;
-                }
-                if (!string.IsNullOrEmpty(configuration))
-                {
-                    propertyArg += ";Configuration=" + configuration;
-                }
-                if (!string.IsNullOrEmpty(runtime))
-                {
-                    propertyArg += ";RuntimeIdentifier=" + runtime;
-                }
-
                 var args = new List<string>
                 {
                     "msbuild",
                     "/target:WriteServiceProjectReferenceMetadata",
-                    propertyArg,
                     "/verbosity:quiet",
-                    "/nologo"
+                    "/nologo",
+                    $"/property:ServiceProjectReferenceMetadataPath={metadataPath}",
+                    projectFile,
                 };
 
-                if (!string.IsNullOrEmpty(file))
+                if (!string.IsNullOrEmpty(framework))
                 {
-                    args.Add(file);
+                    args.Add($"/property:TargetFramework={framework}");
+                }
+
+                if (!string.IsNullOrEmpty(configuration))
+                {
+                    args.Add($"/property:Configuration={configuration}");
+                }
+
+                if (!string.IsNullOrEmpty(runtime))
+                {
+                    args.Add($"/property:RuntimeIdentifier={runtime}");
                 }
 
                 var exitCode = Exe.Run("dotnet", args);
@@ -140,21 +132,20 @@ namespace Microsoft.Extensions.ApiDescription.Client
             }
             finally
             {
-                File.Delete(propsPath);
                 File.Delete(metadataPath);
                 File.Delete(targetsPath);
             }
 
             var project = new Project
             {
+                DefaultDocumentName = metadata[nameof(DefaultDocumentName)],
+                DefaultMethod = metadata[nameof(DefaultMethod)],
+                DefaultService = metadata[nameof(DefaultService)],
+
                 AssemblyName = metadata[nameof(AssemblyName)],
                 AssemblyPath = metadata[nameof(AssemblyPath)],
                 AssetsPath = metadata[nameof(AssetsPath)],
                 Configuration = metadata[nameof(Configuration)],
-                DefaultDocumentName = metadata[nameof(DefaultDocumentName)],
-                DefaultMethod = metadata[nameof(DefaultMethod)],
-                DefaultService = metadata[nameof(DefaultService)],
-                DefaultUri = metadata[nameof(DefaultUri)],
                 DepsPath = metadata[nameof(DepsPath)],
                 Directory = metadata[nameof(Directory)],
                 ExtensionsPath = metadata[nameof(ExtensionsPath)],
@@ -164,6 +155,7 @@ namespace Microsoft.Extensions.ApiDescription.Client
                 PlatformTarget = metadata[nameof(PlatformTarget)] ?? metadata[nameof(Platform)],
                 RuntimeConfigPath = metadata[nameof(RuntimeConfigPath)],
                 RuntimeFrameworkVersion = metadata[nameof(RuntimeFrameworkVersion)],
+                RuntimeIdentifier = metadata[nameof(RuntimeIdentifier)],
                 TargetFramework = metadata[nameof(TargetFramework)],
                 TargetFrameworkMoniker = metadata[nameof(TargetFrameworkMoniker)],
             };
@@ -191,6 +183,11 @@ namespace Microsoft.Extensions.ApiDescription.Client
             if (!Path.IsPathRooted(project.AssemblyPath))
             {
                 project.AssemblyPath = Path.GetFullPath(Path.Combine(project.Directory, project.AssemblyPath));
+            }
+
+            if (!Path.IsPathRooted(project.ExtensionsPath))
+            {
+                project.ExtensionsPath = Path.GetFullPath(Path.Combine(project.Directory, project.ExtensionsPath));
             }
 
             if (!Path.IsPathRooted(project.OutputPath))

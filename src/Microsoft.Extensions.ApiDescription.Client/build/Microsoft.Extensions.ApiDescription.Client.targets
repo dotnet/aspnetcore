@@ -179,7 +179,7 @@
     <ItemGroup>
       <!-- @(CurrentServiceProjectReference) item group will never contain more than one item. -->
       <CurrentServiceProjectReference Update="@(CurrentServiceProjectReference)">
-        <Command>dotnet getdocument --no-build --project %(FullPath) --output %(DocumentPath)</Command>
+        <Command>dotnet $(MSBuildThisFileDirectory)/../tools/dotnet-getdocument.dll --project %(FullPath) --output %(DocumentPath)</Command>
         <DefaultDocumentGeneratorOptions
             Condition="'%(DefaultDocumentGeneratorOptions)' == ''">$(DefaultDocumentGeneratorDefaultOptions)</DefaultDocumentGeneratorOptions>
         <ProjectConfiguration
@@ -193,9 +193,6 @@
       </CurrentServiceProjectReference>
       <CurrentServiceProjectReference Update="@(CurrentServiceProjectReference)">
         <Command Condition="'%(Service)' != ''">%(Command) --service %(Service)</Command>
-      </CurrentServiceProjectReference>
-      <CurrentServiceProjectReference Update="@(CurrentServiceProjectReference)">
-        <Command Condition="'%(Uri)' != ''">%(Command) --uri %(Uri)</Command>
       </CurrentServiceProjectReference>
       <CurrentServiceProjectReference Update="@(CurrentServiceProjectReference)">
         <Command>%(Command) --configuration %(ProjectConfiguration) %(DefaultDocumentGeneratorOptions)</Command>

@@ -30,10 +30,7 @@ namespace Microsoft.Extensions.ApiDescription.Client
             }
             catch (Exception ex)
             {
-                if (ex is CommandException
-                    || ex is CommandParsingException
-                    || (ex is WrappedException wrappedException
-                        && wrappedException.Type == "Microsoft.Extensions.ApiDescription.Client.Design.OperationException"))
+                if (ex is CommandException || ex is CommandParsingException)
                 {
                     Reporter.WriteVerbose(ex.ToString());
                 }

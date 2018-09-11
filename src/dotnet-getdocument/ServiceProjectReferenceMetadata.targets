@@ -1,20 +1,14 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Target Name="WriteServiceProjectReferenceMetadata"
-      DependsOnTargets="$(WriteServiceProjectReferenceMetadataDependsOn)"
-      Returns="@(ServiceProjectReferenceMetadata)" />
-
-  <!-- Collect properties only in inner build. Execute unconditionally before WriteServiceProjectReferenceMetadataCore. -->
+  <!-- Collect properties only in inner build. Execute unconditionally before WriteServiceProjectReferenceMetadata. -->
   <Target Name="GetServiceProjectReferenceMetadata"
-      BeforeTargets="WriteServiceProjectReferenceMetadataCore"
+      BeforeTargets="WriteServiceProjectReferenceMetadata"
       Condition="'$(TargetFramework)' != ''"
-      DependsOnTargets="$(GetServiceProjectReferenceMetadataDependsOn)"
       Returns="@(ServiceProjectReferenceMetadata)">
     <ItemGroup Condition="'$(TargetFramework)' != ''">
       <ServiceProjectReferenceMetadata Include="DefaultDocumentName: $(DefaultServiceProjectDocumentName)" />
-      <ServiceProjectReferenceMetadata Include="DefaultMethod: $(DefaultServiceProjectMethod)"></ServiceProjectReferenceMetadata>
-      <ServiceProjectReferenceMetadata Include="DefaultService: $(DefaultServiceProjectService)"></ServiceProjectReferenceMetadata>
-      <ServiceProjectReferenceMetadata Include="DefaultUri: $(DefaultServiceProjectUri)"></ServiceProjectReferenceMetadata>
+      <ServiceProjectReferenceMetadata Include="DefaultMethod: $(DefaultServiceProjectMethod)" />
+      <ServiceProjectReferenceMetadata Include="DefaultService: $(DefaultServiceProjectService)" />
 
       <ServiceProjectReferenceMetadata Include="AssemblyName: $(AssemblyName)" />
       <ServiceProjectReferenceMetadata Include="AssemblyPath: $(TargetPath)" />
@@ -29,21 +23,21 @@
       <ServiceProjectReferenceMetadata Include="PlatformTarget: $(PlatformTarget)" />
       <ServiceProjectReferenceMetadata Include="RuntimeConfigPath: $(ProjectRuntimeConfigFilePath)" />
       <ServiceProjectReferenceMetadata Include="RuntimeFrameworkVersion: $(RuntimeFrameworkVersion)" />
+      <ServiceProjectReferenceMetadata Include="RuntimeIdentifier: $(RuntimeIdentifier)" />
       <ServiceProjectReferenceMetadata Include="TargetFramework: $(TargetFramework)" />
       <ServiceProjectReferenceMetadata Include="TargetFrameworkMoniker: $(TargetFrameworkMoniker)" />
     </ItemGroup>
   </Target>
 
-  <!-- Write information only in inner build. Execute unconditionally before WriteServiceProjectReferenceMetadata. -->
-  <Target Name="WriteServiceProjectReferenceMetadataCore"
-      BeforeTargets="WriteServiceProjectReferenceMetadata"
-      DependsOnTargets="$(WriteServiceProjectReferenceMetadataCoreDependsOn)"
-      Returns="@(ServiceProjectReferenceMetadata)">
+  <!-- Write information only in inner build. -->
+  <Target Name="WriteServiceProjectReferenceMetadata" Returns="@(ServiceProjectReferenceMetadata)">
     <MSBuild Condition="'$(TargetFramework)' == ''"
       Projects="$(MSBuildProjectFile)"
       Targets="WriteServiceProjectReferenceMetadata"
       Properties="TargetFramework=$(TargetFrameworks.Split(';')[0]);ServiceProjectReferenceMetadataFile=$(ServiceProjectReferenceMetadataFile)" />
 
-    <WriteLinesToFile Condition="'$(TargetFramework)' != ''" File="$(ServiceProjectReferenceMetadataPath)" Lines="@(ServiceProjectReferenceMetadata)" />
+    <WriteLinesToFile Condition="'$(TargetFramework)' != ''"
+        File="$(ServiceProjectReferenceMetadataPath)"
+        Lines="@(ServiceProjectReferenceMetadata)" />
   </Target>
 </Project>

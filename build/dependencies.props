@@ -7,7 +7,7 @@
       is not otherwise referenced. They avoid unnecessary changes to the Universe build graph or to product
       dependencies. Do not use these properties elsewhere.
     -->
-  
+
     <AngleSharpPackageVersion>0.9.9</AngleSharpPackageVersion>
     <BenchmarkDotNetPackageVersion>0.10.13</BenchmarkDotNetPackageVersion>
     <BenchmarksOnlyMicrosoftEntityFrameworkCoreDesignPackageVersion>2.1.1</BenchmarksOnlyMicrosoftEntityFrameworkCoreDesignPackageVersion>
@@ -32,6 +32,7 @@
     <MicrosoftAspNetCoreDiagnosticsAbstractionsPackageVersion>2.2.0-preview3-35359</MicrosoftAspNetCoreDiagnosticsAbstractionsPackageVersion>
     <MicrosoftAspNetCoreDiagnosticsPackageVersion>2.2.0-preview3-35359</MicrosoftAspNetCoreDiagnosticsPackageVersion>
     <MicrosoftAspNetCoreHostingAbstractionsPackageVersion>2.2.0-preview3-35359</MicrosoftAspNetCoreHostingAbstractionsPackageVersion>
+    <MicrosoftAspNetCoreHostingAbstractions20PackageVersion>2.0.0</MicrosoftAspNetCoreHostingAbstractions20PackageVersion>
     <MicrosoftAspNetCoreHostingPackageVersion>2.2.0-preview3-35359</MicrosoftAspNetCoreHostingPackageVersion>
     <MicrosoftAspNetCoreHtmlAbstractionsPackageVersion>2.2.0-preview3-35359</MicrosoftAspNetCoreHtmlAbstractionsPackageVersion>
     <MicrosoftAspNetCoreHttpExtensionsPackageVersion>2.2.0-preview3-35359</MicrosoftAspNetCoreHttpExtensionsPackageVersion>
@@ -54,7 +55,6 @@
     <MicrosoftAspNetCoreSessionPackageVersion>2.2.0-preview3-35359</MicrosoftAspNetCoreSessionPackageVersion>
     <MicrosoftAspNetCoreStaticFilesPackageVersion>2.2.0-preview3-35359</MicrosoftAspNetCoreStaticFilesPackageVersion>
     <MicrosoftAspNetCoreTestHostPackageVersion>2.2.0-preview3-35359</MicrosoftAspNetCoreTestHostPackageVersion>
-    <MicrosoftAspNetCoreTestHost20PackageVersion>2.0.0</MicrosoftAspNetCoreTestHost20PackageVersion>
     <MicrosoftAspNetCoreTestingPackageVersion>2.2.0-preview3-35359</MicrosoftAspNetCoreTestingPackageVersion>
     <MicrosoftAspNetCoreWebUtilitiesPackageVersion>2.2.0-preview3-35359</MicrosoftAspNetCoreWebUtilitiesPackageVersion>
     <MicrosoftAspNetWebApiClientPackageVersion>5.2.6</MicrosoftAspNetWebApiClientPackageVersion>
