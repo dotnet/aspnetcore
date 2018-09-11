@@ -256,6 +256,7 @@
     <PackageArtifact Include="Microsoft.Extensions.Logging.Testing" Category="noship" />
     <PackageArtifact Include="Microsoft.Extensions.Logging.TraceSource" Category="ship" AppMetapackage="true" AllMetapackage="true" />
     <PackageArtifact Include="Microsoft.Extensions.Logging" Category="ship" AppMetapackage="true" AllMetapackage="true" />
+    <PackageArtifact Include="Microsoft.Extensions.NonCapturingTimer.Sources" Category="noship" />
     <PackageArtifact Include="Microsoft.Extensions.ObjectMethodExecutor.Sources" Category="noship" />
     <PackageArtifact Include="Microsoft.Extensions.ObjectPool" Category="ship" AppMetapackage="true" AllMetapackage="true" />
     <PackageArtifact Include="Microsoft.Extensions.Options.ConfigurationExtensions" Category="ship" AppMetapackage="true" AllMetapackage="true" />
