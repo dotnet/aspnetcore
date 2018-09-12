@@ -31,7 +31,7 @@ public class HubConnectionTest {
     }
 
     @Test
-    public void HubConnectionClosesAfterCloseMessage() throws Exception {
+    public void hubConnectionClosesAfterCloseMessage() throws Exception {
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = new HubConnection("http://example.com", mockTransport, true);
 
@@ -46,7 +46,7 @@ public class HubConnectionTest {
     }
 
     @Test
-    public void HubConnectionReceiveHandshakeResponseWithError() throws Exception {
+    public void hubConnectionReceiveHandshakeResponseWithError() throws Exception {
         exceptionRule.expect(HubException.class);
         exceptionRule.expectMessage("Requested protocol 'messagepack' is not available.");
 
@@ -58,7 +58,7 @@ public class HubConnectionTest {
     }
 
     @Test
-    public void RegisteringMultipleHandlersAndBothGetTriggered() throws Exception {
+    public void registeringMultipleHandlersAndBothGetTriggered() throws Exception {
         AtomicReference<Double> value = new AtomicReference<>(0.0);
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = new HubConnection("http://example.com", mockTransport, true);
@@ -84,7 +84,7 @@ public class HubConnectionTest {
     }
 
     @Test
-    public void RemoveHandlerByName() throws Exception {
+    public void removeHandlerByName() throws Exception {
         AtomicReference<Double> value = new AtomicReference<>(0.0);
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = new HubConnection("http://example.com", mockTransport, true);
@@ -111,7 +111,7 @@ public class HubConnectionTest {
     }
 
     @Test
-    public void AddAndRemoveHandlerImmediately() throws Exception {
+    public void addAndRemoveHandlerImmediately() throws Exception {
         AtomicReference<Double> value = new AtomicReference<>(0.0);
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = new HubConnection("http://example.com", mockTransport, true);
@@ -132,11 +132,11 @@ public class HubConnectionTest {
         mockTransport.receiveMessage("{\"type\":1,\"target\":\"inc\",\"arguments\":[]}" + RECORD_SEPARATOR);
 
         // Confirming that the handler was removed.
-        assertEquals(0, value.get(), 0);
+        assertEquals(0.0, value.get(), 0);
     }
 
     @Test
-    public void RemovingMultipleHandlersWithOneCallToRemove() throws Exception {
+    public void removingMultipleHandlersWithOneCallToRemove() throws Exception {
         AtomicReference<Double> value = new AtomicReference<>(0.0);
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = new HubConnection("http://example.com", mockTransport, true);
@@ -168,7 +168,7 @@ public class HubConnectionTest {
     }
 
     @Test
-    public void RemoveHandlerWithUnsubscribe() throws Exception {
+    public void removeHandlerWithUnsubscribe() throws Exception {
         AtomicReference<Double> value = new AtomicReference<>(0.0);
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = new HubConnection("http://example.com", mockTransport, true);
@@ -191,12 +191,17 @@ public class HubConnectionTest {
         assertEquals(1, value.get(), 0);
 
         subscription.unsubscribe();
-        mockTransport.receiveMessage("{\"type\":1,\"target\":\"inc\",\"arguments\":[]}" + RECORD_SEPARATOR);
+        try {
+            mockTransport.receiveMessage("{\"type\":1,\"target\":\"inc\",\"arguments\":[]}" + RECORD_SEPARATOR);
+        } catch (Exception ex) {
+            assertEquals("There are no callbacks registered for the method 'inc'.", ex.getMessage());
+        }
+
         assertEquals(1, value.get(), 0);
     }
 
     @Test
-    public void UnsubscribeTwice() throws Exception {
+    public void unsubscribeTwice() throws Exception {
         AtomicReference<Double> value = new AtomicReference<>(0.0);
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = new HubConnection("http://example.com", mockTransport, true);
@@ -220,12 +225,17 @@ public class HubConnectionTest {
 
         subscription.unsubscribe();
         subscription.unsubscribe();
-        mockTransport.receiveMessage("{\"type\":1,\"target\":\"inc\",\"arguments\":[]}" + RECORD_SEPARATOR);
+        try {
+            mockTransport.receiveMessage("{\"type\":1,\"target\":\"inc\",\"arguments\":[]}" + RECORD_SEPARATOR);
+        } catch (Exception ex) {
+            assertEquals("There are no callbacks registered for the method 'inc'.", ex.getMessage());
+        }
+
         assertEquals(1, value.get(), 0);
     }
 
     @Test
-    public void RemoveSingleHandlerWithUnsubscribe() throws Exception {
+    public void removeSingleHandlerWithUnsubscribe() throws Exception {
         AtomicReference<Double> value = new AtomicReference<>(0.0);
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = new HubConnection("http://example.com", mockTransport, true);
@@ -255,7 +265,7 @@ public class HubConnectionTest {
     }
 
     @Test
-    public void AddAndRemoveHandlerImmediatelyWithSubscribe() throws Exception {
+    public void addAndRemoveHandlerImmediatelyWithSubscribe() throws Exception {
         AtomicReference<Double> value = new AtomicReference<>(0.0);
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = new HubConnection("http://example.com", mockTransport, true);
@@ -268,13 +278,19 @@ public class HubConnectionTest {
 
         hubConnection.start();
         mockTransport.receiveMessage("{}" + RECORD_SEPARATOR);
-        mockTransport.receiveMessage("{\"type\":1,\"target\":\"inc\",\"arguments\":[]}" + RECORD_SEPARATOR);
+
+        try {
+            mockTransport.receiveMessage("{\"type\":1,\"target\":\"inc\",\"arguments\":[]}" + RECORD_SEPARATOR);
+        } catch (Exception ex) {
+            assertEquals("There are no callbacks registered for the method 'inc'.", ex.getMessage());
+        }
+
         // Confirming that the handler was removed.
         assertEquals(0, value.get(), 0);
     }
 
     @Test
-    public void RegisteringMultipleHandlersThatTakeParamsAndBothGetTriggered() throws Exception {
+    public void registeringMultipleHandlersThatTakeParamsAndBothGetTriggered() throws Exception {
         AtomicReference<Double> value = new AtomicReference<>(0.0);
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = new HubConnection("http://example.com", mockTransport, true);
@@ -296,7 +312,7 @@ public class HubConnectionTest {
 
     // We're using AtomicReference<Double> in the send tests instead of int here because Gson has trouble deserializing to Integer
     @Test
-    public void SendWithNoParamsTriggersOnHandler() throws Exception {
+    public void sendWithNoParamsTriggersOnHandler() throws Exception {
         AtomicReference<Double> value = new AtomicReference<Double>(0.0);
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = new HubConnection("http://example.com", mockTransport, true);
@@ -315,7 +331,7 @@ public class HubConnectionTest {
     }
 
     @Test
-    public void SendWithParamTriggersOnHandler() throws Exception {
+    public void sendWithParamTriggersOnHandler() throws Exception {
         AtomicReference<String> value = new AtomicReference<>();
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = new HubConnection("http://example.com", mockTransport, true);
@@ -335,7 +351,7 @@ public class HubConnectionTest {
     }
 
     @Test
-    public void SendWithTwoParamsTriggersOnHandler() throws Exception {
+    public void sendWithTwoParamsTriggersOnHandler() throws Exception {
         AtomicReference<String> value1 = new AtomicReference<>();
         AtomicReference<Double> value2 = new AtomicReference<>();
 
@@ -361,7 +377,7 @@ public class HubConnectionTest {
     }
 
     @Test
-    public void SendWithThreeParamsTriggersOnHandler() throws Exception {
+    public void sendWithThreeParamsTriggersOnHandler() throws Exception {
         AtomicReference<String> value1 = new AtomicReference<>();
         AtomicReference<String> value2 = new AtomicReference<>();
         AtomicReference<String> value3 = new AtomicReference<>();
@@ -391,7 +407,7 @@ public class HubConnectionTest {
     }
 
     @Test
-    public void SendWithFourParamsTriggersOnHandler() throws Exception {
+    public void sendWithFourParamsTriggersOnHandler() throws Exception {
         AtomicReference<String> value1 = new AtomicReference<>();
         AtomicReference<String> value2 = new AtomicReference<>();
         AtomicReference<String> value3 = new AtomicReference<>();
@@ -424,7 +440,7 @@ public class HubConnectionTest {
     }
 
     @Test
-    public void SendWithFiveParamsTriggersOnHandler() throws Exception {
+    public void sendWithFiveParamsTriggersOnHandler() throws Exception {
         AtomicReference<String> value1 = new AtomicReference<>();
         AtomicReference<String> value2 = new AtomicReference<>();
         AtomicReference<String> value3 = new AtomicReference<>();
@@ -461,7 +477,7 @@ public class HubConnectionTest {
     }
 
     @Test
-    public void SendWithSixParamsTriggersOnHandler() throws Exception {
+    public void sendWithSixParamsTriggersOnHandler() throws Exception {
         AtomicReference<String> value1 = new AtomicReference<>();
         AtomicReference<String> value2 = new AtomicReference<>();
         AtomicReference<String> value3 = new AtomicReference<>();
@@ -502,7 +518,7 @@ public class HubConnectionTest {
     }
 
     @Test
-    public void SendWithSevenParamsTriggersOnHandler() throws Exception {
+    public void sendWithSevenParamsTriggersOnHandler() throws Exception {
         AtomicReference<String> value1 = new AtomicReference<>();
         AtomicReference<String> value2 = new AtomicReference<>();
         AtomicReference<String> value3 = new AtomicReference<>();
@@ -547,7 +563,7 @@ public class HubConnectionTest {
     }
 
     @Test
-    public void SendWithEightParamsTriggersOnHandler() throws Exception {
+    public void sendWithEightParamsTriggersOnHandler() throws Exception {
         AtomicReference<String> value1 = new AtomicReference<>();
         AtomicReference<String> value2 = new AtomicReference<>();
         AtomicReference<String> value3 = new AtomicReference<>();
@@ -594,8 +610,40 @@ public class HubConnectionTest {
         assertEquals("F", value8.get());
     }
 
+    private class Custom {
+        public int number;
+        public String str;
+        public boolean[] bools;
+    }
+
     @Test
-    public void ReceiveHandshakeResponseAndMessage() throws Exception {
+    public void sendWithCustomObjectTriggersOnHandler() throws Exception {
+        AtomicReference<Custom> value1 = new AtomicReference<>();
+
+        MockTransport mockTransport = new MockTransport();
+        HubConnection hubConnection = new HubConnection("http://example.com", mockTransport, true);
+
+        hubConnection.on("inc", (param1) -> {
+            assertNull(value1.get());
+
+            value1.set(param1);
+        }, Custom.class);
+
+        hubConnection.start();
+        mockTransport.receiveMessage("{}" + RECORD_SEPARATOR);
+        mockTransport.receiveMessage("{\"type\":1,\"target\":\"inc\",\"arguments\":[{\"number\":1,\"str\":\"A\",\"bools\":[true,false]}]}" + RECORD_SEPARATOR);
+
+        // Confirming that our handler was called and the correct message was passed in.
+        Custom custom = value1.get();
+        assertEquals(1, custom.number);
+        assertEquals("A", custom.str);
+        assertEquals(2, custom.bools.length);
+        assertEquals(true, custom.bools[0]);
+        assertEquals(false, custom.bools[1]);
+    }
+
+    @Test
+    public void receiveHandshakeResponseAndMessage() throws Exception {
         AtomicReference<Double> value = new AtomicReference<Double>(0.0);
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = new HubConnection("http://example.com", mockTransport, true);
@@ -660,7 +708,7 @@ public class HubConnectionTest {
     }
 
     @Test
-    public void HubConnectionClosesAndRunsOnClosedCallbackAfterCloseMessageWithError() throws Exception {
+    public void hubConnectionClosesAndRunsOnClosedCallbackAfterCloseMessageWithError() throws Exception {
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = new HubConnection("http://example.com", mockTransport, true);
         hubConnection.onClosed((ex) -> {
@@ -677,7 +725,7 @@ public class HubConnectionTest {
     }
 
     @Test
-    public void CallingStartOnStartedHubConnectionNoOps() throws Exception {
+    public void callingStartOnStartedHubConnectionNoOps() throws Exception {
         Transport mockTransport = new MockTransport();
         HubConnection hubConnection = new HubConnection("http://example.com", mockTransport, true);
         hubConnection.start();
@@ -691,7 +739,7 @@ public class HubConnectionTest {
     }
 
     @Test
-    public void CannotSendBeforeStart() throws Exception {
+    public void cannotSendBeforeStart() throws Exception {
         exceptionRule.expect(HubException.class);
         exceptionRule.expectMessage("The 'send' method cannot be called if the connection is not active");
 
