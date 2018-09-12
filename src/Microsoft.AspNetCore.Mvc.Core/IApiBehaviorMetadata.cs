@@ -3,13 +3,13 @@
 
 using Microsoft.AspNetCore.Mvc.Filters;
 
-namespace Microsoft.AspNetCore.Mvc.Internal
+namespace Microsoft.AspNetCore.Mvc
 {
     /// <summary>
     /// An <see cref="IFilterMetadata"/> interface for <see cref="ApiControllerAttribute"/>. See 
     /// <see cref="ApiControllerAttribute"/> for details.
     /// </summary>
-    public interface IApiBehaviorMetadata : IFilterMetadata
+    internal interface IApiBehaviorMetadata : IFilterMetadata
     {
     }
 }

@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             Subject = context.Controller;
             var tempData = _tempDataFactory.GetTempData(context.HttpContext);
 
-            SetPropertyVaules(tempData);
+            SetPropertyValues(tempData);
         }
     }
 }

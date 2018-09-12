@@ -28,6 +28,10 @@ namespace ApiExplorerWebSite
         public IActionResult PostWithConventions() => null;
 
         [HttpPost]
+        [Produces("application/json", "text/json")]
+        public IActionResult PostWithProduces(Product p) => null;
+
+        [HttpPost]
         public Task<IActionResult> PostTaskOfProduct(Product p) => null;
 
         [HttpPut]

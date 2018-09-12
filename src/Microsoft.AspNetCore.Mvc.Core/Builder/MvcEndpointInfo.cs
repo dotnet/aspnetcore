@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Builder
                 // Data we parse from the pattern will be used to fill in the rest of the constraints or
                 // defaults. The parser will throw for invalid routes.
                 ParsedPattern = RoutePatternFactory.Parse(pattern, defaults, constraints);
-                Constraints = BuildConstraints(parameterPolicyFactory);
+                ParameterPolicies = BuildParameterPolicies(ParsedPattern.Parameters, parameterPolicyFactory);
 
                 Defaults = defaults;
                 // Merge defaults outside of RoutePattern because the defaults will already have values from pattern
@@ -50,33 +50,30 @@ namespace Microsoft.AspNetCore.Builder
         // Inline and non-inline defaults merged into one
         public RouteValueDictionary MergedDefaults { get; }
 
-        public IDictionary<string, IList<IRouteConstraint>> Constraints { get; }
+        public IDictionary<string, IList<IParameterPolicy>> ParameterPolicies { get; }
         public RouteValueDictionary DataTokens { get; }
         public RoutePattern ParsedPattern { get; private set; }
 
-        private Dictionary<string, IList<IRouteConstraint>> BuildConstraints(ParameterPolicyFactory parameterPolicyFactory)
+        internal static Dictionary<string, IList<IParameterPolicy>> BuildParameterPolicies(IReadOnlyList<RoutePatternParameterPart> parameters, ParameterPolicyFactory parameterPolicyFactory)
         {
-            var constraints = new Dictionary<string, IList<IRouteConstraint>>(StringComparer.OrdinalIgnoreCase);
+            var policies = new Dictionary<string, IList<IParameterPolicy>>(StringComparer.OrdinalIgnoreCase);
 
-            foreach (var parameter in ParsedPattern.Parameters)
+            foreach (var parameter in parameters)
             {
                 foreach (var parameterPolicy in parameter.ParameterPolicies)
                 {
                     var createdPolicy = parameterPolicyFactory.Create(parameter, parameterPolicy);
-                    if (createdPolicy is IRouteConstraint routeConstraint)
+                    if (!policies.TryGetValue(parameter.Name, out var policyList))
                     {
-                        if (!constraints.TryGetValue(parameter.Name, out var paramConstraints))
-                        {
-                            paramConstraints = new List<IRouteConstraint>();
-                            constraints.Add(parameter.Name, paramConstraints);
-                        }
-
-                        paramConstraints.Add(routeConstraint);
+                        policyList = new List<IParameterPolicy>();
+                        policies.Add(parameter.Name, policyList);
                     }
+
+                    policyList.Add(createdPolicy);
                 }
             }
 
-            return constraints;
+            return policies;
         }
     }
 }

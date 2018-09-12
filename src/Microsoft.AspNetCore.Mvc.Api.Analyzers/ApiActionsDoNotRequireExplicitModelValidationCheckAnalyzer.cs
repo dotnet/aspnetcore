@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
                     // if (!ModelState.IsValid)
                     // or
                     // if (ModelState.IsValid == false)
-                    // If the conditional is misisng a true condition or has an else expression, skip this operation.
+                    // If the conditional is missing a true condition or has an else expression, skip this operation.
                     return;
                 }
 
@@ -170,8 +170,8 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
 
             var constantValue = ((ILiteralOperation)operation).ConstantValue;
             if (!constantValue.HasValue ||
-                !(constantValue.Value is bool boolCostantVaue) ||
-                boolCostantVaue != expectedConstantValue)
+                !(constantValue.Value is bool boolConstantValue) ||
+                boolConstantValue != expectedConstantValue)
             {
                 return false;
             }
@@ -199,7 +199,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
 
             if (propertyReference.Instance?.Kind != OperationKind.PropertyReference)
             {
-                // Verify this is refering to the ModelState property on the current controller instance
+                // Verify this is referring to the ModelState property on the current controller instance
                 return false;
             }
 

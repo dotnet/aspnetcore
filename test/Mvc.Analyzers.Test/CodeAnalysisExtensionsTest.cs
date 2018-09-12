@@ -34,10 +34,10 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
         public async Task GetAttributes_OnNonOverriddenMethod_ReturnsAllAttributesOnCurrentAction()
         {
             // Arrange
-            var compilation = await GetCompilation("GetAttributes_WithoutMethodOverridding");
+            var compilation = await GetCompilation("GetAttributes_WithoutMethodOverriding");
             var attribute = compilation.GetTypeByMetadataName(typeof(ProducesResponseTypeAttribute).FullName);
-            var testClass = compilation.GetTypeByMetadataName($"{Namespace}.{nameof(GetAttributes_WithoutMethodOverridding)}");
-            var method = (IMethodSymbol)testClass.GetMembers(nameof(GetAttributes_WithoutMethodOverridding.Method)).First();
+            var testClass = compilation.GetTypeByMetadataName($"{Namespace}.{nameof(GetAttributes_WithoutMethodOverriding)}");
+            var method = (IMethodSymbol)testClass.GetMembers(nameof(GetAttributes_WithoutMethodOverriding.Method)).First();
 
             // Act
             var attributes = CodeAnalysisExtensions.GetAttributes(method, attribute, inherit: true);

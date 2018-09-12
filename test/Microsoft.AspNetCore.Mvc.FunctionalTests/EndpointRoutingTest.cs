@@ -18,6 +18,170 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
+        public async Task ParameterTransformer_TokenReplacement_Found()
+        {
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/_ParameterTransformer_/_Test_");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            var body = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<RoutingResult>(body);
+
+            Assert.Equal("ParameterTransformer", result.Controller);
+            Assert.Equal("Test", result.Action);
+        }
+
+        [Fact]
+        public async Task ParameterTransformer_TokenReplacement_NotFound()
+        {
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/ParameterTransformer/Test");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task AttributeRoutedAction_Parameters_Found()
+        {
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/EndpointRouting/Index");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            var body = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<RoutingResult>(body);
+
+            Assert.Equal("EndpointRouting", result.Controller);
+            Assert.Equal("Index", result.Action);
+        }
+
+        [Fact]
+        public async Task AttributeRoutedAction_Parameters_DefaultValue_Found()
+        {
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/EndpointRouting");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            var body = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<RoutingResult>(body);
+
+            Assert.Equal("EndpointRouting", result.Controller);
+            Assert.Equal("Index", result.Action);
+        }
+
+        [Fact]
+        public async Task AttributeRoutedAction_ParameterTransformer_Found()
+        {
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/_EndpointRouting_/ParameterTransformer");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            var body = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<RoutingResult>(body);
+
+            Assert.Equal("EndpointRouting", result.Controller);
+            Assert.Equal("ParameterTransformer", result.Action);
+        }
+
+        [Fact]
+        public async Task AttributeRoutedAction_ParameterTransformer_NotFound()
+        {
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/EndpointRouting/ParameterTransformer");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task AttributeRoutedAction_ParameterTransformer_LinkToSelf()
+        {
+            // Arrange
+            var url = LinkFrom("http://localhost/_EndpointRouting_/ParameterTransformer").To(new { });
+
+            // Act
+            var response = await Client.GetAsync(url);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var body = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<RoutingResult>(body);
+
+            Assert.Equal("EndpointRouting", result.Controller);
+            Assert.Equal("ParameterTransformer", result.Action);
+
+            Assert.Equal("/_EndpointRouting_/ParameterTransformer", result.Link);
+        }
+
+        [Fact]
+        public async Task AttributeRoutedAction_ParameterTransformer_LinkWithAmbientController()
+        {
+            // Arrange
+            var url = LinkFrom("http://localhost/_EndpointRouting_/ParameterTransformer").To(new { action = "Get", id = 5 });
+
+            // Act
+            var response = await Client.GetAsync(url);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var body = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<RoutingResult>(body);
+
+            Assert.Equal("EndpointRouting", result.Controller);
+            Assert.Equal("ParameterTransformer", result.Action);
+
+            Assert.Equal("/_EndpointRouting_/5", result.Link);
+        }
+
+        [Fact]
+        public async Task AttributeRoutedAction_ParameterTransformer_LinkToAttributeRoutedController()
+        {
+            // Arrange
+            var url = LinkFrom("http://localhost/_EndpointRouting_/ParameterTransformer").To(new { action = "ShowPosts", controller = "Blog" });
+
+            // Act
+            var response = await Client.GetAsync(url);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var body = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<RoutingResult>(body);
+
+            Assert.Equal("EndpointRouting", result.Controller);
+            Assert.Equal("ParameterTransformer", result.Action);
+
+            Assert.Equal("/Blog/ShowPosts", result.Link);
+        }
+
+        [Fact]
+        public async Task AttributeRoutedAction_ParameterTransformer_LinkToConventionalController()
+        {
+            // Arrange
+            var url = LinkFrom("http://localhost/_EndpointRouting_/ParameterTransformer").To(new { action = "Index", controller = "Home" });
+
+            // Act
+            var response = await Client.GetAsync(url);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var body = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<RoutingResult>(body);
+
+            Assert.Equal("EndpointRouting", result.Controller);
+            Assert.Equal("ParameterTransformer", result.Action);
+
+            Assert.Equal("/", result.Link);
+        }
+
+        [Fact]
         public async override Task HasEndpointMatch()
         {
             // Arrange & Act
@@ -122,6 +286,120 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             // Assert
             Assert.Equal(HttpStatusCode.MethodNotAllowed, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task ConventionalRoutedAction_ParameterTransformer()
+        {
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/ConventionalTransformerRoute/_ConventionalTransformer_/Index");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var body = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<RoutingResult>(body);
+
+            Assert.Equal("ConventionalTransformer", result.Controller);
+            Assert.Equal("Index", result.Action);
+        }
+
+        [Fact]
+        public async Task ConventionalRoutedAction_ParameterTransformer_NotFound()
+        {
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/ConventionalTransformerRoute/ConventionalTransformer/Index");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task ConventionalRoutedAction_ParameterTransformer_DefaultValue()
+        {
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/ConventionalTransformerRoute/_ConventionalTransformer_");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var body = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<RoutingResult>(body);
+
+            Assert.Equal("ConventionalTransformer", result.Controller);
+            Assert.Equal("Index", result.Action);
+        }
+
+        [Fact]
+        public async Task ConventionalRoutedAction_ParameterTransformer_WithParam()
+        {
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/ConventionalTransformerRoute/_ConventionalTransformer_/Param/_value_");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var body = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<RoutingResult>(body);
+
+            Assert.Equal("ConventionalTransformer", result.Controller);
+            Assert.Equal("Param", result.Action);
+
+            Assert.Equal("/ConventionalTransformerRoute/_ConventionalTransformer_/Param/_value_", Assert.Single(result.ExpectedUrls));
+        }
+
+        [Fact]
+        public async Task ConventionalRoutedAction_ParameterTransformer_LinkToConventionalController()
+        {
+            // Arrange
+            var url = LinkFrom("http://localhost/ConventionalTransformerRoute/_ConventionalTransformer_/Index").To(new { action = "Index", controller = "Home" });
+
+            // Act
+            var response = await Client.GetAsync(url);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var body = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<RoutingResult>(body);
+
+            Assert.Equal("ConventionalTransformer", result.Controller);
+            Assert.Equal("Index", result.Action);
+            Assert.Equal("/", result.Link);
+        }
+
+        [Fact]
+        public async Task ConventionalRoutedAction_ParameterTransformer_LinkToConventionalControllerWithParam()
+        {
+            // Arrange
+            var url = LinkFrom("http://localhost/ConventionalTransformerRoute/_ConventionalTransformer_/Index").To(new { action = "Param", controller = "ConventionalTransformer", param = "value" });
+
+            // Act
+            var response = await Client.GetAsync(url);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var body = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<RoutingResult>(body);
+
+            Assert.Equal("ConventionalTransformer", result.Controller);
+            Assert.Equal("Index", result.Action);
+            Assert.Equal("/ConventionalTransformerRoute/_ConventionalTransformer_/Param/_value_", result.Link);
+        }
+
+        [Fact]
+        public async Task ConventionalRoutedAction_ParameterTransformer_LinkToSelf()
+        {
+            // Arrange
+            var url = LinkFrom("http://localhost/ConventionalTransformerRoute/_ConventionalTransformer_/Index").To(new {});
+
+            // Act
+            var response = await Client.GetAsync(url);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var body = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<RoutingResult>(body);
+
+            Assert.Equal("ConventionalTransformer", result.Controller);
+            Assert.Equal("Index", result.Action);
+            Assert.Equal("/ConventionalTransformerRoute/_ConventionalTransformer_", result.Link);
         }
     }
 }

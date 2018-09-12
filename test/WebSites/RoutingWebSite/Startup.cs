@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace RoutingWebSite
@@ -14,8 +15,20 @@ namespace RoutingWebSite
         // Set up application services
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc()
+            services
+                .AddMvc(options =>
+                {
+                    // Add route token transformer to one controller
+                    options.Conventions.Add(new ControllerRouteTokenTransformerConvention(
+                        typeof(ParameterTransformerController),
+                        new TestParameterTransformer()));
+                })
                 .SetCompatibilityVersion(CompatibilityVersion.Latest);
+            services
+                .AddRouting(options =>
+                {
+                    options.ConstraintMap["test-transformer"] = typeof(TestParameterTransformer);
+                });
 
             services.AddScoped<TestResponseGenerator>();
             services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
@@ -31,6 +44,12 @@ namespace RoutingWebSite
                     defaults: null,
                     constraints: new { controller = "DataTokens" },
                     dataTokens: new { hasDataTokens = true });
+
+                routes.MapRoute(
+                    "ConventionalTransformerRoute",
+                    "ConventionalTransformerRoute/{controller:test-transformer}/{action=Index}/{param:test-transformer?}",
+                    defaults: null,
+                    constraints: new { controller = "ConventionalTransformer" });
 
                 routes.MapAreaRoute(
                     "flightRoute",

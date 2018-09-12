@@ -361,7 +361,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         }
 
         [Fact]
-        public async Task ProcessAsync_DoesNotUseModelFromViewdata_IfModelExpressionEvalulatesToNull()
+        public async Task ProcessAsync_DoesNotUseModelFromViewdata_IfModelExpressionEvaluatesToNull()
         {
             // Arrange
             var bufferScope = new TestViewBufferScope();
@@ -455,7 +455,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         }
 
         [Fact]
-        public async Task ProcessAsync_UsesModelOnViewContextViewData_WhenModelExpresionIsNull()
+        public async Task ProcessAsync_UsesModelOnViewContextViewData_WhenModelExpressionIsNull()
         {
             // Arrange
             var bufferScope = new TestViewBufferScope();

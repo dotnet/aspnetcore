@@ -4,6 +4,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Analyzer.Testing;
+using Microsoft.AspNetCore.Mvc.Api.Analyzers.TestFiles.ApiControllerFactsTest;
 using Microsoft.CodeAnalysis;
 using Xunit;
 
@@ -110,9 +111,25 @@ namespace TestNamespace
             Assert.True(result);
         }
 
-        private Task<Compilation> GetCompilation()
+        [Fact]
+        public async Task IsApiControllerAction_ReturnsTrue_IfAttributeIsDeclaredOnAssembly()
         {
-            var testSource = MvcTestSource.Read(GetType().Name, "TestFile");
+            // Arrange
+            var compilation = await GetCompilation(nameof(IsApiControllerAction_ReturnsTrue_IfAttributeIsDeclaredOnAssembly));
+            var symbolCache = new ApiControllerSymbolCache(compilation);
+            var type = compilation.GetTypeByMetadataName(typeof(IsApiControllerAction_ReturnsTrue_IfAttributeIsDeclaredOnAssemblyController).FullName);
+            var method = (IMethodSymbol)type.GetMembers(nameof(IsApiControllerAction_ReturnsTrue_IfAttributeIsDeclaredOnAssemblyController.Action)).First();
+
+            // Act
+            var result = ApiControllerFacts.IsApiControllerAction(symbolCache, method);
+
+            // Assert
+            Assert.True(result);
+        }
+
+        private Task<Compilation> GetCompilation(string testFile = "TestFile")
+        {
+            var testSource = MvcTestSource.Read(GetType().Name, testFile);
             var project = DiagnosticProject.Create(GetType().Assembly, new[] { testSource.Source });
 
             return project.GetCompilationAsync();

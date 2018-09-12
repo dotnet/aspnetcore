@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public async Task ApiExplorer_IsVisible_EnabledWithConvention()
         {
             // Arrange & Act
-            var response = await Client.GetAsync("http://localhost/ApiExplorerVisbilityEnabledByConvention");
+            var response = await Client.GetAsync("http://localhost/ApiExplorerVisibilityEnabledByConvention");
 
             var body = await response.Content.ReadAsStringAsync();
             var result = JsonConvert.DeserializeObject<List<ApiExplorerData>>(body);
@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public async Task ApiExplorer_IsVisible_DisabledWithConvention()
         {
             // Arrange & Act
-            var response = await Client.GetAsync("http://localhost/ApiExplorerVisbilityDisabledByConvention");
+            var response = await Client.GetAsync("http://localhost/ApiExplorerVisibilityDisabledByConvention");
 
             var body = await response.Content.ReadAsStringAsync();
             var result = JsonConvert.DeserializeObject<List<ApiExplorerData>>(body);
@@ -1251,6 +1251,41 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             // Act
             var response = await Client.PostAsync(
                 $"ApiExplorerResponseTypeWithApiConventionController/PostTaskOfProduct",
+                new StringContent(string.Empty));
+            var responseBody = await response.EnsureSuccessStatusCode().Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<List<ApiExplorerData>>(responseBody);
+
+            // Assert
+            var description = Assert.Single(result);
+            Assert.Collection(
+                description.SupportedResponseTypes.OrderBy(r => r.StatusCode),
+                responseType =>
+                {
+                    Assert.True(responseType.IsDefaultResponse);
+                },
+                responseType =>
+                {
+                    Assert.Equal(typeof(void).FullName, responseType.ResponseType);
+                    Assert.Equal(201, responseType.StatusCode);
+                    Assert.Empty(responseType.ResponseFormats);
+                },
+                responseType =>
+                {
+                    Assert.Equal(typeof(ProblemDetails).FullName, responseType.ResponseType);
+                    Assert.Equal(400, responseType.StatusCode);
+                    Assert.Equal(expectedMediaTypes, GetSortedMediaTypes(responseType));
+                });
+        }
+
+        [Fact]
+        public async Task ApiConvention_ForPostActionWithProducesAttribute()
+        {
+            // Arrange
+            var expectedMediaTypes = new[] { "application/json", "text/json", };
+
+            // Act
+            var response = await Client.PostAsync(
+                $"ApiExplorerResponseTypeWithApiConventionController/PostWithProduces",
                 new StringContent(string.Empty));
             var responseBody = await response.EnsureSuccessStatusCode().Content.ReadAsStringAsync();
             var result = JsonConvert.DeserializeObject<List<ApiExplorerData>>(responseBody);

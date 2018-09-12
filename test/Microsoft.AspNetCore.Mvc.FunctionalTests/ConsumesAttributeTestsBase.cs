@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         [ConditionalFact]
         // Mono issue - https://github.com/aspnet/External/issues/18
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-        public async Task DerivedClassLevelAttribute_OveridesBaseClassLevel()
+        public async Task DerivedClassLevelAttribute_OverridesBaseClassLevel()
         {
             // Arrange
             var input = "<Product xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\" " +

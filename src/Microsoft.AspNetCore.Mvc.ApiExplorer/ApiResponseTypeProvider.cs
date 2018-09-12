@@ -38,12 +38,12 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             var runtimeReturnType = GetRuntimeReturnType(declaredReturnType);
 
             var responseMetadataAttributes = GetResponseMetadataAttributes(action);
-            if (responseMetadataAttributes.Count == 0 &&
+            if (!HasSignificantMetadataProvider(responseMetadataAttributes) &&
                 action.Properties.TryGetValue(typeof(ApiConventionResult), out var result))
             {
                 // Action does not have any conventions. Use conventions on it if present.
                 var apiConventionResult = (ApiConventionResult)result;
-                responseMetadataAttributes = apiConventionResult.ResponseMetadataProviders;
+                responseMetadataAttributes.AddRange(apiConventionResult.ResponseMetadataProviders);
             }
 
             var defaultErrorType = typeof(void);
@@ -56,11 +56,11 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             return apiResponseTypes;
         }
 
-        private IReadOnlyList<IApiResponseMetadataProvider> GetResponseMetadataAttributes(ControllerActionDescriptor action)
+        private static List<IApiResponseMetadataProvider> GetResponseMetadataAttributes(ControllerActionDescriptor action)
         {
             if (action.FilterDescriptors == null)
             {
-                return Array.Empty<IApiResponseMetadataProvider>();
+                return new List<IApiResponseMetadataProvider>();
             }
 
             // This technique for enumerating filters will intentionally ignore any filter that is an IFilterFactory
@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             return action.FilterDescriptors
                 .Select(fd => fd.Filter)
                 .OfType<IApiResponseMetadataProvider>()
-                .ToArray();
+                .ToList();
         }
 
         private ICollection<ApiResponseType> GetApiResponseTypes(
@@ -188,7 +188,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             }
 
             // Unwrap the type if it's a Task<T>. The Task (non-generic) case was already handled.
-            Type unwrappedType = declaredReturnType;
+            var unwrappedType = declaredReturnType;
             if (declaredReturnType.IsGenericType &&
                 declaredReturnType.GetGenericTypeDefinition() == typeof(Task<>))
             {
@@ -227,6 +227,25 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         private static bool IsClientError(int statusCode)
         {
             return statusCode >= 400 && statusCode < 500;
+        }
+
+        private static bool HasSignificantMetadataProvider(IReadOnlyList<IApiResponseMetadataProvider> providers)
+        {
+            for (var i = 0; i < providers.Count; i++)
+            {
+                var provider = providers[i];
+
+                if (provider is ProducesAttribute producesAttribute && producesAttribute.Type is null)
+                {
+                    // ProducesAttribute that does not specify type is considered not significant.
+                    continue;
+                }
+
+                // Any other IApiResponseMetadataProvider is considered significant
+                return true;
+            }
+
+            return false;
         }
     }
 }
