@@ -8,25 +8,6 @@ using System.Xml.Serialization;
 
 namespace TriageBuildFailures.TeamCity
 {
-    [XmlRoot("builds")]
-    public class Builds
-    {
-        [XmlElement("build")]
-        public List<TeamCityBuild> BuildList;
-    }
-
-    [XmlRoot("tags")]
-    public class Tags
-    {
-        [XmlElement("tag")]
-        public List<Tag> TagList { get; set; }
-    }
-
-    public class Tag
-    {
-        [XmlAttribute("name")]
-        public string Name { get; set; }
-    }
 
     public class TeamCityBuild
     {

@@ -11,7 +11,6 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Web;
 using System.Xml.Serialization;
-using Common;
 using McMaster.Extensions.CommandLineUtils;
 
 namespace TriageBuildFailures.TeamCity

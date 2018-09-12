@@ -6,9 +6,9 @@ using System.Xml.Serialization;
 
 namespace TriageBuildFailures.TeamCity
 {
-    public class Test
+    public class Tag
     {
-        [XmlAttribute("id")]
-        public string ID { get; set; }
+        [XmlAttribute("name")]
+        public string Name { get; set; }
     }
 }

@@ -2,21 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Text.RegularExpressions;
 using McMaster.Extensions.CommandLineUtils;
 
 namespace Common
 {
-    public static class Constants
-    {
-        public const string VSTestPrefix = "VSTest: ";
-
-        /// <summary>
-        /// This property keeps the various providers from making changes to their data sources when testing things out.
-        /// </summary>
-        public static bool BeQuiet = false;
-    }
-
     public static class TestToRepoMapper
     {
         /// <summary>
@@ -147,35 +136,6 @@ namespace Common
             {
                 return "aspnet";
             }
-        }
-    }
-
-    public static class ErrorParsing
-    {
-        /// <summary>
-        /// Trim the full value of an error/exception message down to just the message.
-        /// </summary>
-        /// <param name="fullErrorMsg">The complete error message</param>
-        /// <returns>The message of the error.</returns>
-        public static string GetExceptionMessage(string fullErrorMsg)
-        {
-            if (String.IsNullOrEmpty(fullErrorMsg))
-            {
-                throw new ArgumentNullException(nameof(fullErrorMsg));
-            }
-
-            // Don't include the stacktrace, it's likely to be different between runs.
-            var parts = fullErrorMsg.Split(new string[] { "   at " }, StringSplitOptions.RemoveEmptyEntries);
-
-            if (parts.Length <= 0)
-            {
-                throw new ArgumentException("The stacktrace was not included in the exception message.");
-            }
-            var exceptionMessage = parts[0];
-            exceptionMessage = exceptionMessage.Trim();
-
-            // De-uniquify the port
-            return Regex.Replace(exceptionMessage, @"127.0.0.1(:\d*)?", "127.0.0.1").Trim();
         }
     }
 }
