@@ -1582,13 +1582,28 @@ namespace Microsoft.AspNetCore.Routing
             // Assert
             var templateRoute = (Route)routeBuilder.Routes[0];
 
-            // Assert
             Assert.Equal(expectedDictionary.Count, templateRoute.DataTokens.Count);
             foreach (var expectedKey in expectedDictionary.Keys)
             {
                 Assert.True(templateRoute.DataTokens.ContainsKey(expectedKey));
                 Assert.Equal(expectedDictionary[expectedKey], templateRoute.DataTokens[expectedKey]);
             }
+        }
+
+        [Fact]
+        public void RegisteringRoute_WithParameterPolicy_AbleToAddTheRoute()
+        {
+            // Arrange
+            var routeBuilder = CreateRouteBuilder();
+
+            // Act
+            routeBuilder.MapRoute("mockName",
+                                  "{controller:test-policy}/{action}");
+
+            // Assert
+            var templateRoute = (Route)routeBuilder.Routes[0];
+
+            Assert.Empty(templateRoute.Constraints);
         }
 
         [Fact]
@@ -1752,6 +1767,8 @@ namespace Microsoft.AspNetCore.Routing
             var services = new ServiceCollection();
             services.AddSingleton<IInlineConstraintResolver>(_inlineConstraintResolver);
             services.AddSingleton<RoutingMarkerService>();
+            services.AddSingleton<ParameterPolicyFactory, DefaultParameterPolicyFactory>();
+            services.Configure<RouteOptions>(ConfigureRouteOptions);
 
             var applicationBuilder = Mock.Of<IApplicationBuilder>();
             applicationBuilder.ApplicationServices = services.BuildServiceProvider();
@@ -1837,12 +1854,24 @@ namespace Microsoft.AspNetCore.Routing
 
         private static IInlineConstraintResolver GetInlineConstraintResolver()
         {
-            var routeOptions = new Mock<IOptions<RouteOptions>>();
-            routeOptions
-                .SetupGet(o => o.Value)
-                .Returns(new RouteOptions());
+            var routeOptions = new RouteOptions();
+            ConfigureRouteOptions(routeOptions);
 
-            return new DefaultInlineConstraintResolver(routeOptions.Object, new TestServiceProvider());
+            var routeOptionsMock = new Mock<IOptions<RouteOptions>>();
+            routeOptionsMock
+                .SetupGet(o => o.Value)
+                .Returns(routeOptions);
+
+            return new DefaultInlineConstraintResolver(routeOptionsMock.Object, new TestServiceProvider());
+        }
+
+        private static void ConfigureRouteOptions(RouteOptions options)
+        {
+            options.ConstraintMap["test-policy"] = typeof(TestPolicy);
+        }
+
+        private class TestPolicy : IParameterPolicy
+        {
         }
     }
 }

@@ -56,10 +56,10 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
         public bool Accept(string value)
         {
-            return Accept(value, encodeSlashes: true);
+            return Accept(value, encodeSlashes: true, parameterTransformer: null);
         }
 
-        public bool Accept(string value, bool encodeSlashes)
+        public bool Accept(string value, bool encodeSlashes, IParameterTransformer parameterTransformer)
         {
             if (string.IsNullOrEmpty(value))
             {
@@ -117,11 +117,11 @@ namespace Microsoft.AspNetCore.Routing.Internal
             if (_path.Length == 0 && value.Length > 0 && value[0] == '/')
             {
                 _path.Append("/");
-                EncodeValue(value, 1, value.Length - 1, encodeSlashes);
+                EncodeValue(value, 1, value.Length - 1, encodeSlashes, parameterTransformer);
             }
             else
             {
-                EncodeValue(value, encodeSlashes);
+                EncodeValue(value, encodeSlashes, parameterTransformer);
             }
 
             return true;
@@ -263,17 +263,24 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
         private void EncodeValue(string value)
         {
-            EncodeValue(value, encodeSlashes: true);
+            EncodeValue(value, encodeSlashes: true, parameterTransformer: null);
         }
 
-        private void EncodeValue(string value, bool encodeSlashes)
+        private void EncodeValue(string value, bool encodeSlashes, IParameterTransformer parameterTransformer)
         {
-            EncodeValue(value, start: 0, characterCount: value.Length, encodeSlashes);
+            EncodeValue(value, start: 0, characterCount: value.Length, encodeSlashes, parameterTransformer);
         }
 
         // For testing
-        internal void EncodeValue(string value, int start, int characterCount, bool encodeSlashes)
+        internal void EncodeValue(string value, int start, int characterCount, bool encodeSlashes, IParameterTransformer parameterTransformer)
         {
+            if (parameterTransformer != null)
+            {
+                value = parameterTransformer.Transform(value.Substring(0, characterCount));
+                start = 0;
+                characterCount = value.Length;
+            }
+
             // Just encode everything if its ok to encode slashes
             if (encodeSlashes)
             {

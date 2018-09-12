@@ -132,6 +132,8 @@ namespace Microsoft.AspNetCore.Routing.Tests
             var services = new ServiceCollection();
             services.AddSingleton<IInlineConstraintResolver>(_inlineConstraintResolver);
             services.AddSingleton<RoutingMarkerService>();
+            services.AddSingleton<ParameterPolicyFactory, DefaultParameterPolicyFactory>();
+            services.Configure<RouteOptions>(options => { });
 
             var applicationBuilder = Mock.Of<IApplicationBuilder>();
             applicationBuilder.ApplicationServices = services.BuildServiceProvider();

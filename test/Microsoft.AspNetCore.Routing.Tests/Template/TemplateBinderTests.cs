@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Routing.Internal;
+using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
@@ -1286,6 +1287,43 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
             // Assert2
             Assert.NotNull(boundTemplate);
             Assert.Equal(expected, boundTemplate);
+        }
+
+        [Fact]
+        public void BindValues_ParameterTransformer()
+        {
+            // Arrange
+            var routeOptions = new RouteOptions();
+            routeOptions.ConstraintMap["test-transformer"] = typeof(TestParameterTransformer);
+            var parameterPolicyFactory = new DefaultParameterPolicyFactory(
+                Options.Create(routeOptions),
+                new ServiceCollection().BuildServiceProvider());
+            var expected = "/ConventionalTansformerRoute/_ConventionalTansformer_/Param/_value_";
+            var template = "ConventionalTansformerRoute/_ConventionalTansformer_/Param/{param:length(500):test-transformer?}";
+            var defaults = new RouteValueDictionary(new { controller = "ConventionalTansformer", action = "Param" });
+            var ambientValues = new RouteValueDictionary(new { controller = "ConventionalTansformer", action = "Param" });
+            var explicitValues = new RouteValueDictionary(new { controller = "ConventionalTansformer", action = "Param", param = "value" });
+            var binder = new TemplateBinder(
+                UrlEncoder.Default,
+                new DefaultObjectPoolProvider().Create(new UriBuilderContextPooledObjectPolicy()),
+                RoutePatternFactory.Parse(template),
+                defaults,
+                parameterPolicyFactory);
+
+            // Act
+            var result = binder.GetValues(ambientValues, explicitValues);
+            var boundTemplate = binder.BindValues(result.AcceptedValues);
+
+            // Assert
+            Assert.Equal(expected, boundTemplate);
+        }
+
+        private class TestParameterTransformer : IParameterTransformer
+        {
+            public string Transform(string value)
+            {
+                return "_" + value + "_";
+            }
         }
 
         private static IInlineConstraintResolver GetInlineConstraintResolver()

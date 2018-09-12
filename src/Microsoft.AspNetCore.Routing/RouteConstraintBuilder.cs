@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Routing.Constraints;
+using Microsoft.AspNetCore.Routing.Internal;
 
 namespace Microsoft.AspNetCore.Routing
 {
@@ -157,6 +158,11 @@ namespace Microsoft.AspNetCore.Routing
                         constraintText,
                         _displayName,
                         _inlineConstraintResolver.GetType().Name));
+            }
+            else if (constraint == NullRouteConstraint.Instance)
+            {
+                // A null route constraint can be returned for other parameter policy types
+                return;
             }
 
             Add(key, constraint);

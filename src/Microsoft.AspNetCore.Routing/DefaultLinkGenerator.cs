@@ -271,7 +271,8 @@ namespace Microsoft.AspNetCore.Routing
                 UrlEncoder.Default,
                 _uriBuildingContextPool,
                 endpoint.RoutePattern,
-                new RouteValueDictionary(endpoint.RoutePattern.Defaults));
+                new RouteValueDictionary(endpoint.RoutePattern.Defaults),
+				_parameterPolicyFactory);
 
             var routeValuesAddressMetadata = endpoint.Metadata.GetMetadata<IRouteValuesAddressMetadata>();
             var templateValuesResult = templateBinder.GetValues(

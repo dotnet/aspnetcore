@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Builder
@@ -107,10 +108,6 @@ namespace Microsoft.AspNetCore.Builder
                 throw new RouteCreationException(Resources.FormatDefaultHandler_MustBeSet(nameof(IRouteBuilder)));
             }
 
-            var inlineConstraintResolver = routeBuilder
-                .ServiceProvider
-                .GetRequiredService<IInlineConstraintResolver>();
-
             routeBuilder.Routes.Add(new Route(
                 routeBuilder.DefaultHandler,
                 name,
@@ -118,9 +115,52 @@ namespace Microsoft.AspNetCore.Builder
                 new RouteValueDictionary(defaults),
                 new RouteValueDictionary(constraints),
                 new RouteValueDictionary(dataTokens),
-                inlineConstraintResolver));
+                CreateInlineConstraintResolver(routeBuilder.ServiceProvider)));
 
             return routeBuilder;
+        }
+
+        private static IInlineConstraintResolver CreateInlineConstraintResolver(IServiceProvider serviceProvider)
+        {
+            var inlineConstraintResolver = serviceProvider
+                .GetRequiredService<IInlineConstraintResolver>();
+
+            var parameterPolicyFactory = serviceProvider
+                .GetRequiredService<ParameterPolicyFactory>();
+
+            // This inline constraint resolver will return a null constraint for non-IRouteConstraint
+            // parameter policies so Route does not error
+            return new BackCompatInlineConstraintResolver(inlineConstraintResolver, parameterPolicyFactory);
+        }
+
+        private class BackCompatInlineConstraintResolver : IInlineConstraintResolver
+        {
+            private readonly IInlineConstraintResolver _inner;
+            private readonly ParameterPolicyFactory _parameterPolicyFactory;
+
+            public BackCompatInlineConstraintResolver(IInlineConstraintResolver inner, ParameterPolicyFactory parameterPolicyFactory)
+            {
+                _inner = inner;
+                _parameterPolicyFactory = parameterPolicyFactory;
+            }
+
+            public IRouteConstraint ResolveConstraint(string inlineConstraint)
+            {
+                var routeConstraint = _inner.ResolveConstraint(inlineConstraint);
+                if (routeConstraint != null)
+                {
+                    return routeConstraint;
+                }
+
+                var parameterPolicy = _parameterPolicyFactory.Create(null, inlineConstraint);
+                if (parameterPolicy != null)
+                {
+                    // Logic inside Route will skip adding NullRouteConstraint
+                    return NullRouteConstraint.Instance;
+                }
+
+                return null;
+            }
         }
     }
 }
