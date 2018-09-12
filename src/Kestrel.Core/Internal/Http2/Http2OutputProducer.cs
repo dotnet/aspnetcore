@@ -225,7 +225,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             (
                 pool: pool,
                 readerScheduler: PipeScheduler.Inline,
-                writerScheduler: PipeScheduler.Inline,
+                writerScheduler: PipeScheduler.ThreadPool,
                 pauseWriterThreshold: 1,
                 resumeWriterThreshold: 1,
                 useSynchronizationContext: false,
