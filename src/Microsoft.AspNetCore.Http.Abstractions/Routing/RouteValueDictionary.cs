@@ -155,9 +155,9 @@ namespace Microsoft.AspNetCore.Routing
         {
             get
             {
-                if (string.IsNullOrEmpty(key))
+                if (key == null)
                 {
-                    throw new ArgumentNullException(nameof(key));
+                    ThrowArgumentNullExceptionForKey();
                 }
 
                 object value;
@@ -167,9 +167,9 @@ namespace Microsoft.AspNetCore.Routing
 
             set
             {
-                if (string.IsNullOrEmpty(key))
+                if (key == null)
                 {
-                    throw new ArgumentNullException(nameof(key));
+                    ThrowArgumentNullExceptionForKey();
                 }
 
                 // We're calling this here for the side-effect of converting from properties
@@ -177,7 +177,7 @@ namespace Microsoft.AspNetCore.Routing
                 // property storage is immutable. 
                 EnsureCapacity(_count);
 
-                var index = FindInArray(key);
+                var index = FindIndex(key);
                 if (index < 0)
                 {
                     EnsureCapacity(_count + 1);
@@ -255,12 +255,12 @@ namespace Microsoft.AspNetCore.Routing
         {
             if (key == null)
             {
-                throw new ArgumentNullException(nameof(key));
+                ThrowArgumentNullExceptionForKey();
             }
 
             EnsureCapacity(_count + 1);
 
-            var index = FindInArray(key);
+            var index = FindIndex(key);
             if (index >= 0)
             {
                 var message = Resources.FormatRouteValueDictionary_DuplicateKey(key, nameof(RouteValueDictionary));
@@ -302,7 +302,7 @@ namespace Microsoft.AspNetCore.Routing
         {
             if (key == null)
             {
-                throw new ArgumentNullException(nameof(key));
+                ThrowArgumentNullExceptionForKey();
             }
 
             return TryGetValue(key, out var _);
@@ -362,7 +362,7 @@ namespace Microsoft.AspNetCore.Routing
 
             EnsureCapacity(Count);
 
-            var index = FindInArray(item.Key);
+            var index = FindIndex(item.Key);
             var array = _arrayStorage;
             if (index >= 0 && EqualityComparer<object>.Default.Equals(array[index].Value, item.Value))
             {
@@ -380,7 +380,7 @@ namespace Microsoft.AspNetCore.Routing
         {
             if (key == null)
             {
-                throw new ArgumentNullException(nameof(key));
+                ThrowArgumentNullExceptionForKey();
             }
 
             if (Count == 0)
@@ -390,7 +390,7 @@ namespace Microsoft.AspNetCore.Routing
 
             EnsureCapacity(Count);
 
-            var index = FindInArray(key);
+            var index = FindIndex(key);
             if (index >= 0)
             {
                 _count--;
@@ -404,14 +404,54 @@ namespace Microsoft.AspNetCore.Routing
             return false;
         }
 
+        /// <summary>
+        /// Attempts to the add the provided <paramref name="key"/> and <paramref name="value"/> to the dictionary.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="value">The value.</param>
+        /// <returns>Returns <c>true</c> if the value was added. Returns <c>false</c> if the key was already present.</returns>
+        public bool TryAdd(string key, object value)
+        {
+            if (key == null)
+            {
+                ThrowArgumentNullExceptionForKey();
+            }
+
+            // Since this is an attempt to write to the dictionary, just make it an array if it isn't. If the code
+            // path we're on event tries to write to the dictionary, it will likely get 'upgraded' at some point,
+            // so we do it here to keep the code size and complexity down.
+            EnsureCapacity(Count);
+
+            var index = FindIndex(key);
+            if (index >= 0)
+            {
+                return false;
+            }
+
+            EnsureCapacity(Count + 1);
+            _arrayStorage[Count] = new KeyValuePair<string, object>(key, value);
+            _count++;
+            return true;
+        }
+
         /// <inheritdoc />
         public bool TryGetValue(string key, out object value)
         {
             if (key == null)
             {
-                throw new ArgumentNullException(nameof(key));
+                ThrowArgumentNullExceptionForKey();
             }
 
+            if (_propertyStorage == null)
+            {
+                return TryFindItem(key, out value);
+            }
+
+            return TryGetValueSlow(key, out value);
+        }
+
+        private bool TryGetValueSlow(string key, out object value)
+        {
             if (_propertyStorage != null)
             {
                 var storage = _propertyStorage;
@@ -423,23 +463,15 @@ namespace Microsoft.AspNetCore.Routing
                         return true;
                     }
                 }
-
-                value = default;
-                return false;
-            }
-
-            var array = _arrayStorage;
-            for (var i = 0; i < _count; i++)
-            {
-                if (string.Equals(array[i].Key, key, StringComparison.OrdinalIgnoreCase))
-                {
-                    value = array[i].Value;
-                    return true;
-                }
             }
 
             value = default;
             return false;
+        }
+
+        private static void ThrowArgumentNullExceptionForKey()
+        {
+            throw new ArgumentNullException("key");
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -456,7 +488,10 @@ namespace Microsoft.AspNetCore.Routing
             if (_propertyStorage != null)
             {
                 var storage = _propertyStorage;
-                capacity = Math.Max(storage.Properties.Length, capacity);
+                
+                // If we're converting from properties, it's likely due to an 'add' to make sure we have at least
+                // the default amount of space.
+                capacity = Math.Max(DefaultCapacity, Math.Max(storage.Properties.Length, capacity));
                 var array = new KeyValuePair<string, object>[capacity];
 
                 for (var i = 0; i < storage.Properties.Length; i++)
@@ -484,10 +519,14 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private int FindInArray(string key)
+        private int FindIndex(string key)
         {
+            // Generally the bounds checking here will be elided by the JIT because this will be called
+            // on the same code path as EnsureCapacity.
             var array = _arrayStorage;
-            for (var i = 0; i < _count; i++)
+            var count = _count;
+
+            for (var i = 0; i < count; i++)
             {
                 if (string.Equals(array[i].Key, key, StringComparison.OrdinalIgnoreCase))
                 {
@@ -498,9 +537,32 @@ namespace Microsoft.AspNetCore.Routing
             return -1;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool TryFindItem(string key, out object value)
+        {
+            var array = _arrayStorage;
+            var count = _count;
+
+            // Elide bounds check for indexing.
+            if ((uint)count <= (uint)array.Length)
+            {
+                for (var i = 0; i < count; i++)
+                {
+                    if (string.Equals(array[i].Key, key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        value = array[i].Value;
+                        return true;
+                    }
+                }
+            }
+
+            value = null;
+            return false;
+        }
+
         public struct Enumerator : IEnumerator<KeyValuePair<string, object>>
         {
-            private RouteValueDictionary _dictionary;
+            private readonly RouteValueDictionary _dictionary;
             private int _index;
 
             public Enumerator(RouteValueDictionary dictionary)
@@ -513,7 +575,7 @@ namespace Microsoft.AspNetCore.Routing
                 _dictionary = dictionary;
 
                 Current = default;
-                _index = -1;
+                _index = 0;
             }
 
             public KeyValuePair<string, object> Current { get; private set; }
@@ -524,22 +586,36 @@ namespace Microsoft.AspNetCore.Routing
             {
             }
 
+            // Similar to the design of List<T>.Enumerator - Split into fast path and slow path for inlining friendliness
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public bool MoveNext()
             {
-                if (++_index < _dictionary.Count)
-                {
-                    if (_dictionary._propertyStorage != null)
-                    {
-                        var storage = _dictionary._propertyStorage;
-                        var property = storage.Properties[_index];
-                        Current = new KeyValuePair<string, object>(property.Name, property.GetValue(storage.Value));
-                        return true;
-                    }
+                var dictionary = _dictionary;
 
-                    Current = _dictionary._arrayStorage[_index];
+                // The uncommon case is that the propertyStorage is in use
+                if (dictionary._propertyStorage == null && ((uint)_index < (uint)dictionary._count))
+                {
+                    Current = dictionary._arrayStorage[_index];
+                    _index++;
                     return true;
                 }
 
+                return MoveNextRare();
+            }
+
+            private bool MoveNextRare()
+            {
+                var dictionary = _dictionary; 
+                if (dictionary._propertyStorage != null && ((uint)_index < (uint)dictionary._count))
+                {
+                    var storage = dictionary._propertyStorage;
+                    var property = storage.Properties[_index];
+                    Current = new KeyValuePair<string, object>(property.Name, property.GetValue(storage.Value));
+                    _index++;
+                    return true;
+                }
+
+                _index = dictionary._count;
                 Current = default;
                 return false;
             }
@@ -547,7 +623,7 @@ namespace Microsoft.AspNetCore.Routing
             public void Reset()
             {
                 Current = default;
-                _index = -1;
+                _index = 0;
             }
         }
 
