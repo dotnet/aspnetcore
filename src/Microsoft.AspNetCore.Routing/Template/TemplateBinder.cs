@@ -20,6 +20,7 @@ namespace Microsoft.AspNetCore.Routing.Template
         private readonly ObjectPool<UriBuildingContext> _pool;
 
         private readonly RouteValueDictionary _defaults;
+        private readonly ParameterPolicyFactory _parameterPolicyFactory;
         private readonly RouteValueDictionary _filters;
         private readonly RoutePattern _pattern;
 
@@ -35,7 +36,7 @@ namespace Microsoft.AspNetCore.Routing.Template
             ObjectPool<UriBuildingContext> pool,
             RouteTemplate template,
             RouteValueDictionary defaults)
-            : this(urlEncoder, pool, template?.ToRoutePattern(), defaults)
+            : this(urlEncoder, pool, template?.ToRoutePattern(), defaults, parameterPolicyFactory: null)
         {
         }
 
@@ -46,11 +47,13 @@ namespace Microsoft.AspNetCore.Routing.Template
         /// <param name="pool">The <see cref="ObjectPool{T}"/>.</param>
         /// <param name="pattern">The <see cref="RoutePattern"/> to bind values to.</param>
         /// <param name="defaults">The default values for <paramref name="pattern"/>.</param>
+        /// <param name="parameterPolicyFactory">The <see cref="ParameterPolicyFactory"/>.</param>
         public TemplateBinder(
             UrlEncoder urlEncoder,
             ObjectPool<UriBuildingContext> pool,
             RoutePattern pattern,
-            RouteValueDictionary defaults)
+            RouteValueDictionary defaults,
+            ParameterPolicyFactory parameterPolicyFactory)
         {
             if (urlEncoder == null)
             {
@@ -71,6 +74,7 @@ namespace Microsoft.AspNetCore.Routing.Template
             _pool = pool;
             _pattern = pattern;
             _defaults = defaults;
+            _parameterPolicyFactory = parameterPolicyFactory;
 
             // Any default that doesn't have a corresponding parameter is a 'filter' and if a value
             // is provided for that 'filter' it must match the value in defaults.
@@ -265,7 +269,7 @@ namespace Microsoft.AspNetCore.Routing.Template
                             // Example: template = {id}.{format?}. parameters: id=5
                             // In this case after we have generated "5.", we wont find any value 
                             // for format, so we remove '.' and generate 5.
-                            if (!context.Accept(converted, parameterPart.EncodeSlashes))
+                            if (!context.Accept(converted, parameterPart.EncodeSlashes, GetParameterTransformer(parameterPart)))
                             {
                                 if (j != 0 && parameterPart.IsOptional && (separatorPart = segment.Parts[j - 1] as RoutePatternSeparatorPart) != null)
                                 {
@@ -308,6 +312,26 @@ namespace Microsoft.AspNetCore.Routing.Template
             }
 
             return true;
+        }
+
+        private IParameterTransformer GetParameterTransformer(RoutePatternParameterPart parameterPart)
+        {
+            if (_parameterPolicyFactory == null)
+            {
+                return null;
+            }
+
+            for (var i = 0; i < parameterPart.ParameterPolicies.Count; i++)
+            {
+                // Use the first parameter transformer
+                var parameterPolicy = _parameterPolicyFactory.Create(parameterPart, parameterPart.ParameterPolicies[i]);
+                if (parameterPolicy is IParameterTransformer parameterTransformer)
+                {
+                    return parameterTransformer;
+                }
+            }
+
+            return null;
         }
 
         private bool AddQueryKeyValueToContext(UriBuildingContext context, string key, object value, bool wroteFirst)

@@ -56,7 +56,12 @@ namespace Microsoft.AspNetCore.Routing
                 throw new ArgumentNullException(nameof(inlineConstraint));
             }
 
-            return ParameterPolicyActivator.ResolveParameterPolicy<IRouteConstraint>(_inlineConstraintMap, _serviceProvider, inlineConstraint, out _);
+            // This will return null if the text resolves to a non-IRouteConstraint
+            return ParameterPolicyActivator.ResolveParameterPolicy<IRouteConstraint>(
+                _inlineConstraintMap,
+                _serviceProvider,
+                inlineConstraint,
+                out _);
         }
     }
 }

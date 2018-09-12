@@ -13,7 +13,11 @@ namespace Microsoft.AspNetCore.Routing.Internal
 {
     internal static class ParameterPolicyActivator
     {
-        public static T ResolveParameterPolicy<T>(IDictionary<string, Type> inlineParameterPolicyMap, IServiceProvider serviceProvider, string inlineParameterPolicy, out string parameterPolicyKey)
+        public static T ResolveParameterPolicy<T>(
+            IDictionary<string, Type> inlineParameterPolicyMap,
+            IServiceProvider serviceProvider,
+            string inlineParameterPolicy,
+            out string parameterPolicyKey)
             where T : IParameterPolicy
         {
             // IServiceProvider could be null
@@ -51,9 +55,18 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
             if (!typeof(T).IsAssignableFrom(parameterPolicyType))
             {
-                throw new RouteCreationException(
-                            Resources.FormatDefaultInlineConstraintResolver_TypeNotConstraint(
-                                                        parameterPolicyType, parameterPolicyKey, typeof(T).Name));
+                if (!typeof(IParameterPolicy).IsAssignableFrom(parameterPolicyType))
+                {
+                    // Error if type is not a parameter policy
+                    throw new RouteCreationException(
+                                Resources.FormatDefaultInlineConstraintResolver_TypeNotConstraint(
+                                                            parameterPolicyType, parameterPolicyKey, typeof(T).Name));
+                }
+
+                // Return null if type is parameter policy but is not the exact type
+                // This is used by IInlineConstraintResolver for backwards compatibility
+                // e.g. looking for an IRouteConstraint but get a different IParameterPolicy type
+                return default;
             }
 
             try

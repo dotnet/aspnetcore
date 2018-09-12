@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Routing
             return httpContext;
         }
 
-        private ServiceCollection GetBasicServices()
+        protected ServiceCollection GetBasicServices()
         {
             var services = new ServiceCollection();
             services.AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>();

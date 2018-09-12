@@ -253,6 +253,35 @@ namespace Microsoft.AspNetCore.Routing
             Assert.Equal("/Foo/Bar%3Fencodeme%3F/Home/In%3Fdex?query=some%3Fquery#Fragment?", path);
         }
 
+        private class UpperCaseParameterTransform : IParameterTransformer
+        {
+            public string Transform(string value)
+            {
+                return value?.ToUpperInvariant();
+            }
+        }
+
+        [Fact]
+        public void GetLink_ParameterTransformer()
+        {
+            // Arrange
+            var endpoint = EndpointFactory.CreateRouteEndpoint("{controller:upper-case}/{name}");
+
+            var routeOptions = new RouteOptions();
+            routeOptions.ConstraintMap["upper-case"] = typeof(UpperCaseParameterTransform);
+
+            var services = GetBasicServices();
+            services.AddSingleton(typeof(UpperCaseParameterTransform), new UpperCaseParameterTransform());
+
+            var linkGenerator = CreateLinkGenerator(routeOptions, services, endpoint);
+
+            // Act
+            var link = linkGenerator.GetPathByRouteValues(routeName: null, new { controller = "Home", name = "Test" });
+
+            // Assert
+            Assert.Equal("/HOME/Test", link);
+        }
+
         // Includes characters that need to be encoded
         [Fact]
         public void GetPathByAddress_WithHttpContext_WithPathBaseAndFragment()
