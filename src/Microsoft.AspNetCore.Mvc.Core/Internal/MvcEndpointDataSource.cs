@@ -9,7 +9,6 @@ using System.Text;
 using System.Threading;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
@@ -113,7 +112,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                         //
                         // Start with an order of '1' for conventional routes as attribute routes have a default order of '0'.
                         // This is for scenarios dealing with migrating existing Router based code to Endpoint Routing world.
-                        var conventionalRouteOrder = 0;
+                        var conventionalRouteOrder = 1;
 
                         // Check each of the conventional patterns to see if the action would be reachable
                         // If the action and pattern are compatible then create an endpoint with the
@@ -143,90 +142,38 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                                 continue;
                             }
 
-                            var newPathSegments = endpointInfo.ParsedPattern.PathSegments.ToList();
-
-                            for (var i = 0; i < newPathSegments.Count; i++)
-                            {
-                                // Check if the pattern can be shortened because the remaining parameters are optional
-                                //
-                                // e.g. Matching pattern {controller=Home}/{action=Index}/{id?} against HomeController.Index
-                                // can resolve to the following endpoints:
-                                // - /Home/Index/{id?}
-                                // - /Home
-                                // - /
-                                if (UseDefaultValuePlusRemainingSegmentsOptional(i, action, endpointInfo, newPathSegments))
-                                {
-                                    var subPathSegments = newPathSegments.Take(i);
-
-                                    var subEndpoint = CreateEndpoint(
-                                        action,
-                                        endpointInfo.Name,
-                                        GetPattern(ref patternStringBuilder, subPathSegments),
-                                        subPathSegments,
-                                        endpointInfo.Defaults,
-                                        ++conventionalRouteOrder,
-                                        endpointInfo,
-                                        endpointInfo.DataTokens,
-                                        suppressLinkGeneration: false,
-                                        suppressPathMatching: false);
-                                    endpoints.Add(subEndpoint);
-                                }
-
-                                List<RoutePatternPart> segmentParts = null; // Initialize only as needed
-                                var segment = newPathSegments[i];
-                                for (var j = 0; j < segment.Parts.Count; j++)
-                                {
-                                    var part = segment.Parts[j];
-
-                                    if (part.IsParameter &&
-                                        part is RoutePatternParameterPart parameterPart &&
-                                        action.RouteValues.ContainsKey(parameterPart.Name))
-                                    {
-                                        if (segmentParts == null)
-                                        {
-                                            segmentParts = segment.Parts.ToList();
-                                        }
-
-                                        // Replace parameter with literal value
-                                        segmentParts[j] = RoutePatternFactory.LiteralPart(action.RouteValues[parameterPart.Name]);
-                                    }
-                                }
-
-                                // A parameter part was replaced so replace segment with updated parts
-                                if (segmentParts != null)
-                                {
-                                    newPathSegments[i] = RoutePatternFactory.Segment(segmentParts);
-                                }
-                            }
-
-                            var endpoint = CreateEndpoint(
+                            conventionalRouteOrder = CreateEndpoints(
+                                endpoints,
+                                ref patternStringBuilder,
                                 action,
-                                endpointInfo.Name,
-                                GetPattern(ref patternStringBuilder, newPathSegments),
-                                newPathSegments,
+                                conventionalRouteOrder,
+                                endpointInfo.ParsedPattern,
+                                endpointInfo.MergedDefaults,
                                 endpointInfo.Defaults,
-                                ++conventionalRouteOrder,
-                                endpointInfo,
+                                endpointInfo.Name,
                                 endpointInfo.DataTokens,
+                                endpointInfo.ParameterPolicies,
                                 suppressLinkGeneration: false,
                                 suppressPathMatching: false);
-                            endpoints.Add(endpoint);
                         }
                     }
                     else
                     {
-                        var endpoint = CreateEndpoint(
+                        var attributeRoutePattern = RoutePatternFactory.Parse(action.AttributeRouteInfo.Template);
+
+                        CreateEndpoints(
+                            endpoints,
+                            ref patternStringBuilder,
                             action,
-                            action.AttributeRouteInfo.Name,
-                            action.AttributeRouteInfo.Template,
-                            RoutePatternFactory.Parse(action.AttributeRouteInfo.Template).PathSegments,
-                            nonInlineDefaults: null,
                             action.AttributeRouteInfo.Order,
-                            action.AttributeRouteInfo,
+                            attributeRoutePattern,
+                            attributeRoutePattern.Defaults,
+                            nonInlineDefaults: null,
+                            action.AttributeRouteInfo.Name,
                             dataTokens: null,
-                            suppressLinkGeneration: action.AttributeRouteInfo.SuppressLinkGeneration,
-                            suppressPathMatching: action.AttributeRouteInfo.SuppressPathMatching);
-                        endpoints.Add(endpoint);
+                            allParameterPolicies: null,
+                            action.AttributeRouteInfo.SuppressLinkGeneration,
+                            action.AttributeRouteInfo.SuppressPathMatching);
                     }
                 }
 
@@ -246,6 +193,93 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 // Step 4 - trigger old token
                 oldCancellationTokenSource?.Cancel();
             }
+        }
+
+        // CreateEndpoints processes the route pattern, replacing area/controller/action parameters with endpoint values
+        // Because of default values it is possible for a route pattern to resolve to multiple endpoints
+        private int CreateEndpoints(
+            List<Endpoint> endpoints,
+            ref StringBuilder patternStringBuilder,
+            ActionDescriptor action,
+            int routeOrder,
+            RoutePattern routePattern,
+            IReadOnlyDictionary<string, object> allDefaults,
+            IReadOnlyDictionary<string, object> nonInlineDefaults,
+            string name,
+            RouteValueDictionary dataTokens,
+            IDictionary<string, IList<IParameterPolicy>> allParameterPolicies,
+            bool suppressLinkGeneration,
+            bool suppressPathMatching)
+        {
+            var newPathSegments = routePattern.PathSegments.ToList();
+
+            for (var i = 0; i < newPathSegments.Count; i++)
+            {
+                // Check if the pattern can be shortened because the remaining parameters are optional
+                //
+                // e.g. Matching pattern {controller=Home}/{action=Index}/{id?} against HomeController.Index
+                // can resolve to the following endpoints:
+                // - /Home/Index/{id?}
+                // - /Home
+                // - /
+                if (UseDefaultValuePlusRemainingSegmentsOptional(i, action, allDefaults, newPathSegments))
+                {
+                    var subPathSegments = newPathSegments.Take(i);
+
+                    var subEndpoint = CreateEndpoint(
+                        action,
+                        name,
+                        GetPattern(ref patternStringBuilder, subPathSegments),
+                        subPathSegments,
+                        nonInlineDefaults,
+                        routeOrder++,
+                        dataTokens,
+                        suppressLinkGeneration,
+                        suppressPathMatching);
+                    endpoints.Add(subEndpoint);
+                }
+
+                List<RoutePatternPart> segmentParts = null; // Initialize only as needed
+                var segment = newPathSegments[i];
+                for (var j = 0; j < segment.Parts.Count; j++)
+                {
+                    var part = segment.Parts[j];
+
+                    if (part.IsParameter &&
+                        part is RoutePatternParameterPart parameterPart &&
+                        action.RouteValues.ContainsKey(parameterPart.Name))
+                    {
+                        if (segmentParts == null)
+                        {
+                            segmentParts = segment.Parts.ToList();
+                        }
+
+                        var parameterRouteValue = action.RouteValues[parameterPart.Name];
+
+                        segmentParts[j] = RoutePatternFactory.LiteralPart(parameterRouteValue);
+                    }
+                }
+
+                // A parameter part was replaced so replace segment with updated parts
+                if (segmentParts != null)
+                {
+                    newPathSegments[i] = RoutePatternFactory.Segment(segmentParts);
+                }
+            }
+
+            var endpoint = CreateEndpoint(
+                action,
+                name,
+                GetPattern(ref patternStringBuilder, newPathSegments),
+                newPathSegments,
+                nonInlineDefaults,
+                routeOrder++,
+                dataTokens,
+                suppressLinkGeneration,
+                suppressPathMatching);
+            endpoints.Add(endpoint);
+
+            return routeOrder;
 
             string GetPattern(ref StringBuilder sb, IEnumerable<RoutePatternPathSegment> segments)
             {
@@ -265,7 +299,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         private bool UseDefaultValuePlusRemainingSegmentsOptional(
             int segmentIndex,
             ActionDescriptor action,
-            MvcEndpointInfo endpointInfo,
+            IReadOnlyDictionary<string, object> allDefaults,
             List<RoutePatternPathSegment> pathSegments)
         {
             // Check whether the remaining segments are all optional and one or more of them is
@@ -287,7 +321,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
                         if (action.RouteValues.ContainsKey(parameterPart.Name))
                         {
-                            if (endpointInfo.MergedDefaults[parameterPart.Name] is string defaultValue
+                            if (allDefaults.TryGetValue(parameterPart.Name, out var v)
+                                && v is string defaultValue
                                 && action.RouteValues.TryGetValue(parameterPart.Name, out var routeValue)
                                 && string.Equals(defaultValue, routeValue, StringComparison.OrdinalIgnoreCase))
                             {
@@ -346,11 +381,12 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 {
                     // Check that the value matches against constraints on that parameter
                     // e.g. For {controller:regex((Home|Login))} the controller value must match the regex
-                    if (endpointInfo.Constraints.TryGetValue(routeKey, out var constraints))
+                    if (endpointInfo.ParameterPolicies.TryGetValue(routeKey, out var parameterPolicies))
                     {
-                        foreach (var constraint in constraints)
+                        foreach (var policy in parameterPolicies)
                         {
-                            if (!constraint.Match(httpContext: null, NullRouter.Instance, routeKey, new RouteValueDictionary(action.RouteValues), RouteDirection.IncomingRequest))
+                            if (policy is IRouteConstraint constraint
+                                && !constraint.Match(httpContext: null, NullRouter.Instance, routeKey, new RouteValueDictionary(action.RouteValues), RouteDirection.IncomingRequest))
                             {
                                 // Did not match constraint
                                 return false;
@@ -372,7 +408,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             IEnumerable<RoutePatternPathSegment> segments,
             object nonInlineDefaults,
             int order,
-            object source,
             RouteValueDictionary dataTokens,
             bool suppressLinkGeneration,
             bool suppressPathMatching)
@@ -394,7 +429,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 action,
                 routeName,
                 new RouteValueDictionary(action.RouteValues),
-                source,
                 dataTokens,
                 suppressLinkGeneration,
                 suppressPathMatching);
@@ -413,7 +447,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             ActionDescriptor action,
             string routeName,
             RouteValueDictionary requiredValues,
-            object source,
             RouteValueDictionary dataTokens,
             bool suppressLinkGeneration,
             bool suppressPathMatching)

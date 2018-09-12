@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             Assert.Equal(displayName, matcherEndpoint.DisplayName);
             Assert.Equal(order, matcherEndpoint.Order);
-            Assert.Equal(template, matcherEndpoint.RoutePattern.RawText);
+            Assert.Equal("Template!", matcherEndpoint.RoutePattern.RawText);
         }
 
         [Fact]
@@ -134,27 +134,69 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             Assert.True(actionInvokerCalled);
         }
 
+        public static TheoryData GetSingleActionData_Conventional
+        {
+            get => GetSingleActionData(true);
+        }
+
+        public static TheoryData GetSingleActionData_Attribute
+        {
+            get => GetSingleActionData(false);
+        }
+
+        private static TheoryData GetSingleActionData(bool isConventionalRouting)
+        {
+            var data = new TheoryData<string, string[]>
+                {
+                    {"{controller}/{action}/{id?}", new[] { "TestController/TestAction/{id?}" }},
+                    {"{controller}/{id?}", isConventionalRouting ? new string[] { } : new[] { "TestController/{id?}" }},
+                    {"{action}/{id?}", isConventionalRouting ? new string[] { } : new[] { "TestAction/{id?}" }},
+                    {"{Controller}/{Action}/{id?}", new[] { "TestController/TestAction/{id?}" }},
+                    {"{CONTROLLER}/{ACTION}/{id?}", new[] { "TestController/TestAction/{id?}" }},
+                    {"{controller}/{action=TestAction}", new[] { "TestController", "TestController/TestAction" }},
+                    {"{controller}/{action=TestAction}/{id?}", new[] { "TestController", "TestController/TestAction/{id?}" }},
+                    {"{controller=TestController}/{action=TestAction}/{id?}", new[] { "", "TestController", "TestController/TestAction/{id?}" }},
+                    {"{controller}/{action}/{*catchAll}", new[] { "TestController/TestAction/{*catchAll}" }},
+                    {"{controller}/{action=TestAction}/{*catchAll}", new[] { "TestController", "TestController/TestAction/{*catchAll}" }},
+                    {"{controller}/{action=TestAction}/{id?}/{*catchAll}", new[] { "TestController", "TestController/TestAction/{id?}/{*catchAll}" }},
+                    {"{controller}/{action}.{ext?}", new[] { "TestController/TestAction.{ext?}" }},
+                    {"{controller}/{action=TestAction}.{ext?}", new[] { "TestController", "TestController/TestAction.{ext?}" }},
+                };
+
+            return data;
+        }
+
         [Theory]
-        [InlineData("{controller}/{action}/{id?}", new[] { "TestController/TestAction/{id?}" })]
-        [InlineData("{controller}/{id?}", new string[] { })]
-        [InlineData("{action}/{id?}", new string[] { })]
-        [InlineData("{Controller}/{Action}/{id?}", new[] { "TestController/TestAction/{id?}" })]
-        [InlineData("{CONTROLLER}/{ACTION}/{id?}", new[] { "TestController/TestAction/{id?}" })]
-        [InlineData("{controller}/{action=TestAction}", new[] { "TestController", "TestController/TestAction" })]
-        [InlineData("{controller}/{action=TestAction}/{id?}", new[] { "TestController", "TestController/TestAction/{id?}" })]
-        [InlineData("{controller=TestController}/{action=TestAction}/{id?}", new[] { "", "TestController", "TestController/TestAction/{id?}" })]
-        [InlineData("{controller}/{action}/{*catchAll}", new[] { "TestController/TestAction/{*catchAll}" })]
-        [InlineData("{controller}/{action=TestAction}/{*catchAll}", new[] { "TestController", "TestController/TestAction/{*catchAll}" })]
-        [InlineData("{controller}/{action=TestAction}/{id?}/{*catchAll}", new[] { "TestController", "TestController/TestAction/{id?}/{*catchAll}" })]
-        [InlineData("{controller}/{action}.{ext?}", new[] { "TestController/TestAction.{ext?}" })]
-        [InlineData("{controller}/{action=TestAction}.{ext?}", new[] { "TestController", "TestController/TestAction.{ext?}" })]
-        public void Endpoints_SingleAction(string endpointInfoRoute, string[] finalEndpointPatterns)
+        [MemberData(nameof(GetSingleActionData_Conventional))]
+        public void Endpoints_Conventional_SingleAction(string endpointInfoRoute, string[] finalEndpointPatterns)
         {
             // Arrange
             var actionDescriptorCollection = GetActionDescriptorCollection(
                 new { controller = "TestController", action = "TestAction" });
             var dataSource = CreateMvcEndpointDataSource(actionDescriptorCollection);
             dataSource.ConventionalEndpointInfos.Add(CreateEndpointInfo(string.Empty, endpointInfoRoute));
+
+            // Act
+            var endpoints = dataSource.Endpoints;
+
+            // Assert
+            var inspectors = finalEndpointPatterns
+                .Select(t => new Action<Endpoint>(e => Assert.Equal(t, Assert.IsType<RouteEndpoint>(e).RoutePattern.RawText)))
+                .ToArray();
+
+            // Assert
+            Assert.Collection(endpoints, inspectors);
+        }
+
+        [Theory]
+        [MemberData(nameof(GetSingleActionData_Attribute))]
+        public void Endpoints_AttributeRouting_SingleAction(string endpointInfoRoute, string[] finalEndpointPatterns)
+        {
+            // Arrange
+            var actionDescriptorCollection = GetActionDescriptorCollection(
+                attributeRouteTemplate: endpointInfoRoute,
+                new { controller = "TestController", action = "TestAction" });
+            var dataSource = CreateMvcEndpointDataSource(actionDescriptorCollection);
 
             // Act
             var endpoints = dataSource.Endpoints;
@@ -741,10 +783,15 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         private IActionDescriptorCollectionProvider GetActionDescriptorCollection(params object[] requiredValues)
         {
+            return GetActionDescriptorCollection(attributeRouteTemplate: null, requiredValues);
+        }
+
+        private IActionDescriptorCollectionProvider GetActionDescriptorCollection(string attributeRouteTemplate, params object[] requiredValues)
+        {
             var actionDescriptors = new List<ActionDescriptor>();
             foreach (var requiredValue in requiredValues)
             {
-                actionDescriptors.Add(CreateActionDescriptor(requiredValue));
+                actionDescriptors.Add(CreateActionDescriptor(requiredValue, attributeRouteTemplate));
             }
 
             var actionDescriptorCollectionProviderMock = new Mock<IActionDescriptorCollectionProvider>();
@@ -756,16 +803,24 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         private ActionDescriptor CreateActionDescriptor(string controller, string action, string area = null)
         {
-            return CreateActionDescriptor(new { controller = controller, action = action, area = area });
+            return CreateActionDescriptor(new { controller = controller, action = action, area = area }, attributeRouteTemplate: null);
         }
 
-        private ActionDescriptor CreateActionDescriptor(object requiredValues)
+        private ActionDescriptor CreateActionDescriptor(object requiredValues, string attributeRouteTemplate = null)
         {
             var actionDescriptor = new ActionDescriptor();
             var routeValues = new RouteValueDictionary(requiredValues);
             foreach (var kvp in routeValues)
             {
                 actionDescriptor.RouteValues[kvp.Key] = kvp.Value?.ToString();
+            }
+            if (!string.IsNullOrEmpty(attributeRouteTemplate))
+            {
+                actionDescriptor.AttributeRouteInfo = new AttributeRouteInfo
+                {
+                    Name = attributeRouteTemplate,
+                    Template = attributeRouteTemplate
+                };
             }
             return actionDescriptor;
         }
