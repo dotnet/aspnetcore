@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.AspNetCore.Routing;
 using Resources = Microsoft.AspNetCore.Mvc.Core.Resources;
 
 namespace Microsoft.AspNetCore.Mvc.Internal
@@ -389,15 +390,20 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         {
             try
             {
+                actionDescriptor.Properties.TryGetValue(typeof(IParameterTransformer), out var transformer);
+                var routeTokenTransformer = transformer as IParameterTransformer;
+
                 actionDescriptor.AttributeRouteInfo.Template = AttributeRouteModel.ReplaceTokens(
                     actionDescriptor.AttributeRouteInfo.Template,
-                    actionDescriptor.RouteValues);
+                    actionDescriptor.RouteValues,
+                    routeTokenTransformer);
 
                 if (actionDescriptor.AttributeRouteInfo.Name != null)
                 {
                     actionDescriptor.AttributeRouteInfo.Name = AttributeRouteModel.ReplaceTokens(
                         actionDescriptor.AttributeRouteInfo.Name,
-                        actionDescriptor.RouteValues);
+                        actionDescriptor.RouteValues,
+                        routeTokenTransformer);
                 }
             }
             catch (InvalidOperationException ex)

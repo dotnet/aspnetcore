@@ -22,6 +22,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
     {
         private readonly IActionDescriptorCollectionProvider _actions;
         private readonly MvcEndpointInvokerFactory _invokerFactory;
+        private readonly ParameterPolicyFactory _parameterPolicyFactory;
 
         // The following are protected by this lock for WRITES only. This pattern is similar
         // to DefaultActionDescriptorChangeProvider - see comments there for details on
@@ -33,7 +34,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         public MvcEndpointDataSource(
             IActionDescriptorCollectionProvider actions,
-            MvcEndpointInvokerFactory invokerFactory)
+            MvcEndpointInvokerFactory invokerFactory,
+            ParameterPolicyFactory parameterPolicyFactory)
         {
             if (actions == null)
             {
@@ -45,8 +47,14 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 throw new ArgumentNullException(nameof(invokerFactory));
             }
 
+            if (parameterPolicyFactory == null)
+            {
+                throw new ArgumentNullException(nameof(parameterPolicyFactory));
+            }
+
             _actions = actions;
             _invokerFactory = invokerFactory;
+            _parameterPolicyFactory = parameterPolicyFactory;
 
             ConventionalEndpointInfos = new List<MvcEndpointInfo>();
 
@@ -253,8 +261,27 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                         {
                             segmentParts = segment.Parts.ToList();
                         }
+                        if (allParameterPolicies == null)
+                        {
+                            allParameterPolicies = MvcEndpointInfo.BuildParameterPolicies(routePattern.Parameters, _parameterPolicyFactory);
+                        }
 
                         var parameterRouteValue = action.RouteValues[parameterPart.Name];
+
+                        // Replace parameter with literal value
+                        if (allParameterPolicies.TryGetValue(parameterPart.Name, out var parameterPolicies))
+                        {
+                            // Check if the parameter has a transformer policy
+                            // Use the first transformer policy
+                            for (var k = 0; k < parameterPolicies.Count; k++)
+                            {
+                                if (parameterPolicies[k] is IParameterTransformer parameterTransformer)
+                                {
+                                    parameterRouteValue = parameterTransformer.Transform(parameterRouteValue);
+                                    break;
+                                }
+                            }
+                        }
 
                         segmentParts[j] = RoutePatternFactory.LiteralPart(parameterRouteValue);
                     }

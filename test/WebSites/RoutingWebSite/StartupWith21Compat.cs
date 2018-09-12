@@ -1,11 +1,16 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace RoutingWebSite
 {
@@ -14,11 +19,17 @@ namespace RoutingWebSite
         // Set up application services
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc()
+            services
+                .AddMvc()
                 .SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
             services.AddScoped<TestResponseGenerator>();
             services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
+
+            // EndpointRoutingController is not compatible with old routing
+            // Remove its action to avoid errors
+            var actionDescriptorProvider = new RemoveControllerActionDescriptorProvider(typeof(EndpointRoutingController));
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<IActionDescriptorProvider>(actionDescriptorProvider));
         }
 
         public void Configure(IApplicationBuilder app)
