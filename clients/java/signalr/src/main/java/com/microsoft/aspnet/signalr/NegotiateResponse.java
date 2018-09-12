@@ -10,7 +10,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
-public class NegotiateResponse {
+class NegotiateResponse {
     private String connectionId;
     private Set<String> availableTransports = new HashSet<>();
     private String redirectUrl;

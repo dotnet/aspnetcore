@@ -3,7 +3,7 @@
 
 package com.microsoft.aspnet.signalr;
 
-public class PingMessage extends HubMessage {
+class PingMessage extends HubMessage {
 
     int type = HubMessageType.PING.value;
 

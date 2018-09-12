@@ -26,13 +26,13 @@ export class MessagePackHubProtocol implements IHubProtocol {
 
     /** Creates an array of HubMessage objects from the specified serialized representation.
      *
-     * @param {ArrayBuffer} input An ArrayBuffer containing the serialized representation.
+     * @param {ArrayBuffer | Buffer} input An ArrayBuffer containing the serialized representation.
      * @param {ILogger} logger A logger that will be used to log messages that occur during parsing.
      */
-    public parseMessages(input: ArrayBuffer, logger: ILogger): HubMessage[] {
+    public parseMessages(input: ArrayBuffer | Buffer, logger: ILogger): HubMessage[] {
         // The interface does allow "string" to be passed in, but this implementation does not. So let's throw a useful error.
-        if (!(input instanceof ArrayBuffer)) {
-            throw new Error("Invalid input for MessagePack hub protocol. Expected an ArrayBuffer.");
+        if (!(input instanceof ArrayBuffer) && !(input instanceof Buffer)) {
+            throw new Error("Invalid input for MessagePack hub protocol. Expected an ArrayBuffer or Buffer.");
         }
 
         if (logger === null) {

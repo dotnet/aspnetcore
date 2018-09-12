@@ -1,7 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-import { DefaultHttpClient, HttpClient } from "./HttpClient";
+import { DefaultHttpClient } from "./DefaultHttpClient";
+import { HttpClient } from "./HttpClient";
 import { IConnection } from "./IConnection";
 import { IHttpConnectionOptions } from "./IHttpConnectionOptions";
 import { ILogger, LogLevel } from "./ILogger";
@@ -34,6 +35,15 @@ export interface IAvailableTransport {
 
 const MAX_REDIRECTS = 100;
 
+let WebSocketModule: any = null;
+let EventSourceModule: any = null;
+if (typeof window === "undefined" && typeof require !== "undefined") {
+    // tslint:disable-next-line:no-var-requires
+    WebSocketModule = require("websocket");
+    // tslint:disable-next-line:no-var-requires
+    EventSourceModule = require("eventsource");
+}
+
 /** @private */
 export class HttpConnection implements IConnection {
     private connectionState: ConnectionState;
@@ -59,11 +69,22 @@ export class HttpConnection implements IConnection {
         options = options || {};
         options.logMessageContent = options.logMessageContent || false;
 
-        if (typeof WebSocket !== "undefined" && !options.WebSocket) {
+        const isNode = typeof window === "undefined";
+        if (!isNode && typeof WebSocket !== "undefined" && !options.WebSocket) {
             options.WebSocket = WebSocket;
+        } else if (isNode && !options.WebSocket) {
+            const websocket = WebSocketModule && WebSocketModule.w3cwebsocket;
+            if (websocket) {
+                options.WebSocket = WebSocketModule.w3cwebsocket;
+            }
         }
-        if (typeof EventSource !== "undefined" && !options.EventSource) {
+
+        if (!isNode && typeof EventSource !== "undefined" && !options.EventSource) {
             options.EventSource = EventSource;
+        } else if (isNode && !options.EventSource) {
+            if (typeof EventSourceModule !== "undefined") {
+                options.EventSource = EventSourceModule;
+            }
         }
 
         this.httpClient = options.httpClient || new DefaultHttpClient(this.logger);
@@ -103,6 +124,10 @@ export class HttpConnection implements IConnection {
 
     public async stop(error?: Error): Promise<void> {
         this.connectionState = ConnectionState.Disconnected;
+        // Set error as soon as possible otherwise there is a race between
+        // the transport closing and providing an error and the error from a close message
+        // We would prefer the close message error.
+        this.stopError = error;
 
         try {
             await this.startPromise;
@@ -112,7 +137,6 @@ export class HttpConnection implements IConnection {
 
         // The transport's onclose will trigger stopConnection which will run our onclose event.
         if (this.transport) {
-            this.stopError = error;
             await this.transport.stop();
             this.transport = undefined;
         }

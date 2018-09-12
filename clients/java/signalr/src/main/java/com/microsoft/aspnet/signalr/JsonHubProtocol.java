@@ -11,7 +11,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
-public class JsonHubProtocol implements HubProtocol {
+class JsonHubProtocol implements HubProtocol {
     private final JsonParser jsonParser = new JsonParser();
     private final Gson gson = new Gson();
     private static final String RECORD_SEPARATOR = "\u001e";

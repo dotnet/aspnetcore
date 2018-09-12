@@ -68,9 +68,11 @@ export async function sendMessage(logger: ILogger, transportName: string, httpCl
 
     logger.log(LogLevel.Trace, `(${transportName} transport) sending data. ${getDataDetail(content, logMessageContent)}.`);
 
+    const responseType = content instanceof ArrayBuffer ? "arraybuffer" : "text";
     const response = await httpClient.post(url, {
         content,
         headers,
+        responseType,
     });
 
     logger.log(LogLevel.Trace, `(${transportName} transport) request complete. Response status: ${response.statusCode}.`);

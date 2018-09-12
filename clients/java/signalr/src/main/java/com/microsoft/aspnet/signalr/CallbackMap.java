@@ -8,7 +8,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class CallbackMap {
+class CallbackMap {
     private ConcurrentHashMap<String, List<ActionBase>> handlers = new ConcurrentHashMap<>();
 
     public void put(String target, ActionBase action) {

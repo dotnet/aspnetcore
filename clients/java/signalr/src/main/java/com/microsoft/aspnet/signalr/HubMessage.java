@@ -6,6 +6,6 @@ package com.microsoft.aspnet.signalr;
 /**
  * A base class for hub messages.
  */
-public abstract class HubMessage {
+ abstract class HubMessage {
     public abstract HubMessageType getMessageType();
 }

@@ -3,7 +3,7 @@
 
 package com.microsoft.aspnet.signalr;
 
-public class NullLogger implements Logger {
+class NullLogger implements Logger {
     @Override
     public void log(LogLevel logLevel, String message) { }
 

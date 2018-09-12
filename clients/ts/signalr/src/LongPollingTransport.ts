@@ -52,8 +52,9 @@ export class LongPollingTransport implements ITransport {
 
         this.logger.log(LogLevel.Trace, "(LongPolling transport) Connecting");
 
-        if (transferFormat === TransferFormat.Binary && (typeof new XMLHttpRequest().responseType !== "string")) {
-            // This will work if we fix: https://github.com/aspnet/SignalR/issues/742
+        // Allow binary format on Node and Browsers that support binary content (indicated by the presence of responseType property)
+        if (transferFormat === TransferFormat.Binary &&
+            (typeof XMLHttpRequest !== "undefined" && typeof new XMLHttpRequest().responseType !== "string")) {
             throw new Error("Binary protocols over XmlHttpRequest not implementing advanced features are not supported.");
         }
 
