@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Builder
 {
     public static class MapEndpointEndpointDataSourceBuilderExtensions
     {
-        public static MatcherEndpointBuilder MapEndpoint(
+        public static RouteEndpointBuilder MapEndpoint(
             this EndpointDataSourceBuilder builder,
             RequestDelegate requestDelegate,
             string pattern,
@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Builder
             return MapEndpoint(builder, requestDelegate, pattern, displayName, metadata: null);
         }
 
-        public static MatcherEndpointBuilder MapEndpoint(
+        public static RouteEndpointBuilder MapEndpoint(
             this EndpointDataSourceBuilder builder,
             RequestDelegate requestDelegate,
             RoutePattern pattern,
@@ -30,26 +30,26 @@ namespace Microsoft.AspNetCore.Builder
             return MapEndpoint(builder, requestDelegate, pattern, displayName, metadata: null);
         }
 
-        public static MatcherEndpointBuilder MapEndpoint(
+        public static RouteEndpointBuilder MapEndpoint(
             this EndpointDataSourceBuilder builder,
             RequestDelegate requestDelegate,
             string pattern,
             string displayName,
-            IList<object> metadata)
+            params object[] metadata)
         {
             return MapEndpoint(builder, requestDelegate, RoutePatternFactory.Parse(pattern), displayName, metadata);
         }
 
-        public static MatcherEndpointBuilder MapEndpoint(
+        public static RouteEndpointBuilder MapEndpoint(
             this EndpointDataSourceBuilder builder,
             RequestDelegate requestDelegate,
             RoutePattern pattern,
             string displayName,
-            IList<object> metadata)
+            params object[] metadata)
         {
             const int defaultOrder = 0;
 
-            var endpointBuilder = new MatcherEndpointBuilder(
+            var endpointBuilder = new RouteEndpointBuilder(
                requestDelegate,
                pattern,
                defaultOrder);

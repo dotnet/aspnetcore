@@ -93,7 +93,7 @@ namespace RoutingSample.Web
                     },
                     "/graph",
                     "DFA Graph",
-                    new object[] { new HttpMethodMetadata(new[] { "GET", }) });
+                    new HttpMethodMetadata(new[] { "GET", }));
                 builder.MapEndpoint(
                     (httpContext) =>
                     {
@@ -107,10 +107,7 @@ namespace RoutingSample.Web
                     },
                     "/WithSingleAsteriskCatchAll/{*path}",
                     "WithSingleAsteriskCatchAll",
-                    new object[]
-                    {
-                        new RouteValuesAddressMetadata(routeName: "WithSingleAsteriskCatchAll", requiredValues: new RouteValueDictionary()),
-                    });
+                    new RouteValuesAddressMetadata(routeName: "WithSingleAsteriskCatchAll", requiredValues: new RouteValueDictionary()));
                 builder.MapEndpoint(
                     (httpContext) =>
                     {
@@ -124,10 +121,7 @@ namespace RoutingSample.Web
                     },
                     "/WithDoubleAsteriskCatchAll/{**path}",
                     "WithDoubleAsteriskCatchAll",
-                    new object[]
-                    {
-                        new RouteValuesAddressMetadata(routeName: "WithDoubleAsteriskCatchAll", requiredValues: new RouteValueDictionary())
-                    });
+                    new RouteValuesAddressMetadata(routeName: "WithDoubleAsteriskCatchAll", requiredValues: new RouteValueDictionary()));
             });
 
             // Imagine some more stuff here...

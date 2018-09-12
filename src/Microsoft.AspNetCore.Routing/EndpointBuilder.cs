@@ -8,6 +8,8 @@ namespace Microsoft.AspNetCore.Routing
 {
     public abstract class EndpointBuilder
     {
+        public RequestDelegate RequestDelegate { get; set; }
+
         public string DisplayName { get; set; }
 
         public IList<object> Metadata { get; } = new List<object>();

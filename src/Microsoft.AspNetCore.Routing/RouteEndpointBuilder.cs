@@ -1,22 +1,18 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Patterns;
 
-namespace Microsoft.AspNetCore.Routing.Matching
+namespace Microsoft.AspNetCore.Routing
 {
-    public sealed class MatcherEndpointBuilder : EndpointBuilder
+    public sealed class RouteEndpointBuilder : EndpointBuilder
     {
-        public RequestDelegate RequestDelegate { get; set; }
-
         public RoutePattern RoutePattern { get; set; }
 
         public int Order { get; set; }
 
-        public MatcherEndpointBuilder(
+        public RouteEndpointBuilder(
            RequestDelegate requestDelegate,
            RoutePattern routePattern,
            int order)
