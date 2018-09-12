@@ -374,7 +374,7 @@ Environment.NewLine;
         }
 
         [Fact]
-        public void ObjectTemplate_HonoursHideSurroundingHtml()
+        public void ObjectTemplate_HonorsHideSurroundingHtml()
         {
             // Arrange
             var expected =
@@ -470,7 +470,7 @@ Environment.NewLine;
         }
 
         [Fact]
-        public void HiddenInputTemplate_HonoursHideSurroundingHtml()
+        public void HiddenInputTemplate_HonorsHideSurroundingHtml()
         {
             // Arrange
             var expected = "<input id=\"HtmlEncode[[FieldPrefix]]\" name=\"HtmlEncode[[FieldPrefix]]\" type=\"HtmlEncode[[hidden]]\" value=\"HtmlEncode[[Model string]]\" />";

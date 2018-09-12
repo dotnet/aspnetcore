@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FormatterWebSite.Controllers
 {
-    public class PolymorhpicPropertyBindingController : ControllerBase
+    public class PolymorphicPropertyBindingController : ControllerBase
     {
         [FromBody]
         public IModel Person { get; set; }

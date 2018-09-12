@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
             Subject = context.HandlerInstance;
             var tempData = _tempDataFactory.GetTempData(context.HttpContext);
 
-            SetPropertyVaules(tempData);
+            SetPropertyValues(tempData);
         }
 
         public void OnPageHandlerExecuted(PageHandlerExecutedContext context)

@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Json.Internal
             var context = GetActionContext();
 
             var result = new JsonResult(new { foo = "abcd" });
-            var executor = CreateExcutor();
+            var executor = CreateExecutor();
 
             // Act
             await executor.ExecuteAsync(context, result);
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Json.Internal
 
             var result = new JsonResult(new { foo = "abcd" });
             result.ContentType = "text/json";
-            var executor = CreateExcutor();
+            var executor = CreateExecutor();
 
             // Act
             await executor.ExecuteAsync(context, result);
@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Json.Internal
             {
                 Encoding = Encoding.ASCII
             }.ToString();
-            var executor = CreateExcutor();
+            var executor = CreateExecutor();
 
             // Act
             await executor.ExecuteAsync(context, result);
@@ -97,7 +97,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Json.Internal
             context.HttpContext.Response.ContentType = expectedContentType;
 
             var result = new JsonResult(new { foo = "abcd" });
-            var executor = CreateExcutor();
+            var executor = CreateExecutor();
 
             // Act
             await executor.ExecuteAsync(context, result);
@@ -122,7 +122,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Json.Internal
             context.HttpContext.Response.ContentType = responseContentType;
 
             var result = new JsonResult(new { foo = "abcd" });
-            var executor = CreateExcutor();
+            var executor = CreateExecutor();
 
             // Act
             await executor.ExecuteAsync(context, result);
@@ -147,7 +147,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Json.Internal
             serializerSettings.Formatting = Formatting.Indented;
 
             var result = new JsonResult(new { foo = "abcd" }, serializerSettings);
-            var executor = CreateExcutor();
+            var executor = CreateExecutor();
 
             // Act
             await executor.ExecuteAsync(context, result);
@@ -165,7 +165,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Json.Internal
             var expected = Encoding.UTF8.GetBytes("{\"name\":\"Robert\"");
             var context = GetActionContext();
             var result = new JsonResult(new ModelWithSerializationError());
-            var executor = CreateExcutor();
+            var executor = CreateExecutor();
 
             // Act
             try
@@ -190,7 +190,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Json.Internal
             var expected = "Executing JsonResult, writing value of type 'System.String'.";
             var context = GetActionContext();
             var logger = new StubLogger();
-            var executer = CreateExcutor(logger);
+            var executer = CreateExecutor(logger);
             var result = new JsonResult("result_value");
 
             // Act
@@ -207,7 +207,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Json.Internal
             var expected = "Executing JsonResult, writing value of type 'null'.";
             var context = GetActionContext();
             var logger = new StubLogger();
-            var executer = CreateExcutor(logger);
+            var executer = CreateExecutor(logger);
             var result = new JsonResult(null);
 
             // Act
@@ -217,7 +217,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Json.Internal
             Assert.Equal(expected, logger.MostRecentMessage);
         }
 
-        private static JsonResultExecutor CreateExcutor(ILogger<JsonResultExecutor> logger = null)
+        private static JsonResultExecutor CreateExecutor(ILogger<JsonResultExecutor> logger = null)
         {
             return new JsonResultExecutor(
                 new TestHttpResponseStreamWriterFactory(),

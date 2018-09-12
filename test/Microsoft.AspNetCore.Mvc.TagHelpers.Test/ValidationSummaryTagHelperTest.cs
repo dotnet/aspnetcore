@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
         [Theory]
         [MemberData(nameof(ProcessAsync_GeneratesExpectedOutput_WithNoErrorsData))]
-        public async Task ProcessAsync_SuppressesOutput_IfClientSideValiationDisabled_WithNoErrorsData(
+        public async Task ProcessAsync_SuppressesOutput_IfClientSideValidationDisabled_WithNoErrorsData(
             ModelStateDictionary modelStateDictionary)
         {
             // Arrange

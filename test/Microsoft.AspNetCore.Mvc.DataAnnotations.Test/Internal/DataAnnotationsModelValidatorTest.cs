@@ -262,7 +262,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
         }
 
         public static TheoryData<string, IEnumerable<string>, IEnumerable<ModelValidationResult>>
-            Valdate_ReturnsExpectedResults_Data
+            Validate_ReturnsExpectedResults_Data
         {
             get
             {
@@ -327,8 +327,8 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
         }
 
         [Theory]
-        [MemberData(nameof(Valdate_ReturnsExpectedResults_Data))]
-        public void Valdate_ReturnsExpectedResults(
+        [MemberData(nameof(Validate_ReturnsExpectedResults_Data))]
+        public void Validate_ReturnsExpectedResults(
             string errorMessage,
             IEnumerable<string> memberNames,
             IEnumerable<ModelValidationResult> expectedResults)

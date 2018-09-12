@@ -143,7 +143,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
         }
 
         [Fact]
-        public void ObjectTemplate_HonoursHideSurroundingHtml()
+        public void ObjectTemplate_HonorsHideSurroundingHtml()
         {
             // Arrange
             var expected =
@@ -231,7 +231,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
         }
 
         [Fact]
-        public void HiddenInputTemplate_HonoursHideSurroundingHtml()
+        public void HiddenInputTemplate_HonorsHideSurroundingHtml()
         {
             // Arrange
             var model = "Model string";

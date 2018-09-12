@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public async Task ApiExplorer_IsVisible_EnabledWithConvention()
         {
             // Arrange & Act
-            var response = await Client.GetAsync("http://localhost/ApiExplorerVisbilityEnabledByConvention");
+            var response = await Client.GetAsync("http://localhost/ApiExplorerVisibilityEnabledByConvention");
 
             var body = await response.Content.ReadAsStringAsync();
             var result = JsonConvert.DeserializeObject<List<ApiExplorerData>>(body);
@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public async Task ApiExplorer_IsVisible_DisabledWithConvention()
         {
             // Arrange & Act
-            var response = await Client.GetAsync("http://localhost/ApiExplorerVisbilityDisabledByConvention");
+            var response = await Client.GetAsync("http://localhost/ApiExplorerVisibilityDisabledByConvention");
 
             var body = await response.Content.ReadAsStringAsync();
             var result = JsonConvert.DeserializeObject<List<ApiExplorerData>>(body);

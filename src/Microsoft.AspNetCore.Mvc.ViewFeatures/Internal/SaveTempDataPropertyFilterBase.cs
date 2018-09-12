@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
         /// Sets the values of the properties of <see cref="Subject"/> from <paramref name="tempData"/>.
         /// </summary>
         /// <param name="tempData">The <see cref="ITempDataDictionary"/>.</param>
-        protected void SetPropertyVaules(ITempDataDictionary tempData)
+        protected void SetPropertyValues(ITempDataDictionary tempData)
         {
             if (Properties == null)
             {

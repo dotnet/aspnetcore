@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             Assert.True(bindingContext.ModelState.ContainsKey("theModelName"));
         }
 
-        public static TheoryData<Type> ConvertableTypeData
+        public static TheoryData<Type> ConvertibleTypeData
         {
             get
             {
@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         }
 
         [Theory]
-        [MemberData(nameof(ConvertableTypeData))]
+        [MemberData(nameof(ConvertibleTypeData))]
         public async Task BindModel_ReturnsFailure_IfTypeCanBeConverted_AndConversionFails(Type destinationType)
         {
             // Arrange
@@ -112,7 +112,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         }
 
         [Theory]
-        [MemberData(nameof(ConvertableTypeData))]
+        [MemberData(nameof(ConvertibleTypeData))]
         public async Task BindModel_CreatesError_WhenTypeConversionIsNull(Type destinationType)
         {
             // Arrange

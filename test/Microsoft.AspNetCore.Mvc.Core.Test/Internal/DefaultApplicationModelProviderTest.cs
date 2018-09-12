@@ -869,7 +869,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
-        public void CreateActionModel_AttributeRouteOnAction_CreatesOneActionInforPerRouteTemplate()
+        public void CreateActionModel_AttributeRouteOnAction_CreatesOneActionInfoPerRouteTemplate()
         {
             // Arrange
             var builder = new TestApplicationModelProvider();
@@ -951,7 +951,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         [Theory]
         [InlineData(typeof(SingleRouteAttributeController))]
         [InlineData(typeof(MultipleRouteAttributeController))]
-        public void CreateActionModel_RouteOnController_CreatesOneActionInforPerRouteTemplateOnAction(Type controller)
+        public void CreateActionModel_RouteOnController_CreatesOneActionInfoPerRouteTemplateOnAction(Type controller)
         {
             // Arrange
             var builder = new TestApplicationModelProvider();

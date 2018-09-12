@@ -110,7 +110,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
         private class TestPageWithDerivedModel : Page
         {
-            public DeriviedModel Model => null;
+            public DerivedModel Model => null;
 
             public override Task ExecuteAsync() =>throw new NotImplementedException();
         }
@@ -121,7 +121,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         }
 
         [Authorize(Policy = "Derived")]
-        private class DeriviedModel : BaseModel
+        private class DerivedModel : BaseModel
         {
             public virtual void OnGet()
             {
