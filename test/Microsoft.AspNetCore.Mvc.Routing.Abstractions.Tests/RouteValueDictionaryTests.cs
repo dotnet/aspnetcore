@@ -381,6 +381,19 @@ namespace Microsoft.AspNetCore.Routing.Tests
         }
 
         [Fact]
+        public void IndexGet_EmptyStringIsAllowed()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary();
+
+            // Act
+            var value = dict[""];
+
+            // Assert
+            Assert.Null(value);
+        }
+
+        [Fact]
         public void IndexGet_EmptyStorage_ReturnsNull()
         {
             // Arrange
@@ -484,6 +497,19 @@ namespace Microsoft.AspNetCore.Routing.Tests
             // Assert
             Assert.Equal("value", value);
             Assert.IsType<KeyValuePair<string, object>[]>(dict._arrayStorage);
+        }
+
+        [Fact]
+        public void IndexSet_EmptyStringIsAllowed()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary();
+
+            // Act
+            dict[""] = "foo";
+
+            // Assert
+            Assert.Equal("foo", dict[""]);
         }
 
         [Fact]
@@ -748,6 +774,19 @@ namespace Microsoft.AspNetCore.Routing.Tests
         }
 
         [Fact]
+        public void Add_EmptyStringIsAllowed()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary();
+
+            // Act
+            dict.Add("", "foo");
+
+            // Assert
+            Assert.Equal("foo", dict[""]);
+        }
+
+        [Fact]
         public void Add_PropertyStorage()
         {
             // Arrange
@@ -762,6 +801,14 @@ namespace Microsoft.AspNetCore.Routing.Tests
                 kvp => { Assert.Equal("age", kvp.Key); Assert.Equal(30, kvp.Value); },
                 kvp => { Assert.Equal("key", kvp.Key); Assert.Equal("value", kvp.Value); });
             Assert.IsType<KeyValuePair<string, object>[]>(dict._arrayStorage);
+
+            // The upgrade from property -> array should make space for at least 4 entries
+            Assert.Collection(
+                dict._arrayStorage,
+                kvp => Assert.Equal(new KeyValuePair<string, object>("age", 30), kvp),
+                kvp => Assert.Equal(new KeyValuePair<string, object>("key", "value"), kvp),
+                kvp => Assert.Equal(default, kvp),
+                kvp => Assert.Equal(default, kvp));
         }
 
         [Fact]
@@ -995,6 +1042,19 @@ namespace Microsoft.AspNetCore.Routing.Tests
         }
 
         [Fact]
+        public void ContainsKey_EmptyStringIsAllowed()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary();
+
+            // Act
+            var result = dict.ContainsKey("");
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
         public void ContainsKey_PropertyStorage_False()
         {
             // Arrange
@@ -1207,6 +1267,19 @@ namespace Microsoft.AspNetCore.Routing.Tests
         }
 
         [Fact]
+        public void Remove_EmptyStringIsAllowed()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary();
+
+            // Act
+            var result = dict.Remove("");
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
         public void Remove_PropertyStorage_Empty()
         {
             // Arrange
@@ -1321,6 +1394,132 @@ namespace Microsoft.AspNetCore.Routing.Tests
         }
 
         [Fact]
+        public void TryAdd_EmptyStringIsAllowed()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary();
+
+            // Act
+            var result = dict.TryAdd("", "foo");
+
+            // Assert
+            Assert.True(result);
+        }
+
+        // We always 'upgrade' if you are trying to write to the dictionary.
+        [Fact]
+        public void TryAdd_ConvertsPropertyStorage_ToArrayStorage()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary(new { key = "value", });
+
+            // Act
+            var result = dict.TryAdd("key", "value");
+
+            // Assert
+            Assert.False(result);
+            Assert.Null(dict._propertyStorage);
+            Assert.Collection(
+                dict._arrayStorage,
+                kvp => Assert.Equal(new KeyValuePair<string, object>("key", "value"), kvp),
+                kvp => Assert.Equal(default, kvp),
+                kvp => Assert.Equal(default, kvp),
+                kvp => Assert.Equal(default, kvp));
+        }
+
+        [Fact]
+        public void TryAdd_EmptyStorage_CanAdd()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary();
+
+            // Act
+            var result = dict.TryAdd("key", "value");
+
+            // Assert
+            Assert.True(result);
+            Assert.Collection(
+                dict._arrayStorage,
+                kvp => Assert.Equal(new KeyValuePair<string, object>("key", "value"), kvp),
+                kvp => Assert.Equal(default, kvp),
+                kvp => Assert.Equal(default, kvp),
+                kvp => Assert.Equal(default, kvp));
+        }
+
+        [Fact]
+        public void TryAdd_ArrayStorage_CanAdd()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary()
+            {
+                { "key0", "value0" },
+            };
+
+            // Act
+            var result = dict.TryAdd("key1", "value1");
+
+            // Assert
+            Assert.True(result);
+            Assert.Collection(
+                dict._arrayStorage,
+                kvp => Assert.Equal(new KeyValuePair<string, object>("key0", "value0"), kvp),
+                kvp => Assert.Equal(new KeyValuePair<string, object>("key1", "value1"), kvp),
+                kvp => Assert.Equal(default, kvp),
+                kvp => Assert.Equal(default, kvp));
+        }
+
+        [Fact]
+        public void TryAdd_ArrayStorage_CanAddWithResize()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary()
+            {
+                { "key0", "value0" },
+                { "key1", "value1" },
+                { "key2", "value2" },
+                { "key3", "value3" },
+            };
+
+            // Act
+            var result = dict.TryAdd("key4", "value4");
+
+            // Assert
+            Assert.True(result);
+            Assert.Collection(
+                dict._arrayStorage,
+                kvp => Assert.Equal(new KeyValuePair<string, object>("key0", "value0"), kvp),
+                kvp => Assert.Equal(new KeyValuePair<string, object>("key1", "value1"), kvp),
+                kvp => Assert.Equal(new KeyValuePair<string, object>("key2", "value2"), kvp),
+                kvp => Assert.Equal(new KeyValuePair<string, object>("key3", "value3"), kvp),
+                kvp => Assert.Equal(new KeyValuePair<string, object>("key4", "value4"), kvp),
+                kvp => Assert.Equal(default, kvp),
+                kvp => Assert.Equal(default, kvp),
+                kvp => Assert.Equal(default, kvp));
+        }
+
+        [Fact]
+        public void TryAdd_ArrayStorage_DoesNotAddWhenKeyIsPresent()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary()
+            {
+                { "key0", "value0" },
+            };
+
+            // Act
+            var result = dict.TryAdd("key0", "value1");
+
+            // Assert
+            Assert.False(result);
+            Assert.Collection(
+                dict._arrayStorage,
+                kvp => Assert.Equal(new KeyValuePair<string, object>("key0", "value0"), kvp),
+                kvp => Assert.Equal(default, kvp),
+                kvp => Assert.Equal(default, kvp),
+                kvp => Assert.Equal(default, kvp));
+        }
+
+        [Fact]
         public void TryGetValue_EmptyStorage()
         {
             // Arrange
@@ -1329,6 +1528,20 @@ namespace Microsoft.AspNetCore.Routing.Tests
             // Act
             object value;
             var result = dict.TryGetValue("key", out value);
+
+            // Assert
+            Assert.False(result);
+            Assert.Null(value);
+        }
+
+        [Fact]
+        public void TryGetValue_EmptyStringIsAllowed()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary();
+
+            // Act
+            var result = dict.TryGetValue("", out var value);
 
             // Assert
             Assert.False(result);

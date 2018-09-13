@@ -8,11 +8,11 @@ namespace Microsoft.AspNetCore.Routing
 {
     public class RouteValueDictionaryBenchmark
     {
-        // These dictionaries are used by a few tests over and over, so don't modify them destructively.
         private RouteValueDictionary _arrayValues;
         private RouteValueDictionary _propertyValues;
 
-        [GlobalSetup]
+        // We modify the route value dictionaries in many of these benchmarks.
+        [IterationSetup]
         public void Setup()
         {
             _arrayValues = new RouteValueDictionary()
@@ -27,18 +27,57 @@ namespace Microsoft.AspNetCore.Routing
         [Benchmark]
         public RouteValueDictionary AddSingleItem()
         {
-            var dictionary = new RouteValueDictionary();
-            dictionary.Add("action", "Index");
+            var dictionary = new RouteValueDictionary
+            {
+                { "action", "Index" }
+            };
             return dictionary;
         }
 
         [Benchmark]
         public RouteValueDictionary AddThreeItems()
         {
-            var dictionary = new RouteValueDictionary();
-            dictionary.Add("action", "Index");
-            dictionary.Add("controller", "Home");
-            dictionary.Add("id", "15");
+            var dictionary = new RouteValueDictionary
+            {
+                { "action", "Index" },
+                { "controller", "Home" },
+                { "id", "15" }
+            };
+            return dictionary;
+        }
+
+        [Benchmark]
+        public RouteValueDictionary ConditionalAdd_ContainsKeyAdd()
+        {
+            var dictionary = _arrayValues;
+
+            if (!dictionary.ContainsKey("action"))
+            {
+                dictionary.Add("action", "Index");
+            }
+
+            if (!dictionary.ContainsKey("controller"))
+            {
+                dictionary.Add("controller", "Home");
+            }
+
+            if (!dictionary.ContainsKey("area"))
+            {
+                dictionary.Add("area", "Admin");
+            }
+
+            return dictionary;
+        }
+        
+        [Benchmark]
+        public RouteValueDictionary ConditionalAdd_TryAdd()
+        {
+            var dictionary = _arrayValues;
+
+            dictionary.TryAdd("action", "Index");
+            dictionary.TryAdd("controller", "Home");
+            dictionary.TryAdd("area", "Admin");
+
             return dictionary;
         }
 
@@ -56,7 +95,7 @@ namespace Microsoft.AspNetCore.Routing
         [Benchmark]
         public RouteValueDictionary ForEachThreeItems_Properties()
         {
-            var dictionary = _arrayValues;
+            var dictionary = _propertyValues;
             foreach (var kvp in dictionary)
             {
                 GC.KeepAlive(kvp.Value);
@@ -87,8 +126,10 @@ namespace Microsoft.AspNetCore.Routing
         [Benchmark]
         public RouteValueDictionary SetSingleItem()
         {
-            var dictionary = new RouteValueDictionary();
-            dictionary["action"] = "Index";
+            var dictionary = new RouteValueDictionary
+            {
+                ["action"] = "Index"
+            };
             return dictionary;
         }
 
@@ -103,10 +144,12 @@ namespace Microsoft.AspNetCore.Routing
         [Benchmark]
         public RouteValueDictionary SetThreeItems()
         {
-            var dictionary = new RouteValueDictionary();
-            dictionary["action"] = "Index";
-            dictionary["controller"] = "Home";
-            dictionary["id"] = "15";
+            var dictionary = new RouteValueDictionary
+            {
+                ["action"] = "Index",
+                ["controller"] = "Home",
+                ["id"] = "15"
+            };
             return dictionary;
         }
 
