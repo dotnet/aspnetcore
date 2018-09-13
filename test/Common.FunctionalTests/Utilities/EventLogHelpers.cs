@@ -136,6 +136,13 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             return $"Configuration load error. {reason}";
         }
 
+        public static string OutOfProcessFailedToStart(IISDeploymentResult deploymentResult)
+        {
+            return $"Application '/LM/W3SVC/1/ROOT' with physical root '{EscapedContentRoot(deploymentResult)}' failed to start process with " +
+                $"commandline '(.*)' with multiple retries. " +
+                $"The last try of listening port is '(.*)'. See previous warnings for details.";
+        }
+
         private static string EscapedContentRoot(IISDeploymentResult deploymentResult)
         {
             var contentRoot = deploymentResult.ContentRoot;

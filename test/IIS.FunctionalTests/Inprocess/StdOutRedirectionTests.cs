@@ -7,7 +7,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests;
-using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Microsoft.AspNetCore.Testing.xunit;
 using Newtonsoft.Json;
@@ -40,13 +39,13 @@ namespace IIS.FunctionalTests.Inprocess
         [SkipIfDebug]
         public async Task FrameworkNotFoundExceptionLogged_Pipe()
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.StartupExceptionWebsite, publish: true);
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.InProcessTestSite, publish: true);
 
             var deploymentResult = await DeployAsync(deploymentParameters);
 
             InvalidateRuntimeConfig(deploymentResult);
 
-            var response = await deploymentResult.HttpClient.GetAsync("/");
+            var response = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
             Assert.False(response.IsSuccessStatusCode);
 
             StopServer();
@@ -60,7 +59,7 @@ namespace IIS.FunctionalTests.Inprocess
         public async Task FrameworkNotFoundExceptionLogged_File()
         {
             var deploymentParameters =
-                _fixture.GetBaseDeploymentParameters(_fixture.StartupExceptionWebsite, publish: true);
+                _fixture.GetBaseDeploymentParameters(_fixture.InProcessTestSite, publish: true);
 
             deploymentParameters.EnableLogging(_logFolderPath);
 
@@ -68,7 +67,7 @@ namespace IIS.FunctionalTests.Inprocess
 
             InvalidateRuntimeConfig(deploymentResult);
 
-            var response = await deploymentResult.HttpClient.GetAsync("/");
+            var response = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
             Assert.False(response.IsSuccessStatusCode);
 
             StopServer();
@@ -85,14 +84,16 @@ namespace IIS.FunctionalTests.Inprocess
         public async Task EnableCoreHostTraceLogging_TwoLogFilesCreated()
         {
             var deploymentParameters =
-                _fixture.GetBaseDeploymentParameters(_fixture.StartupExceptionWebsite, publish: true);
+                _fixture.GetBaseDeploymentParameters(_fixture.InProcessTestSite, publish: true);
+            deploymentParameters.TransformArguments((a, _) => $"{a} CheckLargeStdOutWrites");
+
             deploymentParameters.EnvironmentVariables["COREHOST_TRACE"] = "1";
 
             deploymentParameters.EnableLogging(_logFolderPath);
 
             var deploymentResult = await DeployAsync(deploymentParameters);
 
-            var response = await deploymentResult.HttpClient.GetAsync("/");
+            var response = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
             Assert.False(response.IsSuccessStatusCode);
 
             StopServer();
@@ -112,13 +113,13 @@ namespace IIS.FunctionalTests.Inprocess
         [InlineData("CheckOversizedStdOutWrites")]
         public async Task EnableCoreHostTraceLogging_PipeCaptureNativeLogs(string path)
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.StartupExceptionWebsite, publish: true);
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.InProcessTestSite, publish: true);
             deploymentParameters.EnvironmentVariables["COREHOST_TRACE"] = "1";
-            deploymentParameters.WebConfigBasedEnvironmentVariables["ASPNETCORE_INPROCESS_STARTUP_VALUE"] = path;
+            deploymentParameters.TransformArguments((a, _) => $"{a} {path}");
 
             var deploymentResult = await DeployAsync(deploymentParameters);
 
-            var response = await deploymentResult.HttpClient.GetAsync("/");
+            var response = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
 
             Assert.False(response.IsSuccessStatusCode);
 
@@ -137,15 +138,15 @@ namespace IIS.FunctionalTests.Inprocess
         public async Task EnableCoreHostTraceLogging_FileCaptureNativeLogs(string path)
         {
             var deploymentParameters =
-                _fixture.GetBaseDeploymentParameters(_fixture.StartupExceptionWebsite, publish: true);
+                _fixture.GetBaseDeploymentParameters(_fixture.InProcessTestSite, publish: true);
             deploymentParameters.EnvironmentVariables["COREHOST_TRACE"] = "1";
-            deploymentParameters.WebConfigBasedEnvironmentVariables["ASPNETCORE_INPROCESS_STARTUP_VALUE"] = path;
+            deploymentParameters.TransformArguments((a, _) => $"{a} {path}");
 
             deploymentParameters.EnableLogging(_logFolderPath);
 
             var deploymentResult = await DeployAsync(deploymentParameters);
 
-            var response = await deploymentResult.HttpClient.GetAsync("/");
+            var response = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
             Assert.False(response.IsSuccessStatusCode);
 
             StopServer();
@@ -159,7 +160,7 @@ namespace IIS.FunctionalTests.Inprocess
 
         private static void InvalidateRuntimeConfig(IISDeploymentResult deploymentResult)
         {
-            var path = Path.Combine(deploymentResult.ContentRoot, "StartupExceptionWebSite.runtimeconfig.json");
+            var path = Path.Combine(deploymentResult.ContentRoot, "InProcessWebSite.runtimeconfig.json");
             dynamic depsFileContent = JsonConvert.DeserializeObject(File.ReadAllText(path));
             depsFileContent["runtimeOptions"]["framework"]["version"] = "2.9.9";
             var output = JsonConvert.SerializeObject(depsFileContent);

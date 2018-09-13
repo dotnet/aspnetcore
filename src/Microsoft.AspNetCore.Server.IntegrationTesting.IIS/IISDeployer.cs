@@ -115,6 +115,10 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
 
         protected override IEnumerable<Action<XElement, string>> GetWebConfigActions()
         {
+            yield return WebConfigHelpers.AddOrModifyAspNetCoreSection(
+                key: "hostingModel",
+                value: DeploymentParameters.HostingModel.ToString());
+
             if (DeploymentParameters.ApplicationType == ApplicationType.Portable)
             {
                 yield return WebConfigHelpers.AddOrModifyAspNetCoreSection(
@@ -126,14 +130,11 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                 key: "modules",
                 value: DeploymentParameters.AncmVersion.ToString());
 
-
             foreach (var action in base.GetWebConfigActions())
             {
                 yield return action;
             }
         }
-
-
 
         private void GetLogsFromFile()
         {

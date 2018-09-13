@@ -5,7 +5,7 @@ using System.IO;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace TestSites
+namespace TestSite
 {
     public static class Program
     {

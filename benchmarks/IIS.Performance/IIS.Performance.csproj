@@ -26,7 +26,13 @@
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Server.IISIntegration\Microsoft.AspNetCore.Server.IISIntegration.csproj" />
     <ProjectReference Include="..\..\test\IISExpress.FunctionalTests\IISExpress.FunctionalTests.csproj" />
     <ProjectReference Include="..\..\test\IIS.Tests\IIS.Tests.csproj" />
-    <ProjectReference Include="..\..\test\WebSites\**\*.csproj">
+    <ProjectReference Include="..\..\test\WebSites\InProcessWebSite\InProcessWebSite.csproj">
+      <ReferenceOutputAssembly>False</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="..\..\test\WebSites\OutOfProcessWebSite\OutOfProcessWebSite.csproj">
+      <ReferenceOutputAssembly>False</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="..\..\test\WebSites\StressTestWebSite\StressTestWebSite.csproj">
       <ReferenceOutputAssembly>False</ReferenceOutputAssembly>
     </ProjectReference>
   </ItemGroup>

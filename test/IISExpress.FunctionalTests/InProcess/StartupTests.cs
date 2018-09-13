@@ -133,9 +133,12 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
 
         [ConditionalFact]
-        public async Task DetectsOveriddenServer()
+        public async Task DetectsOverriddenServer()
         {
-            var deploymentResult = await DeployAsync(_fixture.GetBaseDeploymentParameters(_fixture.OverriddenServerWebSite, publish: true));
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.InProcessTestSite, publish: true);
+            deploymentParameters.TransformArguments((a, _) => $"{a} OverriddenServer");
+
+            var deploymentResult = await DeployAsync(deploymentParameters);
             var response = await deploymentResult.HttpClient.GetAsync("/");
             Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
 
@@ -149,7 +152,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [ConditionalFact]
         public async Task LogsStartupExceptionExitError()
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.StartupExceptionWebsite, publish: true);
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.InProcessTestSite, publish: true);
             deploymentParameters.TransformArguments((a, _) => $"{a} Throw");
             
             var deploymentResult = await DeployAsync(deploymentParameters);
@@ -167,9 +170,11 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [ConditionalFact]
         public async Task LogsUnexpectedThreadExitError()
         {
-            var deploymentResult = await DeployAsync(_fixture.GetBaseDeploymentParameters(_fixture.StartupExceptionWebsite, publish: true));
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.InProcessTestSite, publish: true);
+            deploymentParameters.TransformArguments((a, _) => $"{a} EarlyReturn");
+            var deploymentResult = await DeployAsync(deploymentParameters);
 
-            var response = await deploymentResult.HttpClient.GetAsync("/");
+            var response = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
             Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
 
             StopServer();
@@ -182,7 +187,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [ConditionalFact]
         public async Task StartupTimeoutIsApplied()
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.StartupExceptionWebsite, publish: true);
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.InProcessTestSite, publish: true);
             deploymentParameters.TransformArguments((a, _) => $"{a} Hang");
             deploymentParameters.WebConfigActionList.Add(
                 WebConfigHelpers.AddOrModifyAspNetCoreSection("startupTimeLimit", "1"));
@@ -202,14 +207,14 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [ConditionalFact]
         public async Task ShutdownTimeoutIsApplied()
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.StartupExceptionWebsite, publish: true);
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.InProcessTestSite, publish: true);
             deploymentParameters.TransformArguments((a, _) => $"{a} HangOnStop");
             deploymentParameters.WebConfigActionList.Add(
                 WebConfigHelpers.AddOrModifyAspNetCoreSection("shutdownTimeLimit", "1"));
 
             var deploymentResult = await DeployAsync(deploymentParameters);
             
-            Assert.Equal("OK", await deploymentResult.HttpClient.GetStringAsync("/"));
+            Assert.Equal("Hello World", await deploymentResult.HttpClient.GetStringAsync("/HelloWorld"));
 
             StopServer();
 

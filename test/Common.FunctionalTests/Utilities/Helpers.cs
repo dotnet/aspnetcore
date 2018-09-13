@@ -146,10 +146,18 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         public static string GetExpectedLogName(IISDeploymentResult deploymentResult, string logFolderPath)
         {
             var startTime = deploymentResult.HostProcess.StartTime.ToUniversalTime();
-            return Path.Combine(logFolderPath, $"std_{startTime.Year}{startTime.Month:D2}" +
+
+            if (deploymentResult.DeploymentParameters.HostingModel == HostingModel.InProcess)
+            {
+                return Path.Combine(logFolderPath, $"std_{startTime.Year}{startTime.Month:D2}" +
                 $"{startTime.Day:D2}{startTime.Hour:D2}" +
                 $"{startTime.Minute:D2}{startTime.Second:D2}_" +
                 $"{deploymentResult.HostProcess.Id}.log");
+            }
+            else
+            {
+                return Directory.GetFiles(logFolderPath).Single();
+            }
         }
     }
 }

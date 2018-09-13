@@ -22,11 +22,11 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
 
         [ConditionalTheory]
-        [InlineData("CheckLogFile")]
-        [InlineData("CheckErrLogFile")]
+        [InlineData("ConsoleWrite")]
+        [InlineData("ConsoleErrorWrite")]
         public async Task CheckStdoutWithRandomNumber(string mode)
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.StartupExceptionWebsite, publish: true);
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.InProcessTestSite, publish: true);
 
             var randomNumberString = new Random(Guid.NewGuid().GetHashCode()).Next(10000000).ToString();
             deploymentParameters.TransformArguments((a, _) => $"{a} {mode} {randomNumberString}");
@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [InlineData("CheckOversizedStdOutWrites")]
         public async Task CheckStdoutWithLargeWrites(string mode)
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.StartupExceptionWebsite, publish: true);
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.InProcessTestSite, publish: true);
             deploymentParameters.TransformArguments((a, _) => $"{a} {mode}");
 
             await AssertFailsToStart(deploymentParameters);
@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [ConditionalFact]
         public async Task CheckValidConsoleFunctions()
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.StartupExceptionWebsite, publish: true);
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.InProcessTestSite, publish: true);
             deploymentParameters.TransformArguments((a, _) => $"{a} CheckConsoleFunctions");
 
             await AssertFailsToStart(deploymentParameters);
@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             Assert.Contains(TestSink.Writes, context => context.Message.Contains("Is Console redirection: True"));
         }
 
-        private async Task AssertFailsToStart(IntegrationTesting.IIS.IISDeploymentParameters deploymentParameters)
+        private async Task AssertFailsToStart(IISDeploymentParameters deploymentParameters)
         {
             var deploymentResult = await DeployAsync(deploymentParameters);
 
@@ -76,17 +76,17 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [ConditionalFact]
         public async Task Gets500_30_ErrorPage()
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.StartupExceptionWebsite, publish: true);
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.InProcessTestSite, publish: true);
+            deploymentParameters.TransformArguments((a, _) => $"{a} EarlyReturn");
 
             var deploymentResult = await DeployAsync(deploymentParameters);
 
-            var response = await deploymentResult.HttpClient.GetAsync("/");
+            var response = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
             Assert.False(response.IsSuccessStatusCode);
             Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
 
             var responseText = await response.Content.ReadAsStringAsync();
             Assert.Contains("500.30 - ANCM In-Process Start Failure", responseText);
         }
-
     }
 }

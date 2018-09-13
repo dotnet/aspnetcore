@@ -4,30 +4,12 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.Extensions.DependencyInjection;
 
-namespace IISTestSite
+namespace TestSite
 {
-    public static class Program
-    {
-        public static void Main(string[] args)
-        {
-            var host = new WebHostBuilder()
-                .UseIIS()
-                .ConfigureServices(services => services.AddSingleton<IServer, DummyServer>())
-                .Configure(builder => builder.Run(async context => { await context.Response.WriteAsync("I shouldn't work"); }))
-                .Build();
-
-            host.Run();
-        }
-    }
-
-    public class DummyServer: IServer
+    public class DummyServer : IServer
     {
         public void Dispose()
         {
