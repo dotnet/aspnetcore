@@ -131,6 +131,11 @@ namespace Microsoft.AspNetCore.Http.Features
 
             cancellationToken.ThrowIfCancellationRequested();
 
+            if (_request.ContentLength == 0)
+            {
+                return FormCollection.Empty;
+            }
+
             if (_options.BufferBody)
             {
                 _request.EnableRewind(_options.MemoryBufferThreshold, _options.BufferBodyLengthLimit);
