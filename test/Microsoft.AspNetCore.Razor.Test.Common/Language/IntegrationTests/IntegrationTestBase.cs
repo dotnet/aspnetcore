@@ -245,7 +245,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                 var location = new SourceSpan(span.Start, span.Length);
                 var expectedSpan = sourceContent.Substring(span.Start.AbsoluteIndex, span.Length);
 
-                // See #
+                // See #2593
                 if (string.IsNullOrWhiteSpace(expectedSpan))
                 {
                     // For now we don't verify whitespace inside of a directive. We know that directives cheat
