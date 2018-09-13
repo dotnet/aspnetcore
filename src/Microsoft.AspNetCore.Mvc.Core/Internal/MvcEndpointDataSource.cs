@@ -58,6 +58,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             ConventionalEndpointInfos = new List<MvcEndpointInfo>();
 
+            // IMPORTANT: this needs to be the last thing we do in the constructor. Change notifications can happen immediately!
+            //
             // It's possible for someone to override the collection provider without providing
             // change notifications. If that's the case we won't process changes.
             if (actions is ActionDescriptorCollectionProvider collectionProviderWithChangeToken)
