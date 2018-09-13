@@ -55,8 +55,6 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     { "href", hrefOutput },
                 };
             var output = MakeTagHelperOutput("link", outputAttributes);
-            var hostingEnvironment = MakeHostingEnvironment();
-            var viewContext = MakeViewContext();
             var urlHelper = new Mock<IUrlHelper>();
 
             // Ensure expanded path does not look like an absolute path on Linux, avoiding
@@ -69,17 +67,9 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 .Setup(f => f.GetUrlHelper(It.IsAny<ActionContext>()))
                 .Returns(urlHelper.Object);
 
-            var helper = new LinkTagHelper(
-                hostingEnvironment,
-                new TagHelperMemoryCacheProvider(),
-                new HtmlTestEncoder(),
-                new JavaScriptTestEncoder(),
-                urlHelperFactory.Object)
-            {
-                ViewContext = viewContext,
-                AppendVersion = true,
-                Href = href,
-            };
+            var helper = GetHelper(urlHelperFactory: urlHelperFactory.Object);
+            helper.AppendVersion = true;
+            helper.Href = href;
 
             // Act
             helper.Process(context, output);
@@ -163,23 +153,14 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                         new TagHelperAttribute("rel", new HtmlString("stylesheet"))
                     }));
             var output = MakeTagHelperOutput("link", combinedOutputAttributes);
-            var hostingEnvironment = MakeHostingEnvironment();
-            var viewContext = MakeViewContext();
 
-            var helper = new LinkTagHelper(
-                hostingEnvironment,
-                new TagHelperMemoryCacheProvider(),
-                new HtmlTestEncoder(),
-                new JavaScriptTestEncoder(),
-                MakeUrlHelperFactory())
-            {
-                ViewContext = viewContext,
-                FallbackHref = "test.css",
-                FallbackTestClass = "hidden",
-                FallbackTestProperty = "visibility",
-                FallbackTestValue = "hidden",
-                Href = "test.css",
-            };
+            var helper = GetHelper();
+            helper.FallbackHref = "test.css";
+            helper.FallbackTestClass = "hidden";
+            helper.FallbackTestProperty = "visibility";
+            helper.FallbackTestValue = "hidden";
+            helper.Href = "test.css";
+
             var expectedAttributes = new TagHelperAttributeList(output.Attributes);
             expectedAttributes.Add(new TagHelperAttribute("href", "test.css"));
 
@@ -320,8 +301,6 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             // Arrange
             var context = MakeTagHelperContext(attributes);
             var output = MakeTagHelperOutput("link");
-            var hostingEnvironment = MakeHostingEnvironment();
-            var viewContext = MakeViewContext();
             var globbingUrlBuilder = new Mock<GlobbingUrlBuilder>(
                 new TestFileProvider(),
                 Mock.Of<IMemoryCache>(),
@@ -329,16 +308,9 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             globbingUrlBuilder.Setup(g => g.BuildUrlList(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
                 .Returns(new[] { "/common.css" });
 
-            var helper = new LinkTagHelper(
-                hostingEnvironment,
-                new TagHelperMemoryCacheProvider(),
-                new HtmlTestEncoder(),
-                new JavaScriptTestEncoder(),
-                MakeUrlHelperFactory())
-            {
-                ViewContext = viewContext,
-                GlobbingUrlBuilder = globbingUrlBuilder.Object
-            };
+            var helper = GetHelper();
+            helper.GlobbingUrlBuilder = globbingUrlBuilder.Object;
+
             setProperties(helper);
 
             // Act
@@ -417,8 +389,6 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             // Arrange
             var context = MakeTagHelperContext(attributes);
             var output = MakeTagHelperOutput("link");
-            var hostingEnvironment = MakeHostingEnvironment();
-            var viewContext = MakeViewContext();
             var globbingUrlBuilder = new Mock<GlobbingUrlBuilder>(
                 new TestFileProvider(),
                 Mock.Of<IMemoryCache>(),
@@ -426,16 +396,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             globbingUrlBuilder.Setup(g => g.BuildUrlList(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
                 .Returns(new[] { "/common.css" });
 
-            var helper = new LinkTagHelper(
-                hostingEnvironment,
-                new TagHelperMemoryCacheProvider(),
-                new HtmlTestEncoder(),
-                new JavaScriptTestEncoder(),
-                MakeUrlHelperFactory())
-            {
-                ViewContext = viewContext,
-                GlobbingUrlBuilder = globbingUrlBuilder.Object
-            };
+            var helper = GetHelper();
+            helper.GlobbingUrlBuilder = globbingUrlBuilder.Object;
             setProperties(helper);
 
             // Act
@@ -469,23 +431,13 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     { "rel", new HtmlString("stylesheet") },
                     { "data-extra", new HtmlString("something") },
                 });
-            var hostingEnvironment = MakeHostingEnvironment();
-            var viewContext = MakeViewContext();
 
-            var helper = new LinkTagHelper(
-                hostingEnvironment,
-                new TagHelperMemoryCacheProvider(),
-                new HtmlTestEncoder(),
-                new JavaScriptTestEncoder(),
-                MakeUrlHelperFactory())
-            {
-                ViewContext = viewContext,
-                FallbackHref = "test.css",
-                FallbackTestClass = "hidden",
-                FallbackTestProperty = "visibility",
-                FallbackTestValue = "hidden",
-                Href = "test.css",
-            };
+            var helper = GetHelper();
+            helper.FallbackHref = "test.css";
+            helper.FallbackTestClass = "hidden";
+            helper.FallbackTestProperty = "visibility";
+            helper.FallbackTestValue = "hidden";
+            helper.Href = "test.css";
 
             // Act
             helper.Process(context, output);
@@ -580,18 +532,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             // Arrange
             var context = MakeTagHelperContext(attributes);
             var output = MakeTagHelperOutput("link");
-            var hostingEnvironment = MakeHostingEnvironment();
-            var viewContext = MakeViewContext();
 
-            var helper = new LinkTagHelper(
-                hostingEnvironment,
-                new TagHelperMemoryCacheProvider(),
-                new HtmlTestEncoder(),
-                new JavaScriptTestEncoder(),
-                MakeUrlHelperFactory())
-            {
-                ViewContext = viewContext,
-            };
+            var helper = GetHelper();
             setProperties(helper);
 
             // Act
@@ -610,18 +552,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             // Arrange
             var context = MakeTagHelperContext();
             var output = MakeTagHelperOutput("link");
-            var hostingEnvironment = MakeHostingEnvironment();
-            var viewContext = MakeViewContext();
 
-            var helper = new LinkTagHelper(
-                hostingEnvironment,
-                new TagHelperMemoryCacheProvider(),
-                new HtmlTestEncoder(),
-                new JavaScriptTestEncoder(),
-                MakeUrlHelperFactory())
-            {
-                ViewContext = viewContext,
-            };
+            var helper = GetHelper();
 
             // Act
             helper.Process(context, output);
@@ -650,8 +582,6 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             {
                 { "rel", new HtmlString("stylesheet") },
             });
-            var hostingEnvironment = MakeHostingEnvironment();
-            var viewContext = MakeViewContext();
             var globbingUrlBuilder = new Mock<GlobbingUrlBuilder>(
                 new TestFileProvider(),
                 Mock.Of<IMemoryCache>(),
@@ -659,18 +589,11 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             globbingUrlBuilder.Setup(g => g.BuildUrlList(null, "**/*.css", null))
                 .Returns(new[] { "/base.css" });
 
-            var helper = new LinkTagHelper(
-                hostingEnvironment,
-                new TagHelperMemoryCacheProvider(),
-                new HtmlTestEncoder(),
-                new JavaScriptTestEncoder(),
-                MakeUrlHelperFactory())
-            {
-                GlobbingUrlBuilder = globbingUrlBuilder.Object,
-                ViewContext = viewContext,
-                Href = "/css/site.css",
-                HrefInclude = "**/*.css",
-            };
+            var helper = GetHelper();
+
+            helper.GlobbingUrlBuilder = globbingUrlBuilder.Object;
+            helper.Href = "/css/site.css";
+            helper.HrefInclude = "**/*.css";
 
             // Act
             helper.Process(context, output);
@@ -713,8 +636,6 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     { "literal", "all HTML encoded" },
                     { new TagHelperAttribute("mixed", mixed, HtmlAttributeValueStyle.SingleQuotes) },
                 });
-            var hostingEnvironment = MakeHostingEnvironment();
-            var viewContext = MakeViewContext();
             var globbingUrlBuilder = new Mock<GlobbingUrlBuilder>(
                 new TestFileProvider(),
                 Mock.Of<IMemoryCache>(),
@@ -722,18 +643,10 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             globbingUrlBuilder.Setup(g => g.BuildUrlList(null, "**/*.css", null))
                 .Returns(new[] { "/base.css" });
 
-            var helper = new LinkTagHelper(
-                hostingEnvironment,
-                new TagHelperMemoryCacheProvider(),
-                new HtmlTestEncoder(),
-                new JavaScriptTestEncoder(),
-                MakeUrlHelperFactory())
-            {
-                GlobbingUrlBuilder = globbingUrlBuilder.Object,
-                Href = "/css/site.css",
-                HrefInclude = "**/*.css",
-                ViewContext = viewContext,
-            };
+            var helper = GetHelper();
+            helper.GlobbingUrlBuilder = globbingUrlBuilder.Object;
+            helper.Href = "/css/site.css";
+            helper.HrefInclude = "**/*.css";
 
             // Act
             helper.Process(context, output);
@@ -760,20 +673,11 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             {
                 { "rel", new HtmlString("stylesheet") },
             });
-            var hostingEnvironment = MakeHostingEnvironment();
-            var viewContext = MakeViewContext();
 
-            var helper = new LinkTagHelper(
-                hostingEnvironment,
-                new TagHelperMemoryCacheProvider(),
-                new HtmlTestEncoder(),
-                new JavaScriptTestEncoder(),
-                MakeUrlHelperFactory())
-            {
-                ViewContext = viewContext,
-                Href = "/css/site.css",
-                AppendVersion = true
-            };
+            var helper = GetHelper();
+
+            helper.Href = "/css/site.css";
+            helper.AppendVersion = true;
 
             // Act
             helper.Process(context, output);
@@ -798,20 +702,12 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             {
                 { "rel", new HtmlString("stylesheet") },
             });
-            var hostingEnvironment = MakeHostingEnvironment();
             var viewContext = MakeViewContext("/bar");
 
-            var helper = new LinkTagHelper(
-                hostingEnvironment,
-                new TagHelperMemoryCacheProvider(),
-                new HtmlTestEncoder(),
-                new JavaScriptTestEncoder(),
-                MakeUrlHelperFactory())
-            {
-                ViewContext = viewContext,
-                Href = "/bar/css/site.css",
-                AppendVersion = true
-            };
+            var helper = GetHelper();
+            helper.ViewContext = viewContext;
+            helper.Href = "/bar/css/site.css";
+            helper.AppendVersion = true;
 
             // Act
             helper.Process(context, output);
@@ -850,8 +746,6 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 {
                     { "rel", new HtmlString("stylesheet") },
                 });
-            var hostingEnvironment = MakeHostingEnvironment();
-            var viewContext = MakeViewContext();
             var globbingUrlBuilder = new Mock<GlobbingUrlBuilder>(
                 new TestFileProvider(),
                 Mock.Of<IMemoryCache>(),
@@ -859,22 +753,14 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             globbingUrlBuilder.Setup(g => g.BuildUrlList(null, "**/fallback.css", null))
                 .Returns(new[] { "/fallback.css" });
 
-            var helper = new LinkTagHelper(
-                MakeHostingEnvironment(),
-                new TagHelperMemoryCacheProvider(),
-                new HtmlTestEncoder(),
-                new JavaScriptTestEncoder(),
-                MakeUrlHelperFactory())
-            {
-                AppendVersion = true,
-                Href = "/css/site.css",
-                FallbackHrefInclude = "**/fallback.css",
-                FallbackTestClass = "hidden",
-                FallbackTestProperty = "visibility",
-                FallbackTestValue = "hidden",
-                GlobbingUrlBuilder = globbingUrlBuilder.Object,
-                ViewContext = viewContext,
-            };
+            var helper = GetHelper();
+            helper.AppendVersion = true;
+            helper.Href = "/css/site.css";
+            helper.FallbackHrefInclude = "**/fallback.css";
+            helper.FallbackTestClass = "hidden";
+            helper.FallbackTestProperty = "visibility";
+            helper.FallbackTestValue = "hidden";
+            helper.GlobbingUrlBuilder = globbingUrlBuilder.Object;
 
             // Act
             helper.Process(context, output);
@@ -929,8 +815,6 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     { "mixed", mixed },
                     { "rel", new HtmlString("stylesheet") },
                 });
-            var hostingEnvironment = MakeHostingEnvironment();
-            var viewContext = MakeViewContext();
             var globbingUrlBuilder = new Mock<GlobbingUrlBuilder>(
                 new TestFileProvider(),
                 Mock.Of<IMemoryCache>(),
@@ -938,22 +822,15 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             globbingUrlBuilder.Setup(g => g.BuildUrlList(null, "**/fallback.css", null))
                 .Returns(new[] { "/fallback.css" });
 
-            var helper = new LinkTagHelper(
-                MakeHostingEnvironment(),
-                new TagHelperMemoryCacheProvider(),
-                new HtmlTestEncoder(),
-                new JavaScriptTestEncoder(),
-                MakeUrlHelperFactory())
-            {
-                AppendVersion = true,
-                FallbackHrefInclude = "**/fallback.css",
-                FallbackTestClass = "hidden",
-                FallbackTestProperty = "visibility",
-                FallbackTestValue = "hidden",
-                GlobbingUrlBuilder = globbingUrlBuilder.Object,
-                Href = "/css/site.css",
-                ViewContext = viewContext,
-            };
+            var helper = GetHelper();
+
+            helper.AppendVersion = true;
+            helper.FallbackHrefInclude = "**/fallback.css";
+            helper.FallbackTestClass = "hidden";
+            helper.FallbackTestProperty = "visibility";
+            helper.FallbackTestValue = "hidden";
+            helper.GlobbingUrlBuilder = globbingUrlBuilder.Object;
+            helper.Href = "/css/site.css";
 
             // Act
             helper.Process(context, output);
@@ -981,8 +858,6 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             {
                 { "rel", new HtmlString("stylesheet") },
             });
-            var hostingEnvironment = MakeHostingEnvironment();
-            var viewContext = MakeViewContext();
             var globbingUrlBuilder = new Mock<GlobbingUrlBuilder>(
                 new TestFileProvider(),
                 Mock.Of<IMemoryCache>(),
@@ -990,19 +865,12 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             globbingUrlBuilder.Setup(g => g.BuildUrlList(null, "**/*.css", null))
                 .Returns(new[] { "/base.css" });
 
-            var helper = new LinkTagHelper(
-                hostingEnvironment,
-                new TagHelperMemoryCacheProvider(),
-                new HtmlTestEncoder(),
-                new JavaScriptTestEncoder(),
-                MakeUrlHelperFactory())
-            {
-                GlobbingUrlBuilder = globbingUrlBuilder.Object,
-                ViewContext = viewContext,
-                Href = "/css/site.css",
-                HrefInclude = "**/*.css",
-                AppendVersion = true
-            };
+            var helper = GetHelper();
+
+            helper.GlobbingUrlBuilder = globbingUrlBuilder.Object;
+            helper.Href = "/css/site.css";
+            helper.HrefInclude = "**/*.css";
+            helper.AppendVersion = true;
 
             // Act
             helper.Process(context, output);
@@ -1016,12 +884,36 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 content);
         }
 
+        private static LinkTagHelper GetHelper(
+            IHostingEnvironment hostingEnvironment = null,
+            IUrlHelperFactory urlHelperFactory = null,
+            ViewContext viewContext = null)
+        {
+            hostingEnvironment = hostingEnvironment ?? MakeHostingEnvironment();
+            urlHelperFactory = urlHelperFactory ?? MakeUrlHelperFactory();
+            viewContext = viewContext ?? MakeViewContext();
+
+            var memoryCacheProvider = new TagHelperMemoryCacheProvider();
+            var fileVersionProvider = new DefaultFileVersionProvider(hostingEnvironment, memoryCacheProvider);
+
+            return new LinkTagHelper(
+                hostingEnvironment,
+                memoryCacheProvider,
+                fileVersionProvider,
+                new HtmlTestEncoder(),
+                new JavaScriptTestEncoder(),
+                urlHelperFactory)
+            {
+                ViewContext = viewContext,
+            };
+        }
+
         private static ViewContext MakeViewContext(string requestPathBase = null)
         {
             var actionContext = new ActionContext(new DefaultHttpContext(), new RouteData(), new ActionDescriptor());
             if (requestPathBase != null)
             {
-                actionContext.HttpContext.Request.PathBase = new Http.PathString(requestPathBase);
+                actionContext.HttpContext.Request.PathBase = new PathString(requestPathBase);
             }
 
             var metadataProvider = new EmptyModelMetadataProvider();

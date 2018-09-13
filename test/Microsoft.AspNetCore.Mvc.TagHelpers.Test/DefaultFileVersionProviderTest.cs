@@ -4,16 +4,18 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Razor.Infrastructure;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Primitives;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.TagHelpers.Internal
+namespace Microsoft.AspNetCore.Mvc.TagHelpers
 {
-    public class FileVersionProviderTest
+    public class DefaultFileVersionProviderTest
     {
         [Theory]
         [InlineData("/hello/world", "/hello/world?v=f4OxZX_x_FO5LcGBSKHWXfwtSx-j1ncoSt3SABJtkGk")]
@@ -25,13 +27,11 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Internal
         {
             // Arrange
             var fileProvider = GetMockFileProvider(filePath);
-            var fileVersionProvider = new FileVersionProvider(
-                fileProvider,
-                new MemoryCache(new MemoryCacheOptions()),
-                GetRequestPathBase());
+            var fileVersionProvider = GetFileVersionProvider(fileProvider);
+            var requestPath = GetRequestPathBase();
 
             // Act
-            var result = fileVersionProvider.AddFileVersionToPath(filePath);
+            var result = fileVersionProvider.AddFileVersionToPath(requestPath, filePath);
 
             // Assert
             Assert.Equal(expected, result);
@@ -46,14 +46,12 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Internal
                 path,
                 pathStartsWithAppName: false,
                 fileDoesNotExist: true);
-            var fileVersionProvider = new FileVersionProvider(
-                fileProvider,
-                new MemoryCache(new MemoryCacheOptions()),
-                GetRequestPathBase());
+            var fileVersionProvider = GetFileVersionProvider(fileProvider);
             var mockFileProvider = Mock.Get(fileProvider);
+            var requestPath = GetRequestPathBase();
 
             // Act 1
-            var result = fileVersionProvider.AddFileVersionToPath(path);
+            var result = fileVersionProvider.AddFileVersionToPath(requestPath, path);
 
             // Assert 1
             Assert.Equal(path, result);
@@ -61,7 +59,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Internal
             mockFileProvider.Verify(f => f.Watch(It.IsAny<string>()), Times.Once());
 
             // Act 2
-            result = fileVersionProvider.AddFileVersionToPath(path);
+            result = fileVersionProvider.AddFileVersionToPath(requestPath, path);
 
             // Assert 2
             Assert.Equal(path, result);
@@ -78,14 +76,12 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Internal
             var fileProvider = GetMockFileProvider(
                 "file.txt",
                 pathStartsWithAppName);
-            var fileVersionProvider = new FileVersionProvider(
-                fileProvider,
-                new MemoryCache(new MemoryCacheOptions()),
-                GetRequestPathBase());
+            var fileVersionProvider = GetFileVersionProvider(fileProvider);
             var mockFileProvider = Mock.Get(fileProvider);
+            var requestPath = GetRequestPathBase();
 
             // Act 1
-            var result = fileVersionProvider.AddFileVersionToPath(path);
+            var result = fileVersionProvider.AddFileVersionToPath(requestPath, path);
 
             // Assert 1
             Assert.Equal($"{path}?v=f4OxZX_x_FO5LcGBSKHWXfwtSx-j1ncoSt3SABJtkGk", result);
@@ -93,7 +89,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Internal
             mockFileProvider.Verify(f => f.Watch(It.IsAny<string>()), Times.Once());
 
             // Act 2
-            result = fileVersionProvider.AddFileVersionToPath(path);
+            result = fileVersionProvider.AddFileVersionToPath(requestPath, path);
 
             // Assert 2
             Assert.Equal($"{path}?v=f4OxZX_x_FO5LcGBSKHWXfwtSx-j1ncoSt3SABJtkGk", result);
@@ -106,13 +102,11 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Internal
         {
             // Arrange
             var fileProvider = new TestFileProvider();
-            var fileVersionProvider = new FileVersionProvider(
-                fileProvider,
-                new MemoryCache(new MemoryCacheOptions()),
-                GetRequestPathBase());
+            var fileVersionProvider = GetFileVersionProvider(fileProvider);
+            var requestPath = GetRequestPathBase();
 
             // Act 1 - File does not exist
-            var result = fileVersionProvider.AddFileVersionToPath("file.txt");
+            var result = fileVersionProvider.AddFileVersionToPath(requestPath, "file.txt");
 
             // Assert 1
             Assert.Equal("file.txt", result);
@@ -120,7 +114,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Internal
             // Act 2 - File gets added
             fileProvider.AddFile("file.txt", "Hello World!");
             fileProvider.GetChangeToken("file.txt").HasChanged = true;
-            result = fileVersionProvider.AddFileVersionToPath("file.txt");
+            result = fileVersionProvider.AddFileVersionToPath(requestPath, "file.txt");
 
             // Assert 2
             Assert.Equal("file.txt?v=f4OxZX_x_FO5LcGBSKHWXfwtSx-j1ncoSt3SABJtkGk", result);
@@ -131,14 +125,12 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Internal
         {
             // Arrange
             var fileProvider = new TestFileProvider();
-            var fileVersionProvider = new FileVersionProvider(
-                fileProvider,
-                new MemoryCache(new MemoryCacheOptions()),
-                GetRequestPathBase());
+            var requestPath = GetRequestPathBase();
+            var fileVersionProvider = GetFileVersionProvider(fileProvider);
             fileProvider.AddFile("file.txt", "Hello World!");
 
             // Act 1 - File exists
-            var result = fileVersionProvider.AddFileVersionToPath("file.txt");
+            var result = fileVersionProvider.AddFileVersionToPath(requestPath, "file.txt");
 
             // Assert 1
             Assert.Equal("file.txt?v=f4OxZX_x_FO5LcGBSKHWXfwtSx-j1ncoSt3SABJtkGk", result);
@@ -146,7 +138,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Internal
             // Act 2
             fileProvider.DeleteFile("file.txt");
             fileProvider.GetChangeToken("file.txt").HasChanged = true;
-            result = fileVersionProvider.AddFileVersionToPath("file.txt");
+            result = fileVersionProvider.AddFileVersionToPath(requestPath, "file.txt");
 
             // Assert 2
             Assert.Equal("file.txt", result);
@@ -157,14 +149,12 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Internal
         {
             // Arrange
             var fileProvider = new TestFileProvider();
-            var fileVersionProvider = new FileVersionProvider(
-                fileProvider,
-                new MemoryCache(new MemoryCacheOptions()),
-                GetRequestPathBase("/wwwroot/"));
+            var requestPath = GetRequestPathBase("/wwwroot/");
+            var fileVersionProvider = GetFileVersionProvider(fileProvider);
             fileProvider.AddFile("file.txt", "Hello World!");
 
             // Act 1 - File exists
-            var result = fileVersionProvider.AddFileVersionToPath("/wwwroot/file.txt");
+            var result = fileVersionProvider.AddFileVersionToPath(requestPath, "/wwwroot/file.txt");
 
             // Assert 1
             Assert.Equal("/wwwroot/file.txt?v=f4OxZX_x_FO5LcGBSKHWXfwtSx-j1ncoSt3SABJtkGk", result);
@@ -172,7 +162,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Internal
             // Act 2
             fileProvider.DeleteFile("file.txt");
             fileProvider.GetChangeToken("file.txt").HasChanged = true;
-            result = fileVersionProvider.AddFileVersionToPath("/wwwroot/file.txt");
+            result = fileVersionProvider.AddFileVersionToPath(requestPath, "/wwwroot/file.txt");
 
             // Assert 2
             Assert.Equal("/wwwroot/file.txt", result);
@@ -192,14 +182,11 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Internal
 
             var fileProvider = new TestFileProvider();
             fileProvider.AddFile("/hello/world", mockFile.Object);
-
-            var fileVersionProvider = new FileVersionProvider(
-                fileProvider,
-                new MemoryCache(new MemoryCacheOptions()),
-                GetRequestPathBase());
+            var requestPath = GetRequestPathBase();
+            var fileVersionProvider = GetFileVersionProvider(fileProvider);
 
             // Act
-            var result = fileVersionProvider.AddFileVersionToPath("/hello/world");
+            var result = fileVersionProvider.AddFileVersionToPath(requestPath, "/hello/world");
 
             // Assert
             Assert.True(stream.Disposed);
@@ -216,13 +203,11 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Internal
         {
             // Arrange
             var fileProvider = GetMockFileProvider(filePath, pathStartsWithAppBase);
-            var fileVersionProvider = new FileVersionProvider(
-                fileProvider,
-                new MemoryCache(new MemoryCacheOptions()),
-                GetRequestPathBase(requestPathBase));
+            var requestPath = GetRequestPathBase(requestPathBase);
+            var fileVersionProvider = GetFileVersionProvider(fileProvider);
 
             // Act
-            var result = fileVersionProvider.AddFileVersionToPath(filePath);
+            var result = fileVersionProvider.AddFileVersionToPath(requestPath, filePath);
 
             // Assert
             Assert.Equal(filePath + "?v=f4OxZX_x_FO5LcGBSKHWXfwtSx-j1ncoSt3SABJtkGk", result);
@@ -234,13 +219,11 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Internal
             // Arrange
             var filePath = "http://contoso.com/hello/world";
             var fileProvider = GetMockFileProvider(filePath, false, true);
-            var fileVersionProvider = new FileVersionProvider(
-                fileProvider,
-                new MemoryCache(new MemoryCacheOptions()),
-                GetRequestPathBase());
+            var requestPath = GetRequestPathBase();
+            var fileVersionProvider = GetFileVersionProvider(fileProvider);
 
             // Act
-            var result = fileVersionProvider.AddFileVersionToPath(filePath);
+            var result = fileVersionProvider.AddFileVersionToPath(requestPath, filePath);
 
             // Assert
             Assert.Equal("http://contoso.com/hello/world", result);
@@ -252,15 +235,14 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Internal
             // Arrange
             var filePath = "/hello/world";
             var fileProvider = GetMockFileProvider(filePath);
-            var memoryCache = new MemoryCache(new MemoryCacheOptions());
-            memoryCache.Set(filePath, "FromCache");
-            var fileVersionProvider = new FileVersionProvider(
-                fileProvider,
-                memoryCache,
-                GetRequestPathBase());
+            var fileVersionProvider = GetFileVersionProvider(fileProvider);
+            var cacheEntryOptions = new MemoryCacheEntryOptions();
+            cacheEntryOptions.SetSize(1);
+            fileVersionProvider.Cache.Set(filePath, "FromCache", cacheEntryOptions);
+            var requestPath = GetRequestPathBase();
 
             // Act
-            var result = fileVersionProvider.AddFileVersionToPath(filePath);
+            var result = fileVersionProvider.AddFileVersionToPath(requestPath, filePath);
 
             // Assert
             Assert.Equal("FromCache", result);
@@ -290,19 +272,32 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Internal
                 .Returns(cacheEntry)
                 .Verifiable();
 
-            var fileVersionProvider = new FileVersionProvider(
-                fileProvider,
-                cache.Object,
-                GetRequestPathBase(requestPathBase));
+            var requestPath = GetRequestPathBase(requestPathBase);
+
+            var fileVersionProvider = GetFileVersionProvider(fileProvider, cache.Object);
 
             // Act
-            var result = fileVersionProvider.AddFileVersionToPath(filePath);
+            var result = fileVersionProvider.AddFileVersionToPath(requestPath, filePath);
 
             // Assert
             Assert.Equal(expected, result);
             Assert.Equal(expected, cacheEntry.Value);
             Assert.Equal(expectedSize, cacheEntry.Size);
             cache.VerifyAll();
+        }
+
+        private static DefaultFileVersionProvider GetFileVersionProvider(
+            IFileProvider fileProvider,
+            IMemoryCache memoryCache = null)
+        {
+            var hostingEnv = Mock.Of<IHostingEnvironment>(e => e.WebRootFileProvider == fileProvider);
+            var cacheProvider = new TagHelperMemoryCacheProvider();
+            if (memoryCache != null)
+            {
+                cacheProvider.Cache = memoryCache;
+            }
+
+            return new DefaultFileVersionProvider(hostingEnv, cacheProvider);
         }
 
         private static IFileProvider GetMockFileProvider(

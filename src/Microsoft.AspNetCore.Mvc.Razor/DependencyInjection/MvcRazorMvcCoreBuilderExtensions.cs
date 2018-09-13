@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Mvc.Razor.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Razor.Internal;
 using Microsoft.AspNetCore.Mvc.Razor.TagHelpers;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.Extensions.Caching.Memory;
@@ -228,9 +229,10 @@ namespace Microsoft.Extensions.DependencyInjection
             // TagHelperComponents manager
             services.TryAddScoped<ITagHelperComponentManager, TagHelperComponentManager>();
 
-            // Consumed by the Cache tag helper to cache results across the lifetime of the application.
+            // Infrastructure for MVC TagHelpers
             services.TryAddSingleton<IMemoryCache, MemoryCache>();
             services.TryAddSingleton<TagHelperMemoryCacheProvider>();
+            services.TryAddSingleton<IFileVersionProvider, DefaultFileVersionProvider>();
         }
     }
 }
