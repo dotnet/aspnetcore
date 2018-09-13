@@ -35,17 +35,20 @@ function Save-TeamCityBackup() {
     $completed = $false
 
     while (-not $completed) {
-    try{
-        $webClient.DownloadFile($TeamCityURL, $targetFolder + $fileName)
-        $completed = $true
-    } catch {
-        if ($retrycount -ge $retries) {
-            Write-Host "Backup download failed the max of $retries times"
-            throw
-        } else {
-            Write-Host "Command failed. Retrying in $secondsDelay seconds."
-            Start-Sleep $secondsDelay
-            $retrycount++ 
+        try {
+            $webClient.DownloadFile($TeamCityURL, $targetFolder + $fileName)
+            $completed = $true
+        }
+        catch {
+            if ($retrycount -ge $retries) {
+                Write-Host "Backup download failed the max of $retries times"
+                throw
+            }
+            else {
+                Write-Host "Command failed. Retrying in $secondsDelay seconds."
+                Start-Sleep $secondsDelay
+                $retrycount++ 
+            }
         }
     }
 }
