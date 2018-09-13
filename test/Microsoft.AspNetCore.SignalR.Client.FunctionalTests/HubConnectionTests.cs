@@ -398,9 +398,12 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         {
             bool ExpectedErrors(WriteContext writeContext)
             {
-                return (writeContext.LoggerName == nameof(Http.Connections.Client.Internal.ServerSentEventsTransport) ||
+                var firstLogCheck = (writeContext.LoggerName == nameof(Http.Connections.Client.Internal.ServerSentEventsTransport) ||
                        writeContext.LoggerName == nameof(Http.Connections.Client.Internal.LongPollingTransport)) &&
                        writeContext.EventId.Name == "ErrorSending";
+                var secondLogCheck = writeContext.LoggerName == nameof(Http.Connections.Client.HttpConnection) &&
+                       writeContext.EventId.Name == "TransportThrewExceptionOnStop";
+                return firstLogCheck || secondLogCheck;
             }
 
             var protocol = HubProtocols[protocolName];
