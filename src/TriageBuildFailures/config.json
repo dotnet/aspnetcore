@@ -75,6 +75,10 @@
         "Manager": "muratg"
       },
       {
+        "Name": "MusicStore",
+        "Manager": "mkArtakMSFT"
+      },
+      {
         "Name": "Mvc",
         "Manager": "mkArtakMSFT"
       },
@@ -196,6 +200,7 @@
       "Releases_22xPublic_UpdateUniverse",
       "Releases_22xPublic_Signed",
       "Releases_22xPublic_SetupSharedFramework",
+      "Releases_22xPublic_SharedFxLinuxMusl",
       "Releases_22xPublic_SiteExtension",
       "Releases_22xPublic_CoherencePackageCacheLinux",
       "Releases_22xPublic_Publish",
