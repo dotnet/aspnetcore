@@ -18,8 +18,8 @@ function Test-Template($templateName, $templateArgs, $templateNupkg, $isSPA) {
         $csprojContent = $csprojContent -replace ('<Project Sdk="Microsoft.NET.Sdk.Web">', "<Project Sdk=""Microsoft.NET.Sdk.Web"">`n<Import Project=""$PSScriptRoot/../test/Templates.Test/bin/Debug/netcoreapp2.2/TemplateTests.props"" />")
         $csprojContent | Set-Content $csproj
 
-        dotnet publish
-        dotnet run bin\Release\netcoreapp2.2\publish\tmp.dll
+        dotnet publish --configuration Release
+        dotnet bin\Release\netcoreapp2.2\publish\$templateName.dll
 
     }
     finally {
