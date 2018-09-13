@@ -360,7 +360,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
             {
                 if (_huffman)
                 {
-                    return Huffman.Decode(_stringOctets, 0, _stringLength, dst);
+                    return Huffman.Decode(new ReadOnlySpan<byte>(_stringOctets, 0, _stringLength), dst);
                 }
                 else
                 {
