@@ -256,7 +256,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                     }
                 }
 
-                // See #
+                // See #2594
                 if (string.Equals("@", expectedSpan) && span.Kind == SpanKindInternal.Code)
                 {
                     // For now we don't verify an escaped transition. In some cases one of the @ tokens in @@foo
