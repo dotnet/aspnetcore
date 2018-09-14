@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public async Task ParameterTransformer_TokenReplacement_Found()
         {
             // Arrange & Act
-            var response = await Client.GetAsync("http://localhost/_ParameterTransformer_/_Test_");
+            var response = await Client.GetAsync("http://localhost/parameter-transformer/my-action");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -30,14 +30,14 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var result = JsonConvert.DeserializeObject<RoutingResult>(body);
 
             Assert.Equal("ParameterTransformer", result.Controller);
-            Assert.Equal("Test", result.Action);
+            Assert.Equal("MyAction", result.Action);
         }
 
         [Fact]
         public async Task ParameterTransformer_TokenReplacement_NotFound()
         {
             // Arrange & Act
-            var response = await Client.GetAsync("http://localhost/ParameterTransformer/Test");
+            var response = await Client.GetAsync("http://localhost/ParameterTransformer/MyAction");
 
             // Assert
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public async Task AttributeRoutedAction_ParameterTransformer_Found()
         {
             // Arrange & Act
-            var response = await Client.GetAsync("http://localhost/_EndpointRouting_/ParameterTransformer");
+            var response = await Client.GetAsync("http://localhost/endpoint-routing/ParameterTransformer");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public async Task AttributeRoutedAction_ParameterTransformer_LinkToSelf()
         {
             // Arrange
-            var url = LinkFrom("http://localhost/_EndpointRouting_/ParameterTransformer").To(new { });
+            var url = LinkFrom("http://localhost/endpoint-routing/ParameterTransformer").To(new { });
 
             // Act
             var response = await Client.GetAsync(url);
@@ -118,14 +118,14 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal("EndpointRouting", result.Controller);
             Assert.Equal("ParameterTransformer", result.Action);
 
-            Assert.Equal("/_EndpointRouting_/ParameterTransformer", result.Link);
+            Assert.Equal("/endpoint-routing/ParameterTransformer", result.Link);
         }
 
         [Fact]
         public async Task AttributeRoutedAction_ParameterTransformer_LinkWithAmbientController()
         {
             // Arrange
-            var url = LinkFrom("http://localhost/_EndpointRouting_/ParameterTransformer").To(new { action = "Get", id = 5 });
+            var url = LinkFrom("http://localhost/endpoint-routing/ParameterTransformer").To(new { action = "Get", id = 5 });
 
             // Act
             var response = await Client.GetAsync(url);
@@ -138,14 +138,14 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal("EndpointRouting", result.Controller);
             Assert.Equal("ParameterTransformer", result.Action);
 
-            Assert.Equal("/_EndpointRouting_/5", result.Link);
+            Assert.Equal("/endpoint-routing/5", result.Link);
         }
 
         [Fact]
         public async Task AttributeRoutedAction_ParameterTransformer_LinkToAttributeRoutedController()
         {
             // Arrange
-            var url = LinkFrom("http://localhost/_EndpointRouting_/ParameterTransformer").To(new { action = "ShowPosts", controller = "Blog" });
+            var url = LinkFrom("http://localhost/endpoint-routing/ParameterTransformer").To(new { action = "ShowPosts", controller = "Blog" });
 
             // Act
             var response = await Client.GetAsync(url);
@@ -165,7 +165,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public async Task AttributeRoutedAction_ParameterTransformer_LinkToConventionalController()
         {
             // Arrange
-            var url = LinkFrom("http://localhost/_EndpointRouting_/ParameterTransformer").To(new { action = "Index", controller = "Home" });
+            var url = LinkFrom("http://localhost/endpoint-routing/ParameterTransformer").To(new { action = "Index", controller = "Home" });
 
             // Act
             var response = await Client.GetAsync(url);
@@ -292,7 +292,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public async Task ConventionalRoutedAction_ParameterTransformer()
         {
             // Arrange & Act
-            var response = await Client.GetAsync("http://localhost/ConventionalTransformerRoute/_ConventionalTransformer_/Index");
+            var response = await Client.GetAsync("http://localhost/ConventionalTransformerRoute/conventional-transformer/Index");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -317,7 +317,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public async Task ConventionalRoutedAction_ParameterTransformer_DefaultValue()
         {
             // Arrange & Act
-            var response = await Client.GetAsync("http://localhost/ConventionalTransformerRoute/_ConventionalTransformer_");
+            var response = await Client.GetAsync("http://localhost/ConventionalTransformerRoute/conventional-transformer");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -332,7 +332,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public async Task ConventionalRoutedAction_ParameterTransformer_WithParam()
         {
             // Arrange & Act
-            var response = await Client.GetAsync("http://localhost/ConventionalTransformerRoute/_ConventionalTransformer_/Param/_value_");
+            var response = await Client.GetAsync("http://localhost/ConventionalTransformerRoute/conventional-transformer/Param/my-value");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -342,14 +342,14 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal("ConventionalTransformer", result.Controller);
             Assert.Equal("Param", result.Action);
 
-            Assert.Equal("/ConventionalTransformerRoute/_ConventionalTransformer_/Param/_value_", Assert.Single(result.ExpectedUrls));
+            Assert.Equal("/ConventionalTransformerRoute/conventional-transformer/Param/my-value", Assert.Single(result.ExpectedUrls));
         }
 
         [Fact]
         public async Task ConventionalRoutedAction_ParameterTransformer_LinkToConventionalController()
         {
             // Arrange
-            var url = LinkFrom("http://localhost/ConventionalTransformerRoute/_ConventionalTransformer_/Index").To(new { action = "Index", controller = "Home" });
+            var url = LinkFrom("http://localhost/ConventionalTransformerRoute/conventional-transformer/Index").To(new { action = "Index", controller = "Home" });
 
             // Act
             var response = await Client.GetAsync(url);
@@ -368,7 +368,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public async Task ConventionalRoutedAction_ParameterTransformer_LinkToConventionalControllerWithParam()
         {
             // Arrange
-            var url = LinkFrom("http://localhost/ConventionalTransformerRoute/_ConventionalTransformer_/Index").To(new { action = "Param", controller = "ConventionalTransformer", param = "value" });
+            var url = LinkFrom("http://localhost/ConventionalTransformerRoute/conventional-transformer/Index").To(new { action = "Param", controller = "ConventionalTransformer", param = "MyValue" });
 
             // Act
             var response = await Client.GetAsync(url);
@@ -380,14 +380,14 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             Assert.Equal("ConventionalTransformer", result.Controller);
             Assert.Equal("Index", result.Action);
-            Assert.Equal("/ConventionalTransformerRoute/_ConventionalTransformer_/Param/_value_", result.Link);
+            Assert.Equal("/ConventionalTransformerRoute/conventional-transformer/Param/my-value", result.Link);
         }
 
         [Fact]
         public async Task ConventionalRoutedAction_ParameterTransformer_LinkToSelf()
         {
             // Arrange
-            var url = LinkFrom("http://localhost/ConventionalTransformerRoute/_ConventionalTransformer_/Index").To(new {});
+            var url = LinkFrom("http://localhost/ConventionalTransformerRoute/conventional-transformer/Index").To(new {});
 
             // Act
             var response = await Client.GetAsync(url);
@@ -399,7 +399,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             Assert.Equal("ConventionalTransformer", result.Controller);
             Assert.Equal("Index", result.Action);
-            Assert.Equal("/ConventionalTransformerRoute/_ConventionalTransformer_", result.Link);
+            Assert.Equal("/ConventionalTransformerRoute/conventional-transformer", result.Link);
         }
     }
 }

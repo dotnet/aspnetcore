@@ -19,9 +19,9 @@ namespace RoutingWebSite
             _generator = generator;
         }
 
-        public IActionResult Test()
+        public IActionResult MyAction()
         {
-            return _generator.Generate("/_ParameterTransformer_/_Test_");
+            return _generator.Generate("/parameter-transformer/my-action");
         }
     }
 }

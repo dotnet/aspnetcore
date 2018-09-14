@@ -21,13 +21,13 @@ namespace RoutingWebSite
                     // Add route token transformer to one controller
                     options.Conventions.Add(new ControllerRouteTokenTransformerConvention(
                         typeof(ParameterTransformerController),
-                        new TestParameterTransformer()));
+                        new SlugifyParameterTransformer()));
                 })
                 .SetCompatibilityVersion(CompatibilityVersion.Latest);
             services
                 .AddRouting(options =>
                 {
-                    options.ConstraintMap["test-transformer"] = typeof(TestParameterTransformer);
+                    options.ConstraintMap["slugify"] = typeof(SlugifyParameterTransformer);
                 });
 
             services.AddScoped<TestResponseGenerator>();
@@ -47,7 +47,7 @@ namespace RoutingWebSite
 
                 routes.MapRoute(
                     "ConventionalTransformerRoute",
-                    "ConventionalTransformerRoute/{controller:test-transformer}/{action=Index}/{param:test-transformer?}",
+                    "ConventionalTransformerRoute/{controller:slugify}/{action=Index}/{param:slugify?}",
                     defaults: null,
                     constraints: new { controller = "ConventionalTransformer" });
 

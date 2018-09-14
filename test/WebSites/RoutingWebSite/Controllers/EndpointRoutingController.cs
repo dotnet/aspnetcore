@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace RoutingWebSite
 {
-    [Route("/{controller:test-transformer}")]
+    [Route("/{controller:slugify}")]
     public class EndpointRoutingController : Controller
     {
         private readonly TestResponseGenerator _generator;
@@ -21,16 +21,16 @@ namespace RoutingWebSite
             return _generator.Generate("/EndpointRouting/Index", "/EndpointRouting");
         }
 
-        [Route("/{controller:test-transformer}/{action}")]
+        [Route("/{controller:slugify}/{action}")]
         public IActionResult ParameterTransformer()
         {
-            return _generator.Generate("/_EndpointRouting_/ParameterTransformer");
+            return _generator.Generate("/endpoint-routing/ParameterTransformer");
         }
 
         [Route("{id}")]
         public IActionResult Get(int id)
         {
-            return _generator.Generate("/_EndpointRouting_/" + id);
+            return _generator.Generate("/endpoint-routing/" + id);
         }
     }
 }
