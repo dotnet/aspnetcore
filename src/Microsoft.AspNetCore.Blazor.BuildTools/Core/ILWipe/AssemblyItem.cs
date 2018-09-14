@@ -40,6 +40,18 @@ namespace Microsoft.AspNetCore.Blazor.BuildTools.Core.ILWipe
                 return; // Nothing to do
             }
 
+            if (Method.HasCustomAttributes)
+            {
+                for (int i = 0; i < Method.CustomAttributes.Count; i++)
+                {
+                    if (Method.CustomAttributes[i].AttributeType.FullName == "System.Runtime.CompilerServices.AsyncStateMachineAttribute")
+                    {
+                        Method.CustomAttributes.RemoveAt(i);
+                        break;
+                    }
+                }
+            }
+
             // We don't want to actually remove the method definition from the assembly, because
             // then you'd have an assembly that was invalid (it could contain calls to the method
             // that no longer exists). Instead, remove all the instructions from its body, and
