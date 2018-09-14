@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.CodeAnalysis.Razor
 {
@@ -149,26 +150,9 @@ namespace Microsoft.CodeAnalysis.Razor
             // Access to the timer is protected by the lock in Enqueue and in Timer_Tick
             if (_timer == null)
             {
-                // Don't capture asynclocals onto Timer
-                bool restoreFlow = false;
-                try
-                {
-                    if (!ExecutionContext.IsFlowSuppressed())
-                    {
-                        ExecutionContext.SuppressFlow();
-                        restoreFlow = true;
-                    }
 
-                    // Timer will fire after a fixed delay, but only once.
-                    _timer = new Timer(state => ((BackgroundDocumentGenerator)state).Timer_Tick(), this, Delay, Timeout.InfiniteTimeSpan);
-                }
-                finally
-                {
-                    if (restoreFlow)
-                    {
-                        ExecutionContext.RestoreFlow();
-                    }
-                }
+                // Timer will fire after a fixed delay, but only once.
+                _timer = NonCapturingTimer.Create(state => ((BackgroundDocumentGenerator)state).Timer_Tick(), this, Delay, Timeout.InfiniteTimeSpan);
             }
         }
 

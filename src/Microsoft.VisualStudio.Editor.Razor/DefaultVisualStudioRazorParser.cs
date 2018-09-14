@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.Editor;
+using Microsoft.Extensions.Internal;
 using Microsoft.VisualStudio.Text;
 using static Microsoft.VisualStudio.Editor.Razor.BackgroundParser;
 using ITextBuffer = Microsoft.VisualStudio.Text.ITextBuffer;
@@ -213,26 +214,8 @@ namespace Microsoft.VisualStudio.Editor.Razor
             {
                 if (_idleTimer == null)
                 {
-                    // Don't capture asynclocals onto Timer
-                    bool restoreFlow = false;
-                    try
-                    {
-                        if (!ExecutionContext.IsFlowSuppressed())
-                        {
-                            ExecutionContext.SuppressFlow();
-                            restoreFlow = true;
-                        }
-
-                        // Timer will fire after a fixed delay, but only once.
-                        _idleTimer = new Timer(state => ((DefaultVisualStudioRazorParser)state).Timer_Tick(), this, IdleDelay, Timeout.InfiniteTimeSpan);
-                    }
-                    finally
-                    {
-                        if (restoreFlow)
-                        {
-                            ExecutionContext.RestoreFlow();
-                        }
-                    }
+                    // Timer will fire after a fixed delay, but only once.
+                    _idleTimer = NonCapturingTimer.Create(state => ((DefaultVisualStudioRazorParser)state).Timer_Tick(), this, IdleDelay, Timeout.InfiniteTimeSpan);
                 }
             }
         }
