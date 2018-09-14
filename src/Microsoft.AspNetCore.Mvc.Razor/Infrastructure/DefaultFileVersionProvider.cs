@@ -2,59 +2,46 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.FileProviders;
 
-namespace Microsoft.AspNetCore.Mvc.TagHelpers.Internal
+namespace Microsoft.AspNetCore.Mvc.Razor.Infrastructure
 {
     /// <summary>
     /// Provides version hash for a specified file.
     /// </summary>
-    public class FileVersionProvider
+    internal class DefaultFileVersionProvider : IFileVersionProvider
     {
         private const string VersionKey = "v";
         private static readonly char[] QueryStringAndFragmentTokens = new [] { '?', '#' };
-        private readonly IFileProvider _fileProvider;
-        private readonly IMemoryCache _cache;
-        private readonly PathString _requestPathBase;
 
-        /// <summary>
-        /// Creates a new instance of <see cref="FileVersionProvider"/>.
-        /// </summary>
-        /// <param name="fileProvider">The file provider to get and watch files.</param>
-        /// <param name="cache"><see cref="IMemoryCache"/> where versioned urls of files are cached.</param>
-        /// <param name="requestPathBase">The base path for the current HTTP request.</param>
-        public FileVersionProvider(
-            IFileProvider fileProvider,
-            IMemoryCache cache,
-            PathString requestPathBase)
+        public DefaultFileVersionProvider(
+            IHostingEnvironment hostingEnvironment,
+            TagHelperMemoryCacheProvider cacheProvider)
         {
-            if (fileProvider == null)
+            if (hostingEnvironment == null)
             {
-                throw new ArgumentNullException(nameof(fileProvider));
+                throw new ArgumentNullException(nameof(hostingEnvironment));
             }
 
-            if (cache == null)
+            if (cacheProvider == null)
             {
-                throw new ArgumentNullException(nameof(cache));
+                throw new ArgumentNullException(nameof(cacheProvider));
             }
 
-            _fileProvider = fileProvider;
-            _cache = cache;
-            _requestPathBase = requestPathBase;
+            FileProvider = hostingEnvironment.WebRootFileProvider;
+            Cache = cacheProvider.Cache;
         }
 
-        /// <summary>
-        /// Adds version query parameter to the specified file path.
-        /// </summary>
-        /// <param name="path">The path of the file to which version should be added.</param>
-        /// <returns>Path containing the version query string.</returns>
-        /// <remarks>
-        /// The version query string is appended with the key "v".
-        /// </remarks>
-        public string AddFileVersionToPath(string path)
+        public IFileProvider FileProvider { get; }
+
+        public IMemoryCache Cache { get; }
+
+        public string AddFileVersionToPath(PathString requestPathBase, string path)
         {
             if (path == null)
             {
@@ -75,22 +62,22 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Internal
                 return path;
             }
 
-            if (_cache.TryGetValue(path, out string value))
+            if (Cache.TryGetValue(path, out string value))
             {
                 return value;
             }
 
             var cacheEntryOptions = new MemoryCacheEntryOptions();
-            cacheEntryOptions.AddExpirationToken(_fileProvider.Watch(resolvedPath));
-            var fileInfo = _fileProvider.GetFileInfo(resolvedPath);
+            cacheEntryOptions.AddExpirationToken(FileProvider.Watch(resolvedPath));
+            var fileInfo = FileProvider.GetFileInfo(resolvedPath);
 
             if (!fileInfo.Exists &&
-                _requestPathBase.HasValue &&
-                resolvedPath.StartsWith(_requestPathBase.Value, StringComparison.OrdinalIgnoreCase))
+                requestPathBase.HasValue &&
+                resolvedPath.StartsWith(requestPathBase.Value, StringComparison.OrdinalIgnoreCase))
             {
-                var requestPathBaseRelativePath = resolvedPath.Substring(_requestPathBase.Value.Length);
-                cacheEntryOptions.AddExpirationToken(_fileProvider.Watch(requestPathBaseRelativePath));
-                fileInfo = _fileProvider.GetFileInfo(requestPathBaseRelativePath);
+                var requestPathBaseRelativePath = resolvedPath.Substring(requestPathBase.Value.Length);
+                cacheEntryOptions.AddExpirationToken(FileProvider.Watch(requestPathBaseRelativePath));
+                fileInfo = FileProvider.GetFileInfo(requestPathBaseRelativePath);
             }
 
             if (fileInfo.Exists)
@@ -104,7 +91,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Internal
             }
 
             cacheEntryOptions.SetSize(value.Length * sizeof(char));
-            value = _cache.Set(path, value, cacheEntryOptions);
+            value = Cache.Set(path, value, cacheEntryOptions);
             return value;
         }
 

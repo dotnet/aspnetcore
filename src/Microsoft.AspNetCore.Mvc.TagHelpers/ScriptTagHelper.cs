@@ -7,11 +7,11 @@ using System.IO;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Html;
-using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.Razor.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Razor.TagHelpers;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Mvc.TagHelpers.Internal;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
@@ -44,7 +44,6 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         private const string IntegrityAttributeName = "integrity";
         private const string AppendVersionAttributeName = "asp-append-version";
         private static readonly Func<Mode, Mode, int> Compare = (a, b) => a - b;
-        private FileVersionProvider _fileVersionProvider;
         private StringWriter _stringWriter;
 
         private static readonly ModeAttributes<Mode>[] ModeDetails = new[] {
@@ -107,6 +106,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         /// </summary>
         /// <param name="hostingEnvironment">The <see cref="IHostingEnvironment"/>.</param>
         /// <param name="cacheProvider">The <see cref="TagHelperMemoryCacheProvider"/>.</param>
+        /// <param name="fileVersionProvider">The <see cref="IFileVersionProvider"/>.</param>
         /// <param name="htmlEncoder">The <see cref="HtmlEncoder"/>.</param>
         /// <param name="javaScriptEncoder">The <see cref="JavaScriptEncoder"/>.</param>
         /// <param name="urlHelperFactory">The <see cref="IUrlHelperFactory"/>.</param>
@@ -116,6 +116,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         public ScriptTagHelper(
             IHostingEnvironment hostingEnvironment,
             TagHelperMemoryCacheProvider cacheProvider,
+            IFileVersionProvider fileVersionProvider,
             HtmlEncoder htmlEncoder,
             JavaScriptEncoder javaScriptEncoder,
             IUrlHelperFactory urlHelperFactory)
@@ -124,6 +125,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             HostingEnvironment = hostingEnvironment;
             Cache = cacheProvider.Cache;
             JavaScriptEncoder = javaScriptEncoder;
+
+            FileVersionProvider = fileVersionProvider;
         }
 
         /// <inheritdoc />
@@ -201,6 +204,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
         protected internal IMemoryCache Cache { get; private set; }
 
+        internal IFileVersionProvider FileVersionProvider { get; private set; }
+
         protected JavaScriptEncoder JavaScriptEncoder { get; }
 
         // Internal for ease of use when testing.
@@ -265,7 +270,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     var existingAttribute = output.Attributes[index];
                     output.Attributes[index] = new TagHelperAttribute(
                         existingAttribute.Name,
-                        _fileVersionProvider.AddFileVersionToPath(Src),
+                        FileVersionProvider.AddFileVersionToPath(ViewContext.HttpContext.Request.PathBase, Src),
                         existingAttribute.ValueStyle);
                 }
             }
@@ -383,7 +388,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         {
             if (AppendVersion == true)
             {
-                srcValue = _fileVersionProvider.AddFileVersionToPath(srcValue);
+                srcValue = FileVersionProvider.AddFileVersionToPath(ViewContext.HttpContext.Request.PathBase, srcValue);
             }
 
             return srcValue;
@@ -428,12 +433,9 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
         private void EnsureFileVersionProvider()
         {
-            if (_fileVersionProvider == null)
+            if (FileVersionProvider == null)
             {
-                _fileVersionProvider = new FileVersionProvider(
-                    HostingEnvironment.WebRootFileProvider,
-                    Cache,
-                    ViewContext.HttpContext.Request.PathBase);
+                FileVersionProvider = ViewContext.HttpContext.RequestServices.GetRequiredService<IFileVersionProvider>();
             }
         }
 

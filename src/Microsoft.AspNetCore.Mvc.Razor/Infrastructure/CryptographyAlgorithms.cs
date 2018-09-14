@@ -3,9 +3,9 @@
 
 using System.Security.Cryptography;
 
-namespace Microsoft.AspNetCore.Mvc.TagHelpers.Internal
+namespace Microsoft.AspNetCore.Mvc.Razor.Infrastructure
 {
-    public static class CryptographyAlgorithms
+    internal static class CryptographyAlgorithms
     {
         public static SHA256 CreateSHA256()
         {

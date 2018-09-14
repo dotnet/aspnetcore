@@ -33,11 +33,12 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
             _actionDescriptorChangeProviders = actionDescriptorChangeProviders.ToArray();
 
+            _lock = new object();
+
+            // IMPORTANT: this needs to be the last thing we do in the constructor. Change notifications can happen immediately!
             ChangeToken.OnChange(
                 GetCompositeChangeToken,
                 UpdateCollection);
-
-            _lock = new object();
         }
 
         /// <summary>
