@@ -4,6 +4,9 @@
     This target is explicitly imported by Razor SDK.
   -->
 
+  <UsingTask TaskName="Microsoft.AspNetCore.Razor.Tasks.RazorGenerate" AssemblyFile="$(RazorSdkBuildTasksAssembly)" />
+  <UsingTask TaskName="Microsoft.AspNetCore.Razor.Tasks.RazorTagHelper" AssemblyFile="$(RazorSdkBuildTasksAssembly)" />
+
   <!-- 
     Consider these properties to be private to this targets file. The main Razor SDK should define all of the properties
     that we use to pass data back and forth. 

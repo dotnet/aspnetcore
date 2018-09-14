@@ -2,6 +2,7 @@
   
   <PropertyGroup>
     <_RazorMSBuildRoot>$(SolutionRoot)src\Microsoft.AspNetCore.Razor.Design\bin\$(Configuration)\</_RazorMSBuildRoot>
+    <RazorSdkBuildTasksDirectoryRoot>$(RazorSdkProjectDirectory)bin\$(Configuration)\</RazorSdkBuildTasksDirectoryRoot>
   </PropertyGroup>
   <Import Project="$(SolutionRoot)src\Microsoft.AspNetCore.Razor.Design\build\netstandard2.0\Microsoft.AspNetCore.Razor.Design.props" />
 
@@ -24,6 +25,20 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ClassLibrary\ClassLibrary.csproj"/>
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(BinariesRoot)'==''">
+    <!-- In test scenarios $(BinariesRoot) is defined in a generated Directory.Build.props file -->
+    <ProjectReference Include="..\..\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib.csproj"/>
+    <ProjectReference Include="..\..\..\src\Microsoft.AspNetCore.Razor.Runtime\Microsoft.AspNetCore.Razor.Runtime.csproj"/>
+    <ProjectReference Include="..\..\..\src\Microsoft.AspNetCore.Razor.Design\Microsoft.AspNetCore.Razor.Design.csproj" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(BinariesRoot)'!=''">
+    <Reference Include="$(BinariesRoot)\Microsoft.AspNetCore.Html.Abstractions.dll"/>
+    <Reference Include="$(BinariesRoot)\Microsoft.AspNetCore.Razor.dll"/>
+    <Reference Include="$(BinariesRoot)\Microsoft.AspNetCore.Razor.Runtime.dll"/>
+    <Reference Include="$(BinariesRoot)\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib.dll"/>
   </ItemGroup>
 
   <Import Project="$(SolutionRoot)src\Microsoft.AspNetCore.Mvc.Razor.Extensions\build\netstandard2.0\Microsoft.AspNetCore.Mvc.Razor.Extensions.targets" />

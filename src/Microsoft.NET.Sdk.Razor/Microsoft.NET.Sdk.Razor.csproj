@@ -1,19 +1,38 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <Description>Razor is a markup syntax for adding server-side logic to web pages. This package contains MSBuild support for Razor.</Description>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netstandard2.0;net46</TargetFrameworks>
 
-    <!-- This project doesn't have any code, so don't include it in the .nupkg -->
-    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <TargetName>Microsoft.NET.Sdk.Razor.Tasks</TargetName>
+    <BuildOutputTargetFolder>tasks</BuildOutputTargetFolder>
 
-    <EnableDefaultItems>false</EnableDefaultItems>
-    <EnableApiCheck>false</EnableApiCheck>
+    <!-- Do not disable ApiCheck. We need to be aware of when we make changes to the Tasks sicne they need to be backwards compatible. -->
   </PropertyGroup>
 
-  <ItemGroup>
+   <ItemGroup>
     <None Include="Sdk\*" Pack="true" PackagePath="Sdk\" />
     <None Include="build\**\*" Pack="true" PackagePath="build" />
     <None Include="buildMultiTargeting\**\*" Pack="true" PackagePath="buildMultiTargeting" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildFrameworkPackageVersion)" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildUtilitiesCorePackageVersion)" />
+    <PackageReference Include="Microsoft.Extensions.CommandLineUtils.Sources" Version="$(MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Microsoft.AspNetCore.Razor.Tools\ServerProtocol\*.cs">
+      <Link>Shared\ServerProtocol\%(FileName)</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNetCore.Razor.Tools\PipeName.cs">
+      <Link>Shared\PipeName.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNetCore.Razor.Tools\MutexName.cs">
+      <Link>Shared\MutexName.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNetCore.Razor.Tools\Client.cs">
+      <Link>Shared\Client.cs</Link>
+    </Compile>
+  </ItemGroup>
 </Project>
