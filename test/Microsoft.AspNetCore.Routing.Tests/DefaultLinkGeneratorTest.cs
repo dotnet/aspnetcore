@@ -179,7 +179,7 @@ namespace Microsoft.AspNetCore.Routing
             var routeOptions = new RouteOptions();
             routeOptions.ConstraintMap["slugify"] = typeof(SlugifyParameterTransformer);
 
-            var linkGenerator = CreateLinkGenerator(routeOptions: routeOptions, services: null, endpoint1, endpoint2);
+            var linkGenerator = CreateLinkGenerator(routeOptions: routeOptions, configureServices: null, endpoint1, endpoint2);
 
             // Act
             var path = linkGenerator.GetPathByAddress(
@@ -200,7 +200,7 @@ namespace Microsoft.AspNetCore.Routing
             var routeOptions = new RouteOptions();
             routeOptions.ConstraintMap["slugify"] = typeof(SlugifyParameterTransformer);
 
-            var linkGenerator = CreateLinkGenerator(routeOptions: routeOptions, services: null, endpoint1, endpoint2);
+            var linkGenerator = CreateLinkGenerator(routeOptions: routeOptions, configureServices: null, endpoint1, endpoint2);
 
             // Act
             var path = linkGenerator.GetPathByAddress(
