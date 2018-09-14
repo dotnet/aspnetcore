@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Routing.Template;
@@ -112,7 +114,8 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                 if (property.BindingInfo != null &&
                     property.BindingInfo.BinderModelName == null &&
                     property.BindingInfo.BindingSource != null &&
-                    !property.BindingInfo.BindingSource.IsGreedy)
+                    !property.BindingInfo.BindingSource.IsGreedy &&
+                    !IsFormFile(property.ParameterType))
                 {
                     var metadata = _modelMetadataProvider.GetMetadataForProperty(
                         controllerModel.ControllerType,
@@ -133,6 +136,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                 if (bindingInfo?.BindingSource != null &&
                     bindingInfo.BinderModelName == null &&
                     !bindingInfo.BindingSource.IsGreedy &&
+                    !IsFormFile(parameter.ParameterType) &&
                     IsComplexTypeParameter(parameter))
                 {
                     parameter.BindingInfo.BinderModelName = string.Empty;
@@ -165,6 +169,12 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             var metadata = _modelMetadataProvider
                 .GetMetadataForType(parameter.ParameterInfo.ParameterType);
             return metadata.IsComplexType && !metadata.IsCollectionType;
+        }
+
+        private static bool IsFormFile(Type parameterType)
+        {
+            return typeof(IFormFile).IsAssignableFrom(parameterType) ||
+                typeof(IEnumerable<IFormFile>).IsAssignableFrom(parameterType);
         }
     }
 }

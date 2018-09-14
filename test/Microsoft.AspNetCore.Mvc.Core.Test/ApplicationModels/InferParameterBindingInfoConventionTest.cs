@@ -686,7 +686,7 @@ Environment.NewLine + "int b";
             convention.InferBoundPropertyModelPrefixes(controller);
 
             // Assert
-            var property = Assert.Single(controller.ControllerProperties);
+            var property = Assert.Single(controller.ControllerProperties, p => p.Name == nameof(ControllerWithBoundProperty.TestProperty));
             Assert.Equal(string.Empty, property.BindingInfo.BinderModelName);
         }
 
@@ -718,6 +718,87 @@ Environment.NewLine + "int b";
             // Assert
             var parameter = Assert.Single(action.Parameters);
             Assert.Equal(string.Empty, parameter.BindingInfo.BinderModelName);
+        }
+
+        [Fact]
+        public void InferParameterModelPrefixes_DoesNotSetModelPrefix_ForFormFileParametersAnnotatedWithFromForm()
+        {
+            // Arrange
+            var action = GetActionModel(
+                typeof(ParameterBindingController), 
+                nameof(ParameterBindingController.FromFormFormFileParameters),
+                TestModelMetadataProvider.CreateDefaultProvider());
+            var convention = GetConvention();
+
+            // Act
+            convention.InferParameterModelPrefixes(action);
+
+            // Assert
+            Assert.Collection(
+                action.Parameters,
+                parameter =>
+                {
+                    Assert.Equal("p1", parameter.Name);
+                    Assert.Null(parameter.BindingInfo.BinderModelName);
+                },
+                parameter =>
+                {
+                    Assert.Equal("p2", parameter.Name);
+                    Assert.Null(parameter.BindingInfo.BinderModelName);
+                },
+                parameter =>
+                {
+                    Assert.Equal("p3", parameter.Name);
+                    Assert.Null(parameter.BindingInfo.BinderModelName);
+                });
+        }
+
+        [Fact]
+        public void InferParameterModelPrefixes_DoesNotSetModelPrefix_ForFormFileParameters()
+        {
+            // Arrange
+            var action = GetActionModel(
+                typeof(ParameterBindingController), 
+                nameof(ParameterBindingController.FormFileParameters), 
+                TestModelMetadataProvider.CreateDefaultProvider());
+            var convention = GetConvention();
+
+            // Act
+            convention.InferParameterModelPrefixes(action);
+
+            // Assert
+            Assert.Collection(
+                action.Parameters,
+                parameter =>
+                {
+                    Assert.Equal("p1", parameter.Name);
+                    Assert.Null(parameter.BindingInfo.BinderModelName);
+                },
+                parameter =>
+                {
+                    Assert.Equal("p2", parameter.Name);
+                    Assert.Null(parameter.BindingInfo.BinderModelName);
+                },
+                parameter =>
+                {
+                    Assert.Equal("p3", parameter.Name);
+                    Assert.Null(parameter.BindingInfo.BinderModelName);
+                });
+        }
+
+        [Fact]
+        public void InferBoundPropertyModelPrefixes_DoesNotSetModelPrefix_ForFormFileCollectionPropertiesAnnotatedWithFromForm()
+        {
+            // Arrange
+            var controller = GetControllerModel(typeof(ControllerWithBoundProperty));
+            var convention = GetConvention();
+
+            // Act
+            convention.InferBoundPropertyModelPrefixes(controller);
+
+            // Assert
+            var parameter = Assert.Single(controller.ControllerProperties, p => p.Name == nameof(ControllerWithBoundProperty.Files));
+            Assert.Null(parameter.BindingInfo.BinderModelName);
         }
 
         private static InferParameterBindingInfoConvention GetConvention(
@@ -861,6 +942,10 @@ Environment.NewLine + "int b";
 
             [HttpGet]
             public IActionResult ParameterWithRequestPredicateProvider([CustomRequestPredicateAndPropertyFilterProvider] int value) => null;
+
+            public IActionResult FromFormFormFileParameters([FromForm] IFormFile p1, [FromForm] IFormFile[] p2, [FromForm] IFormFileCollection p3) => null;
+
+            public IActionResult FormFileParameters(IFormFile p1, IFormFile[] p2, IFormFileCollection p3) => null;
         }
 
         [ApiController]
@@ -954,6 +1039,9 @@ Environment.NewLine + "int b";
         {
             [FromQuery]
             public TestModel TestProperty { get; set; }
+
+            [FromForm]
+            public IList<IFormFile> Files { get; set; }
 
             public IActionResult SomeAction([FromQuery] TestModel test) => null;
         }
