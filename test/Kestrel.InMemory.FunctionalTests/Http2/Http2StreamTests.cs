@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.ExceptionServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
@@ -1686,6 +1687,53 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal("The request was aborted", thrownEx.Message);
             Assert.IsType<ConnectionAbortedException>(thrownEx.InnerException);
             Assert.Equal(CoreStrings.ConnectionAbortedByApplication, thrownEx.InnerException.Message);
+        }
+
+        // Sync writes after async writes could block the write loop if the callback is not dispatched.
+        // https://github.com/aspnet/KestrelHttpServer/issues/2878
+        [Fact]
+        public async Task Write_DoesNotBlockWriteLoop()
+        {
+            const int windowSize = (int)Http2PeerSettings.DefaultMaxFrameSize;
+            _clientSettings.InitialWindowSize = windowSize;
+
+            await InitializeConnectionAsync(async context =>
+            {
+                // Fill the flow control window to create async back pressure.
+                await context.Response.Body.WriteAsync(new byte[windowSize + 1], 0, windowSize + 1);
+                context.Response.Body.Write(new byte[1], 0, 1);
+            });
+
+            await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
+
+            await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 37,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1);
+
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: windowSize,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 1);
+
+            await SendWindowUpdateAsync(1, 2);
+            await SendWindowUpdateAsync(0, 2);
+
+            // Remaining 1 byte from the first write and then the second write
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 1,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 1);
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 1,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 1);
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 0,
+                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withStreamId: 1);
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
         }
     }
 }
