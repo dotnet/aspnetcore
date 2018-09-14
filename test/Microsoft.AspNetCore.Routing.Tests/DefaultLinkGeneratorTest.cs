@@ -1,9 +1,11 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing.TestObjects;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
@@ -168,6 +170,49 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         [Fact]
+        public void GetPathByAddress_WithParameterTransformer()
+        {
+            // Arrange
+            var endpoint1 = EndpointFactory.CreateRouteEndpoint("{controller:slugify}/{action}/{id}", metadata: new object[] { new IntMetadata(1), });
+            var endpoint2 = EndpointFactory.CreateRouteEndpoint("{controller:slugify}/{action}/{id?}", metadata: new object[] { new IntMetadata(1), });
+
+            var routeOptions = new RouteOptions();
+            routeOptions.ConstraintMap["slugify"] = typeof(SlugifyParameterTransformer);
+
+            var linkGenerator = CreateLinkGenerator(routeOptions: routeOptions, configureServices: null, endpoint1, endpoint2);
+
+            // Act
+            var path = linkGenerator.GetPathByAddress(
+                1,
+                values: new RouteValueDictionary(new { controller = "TestController", action = "Index", }));
+
+            // Assert
+            Assert.Equal("/test-controller/Index", path);
+        }
+
+        [Fact]
+        public void GetPathByAddress_WithParameterTransformer_WithLowercaseUrl()
+        {
+            // Arrange
+            var endpoint1 = EndpointFactory.CreateRouteEndpoint("{controller:slugify}/{action}/{id}", metadata: new object[] { new IntMetadata(1), });
+            var endpoint2 = EndpointFactory.CreateRouteEndpoint("{controller:slugify}/{action}/{id?}", metadata: new object[] { new IntMetadata(1), });
+
+            var routeOptions = new RouteOptions();
+            routeOptions.ConstraintMap["slugify"] = typeof(SlugifyParameterTransformer);
+
+            var linkGenerator = CreateLinkGenerator(routeOptions: routeOptions, configureServices: null, endpoint1, endpoint2);
+
+            // Act
+            var path = linkGenerator.GetPathByAddress(
+                1,
+                values: new RouteValueDictionary(new { controller = "TestController", action = "Index", }),
+                options: new LinkOptions() { LowercaseUrls = true, });
+
+            // Assert
+            Assert.Equal("/test-controller/index", path);
+        }
+
+        [Fact]
         public void GetPathByAddress_WithHttpContext_WithLinkOptions()
         {
             // Arrange
@@ -270,10 +315,12 @@ namespace Microsoft.AspNetCore.Routing
             var routeOptions = new RouteOptions();
             routeOptions.ConstraintMap["upper-case"] = typeof(UpperCaseParameterTransform);
 
-            var services = GetBasicServices();
-            services.AddSingleton(typeof(UpperCaseParameterTransform), new UpperCaseParameterTransform());
+            Action<IServiceCollection> configure = (s) =>
+            {
+                s.AddSingleton(typeof(UpperCaseParameterTransform), new UpperCaseParameterTransform());
+            };
 
-            var linkGenerator = CreateLinkGenerator(routeOptions, services, endpoint);
+            var linkGenerator = CreateLinkGenerator(routeOptions, configure, endpoint);
 
             // Act
             var link = linkGenerator.GetPathByRouteValues(routeName: null, new { controller = "Home", name = "Test" });
@@ -429,6 +476,44 @@ namespace Microsoft.AspNetCore.Routing
                 Assert.IsType<DefaultLinkGenerationTemplate>(template).Endpoints,
                 e => Assert.Same(endpoint1, e),
                 e => Assert.Same(endpoint2, e));
+        }
+
+        [Fact]
+        public void GetTemplateBinder_CanCache()
+        {
+            // Arrange
+            var endpoint1 = EndpointFactory.CreateRouteEndpoint("{controller}/{action}/{id}", metadata: new object[] { new IntMetadata(1), });
+            var dataSource = new DynamicEndpointDataSource(endpoint1);
+
+            var linkGenerator = CreateLinkGenerator(dataSources: new[] { dataSource });
+
+            var expected = linkGenerator.GetTemplateBinder(endpoint1);
+
+            // Act
+            var actual = linkGenerator.GetTemplateBinder(endpoint1);
+
+            // Assert
+            Assert.Same(expected, actual);
+        }
+
+        [Fact]
+        public void GetTemplateBinder_CanClearCache()
+        {
+            // Arrange
+            var endpoint1 = EndpointFactory.CreateRouteEndpoint("{controller}/{action}/{id}", metadata: new object[] { new IntMetadata(1), });
+            var dataSource = new DynamicEndpointDataSource(endpoint1);
+
+            var linkGenerator = CreateLinkGenerator(dataSources: new[] { dataSource });
+            var original = linkGenerator.GetTemplateBinder(endpoint1);
+
+            var endpoint2 = EndpointFactory.CreateRouteEndpoint("{controller}/{action}/{id}", metadata: new object[] { new IntMetadata(1), });
+            dataSource.AddEndpoint(endpoint2);
+
+            // Act
+            var actual = linkGenerator.GetTemplateBinder(endpoint1);
+
+            // Assert
+            Assert.NotSame(original, actual);
         }
 
         protected override void AddAdditionalServices(IServiceCollection services)

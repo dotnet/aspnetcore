@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
+using System;
 
 namespace Microsoft.AspNetCore.Routing
 {
@@ -43,31 +44,53 @@ namespace Microsoft.AspNetCore.Routing
 
         private protected DefaultLinkGenerator CreateLinkGenerator(params Endpoint[] endpoints)
         {
-            return CreateLinkGenerator(routeOptions: null, services: null, endpoints);
+            return CreateLinkGenerator(routeOptions: null, endpoints);
         }
 
-        private protected DefaultLinkGenerator CreateLinkGenerator(RouteOptions routeOptions = null, IServiceCollection services = null, params Endpoint[] endpoints)
+        private protected DefaultLinkGenerator CreateLinkGenerator(RouteOptions routeOptions, params Endpoint[] endpoints)
         {
-            if (services == null)
-            {
-                services = GetBasicServices();
-                AddAdditionalServices(services);
-            }
+            return CreateLinkGenerator(routeOptions, configureServices: null, endpoints);
+        }
 
-            if (endpoints != null || endpoints.Length > 0)
-            {
-                services.Configure<EndpointOptions>(o =>
-                {
-                    o.DataSources.Add(new DefaultEndpointDataSource(endpoints));
-                });
-            }
+        private protected DefaultLinkGenerator CreateLinkGenerator(
+            RouteOptions routeOptions,
+            Action<IServiceCollection> configureServices,
+            params Endpoint[] endpoints)
+        {
+            return CreateLinkGenerator(routeOptions, configureServices, new[] { new DefaultEndpointDataSource(endpoints ?? Array.Empty<Endpoint>()) });
+        }
+
+        private protected DefaultLinkGenerator CreateLinkGenerator(EndpointDataSource[] dataSources)
+        {
+            return CreateLinkGenerator(routeOptions: null, configureServices: null, dataSources);
+        }
+
+        private protected DefaultLinkGenerator CreateLinkGenerator(
+            RouteOptions routeOptions,
+            Action<IServiceCollection> configureServices,
+            EndpointDataSource[] dataSources)
+        {
+            var services = GetBasicServices();
+            AddAdditionalServices(services);
+            configureServices?.Invoke(services);
 
             routeOptions = routeOptions ?? new RouteOptions();
+            dataSources = dataSources ?? Array.Empty<EndpointDataSource>();
+
+            services.Configure<EndpointOptions>((o) =>
+            {
+                for (var i = 0; i < dataSources.Length; i++)
+                {
+                    o.DataSources.Add(dataSources[i]);
+                }
+            });
+
             var options = Options.Create(routeOptions);
             var serviceProvider = services.BuildServiceProvider();
 
             return new DefaultLinkGenerator(
                 new DefaultParameterPolicyFactory(options, serviceProvider),
+                serviceProvider.GetRequiredService<CompositeEndpointDataSource>(),
                 new DefaultObjectPool<UriBuildingContext>(new UriBuilderContextPooledObjectPolicy()),
                 options,
                 NullLogger<DefaultLinkGenerator>.Instance,

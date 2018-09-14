@@ -21,24 +21,26 @@ namespace Microsoft.AspNetCore.Routing
         {
             // Arrange
             var endpoint1 = EndpointFactory.CreateRouteEndpoint(
-                "{controller}/{action}/{id}",
-                metadata: new[] { new RouteValuesAddressMetadata(routeName: null, new RouteValueDictionary(new { controller = "Home", action = "In?dex", })) });
+                "Home/Index/{id}",
+                defaults: new { controller = "Home", action = "Index", },
+                metadata: new[] { new RouteValuesAddressMetadata(routeName: null, new RouteValueDictionary(new { controller = "Home", action = "Index", })) });
             var endpoint2 = EndpointFactory.CreateRouteEndpoint(
-                "{controller}/{action}/{id?}",
-                metadata: new[] { new RouteValuesAddressMetadata(routeName: null, new RouteValueDictionary(new { controller = "Home", action = "In?dex", })) });
+                "Home/Index/{id?}",
+                defaults: new { controller = "Home", action = "Index", },
+                metadata: new[] { new RouteValuesAddressMetadata(routeName: null, new RouteValueDictionary(new { controller = "Home", action = "Index", })) });
 
             var linkGenerator = CreateLinkGenerator(endpoint1, endpoint2);
 
             // Act
             var path = linkGenerator.GetPathByRouteValues(
                 routeName: null,
-                values: new RouteValueDictionary(new { controller = "Home", action = "In?dex", query = "some?query" }),
+                values: new RouteValueDictionary(new { controller = "Home", action = "Index", query = "some?query" }),
                 new PathString("/Foo/Bar?encodeme?"),
                 new FragmentString("#Fragment?"),
                 new LinkOptions() { AppendTrailingSlash = true, });
 
             // Assert
-            Assert.Equal("/Foo/Bar%3Fencodeme%3F/Home/In%3Fdex/?query=some%3Fquery#Fragment?", path);
+            Assert.Equal("/Foo/Bar%3Fencodeme%3F/Home/Index/?query=some%3Fquery#Fragment?", path);
         }
 
         [Fact]
@@ -46,11 +48,13 @@ namespace Microsoft.AspNetCore.Routing
         {
             // Arrange
             var endpoint1 = EndpointFactory.CreateRouteEndpoint(
-                "{controller}/{action}/{id}",
-                metadata: new[] { new RouteValuesAddressMetadata(routeName: null, new RouteValueDictionary(new { controller = "Home", action = "In?dex", })) });
+                "Home/Index/{id}",
+                defaults: new { controller = "Home", action = "Index", },
+                metadata: new[] { new RouteValuesAddressMetadata(routeName: null, new RouteValueDictionary(new { controller = "Home", action = "Index", })) });
             var endpoint2 = EndpointFactory.CreateRouteEndpoint(
-                "{controller}/{action}/{id?}",
-                metadata: new[] { new RouteValuesAddressMetadata(routeName: null, new RouteValueDictionary(new { controller = "Home", action = "In?dex", })) });
+                "Home/Index/{id?}",
+                defaults: new { controller = "Home", action = "Index", },
+                metadata: new[] { new RouteValuesAddressMetadata(routeName: null, new RouteValueDictionary(new { controller = "Home", action = "Index", })) });
 
             var linkGenerator = CreateLinkGenerator(endpoint1, endpoint2);
 
@@ -61,12 +65,12 @@ namespace Microsoft.AspNetCore.Routing
             var path = linkGenerator.GetPathByRouteValues(
                 httpContext,
                 routeName: null,
-                values: new RouteValueDictionary(new { controller = "Home", action = "In?dex", query = "some?query" }),
+                values: new RouteValueDictionary(new { controller = "Home", action = "Index", query = "some?query" }),
                 new FragmentString("#Fragment?"),
                 new LinkOptions() { AppendTrailingSlash = true, });
 
             // Assert
-            Assert.Equal("/Foo/Bar%3Fencodeme%3F/Home/In%3Fdex/?query=some%3Fquery#Fragment?", path);
+            Assert.Equal("/Foo/Bar%3Fencodeme%3F/Home/Index/?query=some%3Fquery#Fragment?", path);
         }
 
         [Fact]
@@ -74,18 +78,20 @@ namespace Microsoft.AspNetCore.Routing
         {
             // Arrange
             var endpoint1 = EndpointFactory.CreateRouteEndpoint(
-                "{controller}/{action}/{id}",
-                metadata: new[] { new RouteValuesAddressMetadata(routeName: null, new RouteValueDictionary(new { controller = "Home", action = "In?dex", })) });
+                "Home/Index/{id}",
+                defaults: new { controller = "Home", action = "Index", },
+                metadata: new[] { new RouteValuesAddressMetadata(routeName: null, new RouteValueDictionary(new { controller = "Home", action = "Index", })) });
             var endpoint2 = EndpointFactory.CreateRouteEndpoint(
-                "{controller}/{action}/{id?}",
-                metadata: new[] { new RouteValuesAddressMetadata(routeName: null, new RouteValueDictionary(new { controller = "Home", action = "In?dex", })) });
+                "Home/Index/{id?}",
+                defaults: new { controller = "Home", action = "Index", },
+                metadata: new[] { new RouteValuesAddressMetadata(routeName: null, new RouteValueDictionary(new { controller = "Home", action = "Index", })) });
 
             var linkGenerator = CreateLinkGenerator(endpoint1, endpoint2);
 
             // Act
             var path = linkGenerator.GetUriByRouteValues(
                 routeName: null,
-                values: new RouteValueDictionary(new { controller = "Home", action = "In?dex", query = "some?query" }),
+                values: new RouteValueDictionary(new { controller = "Home", action = "Index", query = "some?query" }),
                 "http",
                 new HostString("example.com"),
                 new PathString("/Foo/Bar?encodeme?"),
@@ -93,7 +99,7 @@ namespace Microsoft.AspNetCore.Routing
                 new LinkOptions() { AppendTrailingSlash = true, });
 
             // Assert
-            Assert.Equal("http://example.com/Foo/Bar%3Fencodeme%3F/Home/In%3Fdex/?query=some%3Fquery#Fragment?", path);
+            Assert.Equal("http://example.com/Foo/Bar%3Fencodeme%3F/Home/Index/?query=some%3Fquery#Fragment?", path);
         }
 
         [Fact]
@@ -101,11 +107,13 @@ namespace Microsoft.AspNetCore.Routing
         {
             // Arrange
             var endpoint1 = EndpointFactory.CreateRouteEndpoint(
-                "{controller}/{action}/{id}",
-                metadata: new[] { new RouteValuesAddressMetadata(routeName: null, new RouteValueDictionary(new { controller = "Home", action = "In?dex", })) });
+                "Home/Index/{id}",
+                defaults: new { controller = "Home", action = "Index", },
+                metadata: new[] { new RouteValuesAddressMetadata(routeName: null, new RouteValueDictionary(new { controller = "Home", action = "Index", })) });
             var endpoint2 = EndpointFactory.CreateRouteEndpoint(
-                "{controller}/{action}/{id?}",
-                metadata: new[] { new RouteValuesAddressMetadata(routeName: null, new RouteValueDictionary(new { controller = "Home", action = "In?dex", })) });
+                "Home/Index/{id?}",
+                defaults: new { controller = "Home", action = "Index", },
+                metadata: new[] { new RouteValuesAddressMetadata(routeName: null, new RouteValueDictionary(new { controller = "Home", action = "Index", })) });
 
             var linkGenerator = CreateLinkGenerator(endpoint1, endpoint2);
 
@@ -118,12 +126,12 @@ namespace Microsoft.AspNetCore.Routing
             var uri = linkGenerator.GetUriByRouteValues(
                 httpContext,
                 routeName: null,
-                values: new RouteValueDictionary(new { controller = "Home", action = "In?dex", query = "some?query" }),
+                values: new RouteValueDictionary(new { controller = "Home", action = "Index", query = "some?query" }),
                 new FragmentString("#Fragment?"),
                 new LinkOptions() { AppendTrailingSlash = true, });
 
             // Assert
-            Assert.Equal("http://example.com/Foo/Bar%3Fencodeme%3F/Home/In%3Fdex/?query=some%3Fquery#Fragment?", uri);
+            Assert.Equal("http://example.com/Foo/Bar%3Fencodeme%3F/Home/Index/?query=some%3Fquery#Fragment?", uri);
         }
 
         [Fact]
