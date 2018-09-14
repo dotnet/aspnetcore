@@ -3,13 +3,16 @@
 
 package com.microsoft.aspnet.signalr;
 
+import java.io.IOException;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonParser;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonToken;
 
 class JsonHubProtocol implements HubProtocol {
     private final JsonParser jsonParser = new JsonParser();
@@ -32,41 +35,105 @@ class JsonHubProtocol implements HubProtocol {
     }
 
     @Override
-    public HubMessage[] parseMessages(String payload) {
+    public HubMessage[] parseMessages(String payload, InvocationBinder binder) throws Exception {
         String[] messages = payload.split(RECORD_SEPARATOR);
         List<HubMessage> hubMessages = new ArrayList<>();
-        for (String splitMessage : messages) {
+        for (String str : messages) {
+            HubMessageType messageType = null;
+            String invocationId = null;
+            String target = null;
+            String error = null;
+            ArrayList<Object> arguments = null;
+            JsonArray argumentsToken = null;
 
-            JsonObject jsonMessage = jsonParser.parse(splitMessage).getAsJsonObject();
-            HubMessageType messageType = HubMessageType.values()[jsonMessage.get("type").getAsInt() -1];
+            JsonReader reader = new JsonReader(new StringReader(str));
+            reader.beginObject();
+
+            do {
+                String name = reader.nextName();
+                switch (name) {
+                    case "type":
+                        messageType = HubMessageType.values()[reader.nextInt() - 1];
+                        break;
+                    case "invocationId":
+                        invocationId = reader.nextString();
+                        break;
+                    case "target":
+                        target = reader.nextString();
+                        break;
+                    case "error":
+                        error = reader.nextString();
+                        break;
+                    case "result":
+                        reader.skipValue();
+                        break;
+                    case "item":
+                        reader.skipValue();
+                        break;
+                    case "arguments":
+                        if (target != null) {
+                            reader.beginArray();
+                            List<Class<?>> types = binder.getParameterTypes(target);
+                            if (types != null && types.size() >= 1) {
+                                arguments = new ArrayList<>();
+                                for (int i = 0; i < types.size(); i++) {
+                                    arguments.add(gson.fromJson(reader, types.get(i)));
+                                }
+                            }
+                            reader.endArray();
+                        } else {
+                            argumentsToken = (JsonArray)jsonParser.parse(reader);
+                        }
+                        break;
+                    case "headers":
+                        throw new HubException("Headers not implemented yet.");
+                    default:
+                        // Skip unknown property, allows new clients to still work with old protocols
+                        reader.skipValue();
+                        break;
+                }
+            } while (reader.hasNext());
+
+            reader.endObject();
+            reader.close();
+
             switch (messageType) {
                 case INVOCATION:
-                    //Invocation Message
-                    String target = jsonMessage.get("target").getAsString();
-                    JsonElement args = jsonMessage.get("arguments");
-                    hubMessages.add(new InvocationMessage(target, new Object[] {args}));
+                    if (argumentsToken != null) {
+                        List<Class<?>> types = binder.getParameterTypes(target);
+                        if (types != null && types.size() >= 1) {
+                            arguments = new ArrayList<>();
+                            for (int i = 0; i < types.size(); i++) {
+                                arguments.add(gson.fromJson(argumentsToken.get(i), types.get(i)));
+                            }
+                        }
+                    }
+                    if (arguments == null) {
+                        hubMessages.add(new InvocationMessage(target, new Object[0]));
+                    } else {
+                        hubMessages.add(new InvocationMessage(target, arguments.toArray()));
+                    }
                     break;
+                case STREAM_INVOCATION:
                 case STREAM_ITEM:
                 case COMPLETION:
-                case STREAM_INVOCATION:
                 case CANCEL_INVOCATION:
                     throw new UnsupportedOperationException(String.format("The message type %s is not supported yet.", messageType));
                 case PING:
-                    //Ping
                     hubMessages.add(new PingMessage());
                     break;
                 case CLOSE:
-                    CloseMessage closeMessage;
-                    if (jsonMessage.has("error")) {
-                        String error = jsonMessage.get("error").getAsString();
-                        closeMessage = new CloseMessage(error);
+                    if (error != null) {
+                        hubMessages.add(new CloseMessage(error));
                     } else {
-                        closeMessage = new CloseMessage();
+                        hubMessages.add(new CloseMessage());
                     }
-                    hubMessages.add(closeMessage);
+                    break;
+                default:
                     break;
             }
         }
+
         return hubMessages.toArray(new HubMessage[hubMessages.size()]);
     }
 

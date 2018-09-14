@@ -11,7 +11,7 @@ class InvocationMessage extends HubMessage {
 
     public InvocationMessage(String target, Object[] args) {
         this.target = target;
-        arguments = args;
+        this.arguments = args;
     }
 
     public String getInvocationId() {

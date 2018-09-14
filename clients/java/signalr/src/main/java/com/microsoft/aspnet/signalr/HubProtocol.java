@@ -3,6 +3,8 @@
 
 package com.microsoft.aspnet.signalr;
 
+import java.io.IOException;
+
 /**
  * A protocol abstraction for communicating with SignalR hubs.
  */
@@ -16,7 +18,7 @@ interface HubProtocol {
      * @param message A string representation of one or more {@link HubMessage}s.
      * @return A list of {@link HubMessage}s.
      */
-    HubMessage[] parseMessages(String message);
+    HubMessage[] parseMessages(String message, InvocationBinder binder) throws Exception;
 
     /**
      * Writes the specified {@link HubMessage} to a String.
