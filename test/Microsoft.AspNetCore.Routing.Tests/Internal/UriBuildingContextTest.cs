@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             var uriBuilldingContext = new UriBuildingContext(urlTestEncoder);
             
             // Act
-            uriBuilldingContext.EncodeValue(value, 0, value.Length, encodeSlashes: true, parameterTransformer: null);
+            uriBuilldingContext.EncodeValue(value, 0, value.Length, encodeSlashes: true);
 
             // Assert
             Assert.Equal(expected, uriBuilldingContext.ToString());
@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             var uriBuilldingContext = new UriBuildingContext(urlTestEncoder);
 
             // Act
-            uriBuilldingContext.EncodeValue(value, 0, value.Length, encodeSlashes: false, parameterTransformer: null);
+            uriBuilldingContext.EncodeValue(value, 0, value.Length, encodeSlashes: false);
 
             // Assert
             Assert.Equal(expected, uriBuilldingContext.ToString());
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             var uriBuilldingContext = new UriBuildingContext(urlTestEncoder);
 
             // Act
-            uriBuilldingContext.EncodeValue(value, startIndex, characterCount, encodeSlashes: false, parameterTransformer: null);
+            uriBuilldingContext.EncodeValue(value, startIndex, characterCount, encodeSlashes: false);
 
             // Assert
             Assert.Equal(expected, uriBuilldingContext.ToString());
