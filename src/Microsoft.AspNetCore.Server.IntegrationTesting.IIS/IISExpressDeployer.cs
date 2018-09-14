@@ -342,7 +342,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                 // For published apps, prefer the content in the web.config, but update it.
                 yield return WebConfigHelpers.AddOrModifyAspNetCoreSection(
                     key: "hostingModel",
-                    value: DeploymentParameters.HostingModel == HostingModel.InProcess ? "inprocess" : "");
+                    value: DeploymentParameters.HostingModel.ToString());
 
                 yield return WebConfigHelpers.AddOrModifyHandlerSection(
                     key: "modules",
