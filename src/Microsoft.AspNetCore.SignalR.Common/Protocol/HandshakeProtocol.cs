@@ -4,6 +4,7 @@
 using System;
 using System.Buffers;
 using System.IO;
+using System.Text;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Newtonsoft.Json;
@@ -214,17 +215,17 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                                 completed = true;
                                 break;
                             default:
-                                throw new InvalidDataException($"Unexpected token '{reader.TokenType}' when reading handshake request JSON.");
+                                throw new InvalidDataException($"Unexpected token '{reader.TokenType}' when reading handshake request JSON. Message content: {GetPayloadAsString()}");
                         }
                     }
 
                     if (protocol == null)
                     {
-                        throw new InvalidDataException($"Missing required property '{ProtocolPropertyName}'.");
+                        throw new InvalidDataException($"Missing required property '{ProtocolPropertyName}'. Message content: {GetPayloadAsString()}");
                     }
                     if (protocolVersion == null)
                     {
-                        throw new InvalidDataException($"Missing required property '{ProtocolVersionPropertyName}'.");
+                        throw new InvalidDataException($"Missing required property '{ProtocolVersionPropertyName}'. Message content: {GetPayloadAsString()}");
                     }
 
                     requestMessage = new HandshakeRequestMessage(protocol, protocolVersion.Value);
@@ -233,6 +234,13 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             finally
             {
                 Utf8BufferTextReader.Return(textReader);
+            }
+
+            // For error messages, we want to print the payload as text
+            string GetPayloadAsString()
+            {
+                // REVIEW: Should we show hex for binary charaters?
+                return Encoding.UTF8.GetString(payload.ToArray());
             }
 
             return true;
