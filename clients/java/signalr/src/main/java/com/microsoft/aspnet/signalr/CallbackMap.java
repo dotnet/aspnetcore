@@ -5,9 +5,9 @@ package com.microsoft.aspnet.signalr;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.Collections;
 
 class CallbackMap {
     private ConcurrentHashMap<String, List<InvocationHandler>> handlers = new ConcurrentHashMap<>();

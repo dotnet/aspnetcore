@@ -8,13 +8,11 @@ import static org.junit.Assert.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.PriorityBlockingQueue;
 
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import com.google.gson.JsonArray;
 
 public class JsonHubProtocolTest {
     private JsonHubProtocol jsonHubProtocol = new JsonHubProtocol();
@@ -31,7 +29,7 @@ public class JsonHubProtocolTest {
 
     @Test
     public void checkTransferFormat() {
-        assertEquals(TransferFormat.Text, jsonHubProtocol.getTransferFormat());
+        assertEquals(TransferFormat.TEXT, jsonHubProtocol.getTransferFormat());
     }
 
     @Test
@@ -45,7 +43,7 @@ public class JsonHubProtocolTest {
     @Test
     public void parsePingMessage() throws Exception {
         String stringifiedMessage = "{\"type\":6}\u001E";
-        TestBinder binder = new TestBinder(new PingMessage());
+        TestBinder binder = new TestBinder(PingMessage.getInstance());
 
         HubMessage[] messages = jsonHubProtocol.parseMessages(stringifiedMessage, binder);
 

@@ -250,6 +250,24 @@ public class HubConnection {
     }
 
     /**
+     * Removes all handlers associated with the method with the specified method name.
+     *
+     * @param name The name of the hub method from which handlers are being removed.
+     */
+    public void remove(String name) {
+        handlers.remove(name);
+        logger.log(LogLevel.Trace, "Removing handlers for client method %s", name);
+    }
+
+    public void onClosed(Consumer<Exception> callback) {
+        if (onClosedCallbackList == null) {
+            onClosedCallbackList = new ArrayList<>();
+        }
+
+        onClosedCallbackList.add(callback);
+    }
+
+    /**
      * Registers a handler that will be invoked when the hub method with the specified method name is invoked.
      *
      * @param target   The name of the hub method to define.
@@ -513,24 +531,6 @@ public class HubConnection {
         InvocationHandler handler = handlers.put(target, action, classes);
         logger.log(LogLevel.Trace, "Registering handler for client method: %s", target);
         return new Subscription(handlers, handler, target);
-    }
-
-    /**
-     * Removes all handlers associated with the method with the specified method name.
-     *
-     * @param name The name of the hub method from which handlers are being removed.
-     */
-    public void remove(String name) {
-        handlers.remove(name);
-        logger.log(LogLevel.Trace, "Removing handlers for client method %s", name);
-    }
-
-    public void onClosed(Consumer<Exception> callback) {
-        if (onClosedCallbackList == null) {
-            onClosedCallbackList = new ArrayList<>();
-        }
-
-        onClosedCallbackList.add(callback);
     }
 
     private class ConnectionState implements InvocationBinder {

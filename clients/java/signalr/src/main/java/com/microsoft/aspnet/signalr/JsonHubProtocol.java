@@ -3,7 +3,6 @@
 
 package com.microsoft.aspnet.signalr;
 
-import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,7 +11,6 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonToken;
 
 class JsonHubProtocol implements HubProtocol {
     private final JsonParser jsonParser = new JsonParser();
@@ -31,7 +29,7 @@ class JsonHubProtocol implements HubProtocol {
 
     @Override
     public TransferFormat getTransferFormat() {
-        return TransferFormat.Text;
+        return TransferFormat.TEXT;
     }
 
     @Override
@@ -120,7 +118,7 @@ class JsonHubProtocol implements HubProtocol {
                 case CANCEL_INVOCATION:
                     throw new UnsupportedOperationException(String.format("The message type %s is not supported yet.", messageType));
                 case PING:
-                    hubMessages.add(new PingMessage());
+                    hubMessages.add(PingMessage.getInstance());
                     break;
                 case CLOSE:
                     if (error != null) {
