@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -49,6 +49,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             PropertyName = propertyNode.BoundAttribute.GetPropertyName();
             Source = propertyNode.Source;
             TagHelper = propertyNode.TagHelper;
+            TypeName = propertyNode.BoundAttribute.IsWeaklyTyped() ? null : propertyNode.BoundAttribute.TypeName;
 
             for (var i = 0; i < propertyNode.Children.Count; i++)
             {
@@ -74,6 +75,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             PropertyName = attributeNode.BoundAttribute.GetPropertyName();
             Source = attributeNode.Source;
             TagHelper = attributeNode.TagHelper;
+            TypeName = attributeNode.BoundAttribute.IsWeaklyTyped() ? null : attributeNode.BoundAttribute.TypeName;
 
             for (var i = 0; i < attributeNode.Children.Count; i++)
             {
@@ -97,6 +99,8 @@ namespace Microsoft.AspNetCore.Blazor.Razor
         public string PropertyName { get; set; }
 
         public TagHelperDescriptor TagHelper { get; set; }
+
+        public string TypeName { get; set; }
 
         public override void Accept(IntermediateNodeVisitor visitor)
         {

@@ -1,0 +1,30 @@
+Document - 
+    NamespaceDeclaration -  - Test
+        UsingDirective - (3:1,1 [14] ) - System
+        UsingDirective - (18:2,1 [34] ) - System.Collections.Generic
+        UsingDirective - (53:3,1 [19] ) - System.Linq
+        UsingDirective - (73:4,1 [30] ) - System.Threading.Tasks
+        UsingDirective - (1:0,1 [36] x:\dir\subdir\Test\TestComponent.cshtml) - Microsoft.AspNetCore.Blazor
+        UsingDirective - (140:6,1 [46] ) - Microsoft.AspNetCore.Blazor.Components
+        ClassDeclaration -  - public - TestComponent - Microsoft.AspNetCore.Blazor.Components.BlazorComponent - 
+            MethodDeclaration -  - protected override - void - BuildRenderTree
+                CSharpCode - 
+                    IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
+                HtmlBlock -  - <h1>Item1</h1>\n
+                CSharpCode - (94:5,1 [34] x:\dir\subdir\Test\TestComponent.cshtml)
+                    IntermediateToken - (94:5,1 [34] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - foreach (var item2 in Items2)\n{\n
+                HtmlContent - (128:7,0 [4] x:\dir\subdir\Test\TestComponent.cshtml)
+                    IntermediateToken - (128:7,0 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html -     
+                HtmlElement - (132:7,4 [40] x:\dir\subdir\Test\TestComponent.cshtml) - p
+                    HtmlContent - (135:7,7 [6] x:\dir\subdir\Test\TestComponent.cshtml)
+                        IntermediateToken - (135:7,7 [6] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n    
+                    CSharpExpression - (142:8,5 [19] x:\dir\subdir\Test\TestComponent.cshtml)
+                        IntermediateToken - (142:8,5 [19] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - ChildContent(item2)
+                    HtmlContent - (161:8,24 [7] x:\dir\subdir\Test\TestComponent.cshtml)
+                        IntermediateToken - (161:8,24 [7] x:\dir\subdir\Test\TestComponent.cshtml) - Html - ;\n    
+                HtmlContent - (172:9,8 [2] x:\dir\subdir\Test\TestComponent.cshtml)
+                    IntermediateToken - (172:9,8 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+                CSharpCode - (174:10,0 [3] x:\dir\subdir\Test\TestComponent.cshtml)
+                    IntermediateToken - (174:10,0 [3] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - }\n
+            CSharpCode - (189:11,12 [164] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (189:11,12 [164] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    [Parameter] TItem1 Item1 { get; set; }\n    [Parameter] List<TItem2> Items2 { get; set; }\n    [Parameter] RenderFragment<TItem2> ChildContent { get; set; }\n

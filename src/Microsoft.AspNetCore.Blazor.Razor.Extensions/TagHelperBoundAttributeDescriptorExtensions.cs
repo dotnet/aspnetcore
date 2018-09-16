@@ -22,6 +22,30 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 string.Equals(value, bool.TrueString);
         }
 
+        public static bool IsGenericTypedProperty(this BoundAttributeDescriptor attribute)
+        {
+            if (attribute == null)
+            {
+                throw new ArgumentNullException(nameof(attribute));
+            }
+            
+            return
+                attribute.Metadata.TryGetValue(BlazorMetadata.Component.GenericTypedKey, out var value) &&
+                string.Equals(value, bool.TrueString);
+        }
+
+        public static bool IsTypeParameterProperty(this BoundAttributeDescriptor attribute)
+        {
+            if (attribute == null)
+            {
+                throw new ArgumentNullException(nameof(attribute));
+            }
+
+            return
+                attribute.Metadata.TryGetValue(BlazorMetadata.Component.TypeParameterKey, out var value) &&
+                string.Equals(value, bool.TrueString);
+        }
+
         public static bool IsWeaklyTyped(this BoundAttributeDescriptor attribute)
         {
             if (attribute == null)

@@ -307,6 +307,9 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             context.CodeWriter.Write(");");
             context.CodeWriter.WriteLine();
 
+            // We can skip type arguments during runtime codegen, they are handled in the
+            // type/parameter declarations.
+
             foreach (var attribute in node.Attributes)
             {
                 context.RenderNode(attribute);
@@ -322,7 +325,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 context.RenderNode(capture);
             }
 
-            // builder.OpenComponent<TComponent>(42);
+            // builder.CloseComponent();
             context.CodeWriter.Write(_scopeStack.BuilderVarName);
             context.CodeWriter.Write(".");
             context.CodeWriter.Write(BlazorApi.RenderTreeBuilder.CloseComponent);
@@ -376,7 +379,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                     (node.BoundAttribute?.IsChildContentProperty() ?? false))
                 {
                     context.CodeWriter.Write("new ");
-                    context.CodeWriter.Write(node.BoundAttribute.TypeName);
+                    context.CodeWriter.Write(node.TypeName);
                     context.CodeWriter.Write("(");
 
                     for (var i = 0; i < tokens.Count; i++)
@@ -392,7 +395,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                     {
                         context.CodeWriter.Write(BlazorApi.RuntimeHelpers.TypeCheck);
                         context.CodeWriter.Write("<");
-                        context.CodeWriter.Write(node.BoundAttribute.TypeName);
+                        context.CodeWriter.Write(node.TypeName);
                         context.CodeWriter.Write(">");
                         context.CodeWriter.Write("(");
                     }
@@ -452,6 +455,12 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 context.RenderNode(node.Children[i]);
             }
             _scopeStack.CloseScope(context);
+        }
+
+        public override void WriteComponentTypeArgument(CodeRenderingContext context, ComponentTypeArgumentExtensionNode node)
+        {
+            // We can skip type arguments during runtime codegen, they are handled in the
+            // type/parameter declarations.
         }
 
         public override void WriteTemplate(CodeRenderingContext context, TemplateIntermediateNode node)

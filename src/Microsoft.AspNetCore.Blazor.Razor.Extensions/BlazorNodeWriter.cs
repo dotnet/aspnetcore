@@ -19,6 +19,8 @@ namespace Microsoft.AspNetCore.Blazor.Razor
 
         public abstract void WriteComponentChildContent(CodeRenderingContext context, ComponentChildContentIntermediateNode node);
 
+        public abstract void WriteComponentTypeArgument(CodeRenderingContext context, ComponentTypeArgumentExtensionNode node);
+
         public abstract void WriteHtmlElement(CodeRenderingContext context, HtmlElementIntermediateNode node);
 
         public abstract void WriteHtmlBlock(CodeRenderingContext context, HtmlBlockIntermediateNode node);

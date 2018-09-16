@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNetCore.Blazor.Shared;
 using Microsoft.AspNetCore.Razor.Language;
@@ -70,6 +69,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 Component = tagHelper,
                 Source = node.Source,
                 TagName = node.TagName,
+                TypeName = tagHelper.GetTypeName(),
             };
 
             for (var i = 0; i < node.Diagnostics.Count; i++)
@@ -214,6 +214,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 {
                     BoundAttribute = attribute,
                     Source = source,
+                    TypeName = attribute?.TypeName ?? BlazorApi.RenderFragment.FullTypeName,
                 };
 
                 // There are two cases here:
@@ -332,7 +333,21 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 // Each 'tag helper property' belongs to a specific tag helper. We want to handle
                 // the cases for components, but leave others alone. This allows our other passes
                 // to handle those cases.
-                _children.Add(node.TagHelper.IsComponentTagHelper() ? (IntermediateNode)new ComponentAttributeExtensionNode(node) : node);
+                if (!node.TagHelper.IsComponentTagHelper())
+                {
+                    _children.Add(node);
+                    return;
+                }
+
+                // Another special case here - this might be a type argument. These don't represent 'real' parameters
+                // that get passed to the component, it needs special code generation support.
+                if (node.TagHelper.IsGenericTypedComponent() && node.BoundAttribute.IsTypeParameterProperty())
+                {
+                    _children.Add(new ComponentTypeArgumentExtensionNode(node));
+                    return;
+                }
+
+                _children.Add(new ComponentAttributeExtensionNode(node));
             }
 
             public override void VisitDefault(IntermediateNode node)

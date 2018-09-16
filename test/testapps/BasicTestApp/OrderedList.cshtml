@@ -1,3 +1,5 @@
+@typeparam TItem
+
 <ol>
     @{
         var index = 1;
@@ -9,7 +11,7 @@
 </ol>
 
 @functions{
-    [Parameter] IEnumerable<string> Items { get; set; }
+    [Parameter] IEnumerable<TItem> Items { get; set; }
 
     [Parameter] RenderFragment<Context> Template { get; set; }
 
@@ -17,6 +19,6 @@
     {
         public int Index { get; set; }
 
-        public string Item { get; set; }
+        public TItem Item { get; set; }
     }
 }

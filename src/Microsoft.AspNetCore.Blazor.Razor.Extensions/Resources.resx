@@ -135,6 +135,9 @@
   <data name="ChildContentParameterName_Documentation" xml:space="preserve">
     <value>Specifies the parameter name for the '{0}' lambda expression.</value>
   </data>
+  <data name="ComponentTypeParameter_Documentation" xml:space="preserve">
+    <value>Specifies the type of the type parameter {0} for the {1} component.</value>
+  </data>
   <data name="EventHandlerTagHelper_Documentation" xml:space="preserve">
     <value>Sets the '{0}' attribute to the provided string or delegate value. A delegate value should be of type '{1}'.</value>
   </data>
@@ -170,5 +173,14 @@
   </data>
   <data name="RefTagHelper_Documentation" xml:space="preserve">
     <value>Populates the specified field or property with a reference to the element or component.</value>
+  </data>
+  <data name="TypeParamDirective_Description" xml:space="preserve">
+    <value>Declares a generic type parameter for the generated component class.</value>
+  </data>
+  <data name="TypeParamDirective_Token_Description" xml:space="preserve">
+    <value>The name of the type parameter.</value>
+  </data>
+  <data name="TypeParamDirective_Token_Name" xml:space="preserve">
+    <value>type parameter</value>
   </data>
 </root>

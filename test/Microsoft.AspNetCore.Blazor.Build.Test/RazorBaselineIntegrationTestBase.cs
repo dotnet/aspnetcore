@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -17,9 +17,14 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
     {
         private static readonly AsyncLocal<string> _directoryPath = new AsyncLocal<string>();
 
-        protected RazorBaselineIntegrationTestBase()
+        protected RazorBaselineIntegrationTestBase(bool? generateBaselines = null)
         {
             TestProjectRoot = TestProject.GetProjectDirectory(GetType());
+
+            if (generateBaselines.HasValue)
+            {
+                GenerateBaselines = generateBaselines.Value;
+            }
         }
 
         // Used by the test framework to set the directory for test files.
@@ -30,9 +35,9 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         }
 
 #if GENERATE_BASELINES
-        protected bool GenerateBaselines { get; set; } = true;
+        protected bool GenerateBaselines { get; } = true;
 #else
-        protected bool GenerateBaselines { get; set; } = false;
+        protected bool GenerateBaselines { get; } = false;
 #endif
 
         protected string TestProjectRoot { get; }
@@ -46,6 +51,12 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
 
         // Force consistent paths since they are going to be recorded in files.
         internal override string WorkingDirectory => ArbitraryWindowsPath;
+
+        [Fact]
+        public void GenerateBaselinesMustBeFalse()
+        {
+            Assert.False(GenerateBaselines, "GenerateBaselines should be set back to false before you check in!");
+        }
 
         protected void AssertDocumentNodeMatchesBaseline(RazorCodeDocument codeDocument)
         {

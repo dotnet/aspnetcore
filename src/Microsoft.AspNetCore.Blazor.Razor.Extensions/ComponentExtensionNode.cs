@@ -23,9 +23,11 @@ namespace Microsoft.AspNetCore.Blazor.Razor
 
         public TagHelperDescriptor Component { get; set; }
 
-        public string TagName { get; set; }
+        public IEnumerable<ComponentTypeArgumentExtensionNode> TypeArguments => Children.OfType<ComponentTypeArgumentExtensionNode>();
 
-        public string TypeName => Component?.GetTypeName();
+        public string TagName { get; set; }
+        
+        public string TypeName { get; set; }
 
         public override void Accept(IntermediateNodeVisitor visitor)
         {
@@ -73,6 +75,13 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 {
                     builder.Append(" ");
                     builder.Append("ref");
+                    builder.Append("=\"...\"");
+                }
+
+                foreach (var typeArgument in TypeArguments)
+                {
+                    builder.Append(" ");
+                    builder.Append(typeArgument.TypeParameterName);
                     builder.Append("=\"...\"");
                 }
 

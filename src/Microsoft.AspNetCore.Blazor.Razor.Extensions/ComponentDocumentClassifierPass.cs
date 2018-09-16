@@ -1,7 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -90,6 +91,19 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             @class.ClassName = computedClass;
             @class.Modifiers.Clear();
             @class.Modifiers.Add("public");
+
+            var documentNode = codeDocument.GetDocumentIntermediateNode();
+            var typeParamReferences = documentNode.FindDirectiveReferences(TypeParamDirective.Directive);
+            for (var i = 0; i < typeParamReferences.Count; i++)
+            {
+                var typeParamNode = (DirectiveIntermediateNode)typeParamReferences[i].Node;
+                if (typeParamNode.HasDiagnostics)
+                {
+                    continue;
+                }
+
+                @class.TypeParameters.Add(new TypeParameter() { ParameterName = typeParamNode.Tokens.First().Content, });
+            }
 
             method.ReturnType = "void";
             method.MethodName = BlazorApi.BlazorComponent.BuildRenderTree;

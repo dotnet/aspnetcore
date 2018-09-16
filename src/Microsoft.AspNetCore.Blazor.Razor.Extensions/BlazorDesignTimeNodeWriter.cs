@@ -343,6 +343,11 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 throw new ArgumentNullException(nameof(node));
             }
 
+            foreach (var typeArgument in node.TypeArguments)
+            {
+                context.RenderNode(typeArgument);
+            }
+
             foreach (var attribute in node.Attributes)
             {
                 context.RenderNode(attribute);
@@ -363,7 +368,10 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 // Consider what would happen if the user's cursor was inside the element. At
                 // design -time we want to render an empty lambda to provide proper scoping
                 // for any code that the user types.
-                context.RenderNode(new ComponentChildContentIntermediateNode());
+                context.RenderNode(new ComponentChildContentIntermediateNode()
+                {
+                    TypeName = BlazorApi.RenderFragment.FullTypeName,
+                });
             }
 
             foreach (var capture in node.Captures)
@@ -425,7 +433,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                     context.CodeWriter.Write(DesignTimeVariable);
                     context.CodeWriter.Write(" = ");
                     context.CodeWriter.Write("new ");
-                    context.CodeWriter.Write(node.BoundAttribute.TypeName);
+                    context.CodeWriter.Write(node.TypeName);
                     context.CodeWriter.Write("(");
                     context.CodeWriter.WriteLine();
 
@@ -448,7 +456,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                     {
                         context.CodeWriter.Write(BlazorApi.RuntimeHelpers.TypeCheck);
                         context.CodeWriter.Write("<");
-                        context.CodeWriter.Write(node.BoundAttribute.TypeName);
+                        context.CodeWriter.Write(node.TypeName);
                         context.CodeWriter.Write(">");
                         context.CodeWriter.Write("(");
                     }
@@ -502,6 +510,41 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 context.RenderNode(node.Children[i]);
             }
             _scopeStack.CloseScope(context);
+        }
+
+        public override void WriteComponentTypeArgument(CodeRenderingContext context, ComponentTypeArgumentExtensionNode node)
+        {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (node == null)
+            {
+                throw new ArgumentNullException(nameof(node));
+            }
+
+            // At design type we want write the equivalent of:
+            //
+            // __o = typeof(TItem);
+            context.CodeWriter.Write(DesignTimeVariable);
+            context.CodeWriter.Write(" = ");
+            context.CodeWriter.Write("typeof(");
+
+            var tokens = GetCSharpTokens(node);
+            for (var i = 0; i < tokens.Count; i++)
+            {
+                WriteCSharpToken(context, tokens[i]);
+            }
+
+            context.CodeWriter.Write(");");
+            context.CodeWriter.WriteLine();
+
+            IReadOnlyList<IntermediateToken> GetCSharpTokens(ComponentTypeArgumentExtensionNode arg)
+            {
+                // We generally expect all children to be CSharp, this is here just in case.
+                return arg.FindDescendantNodes<IntermediateToken>().Where(t => t.IsCSharp).ToArray();
+            }
         }
 
         public override void WriteTemplate(CodeRenderingContext context, TemplateIntermediateNode node)

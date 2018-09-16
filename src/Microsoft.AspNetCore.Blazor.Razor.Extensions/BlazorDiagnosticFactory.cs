@@ -263,5 +263,23 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 childContent2.AttributeName,
                 component2.TagName);
         }
+
+        public static readonly RazorDiagnosticDescriptor GenericComponentMissingTypeArgument =
+            new RazorDiagnosticDescriptor(
+                "BL10000",
+                () => "The component '{0}' is missing required type arguments. Specify the missing types using the attributes: {1}.",
+                RazorDiagnosticSeverity.Error);
+
+        public static RazorDiagnostic Create_GenericComponentMissingTypeArgument(
+            SourceSpan? source,
+            ComponentExtensionNode component,
+            IEnumerable<BoundAttributeDescriptor> attributes)
+        {
+            Debug.Assert(component.Component.IsGenericTypedComponent());
+
+            var attributesText = string.Join(", ", attributes.Select(a => $"'{a.Name}'"));
+            return RazorDiagnostic.Create(GenericComponentMissingTypeArgument, source ?? SourceSpan.Undefined, component.TagName, attributesText);
+        }
     }
+
 }

@@ -11,8 +11,8 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         internal override bool UseTwoPhaseCompilation => true;
 
         public CodeGenerationTestBase()
+            : base(generateBaselines: false)
         {
-            GenerateBaselines = true;
         }
 
         #region Basics
@@ -74,6 +74,36 @@ namespace Test
     BoolProperty=""true""
     StringProperty=""My string""
     ObjectProperty=""new SomeType()""/>");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void ComponentWithTypeParameters()
+        {
+            // Arrange
+
+            // Act
+            var generated = CompileToCSharp(@"
+@using Microsoft.AspNetCore.Blazor;
+@typeparam TItem1
+@typeparam TItem2
+
+<h1>Item1</h1>
+@foreach (var item2 in Items2)
+{
+    <p>
+    @ChildContent(item2);
+    </p>
+}
+@functions {
+    [Parameter] TItem1 Item1 { get; set; }
+    [Parameter] List<TItem2> Items2 { get; set; }
+    [Parameter] RenderFragment<TItem2> ChildContent { get; set; }
+}");
 
             // Assert
             AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
@@ -1199,6 +1229,146 @@ namespace Test
 
         #endregion
 
+        #region Generics
+
+        [Fact]
+        public void ChildComponent_Generic()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using Microsoft.AspNetCore.Blazor.Components;
+
+namespace Test
+{
+    public class MyComponent<TItem> : BlazorComponent
+    {
+        [Parameter] TItem Item { get; set; }
+    }
+}
+"));
+
+            // Act
+            var generated = CompileToCSharp(@"
+@addTagHelper *, TestAssembly
+<MyComponent TItem=string Item=""@(""hi"")""/>");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void ChildComponent_GenericBind()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using System;
+using Microsoft.AspNetCore.Blazor.Components;
+
+namespace Test
+{
+    public class MyComponent<TItem> : BlazorComponent
+    {
+        [Parameter]
+        TItem Value { get; set; }
+
+        [Parameter]
+        Action<TItem> ValueChanged { get; set; }
+    }
+}
+"));
+
+            // Act
+            var generated = CompileToCSharp(@"
+@addTagHelper *, TestAssembly
+<MyComponent TItem=string bind-Item=Value/>
+@functions {
+    string Value;
+}");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void ChildComponent_GenericChildContent()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using Microsoft.AspNetCore.Blazor;
+using Microsoft.AspNetCore.Blazor.Components;
+
+namespace Test
+{
+    public class MyComponent<TItem> : BlazorComponent
+    {
+        [Parameter] TItem Item { get; set; }
+
+        [Parameter] RenderFragment<TItem> ChildContent { get; set; }
+    }
+}
+"));
+
+            // Act
+            var generated = CompileToCSharp(@"
+@addTagHelper *, TestAssembly
+<MyComponent TItem=string Item=""@(""hi"")"">
+  <div>@context.ToLower()</div>
+</MyComponent>");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void ChildComponent_MultipleGenerics()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using Microsoft.AspNetCore.Blazor;
+using Microsoft.AspNetCore.Blazor.Components;
+
+namespace Test
+{
+    public class MyComponent<TItem1, TItem2> : BlazorComponent
+    {
+        [Parameter] TItem1 Item { get; set; }
+
+        [Parameter] RenderFragment<TItem1> ChildContent { get; set; }
+
+        [Parameter] RenderFragment<Context> AnotherChildContent { get; set; }
+
+        public class Context
+        {
+            public TItem2 Item { get; set; }
+        }
+    }
+}
+"));
+
+            // Act
+            var generated = CompileToCSharp(@"
+@addTagHelper *, TestAssembly
+<MyComponent TItem1=string TItem2=int Item=""@(""hi"")"">
+  <ChildContent><div>@context.ToLower()</div></ChildContent>
+<AnotherChildContent Context=""item"">
+  @System.Math.Max(0, item.Item);
+</AnotherChildContent>
+</MyComponent>");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        #endregion
+
         #region Ref
 
         [Fact]
@@ -1335,7 +1505,7 @@ namespace Test
             AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
             CompileToAssembly(generated);
         }
-        
+
         [Fact]
         public void RazorTemplate_NonGeneric_InImplicitExpression()
         {

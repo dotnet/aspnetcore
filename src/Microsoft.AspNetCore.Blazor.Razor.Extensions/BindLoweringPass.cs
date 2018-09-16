@@ -311,6 +311,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                     BoundAttribute = valueAttribute, // Might be null if it doesn't match a component attribute
                     PropertyName = valueAttribute?.GetPropertyName(),
                     TagHelper = valueAttribute == null ? null : node.TagHelper,
+                    TypeName = valueAttribute?.IsWeaklyTyped() == false ? valueAttribute.TypeName : null,
                 };
 
                 valueNode.Children.Clear();
@@ -326,6 +327,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                     BoundAttribute = changeAttribute, // Might be null if it doesn't match a component attribute
                     PropertyName = changeAttribute?.GetPropertyName(),
                     TagHelper = changeAttribute == null ? null : node.TagHelper,
+                    TypeName = changeAttribute?.IsWeaklyTyped() == false ? changeAttribute.TypeName : null,
                 };
 
                 changeNode.Children.Clear();

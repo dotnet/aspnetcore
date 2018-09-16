@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
 
         public string ParameterName { get; set; } = "context";
 
-        public string TypeName => BoundAttribute?.TypeName == null ? BlazorApi.RenderFragment.FullTypeName : BoundAttribute.TypeName;
+        public string TypeName { get; set; }
 
         public override void Accept(IntermediateNodeVisitor visitor)
         {

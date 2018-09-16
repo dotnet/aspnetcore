@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
@@ -84,6 +84,44 @@ namespace Test.AnotherNamespace
             // Assert
             var bindings = result.CodeDocument.GetTagHelperContext();
             Assert.Single(bindings.TagHelpers, t => t.Name == "Microsoft.AspNetCore.Blazor.Routing.NavLink");
+        }
+
+        [Fact]
+        public void ComponentDiscovery_CanFindComponent_WithTypeParameter()
+        {
+            // Arrange
+
+            // Act
+            var result = CompileToCSharp("UniqueName.cshtml", @"
+@addTagHelper *, TestAssembly
+@typeparam TItem
+@functions {
+    [Parameter] TItem Item { get; set; }
+}");
+
+            // Assert
+            var bindings = result.CodeDocument.GetTagHelperContext();
+            Assert.Single(bindings.TagHelpers, t => t.Name == "Test.UniqueName<TItem>");
+        }
+
+        [Fact]
+        public void ComponentDiscovery_CanFindComponent_WithMultipleTypeParameters()
+        {
+            // Arrange
+
+            // Act
+            var result = CompileToCSharp("UniqueName.cshtml", @"
+@addTagHelper *, TestAssembly
+@typeparam TItem1
+@typeparam TItem2
+@typeparam TItem3
+@functions {
+    [Parameter] TItem1 Item { get; set; }
+}");
+
+            // Assert
+            var bindings = result.CodeDocument.GetTagHelperContext();
+            Assert.Single(bindings.TagHelpers, t => t.Name == "Test.UniqueName<TItem1, TItem2, TItem3>");
         }
     }
 }

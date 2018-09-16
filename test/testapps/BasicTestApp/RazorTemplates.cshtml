@@ -4,7 +4,7 @@
 
 <div id="codeblocktemplate">
     @{
-        RenderFragment<OrderedList.Context> template = (context) => @<li>#@context.Index - @context.Item.ToLower()</li>;
+        RenderFragment<OrderedList<string>.Context> template = (context) => @<li>#@context.Index - @context.Item.ToLower()</li>;
     }
-    <OrderedList Items="@items" Template="@template" />
+    <OrderedList Items="@items" Template="@template" TItem="string"/>
 </div>

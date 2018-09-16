@@ -1,3 +1,4 @@
+@typeparam TItem
 <table>
     @if (Header != null)
     {
@@ -24,18 +25,11 @@
     RenderFragment Header { get; set; }
 
     [Parameter]
-    RenderFragment<Item> ItemTemplate { get; set; }
+    RenderFragment<TItem> ItemTemplate { get; set; }
 
     [Parameter]
     RenderFragment Footer { get; set; }
 
     [Parameter]
-    IReadOnlyList<Item> Items { get; set; }
-
-    public class Item
-    {
-        public string Col1 { get; set; }
-        public string Col2 { get; set; }
-        public string Col3 { get; set; }
-    }
+    IReadOnlyList<TItem> Items { get; set; }
 }

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Blazor.Shared;
@@ -95,6 +96,20 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             // Razor ITagHelper runtime.
             builder.Metadata[TagHelperMetadata.Runtime.Name] = BlazorMetadata.Component.RuntimeName;
 
+            if (type.IsGenericType)
+            {
+                builder.Metadata[BlazorMetadata.Component.GenericTypedKey] = bool.TrueString;
+
+                for (var i = 0; i < type.TypeArguments.Length; i++)
+                {
+                    var typeParameter = type.TypeArguments[i] as ITypeParameterSymbol;
+                    if (typeParameter != null)
+                    {
+                        CreateTypeParameterProperty(builder, typeParameter);
+                    }
+                }
+            }
+
             var xml = type.GetDocumentationCommentXml();
             if (!string.IsNullOrEmpty(xml))
             {
@@ -111,38 +126,103 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                     continue;
                 }
 
-                builder.BindAttribute(pb =>
-                {
-                    pb.Name = property.property.Name;
-                    pb.TypeName = property.property.Type.ToDisplayString(FullNameTypeDisplayFormat);
-                    pb.SetPropertyName(property.property.Name);
-
-                    if (property.kind == PropertyKind.Enum)
-                    {
-                        pb.IsEnum = true;
-                    }
-
-                    if (property.kind == PropertyKind.ChildContent)
-                    {
-                        pb.Metadata.Add(BlazorMetadata.Component.ChildContentKey, bool.TrueString);
-                    }
-
-                    if (property.kind == PropertyKind.Delegate)
-                    {
-                        pb.Metadata.Add(BlazorMetadata.Component.DelegateSignatureKey, bool.TrueString);
-                    }
-
-                    xml = property.property.GetDocumentationCommentXml();
-                    if (!string.IsNullOrEmpty(xml))
-                    {
-                        pb.Documentation = xml;
-                    }
-                });
+                CreateProperty(builder, property.property, property.kind);
             }
 
             var descriptor = builder.Build();
 
             return descriptor;
+        }
+
+        private void CreateProperty(TagHelperDescriptorBuilder builder, IPropertySymbol property, PropertyKind kind)
+        {
+            builder.BindAttribute(pb =>
+            {
+                pb.Name = property.Name;
+                pb.TypeName = property.Type.ToDisplayString(FullNameTypeDisplayFormat);
+                pb.SetPropertyName(property.Name);
+
+                if (kind == PropertyKind.Enum)
+                {
+                    pb.IsEnum = true;
+                }
+
+                if (kind == PropertyKind.ChildContent)
+                {
+                    pb.Metadata.Add(BlazorMetadata.Component.ChildContentKey, bool.TrueString);
+                }
+
+                if (kind == PropertyKind.Delegate)
+                {
+                    pb.Metadata.Add(BlazorMetadata.Component.DelegateSignatureKey, bool.TrueString);
+                }
+
+                if (HasTypeParameter(property.Type))
+                {
+                    pb.Metadata.Add(BlazorMetadata.Component.GenericTypedKey, bool.TrueString);
+                }
+
+                var xml = property.GetDocumentationCommentXml();
+                if (!string.IsNullOrEmpty(xml))
+                {
+                    pb.Documentation = xml;
+                }
+            });
+
+            bool HasTypeParameter(ITypeSymbol type)
+            {
+                if (type is ITypeParameterSymbol)
+                {
+                    return true;
+                }
+
+                // We need to check for cases like:
+                // [Parameter] List<T> MyProperty { get; set; }
+                // AND
+                // [Parameter] List<string> MyProperty { get; set; }
+                //
+                // We need to inspect the type arguments to tell the difference between a property that
+                // uses the containing class' type parameter(s) and a vanilla usage of generic types like
+                // List<> and Dictionary<,>
+                //
+                // Since we need to handle cases like RenderFragment<List<T>>, this check must be recursive.
+                if (type is INamedTypeSymbol namedType && namedType.IsGenericType)
+                {
+                    var typeArguments = namedType.TypeArguments;
+                    for (var i = 0; i < typeArguments.Length; i++)
+                    {
+                        if (HasTypeParameter(typeArguments[i]))
+                        {
+                            return true;
+                        }
+                    }
+
+                    // Another case to handle - if the type being inspected is a nested type
+                    // inside a generic containing class. The common usage for this would be a case
+                    // where a generic templated component defines a 'context' nested class.
+                    if (namedType.ContainingType != null && HasTypeParameter(namedType.ContainingType))
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+        }
+
+        private void CreateTypeParameterProperty(TagHelperDescriptorBuilder builder, ITypeSymbol typeParameter)
+        {
+            builder.BindAttribute(pb =>
+            {
+                pb.DisplayName = typeParameter.Name;
+                pb.Name = typeParameter.Name;
+                pb.TypeName = typeof(Type).FullName;
+                pb.SetPropertyName(typeParameter.Name);
+
+                pb.Metadata[BlazorMetadata.Component.TypeParameterKey] = bool.TrueString;
+
+                pb.Documentation = string.Format(Resources.ComponentTypeParameter_Documentation, typeParameter.Name, builder.Name);
+            });
         }
 
         private TagHelperDescriptor CreateChildContentDescriptor(BlazorSymbols symbols, TagHelperDescriptor component, BoundAttributeDescriptor attribute)
@@ -396,7 +476,6 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 return
                     symbol.DeclaredAccessibility == Accessibility.Public &&
                     !symbol.IsAbstract &&
-                    !symbol.IsGenericType &&
                     symbol.AllInterfaces.Contains(_symbols.IComponent);
             }
         }

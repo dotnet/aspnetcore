@@ -54,6 +54,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             InjectDirective.Register(builder);
             LayoutDirective.Register(builder);
             PageDirective.Register(builder);
+            TypeParamDirective.Register(builder);
 
             builder.Features.Remove(builder.Features.OfType<IImportProjectFeature>().Single());
             builder.Features.Add(new BlazorImportProjectFeature());
@@ -82,6 +83,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             builder.Features.Add(new RefLoweringPass());
             builder.Features.Add(new BindLoweringPass());
             builder.Features.Add(new TemplateDiagnosticPass());
+            builder.Features.Add(new GenericComponentPass());
             builder.Features.Add(new ChildContentDiagnosticPass());
             builder.Features.Add(new HtmlBlockPass());
 

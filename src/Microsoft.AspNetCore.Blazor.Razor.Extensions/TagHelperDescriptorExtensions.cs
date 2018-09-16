@@ -35,6 +35,19 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 string.Equals(bool.TrueString, fallback);
         }
 
+        public static bool IsGenericTypedComponent(this TagHelperDescriptor tagHelper)
+        {
+            if (tagHelper == null)
+            {
+                throw new ArgumentNullException(nameof(tagHelper));
+            }
+
+            return
+                IsComponentTagHelper(tagHelper) &&
+                tagHelper.Metadata.TryGetValue(BlazorMetadata.Component.GenericTypedKey, out var value) &&
+                string.Equals(bool.TrueString, value);
+        }
+
         public static bool IsInputElementBindTagHelper(this TagHelperDescriptor tagHelper)
         {
             if (tagHelper == null)
@@ -155,6 +168,28 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             {
                 var attribute = tagHelper.BoundAttributes[i];
                 if (attribute.IsChildContentProperty())
+                {
+                    yield return attribute;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the set of component attributes that represent generic type parameters of the component type.
+        /// </summary>
+        /// <param name="tagHelper">The <see cref="TagHelperDescriptor"/>.</param>
+        /// <returns>The type parameter attributes</returns>
+        public static IEnumerable<BoundAttributeDescriptor> GetTypeParameters(this TagHelperDescriptor tagHelper)
+        {
+            if (tagHelper == null)
+            {
+                throw new ArgumentNullException(nameof(tagHelper));
+            }
+
+            for (var i = 0; i < tagHelper.BoundAttributes.Count; i++)
+            {
+                var attribute = tagHelper.BoundAttributes[i];
+                if (attribute.IsTypeParameterProperty())
                 {
                     yield return attribute;
                 }

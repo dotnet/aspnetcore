@@ -115,6 +115,15 @@ namespace Microsoft.AspNetCore.Blazor.Razor {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Specifies the type of the type parameter {0} for the {1} component..
+        /// </summary>
+        internal static string ComponentTypeParameter_Documentation {
+            get {
+                return ResourceManager.GetString("ComponentTypeParameter_Documentation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Sets the &apos;{0}&apos; attribute to the provided string or delegate value. A delegate value should be of type &apos;{1}&apos;..
         /// </summary>
         internal static string EventHandlerTagHelper_Documentation {
@@ -219,6 +228,33 @@ namespace Microsoft.AspNetCore.Blazor.Razor {
         internal static string RefTagHelper_Documentation {
             get {
                 return ResourceManager.GetString("RefTagHelper_Documentation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Declares a generic type parameter for the generated component class..
+        /// </summary>
+        internal static string TypeParamDirective_Description {
+            get {
+                return ResourceManager.GetString("TypeParamDirective_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The name of the type parameter..
+        /// </summary>
+        internal static string TypeParamDirective_Token_Description {
+            get {
+                return ResourceManager.GetString("TypeParamDirective_Token_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to type parameter.
+        /// </summary>
+        internal static string TypeParamDirective_Token_Name {
+            get {
+                return ResourceManager.GetString("TypeParamDirective_Token_Name", resourceCulture);
             }
         }
     }
