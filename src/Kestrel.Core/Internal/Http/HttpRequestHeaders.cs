@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public unsafe void Append(Span<byte> name, string value)
         {
-            fixed (byte* namePtr = &MemoryMarshal.GetReference(name))
+            fixed (byte* namePtr = name)
             {
                 Append(namePtr, name.Length, value);
             }

@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             // .NET 451 doesn't have pointer overloads for Encoding.GetString so we
             // copy to an array
-            fixed (byte* pointer = &MemoryMarshal.GetReference(path))
+            fixed (byte* pointer = path)
             {
                 return Encoding.UTF8.GetString(pointer, path.Length);
             }
@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         // In-place implementation of the algorithm from https://tools.ietf.org/html/rfc3986#section-5.2.4
         public static unsafe int RemoveDotSegments(Span<byte> input)
         {
-            fixed (byte* start = &MemoryMarshal.GetReference(input))
+            fixed (byte* start = input)
             {
                 var end = start + input.Length;
                 return RemoveDotSegments(start, end);

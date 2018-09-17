@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
 
             // Fix and parse the span
-            fixed (byte* data = &MemoryMarshal.GetReference(span))
+            fixed (byte* data = span)
             {
                 ParseRequestLine(handler, data, span.Length);
             }
@@ -206,7 +206,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     var span = reader.CurrentSegment;
                     var remaining = span.Length - reader.CurrentSegmentIndex;
 
-                    fixed (byte* pBuffer = &MemoryMarshal.GetReference(span))
+                    fixed (byte* pBuffer = span)
                     {
                         while (remaining > 0)
                         {
@@ -298,7 +298,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                                 var headerSpan = buffer.Slice(current, lineEnd).ToSpan();
                                 length = headerSpan.Length;
 
-                                fixed (byte* pHeader = &MemoryMarshal.GetReference(headerSpan))
+                                fixed (byte* pHeader = headerSpan)
                                 {
                                     TakeSingleHeader(pHeader, length, handler);
                                 }

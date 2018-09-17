@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             if (sourceLength <= destLength)
             {
                 fixed (char* input = data)
-                fixed (byte* output = &MemoryMarshal.GetReference(dest))
+                fixed (byte* output = dest)
                 {
                     EncodeAsciiCharsToBytes(input, output, sourceLength);
                 }
@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             // Fast path, try copying to the available memory directly
             var simpleWrite = true;
-            fixed (byte* output = &MemoryMarshal.GetReference(span))
+            fixed (byte* output = span)
             {
                 var start = output;
                 if (number < 10 && bytesLeftInBlock >= 1)
@@ -158,7 +158,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         continue;
                     }
 
-                    fixed (byte* output = &MemoryMarshal.GetReference(buffer.Span))
+                    fixed (byte* output = buffer.Span)
                     {
                         EncodeAsciiCharsToBytes(inputSlice, output, writable);
                     }
