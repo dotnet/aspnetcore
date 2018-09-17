@@ -16,7 +16,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 {
-    // Integration tests targeting the behavior of the MutableObjectModelBinder and related classes
+    // Integration tests targeting the behavior of the ComplexTypeModelBinder and related classes
     // with other model binders.
     public class ComplexTypeModelBinderIntegrationTest
     {
@@ -197,10 +197,8 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Equal("bill", entry.RawValue);
         }
 
-        // We don't provide enough data in this test for the 'Person' model to be created. So even though there is
-        // body data in the request, it won't be used.
         [Fact]
-        public async Task MutableObjectModelBinder_BindsNestedPOCO_WithBodyModelBinder_WithPrefix_PartialData()
+        public async Task ComplexTypeModelBinder_BindsNestedPOCO_WithBodyModelBinder_WithPrefix_PartialData()
         {
             // Arrange
             var parameter = new ParameterDescriptor()
@@ -235,22 +233,21 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.True(modelBindingResult.IsModelSet);
 
             var model = Assert.IsType<Order1>(modelBindingResult.Model);
-            Assert.Null(model.Customer);
+            Assert.NotNull(model.Customer);
+            Assert.Equal("1 Microsoft Way", model.Customer.Address.Street);
+
             Assert.Equal(10, model.ProductId);
 
-            Assert.Single(modelState);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
 
-            var entry = Assert.Single(modelState, e => e.Key == "parameter.ProductId").Value;
+            var entry = Assert.Single(modelState).Value;
             Assert.Equal("10", entry.AttemptedValue);
             Assert.Equal("10", entry.RawValue);
         }
 
-        // We don't provide enough data in this test for the 'Person' model to be created. So even though there is
-        // body data in the request, it won't be used.
         [Fact]
-        public async Task MutableObjectModelBinder_BindsNestedPOCO_WithBodyModelBinder_WithPrefix_NoData()
+        public async Task ComplexTypeModelBinder_BindsNestedPOCO_WithBodyModelBinder_WithPrefix_NoData()
         {
             // Arrange
             var parameter = new ParameterDescriptor()
@@ -285,7 +282,8 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.True(modelBindingResult.IsModelSet);
 
             var model = Assert.IsType<Order1>(modelBindingResult.Model);
-            Assert.Null(model.Customer);
+            Assert.NotNull(model.Customer);
+            Assert.Equal("1 Microsoft Way", model.Customer.Address.Street);
 
             Assert.Empty(modelState);
             Assert.Equal(0, modelState.ErrorCount);
@@ -630,10 +628,8 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Equal("bill", entry.RawValue);
         }
 
-        // We don't provide enough data in this test for the 'Person' model to be created. So even though there are
-        // form files in the request, it won't be used.
         [Fact]
-        public async Task MutableObjectModelBinder_BindsNestedPOCO_WithFormFileModelBinder_WithPrefix_PartialData()
+        public async Task ComplexTypeModelBinder_BindsNestedPOCO_WithFormFileModelBinder_WithPrefix_PartialData()
         {
             // Arrange
             var parameter = new ParameterDescriptor()
@@ -668,22 +664,29 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.True(modelBindingResult.IsModelSet);
 
             var model = Assert.IsType<Order4>(modelBindingResult.Model);
-            Assert.Null(model.Customer);
+            Assert.NotNull(model.Customer);
+
+            var document = Assert.Single(model.Customer.Documents);
+            Assert.Equal("text.txt", document.FileName);
+            using (var reader = new StreamReader(document.OpenReadStream()))
+            {
+                Assert.Equal("Hello, World!", await reader.ReadToEndAsync());
+            }
+
             Assert.Equal(10, model.ProductId);
 
-            Assert.Single(modelState);
+            Assert.Equal(2, modelState.Count);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
 
+            Assert.Single(modelState, e => e.Key == "parameter.Customer.Documents");
             var entry = Assert.Single(modelState, e => e.Key == "parameter.ProductId").Value;
             Assert.Equal("10", entry.AttemptedValue);
             Assert.Equal("10", entry.RawValue);
         }
 
-        // We don't provide enough data in this test for the 'Person' model to be created. So even though there is
-        // body data in the request, it won't be used.
         [Fact]
-        public async Task MutableObjectModelBinder_BindsNestedPOCO_WithFormFileModelBinder_WithPrefix_NoData()
+        public async Task ComplexTypeModelBinder_BindsNestedPOCO_WithFormFileModelBinder_WithPrefix_NoData()
         {
             // Arrange
             var parameter = new ParameterDescriptor()
@@ -696,7 +699,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var testContext = ModelBindingTestHelper.GetTestContext(request =>
             {
                 request.QueryString = new QueryString("?");
-                SetFormFileBodyContent(request, "Hello, World!", "parameter.Customer.Documents");
+                SetFormFileBodyContent(request, "Hello, World!", "Customer.Documents");
             });
 
             var modelState = testContext.ModelState;
@@ -718,11 +721,20 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.True(modelBindingResult.IsModelSet);
 
             var model = Assert.IsType<Order4>(modelBindingResult.Model);
-            Assert.Null(model.Customer);
+            Assert.NotNull(model.Customer);
 
-            Assert.Empty(modelState);
+            var document = Assert.Single(model.Customer.Documents);
+            Assert.Equal("text.txt", document.FileName);
+            using (var reader = new StreamReader(document.OpenReadStream()))
+            {
+                Assert.Equal("Hello, World!", await reader.ReadToEndAsync());
+            }
+
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
+
+            var entry = Assert.Single(modelState);
+            Assert.Equal("Customer.Documents", entry.Key);
         }
 
         private class Order5
