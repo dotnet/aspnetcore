@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Http
             }
 
             // Null out the TraceIdentifier here as a sign that this request is done,
-            // the HttpContextAcessor implementation relies on this to detect that the request is over 
+            // the HttpContextAccessor implementation relies on this to detect that the request is over 
             httpContext.TraceIdentifier = null;
         }
     }
