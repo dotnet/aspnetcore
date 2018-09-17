@@ -293,7 +293,8 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
 
             ConfigureModuleAndBinding(config.Root, contentRoot, port);
 
-            if (!DeploymentParameters.PublishApplicationBeforeDeployment)
+            var webConfigPath = Path.Combine(contentRoot, "web.config");
+            if (!DeploymentParameters.PublishApplicationBeforeDeployment && !File.Exists(webConfigPath))
             {
                 // The elements normally in the web.config are in the applicationhost.config for unpublished apps.
                 AddAspNetCoreElement(config.Root);
