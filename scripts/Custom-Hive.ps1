@@ -13,14 +13,23 @@ function Test-Template($templateName, $templateArgs, $templateNupkg, $isSPA) {
     Push-Location $tmpDir
     try {
         Run-DotnetNew $templateArgs, "--no-restore"
-        $csproj = "$tmpDir/$templateName.csproj"
-        $csprojContent = Get-Content -Path $csproj -Raw
-        $csprojContent = $csprojContent -replace ('<Project Sdk="Microsoft.NET.Sdk.Web">', "<Project Sdk=""Microsoft.NET.Sdk.Web"">`n<Import Project=""$PSScriptRoot/../test/Templates.Test/bin/Debug/netcoreapp2.2/TemplateTests.props"" />")
-        $csprojContent | Set-Content $csproj
+
+        if($templateArgs -match 'F#')
+        {
+            $extension = "fsproj"
+        }
+        else
+        {
+            $extension = "csproj"
+        }
+
+        $proj = "$tmpDir/$templateName.$extension"
+        $projContent = Get-Content -Path $proj -Raw
+        $projContent = $projContent -replace ('<Project Sdk="Microsoft.NET.Sdk.Web">', "<Project Sdk=""Microsoft.NET.Sdk.Web"">`n<Import Project=""$PSScriptRoot/../test/Templates.Test/bin/Debug/netcoreapp2.2/TemplateTests.props"" />")
+        $projContent | Set-Content $proj
 
         dotnet publish --configuration Release
         dotnet bin\Release\netcoreapp2.2\publish\$templateName.dll
-
     }
     finally {
         Pop-Location
