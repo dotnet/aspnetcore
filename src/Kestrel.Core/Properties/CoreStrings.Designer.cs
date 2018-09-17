@@ -2156,6 +2156,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         internal static string FormatArgumentOutOfRange(object min, object max)
             => string.Format(CultureInfo.CurrentCulture, GetString("ArgumentOutOfRange", "min", "max"), min, max);
 
+        /// <summary>
+        /// Dynamic tables size update did not occur at the beginning of the first header block.
+        /// </summary>
+        internal static string HPackErrorDynamicTableSizeUpdateNotAtBeginningOfHeaderBlock
+        {
+            get => GetString("HPackErrorDynamicTableSizeUpdateNotAtBeginningOfHeaderBlock");
+        }
+
+        /// <summary>
+        /// Dynamic tables size update did not occur at the beginning of the first header block.
+        /// </summary>
+        internal static string FormatHPackErrorDynamicTableSizeUpdateNotAtBeginningOfHeaderBlock()
+            => GetString("HPackErrorDynamicTableSizeUpdateNotAtBeginningOfHeaderBlock");
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);
