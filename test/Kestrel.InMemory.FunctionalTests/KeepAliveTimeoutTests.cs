@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         public async Task ConnectionClosedWhenKeepAliveTimeoutExpires()
         {
             var testContext = new TestServiceContext(LoggerFactory);
-            var heartbeatManager = new HeartbeatManager(testContext.ConnectionManager, testContext.SystemClock.UtcNow);
+            var heartbeatManager = new HeartbeatManager(testContext.ConnectionManager);
 
             using (var server = CreateServer(testContext))
             using (var connection = server.CreateConnection())
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         public async Task ConnectionKeptAliveBetweenRequests()
         {
             var testContext = new TestServiceContext(LoggerFactory);
-            var heartbeatManager = new HeartbeatManager(testContext.ConnectionManager, testContext.SystemClock.UtcNow);
+            var heartbeatManager = new HeartbeatManager(testContext.ConnectionManager);
 
             using (var server = CreateServer(testContext))
             using (var connection = server.CreateConnection())
@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         public async Task ConnectionNotTimedOutWhileRequestBeingSent()
         {
             var testContext = new TestServiceContext(LoggerFactory);
-            var heartbeatManager = new HeartbeatManager(testContext.ConnectionManager, testContext.SystemClock.UtcNow);
+            var heartbeatManager = new HeartbeatManager(testContext.ConnectionManager);
 
             using (var server = CreateServer(testContext))
             using (var connection = server.CreateConnection())
@@ -113,7 +113,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         private async Task ConnectionNotTimedOutWhileAppIsRunning()
         {
             var testContext = new TestServiceContext(LoggerFactory);
-            var heartbeatManager = new HeartbeatManager(testContext.ConnectionManager, testContext.SystemClock.UtcNow);
+            var heartbeatManager = new HeartbeatManager(testContext.ConnectionManager);
             var cts = new CancellationTokenSource();
 
             using (var server = CreateServer(testContext, longRunningCt: cts.Token))
@@ -150,7 +150,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         private async Task ConnectionTimesOutWhenOpenedButNoRequestSent()
         {
             var testContext = new TestServiceContext(LoggerFactory);
-            var heartbeatManager = new HeartbeatManager(testContext.ConnectionManager, testContext.SystemClock.UtcNow);
+            var heartbeatManager = new HeartbeatManager(testContext.ConnectionManager);
 
             using (var server = CreateServer(testContext))
             using (var connection = server.CreateConnection())
@@ -167,7 +167,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         private async Task KeepAliveTimeoutDoesNotApplyToUpgradedConnections()
         {
             var testContext = new TestServiceContext(LoggerFactory);
-            var heartbeatManager = new HeartbeatManager(testContext.ConnectionManager, testContext.SystemClock.UtcNow);
+            var heartbeatManager = new HeartbeatManager(testContext.ConnectionManager);
             var cts = new CancellationTokenSource();
 
             using (var server = CreateServer(testContext, upgradeCt: cts.Token))

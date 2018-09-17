@@ -71,9 +71,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                 trace,
                 serverOptions.Limits.MaxConcurrentUpgradedConnections);
 
-            var now = DateTimeOffset.UtcNow;
-            var heartbeatManager = new HeartbeatManager(connectionManager, now);
-            var dateHeaderValueManager = new DateHeaderValueManager(now);
+            var heartbeatManager = new HeartbeatManager(connectionManager);
+            var dateHeaderValueManager = new DateHeaderValueManager();
             var heartbeat = new Heartbeat(
                 new IHeartbeatHandler[] { dateHeaderValueManager, heartbeatManager },
                 new SystemClock(),

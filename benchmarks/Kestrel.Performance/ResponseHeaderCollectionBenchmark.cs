@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Buffers;
 using System.IO.Pipelines;
 using System.Runtime.CompilerServices;
@@ -177,7 +178,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
             var serviceContext = new ServiceContext
             {
-                DateHeaderValueManager = new DateHeaderValueManager(),
+                DateHeaderValueManager = _dateHeaderValueManager,
                 ServerOptions = new KestrelServerOptions(),
                 Log = new MockTrace(),
                 HttpParser = new HttpParser<Http1ParsingHandler>()
@@ -192,6 +193,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             });
 
             http1Connection.Reset();
+            serviceContext.DateHeaderValueManager.OnHeartbeat(DateTimeOffset.UtcNow);
 
             _responseHeadersDirect = (HttpResponseHeaders)http1Connection.ResponseHeaders;
             var context = new DefaultHttpContext(http1Connection);

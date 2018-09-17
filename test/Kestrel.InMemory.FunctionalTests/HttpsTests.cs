@@ -312,7 +312,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             LoggerFactory.AddProvider(loggerProvider);
 
             var testContext = new TestServiceContext(LoggerFactory);
-            var heartbeatManager = new HeartbeatManager(testContext.ConnectionManager, testContext.SystemClock.UtcNow);
+            var heartbeatManager = new HeartbeatManager(testContext.ConnectionManager);
 
             var handshakeStartedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             TimeSpan handshakeTimeout = default;
