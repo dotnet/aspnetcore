@@ -385,7 +385,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
             public ILogger CreateLogger(string categoryName)
             {
-                if (categoryName == nameof(HttpsConnectionAdapter))
+                if (categoryName == TypeNameHelper.GetTypeDisplayName(typeof(HttpsConnectionAdapter)))
                 {
                     return FilterLogger;
                 }
