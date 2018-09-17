@@ -233,7 +233,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
                     if (currentValues.RemoteIpAndPort != null && checkKnownIps && !CheckKnownAddress(currentValues.RemoteIpAndPort.Address))
                     {
                         // Stop at the first unknown remote IP, but still apply changes processed so far.
-                        _logger.LogDebug(1, $"Unknown proxy: {currentValues.RemoteIpAndPort}");
+                        _logger.LogDebug(1, "Unknown proxy: {RemoteIpAndPort}", currentValues.RemoteIpAndPort);
                         break;
                     }
 
@@ -248,12 +248,12 @@ namespace Microsoft.AspNetCore.HttpOverrides
                     else if (!string.IsNullOrEmpty(set.IpAndPortText))
                     {
                         // Stop at the first unparsable IP, but still apply changes processed so far.
-                        _logger.LogDebug(1, $"Unparsable IP: {set.IpAndPortText}");
+                        _logger.LogDebug(1, "Unparsable IP: {IpAndPortText}", set.IpAndPortText);
                         break;
                     }
                     else if (_options.RequireHeaderSymmetry)
                     {
-                        _logger.LogWarning(2, $"Missing forwarded IPAddress.");
+                        _logger.LogWarning(2, "Missing forwarded IPAddress.");
                         return;
                     }
                 }
