@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         public WebSocketsTests(IISTestSiteFixture fixture)
         {
-            _webSocketUri = fixture.BaseUri.Replace("http:", "ws:");
+            _webSocketUri = fixture.DeploymentResult.ApplicationBaseUri.Replace("http:", "ws:");
         }
 
         [ConditionalFact]

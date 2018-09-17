@@ -15,10 +15,10 @@ namespace Microsoft.AspNetCore.Http.Features
     public interface IServerVariablesFeature
     {
         /// <summary>
-        /// Gets the value of a server variable for the current request.
+        /// Gets or sets the value of a server variable for the current request.
         /// </summary>
         /// <param name="variableName">The variable name</param>
         /// <returns>May return null or empty if the variable does not exist or is not set.</returns>
-        string this[string variableName] { get; }
+        string this[string variableName] { get; set; }
     }
 }

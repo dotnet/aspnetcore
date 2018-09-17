@@ -18,12 +18,10 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         private static readonly bool _isMetStatic;
         private static readonly string _skipReasonStatic;
 
-        private readonly bool _isMet;
-        private readonly string _skipReason;
-
         private static readonly bool _websocketsAvailable;
         private static readonly bool _windowsAuthAvailable;
         private static readonly bool _poolEnvironmentVariablesAvailable;
+        private static readonly bool _dynamicCompressionAvailable;
 
         static RequiresIISAttribute()
         {
@@ -84,6 +82,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             _windowsAuthAvailable = File.Exists(Path.Combine(Environment.SystemDirectory, "inetsrv", "authsspi.dll"));
 
+            _dynamicCompressionAvailable = File.Exists(Path.Combine(Environment.SystemDirectory, "inetsrv", "compdyn.dll"));
+
             var iisRegistryKey = Registry.LocalMachine.OpenSubKey(@"Software\Microsoft\InetStp", writable: false);
             if (iisRegistryKey == null)
             {
@@ -98,47 +98,56 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             }
         }
 
-        public RequiresIISAttribute() 
+        public RequiresIISAttribute()
             : this (IISCapability.None) { }
 
         public RequiresIISAttribute(IISCapability capabilities)
         {
-            _isMet = _isMetStatic;
-            _skipReason = _skipReasonStatic;
+            IsMet = _isMetStatic;
+            SkipReason = _skipReasonStatic;
             if (capabilities.HasFlag(IISCapability.Websockets))
             {
-                _isMet &= _websocketsAvailable;
+                IsMet &= _websocketsAvailable;
                 if (!_websocketsAvailable)
                 {
-                    _skipReason += "The machine does not have IIS websockets installed.";
+                    SkipReason += "The machine does not have IIS websockets installed.";
                 }
             }
             if (capabilities.HasFlag(IISCapability.WindowsAuthentication))
             {
-                _isMet &= _windowsAuthAvailable;
+                IsMet &= _windowsAuthAvailable;
 
                 if (!_windowsAuthAvailable)
                 {
-                    _skipReason += "The machine does not have IIS windows authentication installed.";
+                    SkipReason += "The machine does not have IIS windows authentication installed.";
                 }
             }
             if (capabilities.HasFlag(IISCapability.PoolEnvironmentVariables))
             {
-                _isMet &= _poolEnvironmentVariablesAvailable;
+                IsMet &= _poolEnvironmentVariablesAvailable;
                 if (!_poolEnvironmentVariablesAvailable)
                 {
-                    _skipReason += "The machine does allow for setting environment variables on application pools.";
+                    SkipReason += "The machine does allow for setting environment variables on application pools.";
                 }
             }
 
             if (capabilities.HasFlag(IISCapability.ShutdownToken))
             {
-                _isMet = false;
-                _skipReason += "https://github.com/aspnet/IISIntegration/issues/1074";
+                IsMet = false;
+                SkipReason += "https://github.com/aspnet/IISIntegration/issues/1074";
+            }
+
+            if (capabilities.HasFlag(IISCapability.DynamicCompression))
+            {
+                IsMet &= _dynamicCompressionAvailable;
+                if (!_dynamicCompressionAvailable)
+                {
+                    SkipReason += "The machine does not have IIS dynamic compression installed.";
+                }
             }
         }
 
-        public bool IsMet => _isMet;
-        public string SkipReason => _skipReason;
+        public bool IsMet { get; }
+        public string SkipReason { get; }
     }
 }

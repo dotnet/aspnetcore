@@ -23,7 +23,8 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                                             IHttpUpgradeFeature,
                                             IHttpRequestLifetimeFeature,
                                             IHttpAuthenticationFeature,
-                                            IServerVariablesFeature
+                                            IServerVariablesFeature,
+                                            IHttpBufferingFeature
     {
         // NOTE: When feature interfaces are added to or removed from this HttpProtocol implementation,
         // then the list of `implementedFeatures` in the generated code project MUST also be updated.
@@ -202,13 +203,26 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             {
                 if (string.IsNullOrEmpty(variableName))
                 {
-                    return null;
+                    throw new ArgumentException($"{nameof(variableName)} should be non-empty string");
                 }
 
                 // Synchronize access to native methods that might run in parallel with IO loops
                 lock (_contextLock)
                 {
                     return NativeMethods.HttpTryGetServerVariable(_pInProcessHandler, variableName, out var value) ? value : null;
+                }
+            }
+            set
+            {
+                if (string.IsNullOrEmpty(variableName))
+                {
+                    throw new ArgumentException($"{nameof(variableName)} should be non-empty string");
+                }
+
+                // Synchronize access to native methods that might run in parallel with IO loops
+                lock (_contextLock)
+                {
+                    NativeMethods.HttpSetServerVariable(_pInProcessHandler, variableName, value);
                 }
             }
         }
@@ -283,6 +297,22 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         void IHttpRequestLifetimeFeature.Abort()
         {
             Abort();
+        }
+
+        void IHttpBufferingFeature.DisableRequestBuffering()
+        {
+        }
+
+        void IHttpBufferingFeature.DisableResponseBuffering()
+        {
+            NativeMethods.HttpDisableBuffering(_pInProcessHandler);
+            DisableCompression();
+        }
+
+        private void DisableCompression()
+        {
+            var serverVariableFeature = (IServerVariablesFeature)this;
+            serverVariableFeature["IIS_EnableDynamicCompression"] = "0";
         }
     }
 }

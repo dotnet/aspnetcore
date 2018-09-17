@@ -88,6 +88,19 @@ Finished:
 
 EXTERN_C __MIDL_DECLSPEC_DLLEXPORT
 HRESULT
+http_set_server_variable(
+    _In_ IN_PROCESS_HANDLER* pInProcessHandler,
+    _In_ PCSTR pszVariableName,
+    _In_ PCWSTR pszVariableValue
+)
+{
+    return pInProcessHandler
+        ->QueryHttpContext()
+        ->SetServerVariable(pszVariableName, pszVariableValue);
+}
+
+EXTERN_C __MIDL_DECLSPEC_DLLEXPORT
+HRESULT
 http_set_response_status_code(
     _In_ IN_PROCESS_HANDLER* pInProcessHandler,
     _In_ USHORT statusCode,
@@ -398,6 +411,17 @@ http_cancel_io(
 )
 {
     return pInProcessHandler->QueryHttpContext()->CancelIo();
+}
+
+EXTERN_C __MIDL_DECLSPEC_DLLEXPORT
+HRESULT
+http_disable_buffering(
+    _In_ IN_PROCESS_HANDLER* pInProcessHandler
+)
+{
+    pInProcessHandler->QueryHttpContext()->GetResponse()->DisableBuffering();
+
+    return S_OK;
 }
 
 EXTERN_C __MIDL_DECLSPEC_DLLEXPORT

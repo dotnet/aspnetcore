@@ -35,6 +35,12 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
 
         [ConditionalFact]
+        public async Task CanSetAndReadVariable()
+        {
+            Assert.Equal("ROUNDTRIP: 1", await _fixture.Client.GetStringAsync("/ServerVariable?v=1&q=ROUNDTRIP"));
+        }
+
+        [ConditionalFact]
         public async Task BasePathIsNotPrefixedBySlashSlashQuestionMark()
         {
             Assert.DoesNotContain(@"\\?\", await _fixture.Client.GetStringAsync("/BasePath"));

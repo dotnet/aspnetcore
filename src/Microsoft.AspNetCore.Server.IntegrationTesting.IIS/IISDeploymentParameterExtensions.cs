@@ -80,5 +80,31 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                     aspNetCoreElement.SetAttributeValue("arguments", transformation((string)aspNetCoreElement.Attribute("arguments"), contentRoot));
                 });
         }
+
+        public static void EnableModule(this IISDeploymentParameters parameters, string moduleName, string modulePath)
+        {
+            if (parameters.ServerType == ServerType.IIS)
+            {
+                modulePath = modulePath.Replace("%IIS_BIN%", "%windir%\\System32\\inetsrv");
+            }
+
+            parameters.ServerConfigActionList.Add(
+                (element, _) => {
+                    var webServerElement = element
+                        .RequiredElement("system.webServer");
+
+                    webServerElement
+                        .RequiredElement("globalModules")
+                        .GetOrAdd("add", "name", moduleName)
+                        .SetAttributeValue("image", modulePath);
+
+                    (webServerElement.Element("modules") ??
+                     element
+                         .Element("location")
+                         .RequiredElement("system.webServer")
+                         .RequiredElement("modules"))
+                        .GetOrAdd("add", "name", moduleName);
+                });
+        }
     }
 }
