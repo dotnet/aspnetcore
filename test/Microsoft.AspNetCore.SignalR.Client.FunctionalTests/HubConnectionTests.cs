@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Http.Connections.Client;
+using Microsoft.AspNetCore.Http.Connections.Client.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.AspNetCore.SignalR.Tests;
 using Microsoft.AspNetCore.Testing.xunit;
@@ -398,10 +399,10 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         {
             bool ExpectedErrors(WriteContext writeContext)
             {
-                var firstLogCheck = (writeContext.LoggerName == nameof(Http.Connections.Client.Internal.ServerSentEventsTransport) ||
-                       writeContext.LoggerName == nameof(Http.Connections.Client.Internal.LongPollingTransport)) &&
+                var firstLogCheck = (writeContext.LoggerName == typeof(ServerSentEventsTransport).FullName ||
+                       writeContext.LoggerName == typeof(LongPollingTransport).FullName) &&
                        writeContext.EventId.Name == "ErrorSending";
-                var secondLogCheck = writeContext.LoggerName == nameof(Http.Connections.Client.HttpConnection) &&
+                var secondLogCheck = writeContext.LoggerName == typeof(HttpConnection).FullName &&
                        writeContext.EventId.Name == "TransportThrewExceptionOnStop";
                 return firstLogCheck || secondLogCheck;
             }
