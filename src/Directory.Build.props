@@ -5,4 +5,8 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Include="$(RepositoryRoot)THIRD-PARTY-NOTICES.txt" Pack="true" PackagePath="." />
+  </ItemGroup>
+
 </Project>

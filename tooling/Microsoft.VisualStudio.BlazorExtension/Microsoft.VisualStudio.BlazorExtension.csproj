@@ -271,6 +271,11 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="$(RepositoryRoot)THIRD-PARTY-NOTICES.txt">
+      <Link>Content\THIRD-PARTY-NOTICES.txt</Link>
+      <IncludeInVSIX>true</IncludeInVSIX>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="..\..\LICENSE.txt">
       <Link>Content\LICENSE.txt</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
