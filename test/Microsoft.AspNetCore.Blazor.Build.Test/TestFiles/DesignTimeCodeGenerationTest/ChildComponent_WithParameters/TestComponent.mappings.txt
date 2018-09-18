@@ -15,6 +15,6 @@ Generated Location: (1373:37,18 [4] )
 
 Source Location: (146:5,20 [14] x:\dir\subdir\Test\TestComponent.cshtml)
 |new SomeType()|
-Generated Location: (1596:44,20 [14] )
+Generated Location: (1619:45,20 [14] )
 |new SomeType()|
 

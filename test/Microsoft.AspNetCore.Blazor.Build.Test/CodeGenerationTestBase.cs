@@ -1259,6 +1259,116 @@ namespace Test
         }
 
         [Fact]
+        public void ChildComponent_Generic_TypeInference()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using Microsoft.AspNetCore.Blazor.Components;
+
+namespace Test
+{
+    public class MyComponent<TItem> : BlazorComponent
+    {
+        [Parameter] TItem Item { get; set; }
+    }
+}
+"));
+
+            // Act
+            var generated = CompileToCSharp(@"
+@addTagHelper *, TestAssembly
+<MyComponent Item=""@(""hi"")""/>");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void ChildComponent_Generic_TypeInference_Multiple()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using Microsoft.AspNetCore.Blazor.Components;
+
+namespace Test
+{
+    public class MyComponent<TItem> : BlazorComponent
+    {
+        [Parameter] TItem Item { get; set; }
+    }
+}
+"));
+
+            // Act
+            var generated = CompileToCSharp(@"
+@addTagHelper *, TestAssembly
+<MyComponent Item=""@(""hi"")""/>
+<MyComponent Item=""@(""how are you?"")""/>
+<MyComponent Item=""@(""bye!"")""/>");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void ChildComponent_GenericWeaklyTypedAttribute()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using Microsoft.AspNetCore.Blazor.Components;
+
+namespace Test
+{
+    public class MyComponent<TItem> : BlazorComponent
+    {
+        [Parameter] TItem Item { get; set; }
+    }
+}
+"));
+
+            // Act
+            var generated = CompileToCSharp(@"
+@addTagHelper *, TestAssembly
+<MyComponent TItem=string Item=""@(""hi"")"" Other=""@(17)""/>");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void ChildComponent_GenericWeaklyTypedAttribute_TypeInference()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using Microsoft.AspNetCore.Blazor.Components;
+
+namespace Test
+{
+    public class MyComponent<TItem> : BlazorComponent
+    {
+        [Parameter] TItem Item { get; set; }
+    }
+}
+"));
+
+            // Act
+            var generated = CompileToCSharp(@"
+@addTagHelper *, TestAssembly
+<MyComponent Item=""@(""hi"")"" Other=""@(17)""/>");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
         public void ChildComponent_GenericBind()
         {
             // Arrange
@@ -1271,10 +1381,10 @@ namespace Test
     public class MyComponent<TItem> : BlazorComponent
     {
         [Parameter]
-        TItem Value { get; set; }
+        TItem Item { get; set; }
 
         [Parameter]
-        Action<TItem> ValueChanged { get; set; }
+        Action<TItem> ItemChanged { get; set; }
     }
 }
 "));
@@ -1283,6 +1393,102 @@ namespace Test
             var generated = CompileToCSharp(@"
 @addTagHelper *, TestAssembly
 <MyComponent TItem=string bind-Item=Value/>
+@functions {
+    string Value;
+}");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void ChildComponent_GenericBind_TypeInference()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using System;
+using Microsoft.AspNetCore.Blazor.Components;
+
+namespace Test
+{
+    public class MyComponent<TItem> : BlazorComponent
+    {
+        [Parameter]
+        TItem Item { get; set; }
+
+        [Parameter]
+        Action<TItem> ItemChanged { get; set; }
+    }
+}
+"));
+
+            // Act
+            var generated = CompileToCSharp(@"
+@addTagHelper *, TestAssembly
+<MyComponent bind-Item=Value/>
+@functions {
+    string Value;
+}");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void ChildComponent_GenericBindWeaklyTyped()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using System;
+using Microsoft.AspNetCore.Blazor.Components;
+
+namespace Test
+{
+    public class MyComponent<TItem> : BlazorComponent
+    {
+    }
+}
+"));
+
+            // Act
+            var generated = CompileToCSharp(@"
+@addTagHelper *, TestAssembly
+<MyComponent TItem=string bind-Item=Value/>
+@functions {
+    string Value;
+}");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void ChildComponent_GenericBindWeaklyTyped_TypeInference()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using System;
+using Microsoft.AspNetCore.Blazor.Components;
+
+namespace Test
+{
+    public class MyComponent<TItem> : BlazorComponent
+    {
+        [Parameter] TItem Value { get; set; }
+    }
+}
+"));
+
+            // Act
+            var generated = CompileToCSharp(@"
+@addTagHelper *, TestAssembly
+<MyComponent bind-Item=Value Value=@(18)/>
 @functions {
     string Value;
 }");
@@ -1316,6 +1522,38 @@ namespace Test
             var generated = CompileToCSharp(@"
 @addTagHelper *, TestAssembly
 <MyComponent TItem=string Item=""@(""hi"")"">
+  <div>@context.ToLower()</div>
+</MyComponent>");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void ChildComponent_GenericChildContent_TypeInference()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using Microsoft.AspNetCore.Blazor;
+using Microsoft.AspNetCore.Blazor.Components;
+
+namespace Test
+{
+    public class MyComponent<TItem> : BlazorComponent
+    {
+        [Parameter] TItem Item { get; set; }
+
+        [Parameter] RenderFragment<TItem> ChildContent { get; set; }
+    }
+}
+"));
+
+            // Act
+            var generated = CompileToCSharp(@"
+@addTagHelper *, TestAssembly
+<MyComponent Item=""@(""hi"")"">
   <div>@context.ToLower()</div>
 </MyComponent>");
 
@@ -1360,6 +1598,119 @@ namespace Test
   @System.Math.Max(0, item.Item);
 </AnotherChildContent>
 </MyComponent>");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void ChildComponent_MultipleGenerics_TypeInference()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using System.Collections.Generic;
+using Microsoft.AspNetCore.Blazor;
+using Microsoft.AspNetCore.Blazor.Components;
+
+namespace Test
+{
+    public class MyComponent<TItem1, TItem2> : BlazorComponent
+    {
+        [Parameter] TItem1 Item { get; set; }
+
+        [Parameter] List<TItem2> Items { get; set; }
+
+        [Parameter] RenderFragment<TItem1> ChildContent { get; set; }
+
+        [Parameter] RenderFragment<Context> AnotherChildContent { get; set; }
+
+        public class Context
+        {
+            public TItem2 Item { get; set; }
+        }
+    }
+}
+"));
+
+            // Act
+            var generated = CompileToCSharp(@"
+@addTagHelper *, TestAssembly
+<MyComponent Item=""@(""hi"")"" Items=@(new List<long>())>
+  <ChildContent><div>@context.ToLower()</div></ChildContent>
+<AnotherChildContent Context=""item"">
+  @System.Math.Max(0, item.Item);
+</AnotherChildContent>
+</MyComponent>");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void GenericComponent_WithComponentRef()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using Microsoft.AspNetCore.Blazor;
+using Microsoft.AspNetCore.Blazor.Components;
+
+namespace Test
+{
+    public class MyComponent<TItem> : BlazorComponent
+    {
+        [Parameter] TItem Item { get; set; }
+    }
+}
+"));
+
+            // Act
+            var generated = CompileToCSharp(@"
+@addTagHelper *, TestAssembly
+<MyComponent TItem=int Item=""3"" ref=""_my"" />
+
+@functions {
+    private MyComponent<int> _my;
+    public void Foo() { System.GC.KeepAlive(_my); }
+}
+");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void GenericComponent_WithComponentRef_TypeInference()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using Microsoft.AspNetCore.Blazor;
+using Microsoft.AspNetCore.Blazor.Components;
+
+namespace Test
+{
+    public class MyComponent<TItem> : BlazorComponent
+    {
+        [Parameter] TItem Item { get; set; }
+    }
+}
+"));
+
+            // Act
+            var generated = CompileToCSharp(@"
+@addTagHelper *, TestAssembly
+<MyComponent Item=""3"" ref=""_my"" />
+
+@functions {
+    private MyComponent<int> _my;
+    public void Foo() { System.GC.KeepAlive(_my); }
+}
+");
 
             // Assert
             AssertDocumentNodeMatchesBaseline(generated.CodeDocument);

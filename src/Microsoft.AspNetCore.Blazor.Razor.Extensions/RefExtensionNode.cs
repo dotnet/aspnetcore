@@ -1,6 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.AspNetCore.Blazor.Shared;
 using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 using System;
@@ -9,14 +10,6 @@ namespace Microsoft.AspNetCore.Blazor.Razor
 {
     internal class RefExtensionNode : ExtensionIntermediateNode
     {
-        public override IntermediateNodeCollection Children => IntermediateNodeCollection.ReadOnly;
-
-        public IntermediateToken IdentifierToken { get; }
-
-        public bool IsComponentCapture { get; }
-
-        public string ComponentCaptureTypeName { get; }
-
         public RefExtensionNode(IntermediateToken identifierToken)
         {
             IdentifierToken = identifierToken ?? throw new ArgumentNullException(nameof(identifierToken));
@@ -34,6 +27,16 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             IsComponentCapture = true;
             ComponentCaptureTypeName = componentCaptureTypeName;
         }
+
+        public override IntermediateNodeCollection Children => IntermediateNodeCollection.ReadOnly;
+
+        public IntermediateToken IdentifierToken { get; }
+
+        public bool IsComponentCapture { get; }
+
+        public string ComponentCaptureTypeName { get; set; }
+
+        public string TypeName => $"global::System.Action<{(IsComponentCapture ? ComponentCaptureTypeName : "global::" + BlazorApi.ElementRef.FullTypeName)}>";
 
         public override void Accept(IntermediateNodeVisitor visitor)
         {

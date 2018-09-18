@@ -5,7 +5,7 @@ Generated Location: (559:16,38 [15] )
 
 Source Location: (49:1,18 [10] x:\dir\subdir\Test\TestComponent.cshtml)
 |myInstance|
-Generated Location: (1202:32,18 [10] )
+Generated Location: (1225:33,18 [10] )
 |myInstance|
 
 Source Location: (143:5,12 [104] x:\dir\subdir\Test\TestComponent.cshtml)
@@ -13,7 +13,7 @@ Source Location: (143:5,12 [104] x:\dir\subdir\Test\TestComponent.cshtml)
     private Test.MyComponent myInstance;
     public void Foo() { System.GC.KeepAlive(myInstance); }
 |
-Generated Location: (1386:39,12 [104] )
+Generated Location: (1409:40,12 [104] )
 |
     private Test.MyComponent myInstance;
     public void Foo() { System.GC.KeepAlive(myInstance); }

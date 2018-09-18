@@ -26,6 +26,7 @@ global::System.Object __typeHelper = "*, TestAssembly";
         protected override void BuildRenderTree(Microsoft.AspNetCore.Blazor.RenderTree.RenderTreeBuilder builder)
         {
             base.BuildRenderTree(builder);
+            __o = "";
             __o = 
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
                                                        43.ToString()

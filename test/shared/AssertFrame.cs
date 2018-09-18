@@ -123,6 +123,13 @@ namespace Microsoft.AspNetCore.Blazor.Test.Helpers
             AssertFrame.Sequence(frame, sequence);
         }
 
+        public static void ComponentReferenceCapture(RenderTreeFrame frame, int? sequence = null)
+        {
+            Assert.Equal(RenderTreeFrameType.ComponentReferenceCapture, frame.FrameType);
+            Assert.NotNull(frame.ComponentReferenceCaptureAction);
+            AssertFrame.Sequence(frame, sequence);
+        }
+
         public static void ComponentReferenceCapture(RenderTreeFrame frame, Action<object> action, int? sequence = null)
         {
             Assert.Equal(RenderTreeFrameType.ComponentReferenceCapture, frame.FrameType);

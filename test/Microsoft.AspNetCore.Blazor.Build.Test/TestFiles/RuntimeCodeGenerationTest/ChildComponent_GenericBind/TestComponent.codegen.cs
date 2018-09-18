@@ -16,8 +16,8 @@ namespace Test
         {
             base.BuildRenderTree(builder);
             builder.OpenComponent<Test.MyComponent<string>>(0);
-            builder.AddAttribute(1, "Item", Microsoft.AspNetCore.Blazor.Components.BindMethods.GetValue(Value));
-            builder.AddAttribute(2, "ItemChanged", Microsoft.AspNetCore.Blazor.Components.BindMethods.SetValueHandler(__value => Value = __value, Value));
+            builder.AddAttribute(1, "Item", Microsoft.AspNetCore.Blazor.Components.RuntimeHelpers.TypeCheck<string>(Microsoft.AspNetCore.Blazor.Components.BindMethods.GetValue(Value)));
+            builder.AddAttribute(2, "ItemChanged", new System.Action<string>(__value => Value = __value));
             builder.CloseComponent();
         }
         #pragma warning restore 1998

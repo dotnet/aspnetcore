@@ -40,6 +40,7 @@ global::System.Object __typeHelper = "*, TestAssembly";
 #line default
 #line hidden
             );
+            __o = "";
             __o = Microsoft.AspNetCore.Blazor.Components.RuntimeHelpers.TypeCheck<Test.SomeType>(
 #line 6 "x:\dir\subdir\Test\TestComponent.cshtml"
                     new SomeType()

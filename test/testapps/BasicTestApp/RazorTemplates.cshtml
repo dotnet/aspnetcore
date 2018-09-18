@@ -6,5 +6,5 @@
     @{
         RenderFragment<OrderedList<string>.Context> template = (context) => @<li>#@context.Index - @context.Item.ToLower()</li>;
     }
-    <OrderedList Items="@items" Template="@template" TItem="string"/>
+    <OrderedList Items="@items" Template="@template" />
 </div>

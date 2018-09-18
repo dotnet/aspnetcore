@@ -5,6 +5,6 @@ Generated Location: (559:16,38 [15] )
 
 Source Location: (85:1,54 [26] x:\dir\subdir\Test\TestComponent.cshtml)
 |context.ToLowerInvariant()|
-Generated Location: (1234:30,54 [26] )
+Generated Location: (1257:31,54 [26] )
 |context.ToLowerInvariant()|
 

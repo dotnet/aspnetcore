@@ -280,6 +280,24 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             var attributesText = string.Join(", ", attributes.Select(a => $"'{a.Name}'"));
             return RazorDiagnostic.Create(GenericComponentMissingTypeArgument, source ?? SourceSpan.Undefined, component.TagName, attributesText);
         }
+
+        public static readonly RazorDiagnosticDescriptor GenericComponentTypeInferenceUnderspecified =
+            new RazorDiagnosticDescriptor(
+                "BL10001",
+                () => "The type of component '{0}' cannot be inferred based on the values provided. Consider specifying the type arguments " +
+                    "directly using the following attributes: {1}.",
+                RazorDiagnosticSeverity.Error);
+
+        public static RazorDiagnostic Create_GenericComponentTypeInferenceUnderspecified(
+            SourceSpan? source,
+            ComponentExtensionNode component,
+            IEnumerable<BoundAttributeDescriptor> attributes)
+        {
+            Debug.Assert(component.Component.IsGenericTypedComponent());
+
+            var attributesText = string.Join(", ", attributes.Select(a => $"'{a.Name}'"));
+            return RazorDiagnostic.Create(GenericComponentTypeInferenceUnderspecified, source ?? SourceSpan.Undefined, component.TagName, attributesText);
+        }
     }
 
 }

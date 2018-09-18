@@ -1,11 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Blazor.Shared;
-using Microsoft.AspNetCore.Razor.Language;
-using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 
 namespace Microsoft.AspNetCore.Blazor.Razor
 {
@@ -21,27 +19,18 @@ namespace Microsoft.AspNetCore.Blazor.Razor
 
         public string BuilderVarName { get; private set; } = "builder";
 
-        public void OpenElementScope(string tagName)
-        {
-            _stack.Push(new ScopeEntry(tagName, ScopeKind.Element));
-        }
-
-        public void OpenComponentScope(CodeRenderingContext context, string name, string type, string parameterName)
+        public void OpenComponentScope(CodeRenderingContext context, string name, string parameterName)
         {
             var scope = new ScopeEntry(name, ScopeKind.Component);
             _stack.Push(scope);
 
-            var blazorNodeWriter = (BlazorNodeWriter)context.NodeWriter;
-            blazorNodeWriter.BeginWriteAttribute(context.CodeWriter, name);
             OffsetBuilderVarNumber(1);
 
             // Writes code that looks like:
             //
-            // builder.AddAttribute(0, "{name}", ({type})((__builder) => { ... }));
+            // ((__builder) => { ... })
             // OR
-            // builder.AddAttribute(0, "{name}", ({type})((context) => (__builder) => { ... }));
-
-            context.CodeWriter.Write($"({type})(");
+            // ((context) => (__builder) => { ... })
 
             if (parameterName != null)
             {
@@ -59,26 +48,13 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             // Templates always get a lambda scope, because they are defined as a lambda.
             OffsetBuilderVarNumber(1);
             currentScope.LambdaScope = context.CodeWriter.BuildLambda(BuilderVarName);
-
         }
 
         public void CloseScope(CodeRenderingContext context)
         {
             var currentScope = _stack.Pop();
-
-            // When closing the scope for a component with children, it's time to close the lambda
-            if (currentScope.LambdaScope != null)
-            {
-                currentScope.LambdaScope.Dispose();
-
-                if (currentScope.Kind == ScopeKind.Component)
-                {
-                    context.CodeWriter.Write(")");
-                    context.CodeWriter.WriteEndMethodInvocation();
-                }
-
-                OffsetBuilderVarNumber(-1);
-            }
+            currentScope.LambdaScope.Dispose();
+            OffsetBuilderVarNumber(-1);
         }
 
         private void OffsetBuilderVarNumber(int delta)
@@ -108,7 +84,6 @@ namespace Microsoft.AspNetCore.Blazor.Razor
 
         private enum ScopeKind
         {
-            Element,
             Component,
             Template,
         }

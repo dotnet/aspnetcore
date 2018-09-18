@@ -33,14 +33,15 @@ global::System.Object __typeHelper = "*, TestAssembly";
 #line default
 #line hidden
             );
-            __o = Microsoft.AspNetCore.Blazor.Components.BindMethods.GetValue(
+            __o = Microsoft.AspNetCore.Blazor.Components.RuntimeHelpers.TypeCheck<string>(Microsoft.AspNetCore.Blazor.Components.BindMethods.GetValue(
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
                                     Value
 
 #line default
 #line hidden
-            );
-            __o = Microsoft.AspNetCore.Blazor.Components.BindMethods.SetValueHandler(__value => Value = __value, Value);
+            ));
+            __o = new System.Action<string>(
+            __value => Value = __value);
             builder.AddAttribute(-1, "ChildContent", (Microsoft.AspNetCore.Blazor.RenderFragment)((builder2) => {
             }
             ));
