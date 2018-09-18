@@ -11,12 +11,6 @@ namespace Microsoft.CodeAnalysis.Razor
         private INamedTypeSymbol _interface;
         private List<INamedTypeSymbol> _results;
 
-        public static TagHelperTypeVisitor Create(Compilation compilation, List<INamedTypeSymbol> results)
-        {
-            var @interface = compilation.GetTypeByMetadataName(TagHelperTypes.ITagHelper);
-            return new TagHelperTypeVisitor(@interface, results);
-        }
-
         public TagHelperTypeVisitor(INamedTypeSymbol @interface, List<INamedTypeSymbol> results)
         {
             _interface = @interface;
