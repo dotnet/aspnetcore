@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         public static void AssertWorkerProcessStop(this IISDeploymentResult deploymentResult)
         {
             var hostProcess = deploymentResult.HostProcess;
-            Assert.True(hostProcess.WaitForExit((int)TimeoutExtensions.DefaultTimeout.TotalMilliseconds));
+            Assert.True(hostProcess.WaitForExit((int)TimeoutExtensions.DefaultTimeoutValue.TotalMilliseconds));
 
             if (deploymentResult.DeploymentParameters.ServerType == ServerType.IISExpress)
             {

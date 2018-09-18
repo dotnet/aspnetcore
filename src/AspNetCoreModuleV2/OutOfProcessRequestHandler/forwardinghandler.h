@@ -68,9 +68,7 @@ public:
     StaticTerminate();
 
     VOID
-    TerminateRequest(
-        bool    fClientInitiated
-    );
+    NotifyDisconnect() override;
 
     static void * operator new(size_t size);
 
@@ -220,7 +218,6 @@ private:
     DWORD                               m_cMinBufferLimit;
     ULONGLONG                           m_cContentLength;
     WEBSOCKET_HANDLER *                 m_pWebSocket;
-    ASYNC_DISCONNECT_CONTEXT *          m_pDisconnect;
 
     BYTE *                              m_pEntityBuffer;
     static const SIZE_T                 INLINE_ENTITY_BUFFERS = 8;
@@ -239,5 +236,5 @@ private:
     mutable LONG                        m_cRefs;
     IHttpContext*                       m_pW3Context;
     std::unique_ptr<OUT_OF_PROCESS_APPLICATION, IAPPLICATION_DELETER> m_pApplication;
-    HTTP_MODULE_ID                      m_pModuleId;
+    bool                                m_fReactToDisconnect;
 };

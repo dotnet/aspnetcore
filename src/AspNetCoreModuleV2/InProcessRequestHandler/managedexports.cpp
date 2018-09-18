@@ -16,6 +16,7 @@ register_callbacks(
     _In_ IN_PROCESS_APPLICATION* pInProcessApplication,
     _In_ PFN_REQUEST_HANDLER request_handler,
     _In_ PFN_SHUTDOWN_HANDLER shutdown_handler,
+    _In_ PFN_DISCONNECT_HANDLER disconnect_handler,
     _In_ PFN_ASYNC_COMPLETION_HANDLER async_completion_handler,
     _In_ VOID* pvRequstHandlerContext,
     _In_ VOID* pvShutdownHandlerContext
@@ -29,6 +30,7 @@ register_callbacks(
     pInProcessApplication->SetCallbackHandles(
         request_handler,
         shutdown_handler,
+        disconnect_handler,
         async_completion_handler,
         pvRequstHandlerContext,
         pvShutdownHandlerContext
@@ -421,6 +423,16 @@ http_disable_buffering(
 {
     pInProcessHandler->QueryHttpContext()->GetResponse()->DisableBuffering();
 
+    return S_OK;
+}
+
+EXTERN_C __MIDL_DECLSPEC_DLLEXPORT
+HRESULT
+http_close_connection(
+    _In_ IN_PROCESS_HANDLER* pInProcessHandler
+)
+{
+    pInProcessHandler->QueryHttpContext()->GetResponse()->ResetConnection();
     return S_OK;
 }
 

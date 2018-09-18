@@ -11,11 +11,16 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
 
     public static class TimeoutExtensions
     {
-        public static TimeSpan DefaultTimeout = TimeSpan.FromSeconds(300);
+        public static TimeSpan DefaultTimeoutValue = TimeSpan.FromSeconds(300);
 
-        public static Task TimeoutAfterDefault(this Task task, [CallerFilePath] string filePath = null, [CallerLineNumber] int lineNumber = -1)
+        public static Task DefaultTimeout(this Task task, [CallerFilePath] string filePath = null, [CallerLineNumber] int lineNumber = -1)
         {
-            return task.TimeoutAfter(DefaultTimeout, filePath, lineNumber);
+            return task.TimeoutAfter(DefaultTimeoutValue, filePath, lineNumber);
+        }
+
+        public static Task<T> DefaultTimeout<T>(this Task<T> task, [CallerFilePath] string filePath = null, [CallerLineNumber] int lineNumber = -1)
+        {
+            return task.TimeoutAfter(DefaultTimeoutValue, filePath, lineNumber);
         }
     }
 }

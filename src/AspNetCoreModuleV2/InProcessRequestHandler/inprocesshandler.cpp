@@ -6,6 +6,7 @@
 #include "aspnetcore_event.h"
 #include "IOutputManager.h"
 #include "ShuttingDownApplication.h"
+#include "ntassert.h"
 
 ALLOC_CACHE_HANDLER * IN_PROCESS_HANDLER::sm_pAlloc = NULL;
 
@@ -14,6 +15,7 @@ IN_PROCESS_HANDLER::IN_PROCESS_HANDLER(
     _In_ IHttpContext   *pW3Context,
     _In_ PFN_REQUEST_HANDLER pRequestHandler,
     _In_ void * pRequestHandlerContext,
+    _In_ PFN_DISCONNECT_HANDLER pDisconnectHandler,
     _In_ PFN_ASYNC_COMPLETION_HANDLER pAsyncCompletion
 ): m_pManagedHttpContext(nullptr),
    m_requestNotificationStatus(RQ_NOTIFICATION_PENDING),
@@ -22,7 +24,8 @@ IN_PROCESS_HANDLER::IN_PROCESS_HANDLER(
    m_pApplication(std::move(pApplication)),
    m_pRequestHandler(pRequestHandler),
    m_pRequestHandlerContext(pRequestHandlerContext),
-   m_pAsyncCompletionHandler(pAsyncCompletion)
+   m_pAsyncCompletionHandler(pAsyncCompletion),
+   m_pDisconnectHandler(pDisconnectHandler)
 {
 }
 
@@ -63,7 +66,7 @@ IN_PROCESS_HANDLER::OnExecuteRequestHandler()
     {
         return ServerShutdownMessage();
     }
-    
+
     return m_pRequestHandler(this, m_pRequestHandlerContext);
 }
 
@@ -87,6 +90,7 @@ IN_PROCESS_HANDLER::OnAsyncCompletion(
         return ServerShutdownMessage();
     }
 
+    assert(m_pManagedHttpContext != nullptr);
     // Call the managed handler for async completion.
     return m_pAsyncCompletionHandler(m_pManagedHttpContext, hrCompletionStatus, cbCompletion);
 }
@@ -97,11 +101,16 @@ REQUEST_NOTIFICATION_STATUS IN_PROCESS_HANDLER::ServerShutdownMessage() const
 }
 
 VOID
-IN_PROCESS_HANDLER::TerminateRequest(
-    bool    fClientInitiated
-)
+IN_PROCESS_HANDLER::NotifyDisconnect()
 {
-    UNREFERENCED_PARAMETER(fClientInitiated);
+    if (m_pApplication->QueryBlockCallbacksIntoManaged() ||
+        m_fManagedRequestComplete)
+    {
+        return;
+    }
+
+    assert(m_pManagedHttpContext != nullptr);
+    m_pDisconnectHandler(m_pManagedHttpContext);
 }
 
 VOID
@@ -110,6 +119,7 @@ IN_PROCESS_HANDLER::IndicateManagedRequestComplete(
 )
 {
     m_fManagedRequestComplete = TRUE;
+    m_pManagedHttpContext = nullptr;
 }
 
 VOID

@@ -44,6 +44,8 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             }
             finally
             {
+                _streams.Stop();
+
                 if (!HasResponseStarted && _applicationException == null && _onStarting != null)
                 {
                     await FireOnStarting();
@@ -91,7 +93,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                 }
 
                 // Cancel all remaining IO, there might be reads pending if not entire request body was sent by client
-                AsyncIO.Dispose();
+                AsyncIO?.Dispose();
 
                 if (_readBodyTask != null)
                 {

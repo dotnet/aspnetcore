@@ -15,6 +15,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.AspNetCore.Server.IIS.Core.IO;
@@ -31,6 +32,8 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         protected readonly IntPtr _pInProcessHandler;
 
         private readonly IISServerOptions _options;
+
+        protected Streams _streams;
 
         private volatile bool _hasResponseStarted;
         private volatile bool _hasRequestReadingStarted;
@@ -62,7 +65,11 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         private const string BasicString = "Basic";
 
 
-        internal unsafe IISHttpContext(MemoryPool<byte> memoryPool, IntPtr pInProcessHandler, IISServerOptions options, IISHttpServer server)
+        internal unsafe IISHttpContext(
+            MemoryPool<byte> memoryPool,
+            IntPtr pInProcessHandler,
+            IISServerOptions options,
+            IISHttpServer server)
             : base((HttpApiTypes.HTTP_REQUEST*)NativeMethods.HttpGetRawRequest(pInProcessHandler))
         {
             _memoryPool = memoryPool;
@@ -78,7 +85,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         public string Path { get; set; }
         public string QueryString { get; set; }
         public string RawTarget { get; set; }
-        public CancellationToken RequestAborted { get; set; }
+
         public bool HasResponseStarted => _hasResponseStarted;
         public IPAddress RemoteIpAddress { get; set; }
         public int RemotePort { get; set; }
@@ -151,9 +158,9 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                 _currentIHttpUpgradeFeature = null;
             }
 
-            RequestBody = new IISHttpRequestBody(this);
-            ResponseBody = new IISHttpResponseBody(this);
+            _streams = new Streams(this);
 
+            (RequestBody, ResponseBody) = _streams.Start();
 
             var pipe = new Pipe(
                 new PipeOptions(
@@ -223,9 +230,9 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                 }
                 // Client might be disconnected at this point
                 // don't leak the exception
-                catch (IOException)
+                catch (ConnectionResetException)
                 {
-                    // ignore
+                    ConnectionReset();
                 }
             }
 
@@ -255,7 +262,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
         private void ThrowResponseAbortedException()
         {
-            throw new ObjectDisposedException("Unhandled application exception", _applicationException);
+            throw new ObjectDisposedException(CoreStrings.UnhandledApplicationException, _applicationException);
         }
 
         protected Task ProduceEnd()
@@ -338,11 +345,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                     }
                 }
             }
-        }
-
-        public void Abort()
-        {
-            // TODO
         }
 
         public abstract Task<bool> ProcessRequestAsync();
@@ -459,27 +461,28 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             {
                 if (disposing)
                 {
-                    // TODO: dispose managed state (managed objects).
                     _thisHandle.Free();
                 }
+
                 if (WindowsUser?.Identity is WindowsIdentity wi)
                 {
                     wi.Dispose();
                 }
+
+                _abortedCts?.Dispose();
+
                 disposedValue = true;
             }
         }
 
-        // This code added to correctly implement the disposable pattern.
         public override void Dispose()
         {
-            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
             Dispose(disposing: true);
         }
 
-        private void ThrowResponseAlreadyStartedException(string value)
+        private void ThrowResponseAlreadyStartedException(string name)
         {
-            throw new InvalidOperationException("Response already started");
+            throw new InvalidOperationException(CoreStrings.FormatParameterReadOnlyAfterResponseStarted(name));
         }
 
         private WindowsPrincipal GetWindowsPrincipal()

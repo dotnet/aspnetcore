@@ -48,6 +48,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
         }
 
         public Socket Socket => _socket;
+        public Stream Stream => _stream;
 
         public void Dispose()
         {

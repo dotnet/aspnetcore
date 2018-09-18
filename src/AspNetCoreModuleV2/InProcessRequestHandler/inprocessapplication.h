@@ -10,6 +10,7 @@
 
 class IN_PROCESS_HANDLER;
 typedef REQUEST_NOTIFICATION_STATUS(WINAPI * PFN_REQUEST_HANDLER) (IN_PROCESS_HANDLER* pInProcessHandler, void* pvRequestHandlerContext);
+typedef VOID(WINAPI * PFN_DISCONNECT_HANDLER) (void *pvManagedHttpContext);
 typedef BOOL(WINAPI * PFN_SHUTDOWN_HANDLER) (void* pvShutdownHandlerContext);
 typedef REQUEST_NOTIFICATION_STATUS(WINAPI * PFN_ASYNC_COMPLETION_HANDLER)(void *pvManagedHttpContext, HRESULT hrCompletionStatus, DWORD cbCompletion);
 
@@ -33,6 +34,7 @@ public:
     SetCallbackHandles(
         _In_ PFN_REQUEST_HANDLER request_callback,
         _In_ PFN_SHUTDOWN_HANDLER shutdown_callback,
+        _In_ PFN_DISCONNECT_HANDLER disconnect_callback,
         _In_ PFN_ASYNC_COMPLETION_HANDLER managed_context_callback,
         _In_ VOID* pvRequstHandlerContext,
         _In_ VOID* pvShutdownHandlerContext
@@ -48,14 +50,14 @@ public:
     // Executes the .NET Core process
     void
     ExecuteApplication();
-    
+
     HRESULT
     LoadManagedApplication();
 
 
     void
     QueueStop();
-    
+
     void
     StopIncomingRequests()
     {
@@ -110,7 +112,7 @@ public:
 private:
     struct ExecuteClrContext: std::enable_shared_from_this<ExecuteClrContext>
     {
-        ExecuteClrContext(): 
+        ExecuteClrContext():
             m_argc(0),
             m_pProc(nullptr),
             m_exitCode(0),
@@ -121,11 +123,11 @@ private:
         DWORD m_argc;
         std::unique_ptr<PCWSTR[]>   m_argv;
         hostfxr_main_fn m_pProc;
-        
+
         int m_exitCode;
         int m_exceptionCode;
     };
-    
+
     // Thread executing the .NET Core process this might be abandoned in timeout cases
     std::thread                     m_clrThread;
     // Thread tracking the CLR thread, this one is always joined on shutdown
@@ -144,6 +146,7 @@ private:
     VOID*                           m_ShutdownHandlerContext;
 
     PFN_ASYNC_COMPLETION_HANDLER    m_AsyncCompletionHandler;
+    PFN_DISCONNECT_HANDLER          m_DisconnectHandler;
 
     std::wstring                    m_dotnetExeKnownLocation;
 
@@ -164,7 +167,7 @@ private:
 
     HRESULT
     SetEnvironmentVariablesOnWorkerProcess();
-    
+
     void
     StopClr();
 
@@ -175,7 +178,7 @@ private:
     static
     void
     ExecuteClr(const std::shared_ptr<ExecuteClrContext> &context);
-    
+
     // Allows to override call to hostfxr_main with custom callback
     // used in testing
     inline static hostfxr_main_fn  s_fMainCallback = nullptr;

@@ -3,9 +3,9 @@
 
 using System;
 using System.Buffers;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections;
 
 namespace Microsoft.AspNetCore.Server.IIS.Core
 {
@@ -84,6 +84,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
         private async Task ReadBody()
         {
+            Exception error = null;
             try
             {
                 while (true)
@@ -112,18 +113,24 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                     }
                 }
             }
+            catch (ConnectionResetException ex)
+            {
+                ConnectionReset();
+                error = ex;
+            }
             catch (Exception ex)
             {
-                _bodyInputPipe.Writer.Complete(ex);
+                error = ex;
             }
             finally
             {
-                _bodyInputPipe.Writer.Complete();
+                _bodyInputPipe.Writer.Complete(error);
             }
         }
 
         private async Task WriteBody(bool flush = false)
         {
+            Exception error = null;
             try
             {
                 while (true)
@@ -160,17 +167,51 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                 }
             }
             // We want to swallow IO exception and allow app to finish writing
+            catch (ConnectionResetException)
+            {
+                ConnectionReset();
+            }
             catch (Exception ex)
             {
-                if (!(ex is IOException))
-                {
-                    _bodyOutput.Reader.Complete(ex);
-                }
+                error = ex;
             }
             finally
             {
-                _bodyOutput.Reader.Complete();
+                _bodyOutput.Reader.Complete(error);
             }
+        }
+
+        private void AbortIO()
+        {
+            if (Interlocked.CompareExchange(ref _requestAborted, 1, 0) != 0)
+            {
+                return;
+            }
+
+            _bodyOutput.Dispose();
+
+            try
+            {
+                _abortedCts?.Cancel();
+            }
+            catch (Exception)
+            {
+                // ignore
+            }
+        }
+
+        public void Abort(Exception reason)
+        {
+            _bodyOutput.Abort(reason);
+            _streams.Abort(reason);
+            NativeMethods.HttpCloseConnection(_pInProcessHandler);
+
+            AbortIO();
+        }
+
+        internal void ConnectionReset()
+        {
+            AbortIO();
         }
     }
 }

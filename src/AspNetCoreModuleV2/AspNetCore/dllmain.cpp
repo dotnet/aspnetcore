@@ -41,7 +41,7 @@ BOOL WINAPI DllMain(HMODULE hModule,
     switch (ul_reason_for_call)
     {
     case DLL_PROCESS_ATTACH:
-        
+
         ALLOC_CACHE_HANDLER::StaticInitialize();
         g_hServerModule = hModule;
         DisableThreadLibraryCalls(hModule);
@@ -101,7 +101,7 @@ HRESULT
     {
         g_hEventLog = RegisterEventSource(nullptr, ASPNETCORE_EVENT_PROVIDER);
     }
-   
+
     // check whether the feature is disabled due to security reason
     if (RegOpenKeyEx(HKEY_LOCAL_MACHINE,
         L"SOFTWARE\\Microsoft\\IIS Extensions\\IIS AspNetCore Module V2\\Parameters",
@@ -144,9 +144,9 @@ HRESULT
     // The ASPNET_CORE_PROXY_MODULE_FACTORY::Terminate method will clean any
     // static object initialized.
     //
-    
+
     auto applicationManager = std::make_shared<APPLICATION_MANAGER>(g_hServerModule, *pHttpServer);
-    auto moduleFactory = std::make_unique<ASPNET_CORE_PROXY_MODULE_FACTORY>(applicationManager);
+    auto moduleFactory = std::make_unique<ASPNET_CORE_PROXY_MODULE_FACTORY>(pModuleInfo->GetId(), applicationManager);
 
     RETURN_IF_FAILED(pModuleInfo->SetRequestNotifications(
                                   moduleFactory.release(),
@@ -159,7 +159,7 @@ HRESULT
                                      pGlobalModule.release(),
                                      GL_CONFIGURATION_CHANGE | // Configuration change trigers IIS application stop
                                      GL_STOP_LISTENING));   // worker process stop or recycle
-    
+
     return S_OK;
 }
 CATCH_RETURN()

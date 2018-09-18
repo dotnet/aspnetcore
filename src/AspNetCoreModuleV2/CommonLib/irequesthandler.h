@@ -26,9 +26,7 @@ public:
 
     virtual
     VOID
-    TerminateRequest(
-        bool    fClientInitiated
-    ) = 0;
+    NotifyDisconnect() noexcept(false) = 0;
 
     virtual
     ~IREQUEST_HANDLER(

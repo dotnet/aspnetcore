@@ -231,6 +231,7 @@
     <ClInclude Include="applicationinfo.h" />
     <ClInclude Include="AppOfflineApplication.h" />
     <ClInclude Include="AppOfflineHandler.h" />
+    <ClInclude Include="DisconnectHandler.h" />
     <ClInclude Include="ShimOptions.h" />
     <ClInclude Include="globalmodule.h" />
     <ClInclude Include="applicationmanager.h" />
@@ -246,6 +247,7 @@
     <ClCompile Include="applicationmanager.cpp" />
     <ClCompile Include="AppOfflineApplication.cpp" />
     <ClCompile Include="AppOfflineHandler.cpp" />
+    <ClCompile Include="DisconnectHandler.cpp" />
     <ClCompile Include="ShimOptions.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="globalmodule.cpp" />
