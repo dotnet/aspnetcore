@@ -3,21 +3,16 @@
 
 package com.microsoft.aspnet.signalr;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 
 public class HubConnectionTest {
     private static final String RECORD_SEPARATOR = "\u001e";
-
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
 
     @Test
     public void checkHubConnectionState() throws Exception {
@@ -47,14 +42,12 @@ public class HubConnectionTest {
 
     @Test
     public void hubConnectionReceiveHandshakeResponseWithError() throws Exception {
-        exceptionRule.expect(HubException.class);
-        exceptionRule.expectMessage("Requested protocol 'messagepack' is not available.");
-
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = new HubConnection("http://example.com", mockTransport, true);
 
         hubConnection.start();
-        mockTransport.receiveMessage("{\"error\":\"Requested protocol 'messagepack' is not available.\"}" + RECORD_SEPARATOR);
+        Throwable exception = assertThrows(HubException.class, () -> mockTransport.receiveMessage("{\"error\":\"Requested protocol 'messagepack' is not available.\"}" + RECORD_SEPARATOR));
+        assertEquals("Error in handshake Requested protocol 'messagepack' is not available.", exception.getMessage());
     }
 
     @Test
@@ -67,7 +60,7 @@ public class HubConnectionTest {
         hubConnection.on("inc", action);
         hubConnection.on("inc", action);
 
-        assertEquals(0.0, value.get(), 0);
+        assertEquals(Double.valueOf(0), value.get());
 
         hubConnection.start();
 
@@ -80,7 +73,7 @@ public class HubConnectionTest {
         mockTransport.receiveMessage("{\"type\":1,\"target\":\"inc\",\"arguments\":[]}" + RECORD_SEPARATOR);
 
         // Confirming that our handler was called and that the counter property was incremented.
-        assertEquals(2, value.get(), 0);
+        assertEquals(Double.valueOf(2), value.get());
     }
 
     @Test
@@ -92,7 +85,7 @@ public class HubConnectionTest {
 
         hubConnection.on("inc", action);
 
-        assertEquals(0.0, value.get(), 0);
+        assertEquals(Double.valueOf(0), value.get());
 
         hubConnection.start();
         String message = mockTransport.getSentMessages()[0];
@@ -104,10 +97,10 @@ public class HubConnectionTest {
         mockTransport.receiveMessage("{\"type\":1,\"target\":\"inc\",\"arguments\":[]}" + RECORD_SEPARATOR);
 
         // Confirming that our handler was called and that the counter property was incremented.
-        assertEquals(1, value.get(), 0);
+        assertEquals(Double.valueOf(1), value.get());
 
         hubConnection.remove("inc");
-        assertEquals(1, value.get(), 0);
+        assertEquals(Double.valueOf(1), value.get());
     }
 
     @Test
@@ -120,7 +113,7 @@ public class HubConnectionTest {
         hubConnection.on("inc", action);
         hubConnection.remove("inc");
 
-        assertEquals(0.0, value.get(), 0);
+        assertEquals(Double.valueOf(0), value.get());
 
         hubConnection.start();
         String message = mockTransport.getSentMessages()[0];
@@ -132,7 +125,7 @@ public class HubConnectionTest {
         mockTransport.receiveMessage("{\"type\":1,\"target\":\"inc\",\"arguments\":[]}" + RECORD_SEPARATOR);
 
         // Confirming that the handler was removed.
-        assertEquals(0.0, value.get(), 0);
+        assertEquals(Double.valueOf(0), value.get());
     }
 
     @Test
@@ -146,7 +139,7 @@ public class HubConnectionTest {
         hubConnection.on("inc", action);
         hubConnection.on("inc", secondAction);
 
-        assertEquals(0.0, value.get(), 0);
+        assertEquals(Double.valueOf(0), value.get());
 
         hubConnection.start();
         String message = mockTransport.getSentMessages()[0];
@@ -157,14 +150,14 @@ public class HubConnectionTest {
         mockTransport.receiveMessage("{}" + RECORD_SEPARATOR);
         mockTransport.receiveMessage("{\"type\":1,\"target\":\"inc\",\"arguments\":[]}" + RECORD_SEPARATOR);
 
-        assertEquals(3, value.get(), 0);
+        assertEquals(Double.valueOf(3), value.get());
 
         hubConnection.remove("inc");
 
         mockTransport.receiveMessage("{\"type\":1,\"target\":\"inc\",\"arguments\":[]}" + RECORD_SEPARATOR);
 
         // Confirm that another invocation doesn't change anything because the handlers have been removed.
-        assertEquals(3, value.get(), 0);
+        assertEquals(Double.valueOf(3), value.get());
     }
 
     @Test
@@ -176,7 +169,7 @@ public class HubConnectionTest {
 
         Subscription subscription = hubConnection.on("inc", action);
 
-        assertEquals(0.0, value.get(), 0);
+        assertEquals(Double.valueOf(0), value.get());
 
         hubConnection.start();
         String message = mockTransport.getSentMessages()[0];
@@ -188,7 +181,7 @@ public class HubConnectionTest {
         mockTransport.receiveMessage("{\"type\":1,\"target\":\"inc\",\"arguments\":[]}" + RECORD_SEPARATOR);
 
         // Confirming that our handler was called and that the counter property was incremented.
-        assertEquals(1, value.get(), 0);
+        assertEquals(Double.valueOf(1), value.get());
 
         subscription.unsubscribe();
         try {
@@ -197,7 +190,7 @@ public class HubConnectionTest {
             assertEquals("There are no callbacks registered for the method 'inc'.", ex.getMessage());
         }
 
-        assertEquals(1, value.get(), 0);
+        assertEquals(Double.valueOf(1), value.get());
     }
 
     @Test
@@ -209,7 +202,7 @@ public class HubConnectionTest {
 
         Subscription subscription = hubConnection.on("inc", action);
 
-        assertEquals(0.0, value.get(), 0);
+        assertEquals(Double.valueOf(0), value.get());
 
         hubConnection.start();
         String message = mockTransport.getSentMessages()[0];
@@ -221,7 +214,7 @@ public class HubConnectionTest {
         mockTransport.receiveMessage("{\"type\":1,\"target\":\"inc\",\"arguments\":[]}" + RECORD_SEPARATOR);
 
         // Confirming that our handler was called and that the counter property was incremented.
-        assertEquals(1, value.get(), 0);
+        assertEquals(Double.valueOf(1), value.get());
 
         subscription.unsubscribe();
         subscription.unsubscribe();
@@ -231,7 +224,7 @@ public class HubConnectionTest {
             assertEquals("There are no callbacks registered for the method 'inc'.", ex.getMessage());
         }
 
-        assertEquals(1, value.get(), 0);
+        assertEquals(Double.valueOf(1), value.get());
     }
 
     @Test
@@ -245,7 +238,7 @@ public class HubConnectionTest {
         Subscription subscription = hubConnection.on("inc", action);
         Subscription secondSubscription = hubConnection.on("inc", secondAction);
 
-        assertEquals(0.0, value.get(), 0);
+        assertEquals(Double.valueOf(0), value.get());
 
         hubConnection.start();
         String message = mockTransport.getSentMessages()[0];
@@ -256,12 +249,12 @@ public class HubConnectionTest {
         mockTransport.receiveMessage("{}" + RECORD_SEPARATOR);
         mockTransport.receiveMessage("{\"type\":1,\"target\":\"inc\",\"arguments\":[]}" + RECORD_SEPARATOR);
         // Confirming that our handler was called and that the counter property was incremented.
-        assertEquals(3, value.get(), 0);
+        assertEquals(Double.valueOf(3), value.get());
 
         // This removes the first handler so when "inc" is invoked secondAction should still run.
         subscription.unsubscribe();
         mockTransport.receiveMessage("{\"type\":1,\"target\":\"inc\",\"arguments\":[]}" + RECORD_SEPARATOR);
-        assertEquals(5, value.get(), 0);
+        assertEquals(Double.valueOf(5), value.get());
     }
 
     @Test
@@ -274,7 +267,7 @@ public class HubConnectionTest {
         Subscription sub = hubConnection.on("inc", action);
         sub.unsubscribe();
 
-        assertEquals(0.0, value.get(), 0);
+        assertEquals(Double.valueOf(0), value.get());
 
         hubConnection.start();
         mockTransport.receiveMessage("{}" + RECORD_SEPARATOR);
@@ -286,7 +279,7 @@ public class HubConnectionTest {
         }
 
         // Confirming that the handler was removed.
-        assertEquals(0, value.get(), 0);
+        assertEquals(Double.valueOf(0), value.get());
     }
 
     @Test
@@ -300,25 +293,24 @@ public class HubConnectionTest {
         hubConnection.on("add", action, Double.class);
         hubConnection.on("add", action, Double.class);
 
-        assertEquals(0, value.get(), 0);
+        assertEquals(Double.valueOf(0), value.get());
         hubConnection.start();
         mockTransport.receiveMessage("{}" + RECORD_SEPARATOR);
         mockTransport.receiveMessage("{\"type\":1,\"target\":\"add\",\"arguments\":[12]}" + RECORD_SEPARATOR);
         hubConnection.send("add", 12);
 
         // Confirming that our handler was called and the correct message was passed in.
-        assertEquals(24, value.get(), 0);
+        assertEquals(Double.valueOf(24), value.get());
     }
 
-    // We're using AtomicReference<Double> in the send tests instead of int here because Gson has trouble deserializing to Integer
     @Test
     public void sendWithNoParamsTriggersOnHandler() throws Exception {
-        AtomicReference<Double> value = new AtomicReference<Double>(0.0);
+        AtomicReference<Integer> value = new AtomicReference<>(0);
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = new HubConnection("http://example.com", mockTransport, true);
 
         hubConnection.on("inc", () ->{
-            assertEquals(0.0, value.get(), 0);
+            assertEquals(Integer.valueOf(0), value.get());
             value.getAndUpdate((val) -> val + 1);
         });
 
@@ -327,7 +319,7 @@ public class HubConnectionTest {
         mockTransport.receiveMessage("{\"type\":1,\"target\":\"inc\",\"arguments\":[]}" + RECORD_SEPARATOR);
 
         // Confirming that our handler was called and that the counter property was incremented.
-        assertEquals(1, value.get(), 0);
+        assertEquals(Integer.valueOf(1), value.get());
     }
 
     @Test
@@ -373,7 +365,7 @@ public class HubConnectionTest {
 
         // Confirming that our handler was called and the correct message was passed in.
         assertEquals("Hello World", value1.get());
-        assertEquals(12, value2.get(), 0);
+        assertEquals(Double.valueOf(12), value2.get());
     }
 
     @Test
@@ -473,7 +465,7 @@ public class HubConnectionTest {
         assertEquals("B", value2.get());
         assertEquals("C", value3.get());
         assertTrue(value4.get());
-        assertEquals(12, value5.get(), 0);
+        assertEquals(Double.valueOf(12), value5.get());
     }
 
     @Test
@@ -513,7 +505,7 @@ public class HubConnectionTest {
         assertEquals("B", value2.get());
         assertEquals("C", value3.get());
         assertTrue(value4.get());
-        assertEquals(12, value5.get(), 0);
+        assertEquals(Double.valueOf(12), value5.get());
         assertEquals("D", value6.get());
     }
 
@@ -557,7 +549,7 @@ public class HubConnectionTest {
         assertEquals("B", value2.get());
         assertEquals("C", value3.get());
         assertTrue(value4.get());
-        assertEquals(12, value5.get(), 0);
+        assertEquals(Double.valueOf(12), value5.get());
         assertEquals("D", value6.get());
         assertEquals("E", value7.get());
     }
@@ -604,7 +596,7 @@ public class HubConnectionTest {
         assertEquals("B", value2.get());
         assertEquals("C", value3.get());
         assertTrue(value4.get());
-        assertEquals(12, value5.get(), 0);
+        assertEquals(Double.valueOf(12), value5.get());
         assertEquals("D", value6.get());
         assertEquals("E", value7.get());
         assertEquals("F", value8.get());
@@ -649,7 +641,7 @@ public class HubConnectionTest {
         HubConnection hubConnection = new HubConnection("http://example.com", mockTransport, true);
 
         hubConnection.on("inc", () ->{
-            assertEquals(0.0, value.get(), 0);
+            assertEquals(Double.valueOf(0), value.get());
             value.getAndUpdate((val) -> val + 1);
         });
 
@@ -661,7 +653,7 @@ public class HubConnectionTest {
         mockTransport.receiveMessage("{}" + RECORD_SEPARATOR + "{\"type\":1,\"target\":\"inc\",\"arguments\":[]}" + RECORD_SEPARATOR);
 
         // Confirming that our handler was called and that the counter property was incremented.
-        assertEquals(1, value.get(), 0);
+        assertEquals(Double.valueOf(1), value.get());
     }
 
     @Test
@@ -740,14 +732,12 @@ public class HubConnectionTest {
 
     @Test
     public void cannotSendBeforeStart() throws Exception {
-        exceptionRule.expect(HubException.class);
-        exceptionRule.expectMessage("The 'send' method cannot be called if the connection is not active");
-
         Transport mockTransport = new MockTransport();
         HubConnection hubConnection = new HubConnection("http://example.com", mockTransport);
         assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
 
-        hubConnection.send("inc");
+        Throwable exception = assertThrows(HubException.class, () -> hubConnection.send("inc"));
+        assertEquals("The 'send' method cannot be called if the connection is not active", exception.getMessage());
     }
 
     private class MockTransport implements Transport {

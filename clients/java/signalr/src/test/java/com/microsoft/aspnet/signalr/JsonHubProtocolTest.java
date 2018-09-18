@@ -3,15 +3,13 @@
 
 package com.microsoft.aspnet.signalr;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 
 public class JsonHubProtocolTest {
@@ -110,47 +108,40 @@ public class JsonHubProtocolTest {
         assertEquals(42, messageResult);
     }
 
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
-
     @Test
     public void parseSingleUnsupportedStreamItemMessage() throws Exception {
-        exceptionRule.expect(UnsupportedOperationException.class);
-        exceptionRule.expectMessage("The message type STREAM_ITEM is not supported yet.");
         String stringifiedMessage = "{\"type\":2,\"Id\":1,\"Item\":42}\u001E";
         TestBinder binder = new TestBinder(null);
 
-        HubMessage[] messages = jsonHubProtocol.parseMessages(stringifiedMessage, binder);
+        Throwable exception = assertThrows(UnsupportedOperationException.class, () -> jsonHubProtocol.parseMessages(stringifiedMessage, binder));
+        assertEquals("The message type STREAM_ITEM is not supported yet.", exception.getMessage());
     }
 
     @Test
     public void parseSingleUnsupportedStreamInvocationMessage() throws Exception {
-        exceptionRule.expect(UnsupportedOperationException.class);
-        exceptionRule.expectMessage("The message type STREAM_INVOCATION is not supported yet.");
         String stringifiedMessage = "{\"type\":4,\"Id\":1,\"target\":\"test\",\"arguments\":[42]}\u001E";
         TestBinder binder = new TestBinder(new StreamInvocationMessage("1", "test", new Object[] { 42 }));
 
-        HubMessage[] messages = jsonHubProtocol.parseMessages(stringifiedMessage, binder);
+        Throwable exception = assertThrows(UnsupportedOperationException.class, () -> jsonHubProtocol.parseMessages(stringifiedMessage, binder));
+        assertEquals("The message type STREAM_INVOCATION is not supported yet.", exception.getMessage());
     }
 
     @Test
     public void parseSingleUnsupportedCancelInvocationMessage() throws Exception {
-        exceptionRule.expect(UnsupportedOperationException.class);
-        exceptionRule.expectMessage("The message type CANCEL_INVOCATION is not supported yet.");
         String stringifiedMessage = "{\"type\":5,\"invocationId\":123}\u001E";
         TestBinder binder = new TestBinder(null);
 
-        HubMessage[] messages = jsonHubProtocol.parseMessages(stringifiedMessage, binder);
+        Throwable exception = assertThrows(UnsupportedOperationException.class, () -> jsonHubProtocol.parseMessages(stringifiedMessage, binder));
+        assertEquals("The message type CANCEL_INVOCATION is not supported yet.", exception.getMessage());
     }
 
     @Test
     public void parseSingleUnsupportedCompletionMessage() throws Exception {
-        exceptionRule.expect(UnsupportedOperationException.class);
-        exceptionRule.expectMessage("The message type COMPLETION is not supported yet.");
         String stringifiedMessage = "{\"type\":3,\"invocationId\":123}\u001E";
         TestBinder binder = new TestBinder(null);
 
-        HubMessage[] messages = jsonHubProtocol.parseMessages(stringifiedMessage, binder);
+        Throwable exception = assertThrows(UnsupportedOperationException.class, () -> jsonHubProtocol.parseMessages(stringifiedMessage, binder));
+        assertEquals("The message type COMPLETION is not supported yet.", exception.getMessage());
     }
 
     @Test
