@@ -1,17 +1,15 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
+using System.Composition;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
-using Microsoft.AspNetCore.Razor.Language.Syntax;
 
-namespace Microsoft.VisualStudio.Editor.Razor
+namespace Microsoft.CodeAnalysis.Razor
 {
-    [System.Composition.Shared]
+    [Shared]
     [Export(typeof(RazorCompletionFactsService))]
     internal class DefaultRazorCompletionFactsService : RazorCompletionFactsService
     {
@@ -84,7 +82,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         }
 
         // Internal for testing
-        internal static bool IsDirectiveCompletableToken(SyntaxToken token)
+        internal static bool IsDirectiveCompletableToken(AspNetCore.Razor.Language.Syntax.SyntaxToken token)
         {
             return token.Kind == SyntaxKind.Identifier ||
                 // Marker symbol

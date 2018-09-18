@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Razor.Language.Syntax;
 using Moq;
 using Xunit;
 
-namespace Microsoft.VisualStudio.Editor.Razor
+namespace Microsoft.CodeAnalysis.Razor
 {
     public class DefaultRazorCompletionFactsServiceTest
     {

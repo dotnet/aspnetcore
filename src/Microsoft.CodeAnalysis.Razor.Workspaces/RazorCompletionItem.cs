@@ -3,9 +3,9 @@
 
 using System;
 
-namespace Microsoft.VisualStudio.Editor.Razor
+namespace Microsoft.CodeAnalysis.Razor
 {
-    public sealed class RazorCompletionItem
+    internal sealed class RazorCompletionItem
     {
         public RazorCompletionItem(
             string displayText, 

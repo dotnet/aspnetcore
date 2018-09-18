@@ -4,9 +4,9 @@
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Razor.Language;
 
-namespace Microsoft.VisualStudio.Editor.Razor
+namespace Microsoft.CodeAnalysis.Razor
 {
-    public abstract class RazorCompletionFactsService
+    internal abstract class RazorCompletionFactsService
     {
         public abstract IReadOnlyList<RazorCompletionItem> GetCompletionItems(RazorSyntaxTree syntaxTree, SourceSpan location);
     }
