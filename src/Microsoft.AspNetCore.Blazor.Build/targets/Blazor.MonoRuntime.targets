@@ -386,7 +386,7 @@
       <_BlazorLinkerInput Include="@(IntermediateAssembly)" />
       <_BlazorLinkerInput Include="@(_BlazorDependencyInput)" />
       <_BlazorLinkerInput Include="@(BlazorLinkerDescriptor)" />
-      <_BlazorLinkerInput Include="$(AdditionalLinkerOptions)" />
+      <_BlazorLinkerInput Include="$(AdditionalMonoLinkerOptions)" />
     </ItemGroup>
 
     <Hash ItemsToHash="@(_BlazorLinkerInput)">
