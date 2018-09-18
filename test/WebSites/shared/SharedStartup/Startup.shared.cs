@@ -43,5 +43,11 @@ namespace TestSite
 
             await ctx.Response.WriteAsync(authScheme?.Name ?? "null");
         }
+
+        public async Task GetClientCert(HttpContext context)
+        {
+            var clientCert = context.Connection.ClientCertificate;
+            await context.Response.WriteAsync(clientCert != null ? $"Enabled;{clientCert.GetCertHashString()}" : "Disabled");
+        }
     }
 }

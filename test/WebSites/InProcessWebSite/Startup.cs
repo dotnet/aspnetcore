@@ -681,5 +681,8 @@ namespace TestSite
         {
             await ctx.Response.WriteAsync(string.Join("|", Environment.GetCommandLineArgs().Skip(1)));
         }
+
+        public Task HttpsHelloWorld(HttpContext ctx) =>
+           ctx.Response.WriteAsync("Scheme:" + ctx.Request.Scheme + "; Original:" + ctx.Request.Headers["x-original-proto"]);
     }
 }

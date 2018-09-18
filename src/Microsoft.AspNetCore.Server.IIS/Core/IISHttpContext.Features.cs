@@ -61,6 +61,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             _currentIHttpAuthenticationFeature = this;
             _currentIServerVariablesFeature = this;
             _currentIHttpBufferingFeature = this;
+            _currentITlsConnectionFeature = this;
         }
 
         internal object FastFeatureGet(Type key)

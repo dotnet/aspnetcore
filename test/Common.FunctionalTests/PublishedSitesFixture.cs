@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
     /// This type just maps collection names to available fixtures
     /// </summary>
     [CollectionDefinition(Name)]
-    public class PublishedSitesCollection : ICollectionFixture<PublishedSitesFixture>
+    public class PublishedSitesCollection : ICollectionFixture<PublishedSitesFixture>, ICollectionFixture<ClientCertificateFixture>
     {
         public const string Name = nameof(PublishedSitesCollection);
     }

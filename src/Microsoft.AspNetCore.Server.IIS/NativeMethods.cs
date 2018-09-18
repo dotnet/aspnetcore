@@ -23,7 +23,6 @@ namespace Microsoft.AspNetCore.Server.IIS
 
         public static extern bool CloseHandle(IntPtr handle);
 
-
         [DllImport("kernel32.dll")]
         private static extern IntPtr GetModuleHandle(string lpModuleName);
 

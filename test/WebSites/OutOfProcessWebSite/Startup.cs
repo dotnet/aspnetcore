@@ -42,10 +42,6 @@ namespace TestSite
         public Task HttpsHelloWorld(HttpContext ctx) =>
             ctx.Response.WriteAsync("Scheme:" + ctx.Request.Scheme + "; Original:" + ctx.Request.Headers["x-original-proto"]);
 
-        public Task CheckClientCert(HttpContext ctx) =>
-            ctx.Response.WriteAsync("Scheme:" + ctx.Request.Scheme + "; Original:" + ctx.Request.Headers["x-original-proto"]
-                                                   + "; has cert? " + (ctx.Connection.ClientCertificate != null));
-
         public Task Anonymous(HttpContext context) => context.Response.WriteAsync("Anonymous?" + !context.User.Identity.IsAuthenticated);
 
         public Task Restricted(HttpContext context)
