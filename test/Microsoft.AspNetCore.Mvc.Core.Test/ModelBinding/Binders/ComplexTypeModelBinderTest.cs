@@ -155,10 +155,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         [Theory]
         [InlineData(typeof(TypeWithNoBinderMetadata), false)]
         [InlineData(typeof(TypeWithNoBinderMetadata), true)]
-        [InlineData(typeof(TypeWithAtLeastOnePropertyMarkedUsingValueBinderMetadata), false)]
-        [InlineData(typeof(TypeWithAtLeastOnePropertyMarkedUsingValueBinderMetadata), true)]
-        [InlineData(typeof(TypeWithUnmarkedAndBinderMetadataMarkedProperties), false)]
-        [InlineData(typeof(TypeWithUnmarkedAndBinderMetadataMarkedProperties), true)]
         public void CanCreateModel_CreatesModelForValueProviderBasedBinderMetadatas_IfAValueProviderProvidesValue(
             Type modelType,
             bool valueProviderProvidesValue)
@@ -180,6 +176,34 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
             // Assert
             Assert.Equal(valueProviderProvidesValue, canCreate);
+        }
+
+        [Theory]
+        [InlineData(typeof(TypeWithAtLeastOnePropertyMarkedUsingValueBinderMetadata), false)]
+        [InlineData(typeof(TypeWithAtLeastOnePropertyMarkedUsingValueBinderMetadata), true)]
+        [InlineData(typeof(TypeWithUnmarkedAndBinderMetadataMarkedProperties), false)]
+        [InlineData(typeof(TypeWithUnmarkedAndBinderMetadataMarkedProperties), true)]
+        public void CanCreateModel_CreatesModelForValueProviderBasedBinderMetadatas_IfPropertyHasGreedyBindingSource(
+            Type modelType,
+            bool valueProviderProvidesValue)
+        {
+            var valueProvider = new Mock<IValueProvider>();
+            valueProvider
+                .Setup(o => o.ContainsPrefix(It.IsAny<string>()))
+                .Returns(valueProviderProvidesValue);
+
+            var bindingContext = CreateContext(GetMetadataForType(modelType));
+            bindingContext.IsTopLevelObject = false;
+            bindingContext.ValueProvider = valueProvider.Object;
+            bindingContext.OriginalValueProvider = valueProvider.Object;
+
+            var binder = CreateBinder(bindingContext.ModelMetadata);
+
+            // Act
+            var canCreate = binder.CanCreateModel(bindingContext);
+
+            // Assert
+            Assert.True(canCreate);
         }
 
         [Theory]
@@ -214,17 +238,18 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var canCreate = binder.CanCreateModel(bindingContext);
 
             // Assert
-            Assert.Equal(originalValueProviderProvidesValue, canCreate);
+            Assert.True(canCreate);
         }
 
         [Theory]
-        [InlineData(typeof(TypeWithUnmarkedAndBinderMetadataMarkedProperties), false)]
-        [InlineData(typeof(TypeWithUnmarkedAndBinderMetadataMarkedProperties), true)]
-        [InlineData(typeof(TypeWithNoBinderMetadata), false)]
-        [InlineData(typeof(TypeWithNoBinderMetadata), true)]
+        [InlineData(typeof(TypeWithUnmarkedAndBinderMetadataMarkedProperties), false, true)]
+        [InlineData(typeof(TypeWithUnmarkedAndBinderMetadataMarkedProperties), true, true)]
+        [InlineData(typeof(TypeWithNoBinderMetadata), false, false)]
+        [InlineData(typeof(TypeWithNoBinderMetadata), true, true)]
         public void CanCreateModel_UnmarkedProperties_UsesCurrentValueProvider(
             Type modelType,
-            bool valueProviderProvidesValue)
+            bool valueProviderProvidesValue,
+            bool expectedCanCreate)
         {
             var valueProvider = new Mock<IValueProvider>();
             valueProvider
@@ -247,7 +272,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var canCreate = binder.CanCreateModel(bindingContext);
 
             // Assert
-            Assert.Equal(valueProviderProvidesValue, canCreate);
+            Assert.Equal(expectedCanCreate, canCreate);
         }
 
         [Fact]

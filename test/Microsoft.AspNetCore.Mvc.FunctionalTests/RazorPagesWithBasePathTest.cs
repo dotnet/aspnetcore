@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -621,6 +622,41 @@ Hello from /Pages/Shared/";
             Assert.Equal("Value from _ViewStart", valueSetInViewStart);
             Assert.Equal("Value from Page Model", valueSetInPageModel);
             Assert.Equal("Value from Page", valueSetInPage);
+        }
+
+        [Fact]
+        public async Task RoundTrippingFormFileInputWorks()
+        {
+            // Arrange
+            var url = "/PropertyBinding/BindFormFile";
+            var response = await Client.GetAsync(url);
+            await response.AssertStatusCodeAsync(HttpStatusCode.OK);
+
+            var document = await response.GetHtmlDocumentAsync();
+
+            var property1 = document.RequiredQuerySelector("#property1").GetAttribute("name");
+            var file1 = document.RequiredQuerySelector("#file1").GetAttribute("name");
+            var file2 = document.RequiredQuerySelector("#file2").GetAttribute("name");
+            var file3 = document.RequiredQuerySelector("#file3").GetAttribute("name");
+            var antiforgeryToken = document.RetrieveAntiforgeryToken();
+
+            var cookie = AntiforgeryTestHelper.RetrieveAntiforgeryCookie(response);
+
+            var content = new MultipartFormDataContent();
+            content.Add(new StringContent("property1-value"), property1);
+            content.Add(new StringContent("test-value1"), file1, "test1.txt");
+            content.Add(new StringContent("test-value2"), file3, "test2.txt");
+
+            var request = new HttpRequestMessage(HttpMethod.Post, url)
+            {
+                Content = content,
+            };
+            request.Headers.Add("Cookie", cookie.Key + "=" + cookie.Value);
+            request.Headers.Add("RequestVerificationToken", antiforgeryToken);
+
+            response = await Client.SendAsync(request);
+
+            await response.AssertStatusCodeAsync(HttpStatusCode.OK);
         }
 
         private async Task AddAntiforgeryHeadersAsync(HttpRequestMessage request)
