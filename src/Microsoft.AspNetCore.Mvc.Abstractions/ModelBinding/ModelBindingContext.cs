@@ -68,6 +68,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public abstract string ModelName { get; set; }
 
         /// <summary>
+        /// Gets or sets the name of the top-level model. This is not reset to <see cref="string.Empty"/> when value
+        /// providers have no match for that model.
+        /// </summary>
+        public string OriginalModelName { get; protected set; }
+
+        /// <summary>
         /// Gets or sets the <see cref="ModelStateDictionary"/> used to capture <see cref="ModelStateEntry"/> values
         /// for properties in the object graph of the model when binding.
         /// </summary>
