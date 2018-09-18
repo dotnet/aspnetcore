@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions.Internal;
@@ -331,7 +332,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         // Regression test for https://github.com/aspnet/KestrelHttpServer/pull/1197
-        [Fact]
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "macOS EPIPE vs. EPROTOTYPE bug https://github.com/aspnet/KestrelHttpServer/issues/2885")]
         public void ConnectionFilterDoesNotLeakBlock()
         {
             var loggerProvider = new HandshakeErrorLoggerProvider();

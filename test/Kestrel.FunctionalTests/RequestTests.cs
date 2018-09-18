@@ -264,7 +264,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             Assert.True(dataRead);
         }
 
-        [Fact]
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "macOS EPIPE vs. EPROTOTYPE bug https://github.com/aspnet/KestrelHttpServer/issues/2885")]
         public async Task ConnectionResetPriorToRequestIsLoggedAsDebug()
         {
             var connectionStarted = new SemaphoreSlim(0);
@@ -325,7 +326,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             Assert.False(loggedHigherThanDebug);
         }
 
-        [Fact]
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "macOS EPIPE vs. EPROTOTYPE bug https://github.com/aspnet/KestrelHttpServer/issues/2885")]
         public async Task ConnectionResetBetweenRequestsIsLoggedAsDebug()
         {
             var connectionReset = new SemaphoreSlim(0);
@@ -394,7 +396,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             Assert.False(loggedHigherThanDebug);
         }
 
-        [Fact]
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "macOS EPIPE vs. EPROTOTYPE bug https://github.com/aspnet/KestrelHttpServer/issues/2885")]
         public async Task ConnectionResetMidRequestIsLoggedAsDebug()
         {
             var requestStarted = new SemaphoreSlim(0);
@@ -463,7 +466,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             Assert.False(loggedHigherThanDebug, "Logged event should not have been higher than debug.");
         }
 
-        [Fact]
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "macOS EPIPE vs. EPROTOTYPE bug https://github.com/aspnet/KestrelHttpServer/issues/2885")]
         public async Task ThrowsOnReadAfterConnectionError()
         {
             var requestStarted = new SemaphoreSlim(0);
@@ -1305,7 +1309,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             mockKestrelTrace.Verify(t => t.ConnectionStop(It.IsAny<string>()), Times.AtMostOnce());
         }
 
-        [Theory]
+        [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "macOS EPIPE vs. EPROTOTYPE bug https://github.com/aspnet/KestrelHttpServer/issues/2885")]
         [MemberData(nameof(ConnectionAdapterData))]
         public async Task AppCanHandleClientAbortingConnectionMidRequest(ListenOptions listenOptions)
         {
