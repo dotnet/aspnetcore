@@ -31,7 +31,7 @@ namespace PlatformBenchmarks
 
             // Fast path, try copying to the available memory directly
             var advanceBy = 0;
-            fixed (byte* output = &MemoryMarshal.GetReference(span))
+            fixed (byte* output = span)
             {
                 var start = output;
                 if (number < 10 && bytesLeftInBlock >= 1)

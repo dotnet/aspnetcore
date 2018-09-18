@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
@@ -109,11 +110,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
             _dynamicTable = dynamicTable;
         }
 
-        public void Decode(Span<byte> data, bool endHeaders, IHttpHeadersHandler handler)
+        public void Decode(ReadOnlySequence<byte> data, bool endHeaders, IHttpHeadersHandler handler)
         {
-            for (var i = 0; i < data.Length; i++)
+            foreach (var segment in data)
             {
-                OnByte(data[i], handler);
+                var span = segment.Span;
+                for (var i = 0; i < span.Length; i++)
+                {
+                    OnByte(span[i], handler);
+                }
             }
 
             if (endHeaders)

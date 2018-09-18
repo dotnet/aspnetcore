@@ -279,7 +279,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
         }
 
-        public Task OnDataAsync(Http2Frame dataFrame)
+        public Task OnDataAsync(Http2Frame dataFrame, ReadOnlySequence<byte> payload)
         {
             // Since padding isn't buffered, immediately count padding bytes as read for flow control purposes.
             if (dataFrame.DataHasPadding)
@@ -288,10 +288,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 OnDataRead(dataFrame.DataPadLength + 1);
             }
 
-            var payload = dataFrame.DataPayload;
+            var dataPayload = payload.Slice(0, dataFrame.DataPayloadLength); // minus padding
             var endStream = dataFrame.DataEndStream;
 
-            if (payload.Length > 0)
+            if (dataPayload.Length > 0)
             {
                 RequestBodyStarted = true;
 
@@ -302,7 +302,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     _inputFlowControl.StopWindowUpdates();
                 }
 
-                _inputFlowControl.Advance(payload.Length);
+                _inputFlowControl.Advance((int)dataPayload.Length);
 
                 if (IsAborted)
                 {
@@ -315,15 +315,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 if (InputRemaining.HasValue)
                 {
                     // https://tools.ietf.org/html/rfc7540#section-8.1.2.6
-                    if (payload.Length > InputRemaining.Value)
+                    if (dataPayload.Length > InputRemaining.Value)
                     {
                         throw new Http2StreamErrorException(StreamId, CoreStrings.Http2StreamErrorMoreDataThanLength, Http2ErrorCode.PROTOCOL_ERROR);
                     }
 
-                    InputRemaining -= payload.Length;
+                    InputRemaining -= dataPayload.Length;
                 }
 
-                RequestBodyPipe.Writer.Write(payload);
+                foreach (var segment in dataPayload)
+                {
+                    RequestBodyPipe.Writer.Write(segment.Span);
+                }
                 var flushTask = RequestBodyPipe.Writer.FlushAsync();
 
                 // It shouldn't be possible for the RequestBodyPipe to fill up an return an incomplete task if

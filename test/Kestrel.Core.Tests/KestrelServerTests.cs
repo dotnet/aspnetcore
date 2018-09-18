@@ -9,11 +9,14 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit;
 
@@ -382,6 +385,42 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await continuationTask.DefaultTimeout();
 
             mockTransport.Verify(transport => transport.UnbindAsync(), Times.Once);
+        }
+
+        [Fact]
+        public void StartingServerInitializesHeartbeat()
+        {
+            var testContext = new TestServiceContext()
+            {
+                ServerOptions =
+                {
+                    ListenOptions =
+                    {
+                        new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
+                    }
+                },
+                DateHeaderValueManager = new DateHeaderValueManager()
+            };
+
+            testContext.Heartbeat = new Heartbeat(
+                new IHeartbeatHandler[] { testContext.DateHeaderValueManager },
+                testContext.MockSystemClock,
+                DebuggerWrapper.Singleton,
+                testContext.Log);
+
+            using (var server = new KestrelServer(new MockTransportFactory(), testContext))
+            {
+                Assert.Null(testContext.DateHeaderValueManager.GetDateHeaderValues());
+
+                // Ensure KestrelServer is started at a different time than when it was constructed, since we're
+                // verifying the heartbeat is initialized during KestrelServer.StartAsync().
+                testContext.MockSystemClock.UtcNow += TimeSpan.FromDays(1);
+
+                StartDummyApplication(server);
+
+                Assert.Equal(HeaderUtilities.FormatDate(testContext.MockSystemClock.UtcNow),
+                             testContext.DateHeaderValueManager.GetDateHeaderValues().String);
+            }
         }
 
         private static KestrelServer CreateServer(KestrelServerOptions options, ILogger testLogger)

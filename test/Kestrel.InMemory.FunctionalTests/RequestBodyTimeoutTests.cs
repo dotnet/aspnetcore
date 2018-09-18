@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         {
             var gracePeriod = TimeSpan.FromSeconds(5);
             var serviceContext = new TestServiceContext(LoggerFactory);
-            var heartbeatManager = new HeartbeatManager(serviceContext.ConnectionManager, serviceContext.SystemClock.UtcNow);
+            var heartbeatManager = new HeartbeatManager(serviceContext.ConnectionManager);
 
             var appRunningEvent = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
@@ -95,7 +95,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             serviceContext.InitializeHeartbeat();
 
             // Ensure there's still a constant date header value.
-            serviceContext.DateHeaderValueManager = new DateHeaderValueManager();
+            var clock = new MockSystemClock();
+            var date = new DateHeaderValueManager();
+            date.OnHeartbeat(clock.UtcNow);
+            serviceContext.DateHeaderValueManager = date;
 
             var appRunningEvent = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
@@ -137,7 +140,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         {
             var gracePeriod = TimeSpan.FromSeconds(5);
             var serviceContext = new TestServiceContext(LoggerFactory);
-            var heartbeatManager = new HeartbeatManager(serviceContext.ConnectionManager, serviceContext.SystemClock.UtcNow);
+            var heartbeatManager = new HeartbeatManager(serviceContext.ConnectionManager);
 
             var appRunningTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             var exceptionSwallowedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);

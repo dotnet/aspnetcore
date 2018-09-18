@@ -84,8 +84,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await InitializeConnectionAsync(_echoApplication);
 
             await StartStreamAsync(1, _browserRequestHeaders, endStream: false);
+
             uint length = Http2PeerSettings.MinAllowedMaxFrameSize + 1;
-            await SendDataAsync(1, new byte[length].AsSpan(), endStream: true);
+            await SendDataAsync(1, new byte[length], endStream: true);
 
             await WaitForConnectionErrorAsync<Http2ConnectionErrorException>(
                 ignoreNonGoAwayFrames: true,
@@ -104,7 +105,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await InitializeConnectionAsync(_echoApplication, expectedSettingsCount: 3);
 
             await StartStreamAsync(1, _browserRequestHeaders, endStream: false);
-            await SendDataAsync(1, new byte[length].AsSpan(), endStream: true);
+            await SendDataAsync(1, new byte[length], endStream: true);
 
             await ExpectAsync(Http2FrameType.HEADERS,
                 withLength: 37,
@@ -150,7 +151,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
-            Assert.True(_helloWorldBytes.AsSpan().SequenceEqual(dataFrame.DataPayload));
+            Assert.True(_helloWorldBytes.AsSpan().SequenceEqual(dataFrame.PayloadSequence.ToArray()));
         }
 
         [Fact]
@@ -177,7 +178,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
-            Assert.True(_maxData.AsSpan().SequenceEqual(dataFrame.DataPayload));
+            Assert.True(_maxData.AsSpan().SequenceEqual(dataFrame.PayloadSequence.ToArray()));
         }
 
         [Fact]
@@ -249,10 +250,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
-            Assert.True(_maxData.AsSpan().SequenceEqual(dataFrame1.DataPayload));
-            Assert.True(_maxData.AsSpan().SequenceEqual(dataFrame2.DataPayload));
-            Assert.True(_maxData.AsSpan().SequenceEqual(dataFrame3.DataPayload));
-            Assert.True(_maxData.AsSpan().SequenceEqual(dataFrame4.DataPayload));
+            Assert.True(_maxData.AsSpan().SequenceEqual(dataFrame1.PayloadSequence.ToArray()));
+            Assert.True(_maxData.AsSpan().SequenceEqual(dataFrame2.PayloadSequence.ToArray()));
+            Assert.True(_maxData.AsSpan().SequenceEqual(dataFrame3.PayloadSequence.ToArray()));
+            Assert.True(_maxData.AsSpan().SequenceEqual(dataFrame4.PayloadSequence.ToArray()));
             Assert.Equal(_maxData.Length * 2, streamWindowUpdateFrame1.WindowUpdateSizeIncrement);
             Assert.Equal(_maxData.Length * 2, connectionWindowUpdateFrame1.WindowUpdateSizeIncrement);
             Assert.Equal(_maxData.Length * 2, connectionWindowUpdateFrame2.WindowUpdateSizeIncrement);
@@ -287,7 +288,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
-            Assert.True(_helloWorldBytes.AsSpan().SequenceEqual(dataFrame.DataPayload));
+            Assert.True(_helloWorldBytes.AsSpan().SequenceEqual(dataFrame.PayloadSequence.ToArray()));
         }
 
         [Fact]
@@ -350,10 +351,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
 
-            Assert.True(_helloBytes.AsSpan().SequenceEqual(stream1DataFrame1.DataPayload));
-            Assert.True(_worldBytes.AsSpan().SequenceEqual(stream1DataFrame2.DataPayload));
-            Assert.True(_helloBytes.AsSpan().SequenceEqual(stream3DataFrame1.DataPayload));
-            Assert.True(_worldBytes.AsSpan().SequenceEqual(stream3DataFrame2.DataPayload));
+            Assert.True(_helloBytes.AsSpan().SequenceEqual(stream1DataFrame1.PayloadSequence.ToArray()));
+            Assert.True(_worldBytes.AsSpan().SequenceEqual(stream1DataFrame2.PayloadSequence.ToArray()));
+            Assert.True(_helloBytes.AsSpan().SequenceEqual(stream3DataFrame1.PayloadSequence.ToArray()));
+            Assert.True(_worldBytes.AsSpan().SequenceEqual(stream3DataFrame2.PayloadSequence.ToArray()));
         }
 
         [Fact]
@@ -443,16 +444,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
 
-            Assert.True(_maxData.AsSpan().SequenceEqual(dataFrame1.DataPayload));
-            Assert.True(_maxData.AsSpan().SequenceEqual(dataFrame2.DataPayload));
-            Assert.True(_maxData.AsSpan().SequenceEqual(dataFrame3.DataPayload));
+            Assert.True(_maxData.AsSpan().SequenceEqual(dataFrame1.PayloadSequence.ToArray()));
+            Assert.True(_maxData.AsSpan().SequenceEqual(dataFrame2.PayloadSequence.ToArray()));
+            Assert.True(_maxData.AsSpan().SequenceEqual(dataFrame3.PayloadSequence.ToArray()));
             Assert.Equal(_maxData.Length * 2, streamWindowUpdateFrame.WindowUpdateSizeIncrement);
             Assert.Equal(_maxData.Length * 2, connectionWindowUpdateFrame1.WindowUpdateSizeIncrement);
 
-            Assert.True(_maxData.AsSpan().SequenceEqual(dataFrame4.DataPayload));
+            Assert.True(_maxData.AsSpan().SequenceEqual(dataFrame4.PayloadSequence.ToArray()));
             Assert.Equal(_maxData.Length * 2, connectionWindowUpdateFrame2.WindowUpdateSizeIncrement);
 
-            Assert.True(_maxData.AsSpan().SequenceEqual(dataFrame5.DataPayload));
+            Assert.True(_maxData.AsSpan().SequenceEqual(dataFrame5.PayloadSequence.ToArray()));
         }
 
         [Fact]
@@ -547,7 +548,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
-            Assert.True(_helloWorldBytes.AsSpan().SequenceEqual(dataFrame.DataPayload));
+            Assert.True(_helloWorldBytes.AsSpan().SequenceEqual(dataFrame.PayloadSequence.ToArray()));
         }
 
         [Theory]
@@ -564,7 +565,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await InitializeConnectionAsync(_echoApplication);
 
             await StartStreamAsync(1, _browserRequestHeaders, endStream: false);
-            await SendDataWithPaddingAsync(1, maxDataMinusPadding.Span, padLength, endStream: false);
+            await SendDataWithPaddingAsync(1, maxDataMinusPadding, padLength, endStream: false);
 
             await ExpectAsync(Http2FrameType.HEADERS,
                 withLength: 37,
@@ -595,8 +596,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
-            Assert.True(maxDataMinusPadding.Span.SequenceEqual(dataFrame1.DataPayload));
-            Assert.True(_maxData.AsSpan().SequenceEqual(dataFrame2.DataPayload));
+            Assert.True(maxDataMinusPadding.Span.SequenceEqual(dataFrame1.PayloadSequence.ToArray()));
+            Assert.True(_maxData.AsSpan().SequenceEqual(dataFrame2.PayloadSequence.ToArray()));
 
             Assert.Equal(_maxData.Length * 2, connectionWindowUpdateFrame.WindowUpdateSizeIncrement);
         }
@@ -703,8 +704,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await WaitForConnectionErrorAsync<Http2ConnectionErrorException>(
                 ignoreNonGoAwayFrames: true,
                 expectedLastStreamId: 1,
-                expectedErrorCode: Http2ErrorCode.PROTOCOL_ERROR,
-                expectedErrorMessage: CoreStrings.Http2FrameMissingFields);
+                expectedErrorCode: Http2ErrorCode.FRAME_SIZE_ERROR,
+                expectedErrorMessage: CoreStrings.FormatHttp2ErrorUnexpectedFrameLength(Http2FrameType.DATA, expectedLength: 1));
         }
 
         [Fact]
@@ -1127,6 +1128,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
                 withStreamId: 1);
 
+            Assert.Equal(new byte[] { 0x08, 0x03, (byte)'1', (byte)'0', (byte)'0' }, frame.PayloadSequence.ToArray());
+
             await SendDataAsync(1, _helloBytes, endStream: true);
 
             await ExpectAsync(Http2FrameType.HEADERS,
@@ -1141,8 +1144,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 withLength: 0,
                 withFlags: (byte)Http2DataFrameFlags.END_STREAM,
                 withStreamId: 1);
-
-            Assert.Equal(new byte[] { 0x08, 0x03, (byte)'1', (byte)'0', (byte)'0' }, frame.HeadersPayload.ToArray());
 
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
         }
@@ -1361,8 +1362,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await WaitForConnectionErrorAsync<Http2ConnectionErrorException>(
                 ignoreNonGoAwayFrames: true,
                 expectedLastStreamId: 0,
-                expectedErrorCode: Http2ErrorCode.PROTOCOL_ERROR,
-                expectedErrorMessage: CoreStrings.Http2FrameMissingFields);
+                expectedErrorCode: Http2ErrorCode.FRAME_SIZE_ERROR,
+                expectedErrorMessage: CoreStrings.FormatHttp2ErrorUnexpectedFrameLength(Http2FrameType.HEADERS, expectedLength: 1));
         }
 
         [Theory]
@@ -1924,7 +1925,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                     withFlags: (byte)Http2DataFrameFlags.NONE,
                     withStreamId: streamId);
 
-                Assert.True(_helloWorldBytes.AsSpan(0, initialWindowSize).SequenceEqual(dataFrame.DataPayload));
+                Assert.True(_helloWorldBytes.AsSpan(0, initialWindowSize).SequenceEqual(dataFrame.PayloadSequence.ToArray()));
                 Assert.False(writeTasks[streamId].IsCompleted);
             }
 
@@ -2064,13 +2065,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await SendSettingsAsync();
 
             var frame = await ExpectAsync(Http2FrameType.SETTINGS,
-                withLength: Http2Frame.SettingSize * 2,
+                withLength: Http2FrameReader.SettingSize * 2,
                 withFlags: 0,
                 withStreamId: 0);
 
             // Only non protocol defaults are sent
-            Assert.Equal(2, frame.SettingsCount);
-            var settings = frame.GetSettings();
+            var settings = Http2FrameReader.ReadSettings(frame.PayloadSequence);
             Assert.Equal(2, settings.Count);
 
             var setting = settings[0];
@@ -2101,13 +2101,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await SendSettingsAsync();
 
             var frame = await ExpectAsync(Http2FrameType.SETTINGS,
-                withLength: 6 * 2,
+                withLength: Http2FrameReader.SettingSize * 2,
                 withFlags: 0,
                 withStreamId: 0);
 
             // Only non protocol defaults are sent
-            Assert.Equal(2, frame.SettingsCount);
-            var settings = frame.GetSettings();
+            var settings = Http2FrameReader.ReadSettings(frame.PayloadSequence);
             Assert.Equal(2, settings.Count);
 
             var setting = settings[0];
@@ -2139,9 +2138,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             await InitializeConnectionAsync(_noopApplication);
 
-            var frame = new Http2Frame(Http2PeerSettings.MinAllowedMaxFrameSize);
+            var frame = new Http2Frame();
             frame.PrepareSettings(Http2SettingsFrameFlags.ACK);
-            await SendAsync(frame.Raw);
+            Http2FrameWriter.WriteHeader(frame, _pair.Application.Output);
+            await FlushAsync(_pair.Application.Output);
 
             await StopConnectionAsync(expectedLastStreamId: 0, ignoreNonGoAwayFrames: false);
         }
@@ -2260,6 +2260,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task SETTINGS_Received_ChangesAllowedResponseMaxFrameSize()
         {
+            _connection.ServerSettings.MaxFrameSize = Http2PeerSettings.MaxAllowedMaxFrameSize;
             // This includes the default response headers such as :status, etc
             var defaultResponseHeaderLength = 37;
             var headerValueLength = Http2PeerSettings.MinAllowedMaxFrameSize;
@@ -2276,7 +2277,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 context.Response.Headers["A"] = new string('a', headerValueLength);
                 context.Response.Headers["B"] = new string('b', headerValueLength);
                 return context.Response.Body.WriteAsync(new byte[payloadLength], 0, payloadLength);
-            });
+            }, expectedSettingsCount: 3);
 
             // Update client settings
             _clientSettings.MaxFrameSize = (uint)payloadLength;
@@ -2301,6 +2302,42 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 withStreamId: 1);
             await ExpectAsync(Http2FrameType.DATA,
                 withLength: payloadLength,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 1);
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 0,
+                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withStreamId: 1);
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+        }
+
+        [Fact]
+        public async Task SETTINGS_Received_ClientMaxFrameSizeCannotExceedServerMaxFrameSize()
+        {
+            var serverMaxFrame = Http2PeerSettings.MinAllowedMaxFrameSize + 1024;
+            _connection.ServerSettings.MaxFrameSize = Http2PeerSettings.MinAllowedMaxFrameSize + 1024;
+            var clientMaxFrame = serverMaxFrame + 1024 * 5;
+            _clientSettings.MaxFrameSize = (uint)clientMaxFrame;
+
+            await InitializeConnectionAsync(context =>
+            {
+                return context.Response.Body.WriteAsync(new byte[clientMaxFrame], 0, clientMaxFrame);
+            }, expectedSettingsCount: 3);
+
+            // Start request
+            await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
+
+            await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 37,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1);
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: serverMaxFrame,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 1);
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: clientMaxFrame - serverMaxFrame,
                 withFlags: (byte)Http2DataFrameFlags.NONE,
                 withStreamId: 1);
             await ExpectAsync(Http2FrameType.DATA,
@@ -2627,7 +2664,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                     withFlags: (byte)Http2DataFrameFlags.NONE,
                     withStreamId: streamId);
 
-                Assert.True(_helloWorldBytes.AsSpan(0, initialWindowSize).SequenceEqual(dataFrame.DataPayload));
+                Assert.True(_helloWorldBytes.AsSpan(0, initialWindowSize).SequenceEqual(dataFrame.PayloadSequence.ToArray()));
                 Assert.False(writeTasks[streamId].IsCompleted);
             }
 
@@ -2931,8 +2968,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
-            Assert.True(_helloWorldBytes.AsSpan(0, initialWindowSize).SequenceEqual(dataFrame1.DataPayload));
-            Assert.True(_helloWorldBytes.AsSpan(initialWindowSize, initialWindowSize).SequenceEqual(dataFrame2.DataPayload));
+            Assert.True(_helloWorldBytes.AsSpan(0, initialWindowSize).SequenceEqual(dataFrame1.PayloadSequence.ToArray()));
+            Assert.True(_helloWorldBytes.AsSpan(initialWindowSize, initialWindowSize).SequenceEqual(dataFrame2.PayloadSequence.ToArray()));
         }
 
         [Fact]
@@ -2986,9 +3023,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
-            Assert.True(_helloWorldBytes.AsSpan(0, 6).SequenceEqual(dataFrame1.DataPayload));
-            Assert.True(_helloWorldBytes.AsSpan(6, 3).SequenceEqual(dataFrame2.DataPayload));
-            Assert.True(_helloWorldBytes.AsSpan(9, 3).SequenceEqual(dataFrame3.DataPayload));
+            Assert.True(_helloWorldBytes.AsSpan(0, 6).SequenceEqual(dataFrame1.PayloadSequence.ToArray()));
+            Assert.True(_helloWorldBytes.AsSpan(6, 3).SequenceEqual(dataFrame2.PayloadSequence.ToArray()));
+            Assert.True(_helloWorldBytes.AsSpan(9, 3).SequenceEqual(dataFrame3.PayloadSequence.ToArray()));
         }
 
         [Fact]
@@ -3190,9 +3227,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
-            _hpackDecoder.Decode(headersFrame.HeadersPayload, endHeaders: false, handler: this);
-            _hpackDecoder.Decode(continuationFrame1.HeadersPayload, endHeaders: false, handler: this);
-            _hpackDecoder.Decode(continuationFrame2.HeadersPayload, endHeaders: true, handler: this);
+            _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: false, handler: this);
+            _hpackDecoder.Decode(continuationFrame1.PayloadSequence, endHeaders: false, handler: this);
+            _hpackDecoder.Decode(continuationFrame2.PayloadSequence, endHeaders: true, handler: this);
 
             Assert.Equal(11, _decodedHeaders.Count);
             Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);

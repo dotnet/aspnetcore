@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
             }
 
             _options = options;
-            _logger = loggerFactory?.CreateLogger(nameof(HttpsConnectionAdapter));
+            _logger = loggerFactory?.CreateLogger<HttpsConnectionAdapter>();
         }
 
         public bool IsHttps => true;

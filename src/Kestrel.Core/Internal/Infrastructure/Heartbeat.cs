@@ -30,6 +30,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
         public void Start()
         {
+            OnHeartbeat();
             _timer = new Timer(OnHeartbeat, state: this, dueTime: _interval, period: _interval);
         }
 

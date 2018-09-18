@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
     /* https://tools.ietf.org/html/rfc7540#section-6.2
@@ -34,37 +32,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public bool HeadersHasPriority => (HeadersFlags & Http2HeadersFrameFlags.PRIORITY) == Http2HeadersFrameFlags.PRIORITY;
 
-        public byte HeadersPadLength
-        {
-            get => HeadersHasPadding ? Payload[0] : (byte)0;
-            set => Payload[0] = value;
-        }
+        public byte HeadersPadLength { get; set; }
 
-        private int HeadersStreamDependencyOffset => HeadersHasPadding ? 1 : 0;
+        public int HeadersStreamDependency { get; set; }
 
-        public int HeadersStreamDependency
-        {
-            get => (int)Bitshifter.ReadUInt31BigEndian(Payload.Slice(HeadersStreamDependencyOffset));
-            set => Bitshifter.WriteUInt31BigEndian(Payload.Slice(HeadersStreamDependencyOffset), (uint)value);
-        }
+        public byte HeadersPriorityWeight { get; set; }
 
-        private int HeadersPriorityWeightOffset => HeadersStreamDependencyOffset + 4;
+        private int HeadersPayloadOffset => (HeadersHasPadding ? 1 : 0) + (HeadersHasPriority ? 5 : 0);
 
-        public byte HeadersPriorityWeight
-        {
-            get => Payload[HeadersPriorityWeightOffset];
-            set => Payload[HeadersPriorityWeightOffset] = value;
-        }
-
-        public int HeadersPayloadOffset => (HeadersHasPadding ? 1 : 0) + (HeadersHasPriority ? 5 : 0);
-
-        private int HeadersPayloadLength => PayloadLength - HeadersPayloadOffset - HeadersPadLength;
-
-        public Span<byte> HeadersPayload => Payload.Slice(HeadersPayloadOffset, HeadersPayloadLength);
+        public int HeadersPayloadLength => PayloadLength - HeadersPayloadOffset - HeadersPadLength;
 
         public void PrepareHeaders(Http2HeadersFrameFlags flags, int streamId)
         {
-            PayloadLength = (int)_maxFrameSize;
+            PayloadLength = 0;
             Type = Http2FrameType.HEADERS;
             HeadersFlags = flags;
             StreamId = streamId;

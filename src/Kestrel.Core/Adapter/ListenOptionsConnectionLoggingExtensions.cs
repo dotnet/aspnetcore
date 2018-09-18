@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Hosting
         /// </returns>
         public static ListenOptions UseConnectionLogging(this ListenOptions listenOptions)
         {
-            return listenOptions.UseConnectionLogging(nameof(LoggingConnectionAdapter));
+            return listenOptions.UseConnectionLogging(loggerName: null);
         }
 
         /// <summary>
@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Hosting
         public static ListenOptions UseConnectionLogging(this ListenOptions listenOptions, string loggerName)
         {
             var loggerFactory = listenOptions.KestrelServerOptions.ApplicationServices.GetRequiredService<ILoggerFactory>();
-            var logger = loggerFactory.CreateLogger(loggerName ?? nameof(LoggingConnectionAdapter));
+            var logger = loggerName == null ? loggerFactory.CreateLogger<LoggingConnectionAdapter>() : loggerFactory.CreateLogger(loggerName);
             listenOptions.ConnectionAdapters.Add(new LoggingConnectionAdapter(logger));
             return listenOptions;
         }

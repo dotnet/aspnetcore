@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
     /*
@@ -26,32 +24,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public bool DataHasPadding => (DataFlags & Http2DataFrameFlags.PADDED) == Http2DataFrameFlags.PADDED;
 
-        public byte DataPadLength
-        {
-            get => DataHasPadding ? Payload[0] : (byte)0;
-            set => Payload[0] = value;
-        }
+        public byte DataPadLength { get; set; }
 
-        public int DataPayloadOffset => DataHasPadding ? 1 : 0;
+        private int DataPayloadOffset => DataHasPadding ? 1 : 0;
 
-        private int DataPayloadLength => PayloadLength - DataPayloadOffset - DataPadLength;
-
-        public Span<byte> DataPayload => Payload.Slice(DataPayloadOffset, DataPayloadLength);
+        public int DataPayloadLength => PayloadLength - DataPayloadOffset - DataPadLength;
 
         public void PrepareData(int streamId, byte? padLength = null)
         {
-            var padded = padLength != null;
-
-            PayloadLength = (int)_maxFrameSize;
+            PayloadLength = 0;
             Type = Http2FrameType.DATA;
-            DataFlags = padded ? Http2DataFrameFlags.PADDED : Http2DataFrameFlags.NONE;
+            DataFlags = padLength.HasValue ? Http2DataFrameFlags.PADDED : Http2DataFrameFlags.NONE;
             StreamId = streamId;
-
-            if (padded)
-            {
-                DataPadLength = padLength.Value;
-                Payload.Slice(PayloadLength - padLength.Value).Fill(0);
-            }
+            DataPadLength = padLength ?? 0;
         }
     }
 }

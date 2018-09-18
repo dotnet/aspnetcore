@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
-            _hpackDecoder.Decode(headersFrame.HeadersPayload, endHeaders: false, handler: this);
+            _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: false, handler: this);
 
             Assert.Equal(4, _decodedHeaders.Count);
             Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
@@ -115,7 +115,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
-            _hpackDecoder.Decode(headersFrame.HeadersPayload, endHeaders: false, handler: this);
+            _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: false, handler: this);
 
             Assert.Equal(4, _decodedHeaders.Count);
             Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
@@ -146,7 +146,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
-            _hpackDecoder.Decode(headersFrame.HeadersPayload, endHeaders: false, handler: this);
+            _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: false, handler: this);
 
             Assert.Equal(5, _decodedHeaders.Count);
             Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
@@ -178,7 +178,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
-            _hpackDecoder.Decode(headersFrame.HeadersPayload, endHeaders: false, handler: this);
+            _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: false, handler: this);
 
             Assert.Equal(5, _decodedHeaders.Count);
             Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
@@ -216,7 +216,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
-            _hpackDecoder.Decode(headersFrame.HeadersPayload, endHeaders: false, handler: this);
+            _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: false, handler: this);
 
             Assert.Equal(6, _decodedHeaders.Count);
             Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
@@ -262,7 +262,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
-            _hpackDecoder.Decode(headersFrame.HeadersPayload, endHeaders: false, handler: this);
+            _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: false, handler: this);
 
             Assert.Equal(3, _decodedHeaders.Count);
             Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
@@ -328,7 +328,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
-            _hpackDecoder.Decode(headersFrame.HeadersPayload, endHeaders: false, handler: this);
+            _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: false, handler: this);
 
             Assert.Equal(3, _decodedHeaders.Count);
             Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
@@ -361,7 +361,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
-            _hpackDecoder.Decode(headersFrame.HeadersPayload, endHeaders: false, handler: this);
+            _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: false, handler: this);
 
             Assert.Equal(3, _decodedHeaders.Count);
             Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
@@ -394,7 +394,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
-            _hpackDecoder.Decode(headersFrame.HeadersPayload, endHeaders: false, handler: this);
+            _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: false, handler: this);
 
             Assert.Equal(4, _decodedHeaders.Count);
             Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
@@ -429,7 +429,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
-            _hpackDecoder.Decode(headersFrame.HeadersPayload, endHeaders: false, handler: this);
+            _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: false, handler: this);
 
             Assert.Equal(4, _decodedHeaders.Count);
             Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
@@ -464,7 +464,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
-            _hpackDecoder.Decode(headersFrame.HeadersPayload, endHeaders: false, handler: this);
+            _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: false, handler: this);
 
             Assert.Equal(4, _decodedHeaders.Count);
             Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
@@ -499,7 +499,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
-            _hpackDecoder.Decode(headersFrame.HeadersPayload, endHeaders: false, handler: this);
+            _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: false, handler: this);
 
             Assert.Equal(4, _decodedHeaders.Count);
             Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
@@ -610,7 +610,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             });
 
             await StartStreamAsync(1, headers, endStream: false);
-            await SendDataAsync(1, new byte[12].AsSpan(), endStream: true);
+            await SendDataAsync(1, new byte[12], endStream: true);
 
             var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
                 withLength: 55,
@@ -623,7 +623,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
-            _hpackDecoder.Decode(headersFrame.HeadersPayload, endHeaders: false, handler: this);
+            _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: false, handler: this);
 
             Assert.Equal(3, _decodedHeaders.Count);
             Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
@@ -653,7 +653,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 new KeyValuePair<string, string>(HeaderNames.ContentLength, "12"),
             };
             await StartStreamAsync(1, headers, endStream: false);
-            await SendDataAsync(1, new byte[12].AsSpan(), endStream: true);
+            await SendDataAsync(1, new byte[12], endStream: true);
 
             var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
                 withLength: 55,
@@ -666,7 +666,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
-            _hpackDecoder.Decode(headersFrame.HeadersPayload, endHeaders: false, handler: this);
+            _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: false, handler: this);
 
             Assert.Equal(3, _decodedHeaders.Count);
             Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
@@ -699,9 +699,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
 
             await StartStreamAsync(1, headers, endStream: false);
-            await SendDataAsync(1, new byte[1].AsSpan(), endStream: false);
-            await SendDataAsync(1, new byte[3].AsSpan(), endStream: false);
-            await SendDataAsync(1, new byte[8].AsSpan(), endStream: true);
+            await SendDataAsync(1, new byte[1], endStream: false);
+            await SendDataAsync(1, new byte[3], endStream: false);
+            await SendDataAsync(1, new byte[8], endStream: true);
 
             var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
                 withLength: 55,
@@ -714,7 +714,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
-            _hpackDecoder.Decode(headersFrame.HeadersPayload, endHeaders: false, handler: this);
+            _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: false, handler: this);
 
             Assert.Equal(3, _decodedHeaders.Count);
             Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
@@ -786,7 +786,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             });
 
             await StartStreamAsync(1, headers, endStream: false);
-            await SendDataAsync(1, new byte[13].AsSpan(), endStream: true);
+            await SendDataAsync(1, new byte[13], endStream: true);
 
             await WaitForStreamErrorAsync(1, Http2ErrorCode.PROTOCOL_ERROR, CoreStrings.Http2StreamErrorMoreDataThanLength);
 
@@ -821,7 +821,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             });
 
             await StartStreamAsync(1, headers, endStream: false);
-            await SendDataAsync(1, new byte[11].AsSpan(), endStream: true);
+            await SendDataAsync(1, new byte[11], endStream: true);
 
             await WaitForStreamErrorAsync(1, Http2ErrorCode.PROTOCOL_ERROR, CoreStrings.Http2StreamErrorLessDataThanLength);
 
@@ -856,10 +856,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             });
 
             await StartStreamAsync(1, headers, endStream: false);
-            await SendDataAsync(1, new byte[1].AsSpan(), endStream: false);
-            await SendDataAsync(1, new byte[2].AsSpan(), endStream: false);
-            await SendDataAsync(1, new byte[10].AsSpan(), endStream: false);
-            await SendDataAsync(1, new byte[2].AsSpan(), endStream: true);
+            await SendDataAsync(1, new byte[1], endStream: false);
+            await SendDataAsync(1, new byte[2], endStream: false);
+            await SendDataAsync(1, new byte[10], endStream: false);
+            await SendDataAsync(1, new byte[2], endStream: true);
 
             await WaitForStreamErrorAsync(1, Http2ErrorCode.PROTOCOL_ERROR, CoreStrings.Http2StreamErrorMoreDataThanLength);
 
@@ -894,8 +894,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             });
 
             await StartStreamAsync(1, headers, endStream: false);
-            await SendDataAsync(1, new byte[1].AsSpan(), endStream: false);
-            await SendDataAsync(1, new byte[2].AsSpan(), endStream: true);
+            await SendDataAsync(1, new byte[1], endStream: false);
+            await SendDataAsync(1, new byte[2], endStream: true);
 
             await WaitForStreamErrorAsync(1, Http2ErrorCode.PROTOCOL_ERROR, CoreStrings.Http2StreamErrorLessDataThanLength);
 
@@ -938,7 +938,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
-            _hpackDecoder.Decode(headersFrame.HeadersPayload, endHeaders: false, handler: this);
+            _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: false, handler: this);
 
             Assert.Equal(3, _decodedHeaders.Count);
             Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
@@ -977,7 +977,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
-            _hpackDecoder.Decode(headersFrame.HeadersPayload, endHeaders: false, handler: this);
+            _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: false, handler: this);
 
             Assert.Equal(3, _decodedHeaders.Count);
             Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
@@ -1015,7 +1015,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
-            _hpackDecoder.Decode(headersFrame.HeadersPayload, endHeaders: false, handler: this);
+            _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: false, handler: this);
 
             Assert.Equal(3, _decodedHeaders.Count);
             Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
@@ -1053,7 +1053,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
-            _hpackDecoder.Decode(headersFrame.HeadersPayload, endHeaders: false, handler: this);
+            _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: false, handler: this);
 
             Assert.Equal(3, _decodedHeaders.Count);
             Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
@@ -1080,7 +1080,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             });
 
             await StartStreamAsync(1, headers, endStream: false);
-            await SendDataAsync(1, new byte[12].AsSpan(), endStream: true);
+            await SendDataAsync(1, new byte[12], endStream: true);
 
             var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
                 withLength: 55,
@@ -1093,7 +1093,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
-            _hpackDecoder.Decode(headersFrame.HeadersPayload, endHeaders: false, handler: this);
+            _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: false, handler: this);
 
             Assert.Equal(3, _decodedHeaders.Count);
             Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
@@ -1136,7 +1136,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
-            _hpackDecoder.Decode(headersFrame.HeadersPayload, endHeaders: false, handler: this);
+            _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: false, handler: this);
 
             Assert.Equal(3, _decodedHeaders.Count);
             Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
@@ -1164,7 +1164,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             });
 
             await StartStreamAsync(1, headers, endStream: false);
-            await SendDataAsync(1, new byte[12].AsSpan(), endStream: true);
+            await SendDataAsync(1, new byte[12], endStream: true);
 
             var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
                 withLength: 55,
@@ -1177,7 +1177,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
-            _hpackDecoder.Decode(headersFrame.HeadersPayload, endHeaders: false, handler: this);
+            _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: false, handler: this);
 
             Assert.Equal(3, _decodedHeaders.Count);
             Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
@@ -1207,9 +1207,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             });
 
             await StartStreamAsync(1, headers, endStream: false);
-            await SendDataAsync(1, new byte[6].AsSpan(), endStream: false);
-            await SendDataAsync(1, new byte[6].AsSpan(), endStream: false);
-            await SendDataAsync(1, new byte[6].AsSpan(), endStream: true);
+            await SendDataAsync(1, new byte[6], endStream: false);
+            await SendDataAsync(1, new byte[6], endStream: false);
+            await SendDataAsync(1, new byte[6], endStream: true);
 
             var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
                 withLength: 59,
@@ -1222,7 +1222,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
-            _hpackDecoder.Decode(headersFrame.HeadersPayload, endHeaders: false, handler: this);
+            _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: false, handler: this);
 
             Assert.Equal(3, _decodedHeaders.Count);
             Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
@@ -1266,9 +1266,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             });
 
             await StartStreamAsync(1, headers, endStream: false);
-            await SendDataAsync(1, new byte[6].AsSpan(), endStream: false);
-            await SendDataAsync(1, new byte[6].AsSpan(), endStream: false);
-            await SendDataAsync(1, new byte[6].AsSpan(), endStream: true);
+            await SendDataAsync(1, new byte[6], endStream: false);
+            await SendDataAsync(1, new byte[6], endStream: false);
+            await SendDataAsync(1, new byte[6], endStream: true);
 
             var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
                 withLength: 59,
@@ -1281,7 +1281,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
-            _hpackDecoder.Decode(headersFrame.HeadersPayload, endHeaders: false, handler: this);
+            _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: false, handler: this);
 
             Assert.Equal(3, _decodedHeaders.Count);
             Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
@@ -1321,7 +1321,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             });
 
             await StartStreamAsync(1, headers, endStream: false);
-            await SendDataAsync(1, new byte[12].AsSpan(), endStream: true);
+            await SendDataAsync(1, new byte[12], endStream: true);
 
             var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
                 withLength: 55,
@@ -1334,7 +1334,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
-            _hpackDecoder.Decode(headersFrame.HeadersPayload, endHeaders: false, handler: this);
+            _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: false, handler: this);
 
             Assert.Equal(3, _decodedHeaders.Count);
             Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
@@ -1371,7 +1371,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
-            _hpackDecoder.Decode(headersFrame.HeadersPayload, endHeaders: false, handler: this);
+            _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: false, handler: this);
 
             Assert.Equal(3, _decodedHeaders.Count);
             Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
@@ -1409,7 +1409,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
-            _hpackDecoder.Decode(headersFrame.HeadersPayload, endHeaders: false, handler: this);
+            _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: false, handler: this);
 
             Assert.Equal(2, _decodedHeaders.Count);
             Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
@@ -1734,6 +1734,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 withStreamId: 1);
 
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+        }
+
+        [Fact]
+        public async Task ResponseWithHeadersTooLarge_AbortsConnection()
+        {
+            var appFinished = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            await InitializeConnectionAsync(async context =>
+            {
+                context.Response.Headers["too_long"] = new string('a', (int)Http2PeerSettings.DefaultMaxFrameSize);
+                var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => context.Response.WriteAsync("Hello World")).DefaultTimeout();
+                appFinished.TrySetResult(ex.InnerException.Message);
+            });
+
+            await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
+
+            var message = await appFinished.Task.DefaultTimeout();
+            Assert.Equal(CoreStrings.HPackErrorNotEnoughBuffer, message);
         }
     }
 }

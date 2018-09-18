@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         public async Task ConnectionAbortedWhenRequestHeadersNotReceivedInTime(string headers)
         {
             var testContext = new TestServiceContext(LoggerFactory);
-            var heartbeatManager = new HeartbeatManager(testContext.ConnectionManager, testContext.SystemClock.UtcNow);
+            var heartbeatManager = new HeartbeatManager(testContext.ConnectionManager);
 
             using (var server = CreateServer(testContext))
             using (var connection = server.CreateConnection())
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         public async Task RequestHeadersTimeoutCanceledAfterHeadersReceived()
         {
             var testContext = new TestServiceContext(LoggerFactory);
-            var heartbeatManager = new HeartbeatManager(testContext.ConnectionManager, testContext.SystemClock.UtcNow);
+            var heartbeatManager = new HeartbeatManager(testContext.ConnectionManager);
 
             using (var server = CreateServer(testContext))
             using (var connection = server.CreateConnection())
@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         public async Task ConnectionAbortedWhenRequestLineNotReceivedInTime(string requestLine)
         {
             var testContext = new TestServiceContext(LoggerFactory);
-            var heartbeatManager = new HeartbeatManager(testContext.ConnectionManager, testContext.SystemClock.UtcNow);
+            var heartbeatManager = new HeartbeatManager(testContext.ConnectionManager);
 
             using (var server = CreateServer(testContext))
             using (var connection = server.CreateConnection())
@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         public async Task TimeoutNotResetOnEachRequestLineCharacterReceived()
         {
             var testContext = new TestServiceContext(LoggerFactory);
-            var heartbeatManager = new HeartbeatManager(testContext.ConnectionManager, testContext.SystemClock.UtcNow);
+            var heartbeatManager = new HeartbeatManager(testContext.ConnectionManager);
 
             using (var server = CreateServer(testContext))
             using (var connection = server.CreateConnection())

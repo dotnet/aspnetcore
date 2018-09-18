@@ -10,11 +10,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
     */
     public partial class Http2Frame
     {
-        public int WindowUpdateSizeIncrement
-        {
-            get => (int)Bitshifter.ReadUInt31BigEndian(Payload);
-            set => Bitshifter.WriteUInt31BigEndian(Payload, (uint)value);
-        }
+        public int WindowUpdateSizeIncrement { get; set; }
 
         public void PrepareWindowUpdate(int streamId, int sizeIncrement)
         {

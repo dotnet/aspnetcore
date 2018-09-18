@@ -3,7 +3,9 @@
 
 using System;
 using System.Buffers;
+using System.Buffers.Binary;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,6 +24,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private static readonly byte[] _continueBytes = new byte[] { 0x08, 0x03, (byte)'1', (byte)'0', (byte)'0' };
 
         private uint _maxFrameSize = Http2PeerSettings.MinAllowedMaxFrameSize;
+        private byte[] _headerEncodingBuffer;
         private Http2Frame _outgoingFrame;
         private readonly object _writeLock = new object();
         private readonly HPackEncoder _hpackEncoder = new HPackEncoder();
@@ -49,15 +52,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             _connectionId = connectionId;
             _log = log;
             _flusher = new StreamSafePipeFlusher(_outputWriter, timeoutControl);
-            _outgoingFrame = new Http2Frame(_maxFrameSize);
+            _outgoingFrame = new Http2Frame();
+            _headerEncodingBuffer = new byte[_maxFrameSize];
         }
 
         public void UpdateMaxFrameSize(uint maxFrameSize)
         {
             lock (_writeLock)
             {
-                _maxFrameSize = maxFrameSize;
-                _outgoingFrame = new Http2Frame(maxFrameSize);
+                if (_maxFrameSize != maxFrameSize)
+                {
+                    _maxFrameSize = maxFrameSize;
+                    _headerEncodingBuffer = new byte[_maxFrameSize];
+                }
             }
         }
 
@@ -109,14 +116,33 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         {
             lock (_writeLock)
             {
+                if (_completed)
+                {
+                    return Task.CompletedTask;
+                }
+
                 _outgoingFrame.PrepareHeaders(Http2HeadersFrameFlags.END_HEADERS, streamId);
                 _outgoingFrame.PayloadLength = _continueBytes.Length;
-                _continueBytes.CopyTo(_outgoingFrame.HeadersPayload);
-
-                return WriteFrameUnsynchronizedAsync();
+                WriteHeaderUnsynchronized();
+                _outputWriter.Write(_continueBytes);
+                return _flusher.FlushAsync();
             }
         }
 
+        // Optional header fields for padding and priority are not implemented.
+        /* https://tools.ietf.org/html/rfc7540#section-6.2
+            +---------------+
+            |Pad Length? (8)|
+            +-+-------------+-----------------------------------------------+
+            |E|                 Stream Dependency? (31)                     |
+            +-+-------------+-----------------------------------------------+
+            |  Weight? (8)  |
+            +-+-------------+-----------------------------------------------+
+            |                   Header Block Fragment (*)                 ...
+            +---------------------------------------------------------------+
+            |                           Padding (*)                       ...
+            +---------------------------------------------------------------+
+        */
         public void WriteResponseHeaders(int streamId, int statusCode, IHeaderDictionary headers)
         {
             lock (_writeLock)
@@ -126,33 +152,43 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     return;
                 }
 
-                _outgoingFrame.PrepareHeaders(Http2HeadersFrameFlags.NONE, streamId);
-
-                var done = _hpackEncoder.BeginEncode(statusCode, EnumerateHeaders(headers), _outgoingFrame.Payload, out var payloadLength);
-                _outgoingFrame.PayloadLength = payloadLength;
-
-                if (done)
+                try
                 {
-                    _outgoingFrame.HeadersFlags = Http2HeadersFrameFlags.END_HEADERS;
-                }
+                    _outgoingFrame.PrepareHeaders(Http2HeadersFrameFlags.NONE, streamId);
+                    var buffer = _headerEncodingBuffer.AsSpan();
+                    var done = _hpackEncoder.BeginEncode(statusCode, EnumerateHeaders(headers), buffer, out var payloadLength);
 
-                _log.Http2FrameSending(_connectionId, _outgoingFrame);
-                _outputWriter.Write(_outgoingFrame.Raw);
-
-                while (!done)
-                {
-                    _outgoingFrame.PrepareContinuation(Http2ContinuationFrameFlags.NONE, streamId);
-
-                    done = _hpackEncoder.Encode(_outgoingFrame.Payload, out var length);
-                    _outgoingFrame.PayloadLength = length;
+                    _outgoingFrame.PayloadLength = payloadLength;
 
                     if (done)
                     {
-                        _outgoingFrame.ContinuationFlags = Http2ContinuationFrameFlags.END_HEADERS;
+                        _outgoingFrame.HeadersFlags = Http2HeadersFrameFlags.END_HEADERS;
                     }
 
-                    _log.Http2FrameSending(_connectionId, _outgoingFrame);
-                    _outputWriter.Write(_outgoingFrame.Raw);
+                    WriteHeaderUnsynchronized();
+                    _outputWriter.Write(buffer.Slice(0, payloadLength));
+
+                    while (!done)
+                    {
+                        _outgoingFrame.PrepareContinuation(Http2ContinuationFrameFlags.NONE, streamId);
+
+                        done = _hpackEncoder.Encode(buffer, out payloadLength);
+                        _outgoingFrame.PayloadLength = payloadLength;
+
+                        if (done)
+                        {
+                            _outgoingFrame.ContinuationFlags = Http2ContinuationFrameFlags.END_HEADERS;
+                        }
+
+                        WriteHeaderUnsynchronized();
+                        _outputWriter.Write(buffer.Slice(0, payloadLength));
+                    }
+                }
+                catch (HPackEncodingException hex)
+                {
+                    // Header errors are fatal to the connection. We don't have a direct way to signal this to the Http2Connection.
+                    _connectionContext.Abort(new ConnectionAbortedException("", hex));
+                    throw new InvalidOperationException("", hex); // Report the error to the user if this was the first write.
                 }
             }
         }
@@ -182,45 +218,54 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
         }
 
+        /*  Padding is not implemented
+            +---------------+
+            |Pad Length? (8)|
+            +---------------+-----------------------------------------------+
+            |                            Data (*)                         ...
+            +---------------------------------------------------------------+
+            |                           Padding (*)                       ...
+            +---------------------------------------------------------------+
+        */
         private Task WriteDataUnsynchronizedAsync(int streamId, ReadOnlySequence<byte> data, bool endStream)
         {
+            // Note padding is not implemented
             _outgoingFrame.PrepareData(streamId);
 
-            var payload = _outgoingFrame.Payload;
-            var unwrittenPayloadLength = 0;
+            var dataPayloadLength = (int)_maxFrameSize; // Minus padding
 
-            foreach (var buffer in data)
+            while (data.Length > dataPayloadLength)
             {
-                var current = buffer;
+                var currentData = data.Slice(0, dataPayloadLength);
+                _outgoingFrame.PayloadLength = dataPayloadLength; // Plus padding
 
-                while (current.Length > payload.Length)
+                WriteHeaderUnsynchronized();
+
+                foreach (var buffer in currentData)
                 {
-                    current.Span.Slice(0, payload.Length).CopyTo(payload);
-                    current = current.Slice(payload.Length);
-
-                    _log.Http2FrameSending(_connectionId, _outgoingFrame);
-                    _outputWriter.Write(_outgoingFrame.Raw);
-                    payload = _outgoingFrame.Payload;
-                    unwrittenPayloadLength = 0;
+                    _outputWriter.Write(buffer.Span);
                 }
 
-                if (current.Length > 0)
-                {
-                    current.Span.CopyTo(payload);
-                    payload = payload.Slice(current.Length);
-                    unwrittenPayloadLength += current.Length;
-                }
+                // Plus padding
+
+                data = data.Slice(dataPayloadLength);
             }
 
             if (endStream)
             {
-                _outgoingFrame.DataFlags = Http2DataFrameFlags.END_STREAM;
+                _outgoingFrame.DataFlags |= Http2DataFrameFlags.END_STREAM;
             }
 
-            _outgoingFrame.PayloadLength = unwrittenPayloadLength;
+            _outgoingFrame.PayloadLength = (int)data.Length; // Plus padding
 
-            _log.Http2FrameSending(_connectionId, _outgoingFrame);
-            _outputWriter.Write(_outgoingFrame.Raw);
+            WriteHeaderUnsynchronized();
+
+            foreach (var buffer in data)
+            {
+                _outputWriter.Write(buffer.Span);
+            }
+
+            // Plus padding
 
             return _flusher.FlushAsync();
         }
@@ -271,71 +316,194 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             await ThreadPoolAwaitable.Instance;
         }
 
+        /* https://tools.ietf.org/html/rfc7540#section-6.9
+            +-+-------------------------------------------------------------+
+            |R|              Window Size Increment (31)                     |
+            +-+-------------------------------------------------------------+
+        */
         public Task WriteWindowUpdateAsync(int streamId, int sizeIncrement)
         {
             lock (_writeLock)
             {
+                if (_completed)
+                {
+                    return Task.CompletedTask;
+                }
+
                 _outgoingFrame.PrepareWindowUpdate(streamId, sizeIncrement);
-                return WriteFrameUnsynchronizedAsync();
+                WriteHeaderUnsynchronized();
+                var buffer = _outputWriter.GetSpan(4);
+                Bitshifter.WriteUInt31BigEndian(buffer, (uint)sizeIncrement);
+                _outputWriter.Advance(4);
+                return _flusher.FlushAsync();
             }
         }
 
+        /* https://tools.ietf.org/html/rfc7540#section-6.4
+            +---------------------------------------------------------------+
+            |                        Error Code (32)                        |
+            +---------------------------------------------------------------+
+        */
         public Task WriteRstStreamAsync(int streamId, Http2ErrorCode errorCode)
         {
             lock (_writeLock)
             {
+                if (_completed)
+                {
+                    return Task.CompletedTask;
+                }
+
                 _outgoingFrame.PrepareRstStream(streamId, errorCode);
-                return WriteFrameUnsynchronizedAsync();
+                WriteHeaderUnsynchronized();
+                var buffer = _outputWriter.GetSpan(4);
+                BinaryPrimitives.WriteUInt32BigEndian(buffer, (uint)errorCode);
+                _outputWriter.Advance(4);
+
+                return _flusher.FlushAsync();
             }
         }
 
+        /* https://tools.ietf.org/html/rfc7540#section-6.5.1
+            List of:
+            +-------------------------------+
+            |       Identifier (16)         |
+            +-------------------------------+-------------------------------+
+            |                        Value (32)                             |
+            +---------------------------------------------------------------+
+        */
         public Task WriteSettingsAsync(IList<Http2PeerSetting> settings)
         {
             lock (_writeLock)
             {
-                _outgoingFrame.PrepareSettings(Http2SettingsFrameFlags.NONE, settings);
-                return WriteFrameUnsynchronizedAsync();
+                if (_completed)
+                {
+                    return Task.CompletedTask;
+                }
+
+                _outgoingFrame.PrepareSettings(Http2SettingsFrameFlags.NONE);
+                var settingsSize = settings.Count * Http2FrameReader.SettingSize;
+                _outgoingFrame.PayloadLength = settingsSize;
+                WriteHeaderUnsynchronized();
+
+                var buffer = _outputWriter.GetSpan(settingsSize).Slice(0, settingsSize); // GetSpan isn't precise
+                WriteSettings(settings, buffer);
+                _outputWriter.Advance(settingsSize);
+
+                return _flusher.FlushAsync();
             }
         }
 
+        internal static void WriteSettings(IList<Http2PeerSetting> settings, Span<byte> destination)
+        {
+            foreach (var setting in settings)
+            {
+                BinaryPrimitives.WriteUInt16BigEndian(destination, (ushort)setting.Parameter);
+                BinaryPrimitives.WriteUInt32BigEndian(destination.Slice(2), setting.Value);
+                destination = destination.Slice(Http2FrameReader.SettingSize);
+            }
+        }
+
+        // No payload
         public Task WriteSettingsAckAsync()
         {
             lock (_writeLock)
             {
+                if (_completed)
+                {
+                    return Task.CompletedTask;
+                }
+
                 _outgoingFrame.PrepareSettings(Http2SettingsFrameFlags.ACK);
-                return WriteFrameUnsynchronizedAsync();
+                WriteHeaderUnsynchronized();
+                return _flusher.FlushAsync();
             }
         }
 
-        public Task WritePingAsync(Http2PingFrameFlags flags, ReadOnlySpan<byte> payload)
+        /* https://tools.ietf.org/html/rfc7540#section-6.7
+            +---------------------------------------------------------------+
+            |                                                               |
+            |                      Opaque Data (64)                         |
+            |                                                               |
+            +---------------------------------------------------------------+
+        */
+        public Task WritePingAsync(Http2PingFrameFlags flags, ReadOnlySequence<byte> payload)
         {
             lock (_writeLock)
             {
+                if (_completed)
+                {
+                    return Task.CompletedTask;
+                }
+
                 _outgoingFrame.PreparePing(Http2PingFrameFlags.ACK);
-                payload.CopyTo(_outgoingFrame.Payload);
-                return WriteFrameUnsynchronizedAsync();
+                Debug.Assert(payload.Length == _outgoingFrame.PayloadLength); // 8
+                WriteHeaderUnsynchronized();
+                foreach (var segment in payload)
+                {
+                    _outputWriter.Write(segment.Span);
+                }
+
+                return _flusher.FlushAsync();
             }
         }
 
+        /* https://tools.ietf.org/html/rfc7540#section-6.8
+            +-+-------------------------------------------------------------+
+            |R|                  Last-Stream-ID (31)                        |
+            +-+-------------------------------------------------------------+
+            |                      Error Code (32)                          |
+            +---------------------------------------------------------------+
+            |                  Additional Debug Data (*)                    | (not implemented)
+            +---------------------------------------------------------------+
+        */
         public Task WriteGoAwayAsync(int lastStreamId, Http2ErrorCode errorCode)
         {
             lock (_writeLock)
             {
                 _outgoingFrame.PrepareGoAway(lastStreamId, errorCode);
-                return WriteFrameUnsynchronizedAsync();
+                WriteHeaderUnsynchronized();
+
+                var buffer = _outputWriter.GetSpan(8);
+                Bitshifter.WriteUInt31BigEndian(buffer, (uint)lastStreamId);
+                buffer = buffer.Slice(4);
+                BinaryPrimitives.WriteUInt32BigEndian(buffer, (uint)errorCode);
+                _outputWriter.Advance(8);
+
+                return _flusher.FlushAsync();
             }
         }
 
-        private Task WriteFrameUnsynchronizedAsync()
+        private void WriteHeaderUnsynchronized()
         {
-            if (_completed)
-            {
-                return Task.CompletedTask;
-            }
-
             _log.Http2FrameSending(_connectionId, _outgoingFrame);
-            _outputWriter.Write(_outgoingFrame.Raw);
-            return _flusher.FlushAsync();
+            WriteHeader(_outgoingFrame, _outputWriter);
+        }
+
+        /* https://tools.ietf.org/html/rfc7540#section-4.1
+            +-----------------------------------------------+
+            |                 Length (24)                   |
+            +---------------+---------------+---------------+
+            |   Type (8)    |   Flags (8)   |
+            +-+-------------+---------------+-------------------------------+
+            |R|                 Stream Identifier (31)                      |
+            +=+=============================================================+
+            |                   Frame Payload (0...)                      ...
+            +---------------------------------------------------------------+
+        */
+        internal static void WriteHeader(Http2Frame frame, PipeWriter output)
+        {
+            var buffer = output.GetSpan(Http2FrameReader.HeaderLength);
+
+            Bitshifter.WriteUInt24BigEndian(buffer, (uint)frame.PayloadLength);
+            buffer = buffer.Slice(3);
+
+            buffer[0] = (byte)frame.Type;
+            buffer[1] = frame.Flags;
+            buffer = buffer.Slice(2);
+
+            Bitshifter.WriteUInt31BigEndian(buffer, (uint)frame.StreamId);
+
+            output.Advance(Http2FrameReader.HeaderLength);
         }
 
         public bool TryUpdateConnectionWindow(int bytes)
