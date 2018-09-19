@@ -27,6 +27,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         private static readonly Type IHttpSendFileFeatureType = typeof(global::Microsoft.AspNetCore.Http.Features.IHttpSendFileFeature);
         private static readonly Type IISHttpContextType = typeof(IISHttpContext);
         private static readonly Type IServerVariablesFeature = typeof(global::Microsoft.AspNetCore.Http.Features.IServerVariablesFeature);
+        private static readonly Type IHttpBufferingFeature = typeof(global::Microsoft.AspNetCore.Http.Features.IHttpBufferingFeature);
 
         private object _currentIHttpRequestFeature;
         private object _currentIHttpResponseFeature;
@@ -41,14 +42,12 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         private object _currentIResponseCookiesFeature;
         private object _currentIItemsFeature;
         private object _currentITlsConnectionFeature;
-        private object _currentIHttpMaxRequestBodySizeFeature;
-        private object _currentIHttpMinRequestBodyDataRateFeature;
-        private object _currentIHttpMinResponseDataRateFeature;
         private object _currentIHttpWebSocketFeature;
         private object _currentISessionFeature;
         private object _currentIHttpBodyControlFeature;
         private object _currentIHttpSendFileFeature;
         private object _currentIServerVariablesFeature;
+        private object _currentIHttpBufferingFeature;
 
         private void Initialize()
         {
@@ -58,12 +57,11 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             _currentIHttpRequestIdentifierFeature = this;
             _currentIHttpRequestLifetimeFeature = this;
             _currentIHttpConnectionFeature = this;
-            _currentIHttpMaxRequestBodySizeFeature = this;
-            _currentIHttpMinRequestBodyDataRateFeature = this;
-            _currentIHttpMinResponseDataRateFeature = this;
             _currentIHttpBodyControlFeature = this;
             _currentIHttpAuthenticationFeature = this;
             _currentIServerVariablesFeature = this;
+            _currentIHttpBufferingFeature = this;
+            _currentITlsConnectionFeature = this;
         }
 
         internal object FastFeatureGet(Type key)
@@ -142,7 +140,11 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             }
             if (key == IServerVariablesFeature)
             {
-                return this;
+                return _currentIServerVariablesFeature;
+            }
+            if (key == IHttpBufferingFeature)
+            {
+                return _currentIHttpBufferingFeature;
             }
 
             return ExtraFeatureGet(key);
@@ -242,6 +244,11 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                 _currentIServerVariablesFeature = feature;
                 return;
             }
+            if (key == IHttpBufferingFeature)
+            {
+                _currentIHttpBufferingFeature = feature;
+                return;
+            }
             if (key == IISHttpContextType)
             {
                 throw new InvalidOperationException("Cannot set IISHttpContext in feature collection");
@@ -322,6 +329,10 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             if (_currentIServerVariablesFeature != null)
             {
                 yield return new KeyValuePair<Type, object>(IServerVariablesFeature, _currentIServerVariablesFeature as global::Microsoft.AspNetCore.Http.Features.IServerVariablesFeature);
+            }
+            if (_currentIHttpBufferingFeature != null)
+            {
+                yield return new KeyValuePair<Type, object>(IHttpBufferingFeature, _currentIHttpBufferingFeature as global::Microsoft.AspNetCore.Http.Features.IHttpBufferingFeature);
             }
 
             if (MaybeExtra != null)

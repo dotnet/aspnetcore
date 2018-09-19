@@ -15,24 +15,13 @@ using Xunit;
 namespace IIS.FunctionalTests.Inprocess
 {
     [Collection(PublishedSitesCollection.Name)]
-    public class StdOutRedirectionTests : IISFunctionalTestBase
+    public class StdOutRedirectionTests : LogFileTestBase
     {
         private readonly PublishedSitesFixture _fixture;
-        private readonly string _logFolderPath;
 
         public StdOutRedirectionTests(PublishedSitesFixture fixture)
         {
-            _logFolderPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
             _fixture = fixture;
-        }
-
-        public override void Dispose()
-        {
-            base.Dispose();
-            if (Directory.Exists(_logFolderPath))
-            {
-                Directory.Delete(_logFolderPath, true);
-            }
         }
 
         [ConditionalFact]

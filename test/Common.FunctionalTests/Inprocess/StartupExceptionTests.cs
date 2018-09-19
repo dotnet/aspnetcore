@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
@@ -12,7 +11,7 @@ using Xunit;
 namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 {
     [Collection(PublishedSitesCollection.Name)]
-    public class StartupExceptionTests : IISFunctionalTestBase
+    public class StartupExceptionTests : LogFileTestBase
     {
         private readonly PublishedSitesFixture _fixture;
 
@@ -22,18 +21,20 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
 
         [ConditionalTheory]
-        [InlineData("ConsoleWrite")]
-        [InlineData("ConsoleErrorWrite")]
-        public async Task CheckStdoutWithRandomNumber(string mode)
+        [InlineData("CheckLargeStdErrWrites")]
+        [InlineData("CheckLargeStdOutWrites")]
+        [InlineData("CheckOversizedStdErrWrites")]
+        [InlineData("CheckOversizedStdOutWrites")]
+        public async Task CheckStdoutWithLargeWrites_TestSink(string mode)
         {
             var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.InProcessTestSite, publish: true);
+            deploymentParameters.TransformArguments((a, _) => $"{a} {mode}");
+            var deploymentResult = await DeployAsync(deploymentParameters);
 
-            var randomNumberString = new Random(Guid.NewGuid().GetHashCode()).Next(10000000).ToString();
-            deploymentParameters.TransformArguments((a, _) => $"{a} {mode} {randomNumberString}");
-
-            await AssertFailsToStart(deploymentParameters);
-
-            Assert.Contains(TestSink.Writes, context => context.Message.Contains($"Random number: {randomNumberString}"));
+            await AssertFailsToStart(deploymentResult);
+            var expectedString = new string('a', 30000);
+            Assert.Contains(TestSink.Writes, context => context.Message.Contains(expectedString));
+            EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessThreadExitStdOut(deploymentResult, "12", expectedString));
         }
 
         [ConditionalTheory]
@@ -41,14 +42,21 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [InlineData("CheckLargeStdOutWrites")]
         [InlineData("CheckOversizedStdErrWrites")]
         [InlineData("CheckOversizedStdOutWrites")]
-        public async Task CheckStdoutWithLargeWrites(string mode)
+        public async Task CheckStdoutWithLargeWrites_LogFile(string mode)
         {
             var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.InProcessTestSite, publish: true);
             deploymentParameters.TransformArguments((a, _) => $"{a} {mode}");
+            deploymentParameters.EnableLogging(_logFolderPath);
 
-            await AssertFailsToStart(deploymentParameters);
+            var deploymentResult = await DeployAsync(deploymentParameters);
 
-            Assert.Contains(TestSink.Writes, context => context.Message.Contains(new string('a', 30000)));
+            await AssertFailsToStart(deploymentResult);
+
+            var contents = GetLogFileContent(deploymentResult);
+            var expectedString = new string('a', 30000);
+
+            Assert.Contains(expectedString, contents);
+            EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessThreadExitStdOut(deploymentResult, "12", expectedString));
         }
 
         [ConditionalFact]
@@ -57,16 +65,16 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.InProcessTestSite, publish: true);
             deploymentParameters.TransformArguments((a, _) => $"{a} CheckConsoleFunctions");
 
-            await AssertFailsToStart(deploymentParameters);
+            var deploymentResult = await DeployAsync(deploymentParameters);
+
+            await AssertFailsToStart(deploymentResult);
 
             Assert.Contains(TestSink.Writes, context => context.Message.Contains("Is Console redirection: True"));
         }
 
-        private async Task AssertFailsToStart(IISDeploymentParameters deploymentParameters)
+        private async Task AssertFailsToStart(IISDeploymentResult deploymentResult)
         {
-            var deploymentResult = await DeployAsync(deploymentParameters);
-
-            var response = await deploymentResult.HttpClient.GetAsync("/");
+            var response = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
 
             Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
 

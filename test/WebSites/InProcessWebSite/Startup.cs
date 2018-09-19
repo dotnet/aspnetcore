@@ -30,7 +30,13 @@ namespace TestSite
         private async Task ServerVariable(HttpContext ctx)
         {
             var varName = ctx.Request.Query["q"];
-            await ctx.Response.WriteAsync($"{varName}: {ctx.GetIISServerVariable(varName) ?? "(null)"}");
+            var newValue = ctx.Request.Query["v"];
+            var feature = ctx.Features.Get<IServerVariablesFeature>();
+            if (newValue.Count != 0)
+            {
+                feature[varName] = newValue;
+            }
+            await ctx.Response.WriteAsync($"{varName}: {feature[varName] ?? "(null)"}");
         }
 
         private async Task AuthenticationAnonymous(HttpContext ctx)
@@ -321,6 +327,11 @@ namespace TestSite
 
         private async Task ReadAndWriteEchoLines(HttpContext ctx)
         {
+            if (ctx.Request.Headers.TryGetValue("Response-Content-Type", out var contentType))
+            {
+                ctx.Response.ContentType = contentType;
+            }
+
             //Send headers
             await ctx.Response.Body.FlushAsync();
 
@@ -334,6 +345,31 @@ namespace TestSite
                 }
                 await ctx.Response.WriteAsync(line + Environment.NewLine);
                 await ctx.Response.Body.FlushAsync();
+            }
+        }
+
+        private async Task ReadAndWriteEchoLinesNoBuffering(HttpContext ctx)
+        {
+            var feature = ctx.Features.Get<IHttpBufferingFeature>();
+            feature.DisableResponseBuffering();
+
+            if (ctx.Request.Headers.TryGetValue("Response-Content-Type", out var contentType))
+            {
+                ctx.Response.ContentType = contentType;
+            }
+
+            //Send headers
+            await ctx.Response.Body.FlushAsync();
+
+            var reader = new StreamReader(ctx.Request.Body);
+            while (!reader.EndOfStream)
+            {
+                var line = await reader.ReadLineAsync();
+                if (line == "")
+                {
+                    return;
+                }
+                await ctx.Response.WriteAsync(line + Environment.NewLine);
             }
         }
 
@@ -631,10 +667,11 @@ namespace TestSite
             // executed on background thread while request thread calls GetServerVariable
             // concurrent native calls may cause native object corruption
 
+            var serverVariableFeature = ctx.Features.Get<IServerVariablesFeature>();
             await ctx.Response.WriteAsync("Response Begin");
             for (int i = 0; i < 1000; i++)
             {
-                await ctx.Response.WriteAsync(ctx.GetIISServerVariable("REMOTE_PORT"));
+                await ctx.Response.WriteAsync(serverVariableFeature["REMOTE_PORT"]);
                 await ctx.Response.Body.FlushAsync();
             }
             await ctx.Response.WriteAsync("Response End");
@@ -644,5 +681,8 @@ namespace TestSite
         {
             await ctx.Response.WriteAsync(string.Join("|", Environment.GetCommandLineArgs().Skip(1)));
         }
+
+        public Task HttpsHelloWorld(HttpContext ctx) =>
+           ctx.Response.WriteAsync("Scheme:" + ctx.Request.Scheme + "; Original:" + ctx.Request.Headers["x-original-proto"]);
     }
 }

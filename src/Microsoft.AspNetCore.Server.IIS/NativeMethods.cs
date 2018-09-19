@@ -23,7 +23,6 @@ namespace Microsoft.AspNetCore.Server.IIS
 
         public static extern bool CloseHandle(IntPtr handle);
 
-
         [DllImport("kernel32.dll")]
         private static extern IntPtr GetModuleHandle(string lpModuleName);
 
@@ -76,6 +75,9 @@ namespace Microsoft.AspNetCore.Server.IIS
         [DllImport(AspNetCoreModuleDll)]
         private static extern int http_stop_incoming_requests(IntPtr pInProcessApplication);
 
+        [DllImport(AspNetCoreModuleDll)]
+        private static extern int http_disable_buffering(IntPtr pInProcessApplication);
+
         [DllImport(AspNetCoreModuleDll, CharSet = CharSet.Ansi)]
         private static extern int http_set_response_status_code(IntPtr pInProcessHandler, ushort statusCode, string pszReason);
 
@@ -96,6 +98,12 @@ namespace Microsoft.AspNetCore.Server.IIS
             IntPtr pInProcessHandler,
             [MarshalAs(UnmanagedType.LPStr)] string variableName,
             [MarshalAs(UnmanagedType.BStr)] out string value);
+
+        [DllImport(AspNetCoreModuleDll)]
+        private static extern int http_set_server_variable(
+            IntPtr pInProcessHandler,
+            [MarshalAs(UnmanagedType.LPStr)] string variableName,
+            [MarshalAs(UnmanagedType.LPWStr)] string value);
 
         [DllImport(AspNetCoreModuleDll)]
         private static extern unsafe int http_websockets_read_bytes(
@@ -176,6 +184,11 @@ namespace Microsoft.AspNetCore.Server.IIS
             Validate(http_stop_incoming_requests(pInProcessApplication));
         }
 
+        public static void HttpDisableBuffering(IntPtr pInProcessApplication)
+        {
+            Validate(http_disable_buffering(pInProcessApplication));
+        }
+
         public static void HttpSetResponseStatusCode(IntPtr pInProcessHandler, ushort statusCode, string pszReason)
         {
             Validate(http_set_response_status_code(pInProcessHandler, statusCode, pszReason));
@@ -206,6 +219,11 @@ namespace Microsoft.AspNetCore.Server.IIS
         public static bool HttpTryGetServerVariable(IntPtr pInProcessHandler, string variableName, out string value)
         {
             return http_get_server_variable(pInProcessHandler, variableName, out value) == 0;
+        }
+
+        public static void HttpSetServerVariable(IntPtr pInProcessHandler, string variableName, string value)
+        {
+            Validate(http_set_server_variable(pInProcessHandler, variableName, value));
         }
 
         public static unsafe int HttpWebsocketsReadBytes(

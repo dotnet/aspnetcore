@@ -36,29 +36,11 @@ namespace TestSite
 
         public Task BodyLimit(HttpContext ctx) => ctx.Response.WriteAsync(ctx.Features.Get<IHttpMaxRequestBodySizeFeature>()?.MaxRequestBodySize?.ToString() ?? "null");
 
-        public async Task Auth(HttpContext ctx)
-        {
-            var iisAuth = Environment.GetEnvironmentVariable("ASPNETCORE_IIS_HTTPAUTH");
-            var authProvider = ctx.RequestServices.GetService<IAuthenticationSchemeProvider>();
-            var authScheme = (await authProvider.GetAllSchemesAsync()).SingleOrDefault();
-            if (string.IsNullOrEmpty(iisAuth))
-            {
-                await ctx.Response.WriteAsync("backcompat;" + (authScheme?.Name ?? "null"));
-            }
-            else
-            {
-                await ctx.Response.WriteAsync("latest;" + (authScheme?.Name ?? "null"));
-            }
-        }
 
         public Task HelloWorld(HttpContext ctx) => ctx.Response.WriteAsync("Hello World");
 
         public Task HttpsHelloWorld(HttpContext ctx) =>
             ctx.Response.WriteAsync("Scheme:" + ctx.Request.Scheme + "; Original:" + ctx.Request.Headers["x-original-proto"]);
-
-        public Task CheckClientCert(HttpContext ctx) =>
-            ctx.Response.WriteAsync("Scheme:" + ctx.Request.Scheme + "; Original:" + ctx.Request.Headers["x-original-proto"]
-                                                   + "; has cert? " + (ctx.Connection.ClientCertificate != null));
 
         public Task Anonymous(HttpContext context) => context.Response.WriteAsync("Anonymous?" + !context.User.Identity.IsAuthenticated);
 

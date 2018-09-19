@@ -24,7 +24,6 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
         private readonly bool _ownsSocket;
         private readonly Socket _socket;
         private readonly NetworkStream _stream;
-        private readonly StreamReader _reader;
 
         public TestConnection(int port)
             : this(port, AddressFamily.InterNetwork)
@@ -46,12 +45,9 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
             _ownsSocket = ownsSocket;
             _socket = socket;
             _stream = new NetworkStream(_socket, ownsSocket: false);
-            _reader = new StreamReader(_stream, Encoding.ASCII);
         }
 
         public Socket Socket => _socket;
-
-        public StreamReader Reader => _reader;
 
         public void Dispose()
         {
@@ -79,50 +75,96 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
             await _stream.FlushAsync().ConfigureAwait(false);
         }
 
+        public async Task<int> ReadCharAsync()
+        {
+            var bytes = new byte[1];
+            return (await _stream.ReadAsync(bytes, 0, 1) == 1) ? bytes[0] : -1;
+        }
+
+        public async Task<string> ReadLineAsync()
+        {
+            var builder = new StringBuilder();
+            var current = await ReadCharAsync();
+            while (current != '\r')
+            {
+                builder.Append((char)current);
+                current = await ReadCharAsync();
+            }
+
+            // Consume \n
+            await ReadCharAsync();
+
+            return builder.ToString();
+        }
+
+        public async Task<Memory<byte>> ReceiveChunk()
+        {
+            var length = int.Parse(await ReadLineAsync(), System.Globalization.NumberStyles.HexNumber);
+
+            var bytes = await Receive(length);
+
+            await ReadLineAsync();
+
+            return bytes;
+        }
+
+        public async Task ReceiveChunk(string expected)
+        {
+            Assert.Equal(expected, Encoding.ASCII.GetString((await ReceiveChunk()).Span));
+        }
+
         public async Task Receive(params string[] lines)
         {
             var expected = string.Join("\r\n", lines);
-            var actual = new char[expected.Length];
-            var offset = 0;
+            var actual = await Receive(expected.Length);
 
+            Assert.Equal(expected, Encoding.ASCII.GetString(actual.Span));
+        }
+
+        private async Task<Memory<byte>> Receive(int length)
+        {
+            var actual = new byte[length];
+            int offset = 0;
             try
             {
-                while (offset < expected.Length)
+                while (offset < length)
                 {
-                    var data = new byte[expected.Length];
-                    var task = _reader.ReadAsync(actual, offset, actual.Length - offset);
+                    var task = _stream.ReadAsync(actual, offset, actual.Length - offset);
                     if (!Debugger.IsAttached)
                     {
                         task = task.TimeoutAfter(Timeout);
                     }
+
                     var count = await task.ConfigureAwait(false);
                     if (count == 0)
                     {
                         break;
                     }
+
                     offset += count;
                 }
             }
             catch (TimeoutException ex) when (offset != 0)
             {
-                throw new TimeoutException($"Did not receive a complete response within {Timeout}.{Environment.NewLine}{Environment.NewLine}" +
-                    $"Expected:{Environment.NewLine}{expected}{Environment.NewLine}{Environment.NewLine}" +
-                    $"Actual:{Environment.NewLine}{new string(actual, 0, offset)}{Environment.NewLine}",
+                throw new TimeoutException(
+                    $"Did not receive a complete response within {Timeout}.{Environment.NewLine}{Environment.NewLine}" +
+                    $"Expected:{Environment.NewLine}{length} bytes of data{Environment.NewLine}{Environment.NewLine}" +
+                    $"Actual:{Environment.NewLine}{Encoding.ASCII.GetString(actual, 0, offset)}{Environment.NewLine}",
                     ex);
             }
 
-            Assert.Equal(expected, new string(actual, 0, offset));
+            return actual.AsMemory(0, offset);
         }
 
         public async Task ReceiveStartsWith(string prefix, int maxLineLength = 1024)
         {
-            var actual = new char[maxLineLength];
+            var actual = new byte[maxLineLength];
             var offset = 0;
 
             while (offset < maxLineLength)
             {
                 // Read one char at a time so we don't read past the end of the line.
-                var task = _reader.ReadAsync(actual, offset, 1);
+                var task = _stream.ReadAsync(actual, offset, 1);
                 if (!Debugger.IsAttached)
                 {
                     Assert.True(task.Wait(4000), "timeout");
@@ -142,7 +184,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 }
             }
 
-            var actualLine = new string(actual, 0, offset);
+            var actualLine = Encoding.ASCII.GetString(actual, 0, offset);
             Assert.StartsWith(prefix, actualLine);
         }
 
@@ -152,7 +194,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
             string line;
             do
             {
-                line = await _reader.ReadLineAsync();
+                line = await ReadLineAsync();
                 headers.Add(line);
             } while (line != "");
 
@@ -190,7 +232,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
             else
             {
                 tcs.SetException(new IOException(
-                    $"Expected connection close, received data instead: \"{_reader.CurrentEncoding.GetString(e.Buffer, 0, e.BytesTransferred)}\""));
+                    $"Expected connection close, received data instead: \"{Encoding.ASCII.GetString(e.Buffer, 0, e.BytesTransferred)}\""));
             }
         }
 

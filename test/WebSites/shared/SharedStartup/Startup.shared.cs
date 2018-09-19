@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -32,6 +34,20 @@ namespace TestSite
             Console.Error.WriteLine("TEST MESSAGE");
 
             await ctx.Response.WriteAsync("Hello World");
+        }
+
+        public async Task Auth(HttpContext ctx)
+        {
+            var authProvider = ctx.RequestServices.GetService<IAuthenticationSchemeProvider>();
+            var authScheme = (await authProvider.GetAllSchemesAsync()).SingleOrDefault();
+
+            await ctx.Response.WriteAsync(authScheme?.Name ?? "null");
+        }
+
+        public async Task GetClientCert(HttpContext context)
+        {
+            var clientCert = context.Connection.ClientCertificate;
+            await context.Response.WriteAsync(clientCert != null ? $"Enabled;{clientCert.GetCertHashString()}" : "Disabled");
         }
     }
 }

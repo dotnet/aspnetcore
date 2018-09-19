@@ -14,40 +14,36 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 {
     public class IISTestSiteFixture : IDisposable
     {
-        private readonly ApplicationDeployer _deployer;
-        private readonly ForwardingProvider _forwardingProvider;
+        private ApplicationDeployer _deployer;
+        private ILoggerFactory _loggerFactory;
+        private ForwardingProvider _forwardingProvider;
+        private IISDeploymentResult _deploymentResult;
+        private readonly Action<IISDeploymentParameters> _configure;
 
-        public IISTestSiteFixture()
+        public IISTestSiteFixture() : this(_ => { })
         {
-            var logging = AssemblyTestLog.ForAssembly(typeof(IISTestSiteFixture).Assembly);
-
-            var deploymentParameters = new IISDeploymentParameters(Helpers.GetInProcessTestSitesPath(),
-                DeployerSelector.ServerType,
-                RuntimeFlavor.CoreClr,
-                RuntimeArchitecture.x64)
-            {
-                TargetFramework = Tfm.NetCoreApp22,
-                AncmVersion = AncmVersion.AspNetCoreModuleV2,
-                HostingModel = HostingModel.InProcess,
-                PublishApplicationBeforeDeployment = true,
-            };
-
-            _forwardingProvider = new ForwardingProvider();
-            var loggerFactory = logging.CreateLoggerFactory(null, nameof(IISTestSiteFixture));
-            loggerFactory.AddProvider(_forwardingProvider);
-
-            _deployer = IISApplicationDeployerFactory.Create(deploymentParameters, loggerFactory);
-
-            DeploymentResult = (IISDeploymentResult)_deployer.DeployAsync().Result;
-            Client = DeploymentResult.HttpClient;
-            BaseUri = DeploymentResult.ApplicationBaseUri;
-            ShutdownToken = DeploymentResult.HostShutdownToken;
         }
 
-        public string BaseUri { get; }
-        public HttpClient Client { get; }
-        public CancellationToken ShutdownToken { get; }
-        public IISDeploymentResult DeploymentResult { get; }
+        public IISTestSiteFixture(Action<IISDeploymentParameters> configure)
+        {
+            var logging = AssemblyTestLog.ForAssembly(typeof(IISTestSiteFixture).Assembly);
+            _loggerFactory = logging.CreateLoggerFactory(null, nameof(IISTestSiteFixture));
+
+            _forwardingProvider = new ForwardingProvider();
+            _loggerFactory.AddProvider(_forwardingProvider);
+
+            _configure = configure;
+        }
+
+        public HttpClient Client => DeploymentResult.HttpClient;
+        public IISDeploymentResult DeploymentResult
+        {
+            get
+            {
+                EnsureInitialized();
+                return _deploymentResult;
+            }
+        }
 
         public TestConnection CreateTestConnection()
         {
@@ -56,7 +52,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         public void Dispose()
         {
-            _deployer.Dispose();
+            _deployer?.Dispose();
         }
 
         public void Attach(LoggedTest test)
@@ -77,6 +73,30 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             }
 
             _forwardingProvider.LoggerFactory = null;
+        }
+
+        private void EnsureInitialized()
+        {
+            if (_deployer != null)
+            {
+                return;
+            }
+
+            var deploymentParameters = new IISDeploymentParameters(Helpers.GetInProcessTestSitesPath(),
+                DeployerSelector.ServerType,
+                RuntimeFlavor.CoreClr,
+                RuntimeArchitecture.x64)
+            {
+                TargetFramework = Tfm.NetCoreApp22,
+                AncmVersion = AncmVersion.AspNetCoreModuleV2,
+                HostingModel = HostingModel.InProcess,
+                PublishApplicationBeforeDeployment = true,
+            };
+
+            _configure(deploymentParameters);
+
+            _deployer = IISApplicationDeployerFactory.Create(deploymentParameters, _loggerFactory);
+            _deploymentResult = (IISDeploymentResult)_deployer.DeployAsync().Result;
         }
 
         private class ForwardingProvider : ILoggerProvider

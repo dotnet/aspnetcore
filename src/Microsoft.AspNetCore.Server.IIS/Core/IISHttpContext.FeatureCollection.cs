@@ -6,7 +6,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Security.Claims;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -23,13 +25,16 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                                             IHttpUpgradeFeature,
                                             IHttpRequestLifetimeFeature,
                                             IHttpAuthenticationFeature,
-                                            IServerVariablesFeature
+                                            IServerVariablesFeature,
+                                            IHttpBufferingFeature,
+                                            ITlsConnectionFeature
     {
         // NOTE: When feature interfaces are added to or removed from this HttpProtocol implementation,
         // then the list of `implementedFeatures` in the generated code project MUST also be updated.
 
         private int _featureRevision;
         private string _httpProtocolVersion = null;
+        private X509Certificate2 _certificate;
 
         private List<KeyValuePair<Type, object>> MaybeExtra;
         public void ResetFeatureCollection()
@@ -202,13 +207,26 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             {
                 if (string.IsNullOrEmpty(variableName))
                 {
-                    return null;
+                    throw new ArgumentException($"{nameof(variableName)} should be non-empty string");
                 }
 
                 // Synchronize access to native methods that might run in parallel with IO loops
                 lock (_contextLock)
                 {
                     return NativeMethods.HttpTryGetServerVariable(_pInProcessHandler, variableName, out var value) ? value : null;
+                }
+            }
+            set
+            {
+                if (string.IsNullOrEmpty(variableName))
+                {
+                    throw new ArgumentException($"{nameof(variableName)} should be non-empty string");
+                }
+
+                // Synchronize access to native methods that might run in parallel with IO loops
+                lock (_contextLock)
+                {
+                    NativeMethods.HttpSetServerVariable(_pInProcessHandler, variableName, value);
                 }
             }
         }
@@ -262,7 +280,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             ReasonPhrase = ReasonPhrases.GetReasonPhrase(StatusCodes.Status101SwitchingProtocols);
 
             // If we started reading before calling Upgrade Task should be completed at this point
-            // because read would return 0 syncronosly
+            // because read would return 0 synchronously
             Debug.Assert(_readBodyTask == null || _readBodyTask.IsCompleted);
 
             // Reset reading status to allow restarting with new IO
@@ -276,6 +294,35 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             return new DuplexStream(RequestBody, ResponseBody);
         }
 
+        Task<X509Certificate2> ITlsConnectionFeature.GetClientCertificateAsync(CancellationToken cancellationToken)
+        {
+            return Task.FromResult(((ITlsConnectionFeature)this).ClientCertificate);
+        }
+
+        unsafe X509Certificate2 ITlsConnectionFeature.ClientCertificate
+        {
+            get
+            {
+                if (_certificate == null &&
+                    NativeRequest->pSslInfo != null &&
+                    NativeRequest->pSslInfo->pClientCertInfo != null &&
+                    NativeRequest->pSslInfo->pClientCertInfo->pCertEncoded != null &&
+                    NativeRequest->pSslInfo->pClientCertInfo->CertEncodedSize != 0)
+                {
+                    // Based off of from https://referencesource.microsoft.com/#system/net/System/Net/HttpListenerRequest.cs,1037c8ec82879ba0,references
+                    var rawCertificateCopy = new byte[NativeRequest->pSslInfo->pClientCertInfo->CertEncodedSize];
+                    Marshal.Copy((IntPtr)NativeRequest->pSslInfo->pClientCertInfo->pCertEncoded, rawCertificateCopy, 0, rawCertificateCopy.Length);
+                    _certificate = new X509Certificate2(rawCertificateCopy);
+                }
+
+                return _certificate;
+            }
+            set
+            {
+                _certificate = value;
+            }
+        }
+
         IEnumerator<KeyValuePair<Type, object>> IEnumerable<KeyValuePair<Type, object>>.GetEnumerator() => FastEnumerable().GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() => FastEnumerable().GetEnumerator();
@@ -283,6 +330,22 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         void IHttpRequestLifetimeFeature.Abort()
         {
             Abort();
+        }
+
+        void IHttpBufferingFeature.DisableRequestBuffering()
+        {
+        }
+
+        void IHttpBufferingFeature.DisableResponseBuffering()
+        {
+            NativeMethods.HttpDisableBuffering(_pInProcessHandler);
+            DisableCompression();
+        }
+
+        private void DisableCompression()
+        {
+            var serverVariableFeature = (IServerVariablesFeature)this;
+            serverVariableFeature["IIS_EnableDynamicCompression"] = "0";
         }
     }
 }

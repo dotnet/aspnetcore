@@ -26,7 +26,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             => TestMatrix.ForServers(DeployerSelector.ServerType)
                 .WithTfms(Tfm.NetCoreApp22, Tfm.Net461)
                 .WithAllApplicationTypes()
-                .WithAllAncmVersions();
+                .WithAllAncmVersions()
+                .WithAllHostingModels();
 
         [ConditionalTheory]
         [MemberData(nameof(TestVariants))]
@@ -41,7 +42,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             var response = await deploymentResult.HttpClient.GetAsync("/Auth");
             var responseText = await response.Content.ReadAsStringAsync();
 
-            Assert.True("backcompat;Windows".Equals(responseText) || "latest;Windows".Equals(responseText), "Auth");
+            Assert.Equal("Windows", responseText);
         }
     }
 }
