@@ -280,13 +280,40 @@ namespace Microsoft.AspNetCore.Routing
 
         private TemplateBinder CreateTemplateBinder(RouteEndpoint endpoint)
         {
+            // Now create the constraints and parameter transformers from the pattern
+            var policies = new List<(string parameterName, IParameterPolicy policy)>();
+            foreach (var kvp in endpoint.RoutePattern.ParameterPolicies)
+            {
+                var parameterName = kvp.Key;
+
+                // It's possible that we don't have an actual route parameter, we need to support that case.
+                var parameter = endpoint.RoutePattern.GetParameter(parameterName);
+
+                // Use the first parameter transformer per parameter
+                var foundTransformer = false;
+                for (var i = 0; i < kvp.Value.Count; i++)
+                {
+                    var parameterPolicy = _parameterPolicyFactory.Create(parameter, kvp.Value[i]);
+                    if (!foundTransformer && parameterPolicy is IOutboundParameterTransformer parameterTransformer)
+                    {
+                        policies.Add((parameterName, parameterTransformer));
+                        foundTransformer = true;
+                    }
+
+                    if (parameterPolicy is IRouteConstraint constraint)
+                    {
+                        policies.Add((parameterName, constraint));
+                    }
+                }
+            }
+
             return new TemplateBinder(
                 UrlEncoder.Default,
                 _uriBuildingContextPool,
                 endpoint.RoutePattern,
                 new RouteValueDictionary(endpoint.RoutePattern.Defaults),
                 endpoint.Metadata.GetMetadata<IRouteValuesAddressMetadata>()?.RequiredValues.Keys,
-                _parameterPolicyFactory);
+                policies);
         }
 
         // Internal for testing
@@ -312,11 +339,10 @@ namespace Microsoft.AspNetCore.Routing
                 return false;
             }
 
-            if (!MatchesConstraints(httpContext, endpoint, templateValuesResult.CombinedValues))
+            if (!templateBinder.TryProcessConstraints(httpContext, templateValuesResult.CombinedValues, out var parameterName, out var constraint))
             {
                 result = default;
-
-                // MatchesConstraints does its own logging, so we're not logging here.
+                Log.TemplateFailedConstraint(_logger, endpoint, parameterName, constraint, templateValuesResult.CombinedValues);
                 return false;
             }
 
@@ -327,36 +353,6 @@ namespace Microsoft.AspNetCore.Routing
             }
 
             Log.TemplateSucceeded(_logger, endpoint, result.path, result.query);
-            return true;
-        }
-
-        private bool MatchesConstraints(
-            HttpContext httpContext,
-            RouteEndpoint endpoint,
-            RouteValueDictionary routeValues)
-        {
-            if (routeValues == null)
-            {
-                throw new ArgumentNullException(nameof(routeValues));
-            }
-
-            foreach (var kvp in endpoint.RoutePattern.ParameterPolicies)
-            {
-                var parameter = endpoint.RoutePattern.GetParameter(kvp.Key); // may be null, that's ok
-                var constraintReferences = kvp.Value;
-                for (var i = 0; i < constraintReferences.Count; i++)
-                {
-                    var constraintReference = constraintReferences[i];
-                    var parameterPolicy = _parameterPolicyFactory.Create(parameter, constraintReference);
-                    if (parameterPolicy is IRouteConstraint routeConstraint
-                        && !routeConstraint.Match(httpContext, NullRouter.Instance, kvp.Key, routeValues, RouteDirection.UrlGeneration))
-                    {
-                        Log.TemplateFailedConstraint(_logger, endpoint, kvp.Key, routeConstraint, routeValues);
-                        return false;
-                    }
-                }
-            }
-
             return true;
         }
 

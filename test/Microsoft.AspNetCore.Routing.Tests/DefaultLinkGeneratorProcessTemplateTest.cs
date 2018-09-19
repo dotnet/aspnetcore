@@ -277,6 +277,54 @@ namespace Microsoft.AspNetCore.Routing
             Assert.Equal(string.Empty, result.query.ToUriComponent());
         }
 
+        // Regression test for https://github.com/aspnet/Routing/issues/802
+        [Fact]
+        public void TryProcessTemplate_GeneratesLowercaseUrl_Includes_BufferedValues_SetOnRouteOptions()
+        {
+            // Arrange
+            var endpoint = EndpointFactory.CreateRouteEndpoint("Foo/{bar=BAR}/{id?}");
+            var linkGenerator = CreateLinkGenerator(new RouteOptions() { LowercaseUrls = true }, endpoints: new[] { endpoint, });
+            var httpContext = CreateHttpContext();
+
+            // Act
+            var success = linkGenerator.TryProcessTemplate(
+                httpContext: httpContext,
+                endpoint: endpoint,
+                ambientValues: DefaultLinkGenerator.GetAmbientValues(httpContext),
+                explicitValues: new RouteValueDictionary(new { id = "18" }),
+                options: null,
+                out var result);
+
+            // Assert
+            Assert.True(success);
+            Assert.Equal("/foo/bar/18", result.path.ToUriComponent());
+            Assert.Equal(string.Empty, result.query.ToUriComponent());
+        }
+
+        // Regression test for https://github.com/aspnet/Routing/issues/802
+        [Fact]
+        public void TryProcessTemplate_ParameterPolicy_Includes_BufferedValues()
+        {
+            // Arrange
+            var endpoint = EndpointFactory.CreateRouteEndpoint("Foo/{bar=BAR}/{id?}", policies: new { bar = new SlugifyParameterTransformer(), });
+            var linkGenerator = CreateLinkGenerator(new RouteOptions() { LowercaseUrls = true }, endpoints: new[] { endpoint, });
+            var httpContext = CreateHttpContext();
+
+            // Act
+            var success = linkGenerator.TryProcessTemplate(
+                httpContext: httpContext,
+                endpoint: endpoint,
+                ambientValues: DefaultLinkGenerator.GetAmbientValues(httpContext),
+                explicitValues: new RouteValueDictionary(new { id = "18" }),
+                options: null,
+                out var result);
+
+            // Assert
+            Assert.True(success);
+            Assert.Equal("/foo/bar/18", result.path.ToUriComponent());
+            Assert.Equal(string.Empty, result.query.ToUriComponent());
+        }
+
         // Regression test for aspnet/Routing#435
         //
         // In this issue we used to lowercase URLs after parameters were encoded, meaning that if a character needed
@@ -531,7 +579,7 @@ namespace Microsoft.AspNetCore.Routing
             var endpoint = EndpointFactory.CreateRouteEndpoint(
                 "{p1}/{p2}",
                 defaults: new { p2 = "catchall" },
-                constraints: new { p2 = "\\d{4}" });
+                policies: new { p2 = "\\d{4}" });
             var linkGenerator = CreateLinkGenerator(endpoint);
             var httpContext = CreateHttpContext(ambientValues: new { });
 
@@ -555,7 +603,7 @@ namespace Microsoft.AspNetCore.Routing
             var endpoint = EndpointFactory.CreateRouteEndpoint(
                 "{p1}/{p2}",
                 defaults: new { p2 = "catchall" },
-                constraints: new { p2 = new RegexRouteConstraint("\\d{4}"), });
+                policies: new { p2 = new RegexRouteConstraint("\\d{4}"), });
             var linkGenerator = CreateLinkGenerator(endpoint);
             var httpContext = CreateHttpContext(ambientValues: new { });
 
@@ -581,7 +629,7 @@ namespace Microsoft.AspNetCore.Routing
             var endpoint = EndpointFactory.CreateRouteEndpoint(
                 "{p1}/{*p2}",
                 defaults: new { p2 = "catchall" },
-                constraints: new { p2 = new RegexRouteConstraint("\\d{4}") });
+                policies: new { p2 = new RegexRouteConstraint("\\d{4}") });
             var linkGenerator = CreateLinkGenerator(endpoint);
             var httpContext = CreateHttpContext(ambientValues: new { });
 
@@ -605,7 +653,7 @@ namespace Microsoft.AspNetCore.Routing
             var endpoint = EndpointFactory.CreateRouteEndpoint(
                 "{p1}/{*p2}",
                 defaults: new { p2 = "catchall" },
-                constraints: new { p2 = new RegexRouteConstraint("\\d{4}") });
+                policies: new { p2 = new RegexRouteConstraint("\\d{4}") });
             var linkGenerator = CreateLinkGenerator(endpoint);
             var httpContext = CreateHttpContext(ambientValues: new { });
 
@@ -642,7 +690,7 @@ namespace Microsoft.AspNetCore.Routing
             var endpoint = EndpointFactory.CreateRouteEndpoint(
                 "{p1}/{p2}",
                 defaults: new { p2 = "catchall" },
-                constraints: new { p2 = target.Object });
+                policies: new { p2 = target.Object });
             var linkGenerator = CreateLinkGenerator(endpoint);
             var httpContext = CreateHttpContext(ambientValues: new { });
 
@@ -674,7 +722,7 @@ namespace Microsoft.AspNetCore.Routing
             var endpoint = EndpointFactory.CreateRouteEndpoint(
                 template: "slug/Home/Store",
                 defaults: new { controller = "Home", action = "Store" },
-                constraints: new { c = constraint });
+                policies: new { c = constraint });
             var linkGenerator = CreateLinkGenerator(endpoint);
             var httpContext = CreateHttpContext(
                 ambientValues: new { controller = "Home", action = "Blog", extra = "42" });
@@ -708,7 +756,7 @@ namespace Microsoft.AspNetCore.Routing
             var endpoint = EndpointFactory.CreateRouteEndpoint(
                 template: "slug/Home/Store",
                 defaults: new { controller = "Home", action = "Store", otherthing = "17" },
-                constraints: new { c = constraint });
+                policies: new { c = constraint });
             var linkGenerator = CreateLinkGenerator(endpoint);
             var httpContext = CreateHttpContext(ambientValues: new { controller = "Home", action = "Blog" });
             var expectedValues = new RouteValueDictionary(
@@ -740,7 +788,7 @@ namespace Microsoft.AspNetCore.Routing
             var endpoint = EndpointFactory.CreateRouteEndpoint(
                 template: "slug/{controller}/{action}",
                 defaults: new { action = "Index" },
-                constraints: new { c = constraint, });
+                policies: new { c = constraint, });
             var linkGenerator = CreateLinkGenerator(endpoint);
             var httpContext = CreateHttpContext(ambientValues: new { controller = "Home", action = "Blog" });
             var expectedValues = new RouteValueDictionary(
@@ -772,7 +820,7 @@ namespace Microsoft.AspNetCore.Routing
             var endpoint = EndpointFactory.CreateRouteEndpoint(
                 template: "slug/Home/Store",
                 defaults: new { controller = "Home", action = "Store", otherthing = "17", thirdthing = "13" },
-                constraints: new { c = constraint, });
+                policies: new { c = constraint, });
             var linkGenerator = CreateLinkGenerator(endpoint);
             var httpContext = CreateHttpContext(
                 ambientValues: new { controller = "Home", action = "Blog", otherthing = "17" });
@@ -806,7 +854,7 @@ namespace Microsoft.AspNetCore.Routing
             var endpoint = EndpointFactory.CreateRouteEndpoint(
                 template: "Home/Index/{id:int}",
                 defaults: new { controller = "Home", action = "Index" },
-                constraints: new { });
+                policies: new { });
             var linkGenerator = CreateLinkGenerator(endpoint);
             var httpContext = hasHttpContext ? CreateHttpContext(new { }) : null;
 
@@ -832,7 +880,7 @@ namespace Microsoft.AspNetCore.Routing
             var endpoint = EndpointFactory.CreateRouteEndpoint(
                 template: "Home/Index/{id}",
                 defaults: new { controller = "Home", action = "Index" },
-                constraints: new { id = "int" });
+                policies: new { id = "int" });
             var linkGenerator = CreateLinkGenerator(endpoint);
             var httpContext = CreateHttpContext(ambientValues: new { });
 
@@ -858,7 +906,7 @@ namespace Microsoft.AspNetCore.Routing
             var endpoint = EndpointFactory.CreateRouteEndpoint(
                 template: "Home/Index/{id:int?}",
                 defaults: new { controller = "Home", action = "Index" },
-                constraints: new { });
+                policies: new { });
             var linkGenerator = CreateLinkGenerator(endpoint);
             var httpContext = hasHttpContext ? CreateHttpContext(new { }) : null;
 
@@ -884,7 +932,7 @@ namespace Microsoft.AspNetCore.Routing
             var endpoint = EndpointFactory.CreateRouteEndpoint(
                 template: "Home/Index/{id?}",
                 defaults: new { controller = "Home", action = "Index" },
-                constraints: new { id = "int" });
+                policies: new { id = "int" });
             var linkGenerator = CreateLinkGenerator(endpoint);
             var httpContext = CreateHttpContext(ambientValues: new { });
 
@@ -910,7 +958,7 @@ namespace Microsoft.AspNetCore.Routing
             var endpoint = EndpointFactory.CreateRouteEndpoint(
                 template: "Home/Index/{id?}",
                 defaults: new { controller = "Home", action = "Index" },
-                constraints: new { id = "int" });
+                policies: new { id = "int" });
             var linkGenerator = CreateLinkGenerator(endpoint);
             var httpContext = CreateHttpContext(ambientValues: new { });
 
@@ -936,7 +984,7 @@ namespace Microsoft.AspNetCore.Routing
             var endpoint = EndpointFactory.CreateRouteEndpoint(
                 template: "Home/Index/{id:int:range(1,20)}",
                 defaults: new { controller = "Home", action = "Index" },
-                constraints: new { });
+                policies: new { });
             var linkGenerator = CreateLinkGenerator(endpoint);
             var httpContext = hasHttpContext ? CreateHttpContext(new { }) : null;
 
@@ -964,7 +1012,7 @@ namespace Microsoft.AspNetCore.Routing
             var endpoint = EndpointFactory.CreateRouteEndpoint(
                 template: "Home/Index/{id:int:range(1,20)}",
                 defaults: new { controller = "Home", action = "Index" },
-                constraints: new { });
+                policies: new { });
             var linkGenerator = CreateLinkGenerator(endpoint);
             var httpContext = hasHttpContext ? CreateHttpContext(new { }) : null;
 
@@ -989,7 +1037,7 @@ namespace Microsoft.AspNetCore.Routing
             var endpoint = EndpointFactory.CreateRouteEndpoint(
                 template: "Home/Index/{name}",
                 defaults: new { controller = "Home", action = "Index" },
-                constraints: new { name = constraint });
+                policies: new { name = constraint });
             var linkGenerator = CreateLinkGenerator(endpoint);
             var httpContext = CreateHttpContext(ambientValues: new { });
 

@@ -56,10 +56,10 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
         public bool Accept(string value)
         {
-            return Accept(value, encodeSlashes: true, parameterTransformer: null);
+            return Accept(value, encodeSlashes: true);
         }
 
-        public bool Accept(string value, bool encodeSlashes, IParameterTransformer parameterTransformer)
+        public bool Accept(string value, bool encodeSlashes)
         {
             if (string.IsNullOrEmpty(value))
             {
@@ -80,31 +80,31 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 return false;
             }
 
-            // NOTE: call the parameter transformer before changing the case
-            // A transformer might use the case, e.g. AllProducts -> all-products
-            if (parameterTransformer != null)
-            {
-                value = parameterTransformer.Transform(value);
-            }
-
             // NOTE: this needs to be above all 'EncodeValue' and _path.Append calls
             if (LowercaseUrls)
             {
                 value = value.ToLowerInvariant();
             }
 
-            for (var i = 0; i < _buffer.Count; i++)
+            var buffer = _buffer;
+            for (var i = 0; i < buffer.Count; i++)
             {
-                if (_buffer[i].RequiresEncoding)
+                var bufferValue = buffer[i].Value;
+                if (LowercaseUrls)
                 {
-                    EncodeValue(_buffer[i].Value);
+                    bufferValue = bufferValue.ToLowerInvariant();
+                }
+
+                if (buffer[i].RequiresEncoding)
+                {
+                    EncodeValue(bufferValue);
                 }
                 else
                 {
-                    _path.Append(_buffer[i].Value);
+                    _path.Append(bufferValue);
                 }
             }
-            _buffer.Clear();
+            buffer.Clear();
 
             if (UriState == SegmentState.Beginning && BufferState == SegmentState.Beginning)
             {
