@@ -64,7 +64,7 @@
       },
       {
         "Name": "HttpClientFactory",
-        "Manager": "muratg"
+        "Manager": "rynowak"
       },
       {
         "Name": "JsonPatch",
