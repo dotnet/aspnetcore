@@ -5,6 +5,7 @@
     <ServiceProjectReferenceGeneratorDependsOn>
       _ServiceProjectReferenceGenerator_GetTargetFramework;
       _ServiceProjectReferenceGenerator_GetProjectTargetPath;
+      _ServiceProjectReferenceGenerator_GetMetadata;
       _ServiceProjectReferenceGenerator_Build;
       _ServiceProjectReferenceGenerator_Core;
       _ServiceProjectReferenceGenerator_SetMetadata
@@ -14,7 +15,6 @@
       _ServiceUriReferenceGenerator_Core
     </ServiceUriReferenceGeneratorDependsOn>
     <ServiceFileReferenceGeneratorDependsOn>
-      _CheckServiceReferences;
       ServiceProjectReferenceGenerator;
       ServiceUriReferenceGenerator;
       _ServiceFileReferenceGenerator_GetMetadata;
@@ -22,15 +22,6 @@
       _ServiceFileReferenceGenerator_SetMetadata
     </ServiceFileReferenceGeneratorDependsOn>
   </PropertyGroup>
-
-  <Target Name="_CheckServiceReferences">
-    <Error Condition="'@(ServiceProjectReference)' != '' AND '%(CodeGenerator)' == ''"
-        Text="ServiceProjectReference items '@(ServiceProjectReference)' lack CodeGenerator metadata." />
-    <Error Condition="'@(ServiceUriReference)' != '' AND '%(CodeGenerator)' == ''"
-        Text="ServiceUriReference items '@(ServiceUriReference)' lack CodeGenerator metadata." />
-    <Error Condition="'@(ServiceFileReference)' != '' AND '%(CodeGenerator)' == ''"
-        Text="ServiceFileReference items '@(ServiceFileReference)' lack CodeGenerator metadata." />
-  </Target>
 
   <!-- ServiceProjectReference support -->
 
@@ -114,6 +105,28 @@
       <_ProjectTargetPath />
       <_TargetFramework />
     </PropertyGroup>
+  </Target>
+
+  <!-- Metadata setup phase 3: Ensure items have DocumentPath metadata. -->
+  <Target Name="_ServiceProjectReferenceGenerator_GetMetadata" Condition="'@(ServiceProjectReference)' != ''">
+    <ItemGroup>
+      <_Temporary Remove="@(_Temporary)" />
+    </ItemGroup>
+
+    <GetProjectReferenceMetadata Inputs="@(ServiceProjectReference)" DocumentDirectory="$(ServiceProjectReferenceDirectory)">
+      <Output TaskParameter="Outputs" ItemName="_Temporary" />
+    </GetProjectReferenceMetadata>
+
+    <ItemGroup>
+      <ServiceProjectReference Remove="@(ServiceProjectReference)" />
+      <ServiceProjectReference Include="@(_Temporary)" />
+    </ItemGroup>
+    <ItemGroup>
+      <_Temporary Remove="@(_Temporary)" />
+    </ItemGroup>
+
+    <Message Importance="high" Text="%0A_ServiceProjectReferenceGenerator_GetMetadata:" />
+    <Message Importance="high" Text="  @(ServiceProjectReference): %(DocumentPath)" />
   </Target>
 
   <Target Name="_ServiceProjectReferenceGenerator_Build"

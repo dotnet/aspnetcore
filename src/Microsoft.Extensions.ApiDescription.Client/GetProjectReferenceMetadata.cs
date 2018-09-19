@@ -1,7 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.IO;
 using Microsoft.Build.Framework;
@@ -10,14 +9,14 @@ using Microsoft.Build.Utilities;
 namespace Microsoft.Extensions.ApiDescription.Client
 {
     /// <summary>
-    /// Adds or corrects DocumentPath and project-related metadata in ServiceProjectReference items.
+    /// Adds or corrects DocumentPath and project-related metadata in ServiceProjectReference items. Also stores final
+    /// metadata as SerializedMetadata.
     /// </summary>
     public class GetProjectReferenceMetadata : Task
     {
         /// <summary>
         /// Default directory for DocumentPath values.
         /// </summary>
-        [Required]
         public string DocumentDirectory { get; set; }
 
         /// <summary>
@@ -37,30 +36,53 @@ namespace Microsoft.Extensions.ApiDescription.Client
         public override bool Execute()
         {
             var outputs = new List<ITaskItem>(Inputs.Length);
+            var destinations = new HashSet<string>();
+
             foreach (var item in Inputs)
             {
                 var newItem = new TaskItem(item);
                 outputs.Add(newItem);
 
-                var codeGenerator = item.GetMetadata("CodeGenerator");
-                var isTypeScript = codeGenerator.EndsWith("TypeScript", StringComparison.OrdinalIgnoreCase);
-
-                var outputPath = item.GetMetadata("OutputPath");
-                if (string.IsNullOrEmpty(outputPath))
+                var documentGenerator = item.GetMetadata("DocumentGenerator");
+                if (string.IsNullOrEmpty(documentGenerator))
                 {
-                    var className = item.GetMetadata("ClassName");
-                    outputPath = className + (isTypeScript ? ".ts" : ".cs");
+                    // This case occurs when user overrides the default metadata.
+                    Log.LogError(Resources.FormatInvalidEmptyMetadataValue(
+                        "DocumentGenerator",
+                        "ServiceProjectReference",
+                        item.ItemSpec));
+                }
+
+                var documentPath = item.GetMetadata("DocumentPath");
+                if (string.IsNullOrEmpty(documentPath))
+                {
+                    var filename = item.GetMetadata("Filename");
+                    var documentName = item.GetMetadata("DocumentName");
+                    if (string.IsNullOrEmpty(documentName))
+                    {
+                        documentName = "v1";
+                    }
+
+                    documentPath = $"{filename}.{documentName}.json";
+                }
+
+                documentPath = GetFullPath(documentPath);
+                MetadataSerializer.SetMetadata(newItem, "DocumentPath", documentPath);
+
+                if (!destinations.Add(documentPath))
+                {
+                    // This case may occur when user is experimenting e.g. with multiple generators or options.
+                    // May also occur when user accidentally duplicates DocumentPath metadata.
+                    Log.LogError(Resources.FormatDuplicateProjectDocumentPaths(documentPath));
                 }
 
                 // Add metadata which may be used as a property and passed to an inner build.
                 newItem.SetMetadata("SerializedMetadata", MetadataSerializer.SerializeMetadata(newItem));
-                outputPath = GetFullPath(outputPath);
-                newItem.SetMetadata("OutputPath", outputPath);
             }
 
             Outputs = outputs.ToArray();
 
-            return true;
+            return !Log.HasLoggedErrors;
         }
 
         private string GetFullPath(string path)

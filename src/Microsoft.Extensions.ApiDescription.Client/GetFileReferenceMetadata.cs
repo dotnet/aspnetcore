@@ -10,7 +10,8 @@ using Microsoft.Build.Utilities;
 namespace Microsoft.Extensions.ApiDescription.Client
 {
     /// <summary>
-    /// Adds or corrects Namespace and OutputPath metadata in ServiceFileReference items.
+    /// Adds or corrects ClassName, Namespace and OutputPath metadata in ServiceFileReference items. Also stores final
+    /// metadata as SerializedMetadata.
     /// </summary>
     public class GetFileReferenceMetadata : Task
     {
@@ -23,7 +24,6 @@ namespace Microsoft.Extensions.ApiDescription.Client
         /// <summary>
         /// Default directory for OutputPath values.
         /// </summary>
-        [Required]
         public string OutputDirectory { get; set; }
 
         /// <summary>
@@ -49,14 +49,47 @@ namespace Microsoft.Extensions.ApiDescription.Client
         public override bool Execute()
         {
             var outputs = new List<ITaskItem>(Inputs.Length);
+            var destinations = new HashSet<string>();
             foreach (var item in Inputs)
             {
                 var newItem = new TaskItem(item);
                 outputs.Add(newItem);
 
                 var codeGenerator = item.GetMetadata("CodeGenerator");
-                var isTypeScript = codeGenerator.EndsWith("TypeScript", StringComparison.OrdinalIgnoreCase);
+                if (string.IsNullOrEmpty("CodeGenerator"))
+                {
+                    // This case occurs when user forgets to specify the required metadata. We have no default here.
+                    string type;
+                    if (!string.IsNullOrEmpty(item.GetMetadata("SourceProject")))
+                    {
+                        type = "ServiceProjectReference";
+                    }
+                    else if (!string.IsNullOrEmpty(item.GetMetadata("SourceUri")))
+                    {
+                        type = "ServiceUriReference";
+                    }
+                    else
+                    {
+                        type = "ServiceFileReference";
+                    }
 
+                    Log.LogError(Resources.FormatInvalidEmptyMetadataValue("CodeGenerator", type, item.ItemSpec));
+                }
+
+                var className = item.GetMetadata("ClassName");
+                if (string.IsNullOrEmpty(className))
+                {
+                    var filename = item.GetMetadata("Filename");
+                    className = $"{filename}Client";
+                    if (char.IsLower(className[0]))
+                    {
+                        className = char.ToUpper(className[0]) + className.Substring(startIndex: 1);
+                    }
+
+                    MetadataSerializer.SetMetadata(newItem, "ClassName", className);
+                }
+
+                var isTypeScript = codeGenerator.EndsWith("TypeScript", StringComparison.OrdinalIgnoreCase);
                 var @namespace = item.GetMetadata("Namespace");
                 if (string.IsNullOrEmpty(@namespace))
                 {
@@ -67,12 +100,18 @@ namespace Microsoft.Extensions.ApiDescription.Client
                 var outputPath = item.GetMetadata("OutputPath");
                 if (string.IsNullOrEmpty(outputPath))
                 {
-                    var className = item.GetMetadata("ClassName");
                     outputPath = $"{className}{(isTypeScript ? ".ts" : ".cs")}";
                 }
 
                 outputPath = GetFullPath(outputPath);
                 MetadataSerializer.SetMetadata(newItem, "OutputPath", outputPath);
+
+                if (!destinations.Add(outputPath))
+                {
+                    // This case may occur when user is experimenting e.g. with multiple code generators or options.
+                    // May also occur when user accidentally duplicates OutputPath metadata.
+                    Log.LogError(Resources.FormatDuplicateFileOutputPaths(outputPath));
+                }
 
                 // Add metadata which may be used as a property and passed to an inner build.
                 newItem.SetMetadata("SerializedMetadata", MetadataSerializer.SerializeMetadata(newItem));
@@ -80,7 +119,7 @@ namespace Microsoft.Extensions.ApiDescription.Client
 
             Outputs = outputs.ToArray();
 
-            return true;
+            return !Log.HasLoggedErrors;
         }
 
         private string GetFullPath(string path)

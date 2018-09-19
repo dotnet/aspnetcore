@@ -17,7 +17,6 @@ namespace Microsoft.Extensions.ApiDescription.Client
         /// <summary>
         /// Default directory for DocumentPath metadata values.
         /// </summary>
-        [Required]
         public string DocumentDirectory { get; set; }
 
         /// <summary>
@@ -36,6 +35,7 @@ namespace Microsoft.Extensions.ApiDescription.Client
         public override bool Execute()
         {
             var outputs = new List<ITaskItem>(Inputs.Length);
+            var destinations = new HashSet<string>();
             foreach (var item in Inputs)
             {
                 var newItem = new TaskItem(item);
@@ -96,11 +96,18 @@ namespace Microsoft.Extensions.ApiDescription.Client
 
                 documentPath = GetFullPath(documentPath);
                 MetadataSerializer.SetMetadata(newItem, "DocumentPath", documentPath);
+
+                if (!destinations.Add(documentPath))
+                {
+                    // This case may occur when user is experimenting e.g. with multiple code generators or options.
+                    // May also occur when user accidentally duplicates DocumentPath metadata.
+                    Log.LogError(Resources.FormatDuplicateUriDocumentPaths(documentPath));
+                }
             }
 
             Outputs = outputs.ToArray();
 
-            return true;
+            return !Log.HasLoggedErrors;
         }
 
         private string GetFullPath(string path)
