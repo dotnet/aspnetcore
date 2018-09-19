@@ -1,4 +1,4 @@
 <Project>
-    <Import Project="dependencies.props" />
     <Import Project="sources.props" />
+    <Import Project="repo.props" />
 </Project>

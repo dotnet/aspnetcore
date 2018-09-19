@@ -15,9 +15,8 @@ namespace TriageBuildFailures.GitHub
         public const string TestFailureTag = "test-failure";
         public GitHubConfig Config { get; private set; }
         public GitHubClient Client { get; private set; }
-        private IReporter _reporter;
-        private static Random _random = new Random();
-        private const string _tempFolder = "temp";
+
+        private readonly IReporter _reporter;
         private static readonly ProductHeaderValue ProductHeader = new ProductHeaderValue("rybrandeRAAS");
 
         public GitHubClientWrapper(GitHubConfig config, IReporter reporter)
@@ -140,33 +139,6 @@ namespace TriageBuildFailures.GitHub
             }
 
             return new GithubIssue(await Client.Issue.Create(owner, repo, newIssue));
-        }
-    }
-
-    public class GithubIssue : Issue
-    {
-        public GithubIssue(Issue issue)
-            : base(issue.Url, issue.HtmlUrl, issue.CommentsUrl, issue.EventsUrl, issue.Number, issue.State.Value, issue.Title,
-                  issue.Body, issue.ClosedBy, issue.User, issue.Labels, issue.Assignee, issue.Assignees, issue.Milestone,
-                  issue.Comments, issue.PullRequest, issue.ClosedAt, issue.CreatedAt, issue.UpdatedAt, issue.Id, issue.Locked,
-                  issue.Repository)
-        {
-        }
-
-        public string RepositoryName
-        {
-            get
-            {
-                return Repository?.Name == null ? Url.Split('/')[5] : Repository.Name;
-            }
-        }
-
-        public string RepositoryOwner
-        {
-            get
-            {
-                return Repository?.Owner == null ? Url.Split('/')[4] : Repository.Owner.Name;
-            }
         }
     }
 }

@@ -8,7 +8,6 @@ using System.Xml.Serialization;
 
 namespace TriageBuildFailures.TeamCity
 {
-
     public class TeamCityBuild
     {
         public static IDictionary<string, string> BuildNames { get; set; }
