@@ -13,6 +13,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         WindowsAuthentication = 2,
         PoolEnvironmentVariables = 4,
         ShutdownToken = 8,
-        DynamicCompression = 16
+        DynamicCompression = 16,
+        ApplicationInitialization = 32
     }
 }

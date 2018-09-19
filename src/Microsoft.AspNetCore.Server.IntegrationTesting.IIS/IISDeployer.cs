@@ -357,10 +357,27 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                         throw new InvalidOperationException("Site not stopped yet");
                     }
 
-                    if (appPool.WorkerProcesses != null && appPool.WorkerProcesses.Any(wp => wp.State == WorkerProcessState.Running ||
-                                                          wp.State == WorkerProcessState.Stopping))
+                    try
                     {
-                        throw new InvalidOperationException("WorkerProcess not stopped yet");
+                        if (appPool.WorkerProcesses != null &&
+                            appPool.WorkerProcesses.Any(wp =>
+                                wp.State == WorkerProcessState.Running ||
+                                wp.State == WorkerProcessState.Stopping))
+                        {
+                            throw new InvalidOperationException("WorkerProcess not stopped yet");
+                        }
+
+                    }
+                    // If WAS was stopped for some reason appPool.WorkerProcesses
+                    // would throw UnauthorizedAccessException.
+                    // check if it's the case and continue shutting down deployer
+                    catch (UnauthorizedAccessException)
+                    {
+                        var serviceController = new ServiceController("was");
+                        if (serviceController.Status != ServiceControllerStatus.Stopped)
+                        {
+                            throw;
+                        }
                     }
 
                     if (!HostProcess.HasExited)

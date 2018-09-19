@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 {
-    public class ClientCertificateFixture : IDisposable 
+    public class ClientCertificateFixture : IDisposable
     {
         private X509Certificate2 _certificate;
 
