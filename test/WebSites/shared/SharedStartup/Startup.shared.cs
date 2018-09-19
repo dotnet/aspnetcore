@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
@@ -48,6 +49,27 @@ namespace TestSite
         {
             var clientCert = context.Connection.ClientCertificate;
             await context.Response.WriteAsync(clientCert != null ? $"Enabled;{clientCert.GetCertHashString()}" : "Disabled");
+        }
+
+        private static int _waitingRequestCount;
+
+        public Task WaitForAbort(HttpContext context)
+        {
+            Interlocked.Increment(ref _waitingRequestCount);
+            try
+            {
+                context.RequestAborted.WaitHandle.WaitOne();
+                return Task.CompletedTask;
+            }
+            finally
+            {
+                 Interlocked.Decrement(ref _waitingRequestCount);
+            }
+        }
+
+        public async Task WaitingRequestCount(HttpContext context)
+        {
+            await context.Response.WriteAsync(_waitingRequestCount.ToString());
         }
     }
 }
