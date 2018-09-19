@@ -2381,6 +2381,95 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
         }
 
+        [Theory]
+        [InlineData(nameof(LongRunningHub.CancelableStream))]
+        [InlineData(nameof(LongRunningHub.CancelableStream2), 1, 2)]
+        [InlineData(nameof(LongRunningHub.CancelableStreamMiddle), 1, 2)]
+        public async Task StreamHubMethodCanAcceptCancellationTokenAsArgumentAndBeTriggeredOnCancellation(string methodName, params object[] args)
+        {
+            var tcsService = new TcsService();
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(builder =>
+            {
+                builder.AddSingleton(tcsService);
+            });
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<LongRunningHub>>();
+
+            using (var client = new TestClient())
+            {
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler).OrTimeout();
+
+                var streamInvocationId = await client.SendStreamInvocationAsync(methodName, args).OrTimeout();
+                // Wait for the stream method to start
+                await tcsService.StartedMethod.Task.OrTimeout();
+
+                // Cancel the stream which should trigger the CancellationToken in the hub method
+                await client.SendHubMessageAsync(new CancelInvocationMessage(streamInvocationId)).OrTimeout();
+
+                var result = await client.ReadAsync().OrTimeout();
+
+                var simpleCompletion = Assert.IsType<CompletionMessage>(result);
+                Assert.Null(simpleCompletion.Result);
+
+                // CancellationToken passed to hub method will allow EndMethod to be triggered if it is canceled.
+                await tcsService.EndMethod.Task.OrTimeout();
+
+                // Shut down
+                client.Dispose();
+
+                await connectionHandlerTask.OrTimeout();
+            }
+        }
+
+        [Fact]
+        public async Task StreamHubMethodCanAcceptCancellationTokenAsArgumentAndBeTriggeredOnConnectionAborted()
+        {
+            var tcsService = new TcsService();
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(builder =>
+            {
+                builder.AddSingleton(tcsService);
+            });
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<LongRunningHub>>();
+
+            using (var client = new TestClient())
+            {
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler).OrTimeout();
+
+                var streamInvocationId = await client.SendStreamInvocationAsync(nameof(LongRunningHub.CancelableStream)).OrTimeout();
+                // Wait for the stream method to start
+                await tcsService.StartedMethod.Task.OrTimeout();
+
+                // Shut down the client which should trigger the CancellationToken in the hub method
+                client.Dispose();
+
+                // CancellationToken passed to hub method will allow EndMethod to be triggered if it is canceled.
+                await tcsService.EndMethod.Task.OrTimeout();
+
+                await connectionHandlerTask.OrTimeout();
+            }
+        }
+
+        [Fact]
+        public async Task InvokeHubMethodCannotAcceptCancellationTokenAsArgument()
+        {
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider();
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+
+            using (var client = new TestClient())
+            {
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler).OrTimeout();
+
+                var invocationId = await client.SendInvocationAsync(nameof(MethodHub.InvalidArgument)).OrTimeout();
+
+                var completion = Assert.IsType<CompletionMessage>(await client.ReadAsync().OrTimeout());
+
+                Assert.Equal("Failed to invoke 'InvalidArgument' due to an error on the server.", completion.Error);
+
+                client.Dispose();
+
+                await connectionHandlerTask.OrTimeout();
+            }
+        }
+
         private class CustomHubActivator<THub> : IHubActivator<THub> where THub : Hub
         {
             public int ReleaseCount;

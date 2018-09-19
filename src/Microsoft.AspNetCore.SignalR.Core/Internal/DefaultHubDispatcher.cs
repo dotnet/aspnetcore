@@ -188,11 +188,45 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 {
                     InitializeHub(hub, connection);
 
-                    var result = await ExecuteHubMethod(methodExecutor, hub, hubMethodInvocationMessage.Arguments);
+                    CancellationTokenSource cts = null;
+                    var arguments = hubMethodInvocationMessage.Arguments;
+                    if (descriptor.HasSyntheticArguments)
+                    {
+                        // In order to add the synthetic arguments we need a new array because the invocation array is too small (it doesn't know about synthetic arguments)
+                        arguments = new object[descriptor.OriginalParameterTypes.Count];
+
+                        var hubInvocationArgumentPointer = 0;
+                        for (var parameterPointer = 0; parameterPointer < arguments.Length; parameterPointer++)
+                        {
+                            if (hubMethodInvocationMessage.Arguments.Length > hubInvocationArgumentPointer &&
+                                hubMethodInvocationMessage.Arguments[hubInvocationArgumentPointer].GetType() == descriptor.OriginalParameterTypes[parameterPointer])
+                            {
+                                // The types match so it isn't a synthetic argument, just copy it into the arguments array
+                                arguments[parameterPointer] = hubMethodInvocationMessage.Arguments[hubInvocationArgumentPointer];
+                                hubInvocationArgumentPointer++;
+                            }
+                            else
+                            {
+                                // This is the only synthetic argument type we currently support
+                                if (descriptor.OriginalParameterTypes[parameterPointer] == typeof(CancellationToken))
+                                {
+                                    cts = CancellationTokenSource.CreateLinkedTokenSource(connection.ConnectionAborted);
+                                    arguments[parameterPointer] = cts.Token;
+                                }
+                                else
+                                {
+                                    // This should never happen
+                                    Debug.Assert(false, $"Failed to bind argument of type '{descriptor.OriginalParameterTypes[parameterPointer].Name}' for hub method '{methodExecutor.MethodInfo.Name}'.");
+                                }
+                            }
+                        }
+                    }
+
+                    var result = await ExecuteHubMethod(methodExecutor, hub, arguments);
 
                     if (isStreamedInvocation)
                     {
-                        if (!TryGetStreamingEnumerator(connection, hubMethodInvocationMessage.InvocationId, descriptor, result, out var enumerator, out var streamCts))
+                        if (!TryGetStreamingEnumerator(connection, hubMethodInvocationMessage.InvocationId, descriptor, result, out var enumerator, ref cts))
                         {
                             Log.InvalidReturnValueFromStreamingMethod(_logger, methodExecutor.MethodInfo.Name);
 
@@ -204,7 +238,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                         disposeScope = false;
                         Log.StreamingResult(_logger, hubMethodInvocationMessage.InvocationId, methodExecutor);
                         // Fire-and-forget stream invocations, otherwise they would block other hub invocations from being able to run
-                        _ = StreamResultsAsync(hubMethodInvocationMessage.InvocationId, connection, enumerator, scope, hubActivator, hub, streamCts);
+                        _ = StreamResultsAsync(hubMethodInvocationMessage.InvocationId, connection, enumerator, scope, hubActivator, hub, cts);
                     }
                     // Non-empty/null InvocationId ==> Blocking invocation that needs a response
                     else if (!string.IsNullOrEmpty(hubMethodInvocationMessage.InvocationId))
@@ -375,29 +409,24 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             return true;
         }
 
-        private bool TryGetStreamingEnumerator(HubConnectionContext connection, string invocationId, HubMethodDescriptor hubMethodDescriptor, object result, out IAsyncEnumerator<object> enumerator, out CancellationTokenSource streamCts)
+        private bool TryGetStreamingEnumerator(HubConnectionContext connection, string invocationId, HubMethodDescriptor hubMethodDescriptor, object result, out IAsyncEnumerator<object> enumerator, ref CancellationTokenSource streamCts)
         {
             if (result != null)
             {
                 if (hubMethodDescriptor.IsChannel)
                 {
-                    streamCts = CreateCancellation();
+                    if (streamCts == null)
+                    {
+                        streamCts = CancellationTokenSource.CreateLinkedTokenSource(connection.ConnectionAborted);
+                    }
+                    connection.ActiveRequestCancellationSources.TryAdd(invocationId, streamCts);
                     enumerator = hubMethodDescriptor.FromChannel(result, streamCts.Token);
                     return true;
                 }
             }
 
-            streamCts = null;
             enumerator = null;
             return false;
-
-            CancellationTokenSource CreateCancellation()
-            {
-                var userCts = new CancellationTokenSource();
-                connection.ActiveRequestCancellationSources.TryAdd(invocationId, userCts);
-
-                return CancellationTokenSource.CreateLinkedTokenSource(connection.ConnectionAborted, userCts.Token);
-            }
         }
 
         private void DiscoverHubMethods()
