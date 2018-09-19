@@ -6,7 +6,9 @@ package com.microsoft.aspnet.signalr;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.ArrayList;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.Test;
@@ -298,10 +300,115 @@ public class HubConnectionTest {
         hubConnection.start();
         mockTransport.receiveMessage("{}" + RECORD_SEPARATOR);
         mockTransport.receiveMessage("{\"type\":1,\"target\":\"add\",\"arguments\":[12]}" + RECORD_SEPARATOR);
-        hubConnection.send("add", 12);
 
         // Confirming that our handler was called and the correct message was passed in.
         assertEquals(Double.valueOf(24), value.get());
+    }
+
+    @Test
+    public void invokeWaitsForCompletionMessage() throws Exception {
+        MockTransport mockTransport = new MockTransport();
+        HubConnection hubConnection = new HubConnection("http://example.com", mockTransport, true);
+
+        hubConnection.start();
+        mockTransport.receiveMessage("{}" + RECORD_SEPARATOR);
+
+        CompletableFuture<Integer> result = hubConnection.invoke(Integer.class, "echo", "message");
+        assertEquals("{\"type\":1,\"invocationId\":\"1\",\"target\":\"echo\",\"arguments\":[\"message\"]}" + RECORD_SEPARATOR, mockTransport.sentMessages.get(1));
+        assertFalse(result.isDone());
+
+        mockTransport.receiveMessage("{\"type\":3,\"invocationId\":\"1\",\"result\":42}" + RECORD_SEPARATOR);
+
+        assertEquals(Integer.valueOf(42), result.get(1000L, TimeUnit.MILLISECONDS));
+    }
+
+    @Test
+    public void multipleInvokesWaitForOwnCompletionMessage() throws Exception {
+        MockTransport mockTransport = new MockTransport();
+        HubConnection hubConnection = new HubConnection("http://example.com", mockTransport, true);
+
+        hubConnection.start();
+        mockTransport.receiveMessage("{}" + RECORD_SEPARATOR);
+
+        CompletableFuture<Integer> result = hubConnection.invoke(Integer.class, "echo", "message");
+        CompletableFuture<String> result2 = hubConnection.invoke(String.class, "echo", "message");
+        assertEquals("{\"type\":1,\"invocationId\":\"1\",\"target\":\"echo\",\"arguments\":[\"message\"]}" + RECORD_SEPARATOR, mockTransport.sentMessages.get(1));
+        assertEquals("{\"type\":1,\"invocationId\":\"2\",\"target\":\"echo\",\"arguments\":[\"message\"]}" + RECORD_SEPARATOR, mockTransport.sentMessages.get(2));
+        assertFalse(result.isDone());
+        assertFalse(result2.isDone());
+
+        mockTransport.receiveMessage("{\"type\":3,\"invocationId\":\"2\",\"result\":\"message\"}" + RECORD_SEPARATOR);
+        assertEquals("message", result2.get(1000L, TimeUnit.MILLISECONDS));
+        assertFalse(result.isDone());
+
+        mockTransport.receiveMessage("{\"type\":3,\"invocationId\":\"1\",\"result\":42}" + RECORD_SEPARATOR);
+        assertEquals(Integer.valueOf(42), result.get(1000L, TimeUnit.MILLISECONDS));
+    }
+
+    @Test
+    public void invokeWorksForPrimitiveTypes() throws Exception {
+        MockTransport mockTransport = new MockTransport();
+        HubConnection hubConnection = new HubConnection("http://example.com", mockTransport, true);
+
+        hubConnection.start();
+        mockTransport.receiveMessage("{}" + RECORD_SEPARATOR);
+
+        // int.class is a primitive type and since we use Class.cast to cast an Object to the expected return type
+        // which does not work for primitives we have to write special logic for that case.
+        CompletableFuture<Integer> result = hubConnection.invoke(int.class, "echo", "message");
+        assertFalse(result.isDone());
+
+        mockTransport.receiveMessage("{\"type\":3,\"invocationId\":\"1\",\"result\":42}" + RECORD_SEPARATOR);
+
+        assertEquals(Integer.valueOf(42), result.get(1000L, TimeUnit.MILLISECONDS));
+    }
+
+    @Test
+    public void completionMessageCanHaveError() throws Exception {
+        MockTransport mockTransport = new MockTransport();
+        HubConnection hubConnection = new HubConnection("http://example.com", mockTransport, true);
+
+        hubConnection.start();
+        mockTransport.receiveMessage("{}" + RECORD_SEPARATOR);
+
+        CompletableFuture<Integer> result = hubConnection.invoke(int.class, "echo", "message");
+        assertFalse(result.isDone());
+
+        mockTransport.receiveMessage("{\"type\":3,\"invocationId\":\"1\",\"error\":\"There was an error\"}" + RECORD_SEPARATOR);
+
+        String exceptionMessage = null;
+        try {
+            result.get(1000L, TimeUnit.MILLISECONDS);
+            assertFalse(true);
+        } catch (Exception ex) {
+            exceptionMessage = ex.getMessage();
+        }
+
+        assertEquals("com.microsoft.aspnet.signalr.HubException: There was an error", exceptionMessage);
+    }
+
+    @Test
+    public void stopCancelsActiveInvokes() throws Exception {
+        MockTransport mockTransport = new MockTransport();
+        HubConnection hubConnection = new HubConnection("http://example.com", mockTransport, true);
+
+        hubConnection.start();
+        mockTransport.receiveMessage("{}" + RECORD_SEPARATOR);
+
+        CompletableFuture<Integer> result = hubConnection.invoke(int.class, "echo", "message");
+        assertFalse(result.isDone());
+
+        hubConnection.stop();
+
+        boolean hasException = false;
+        try {
+            result.get(1000L, TimeUnit.MILLISECONDS);
+            assertFalse(true);
+        } catch (CancellationException ex) {
+            hasException = true;
+        }
+
+        assertTrue(hasException);
     }
 
     @Test

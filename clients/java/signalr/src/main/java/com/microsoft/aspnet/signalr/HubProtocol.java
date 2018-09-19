@@ -3,7 +3,6 @@
 
 package com.microsoft.aspnet.signalr;
 
-
 /**
  * A protocol abstraction for communicating with SignalR hubs.
  */

@@ -9,6 +9,7 @@ import java.util.List;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonReader;
 
@@ -43,6 +44,8 @@ class JsonHubProtocol implements HubProtocol {
             String error = null;
             ArrayList<Object> arguments = null;
             JsonArray argumentsToken = null;
+            Object result = null;
+            JsonElement resultToken = null;
 
             JsonReader reader = new JsonReader(new StringReader(str));
             reader.beginObject();
@@ -63,7 +66,11 @@ class JsonHubProtocol implements HubProtocol {
                         error = reader.nextString();
                         break;
                     case "result":
-                        reader.skipValue();
+                        if (invocationId == null) {
+                            resultToken = jsonParser.parse(reader);
+                        } else {
+                            result = gson.fromJson(reader, binder.getReturnType(invocationId));
+                        }
                         break;
                     case "item":
                         reader.skipValue();
@@ -107,14 +114,19 @@ class JsonHubProtocol implements HubProtocol {
                         }
                     }
                     if (arguments == null) {
-                        hubMessages.add(new InvocationMessage(target, new Object[0]));
+                        hubMessages.add(new InvocationMessage(invocationId, target, new Object[0]));
                     } else {
-                        hubMessages.add(new InvocationMessage(target, arguments.toArray()));
+                        hubMessages.add(new InvocationMessage(invocationId, target, arguments.toArray()));
                     }
+                    break;
+                case COMPLETION:
+                    if (resultToken != null) {
+                        result = gson.fromJson(resultToken, binder.getReturnType(invocationId));
+                    }
+                    hubMessages.add(new CompletionMessage(invocationId, result, error));
                     break;
                 case STREAM_INVOCATION:
                 case STREAM_ITEM:
-                case COMPLETION:
                 case CANCEL_INVOCATION:
                     throw new UnsupportedOperationException(String.format("The message type %s is not supported yet.", messageType));
                 case PING:

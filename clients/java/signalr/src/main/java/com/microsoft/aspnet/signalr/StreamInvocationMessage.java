@@ -8,8 +8,7 @@ class StreamInvocationMessage extends InvocationMessage {
     int type = HubMessageType.STREAM_INVOCATION.value;
 
     public StreamInvocationMessage(String invocationId, String target, Object[] arguments) {
-        super(target, arguments);
-        this.invocationId = invocationId;
+        super(invocationId, target, arguments);
     }
 
     @Override
