@@ -6,6 +6,7 @@ package com.microsoft.aspnet.signalr;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.ArrayList;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.Test;
@@ -745,11 +746,14 @@ public class HubConnectionTest {
         private ArrayList<String> sentMessages = new ArrayList<>();
 
         @Override
-        public void start() {}
+        public CompletableFuture start() {
+            return CompletableFuture.completedFuture(null);
+        }
 
         @Override
-        public void send(String message) {
+        public CompletableFuture send(String message) {
             sentMessages.add(message);
+            return CompletableFuture.completedFuture(null);
         }
 
         @Override
@@ -763,7 +767,9 @@ public class HubConnectionTest {
         }
 
         @Override
-        public void stop() {}
+        public CompletableFuture stop() {
+            return CompletableFuture.completedFuture(null);
+        }
 
         public void receiveMessage(String message) throws Exception {
             this.onReceive(message);
