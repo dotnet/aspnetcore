@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Server.IIS.Core
 {
-    // TODO redudant file, remove
     // See https://github.com/aspnet/IISIntegration/issues/426
     internal class DuplexStream : Stream
     {

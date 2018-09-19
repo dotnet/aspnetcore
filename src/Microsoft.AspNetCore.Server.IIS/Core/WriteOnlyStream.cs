@@ -8,40 +8,36 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Server.IIS.Core
 {
-    internal class IISHttpRequestBody : Stream
+    public abstract class WriteOnlyStream : Stream
     {
-        private readonly IISHttpContext _httpContext;
+        public override bool CanRead => false;
 
-        public IISHttpRequestBody(IISHttpContext httpContext)
+        public override bool CanWrite => true;
+
+        public override int ReadTimeout
         {
-            _httpContext = httpContext;
+            get => throw new NotSupportedException();
+            set => throw new NotSupportedException();
         }
-
-        public override bool CanRead => true;
 
         public override bool CanSeek => false;
 
-        public override bool CanWrite => false;
-
         public override long Length => throw new NotSupportedException();
 
-        public override long Position { get => throw new NotSupportedException(); set => throw new NotSupportedException(); }
-
-        public override void Flush()
+        public override long Position
         {
-            throw new NotSupportedException();
+            get => throw new NotSupportedException();
+            set => throw new NotSupportedException();
         }
 
         public override int Read(byte[] buffer, int offset, int count)
         {
-            return ReadAsync(buffer, offset, count, CancellationToken.None).GetAwaiter().GetResult();
+            throw new NotSupportedException();
         }
 
         public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
-            var memory = new Memory<byte>(buffer, offset, count);
-
-            return _httpContext.ReadAsync(memory, cancellationToken);
+            throw new NotSupportedException();
         }
 
         public override long Seek(long offset, SeekOrigin origin)
@@ -50,11 +46,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         }
 
         public override void SetLength(long value)
-        {
-            throw new NotSupportedException();
-        }
-
-        public override void Write(byte[] buffer, int offset, int count)
         {
             throw new NotSupportedException();
         }

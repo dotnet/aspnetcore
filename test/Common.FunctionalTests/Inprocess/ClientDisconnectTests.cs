@@ -43,5 +43,23 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             var responseText = await response.Content.ReadAsStringAsync();
             Assert.Equal("Hello World", responseText);
         }
+
+        [ConditionalFact]
+        public async Task RequestAbortedTokenFires()
+        {
+            using (var connection = _fixture.CreateTestConnection())
+            {
+                await connection.Send(
+                    "GET /WaitForAbort HTTP/1.1",
+                    "Host: localhost",
+                    "Connection: close",
+                    "",
+                    "");
+
+                await _fixture.Client.RetryRequestAsync("/WaitingRequestCount", async message => await message.Content.ReadAsStringAsync() == "1");
+            }
+
+            await _fixture.Client.RetryRequestAsync("/WaitingRequestCount", async message => await message.Content.ReadAsStringAsync() == "0");
+        }
     }
 }

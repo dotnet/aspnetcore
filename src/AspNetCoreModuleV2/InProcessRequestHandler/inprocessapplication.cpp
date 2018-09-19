@@ -44,14 +44,14 @@ IN_PROCESS_APPLICATION::~IN_PROCESS_APPLICATION()
 
 VOID
 IN_PROCESS_APPLICATION::StopInternal(bool fServerInitiated)
-{   
+{
     StopClr();
     InProcessApplicationBase::StopInternal(fServerInitiated);
 }
 
 VOID
 IN_PROCESS_APPLICATION::StopClr()
-{   
+{
     LOG_INFO(L"Stopping CLR");
 
     if (!m_blockManagedCallbacks)
@@ -86,6 +86,7 @@ VOID
 IN_PROCESS_APPLICATION::SetCallbackHandles(
     _In_ PFN_REQUEST_HANDLER request_handler,
     _In_ PFN_SHUTDOWN_HANDLER shutdown_handler,
+    _In_ PFN_DISCONNECT_HANDLER disconnect_callback,
     _In_ PFN_ASYNC_COMPLETION_HANDLER async_completion_handler,
     _In_ VOID* pvRequstHandlerContext,
     _In_ VOID* pvShutdownHandlerContext
@@ -95,6 +96,7 @@ IN_PROCESS_APPLICATION::SetCallbackHandles(
 
     m_RequestHandler = request_handler;
     m_RequestHandlerContext = pvRequstHandlerContext;
+    m_DisconnectHandler = disconnect_callback;
     m_ShutdownHandler = shutdown_handler;
     m_ShutdownHandlerContext = pvShutdownHandlerContext;
     m_AsyncCompletionHandler = async_completion_handler;
@@ -135,13 +137,13 @@ IN_PROCESS_APPLICATION::LoadManagedApplication()
     }, ::ReferenceApplication(this));
 
     LOG_INFO(L"Waiting for initialization");
-    
+
     const HANDLE waitHandles[2] = { m_pInitializeEvent, m_workerThread.native_handle() };
-    
+
     // Wait for shutdown request
     const auto waitResult = WaitForMultipleObjects(2, waitHandles, FALSE, m_pConfig->QueryStartupTimeLimitInMS());
     THROW_LAST_ERROR_IF(waitResult == WAIT_FAILED);
-    
+
     if (waitResult == WAIT_TIMEOUT)
     {
         // If server wasn't initialized in time shut application down without waiting for CLR thread to exit
@@ -168,9 +170,9 @@ void
 IN_PROCESS_APPLICATION::ExecuteApplication()
 {
     try
-    {   
+    {
         std::unique_ptr<HOSTFXR_OPTIONS> hostFxrOptions;
-        
+
         auto context = std::make_shared<ExecuteClrContext>();
 
         auto pProc = s_fMainCallback;
@@ -184,7 +186,7 @@ IN_PROCESS_APPLICATION::ExecuteApplication()
             // Get the entry point for main
             pProc = reinterpret_cast<hostfxr_main_fn>(GetProcAddress(hModule, "hostfxr_main"));
             THROW_LAST_ERROR_IF_NULL(pProc);
-            
+
             THROW_IF_FAILED(HOSTFXR_OPTIONS::Create(
                 m_dotnetExeKnownLocation,
                 m_pConfig->QueryProcessPath(),
@@ -217,7 +219,7 @@ IN_PROCESS_APPLICATION::ExecuteApplication()
         // We set a static so that managed code can call back into this instance and
         // set the callbacks
         s_Application = this;
-        
+
         //Start CLR thread
         m_clrThread = std::thread(ClrThreadEntryPoint, context);
 
@@ -237,7 +239,7 @@ IN_PROCESS_APPLICATION::ExecuteApplication()
         {
             const auto clrWaitResult = WaitForSingleObject(m_clrThread.native_handle(), m_pConfig->QueryShutdownTimeLimitInMS());
             THROW_LAST_ERROR_IF(waitResult == WAIT_FAILED);
-            
+
             clrThreadExited = clrWaitResult != WAIT_TIMEOUT;
         }
 
@@ -274,7 +276,7 @@ IN_PROCESS_APPLICATION::ExecuteApplication()
                 // in case when it was not initialized we need to keep server running to serve 502 page
                 if (m_Initialized)
                 {
-                    QueueStop();   
+                    QueueStop();
                 }
             }
         }
@@ -298,7 +300,7 @@ IN_PROCESS_APPLICATION::ExecuteApplication()
             QueryApplicationId().c_str(),
             QueryApplicationPhysicalPath().c_str(),
             GetUnexpectedExceptionMessage(ex).c_str());
-        
+
         OBSERVE_CAUGHT_EXCEPTION();
     }
 }
@@ -500,9 +502,9 @@ IN_PROCESS_APPLICATION::CreateHandler(
 {
     try
     {
-        *pRequestHandler = new IN_PROCESS_HANDLER(::ReferenceApplication(this), pHttpContext, m_RequestHandler, m_RequestHandlerContext, m_AsyncCompletionHandler);    
+        *pRequestHandler = new IN_PROCESS_HANDLER(::ReferenceApplication(this), pHttpContext, m_RequestHandler, m_RequestHandlerContext, m_DisconnectHandler, m_AsyncCompletionHandler);
     }
     CATCH_RETURN();
-    
+
     return S_OK;
 }

@@ -14,7 +14,7 @@ class REQUEST_HANDLER: public virtual IREQUEST_HANDLER
 
 public:
     VOID
-    ReferenceRequestHandler() noexcept override 
+    ReferenceRequestHandler() noexcept override
     {
         InterlockedIncrement(&m_cRefs);
     }
@@ -39,9 +39,11 @@ public:
         return RQ_NOTIFICATION_FINISH_REQUEST;
     }
 
-    VOID TerminateRequest(bool fClientInitiated) override
+    #pragma warning( push )
+    #pragma warning ( disable : 26440 ) // Disable "Can be marked with noexcept"
+    VOID NotifyDisconnect() override
+    #pragma warning( pop )
     {
-        UNREFERENCED_PARAMETER(fClientInitiated);
     }
 
 private:

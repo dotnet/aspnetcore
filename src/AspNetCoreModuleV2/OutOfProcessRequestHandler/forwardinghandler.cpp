@@ -46,7 +46,8 @@ FORWARDING_HANDLER::FORWARDING_HANDLER(
     m_fServerResetConn(FALSE),
     m_cRefs(1),
     m_pW3Context(pW3Context),
-    m_pApplication(std::move(pApplication))
+    m_pApplication(std::move(pApplication)),
+    m_fReactToDisconnect(FALSE)
 {
     LOG_TRACE(L"FORWARDING_HANDLER::FORWARDING_HANDLER");
 
@@ -73,7 +74,7 @@ FORWARDING_HANDLER::~FORWARDING_HANDLER(
     // The m_pServer cleanup would happen afterwards, since there may be a
     // call pending from SHARED_HANDLER to  FORWARDING_HANDLER::SetStatusAndHeaders()
     //
-    DBG_ASSERT(m_pDisconnect == NULL);
+    DBG_ASSERT(!m_fReactToDisconnect);
 
     RemoveRequest();
 
@@ -93,7 +94,6 @@ FORWARDING_HANDLER::OnExecuteRequestHandler()
     REQUEST_NOTIFICATION_STATUS retVal = RQ_NOTIFICATION_CONTINUE;
     HRESULT                     hr = S_OK;
     BOOL                        fRequestLocked = FALSE;
-    BOOL                        fHandleSet = FALSE;
     BOOL                        fFailedToStartKestrel = FALSE;
     BOOL                        fSecure = FALSE;
     HINTERNET                   hConnect = NULL;
@@ -199,31 +199,7 @@ FORWARDING_HANDLER::OnExecuteRequestHandler()
         goto Failure;
     }
 
-    // Set client disconnect callback contract with IIS
-    m_pDisconnect = static_cast<ASYNC_DISCONNECT_CONTEXT *>(
-        pClientConnection->GetModuleContextContainer()->
-        GetConnectionModuleContext(m_pModuleId));
-    if (m_pDisconnect == NULL)
-    {
-        m_pDisconnect = new ASYNC_DISCONNECT_CONTEXT();
-        if (m_pDisconnect == NULL)
-        {
-            hr = E_OUTOFMEMORY;
-            goto Failure;
-        }
-
-        hr = pClientConnection->GetModuleContextContainer()->
-            SetConnectionModuleContext(m_pDisconnect,
-                m_pModuleId);
-        DBG_ASSERT(hr != HRESULT_FROM_WIN32(ERROR_ALREADY_ASSIGNED));
-        if (FAILED_LOG(hr))
-        {
-            goto Failure;
-        }
-    }
-
-    m_pDisconnect->SetHandler(this);
-    fHandleSet = TRUE;
+    m_fReactToDisconnect = TRUE;
 
     // require lock as client disconnect callback may happen
     AcquireSRWLockShared(&m_RequestLock);
@@ -2705,21 +2681,16 @@ FORWARDING_HANDLER::RemoveRequest(
     VOID
 )
 {
-    ASYNC_DISCONNECT_CONTEXT *       pDisconnect;
-    pDisconnect = (ASYNC_DISCONNECT_CONTEXT *)InterlockedExchangePointer((PVOID*)&m_pDisconnect, NULL);
-    if (pDisconnect != NULL)
-    {
-        pDisconnect->ResetHandler();
-        pDisconnect = NULL;
-    }
+    m_fReactToDisconnect = FALSE;
 }
 
 VOID
-FORWARDING_HANDLER::TerminateRequest(
-    bool    fClientInitiated
-)
+FORWARDING_HANDLER::NotifyDisconnect()
 {
-    UNREFERENCED_PARAMETER(fClientInitiated);
+    if (!m_fReactToDisconnect)
+    {
+        return;
+    }
 
     BOOL fLocked = FALSE;
     if (TlsGetValue(g_dwTlsIndex) != this)
@@ -2740,7 +2711,7 @@ FORWARDING_HANDLER::TerminateRequest(
 
     if (!m_fHttpHandleInClose)
     {
-        m_fClientDisconnected = fClientInitiated;
+        m_fClientDisconnected = true;
     }
 
     if (fLocked)

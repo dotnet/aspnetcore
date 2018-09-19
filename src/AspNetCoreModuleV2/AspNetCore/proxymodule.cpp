@@ -6,13 +6,15 @@
 #include "applicationmanager.h"
 #include "applicationinfo.h"
 #include "exceptions.h"
+#include "DisconnectHandler.h"
 
 extern BOOL         g_fInShutdown;
 
 __override
 
-ASPNET_CORE_PROXY_MODULE_FACTORY::ASPNET_CORE_PROXY_MODULE_FACTORY(std::shared_ptr<APPLICATION_MANAGER> applicationManager) noexcept
-    :m_pApplicationManager(std::move(applicationManager))
+ASPNET_CORE_PROXY_MODULE_FACTORY::ASPNET_CORE_PROXY_MODULE_FACTORY(HTTP_MODULE_ID moduleId, std::shared_ptr<APPLICATION_MANAGER> applicationManager) noexcept
+    : m_pApplicationManager(std::move(applicationManager)),
+      m_moduleId(moduleId)
 {
 }
 
@@ -22,10 +24,10 @@ ASPNET_CORE_PROXY_MODULE_FACTORY::GetHttpModule(
     IModuleAllocator *  pAllocator
 )
 {
-    
+
     #pragma warning( push )
     #pragma warning ( disable : 26409 ) // Disable "Avoid using new"
-    *ppModule = new (pAllocator) ASPNET_CORE_PROXY_MODULE(m_pApplicationManager);
+    *ppModule = new (pAllocator) ASPNET_CORE_PROXY_MODULE(m_moduleId, m_pApplicationManager);
     #pragma warning( push )
     if (*ppModule == nullptr)
     {
@@ -58,11 +60,21 @@ Return value:
     delete this;
 }
 
-ASPNET_CORE_PROXY_MODULE::ASPNET_CORE_PROXY_MODULE(std::shared_ptr<APPLICATION_MANAGER> applicationManager) noexcept 
+ASPNET_CORE_PROXY_MODULE::ASPNET_CORE_PROXY_MODULE(HTTP_MODULE_ID moduleId, std::shared_ptr<APPLICATION_MANAGER> applicationManager) noexcept
     : m_pApplicationManager(std::move(applicationManager)),
       m_pApplicationInfo(nullptr),
-      m_pHandler(nullptr)
+      m_pHandler(nullptr),
+      m_moduleId(moduleId),
+      m_pDisconnectHandler(nullptr)
 {
+}
+
+ASPNET_CORE_PROXY_MODULE::~ASPNET_CORE_PROXY_MODULE()
+{
+    if (m_pDisconnectHandler != nullptr)
+    {
+        m_pDisconnectHandler->SetHandler(nullptr);
+    }
 }
 
 __override
@@ -77,11 +89,30 @@ ASPNET_CORE_PROXY_MODULE::OnExecuteRequestHandler(
 
     try
     {
-
         if (g_fInShutdown)
         {
             FINISHED(HRESULT_FROM_WIN32(ERROR_SERVER_SHUTDOWN_IN_PROGRESS));
         }
+
+        auto moduleContainer = pHttpContext
+            ->GetConnection()
+            ->GetModuleContextContainer();
+
+        #pragma warning( push )
+        #pragma warning ( disable : 26466 ) // Disable "Don't use static_cast downcasts". We build without RTTI support so dynamic_cast is not available
+        m_pDisconnectHandler = static_cast<DisconnectHandler*>(moduleContainer->GetConnectionModuleContext(m_moduleId));
+        #pragma warning( push )
+
+        if (m_pDisconnectHandler == nullptr)
+        {
+            auto disconnectHandler = std::make_unique<DisconnectHandler>();
+            m_pDisconnectHandler = disconnectHandler.get();
+            // ModuleContextContainer takes ownership of disconnectHandler
+            // we are trusting that it would not release it before deleting the context
+            FINISHED_IF_FAILED(moduleContainer->SetConnectionModuleContext(static_cast<IHttpConnectionStoredContext*>(disconnectHandler.release()), m_moduleId));
+        }
+
+        m_pDisconnectHandler->SetHandler(this);
 
         FINISHED_IF_FAILED(m_pApplicationManager->GetOrCreateApplicationInfo(
             *pHttpContext,
@@ -134,4 +165,9 @@ ASPNET_CORE_PROXY_MODULE::OnAsyncCompletion(
         OBSERVE_CAUGHT_EXCEPTION();
         return RQ_NOTIFICATION_FINISH_REQUEST;
     }
+}
+
+void ASPNET_CORE_PROXY_MODULE::NotifyDisconnect() const
+{
+    m_pHandler->NotifyDisconnect();
 }

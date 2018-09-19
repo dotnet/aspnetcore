@@ -3,9 +3,11 @@
 
 using System;
 using System.Buffers;
+using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections;
 
 namespace Microsoft.AspNetCore.Server.IIS.Core
 {
@@ -67,7 +69,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                 _completed = true;
 
                 _pipe.Reader.CancelPendingRead();
-                _pipe.Writer.Complete(error);
+                _pipe.Writer.Complete();
             }
         }
 
@@ -77,7 +79,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             {
                 if (_completed)
                 {
-                    throw new ObjectDisposedException("Response is already completed");
+                    return Task.CompletedTask;
                 }
 
                 _pipe.Writer.Write(buffer.Span);
@@ -119,11 +121,14 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                 await _flushTcs.Task;
                 cancellationToken.ThrowIfCancellationRequested();
             }
-            catch (OperationCanceledException)
+            catch (OperationCanceledException ex)
             {
-                _pipe.Writer.Complete();
-                _completed = true;
-                throw;
+                Abort(new ConnectionAbortedException(CoreStrings.ConnectionOrStreamAbortedByCancellationToken, ex));
+            }
+            catch
+            {
+                // A canceled token is the only reason flush should ever throw.
+                Debug.Assert(false);
             }
         }
 

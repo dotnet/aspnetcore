@@ -59,7 +59,6 @@
 #include "resources.h"
 #include "aspnetcore_event.h"
 #include "aspnetcore_msg.h"
-#include "disconnectcontext.h"
 #include "requesthandler_config.h"
 
 #include "sttimer.h"

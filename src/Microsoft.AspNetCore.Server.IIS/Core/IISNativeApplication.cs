@@ -28,6 +28,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         public void RegisterCallbacks(
             NativeMethods.PFN_REQUEST_HANDLER requestHandler,
             NativeMethods.PFN_SHUTDOWN_HANDLER shutdownHandler,
+            NativeMethods.PFN_DISCONNECT_HANDLER disconnectHandler,
             NativeMethods.PFN_ASYNC_COMPLETION onAsyncCompletion,
             IntPtr requestContext,
             IntPtr shutdownContext)
@@ -36,7 +37,8 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                 _nativeApplication,
                 requestHandler,
                 shutdownHandler,
-                onAsyncCompletion, 
+                disconnectHandler,
+                onAsyncCompletion,
                 requestContext,
                 shutdownContext);
         }

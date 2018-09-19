@@ -27,7 +27,8 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                                             IHttpAuthenticationFeature,
                                             IServerVariablesFeature,
                                             IHttpBufferingFeature,
-                                            ITlsConnectionFeature
+                                            ITlsConnectionFeature,
+                                            IHttpBodyControlFeature
     {
         // NOTE: When feature interfaces are added to or removed from this HttpProtocol implementation,
         // then the list of `implementedFeatures` in the generated code project MUST also be updated.
@@ -37,6 +38,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         private X509Certificate2 _certificate;
 
         private List<KeyValuePair<Type, object>> MaybeExtra;
+
         public void ResetFeatureCollection()
         {
             Initialize();
@@ -179,12 +181,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             set => ResponseBody = value;
         }
 
-        CancellationToken IHttpRequestLifetimeFeature.RequestAborted
-        {
-            get => RequestAborted;
-            set => RequestAborted = value;
-        }
-
         bool IHttpResponseFeature.HasStarted => HasResponseStarted;
 
         bool IHttpUpgradeFeature.IsUpgradableRequest => true;
@@ -259,19 +255,18 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
         async Task<Stream> IHttpUpgradeFeature.UpgradeAsync()
         {
-            // TODO fix these exceptions strings
             if (!((IHttpUpgradeFeature)this).IsUpgradableRequest)
             {
-                throw new InvalidOperationException("CoreStrings.CannotUpgradeNonUpgradableRequest");
+                throw new InvalidOperationException(CoreStrings.CannotUpgradeNonUpgradableRequest);
             }
 
             if (_wasUpgraded)
             {
-                throw new InvalidOperationException("CoreStrings.UpgradeCannotBeCalledMultipleTimes");
+                throw new InvalidOperationException(CoreStrings.UpgradeCannotBeCalledMultipleTimes);
             }
             if (HasResponseStarted)
             {
-                throw new InvalidOperationException("CoreStrings.UpgradeCannotBeCalledMultipleTimes");
+                throw new InvalidOperationException(CoreStrings.UpgradeCannotBeCalledMultipleTimes);
             }
 
             _wasUpgraded = true;
@@ -291,7 +286,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
             await InitializeResponse(flushHeaders: true);
 
-            return new DuplexStream(RequestBody, ResponseBody);
+            return _streams.Upgrade();
         }
 
         Task<X509Certificate2> ITlsConnectionFeature.GetClientCertificateAsync(CancellationToken cancellationToken)
@@ -327,10 +322,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
         IEnumerator IEnumerable.GetEnumerator() => FastEnumerable().GetEnumerator();
 
-        void IHttpRequestLifetimeFeature.Abort()
-        {
-            Abort();
-        }
+        bool IHttpBodyControlFeature.AllowSynchronousIO { get; set; } = true;
 
         void IHttpBufferingFeature.DisableRequestBuffering()
         {

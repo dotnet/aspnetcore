@@ -22,6 +22,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
         private static readonly NativeMethods.PFN_REQUEST_HANDLER _requestHandler = HandleRequest;
         private static readonly NativeMethods.PFN_SHUTDOWN_HANDLER _shutdownHandler = HandleShutdown;
+        private static readonly NativeMethods.PFN_DISCONNECT_HANDLER _onDisconnect = OnDisconnect;
         private static readonly NativeMethods.PFN_ASYNC_COMPLETION _onAsyncCompletion = OnAsyncCompletion;
 
         private IISContextFactory _iisContextFactory;
@@ -82,7 +83,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             _httpServerHandle = GCHandle.Alloc(this);
 
             _iisContextFactory = new IISContextFactory<TContext>(_memoryPool, application, _options, this);
-            _nativeApplication.RegisterCallbacks(_requestHandler, _shutdownHandler, _onAsyncCompletion, (IntPtr)_httpServerHandle, (IntPtr)_httpServerHandle);
+            _nativeApplication.RegisterCallbacks(_requestHandler, _shutdownHandler, _onDisconnect, _onAsyncCompletion, (IntPtr)_httpServerHandle, (IntPtr)_httpServerHandle);
             return Task.CompletedTask;
         }
 
@@ -197,6 +198,22 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                 server?._logger.LogError(0, ex, $"Unexpected exception in {nameof(IISHttpServer)}.{nameof(HandleShutdown)}.");
             }
             return true;
+        }
+
+
+        private static void OnDisconnect(IntPtr pvManagedHttpContext)
+        {
+            IISHttpContext context = null;
+            try
+            {
+                context = (IISHttpContext)GCHandle.FromIntPtr(pvManagedHttpContext).Target;
+                context.ConnectionReset();
+            }
+            catch (Exception ex)
+            {
+                context?.Server._logger.LogError(0, ex, $"Unexpected exception in {nameof(IISHttpServer)}.{nameof(OnDisconnect)}.");
+            }
+
         }
 
         private static NativeMethods.REQUEST_NOTIFICATION_STATUS OnAsyncCompletion(IntPtr pvManagedHttpContext, int hr, int bytes)
