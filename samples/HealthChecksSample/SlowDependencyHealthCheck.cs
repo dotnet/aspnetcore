@@ -17,16 +17,14 @@ namespace HealthChecksSample
             _task = Task.Delay(15 * 1000);
         }
 
-        public string Name => HealthCheckName;
-
-        public Task<HealthCheckResult> CheckHealthAsync(CancellationToken cancellationToken = default(CancellationToken))
+        public Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (_task.IsCompleted)
             {
-                return Task.FromResult(HealthCheckResult.Healthy("Dependency is ready"));
+                return Task.FromResult(HealthCheckResult.Passed("Dependency is ready"));
             }
 
-            return Task.FromResult(HealthCheckResult.Unhealthy("Dependency is still initializing"));
+            return Task.FromResult(HealthCheckResult.Failed("Dependency is still initializing"));
         }
     }
 }

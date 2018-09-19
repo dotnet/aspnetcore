@@ -15,12 +15,12 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
     {
         private readonly RequestDelegate _next;
         private readonly HealthCheckOptions _healthCheckOptions;
-        private readonly IHealthCheckService _healthCheckService;
+        private readonly HealthCheckService _healthCheckService;
 
         public HealthCheckMiddleware(
             RequestDelegate next,
             IOptions<HealthCheckOptions> healthCheckOptions,
-            IHealthCheckService healthCheckService)
+            HealthCheckService healthCheckService)
         {
             if (next == null)
             {
@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
             if (!_healthCheckOptions.ResultStatusCodes.TryGetValue(result.Status, out var statusCode))
             {
                 var message =
-                    $"No status code mapping found for {nameof(HealthCheckStatus)} value: {result.Status}." +
+                    $"No status code mapping found for {nameof(HealthStatus)} value: {result.Status}." +
                     $"{nameof(HealthCheckOptions)}.{nameof(HealthCheckOptions.ResultStatusCodes)} must contain" +
                     $"an entry for {result.Status}.";
 

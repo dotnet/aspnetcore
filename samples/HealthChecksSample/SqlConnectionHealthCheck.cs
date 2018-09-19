@@ -1,6 +1,5 @@
 ﻿using System.Data.Common;
 using System.Data.SqlClient;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace HealthChecksSample
 {
@@ -8,13 +7,13 @@ namespace HealthChecksSample
     {
         private static readonly string DefaultTestQuery = "Select 1";
 
-        public SqlConnectionHealthCheck(string name, string connectionString)
-            : this(name, connectionString, testQuery: DefaultTestQuery)
+        public SqlConnectionHealthCheck(string connectionString)
+            : this(connectionString, testQuery: DefaultTestQuery)
         {
         }
 
-        public SqlConnectionHealthCheck(string name, string connectionString, string testQuery)
-            : base(name, connectionString, testQuery ?? DefaultTestQuery)
+        public SqlConnectionHealthCheck(string connectionString, string testQuery)
+            : base(connectionString, testQuery ?? DefaultTestQuery)
         {
         }
 

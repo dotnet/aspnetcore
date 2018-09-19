@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace HealthChecksSample
 {
@@ -17,7 +15,7 @@ namespace HealthChecksSample
             // Registers required services for health checks
             services
                 .AddHealthChecks()
-                .AddCheck(new SlowDependencyHealthCheck());
+                .AddCheck<SlowDependencyHealthCheck>("Slow", failureStatus: null, tags: new[] { "ready", });
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
@@ -46,10 +44,13 @@ namespace HealthChecksSample
             // long initialization time (15 seconds).
 
 
-            // The readiness check uses all of the registered health checks (default)
-            app.UseHealthChecks("/health/ready");
+            // The readiness check uses all registered checks with the 'ready' tag.
+            app.UseHealthChecks("/health/ready", new HealthCheckOptions()
+            {
+                Predicate = (check) => check.Tags.Contains("ready"), 
+            });
 
-            // The liveness check uses an 'identity' health check that always returns healthy
+            // The liveness filters out all checks and just returns success
             app.UseHealthChecks("/health/live", new HealthCheckOptions()
             {
                 // Exclude all checks, just return a 200.

@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
 {
     internal static class HealthCheckResponseWriters
     {
-        public static Task WriteMinimalPlaintext(HttpContext httpContext, CompositeHealthCheckResult result)
+        public static Task WriteMinimalPlaintext(HttpContext httpContext, HealthReport result)
         {
             httpContext.Response.ContentType = "text/plain";
             return httpContext.Response.WriteAsync(result.Status.ToString());
