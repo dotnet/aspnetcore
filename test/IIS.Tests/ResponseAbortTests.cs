@@ -51,8 +51,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                         "HTTP/1.1 200 OK",
                         "");
                     await connection.ReceiveHeaders(
-                        "Transfer-Encoding: chunked",
-                        "Server: Microsoft-IIS/10.0");
+                        "Transfer-Encoding: chunked");
 
                     await connection.ReceiveChunk("Abort");
                     bodyReceived.SetResult(true);
