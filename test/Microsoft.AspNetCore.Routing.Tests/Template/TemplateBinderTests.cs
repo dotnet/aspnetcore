@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Encodings.Web;
+using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.AspNetCore.Routing.TestObjects;
@@ -1294,12 +1295,8 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         public void BindValues_ParameterTransformer()
         {
             // Arrange
-            var routeOptions = new RouteOptions();
-            routeOptions.ConstraintMap["slugify"] = typeof(SlugifyParameterTransformer);
-            var parameterPolicyFactory = new DefaultParameterPolicyFactory(
-                Options.Create(routeOptions),
-                new ServiceCollection().BuildServiceProvider());
             var expected = "/ConventionalTransformerRoute/conventional-transformer/Param/my-value";
+
             var template = "ConventionalTransformerRoute/conventional-transformer/Param/{param:length(500):slugify?}";
             var defaults = new RouteValueDictionary(new { controller = "ConventionalTransformer", action = "Param" });
             var ambientValues = new RouteValueDictionary(new { controller = "ConventionalTransformer", action = "Param" });
@@ -1310,7 +1307,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
                 RoutePatternFactory.Parse(template),
                 defaults,
                 requiredKeys: defaults.Keys,
-                parameterPolicyFactory);
+                parameterPolicies: new (string, IParameterPolicy)[] { ("param", new LengthRouteConstraint(500)), ("param", new SlugifyParameterTransformer()), });
 
             // Act
             var result = binder.GetValues(ambientValues, explicitValues);

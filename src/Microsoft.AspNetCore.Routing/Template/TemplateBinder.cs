@@ -20,10 +20,11 @@ namespace Microsoft.AspNetCore.Routing.Template
     {
         private readonly UrlEncoder _urlEncoder;
         private readonly ObjectPool<UriBuildingContext> _pool;
-        private readonly ParameterPolicyFactory _parameterPolicyFactory;
 
+        private readonly (string parameterName, IRouteConstraint constraint)[] _constraints;
         private readonly RouteValueDictionary _defaults;
         private readonly KeyValuePair<string, object>[] _filters;
+        private readonly (string parameterName, IOutboundParameterTransformer transformer)[] _parameterTransformers;
         private readonly RoutePattern _pattern;
         private readonly string[] _requiredKeys;
 
@@ -44,7 +45,7 @@ namespace Microsoft.AspNetCore.Routing.Template
             ObjectPool<UriBuildingContext> pool,
             RouteTemplate template,
             RouteValueDictionary defaults)
-            : this(urlEncoder, pool, template?.ToRoutePattern(), defaults, requiredKeys: null, parameterPolicyFactory: null)
+            : this(urlEncoder, pool, template?.ToRoutePattern(), defaults, requiredKeys: null, parameterPolicies: null)
         {
         }
 
@@ -56,14 +57,16 @@ namespace Microsoft.AspNetCore.Routing.Template
         /// <param name="pattern">The <see cref="RoutePattern"/> to bind values to.</param>
         /// <param name="defaults">The default values for <paramref name="pattern"/>. Optional.</param>
         /// <param name="requiredKeys">Keys used to determine if the ambient values apply. Optional.</param>
-        /// <param name="parameterPolicyFactory">The <see cref="ParameterPolicyFactory"/>.</param>
+        /// <param name="parameterPolicies">
+        /// A list of (<see cref="string"/>, <see cref="IParameterPolicy"/>) pairs to evalute when producing a URI.
+        /// </param>
         public TemplateBinder(
             UrlEncoder urlEncoder,
             ObjectPool<UriBuildingContext> pool,
             RoutePattern pattern,
             RouteValueDictionary defaults,
             IEnumerable<string> requiredKeys,
-            ParameterPolicyFactory parameterPolicyFactory)
+            IEnumerable<(string parameterName, IParameterPolicy policy)> parameterPolicies)
         {
             if (urlEncoder == null)
             {
@@ -84,7 +87,6 @@ namespace Microsoft.AspNetCore.Routing.Template
             _pool = pool;
             _pattern = pattern;
             _defaults = defaults;
-            _parameterPolicyFactory = parameterPolicyFactory;
             _requiredKeys = requiredKeys?.ToArray() ?? Array.Empty<string>();
 
             for (var i = 0; i < _requiredKeys.Length; i++)
@@ -101,13 +103,21 @@ namespace Microsoft.AspNetCore.Routing.Template
             // Any default that doesn't have a corresponding parameter is a 'filter' and if a value
             // is provided for that 'filter' it must match the value in defaults.
             var filters = new RouteValueDictionary(_defaults);
-            foreach (var parameter in _pattern.Parameters)
+            for (var i = 0; i < pattern.Parameters.Count; i++)
             {
-                filters.Remove(parameter.Name);
+                filters.Remove(pattern.Parameters[i].Name);
             }
-
             _filters = filters.ToArray();
-            
+
+            _constraints = parameterPolicies
+                ?.Where(p => p.policy is IRouteConstraint)
+                .Select(p => (p.parameterName, (IRouteConstraint)p.policy))
+                .ToArray() ?? Array.Empty<(string, IRouteConstraint)>();
+            _parameterTransformers = parameterPolicies
+                ?.Where(p => p.policy is IOutboundParameterTransformer)
+                .Select(p => (p.parameterName, (IOutboundParameterTransformer)p.policy))
+                .ToArray() ?? Array.Empty<(string, IOutboundParameterTransformer)>();
+
             _slots = AssignSlots(_pattern, _filters);
         }
 
@@ -351,6 +361,29 @@ namespace Microsoft.AspNetCore.Routing.Template
             };
         }
 
+        // Step 1.5: Process constraints
+        //
+        // Processes the constraints **if** they were passed in to the TemplateBinder constructor.
+        // Returns true on success
+        // Returns false + sets the name/constraint for logging on failure.
+        public bool TryProcessConstraints(HttpContext httpContext, RouteValueDictionary combinedValues, out string parameterName, out IRouteConstraint constraint)
+        {
+            var constraints = _constraints;
+            for (var i = 0; i < constraints.Length; i++)
+            {
+                (parameterName, constraint) = constraints[i];
+
+                if (!constraint.Match(httpContext, NullRouter.Instance, parameterName, combinedValues, RouteDirection.UrlGeneration))
+                {
+                    return false;
+                }
+            }
+
+            parameterName = null;
+            constraint = null;
+            return true;
+        }
+
         // Step 2: If the route is a match generate the appropriate URI
         public string BindValues(RouteValueDictionary acceptedValues)
         {
@@ -398,6 +431,18 @@ namespace Microsoft.AspNetCore.Routing.Template
 
         private bool TryBindValuesCore(UriBuildingContext context, RouteValueDictionary acceptedValues)
         {
+            // If we have any output parameter transformers, allow them a chance to influence the parameter values
+            // before we build the URI.
+            var parameterTransformers = _parameterTransformers;
+            for (var i = 0; i < parameterTransformers.Length; i++)
+            {
+                (var parameterName, var transformer) = parameterTransformers[i];
+                if (acceptedValues.TryGetValue(parameterName, out var value))
+                {
+                    acceptedValues[parameterName] = transformer.TransformOutbound(value);
+                }
+            }
+
             for (var i = 0; i < _pattern.PathSegments.Count; i++)
             {
                 Debug.Assert(context.BufferState == SegmentState.Beginning);
@@ -460,7 +505,7 @@ namespace Microsoft.AspNetCore.Routing.Template
                             // Example: template = {id}.{format?}. parameters: id=5
                             // In this case after we have generated "5.", we wont find any value 
                             // for format, so we remove '.' and generate 5.
-                            if (!context.Accept(converted, parameterPart.EncodeSlashes, GetParameterTransformer(parameterPart)))
+                            if (!context.Accept(converted, parameterPart.EncodeSlashes))
                             {
                                 if (j != 0 && parameterPart.IsOptional && (separatorPart = segment.Parts[j - 1] as RoutePatternSeparatorPart) != null)
                                 {
@@ -503,26 +548,6 @@ namespace Microsoft.AspNetCore.Routing.Template
             }
 
             return true;
-        }
-
-        private IParameterTransformer GetParameterTransformer(RoutePatternParameterPart parameterPart)
-        {
-            if (_parameterPolicyFactory == null)
-            {
-                return null;
-            }
-
-            for (var i = 0; i < parameterPart.ParameterPolicies.Count; i++)
-            {
-                // Use the first parameter transformer
-                var parameterPolicy = _parameterPolicyFactory.Create(parameterPart, parameterPart.ParameterPolicies[i]);
-                if (parameterPolicy is IParameterTransformer parameterTransformer)
-                {
-                    return parameterTransformer;
-                }
-            }
-
-            return null;
         }
 
         private bool AddQueryKeyValueToContext(UriBuildingContext context, string key, object value, bool wroteFirst)

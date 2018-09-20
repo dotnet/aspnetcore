@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Routing
         public static RouteEndpoint CreateRouteEndpoint(
             string template,
             object defaults = null,
-            object constraints = null,
+            object policies = null,
             object requiredValues = null,
             int order = 0,
             string displayName = null,
@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Routing
 
             return new RouteEndpoint(
                 TestConstants.EmptyRequestDelegate,
-                RoutePatternFactory.Parse(template, defaults, constraints),
+                RoutePatternFactory.Parse(template, defaults, policies),
                 order,
                 new EndpointMetadataCollection(d),
                 displayName);
