@@ -5,6 +5,7 @@ using WebAssembly.JSInterop;
 using System;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Net.Http;
 
 namespace MonoSanityClient
 {
@@ -28,6 +29,11 @@ namespace MonoSanityClient
         public static void TriggerException(string message)
         {
             throw new InvalidOperationException(message);
+        }
+
+        public static void InvokeWipedMethod()
+        {
+            new HttpClientHandler();
         }
 
         public static string EvaluateJavaScript(string expression)

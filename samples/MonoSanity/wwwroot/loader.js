@@ -80,6 +80,7 @@
       'mscorlib',
       'System',
       'System.Core',
+      'System.Net.Http',
     ];
 
     var allAssemblyUrls = loadAssemblyUrls

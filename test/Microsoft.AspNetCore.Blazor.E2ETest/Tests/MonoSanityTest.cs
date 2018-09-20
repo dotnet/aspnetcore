@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Blazor.E2ETest.Infrastructure;
@@ -66,6 +66,14 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
             Browser.FindElement(By.CssSelector("#triggerException button")).Click();
 
             Assert.Contains("Hello from test", GetValue(Browser, "triggerExceptionMessageStackTrace"));
+        }
+
+        [Fact]
+        public void ProvidesDiagnosticIfInvokingWipedMethod()
+        {
+            Browser.FindElement(By.CssSelector("#invokeWipedMethod button")).Click();
+
+            Assert.Contains("System.NotImplementedException: Cannot invoke method because it was wiped. See stack trace for details.", GetValue(Browser, "invokeWipedMethodStackTrace"));
         }
 
         [Fact]

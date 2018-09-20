@@ -43,6 +43,12 @@ namespace Microsoft.AspNetCore.Blazor.BuildTools.Core.ILWipe
                 }
             }
 
+            // Also resolve referenced assemblies in the same directory
+            if (moduleDefinition.AssemblyResolver is DefaultAssemblyResolver resolver)
+            {
+                resolver.AddSearchDirectory(Path.GetDirectoryName(inputPath));
+            }
+
             moduleDefinition.Write(outputPath);
         }
     }

@@ -23,7 +23,8 @@ namespace Microsoft.AspNetCore.Blazor.BuildTools.Core.ILWipe
             //     }
             // }
             var ilWipeHelpersType = new TypeDefinition("ILWipe", "ILWipeHelpers",
-                TypeAttributes.NotPublic | TypeAttributes.Abstract | TypeAttributes.Sealed | TypeAttributes.BeforeFieldInit);
+                TypeAttributes.NotPublic | TypeAttributes.Class | TypeAttributes.Abstract | TypeAttributes.Sealed | TypeAttributes.BeforeFieldInit,
+                moduleDefinition.TypeSystem.Object);
             moduleDefinition.Types.Add(ilWipeHelpersType);
 
             var methodAttributes =
@@ -38,6 +39,7 @@ namespace Microsoft.AspNetCore.Blazor.BuildTools.Core.ILWipe
 
             var notImplExceptionType = ImportEquivalentTypeFromMscorlib(moduleDefinition, typeof(NotImplementedException));
             var notImplExceptionCtor = new MethodReference(".ctor", moduleDefinition.TypeSystem.Void, notImplExceptionType);
+            notImplExceptionCtor.HasThis = true;
             notImplExceptionCtor.Parameters.Add(new ParameterDefinition(moduleDefinition.TypeSystem.String));
 
             var il = createMethodWipedExceptionMethod.Body.GetILProcessor();
