@@ -4,8 +4,15 @@
     This target is explicitly imported by Razor SDK.
   -->
 
-  <UsingTask TaskName="Microsoft.AspNetCore.Razor.Tasks.RazorGenerate" AssemblyFile="$(RazorSdkBuildTasksAssembly)" />
-  <UsingTask TaskName="Microsoft.AspNetCore.Razor.Tasks.RazorTagHelper" AssemblyFile="$(RazorSdkBuildTasksAssembly)" />
+  <UsingTask
+    TaskName="Microsoft.AspNetCore.Razor.Tasks.RazorGenerate"
+    AssemblyFile="$(RazorSdkBuildTasksAssembly)"
+    Condition="'$(RazorSdkBuildTasksAssembly)' != ''" />
+
+  <UsingTask
+    TaskName="Microsoft.AspNetCore.Razor.Tasks.RazorTagHelper"
+    AssemblyFile="$(RazorSdkBuildTasksAssembly)"
+    Condition="'$(RazorSdkBuildTasksAssembly)' != ''" />
 
   <!-- 
     Consider these properties to be private to this targets file. The main Razor SDK should define all of the properties
@@ -51,7 +58,7 @@
 
   <Target
     Name="ResolveTagHelperRazorGenerateInputs"
-    DependsOnTargets="Compile"
+    DependsOnTargets="_EnsureRazorTasksAssemblyDefined;Compile"
     Inputs="$(MSBuildAllProjects);@(RazorReferencePath)"
     Outputs="$(_RazorTagHelperInputCache)"
     Condition="'@(RazorGenerateWithTargetPath)' != ''">
@@ -100,6 +107,7 @@
 
   <PropertyGroup>
     <RazorCoreGenerateDependsOn>
+      _EnsureRazorTasksAssemblyDefined;
       _HashRazorGenerateInputs;
       _ResolveRazorGenerateOutputs;
     </RazorCoreGenerateDependsOn>
@@ -147,6 +155,12 @@
     <ItemGroup>
       <RazorCompile Include="@(_RazorGenerateOutput)" />
     </ItemGroup>
+  </Target>
+
+  <Target Name="_EnsureRazorTasksAssemblyDefined">
+    <Error 
+      Text="Assembly location for Razor SDK Tasks was not specified. The most likely cause is an older incompatible version of Microsoft.NET.Sdk.Razor, or Microsoft.NET.Sdk.Web used by this project. Please target a newer version of the .NET Core SDK." 
+      Condition="'$(RazorSdkBuildTasksAssembly)' == ''" />
   </Target>
 
 </Project>
