@@ -71,5 +71,16 @@ namespace TestSite
         {
             await context.Response.WriteAsync(_waitingRequestCount.ToString());
         }
+
+        private static bool _applicationInitializationCalled;
+
+        public async Task ApplicationInitialization(HttpContext context)
+        {
+            if (context.Request.Query["IISInit"] == "true")
+            {
+                _applicationInitializationCalled = true;
+            }
+            await context.Response.WriteAsync(_applicationInitializationCalled.ToString());
+        }
     }
 }

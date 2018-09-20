@@ -97,6 +97,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             var deploymentResult = await DeployAsync(deploymentParameters);
             await deploymentResult.AssertStarts();
 
+            StopServer();
             // Verify that in this scenario where.exe was invoked only once by shim and request handler uses cached value
             Assert.Equal(1, TestSink.Writes.Count(w => w.Message.Contains("Invoking where.exe to find dotnet.exe")));
         }
@@ -143,7 +144,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
 
             StopServer();
-            
+
             EventLogHelpers.VerifyEventLogEvents(deploymentResult,
                 EventLogHelpers.InProcessFailedToStart(deploymentResult, "CLR worker thread exited prematurely"),
                 EventLogHelpers.InProcessThreadException(deploymentResult, ".*?Application is running inside IIS process but is not configured to use IIS server"));
@@ -154,7 +155,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         {
             var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.InProcessTestSite, publish: true);
             deploymentParameters.TransformArguments((a, _) => $"{a} Throw");
-            
+
             var deploymentResult = await DeployAsync(deploymentParameters);
 
             var response = await deploymentResult.HttpClient.GetAsync("/");
@@ -166,7 +167,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 EventLogHelpers.InProcessFailedToStart(deploymentResult, "CLR worker thread exited prematurely"),
                 EventLogHelpers.InProcessThreadException(deploymentResult, ", exception code = '0xe0434352'"));
         }
-        
+
         [ConditionalFact]
         public async Task LogsUnexpectedThreadExitError()
         {
@@ -193,7 +194,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 WebConfigHelpers.AddOrModifyAspNetCoreSection("startupTimeLimit", "1"));
 
             var deploymentResult = await DeployAsync(deploymentParameters);
-            
+
             var response = await deploymentResult.HttpClient.GetAsync("/");
             Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
 
@@ -213,7 +214,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 WebConfigHelpers.AddOrModifyAspNetCoreSection("shutdownTimeLimit", "1"));
 
             var deploymentResult = await DeployAsync(deploymentParameters);
-            
+
             Assert.Equal("Hello World", await deploymentResult.HttpClient.GetStringAsync("/HelloWorld"));
 
             StopServer();

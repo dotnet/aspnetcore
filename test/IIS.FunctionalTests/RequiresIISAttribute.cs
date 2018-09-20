@@ -22,6 +22,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         private static readonly bool _windowsAuthAvailable;
         private static readonly bool _poolEnvironmentVariablesAvailable;
         private static readonly bool _dynamicCompressionAvailable;
+        private static readonly bool _applicationInitializationModule;
 
         static RequiresIISAttribute()
         {
@@ -84,6 +85,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             _dynamicCompressionAvailable = File.Exists(Path.Combine(Environment.SystemDirectory, "inetsrv", "compdyn.dll"));
 
+            _applicationInitializationModule = File.Exists(Path.Combine(Environment.SystemDirectory, "inetsrv", "warmup.dll"));
+
             var iisRegistryKey = Registry.LocalMachine.OpenSubKey(@"Software\Microsoft\InetStp", writable: false);
             if (iisRegistryKey == null)
             {
@@ -143,6 +146,15 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 if (!_dynamicCompressionAvailable)
                 {
                     SkipReason += "The machine does not have IIS dynamic compression installed.";
+                }
+            }
+
+            if (capabilities.HasFlag(IISCapability.ApplicationInitialization))
+            {
+                IsMet &= _dynamicCompressionAvailable;
+                if (!_dynamicCompressionAvailable)
+                {
+                    SkipReason += "The machine does not have IIS ApplicationInitialization installed.";
                 }
             }
         }

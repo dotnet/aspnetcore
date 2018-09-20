@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             var entries = GetEntries(deploymentResult);
             AssertSingleEntry(expectedRegexMatchString, entries);
         }
-        
+
         public static void VerifyEventLogEvents(IISDeploymentResult deploymentResult, params string[] expectedRegexMatchString)
         {
             Assert.True(deploymentResult.HostProcess.HasExited);
@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                     entries.Remove(matchedEntry);
                 }
             }
-            
+
             Assert.True(0 == entries.Count, $"Some entries were not matched by any regex {FormatEntries(entries)}");
         }
 
@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 {
                     continue;
                 }
-                
+
                 // ReplacementStings == EventData collection in EventLog
                 // This is unaffected if event providers are not registered correctly
                 if (eventLogEntry.Source == AncmVersionToMatch(deploymentResult) &&
@@ -96,10 +96,26 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 (deploymentResult.DeploymentParameters.AncmVersion == AncmVersion.AspNetCoreModuleV2 ? " V2" : "");
         }
 
-        
+        public static string Started(IISDeploymentResult deploymentResult)
+        {
+            if (deploymentResult.DeploymentParameters.HostingModel == HostingModel.InProcess)
+            {
+                return InProcessStarted(deploymentResult);
+            }
+            else
+            {
+                return OutOfProcessStarted(deploymentResult);
+            }
+        }
+
         public static string InProcessStarted(IISDeploymentResult deploymentResult)
         {
             return $"Application '{EscapedContentRoot(deploymentResult)}' started the coreclr in-process successfully";
+        }
+
+        public static string OutOfProcessStarted(IISDeploymentResult deploymentResult)
+        {
+            return $"Application '/LM/W3SVC/1/ROOT' started process '\\d+' successfully and process '\\d+' is listening on port '\\d+'.";
         }
 
         public static string InProcessFailedToStart(IISDeploymentResult deploymentResult, string reason)
