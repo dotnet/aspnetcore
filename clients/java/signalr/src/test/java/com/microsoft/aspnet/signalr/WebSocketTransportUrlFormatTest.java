@@ -12,7 +12,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-public class WebSocketTransportUrlFormatTest {
+class WebSocketTransportUrlFormatTest {
     private static Stream<Arguments> protocols() {
         return Stream.of(
                 Arguments.of("http://example.com", "ws://example.com"),
