@@ -184,6 +184,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         private void AssertLoadedVersion(string version)
         {
+            StopServer();
             Assert.Contains(TestSink.Writes, context => context.Message.Contains(version + @"\aspnetcorev2_outofprocess.dll"));
         }
 
