@@ -74,5 +74,12 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             // ReadAsStringAsync returns empty string for empty results
             Assert.Equal(body ?? string.Empty, await response.Content.ReadAsStringAsync());
         }
+
+        [ConditionalFact]
+        public async Task ServerHeaderIsOverriden()
+        {
+            var response = await _fixture.Client.GetAsync("OverrideServer");
+            Assert.Equal("MyServer/7.8", response.Headers.Server.Single().Product.ToString());
+        }
     }
 }
