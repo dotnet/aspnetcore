@@ -15,6 +15,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         private int _headerTableSize = (int)Http2PeerSettings.DefaultHeaderTableSize;
         private int _maxFrameSize = (int)Http2PeerSettings.DefaultMaxFrameSize;
         private int _maxRequestHeaderFieldSize = 8192;
+        private int _initialConnectionWindowSize = 1024 * 128; // Larger than the default 64kb, and larger than any one single stream.
+        private int _initialStreamWindowSize = 1024 * 96; // Larger than the default 64kb
 
         /// <summary>
         /// Limits the number of concurrent request streams per HTTP/2 connection. Excess streams will be refused.
@@ -93,6 +95,50 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                 }
 
                 _maxRequestHeaderFieldSize = value;
+            }
+        }
+
+        /// <summary>
+        /// Indicates how much request body data the server is willing to receive and buffer at a time aggregated across all
+        /// requests (streams) per connection. Note requests are also limited by <see cref="InitialStreamWindowSize"/>
+        /// <para>
+        /// Value must be greater than or equal to 65,535 and less than 2^31, defaults to 128 kb.
+        /// </para>
+        /// </summary>
+        public int InitialConnectionWindowSize
+        {
+            get => _initialConnectionWindowSize;
+            set
+            {
+                if (value < Http2PeerSettings.DefaultInitialWindowSize || value > Http2PeerSettings.MaxWindowSize)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value), value,
+                        CoreStrings.FormatArgumentOutOfRange(Http2PeerSettings.DefaultInitialWindowSize, Http2PeerSettings.MaxWindowSize));
+                }
+
+                _initialConnectionWindowSize = value;
+            }
+        }
+
+        /// <summary>
+        /// Indicates how much request body data the server is willing to receive and buffer at a time per stream.
+        /// Note connections are also limited by <see cref="InitialConnectionWindowSize"/>
+        /// <para>
+        /// Value must be greater than or equal to 65,535 and less than 2^31, defaults to 96 kb.
+        /// </para>
+        /// </summary>
+        public int InitialStreamWindowSize
+        {
+            get => _initialStreamWindowSize;
+            set
+            {
+                if (value < Http2PeerSettings.DefaultInitialWindowSize || value > Http2PeerSettings.MaxWindowSize)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value), value,
+                        CoreStrings.FormatArgumentOutOfRange(Http2PeerSettings.DefaultInitialWindowSize, Http2PeerSettings.MaxWindowSize));
+                }
+
+                _initialStreamWindowSize = value;
             }
         }
     }
