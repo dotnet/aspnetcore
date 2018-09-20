@@ -225,7 +225,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             return ReplaceTokens(template, values, routeTokenTransformer: null);
         }
 
-        public static string ReplaceTokens(string template, IDictionary<string, string> values, IParameterTransformer routeTokenTransformer)
+        public static string ReplaceTokens(string template, IDictionary<string, string> values, IOutboundParameterTransformer routeTokenTransformer)
         {
             var builder = new StringBuilder();
             var state = TemplateParserState.Plaintext;
@@ -379,7 +379,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 
                             if (routeTokenTransformer != null)
                             {
-                                value = routeTokenTransformer.Transform(value);
+                                value = routeTokenTransformer.TransformOutbound(value);
                             }
 
                             builder.Append(value);

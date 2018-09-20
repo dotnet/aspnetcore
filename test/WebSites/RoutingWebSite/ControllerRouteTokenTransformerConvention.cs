@@ -11,9 +11,9 @@ namespace RoutingWebSite
     public class ControllerRouteTokenTransformerConvention : IApplicationModelConvention
     {
         private readonly Type _controllerType;
-        private readonly IParameterTransformer _parameterTransformer;
+        private readonly IOutboundParameterTransformer _parameterTransformer;
 
-        public ControllerRouteTokenTransformerConvention(Type controllerType, IParameterTransformer parameterTransformer)
+        public ControllerRouteTokenTransformerConvention(Type controllerType, IOutboundParameterTransformer parameterTransformer)
         {
             if (parameterTransformer == null)
             {
@@ -30,7 +30,7 @@ namespace RoutingWebSite
             {
                 foreach (var action in controller.Actions)
                 {
-                    action.Properties[typeof(IParameterTransformer)] = _parameterTransformer;
+                    action.Properties[typeof(IOutboundParameterTransformer)] = _parameterTransformer;
                 }
             }
         }
