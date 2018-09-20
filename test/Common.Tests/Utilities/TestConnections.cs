@@ -62,18 +62,15 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
 
         public async Task Send(params string[] lines)
         {
-            var text = string.Join("\r\n", lines);
-            var writer = new StreamWriter(_stream, Encoding.GetEncoding("iso-8859-1"));
-            for (var index = 0; index < text.Length; index++)
+            var bytes = Encoding.ASCII.GetBytes(string.Join("\r\n", lines));
+
+            for (var index = 0; index < bytes.Length; index++)
             {
-                var ch = text[index];
-                writer.Write(ch);
-                await writer.FlushAsync().ConfigureAwait(false);
+                await _stream.WriteAsync(bytes, index, 1).ConfigureAwait(false);
+                await _stream.FlushAsync().ConfigureAwait(false);
                 // Re-add delay to help find socket input consumption bugs more consistently
                 //await Task.Delay(TimeSpan.FromMilliseconds(5));
             }
-            await writer.FlushAsync().ConfigureAwait(false);
-            await _stream.FlushAsync().ConfigureAwait(false);
         }
 
         public async Task<int> ReadCharAsync()
