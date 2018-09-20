@@ -155,6 +155,11 @@ namespace Microsoft.AspNetCore.ResponseCompression
                 return false;
             }
 
+            if (context.Response.Headers.ContainsKey(HeaderNames.ContentEncoding))
+            {
+                return false;
+            }
+
             var mimeType = context.Response.ContentType;
 
             if (string.IsNullOrEmpty(mimeType))

@@ -321,8 +321,9 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
             CheckResponseNotCompressed(response, expectedBodyLength: 50, sendVaryHeader: false);
         }
 
+
         [Fact]
-        public async Task Response_WithContentEncodingAlreadySet_Stacked()
+        public async Task Response_WithContentEncodingAlreadySet_NotReCompressed()
         {
             var otherContentEncoding = "something";
 
@@ -332,8 +333,8 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
             });
 
             Assert.True(response.Content.Headers.ContentEncoding.Contains(otherContentEncoding));
-            Assert.True(response.Content.Headers.ContentEncoding.Contains("gzip"));
-            Assert.Equal(24, response.Content.Headers.ContentLength);
+            Assert.False(response.Content.Headers.ContentEncoding.Contains("gzip"));
+            Assert.Equal(50, response.Content.Headers.ContentLength);
         }
 
         [Theory]
