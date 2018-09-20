@@ -9,7 +9,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.Test;
 
-public class WebSocketTransportTest {
+class WebSocketTransportTest {
     @Test
     public void WebsocketThrowsIfItCantConnect() throws Exception {
         Transport transport = new WebSocketTransport("www.notarealurl12345.fake", new NullLogger());

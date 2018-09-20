@@ -3,7 +3,7 @@
 
 package com.microsoft.aspnet.signalr;
 
-public enum HubMessageType {
+enum HubMessageType {
     INVOCATION(1),
     STREAM_ITEM(2),
     COMPLETION(3),
