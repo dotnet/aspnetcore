@@ -138,7 +138,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                                     case TypePropertyName:
                                         // a handshake response does not have a type
                                         // check the incoming message was not any other type of message
-                                        throw new InvalidDataException("Handshake response should not have a 'type' value.");
+                                        throw new InvalidDataException("Expected a handshake response from the server.");
                                     case ErrorPropertyName:
                                         error = JsonUtils.ReadAsString(reader, ErrorPropertyName);
                                         break;

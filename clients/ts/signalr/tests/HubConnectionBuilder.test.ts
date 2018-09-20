@@ -65,7 +65,10 @@ describe("HubConnectionBuilder", () => {
 
             // Start the connection
             const closed = makeClosedPromise(connection);
-            await connection.start();
+
+            // start waits for handshake before returning, we don't care in this test
+            // tslint:disable-next-line:no-floating-promises
+            connection.start();
 
             const pollRequest = await pollSent.promise;
             expect(pollRequest.url).toMatch(/http:\/\/example.com\?id=abc123.*/);
@@ -109,7 +112,10 @@ describe("HubConnectionBuilder", () => {
 
             // Start the connection
             const closed = makeClosedPromise(connection);
-            await connection.start();
+
+            // start waits for handshake before returning, we don't care in this test
+            // tslint:disable-next-line:no-floating-promises
+            connection.start();
 
             const negotiateRequest = await negotiateReceived.promise;
             expect(negotiateRequest.content).toBe(`{"protocol":"${protocol.name}","version":1}\x1E`);

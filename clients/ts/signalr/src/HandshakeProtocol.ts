@@ -55,7 +55,11 @@ export class HandshakeProtocol {
 
         // At this point we should have just the single handshake message
         const messages = TextMessageFormat.parse(messageData);
-        responseMessage = JSON.parse(messages[0]);
+        const response = JSON.parse(messages[0]);
+        if (response.type) {
+            throw new Error("Expected a handshake response from the server.");
+        }
+        responseMessage = response;
 
         // multiple messages could have arrived with handshake
         // return additional data to be parsed as usual, or null if all parsed

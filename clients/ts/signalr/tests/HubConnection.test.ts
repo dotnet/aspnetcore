@@ -23,7 +23,7 @@ registerUnhandledRejectionHandler();
 describe("HubConnection", () => {
 
     describe("start", () => {
-        it("sends negotiation message", async () => {
+        it("sends handshake message", async () => {
             await VerifyLogger.run(async (logger) => {
                 const connection = new TestConnection();
                 const hubConnection = createHubConnection(connection, logger);
@@ -163,12 +163,16 @@ describe("HubConnection", () => {
                     protocolCalled = true;
                 };
 
-                const connection = new TestConnection();
+                const connection = new TestConnection(false);
                 const hubConnection = createHubConnection(connection, logger, mockProtocol);
                 try {
+                    let startCompleted = false;
+                    const startPromise = hubConnection.start().then(() => startCompleted = true);
                     const data = "{}" + TextMessageFormat.RecordSeparator;
+                    expect(startCompleted).toBe(false);
 
                     connection.receiveText(data);
+                    await startPromise;
 
                     // message only contained handshake response
                     expect(protocolCalled).toEqual(false);
@@ -187,13 +191,18 @@ describe("HubConnection", () => {
                     protocolCalled = true;
                 };
 
-                const connection = new TestConnection();
+                const connection = new TestConnection(false);
                 const hubConnection = createHubConnection(connection, logger, mockProtocol);
                 try {
+                    let startCompleted = false;
+                    const startPromise = hubConnection.start().then(() => startCompleted = true);
+                    expect(startCompleted).toBe(false);
+
                     // handshake response + message separator
                     const data = [0x7b, 0x7d, 0x1e];
 
                     connection.receiveBinary(new Uint8Array(data).buffer);
+                    await startPromise;
 
                     // message only contained handshake response
                     expect(protocolCalled).toEqual(false);
@@ -210,9 +219,13 @@ describe("HubConnection", () => {
                 const mockProtocol = new TestProtocol(TransferFormat.Binary);
                 mockProtocol.onreceive = (d) => receivedProcotolData = d as ArrayBuffer;
 
-                const connection = new TestConnection();
+                const connection = new TestConnection(false);
                 const hubConnection = createHubConnection(connection, logger, mockProtocol);
                 try {
+                    let startCompleted = false;
+                    const startPromise = hubConnection.start().then(() => startCompleted = true);
+                    expect(startCompleted).toBe(false);
+
                     // handshake response + message separator + message pack message
                     const data = [
                         0x7b, 0x7d, 0x1e, 0x65, 0x95, 0x03, 0x80, 0xa1, 0x30, 0x01, 0xd9, 0x5d, 0x54, 0x68, 0x65, 0x20, 0x63, 0x6c,
@@ -224,6 +237,7 @@ describe("HubConnection", () => {
                     ];
 
                     connection.receiveBinary(new Uint8Array(data).buffer);
+                    await startPromise;
 
                     // left over data is the message pack message
                     expect(receivedProcotolData!.byteLength).toEqual(102);
@@ -240,12 +254,17 @@ describe("HubConnection", () => {
                 const mockProtocol = new TestProtocol(TransferFormat.Text);
                 mockProtocol.onreceive = (d) => receivedProcotolData = d as string;
 
-                const connection = new TestConnection();
+                const connection = new TestConnection(false);
                 const hubConnection = createHubConnection(connection, logger, mockProtocol);
                 try {
+                    let startCompleted = false;
+                    const startPromise = hubConnection.start().then(() => startCompleted = true);
+                    expect(startCompleted).toBe(false);
+
                     const data = "{}" + TextMessageFormat.RecordSeparator + "{\"type\":6}" + TextMessageFormat.RecordSeparator;
 
                     connection.receiveText(data);
+                    await startPromise;
 
                     expect(receivedProcotolData).toEqual("{\"type\":6}" + TextMessageFormat.RecordSeparator);
                 } finally {
@@ -259,7 +278,7 @@ describe("HubConnection", () => {
                 const connection = new TestConnection();
                 const hubConnection = createHubConnection(connection, logger);
                 try {
-                    connection.receiveHandshakeResponse();
+                    await hubConnection.start();
 
                     const invokePromise = hubConnection.invoke("testMethod", "arg", 42);
 
@@ -277,7 +296,7 @@ describe("HubConnection", () => {
                 const connection = new TestConnection();
                 const hubConnection = createHubConnection(connection, logger);
                 try {
-                    connection.receiveHandshakeResponse();
+                    await hubConnection.start();
 
                     const invokePromise = hubConnection.invoke("testMethod", "arg", 42);
 
@@ -296,7 +315,7 @@ describe("HubConnection", () => {
 
                 const hubConnection = createHubConnection(connection, logger);
 
-                connection.receiveHandshakeResponse();
+                await hubConnection.start();
 
                 const invokePromise = hubConnection.invoke("testMethod");
                 await hubConnection.stop();
@@ -311,7 +330,7 @@ describe("HubConnection", () => {
 
                 const hubConnection = createHubConnection(connection, logger);
                 try {
-                    connection.receiveHandshakeResponse();
+                    await hubConnection.start();
 
                     const invokePromise = hubConnection.invoke("testMethod");
                     // Typically this would be called by the transport
@@ -340,7 +359,7 @@ describe("HubConnection", () => {
                 const connection = new TestConnection();
                 const hubConnection = createHubConnection(connection, wrappingLogger);
                 try {
-                    connection.receiveHandshakeResponse();
+                    await hubConnection.start();
 
                     connection.receive({
                         arguments: ["test"],
@@ -370,7 +389,7 @@ describe("HubConnection", () => {
                 const connection = new TestConnection();
                 const hubConnection = createHubConnection(connection, wrappingLogger);
                 try {
-                    connection.receiveHandshakeResponse();
+                    await hubConnection.start();
 
                     const handler = () => { };
                     hubConnection.on("message", handler);
@@ -396,7 +415,7 @@ describe("HubConnection", () => {
                 const connection = new TestConnection();
                 const hubConnection = createHubConnection(connection, logger);
                 try {
-                    connection.receiveHandshakeResponse();
+                    await hubConnection.start();
 
                     let count = 0;
                     const handler = () => { count++; };
@@ -432,7 +451,7 @@ describe("HubConnection", () => {
                 const connection = new TestConnection();
                 const hubConnection = createHubConnection(connection, logger);
                 try {
-                    connection.receiveHandshakeResponse();
+                    await hubConnection.start();
 
                     let count = 0;
                     const handler = () => { count++; };
@@ -468,7 +487,7 @@ describe("HubConnection", () => {
                 const connection = new TestConnection();
                 const hubConnection = createHubConnection(connection, logger);
                 try {
-                    connection.receiveHandshakeResponse();
+                    await hubConnection.start();
 
                     let count = 0;
                     const handler = () => { count++; };
@@ -494,7 +513,7 @@ describe("HubConnection", () => {
                 const connection = new TestConnection();
                 const hubConnection = createHubConnection(connection, logger);
                 try {
-                    connection.receiveHandshakeResponse();
+                    await hubConnection.start();
 
                     let value = "";
                     hubConnection.on("message", (v) => value = v);
@@ -515,13 +534,22 @@ describe("HubConnection", () => {
 
         it("stop on handshake error", async () => {
             await VerifyLogger.run(async (logger) => {
-                const connection = new TestConnection();
+                const connection = new TestConnection(false);
                 const hubConnection = createHubConnection(connection, logger);
                 try {
                     let closeError: Error | undefined;
                     hubConnection.onclose((e) => closeError = e);
 
-                    connection.receiveHandshakeResponse("Error!");
+                    let startCompleted = false;
+                    const startPromise = hubConnection.start().then(() => startCompleted = true);
+                    expect(startCompleted).toBe(false);
+                    try {
+                        connection.receiveHandshakeResponse("Error!");
+                    } catch {
+                    }
+                    await expect(startPromise)
+                        .rejects
+                        .toThrow("Server returned handshake error: Error!");
 
                     expect(closeError!.message).toEqual("Server returned handshake error: Error!");
                 } finally {
@@ -543,7 +571,7 @@ describe("HubConnection", () => {
                         closeError = e;
                     });
 
-                    connection.receiveHandshakeResponse();
+                    await hubConnection.start();
 
                     connection.receive({
                         type: MessageType.Close,
@@ -569,7 +597,7 @@ describe("HubConnection", () => {
                         closeError = e;
                     });
 
-                    connection.receiveHandshakeResponse();
+                    await hubConnection.start();
 
                     connection.receive({
                         error: "Error!",
@@ -589,7 +617,7 @@ describe("HubConnection", () => {
                 const connection = new TestConnection();
                 const hubConnection = createHubConnection(connection, logger);
                 try {
-                    connection.receiveHandshakeResponse();
+                    await hubConnection.start();
 
                     let numInvocations1 = 0;
                     let numInvocations2 = 0;
@@ -616,7 +644,7 @@ describe("HubConnection", () => {
                 const connection = new TestConnection();
                 const hubConnection = createHubConnection(connection, logger);
                 try {
-                    connection.receiveHandshakeResponse();
+                    await hubConnection.start();
 
                     let numInvocations = 0;
                     const callback = () => numInvocations++;
@@ -674,7 +702,7 @@ describe("HubConnection", () => {
                 const connection = new TestConnection();
                 const hubConnection = createHubConnection(connection, wrappingLogger);
                 try {
-                    connection.receiveHandshakeResponse();
+                    await hubConnection.start();
 
                     hubConnection.on(null!, undefined!);
                     hubConnection.on(undefined!, null!);
@@ -714,11 +742,13 @@ describe("HubConnection", () => {
 
                 const hubConnection = createHubConnection(connection, logger);
                 try {
+                    await hubConnection.start();
+
                     hubConnection.stream("testStream", "arg", 42);
 
-                    // Verify the message is sent
-                    expect(connection.sentData.length).toBe(1);
-                    expect(JSON.parse(connection.sentData[0])).toEqual({
+                    // Verify the message is sent (+ handshake)
+                    expect(connection.sentData.length).toBe(2);
+                    expect(JSON.parse(connection.sentData[1])).toEqual({
                         arguments: [
                             "arg",
                             42,
@@ -741,7 +771,7 @@ describe("HubConnection", () => {
                 const connection = new TestConnection();
                 const hubConnection = createHubConnection(connection, logger);
                 try {
-                    connection.receiveHandshakeResponse();
+                    await hubConnection.start();
 
                     const observer = new TestObserver();
                     hubConnection.stream<any>("testMethod", "arg", 42)
@@ -761,7 +791,7 @@ describe("HubConnection", () => {
                 const connection = new TestConnection();
                 const hubConnection = createHubConnection(connection, logger);
                 try {
-                    connection.receiveHandshakeResponse();
+                    await hubConnection.start();
 
                     const observer = new TestObserver();
                     hubConnection.stream<any>("testMethod", "arg", 42)
@@ -782,6 +812,8 @@ describe("HubConnection", () => {
 
                 const hubConnection = createHubConnection(connection, logger);
                 try {
+                    await hubConnection.start();
+
                     const observer = new TestObserver();
                     hubConnection.stream<any>("testMethod")
                         .subscribe(observer);
@@ -800,6 +832,8 @@ describe("HubConnection", () => {
 
                 const hubConnection = createHubConnection(connection, logger);
                 try {
+                    await hubConnection.start();
+
                     const observer = new TestObserver();
                     hubConnection.stream<any>("testMethod")
                         .subscribe(observer);
@@ -819,7 +853,7 @@ describe("HubConnection", () => {
                 const connection = new TestConnection();
                 const hubConnection = createHubConnection(connection, logger);
                 try {
-                    connection.receiveHandshakeResponse();
+                    await hubConnection.start();
 
                     const observer = new TestObserver();
                     hubConnection.stream<any>("testMethod")
@@ -848,6 +882,7 @@ describe("HubConnection", () => {
 
                 const hubConnection = createHubConnection(connection, logger);
                 try {
+                    await hubConnection.start();
                     hubConnection.stream("testMethod").subscribe(NullSubscriber.instance);
 
                     // Typically this would be called by the transport
@@ -865,6 +900,7 @@ describe("HubConnection", () => {
 
                 const hubConnection = createHubConnection(connection, logger);
                 try {
+                    await hubConnection.start();
                     hubConnection.stream("testMethod").subscribe(NullSubscriber.instance);
 
                     // Send completion to trigger observer.complete()
@@ -881,7 +917,7 @@ describe("HubConnection", () => {
                 const connection = new TestConnection();
                 const hubConnection = createHubConnection(connection, logger);
                 try {
-                    connection.receiveHandshakeResponse();
+                    await hubConnection.start();
 
                     const observer = new TestObserver();
                     const subscription = hubConnection.stream("testMethod")
@@ -896,9 +932,9 @@ describe("HubConnection", () => {
                     // Observer should no longer receive messages
                     expect(observer.itemsReceived).toEqual([1]);
 
-                    // Verify the cancel is sent
-                    expect(connection.sentData.length).toBe(2);
-                    expect(JSON.parse(connection.sentData[1])).toEqual({
+                    // Verify the cancel is sent (+ handshake)
+                    expect(connection.sentData.length).toBe(3);
+                    expect(JSON.parse(connection.sentData[2])).toEqual({
                         invocationId: connection.lastInvocationId,
                         type: MessageType.CancelInvocation,
                     });
@@ -986,6 +1022,7 @@ describe("HubConnection", () => {
                 const connection = new TestConnection();
                 const hubConnection = createHubConnection(connection, logger);
                 try {
+                    await hubConnection.start();
                     const invokePromise = hubConnection.invoke("testMethod", "arg", 42);
 
                     connection.receive({ type: MessageType.Ping });
@@ -1007,37 +1044,6 @@ describe("HubConnection", () => {
 
                     const p = new PromiseSource<Error>();
                     hubConnection.onclose((e) => p.resolve(e));
-
-                    await hubConnection.start();
-
-                    for (let i = 0; i < 6; i++) {
-                        await pingAndWait(connection);
-                    }
-
-                    await connection.stop();
-
-                    const error = await p.promise;
-
-                    expect(error).toBeUndefined();
-                } finally {
-                    await hubConnection.stop();
-                }
-            });
-        });
-
-        it("does not timeout if message was received before HubConnection.start", async () => {
-            await VerifyLogger.run(async (logger) => {
-                const connection = new TestConnection();
-                const hubConnection = createHubConnection(connection, logger);
-                try {
-                    hubConnection.serverTimeoutInMilliseconds = 200;
-
-                    const p = new PromiseSource<Error>();
-                    hubConnection.onclose((e) => p.resolve(e));
-
-                    // send message before start to trigger timeout handler
-                    // testing for regression where we didn't cleanup timer if request received before start created a timer
-                    await connection.receive({ type: MessageType.Ping });
 
                     await hubConnection.start();
 
@@ -1092,11 +1098,14 @@ class TestConnection implements IConnection {
     public sentData: any[];
     public lastInvocationId: string | null;
 
-    constructor() {
+    private autoHandshake: boolean | null;
+
+    constructor(autoHandshake: boolean = true) {
         this.onreceive = null;
         this.onclose = null;
         this.sentData = [];
         this.lastInvocationId = null;
+        this.autoHandshake = autoHandshake;
     }
 
     public start(): Promise<void> {
@@ -1105,7 +1114,11 @@ class TestConnection implements IConnection {
 
     public send(data: any): Promise<void> {
         const invocation = TextMessageFormat.parse(data)[0];
-        const invocationId = JSON.parse(invocation).invocationId;
+        const parsedInvocation = JSON.parse(invocation);
+        const invocationId = parsedInvocation.invocationId;
+        if (parsedInvocation.protocol && parsedInvocation.version && this.autoHandshake) {
+            this.receiveHandshakeResponse();
+        }
         if (invocationId) {
             this.lastInvocationId = invocationId;
         }
