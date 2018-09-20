@@ -8,7 +8,7 @@
             "cwd": "${workspaceFolder}/clients/java/",
             "console": "externalTerminal",
             "stopOnEntry": false,
-            "mainClass": "com.microsoft.aspnet.signalr.Chat",
+            "mainClass": "com.microsoft.aspnet.signalr.sample.Chat",
             "args": ""
         },
         {
