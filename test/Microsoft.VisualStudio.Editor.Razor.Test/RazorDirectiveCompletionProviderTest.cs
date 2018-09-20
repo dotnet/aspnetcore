@@ -30,7 +30,10 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var razorBuffer = Mock.Of<ITextBuffer>(buffer => buffer.ContentType == Mock.Of<IContentType>());
             TextBufferProvider = Mock.Of<RazorTextBufferProvider>(provider => provider.TryGetFromDocument(It.IsAny<TextDocument>(), out razorBuffer) == true);
             CompletionFactsService = new DefaultRazorCompletionFactsService();
+            CompletionProviderDependencies = new Lazy<CompletionProviderDependencies>(() => new DefaultCompletionProviderDependencies(CompletionFactsService, CompletionBroker));
         }
+
+        private Lazy<CompletionProviderDependencies> CompletionProviderDependencies { get; }
 
         private IAsyncCompletionBroker CompletionBroker { get; }
 
@@ -52,8 +55,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var codeDocumentProvider = new Mock<RazorCodeDocumentProvider>();
             var completionProvider = new RazorDirectiveCompletionProvider(
                 new Lazy<RazorCodeDocumentProvider>(() => codeDocumentProvider.Object),
-                new Lazy<RazorCompletionFactsService>(() => CompletionFactsService),
-                CompletionBroker,
+                CompletionProviderDependencies,
                 TextBufferProvider);
 
             // Act
@@ -75,8 +77,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var codeDocumentProvider = new Mock<RazorCodeDocumentProvider>();
             var completionProvider = new RazorDirectiveCompletionProvider(
                 new Lazy<RazorCodeDocumentProvider>(() => codeDocumentProvider.Object),
-                new Lazy<RazorCompletionFactsService>(() => CompletionFactsService),
-                CompletionBroker,
+                CompletionProviderDependencies,
                 TextBufferProvider);
 
             // Act
@@ -94,7 +95,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var codeDocumentProvider = new Mock<RazorCodeDocumentProvider>(MockBehavior.Strict);
             var completionProvider = new FailOnGetCompletionsProvider(
                 new Lazy<RazorCodeDocumentProvider>(() => codeDocumentProvider.Object),
-                CompletionBroker,
+                CompletionProviderDependencies,
                 TextBufferProvider);
             var document = CreateDocument();
             document = document.WithFilePath("NotRazor.cs");
@@ -122,7 +123,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var codeDocumentProvider = new Mock<RazorCodeDocumentProvider>(MockBehavior.Strict);
             var completionProvider = new FailOnGetCompletionsProvider(
                 new Lazy<RazorCodeDocumentProvider>(() => codeDocumentProvider.Object),
-                CompletionBroker,
+                CompletionProviderDependencies,
                 TextBufferProvider);
             var context = CreateContext(1, completionProvider, document);
 
@@ -140,7 +141,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 .Returns(false);
             var completionProvider = new FailOnGetCompletionsProvider(
                 new Lazy<RazorCodeDocumentProvider>(() => codeDocumentProvider.Object),
-                CompletionBroker,
+                CompletionProviderDependencies,
                 TextBufferProvider);
             var document = CreateDocument();
             var context = CreateContext(1, completionProvider, document);
@@ -156,7 +157,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var codeDocumentProvider = CreateCodeDocumentProvider("@", Enumerable.Empty<DirectiveDescriptor>());
             var completionProvider = new FailOnGetCompletionsProvider(
                 codeDocumentProvider,
-                CompletionBroker,
+                CompletionProviderDependencies,
                 TextBufferProvider,
                 canGetSnapshotPoint: false);
             var document = CreateDocument();
@@ -223,10 +224,10 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
             public FailOnGetCompletionsProvider(
                 Lazy<RazorCodeDocumentProvider> codeDocumentProvider,
-                IAsyncCompletionBroker asyncCompletionBroker,
+                Lazy<CompletionProviderDependencies> completionProviderDependencies,
                 RazorTextBufferProvider textBufferProvider,
                 bool canGetSnapshotPoint = true)
-                : base(codeDocumentProvider, new Lazy<RazorCompletionFactsService>(() => new DefaultRazorCompletionFactsService()), asyncCompletionBroker, textBufferProvider)
+                : base(codeDocumentProvider, completionProviderDependencies, textBufferProvider)
             {
                 _canGetSnapshotPoint = canGetSnapshotPoint;
             }

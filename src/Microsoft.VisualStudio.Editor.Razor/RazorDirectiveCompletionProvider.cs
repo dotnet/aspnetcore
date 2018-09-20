@@ -37,15 +37,13 @@ namespace Microsoft.VisualStudio.Editor.Razor
             CSharpCodeParser.TagHelperPrefixDirectiveDescriptor,
         };
         private readonly Lazy<RazorCodeDocumentProvider> _codeDocumentProvider;
-        private readonly Lazy<RazorCompletionFactsService> _completionFactsService;
-        private readonly IAsyncCompletionBroker _asyncCompletionBroker;
+        private readonly Lazy<CompletionProviderDependencies> _dependencies;
         private readonly RazorTextBufferProvider _textBufferProvider;
 
         [ImportingConstructor]
         public RazorDirectiveCompletionProvider(
             [Import(typeof(RazorCodeDocumentProvider))] Lazy<RazorCodeDocumentProvider> codeDocumentProvider,
-            [Import(typeof(RazorCompletionFactsService))] Lazy<RazorCompletionFactsService> completionFactsService,
-            IAsyncCompletionBroker asyncCompletionBroker,
+            [Import(typeof(CompletionProviderDependencies))] Lazy<CompletionProviderDependencies> dependencies,
             RazorTextBufferProvider textBufferProvider)
         {
             if (codeDocumentProvider == null)
@@ -53,14 +51,9 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 throw new ArgumentNullException(nameof(codeDocumentProvider));
             }
 
-            if (completionFactsService == null)
+            if (dependencies == null)
             {
-                throw new ArgumentNullException(nameof(completionFactsService));
-            }
-
-            if (asyncCompletionBroker == null)
-            {
-                throw new ArgumentNullException(nameof(asyncCompletionBroker));
+                throw new ArgumentNullException(nameof(dependencies));
             }
 
             if (textBufferProvider == null)
@@ -69,8 +62,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             }
 
             _codeDocumentProvider = codeDocumentProvider;
-            _completionFactsService = completionFactsService;
-            _asyncCompletionBroker = asyncCompletionBroker;
+            _dependencies = dependencies;
             _textBufferProvider = textBufferProvider;
         }
 
@@ -112,13 +104,6 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 return Task.CompletedTask;
             }
 
-            if (!_textBufferProvider.TryGetFromDocument(context.Document, out var textBuffer) ||
-                !_asyncCompletionBroker.IsCompletionSupported(textBuffer.ContentType))
-            {
-                // Completion is not supported.
-                return Task.CompletedTask;
-            }
-
             var result = AddCompletionItems(context);
 
             return result;
@@ -129,6 +114,13 @@ namespace Microsoft.VisualStudio.Editor.Razor
         [MethodImpl(MethodImplOptions.NoInlining)]
         private Task AddCompletionItems(CompletionContext context)
         {
+            if (!_textBufferProvider.TryGetFromDocument(context.Document, out var textBuffer) ||
+                !_dependencies.Value.AsyncCompletionBroker.IsCompletionSupported(textBuffer.ContentType))
+            {
+                // Completion is not supported.
+                return Task.CompletedTask;
+            }
+
             if (!_codeDocumentProvider.Value.TryGetFromDocument(context.Document, out var codeDocument))
             {
                 // A Razor code document has not yet been associated with the document.
@@ -149,7 +141,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             }
 
             var location = new SourceSpan(razorSnapshotPoint.Position, 0);
-            var razorCompletionItems = _completionFactsService.Value.GetCompletionItems(syntaxTree, location);
+            var razorCompletionItems = _dependencies.Value.CompletionFactsService.GetCompletionItems(syntaxTree, location);
 
             foreach (var razorCompletionItem in razorCompletionItems)
             {
@@ -207,5 +199,41 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
             return false;
         }
+    }
+
+    // These types are only for this class to provide indirection for assembly loads.
+    internal abstract class CompletionProviderDependencies
+    {
+        public abstract RazorCompletionFactsService CompletionFactsService { get; }
+
+        public abstract IAsyncCompletionBroker AsyncCompletionBroker { get; }
+    }
+
+    [System.Composition.Shared]
+    [Export(typeof(CompletionProviderDependencies))]
+    internal class DefaultCompletionProviderDependencies : CompletionProviderDependencies
+    {
+        [ImportingConstructor]
+        public DefaultCompletionProviderDependencies(
+            RazorCompletionFactsService completionFactsService,
+            IAsyncCompletionBroker asyncCompletionBroker)
+        {
+            if (completionFactsService == null)
+            {
+                throw new ArgumentNullException(nameof(completionFactsService));
+            }
+
+            if (asyncCompletionBroker == null)
+            {
+                throw new ArgumentNullException(nameof(asyncCompletionBroker));
+            }
+
+            CompletionFactsService = completionFactsService;
+            AsyncCompletionBroker = asyncCompletionBroker;
+        }
+
+        public override RazorCompletionFactsService CompletionFactsService { get; }
+
+        public override IAsyncCompletionBroker AsyncCompletionBroker { get; }
     }
 }
