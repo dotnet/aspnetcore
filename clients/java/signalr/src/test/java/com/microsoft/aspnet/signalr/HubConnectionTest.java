@@ -14,7 +14,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Test;
 
 
-public class HubConnectionTest {
+class HubConnectionTest {
     private static final String RECORD_SEPARATOR = "\u001e";
 
     @Test

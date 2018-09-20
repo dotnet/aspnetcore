@@ -7,11 +7,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Pipelines;
+using System.Security.Claims;
+using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Connections.Features;
-using Microsoft.AspNetCore.Http.Connections.Features;
 using Microsoft.AspNetCore.Http.Connections.Internal.Transports;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Internal;
@@ -608,9 +608,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 return false;
             }
 
-            // Setup the connection state from the http context
-            connection.User = context.User;
-
             // Configure transport-specific features.
             if (transportType == HttpTransportType.LongPolling)
             {
@@ -630,7 +627,15 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 {
                     // Set the request trace identifier to the current http request handling the poll
                     existing.TraceIdentifier = context.TraceIdentifier;
-                    existing.User = context.User;
+
+                    // Don't copy the identity if it's a windows identity
+                    // We specifically clone the identity on first poll if it's a windows identity
+                    // If we swapped the new User here we'd have to dispose the old identities which could race with the application
+                    // trying to access the identity.
+                    if (context.User.Identity is WindowsIdentity)
+                    {
+                        existing.User = context.User;
+                    }
                 }
             }
             else
@@ -638,11 +643,31 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 connection.HttpContext = context;
             }
 
+            // Setup the connection state from the http context
+            connection.User = connection.HttpContext.User;
+
             // Set the Connection ID on the logging scope so that logs from now on will have the
             // Connection ID metadata set.
             logScope.ConnectionId = connection.ConnectionId;
 
             return true;
+        }
+
+        private static void CloneUser(HttpContext newContext, HttpContext oldContext)
+        {
+            if (oldContext.User.Identity is WindowsIdentity)
+            {
+                newContext.User = new ClaimsPrincipal();
+
+                foreach (var identity in oldContext.User.Identities)
+                {
+                    newContext.User.AddIdentity(identity.Clone());
+                }
+            }
+            else
+            {
+                newContext.User = oldContext.User;
+            }
         }
 
         private static HttpContext CloneHttpContext(HttpContext context)
@@ -692,7 +717,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
             var newHttpContext = new DefaultHttpContext(features);
             newHttpContext.TraceIdentifier = context.TraceIdentifier;
-            newHttpContext.User = context.User;
+
+            CloneUser(newHttpContext, context);
 
             // Making request services function property could be tricky and expensive as it would require
             // DI scope per connection. It would also mean that services resolved in middleware leading up to here

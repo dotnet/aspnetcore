@@ -11,7 +11,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-public class ResolveNegotiateUrlTest {
+class ResolveNegotiateUrlTest {
     private static Stream<Arguments> protocols() {
         return Stream.of(
                 Arguments.of("http://example.com/hub/", "http://example.com/hub/negotiate"),

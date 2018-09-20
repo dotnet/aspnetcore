@@ -6,6 +6,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO.Pipelines;
 using System.Security.Claims;
+using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
@@ -208,6 +209,14 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 Cancellation?.Dispose();
 
                 Cancellation = null;
+
+                if (User != null && User.Identity is WindowsIdentity)
+                {
+                    foreach (var identity in User.Identities)
+                    {
+                        (identity as IDisposable)?.Dispose();
+                    }
+                }
             }
 
             await disposeTask;

@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
 
-public class HubExceptionTest {
+class HubExceptionTest {
     @Test
     public void VeryHubExceptionMesssageIsSet() {
         String errorMessage = "This is a HubException";
