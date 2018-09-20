@@ -1,11 +1,13 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Analyzer.Testing;
+using Microsoft.AspNetCore.Mvc.Api.Analyzers.TestFiles.SymbolApiResponseMetadataProviderTest;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Xunit;
@@ -431,6 +433,95 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
             // Assert
             Assert.NotNull(actualResponseMetadata);
             Assert.True(actualResponseMetadata.Value.IsDefaultResponse);
+        }
+
+        [Fact]
+        public async Task TryGetActualResponseMetadata_ActionWithActionResultOfTReturningOkResult()
+        {
+            // Arrange
+            var typeName = typeof(TryGetActualResponseMetadataController).FullName;
+            var methodName = nameof(TryGetActualResponseMetadataController.ActionWithActionResultOfTReturningOkResult);
+
+            // Act
+            var (success, responseMetadatas, _) = await TryGetActualResponseMetadata(typeName, methodName);
+
+            // Assert
+            Assert.True(success);
+            Assert.Collection(
+                responseMetadatas,
+                metadata =>
+                {
+                    Assert.False(metadata.IsDefaultResponse);
+                    Assert.Equal(200, metadata.StatusCode);
+                });
+        }
+
+        [Fact]
+        public async Task TryGetActualResponseMetadata_ActionWithActionResultOfTReturningModel()
+        {
+            // Arrange
+            var typeName = typeof(TryGetActualResponseMetadataController).FullName;
+            var methodName = nameof(TryGetActualResponseMetadataController.ActionWithActionResultOfTReturningModel);
+
+            // Act
+            var (success, responseMetadatas, _) = await TryGetActualResponseMetadata(typeName, methodName);
+
+            // Assert
+            Assert.True(success);
+            Assert.Collection(
+                responseMetadatas,
+                metadata =>
+                {
+                    Assert.True(metadata.IsDefaultResponse);
+                });
+        }
+
+        [Fact]
+        public async Task TryGetActualResponseMetadata_ActionReturningNotFoundAndModel()
+        {
+            // Arrange
+            var typeName = typeof(TryGetActualResponseMetadataController).FullName;
+            var methodName = nameof(TryGetActualResponseMetadataController.ActionReturningNotFoundAndModel);
+
+            // Act
+            var (success, responseMetadatas, testSource) = await TryGetActualResponseMetadata(typeName, methodName);
+
+            // Assert
+            Assert.True(success);
+            Assert.Collection(
+                responseMetadatas,
+                metadata =>
+                {
+                    Assert.False(metadata.IsDefaultResponse);
+                    Assert.Equal(204, metadata.StatusCode);
+                    AnalyzerAssert.DiagnosticLocation(testSource.MarkerLocations["MM1"], metadata.ReturnStatement.GetLocation());
+                    
+                },
+                metadata =>
+                {
+                    Assert.True(metadata.IsDefaultResponse);
+                    AnalyzerAssert.DiagnosticLocation(testSource.MarkerLocations["MM2"], metadata.ReturnStatement.GetLocation());
+                });
+        }
+
+        private async Task<(bool result, IList<ActualApiResponseMetadata> responseMetadatas, TestSource testSource)> TryGetActualResponseMetadata(string typeName, string methodName)
+        {
+            var testSource = MvcTestSource.Read(GetType().Name, "TryGetActualResponseMetadataTests");
+            var project = DiagnosticProject.Create(GetType().Assembly, new[] { testSource.Source });
+
+            var compilation = await GetCompilation("TryGetActualResponseMetadataTests");
+
+            var type = compilation.GetTypeByMetadataName(typeName);
+            var method = (IMethodSymbol)type.GetMembers(methodName).First();
+            var symbolCache = new ApiControllerSymbolCache(compilation);
+
+            var syntaxTree = method.DeclaringSyntaxReferences[0].SyntaxTree;
+            var methodSyntax = (MethodDeclarationSyntax)syntaxTree.GetRoot().FindNode(method.Locations[0].SourceSpan);
+            var semanticModel = compilation.GetSemanticModel(syntaxTree);
+
+            var result = SymbolApiResponseMetadataProvider.TryGetActualResponseMetadata(symbolCache, semanticModel, methodSyntax, CancellationToken.None, out var responseMetadatas);
+
+            return (result, responseMetadatas, testSource);
         }
 
         private async Task<ActualApiResponseMetadata?> RunInspectReturnStatementSyntax([CallerMemberName]string test = null)

@@ -135,12 +135,33 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 
             if (contentTypes.Count == 0)
             {
+                // None of the IApiResponseMetadataProvider specified a content type. This is common for actions that
+                // specify one or more ProducesResponseType but no ProducesAttribute. In this case, formatters will participate in conneg
+                // and respond to the incoming request.
+                // Querying IApiResponseTypeMetadataProvider.GetSupportedContentTypes with "null" should retrieve all supported
+                // content types that each formatter may respond in.
                 contentTypes.Add((string)null);
             }
 
+            var responseTypes = results.Values;
+            CalculateResponseFormats(responseTypes, contentTypes);
+            return responseTypes;
+        }
+
+        private void CalculateResponseFormats(ICollection<ApiResponseType> responseTypes, MediaTypeCollection declaredContentTypes)
+        {
             var responseTypeMetadataProviders = _mvcOptions.OutputFormatters.OfType<IApiResponseTypeMetadataProvider>();
 
-            foreach (var apiResponse in results.Values)
+            // Given the content-types that were declared for this action, determine the formatters that support the content-type for the given
+            // response type.
+            // 1. Responses that do not specify an type do not have any associated content-type. This usually is meant for status-code only responses such
+            // as return NotFound();
+            // 2. When a type is specified, use GetSupportedContentTypes to expand wildcards and get the range of content-types formatters support.
+            // 3. When no formatter supports the specified content-type, use the user specified value as is. This is useful in actions where the user
+            // dictates the content-type.
+            // e.g. [Produces("application/pdf")] Action() => FileStream("somefile.pdf", "applicaiton/pdf");
+
+            foreach (var apiResponse in responseTypes)
             {
                 var responseType = apiResponse.Type;
                 if (responseType == null || responseType == typeof(void))
@@ -150,8 +171,10 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 
                 apiResponse.ModelMetadata = _modelMetadataProvider.GetMetadataForType(responseType);
 
-                foreach (var contentType in contentTypes)
+                foreach (var contentType in declaredContentTypes)
                 {
+                    var isSupportedContentType = false;
+
                     foreach (var responseTypeMetadataProvider in responseTypeMetadataProviders)
                     {
                         var formatterSupportedContentTypes = responseTypeMetadataProvider.GetSupportedContentTypes(
@@ -163,6 +186,8 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                             continue;
                         }
 
+                        isSupportedContentType = true;
+
                         foreach (var formatterSupportedContentType in formatterSupportedContentTypes)
                         {
                             apiResponse.ApiResponseFormats.Add(new ApiResponseFormat
@@ -172,10 +197,17 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                             });
                         }
                     }
+
+                    if (!isSupportedContentType && contentType != null)
+                    {
+                        // No output formatter was found that supports this content type. Add the user specified content type as-is to the result.
+                        apiResponse.ApiResponseFormats.Add(new ApiResponseFormat
+                        {
+                            MediaType = contentType,
+                        });
+                    }
                 }
             }
-
-            return results.Values;
         }
 
         private Type GetDeclaredReturnType(ControllerActionDescriptor action)

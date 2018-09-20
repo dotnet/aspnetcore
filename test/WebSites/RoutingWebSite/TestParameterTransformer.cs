@@ -7,12 +7,12 @@ using Microsoft.AspNetCore.Routing;
 
 namespace RoutingWebSite
 {
-    public class SlugifyParameterTransformer : IParameterTransformer
+    public class SlugifyParameterTransformer : IOutboundParameterTransformer
     {
-        public string Transform(string value)
+        public string TransformOutbound(object value)
         {
             // Slugify value
-            return Regex.Replace(value, "([a-z])([A-Z])", "$1-$2", RegexOptions.None, TimeSpan.FromMilliseconds(100)).ToLower();
+            return value == null ? null : Regex.Replace(value.ToString(), "([a-z])([A-Z])", "$1-$2", RegexOptions.None, TimeSpan.FromMilliseconds(100)).ToLower();
         }
     }
 }

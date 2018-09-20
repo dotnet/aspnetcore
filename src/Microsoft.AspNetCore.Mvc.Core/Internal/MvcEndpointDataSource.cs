@@ -277,9 +277,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                             // Use the first transformer policy
                             for (var k = 0; k < parameterPolicies.Count; k++)
                             {
-                                if (parameterPolicies[k] is IParameterTransformer parameterTransformer)
+                                if (parameterPolicies[k] is IOutboundParameterTransformer parameterTransformer)
                                 {
-                                    parameterRouteValue = parameterTransformer.Transform(parameterRouteValue);
+                                    parameterRouteValue = parameterTransformer.TransformOutbound(parameterRouteValue);
                                     break;
                                 }
                             }

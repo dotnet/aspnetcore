@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -829,17 +830,27 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             // Assert
             var description = Assert.Single(result);
             var responseType = Assert.Single(description.SupportedResponseTypes);
-            Assert.Equal(1, responseType.ResponseFormats.Count);
-
-            var responseFormat = responseType.ResponseFormats[0];
-            Assert.Equal("application/hal+json", responseFormat.MediaType);
-            Assert.Equal(typeof(JsonOutputFormatter).FullName, responseFormat.FormatterType);
+            Assert.Collection(
+                responseType.ResponseFormats,
+                responseFormat =>
+                {
+                    Assert.Equal("application/hal+custom", responseFormat.MediaType);
+                    Assert.Null(responseFormat.FormatterType);
+                },
+                responseFormat =>
+                {
+                    Assert.Equal("application/hal+json", responseFormat.MediaType);
+                    Assert.Equal(typeof(JsonOutputFormatter).FullName, responseFormat.FormatterType);
+                });
         }
 
         [Fact]
         public async Task ApiExplorer_ResponseContentType_NoMatch()
         {
-            // Arrange & Act
+            // Arrange
+            var expectedMediaTypes = new[] { "application/custom", "text/hal+bson" };
+
+            // Act
             var response = await Client.GetAsync("http://localhost/ApiExplorerResponseContentType/NoMatch");
 
             var body = await response.Content.ReadAsStringAsync();
@@ -848,7 +859,11 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             // Assert
             var description = Assert.Single(result);
             var responseType = Assert.Single(description.SupportedResponseTypes);
-            Assert.Empty(responseType.ResponseFormats);
+
+
+            Assert.Equal(typeof(Product).FullName, responseType.ResponseType);
+            Assert.Equal(200, responseType.StatusCode);
+            Assert.Equal(expectedMediaTypes, GetSortedMediaTypes(responseType));
         }
 
         [ConditionalTheory]
@@ -1145,6 +1160,28 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var description = Assert.Single(result);
             var requestFormat = Assert.Single(description.SupportedRequestFormats);
             Assert.Equal("multipart/form-data", requestFormat.MediaType);
+        }
+
+        [Fact]
+        public async Task ApiBehavior_UsesContentTypeFromProducesAttribute_WhenNoFormatterSupportsIt()
+        {
+            // Arrange
+            var expectedMediaTypes = new[] { "application/pdf" };
+
+            // Act
+            var body = await Client.GetStringAsync("ApiExplorerApiController/ProducesWithUnsupportedContentType");
+            var result = JsonConvert.DeserializeObject<List<ApiExplorerData>>(body);
+
+            // Assert
+            var description = Assert.Single(result);
+            Assert.Collection(
+                description.SupportedResponseTypes.OrderBy(r => r.StatusCode),
+                responseType =>
+                {
+                    Assert.Equal(typeof(Stream).FullName, responseType.ResponseType);
+                    Assert.Equal(200, responseType.StatusCode);
+                    Assert.Equal(expectedMediaTypes, GetSortedMediaTypes(responseType));
+                });
         }
 
         [Fact]

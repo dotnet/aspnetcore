@@ -8,17 +8,17 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 {
     /// <summary>
     /// An <see cref="IActionModelConvention"/> that sets attribute routing token replacement
-    /// to use the specified <see cref="IParameterTransformer"/> on <see cref="ActionModel"/> selectors.
+    /// to use the specified <see cref="IOutboundParameterTransformer"/> on <see cref="ActionModel"/> selectors.
     /// </summary>
     public class RouteTokenTransformerConvention : IActionModelConvention
     {
-        private readonly IParameterTransformer _parameterTransformer;
+        private readonly IOutboundParameterTransformer _parameterTransformer;
 
         /// <summary>
-        /// Creates a new instance of <see cref="RouteTokenTransformerConvention"/> with the specified <see cref="IParameterTransformer"/>.
+        /// Creates a new instance of <see cref="RouteTokenTransformerConvention"/> with the specified <see cref="IOutboundParameterTransformer"/>.
         /// </summary>
-        /// <param name="parameterTransformer">The <see cref="IParameterTransformer"/> to use with attribute routing token replacement.</param>
-        public RouteTokenTransformerConvention(IParameterTransformer parameterTransformer)
+        /// <param name="parameterTransformer">The <see cref="IOutboundParameterTransformer"/> to use with attribute routing token replacement.</param>
+        public RouteTokenTransformerConvention(IOutboundParameterTransformer parameterTransformer)
         {
             if (parameterTransformer == null)
             {
@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         {
             if (ShouldApply(action))
             {
-                action.Properties[typeof(IParameterTransformer)] = _parameterTransformer;
+                action.Properties[typeof(IOutboundParameterTransformer)] = _parameterTransformer;
             }
         }
 

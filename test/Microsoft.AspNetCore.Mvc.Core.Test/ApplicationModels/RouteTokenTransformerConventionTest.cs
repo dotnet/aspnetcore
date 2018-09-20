@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Mvc.Test.ApplicationModels
             convention.Apply(model);
 
             // Assert
-            Assert.True(model.Properties.TryGetValue(typeof(IParameterTransformer), out var routeTokenTransformer));
+            Assert.True(model.Properties.TryGetValue(typeof(IOutboundParameterTransformer), out var routeTokenTransformer));
             Assert.Equal(transformer, routeTokenTransformer);
         }
 
@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Mvc.Test.ApplicationModels
             convention.Apply(model);
 
             // Assert
-            Assert.False(model.Properties.TryGetValue(typeof(IParameterTransformer), out _));
+            Assert.False(model.Properties.TryGetValue(typeof(IOutboundParameterTransformer), out _));
         }
 
         private MethodInfo GetMethodInfo()
@@ -76,17 +76,17 @@ namespace Microsoft.AspNetCore.Mvc.Test.ApplicationModels
             return typeof(RouteTokenTransformerConventionTest).GetMethod(nameof(GetMethodInfo), BindingFlags.NonPublic | BindingFlags.Instance);
         }
 
-        private class TestParameterTransformer : IParameterTransformer
+        private class TestParameterTransformer : IOutboundParameterTransformer
         {
-            public string Transform(string value)
+            public string TransformOutbound(object value)
             {
-                return value;
+                return value?.ToString();
             }
         }
 
         private class CustomRouteTokenTransformerConvention : RouteTokenTransformerConvention
         {
-            public CustomRouteTokenTransformerConvention(IParameterTransformer parameterTransformer) : base(parameterTransformer)
+            public CustomRouteTokenTransformerConvention(IOutboundParameterTransformer parameterTransformer) : base(parameterTransformer)
             {
             }
 

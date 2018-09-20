@@ -390,8 +390,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         {
             try
             {
-                actionDescriptor.Properties.TryGetValue(typeof(IParameterTransformer), out var transformer);
-                var routeTokenTransformer = transformer as IParameterTransformer;
+                actionDescriptor.Properties.TryGetValue(typeof(IOutboundParameterTransformer), out var transformer);
+                var routeTokenTransformer = transformer as IOutboundParameterTransformer;
 
                 actionDescriptor.AttributeRouteInfo.Template = AttributeRouteModel.ReplaceTokens(
                     actionDescriptor.AttributeRouteInfo.Template,

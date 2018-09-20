@@ -771,11 +771,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             return dataSource;
         }
 
-        private class UpperCaseParameterTransform : IParameterTransformer
+        private class UpperCaseParameterTransform : IOutboundParameterTransformer
         {
-            public string Transform(string value)
+            public string TransformOutbound(object value)
             {
-                return value?.ToUpperInvariant();
+                return value?.ToString().ToUpperInvariant();
             }
         }
 

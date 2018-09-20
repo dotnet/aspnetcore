@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
     internal readonly struct DeclaredApiResponseMetadata
     {
         public static DeclaredApiResponseMetadata ImplicitResponse { get; } =
-            new DeclaredApiResponseMetadata(statusCode: 0, attributeData: null, attributeSource: null, @implicit: true, @default: false);
+            new DeclaredApiResponseMetadata(statusCode: 200, attributeData: null, attributeSource: null, @implicit: true, @default: false);
 
         public static DeclaredApiResponseMetadata ForProducesResponseType(int statusCode, AttributeData attributeData, IMethodSymbol attributeSource)
         {
@@ -41,8 +41,16 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
 
         public IMethodSymbol AttributeSource { get; }
 
+        /// <summary>
+        /// <c>True</c> if this <see cref="DeclaredApiResponseMetadata" /> is the implicit 200 associated with an
+        /// action specifying no metadata.
+        /// </summary>
         public bool IsImplicit { get; }
 
+        /// <summary>
+        /// <c>True</c> if this <see cref="DeclaredApiResponseMetadata" /> is from a <c>ProducesDefaultResponseTypeAttribute</c>.
+        /// Matches all failure (400 and above) status codes.
+        /// </summary>
         public bool IsDefault { get; }
 
         internal static bool Contains(IList<DeclaredApiResponseMetadata> declaredApiResponseMetadata, ActualApiResponseMetadata actualMetadata)

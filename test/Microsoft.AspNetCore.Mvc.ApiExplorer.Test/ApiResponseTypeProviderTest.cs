@@ -45,7 +45,11 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                     Assert.False(responseType.IsDefaultResponse);
                     Assert.Collection(
                         responseType.ApiResponseFormats,
-                        format => Assert.Equal("application/json", format.MediaType));
+                        format =>
+                        {
+                            Assert.Equal("application/json", format.MediaType);
+                            Assert.IsType<TestOutputFormatter>(format.Formatter);
+                        });
                 },
                 responseType =>
                 {
@@ -106,7 +110,11 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                     Assert.False(responseType.IsDefaultResponse);
                     Assert.Collection(
                         responseType.ApiResponseFormats,
-                        format => Assert.Equal("application/json", format.MediaType));
+                        format =>
+                        {
+                            Assert.Equal("application/json", format.MediaType);
+                            Assert.IsType<TestOutputFormatter>(format.Formatter);
+                        });
                 },
                 responseType =>
                 {
@@ -115,7 +123,11 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                     Assert.False(responseType.IsDefaultResponse);
                     Assert.Collection(
                         responseType.ApiResponseFormats,
-                        format => Assert.Equal("application/json", format.MediaType));
+                        format =>
+                        {
+                            Assert.Equal("application/json", format.MediaType);
+                            Assert.IsType<TestOutputFormatter>(format.Formatter);
+                        });
                 },
                 responseType =>
                 {
@@ -156,7 +168,11 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                    Assert.False(responseType.IsDefaultResponse);
                    Assert.Collection(
                         responseType.ApiResponseFormats,
-                        format => Assert.Equal("application/json", format.MediaType));
+                        format =>
+                        {
+                            Assert.Equal("application/json", format.MediaType);
+                            Assert.IsType<TestOutputFormatter>(format.Formatter);
+                        });
                },
                responseType =>
                {
@@ -660,6 +676,36 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                     Assert.Collection(
                         responseType.ApiResponseFormats,
                         format => Assert.Equal("application/json", format.MediaType));
+                });
+        }
+
+        [Fact]
+        public void GetApiResponseTypes_UsesContentTypeWithoutWildCard_WhenNoFormatterSupportsIt()
+        {
+            // Arrange
+            var actionDescriptor = GetControllerActionDescriptor(typeof(TestController), nameof(TestController.GetUser));
+            actionDescriptor.FilterDescriptors.Add(new FilterDescriptor(new ProducesAttribute("application/pdf"), FilterScope.Action));
+
+            var provider = GetProvider();
+
+            // Act
+            var result = provider.GetApiResponseTypes(actionDescriptor);
+
+            // Assert
+            Assert.Collection(
+                result.OrderBy(r => r.StatusCode),
+                responseType =>
+                {
+                    Assert.Equal(200, responseType.StatusCode);
+                    Assert.Equal(typeof(DerivedModel), responseType.Type);
+                    Assert.False(responseType.IsDefaultResponse);
+                    Assert.Collection(
+                        responseType.ApiResponseFormats,
+                        format =>
+                        {
+                            Assert.Equal("application/pdf", format.MediaType);
+                            Assert.Null(format.Formatter);
+                        });
                 });
         }
 

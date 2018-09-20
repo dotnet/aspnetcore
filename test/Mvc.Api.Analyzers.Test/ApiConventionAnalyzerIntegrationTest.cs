@@ -27,6 +27,10 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
             => RunNoDiagnosticsAreReturned();
 
         [Fact]
+        public Task NoDiagnosticsAreReturned_ForOkResultReturningAction()
+            => RunNoDiagnosticsAreReturned();
+
+        [Fact]
         public Task NoDiagnosticsAreReturned_ForApiController_IfStatusCodesCannotBeInferred()
             => RunNoDiagnosticsAreReturned();
 
