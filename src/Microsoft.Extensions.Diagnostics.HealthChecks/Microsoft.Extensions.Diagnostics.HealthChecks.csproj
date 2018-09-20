@@ -3,8 +3,8 @@
     <Description>Components for performing health checks in .NET applications
     
 Commonly Used Types:
-Microsoft.Extensions.Diagnostics.HealthChecks.IHealthCheckService
-Microsoft.Extensions.Diagnostics.HealthChecks.IHealthChecksBuilder      
+Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckService
+Microsoft.Extensions.Diagnostics.HealthChecks.IHealthChecksBuilder
     </Description>
     <TargetFramework>netstandard2.0</TargetFramework>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
@@ -14,6 +14,7 @@ Microsoft.Extensions.Diagnostics.HealthChecks.IHealthChecksBuilder
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="$(MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="$(MicrosoftExtensionsLoggingAbstractionsPackageVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="$(MicrosoftExtensionsOptionsPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.ValueStopwatch.Sources" Version="$(MicrosoftExtensionsValueStopwatchSourcesPackageVersion)" PrivateAssets="All" />
   </ItemGroup>
   <ItemGroup>

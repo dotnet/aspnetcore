@@ -22,20 +22,20 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
         /// registered health checks - this is the default behavior. To run a subset of health checks,
         /// provide a function that filters the set of checks.
         /// </remarks>
-        public Func<IHealthCheck, bool> Predicate { get; set; }
+        public Func<HealthCheckRegistration, bool> Predicate { get; set; }
 
         /// <summary>
-        /// Gets a dictionary mapping the <see cref="HealthCheckStatus"/> to an HTTP status code applied to the response.
+        /// Gets a dictionary mapping the <see cref="HealthStatus"/> to an HTTP status code applied to the response.
         /// This property can be used to configure the status codes returned for each status.
         /// </summary>
-        public IDictionary<HealthCheckStatus, int> ResultStatusCodes { get; } = new Dictionary<HealthCheckStatus, int>()
+        public IDictionary<HealthStatus, int> ResultStatusCodes { get; } = new Dictionary<HealthStatus, int>()
         {
-            { HealthCheckStatus.Healthy, StatusCodes.Status200OK },
-            { HealthCheckStatus.Degraded, StatusCodes.Status200OK },
-            { HealthCheckStatus.Unhealthy, StatusCodes.Status503ServiceUnavailable },
+            { HealthStatus.Healthy, StatusCodes.Status200OK },
+            { HealthStatus.Degraded, StatusCodes.Status200OK },
+            { HealthStatus.Unhealthy, StatusCodes.Status503ServiceUnavailable },
 
             // This means that a health check failed, so 500 is appropriate. This is an error.
-            { HealthCheckStatus.Failed, StatusCodes.Status500InternalServerError },
+            { HealthStatus.Failed, StatusCodes.Status500InternalServerError },
         };
 
         /// <summary>
@@ -43,8 +43,8 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
         /// </summary>
         /// <remarks>
         /// The default value is a delegate that will write a minimal <c>text/plain</c> response with the value
-        /// of <see cref="CompositeHealthCheckResult.Status"/> as a string.
+        /// of <see cref="HealthReport.Status"/> as a string.
         /// </remarks>
-        public Func<HttpContext, CompositeHealthCheckResult, Task> ResponseWriter { get; set; } = HealthCheckResponseWriters.WriteMinimalPlaintext;
+        public Func<HttpContext, HealthReport, Task> ResponseWriter { get; set; } = HealthCheckResponseWriters.WriteMinimalPlaintext;
     }
 }

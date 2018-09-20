@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
@@ -100,7 +98,6 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
             Assert.Equal("Healthy", await response.Content.ReadAsStringAsync());
         }
 
-
         [Fact]
         public async Task StatusCodeIs200IfAllChecksHealthy()
         {
@@ -112,9 +109,9 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
                 .ConfigureServices(services =>
                 {
                     services.AddHealthChecks()
-                        .AddCheck("Foo", () => Task.FromResult(HealthCheckResult.Healthy("A-ok!")))
-                        .AddCheck("Bar", () => Task.FromResult(HealthCheckResult.Healthy("A-ok!")))
-                        .AddCheck("Baz", () => Task.FromResult(HealthCheckResult.Healthy("A-ok!")));
+                        .AddCheck("Foo", () => HealthCheckResult.Passed("A-ok!"))
+                        .AddCheck("Bar", () => HealthCheckResult.Passed("A-ok!"))
+                        .AddCheck("Baz", () => HealthCheckResult.Passed("A-ok!"));
                 });
             var server = new TestServer(builder);
             var client = server.CreateClient();
@@ -137,9 +134,9 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
                 .ConfigureServices(services =>
                 {
                     services.AddHealthChecks()
-                        .AddCheck("Foo", () => Task.FromResult(HealthCheckResult.Healthy("A-ok!")))
-                        .AddCheck("Bar", () => Task.FromResult(HealthCheckResult.Degraded("Not so great.")))
-                        .AddCheck("Baz", () => Task.FromResult(HealthCheckResult.Healthy("A-ok!")));
+                        .AddCheck("Foo", () => HealthCheckResult.Passed("A-ok!"))
+                        .AddCheck("Bar", () => HealthCheckResult.Failed("Not so great."), failureStatus: HealthStatus.Degraded)
+                        .AddCheck("Baz", () => HealthCheckResult.Passed("A-ok!"));
                 });
             var server = new TestServer(builder);
             var client = server.CreateClient();
@@ -162,9 +159,9 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
                 .ConfigureServices(services =>
                 {
                     services.AddHealthChecks()
-                        .AddCheck("Foo", () => Task.FromResult(HealthCheckResult.Healthy("A-ok!")))
-                        .AddCheck("Bar", () => Task.FromResult(HealthCheckResult.Unhealthy("Pretty bad.")))
-                        .AddCheck("Baz", () => Task.FromResult(HealthCheckResult.Healthy("A-ok!")));
+                        .AddAsyncCheck("Foo", () => Task.FromResult(HealthCheckResult.Passed("A-ok!")))
+                        .AddAsyncCheck("Bar", () => Task.FromResult(HealthCheckResult.Failed("Pretty bad.")))
+                        .AddAsyncCheck("Baz", () => Task.FromResult(HealthCheckResult.Passed("A-ok!")));
                 });
             var server = new TestServer(builder);
             var client = server.CreateClient();
@@ -187,9 +184,9 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
                 .ConfigureServices(services =>
                 {
                     services.AddHealthChecks()
-                        .AddCheck("Foo", () => Task.FromResult(HealthCheckResult.Healthy("A-ok!")))
-                        .AddCheck("Bar", () => Task.FromResult(new HealthCheckResult(HealthCheckStatus.Failed, null, null, null)))
-                        .AddCheck("Baz", () => Task.FromResult(HealthCheckResult.Healthy("A-ok!")));
+                        .AddAsyncCheck("Foo", () => Task.FromResult(HealthCheckResult.Passed("A-ok!")))
+                        .AddAsyncCheck("Bar", () => throw null)
+                        .AddAsyncCheck("Baz", () => Task.FromResult(HealthCheckResult.Passed("A-ok!")));
                 });
             var server = new TestServer(builder);
             var client = server.CreateClient();
@@ -225,9 +222,9 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
                 .ConfigureServices(services =>
                 {
                     services.AddHealthChecks()
-                        .AddCheck("Foo", () => Task.FromResult(HealthCheckResult.Healthy("A-ok!")))
-                        .AddCheck("Bar", () => Task.FromResult(HealthCheckResult.Unhealthy("Pretty bad.")))
-                        .AddCheck("Baz", () => Task.FromResult(HealthCheckResult.Healthy("A-ok!")));
+                        .AddAsyncCheck("Foo", () => Task.FromResult(HealthCheckResult.Passed("A-ok!")))
+                        .AddAsyncCheck("Bar", () => Task.FromResult(HealthCheckResult.Failed("Pretty bad.")))
+                        .AddAsyncCheck("Baz", () => Task.FromResult(HealthCheckResult.Passed("A-ok!")));
                 });
             var server = new TestServer(builder);
             var client = server.CreateClient();
@@ -254,9 +251,9 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
                 .ConfigureServices(services =>
                 {
                     services.AddHealthChecks()
-                        .AddCheck("Foo", () => Task.FromResult(HealthCheckResult.Healthy("A-ok!")))
-                        .AddCheck("Bar", () => Task.FromResult(HealthCheckResult.Unhealthy("Pretty bad.")))
-                        .AddCheck("Baz", () => Task.FromResult(HealthCheckResult.Healthy("A-ok!")));
+                        .AddAsyncCheck("Foo", () => Task.FromResult(HealthCheckResult.Passed("A-ok!")))
+                        .AddAsyncCheck("Bar", () => Task.FromResult(HealthCheckResult.Failed("Pretty bad.")))
+                        .AddAsyncCheck("Baz", () => Task.FromResult(HealthCheckResult.Passed("A-ok!")));
                 });
             var server = new TestServer(builder);
             var client = server.CreateClient();
@@ -277,7 +274,7 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
                     {
                         ResultStatusCodes =
                         {
-                            [HealthCheckStatus.Healthy] = 201,
+                            [HealthStatus.Healthy] = 201,
                         }
                     });
                 })
@@ -308,10 +305,10 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
                 .ConfigureServices(services =>
                 {
                     services.AddHealthChecks()
-                        .AddCheck("Foo", () => Task.FromResult(HealthCheckResult.Healthy("A-ok!")))
+                        .AddAsyncCheck("Foo", () => Task.FromResult(HealthCheckResult.Passed("A-ok!")))
                         // Will get filtered out
-                        .AddCheck("Bar", () => Task.FromResult(HealthCheckResult.Unhealthy("A-ok!")))
-                        .AddCheck("Baz", () => Task.FromResult(HealthCheckResult.Healthy("A-ok!")));
+                        .AddAsyncCheck("Bar", () => Task.FromResult(HealthCheckResult.Failed("A-ok!")))
+                        .AddAsyncCheck("Baz", () => Task.FromResult(HealthCheckResult.Passed("A-ok!")));
                 });
             var server = new TestServer(builder);
             var client = server.CreateClient();

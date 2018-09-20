@@ -17,14 +17,10 @@ namespace HealthChecksSample
         public void ConfigureServices(IServiceCollection services)
         {
             // Registers required services for health checks
-            services.AddHealthChecks();
-
-            // This is an example of registering a custom health check as a service.
-            // All IHealthCheck services will be available to the health check service and
-            // middleware.
-            //
-            // We recommend registering all health checks as Singleton services.
-            services.AddSingleton<IHealthCheck, GCInfoHealthCheck>();
+            services.AddHealthChecks()
+                
+                // Registers a custom health check implementation
+                .AddGCInfoCheck("GCInfo");
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
@@ -45,13 +41,13 @@ namespace HealthChecksSample
             });
         }
 
-        private static Task WriteResponse(HttpContext httpContext, CompositeHealthCheckResult result)
+        private static Task WriteResponse(HttpContext httpContext, HealthReport result)
         {
             httpContext.Response.ContentType = "application/json";
 
             var json = new JObject(
                 new JProperty("status", result.Status.ToString()),
-                new JProperty("results", new JObject(result.Results.Select(pair =>
+                new JProperty("results", new JObject(result.Entries.Select(pair =>
                     new JProperty(pair.Key, new JObject(
                         new JProperty("status", pair.Value.Status.ToString()),
                         new JProperty("description", pair.Value.Description),
