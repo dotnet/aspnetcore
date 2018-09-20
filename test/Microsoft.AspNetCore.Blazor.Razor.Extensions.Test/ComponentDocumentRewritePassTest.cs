@@ -256,6 +256,36 @@ namespace Microsoft.AspNetCore.Blazor.Razor
         }
 
         [Fact]
+        public void Execute_RewritesHtml_UnbalancedClosing_MisuseOfVoidElement()
+        {
+            // Arrange
+            var document = CreateDocument(@"<input></input>");
+
+            var documentNode = Lower(document);
+
+            // Act
+            Pass.Execute(document, documentNode);
+
+            // Assert
+            var method = documentNode.FindPrimaryMethod();
+            Assert.Collection(
+                method.Children,
+                c => Assert.IsType<CSharpCodeIntermediateNode>(c),
+                c => NodeAssert.Element(c, "input"),
+                c => NodeAssert.Element(c, "input"));
+
+            var input2 = NodeAssert.Element(method.Children[2], "input");
+            Assert.Equal(7, input2.Source.Value.AbsoluteIndex);
+            Assert.Equal(0, input2.Source.Value.LineIndex);
+            Assert.Equal(7, input2.Source.Value.CharacterIndex);
+            Assert.Equal(8, input2.Source.Value.Length);
+
+            var diagnostic = Assert.Single(input2.Diagnostics);
+            Assert.Same(BlazorDiagnosticFactory.UnexpectedClosingTagForVoidElement.Id, diagnostic.Id);
+            Assert.Equal(input2.Source, diagnostic.Span);
+        }
+
+        [Fact]
         public void Execute_RewritesHtml_UnbalancedClosingTagAtTopLevel()
         {
             // Arrange

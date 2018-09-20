@@ -61,6 +61,16 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             return RazorDiagnostic.Create(MismatchedClosingTag, span ?? SourceSpan.Undefined, expectedTagName, tagName);
         }
 
+        public static readonly RazorDiagnosticDescriptor UnexpectedClosingTagForVoidElement = new RazorDiagnosticDescriptor(
+            "BL9983",
+            () => "Unexpected closing tag '{0}'. The element '{0}' is a void element, and should be used without a closing tag.",
+            RazorDiagnosticSeverity.Error);
+
+        public static RazorDiagnostic Create_UnexpectedClosingTagForVoidElement(SourceSpan? span, string tagName)
+        {
+            return RazorDiagnostic.Create(UnexpectedClosingTagForVoidElement, span ?? SourceSpan.Undefined, tagName);
+        }
+
         public static readonly RazorDiagnosticDescriptor InvalidHtmlContent = new RazorDiagnosticDescriptor(
             "BL9984",
             () => "Found invalid HTML content. Text '{0}'",
