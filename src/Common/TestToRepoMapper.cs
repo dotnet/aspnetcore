@@ -104,6 +104,10 @@ namespace Common
                     {
                         return "IISIntegration";
                     }
+                    else if (name.StartsWith("Microsoft.Extensions.Primitives"))
+                    {
+                        return "Common";
+                    }
                     else if (name.StartsWith("Microsoft.Extensions.Options"))
                     {
                         return "Options";
