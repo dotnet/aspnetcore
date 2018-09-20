@@ -315,7 +315,7 @@
       $(ResolvedCodeAnalysisRuleSet);
       @(AdditionalFiles)"
     Outputs="@(_BlazorTempAssembly);$(NonExistentFile)"
-    Condition="'$(DesignTimeBuild)'!='true'">
+    Condition="'$(DesignTimeBuild)'!='true' AND '$(Language)'=='C#' AND '@(BlazorDeclaration)' != ''">
 
     <MakeDir Directories="%(_BlazorTempAssembly.RelativeDir)" />
 
