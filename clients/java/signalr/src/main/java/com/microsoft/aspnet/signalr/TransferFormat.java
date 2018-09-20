@@ -4,6 +4,6 @@
 package com.microsoft.aspnet.signalr;
 
 public enum TransferFormat {
-    Text,
-    Binary
+    TEXT,
+    BINARY
 }

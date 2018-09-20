@@ -4,7 +4,7 @@
 package com.microsoft.aspnet.signalr;
 
 class CloseMessage extends HubMessage {
-    String error;
+    private String error;
 
     @Override
     public HubMessageType getMessageType() {

@@ -3,39 +3,28 @@
 
 package com.microsoft.aspnet.signalr;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.net.URISyntaxException;
-import java.util.Arrays;
-import java.util.Collection;
+import java.util.stream.Stream;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
-
-@RunWith(Parameterized.class)
 public class WebSocketTransportUrlFormatTest {
-    private String url;
-    private String expectedUrl;
-
-    public WebSocketTransportUrlFormatTest(String url, String expectedProtocol) {
-        this.url = url;
-        this.expectedUrl = expectedProtocol;
+    private static Stream<Arguments> protocols() {
+        return Stream.of(
+                Arguments.of("http://example.com", "ws://example.com"),
+                Arguments.of("https://example.com", "wss://example.com"),
+                Arguments.of("ws://example.com", "ws://example.com"),
+                Arguments.of("wss://example.com", "wss://example.com"));
     }
 
-    @Parameterized.Parameters
-    public static Collection protocols() {
-        return Arrays.asList(new String[][]{
-                {"http://example.com", "ws://example.com"},
-                {"https://example.com", "wss://example.com"},
-                {"ws://example.com", "ws://example.com"},
-                {"wss://example.com", "wss://example.com"}});
-    }
-
-    @Test
-    public void checkWebsocketUrlProtocol() throws URISyntaxException {
-        WebSocketTransport webSocketTransport = new WebSocketTransport(this.url, new NullLogger());
-        assertEquals(this.expectedUrl, webSocketTransport.getUrl().toString());
+    @ParameterizedTest
+    @MethodSource("protocols")
+    public void checkWebsocketUrlProtocol(String url, String expectedUrl) throws URISyntaxException {
+        WebSocketTransport webSocketTransport = new WebSocketTransport(url, new NullLogger());
+        assertEquals(expectedUrl, webSocketTransport.getUrl().toString());
     }
 }

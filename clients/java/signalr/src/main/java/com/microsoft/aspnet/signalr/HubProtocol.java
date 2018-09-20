@@ -3,8 +3,6 @@
 
 package com.microsoft.aspnet.signalr;
 
-import java.io.IOException;
-
 /**
  * A protocol abstraction for communicating with SignalR hubs.
  */

@@ -3,18 +3,14 @@
 
 package com.microsoft.aspnet.signalr;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.PriorityBlockingQueue;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
-import com.google.gson.JsonArray;
 
 public class JsonHubProtocolTest {
     private JsonHubProtocol jsonHubProtocol = new JsonHubProtocol();
@@ -31,12 +27,12 @@ public class JsonHubProtocolTest {
 
     @Test
     public void checkTransferFormat() {
-        assertEquals(TransferFormat.Text, jsonHubProtocol.getTransferFormat());
+        assertEquals(TransferFormat.TEXT, jsonHubProtocol.getTransferFormat());
     }
 
     @Test
     public void verifyWriteMessage() {
-        InvocationMessage invocationMessage = new InvocationMessage("test", new Object[] {"42"});
+        InvocationMessage invocationMessage = new InvocationMessage(null, "test", new Object[] {"42"});
         String result = jsonHubProtocol.writeMessage(invocationMessage);
         String expectedResult = "{\"type\":1,\"target\":\"test\",\"arguments\":[\"42\"]}\u001E";
         assertEquals(expectedResult, result);
@@ -45,7 +41,7 @@ public class JsonHubProtocolTest {
     @Test
     public void parsePingMessage() throws Exception {
         String stringifiedMessage = "{\"type\":6}\u001E";
-        TestBinder binder = new TestBinder(new PingMessage());
+        TestBinder binder = new TestBinder(PingMessage.getInstance());
 
         HubMessage[] messages = jsonHubProtocol.parseMessages(stringifiedMessage, binder);
 
@@ -93,7 +89,7 @@ public class JsonHubProtocolTest {
     @Test
     public void parseSingleMessage() throws Exception {
         String stringifiedMessage = "{\"type\":1,\"target\":\"test\",\"arguments\":[42]}\u001E";
-        TestBinder binder = new TestBinder(new InvocationMessage("test", new Object[] { 42 }));
+        TestBinder binder = new TestBinder(new InvocationMessage("1", "test", new Object[] { 42 }));
 
         HubMessage[] messages = jsonHubProtocol.parseMessages(stringifiedMessage, binder);
 
@@ -112,53 +108,37 @@ public class JsonHubProtocolTest {
         assertEquals(42, messageResult);
     }
 
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
-
     @Test
     public void parseSingleUnsupportedStreamItemMessage() throws Exception {
-        exceptionRule.expect(UnsupportedOperationException.class);
-        exceptionRule.expectMessage("The message type STREAM_ITEM is not supported yet.");
         String stringifiedMessage = "{\"type\":2,\"Id\":1,\"Item\":42}\u001E";
         TestBinder binder = new TestBinder(null);
 
-        HubMessage[] messages = jsonHubProtocol.parseMessages(stringifiedMessage, binder);
+        Throwable exception = assertThrows(UnsupportedOperationException.class, () -> jsonHubProtocol.parseMessages(stringifiedMessage, binder));
+        assertEquals("The message type STREAM_ITEM is not supported yet.", exception.getMessage());
     }
 
     @Test
     public void parseSingleUnsupportedStreamInvocationMessage() throws Exception {
-        exceptionRule.expect(UnsupportedOperationException.class);
-        exceptionRule.expectMessage("The message type STREAM_INVOCATION is not supported yet.");
         String stringifiedMessage = "{\"type\":4,\"Id\":1,\"target\":\"test\",\"arguments\":[42]}\u001E";
         TestBinder binder = new TestBinder(new StreamInvocationMessage("1", "test", new Object[] { 42 }));
 
-        HubMessage[] messages = jsonHubProtocol.parseMessages(stringifiedMessage, binder);
+        Throwable exception = assertThrows(UnsupportedOperationException.class, () -> jsonHubProtocol.parseMessages(stringifiedMessage, binder));
+        assertEquals("The message type STREAM_INVOCATION is not supported yet.", exception.getMessage());
     }
 
     @Test
     public void parseSingleUnsupportedCancelInvocationMessage() throws Exception {
-        exceptionRule.expect(UnsupportedOperationException.class);
-        exceptionRule.expectMessage("The message type CANCEL_INVOCATION is not supported yet.");
         String stringifiedMessage = "{\"type\":5,\"invocationId\":123}\u001E";
         TestBinder binder = new TestBinder(null);
 
-        HubMessage[] messages = jsonHubProtocol.parseMessages(stringifiedMessage, binder);
-    }
-
-    @Test
-    public void parseSingleUnsupportedCompletionMessage() throws Exception {
-        exceptionRule.expect(UnsupportedOperationException.class);
-        exceptionRule.expectMessage("The message type COMPLETION is not supported yet.");
-        String stringifiedMessage = "{\"type\":3,\"invocationId\":123}\u001E";
-        TestBinder binder = new TestBinder(null);
-
-        HubMessage[] messages = jsonHubProtocol.parseMessages(stringifiedMessage, binder);
+        Throwable exception = assertThrows(UnsupportedOperationException.class, () -> jsonHubProtocol.parseMessages(stringifiedMessage, binder));
+        assertEquals("The message type CANCEL_INVOCATION is not supported yet.", exception.getMessage());
     }
 
     @Test
     public void parseTwoMessages() throws Exception {
         String twoMessages = "{\"type\":1,\"target\":\"one\",\"arguments\":[42]}\u001E{\"type\":1,\"target\":\"two\",\"arguments\":[43]}\u001E";
-        TestBinder binder = new TestBinder(new InvocationMessage("one", new Object[] { 42 }));
+        TestBinder binder = new TestBinder(new InvocationMessage("1", "one", new Object[] { 42 }));
 
         HubMessage[] messages = jsonHubProtocol.parseMessages(twoMessages, binder);
         assertEquals(2, messages.length);
@@ -189,7 +169,7 @@ public class JsonHubProtocolTest {
     @Test
     public void parseSingleMessageMutipleArgs() throws Exception {
         String stringifiedMessage = "{\"type\":1,\"target\":\"test\",\"arguments\":[42, 24]}\u001E";
-        TestBinder binder = new TestBinder(new InvocationMessage("test", new Object[] { 42, 24 }));
+        TestBinder binder = new TestBinder(new InvocationMessage("1", "test", new Object[] { 42, 24 }));
 
         HubMessage[] messages = jsonHubProtocol.parseMessages(stringifiedMessage, binder);
 
@@ -208,7 +188,7 @@ public class JsonHubProtocolTest {
     @Test
     public void parseMessageWithOutOfOrderProperties() throws Exception {
         String stringifiedMessage = "{\"arguments\":[42, 24],\"type\":1,\"target\":\"test\"}\u001E";
-        TestBinder binder = new TestBinder(new InvocationMessage("test", new Object[] { 42, 24 }));
+        TestBinder binder = new TestBinder(new InvocationMessage("1", "test", new Object[] { 42, 24 }));
 
         HubMessage[] messages = jsonHubProtocol.parseMessages(stringifiedMessage, binder);
 
@@ -224,8 +204,24 @@ public class JsonHubProtocolTest {
         assertEquals(24, messageResult2);
     }
 
+    @Test
+    public void parseCompletionMessageWithOutOfOrderProperties() throws Exception {
+        String stringifiedMessage = "{\"type\":3,\"result\":42,\"invocationId\":\"1\"}\u001E";
+        TestBinder binder = new TestBinder(new CompletionMessage("1", 42, null));
+
+        HubMessage[] messages = jsonHubProtocol.parseMessages(stringifiedMessage, binder);
+
+        // We know it's only one message
+        assertEquals(HubMessageType.COMPLETION, messages[0].getMessageType());
+
+        CompletionMessage message = (CompletionMessage) messages[0];
+        assertEquals(null, message.getError());
+        assertEquals(42 , message.getResult());
+    }
+
     private class TestBinder implements InvocationBinder {
         private Class<?>[] paramTypes = null;
+        private Class<?> returnType = null;
 
         public TestBinder(HubMessage expectedMessage) {
             if (expectedMessage == null) {
@@ -249,6 +245,9 @@ public class JsonHubProtocolTest {
                     break;
                 case STREAM_ITEM:
                     break;
+                case COMPLETION:
+                    returnType = ((CompletionMessage)expectedMessage).getResult().getClass();
+                    break;
                 default:
                     break;
             }
@@ -256,7 +255,7 @@ public class JsonHubProtocolTest {
 
         @Override
         public Class<?> getReturnType(String invocationId) {
-            return null;
+            return returnType;
         }
 
         @Override

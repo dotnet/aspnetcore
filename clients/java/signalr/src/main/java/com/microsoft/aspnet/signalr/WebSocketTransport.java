@@ -6,6 +6,7 @@ package com.microsoft.aspnet.signalr;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
@@ -47,21 +48,28 @@ class WebSocketTransport implements Transport {
     }
 
     @Override
-    public void start() throws Exception {
-        logger.log(LogLevel.Debug, "Starting Websocket connection.");
-        webSocketClient = createWebSocket(headers);
-
-        if (!webSocketClient.connectBlocking()) {
-            String errorMessage = "There was an error starting the Websockets transport.";
-            logger.log(LogLevel.Debug, errorMessage);
-            throw new Exception(errorMessage);
-        }
-        logger.log(LogLevel.Information, "WebSocket transport connected to: %s", webSocketClient.getURI());
+    public CompletableFuture start() {
+        return CompletableFuture.runAsync(() -> {
+            logger.log(LogLevel.Debug, "Starting Websocket connection.");
+            webSocketClient = createWebSocket(headers);
+            try {
+                if (!webSocketClient.connectBlocking()) {
+                    String errorMessage = "There was an error starting the Websockets transport.";
+                    logger.log(LogLevel.Debug, errorMessage);
+                    throw new RuntimeException(errorMessage);
+                }
+            } catch (InterruptedException e) {
+                String interruptedExMessage = "Connecting the Websockets transport was interrupted.";
+                logger.log(LogLevel.Debug, interruptedExMessage);
+                throw new RuntimeException(interruptedExMessage);
+            }
+            logger.log(LogLevel.Information, "WebSocket transport connected to: %s", webSocketClient.getURI());
+        });
     }
 
     @Override
-    public void send(String message) {
-        webSocketClient.send(message);
+    public CompletableFuture send(String message) {
+        return CompletableFuture.runAsync(() -> webSocketClient.send(message));
     }
 
     @Override
@@ -76,9 +84,11 @@ class WebSocketTransport implements Transport {
     }
 
     @Override
-    public void stop() {
-        webSocketClient.closeConnection(0, "HubConnection Stopped");
-        logger.log(LogLevel.Information, "WebSocket connection stopped");
+    public CompletableFuture stop() {
+        return CompletableFuture.runAsync(() -> {
+            webSocketClient.closeConnection(0, "HubConnection Stopped");
+            logger.log(LogLevel.Information, "WebSocket connection stopped");
+        });
     }
 
     private WebSocketClient createWebSocket(Map<String, String> headers) {

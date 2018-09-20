@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -164,6 +165,10 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         public Task ProtocolError()
         {
             return Clients.Caller.SendAsync("Send", new string('x', 3000), new SelfRef());
+        }
+
+        public void InvalidArgument(CancellationToken token)
+        {
         }
 
         private class SelfRef
@@ -618,6 +623,51 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             await _tcsService.EndMethod.Task;
             // Never ending stream
             return Channel.CreateUnbounded<string>().Reader;
+        }
+
+        public ChannelReader<int> CancelableStream(CancellationToken token)
+        {
+            var channel = Channel.CreateBounded<int>(10);
+
+            Task.Run(async () =>
+            {
+                _tcsService.StartedMethod.SetResult(null);
+                await token.WaitForCancellationAsync();
+                channel.Writer.TryComplete();
+                _tcsService.EndMethod.SetResult(null);
+            });
+
+            return channel.Reader;
+        }
+
+        public ChannelReader<int> CancelableStream2(int ignore, int ignore2, CancellationToken token)
+        {
+            var channel = Channel.CreateBounded<int>(10);
+
+            Task.Run(async () =>
+            {
+                _tcsService.StartedMethod.SetResult(null);
+                await token.WaitForCancellationAsync();
+                channel.Writer.TryComplete();
+                _tcsService.EndMethod.SetResult(null);
+            });
+
+            return channel.Reader;
+        }
+
+        public ChannelReader<int> CancelableStreamMiddle(int ignore, CancellationToken token, int ignore2)
+        {
+            var channel = Channel.CreateBounded<int>(10);
+
+            Task.Run(async () =>
+            {
+                _tcsService.StartedMethod.SetResult(null);
+                await token.WaitForCancellationAsync();
+                channel.Writer.TryComplete();
+                _tcsService.EndMethod.SetResult(null);
+            });
+
+            return channel.Reader;
         }
 
         public int SimpleMethod()

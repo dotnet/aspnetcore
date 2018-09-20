@@ -3,10 +3,15 @@
 
 package com.microsoft.aspnet.signalr;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 
 public class HubConnection {
@@ -18,6 +23,7 @@ public class HubConnection {
     private Boolean handshakeReceived = false;
     private static final String RECORD_SEPARATOR = "\u001e";
     private HubConnectionState hubConnectionState = HubConnectionState.DISCONNECTED;
+    private Lock hubConnectionStateLock = new ReentrantLock();
     private Logger logger;
     private List<Consumer<Exception>> onClosedCallbackList;
     private boolean skipNegotiate = false;
@@ -66,13 +72,13 @@ public class HubConnection {
                 switch (message.getMessageType()) {
                     case INVOCATION:
                         InvocationMessage invocationMessage = (InvocationMessage) message;
-                        List<InvocationHandler> handlers = this.handlers.get(invocationMessage.target);
+                        List<InvocationHandler> handlers = this.handlers.get(invocationMessage.getTarget());
                         if (handlers != null) {
                             for (InvocationHandler handler : handlers) {
-                                handler.getAction().invoke(invocationMessage.arguments);
+                                handler.getAction().invoke(invocationMessage.getArguments());
                             }
                         } else {
-                            logger.log(LogLevel.Warning, "Failed to find handler for %s method.", invocationMessage.target);
+                            logger.log(LogLevel.Warning, "Failed to find handler for %s method.", invocationMessage.getMessageType());
                         }
                         break;
                     case CLOSE:
@@ -83,10 +89,18 @@ public class HubConnection {
                     case PING:
                         // We don't need to do anything in the case of a ping message.
                         break;
+                    case COMPLETION:
+                        CompletionMessage completionMessage = (CompletionMessage)message;
+                        InvocationRequest irq = connectionState.tryRemoveInvocation(completionMessage.getInvocationId());
+                        if (irq == null) {
+                            logger.log(LogLevel.Warning, "Dropped unsolicited Completion message for invocation '%s'.", completionMessage.getInvocationId());
+                            continue;
+                        }
+                        irq.complete(completionMessage);
+                        break;
                     case STREAM_INVOCATION:
                     case STREAM_ITEM:
                     case CANCEL_INVOCATION:
-                    case COMPLETION:
                         logger.log(LogLevel.Error, "This client does not support %s messages.", message.getMessageType());
 
                         throw new UnsupportedOperationException(String.format("The message type %s is not supported yet.", message.getMessageType()));
@@ -97,6 +111,29 @@ public class HubConnection {
         if (transport != null) {
             this.transport = transport;
         }
+    }
+
+    private NegotiateResponse handleNegotiate() throws IOException {
+        accessToken = (negotiateResponse == null) ? null : negotiateResponse.getAccessToken();
+        negotiateResponse = Negotiate.processNegotiate(url, accessToken);
+
+        if (negotiateResponse.getConnectionId() != null) {
+            if (url.contains("?")) {
+                url = url + "&id=" + negotiateResponse.getConnectionId();
+            } else {
+                url = url + "?id=" + negotiateResponse.getConnectionId();
+            }
+        }
+
+        if (negotiateResponse.getAccessToken() != null) {
+            this.headers.put("Authorization", "Bearer " + negotiateResponse.getAccessToken());
+        }
+
+        if (negotiateResponse.getRedirectUrl() != null) {
+            this.url = this.negotiateResponse.getRedirectUrl();
+        }
+
+        return negotiateResponse;
     }
 
     public HubConnection(String url, Transport transport, Logger logger) {
@@ -150,32 +187,15 @@ public class HubConnection {
      *
      * @throws Exception An error occurred while connecting.
      */
-    public void start() throws Exception {
+    public CompletableFuture start() throws Exception {
         if (hubConnectionState != HubConnectionState.DISCONNECTED) {
-            return;
+            return CompletableFuture.completedFuture(null);
         }
         if (!skipNegotiate) {
             int negotiateAttempts = 0;
             do {
                 accessToken = (negotiateResponse == null) ? null : negotiateResponse.getAccessToken();
-                negotiateResponse = Negotiate.processNegotiate(url, accessToken);
-
-                if (negotiateResponse.getConnectionId() != null) {
-                    if (url.contains("?")) {
-                        url = url + "&id=" + negotiateResponse.getConnectionId();
-                    } else {
-                        url = url + "?id=" + negotiateResponse.getConnectionId();
-                    }
-                }
-
-                if (negotiateResponse.getAccessToken() != null) {
-                    this.headers.put("Authorization", "Bearer " + negotiateResponse.getAccessToken());
-                }
-
-                if (negotiateResponse.getRedirectUrl() != null) {
-                    url = this.negotiateResponse.getRedirectUrl();
-                }
-
+                negotiateResponse = handleNegotiate();
                 negotiateAttempts++;
             } while (negotiateResponse.getRedirectUrl() != null && negotiateAttempts < MAX_NEGOTIATE_ATTEMPTS);
             if (!negotiateResponse.getAvailableTransports().contains("WebSockets")) {
@@ -189,34 +209,53 @@ public class HubConnection {
         }
 
         transport.setOnReceive(this.callback);
-        transport.start();
-        String handshake = HandshakeProtocol.createHandshakeRequestMessage(new HandshakeRequestMessage(protocol.getName(), protocol.getVersion()));
-        transport.send(handshake);
-        hubConnectionState = HubConnectionState.CONNECTED;
-        connectionState = new ConnectionState(this);
-        logger.log(LogLevel.Information, "HubConnected started.");
+        return transport.start().thenCompose((future) -> {
+            String handshake = HandshakeProtocol.createHandshakeRequestMessage(new HandshakeRequestMessage(protocol.getName(), protocol.getVersion()));
+            return transport.send(handshake).thenRun(() -> {
+                hubConnectionStateLock.lock();
+                try {
+                    hubConnectionState = HubConnectionState.CONNECTED;
+                    connectionState = new ConnectionState(this);
+                    logger.log(LogLevel.Information, "HubConnected started.");
+                } finally {
+                    hubConnectionStateLock.unlock();
+                }
+            });
+        });
+
     }
 
     /**
      * Stops a connection to the server.
      */
     private void stop(String errorMessage) {
-        if (hubConnectionState == HubConnectionState.DISCONNECTED) {
-            return;
+        HubException hubException = null;
+        hubConnectionStateLock.lock();
+        try {
+            if (hubConnectionState == HubConnectionState.DISCONNECTED) {
+                return;
+            }
+
+            if (errorMessage != null) {
+                logger.log(LogLevel.Error, "HubConnection disconnected with an error %s.", errorMessage);
+            } else {
+                logger.log(LogLevel.Debug, "Stopping HubConnection.");
+            }
+
+            transport.stop();
+            hubConnectionState = HubConnectionState.DISCONNECTED;
+
+            if (errorMessage != null) {
+                hubException = new HubException(errorMessage);
+            }
+            connectionState.cancelOutstandingInvocations(hubException);
+            connectionState = null;
+            logger.log(LogLevel.Information, "HubConnection stopped.");
+        } finally {
+            hubConnectionStateLock.unlock();
         }
 
-        if (errorMessage != null) {
-            logger.log(LogLevel.Error, "HubConnection disconnected with an error %s.", errorMessage);
-        } else {
-            logger.log(LogLevel.Debug, "Stopping HubConnection.");
-        }
-
-        transport.stop();
-        hubConnectionState = HubConnectionState.DISCONNECTED;
-        connectionState = null;
-        logger.log(LogLevel.Information, "HubConnection stopped.");
         if (onClosedCallbackList != null) {
-            HubException hubException = new HubException(errorMessage);
             for (Consumer<Exception> callback : onClosedCallbackList) {
                 callback.accept(hubException);
             }
@@ -243,10 +282,67 @@ public class HubConnection {
             throw new HubException("The 'send' method cannot be called if the connection is not active");
         }
 
-        InvocationMessage invocationMessage = new InvocationMessage(method, args);
-        String message = protocol.writeMessage(invocationMessage);
-        logger.log(LogLevel.Debug, "Sending message");
-        transport.send(message);
+        InvocationMessage invocationMessage = new InvocationMessage(null, method, args);
+        sendHubMessage(invocationMessage);
+    }
+
+    public <T> CompletableFuture<T> invoke(Class<T> returnType, String method, Object... args) throws Exception {
+        String id = connectionState.getNextInvocationId();
+        InvocationMessage invocationMessage = new InvocationMessage(id, method, args);
+
+        CompletableFuture<T> future = new CompletableFuture<>();
+        InvocationRequest irq = new InvocationRequest(returnType, id);
+        connectionState.addInvocation(irq);
+
+        // forward the invocation result or error to the user
+        // run continuations on a separate thread
+        CompletableFuture<Object> pendingCall = irq.getPendingCall();
+        pendingCall.whenCompleteAsync((result, error) -> {
+            if (error == null) {
+                // Primitive types can't be cast with the Class cast function
+                if (returnType.isPrimitive()) {
+                    future.complete((T)result);
+                } else {
+                    future.complete(returnType.cast(result));
+                }
+            } else {
+                future.completeExceptionally(error);
+            }
+        });
+
+        // Make sure the actual send is after setting up the future otherwise there is a race
+        // where the map doesn't have the future yet when the response is returned
+        sendHubMessage(invocationMessage);
+
+        return future;
+    }
+
+    private void sendHubMessage(HubMessage message) throws Exception {
+        String serializedMessage = protocol.writeMessage(message);
+        if (message.getMessageType() == HubMessageType.INVOCATION) {
+            logger.log(LogLevel.Debug, "Sending %d message '%s'.", message.getMessageType().value, ((InvocationMessage)message).getInvocationId());
+        } else {
+            logger.log(LogLevel.Debug, "Sending %d message.", message.getMessageType().value);
+        }
+        transport.send(serializedMessage);
+    }
+
+    /**
+     * Removes all handlers associated with the method with the specified method name.
+     *
+     * @param name The name of the hub method from which handlers are being removed.
+     */
+    public void remove(String name) {
+        handlers.remove(name);
+        logger.log(LogLevel.Trace, "Removing handlers for client method %s", name);
+    }
+
+    public void onClosed(Consumer<Exception> callback) {
+        if (onClosedCallbackList == null) {
+            onClosedCallbackList = new ArrayList<>();
+        }
+
+        onClosedCallbackList.add(callback);
     }
 
     /**
@@ -515,34 +611,80 @@ public class HubConnection {
         return new Subscription(handlers, handler, target);
     }
 
-    /**
-     * Removes all handlers associated with the method with the specified method name.
-     *
-     * @param name The name of the hub method from which handlers are being removed.
-     */
-    public void remove(String name) {
-        handlers.remove(name);
-        logger.log(LogLevel.Trace, "Removing handlers for client method %s", name);
-    }
-
-    public void onClosed(Consumer<Exception> callback) {
-        if (onClosedCallbackList == null) {
-            onClosedCallbackList = new ArrayList<>();
-        }
-
-        onClosedCallbackList.add(callback);
-    }
-
     private class ConnectionState implements InvocationBinder {
-        HubConnection connection;
+        private HubConnection connection;
+        private AtomicInteger nextId = new AtomicInteger(0);
+        private HashMap<String, InvocationRequest> pendingInvocations = new HashMap<>();
+        private Lock lock = new ReentrantLock();
 
         public ConnectionState(HubConnection connection) {
             this.connection = connection;
         }
 
+        public String getNextInvocationId() {
+            int i = nextId.incrementAndGet();
+            return Integer.toString(i);
+        }
+
+        public void cancelOutstandingInvocations(Exception ex) {
+            lock.lock();
+            try {
+                pendingInvocations.forEach((key, irq) -> {
+                    if (ex == null) {
+                        irq.cancel();
+                    } else {
+                        irq.fail(ex);
+                    }
+                });
+
+                pendingInvocations.clear();
+            } finally {
+                lock.unlock();
+            }
+        }
+
+        public void addInvocation(InvocationRequest irq) {
+            lock.lock();
+            try {
+                pendingInvocations.compute(irq.getInvocationId(), (key, value) -> {
+                    if (value != null) {
+                        // This should never happen
+                        throw new IllegalStateException("Invocation Id is already used");
+                    }
+
+                    return irq;
+                });
+            } finally {
+                lock.unlock();
+            }
+        }
+
+        public InvocationRequest getInvocation(String id) {
+            lock.lock();
+            try {
+                return pendingInvocations.get(id);
+            } finally {
+                lock.unlock();
+            }
+        }
+
+        public InvocationRequest tryRemoveInvocation(String id) {
+            lock.lock();
+            try {
+                return pendingInvocations.remove(id);
+            } finally {
+                lock.unlock();
+            }
+        }
+
         @Override
         public Class<?> getReturnType(String invocationId) {
-            return null;
+            InvocationRequest irq = getInvocation(invocationId);
+            if (irq == null) {
+                return null;
+            }
+
+            return irq.getReturnType();
         }
 
         @Override

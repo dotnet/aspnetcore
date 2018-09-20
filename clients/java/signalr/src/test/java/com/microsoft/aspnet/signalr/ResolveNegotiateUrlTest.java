@@ -3,39 +3,28 @@
 
 package com.microsoft.aspnet.signalr;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.util.Arrays;
-import java.util.Collection;
+import java.util.stream.Stream;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
-
-@RunWith(Parameterized.class)
 public class ResolveNegotiateUrlTest {
-    private String url;
-    private String resolvedUrl;
-
-    public ResolveNegotiateUrlTest(String url, String resolvedUrl) {
-        this.url = url;
-        this.resolvedUrl = resolvedUrl;
+    private static Stream<Arguments> protocols() {
+        return Stream.of(
+                Arguments.of("http://example.com/hub/", "http://example.com/hub/negotiate"),
+                Arguments.of("http://example.com/hub", "http://example.com/hub/negotiate"),
+                Arguments.of("http://example.com/endpoint?q=my/Data", "http://example.com/endpoint/negotiate?q=my/Data"),
+                Arguments.of("http://example.com/endpoint/?q=my/Data", "http://example.com/endpoint/negotiate?q=my/Data"),
+                Arguments.of("http://example.com/endpoint/path/more?q=my/Data", "http://example.com/endpoint/path/more/negotiate?q=my/Data"));
     }
 
-    @Parameterized.Parameters
-    public static Collection protocols() {
-        return Arrays.asList(new String[][]{
-                {"http://example.com/hub/", "http://example.com/hub/negotiate"},
-                {"http://example.com/hub", "http://example.com/hub/negotiate"},
-                {"http://example.com/endpoint?q=my/Data", "http://example.com/endpoint/negotiate?q=my/Data"},
-                {"http://example.com/endpoint/?q=my/Data", "http://example.com/endpoint/negotiate?q=my/Data"},
-                {"http://example.com/endpoint/path/more?q=my/Data", "http://example.com/endpoint/path/more/negotiate?q=my/Data"},});
-    }
-
-    @Test
-    public void checkNegotiateUrl() {
-        String urlResult = Negotiate.resolveNegotiateUrl(this.url);
-        assertEquals(this.resolvedUrl, urlResult);
+    @ParameterizedTest
+    @MethodSource("protocols")
+    public void checkNegotiateUrl(String url, String resolvedUrl) {
+        String urlResult = Negotiate.resolveNegotiateUrl(url);
+        assertEquals(resolvedUrl, urlResult);
     }
 }

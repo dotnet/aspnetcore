@@ -23,8 +23,6 @@ namespace Microsoft.AspNetCore.SignalR.Internal
         public HubMethodDescriptor(ObjectMethodExecutor methodExecutor, IEnumerable<IAuthorizeData> policies)
         {
             MethodExecutor = methodExecutor;
-            ParameterTypes = methodExecutor.MethodParameters.Select(GetParameterType).ToArray();
-            Policies = policies.ToArray();
 
             NonAsyncReturnType = (MethodExecutor.IsMethodAsync)
                 ? MethodExecutor.AsyncResultType
@@ -35,6 +33,25 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 IsChannel = true;
                 StreamReturnType = channelItemType;
             }
+
+            // Take out synthetic arguments that will be provided by the server, this list will be given to the protocol parsers
+            ParameterTypes = methodExecutor.MethodParameters.Where(p =>
+            {
+                // Only streams can take CancellationTokens currently
+                if (IsStreamable && p.ParameterType == typeof(CancellationToken))
+                {
+                    HasSyntheticArguments = true;
+                    return false;
+                }
+                return true;
+            }).Select(GetParameterType).ToArray();
+
+            if (HasSyntheticArguments)
+            {
+                OriginalParameterTypes = methodExecutor.MethodParameters.Select(p => p.ParameterType).ToArray();
+            }
+
+            Policies = policies.ToArray();
         }
 
         public bool HasStreamingParameters { get; private set; }
@@ -45,6 +62,8 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
         public IReadOnlyList<Type> ParameterTypes { get; }
 
+        public IReadOnlyList<Type> OriginalParameterTypes { get; }
+
         public Type NonAsyncReturnType { get; }
 
         public bool IsChannel { get; }
@@ -54,6 +73,8 @@ namespace Microsoft.AspNetCore.SignalR.Internal
         public Type StreamReturnType { get; }
 
         public IList<IAuthorizeData> Policies { get; }
+
+        public bool HasSyntheticArguments { get; private set; }
 
         private Type GetParameterType(ParameterInfo p)
         {

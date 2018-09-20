@@ -3,10 +3,12 @@
 
 package com.microsoft.aspnet.signalr;
 
+import java.util.concurrent.CompletableFuture;
+
 interface Transport {
-    void start() throws Exception;
-    void send(String message) throws Exception;
+    CompletableFuture start() throws Exception;
+    CompletableFuture send(String message);
     void setOnReceive(OnReceiveCallBack callback);
     void onReceive(String message) throws Exception;
-    void stop();
+    CompletableFuture stop();
 }

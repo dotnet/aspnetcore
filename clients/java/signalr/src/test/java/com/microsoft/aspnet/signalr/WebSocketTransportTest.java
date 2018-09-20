@@ -3,20 +3,17 @@
 
 package com.microsoft.aspnet.signalr;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import static org.junit.jupiter.api.Assertions.*;
+
+import java.util.concurrent.TimeUnit;
+
+import org.junit.jupiter.api.Test;
 
 public class WebSocketTransportTest {
-
-    @Rule
-    public ExpectedException expectedEx = ExpectedException.none();
-
     @Test
     public void WebsocketThrowsIfItCantConnect() throws Exception {
-        expectedEx.expect(Exception.class);
-        expectedEx.expectMessage("There was an error starting the Websockets transport");
         Transport transport = new WebSocketTransport("www.notarealurl12345.fake", new NullLogger());
-        transport.start();
+        Throwable exception = assertThrows(Exception.class, () -> transport.start().get(1,TimeUnit.SECONDS));
+        assertEquals("There was an error starting the Websockets transport.", exception.getCause().getMessage());
     }
 }
