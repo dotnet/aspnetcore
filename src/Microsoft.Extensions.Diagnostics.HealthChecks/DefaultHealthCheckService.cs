@@ -77,7 +77,9 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
 
                             Log.HealthCheckEnd(_logger, registration, entry, stopwatch.GetElapsedTime());
                         }
-                        catch (Exception ex)
+
+                        // Allow cancellation to propagate.
+                        catch (Exception ex) when (ex as OperationCanceledException == null)
                         {
                             entry = new HealthReportEntry(HealthStatus.Failed, ex.Message, ex, data: null);
                             Log.HealthCheckError(_logger, registration, ex, stopwatch.GetElapsedTime());

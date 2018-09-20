@@ -33,7 +33,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
                 .AddCheck("Baz", new DelegateHealthCheck(_ => Task.FromResult(HealthCheckResult.Passed())));
 
             var services = serviceCollection.BuildServiceProvider();
-            
+
             var scopeFactory = services.GetRequiredService<IServiceScopeFactory>();
             var options = services.GetRequiredService<IOptions<HealthCheckServiceOptions>>();
             var logger = services.GetRequiredService<ILogger<DefaultHealthCheckService>>();
@@ -186,6 +186,35 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
                         actual.Value.Data,
                         kvp => Assert.Equal(kvp, new KeyValuePair<string, object>("name", "C")));
                 });
+        }
+
+        [Fact]
+        public async Task CheckHealthAsync_Cancellation_CanPropagate()
+        {
+            // Arrange
+            var insideCheck = new TaskCompletionSource<object>();
+
+            var service = CreateHealthChecksService(b =>
+            {
+                b.AddAsyncCheck("cancels", async ct =>
+                {
+                    insideCheck.SetResult(null);
+
+                    await Task.Delay(10000, ct);
+                    return HealthCheckResult.Failed();
+                });
+            });
+
+            var cancel = new CancellationTokenSource();
+            var task = service.CheckHealthAsync(cancel.Token);
+
+            // After this returns we know the check has started
+            await insideCheck.Task;
+
+            cancel.Cancel();
+
+            // Act & Assert
+            await Assert.ThrowsAsync<TaskCanceledException>(async () => await task);
         }
 
         [Fact]
@@ -366,7 +395,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
             public CheckWithServiceDependency(AnotherService _)
             {
             }
-            
+
             public Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
             {
                 return Task.FromResult(HealthCheckResult.Passed());
