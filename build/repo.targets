@@ -90,9 +90,8 @@
     <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="PrepareSiteExtensionSdk" Properties="SiteExtensionArch=x64" />
   </Target>
 
-  <Target Name="BuildSiteExtension" DependsOnTargets="_CleanSiteExtension;PrepareSiteExtensionSdks">
-    <!-- Strip LZMA from sdk -->
-    <Delete Files="$(SiteExtensionWorkingDirectory)\sdk\$(_SdkVersion)\nuGetPackagesArchive.lzma" />
+  <Target Name="BuildSiteExtension">
+
     <MSBuild Projects="%(SiteExtensions.Identity)"
       Targets="Restore"
       Properties="BuildNumber=$(BuildNumber)" />

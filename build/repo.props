@@ -13,8 +13,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <SiteExtensions Include="$(RepositoryRoot)extensions\Microsoft.AspNetCore.Runtime.SiteExtension\Microsoft.AspNetCore.Runtime.SiteExtension.csproj" PackageName="AspNetCoreRuntime.2.1.x64" BuildProperties="RuntimeArch=x64;" />
-    <SiteExtensions Include="$(RepositoryRoot)extensions\Microsoft.AspNetCore.Runtime.SiteExtension\Microsoft.AspNetCore.Runtime.SiteExtension.csproj" PackageName="AspNetCoreRuntime.2.1.x86" BuildProperties="RuntimeArch=x86;" />
     <SiteExtensions Include="$(RepositoryRoot)extensions\Microsoft.AspNetCore.AzureAppServices.SiteExtension\Microsoft.AspNetCore.AzureAppServices.SiteExtension.csproj" PackageName="Microsoft.AspNetCore.AzureAppServices.SiteExtension" />
   </ItemGroup>
 
