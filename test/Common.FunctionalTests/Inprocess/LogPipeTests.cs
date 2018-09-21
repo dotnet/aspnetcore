@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.IO;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
@@ -41,19 +40,19 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
 
         [ConditionalTheory]
-        [InlineData("ConsoleErrorWrite")]
-        [InlineData("ConsoleWrite")]
+        [InlineData("ConsoleErrorWriteStartServer")]
+        [InlineData("ConsoleWriteStartServer")]
         public async Task CheckStdoutLoggingToPipeWithFirstWrite(string path)
         {
             var deploymentParameters = _fixture.GetBaseDeploymentParameters(publish: true);
 
-            var firstWriteString = path + path;
+            var firstWriteString = "TEST MESSAGE";
 
-            deploymentParameters.WebConfigBasedEnvironmentVariables["ASPNETCORE_INPROCESS_INITIAL_WRITE"] = firstWriteString;
+            deploymentParameters.TransformArguments((a, _) => $"{a} {path}");
 
             var deploymentResult = await DeployAsync(deploymentParameters);
 
-            await Helpers.AssertStarts(deploymentResult, path);
+            await Helpers.AssertStarts(deploymentResult);
 
             StopServer();
 
@@ -61,7 +60,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             {
                 // We can't read stdout logs from IIS as they aren't redirected.
                 Assert.Contains(TestSink.Writes, context => context.Message.Contains(firstWriteString));
-                Assert.Contains(TestSink.Writes, context => context.Message.Contains("TEST MESSAGE"));
             }
         }
 

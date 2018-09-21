@@ -79,31 +79,33 @@ namespace TestSite
                         host.Run();
                     }
                     break;
+                case "ConsoleErrorWriteStartServer":
+                    Console.Error.WriteLine("TEST MESSAGE");
+                    return StartServer();
+                case "ConsoleWriteStartServer":
+                    Console.WriteLine("TEST MESSAGE");
+                    return StartServer();
                 default:
-                    {
+                    return StartServer();
 
-                        var envVariable = Environment.GetEnvironmentVariable("ASPNETCORE_INPROCESS_INITIAL_WRITE");
-                        if (!string.IsNullOrEmpty(envVariable))
-                        {
-                            Console.WriteLine(envVariable);
-                            Console.Error.WriteLine(envVariable);
-                        }
-
-                        var host = new WebHostBuilder()
-                            .ConfigureLogging((_, factory) =>
-                            {
-                                factory.AddConsole();
-                                factory.AddFilter("Console", level => level >= LogLevel.Information);
-                            })
-                            .UseIIS()
-                            .UseStartup<Startup>()
-                            .Build();
-
-                        host.Run();
-                        return 0;
-                    }
             }
             return 12;
+        }
+
+        private static int StartServer()
+        {
+            var host = new WebHostBuilder()
+                .ConfigureLogging((_, factory) =>
+                {
+                    factory.AddConsole();
+                    factory.AddFilter("Console", level => level >= LogLevel.Information);
+                })
+                .UseIIS()
+                .UseStartup<Startup>()
+                .Build();
+
+            host.Run();
+            return 0;
         }
     }
 }
