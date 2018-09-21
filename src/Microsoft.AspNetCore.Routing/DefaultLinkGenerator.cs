@@ -73,6 +73,8 @@ namespace Microsoft.AspNetCore.Routing
             HttpContext httpContext,
             TAddress address,
             RouteValueDictionary values,
+            RouteValueDictionary ambientValues = default,
+            PathString? pathBase = default,
             FragmentString fragment = default,
             LinkOptions options = null)
         {
@@ -89,9 +91,9 @@ namespace Microsoft.AspNetCore.Routing
 
             return GetPathByEndpoints(
                 endpoints,
-                GetAmbientValues(httpContext),
                 values,
-                httpContext.Request.PathBase,
+                ambientValues,
+                pathBase ?? httpContext.Request.PathBase,
                 fragment,
                 options);
         }
@@ -111,17 +113,21 @@ namespace Microsoft.AspNetCore.Routing
 
             return GetPathByEndpoints(
                 endpoints,
-                ambientValues: null,
                 values,
-                pathBase,
-                fragment,
-                options);
+                ambientValues: null,
+                pathBase: pathBase,
+                fragment: fragment,
+                options: options);
         }
 
         public override string GetUriByAddress<TAddress>(
             HttpContext httpContext,
             TAddress address,
             RouteValueDictionary values,
+            RouteValueDictionary ambientValues = default,
+            string scheme = default,
+            HostString? host = default,
+            PathString? pathBase = default,
             FragmentString fragment = default,
             LinkOptions options = null)
         {
@@ -138,11 +144,11 @@ namespace Microsoft.AspNetCore.Routing
 
             return GetUriByEndpoints(
                 endpoints,
-                GetAmbientValues(httpContext),
                 values,
-                httpContext.Request.Scheme,
-                httpContext.Request.Host,
-                httpContext.Request.PathBase,
+                ambientValues,
+                scheme ?? httpContext.Request.Scheme,
+                host ?? httpContext.Request.Host,
+                pathBase ?? httpContext.Request.PathBase,
                 fragment,
                 options);
         }
@@ -156,9 +162,14 @@ namespace Microsoft.AspNetCore.Routing
             FragmentString fragment = default,
             LinkOptions options = null)
         {
+            if (string.IsNullOrEmpty(scheme))
+            {
+                throw new ArgumentException("A scheme must be provided.", nameof(scheme));
+            }
+
             if (!host.HasValue)
             {
-                throw new ArgumentNullException(nameof(host));
+                throw new ArgumentException("A host must be provided.", nameof(host));
             }
 
             var endpoints = GetEndpoints(address);
@@ -169,16 +180,16 @@ namespace Microsoft.AspNetCore.Routing
 
             return GetUriByEndpoints(
                 endpoints,
-                ambientValues: null,
                 values,
-                scheme,
-                host,
-                pathBase,
-                fragment,
-                options);
+                ambientValues: null,
+                scheme: scheme,
+                host: host,
+                pathBase: pathBase,
+                fragment: fragment,
+                options: options);
         }
 
-        public override LinkGenerationTemplate GetTemplateByAddress<TAddress>(TAddress address)
+        public override LinkGenerationTemplate GetTemplateByAddress<TAddress>(TAddress address, LinkGenerationTemplateOptions options = default)
         {
             var endpoints = GetEndpoints(address);
             if (endpoints.Count == 0)
@@ -186,7 +197,7 @@ namespace Microsoft.AspNetCore.Routing
                 return null;
             }
 
-            return new DefaultLinkGenerationTemplate(this, endpoints);
+            return new DefaultLinkGenerationTemplate(this, endpoints, options);
         }
 
         private List<RouteEndpoint> GetEndpoints<TAddress>(TAddress address)
@@ -209,8 +220,8 @@ namespace Microsoft.AspNetCore.Routing
         // Also called from DefaultLinkGenerationTemplate
         public string GetPathByEndpoints(
             List<RouteEndpoint> endpoints,
-            RouteValueDictionary ambientValues,
             RouteValueDictionary values,
+            RouteValueDictionary ambientValues,
             PathString pathBase,
             FragmentString fragment,
             LinkOptions options)
@@ -220,11 +231,11 @@ namespace Microsoft.AspNetCore.Routing
                 var endpoint = endpoints[i];
                 if (TryProcessTemplate(
                     httpContext: null,
-                    endpoint,
+                    endpoint: endpoint,
+                    values: values,
                     ambientValues: ambientValues,
-                    values,
-                    options,
-                    out var result))
+                    options: options,
+                    result: out var result))
                 {
                     var uri = UriHelper.BuildRelative(
                         pathBase,
@@ -243,8 +254,8 @@ namespace Microsoft.AspNetCore.Routing
         // Also called from DefaultLinkGenerationTemplate
         public string GetUriByEndpoints(
             List<RouteEndpoint> endpoints,
-            RouteValueDictionary ambientValues,
             RouteValueDictionary values,
+            RouteValueDictionary ambientValues,
             string scheme,
             HostString host,
             PathString pathBase,
@@ -256,11 +267,11 @@ namespace Microsoft.AspNetCore.Routing
                 var endpoint = endpoints[i];
                 if (TryProcessTemplate(
                     httpContext: null,
-                    endpoint,
+                    endpoint: endpoint,
+                    values: values,
                     ambientValues: ambientValues,
-                    values,
-                    options,
-                    out var result))
+                    options: options,
+                    result: out var result))
                 {
                     var uri = UriHelper.BuildAbsolute(
                         scheme,
@@ -323,19 +334,19 @@ namespace Microsoft.AspNetCore.Routing
         internal bool TryProcessTemplate(
             HttpContext httpContext,
             RouteEndpoint endpoint,
+            RouteValueDictionary values,
             RouteValueDictionary ambientValues,
-            RouteValueDictionary explicitValues,
             LinkOptions options,
             out (PathString path, QueryString query) result)
         {
             var templateBinder = GetTemplateBinder(endpoint);
 
-            var templateValuesResult = templateBinder.GetValues(ambientValues, explicitValues);
+            var templateValuesResult = templateBinder.GetValues(ambientValues, values);
             if (templateValuesResult == null)
             {
                 // We're missing one of the required values for this route.
                 result = default;
-                Log.TemplateFailedRequiredValues(_logger, endpoint, ambientValues, explicitValues);
+                Log.TemplateFailedRequiredValues(_logger, endpoint, ambientValues, values);
                 return false;
             }
 

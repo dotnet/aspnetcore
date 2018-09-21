@@ -3,6 +3,7 @@
 
 using System.Linq;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Routing
@@ -16,6 +17,41 @@ namespace Microsoft.AspNetCore.Routing
     // Does not cover the RouteValueBasedEndpointFinder in detail. see RouteValueBasedEndpointFinderTest
     public class LinkGeneratorRouteValuesAddressExtensionsTest : LinkGeneratorTestBase
     {
+        [Fact]
+        public void GetPathByRouteValues_WithHttpContext_UsesAmbientValues()
+        {
+            // Arrange
+            var endpoint1 = EndpointFactory.CreateRouteEndpoint(
+                "Home/Index/{id}",
+                defaults: new { controller = "Home", action = "Index", },
+                metadata: new[] { new RouteValuesAddressMetadata(routeName: null, new RouteValueDictionary(new { controller = "Home", action = "Index", })) });
+            var endpoint2 = EndpointFactory.CreateRouteEndpoint(
+                "Home/Index/{id?}",
+                defaults: new { controller = "Home", action = "Index", },
+                metadata: new[] { new RouteValuesAddressMetadata(routeName: null, new RouteValueDictionary(new { controller = "Home", action = "Index", })) });
+
+            var linkGenerator = CreateLinkGenerator(endpoint1, endpoint2);
+
+            var feature = new EndpointFeature()
+            {
+                RouteValues = new RouteValueDictionary(new { action = "Index", })
+            };
+            var httpContext = CreateHttpContext();
+            httpContext.Features.Set<IRouteValuesFeature>(feature);
+            httpContext.Request.PathBase = new PathString("/Foo/Bar?encodeme?");
+
+            // Act
+            var path = linkGenerator.GetPathByRouteValues(
+                httpContext,
+                routeName: null,
+                values: new RouteValueDictionary(new { controller = "Home", query = "some?query" }),
+                fragment: new FragmentString("#Fragment?"),
+                options: new LinkOptions() { AppendTrailingSlash = true, });
+
+            // Assert
+            Assert.Equal("/Foo/Bar%3Fencodeme%3F/Home/Index/?query=some%3Fquery#Fragment?", path);
+        }
+
         [Fact]
         public void GetPathByRouteValues_WithoutHttpContext_WithPathBaseAndFragment()
         {
@@ -66,8 +102,8 @@ namespace Microsoft.AspNetCore.Routing
                 httpContext,
                 routeName: null,
                 values: new RouteValueDictionary(new { controller = "Home", action = "Index", query = "some?query" }),
-                new FragmentString("#Fragment?"),
-                new LinkOptions() { AppendTrailingSlash = true, });
+                fragment: new FragmentString("#Fragment?"),
+                options: new LinkOptions() { AppendTrailingSlash = true, });
 
             // Assert
             Assert.Equal("/Foo/Bar%3Fencodeme%3F/Home/Index/?query=some%3Fquery#Fragment?", path);
@@ -127,8 +163,8 @@ namespace Microsoft.AspNetCore.Routing
                 httpContext,
                 routeName: null,
                 values: new RouteValueDictionary(new { controller = "Home", action = "Index", query = "some?query" }),
-                new FragmentString("#Fragment?"),
-                new LinkOptions() { AppendTrailingSlash = true, });
+                fragment: new FragmentString("#Fragment?"),
+                options: new LinkOptions() { AppendTrailingSlash = true, });
 
             // Assert
             Assert.Equal("http://example.com/Foo/Bar%3Fencodeme%3F/Home/Index/?query=some%3Fquery#Fragment?", uri);

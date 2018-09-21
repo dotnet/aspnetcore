@@ -370,7 +370,7 @@ namespace Microsoft.AspNetCore.Routing
                 httpContext,
                 1,
                 values: new RouteValueDictionary(new { controller = "Home", action = "In?dex", query = "some?query" }),
-                new FragmentString("#Fragment?"));
+                fragment: new FragmentString("#Fragment?"));
 
             // Assert
             Assert.Equal("/Foo/Bar%3Fencodeme%3F/Home/In%3Fdex?query=some%3Fquery#Fragment?", path);
@@ -419,7 +419,7 @@ namespace Microsoft.AspNetCore.Routing
                 httpContext,
                 1,
                 values: new RouteValueDictionary(new { controller = "Home", action = "In?dex", query = "some?query" }),
-                new FragmentString("#Fragment?"));
+                fragment: new FragmentString("#Fragment?"));
 
             // Assert
             Assert.Equal("http://example.com/Foo/Bar%3Fencodeme%3F/Home/In%3Fdex?query=some%3Fquery#Fragment?", uri);
@@ -434,12 +434,16 @@ namespace Microsoft.AspNetCore.Routing
 
             var linkGenerator = CreateLinkGenerator(endpoint1, endpoint2);
 
-            var httpContext = CreateHttpContext(new { controller = "Home", });
+            var httpContext = CreateHttpContext();
             httpContext.Request.Scheme = "http";
             httpContext.Request.Host = new HostString("example.com");
 
             // Act
-            var uri = linkGenerator.GetPathByAddress(httpContext, 1, values: new RouteValueDictionary(new { action = "Index", }));
+            var uri = linkGenerator.GetPathByAddress(
+                httpContext, 
+                1, 
+                values: new RouteValueDictionary(new { action = "Index", }), 
+                ambientValues: new RouteValueDictionary(new { controller = "Home", }));
 
             // Assert
             Assert.Equal("/Home/Index", uri);
@@ -454,15 +458,69 @@ namespace Microsoft.AspNetCore.Routing
 
             var linkGenerator = CreateLinkGenerator(endpoint1, endpoint2);
 
-            var httpContext = CreateHttpContext(new { controller = "Home", });
+            var httpContext = CreateHttpContext();
             httpContext.Request.Scheme = "http";
             httpContext.Request.Host = new HostString("example.com");
 
             // Act
-            var uri = linkGenerator.GetUriByAddress(httpContext, 1, values: new RouteValueDictionary(new { action = "Index", }));
+            var uri = linkGenerator.GetUriByAddress(
+                httpContext, 
+                1, 
+                values: new RouteValueDictionary(new { action = "Index", }),
+                ambientValues: new RouteValueDictionary(new { controller = "Home", }));
 
             // Assert
             Assert.Equal("http://example.com/Home/Index", uri);
+        }
+
+        [Fact]
+        public void GetPathByAddress_WithHttpContext_CanOverrideUriParts()
+        {
+            // Arrange
+            var endpoint1 = EndpointFactory.CreateRouteEndpoint("{controller}/{action}/{id}", metadata: new object[] { new IntMetadata(1), });
+            var endpoint2 = EndpointFactory.CreateRouteEndpoint("{controller}/{action}/{id?}", metadata: new object[] { new IntMetadata(1), });
+
+            var linkGenerator = CreateLinkGenerator(endpoint1, endpoint2);
+
+            var httpContext = CreateHttpContext();
+            httpContext.Request.PathBase = "/Foo";
+
+            // Act
+            var uri = linkGenerator.GetPathByAddress(
+                httpContext,
+                1,
+                values: new RouteValueDictionary(new { action = "Index", controller= "Home", }),
+                pathBase: "/");
+
+            // Assert
+            Assert.Equal("/Home/Index", uri);
+        }
+
+        [Fact]
+        public void GetUriByAddress_WithHttpContext_CanOverrideUriParts()
+        {
+            // Arrange
+            var endpoint1 = EndpointFactory.CreateRouteEndpoint("{controller}/{action}/{id}", metadata: new object[] { new IntMetadata(1), });
+            var endpoint2 = EndpointFactory.CreateRouteEndpoint("{controller}/{action}/{id?}", metadata: new object[] { new IntMetadata(1), });
+
+            var linkGenerator = CreateLinkGenerator(endpoint1, endpoint2);
+
+            var httpContext = CreateHttpContext();
+            httpContext.Request.Scheme = "http";
+            httpContext.Request.Host = new HostString("example.com");
+            httpContext.Request.PathBase = "/Foo";
+
+            // Act
+            var uri = linkGenerator.GetUriByAddress(
+                httpContext,
+                1,
+                values: new RouteValueDictionary(new { action = "Index", controller = "Home", }),
+                scheme: "ftp",
+                host: new HostString("example.com:5000"),
+                pathBase: "/");
+
+            // Assert
+            Assert.Equal("ftp://example.com:5000/Home/Index", uri);
         }
 
         [Fact]

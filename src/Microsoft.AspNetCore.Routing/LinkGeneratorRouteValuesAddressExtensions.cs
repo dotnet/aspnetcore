@@ -11,6 +11,11 @@ namespace Microsoft.AspNetCore.Routing
     /// </summary>
     public static class LinkGeneratorRouteValuesAddressExtensions
     {
+        private static readonly LinkGenerationTemplateOptions _templateOptions = new LinkGenerationTemplateOptions()
+        {
+            UseAmbientValues = true,
+        };
+
         /// <summary>
         /// Generates a URI with an absolute path based on the provided values.
         /// </summary>
@@ -18,6 +23,9 @@ namespace Microsoft.AspNetCore.Routing
         /// <param name="httpContext">The <see cref="HttpContext"/> associated with the current request.</param>
         /// <param name="routeName">The route name. Used to resolve endpoints. Optional.</param>
         /// <param name="values">The route values. Used to resolve endpoints and expand parameters in the route template. Optional.</param>
+        /// <param name="pathBase">
+        /// An optional URI path base. Prepended to the path in the resulting URI. If not provided, the value of <see cref="HttpRequest.PathBase"/> will be used.
+        /// </param>
         /// <param name="fragment">An optional URI fragment. Appended to the resulting URI.</param>
         /// <param name="options">
         /// An optional <see cref="LinkOptions"/>. Settings on provided object override the settings with matching
@@ -29,6 +37,7 @@ namespace Microsoft.AspNetCore.Routing
             HttpContext httpContext,
             string routeName,
             object values,
+            PathString? pathBase = default,
             FragmentString fragment = default,
             LinkOptions options = default)
         {
@@ -37,8 +46,20 @@ namespace Microsoft.AspNetCore.Routing
                 throw new ArgumentNullException(nameof(generator));
             }
 
+            if (httpContext == null)
+            {
+                throw new ArgumentNullException(nameof(httpContext));
+            }
+
             var address = CreateAddress(httpContext, routeName, values);
-            return generator.GetPathByAddress<RouteValuesAddress>(httpContext, address, address.ExplicitValues, fragment, options);
+            return generator.GetPathByAddress<RouteValuesAddress>(
+                httpContext,
+                address,
+                address.ExplicitValues,
+                address.AmbientValues,
+                pathBase,
+                fragment,
+                options);
         }
 
         /// <summary>
@@ -78,6 +99,15 @@ namespace Microsoft.AspNetCore.Routing
         /// <param name="httpContext">The <see cref="HttpContext"/> associated with the current request.</param>
         /// <param name="routeName">The route name. Used to resolve endpoints. Optional.</param>
         /// <param name="values">The route values. Used to resolve endpoints and expand parameters in the route template. Optional.</param>
+        /// <param name="scheme">
+        /// The URI scheme, applied to the resulting URI. Optional. If not provided, the value of <see cref="HttpRequest.Scheme"/> will be used.
+        /// </param>
+        /// <param name="host">
+        /// The URI host/authority, applied to the resulting URI. Optional. If not provided, the value <see cref="HttpRequest.Host"/> will be used.
+        /// </param>
+        /// <param name="pathBase">
+        /// An optional URI path base. Prepended to the path in the resulting URI. If not provided, the value of <see cref="HttpRequest.PathBase"/> will be used.
+        /// </param>
         /// <param name="fragment">An optional URI fragment. Appended to the resulting URI.</param>
         /// <param name="options">
         /// An optional <see cref="LinkOptions"/>. Settings on provided object override the settings with matching
@@ -89,6 +119,9 @@ namespace Microsoft.AspNetCore.Routing
             HttpContext httpContext,
             string routeName,
             object values,
+            string scheme = default,
+            HostString? host = default,
+            PathString? pathBase = default,
             FragmentString fragment = default,
             LinkOptions options = default)
         {
@@ -97,8 +130,22 @@ namespace Microsoft.AspNetCore.Routing
                 throw new ArgumentNullException(nameof(generator));
             }
 
+            if (httpContext == null)
+            {
+                throw new ArgumentNullException(nameof(httpContext));
+            }
+
             var address = CreateAddress(httpContext: null, routeName, values);
-            return generator.GetUriByAddress<RouteValuesAddress>(httpContext, address, address.ExplicitValues, fragment, options);
+            return generator.GetUriByAddress<RouteValuesAddress>(
+                httpContext,
+                address,
+                address.ExplicitValues,
+                address.AmbientValues,
+                scheme,
+                host,
+                pathBase,
+                fragment,
+                options);
         }
 
         /// <summary>
@@ -155,9 +202,9 @@ namespace Microsoft.AspNetCore.Routing
             }
 
             var address = CreateAddress(httpContext: null, routeName, values);
-            return generator.GetTemplateByAddress<RouteValuesAddress>(address);
+            return generator.GetTemplateByAddress<RouteValuesAddress>(address, _templateOptions);
         }
-        
+
         private static RouteValuesAddress CreateAddress(HttpContext httpContext, string routeName, object values)
         {
             return new RouteValuesAddress()
