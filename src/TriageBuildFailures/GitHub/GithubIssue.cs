@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Octokit;
 
 namespace TriageBuildFailures.GitHub
@@ -29,6 +30,20 @@ namespace TriageBuildFailures.GitHub
             {
                 return Repository?.Owner == null ? Url.Split('/')[4] : Repository.Owner.Name;
             }
+        }
+
+        public override bool Equals(object obj)
+        {
+            var issue = obj as GithubIssue;
+            return issue != null &&
+                   RepositoryName == issue.RepositoryName &&
+                   RepositoryOwner == issue.RepositoryOwner &&
+                   Number == issue.Number;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(RepositoryName, RepositoryOwner, Number);
         }
     }
 }

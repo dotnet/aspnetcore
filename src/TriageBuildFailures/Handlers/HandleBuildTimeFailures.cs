@@ -40,7 +40,7 @@ namespace TriageBuildFailures.Handlers
 
             if (applicableIssues.Count() > 0)
             {
-                await CommentOnIssue(build, applicableIssues.First(), build.BuildName);
+                await CommentOnBuild(build, applicableIssues.First(), build.BuildName);
             }
             else
             {

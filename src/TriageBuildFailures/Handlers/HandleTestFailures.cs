@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Common;
@@ -79,6 +80,8 @@ namespace TriageBuildFailures.Handlers
             var tests = TCClient.GetTests(build);
             var failures = tests.Where(s => s.Status == BuildStatus.FAILURE);
 
+            var testAggregates = new Dictionary<GithubIssue, List<string>>();
+
             foreach (var failure in failures)
             {
                 var repo = TestToRepoMapper.FindRepo(failure.Name, Reporter);
@@ -115,8 +118,19 @@ CC @{ GetManager(repo) }";
                 // The issue already exists, comment on it if we haven't already done so for this build.
                 else
                 {
-                    await CommentOnIssue(build, applicableIssues.First(), shortTestName);
+                    if (!testAggregates.TryGetValue(applicableIssues.First(), out var testNames))
+                    {
+                        testNames = new List<string>() { shortTestName };
+                        testAggregates.Add(applicableIssues.First(), testNames);
+                    } else {
+                        testNames.Add(shortTestName);
+                    }
                 }
+            }
+
+            foreach (var test in testAggregates)
+            {
+                await CommentOnTest(build, test.Key, test.Value);
             }
         }
 
