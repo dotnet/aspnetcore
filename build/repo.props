@@ -49,6 +49,11 @@
       Feed="$(DotNetAssetRootUrl)"
       FeedCredential="$(DotNetAssetRootAccessTokenSuffix)" />
 
+    <!-- These items are temporary, they should be removed when our repos update to netcoreapp3.0 -->
+    <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp20PackageVersion)" />
+    <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp21PackageVersion)" />
+    <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp22PackageVersion)" />
+
     <DotNetCoreRuntime Condition="'$(OS)' == 'Windows_NT'"
       Include="$(MicrosoftNETCoreApp30PackageVersion)"
       Arch="x86"

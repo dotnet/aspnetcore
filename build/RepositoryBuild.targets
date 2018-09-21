@@ -23,7 +23,6 @@
   </Target>
 
   <Target Name="_BuildRepositories" DependsOnTargets="GetRepoBatches" Condition=" @(RepositoryBuildOrder->Count()) != 0 ">
-
     <MSBuild
       Projects="@(BatchedRepository)"
       BuildInParallel="true"
