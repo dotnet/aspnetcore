@@ -324,17 +324,6 @@ namespace TestSite
                 result = await ctx.Request.Body.ReadAsync(readBuffer, 0, readBuffer.Length);
             }
         }
-        private async Task ReadAndFlushEcho(HttpContext ctx)
-        {
-            var readBuffer = new byte[4096];
-            var result = await ctx.Request.Body.ReadAsync(readBuffer, 0, readBuffer.Length);
-            while (result != 0)
-            {
-                await ctx.Response.WriteAsync(Encoding.UTF8.GetString(readBuffer, 0, result));
-                await ctx.Response.Body.FlushAsync();
-                result = await ctx.Request.Body.ReadAsync(readBuffer, 0, readBuffer.Length);
-            }
-        }
 
         private async Task ReadAndWriteEchoLines(HttpContext ctx)
         {
