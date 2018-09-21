@@ -24,5 +24,6 @@
     <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="$(MicrosoftAspNetCoreStaticFilesPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics" Version="$(MicrosoftAspNetCoreDiagnosticsPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.CookiePolicy" Version="$(MicrosoftAspNetCoreCookiePolicyPackageVersion)" />
+    <PackageReference Include="Microsoft.NET.Sdk.Razor" Version="$(MicrosoftNETSdkRazorPackageVersion)" PrivateAssets="All" />
   </ItemGroup>
 </Project>

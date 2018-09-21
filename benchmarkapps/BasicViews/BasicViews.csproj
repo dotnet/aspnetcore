@@ -28,6 +28,7 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="$(BenchmarksOnlyMicrosoftEntityFrameworkCoreSqlitePackageVersion)" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="$(BenchmarksOnlyMicrosoftEntityFrameworkCoreSqlServerPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="$(MicrosoftExtensionsConfigurationCommandLinePackageVersion)" />
+    <PackageReference Include="Microsoft.NET.Sdk.Razor" Version="$(MicrosoftNETSdkRazorPackageVersion)" PrivateAssets="All" />
 
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Mvc\Microsoft.AspNetCore.Mvc.csproj" />
   </ItemGroup>
