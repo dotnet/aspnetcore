@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -275,8 +276,15 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             Assert.Equal(expectedCanCreate, canCreate);
         }
 
-        [Fact]
-        public async Task BindModelAsync_CreatesModel_IfIsTopLevelObject()
+        private IActionResult ActionWithComplexParameter(Person parameter) => null;
+
+        [Theory]
+        [InlineData(false, false)]
+        [InlineData(false, true)]
+        [InlineData(true, false)]
+        public async Task BindModelAsync_CreatesModel_IfIsTopLevelObject(
+            bool allowValidatingTopLevelNodes,
+            bool isBindingRequired)
         {
             // Arrange
             var mockValueProvider = new Mock<IValueProvider>();
@@ -287,6 +295,14 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             // Mock binder fails to bind all properties.
             var mockBinder = new StubModelBinder();
 
+            var parameter = typeof(ComplexTypeModelBinderTest)
+                .GetMethod(nameof(ActionWithComplexParameter), BindingFlags.Instance | BindingFlags.NonPublic)
+                .GetParameters()[0];
+            var metadataProvider = new TestModelMetadataProvider();
+            metadataProvider
+                .ForParameter(parameter)
+                .BindingDetails(b => b.IsBindingRequired = isBindingRequired);
+            var metadata = metadataProvider.GetMetadataForParameter(parameter);
             var bindingContext = new DefaultModelBindingContext
             {
                 IsTopLevelObject = true,
@@ -298,7 +314,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
             var model = new Person();
 
-            var testableBinder = new Mock<TestableComplexTypeModelBinder> { CallBase = true };
+            var testableBinder = new Mock<TestableComplexTypeModelBinder>(allowValidatingTopLevelNodes)
+            {
+                CallBase = true
+            };
             testableBinder
                 .Setup(o => o.CreateModelPublic(bindingContext))
                 .Returns(model)
@@ -312,9 +331,147 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
             // Assert
             Assert.True(bindingContext.Result.IsModelSet);
+            Assert.Equal(0, bindingContext.ModelState.ErrorCount);
+
             var returnedPerson = Assert.IsType<Person>(bindingContext.Result.Model);
             Assert.Same(model, returnedPerson);
             testableBinder.Verify();
+        }
+
+        [Fact]
+        public async Task BindModelAsync_CreatesModelAndAddsError_IfIsTopLevelObject_WithNoData()
+        {
+            // Arrange
+            var parameter = typeof(ComplexTypeModelBinderTest)
+                .GetMethod(nameof(ActionWithComplexParameter), BindingFlags.Instance | BindingFlags.NonPublic)
+                .GetParameters()[0];
+            var metadataProvider = new TestModelMetadataProvider();
+            metadataProvider
+                .ForParameter(parameter)
+                .BindingDetails(b => b.IsBindingRequired = true);
+            var metadata = metadataProvider.GetMetadataForParameter(parameter);
+            var bindingContext = new DefaultModelBindingContext
+            {
+                IsTopLevelObject = true,
+                FieldName = "fieldName",
+                ModelMetadata = metadata,
+                ModelName = string.Empty,
+                ValueProvider = new TestValueProvider(new Dictionary<string, object>()),
+                ModelState = new ModelStateDictionary(),
+            };
+
+            // Mock binder fails to bind all properties.
+            var innerBinder = new StubModelBinder();
+            var binders = new Dictionary<ModelMetadata, IModelBinder>();
+            foreach (var property in metadataProvider.GetMetadataForProperties(typeof(Person)))
+            {
+                binders.Add(property, innerBinder);
+            }
+
+            var binder = new ComplexTypeModelBinder(
+                binders,
+                NullLoggerFactory.Instance,
+                allowValidatingTopLevelNodes: true);
+
+            // Act
+            await binder.BindModelAsync(bindingContext);
+
+            // Assert
+            Assert.True(bindingContext.Result.IsModelSet);
+            Assert.IsType<Person>(bindingContext.Result.Model);
+
+            var keyValuePair = Assert.Single(bindingContext.ModelState);
+            Assert.Equal(string.Empty, keyValuePair.Key);
+            var error = Assert.Single(keyValuePair.Value.Errors);
+            Assert.Equal("A value for the 'fieldName' parameter or property was not provided.", error.ErrorMessage);
+        }
+
+        private IActionResult ActionWithNoSettablePropertiesParameter(PersonWithNoProperties parameter) => null;
+
+        [Fact]
+        public async Task BindModelAsync_CreatesModelAndAddsError_IfIsTopLevelObject_WithNoSettableProperties()
+        {
+            // Arrange
+            var parameter = typeof(ComplexTypeModelBinderTest)
+                .GetMethod(
+                    nameof(ActionWithNoSettablePropertiesParameter),
+                    BindingFlags.Instance | BindingFlags.NonPublic)
+                .GetParameters()[0];
+            var metadataProvider = new TestModelMetadataProvider();
+            metadataProvider
+                .ForParameter(parameter)
+                .BindingDetails(b => b.IsBindingRequired = true);
+            var metadata = metadataProvider.GetMetadataForParameter(parameter);
+            var bindingContext = new DefaultModelBindingContext
+            {
+                IsTopLevelObject = true,
+                FieldName = "fieldName",
+                ModelMetadata = metadata,
+                ModelName = string.Empty,
+                ValueProvider = new TestValueProvider(new Dictionary<string, object>()),
+                ModelState = new ModelStateDictionary(),
+            };
+
+            var binder = new ComplexTypeModelBinder(
+                new Dictionary<ModelMetadata, IModelBinder>(),
+                NullLoggerFactory.Instance,
+                allowValidatingTopLevelNodes: true);
+
+            // Act
+            await binder.BindModelAsync(bindingContext);
+
+            // Assert
+            Assert.True(bindingContext.Result.IsModelSet);
+            Assert.IsType<PersonWithNoProperties>(bindingContext.Result.Model);
+
+            var keyValuePair = Assert.Single(bindingContext.ModelState);
+            Assert.Equal(string.Empty, keyValuePair.Key);
+            var error = Assert.Single(keyValuePair.Value.Errors);
+            Assert.Equal("A value for the 'fieldName' parameter or property was not provided.", error.ErrorMessage);
+        }
+
+        private IActionResult ActionWithAllPropertiesExcludedParameter(PersonWithAllPropertiesExcluded parameter) => null;
+
+        [Fact]
+        public async Task BindModelAsync_CreatesModelAndAddsError_IfIsTopLevelObject_WithAllPropertiesExcluded()
+        {
+            // Arrange
+            var parameter = typeof(ComplexTypeModelBinderTest)
+                .GetMethod(
+                    nameof(ActionWithAllPropertiesExcludedParameter),
+                    BindingFlags.Instance | BindingFlags.NonPublic)
+                .GetParameters()[0];
+            var metadataProvider = new TestModelMetadataProvider();
+            metadataProvider
+                .ForParameter(parameter)
+                .BindingDetails(b => b.IsBindingRequired = true);
+            var metadata = metadataProvider.GetMetadataForParameter(parameter);
+            var bindingContext = new DefaultModelBindingContext
+            {
+                IsTopLevelObject = true,
+                FieldName = "fieldName",
+                ModelMetadata = metadata,
+                ModelName = string.Empty,
+                ValueProvider = new TestValueProvider(new Dictionary<string, object>()),
+                ModelState = new ModelStateDictionary(),
+            };
+
+            var binder = new ComplexTypeModelBinder(
+                new Dictionary<ModelMetadata, IModelBinder>(),
+                NullLoggerFactory.Instance,
+                allowValidatingTopLevelNodes: true);
+
+            // Act
+            await binder.BindModelAsync(bindingContext);
+
+            // Assert
+            Assert.True(bindingContext.Result.IsModelSet);
+            Assert.IsType<PersonWithAllPropertiesExcluded>(bindingContext.Result.Model);
+
+            var keyValuePair = Assert.Single(bindingContext.ModelState);
+            Assert.Equal(string.Empty, keyValuePair.Key);
+            var error = Assert.Single(keyValuePair.Value.Errors);
+            Assert.Equal("A value for the 'fieldName' parameter or property was not provided.", error.ErrorMessage);
         }
 
         [Theory]
@@ -644,7 +801,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var modelError = Assert.Single(entry.Errors);
             Assert.Null(modelError.Exception);
             Assert.NotNull(modelError.ErrorMessage);
-            Assert.Equal("A value for the 'Age' property was not provided.", modelError.ErrorMessage);
+            Assert.Equal("A value for the 'Age' parameter or property was not provided.", modelError.ErrorMessage);
         }
 
         [Fact]
@@ -678,7 +835,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var modelError = Assert.Single(entry.Errors);
             Assert.Null(modelError.Exception);
             Assert.NotNull(modelError.ErrorMessage);
-            Assert.Equal("A value for the 'Age' property was not provided.", modelError.ErrorMessage);
+            Assert.Equal("A value for the 'Age' parameter or property was not provided.", modelError.ErrorMessage);
         }
 
         [Fact]
@@ -1203,6 +1360,23 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             public string name = null;
         }
 
+        private class PersonWithAllPropertiesExcluded
+        {
+            [BindNever]
+            public DateTime DateOfBirth { get; set; }
+
+            [BindNever]
+            public DateTime? DateOfDeath { get; set; }
+
+            [BindNever]
+            public string FirstName { get; set; }
+
+            [BindNever]
+            public string LastName { get; set; }
+
+            public string NonUpdateableProperty { get; private set; }
+        }
+
         private class PersonWithBindExclusion
         {
             [BindNever]
@@ -1405,13 +1579,24 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             {
             }
 
+            public TestableComplexTypeModelBinder(bool allowValidatingTopLevelNodes)
+                : this(new Dictionary<ModelMetadata, IModelBinder>(), allowValidatingTopLevelNodes)
+            {
+            }
+
             public TestableComplexTypeModelBinder(IDictionary<ModelMetadata, IModelBinder> propertyBinders)
                 : base(propertyBinders, NullLoggerFactory.Instance)
             {
-                Results = new Dictionary<ModelMetadata, ModelBindingResult>();
             }
 
-            public Dictionary<ModelMetadata, ModelBindingResult> Results { get; }
+            public TestableComplexTypeModelBinder(
+                IDictionary<ModelMetadata, IModelBinder> propertyBinders,
+                bool allowValidatingTopLevelNodes)
+                : base(propertyBinders, NullLoggerFactory.Instance, allowValidatingTopLevelNodes)
+            {
+            }
+
+            public Dictionary<ModelMetadata, ModelBindingResult> Results { get; } = new Dictionary<ModelMetadata, ModelBindingResult>();
 
             public virtual Task BindPropertyPublic(ModelBindingContext bindingContext)
             {
