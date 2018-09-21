@@ -3,7 +3,7 @@
 
 #include "SRWExclusiveLock.h"
 
-SRWExclusiveLock::SRWExclusiveLock(const SRWLOCK& lock)
+SRWExclusiveLock::SRWExclusiveLock(const SRWLOCK& lock) noexcept
     : m_lock(lock)
 {
     AcquireSRWLockExclusive(const_cast<SRWLOCK*>(&m_lock));
