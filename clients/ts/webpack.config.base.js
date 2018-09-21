@@ -74,7 +74,6 @@ module.exports = function (modulePath, browserBaseName, options) {
             new webpack.IgnorePlugin(/vertx/),
             new webpack.IgnorePlugin(/NodeHttpClient/),
             new webpack.IgnorePlugin(/eventsource/),
-            new webpack.IgnorePlugin(/websocket/),
         ],
         externals: options.externals,
     };

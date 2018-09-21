@@ -25,7 +25,7 @@ export class Arg {
 /** @private */
 export function getDataDetail(data: any, includeContent: boolean): string {
     let detail = "";
-    if (data instanceof ArrayBuffer) {
+    if (isArrayBuffer(data)) {
         detail = `Binary data of length ${data.byteLength}`;
         if (includeContent) {
             detail += `. Content: '${formatArrayBuffer(data)}'`;
@@ -54,6 +54,15 @@ export function formatArrayBuffer(data: ArrayBuffer): string {
     return str.substr(0, str.length - 1);
 }
 
+// Also in signalr-protocol-msgpack/Utils.ts
+/** @private */
+export function isArrayBuffer(val: any): val is ArrayBuffer {
+    return val && typeof ArrayBuffer !== "undefined" &&
+        (val instanceof ArrayBuffer ||
+        // Sometimes we get an ArrayBuffer that doesn't satisfy instanceof
+        (val.constructor && val.constructor.name === "ArrayBuffer"));
+}
+
 /** @private */
 export async function sendMessage(logger: ILogger, transportName: string, httpClient: HttpClient, url: string, accessTokenFactory: (() => string | Promise<string>) | undefined, content: string | ArrayBuffer, logMessageContent: boolean): Promise<void> {
     let headers;
@@ -68,7 +77,7 @@ export async function sendMessage(logger: ILogger, transportName: string, httpCl
 
     logger.log(LogLevel.Trace, `(${transportName} transport) sending data. ${getDataDetail(content, logMessageContent)}.`);
 
-    const responseType = content instanceof ArrayBuffer ? "arraybuffer" : "text";
+    const responseType = isArrayBuffer(content) ? "arraybuffer" : "text";
     const response = await httpClient.post(url, {
         content,
         headers,

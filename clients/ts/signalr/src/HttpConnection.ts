@@ -39,7 +39,7 @@ let WebSocketModule: any = null;
 let EventSourceModule: any = null;
 if (typeof window === "undefined" && typeof require !== "undefined") {
     // tslint:disable-next-line:no-var-requires
-    WebSocketModule = require("websocket");
+    WebSocketModule = require("ws");
     // tslint:disable-next-line:no-var-requires
     EventSourceModule = require("eventsource");
 }
@@ -73,9 +73,8 @@ export class HttpConnection implements IConnection {
         if (!isNode && typeof WebSocket !== "undefined" && !options.WebSocket) {
             options.WebSocket = WebSocket;
         } else if (isNode && !options.WebSocket) {
-            const websocket = WebSocketModule && WebSocketModule.w3cwebsocket;
-            if (websocket) {
-                options.WebSocket = WebSocketModule.w3cwebsocket;
+            if (WebSocketModule) {
+                options.WebSocket = WebSocketModule;
             }
         }
 

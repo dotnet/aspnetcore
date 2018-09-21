@@ -7,6 +7,7 @@ import { URL } from "url";
 import { AbortError, HttpError, TimeoutError } from "./Errors";
 import { HttpClient, HttpRequest, HttpResponse } from "./HttpClient";
 import { ILogger, LogLevel } from "./ILogger";
+import { isArrayBuffer } from "./Utils";
 
 export class NodeHttpClient extends HttpClient {
     private readonly logger: ILogger;
@@ -80,7 +81,7 @@ export class NodeHttpClient extends HttpClient {
                 reject(e);
             });
 
-            if (request.content instanceof ArrayBuffer) {
+            if (isArrayBuffer(request.content)) {
                 req.write(Buffer.from(request.content));
             } else {
                 req.write(request.content || "");
