@@ -13,8 +13,8 @@
   "precedence": "4000",
   "identity": "Microsoft.Web.RazorPages.CSharp.2.2",
   "shortName": [
-    "razor",
-    "webapp"
+    "webapp",
+    "razor"
   ],
   "thirdPartyNotices": "https://aka.ms/aspnetcore-template-3pn-210",
   "tags": {

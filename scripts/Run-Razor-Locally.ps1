@@ -6,4 +6,4 @@ param()
 
 . $PSScriptRoot\Custom-Hive.ps1
 
-Test-Template "razor" "razor -au Individual" "Microsoft.DotNet.Web.ProjectTemplates.2.2.2.2.0-preview3-t000.nupkg" $false
+Test-Template "webapp" "webapp -au Individual" "Microsoft.DotNet.Web.ProjectTemplates.2.2.2.2.0-preview3-t000.nupkg" $false
