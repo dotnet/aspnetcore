@@ -1,4 +1,4 @@
-﻿<Project>
+<Project>
   <PropertyGroup>
     <VersionPrefix>3.0.0</VersionPrefix>
     <ExperimentalProjectVersionPrefix>0.5.0</ExperimentalProjectVersionPrefix>
