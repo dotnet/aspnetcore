@@ -54,3 +54,9 @@ struct IREQUEST_HANDLER_DELETER
         application->DereferenceRequestHandler();
     }
 };
+
+inline std::unique_ptr<IREQUEST_HANDLER, IREQUEST_HANDLER_DELETER> ReferenceRequestHandler(IREQUEST_HANDLER* handler)
+{
+    handler->ReferenceRequestHandler();
+    return std::unique_ptr<IREQUEST_HANDLER, IREQUEST_HANDLER_DELETER>(handler);
+};

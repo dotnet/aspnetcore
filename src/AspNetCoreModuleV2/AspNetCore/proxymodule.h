@@ -47,8 +47,8 @@ class ASPNET_CORE_PROXY_MODULE : NonCopyable, public CHttpModule
         IHttpCompletionInfo *   pCompletionInfo
     ) override;
 
-    void
-    NotifyDisconnect() const;
+    REQUEST_NOTIFICATION_STATUS
+    HandleNotificationStatus(REQUEST_NOTIFICATION_STATUS status) noexcept;
 
  private:
     std::shared_ptr<APPLICATION_MANAGER> m_pApplicationManager;
