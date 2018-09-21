@@ -206,6 +206,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [ConditionalFact]
         public async Task ReaderThrowsResetExceptionOnInvalidBody()
         {
+            var requestStartedCompletionSource = CreateTaskCompletionSource();
             var requestCompletedCompletionSource = CreateTaskCompletionSource();
 
             Exception exception = null;
@@ -213,6 +214,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             var data = new byte[1024];
             using (var testServer = await TestServer.Create(async ctx =>
             {
+                requestStartedCompletionSource.SetResult(true);
                 try
                 {
                     await ctx.Request.Body.ReadAsync(data);
@@ -233,10 +235,19 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                         "Host: localhost",
                         "Connection: close",
                         "",
-                        "ZZZ",
                         "");
-                    await requestCompletedCompletionSource.Task.DefaultTimeout();
+
+                    await requestStartedCompletionSource.Task;
+                    await connection.Send(
+                        "ZZZZZZZZZZZZZ");
+
+                    await connection.Receive(
+                        "HTTP/1.1 400 Bad Request",
+                        ""
+                        );
+
                 }
+                await requestCompletedCompletionSource.Task.DefaultTimeout();
             }
 
             Assert.IsType<ConnectionResetException>(exception);

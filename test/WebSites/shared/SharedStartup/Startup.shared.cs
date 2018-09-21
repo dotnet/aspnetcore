@@ -82,5 +82,11 @@ namespace TestSite
             }
             await context.Response.WriteAsync(_applicationInitializationCalled.ToString());
         }
+
+        public Task OverrideServer(HttpContext context)
+        {
+            context.Response.Headers["Server"] = "MyServer/7.8";
+            return Task.CompletedTask;
+        }
     }
 }

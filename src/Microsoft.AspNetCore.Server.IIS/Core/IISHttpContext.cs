@@ -318,29 +318,23 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             {
                 var headerValues = headerPair.Value;
                 var knownHeaderIndex = HttpApiTypes.HTTP_RESPONSE_HEADER_ID.IndexOfKnownHeader(headerPair.Key);
-                if (knownHeaderIndex == -1)
+                for (var i = 0; i < headerValues.Count; i++)
                 {
-                    var headerNameBytes = Encoding.UTF8.GetBytes(headerPair.Key);
-                    for (var i = 0; i < headerValues.Count; i++)
+                    var isFirst = i == 0;
+                    var headerValueBytes = Encoding.UTF8.GetBytes(headerValues[i]);
+                    fixed (byte* pHeaderValue = headerValueBytes)
                     {
-                        var headerValueBytes = Encoding.UTF8.GetBytes(headerValues[i]);
-                        fixed (byte* pHeaderName = headerNameBytes)
+                        if (knownHeaderIndex == -1)
                         {
-                            fixed (byte* pHeaderValue = headerValueBytes)
+                            var headerNameBytes = Encoding.UTF8.GetBytes(headerPair.Key);
+                            fixed (byte* pHeaderName = headerNameBytes)
                             {
-                                NativeMethods.HttpResponseSetUnknownHeader(_pInProcessHandler, pHeaderName, pHeaderValue, (ushort)headerValueBytes.Length, fReplace: false);
+                                NativeMethods.HttpResponseSetUnknownHeader(_pInProcessHandler, pHeaderName, pHeaderValue, (ushort)headerValueBytes.Length, fReplace: isFirst);
                             }
                         }
-                    }
-                }
-                else
-                {
-                    for (var i = 0; i < headerValues.Count; i++)
-                    {
-                        var headerValueBytes = Encoding.UTF8.GetBytes(headerValues[i]);
-                        fixed (byte* pHeaderValue = headerValueBytes)
+                        else
                         {
-                            NativeMethods.HttpResponseSetKnownHeader(_pInProcessHandler, knownHeaderIndex, pHeaderValue, (ushort)headerValueBytes.Length, fReplace: false);
+                            NativeMethods.HttpResponseSetKnownHeader(_pInProcessHandler, knownHeaderIndex, pHeaderValue, (ushort)headerValueBytes.Length, fReplace: isFirst);
                         }
                     }
                 }
