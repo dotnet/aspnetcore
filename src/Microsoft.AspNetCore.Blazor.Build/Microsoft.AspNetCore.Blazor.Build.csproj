@@ -21,7 +21,7 @@
       <NuspecProperties>
       version=$(PackageVersion);
       publishDir=$([MSBuild]::NormalizeDirectory($(IntermediatePackDir)));
-      razorversion=$(RazorPackageVersion);</NuspecProperties>
+      razorversion=$(MicrosoftAspNetCoreRazorDesignPackageVersion);</NuspecProperties>
     </PropertyGroup>
     <ItemGroup>
       <_TargetFramework Include="$(TargetFrameworks)" />
@@ -44,7 +44,7 @@
     <ProjectReference Include="..\Microsoft.AspNetCore.Blazor.TagHelperWorkaround\Microsoft.AspNetCore.Blazor.TagHelperWorkaround.csproj" />
 
     <!-- Intentionally include Razor.Design's MSBuild assets for everyone who reference Blazor.Build -->
-    <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="$(RazorPackageVersion)" PrivateAssets="None" />
+    <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="$(MicrosoftAspNetCoreRazorDesignPackageVersion)" PrivateAssets="None" />
 
     <PackageReference Include="Microsoft.Extensions.CommandLineUtils" Version="1.1.1" />
     <PackageReference Include="Microsoft.Extensions.FileProviders.Composite" Version="$(AspNetCorePackageVersion)" />

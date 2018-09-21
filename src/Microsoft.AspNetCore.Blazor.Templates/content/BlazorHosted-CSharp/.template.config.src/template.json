@@ -95,13 +95,6 @@
       "replaces": "$(TemplateBlazorPackageVersion)",
       "defaultValue": "${TemplateBlazorVersion}"
     },
-    "AspNetCorePackageVersionSymbol": {
-      "type": "parameter",
-      "datatype": "string",
-      "description": "Intended for internal use only.",
-      "replaces": " Version=\"$(AspNetCorePackageVersion)\"",
-      "defaultValue": ""
-    },
     "skipRestore": {
       "type": "parameter",
       "datatype": "bool",

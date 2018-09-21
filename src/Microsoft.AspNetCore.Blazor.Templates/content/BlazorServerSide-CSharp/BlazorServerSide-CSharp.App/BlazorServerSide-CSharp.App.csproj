@@ -15,6 +15,10 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Blazor.Browser" Version="$(TemplateBlazorPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Blazor.Build" Version="$(TemplateBlazorPackageVersion)" PrivateAssets="all" />
+
+    
+    <!-- Temporary workaround until we have a version of these packages that has the right Razor reference -->
+    <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="2.1.2" />
   </ItemGroup>
 
 </Project>

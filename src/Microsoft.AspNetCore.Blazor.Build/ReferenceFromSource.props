@@ -23,7 +23,7 @@
   <Import Project="$(MSBuildThisFileDirectory)targets/All.targets" />
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="$(RazorPackageVersion)"/>
+    <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="$(MicrosoftAspNetCoreRazorDesignPackageVersion)" />
   </ItemGroup>
 
   <!-- This is used as a P2P when building the repo. Normal Blazor projects will get this as a reference through the Blazor.Build package -->
