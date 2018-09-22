@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 ActionContext.HttpContext,
                 routeName: null,
                 values,
-                new FragmentString(urlActionContext.Fragment == null ? null : "#" + urlActionContext.Fragment));
+                fragment: new FragmentString(urlActionContext.Fragment == null ? null : "#" + urlActionContext.Fragment));
             return GenerateUrl(urlActionContext.Protocol, urlActionContext.Host, path);
         }
 
@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 ActionContext.HttpContext,
                 routeContext.RouteName,
                 routeContext.Values,
-                new FragmentString(routeContext.Fragment == null ? null : "#" + routeContext.Fragment));
+                fragment: new FragmentString(routeContext.Fragment == null ? null : "#" + routeContext.Fragment));
             return GenerateUrl(routeContext.Protocol, routeContext.Host, path);
         }
     }
