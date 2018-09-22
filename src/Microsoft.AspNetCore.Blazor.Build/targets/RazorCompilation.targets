@@ -213,7 +213,7 @@
     <!-- Include the temp assembly as a reference so we can discover components from the app.-->
     <ItemGroup>
       <_BlazorReferencePathWithRefAssemblies Include="@(ReferencePathWithRefAssemblies)" />
-      <_BlazorReferencePathWithRefAssemblies Include="%(_BlazorTempAssembly.FullPath)" />
+      <_BlazorReferencePathWithRefAssemblies Include="%(_BlazorTempAssembly.FullPath)" Condition="Exists('%(_BlazorTempAssembly.FullPath)')" />
     </ItemGroup>
 
     <ItemGroup>

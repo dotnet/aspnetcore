@@ -11,6 +11,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.AspNetCore.Blazor.Server" Version="$(TemplateBlazorPackageVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Blazor.Design" Version="$(TemplateRazorDesignPackageVersion)" />
   </ItemGroup>
 
   <ItemGroup>

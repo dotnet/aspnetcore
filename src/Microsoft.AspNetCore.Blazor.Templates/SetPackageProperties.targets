@@ -21,6 +21,7 @@
       <GeneratedContentProperties>
         IncludeCustomRestoreSources=$(IncludeCustomRestoreSourcesValue);
         TemplateBlazorVersion=$(PackageVersion);
+        TemplateRazorDesignPackageVersion=$(TemplateRazorDesignPackageVersion);
       </GeneratedContentProperties>
     </PropertyGroup>    
   </Target>
