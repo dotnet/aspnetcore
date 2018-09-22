@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Routing
     /// Defines a contract to generate a URL from a template.
     /// </summary>
     /// <remarks>
-    /// A <see cref="LinkGenerationTemplate"/> can be created from <see cref="LinkGenerator.GetTemplateByAddress{TAddress}(TAddress)"/>
+    /// A <see cref="LinkGenerationTemplate"/> can be created from <see cref="LinkGenerator.GetTemplateByAddress{TAddress}(TAddress, LinkGenerationTemplateOptions)"/>
     /// by supplying an address value which has matching endpoints. The returned <see cref="LinkGenerationTemplate"/>
     /// will be bound to the endpoints matching the address that was originally provided.
     /// </remarks>
@@ -20,6 +20,9 @@ namespace Microsoft.AspNetCore.Routing
         /// </summary>
         /// <param name="httpContext">The <see cref="HttpContext"/> associated with the current request.</param>
         /// <param name="values">The route values. Used to expand parameters in the route template. Optional.</param>
+        /// <param name="pathBase">
+        /// An optional URI path base. Prepended to the path in the resulting URI. If not provided, the value of <see cref="HttpRequest.PathBase"/> will be used.
+        /// </param>
         /// <param name="fragment">An optional URI fragment. Appended to the resulting URI.</param>
         /// <param name="options">
         /// An optional <see cref="LinkOptions"/>. Settings on provided object override the settings with matching
@@ -29,6 +32,7 @@ namespace Microsoft.AspNetCore.Routing
         public abstract string GetPath(
             HttpContext httpContext,
             object values,
+            PathString? pathBase = default,
             FragmentString fragment = default,
             LinkOptions options = default);
 
@@ -54,6 +58,15 @@ namespace Microsoft.AspNetCore.Routing
         /// </summary>
         /// <param name="httpContext">The <see cref="HttpContext"/> associated with the current request.</param>
         /// <param name="values">The route values. Used to expand parameters in the route template. Optional.</param>
+        /// <param name="scheme">
+        /// The URI scheme, applied to the resulting URI. Optional. If not provided, the value of <see cref="HttpRequest.Scheme"/> will be used.
+        /// </param>
+        /// <param name="host">
+        /// The URI host/authority, applied to the resulting URI. Optional. If not provided, the value <see cref="HttpRequest.Host"/> will be used.
+        /// </param>
+        /// <param name="pathBase">
+        /// An optional URI path base. Prepended to the path in the resulting URI. If not provided, the value of <see cref="HttpRequest.PathBase"/> will be used.
+        /// </param>
         /// <param name="fragment">An optional URI fragment. Appended to the resulting URI.</param>
         /// <param name="options">
         /// An optional <see cref="LinkOptions"/>. Settings on provided object override the settings with matching
@@ -63,6 +76,9 @@ namespace Microsoft.AspNetCore.Routing
         public abstract string GetUri(
             HttpContext httpContext,
             object values,
+            string scheme = default,
+            HostString? host = default,
+            PathString? pathBase = default,
             FragmentString fragment = default,
             LinkOptions options = default);
 

@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Routing
             var endpoint2 = EndpointFactory.CreateRouteEndpoint("{controller}/{action}/{id?}");
 
             var linkGenerator = CreateLinkGenerator();
-            var template = new DefaultLinkGenerationTemplate(linkGenerator, new List<RouteEndpoint>() { endpoint1, endpoint2, });
+            var template = new DefaultLinkGenerationTemplate(linkGenerator, new List<RouteEndpoint>() { endpoint1, endpoint2, }, options: null);
 
             // Act
             var path = template.GetPath(
@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Routing
             var endpoint2 = EndpointFactory.CreateRouteEndpoint("{controller}/{action}/{id?}");
 
             var linkGenerator = CreateLinkGenerator();
-            var template = new DefaultLinkGenerationTemplate(linkGenerator, new List<RouteEndpoint>() { endpoint1, endpoint2, });
+            var template = new DefaultLinkGenerationTemplate(linkGenerator, new List<RouteEndpoint>() { endpoint1, endpoint2, }, options: null);
 
             var httpContext = CreateHttpContext();
             httpContext.Request.PathBase = new PathString("/Foo/Bar?encodeme?");
@@ -52,8 +52,8 @@ namespace Microsoft.AspNetCore.Routing
             var path = template.GetPath(
                 httpContext,
                 values: new RouteValueDictionary(new { controller = "Home", action = "In?dex", query = "some?query" }),
-                new FragmentString("#Fragment?"),
-                new LinkOptions() { AppendTrailingSlash = true, });
+                fragment: new FragmentString("#Fragment?"),
+                options: new LinkOptions() { AppendTrailingSlash = true, });
 
             // Assert
             Assert.Equal("/Foo/Bar%3Fencodeme%3F/Home/In%3Fdex/?query=some%3Fquery#Fragment?", path);
@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Routing
             var endpoint2 = EndpointFactory.CreateRouteEndpoint("{controller}/{action}/{id?}");
 
             var linkGenerator = CreateLinkGenerator();
-            var template = new DefaultLinkGenerationTemplate(linkGenerator, new List<RouteEndpoint>() { endpoint1, endpoint2, });
+            var template = new DefaultLinkGenerationTemplate(linkGenerator, new List<RouteEndpoint>() { endpoint1, endpoint2, }, options: null);
 
             // Act
             var path = template.GetUri(
@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.Routing
             var endpoint2 = EndpointFactory.CreateRouteEndpoint("{controller}/{action}/{id?}");
 
             var linkGenerator = CreateLinkGenerator();
-            var template = new DefaultLinkGenerationTemplate(linkGenerator, new List<RouteEndpoint>() { endpoint1, endpoint2, });
+            var template = new DefaultLinkGenerationTemplate(linkGenerator, new List<RouteEndpoint>() { endpoint1, endpoint2, }, options: null);
 
             var httpContext = CreateHttpContext();
             httpContext.Request.Scheme = "http";
@@ -101,22 +101,25 @@ namespace Microsoft.AspNetCore.Routing
             var uri = template.GetUri(
                 httpContext,
                 values: new RouteValueDictionary(new { controller = "Home", action = "In?dex", query = "some?query" }),
-                new FragmentString("#Fragment?"),
-                new LinkOptions() { AppendTrailingSlash = true, });
+                fragment: new FragmentString("#Fragment?"),
+                options: new LinkOptions() { AppendTrailingSlash = true, });
 
             // Assert
             Assert.Equal("http://example.com/Foo/Bar%3Fencodeme%3F/Home/In%3Fdex/?query=some%3Fquery#Fragment?", uri);
         }
 
         [Fact]
-        public void GetPath_WithHttpContext_IncludesAmbientValues()
+        public void GetPath_WithHttpContext_IncludesAmbientValues_WhenUseAmbientValuesIsTrue()
         {
             // Arrange
             var endpoint1 = EndpointFactory.CreateRouteEndpoint("{controller}/{action}/{id}");
             var endpoint2 = EndpointFactory.CreateRouteEndpoint("{controller}/{action}/{id?}");
 
             var linkGenerator = CreateLinkGenerator();
-            var template = new DefaultLinkGenerationTemplate(linkGenerator, new List<RouteEndpoint>() { endpoint1, endpoint2, });
+            var template = new DefaultLinkGenerationTemplate(linkGenerator, new List<RouteEndpoint>() { endpoint1, endpoint2, }, options: new LinkGenerationTemplateOptions()
+            {
+                UseAmbientValues = true,
+            });
 
             var httpContext = CreateHttpContext(new { controller = "Home", });
             httpContext.Request.Scheme = "http";
@@ -130,14 +133,41 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         [Fact]
-        public void GetUri_WithHttpContext_IncludesAmbientValues()
+        public void GetPath_WithHttpContext_ExcludesAmbientValues_WhenUseAmbientValuesIsFalse()
         {
             // Arrange
             var endpoint1 = EndpointFactory.CreateRouteEndpoint("{controller}/{action}/{id}");
             var endpoint2 = EndpointFactory.CreateRouteEndpoint("{controller}/{action}/{id?}");
 
             var linkGenerator = CreateLinkGenerator();
-            var template = new DefaultLinkGenerationTemplate(linkGenerator, new List<RouteEndpoint>() { endpoint1, endpoint2, });
+            var template = new DefaultLinkGenerationTemplate(linkGenerator, new List<RouteEndpoint>() { endpoint1, endpoint2, }, options: new LinkGenerationTemplateOptions()
+            {
+                UseAmbientValues = false,
+            });
+
+            var httpContext = CreateHttpContext(new { controller = "Home", });
+            httpContext.Request.Scheme = "http";
+            httpContext.Request.Host = new HostString("example.com");
+
+            // Act
+            var uri = template.GetPath(httpContext, values: new RouteValueDictionary(new { action = "Index", }));
+
+            // Assert
+            Assert.Null(uri);
+        }
+
+        [Fact]
+        public void GetUri_WithHttpContext_IncludesAmbientValues_WhenUseAmbientValuesIsTrue()
+        {
+            // Arrange
+            var endpoint1 = EndpointFactory.CreateRouteEndpoint("{controller}/{action}/{id}");
+            var endpoint2 = EndpointFactory.CreateRouteEndpoint("{controller}/{action}/{id?}");
+
+            var linkGenerator = CreateLinkGenerator();
+            var template = new DefaultLinkGenerationTemplate(linkGenerator, new List<RouteEndpoint>() { endpoint1, endpoint2, }, options: new LinkGenerationTemplateOptions()
+            {
+                UseAmbientValues = true,
+            });
 
             var httpContext = CreateHttpContext(new { controller = "Home", });
             httpContext.Request.Scheme = "http";
@@ -148,6 +178,30 @@ namespace Microsoft.AspNetCore.Routing
 
             // Assert
             Assert.Equal("http://example.com/Home/Index", uri);
+        }
+
+        [Fact]
+        public void GetUri_WithHttpContext_ExcludesAmbientValues_WhenUseAmbientValuesIsFalse()
+        {
+            // Arrange
+            var endpoint1 = EndpointFactory.CreateRouteEndpoint("{controller}/{action}/{id}");
+            var endpoint2 = EndpointFactory.CreateRouteEndpoint("{controller}/{action}/{id?}");
+
+            var linkGenerator = CreateLinkGenerator();
+            var template = new DefaultLinkGenerationTemplate(linkGenerator, new List<RouteEndpoint>() { endpoint1, endpoint2, }, options: new LinkGenerationTemplateOptions()
+            {
+                UseAmbientValues = false,
+            });
+
+            var httpContext = CreateHttpContext(new { controller = "Home", });
+            httpContext.Request.Scheme = "http";
+            httpContext.Request.Host = new HostString("example.com");
+
+            // Act
+            var uri = template.GetUri(httpContext, values: new { action = "Index", });
+
+            // Assert
+            Assert.Null(uri);
         }
     }
 }

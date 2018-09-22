@@ -3,6 +3,7 @@
 
 using System.Linq;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Routing
@@ -16,6 +17,37 @@ namespace Microsoft.AspNetCore.Routing
     // Does not cover the EndpointNameEndpointFinder in detail. see EndpointNameEndpointFinderTest
     public class LinkGeneratorEndpointNameExtensionsTest : LinkGeneratorTestBase
     {
+        [Fact]
+        public void GetPathByName_WithHttpContext_DoesNotUseAmbientValues()
+        {
+            // Arrange
+            var endpoint1 = EndpointFactory.CreateRouteEndpoint("some-endpoint/{p}", metadata: new[] { new EndpointNameMetadata("name1"), });
+            var endpoint2 = EndpointFactory.CreateRouteEndpoint("some#-other-endpoint/{p}", metadata: new[] { new EndpointNameMetadata("name2"), });
+
+            var linkGenerator = CreateLinkGenerator(endpoint1, endpoint2);
+
+            var feature = new EndpointFeature()
+            {
+                RouteValues = new RouteValueDictionary(new { p = "5", })
+            };
+            var httpContext = CreateHttpContext();
+            httpContext.Features.Set<IRouteValuesFeature>(feature);
+            httpContext.Request.PathBase = new PathString("/Foo/Bar?encodeme?");
+
+            var values = new { query = "some?query", };
+
+            // Act
+            var path = linkGenerator.GetPathByName(
+                httpContext,
+                endpointName: "name2",
+                values,
+                fragment: new FragmentString("#Fragment?"),
+                options: new LinkOptions() { AppendTrailingSlash = true, });
+
+            // Assert
+            Assert.Null(path);
+        }
+
         [Fact]
         public void GetPathByName_WithoutHttpContext_WithPathBaseAndFragment()
         {
@@ -58,8 +90,8 @@ namespace Microsoft.AspNetCore.Routing
                 httpContext,
                 endpointName: "name2",
                 values,
-                new FragmentString("#Fragment?"),
-                new LinkOptions() { AppendTrailingSlash = true, });
+                fragment: new FragmentString("#Fragment?"),
+                options: new LinkOptions() { AppendTrailingSlash = true, });
 
             // Assert
             Assert.Equal("/Foo/Bar%3Fencodeme%3F/some%23-other-endpoint/In%3Fdex/?query=some%3Fquery#Fragment?", path);
@@ -111,8 +143,8 @@ namespace Microsoft.AspNetCore.Routing
                 httpContext,
                 endpointName: "name2",
                 values,
-                new FragmentString("#Fragment?"),
-                new LinkOptions() { AppendTrailingSlash = true, });
+                fragment: new FragmentString("#Fragment?"),
+                options: new LinkOptions() { AppendTrailingSlash = true, });
 
             // Assert
             Assert.Equal("http://example.com/Foo/Bar%3Fencodeme%3F/some%23-other-endpoint/In%3Fdex/?query=some%3Fquery#Fragment?", uri);

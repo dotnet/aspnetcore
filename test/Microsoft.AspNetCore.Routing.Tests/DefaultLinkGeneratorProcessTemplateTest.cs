@@ -25,10 +25,10 @@ namespace Microsoft.AspNetCore.Routing
             var success = linkGenerator.TryProcessTemplate(
                 httpContext: null,
                 endpoint: endpoint,
+                values: new RouteValueDictionary(new { p1 = "Home", p3 = "bar", }),
                 ambientValues: null,
-                explicitValues: new RouteValueDictionary(new { p1 = "Home", p3 = "bar", }),
                 options: null,
-                out var result);
+                result: out var result);
 
             // Assert
             Assert.True(success);
@@ -50,10 +50,10 @@ namespace Microsoft.AspNetCore.Routing
             var success = linkGenerator.TryProcessTemplate(
                 httpContext: httpContext,
                 endpoint: endpoint,
+                values: new RouteValueDictionary(new { path = routeValue, }),
                 ambientValues: DefaultLinkGenerator.GetAmbientValues(httpContext),
-                explicitValues: new RouteValueDictionary(new { path = routeValue, }),
                 options: null,
-                out var result);
+                result: out var result);
 
             // Assert
             Assert.True(success);
@@ -82,10 +82,10 @@ namespace Microsoft.AspNetCore.Routing
             var success = linkGenerator.TryProcessTemplate(
                 httpContext: httpContext,
                 endpoint: endpoint,
+                values: new RouteValueDictionary(new { path = routeValue, }),
                 ambientValues: DefaultLinkGenerator.GetAmbientValues(httpContext),
-                explicitValues: new RouteValueDictionary(new { path = routeValue, }),
                 options: null,
-                out var result);
+                result: out var result);
 
             // Assert
             Assert.True(success);
@@ -105,10 +105,10 @@ namespace Microsoft.AspNetCore.Routing
             var success = linkGenerator.TryProcessTemplate(
                 httpContext: httpContext,
                 endpoint: endpoint,
+                values: new RouteValueDictionary(new { path = "a/b b1/c c1" }),
                 ambientValues: DefaultLinkGenerator.GetAmbientValues(httpContext),
-                explicitValues: new RouteValueDictionary(new { path = "a/b b1/c c1" }),
                 options: null,
-                out var result);
+                result: out var result);
 
             // Assert
             Assert.True(success);
@@ -128,10 +128,10 @@ namespace Microsoft.AspNetCore.Routing
             var success = linkGenerator.TryProcessTemplate(
                 httpContext: httpContext,
                 endpoint: endpoint,
+                values: new RouteValueDictionary(new { name = "name with %special #characters" }),
                 ambientValues: DefaultLinkGenerator.GetAmbientValues(httpContext),
-                explicitValues: new RouteValueDictionary(new { name = "name with %special #characters" }),
                 options: null,
-                out var result);
+                result: out var result);
 
             // Assert
             Assert.True(success);
@@ -151,10 +151,10 @@ namespace Microsoft.AspNetCore.Routing
             var success = linkGenerator.TryProcessTemplate(
                 httpContext: httpContext,
                 endpoint: endpoint,
+                values: new RouteValueDictionary(new { color = new List<string> { "red", "green", "blue" } }),
                 ambientValues: DefaultLinkGenerator.GetAmbientValues(httpContext),
-                explicitValues: new RouteValueDictionary(new { color = new List<string> { "red", "green", "blue" } }),
                 options: null,
-                out var result);
+                result: out var result);
 
             // Assert
             Assert.True(success);
@@ -174,10 +174,10 @@ namespace Microsoft.AspNetCore.Routing
             var success = linkGenerator.TryProcessTemplate(
                 httpContext: httpContext,
                 endpoint: endpoint,
+                values: new RouteValueDictionary(new { items = new List<int> { 10, 20, 30 } }),
                 ambientValues: DefaultLinkGenerator.GetAmbientValues(httpContext),
-                explicitValues: new RouteValueDictionary(new { items = new List<int> { 10, 20, 30 } }),
                 options: null,
-                out var result);
+                result: out var result);
 
             // Assert
             Assert.True(success);
@@ -197,10 +197,10 @@ namespace Microsoft.AspNetCore.Routing
             var success = linkGenerator.TryProcessTemplate(
                 httpContext: httpContext,
                 endpoint: endpoint,
+                values: new RouteValueDictionary(new { color = new List<string> { } }),
                 ambientValues: DefaultLinkGenerator.GetAmbientValues(httpContext),
-                explicitValues: new RouteValueDictionary(new { color = new List<string> { } }),
                 options: null,
-                out var result);
+                result: out var result);
 
             // Assert
             Assert.True(success);
@@ -220,10 +220,10 @@ namespace Microsoft.AspNetCore.Routing
             var success = linkGenerator.TryProcessTemplate(
                 httpContext: httpContext,
                 endpoint: endpoint,
+                values: new RouteValueDictionary(new { page = 1, color = new List<string> { "red", "green", "blue" }, message = "textfortest" }),
                 ambientValues: DefaultLinkGenerator.GetAmbientValues(httpContext),
-                explicitValues: new RouteValueDictionary(new { page = 1, color = new List<string> { "red", "green", "blue" }, message = "textfortest" }),
                 options: null,
-                out var result);
+                result: out var result);
 
             // Assert
             Assert.True(success);
@@ -243,10 +243,10 @@ namespace Microsoft.AspNetCore.Routing
             var success = linkGenerator.TryProcessTemplate(
                 httpContext: httpContext,
                 endpoint: endpoint,
+                values: new RouteValueDictionary(new { action = "Index" }),
                 ambientValues: DefaultLinkGenerator.GetAmbientValues(httpContext),
-                explicitValues: new RouteValueDictionary(new { action = "Index" }),
                 options: null,
-                out var result);
+                result: out var result);
 
             // Assert
             Assert.True(success);
@@ -266,10 +266,10 @@ namespace Microsoft.AspNetCore.Routing
             var success = linkGenerator.TryProcessTemplate(
                 httpContext: httpContext,
                 endpoint: endpoint,
+                values: new RouteValueDictionary(new { action = "Index" }),
                 ambientValues: DefaultLinkGenerator.GetAmbientValues(httpContext),
-                explicitValues: new RouteValueDictionary(new { action = "Index" }),
                 options: null,
-                out var result);
+                result: out var result);
 
             // Assert
             Assert.True(success);
@@ -290,10 +290,10 @@ namespace Microsoft.AspNetCore.Routing
             var success = linkGenerator.TryProcessTemplate(
                 httpContext: httpContext,
                 endpoint: endpoint,
+                values: new RouteValueDictionary(new { id = "18" }),
                 ambientValues: DefaultLinkGenerator.GetAmbientValues(httpContext),
-                explicitValues: new RouteValueDictionary(new { id = "18" }),
                 options: null,
-                out var result);
+                result: out var result);
 
             // Assert
             Assert.True(success);
@@ -314,10 +314,10 @@ namespace Microsoft.AspNetCore.Routing
             var success = linkGenerator.TryProcessTemplate(
                 httpContext: httpContext,
                 endpoint: endpoint,
+                values: new RouteValueDictionary(new { id = "18" }),
                 ambientValues: DefaultLinkGenerator.GetAmbientValues(httpContext),
-                explicitValues: new RouteValueDictionary(new { id = "18" }),
                 options: null,
-                out var result);
+                result: out var result);
 
             // Assert
             Assert.True(success);
@@ -341,10 +341,10 @@ namespace Microsoft.AspNetCore.Routing
             var success = linkGenerator.TryProcessTemplate(
                 httpContext: httpContext,
                 endpoint: endpoint,
-                ambientValues: DefaultLinkGenerator.GetAmbientValues(httpContext),
-                explicitValues: new RouteValueDictionary(new { action = "П" }), // Cryillic uppercase Pe
+                values: new RouteValueDictionary(new { action = "П" }),
+                ambientValues: DefaultLinkGenerator.GetAmbientValues(httpContext), // Cryillic uppercase Pe
                 options: null,
-                out var result);
+                result: out var result);
 
             // Assert
             Assert.True(success);
@@ -371,10 +371,10 @@ namespace Microsoft.AspNetCore.Routing
             var success = linkGenerator.TryProcessTemplate(
                 httpContext: httpContext,
                 endpoint: endpoint,
+                values: new RouteValueDictionary(new { action = "Index", ShowStatus = "True", INFO = "DETAILED" }),
                 ambientValues: DefaultLinkGenerator.GetAmbientValues(httpContext),
-                explicitValues: new RouteValueDictionary(new { action = "Index", ShowStatus = "True", INFO = "DETAILED" }),
                 options: null,
-                out var result);
+                result: out var result);
 
             // Assert
             Assert.True(success);
@@ -396,10 +396,10 @@ namespace Microsoft.AspNetCore.Routing
             var success = linkGenerator.TryProcessTemplate(
                 httpContext: httpContext,
                 endpoint: endpoint,
+                values: new RouteValueDictionary(new { action = "Index" }),
                 ambientValues: DefaultLinkGenerator.GetAmbientValues(httpContext),
-                explicitValues: new RouteValueDictionary(new { action = "Index" }),
                 options: null,
-                out var result);
+                result: out var result);
 
             // Assert
             Assert.True(success);
@@ -421,10 +421,10 @@ namespace Microsoft.AspNetCore.Routing
             var success = linkGenerator.TryProcessTemplate(
                 httpContext: httpContext,
                 endpoint: endpoint,
+                values: new RouteValueDictionary(new { action = "Index", ShowStatus = "True", INFO = "DETAILED" }),
                 ambientValues: DefaultLinkGenerator.GetAmbientValues(httpContext),
-                explicitValues: new RouteValueDictionary(new { action = "Index", ShowStatus = "True", INFO = "DETAILED" }),
                 options: null,
-                out var result);
+                result: out var result);
 
             // Assert
             Assert.True(success);
@@ -446,13 +446,13 @@ namespace Microsoft.AspNetCore.Routing
             var success = linkGenerator.TryProcessTemplate(
                 httpContext: httpContext,
                 endpoint: endpoint,
+                values: new RouteValueDictionary(new { action = "InDex" }),
                 ambientValues: DefaultLinkGenerator.GetAmbientValues(httpContext),
-                explicitValues: new RouteValueDictionary(new { action = "InDex" }),
                 options: new LinkOptions
                 {
                     LowercaseUrls = false
                 },
-                out var result);
+                result: out var result);
 
 
             // Assert
@@ -475,13 +475,13 @@ namespace Microsoft.AspNetCore.Routing
             var success = linkGenerator.TryProcessTemplate(
                 httpContext: httpContext,
                 endpoint: endpoint,
+                values: new RouteValueDictionary(new { action = "InDex" }),
                 ambientValues: DefaultLinkGenerator.GetAmbientValues(httpContext),
-                explicitValues: new RouteValueDictionary(new { action = "InDex" }),
                 options: new LinkOptions()
                 {
                     LowercaseUrls = true
                 },
-                out var result);
+                result: out var result);
 
             // Assert
             Assert.True(success);
@@ -503,14 +503,14 @@ namespace Microsoft.AspNetCore.Routing
             var success = linkGenerator.TryProcessTemplate(
                 httpContext: httpContext,
                 endpoint: endpoint,
+                values: new RouteValueDictionary(new { action = "Index", ShowStatus = "True", INFO = "DETAILED" }),
                 ambientValues: DefaultLinkGenerator.GetAmbientValues(httpContext),
-                explicitValues: new RouteValueDictionary(new { action = "Index", ShowStatus = "True", INFO = "DETAILED" }),
                 options: new LinkOptions
                 {
                     LowercaseUrls = false,
                     LowercaseQueryStrings = false
                 },
-                out var result);
+                result: out var result);
 
             // Assert
             Assert.True(success);
@@ -532,14 +532,14 @@ namespace Microsoft.AspNetCore.Routing
             var success = linkGenerator.TryProcessTemplate(
                 httpContext: httpContext,
                 endpoint: endpoint,
+                values: new RouteValueDictionary(new { action = "Index", ShowStatus = "True", INFO = "DETAILED" }),
                 ambientValues: DefaultLinkGenerator.GetAmbientValues(httpContext),
-                explicitValues: new RouteValueDictionary(new { action = "Index", ShowStatus = "True", INFO = "DETAILED" }),
                 options: new LinkOptions()
                 {
                     LowercaseUrls = true,
                     LowercaseQueryStrings = true,
                 },
-                out var result);
+                result: out var result);
 
             // Assert
             Assert.True(success);
@@ -561,10 +561,10 @@ namespace Microsoft.AspNetCore.Routing
             var success = linkGenerator.TryProcessTemplate(
                 httpContext: httpContext,
                 endpoint: endpoint,
+                values: new RouteValueDictionary(new { action = "Index" }),
                 ambientValues: DefaultLinkGenerator.GetAmbientValues(httpContext),
-                explicitValues: new RouteValueDictionary(new { action = "Index" }),
                 options: new LinkOptions() { AppendTrailingSlash = true, },
-                out var result);
+                result: out var result);
 
             // Assert
             Assert.True(success);
@@ -587,10 +587,10 @@ namespace Microsoft.AspNetCore.Routing
             var success = linkGenerator.TryProcessTemplate(
                 httpContext: httpContext,
                 endpoint: endpoint,
+                values: new RouteValueDictionary(new { p1 = "abcd" }),
                 ambientValues: DefaultLinkGenerator.GetAmbientValues(httpContext),
-                explicitValues: new RouteValueDictionary(new { p1 = "abcd" }),
                 options: null,
-                out var result);
+                result: out var result);
 
             // Assert
             Assert.False(success);
@@ -611,10 +611,10 @@ namespace Microsoft.AspNetCore.Routing
             var success = linkGenerator.TryProcessTemplate(
                 httpContext: httpContext,
                 endpoint: endpoint,
+                values: new RouteValueDictionary(new { p1 = "hello", p2 = "1234" }),
                 ambientValues: DefaultLinkGenerator.GetAmbientValues(httpContext),
-                explicitValues: new RouteValueDictionary(new { p1 = "hello", p2 = "1234" }),
                 options: null,
-                out var result);
+                result: out var result);
 
             // Assert
             Assert.True(success);
@@ -637,10 +637,10 @@ namespace Microsoft.AspNetCore.Routing
             var success = linkGenerator.TryProcessTemplate(
                 httpContext: httpContext,
                 endpoint: endpoint,
+                values: new RouteValueDictionary(new { p1 = "abcd" }),
                 ambientValues: DefaultLinkGenerator.GetAmbientValues(httpContext),
-                explicitValues: new RouteValueDictionary(new { p1 = "abcd" }),
                 options: null,
-                out var result);
+                result: out var result);
 
             // Assert
             Assert.False(success);
@@ -661,10 +661,10 @@ namespace Microsoft.AspNetCore.Routing
             var success = linkGenerator.TryProcessTemplate(
                 httpContext: httpContext,
                 endpoint: endpoint,
+                values: new RouteValueDictionary(new { p1 = "hello", p2 = "1234" }),
                 ambientValues: DefaultLinkGenerator.GetAmbientValues(httpContext),
-                explicitValues: new RouteValueDictionary(new { p1 = "hello", p2 = "1234" }),
                 options: null,
-                out var result);
+                result: out var result);
 
             // Assert
             Assert.True(success);
@@ -698,10 +698,10 @@ namespace Microsoft.AspNetCore.Routing
             var success = linkGenerator.TryProcessTemplate(
                 httpContext: httpContext,
                 endpoint: endpoint,
+                values: new RouteValueDictionary(new { p1 = "hello", p2 = "1234" }),
                 ambientValues: DefaultLinkGenerator.GetAmbientValues(httpContext),
-                explicitValues: new RouteValueDictionary(new { p1 = "hello", p2 = "1234" }),
                 options: null,
-                out var result);
+                result: out var result);
 
             // Assert
             Assert.True(success);
@@ -733,10 +733,10 @@ namespace Microsoft.AspNetCore.Routing
             var success = linkGenerator.TryProcessTemplate(
                 httpContext: httpContext,
                 endpoint: endpoint,
+                values: new RouteValueDictionary(new { action = "Store" }),
                 ambientValues: DefaultLinkGenerator.GetAmbientValues(httpContext),
-                explicitValues: new RouteValueDictionary(new { action = "Store" }),
                 options: null,
-                out var result);
+                result: out var result);
 
             // Assert
             Assert.True(success);
@@ -766,10 +766,10 @@ namespace Microsoft.AspNetCore.Routing
             var success = linkGenerator.TryProcessTemplate(
                 httpContext: httpContext,
                 endpoint: endpoint,
+                values: new RouteValueDictionary(new { action = "Store" }),
                 ambientValues: DefaultLinkGenerator.GetAmbientValues(httpContext),
-                explicitValues: new RouteValueDictionary(new { action = "Store" }),
                 options: null,
-                out var result);
+                result: out var result);
 
             // Assert
             Assert.True(success);
@@ -798,10 +798,10 @@ namespace Microsoft.AspNetCore.Routing
             var success = linkGenerator.TryProcessTemplate(
                 httpContext: httpContext,
                 endpoint: endpoint,
+                values: new RouteValueDictionary(new { controller = "Shopping" }),
                 ambientValues: DefaultLinkGenerator.GetAmbientValues(httpContext),
-                explicitValues: new RouteValueDictionary(new { controller = "Shopping" }),
                 options: null,
-                out var result);
+                result: out var result);
 
             // Assert
             Assert.True(success);
@@ -832,10 +832,10 @@ namespace Microsoft.AspNetCore.Routing
             var success = linkGenerator.TryProcessTemplate(
                 httpContext: httpContext,
                 endpoint: endpoint,
+                values: new RouteValueDictionary(new { action = "Store", thirdthing = "13" }),
                 ambientValues: DefaultLinkGenerator.GetAmbientValues(httpContext),
-                explicitValues: new RouteValueDictionary(new { action = "Store", thirdthing = "13" }),
                 options: null,
-                out var result);
+                result: out var result);
 
             // Assert
             Assert.True(success);
@@ -862,10 +862,10 @@ namespace Microsoft.AspNetCore.Routing
             var success = linkGenerator.TryProcessTemplate(
                 httpContext: httpContext,
                 endpoint: endpoint,
+                values: new RouteValueDictionary(new { action = "Index", controller = "Home", id = 4 }),
                 ambientValues: DefaultLinkGenerator.GetAmbientValues(httpContext),
-                explicitValues: new RouteValueDictionary(new { action = "Index", controller = "Home", id = 4 }),
                 options: null,
-                out var result);
+                result: out var result);
 
             // Assert
             Assert.True(success);
@@ -888,10 +888,10 @@ namespace Microsoft.AspNetCore.Routing
             var success = linkGenerator.TryProcessTemplate(
                 httpContext: httpContext,
                 endpoint: endpoint,
+                values: new RouteValueDictionary(new { action = "Index", controller = "Home", id = "not-an-integer" }),
                 ambientValues: DefaultLinkGenerator.GetAmbientValues(httpContext),
-                explicitValues: new RouteValueDictionary(new { action = "Index", controller = "Home", id = "not-an-integer" }),
                 options: null,
-                out var result);
+                result: out var result);
             
             // Assert
             Assert.False(success);
@@ -914,10 +914,10 @@ namespace Microsoft.AspNetCore.Routing
             var success = linkGenerator.TryProcessTemplate(
                 httpContext: httpContext,
                 endpoint: endpoint,
+                values: new RouteValueDictionary(new { action = "Index", controller = "Home", id = 98 }),
                 ambientValues: DefaultLinkGenerator.GetAmbientValues(httpContext),
-                explicitValues: new RouteValueDictionary(new { action = "Index", controller = "Home", id = 98 }),
                 options: null,
-                out var result);
+                result: out var result);
 
             // Assert
             Assert.True(success);
@@ -940,10 +940,10 @@ namespace Microsoft.AspNetCore.Routing
             var success = linkGenerator.TryProcessTemplate(
                 httpContext: httpContext,
                 endpoint: endpoint,
+                values: new RouteValueDictionary(new { action = "Index", controller = "Home" }),
                 ambientValues: DefaultLinkGenerator.GetAmbientValues(httpContext),
-                explicitValues: new RouteValueDictionary(new { action = "Index", controller = "Home" }),
                 options: null,
-                out var result);
+                result: out var result);
 
             // Assert
             Assert.True(success);
@@ -966,10 +966,10 @@ namespace Microsoft.AspNetCore.Routing
             var success = linkGenerator.TryProcessTemplate(
                 httpContext: httpContext,
                 endpoint: endpoint,
+                values: new RouteValueDictionary(new { action = "Index", controller = "Home", id = "not-an-integer" }),
                 ambientValues: DefaultLinkGenerator.GetAmbientValues(httpContext),
-                explicitValues: new RouteValueDictionary(new { action = "Index", controller = "Home", id = "not-an-integer" }),
                 options: null,
-                out var result);
+                result: out var result);
 
             // Assert
             Assert.False(success);
@@ -992,10 +992,10 @@ namespace Microsoft.AspNetCore.Routing
             var success = linkGenerator.TryProcessTemplate(
                 httpContext: httpContext,
                 endpoint: endpoint,
+                values: new RouteValueDictionary(new { action = "Index", controller = "Home", id = 14 }),
                 ambientValues: DefaultLinkGenerator.GetAmbientValues(httpContext),
-                explicitValues: new RouteValueDictionary(new { action = "Index", controller = "Home", id = 14 }),
                 options: null,
-                out var result);
+                result: out var result);
 
             // Assert
             Assert.True(success);
@@ -1020,10 +1020,10 @@ namespace Microsoft.AspNetCore.Routing
             var success = linkGenerator.TryProcessTemplate(
                 httpContext: httpContext,
                 endpoint: endpoint,
+                values: new RouteValueDictionary(new { action = "Index", controller = "Home", id = 50 }),
                 ambientValues: DefaultLinkGenerator.GetAmbientValues(httpContext),
-                explicitValues: new RouteValueDictionary(new { action = "Index", controller = "Home", id = 50 }),
                 options: null,
-                out var result);
+                result: out var result);
 
             // Assert
             Assert.False(success);
@@ -1045,10 +1045,10 @@ namespace Microsoft.AspNetCore.Routing
             var success = linkGenerator.TryProcessTemplate(
                 httpContext: httpContext,
                 endpoint: endpoint,
+                values: new RouteValueDictionary(new { action = "Index", controller = "Home", name = "products" }),
                 ambientValues: DefaultLinkGenerator.GetAmbientValues(httpContext),
-                explicitValues: new RouteValueDictionary(new { action = "Index", controller = "Home", name = "products" }),
                 options: null,
-                out var result);
+                result: out var result);
 
             // Assert
             Assert.True(success);
@@ -1068,10 +1068,10 @@ namespace Microsoft.AspNetCore.Routing
             var success = linkGenerator.TryProcessTemplate(
                 httpContext: httpContext,
                 endpoint: endpoint,
+                values: new RouteValueDictionary(new { action = "Index", controller = "Home", name = "products" }),
                 ambientValues: DefaultLinkGenerator.GetAmbientValues(httpContext),
-                explicitValues: new RouteValueDictionary(new { action = "Index", controller = "Home", name = "products" }),
                 options: null,
-                out var result);
+                result: out var result);
 
             // Assert
             Assert.True(success);
@@ -1091,10 +1091,10 @@ namespace Microsoft.AspNetCore.Routing
             var success = linkGenerator.TryProcessTemplate(
                 httpContext: httpContext,
                 endpoint: endpoint,
+                values: new RouteValueDictionary(new { action = "Index", controller = "Home" }),
                 ambientValues: DefaultLinkGenerator.GetAmbientValues(httpContext),
-                explicitValues: new RouteValueDictionary(new { action = "Index", controller = "Home" }),
                 options: null,
-                out var result);
+                result: out var result);
 
             // Assert
             Assert.True(success);
@@ -1116,10 +1116,10 @@ namespace Microsoft.AspNetCore.Routing
             var success = linkGenerator.TryProcessTemplate(
                 httpContext: httpContext,
                 endpoint: endpoint,
+                values: new RouteValueDictionary(new { action = "Index", controller = "Home", name = "products" }),
                 ambientValues: DefaultLinkGenerator.GetAmbientValues(httpContext),
-                explicitValues: new RouteValueDictionary(new { action = "Index", controller = "Home", name = "products" }),
                 options: null,
-                out var result);
+                result: out var result);
 
             // Assert
             Assert.True(success);
@@ -1141,10 +1141,10 @@ namespace Microsoft.AspNetCore.Routing
             var success = linkGenerator.TryProcessTemplate(
                 httpContext: httpContext,
                 endpoint: endpoint,
+                values: new RouteValueDictionary(new { action = "Index", controller = "Home" }),
                 ambientValues: DefaultLinkGenerator.GetAmbientValues(httpContext),
-                explicitValues: new RouteValueDictionary(new { action = "Index", controller = "Home" }),
                 options: null,
-                out var result);
+                result: out var result);
 
             // Assert
             Assert.True(success);
@@ -1164,10 +1164,10 @@ namespace Microsoft.AspNetCore.Routing
             var success = linkGenerator.TryProcessTemplate(
                 httpContext: httpContext,
                 endpoint: endpoint,
+                values: new RouteValueDictionary(new { action = "Index", controller = "Home", name = "products", format = "json" }),
                 ambientValues: DefaultLinkGenerator.GetAmbientValues(httpContext),
-                explicitValues: new RouteValueDictionary(new { action = "Index", controller = "Home", name = "products", format = "json" }),
                 options: null,
-                out var result);
+                result: out var result);
 
             // Assert
             Assert.True(success);
@@ -1188,10 +1188,10 @@ namespace Microsoft.AspNetCore.Routing
             var success = linkGenerator.TryProcessTemplate(
                 httpContext: httpContext,
                 endpoint: endpoint,
+                values: new RouteValueDictionary(new { action = "Index", controller = "Home", name = "products" }),
                 ambientValues: DefaultLinkGenerator.GetAmbientValues(httpContext),
-                explicitValues: new RouteValueDictionary(new { action = "Index", controller = "Home", name = "products" }),
                 options: null,
-                out var result);
+                result: out var result);
 
             // Assert
             Assert.True(success);
@@ -1211,10 +1211,10 @@ namespace Microsoft.AspNetCore.Routing
             var success = linkGenerator.TryProcessTemplate(
                 httpContext: httpContext,
                 endpoint: endpoint,
+                values: new RouteValueDictionary(new { action = "Index", controller = "Home" }),
                 ambientValues: DefaultLinkGenerator.GetAmbientValues(httpContext),
-                explicitValues: new RouteValueDictionary(new { action = "Index", controller = "Home" }),
                 options: null,
-                out var result);
+                result: out var result);
 
 
             Assert.True(success);
@@ -1234,10 +1234,10 @@ namespace Microsoft.AspNetCore.Routing
             var success = linkGenerator.TryProcessTemplate(
                 httpContext: httpContext,
                 endpoint: endpoint,
+                values: new RouteValueDictionary(new { action = "Index", controller = "Home" }),
                 ambientValues: DefaultLinkGenerator.GetAmbientValues(httpContext),
-                explicitValues: new RouteValueDictionary(new { action = "Index", controller = "Home" }),
                 options: null,
-                out var result);
+                result: out var result);
 
             // Assert
             Assert.True(success);
@@ -1257,10 +1257,10 @@ namespace Microsoft.AspNetCore.Routing
             var success = linkGenerator.TryProcessTemplate(
                 httpContext: httpContext,
                 endpoint: endpoint,
+                values: new RouteValueDictionary(new { }),
                 ambientValues: DefaultLinkGenerator.GetAmbientValues(httpContext),
-                explicitValues: new RouteValueDictionary(new { }),
                 options: null,
-                out var result);
+                result: out var result);
 
             // Assert
             Assert.True(success);
@@ -1280,10 +1280,10 @@ namespace Microsoft.AspNetCore.Routing
             var success = linkGenerator.TryProcessTemplate(
                 httpContext: httpContext,
                 endpoint: endpoint,
+                values: new RouteValueDictionary(new { }),
                 ambientValues: DefaultLinkGenerator.GetAmbientValues(httpContext),
-                explicitValues: new RouteValueDictionary(new { }),
                 options: null,
-                out var result);
+                result: out var result);
 
             // Assert
             Assert.True(success);
@@ -1303,10 +1303,10 @@ namespace Microsoft.AspNetCore.Routing
             var success = linkGenerator.TryProcessTemplate(
                 httpContext: httpContext,
                 endpoint: endpoint,
+                values: new RouteValueDictionary(new { }),
                 ambientValues: DefaultLinkGenerator.GetAmbientValues(httpContext),
-                explicitValues: new RouteValueDictionary(new { }),
                 options: null,
-                out var result);
+                result: out var result);
 
             // Assert
             Assert.True(success);
@@ -1407,10 +1407,10 @@ namespace Microsoft.AspNetCore.Routing
             var success = linkGenerator.TryProcessTemplate(
                 httpContext: httpContext,
                 endpoint: endpoint,
+                values: new RouteValueDictionary(explicitValues),
                 ambientValues: DefaultLinkGenerator.GetAmbientValues(httpContext),
-                explicitValues: new RouteValueDictionary(explicitValues),
                 options: null,
-                out var result);
+                result: out var result);
 
             // Assert
             Assert.True(success);
@@ -1435,10 +1435,10 @@ namespace Microsoft.AspNetCore.Routing
             var success = linkGenerator.TryProcessTemplate(
                 httpContext: httpContext,
                 endpoint: endpoint,
+                values: new RouteValueDictionary(new { c = "Products", a = "Edit" }),
                 ambientValues: DefaultLinkGenerator.GetAmbientValues(httpContext),
-                explicitValues: new RouteValueDictionary(new { c = "Products", a = "Edit" }),
                 options: null,
-                out var result);
+                result: out var result);
 
             // Assert
             Assert.True(success);
@@ -1463,10 +1463,10 @@ namespace Microsoft.AspNetCore.Routing
             var success = linkGenerator.TryProcessTemplate(
                 httpContext: httpContext,
                 endpoint: endpoint,
+                values: new RouteValueDictionary(new { c = "Products", a = "List" }),
                 ambientValues: DefaultLinkGenerator.GetAmbientValues(httpContext),
-                explicitValues: new RouteValueDictionary(new { c = "Products", a = "List" }),
                 options: null,
-                out var result);
+                result: out var result);
 
             // Assert
             Assert.False(success);
@@ -1571,10 +1571,10 @@ namespace Microsoft.AspNetCore.Routing
             var success = linkGenerator.TryProcessTemplate(
                 httpContext: httpContext,
                 endpoint: endpoint,
+                values: new RouteValueDictionary(explicitValues),
                 ambientValues: DefaultLinkGenerator.GetAmbientValues(httpContext),
-                explicitValues: new RouteValueDictionary(explicitValues),
                 options: null,
-                out var result);
+                result: out var result);
 
             // Assert
             Assert.False(success);

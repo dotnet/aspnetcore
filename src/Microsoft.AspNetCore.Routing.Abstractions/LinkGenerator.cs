@@ -25,12 +25,16 @@ namespace Microsoft.AspNetCore.Routing
     public abstract class LinkGenerator
     {
         /// <summary>
-        /// Generates a URI with an absolute path based on the provided values.
+        /// Generates a URI with an absolute path based on the provided values and <see cref="HttpContext"/>.
         /// </summary>
         /// <typeparam name="TAddress">The address type.</typeparam>
         /// <param name="httpContext">The <see cref="HttpContext"/> associated with the current request.</param>
         /// <param name="address">The address value. Used to resolve endpoints.</param>
         /// <param name="values">The route values. Used to expand parameters in the route template. Optional.</param>
+        /// <param name="ambientValues">The values associated with the current request. Optional.</param>
+        /// <param name="pathBase">
+        /// An optional URI path base. Prepended to the path in the resulting URI. If not provided, the value of <see cref="HttpRequest.PathBase"/> will be used.
+        /// </param>
         /// <param name="fragment">An optional URI fragment. Appended to the resulting URI.</param>
         /// <param name="options">
         /// An optional <see cref="LinkOptions"/>. Settings on provided object override the settings with matching
@@ -41,6 +45,8 @@ namespace Microsoft.AspNetCore.Routing
             HttpContext httpContext,
             TAddress address,
             RouteValueDictionary values,
+            RouteValueDictionary ambientValues = default,
+            PathString? pathBase = default,
             FragmentString fragment = default,
             LinkOptions options = default);
 
@@ -65,12 +71,22 @@ namespace Microsoft.AspNetCore.Routing
             LinkOptions options = default);
 
         /// <summary>
-        /// Generates an absolute URI based on the provided values.
+        /// Generates an absolute URI based on the provided values and <see cref="HttpContext"/>.
         /// </summary>
         /// <typeparam name="TAddress">The address type.</typeparam>
         /// <param name="httpContext">The <see cref="HttpContext"/> associated with the current request.</param>
         /// <param name="address">The address value. Used to resolve endpoints.</param>
         /// <param name="values">The route values. Used to expand parameters in the route template. Optional.</param>
+        /// <param name="ambientValues">The values associated with the current request. Optional.</param>
+        /// <param name="scheme">
+        /// The URI scheme, applied to the resulting URI. Optional. If not provided, the value of <see cref="HttpRequest.Scheme"/> will be used.
+        /// </param>
+        /// <param name="host">
+        /// The URI host/authority, applied to the resulting URI. Optional. If not provided, the value <see cref="HttpRequest.Host"/> will be used.
+        /// </param>
+        /// <param name="pathBase">
+        /// An optional URI path base. Prepended to the path in the resulting URI. If not provided, the value of <see cref="HttpRequest.PathBase"/> will be used.
+        /// </param>
         /// <param name="fragment">An optional URI fragment. Appended to the resulting URI.</param>
         /// <param name="options">
         /// An optional <see cref="LinkOptions"/>. Settings on provided object override the settings with matching
@@ -81,6 +97,10 @@ namespace Microsoft.AspNetCore.Routing
             HttpContext httpContext,
             TAddress address,
             RouteValueDictionary values,
+            RouteValueDictionary ambientValues = default,
+            string scheme = default,
+            HostString? host = default,
+            PathString? pathBase = default,
             FragmentString fragment = default,
             LinkOptions options = default);
 
@@ -113,9 +133,10 @@ namespace Microsoft.AspNetCore.Routing
         /// </summary>
         /// <typeparam name="TAddress">The address type.</typeparam>
         /// <param name="address">The address value. Used to resolve endpoints.</param>
+        /// <param name="options">Options for the created <see cref="LinkGenerationTemplate"/>.</param>
         /// <returns>
         /// A <see cref="LinkGenerationTemplate"/> if one or more endpoints matching the address can be found, otherwise <c>null</c>.
         /// </returns>
-        public abstract LinkGenerationTemplate GetTemplateByAddress<TAddress>(TAddress address);
+        public abstract LinkGenerationTemplate GetTemplateByAddress<TAddress>(TAddress address, LinkGenerationTemplateOptions options = null);
     }
 }
