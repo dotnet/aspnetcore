@@ -1,15 +1,16 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Net;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json;
+using System.Net;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
@@ -292,6 +293,57 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
         }
 
         [Fact]
+        public async Task SetsCacheHeaders()
+        {
+            var builder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.UseHealthChecks("/health");
+                })
+                .ConfigureServices(services =>
+                {
+                    services.AddHealthChecks();
+                });
+            var server = new TestServer(builder);
+            var client = server.CreateClient();
+
+            var response = await client.GetAsync("/health");
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("Healthy", await response.Content.ReadAsStringAsync());
+            Assert.Equal("no-store, no-cache", response.Headers.CacheControl.ToString());
+            Assert.Equal("no-cache", response.Headers.Pragma.ToString());
+            Assert.Equal(new string[] { "Thu, 01 Jan 1970 00:00:00 GMT" }, response.Content.Headers.GetValues(HeaderNames.Expires));
+        }
+
+        [Fact]
+        public async Task CanSuppressCacheHeaders()
+        {
+            var builder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.UseHealthChecks("/health", new HealthCheckOptions()
+                    {
+                        SuppressCacheHeaders = true,
+                    });
+                })
+                .ConfigureServices(services =>
+                {
+                    services.AddHealthChecks();
+                });
+            var server = new TestServer(builder);
+            var client = server.CreateClient();
+
+            var response = await client.GetAsync("/health");
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("Healthy", await response.Content.ReadAsStringAsync());
+            Assert.Null(response.Headers.CacheControl);
+            Assert.Empty(response.Headers.Pragma.ToString());
+            Assert.False(response.Content.Headers.Contains(HeaderNames.Expires));
+        }
+
+        [Fact]
         public async Task CanFilterChecks()
         {
             var builder = new WebHostBuilder()
@@ -363,7 +415,7 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
                 {
                     services.AddHealthChecks();
                 });
-            
+
             var server = new TestServer(builder);
             var client = server.CreateClient();
 
