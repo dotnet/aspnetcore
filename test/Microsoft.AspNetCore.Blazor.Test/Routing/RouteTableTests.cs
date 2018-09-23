@@ -167,7 +167,9 @@ namespace Microsoft.AspNetCore.Blazor.Test.Routing
             new object[] { "/{value:float}", "/0.1", 0.1f },
             new object[] { "/{value:guid}", "/1FCEF085-884F-416E-B0A1-71B15F3E206B", Guid.Parse("1FCEF085-884F-416E-B0A1-71B15F3E206B") },
             new object[] { "/{value:int}", "/123", 123 },
+            new object[] { "/{value:int}", "/-123", -123},
             new object[] { "/{value:long}", "/9223372036854775807", long.MaxValue },
+            new object[] { "/{value:long}", $"/-9223372036854775808", long.MinValue },
         };
 
         [Theory]

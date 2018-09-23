@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -62,10 +62,10 @@ namespace Microsoft.AspNetCore.Blazor.Routing
                     return new TypeRouteConstraint<Guid>(Guid.TryParse);
                 case "int":
                     return new TypeRouteConstraint<int>((string str, out int result)
-                        => int.TryParse(str, NumberStyles.None, CultureInfo.InvariantCulture, out result));
+                        => int.TryParse(str, NumberStyles.Integer, CultureInfo.InvariantCulture, out result));
                 case "long":
                     return new TypeRouteConstraint<long>((string str, out long result)
-                        => long.TryParse(str, NumberStyles.None, CultureInfo.InvariantCulture, out result));
+                        => long.TryParse(str, NumberStyles.Integer, CultureInfo.InvariantCulture, out result));
                 default:
                     return null;
             }
