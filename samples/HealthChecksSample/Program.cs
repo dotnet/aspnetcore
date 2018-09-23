@@ -15,7 +15,7 @@ namespace HealthChecksSample
         {
             _scenarios = new Dictionary<string, Type>(StringComparer.OrdinalIgnoreCase)
             {
-                { "", typeof(DBHealthStartup) },
+                { "", typeof(CustomWriterStartup) },
                 { "basic", typeof(BasicStartup) },
                 { "writer", typeof(CustomWriterStartup) },
                 { "liveness", typeof(LivenessProbeStartup) },
