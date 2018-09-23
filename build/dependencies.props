@@ -4,20 +4,20 @@
   </PropertyGroup>
   <PropertyGroup Label="Package Versions">
     <BenchmarkDotNetPackageVersion>0.10.13</BenchmarkDotNetPackageVersion>
-    <InternalAspNetCoreSdkPackageVersion>3.0.0-alpha1-20180911.2</InternalAspNetCoreSdkPackageVersion>
-    <MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>3.0.0-alpha1-10454</MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>
-    <MicrosoftAspNetCoreHtmlAbstractionsPackageVersion>3.0.0-alpha1-10454</MicrosoftAspNetCoreHtmlAbstractionsPackageVersion>
-    <MicrosoftAspNetCoreTestingPackageVersion>3.0.0-alpha1-10454</MicrosoftAspNetCoreTestingPackageVersion>
+    <InternalAspNetCoreSdkPackageVersion>3.0.0-alpha1-20180919.1</InternalAspNetCoreSdkPackageVersion>
+    <MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>3.0.0-alpha1-10495</MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>
+    <MicrosoftAspNetCoreHtmlAbstractionsPackageVersion>3.0.0-alpha1-10495</MicrosoftAspNetCoreHtmlAbstractionsPackageVersion>
+    <MicrosoftAspNetCoreTestingPackageVersion>3.0.0-alpha1-10495</MicrosoftAspNetCoreTestingPackageVersion>
     <MicrosoftBuildFrameworkPackageVersion>15.6.82</MicrosoftBuildFrameworkPackageVersion>
     <MicrosoftBuildPackageVersion>15.6.82</MicrosoftBuildPackageVersion>
     <MicrosoftBuildUtilitiesCorePackageVersion>15.6.82</MicrosoftBuildUtilitiesCorePackageVersion>
     <MicrosoftCodeAnalysisCommonPackageVersion>2.8.0</MicrosoftCodeAnalysisCommonPackageVersion>
     <MicrosoftCodeAnalysisCSharpPackageVersion>2.8.0</MicrosoftCodeAnalysisCSharpPackageVersion>
-    <MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>3.0.0-alpha1-10454</MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>
-    <MicrosoftExtensionsCopyOnWriteDictionarySourcesPackageVersion>3.0.0-alpha1-10454</MicrosoftExtensionsCopyOnWriteDictionarySourcesPackageVersion>
+    <MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>3.0.0-alpha1-10495</MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>
+    <MicrosoftExtensionsCopyOnWriteDictionarySourcesPackageVersion>3.0.0-alpha1-10495</MicrosoftExtensionsCopyOnWriteDictionarySourcesPackageVersion>
     <MicrosoftExtensionsDependencyModelPackageVersion>3.0.0-preview1-26907-05</MicrosoftExtensionsDependencyModelPackageVersion>
-    <MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>3.0.0-alpha1-10454</MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>
-    <MicrosoftExtensionsWebEncodersPackageVersion>3.0.0-alpha1-10454</MicrosoftExtensionsWebEncodersPackageVersion>
+    <MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>3.0.0-alpha1-10495</MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>
+    <MicrosoftExtensionsWebEncodersPackageVersion>3.0.0-alpha1-10495</MicrosoftExtensionsWebEncodersPackageVersion>
     <MicrosoftNETCoreApp20PackageVersion>2.0.9</MicrosoftNETCoreApp20PackageVersion>
     <MicrosoftNETCoreApp21PackageVersion>2.1.3</MicrosoftNETCoreApp21PackageVersion>
     <MicrosoftNETCoreApp22PackageVersion>2.2.0-preview2-26905-02</MicrosoftNETCoreApp22PackageVersion>
