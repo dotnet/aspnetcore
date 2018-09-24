@@ -23,6 +23,11 @@ namespace Microsoft.AspNetCore.Blazor.Razor
 
         public TagHelperDescriptor Component { get; set; }
 
+        /// <summary>
+        /// Gets the child content parameter name (null if unset) that was applied at the component level.
+        /// </summary>
+        public string ChildContentParameterName { get; set; }
+
         public IEnumerable<ComponentTypeArgumentExtensionNode> TypeArguments => Children.OfType<ComponentTypeArgumentExtensionNode>();
 
         public string TagName { get; set; }

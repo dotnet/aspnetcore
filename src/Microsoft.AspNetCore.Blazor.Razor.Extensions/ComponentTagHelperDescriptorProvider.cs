@@ -129,8 +129,16 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 CreateProperty(builder, property.property, property.kind);
             }
 
-            var descriptor = builder.Build();
+            if (builder.BoundAttributes.Any(a => a.IsParameterizedChildContentProperty()) &&
+                !builder.BoundAttributes.Any(a => string.Equals(a.Name, BlazorMetadata.ChildContent.ParameterAttributeName, StringComparison.OrdinalIgnoreCase)))
+            {
+                // If we have any parameterized child content parameters, synthesize a 'Context' parameter to be
+                // able to set the variable name (for all child content). If the developer defined a 'Context' parameter
+                // already, then theirs wins.
+                CreateContextParameter(builder, childContentName: null);
+            }
 
+            var descriptor = builder.Build();
             return descriptor;
         }
 
@@ -257,17 +265,31 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             {
                 // For child content attributes with a parameter, synthesize an attribute that allows you to name
                 // the parameter.
-                builder.BindAttribute(b =>
-                {
-                    b.Name = "Context";
-                    b.TypeName = typeof(string).FullName;
-                    b.Documentation = string.Format(Resources.ChildContentParameterName_Documentation, attribute.Name);
-                });
+                CreateContextParameter(builder, attribute.Name);
             }
 
             var descriptor = builder.Build();
 
             return descriptor;
+        }
+
+        private void CreateContextParameter(TagHelperDescriptorBuilder builder, string childContentName)
+        {
+            builder.BindAttribute(b =>
+            {
+                b.Name = BlazorMetadata.ChildContent.ParameterAttributeName;
+                b.TypeName = typeof(string).FullName;
+                b.Metadata.Add(BlazorMetadata.Component.ChildContentParameterNameKey, bool.TrueString);
+
+                if (childContentName == null)
+                {
+                    b.Documentation = Resources.ChildContentParameterName_TopLevelDocumentation;
+                }
+                else
+                {
+                    b.Documentation = string.Format(Resources.ChildContentParameterName_Documentation, childContentName);
+                }
+            });
         }
 
         // Does a walk up the inheritance chain to determine the set of parameters by using

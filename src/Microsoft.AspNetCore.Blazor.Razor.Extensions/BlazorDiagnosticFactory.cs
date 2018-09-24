@@ -308,6 +308,16 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             var attributesText = string.Join(", ", attributes.Select(a => $"'{a.Name}'"));
             return RazorDiagnostic.Create(GenericComponentTypeInferenceUnderspecified, source ?? SourceSpan.Undefined, component.TagName, attributesText);
         }
-    }
 
+        public static readonly RazorDiagnosticDescriptor ChildContentHasInvalidParameterOnComponent =
+            new RazorDiagnosticDescriptor(
+                "BL10002",
+                () => "Invalid parameter name. The parameter name attribute '{0}' on component '{1}' can only include literal text.",
+                RazorDiagnosticSeverity.Error);
+
+        public static RazorDiagnostic Create_ChildContentHasInvalidParameterOnComponent(SourceSpan? source, string attribute, string element)
+        {
+            return RazorDiagnostic.Create(ChildContentHasInvalidParameterOnComponent, source ?? SourceSpan.Undefined, attribute, element);
+        }
+    }
 }

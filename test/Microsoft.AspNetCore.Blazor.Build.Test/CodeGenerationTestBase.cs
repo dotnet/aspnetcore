@@ -672,6 +672,42 @@ namespace Test
         }
 
         [Fact]
+        public void ChildComponent_WithGenericChildContent_SetsParameterNameOnComponent()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using Microsoft.AspNetCore.Blazor;
+using Microsoft.AspNetCore.Blazor.Components;
+
+namespace Test
+{
+    public class MyComponent : BlazorComponent
+    {
+        [Parameter]
+        string MyAttr { get; set; }
+
+        [Parameter]
+        RenderFragment<string> ChildContent { get; set; }
+    }
+}
+"));
+
+            // Act
+            var generated = CompileToCSharp(@"
+@addTagHelper *, TestAssembly
+<MyComponent MyAttr=""abc"" Context=""item"">
+  <ChildContent>
+    Some text<some-child a='1'>@item.ToLowerInvariant()</some-child>
+  </ChildContent>
+</MyComponent>");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
         public void ChildComponent_WithElementOnlyChildContent()
         {
             // Arrange

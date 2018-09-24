@@ -345,6 +345,75 @@ namespace Test
         }
 
         [Fact]
+        public void Render_MultipleChildContent_ContextParameterOnComponent()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(RenderMultipleChildContent);
+
+            var component = CompileToComponent(@"
+@addTagHelper *, TestAssembly
+<RenderMultipleChildContent Name=""billg"" Value=""HI"" Context=""item"">
+  <Header><div>@item.ToLowerInvariant()</div></Header>
+  <ChildContent Context=""Context"">Some @Context.ToLowerInvariant() Content</ChildContent>
+  <Footer>Bye!</Footer>
+</RenderMultipleChildContent>");
+
+            // Act
+            var frames = GetRenderTree(component);
+
+            // Assert
+            Assert.Collection(
+                frames,
+                frame => AssertFrame.Component(frame, "Test.RenderMultipleChildContent", 6, 0),
+                frame => AssertFrame.Attribute(frame, "Name", "billg", 1),
+                frame => AssertFrame.Attribute(frame, "Value", "HI", 2),
+                frame => AssertFrame.Attribute(frame, "Header", typeof(RenderFragment<string>), 3),
+                frame => AssertFrame.Attribute(frame, RenderTreeBuilder.ChildContent, typeof(RenderFragment<string>), 6),
+                frame => AssertFrame.Attribute(frame, "Footer", typeof(RenderFragment), 10),
+                frame => AssertFrame.Element(frame, "div", 2, 4),
+                frame => AssertFrame.Text(frame, "billg", 5),
+                frame => AssertFrame.Text(frame, "Some ", 7),
+                frame => AssertFrame.Text(frame, "hi", 8),
+                frame => AssertFrame.Text(frame, " Content", 9),
+                frame => AssertFrame.Text(frame, "Bye!", 11));
+        }
+
+        // Verifies that our check for reuse of parameter names isn't too aggressive.
+        [Fact]
+        public void Render_MultipleChildContent_ContextParameterOnComponent_SetsSameName()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(RenderMultipleChildContent);
+
+            var component = CompileToComponent(@"
+@addTagHelper *, TestAssembly
+<RenderMultipleChildContent Name=""billg"" Value=""HI"" Context=""item"">
+  <Header><div>@item.ToLowerInvariant()</div></Header>
+  <ChildContent Context=""item"">Some @item.ToLowerInvariant() Content</ChildContent>
+  <Footer>Bye!</Footer>
+</RenderMultipleChildContent>");
+
+            // Act
+            var frames = GetRenderTree(component);
+
+            // Assert
+            Assert.Collection(
+                frames,
+                frame => AssertFrame.Component(frame, "Test.RenderMultipleChildContent", 6, 0),
+                frame => AssertFrame.Attribute(frame, "Name", "billg", 1),
+                frame => AssertFrame.Attribute(frame, "Value", "HI", 2),
+                frame => AssertFrame.Attribute(frame, "Header", typeof(RenderFragment<string>), 3),
+                frame => AssertFrame.Attribute(frame, RenderTreeBuilder.ChildContent, typeof(RenderFragment<string>), 6),
+                frame => AssertFrame.Attribute(frame, "Footer", typeof(RenderFragment), 10),
+                frame => AssertFrame.Element(frame, "div", 2, 4),
+                frame => AssertFrame.Text(frame, "billg", 5),
+                frame => AssertFrame.Text(frame, "Some ", 7),
+                frame => AssertFrame.Text(frame, "hi", 8),
+                frame => AssertFrame.Text(frame, " Content", 9),
+                frame => AssertFrame.Text(frame, "Bye!", 11));
+        }
+
+        [Fact]
         public void Render_ChildContent_AttributeAndBody_ProducesDiagnostic()
         {
             // Arrange
@@ -490,6 +559,26 @@ Some Content
             Assert.Equal(
                 "The child content element 'ChildContent' of component 'RenderChildContentString' uses the same parameter name ('context') as enclosing child content " +
                 "element 'ChildContent' of component 'RenderChildContentString'. Specify the parameter name like: '<ChildContent Context=\"another_name\"> to resolve the ambiguity",
+                diagnostic.GetMessage());
+        }
+
+        [Fact]
+        public void Render_ChildContent_ContextParameterNameOnComponent_Invalid_ProducesDiagnostic()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(RenderChildContentStringComponent);
+
+            // Act
+            var generated = CompileToCSharp(@"
+@addTagHelper *, TestAssembly
+<RenderChildContentString Context=""@Foo()"">
+</RenderChildContentString>");
+
+            // Assert
+            var diagnostic = Assert.Single(generated.Diagnostics);
+            Assert.Same(BlazorDiagnosticFactory.ChildContentHasInvalidParameterOnComponent.Id, diagnostic.Id);
+            Assert.Equal(
+                "Invalid parameter name. The parameter name attribute 'Context' on component 'RenderChildContentString' can only include literal text.",
                 diagnostic.GetMessage());
         }
     }

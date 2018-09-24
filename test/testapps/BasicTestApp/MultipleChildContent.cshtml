@@ -1,4 +1,4 @@
-<TemplatedTable Items="@Items">
+<TemplatedTable Items="@Items" Context="row">
     <Header><tr><th>Col1</th><th>Col2</th><th>Col3</th></tr></Header>
     <Footer>
         @if (ShowFooter)
@@ -7,7 +7,7 @@
         }
     </Footer>
     <ItemTemplate>
-        <tr><td>@context.Col1</td><td>@context.Col2</td><td>@context.Col3</td></tr>
+        <tr><td>@row.Col1</td><td>@row.Col2</td><td>@row.Col3</td></tr>
     </ItemTemplate>
 </TemplatedTable>
 

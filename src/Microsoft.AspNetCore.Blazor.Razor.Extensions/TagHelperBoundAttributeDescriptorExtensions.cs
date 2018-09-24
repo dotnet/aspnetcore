@@ -79,6 +79,25 @@ namespace Microsoft.AspNetCore.Blazor.Razor
         }
 
         /// <summary>
+        /// Gets a value that indicates whether the property is a child content property. Properties are
+        /// considered child content if they have the type <c>RenderFragment</c> or <c>RenderFragment{T}</c>.
+        /// </summary>
+        /// <param name="attribute">The <see cref="BoundAttributeDescriptorBuilder"/>.</param>
+        /// <returns>Returns <c>true</c> if the property is child content, otherwise <c>false</c>.</returns>
+        public static bool IsChildContentProperty(this BoundAttributeDescriptorBuilder attribute)
+        {
+            if (attribute == null)
+            {
+                throw new ArgumentNullException(nameof(attribute));
+            }
+
+            var key = BlazorMetadata.Component.ChildContentKey;
+            return
+                attribute.Metadata.TryGetValue(key, out var value) &&
+                string.Equals(value, bool.TrueString);
+        }
+
+        /// <summary>
         /// Gets a value that indicates whether the property is a parameterized child content property. Properties are
         /// considered parameterized child content if they have the type <c>RenderFragment{T}</c> (for some T).
         /// </summary>
@@ -93,6 +112,45 @@ namespace Microsoft.AspNetCore.Blazor.Razor
 
             return attribute.IsChildContentProperty() &&
                 !string.Equals(attribute.TypeName, BlazorApi.RenderFragment.FullTypeName, StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// Gets a value that indicates whether the property is a parameterized child content property. Properties are
+        /// considered parameterized child content if they have the type <c>RenderFragment{T}</c> (for some T).
+        /// </summary>
+        /// <param name="attribute">The <see cref="BoundAttributeDescriptor"/>.</param>
+        /// <returns>Returns <c>true</c> if the property is parameterized child content, otherwise <c>false</c>.</returns>
+        public static bool IsParameterizedChildContentProperty(this BoundAttributeDescriptorBuilder attribute)
+        {
+            if (attribute == null)
+            {
+                throw new ArgumentNullException(nameof(attribute));
+            }
+
+            return attribute.IsChildContentProperty() &&
+                !string.Equals(attribute.TypeName, BlazorApi.RenderFragment.FullTypeName, StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// Gets a value that indicates whether the property is used to specify the name of the parameter
+        /// for a parameterized child content property.
+        /// </summary>
+        /// <param name="attribute">The <see cref="BoundAttributeDescriptor"/>.</param>
+        /// <returns>
+        /// Returns <c>true</c> if the property specifies the name of a parameter for a parameterized child content,
+        /// otherwise <c>false</c>.
+        /// </returns>
+        public static bool IsChildContentParameterNameProperty(this BoundAttributeDescriptor attribute)
+        {
+            if (attribute == null)
+            {
+                throw new ArgumentNullException(nameof(attribute));
+            }
+
+            var key = BlazorMetadata.Component.ChildContentParameterNameKey;
+            return
+                attribute.Metadata.TryGetValue(key, out var value) &&
+                string.Equals(value, bool.TrueString);
         }
     }
 }

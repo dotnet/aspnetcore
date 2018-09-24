@@ -33,11 +33,23 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             public static readonly string TagHelperKind = "Blazor.ChildContent";
 
             public static readonly string ParameterNameBoundAttributeKind = "Blazor.ChildContentParameterName";
+
+            /// <summary>
+            /// The name of the synthesized attribute used to set a child content parameter.
+            /// </summary>
+            public static readonly string ParameterAttributeName = "Context";
+
+            /// <summary>
+            /// The default name of the child content parameter (unless set by a Context attribute).
+            /// </summary>
+            public static readonly string DefaultParameterName = "context";
         }
 
         public static class Component
         {
             public static readonly string ChildContentKey = "Blazor.ChildContent";
+
+            public static readonly string ChildContentParameterNameKey = "Blazor.ChildContentParameterName";
 
             public static readonly string DelegateSignatureKey = "Blazor.DelegateSignature";
 

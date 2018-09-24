@@ -80,6 +80,13 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             var visitor = new ComponentRewriteVisitor(component);
             visitor.Visit(node);
 
+            // Fixup the parameter names of child content elements. We can't do this during the rewrite
+            // because we see the nodes in the wrong order.
+            foreach (var childContent in component.ChildContents)
+            {
+                childContent.ParameterName = childContent.ParameterName ?? component.ChildContentParameterName ?? BlazorMetadata.ChildContent.DefaultParameterName;
+            }
+
             return component;
         }
 
@@ -234,7 +241,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                     }
                     else if (child is TagHelperPropertyIntermediateNode property)
                     {
-                        if (property.BoundAttribute.Kind == BlazorMetadata.ChildContent.TagHelperKind)
+                        if (property.BoundAttribute.IsChildContentParameterNameProperty())
                         {
                             // Check for each child content with a parameter name, that the parameter name is specified
                             // with literal text. For instance, the following is not allowed and should generate a diagnostic.
@@ -344,6 +351,25 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 if (node.TagHelper.IsGenericTypedComponent() && node.BoundAttribute.IsTypeParameterProperty())
                 {
                     _children.Add(new ComponentTypeArgumentExtensionNode(node));
+                    return;
+                }
+
+                // Another special case here -- this might be a 'Context' parameter, which specifies the name
+                // for lambda parameter for parameterized child content
+                if (node.BoundAttribute.IsChildContentParameterNameProperty())
+                {
+                    // Check for each child content with a parameter name, that the parameter name is specified
+                    // with literal text. For instance, the following is not allowed and should generate a diagnostic.
+                    //
+                    // <MyComponent Context="@Foo()">...</MyComponent>
+                    if (TryGetAttributeStringContent(node, out var parameterName))
+                    {
+                        _component.ChildContentParameterName = parameterName;
+                        return;
+                    }
+
+                    // The parameter name is invalid.
+                    _component.Diagnostics.Add(BlazorDiagnosticFactory.Create_ChildContentHasInvalidParameterOnComponent(node.Source, node.AttributeName, _component.TagName));
                     return;
                 }
 

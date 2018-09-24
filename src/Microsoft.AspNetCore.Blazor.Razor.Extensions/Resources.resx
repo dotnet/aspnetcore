@@ -133,7 +133,10 @@
     <value>Specifies a format to convert the value specified by the corresponding bind attribute. For example: &lt;code&gt;format-value="..."&lt;/code&gt; will apply a format string to the value specified in &lt;code&gt;bind-value-...&lt;/code&gt;. The format string can currently only be used with expressions of type &lt;code&gt;DateTime&lt;/code&gt;.</value>
   </data>
   <data name="ChildContentParameterName_Documentation" xml:space="preserve">
-    <value>Specifies the parameter name for the '{0}' lambda expression.</value>
+    <value>Specifies the parameter name for the '{0}' child content expression.</value>
+  </data>
+  <data name="ChildContentParameterName_TopLevelDocumentation" xml:space="preserve">
+    <value>Specifies the parameter name for all child content expressions.</value>
   </data>
   <data name="ComponentTypeParameter_Documentation" xml:space="preserve">
     <value>Specifies the type of the type parameter {0} for the {1} component.</value>
