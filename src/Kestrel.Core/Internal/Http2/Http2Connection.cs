@@ -86,13 +86,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public Http2Connection(Http2ConnectionContext context)
         {
+            var httpLimits = context.ServiceContext.ServerOptions.Limits;
+            var http2Limits = httpLimits.Http2;
+
             _context = context;
             _frameWriter = new Http2FrameWriter(context.Transport.Output, context.ConnectionContext, _outputFlowControl, this, context.ConnectionId, context.ServiceContext.Log);
-            _serverSettings.MaxConcurrentStreams = (uint)context.ServiceContext.ServerOptions.Limits.Http2.MaxStreamsPerConnection;
-            _serverSettings.MaxFrameSize = (uint)context.ServiceContext.ServerOptions.Limits.Http2.MaxFrameSize;
-            _serverSettings.HeaderTableSize = (uint)context.ServiceContext.ServerOptions.Limits.Http2.HeaderTableSize;
-            _hpackDecoder = new HPackDecoder((int)_serverSettings.HeaderTableSize);
-            _serverSettings.MaxHeaderListSize = (uint)context.ServiceContext.ServerOptions.Limits.MaxRequestHeadersTotalSize;
+            _serverSettings.MaxConcurrentStreams = (uint)http2Limits.MaxStreamsPerConnection;
+            _serverSettings.MaxFrameSize = (uint)http2Limits.MaxFrameSize;
+            _serverSettings.HeaderTableSize = (uint)http2Limits.HeaderTableSize;
+            _hpackDecoder = new HPackDecoder(http2Limits.HeaderTableSize, http2Limits.MaxRequestHeaderFieldSize);
+            _serverSettings.MaxHeaderListSize = (uint)httpLimits.MaxRequestHeadersTotalSize;
         }
 
         public string ConnectionId => _context.ConnectionId;

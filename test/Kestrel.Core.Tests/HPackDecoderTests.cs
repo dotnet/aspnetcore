@@ -17,6 +17,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
     public class HPackDecoderTests : IHttpHeadersHandler
     {
         private const int DynamicTableInitialMaxSize = 4096;
+        private const int MaxRequestHeaderFieldSize = 8192;
 
         // Indexed Header Field Representation - Static Table - Index 2 (:method: GET)
         private static readonly byte[] _indexedHeaderStatic = new byte[] { 0x82 };
@@ -94,7 +95,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         public HPackDecoderTests()
         {
             _dynamicTable = new DynamicTable(DynamicTableInitialMaxSize);
-            _decoder = new HPackDecoder(DynamicTableInitialMaxSize, _dynamicTable);
+            _decoder = new HPackDecoder(DynamicTableInitialMaxSize, MaxRequestHeaderFieldSize, _dynamicTable);
         }
 
         void IHttpHeadersHandler.OnHeader(Span<byte> name, Span<byte> value)
@@ -438,12 +439,30 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         public void DecodesStringLength_GreaterThanLimit_Error()
         {
             var encoded = _literalHeaderFieldWithoutIndexingNewName
-                .Concat(new byte[] { 0xff, 0x82, 0x1f }) // 4097 encoded with 7-bit prefix
+                .Concat(new byte[] { 0xff, 0x82, 0x3f }) // 8193 encoded with 7-bit prefix
                 .ToArray();
 
             var exception = Assert.Throws<HPackDecodingException>(() => _decoder.Decode(new ReadOnlySequence<byte>(encoded), endHeaders: true, handler: this));
-            Assert.Equal(CoreStrings.FormatHPackStringLengthTooLarge(4097, HPackDecoder.MaxStringOctets), exception.Message);
+            Assert.Equal(CoreStrings.FormatHPackStringLengthTooLarge(MaxRequestHeaderFieldSize + 1, MaxRequestHeaderFieldSize), exception.Message);
             Assert.Empty(_decodedHeaders);
+        }
+
+        [Fact]
+        public void DecodesStringLength_LimitConfigurable()
+        {
+            var decoder = new HPackDecoder(DynamicTableInitialMaxSize, MaxRequestHeaderFieldSize + 1);
+            var string8193 = new string('a', MaxRequestHeaderFieldSize + 1);
+
+            var encoded = _literalHeaderFieldWithoutIndexingNewName
+                .Concat(new byte[] { 0x7f, 0x82, 0x3f }) // 8193 encoded with 7-bit prefix, no Huffman encoding
+                .Concat(Encoding.ASCII.GetBytes(string8193))
+                .Concat(new byte[] { 0x7f, 0x82, 0x3f }) // 8193 encoded with 7-bit prefix, no Huffman encoding
+                .Concat(Encoding.ASCII.GetBytes(string8193))
+                .ToArray();
+
+            decoder.Decode(new ReadOnlySequence<byte>(encoded), endHeaders: true, handler: this);
+
+            Assert.Equal(string8193, _decodedHeaders[string8193]);
         }
 
         public static readonly TheoryData<byte[]> _incompleteHeaderBlockData = new TheoryData<byte[]>
