@@ -65,8 +65,8 @@ namespace HealthChecksSample
                 { "Gen2Collections", GC.CollectionCount(2) },
             };
 
-            // Report failure if the allocated memory is >= the threshold
-            var result = allocated >= options.Threshold;
+            // Report failure if the allocated memory is >= the threshold. Negated because true == success
+            var result = !(allocated >= options.Threshold);
 
             return Task.FromResult(new HealthCheckResult(
                 result,

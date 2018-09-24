@@ -46,5 +46,13 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
         /// of <see cref="HealthReport.Status"/> as a string.
         /// </remarks>
         public Func<HttpContext, HealthReport, Task> ResponseWriter { get; set; } = HealthCheckResponseWriters.WriteMinimalPlaintext;
+
+        /// <summary>
+        /// Gets or sets a value that controls whether the health check middleware will add HTTP headers to prevent
+        /// response caching. If the value is <c>false</c> the health check middleware will set or override the 
+        /// <c>Cache-Control</c>, <c>Expires</c>, and <c>Pragma</c> headers to prevent response caching. If the value 
+        /// is <c>true</c> the health check middleware will not modify the cache headers of the response.
+        /// </summary>
+        public bool SuppressCacheHeaders { get; set; }
     }
 }

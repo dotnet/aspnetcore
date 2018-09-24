@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
 {
@@ -70,6 +71,15 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
 
             httpContext.Response.StatusCode = statusCode;
 
+            if (!_healthCheckOptions.SuppressCacheHeaders)
+            {
+                // Similar to: https://github.com/aspnet/Security/blob/7b6c9cf0eeb149f2142dedd55a17430e7831ea99/src/Microsoft.AspNetCore.Authentication.Cookies/CookieAuthenticationHandler.cs#L377-L379
+                var headers = httpContext.Response.Headers;
+                headers[HeaderNames.CacheControl] = "no-store, no-cache";
+                headers[HeaderNames.Pragma] = "no-cache";
+                headers[HeaderNames.Expires] = "Thu, 01 Jan 1970 00:00:00 GMT";
+            }
+
             if (_healthCheckOptions.ResponseWriter != null)
             {
                 await _healthCheckOptions.ResponseWriter(httpContext, result);
@@ -103,7 +113,7 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
 
             if (notFound.Count > 0)
             {
-                var message = 
+                var message =
                     $"The following health checks were not found: '{string.Join(", ", notFound)}'. " +
                     $"Registered health checks: '{string.Join(", ", checks.Keys)}'.";
                 throw new InvalidOperationException(message);
