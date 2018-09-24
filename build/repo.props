@@ -50,7 +50,8 @@
       FeedCredential="$(DotNetAssetRootAccessTokenSuffix)" />
 
     <!-- These items are temporary, they should be removed when our repos update to netcoreapp3.0 -->
-    <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp20PackageVersion)" />
+    <!-- There is no linux-musl in 2.0. This was new in 2.1. -->
+    <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp20PackageVersion)" Condition="'$(SharedFXRid)' != 'linux-musl-x64'" />
     <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp21PackageVersion)" />
     <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp22PackageVersion)" />
 
