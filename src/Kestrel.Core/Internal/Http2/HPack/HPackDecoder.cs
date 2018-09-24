@@ -132,6 +132,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
 
         private void OnByte(byte b, IHttpHeadersHandler handler)
         {
+            int intResult;
             switch (_state)
             {
                 case State.Ready:
@@ -140,9 +141,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
                         _headersObserved = true;
                         var val = b & ~IndexedHeaderFieldMask;
 
-                        if (_integerDecoder.BeginDecode((byte)val, IndexedHeaderFieldPrefix))
+                        if (_integerDecoder.BeginTryDecode((byte)val, IndexedHeaderFieldPrefix, out intResult))
                         {
-                            OnIndexedHeaderField(_integerDecoder.Value, handler);
+                            OnIndexedHeaderField(intResult, handler);
                         }
                         else
                         {
@@ -159,9 +160,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
                         {
                             _state = State.HeaderNameLength;
                         }
-                        else if (_integerDecoder.BeginDecode((byte)val, LiteralHeaderFieldWithIncrementalIndexingPrefix))
+                        else if (_integerDecoder.BeginTryDecode((byte)val, LiteralHeaderFieldWithIncrementalIndexingPrefix, out intResult))
                         {
-                            OnIndexedHeaderName(_integerDecoder.Value);
+                            OnIndexedHeaderName(intResult);
                         }
                         else
                         {
@@ -178,9 +179,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
                         {
                             _state = State.HeaderNameLength;
                         }
-                        else if (_integerDecoder.BeginDecode((byte)val, LiteralHeaderFieldWithoutIndexingPrefix))
+                        else if (_integerDecoder.BeginTryDecode((byte)val, LiteralHeaderFieldWithoutIndexingPrefix, out intResult))
                         {
-                            OnIndexedHeaderName(_integerDecoder.Value);
+                            OnIndexedHeaderName(intResult);
                         }
                         else
                         {
@@ -197,9 +198,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
                         {
                             _state = State.HeaderNameLength;
                         }
-                        else if (_integerDecoder.BeginDecode((byte)val, LiteralHeaderFieldNeverIndexedPrefix))
+                        else if (_integerDecoder.BeginTryDecode((byte)val, LiteralHeaderFieldNeverIndexedPrefix, out intResult))
                         {
-                            OnIndexedHeaderName(_integerDecoder.Value);
+                            OnIndexedHeaderName(intResult);
                         }
                         else
                         {
@@ -217,9 +218,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
                             throw new HPackDecodingException(CoreStrings.HPackErrorDynamicTableSizeUpdateNotAtBeginningOfHeaderBlock);
                         }
 
-                        if (_integerDecoder.BeginDecode((byte)(b & ~DynamicTableSizeUpdateMask), DynamicTableSizeUpdatePrefix))
+                        if (_integerDecoder.BeginTryDecode((byte)(b & ~DynamicTableSizeUpdateMask), DynamicTableSizeUpdatePrefix, out intResult))
                         {
-                            SetDynamicHeaderTableSize(_integerDecoder.Value);
+                            SetDynamicHeaderTableSize(intResult);
                         }
                         else
                         {
@@ -234,25 +235,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
 
                     break;
                 case State.HeaderFieldIndex:
-                    if (_integerDecoder.Decode(b))
+                    if (_integerDecoder.TryDecode(b, out intResult))
                     {
-                        OnIndexedHeaderField(_integerDecoder.Value, handler);
+                        OnIndexedHeaderField(intResult, handler);
                     }
 
                     break;
                 case State.HeaderNameIndex:
-                    if (_integerDecoder.Decode(b))
+                    if (_integerDecoder.TryDecode(b, out intResult))
                     {
-                        OnIndexedHeaderName(_integerDecoder.Value);
+                        OnIndexedHeaderName(intResult);
                     }
 
                     break;
                 case State.HeaderNameLength:
                     _huffman = (b & HuffmanMask) != 0;
 
-                    if (_integerDecoder.BeginDecode((byte)(b & ~HuffmanMask), StringLengthPrefix))
+                    if (_integerDecoder.BeginTryDecode((byte)(b & ~HuffmanMask), StringLengthPrefix, out intResult))
                     {
-                        OnStringLength(_integerDecoder.Value, nextState: State.HeaderName);
+                        OnStringLength(intResult, nextState: State.HeaderName);
                     }
                     else
                     {
@@ -261,9 +262,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
 
                     break;
                 case State.HeaderNameLengthContinue:
-                    if (_integerDecoder.Decode(b))
+                    if (_integerDecoder.TryDecode(b, out intResult))
                     {
-                        OnStringLength(_integerDecoder.Value, nextState: State.HeaderName);
+                        OnStringLength(intResult, nextState: State.HeaderName);
                     }
 
                     break;
@@ -279,10 +280,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
                 case State.HeaderValueLength:
                     _huffman = (b & HuffmanMask) != 0;
 
-                    if (_integerDecoder.BeginDecode((byte)(b & ~HuffmanMask), StringLengthPrefix))
+                    if (_integerDecoder.BeginTryDecode((byte)(b & ~HuffmanMask), StringLengthPrefix, out intResult))
                     {
-                        OnStringLength(_integerDecoder.Value, nextState: State.HeaderValue);
-                        if (_integerDecoder.Value == 0)
+                        OnStringLength(intResult, nextState: State.HeaderValue);
+                        if (intResult == 0)
                         {
                             ProcessHeaderValue(handler);
                         }
@@ -294,10 +295,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
 
                     break;
                 case State.HeaderValueLengthContinue:
-                    if (_integerDecoder.Decode(b))
+                    if (_integerDecoder.TryDecode(b, out intResult))
                     {
-                        OnStringLength(_integerDecoder.Value, nextState: State.HeaderValue);
-                        if (_integerDecoder.Value == 0)
+                        OnStringLength(intResult, nextState: State.HeaderValue);
+                        if (intResult == 0)
                         {
                             ProcessHeaderValue(handler);
                         }
@@ -314,9 +315,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
 
                     break;
                 case State.DynamicTableSizeUpdate:
-                    if (_integerDecoder.Decode(b))
+                    if (_integerDecoder.TryDecode(b, out intResult))
                     {
-                        SetDynamicHeaderTableSize(_integerDecoder.Value);
+                        SetDynamicHeaderTableSize(intResult);
                         _state = State.Ready;
                     }
 

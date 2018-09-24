@@ -2170,6 +2170,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         internal static string FormatHPackErrorNotEnoughBuffer()
             => GetString("HPackErrorNotEnoughBuffer");
 
+        /// <summary>
+        /// The decoded integer exceeds the maximum value of Int32.MaxValue.
+        /// </summary>
+        internal static string HPackErrorIntegerTooBig
+        {
+            get => GetString("HPackErrorIntegerTooBig");
+        }
+
+        /// <summary>
+        /// The decoded integer exceeds the maximum value of Int32.MaxValue.
+        /// </summary>
+        internal static string FormatHPackErrorIntegerTooBig()
+            => GetString("HPackErrorIntegerTooBig");
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);
