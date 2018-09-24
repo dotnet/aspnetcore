@@ -3,7 +3,7 @@
     ViewData["Title"] = "Verify Phone Number";
 }
 
-<h2>@ViewData["Title"].</h2>
+<h1>@ViewData["Title"].</h1>
 
 <form asp-controller="Manage" asp-action="VerifyPhoneNumber" asp-route-returnurl="@ViewData["ReturnUrl"]" method="post" class="form-horizontal" role="form">
     <input asp-for="PhoneNumber" type="hidden" />
