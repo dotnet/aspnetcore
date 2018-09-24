@@ -20,11 +20,11 @@ More details
 
 ### Configure the internal package feeds
 
-This build uses packages from two internal-only feeds: https://microsoft.visualstudio.com/Universal%20Store/_packaging?feed=esrp&_a=feed and https://devdiv.visualstudio.com/DevDiv/_packaging?feed=WebTools&_a=feed.
+This build uses packages from two internal-only feeds: <https://dev.azure.com/microsoft/Universal%20Store/_packaging?feed=esrp&_a=feed> and <https://dev.azure.com/devdiv/DevDiv/_packaging?feed=WebTools&_a=feed>.
 
 To consume the NuGet package:
 
-1. Create a Personal Access Token (PAT) to access nuget source from https://microsoft.visualstudio.com/_details/security/tokens​​. (Make sure it has it the Packaging scope)
+1. Create a Personal Access Token (PAT) to access nuget source from https://dev.azure.com/devdiv/_usersSettings/tokens. (Make sure it has it the Packaging scope)
 2. Add package source on your machine using the command:
     ```
     nuget.exe sources add -name esrp -source https://microsoft.pkgs.visualstudio.com/_packaging/ESRP/nuget/v3/index.json -username {anything} -password {your PAT}
@@ -42,4 +42,4 @@ You can also configure the ESRP package feed access on CI by setting the followi
 $env:NuGetPackageSourceCredentials_esrp="Username=$alias$@microsoft.com;Password=$pat$"
 $env:NuGetPackageSourceCredentials_webtools="Username=$alias$@microsoft.com;Password=$pat$"
 ```
-where `$pat$` is a PAT from https://microsoft.visualstudio.com/_details/security/tokens​​ that has access to the "Packaging" scope.
+where `$pat$` is a PAT from  https://dev.azure.com/devdiv/_usersSettings/tokens that has access to the "Packaging" scope.
