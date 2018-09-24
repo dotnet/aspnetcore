@@ -24,11 +24,11 @@ This build uses packages from two internal-only feeds: <https://dev.azure.com/mi
 
 To consume the NuGet package:
 
-1. Create a Personal Access Token (PAT) to access nuget source from https://dev.azure.com/devdiv/_usersSettings/tokens. (Make sure it has it the Packaging scope)
+1. Create two Personal Access Tokens (PAT) to access nuget source from https://dev.azure.com/devdiv/_usersSettings/tokens. (You would need one for microsoft account and one for devdiv account. Make sure they have the Packaging scope). 
 2. Add package source on your machine using the command:
     ```
-    nuget.exe sources add -name esrp -source https://microsoft.pkgs.visualstudio.com/_packaging/ESRP/nuget/v3/index.json -username {anything} -password {your PAT}
-    nuget.exe sources add -name webtools -source https://devdiv.pkgs.visualstudio.com/_packaging/WebTools/nuget/v3/index.json -username {anything} -password {your PAT}
+    nuget.exe sources add -name esrp -source https://microsoft.pkgs.visualstudio.com/_packaging/ESRP/nuget/v3/index.json -username {anything} -password {your microsoft PAT}
+    nuget.exe sources add -name webtools -source https://devdiv.pkgs.visualstudio.com/_packaging/WebTools/nuget/v3/index.json -username {anything} -password {your devdiv PAT}
     ```
 
 More help on feed access is at
