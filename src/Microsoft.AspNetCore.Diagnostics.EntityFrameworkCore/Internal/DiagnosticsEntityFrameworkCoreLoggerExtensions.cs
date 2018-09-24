@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Internal
         private static readonly Action<ILogger, Exception> _noContextType = LoggerMessage.Define(
             LogLevel.Error,
             new EventId(1, "NoContextType"),
-            "No context type was specified. Ensure the form data from the request includes a contextTypeName value, specifying the context to apply migrations for.");
+            "No context type was specified. Ensure the form data from the request includes a 'context' value, specifying the context type name to apply migrations for.");
 
         private static readonly Action<ILogger, string, Exception> _invalidContextType = LoggerMessage.Define<string>(
             LogLevel.Error,
