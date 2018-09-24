@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Blazor.Server;
+using Microsoft.AspNetCore.Blazor.Server;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.ResponseCompression;
@@ -42,7 +42,7 @@ namespace BlazorHosted_CSharp.Server
                 routes.MapRoute(name: "default", template: "{controller}/{action}/{id?}");
             });
 
-            app.UseBlazor<Client.Program>();
+            app.UseBlazor<Client.Startup>();
         }
     }
 }
