@@ -44,31 +44,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 
             var valuesDictionary = GetValuesDictionary(actionContext.Values);
 
-            if (actionContext.Action == null)
-            {
-                if (!valuesDictionary.ContainsKey("action") &&
-                    AmbientValues.TryGetValue("action", out var action))
-                {
-                    valuesDictionary["action"] = action;
-                }
-            }
-            else
-            {
-                valuesDictionary["action"] = actionContext.Action;
-            }
-
-            if (actionContext.Controller == null)
-            {
-                if (!valuesDictionary.ContainsKey("controller") &&
-                    AmbientValues.TryGetValue("controller", out var controller))
-                {
-                    valuesDictionary["controller"] = controller;
-                }
-            }
-            else
-            {
-                valuesDictionary["controller"] = actionContext.Controller;
-            }
+            NormalizeRouteValuesForAction(actionContext.Action, actionContext.Controller, valuesDictionary, AmbientValues);
 
             var virtualPathData = GetVirtualPathData(routeName: null, values: valuesDictionary);
             return GenerateUrl(actionContext.Protocol, actionContext.Host, virtualPathData, actionContext.Fragment);
