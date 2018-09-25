@@ -95,6 +95,13 @@
       "replaces": "$(TemplateBlazorPackageVersion)",
       "defaultValue": "${TemplateBlazorVersion}"
     },
+    "TemplateRazorDesignPackageVersionSymbol": {
+      "type": "parameter",
+      "datatype": "string",
+      "description": "Specifies which version of the Razor.Design package to use.",
+      "replaces": "$(TemplateRazorDesignPackageVersion)",
+      "defaultValue": "${TemplateRazorDesignPackageVersion}"
+    },
     "skipRestore": {
       "type": "parameter",
       "datatype": "bool",
