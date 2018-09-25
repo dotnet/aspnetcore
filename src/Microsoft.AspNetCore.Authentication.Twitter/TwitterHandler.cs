@@ -22,9 +22,6 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
     public class TwitterHandler : RemoteAuthenticationHandler<TwitterOptions>
     {
         private static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-        private const string RequestTokenEndpoint = "https://api.twitter.com/oauth/request_token";
-        private const string AuthenticationEndpoint = "https://api.twitter.com/oauth/authenticate?oauth_token=";
-        private const string AccessTokenEndpoint = "https://api.twitter.com/oauth/access_token";
 
         private HttpClient Backchannel => Options.Backchannel;
 
@@ -138,7 +135,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
 
             // If CallbackConfirmed is false, this will throw
             var requestToken = await ObtainRequestTokenAsync(BuildRedirectUri(Options.CallbackPath), properties);
-            var twitterAuthenticationEndpoint = AuthenticationEndpoint + requestToken.Token;
+            var twitterAuthenticationEndpoint = TwitterDefaults.AuthenticationEndpoint + requestToken.Token;
 
             var cookieOptions = Options.StateCookie.Build(Context, Clock.UtcNow);
 
@@ -233,7 +230,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
         {
             Logger.ObtainRequestToken();
 
-            var response = await ExecuteRequestAsync(RequestTokenEndpoint, HttpMethod.Post, extraOAuthPairs: new Dictionary<string, string>() { { "oauth_callback", callBackUri } });
+            var response = await ExecuteRequestAsync(TwitterDefaults.RequestTokenEndpoint, HttpMethod.Post, extraOAuthPairs: new Dictionary<string, string>() { { "oauth_callback", callBackUri } });
             response.EnsureSuccessStatusCode();
             var responseText = await response.Content.ReadAsStringAsync();
 
@@ -253,7 +250,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
             Logger.ObtainAccessToken();
 
             var formPost = new Dictionary<string, string> { { "oauth_verifier", verifier } };
-            var response = await ExecuteRequestAsync(AccessTokenEndpoint, HttpMethod.Post, token, formData: formPost);
+            var response = await ExecuteRequestAsync(TwitterDefaults.AccessTokenEndpoint, HttpMethod.Post, token, formData: formPost);
 
             if (!response.IsSuccessStatusCode)
             {
