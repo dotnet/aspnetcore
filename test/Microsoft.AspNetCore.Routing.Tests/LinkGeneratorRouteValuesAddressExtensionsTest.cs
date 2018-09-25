@@ -171,6 +171,38 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         [Fact]
+        public void GetUriByRouteValues_WithHttpContext_CanUseAmbientValues()
+        {
+            // Arrange
+            var endpoint1 = EndpointFactory.CreateRouteEndpoint(
+                "Home/Index/{id}",
+                defaults: new { controller = "Home", action = "Index", },
+                metadata: new[] { new RouteValuesAddressMetadata(routeName: null, new RouteValueDictionary(new { controller = "Home", action = "Index", })) });
+            var endpoint2 = EndpointFactory.CreateRouteEndpoint(
+                "Home/Index/{id?}",
+                defaults: new { controller = "Home", action = "Index", },
+                metadata: new[] { new RouteValuesAddressMetadata(routeName: null, new RouteValueDictionary(new { controller = "Home", action = "Index", })) });
+
+            var linkGenerator = CreateLinkGenerator(endpoint1, endpoint2);
+
+            var httpContext = CreateHttpContext(new { controller = "Home", });
+            httpContext.Request.Scheme = "http";
+            httpContext.Request.Host = new HostString("example.com");
+            httpContext.Request.PathBase = new PathString("/Foo/Bar?encodeme?");
+
+            // Act
+            var uri = linkGenerator.GetUriByRouteValues(
+                httpContext,
+                routeName: null,
+                values: new RouteValueDictionary(new { action = "Index", query = "some?query" }),
+                fragment: new FragmentString("#Fragment?"),
+                options: new LinkOptions() { AppendTrailingSlash = true, });
+
+            // Assert
+            Assert.Equal("http://example.com/Foo/Bar%3Fencodeme%3F/Home/Index/?query=some%3Fquery#Fragment?", uri);
+        }
+
+        [Fact]
         public void GetTemplateByRouteValues_CreatesTemplate()
         {
             // Arrange

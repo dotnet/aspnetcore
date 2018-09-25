@@ -15,6 +15,26 @@ namespace Microsoft.AspNetCore.Routing.Internal.Routing
     public class LinkGenerationDecisionTreeTest
     {
         [Fact]
+        public void GetMatches_AllowsNullAmbientValues()
+        {
+            // Arrange
+            var entries = new List<OutboundMatch>();
+
+            var entry = CreateMatch(new { });
+            entries.Add(entry);
+
+            var tree = new LinkGenerationDecisionTree(entries);
+
+            var context = CreateContext(new { });
+
+            // Act
+            var matches = tree.GetMatches(context.Values, ambientValues: null);
+
+            // Assert
+            Assert.Same(entry, Assert.Single(matches).Match);
+        }
+
+        [Fact]
         public void SelectSingleEntry_NoCriteria()
         {
             // Arrange

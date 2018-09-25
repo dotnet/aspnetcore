@@ -15,6 +15,11 @@ namespace Microsoft.AspNetCore.Routing.Internal
     [DebuggerDisplay("{DebuggerDisplayString,nq}")]
     public class LinkGenerationDecisionTree
     {
+        // Fallback value for cases where the ambient values weren't provided.
+        //
+        // This is safe because we don't mutate the route values in here.
+        private static readonly RouteValueDictionary EmptyAmbientValues = new RouteValueDictionary();
+
         private readonly DecisionTreeNode<OutboundMatch> _root;
 
         public LinkGenerationDecisionTree(IReadOnlyList<OutboundMatch> entries)
@@ -30,7 +35,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             if (_root.Matches.Count > 0 || _root.Criteria.Count > 0)
             {
                 var results = new List<OutboundMatchResult>();
-                Walk(results, values, ambientValues, _root, isFallbackPath: false);
+                Walk(results, values, ambientValues ?? EmptyAmbientValues, _root, isFallbackPath: false);
                 results.Sort(OutboundMatchResultComparer.Instance);
                 return results;
             }
