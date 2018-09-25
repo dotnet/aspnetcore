@@ -15,22 +15,24 @@ namespace Microsoft.Extensions.ApiDescription.Client
     /// </summary>
     public class GetFileReferenceMetadata : Task
     {
+        private const string TypeScriptLanguageName = "TypeScript";
+
         /// <summary>
-        /// Default Namespace metadata value for C# output.
+        /// Extension to use in default OutputPath metadata value. Ignored when generating TypeScript.
         /// </summary>
         [Required]
-        public string CSharpNamespace { get; set; }
+        public string Extension { get; set; }
+
+        /// <summary>
+        /// Default Namespace metadata value.
+        /// </summary>
+        [Required]
+        public string Namespace { get; set; }
 
         /// <summary>
         /// Default directory for OutputPath values.
         /// </summary>
         public string OutputDirectory { get; set; }
-
-        /// <summary>
-        /// Default Namespace metadata value for TypeScript output.
-        /// </summary>
-        [Required]
-        public string TypeScriptNamespace { get; set; }
 
         /// <summary>
         /// The ServiceFileReference items to update.
@@ -39,8 +41,7 @@ namespace Microsoft.Extensions.ApiDescription.Client
         public ITaskItem[] Inputs { get; set; }
 
         /// <summary>
-        /// The updated ServiceFileReference items. Will include Namespace and OutputPath metadata. OutputPath metadata
-        /// will contain full paths.
+        /// The updated ServiceFileReference items. Will include ClassName, Namespace and OutputPath metadata.
         /// </summary>
         [Output]
         public ITaskItem[] Outputs{ get; set; }
@@ -50,6 +51,7 @@ namespace Microsoft.Extensions.ApiDescription.Client
         {
             var outputs = new List<ITaskItem>(Inputs.Length);
             var destinations = new HashSet<string>();
+
             foreach (var item in Inputs)
             {
                 var newItem = new TaskItem(item);
@@ -89,22 +91,24 @@ namespace Microsoft.Extensions.ApiDescription.Client
                     MetadataSerializer.SetMetadata(newItem, "ClassName", className);
                 }
 
-                var isTypeScript = codeGenerator.EndsWith("TypeScript", StringComparison.OrdinalIgnoreCase);
                 var @namespace = item.GetMetadata("Namespace");
                 if (string.IsNullOrEmpty(@namespace))
                 {
-                    @namespace = isTypeScript ? CSharpNamespace : TypeScriptNamespace;
-                    MetadataSerializer.SetMetadata(newItem, "Namespace", @namespace);
+                    MetadataSerializer.SetMetadata(newItem, "Namespace", Namespace);
                 }
 
                 var outputPath = item.GetMetadata("OutputPath");
                 if (string.IsNullOrEmpty(outputPath))
                 {
-                    outputPath = $"{className}{(isTypeScript ? ".ts" : ".cs")}";
+                    var isTypeScript = codeGenerator.EndsWith(TypeScriptLanguageName, StringComparison.OrdinalIgnoreCase);
+                    outputPath = $"{className}{(isTypeScript ? ".ts" : Extension)}";
                 }
 
-                outputPath = GetFullPath(outputPath);
-                MetadataSerializer.SetMetadata(newItem, "OutputPath", outputPath);
+                // Place output file in correct directory (relative to project directory).
+                if (!Path.IsPathRooted(outputPath) && !string.IsNullOrEmpty(OutputDirectory))
+                {
+                    outputPath = Path.Combine(OutputDirectory, outputPath);
+                }
 
                 if (!destinations.Add(outputPath))
                 {
@@ -113,28 +117,16 @@ namespace Microsoft.Extensions.ApiDescription.Client
                     Log.LogError(Resources.FormatDuplicateFileOutputPaths(outputPath));
                 }
 
+                MetadataSerializer.SetMetadata(newItem, "OutputPath", outputPath);
+
                 // Add metadata which may be used as a property and passed to an inner build.
+                newItem.RemoveMetadata("SerializedMetadata");
                 newItem.SetMetadata("SerializedMetadata", MetadataSerializer.SerializeMetadata(newItem));
             }
 
             Outputs = outputs.ToArray();
 
             return !Log.HasLoggedErrors;
-        }
-
-        private string GetFullPath(string path)
-        {
-            if (!Path.IsPathRooted(path))
-            {
-                if (!string.IsNullOrEmpty(OutputDirectory))
-                {
-                    path = Path.Combine(OutputDirectory, path);
-                }
-
-                path = Path.GetFullPath(path);
-            }
-
-            return path;
         }
     }
 }

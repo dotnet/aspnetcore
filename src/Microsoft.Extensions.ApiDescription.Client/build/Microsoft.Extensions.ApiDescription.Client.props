@@ -12,7 +12,10 @@
   <UsingTask TaskName="GetUriReferenceMetadata" AssemblyFile="$(_ApiDescriptionTasksAssemblyPath)" />
   <UsingTask TaskName="Microsoft.Extensions.ApiDescription.Client.DownloadFile" AssemblyFile="$(_ApiDescriptionTasksAssemblyPath)" />
 
-  <!-- Settings users may update as they see fit. -->
+  <!--
+    Settings users may update as they see fit. All $(...Directory) values are interpreted relative to the client
+    project folder, unless already an absolute path.
+  -->
   <PropertyGroup>
     <ServiceProjectReferenceCheckIfNewer
         Condition="'$(ServiceProjectReferenceCheckIfNewer)' == ''">true</ServiceProjectReferenceCheckIfNewer>
@@ -28,10 +31,8 @@
         Condition="'$(ServiceFileReferenceCheckIfNewer)' == ''">true</ServiceFileReferenceCheckIfNewer>
     <ServiceFileReferenceDirectory
         Condition="'$(ServiceFileReferenceDirectory)' != ''">$([MSBuild]::EnsureTrailingSlash('$(ServiceFileReferenceDirectory)'))</ServiceFileReferenceDirectory>
-    <ServiceFileReferenceCSharpNamespace
-        Condition="'$(ServiceFileReferenceCSharpNamespace)' == ''">$(RootNamespace)</ServiceFileReferenceCSharpNamespace>
-    <ServiceFileReferenceTypeScriptNamespace
-        Condition="'$(ServiceFileReferenceTypeScriptNamespace)' == ''">$(RootNamespace)</ServiceFileReferenceTypeScriptNamespace>
+
+    <DefaultDocumentGeneratorDefaultOptions Condition="'$(DefaultDocumentGeneratorDefaultOptions)' == ''" />
   </PropertyGroup>
 
   <!--
@@ -40,7 +41,10 @@
   -->
   <ItemDefinitionGroup>
     <ServiceProjectReference>
-      <!-- Name of the API description document generator. -->
+      <!--
+        Name of the API description document generator.  Builds will invoke a target named
+        "%(DocumentGenerator)DocumentGenerator" to do actual document retrieval / generation.
+      -->
       <DocumentGenerator>Default</DocumentGenerator>
 
       <!-- Server project metadata which is likely applicable to all document generators. -->
@@ -107,17 +111,20 @@
     <ServiceFileReference>
       <!-- Name of the class to generate. Defaults to %(Filename)Client but with an uppercase first letter. -->
       <ClassName />
-      <!-- Code generator to use. Required. -->
+      <!--
+        Code generator to use. Required and must end with "CSharp" or "TypeScript" (the currently-supported target
+        languages). Builds will invoke a target named "%(CodeGenerator)CodeGenerator" to do actual code generation.
+      -->
       <CodeGenerator />
       <!--
-        Namespace to contain generated class. Default is either $(ServiceFileReferenceCSharpNamespace) or
-        $(ServiceFileReferenceTypeScriptNamespace), depending on target language.
+        Namespace to contain generated class. Default is $(RootNamespace).
       -->
       <Namespace />
       <!--
         Path to place generated code. Code generator may interpret path as a filename or directory. Default filename or
         folder name is %(ClassName).[cs|ts]. Filenames and relative paths (if explicitly set) are combined with
-        $(ServiceFileReferenceDirectory).
+        $(ServiceFileReferenceDirectory). Final value (depending on $(ServiceFileReferenceDirectory)) is likely to be
+        a path relative to the client project.
       -->
       <OutputPath />
     </ServiceFileReference>
