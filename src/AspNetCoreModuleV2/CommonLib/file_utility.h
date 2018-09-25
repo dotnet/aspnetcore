@@ -25,6 +25,11 @@ public:
     EnsureDirectoryPathExist(
         _In_  LPCWSTR pszPath
     );
+
+    static
+    std::string
+    GetHtml(HMODULE module, int page);
+
 private:
     static
     HRESULT
@@ -32,5 +37,6 @@ private:
         __in  LPCWSTR       pszPath,
         __out BOOL *        pfIsUnc
     );
+
 };
 

@@ -32,7 +32,7 @@ namespace IIS.FunctionalTests.Inprocess
 
             var deploymentResult = await DeployAsync(deploymentParameters);
 
-            InvalidateRuntimeConfig(deploymentResult);
+            Helpers.ModifyFrameworkVersionInRuntimeConfig(deploymentResult);
 
             var response = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
             Assert.False(response.IsSuccessStatusCode);
@@ -54,7 +54,7 @@ namespace IIS.FunctionalTests.Inprocess
 
             var deploymentResult = await DeployAsync(deploymentParameters);
 
-            InvalidateRuntimeConfig(deploymentResult);
+            Helpers.ModifyFrameworkVersionInRuntimeConfig(deploymentResult);
 
             var response = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
             Assert.False(response.IsSuccessStatusCode);
@@ -145,15 +145,6 @@ namespace IIS.FunctionalTests.Inprocess
 
             EventLogHelpers.VerifyEventLogEvent(deploymentResult, "Invoked hostfxr");
             Assert.Contains("Invoked hostfxr", contents);
-        }
-
-        private static void InvalidateRuntimeConfig(IISDeploymentResult deploymentResult)
-        {
-            var path = Path.Combine(deploymentResult.ContentRoot, "InProcessWebSite.runtimeconfig.json");
-            dynamic depsFileContent = JsonConvert.DeserializeObject(File.ReadAllText(path));
-            depsFileContent["runtimeOptions"]["framework"]["version"] = "2.9.9";
-            var output = JsonConvert.SerializeObject(depsFileContent);
-            File.WriteAllText(path, output);
         }
     }
 }

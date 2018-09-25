@@ -11,8 +11,6 @@
 #include "StdWrapper.h"
 #include "StringHelpers.h"
 
-extern HINSTANCE    g_hModule;
-
 FileOutputManager::FileOutputManager(std::wstring pwzStdOutLogFileName, std::wstring  pwzApplicationPath) :
     FileOutputManager(pwzStdOutLogFileName, pwzApplicationPath, /* fEnableNativeLogging */ true) { }
 

@@ -53,6 +53,12 @@ public:
         return m_struStdoutLogFile;
     }
 
+    bool
+    QueryDisableStartupPage() const noexcept
+    {
+        return m_fDisableStartupPage;
+    }
+
     ShimOptions(const ConfigurationSource &configurationSource);
 
 private:
@@ -62,4 +68,5 @@ private:
     std::wstring                   m_strHandlerVersion;
     std::wstring                   m_struStdoutLogFile;
     bool                           m_fStdoutLogEnabled;
+    bool                           m_fDisableStartupPage;
 };

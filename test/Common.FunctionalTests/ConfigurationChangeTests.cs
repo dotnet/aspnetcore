@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             await deploymentResult.HttpClient.RetryRequestAsync("/HelloWorld", r => r.StatusCode == HttpStatusCode.InternalServerError);
 
             StopServer();
-            EventLogHelpers.VerifyEventLogEvent(deploymentResult, "Could not find the assembly 'aspnetcorev2_inprocess.dll'");
+            EventLogHelpers.VerifyEventLogEvent(deploymentResult, "Could not find the assembly 'aspnetcorev2_inprocess.dll'", Logger);
         }
 
         [ConditionalTheory]

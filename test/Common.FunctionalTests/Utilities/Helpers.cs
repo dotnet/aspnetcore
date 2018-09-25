@@ -12,6 +12,8 @@ using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
@@ -158,6 +160,15 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             {
                 return Directory.GetFiles(logFolderPath).Single();
             }
+        }
+
+        public static void ModifyFrameworkVersionInRuntimeConfig(IISDeploymentResult deploymentResult)
+        {
+            var path = Path.Combine(deploymentResult.ContentRoot, "InProcessWebSite.runtimeconfig.json");
+            dynamic depsFileContent = JsonConvert.DeserializeObject(File.ReadAllText(path));
+            depsFileContent["runtimeOptions"]["framework"]["version"] = "2.9.9";
+            var output = JsonConvert.SerializeObject(depsFileContent);
+            File.WriteAllText(path, output);
         }
     }
 }

@@ -76,6 +76,9 @@ private:
     HRESULT
     CreateApplication(const IHttpApplication& pHttpApplication);
 
+    HRESULT
+    TryCreateApplication(const IHttpApplication& pHttpApplication, const ShimOptions& options);
+
     IHttpServer            &m_pServer;
     HandlerResolver        &m_handlerResolver;
 

@@ -151,8 +151,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             if (capabilities.HasFlag(IISCapability.ApplicationInitialization))
             {
-                IsMet &= _dynamicCompressionAvailable;
-                if (!_dynamicCompressionAvailable)
+                IsMet &= _applicationInitializationModule;
+                if (!_applicationInitializationModule)
                 {
                     SkipReason += "The machine does not have IIS ApplicationInitialization installed.";
                 }

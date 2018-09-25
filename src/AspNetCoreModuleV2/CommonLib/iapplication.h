@@ -51,3 +51,13 @@ std::unique_ptr<APPLICATION, IAPPLICATION_DELETER> ReferenceApplication(APPLICAT
     application->ReferenceApplication();
     return std::unique_ptr<APPLICATION, IAPPLICATION_DELETER>(application);
 };
+
+template< class APPLICATION, typename ...Params >
+std::unique_ptr<IAPPLICATION, IAPPLICATION_DELETER> make_application(Params&&... params)
+{
+#pragma warning( push )
+#pragma warning ( disable : 26409 ) // Disable "Avoid using new", using custom deleter here
+    return std::unique_ptr<IAPPLICATION, IAPPLICATION_DELETER>(new APPLICATION(std::forward<Params>(params)...));
+#pragma warning( pop )
+}
+

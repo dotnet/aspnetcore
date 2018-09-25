@@ -229,10 +229,10 @@
     <ClInclude Include="InProcessApplicationBase.h" />
     <ClInclude Include="inprocesshandler.h" />
     <ClInclude Include="InProcessOptions.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="ShuttingDownApplication.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="StartupExceptionApplication.h" />
-    <ClInclude Include="StartupExceptionHandler.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
@@ -247,8 +247,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="StartupExceptionApplication.cpp" />
-    <ClCompile Include="StartupExceptionHandler.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CommonLib\CommonLib.vcxproj">
@@ -262,9 +260,13 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ResourceCompile Include="HtmlResponses.rc" />
     <ResourceCompile Include="inprocessrequesthandler.rc" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="InProcessRhStaticHtml.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
     <None Include="Source.def" />
   </ItemGroup>
   <Import Project="..\..\..\build\native.targets" />
