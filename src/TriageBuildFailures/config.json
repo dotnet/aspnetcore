@@ -212,6 +212,7 @@
       "Releases_22xPublic_Publish",
       "Releases_22xPublic_PbTestWindowsServer2012",
       "Releases_22xPublic_RuntimeStoreInstallers",
+      "Releases_22xPublic_WindowsInstallers",
       // Maintenance builds
       "Maintenance_Backup"
     ]
