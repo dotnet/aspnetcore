@@ -135,7 +135,7 @@ namespace Microsoft.AspNetCore.Routing
                 throw new ArgumentNullException(nameof(httpContext));
             }
 
-            var address = CreateAddress(httpContext: null, routeName, values);
+            var address = CreateAddress(httpContext, routeName, values);
             return generator.GetUriByAddress<RouteValuesAddress>(
                 httpContext,
                 address,
