@@ -95,3 +95,7 @@ cd $binFolder
 
 Write-Host "`nUpdating TeamCity service account password configuration value and Starting the team city agent service..."
 & $changePasswordScript -teamAgentServiceAccountName $teamAgentServiceAccountName -teamAgentServiceAccountPassword $teamAgentServiceAccountPassword 
+
+# This JDK is a later version than the one installed above. I'm not entirely sure what that one is for, but it's installed to a special directory (C:\Java\jre) and isn't the version SignalR wants to use.
+Write-Host "`nEnsure JDK 10 is installed, for SignalR"
+& "$PSScriptRoot\EnsureJDK.ps1"
