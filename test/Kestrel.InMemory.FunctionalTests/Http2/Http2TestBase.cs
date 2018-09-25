@@ -310,7 +310,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _decodedHeaders[name.GetAsciiStringNonNullCharacters()] = value.GetAsciiOrUTF8StringNonNullCharacters();
         }
 
-        protected async Task InitializeConnectionAsync(RequestDelegate application, int expectedSettingsCount = 2)
+        protected async Task InitializeConnectionAsync(RequestDelegate application, int expectedSettingsCount = 3)
         {
             _connectionTask = _connection.ProcessRequestsAsync(new DummyApplication(application));
 
@@ -319,6 +319,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await ExpectAsync(Http2FrameType.SETTINGS,
                 withLength: expectedSettingsCount * Http2FrameReader.SettingSize,
+                withFlags: 0,
+                withStreamId: 0);
+
+            await ExpectAsync(Http2FrameType.WINDOW_UPDATE,
+                withLength: 4,
                 withFlags: 0,
                 withStreamId: 0);
 

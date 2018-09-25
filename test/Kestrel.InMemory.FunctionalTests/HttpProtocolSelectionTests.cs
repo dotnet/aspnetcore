@@ -40,9 +40,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             // Expect a SETTINGS frame (type 0x4) with default settings
             var expected = new byte[]
             {
-                0x00, 0x00, 0x0C, // Payload Length (6 * settings count)
+                0x00, 0x00, 0x12, // Payload Length (6 * settings count)
                 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, // SETTINGS frame (type 0x04)
                 0x00, 0x03, 0x00, 0x00, 0x00, 0x64, // Connection limit
+                0x00, 0x04, 0x00, 0x01, 0x80, 0x00, // Initial window size
                 0x00, 0x06, 0x00, 0x00, 0x80, 0x00 // Header size limit
             };
             var testContext = new TestServiceContext(LoggerFactory);

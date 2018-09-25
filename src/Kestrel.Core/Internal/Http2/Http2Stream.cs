@@ -36,13 +36,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 _context.StreamId,
                 _context.FrameWriter,
                 context.ConnectionInputFlowControl,
-                Http2PeerSettings.DefaultInitialWindowSize,
-                Http2PeerSettings.DefaultInitialWindowSize / 2);
+                _context.ServerPeerSettings.InitialWindowSize,
+                _context.ServerPeerSettings.InitialWindowSize / 2);
 
             _outputFlowControl = new StreamOutputFlowControl(context.ConnectionOutputFlowControl, context.ClientPeerSettings.InitialWindowSize);
             _http2Output = new Http2OutputProducer(context.StreamId, context.FrameWriter, _outputFlowControl, context.TimeoutControl, context.MemoryPool);
 
-            RequestBodyPipe = CreateRequestBodyPipe();
+            RequestBodyPipe = CreateRequestBodyPipe(_context.ServerPeerSettings.InitialWindowSize);
             Output = _http2Output;
         }
 
@@ -446,14 +446,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             _inputFlowControl.Abort();
         }
 
-        private Pipe CreateRequestBodyPipe()
+        private Pipe CreateRequestBodyPipe(uint windowSize)
             => new Pipe(new PipeOptions
             (
                 pool: _context.MemoryPool,
                 readerScheduler: ServiceContext.Scheduler,
                 writerScheduler: PipeScheduler.Inline,
-                pauseWriterThreshold: Http2PeerSettings.DefaultInitialWindowSize,
-                resumeWriterThreshold: Http2PeerSettings.DefaultInitialWindowSize,
+                // Never pause within the window range. Flow control will prevent more data from being added.
+                // See the assert in OnDataAsync.
+                pauseWriterThreshold: windowSize + 1,
+                resumeWriterThreshold: windowSize + 1,
                 useSynchronizationContext: false,
                 minimumSegmentSize: KestrelMemoryPool.MinimumSegmentSize
             ));
