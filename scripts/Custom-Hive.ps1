@@ -14,18 +14,20 @@ function Test-Template($templateName, $templateArgs, $templateNupkg, $isSPA) {
     try {
         Run-DotnetNew $templateArgs, "--no-restore"
 
-        if($templateArgs -match 'F#')
-        {
+        if ($templateArgs -match 'F#') {
             $extension = "fsproj"
         }
-        else
-        {
+        else {
             $extension = "csproj"
         }
 
         $proj = "$tmpDir/$templateName.$extension"
         $projContent = Get-Content -Path $proj -Raw
-        $projContent = $projContent -replace ('<Project Sdk="Microsoft.NET.Sdk.Web">', "<Project Sdk=""Microsoft.NET.Sdk.Web"">`n<Import Project=""$PSScriptRoot/../test/Templates.Test/bin/Debug/netcoreapp2.2/TemplateTests.props"" />")
+        $projContent = $projContent -replace ('<Project Sdk="Microsoft.NET.Sdk.Web">', "<Project Sdk=""Microsoft.NET.Sdk.Web"">
+  <Import Project=""$PSScriptRoot/../test/Templates.Test/bin/Debug/netcoreapp2.2/TemplateTests.props"" />
+  <ItemGroup>
+    <PackageReference Include=""Microsoft.NET.Sdk.Razor"" Version=""`$(MicrosoftNETSdkRazorPackageVersion)"" />
+  </ItemGroup>")
         $projContent | Set-Content $proj
 
         dotnet publish --configuration Release
