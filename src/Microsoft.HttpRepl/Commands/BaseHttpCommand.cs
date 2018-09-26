@@ -42,7 +42,7 @@ namespace Microsoft.HttpRepl.Commands
 
         protected abstract bool RequiresBody { get; }
 
-        protected override CommandInputSpecification InputSpec
+        public override CommandInputSpecification InputSpec
         {
             get
             {
@@ -469,7 +469,18 @@ namespace Microsoft.HttpRepl.Commands
 
         protected override string GetHelpDetails(IShellState shellState, HttpState programState, DefaultCommandInput<ICoreParseResult> commandInput, ICoreParseResult parseResult)
         {
-            return $"Issues a {Verb.ToUpperInvariant()} request";
+            var helpText = new StringBuilder();
+            helpText.Append("Usage: ".Bold());
+            helpText.AppendLine($"{Verb.ToUpperInvariant()} [Options]");
+            helpText.AppendLine();
+            helpText.AppendLine($"Issues a {Verb.ToUpperInvariant()} request.");
+
+            if (RequiresBody)
+            {
+                helpText.AppendLine("Your default editor will be opened with a sample body if no options are provided.");
+            }
+
+            return helpText.ToString();
         }
 
         public override string GetHelpSummary(IShellState shellState, HttpState programState)

@@ -4,10 +4,12 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Repl;
 using Microsoft.Repl.Commanding;
+using Microsoft.Repl.ConsoleHandling;
 using Microsoft.Repl.Parsing;
 using Microsoft.Repl.Scripting;
 using Microsoft.Repl.Suggestions;
@@ -48,12 +50,13 @@ namespace Microsoft.HttpRepl.Commands
         {
             if (parseResult.Sections.Count > 0 && string.Equals(parseResult.Sections[0], Name, StringComparison.OrdinalIgnoreCase))
             {
-                if (parseResult.Sections.Count == 1)
-                {
-                    return "Runs the specified script";
-                }
-
-                return "Runs the script " + parseResult.Sections[1];
+                var helpText = new StringBuilder();
+                helpText.Append("Usage: ".Bold());
+                helpText.AppendLine("run {path to script}");
+                helpText.AppendLine();
+                helpText.AppendLine("Runs the specified script.");
+                helpText.AppendLine("A script is a text file containing one CLI command per line. Each line will be run as if it was typed into the CLI.");
+                return helpText.ToString();
             }
 
             return null;

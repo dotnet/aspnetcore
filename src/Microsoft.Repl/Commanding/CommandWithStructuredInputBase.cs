@@ -208,6 +208,6 @@ namespace Microsoft.Repl.Commanding
 
         protected abstract Task ExecuteAsync(IShellState shellState, TProgramState programState, DefaultCommandInput<TParseResult> commandInput, TParseResult parseResult, CancellationToken cancellationToken);
 
-        protected abstract CommandInputSpecification InputSpec { get; }
+        public abstract CommandInputSpecification InputSpec { get; }
     }
 }

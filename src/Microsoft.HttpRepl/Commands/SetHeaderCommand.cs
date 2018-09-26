@@ -4,11 +4,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.HttpRepl.Suggestions;
 using Microsoft.Repl;
 using Microsoft.Repl.Commanding;
+using Microsoft.Repl.ConsoleHandling;
 using Microsoft.Repl.Parsing;
 
 namespace Microsoft.HttpRepl.Commands
@@ -18,7 +20,7 @@ namespace Microsoft.HttpRepl.Commands
         private static readonly string Name = "set";
         private static readonly string SubCommand = "header";
 
-        public string Description => "set header {name} [{{value}}] - Sets or clears a header";
+        public string Description => "set header {name} [value] - Sets or clears a header";
 
         public bool? CanHandle(IShellState shellState, HttpState programState, ICoreParseResult parseResult)
         {
@@ -43,12 +45,12 @@ namespace Microsoft.HttpRepl.Commands
 
         public string GetHelpDetails(IShellState shellState, HttpState programState, ICoreParseResult parseResult)
         {
-            if (parseResult.Sections.Count > 1 && string.Equals(parseResult.Sections[0], Name, StringComparison.OrdinalIgnoreCase) && string.Equals(parseResult.Sections[1], SubCommand, StringComparison.OrdinalIgnoreCase))
-            {
-                return Description;
-            }
-
-            return null;
+            var helpText = new StringBuilder();
+            helpText.Append("Usage: ".Bold());
+            helpText.AppendLine("set header {name} [value]");
+            helpText.AppendLine();
+            helpText.AppendLine("Sets or clears a header. When [value] is empty the header is cleared.");
+            return Description;
         }
 
         public string GetHelpSummary(IShellState shellState, HttpState programState)
