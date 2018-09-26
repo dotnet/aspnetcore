@@ -27,7 +27,7 @@ The RID of the platform running the tests. (Determined automatically if possible
 .PARAMETER ProdConManifestUrl
 The prodcon build.xml file
 
-.PARAMETER ProcConChannel
+.PARAMETER ProdConChannel
 The prodcon channel to use if a build.xml file isn't set.
 #>
 
@@ -40,7 +40,7 @@ param(
     $TestRuntimeIdentifier,
     $HostRid,
     $ProdConManifestUrl,
-    $ProcConChannel = 'release/2.2'
+    $ProdConChannel = 'release/2.2'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -89,7 +89,7 @@ try {
 
         if (-not $ProdConManifestUrl) {
             Write-Host -ForegroundColor Magenta "Running tests for the latest ProdCon build"
-            $ProdConManifestUrl = "https://raw.githubusercontent.com/dotnet/versions/master/build-info/dotnet/product/cli/$ProcConChannel/build.xml"
+            $ProdConManifestUrl = "https://raw.githubusercontent.com/dotnet/versions/master/build-info/dotnet/product/cli/$ProdConChannel/build.xml"
         }
 
         Write-Host "ProdConManifestUrl:    $ProdConManifestUrl"
