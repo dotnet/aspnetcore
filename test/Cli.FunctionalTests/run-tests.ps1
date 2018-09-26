@@ -49,6 +49,9 @@ Set-StrictMode -Version 1
 $repoRoot = Resolve-Path "$PSScriptRoot/../../"
 Import-Module "$repoRoot/scripts/common.psm1" -Scope Local -Force
 
+# This ID corresponds to the ProdCon build number
+Write-Host "ProductBuildId:  $env:PRODUCTBUILDID"
+
 if (-not $HostRid) {
     if (Test-Path Variable:/IsCoreCLR) {
         $HostRid = if ($IsWindows) { 'win-x64' } `
@@ -89,6 +92,8 @@ try {
             $ProdConManifestUrl = "https://raw.githubusercontent.com/dotnet/versions/master/build-info/dotnet/product/cli/$ProcConChannel/build.xml"
         }
 
+        Write-Host "ProdConManifestUrl:    $ProdConManifestUrl"
+
         [xml] $prodConManifest = Invoke-RestMethod $ProdConManifestUrl
 
         $RestoreSources = $prodConManifest.OrchestratedBuild.Endpoint `
@@ -106,7 +111,9 @@ try {
             Write-Error "Missing required parameter: AssetRootUrl"
         }
         $AssetRootUrl = $AssetRootUrl.TrimEnd('/')
-        [xml] $cli = Invoke-RestMethod "$AssetRootUrl/orchestration-metadata/manifests/cli.xml${AccessTokenSuffix}"
+        $cliMetadataUrl = "$AssetRootUrl/orchestration-metadata/manifests/cli.xml${AccessTokenSuffix}"
+        Write-Host "CliMetadataUrl:    $cliMetadataUrl"
+        [xml] $cli = Invoke-RestMethod $cliMetadataUrl
         $sdkVersion = $cli.Build.ProductVersion
     }
 
