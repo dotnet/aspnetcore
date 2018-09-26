@@ -35,7 +35,7 @@ param(
     [switch]$ci,
     $AssetRootUrl = $env:PB_ASSETROOTURL,
     $AccessTokenSuffix = $env:PB_ACCESSTOKENSUFFIX,
-    $RestoreSources = $env:PB_RESTORESOURCES,
+    $RestoreSources = $env:PB_RESTORESOURCE,
     [ValidateSet('none', 'osx-x64', 'linux-x64', 'win-x64')]
     $TestRuntimeIdentifier,
     $HostRid,
@@ -112,7 +112,7 @@ try {
         }
         $AssetRootUrl = $AssetRootUrl.TrimEnd('/')
         $cliMetadataUrl = "$AssetRootUrl/orchestration-metadata/manifests/cli.xml${AccessTokenSuffix}"
-        Write-Host "CliMetadataUrl:    $cliMetadataUrl"
+        Write-Host "CliMetadataUrl:  $cliMetadataUrl"
         [xml] $cli = Invoke-RestMethod $cliMetadataUrl
         $sdkVersion = $cli.Build.ProductVersion
     }
