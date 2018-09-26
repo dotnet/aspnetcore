@@ -841,7 +841,7 @@ class HubConnectionTest {
     @Test
     public void callingStartOnStartedHubConnectionNoOps() throws Exception {
         Transport mockTransport = new MockTransport();
-        HubConnection hubConnection = new HubConnection("http://example.com", mockTransport ,new NullLogger() ,true);
+        HubConnection hubConnection = new HubConnection("http://example.com", mockTransport, new NullLogger() ,true);
         hubConnection.start();
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
 
@@ -860,5 +860,21 @@ class HubConnectionTest {
 
         Throwable exception = assertThrows(HubException.class, () -> hubConnection.send("inc"));
         assertEquals("The 'send' method cannot be called if the connection is not active", exception.getMessage());
+    }
+
+    @Test
+    public void errorWhenReceivingInvokeWithIncorrectArgumentLength() throws Exception {
+        MockTransport mockTransport = new MockTransport();
+        HubConnection hubConnection = new HubConnection("http://example.com", mockTransport, new NullLogger(), true);
+        hubConnection.on("Send", (s) -> {
+            assertTrue(false);
+        }, String.class);
+
+        CompletableFuture<Void> startFuture = hubConnection.start();
+        mockTransport.receiveMessage("{}" + RECORD_SEPARATOR);
+
+        startFuture.get(1000, TimeUnit.MILLISECONDS);
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> mockTransport.receiveMessage("{\"type\":1,\"target\":\"Send\",\"arguments\":[]}" + RECORD_SEPARATOR));
+        assertEquals("Invocation provides 0 argument(s) but target expects 1.", exception.getMessage());
     }
 }

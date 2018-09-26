@@ -3,6 +3,7 @@
 
 package com.microsoft.aspnet.signalr;
 
+import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,6 +13,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonToken;
 
 class JsonHubProtocol implements HubProtocol {
     private final JsonParser jsonParser = new JsonParser();
@@ -77,15 +79,8 @@ class JsonHubProtocol implements HubProtocol {
                         break;
                     case "arguments":
                         if (target != null) {
-                            reader.beginArray();
                             List<Class<?>> types = binder.getParameterTypes(target);
-                            if (types != null && types.size() >= 1) {
-                                arguments = new ArrayList<>();
-                                for (int i = 0; i < types.size(); i++) {
-                                    arguments.add(gson.fromJson(reader, types.get(i)));
-                                }
-                            }
-                            reader.endArray();
+                            arguments = bindArguments(reader, types);
                         } else {
                             argumentsToken = (JsonArray)jsonParser.parse(reader);
                         }
@@ -106,12 +101,7 @@ class JsonHubProtocol implements HubProtocol {
                 case INVOCATION:
                     if (argumentsToken != null) {
                         List<Class<?>> types = binder.getParameterTypes(target);
-                        if (types != null && types.size() >= 1) {
-                            arguments = new ArrayList<>();
-                            for (int i = 0; i < types.size(); i++) {
-                                arguments.add(gson.fromJson(argumentsToken.get(i), types.get(i)));
-                            }
-                        }
+                        arguments = bindArguments(argumentsToken, types);
                     }
                     if (arguments == null) {
                         hubMessages.add(new InvocationMessage(invocationId, target, new Object[0]));
@@ -150,5 +140,43 @@ class JsonHubProtocol implements HubProtocol {
     @Override
     public String writeMessage(HubMessage hubMessage) {
         return gson.toJson(hubMessage) + RECORD_SEPARATOR;
+    }
+
+    private ArrayList<Object> bindArguments(JsonArray argumentsToken, List<Class<?>> paramTypes) {
+        if (argumentsToken.size() != paramTypes.size()) {
+            throw new RuntimeException(String.format("Invocation provides %d argument(s) but target expects %d.", argumentsToken.size(), paramTypes.size()));
+        }
+
+        ArrayList<Object> arguments = null;
+        if (paramTypes.size() >= 1) {
+            arguments = new ArrayList<>();
+            for (int i = 0; i < paramTypes.size(); i++) {
+                arguments.add(gson.fromJson(argumentsToken.get(i), paramTypes.get(i)));
+            }
+        }
+
+        return arguments;
+    }
+
+    private ArrayList<Object> bindArguments(JsonReader reader, List<Class<?>> paramTypes) throws IOException {
+        reader.beginArray();
+        int paramCount = paramTypes.size();
+        int argCount = 0;
+        ArrayList<Object> arguments = new ArrayList<>();
+        while (reader.peek() != JsonToken.END_ARRAY) {
+            if (argCount < paramCount) {
+                arguments.add(gson.fromJson(reader, paramTypes.get(argCount)));
+            } else {
+                reader.skipValue();
+            }
+            argCount++;
+        }
+
+        if (paramCount != argCount) {
+            throw new RuntimeException(String.format("Invocation provides %d argument(s) but target expects %d.", argCount, paramCount));
+        }
+
+        reader.endArray();
+        return arguments;
     }
 }
