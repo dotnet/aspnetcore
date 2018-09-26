@@ -36,6 +36,10 @@ public class HubConnection {
     private static int MAX_NEGOTIATE_ATTEMPTS = 100;
 
     public HubConnection(String url, Transport transport, Logger logger, boolean skipNegotiate) {
+        if (url == null || url.isEmpty()) {
+            throw new IllegalArgumentException("A valid url is required.");
+        }
+
         this.url = url;
         this.protocol = new JsonHubProtocol();
 
@@ -44,6 +48,11 @@ public class HubConnection {
         } else {
             this.logger = new NullLogger();
         }
+
+        if (transport != null) {
+            this.transport = transport;
+        }
+
         this.skipNegotiate = skipNegotiate;
         this.callback = (payload) -> {
 
@@ -107,10 +116,6 @@ public class HubConnection {
                 }
             }
         };
-
-        if (transport != null) {
-            this.transport = transport;
-        }
     }
 
     private NegotiateResponse handleNegotiate() throws IOException {
@@ -134,43 +139,6 @@ public class HubConnection {
         }
 
         return negotiateResponse;
-    }
-
-    public HubConnection(String url, Transport transport, Logger logger) {
-        this(url, transport, logger, false);
-    }
-
-    public HubConnection(String url, Transport transport, boolean skipNegotiate) {
-        this(url, transport, new NullLogger(), skipNegotiate);
-    }
-
-    /**
-     * Initializes a new instance of the {@link HubConnection} class.
-     *
-     * @param url       The url of the SignalR server to connect to.
-     * @param transport The {@link Transport} that the client will use to communicate with the server.
-     */
-    public HubConnection(String url, Transport transport) {
-        this(url, transport, new NullLogger());
-    }
-
-    /**
-     * Initializes a new instance of the {@link HubConnection} class.
-     *
-     * @param url The url of the SignalR server to connect to.
-     */
-    public HubConnection(String url) {
-        this(url, null, new NullLogger());
-    }
-
-    /**
-     * Initializes a new instance of the {@link HubConnection} class.
-     *
-     * @param url      The url of the SignalR server to connect to.
-     * @param logLevel The minimum level of messages to log.
-     */
-    public HubConnection(String url, LogLevel logLevel) {
-        this(url, null, new ConsoleLogger(logLevel));
     }
 
     /**
