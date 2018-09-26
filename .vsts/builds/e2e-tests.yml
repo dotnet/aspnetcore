@@ -1,0 +1,58 @@
+trigger: none
+phases:
+- phase: Host_Windows
+  queue:
+    name: DotNetCore-Windows
+    parallel: 4
+    matrix:
+      Portable:
+        Test.RuntimeIdentifier: none
+      SelfContainedWindows:
+        Test.RuntimeIdentifier: win-x64
+      SelfContainedLinux:
+        Test.RuntimeIdentifier: linux-x64
+      SelfContainedMacOs:
+        Test.RuntimeIdentifier: osx-x64
+  steps:
+  - task: NodeTool@0
+    displayName: Install Node 10.x
+    inputs:
+      versionSpec: 10.x
+  - powershell: |
+      test/Cli.FunctionalTests/run-tests.ps1 -ci -ProdConManifestUrl $env:PRODCONMANIFESTURL -TestRuntimeIdentifier $(Test.RuntimeIdentifier)
+    condition: ne(variables['PB_SkipTests'], 'true')
+    displayName: Run E2E tests
+  - task: PublishTestResults@2
+    displayName: Publish test results
+    condition: always()
+    inputs:
+      testRunner: vstest
+      testResultsFiles: 'artifacts/logs/**/*.trx'
+- phase: Host_macOS
+  queue:
+    name: Hosted macOS Preview
+    parallel: 4
+    matrix:
+      Portable:
+        Test.RuntimeIdentifier: none
+      SelfContainedWindows:
+        Test.RuntimeIdentifier: win-x64
+      SelfContainedLinux:
+        Test.RuntimeIdentifier: linux-x64
+      SelfContainedMacOs:
+        Test.RuntimeIdentifier: osx-x64
+  steps:
+  - task: NodeTool@0
+    displayName: Install Node 8.x
+    inputs:
+      versionSpec: 8.x
+  - powershell: |
+      test/Cli.FunctionalTests/run-tests.ps1 -ci -ProdConManifestUrl $env:PRODCONMANIFESTURL -TestRuntimeIdentifier $(Test.RuntimeIdentifier)
+    condition: ne(variables['PB_SkipTests'], 'true')
+    displayName: Run E2E tests
+  - task: PublishTestResults@2
+    displayName: Publish test results
+    condition: always()
+    inputs:
+      testRunner: vstest
+      testResultsFiles: 'artifacts/logs/**/*.trx'
