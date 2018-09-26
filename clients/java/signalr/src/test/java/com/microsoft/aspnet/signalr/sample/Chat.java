@@ -33,7 +33,7 @@ public class Chat {
         });
 
         //This is a blocking call
-        hubConnection.start();
+        hubConnection.start().get();
 
         String message = "";
         while (!message.equals("leave")) {

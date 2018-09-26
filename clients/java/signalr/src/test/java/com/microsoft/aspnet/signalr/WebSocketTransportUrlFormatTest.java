@@ -6,6 +6,7 @@ package com.microsoft.aspnet.signalr;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.net.URISyntaxException;
+import java.util.HashMap;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.params.ParameterizedTest;
@@ -24,7 +25,7 @@ class WebSocketTransportUrlFormatTest {
     @ParameterizedTest
     @MethodSource("protocols")
     public void checkWebsocketUrlProtocol(String url, String expectedUrl) throws URISyntaxException {
-        WebSocketTransport webSocketTransport = new WebSocketTransport(url, new NullLogger());
+        WebSocketTransport webSocketTransport = new WebSocketTransport(url, new NullLogger(), new HashMap<>());
         assertEquals(expectedUrl, webSocketTransport.getUrl().toString());
     }
 }

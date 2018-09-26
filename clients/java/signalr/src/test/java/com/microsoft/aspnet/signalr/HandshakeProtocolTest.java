@@ -8,7 +8,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 
 class HandshakeProtocolTest {
-
     @Test
     public void VerifyCreateHandshakerequestMessage() {
         HandshakeRequestMessage handshakeRequest = new HandshakeRequestMessage("json", 1);

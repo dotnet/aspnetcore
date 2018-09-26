@@ -219,6 +219,33 @@ class JsonHubProtocolTest {
         assertEquals(42 , message.getResult());
     }
 
+    @Test
+    public void errorWhileParsingTooManyArgumentsWithOutOfOrderProperties() throws Exception {
+        String stringifiedMessage = "{\"arguments\":[42, 24],\"type\":1,\"target\":\"test\"}\u001E";
+        TestBinder binder = new TestBinder(new InvocationMessage(null, "test", new Object[] { 42 }));
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> jsonHubProtocol.parseMessages(stringifiedMessage, binder));
+        assertEquals("Invocation provides 2 argument(s) but target expects 1.", exception.getMessage());
+    }
+
+    @Test
+    public void errorWhileParsingTooManyArguments() throws Exception {
+        String stringifiedMessage = "{\"type\":1,\"target\":\"test\",\"arguments\":[42, 24]}\u001E";
+        TestBinder binder = new TestBinder(new InvocationMessage(null, "test", new Object[] { 42 }));
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> jsonHubProtocol.parseMessages(stringifiedMessage, binder));
+        assertEquals("Invocation provides 2 argument(s) but target expects 1.", exception.getMessage());
+    }
+
+    @Test
+    public void errorWhileParsingTooFewArguments() throws Exception {
+        String stringifiedMessage = "{\"type\":1,\"target\":\"test\",\"arguments\":[42]}\u001E";
+        TestBinder binder = new TestBinder(new InvocationMessage(null, "test", new Object[] { 42, 24 }));
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> jsonHubProtocol.parseMessages(stringifiedMessage, binder));
+        assertEquals("Invocation provides 1 argument(s) but target expects 2.", exception.getMessage());
+    }
+
     private class TestBinder implements InvocationBinder {
         private Class<?>[] paramTypes = null;
         private Class<?> returnType = null;
