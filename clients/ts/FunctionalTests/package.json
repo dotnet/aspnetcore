@@ -32,7 +32,7 @@
     "karma-summary-reporter": "^1.5.0",
     "ts-node": "^4.1.0",
     "typescript": "^3.0.1",
-    "websocket": " ^1.0.26"
+    "ws": " ^6.0.0"
   },
   "scripts": {
     "clean": "node ../common/node_modules/rimraf/bin.js ./wwwroot/dist ./obj/js",

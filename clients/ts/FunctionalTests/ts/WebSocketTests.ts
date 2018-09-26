@@ -20,10 +20,9 @@ describe("WebSockets", () => {
                 return;
             }
         } else {
-            const websocketModule = require("websocket");
-            const hasWebsocket = websocketModule && websocketModule.w3cwebsocket;
-            if (hasWebsocket) {
-                webSocket = new websocketModule.w3cwebsocket(ECHOENDPOINT_URL.replace(/^http/, "ws"));
+            const websocketModule = require("ws");
+            if (websocketModule) {
+                webSocket = new websocketModule(ECHOENDPOINT_URL.replace(/^http/, "ws"));
             } else {
                 // No WebSockets implementations in current environment, skip test
                 done();

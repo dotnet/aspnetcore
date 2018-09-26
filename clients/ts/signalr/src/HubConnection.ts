@@ -31,6 +31,8 @@ export class HubConnection {
     private id: number;
     private closedCallbacks: Array<(error?: Error) => void>;
     private receivedHandshakeResponse: boolean;
+    private handshakeResolver!: (value?: PromiseLike<{}>) => void;
+    private handshakeRejecter!: (reason?: any) => void;
     private connectionState: HubConnectionState;
 
     // The type of these a) doesn't matter and b) varies when building in browser and node contexts
@@ -106,6 +108,11 @@ export class HubConnection {
         this.logger.log(LogLevel.Debug, "Starting HubConnection.");
 
         this.receivedHandshakeResponse = false;
+        // Set up the promise before any connection is started otherwise it could race with received messages
+        const handshakePromise = new Promise((resolve, reject) => {
+            this.handshakeResolver = resolve;
+            this.handshakeRejecter = reject;
+        });
 
         await this.connection.start(this.protocol.transferFormat);
 
@@ -120,6 +127,8 @@ export class HubConnection {
         this.resetTimeoutPeriod();
         this.resetKeepAliveInterval();
 
+        // Wait for the handshake to complete before marking connection as connected
+        await handshakePromise;
         this.connectionState = HubConnectionState.Connected;
     }
 
@@ -388,19 +397,23 @@ export class HubConnection {
             // We don't want to wait on the stop itself.
             // tslint:disable-next-line:no-floating-promises
             this.connection.stop(error);
+            this.handshakeRejecter(error);
             throw error;
         }
         if (responseMessage.error) {
             const message = "Server returned handshake error: " + responseMessage.error;
             this.logger.log(LogLevel.Error, message);
 
+            this.handshakeRejecter(message);
             // We don't want to wait on the stop itself.
             // tslint:disable-next-line:no-floating-promises
             this.connection.stop(new Error(message));
+            throw new Error(message);
         } else {
             this.logger.log(LogLevel.Debug, "Server handshake complete.");
         }
 
+        this.handshakeResolver();
         return remainingData;
     }
 
