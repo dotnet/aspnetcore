@@ -27,7 +27,7 @@ The RID of the platform running the tests. (Determined automatically if possible
 .PARAMETER ProdConManifestUrl
 The prodcon build.xml file
 
-.PARAMETER ProcConChannel
+.PARAMETER ProdConChannel
 The prodcon channel to use if a build.xml file isn't set.
 #>
 
@@ -35,12 +35,12 @@ param(
     [switch]$ci,
     $AssetRootUrl = $env:PB_ASSETROOTURL,
     $AccessTokenSuffix = $env:PB_ACCESSTOKENSUFFIX,
-    $RestoreSources = $env:PB_RESTORESOURCES,
+    $RestoreSources = $env:PB_RESTORESOURCE,
     [ValidateSet('none', 'osx-x64', 'linux-x64', 'win-x64')]
     $TestRuntimeIdentifier,
     $HostRid,
     $ProdConManifestUrl,
-    $ProcConChannel = 'master'
+    $ProdConChannel = 'master'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -48,6 +48,9 @@ Set-StrictMode -Version 1
 
 $repoRoot = Resolve-Path "$PSScriptRoot/../../"
 Import-Module "$repoRoot/scripts/common.psm1" -Scope Local -Force
+
+# This ID corresponds to the ProdCon build number
+Write-Host "ProductBuildId:  $env:PRODUCTBUILDID"
 
 if (-not $HostRid) {
     if (Test-Path Variable:/IsCoreCLR) {
@@ -86,8 +89,10 @@ try {
 
         if (-not $ProdConManifestUrl) {
             Write-Host -ForegroundColor Magenta "Running tests for the latest ProdCon build"
-            $ProdConManifestUrl = "https://raw.githubusercontent.com/dotnet/versions/master/build-info/dotnet/product/cli/$ProcConChannel/build.xml"
+            $ProdConManifestUrl = "https://raw.githubusercontent.com/dotnet/versions/master/build-info/dotnet/product/cli/$ProdConChannel/build.xml"
         }
+
+        Write-Host "ProdConManifestUrl:    $ProdConManifestUrl"
 
         [xml] $prodConManifest = Invoke-RestMethod $ProdConManifestUrl
 
@@ -106,7 +111,9 @@ try {
             Write-Error "Missing required parameter: AssetRootUrl"
         }
         $AssetRootUrl = $AssetRootUrl.TrimEnd('/')
-        [xml] $cli = Invoke-RestMethod "$AssetRootUrl/orchestration-metadata/manifests/cli.xml${AccessTokenSuffix}"
+        $cliMetadataUrl = "$AssetRootUrl/orchestration-metadata/manifests/cli.xml${AccessTokenSuffix}"
+        Write-Host "CliMetadataUrl:  $cliMetadataUrl"
+        [xml] $cli = Invoke-RestMethod $cliMetadataUrl
         $sdkVersion = $cli.Build.ProductVersion
     }
 
