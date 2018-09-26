@@ -230,6 +230,7 @@
     <PackageArtifact Include="Microsoft.Extensions.DependencyInjection" Category="ship" AppMetapackage="true" AllMetapackage="true" />
     <PackageArtifact Include="Microsoft.Extensions.DiagnosticAdapter" Category="ship" AppMetapackage="true" AllMetapackage="true" />
     <PackageArtifact Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" Category="ship" AppMetapackage="true" AllMetapackage="true" />
+    <PackageArtifact Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Category="ship" AppMetapackage="false" AllMetapackage="false" />
     <PackageArtifact Include="Microsoft.Extensions.Diagnostics.HealthChecks" Category="ship" AppMetapackage="true" AllMetapackage="true"  />
     <PackageArtifact Include="Microsoft.Extensions.FileProviders.Abstractions" Category="ship" AppMetapackage="true" AllMetapackage="true" />
     <PackageArtifact Include="Microsoft.Extensions.FileProviders.Composite" Category="ship" AppMetapackage="true" AllMetapackage="true" />
