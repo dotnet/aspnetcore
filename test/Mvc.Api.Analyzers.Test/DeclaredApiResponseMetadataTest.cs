@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         {
             // Arrange
             var declaredMetadata = DeclaredApiResponseMetadata.ImplicitResponse;
-            var actualMetadata = new ActualApiResponseMetadata(ReturnStatement);
+            var actualMetadata = new ActualApiResponseMetadata(ReturnStatement, null);
 
             // Act
             var matches = declaredMetadata.Matches(actualMetadata);
@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         {
             // Arrange
             var declaredMetadata = DeclaredApiResponseMetadata.ImplicitResponse;
-            var actualMetadata = new ActualApiResponseMetadata(ReturnStatement, 200);
+            var actualMetadata = new ActualApiResponseMetadata(ReturnStatement, 200, null);
 
             // Act
             var matches = declaredMetadata.Matches(actualMetadata);
@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         {
             // Arrange
             var declaredMetadata = DeclaredApiResponseMetadata.ForProducesResponseType(200, AttributeData, Mock.Of<IMethodSymbol>());
-            var actualMetadata = new ActualApiResponseMetadata(ReturnStatement);
+            var actualMetadata = new ActualApiResponseMetadata(ReturnStatement, null);
 
             // Act
             var matches = declaredMetadata.Matches(actualMetadata);
@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         {
             // Arrange
             var declaredMetadata = DeclaredApiResponseMetadata.ForProducesResponseType(201, AttributeData, Mock.Of<IMethodSymbol>());
-            var actualMetadata = new ActualApiResponseMetadata(ReturnStatement);
+            var actualMetadata = new ActualApiResponseMetadata(ReturnStatement, null);
 
             // Act
             var matches = declaredMetadata.Matches(actualMetadata);
@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         {
             // Arrange
             var declaredMetadata = DeclaredApiResponseMetadata.ForProducesResponseType(201, AttributeData, Mock.Of<IMethodSymbol>());
-            var actualMetadata = new ActualApiResponseMetadata(ReturnStatement, 200);
+            var actualMetadata = new ActualApiResponseMetadata(ReturnStatement, 200, null);
 
             // Act
             var matches = declaredMetadata.Matches(actualMetadata);
@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         {
             // Arrange
             var declaredMetadata = DeclaredApiResponseMetadata.ForProducesResponseType(302, AttributeData, Mock.Of<IMethodSymbol>());
-            var actualMetadata = new ActualApiResponseMetadata(ReturnStatement, 302);
+            var actualMetadata = new ActualApiResponseMetadata(ReturnStatement, 302, null);
 
             // Act
             var matches = declaredMetadata.Matches(actualMetadata);
@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         {
             // Arrange
             var declaredMetadata = DeclaredApiResponseMetadata.ForProducesDefaultResponse(AttributeData, Mock.Of<IMethodSymbol>());
-            var actualMetadata = new ActualApiResponseMetadata(ReturnStatement, actualStatusCode);
+            var actualMetadata = new ActualApiResponseMetadata(ReturnStatement, actualStatusCode, null);
 
             // Act
             var matches = declaredMetadata.Matches(actualMetadata);
@@ -130,7 +130,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         {
             // Arrange
             var declaredMetadata = DeclaredApiResponseMetadata.ForProducesDefaultResponse(AttributeData, Mock.Of<IMethodSymbol>());
-            var actualMetadata = new ActualApiResponseMetadata(ReturnStatement, 204);
+            var actualMetadata = new ActualApiResponseMetadata(ReturnStatement, 204, null);
 
             // Act
             var matches = declaredMetadata.Matches(actualMetadata);
@@ -144,7 +144,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         {
             // Arrange
             var declaredMetadata = DeclaredApiResponseMetadata.ForProducesDefaultResponse(AttributeData, Mock.Of<IMethodSymbol>());
-            var actualMetadata = new ActualApiResponseMetadata(ReturnStatement);
+            var actualMetadata = new ActualApiResponseMetadata(ReturnStatement, null);
 
             // Act
             var matches = declaredMetadata.Matches(actualMetadata);

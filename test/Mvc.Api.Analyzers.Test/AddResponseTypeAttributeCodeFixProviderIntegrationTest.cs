@@ -22,6 +22,9 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         public Task CodeFixAddsMissingStatusCodes() => RunTest();
 
         [Fact]
+        public Task CodeFixAddsMissingStatusCodesAndTypes() => RunTest();
+
+        [Fact]
         public Task CodeFixWithConventionAddsMissingStatusCodes() => RunTest();
 
         [Fact]
@@ -35,6 +38,9 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
 
         [Fact]
         public Task CodeFixAddsNumericLiteralForNonExistingStatusCodeConstants() => RunTest();
+
+        [Fact]
+        public Task CodeFixAddsResponseTypeWhenDifferentFromErrorType() => RunTest();
 
         [Fact]
         public Task CodeFixAddsStatusCodesFromMethodParameters() => RunTest();

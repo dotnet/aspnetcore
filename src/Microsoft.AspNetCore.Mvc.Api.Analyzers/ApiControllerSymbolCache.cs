@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics;
 using Microsoft.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
@@ -22,10 +21,10 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
             ModelStateDictionary = compilation.GetTypeByMetadataName(ApiSymbolNames.ModelStateDictionary);
             NonActionAttribute = compilation.GetTypeByMetadataName(ApiSymbolNames.NonActionAttribute);
             NonControllerAttribute = compilation.GetTypeByMetadataName(ApiSymbolNames.NonControllerAttribute);
+            ProblemDetails = compilation.GetTypeByMetadataName(ApiSymbolNames.ProblemDetails);
             ProducesDefaultResponseTypeAttribute = compilation.GetTypeByMetadataName(ApiSymbolNames.ProducesDefaultResponseTypeAttribute);
+            ProducesErrorResponseTypeAttribute = compilation.GetTypeByMetadataName(ApiSymbolNames.ProducesErrorResponseTypeAttribute);
             ProducesResponseTypeAttribute = compilation.GetTypeByMetadataName(ApiSymbolNames.ProducesResponseTypeAttribute);
-
-            StatusCodeValueAttribute = compilation.GetTypeByMetadataName(ApiSymbolNames.StatusCodeValueAttribute);
 
             var statusCodeActionResult = compilation.GetTypeByMetadataName(ApiSymbolNames.IStatusCodeActionResult);
             StatusCodeActionResultStatusProperty = (IPropertySymbol)statusCodeActionResult?.GetMembers("StatusCode")[0];
@@ -61,10 +60,12 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
 
         public INamedTypeSymbol NonControllerAttribute { get; }
 
+        public INamedTypeSymbol ProblemDetails { get; }
+
         public INamedTypeSymbol ProducesDefaultResponseTypeAttribute { get; }
 
         public INamedTypeSymbol ProducesResponseTypeAttribute { get; }
 
-        public INamedTypeSymbol StatusCodeValueAttribute { get; }
+        public INamedTypeSymbol ProducesErrorResponseTypeAttribute { get; }
     }
 }

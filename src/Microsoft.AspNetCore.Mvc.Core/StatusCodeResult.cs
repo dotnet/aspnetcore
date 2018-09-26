@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// with the given <paramref name="statusCode"/>.
         /// </summary>
         /// <param name="statusCode">The HTTP status code of the response.</param>
-        public StatusCodeResult([StatusCodeValue] int statusCode)
+        public StatusCodeResult([ActionResultStatusCode] int statusCode)
         {
             StatusCode = statusCode;
         }

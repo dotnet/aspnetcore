@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
                 }
 
                 var declaredResponseMetadata = SymbolApiResponseMetadataProvider.GetDeclaredResponseMetadata(symbolCache, method);
-                var hasUnreadableStatusCodes = !SymbolApiResponseMetadataProvider.TryGetActualResponseMetadata(symbolCache, semanticModel, methodSyntax, cancellationToken, out var actualResponseMetadata);
+                var hasUnreadableStatusCodes = !ActualApiResponseMetadataFactory.TryGetActualResponseMetadata(symbolCache, semanticModel, methodSyntax, cancellationToken, out var actualResponseMetadata);
 
                 var hasUndocumentedStatusCodes = false;
                 foreach (var actualMetadata in actualResponseMetadata)

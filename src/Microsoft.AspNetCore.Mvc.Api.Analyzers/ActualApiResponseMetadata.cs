@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
@@ -9,16 +10,18 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
     {
         private readonly int? _statusCode;
 
-        public ActualApiResponseMetadata(ReturnStatementSyntax returnStatement)
+        public ActualApiResponseMetadata(ReturnStatementSyntax returnStatement, ITypeSymbol returnType)
         {
             ReturnStatement = returnStatement;
+            ReturnType = returnType;
             _statusCode = null;
         }
 
-        public ActualApiResponseMetadata(ReturnStatementSyntax returnStatement, int statusCode)
+        public ActualApiResponseMetadata(ReturnStatementSyntax returnStatement, int statusCode, ITypeSymbol returnType)
         {
             ReturnStatement = returnStatement;
             _statusCode = statusCode;
+            ReturnType = returnType;
         }
 
         public ReturnStatementSyntax ReturnStatement { get; }
@@ -26,5 +29,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         public int StatusCode => _statusCode.Value;
 
         public bool IsDefaultResponse => _statusCode == null;
+
+        public ITypeSymbol ReturnType { get; }
     }
 }

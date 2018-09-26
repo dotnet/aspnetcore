@@ -18,6 +18,7 @@ namespace Microsoft.AspNetCore.Mvc
             ContentTypes = new MediaTypeCollection();
         }
 
+        [ActionResultObjectValue]
         public object Value { get; set; }
 
         public FormatterCollection<IOutputFormatter> Formatters { get; set; }

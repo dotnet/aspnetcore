@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <summary>
         /// Creates a new <see cref="UnauthorizedObjectResult"/> instance.
         /// </summary>
-        public UnauthorizedObjectResult(object value) : base(value)
+        public UnauthorizedObjectResult([ActionResultObjectValue] object value) : base(value)
         {
             StatusCode = DefaultStatusCode;
         }

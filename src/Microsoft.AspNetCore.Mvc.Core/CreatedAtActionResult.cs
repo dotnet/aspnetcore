@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Mvc
             string actionName,
             string controllerName,
             object routeValues,
-            object value)
+            [ActionResultObjectValue] object value)
             : base(value)
         {
             ActionName = actionName;

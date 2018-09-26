@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// </summary>
         /// <param name="routeValues">The route data to use for generating the URL.</param>
         /// <param name="value">The value to format in the entity body.</param>
-        public AcceptedAtRouteResult(object routeValues, object value)
+        public AcceptedAtRouteResult(object routeValues, [ActionResultObjectValue] object value)
             : this(routeName: null, routeValues: routeValues, value: value)
         {
         }
@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Mvc
         public AcceptedAtRouteResult(
             string routeName,
             object routeValues,
-            object value)
+            [ActionResultObjectValue] object value)
             : base(value)
         {
             RouteName = routeName;

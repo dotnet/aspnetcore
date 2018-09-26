@@ -5,6 +5,10 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
 {
     internal static class ApiSymbolNames
     {
+        public const string ActionResultStatusCodeAttribute = "ActionResultStatusCodeAttribute";
+
+        public const string ActionResultObjectValueAttribute = "ActionResultObjectValueAttribute";
+
         public const string AllowAnonymousAttribute = "Microsoft.AspNetCore.Authorization.AllowAnonymousAttribute";
 
         public const string ApiConventionMethodAttribute = "Microsoft.AspNetCore.Mvc.ApiConventionMethodAttribute";
@@ -31,12 +35,14 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
 
         public const string NonControllerAttribute = "Microsoft.AspNetCore.Mvc.NonControllerAttribute";
 
+        public const string ProblemDetails = "Microsoft.AspNetCore.Mvc.ProblemDetails";
+
         public const string ProducesDefaultResponseTypeAttribute = "Microsoft.AspNetCore.Mvc.ProducesDefaultResponseTypeAttribute";
+
+        public const string ProducesErrorResponseTypeAttribute = "Microsoft.AspNetCore.Mvc.ProducesErrorResponseTypeAttribute";
 
         public const string ProducesResponseTypeAttribute = "Microsoft.AspNetCore.Mvc.ProducesResponseTypeAttribute";
 
         public const string HttpStatusCodes = "Microsoft.AspNetCore.Http.StatusCodes";
-
-        public const string StatusCodeValueAttribute = "Microsoft.AspNetCore.Mvc.Infrastructure.StatusCodeValueAttribute";
     }
 }
