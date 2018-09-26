@@ -30,18 +30,16 @@
 
   <ItemGroup Condition="'$(TargetFramework)'==''">
     <!-- Binaries produced in this project -->
-    <SignedPackageFile Include="tools/rzc.dll" Certificate="$(AssemblySigningCertName)" />
-    <SignedPackageFile Include="tools/Microsoft.AspNetCore.Razor.Language.dll" Certificate="$(AssemblySigningCertName)" />
-    <SignedPackageFile Include="tools/Microsoft.CodeAnalysis.Razor.dll" Certificate="$(AssemblySigningCertName)" />
+    <SignedPackageFile Include="$(MSBuildProjectDirectory)\$(OutputPath)\tools/rzc.dll" Certificate="$(AssemblySigningCertName)" />
 
     <!-- Third-party assemblies -->
-    <SignedPackageFile Include="tools/Newtonsoft.Json.dll" Certificate="3PartyDual" />
+    <SignedPackageFile Include="$(MSBuildProjectDirectory)\$(OutputPath)\tools/Newtonsoft.Json.dll" Certificate="3PartyDual" />
 
     <!-- Binaries that should be signed by corefx/roslyn -->
-    <ExcludePackageFileFromSigning Include="tools/Microsoft.CodeAnalysis.CSharp.dll" />
-    <ExcludePackageFileFromSigning Include="tools/Microsoft.CodeAnalysis.dll" />
-    <ExcludePackageFileFromSigning Include="tools/runtimes/unix/lib/netstandard1.3/System.Text.Encoding.CodePages.dll" />
-    <ExcludePackageFileFromSigning Include="tools/runtimes/win/lib/netstandard1.3/System.Text.Encoding.CodePages.dll" />
+    <ExcludePackageFileFromSigning Include="$(MSBuildProjectDirectory)\$(OutputPath)\tools/Microsoft.CodeAnalysis.CSharp.dll" />
+    <ExcludePackageFileFromSigning Include="$(MSBuildProjectDirectory)\$(OutputPath)\tools/Microsoft.CodeAnalysis.dll" />
+    <ExcludePackageFileFromSigning Include="$(MSBuildProjectDirectory)\$(OutputPath)\tools/runtimes/unix/lib/netstandard1.3/System.Text.Encoding.CodePages.dll" />
+    <ExcludePackageFileFromSigning Include="$(MSBuildProjectDirectory)\$(OutputPath)\tools/runtimes/win/lib/netstandard1.3/System.Text.Encoding.CodePages.dll" />
   </ItemGroup>
 
   <Target Name="PopulateNuspec" BeforeTargets="GenerateNuspec">
