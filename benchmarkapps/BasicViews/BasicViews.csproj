@@ -39,5 +39,6 @@
   -->
   <ItemGroup Condition="'$(BenchmarksTargetFramework)' != ''">
     <PackageReference Include="Microsoft.AspNetCore.All" Version="$(MicrosoftAspNetCoreAllPackageVersion)" />
+    <PackageReference Include="Microsoft.NET.Sdk.Razor" Version="$(MicrosoftAspNetCoreAllPackageVersion)" PrivateAssets="All" />
   </ItemGroup>
 </Project>
