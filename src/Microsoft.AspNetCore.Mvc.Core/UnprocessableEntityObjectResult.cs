@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// Creates a new <see cref="UnprocessableEntityObjectResult"/> instance.
         /// </summary>
         /// <param name="modelState"><see cref="ModelStateDictionary"/> containing the validation errors.</param>
-        public UnprocessableEntityObjectResult(ModelStateDictionary modelState)
+        public UnprocessableEntityObjectResult([ActionResultObjectValue] ModelStateDictionary modelState)
             : this(new SerializableError(modelState))
         {
         }
@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// Creates a new <see cref="UnprocessableEntityObjectResult"/> instance.
         /// </summary>
         /// <param name="error">Contains errors to be returned to the client.</param>
-        public UnprocessableEntityObjectResult(object error)
+        public UnprocessableEntityObjectResult([ActionResultObjectValue] object error)
             : base(error)
         {
             StatusCode = DefaultStatusCode;

@@ -103,7 +103,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
                 }
 
                 var returnStatementSyntax = (ReturnStatementSyntax)returnOperation.Syntax;
-                var actualMetadata = SymbolApiResponseMetadataProvider.InspectReturnStatementSyntax(
+                var actualMetadata = ActualApiResponseMetadataFactory.InspectReturnStatementSyntax(
                     symbolCache,
                     semanticModel,
                     returnStatementSyntax,

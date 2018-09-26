@@ -43,6 +43,71 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
             => RunNoDiagnosticsAreReturned();
 
         [Fact]
+        public async Task DiagnosticsAreReturned_ForIncompleteActionResults()
+        {
+            // Arrange
+            var source = @"
+using Microsoft.AspNetCore.Mvc;
+
+namespace Test
+{
+    [ApiController]
+    [Route(""[controller]/[action]"")
+    public class TestController : ControllerBase
+    {
+        public IActionResult Get(int id)
+        {
+            if (id == 0)
+            {
+                /*MM*/return NotFound();
+            }
+
+            return;
+        }
+    }
+}";
+            var testSource = TestSource.Read(source);
+            var expectedLocation = testSource.DefaultMarkerLocation;
+
+            // Act
+            var result = await Executor.GetDiagnosticsAsync(testSource.Source);
+
+            // Assert
+            var diagnostic = Assert.Single(result, d => d.Id == ApiDiagnosticDescriptors.API1000_ActionReturnsUndocumentedStatusCode.Id);
+            AnalyzerAssert.DiagnosticLocation(expectedLocation, diagnostic.Location);
+        }
+
+        [Fact]
+        public async Task NoDiagnosticsAreReturned_WhenActionDoesNotCompile()
+        {
+            // Arrange
+            var source = @"
+namespace Test
+{
+    [ApiController]
+    [Route(""[controller]/[action]"")
+    public class TestController : ControllerBase
+    {
+        public IActionResult Get(int id)
+        {
+            if (id == 0)
+            {
+                return NotFound();
+            }
+
+            return Ok();
+        }
+    }
+}";
+
+            // Act
+            var result = await Executor.GetDiagnosticsAsync(source);
+
+            // Assert
+            Assert.DoesNotContain(result, d => d.Id == ApiDiagnosticDescriptors.API1000_ActionReturnsUndocumentedStatusCode.Id);
+        }
+
+        [Fact]
         public Task DiagnosticsAreReturned_IfMethodWithProducesResponseTypeAttribute_ReturnsUndocumentedStatusCode()
             => RunTest(ApiDiagnosticDescriptors.API1000_ActionReturnsUndocumentedStatusCode, 404);
 

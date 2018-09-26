@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// Creates a new <see cref="ConflictObjectResult"/> instance.
         /// </summary>
         /// <param name="error">Contains the errors to be returned to the client.</param>
-        public ConflictObjectResult(object error)
+        public ConflictObjectResult([ActionResultObjectValue] object error)
             : base(error)
         {
             StatusCode = DefaultStatusCode;
@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// Creates a new <see cref="ConflictObjectResult"/> instance.
         /// </summary>
         /// <param name="modelState"><see cref="ModelStateDictionary"/> containing the validation errors.</param>
-        public ConflictObjectResult(ModelStateDictionary modelState)
+        public ConflictObjectResult([ActionResultObjectValue] ModelStateDictionary modelState)
             : base(new SerializableError(modelState))
         {
             if (modelState == null)

@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
 
         [ProducesResponseType(204)]
         [ApiConventionMethod(typeof(DefaultApiConventions), nameof(DefaultApiConventions.Find))]
-        public IActionResult GetResponseMetadata_WIthProducesResponseTypeAndApiConventionMethod() => null;
+        public IActionResult GetResponseMetadata_WithProducesResponseTypeAndApiConventionMethod() => null;
     }
 
     public class Person { }
