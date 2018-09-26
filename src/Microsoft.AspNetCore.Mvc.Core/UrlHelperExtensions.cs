@@ -444,32 +444,8 @@ namespace Microsoft.AspNetCore.Mvc
 
             var routeValues = new RouteValueDictionary(values);
             var ambientValues = urlHelper.ActionContext.RouteData.Values;
-            if (string.IsNullOrEmpty(pageName))
-            {
-                if (!routeValues.ContainsKey("page") &&
-                    ambientValues.TryGetValue("page", out var value))
-                {
-                    routeValues["page"] = value;
-                }
-            }
-            else
-            {
-                routeValues["page"] = CalculatePageName(urlHelper.ActionContext, pageName);
-            }
 
-            if (string.IsNullOrEmpty(pageHandler))
-            {
-                if (!routeValues.ContainsKey("handler") &&
-                    ambientValues.TryGetValue("handler", out var handler))
-                {
-                    // Clear out form action unless it's explicitly specified in the routeValues.
-                    routeValues["handler"] = null;
-                }
-            }
-            else
-            {
-                routeValues["handler"] = pageHandler;
-            }
+            UrlHelperBase.NormalizeRouteValuesForPage(urlHelper.ActionContext, pageName, pageHandler, routeValues, ambientValues);
 
             return urlHelper.RouteUrl(
                 routeName: null,
@@ -477,25 +453,6 @@ namespace Microsoft.AspNetCore.Mvc
                 protocol: protocol,
                 host: host,
                 fragment: fragment);
-        }
-
-        private static object CalculatePageName(ActionContext actionContext, string pageName)
-        {
-            Debug.Assert(pageName.Length > 0);
-            // Paths not qualified with a leading slash are treated as relative to the current page.
-            if (pageName[0] != '/')
-            {
-                var currentPagePath = NormalizedRouteValue.GetNormalizedRouteValue(actionContext, "page");
-                if (string.IsNullOrEmpty(currentPagePath))
-                {
-                    // Disallow the use sibling page routing, a Razor page specific feature, from a non-page action.
-                    throw new InvalidOperationException(Resources.FormatUrlHelper_RelativePagePathIsNotSupported(pageName));
-                }
-
-                return ViewEnginePath.CombinePath(currentPagePath, pageName);
-            }
-
-            return pageName;
         }
     }
 }

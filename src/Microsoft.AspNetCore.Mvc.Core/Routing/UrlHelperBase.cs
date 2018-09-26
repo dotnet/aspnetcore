@@ -3,8 +3,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Core;
+using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Routing;
 
 namespace Microsoft.AspNetCore.Mvc.Routing
@@ -261,6 +265,109 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 // Clear the StringBuilder so that it can reused for the next call.
                 builder.Clear();
             }
+        }
+
+        internal static void NormalizeRouteValuesForAction(
+            string action,
+            string controller,
+            RouteValueDictionary values,
+            RouteValueDictionary ambientValues)
+        {
+            object obj = null;
+            if (action == null)
+            {
+                if (!values.ContainsKey("action") &&
+                    (ambientValues?.TryGetValue("action", out obj) ?? false))
+                {
+                    values["action"] = obj;
+                }
+            }
+            else
+            {
+                values["action"] = action;
+            }
+
+            if (controller == null)
+            {
+                if (!values.ContainsKey("controller") &&
+                    (ambientValues?.TryGetValue("controller", out obj) ?? false))
+                {
+                    values["controller"] = obj;
+                }
+            }
+            else
+            {
+                values["controller"] = controller;
+            }
+        }
+
+        internal static void NormalizeRouteValuesForPage(
+            ActionContext context,
+            string page,
+            string handler,
+            RouteValueDictionary values,
+            RouteValueDictionary ambientValues)
+        {
+            object value = null;
+            if (string.IsNullOrEmpty(page))
+            {
+                if (!values.ContainsKey("page") &&
+                    (ambientValues?.TryGetValue("page", out value) ?? false))
+                {
+                    values["page"] = value;
+                }
+            }
+            else
+            {
+                values["page"] = CalculatePageName(context, ambientValues, page);
+            }
+
+            if (string.IsNullOrEmpty(handler))
+            {
+                if (!values.ContainsKey("handler") &&
+                    (ambientValues?.ContainsKey("handler") ?? false))
+                {
+                    // Clear out form action unless it's explicitly specified in the routeValues.
+                    values["handler"] = null;
+                }
+            }
+            else
+            {
+                values["handler"] = handler;
+            }
+        }
+
+        private static object CalculatePageName(ActionContext context, RouteValueDictionary ambientValues, string pageName)
+        {
+            Debug.Assert(pageName.Length > 0);
+            // Paths not qualified with a leading slash are treated as relative to the current page.
+            if (pageName[0] != '/')
+            {
+                // OK now we should get the best 'normalized' version of the page route value that we can.
+                string currentPagePath;
+                if (context != null)
+                {
+                    currentPagePath = NormalizedRouteValue.GetNormalizedRouteValue(context, "page");
+                }
+                else if (ambientValues != null)
+                {
+                    currentPagePath = ambientValues["page"]?.ToString();
+                }
+                else
+                {
+                    currentPagePath = null;
+                }
+
+                if (string.IsNullOrEmpty(currentPagePath))
+                {
+                    // Disallow the use sibling page routing, a Razor page specific feature, from a non-page action.
+                    throw new InvalidOperationException(Resources.FormatUrlHelper_RelativePagePathIsNotSupported(pageName));
+                }
+
+                return ViewEnginePath.CombinePath(currentPagePath, pageName);
+            }
+
+            return pageName;
         }
 
         // for unit testing
