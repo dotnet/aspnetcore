@@ -1527,6 +1527,34 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedErrorMessage: CoreStrings.HPackErrorIncompleteHeaderBlock);
         }
 
+        [Fact]
+        public async Task HEADERS_Received_IntegerOverLimit_ConnectionError()
+        {
+            await InitializeConnectionAsync(_noopApplication);
+
+            var outputWriter = _pair.Application.Output;
+            var frame = new Http2Frame();
+
+            frame.PrepareHeaders(Http2HeadersFrameFlags.END_HEADERS, 1);
+            frame.PayloadLength = 7;
+            var payload = new byte[]
+            {
+                // Set up an incomplete Literal Header Field w/ Incremental Indexing frame,
+                0x00,
+                // with an name of size that's greater than int.MaxValue
+                0x7f, 0x80, 0x80, 0x80, 0x80, 0x7f
+            };
+
+            Http2FrameWriter.WriteHeader(frame, outputWriter);
+            await SendAsync(payload);
+
+            await WaitForConnectionErrorAsync<HPackDecodingException>(
+                ignoreNonGoAwayFrames: false,
+                expectedLastStreamId: 1,
+                expectedErrorCode: Http2ErrorCode.COMPRESSION_ERROR,
+                expectedErrorMessage: CoreStrings.HPackErrorIntegerTooBig);
+        }
+
         [Theory]
         [MemberData(nameof(IllegalTrailerData))]
         public async Task HEADERS_Received_WithTrailers_ContainsIllegalTrailer_ConnectionError(byte[] trailers, string expectedErrorMessage)
