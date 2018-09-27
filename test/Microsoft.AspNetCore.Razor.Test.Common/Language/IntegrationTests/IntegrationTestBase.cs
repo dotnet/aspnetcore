@@ -18,6 +18,9 @@ using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 using Xunit;
 using Xunit.Sdk;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Razor;
+using Microsoft.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 {
@@ -28,15 +31,81 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
         private static readonly AsyncLocal<string> _fileName = new AsyncLocal<string>();
 #endif
 
-        protected IntegrationTestBase()
+        private static readonly CSharpCompilation DefaultBaseCompilation;
+
+        static IntegrationTestBase()
         {
-            TestProjectRoot = TestProject.GetProjectDirectory(GetType());
+            var referenceAssemblyRoots = new[]
+            {
+                typeof(System.Runtime.AssemblyTargetedPatchBandAttribute).Assembly, // System.Runtime
+            };
+
+            var referenceAssemblies = referenceAssemblyRoots
+                .SelectMany(assembly => assembly.GetReferencedAssemblies().Concat(new[] { assembly.GetName() }))
+                .Distinct()
+                .Select(Assembly.Load)
+                .Select(assembly => MetadataReference.CreateFromFile(assembly.Location))
+                .ToList();
+            DefaultBaseCompilation = CSharpCompilation.Create(
+                "TestAssembly",
+                Array.Empty<SyntaxTree>(),
+                referenceAssemblies,
+                new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
         }
 
+        protected IntegrationTestBase(bool? generateBaselines = null)
+        {
+            TestProjectRoot = TestProject.GetProjectDirectory(GetType());
+
+            if (generateBaselines.HasValue)
+            {
+                GenerateBaselines = generateBaselines.Value;
+            }
+        }
+
+        /// <summary>
+        /// Gets the <see cref="CSharpCompilation"/> that will be used as the 'app' compilation.
+        /// </summary>
+        protected virtual CSharpCompilation BaseCompilation => DefaultBaseCompilation;
+
+        /// <summary>
+        /// Gets the parse options applied when using <see cref="AddCSharpSyntaxTree(string, string)"/>.
+        /// </summary>
+        protected virtual CSharpParseOptions CSharpParseOptions { get; } = new CSharpParseOptions(LanguageVersion.Latest);
+
+        /// <summary>
+        /// Gets the compilation options applied when compiling assemblies.
+        /// </summary>
+        protected virtual CSharpCompilationOptions CSharpCompilationOptions { get; } = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary);
+
+        /// <summary>
+        /// Gets a list of CSharp syntax trees used that are considered part of the 'app'.
+        /// </summary>
+        protected virtual List<CSharpSyntaxTree> CSharpSyntaxTrees { get; } = new List<CSharpSyntaxTree>();
+
+        /// <summary>
+        /// Gets the <see cref="RazorConfiguration"/> that will be used for code generation.
+        /// </summary>
+        protected virtual RazorConfiguration Configuration { get; } = RazorConfiguration.Default;
+
+        protected virtual bool DesignTime { get; } = false;
+
+        /// <summary>
+        /// Gets the 
+        /// </summary>
+        internal VirtualRazorProjectFileSystem FileSystem { get; } = new VirtualRazorProjectFileSystem();
+
+        /// <summary>
+        /// Used to force a specific style of line-endings for testing. This matters for the baseline tests that exercise line mappings. 
+        /// Even though we normalize newlines for testing, the difference between platforms affects the data through the *count* of 
+        /// characters written.
+        /// </summary>
+        protected virtual string LineEnding { get; } = "\r\n";
+
 #if GENERATE_BASELINES
-        protected bool GenerateBaselines { get; set; } = true;
+        protected bool GenerateBaselines { get; } = true;
 #else
-        protected bool GenerateBaselines { get; set; } = false;
+        protected bool GenerateBaselines { get; } = false;
 #endif
 
         protected string TestProjectRoot { get; }
@@ -60,34 +129,62 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 #endif
         }
 
-        protected virtual RazorProjectEngine CreateProjectEngine() => CreateProjectEngine(configure: null);
-
-        protected virtual RazorProjectEngine CreateProjectEngine(Action<RazorProjectEngineBuilder> configure)
+        protected virtual void ConfigureProjectEngine(RazorProjectEngineBuilder builder)
         {
-            if (FileName == null)
-            {
-                var message = $"{nameof(CreateProjectEngine)} should only be called from an integration test, ({nameof(FileName)} is null).";
-                throw new InvalidOperationException(message);
-            }
-
-            var assembly = GetType().GetTypeInfo().Assembly;
-            var projectEngine = RazorProjectEngine.Create(RazorConfiguration.Default, IntegrationTestFileSystem.Default, b =>
-            {
-                configure?.Invoke(b);
-
-                var existingImportFeature = b.Features.OfType<IImportProjectFeature>().Single();
-                b.SetImportFeature(new IntegrationTestImportFeature(assembly, existingImportFeature));
-            });
-            var testProjectEngine = new IntegrationTestProjectEngine(projectEngine);
-
-            return testProjectEngine;
         }
 
-        protected virtual RazorProjectItem CreateProjectItem()
+        protected CSharpSyntaxTree AddCSharpSyntaxTree(string text, string filePath = null)
+        {
+            var syntaxTree = (CSharpSyntaxTree)CSharpSyntaxTree.ParseText(text, CSharpParseOptions, path: filePath);
+            CSharpSyntaxTrees.Add(syntaxTree);
+            return syntaxTree;
+        }
+
+        protected RazorProjectItem AddProjectItemFromText(string text, string filePath = "_ViewImports.cshtml")
+        {
+            var projectItem = CreateProjectItemFromText(text, filePath);
+            FileSystem.Add(projectItem);
+            return projectItem;
+        }
+
+        private RazorProjectItem CreateProjectItemFromText(string text, string filePath)
+        {
+            // Consider the file path to be relative to the 'FileName' of the test.
+            var workingDirectory = Path.GetDirectoryName(FileName);
+
+            // Since these paths are used in baselines, we normalize them to windows style. We
+            // use "" as the base path by convention to avoid baking in an actual file system
+            // path.
+            var basePath = "";
+            var physicalPath = Path.Combine(workingDirectory, filePath).Replace('/', '\\');
+            var relativePhysicalPath = physicalPath;
+
+            // FilePaths in Razor are **always** are of the form '/a/b/c.cshtml'
+            filePath = physicalPath.Replace('\\', '/');
+            if (!filePath.StartsWith("/"))
+            {
+                filePath = '/' + filePath;
+            }
+
+            text = NormalizeNewLines(text);
+
+            var projectItem = new TestRazorProjectItem(
+                basePath: basePath,
+                filePath: filePath,
+                physicalPath: physicalPath,
+                relativePhysicalPath: relativePhysicalPath)
+            {
+                Content = text,
+            };
+            
+            return projectItem;
+        }
+
+        protected RazorProjectItem CreateProjectItemFromFile(string filePath = null)
         {
             if (FileName == null)
             {
-                var message = $"{nameof(CreateProjectItem)} should only be called from an integration test, ({nameof(FileName)} is null).";
+                var message = $"{nameof(CreateProjectItemFromFile)} should only be called from an integration test, ({nameof(FileName)} is null).";
                 throw new InvalidOperationException(message);
             }
 
@@ -102,12 +199,149 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             var fileContent = testFile.ReadAllText();
             var normalizedContent = NormalizeNewLines(fileContent);
 
-            var projectItem = new TestRazorProjectItem(sourceFileName)
+            var workingDirectory = Path.GetDirectoryName(FileName);
+            var fullPath = sourceFileName;
+
+            // Normalize to forward-slash - these strings end up in the baselines.
+            fullPath = fullPath.Replace('\\', '/');
+            sourceFileName = sourceFileName.Replace('\\', '/');
+
+            // FilePaths in Razor are **always** are of the form '/a/b/c.cshtml'
+            filePath = filePath ?? sourceFileName;
+            if (!filePath.StartsWith("/"))
             {
-                Content = normalizedContent,
+                filePath = '/' + filePath;
+            }
+
+            var projectItem = new TestRazorProjectItem(
+                basePath: workingDirectory,
+                filePath: filePath,
+                physicalPath: fullPath,
+                relativePhysicalPath: sourceFileName)
+            {
+                Content = fileContent,
+            };
+            
+            return projectItem;
+        }
+
+        protected CompiledCSharpCode CompileToCSharp(string text, string path = "test.cshtml", bool? designTime = null)
+        {
+            var projectItem = CreateProjectItemFromText(text, path);
+            return CompileToCSharp(projectItem, designTime);
+        }
+
+        protected CompiledCSharpCode CompileToCSharp(RazorProjectItem projectItem, bool? designTime = null)
+        {
+            var compilation = CreateCompilation();
+            var references = compilation.References.Concat(new[] { compilation.ToMetadataReference(), }).ToArray();
+
+            var projectEngine = CreateProjectEngine(Configuration, references, ConfigureProjectEngine);
+            var codeDocument = (designTime ?? DesignTime) ? projectEngine.ProcessDesignTime(projectItem) : projectEngine.Process(projectItem);
+
+            return new CompiledCSharpCode(CSharpCompilation.Create(compilation.AssemblyName + ".Views", references: references, options: CSharpCompilationOptions), codeDocument);
+        }
+
+        protected CompiledAssembly CompileToAssembly(string text, string path = "test.cshtml", bool? designTime = null, bool throwOnFailure = true)
+        {
+            var compiled = CompileToCSharp(text, path, designTime);
+            return CompileToAssembly(compiled);
+        }
+
+        protected CompiledAssembly CompileToAssembly(RazorProjectItem projectItem, bool? designTime = null, bool throwOnFailure = true)
+        {
+            var compiled = CompileToCSharp(projectItem, designTime);
+            return CompileToAssembly(compiled, throwOnFailure: throwOnFailure);
+        }
+
+        protected CompiledAssembly CompileToAssembly(CompiledCSharpCode code, bool throwOnFailure = true)
+        {
+            var cSharpDocument = code.CodeDocument.GetCSharpDocument();
+            if (cSharpDocument.Diagnostics.Any())
+            {
+                var diagnosticsLog = string.Join(Environment.NewLine, cSharpDocument.Diagnostics.Select(d => d.ToString()).ToArray());
+                throw new InvalidOperationException($"Aborting compilation to assembly because RazorCompiler returned nonempty diagnostics: {diagnosticsLog}");
+            }
+
+            var syntaxTrees = new[]
+            {
+                (CSharpSyntaxTree)CSharpSyntaxTree.ParseText(cSharpDocument.GeneratedCode, CSharpParseOptions, path: code.CodeDocument.Source.FilePath),
             };
 
-            return projectItem;
+            var compilation = code.BaseCompilation.AddSyntaxTrees(syntaxTrees);
+
+            var diagnostics = compilation
+                .GetDiagnostics()
+                .Where(d => d.Severity >= DiagnosticSeverity.Warning)
+                .ToArray();
+
+            if (diagnostics.Length > 0 && throwOnFailure)
+            {
+                throw new CompilationFailedException(compilation, diagnostics);
+            }
+            else if (diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error))
+            {
+                return new CompiledAssembly(compilation, code.CodeDocument, assembly: null);
+            }
+
+            using (var peStream = new MemoryStream())
+            {
+                var emit = compilation.Emit(peStream);
+                diagnostics = emit
+                    .Diagnostics
+                    .Where(d => d.Severity >= DiagnosticSeverity.Warning)
+                    .ToArray();
+                if (diagnostics.Length > 0 && throwOnFailure)
+                {
+                    throw new CompilationFailedException(compilation, diagnostics);
+                }
+
+                return new CompiledAssembly(compilation, code.CodeDocument, Assembly.Load(peStream.ToArray()));
+            }
+        }
+
+        private CSharpCompilation CreateCompilation()
+        {
+            var compilation = BaseCompilation.AddSyntaxTrees(CSharpSyntaxTrees);
+            var diagnostics = compilation.GetDiagnostics().Where(d => d.Severity >= DiagnosticSeverity.Warning).ToArray();
+            if (diagnostics.Length > 0)
+            {
+                throw new CompilationFailedException(compilation, diagnostics);
+            }
+
+            return compilation;
+        }
+
+        protected RazorProjectEngine CreateProjectEngine(Action<RazorProjectEngineBuilder> configure = null)
+        {
+            var compilation = CreateCompilation();
+            var references = compilation.References.Concat(new[] { compilation.ToMetadataReference(), }).ToArray();
+            return CreateProjectEngine(Configuration, references, configure);
+        }
+
+        private RazorProjectEngine CreateProjectEngine(RazorConfiguration configuration, MetadataReference[] references, Action<RazorProjectEngineBuilder> configure)
+        {
+            return RazorProjectEngine.Create(configuration, FileSystem, b =>
+            {
+                b.Phases.Insert(0, new ConfigureCodeRenderingPhase(LineEnding));
+
+                configure?.Invoke(b);
+
+                // Allow the test to do custom things with tag helpers, but do the default thing most of the time.
+                if (!b.Features.OfType<ITagHelperFeature>().Any())
+                {
+                    b.Features.Add(new CompilationTagHelperFeature());
+                    b.Features.Add(new DefaultMetadataReferenceFeature()
+                    {
+                        References = references,
+                    });
+                }
+
+                // Decorate the import feature so we can normalize line endings.
+                var importFeature = b.Features.OfType<IImportProjectFeature>().FirstOrDefault();
+                b.Features.Add(new NormalizedDefaultImportFeature(importFeature, LineEnding));
+                b.Features.Remove(importFeature);
+            });
         }
 
         protected void AssertDocumentNodeMatchesBaseline(DocumentIntermediateNode document)
@@ -225,96 +459,93 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             Assert.Equal(baseline, actual);
         }
 
-        private static string NormalizeNewLines(string content)
+        private string NormalizeNewLines(string content)
         {
-            return Regex.Replace(content, "(?<!\r)\n", "\r\n", RegexOptions.None, TimeSpan.FromSeconds(10));
+            return NormalizeNewLines(content, LineEnding);
         }
 
-        private class IntegrationTestProjectEngine : DefaultRazorProjectEngine
+        private static string NormalizeNewLines(string content, string lineEnding)
         {
-            public IntegrationTestProjectEngine(
-                RazorProjectEngine innerEngine)
-                : base(innerEngine.Configuration, innerEngine.Engine, innerEngine.FileSystem, innerEngine.ProjectFeatures)
+            return Regex.Replace(content, "(?<!\r)\n", lineEnding, RegexOptions.None, TimeSpan.FromSeconds(10));
+        }
+
+        // This is to prevent you from accidentally checking in with GenerateBaselines = true
+        [Fact]
+        public void GenerateBaselinesMustBeFalse()
+        {
+            Assert.False(GenerateBaselines, "GenerateBaselines should be set back to false before you check in!");
+        }
+
+        private class ConfigureCodeRenderingPhase : RazorEnginePhaseBase
+        {
+            public ConfigureCodeRenderingPhase(string lineEnding)
             {
+                LineEnding = lineEnding;
             }
 
-            protected override void ProcessCore(RazorCodeDocument codeDocument)
+            public string LineEnding { get; }
+
+            protected override void ExecuteCore(RazorCodeDocument codeDocument)
             {
-                // This will ensure that we're not putting any randomly generated data in a baseline.
                 codeDocument.Items[CodeRenderingContext.SuppressUniqueIds] = "test";
-
-                // This is to make tests work cross platform.
-                codeDocument.Items[CodeRenderingContext.NewLineString] = "\r\n";
-
-                base.ProcessCore(codeDocument);
+                codeDocument.Items[CodeRenderingContext.NewLineString] = LineEnding;
             }
         }
 
-        private class IntegrationTestImportFeature : RazorProjectEngineFeatureBase, IImportProjectFeature
+        // 'Default' imports won't have normalized line-endings, which is unfriendly for testing.
+        private class NormalizedDefaultImportFeature : RazorProjectEngineFeatureBase, IImportProjectFeature
         {
-            private Assembly _assembly;
-            private IImportProjectFeature _existingImportFeature;
+            private readonly IImportProjectFeature _inner;
+            private readonly string _lineEnding;
 
-            public IntegrationTestImportFeature(Assembly assembly, IImportProjectFeature existingImportFeature)
+            public NormalizedDefaultImportFeature(IImportProjectFeature inner, string lineEnding)
             {
-                _assembly = assembly;
-                _existingImportFeature = existingImportFeature;
+                _inner = inner;
+                _lineEnding = lineEnding;
             }
 
             protected override void OnInitialized()
             {
-                _existingImportFeature.ProjectEngine = ProjectEngine;
+                if (_inner != null)
+                {
+                    _inner.ProjectEngine = ProjectEngine;
+                }
             }
 
             public IReadOnlyList<RazorProjectItem> GetImports(RazorProjectItem projectItem)
             {
-                var imports = new List<RazorProjectItem>();
-
-                while (true)
+                if (_inner == null)
                 {
-                    var importsFileName = Path.ChangeExtension(projectItem.FilePathWithoutExtension + "_Imports" + imports.Count.ToString(), ".cshtml");
-                    var importsFile = TestFile.Create(importsFileName, _assembly);
-                    if (!importsFile.Exists())
-                    {
-                        break;
-                    }
-
-                    var importContent = importsFile.ReadAllText();
-                    var normalizedContent = NormalizeNewLines(importContent);
-                    var importItem = new TestRazorProjectItem(importsFileName)
-                    {
-                        Content = normalizedContent
-                    };
-                    imports.Add(importItem);
+                    return Array.Empty<RazorProjectItem>();
                 }
 
-                imports.AddRange(_existingImportFeature.GetImports(projectItem));
+                var normalizedImports = new List<RazorProjectItem>();
+                var imports = _inner.GetImports(projectItem);
+                foreach (var import in imports)
+                {
+                    if (import.Exists)
+                    {
+                        var text = string.Empty;
+                        using (var stream = import.Read())
+                        using (var reader = new StreamReader(stream))
+                        {
+                            text = reader.ReadToEnd().Trim();
+                        }
 
-                return imports;
-            }
-        }
+                        // It's important that we normalize the newlines in the default imports. The default imports will
+                        // be created with Environment.NewLine, but we need to normalize to `\r\n` so that the indices
+                        // are the same on xplat.
+                        var normalizedText = NormalizeNewLines(text, _lineEnding);
+                        var normalizedImport = new TestRazorProjectItem(import.FilePath, import.PhysicalPath, import.RelativePhysicalPath, import.BasePath)
+                        {
+                            Content = normalizedText
+                        };
 
-        private class IntegrationTestFileSystem : RazorProjectFileSystem
-        {
-            public static IntegrationTestFileSystem Default = new IntegrationTestFileSystem();
+                        normalizedImports.Add(normalizedImport);
+                    }
+                }
 
-            private IntegrationTestFileSystem()
-            {
-            }
-
-            public override IEnumerable<RazorProjectItem> EnumerateItems(string basePath)
-            {
-                return Enumerable.Empty<RazorProjectItem>();
-            }
-
-            public override RazorProjectItem GetItem(string path)
-            {
-                return new NotFoundProjectItem(string.Empty, path);
-            }
-
-            public override IEnumerable<RazorProjectItem> FindHierarchicalItems(string basePath, string path, string fileName)
-            {
-                return Enumerable.Empty<RazorProjectItem>();
+                return normalizedImports;
             }
         }
     }
