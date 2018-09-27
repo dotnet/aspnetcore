@@ -43,6 +43,13 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 return;
             }
 
+            // We do not have an upper bound on the allowed status code. This allows this filter to be used
+            // for 5xx and later status codes.
+            if (clientError.StatusCode < 400)
+            {
+                return;
+            }
+
             var result = _clientErrorFactory.GetClientError(context, clientError);
             if (result == null)
             {
