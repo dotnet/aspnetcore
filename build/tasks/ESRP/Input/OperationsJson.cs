@@ -180,12 +180,12 @@ namespace Microsoft.Build.OOB.ESRP
         {
             new Operations
             {
-                KeyCode = ESRP.KeyCode.CP_299834,
+                KeyCode = ESRP.KeyCode.CP_229834,
                 OperationCode = OperationCode.OpcSign
             },
             new Operations
             {
-                KeyCode = ESRP.KeyCode.CP_299834,
+                KeyCode = ESRP.KeyCode.CP_229834,
                 OperationCode = OperationCode.OpcVerify
             }
         };

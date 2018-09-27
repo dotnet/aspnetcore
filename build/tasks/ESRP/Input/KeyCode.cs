@@ -6,7 +6,7 @@
         public const string CP_233863_SN = "CP-233863-SN";
 
         public const string CP_229803 = "CP-229803";
-        public const string CP_299834 = "CP-299834";
+        public const string CP_229834 = "CP-229834";
         public const string CP_230012 = "CP-230012";
         public const string CP_231514 = "CP-231514";
         public const string CP_231522 = "CP-231522";

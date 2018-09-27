@@ -20,12 +20,15 @@ namespace MicroBuild.Plugins.TeamCity.Signing
 
         private static readonly Dictionary<string, Operations[]> _mapping = new Dictionary<string, Operations[]>(StringComparer.OrdinalIgnoreCase)
         {
-            ["Microsoft"] = OperationsJson.MicrosoftAuthentiCodeSha2,
-            ["MicrosoftSHA1"] = OperationsJson.MicrosoftAuthentiCodeSha1Sha2,
-            ["Vsix"] = OperationsJson.MicrosoftOpc2,
+            ["Microsoft"] = OperationsJson.MicrosoftAuthentiCodeSha1Sha2,
+            ["Microsoft400"] = OperationsJson.MicrosoftAuthentiCodeSha2,
+            ["Microsoft402"] = OperationsJson.MicrosoftAuthentiCodeSha2HashSha1,
+            ["Vsix"] = OperationsJson.MicrosoftOpc,
+            ["VsixSHA2"] = OperationsJson.MicrosoftOpc2,
             ["3PartyDual"] = OperationsJson.Microsoft3rdPartyAppComponentDual,
+            ["3PartySHA2"] = OperationsJson.Microsoft3rdPartyAppComponent,
             ["NuGet"] = OperationsJson.MicrosoftNuGet,
-            ["MicrosoftJava"] = OperationsJson.MicrosoftJava,
+            ["MicrosoftJAR"] = OperationsJson.MicrosoftJava,
         };
     }
 }
