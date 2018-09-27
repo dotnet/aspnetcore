@@ -12,6 +12,11 @@
 #include "EventLog.h"
 #include "ServerErrorApplication.h"
 #include "AppOfflineApplication.h"
+#include "WebConfigConfigurationSource.h"
+#include "ConfigurationLoadException.h"
+#include "resource.h"
+
+extern HINSTANCE           g_hServerModule;
 
 HRESULT
 APPLICATION_INFO::CreateHandler(
@@ -23,7 +28,7 @@ APPLICATION_INFO::CreateHandler(
 
     {
         SRWSharedLock lock(m_applicationLock);
-        
+
         RETURN_IF_FAILED(hr = TryCreateHandler(pHttpContext, pHandler));
 
         if (hr == S_OK)
@@ -31,10 +36,10 @@ APPLICATION_INFO::CreateHandler(
             return S_OK;
         }
     }
-    
+
     {
         SRWExclusiveLock lock(m_applicationLock);
-        
+
         // check if other thread created application
         RETURN_IF_FAILED(hr = TryCreateHandler(pHttpContext, pHandler));
 
@@ -66,48 +71,78 @@ APPLICATION_INFO::CreateHandler(
 HRESULT
 APPLICATION_INFO::CreateApplication(const IHttpApplication& pHttpApplication)
 {
-    HRESULT hr = S_OK;
-
     if (AppOfflineApplication::ShouldBeStarted(pHttpApplication))
     {
         LOG_INFO(L"Detected app_offline file, creating polling application");
-        #pragma warning( push )
-        #pragma warning ( disable : 26409 ) // Disable "Avoid using new", using custom deleter here
-        m_pApplication.reset(new AppOfflineApplication(pHttpApplication));
-        #pragma warning( pop )
+        m_pApplication = make_application<AppOfflineApplication>(pHttpApplication);
+
+        return S_OK;
     }
     else
     {
-        FINISHED_IF_FAILED(m_handlerResolver.GetApplicationFactory(pHttpApplication, m_pApplicationFactory));
+        try
+        {
+            const WebConfigConfigurationSource configurationSource(m_pServer.GetAdminManager(), pHttpApplication);
+            ShimOptions options(configurationSource);
 
-        LOG_INFO(L"Creating handler application");
-        IAPPLICATION * newApplication;
-        FINISHED_IF_FAILED(m_pApplicationFactory->Execute(
-            &m_pServer,
-            &pHttpApplication,
-            &newApplication));
+            const auto hr = TryCreateApplication(pHttpApplication, options);
 
-        m_pApplication.reset(newApplication);
+            if (FAILED_LOG(hr))
+            {
+                // Log the failure and update application info to not try again
+                EventLog::Error(
+                    ASPNETCORE_EVENT_ADD_APPLICATION_ERROR,
+                    ASPNETCORE_EVENT_ADD_APPLICATION_ERROR_MSG,
+                    pHttpApplication.GetApplicationId(),
+                    hr);
+
+                m_pApplication = make_application<ServerErrorApplication>(
+                    pHttpApplication,
+                    hr,
+                    g_hServerModule,
+                    options.QueryDisableStartupPage(),
+                    options.QueryHostingModel() == APP_HOSTING_MODEL::HOSTING_IN_PROCESS ? IN_PROCESS_SHIM_STATIC_HTML : OUT_OF_PROCESS_SHIM_STATIC_HTML);
+            }
+            return S_OK;
+        }
+        catch (ConfigurationLoadException &ex)
+        {
+            EventLog::Error(
+                ASPNETCORE_CONFIGURATION_LOAD_ERROR,
+                ASPNETCORE_CONFIGURATION_LOAD_ERROR_MSG,
+                ex.get_message().c_str());
+        }
+        catch (...)
+        {
+            EventLog::Error(
+                ASPNETCORE_CONFIGURATION_LOAD_ERROR,
+                ASPNETCORE_CONFIGURATION_LOAD_ERROR_MSG,
+                L"");
+        }
+
+        m_pApplication = make_application<ServerErrorApplication>(
+            pHttpApplication,
+            E_FAIL,
+            g_hServerModule);
+
+        return S_OK;
     }
+}
 
-Finished:
+HRESULT
+APPLICATION_INFO::TryCreateApplication(const IHttpApplication& pHttpApplication, const ShimOptions& options)
+{
+    RETURN_IF_FAILED(m_handlerResolver.GetApplicationFactory(pHttpApplication, m_pApplicationFactory, options));
+    LOG_INFO(L"Creating handler application");
 
-    if (m_pApplication == nullptr || FAILED(hr))
-    {
-        // Log the failure and update application info to not try again
-        EventLog::Error(
-            ASPNETCORE_EVENT_ADD_APPLICATION_ERROR,
-            ASPNETCORE_EVENT_ADD_APPLICATION_ERROR_MSG,
-            pHttpApplication.GetApplicationId(),
-            hr);
-        
-        #pragma warning( push )
-        #pragma warning ( disable : 26409 ) // Disable "Avoid using new", using custom deleter here
-        m_pApplication.reset(new ServerErrorApplication(pHttpApplication, hr));
-        #pragma warning( pop )
-    }
+    IAPPLICATION * newApplication;
+    RETURN_IF_FAILED(m_pApplicationFactory->Execute(
+        &m_pServer,
+        &pHttpApplication,
+        &newApplication));
 
-    return hr;
+    m_pApplication.reset(newApplication);
+    return S_OK;
 }
 
 HRESULT
@@ -139,7 +174,7 @@ APPLICATION_INFO::ShutDownApplication(bool fServerInitiated)
     if (m_pApplication)
     {
         LOG_INFOF(L"Stopping application '%ls'", QueryApplicationInfoKey().c_str());
-        m_pApplication ->Stop(fServerInitiated);
+        m_pApplication->Stop(fServerInitiated);
         m_pApplication = nullptr;
         m_pApplicationFactory = nullptr;
     }

@@ -73,21 +73,18 @@ HandlerResolver::LoadRequestHandlerAssembly(const IHttpApplication &pApplication
                 pApplication.GetApplicationPhysicalPath(),
                 outputManager));
 
-            outputManager->TryStartRedirection();
 
-            hr = FindNativeAssemblyFromHostfxr(*options.get(), pstrHandlerDllName, handlerDllPath);
+            hr = FindNativeAssemblyFromHostfxr(*options.get(), pstrHandlerDllName, handlerDllPath, outputManager.get());
 
-            outputManager->TryStopRedirection();
-
-            if (FAILED(hr) && m_hHostFxrDll != nullptr)
+            if (FAILED_LOG(hr))
             {
                 auto output = outputManager->GetStdOutContent();
 
                 EventLog::Error(
                     ASPNETCORE_EVENT_GENERAL_ERROR,
                     ASPNETCORE_EVENT_INPROCESS_RH_ERROR_MSG,
-                    handlerDllPath.empty()? s_pwzAspnetcoreInProcessRequestHandlerName : handlerDllPath.c_str(),
                     output.c_str());
+                return hr;
             }
         }
         else
@@ -122,55 +119,38 @@ HandlerResolver::LoadRequestHandlerAssembly(const IHttpApplication &pApplication
 }
 
 HRESULT
-HandlerResolver::GetApplicationFactory(const IHttpApplication &pApplication, std::unique_ptr<ApplicationFactory>& pApplicationFactory)
+HandlerResolver::GetApplicationFactory(const IHttpApplication &pApplication, std::unique_ptr<ApplicationFactory>& pApplicationFactory, const ShimOptions& options)
 {
-    try
+    SRWExclusiveLock lock(m_requestHandlerLoadLock);
+    if (m_loadedApplicationHostingModel != HOSTING_UNKNOWN)
     {
-        const WebConfigConfigurationSource configurationSource(m_pServer.GetAdminManager(), pApplication);
-        ShimOptions options(configurationSource);
-
-        SRWExclusiveLock lock(m_requestHandlerLoadLock);
-        if (m_loadedApplicationHostingModel != HOSTING_UNKNOWN)
+        // Mixed hosting models
+        if (m_loadedApplicationHostingModel != options.QueryHostingModel())
         {
-            // Mixed hosting models
-            if (m_loadedApplicationHostingModel != options.QueryHostingModel())
-            {
-                EventLog::Error(
-                    ASPNETCORE_EVENT_MIXED_HOSTING_MODEL_ERROR,
-                    ASPNETCORE_EVENT_MIXED_HOSTING_MODEL_ERROR_MSG,
-                    pApplication.GetApplicationId(),
-                    options.QueryHostingModel());
+            EventLog::Error(
+                ASPNETCORE_EVENT_MIXED_HOSTING_MODEL_ERROR,
+                ASPNETCORE_EVENT_MIXED_HOSTING_MODEL_ERROR_MSG,
+                pApplication.GetApplicationId(),
+                options.QueryHostingModel());
 
-                return E_FAIL;
-            }
-            // Multiple in-process apps
-            if (m_loadedApplicationHostingModel == HOSTING_IN_PROCESS && m_loadedApplicationId != pApplication.GetApplicationId())
-            {
-                EventLog::Error(
-                    ASPNETCORE_EVENT_DUPLICATED_INPROCESS_APP,
-                    ASPNETCORE_EVENT_DUPLICATED_INPROCESS_APP_MSG,
-                    pApplication.GetApplicationId());
-
-                return E_FAIL;
-            }
+            return E_FAIL;
         }
+        // Multiple in-process apps
+        if (m_loadedApplicationHostingModel == HOSTING_IN_PROCESS && m_loadedApplicationId != pApplication.GetApplicationId())
+        {
+            EventLog::Error(
+                ASPNETCORE_EVENT_DUPLICATED_INPROCESS_APP,
+                ASPNETCORE_EVENT_DUPLICATED_INPROCESS_APP_MSG,
+                pApplication.GetApplicationId());
 
-        m_loadedApplicationHostingModel = options.QueryHostingModel();
-        m_loadedApplicationId = pApplication.GetApplicationId();
-        RETURN_IF_FAILED(LoadRequestHandlerAssembly(pApplication, options, pApplicationFactory));
-
+            return E_FAIL;
+        }
     }
-    catch(ConfigurationLoadException &ex)
-    {
-        EventLog::Error(
-            ASPNETCORE_CONFIGURATION_LOAD_ERROR,
-            ASPNETCORE_CONFIGURATION_LOAD_ERROR_MSG,
-            ex.get_message().c_str());
 
-        RETURN_HR(E_FAIL);
-    }
-    CATCH_RETURN();
-
+    m_loadedApplicationHostingModel = options.QueryHostingModel();
+    m_loadedApplicationId = pApplication.GetApplicationId();
+    RETURN_IF_FAILED(LoadRequestHandlerAssembly(pApplication, options, pApplicationFactory));
+  
     return S_OK;
 }
 
@@ -222,7 +202,8 @@ HRESULT
 HandlerResolver::FindNativeAssemblyFromHostfxr(
     const HOSTFXR_OPTIONS& hostfxrOptions,
     PCWSTR libraryName,
-    std::wstring& handlerDllPath
+    std::wstring& handlerDllPath,
+    BaseOutputManager* outputManager
 )
 {
     std::wstring   struNativeSearchPaths;
@@ -230,22 +211,28 @@ HandlerResolver::FindNativeAssemblyFromHostfxr(
     size_t         intPrevIndex = 0;
     DWORD          dwBufferSize = s_initialGetNativeSearchDirectoriesBufferSize;
     DWORD          dwRequiredBufferSize = 0;
+    hostfxr_get_native_search_directories_fn pFnHostFxrSearchDirectories = nullptr;
 
     RETURN_LAST_ERROR_IF_NULL(m_hHostFxrDll = LoadLibraryW(hostfxrOptions.GetHostFxrLocation().c_str()));
 
-    const auto pFnHostFxrSearchDirectories = ModuleHelpers::GetKnownProcAddress<hostfxr_get_native_search_directories_fn>(m_hHostFxrDll, "hostfxr_get_native_search_directories");
-    if (pFnHostFxrSearchDirectories == nullptr)
+    try
+    {
+        pFnHostFxrSearchDirectories = ModuleHelpers::GetKnownProcAddress<hostfxr_get_native_search_directories_fn>(m_hHostFxrDll, "hostfxr_get_native_search_directories");
+    }
+    catch (...)
     {
         EventLog::Error(
             ASPNETCORE_EVENT_GENERAL_ERROR,
             ASPNETCORE_EVENT_HOSTFXR_DLL_INVALID_VERSION_MSG,
             hostfxrOptions.GetHostFxrLocation().c_str()
-            );
-        RETURN_IF_FAILED(E_FAIL);
+        );
+        return OBSERVE_CAUGHT_EXCEPTION();
     }
 
     RETURN_LAST_ERROR_IF_NULL(pFnHostFxrSearchDirectories);
     struNativeSearchPaths.resize(dwBufferSize);
+
+    outputManager->TryStartRedirection();
 
     while (TRUE)
     {
@@ -273,10 +260,22 @@ HandlerResolver::FindNativeAssemblyFromHostfxr(
         }
         else
         {
-            // Log "Error finding native search directories from aspnetcore application.
+            // Stop redirecting before logging to event log to avoid logging debug logs
+            // twice.
+            outputManager->TryStopRedirection();
+
+            // If hostfxr didn't set the required buffer size, something in the app is misconfigured
+            // Ex: Framework not found.
+            EventLog::Error(
+                ASPNETCORE_EVENT_GENERAL_ERROR,
+                ASPNETCORE_EVENT_HOSTFXR_FAILURE_MSG
+            );
+
             return E_UNEXPECTED;
         }
     }
+
+    outputManager->TryStopRedirection();
 
     struNativeSearchPaths.resize(struNativeSearchPaths.find(L'\0'));
 
@@ -307,6 +306,10 @@ HandlerResolver::FindNativeAssemblyFromHostfxr(
 
     if (!fFound)
     {
+        EventLog::Error(
+            ASPNETCORE_EVENT_GENERAL_ERROR,
+            ASPNETCORE_EVENT_INPROCESS_RH_REFERENCE_MSG,
+            handlerDllPath.empty() ? s_pwzAspnetcoreInProcessRequestHandlerName : handlerDllPath.c_str());
         return HRESULT_FROM_WIN32(ERROR_DLL_NOT_FOUND);
     }
 

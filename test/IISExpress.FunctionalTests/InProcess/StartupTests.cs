@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Microsoft.AspNetCore.Testing.xunit;
+using Newtonsoft.Json;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
@@ -60,6 +61,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             StopServer();
 
             EventLogHelpers.VerifyEventLogEvent(deploymentResult, $@"Application '{Regex.Escape(deploymentResult.ContentRoot)}\\' wasn't able to start. {subError}");
+
+            Assert.Contains("HTTP Error 500.0 - ANCM InProcess Startup Failure", await response.Content.ReadAsStringAsync());
         }
 
         [ConditionalFact]
@@ -186,6 +189,48 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
 
         [ConditionalFact]
+        public async Task RemoveHostfxrFromApp_InProcessHostfxrInvalid()
+        {
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.InProcessTestSite, publish: true);
+            deploymentParameters.ApplicationType = ApplicationType.Standalone;
+            var deploymentResult = await DeployAsync(deploymentParameters);
+
+            File.Copy(
+                Path.Combine(deploymentResult.ContentRoot, "aspnetcorev2_inprocess.dll"),
+                Path.Combine(deploymentResult.ContentRoot, "hostfxr.dll"),
+                true);
+            await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult);
+
+            EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessHostfxrInvalid(deploymentResult), Logger);
+        }
+
+        [ConditionalFact]
+        public async Task TargedDifferenceSharedFramework_FailedToFindNativeDependencies()
+        {
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.InProcessTestSite, publish: true);
+            var deploymentResult = await DeployAsync(deploymentParameters);
+
+            Helpers.ModifyFrameworkVersionInRuntimeConfig(deploymentResult);
+            await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult);
+
+            EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessFailedToFindNativeDependencies(deploymentResult), Logger);
+        }
+
+        [ConditionalFact]
+        public async Task RemoveInProcessReference_FailedToFindRequestHandler()
+        {
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.InProcessTestSite, publish: true);
+            deploymentParameters.ApplicationType = ApplicationType.Standalone;
+            var deploymentResult = await DeployAsync(deploymentParameters);
+
+            File.Delete(Path.Combine(deploymentResult.ContentRoot, "aspnetcorev2_inprocess.dll"));
+
+            await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult);
+
+            EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessFailedToFindRequestHandler(deploymentResult), Logger);
+        }
+
+        [ConditionalFact]
         public async Task StartupTimeoutIsApplied()
         {
             var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.InProcessTestSite, publish: true);
@@ -239,7 +284,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             StopServer();
 
             EventLogHelpers.VerifyEventLogEvents(deploymentResult,
-                EventLogHelpers.FailedToStartApplication(deploymentResult, "0x80004005"),
                 EventLogHelpers.ConfigurationLoadError(deploymentResult, "Unknown hosting model 'bogus'. Please specify either hostingModel=\"inprocess\" or hostingModel=\"outofprocess\" in the web.config file.")
                 );
         }
@@ -259,8 +303,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             Assert.Equal(HttpStatusCode.InternalServerError, result.StatusCode);
 
             StopServer();
+
             EventLogHelpers.VerifyEventLogEvents(deploymentResult,
-                EventLogHelpers.FailedToStartApplication(deploymentResult, "0x80004005"),
                 EventLogHelpers.ConfigurationLoadError(deploymentResult, expectedError)
             );
         }
@@ -406,6 +450,14 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                     fileSystemInfo.Delete();
                 }
             });
+        }
+
+        private async Task AssertSiteFailsToStartWithInProcessStaticContent(IISDeploymentResult deploymentResult)
+        {
+            var response = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
+            Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+            Assert.Contains("HTTP Error 500.0 - ANCM InProcess Startup Failure", await response.Content.ReadAsStringAsync());
+            StopServer();
         }
     }
 }

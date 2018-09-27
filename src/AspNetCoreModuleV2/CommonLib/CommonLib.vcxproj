@@ -223,12 +223,14 @@
     <ClInclude Include="NonCopyable.h" />
     <ClInclude Include="NullOutputManager.h" />
     <ClInclude Include="PipeOutputManager.h" />
-    <ClInclude Include="StdWrapper.h" />
     <ClInclude Include="requesthandler.h" />
     <ClInclude Include="resources.h" />
+    <ClInclude Include="ServerErrorApplication.h" />
+    <ClInclude Include="ServerErrorHandler.h" />
     <ClInclude Include="SRWExclusiveLock.h" />
     <ClInclude Include="SRWSharedLock.h" />
     <ClInclude Include="stdafx.h" />
+    <ClInclude Include="StdWrapper.h" />
     <ClInclude Include="StringHelpers.h" />
     <ClInclude Include="sttimer.h" />
     <ClInclude Include="WebConfigConfigurationSection.h" />

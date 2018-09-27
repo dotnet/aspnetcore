@@ -1,12 +1,14 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
+using Microsoft.Extensions.Logging;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
@@ -19,6 +21,25 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             var entries = GetEntries(deploymentResult);
             AssertSingleEntry(expectedRegexMatchString, entries);
+        }
+
+        public static void VerifyEventLogEvent(IISDeploymentResult deploymentResult, string expectedRegexMatchString, ILogger logger)
+        {
+            Assert.True(deploymentResult.HostProcess.HasExited);
+
+            var entries = GetEntries(deploymentResult);
+            try
+            {
+                AssertSingleEntry(expectedRegexMatchString, entries);
+            }
+            catch (Exception ex)
+            {
+                foreach (var entry in entries)
+                {
+                    logger.LogInformation(entry.Message);
+                }
+                throw ex;
+            }
         }
 
         public static void VerifyEventLogEvents(IISDeploymentResult deploymentResult, params string[] expectedRegexMatchString)
@@ -149,7 +170,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         public static string ConfigurationLoadError(IISDeploymentResult deploymentResult, string reason)
         {
-            return $"Configuration load error. {reason}";
+            return $"Could not load configuration. Exception message: {reason}";
         }
 
         public static string OutOfProcessFailedToStart(IISDeploymentResult deploymentResult)
@@ -157,6 +178,23 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             return $"Application '/LM/W3SVC/1/ROOT' with physical root '{EscapedContentRoot(deploymentResult)}' failed to start process with " +
                 $"commandline '(.*)' with multiple retries. " +
                 $"The last try of listening port is '(.*)'. See previous warnings for details.";
+        }
+
+        public static string InProcessHostfxrInvalid(IISDeploymentResult deploymentResult)
+        {
+            return $"Hostfxr version used does not support 'hostfxr_get_native_search_directories', update the version of hostfxr to a higher version. Path to hostfxr: '(.*)'.";
+        }
+
+        public static string InProcessFailedToFindNativeDependencies(IISDeploymentResult deploymentResult)
+        {
+            return "Invoking hostfxr to find the inprocess request handler failed without finding any native dependencies. " +
+                "This most likely means the app is misconfigured, please check the versions of Microsoft.NetCore.App and Microsoft.AspNetCore.App that " +
+                "are targeted by the application and are installed on the machine.";
+        }
+
+        public static string InProcessFailedToFindRequestHandler(IISDeploymentResult deploymentResult)
+        {
+            return "Could not find the assembly '(.*)' referenced for the in-process application. Please confirm the Microsoft.AspNetCore.Server.IIS package is referenced in your application.";
         }
 
         private static string EscapedContentRoot(IISDeploymentResult deploymentResult)

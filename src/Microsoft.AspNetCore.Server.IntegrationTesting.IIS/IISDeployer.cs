@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
     {
         private const string DetailedErrorsEnvironmentVariable = "ASPNETCORE_DETAILEDERRORS";
 
-        private static readonly TimeSpan _timeout = TimeSpan.FromSeconds(10);
+        private static readonly TimeSpan _timeout = TimeSpan.FromSeconds(60);
         private static readonly TimeSpan _retryDelay = TimeSpan.FromMilliseconds(200);
 
         private CancellationTokenSource _hostShutdownToken = new CancellationTokenSource();

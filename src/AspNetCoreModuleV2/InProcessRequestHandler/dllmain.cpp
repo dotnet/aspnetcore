@@ -6,7 +6,6 @@
 #include <VersionHelpers.h>
 
 #include "inprocessapplication.h"
-#include "StartupExceptionApplication.h"
 #include "inprocesshandler.h"
 #include "requesthandler_config.h"
 #include "debugutil.h"
@@ -17,6 +16,7 @@
 #include "EventLog.h"
 #include "WebConfigConfigurationSource.h"
 #include "ConfigurationLoadException.h"
+#include "StartupExceptionApplication.h"
 
 DECLARE_DEBUG_PRINT_OBJECT("aspnetcorev2_inprocess.dll");
 
@@ -28,6 +28,7 @@ HINSTANCE           g_hWinHttpModule;
 HINSTANCE           g_hAspNetCoreModule;
 HANDLE              g_hEventLog = NULL;
 bool                g_fInProcessApplicationCreated = false;
+HINSTANCE           g_hServerModule;
 
 HRESULT
 InitializeGlobalConfiguration(
@@ -69,7 +70,7 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 )
 {
     UNREFERENCED_PARAMETER(lpReserved);
-
+    g_hServerModule = hModule;
     switch (ul_reason_for_call)
     {
     case DLL_PROCESS_ATTACH:
@@ -100,6 +101,7 @@ CreateApplication(
 {
     try
     {
+        HRESULT hr = S_OK;
         RETURN_IF_FAILED(InitializeGlobalConfiguration(pServer, pHttpApplication));
 
         // In process application was already created so another call to CreateApplication
@@ -114,7 +116,7 @@ CreateApplication(
         g_fInProcessApplicationCreated = true;
 
         std::unique_ptr<IN_PROCESS_APPLICATION, IAPPLICATION_DELETER> inProcessApplication;
-        if (!FAILED_LOG(IN_PROCESS_APPLICATION::Start(*pServer, *pHttpApplication, pParameters, nParameters, inProcessApplication)))
+        if (!FAILED_LOG(hr = IN_PROCESS_APPLICATION::Start(*pServer, *pHttpApplication, pParameters, nParameters, inProcessApplication)))
         {
             *ppApplication = inProcessApplication.release();
         }
@@ -123,7 +125,7 @@ CreateApplication(
             std::unique_ptr<InProcessOptions> options;
             THROW_IF_FAILED(InProcessOptions::Create(*pServer, *pHttpApplication, options));
             // Set the currently running application to a fake application that returns startup exceptions.
-            auto pErrorApplication = std::make_unique<StartupExceptionApplication>(*pServer, *pHttpApplication, options->QueryDisableStartUpErrorPage());
+            auto pErrorApplication = std::make_unique<StartupExceptionApplication>(*pServer, *pHttpApplication, g_hServerModule, options->QueryDisableStartUpErrorPage(), hr);
 
             RETURN_IF_FAILED(pErrorApplication->StartMonitoringAppOffline());
             *ppApplication = pErrorApplication.release();
