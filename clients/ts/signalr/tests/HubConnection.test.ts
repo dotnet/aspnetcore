@@ -273,6 +273,27 @@ describe("HubConnection", () => {
             });
         });
 
+        it.only("start completes if connection closes and handshake not received yet", async () => {
+            await VerifyLogger.run(async (logger) => {
+                const mockProtocol = new TestProtocol(TransferFormat.Text);
+
+                const connection = new TestConnection(false);
+                const hubConnection = createHubConnection(connection, logger, mockProtocol);
+                try {
+                    let startCompleted = false;
+                    const startPromise = hubConnection.start().then(() => startCompleted = true);
+                    expect(startCompleted).toBe(false);
+
+                    await connection.stop();
+                    try {
+                        await startPromise;
+                    } catch { }
+                } finally {
+                    await hubConnection.stop();
+                }
+            });
+        });
+
         it("rejects the promise when an error is received", async () => {
             await VerifyLogger.run(async (logger) => {
                 const connection = new TestConnection();
@@ -549,7 +570,7 @@ describe("HubConnection", () => {
                     }
                     await expect(startPromise)
                         .rejects
-                        .toThrow("Server returned handshake error: Error!");
+                        .toBe("Server returned handshake error: Error!");
 
                     expect(closeError!.message).toEqual("Server returned handshake error: Error!");
                 } finally {

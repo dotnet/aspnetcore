@@ -57,7 +57,7 @@ describe("HttpConnection", () => {
 
             await expect(connection.start(TransferFormat.Text))
                 .rejects
-                .toThrow("error");
+                .toBe("error");
         },
         "Failed to start the connection: error",
         "Failed to complete negotiation with the server: error");
@@ -118,11 +118,11 @@ describe("HttpConnection", () => {
 
             await expect(connection.start(TransferFormat.Text))
                 .rejects
-                .toThrow("reached negotiate");
+                .toBe("reached negotiate");
 
             await expect(connection.start(TransferFormat.Text))
                 .rejects
-                .toThrow("reached negotiate");
+                .toBe("reached negotiate");
         },
         "Failed to complete negotiation with the server: reached negotiate",
         "Failed to start the connection: reached negotiate");
