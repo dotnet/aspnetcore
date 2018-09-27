@@ -1,8 +1,20 @@
+buildscript {
+    repositories {
+    maven {
+      url "https://plugins.gradle.org/m2/"
+    }
+  }
+  dependencies {
+    classpath "com.diffplug.spotless:spotless-plugin-gradle:3.14.0"
+  }
+}
+
 plugins {
     id 'java'
     id 'maven'
-    id "com.diffplug.gradle.spotless" version "3.14.0"
 }
+
+apply plugin: "com.diffplug.gradle.spotless"
 
 group 'com.microsoft.aspnet'
 
