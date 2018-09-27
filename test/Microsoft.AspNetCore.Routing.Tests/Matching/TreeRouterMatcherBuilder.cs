@@ -78,6 +78,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         {
             private readonly EndpointSelector _selector;
             private readonly RouteEndpoint[] _candidates;
+            private readonly RouteValueDictionary[] _values;
             private readonly int[] _scores;
 
             public SelectorRouter(EndpointSelector selector, RouteEndpoint[] candidates)
@@ -85,6 +86,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 _selector = selector;
                 _candidates = candidates;
 
+                _values = new RouteValueDictionary[_candidates.Length];
                 _scores = new int[_candidates.Length];
             }
 
@@ -100,7 +102,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 // This is needed due to a quirk of our tests - they reuse the endpoint feature.
                 context.Endpoint = null;
                 
-                await _selector.SelectAsync(routeContext.HttpContext, context, new CandidateSet(_candidates, _scores));
+                await _selector.SelectAsync(routeContext.HttpContext, context, new CandidateSet(_candidates, _values, _scores));
                 if (context.Endpoint != null)
                 {
                     routeContext.Handler = (_) => Task.CompletedTask;

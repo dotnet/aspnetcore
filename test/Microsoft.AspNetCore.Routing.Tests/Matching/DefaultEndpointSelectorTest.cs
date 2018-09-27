@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var candidateSet = CreateCandidateSet(endpoints, scores);
 
             candidateSet[0].Values = new RouteValueDictionary();
-            candidateSet[0].IsValidCandidate = false;
+            candidateSet.SetValidity(0, false);
 
             var (httpContext, context) = CreateContext();
             var selector = CreateSelector();
@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var candidateSet = CreateCandidateSet(endpoints, scores);
 
             candidateSet[0].Values = new RouteValueDictionary();
-            candidateSet[0].IsValidCandidate = true;
+            candidateSet.SetValidity(0, true);
 
             var (httpContext, context) = CreateContext();
             var selector = CreateSelector();
@@ -81,8 +81,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var scores = new int[] { 0, 0 };
             var candidateSet = CreateCandidateSet(endpoints, scores);
 
-            candidateSet[0].IsValidCandidate = false;
-            candidateSet[1].IsValidCandidate = true;
+            candidateSet.SetValidity(0, false);
+            candidateSet.SetValidity(1, true);
 
             var (httpContext, context) = CreateContext();
             var selector = CreateSelector();
@@ -102,9 +102,9 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var scores = new int[] { 0, 0, 1 };
             var candidateSet = CreateCandidateSet(endpoints, scores);
 
-            candidateSet[0].IsValidCandidate = false;
-            candidateSet[1].IsValidCandidate = true;
-            candidateSet[2].IsValidCandidate = true;
+            candidateSet.SetValidity(0, false);
+            candidateSet.SetValidity(1, true);
+            candidateSet.SetValidity(2, true);
 
             var (httpContext, context) = CreateContext();
             var selector = CreateSelector();
@@ -131,11 +131,11 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var scores = new int[] { 0, 1, 2, 3, 4 };
             var candidateSet = CreateCandidateSet(endpoints, scores);
 
-            candidateSet[0].IsValidCandidate = false;
-            candidateSet[1].IsValidCandidate = false;
-            candidateSet[2].IsValidCandidate = false;
-            candidateSet[3].IsValidCandidate = false;
-            candidateSet[4].IsValidCandidate = true;
+            candidateSet.SetValidity(0, false);
+            candidateSet.SetValidity(1, false);
+            candidateSet.SetValidity(2, false);
+            candidateSet.SetValidity(3, false);
+            candidateSet.SetValidity(4, true);
 
             var (httpContext, context) = CreateContext();
             var selector = CreateSelector();
@@ -155,9 +155,9 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var scores = new int[] { 0, 1, 1 };
             var candidateSet = CreateCandidateSet(endpoints, scores);
 
-            candidateSet[0].IsValidCandidate = false;
-            candidateSet[1].IsValidCandidate = true;
-            candidateSet[2].IsValidCandidate = true;
+            candidateSet.SetValidity(0, false);
+            candidateSet.SetValidity(1, true);
+            candidateSet.SetValidity(2, true);
 
             var (httpContext, context) = CreateContext();
             var selector = CreateSelector();
@@ -188,13 +188,13 @@ test: /test3", ex.Message);
                 .Setup(p => p.ApplyAsync(It.IsAny<HttpContext>(), It.IsAny<EndpointSelectorContext>(), It.IsAny<CandidateSet>()))
                 .Returns<HttpContext, EndpointSelectorContext, CandidateSet>((c, f, cs) =>
                 {
-                    cs[1].IsValidCandidate = false;
+                    cs.SetValidity(1, false);
                     return Task.CompletedTask;
                 });
 
-            candidateSet[0].IsValidCandidate = false;
-            candidateSet[1].IsValidCandidate = true;
-            candidateSet[2].IsValidCandidate = true;
+            candidateSet.SetValidity(0, false);
+            candidateSet.SetValidity(1, true);
+            candidateSet.SetValidity(2, true);
 
             var (httpContext, context) = CreateContext();
             var selector = CreateSelector(policy.Object);
@@ -234,9 +234,9 @@ test: /test3", ex.Message);
                 .Setup(p => p.ApplyAsync(It.IsAny<HttpContext>(), It.IsAny<EndpointSelectorContext>(), It.IsAny<CandidateSet>()))
                 .Throws(new InvalidOperationException());
 
-            candidateSet[0].IsValidCandidate = false;
-            candidateSet[1].IsValidCandidate = true;
-            candidateSet[2].IsValidCandidate = true;
+            candidateSet.SetValidity(0, false);
+            candidateSet.SetValidity(1, true);
+            candidateSet.SetValidity(2, true);
 
             var (httpContext, context) = CreateContext();
             var selector = CreateSelector(policy1.Object, policy2.Object);
@@ -270,7 +270,7 @@ test: /test3", ex.Message);
 
         private static CandidateSet CreateCandidateSet(RouteEndpoint[] endpoints, int[] scores)
         {
-            return new CandidateSet(endpoints, scores);
+            return new CandidateSet(endpoints, new RouteValueDictionary[endpoints.Length], scores);
         }
 
         private static DefaultEndpointSelector CreateSelector(params MatcherPolicy[] policies)

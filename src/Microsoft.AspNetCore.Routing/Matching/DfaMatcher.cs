@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing.Patterns;
 
 namespace Microsoft.AspNetCore.Routing.Matching
@@ -118,18 +117,23 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 // Now that we have the route values, we need to process complex segments.
                 // Complex segments go through an old API that requires a fully-materialized
                 // route value dictionary.
-                var isMatch = true;
                 if ((flags & Candidate.CandidateFlags.HasComplexSegments) != 0)
                 {
-                    isMatch &= ProcessComplexSegments(candidate.ComplexSegments, path, segments, values);
+                    if (!ProcessComplexSegments(candidate.ComplexSegments, path, segments, values))
+                    {
+                        candidateSet.SetValidity(i, false);
+                        continue;
+                    }
                 }
 
                 if ((flags & Candidate.CandidateFlags.HasConstraints) != 0)
                 {
-                    isMatch &= ProcessConstraints(candidate.Constraints, httpContext, values);
+                    if (!ProcessConstraints(candidate.Constraints, httpContext, values))
+                    {
+                        candidateSet.SetValidity(i, false);
+                        continue;
+                    }
                 }
-
-                state.IsValidCandidate = isMatch;
             }
 
             return _selector.SelectAsync(httpContext, context, candidateSet);

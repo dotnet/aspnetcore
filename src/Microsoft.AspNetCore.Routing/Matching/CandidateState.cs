@@ -14,9 +14,14 @@ namespace Microsoft.AspNetCore.Routing.Matching
         {
             Endpoint = endpoint;
             Score = score;
-
-            IsValidCandidate = true;
             Values = null;
+        }
+
+        internal CandidateState(Endpoint endpoint, RouteValueDictionary values, int score)
+        {
+            Endpoint = endpoint;
+            Values = values;
+            Score = score;
         }
 
         /// <summary>
@@ -42,16 +47,9 @@ namespace Microsoft.AspNetCore.Routing.Matching
         public int Score { get; }
 
         /// <summary>
-        /// Gets or sets a value which indicates where the <see cref="Http.Endpoint"/> is considered
-        /// a valid candiate for the current request. Set this value to <c>false</c> to exclude an
-        /// <see cref="Http.Endpoint"/> from consideration.
-        /// </summary>
-        public bool IsValidCandidate { get; set; }
-
-        /// <summary>
         /// Gets or sets the <see cref="RouteValueDictionary"/> associated with the
         /// <see cref="Http.Endpoint"/> and the current request.
         /// </summary>
-        public RouteValueDictionary Values { get; set; }
+        public RouteValueDictionary Values { get; internal set; }
     }
 }

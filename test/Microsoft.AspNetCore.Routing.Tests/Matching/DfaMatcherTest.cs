@@ -126,12 +126,12 @@ namespace Microsoft.AspNetCore.Routing.Matching
                     Assert.Equal(2, cs.Count);
 
                     Assert.Same(endpoint1, cs[0].Endpoint);
-                    Assert.True(cs[0].IsValidCandidate);
+                    Assert.True(cs.IsValidCandidate(0));
                     Assert.Equal(0, cs[0].Score);
                     Assert.Empty(cs[0].Values);
 
                     Assert.Same(endpoint2, cs[1].Endpoint);
-                    Assert.True(cs[1].IsValidCandidate);
+                    Assert.True(cs.IsValidCandidate(1));
                     Assert.Equal(1, cs[1].Score);
                     Assert.Empty(cs[1].Values);
 

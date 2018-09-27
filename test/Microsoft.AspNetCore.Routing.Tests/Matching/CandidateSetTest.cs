@@ -22,6 +22,9 @@ namespace Microsoft.AspNetCore.Routing.Matching
         [InlineData(4)]
         [InlineData(5)] // this is the break-point where we start to use a list.
         [InlineData(6)]
+        [InlineData(31)]
+        [InlineData(32)] // this is the break point where we use a BitArray
+        [InlineData(33)]
         public void Create_CreatesCandidateSet(int count)
         {
             // Arrange
@@ -41,10 +44,13 @@ namespace Microsoft.AspNetCore.Routing.Matching
             for (var i = 0; i < candidateSet.Count; i++)
             {
                 ref var state = ref candidateSet[i];
-                Assert.True(state.IsValidCandidate);
+                Assert.True(candidateSet.IsValidCandidate(i));
                 Assert.Same(endpoints[i], state.Endpoint);
                 Assert.Equal(candidates[i].Score, state.Score);
                 Assert.Null(state.Values);
+
+                candidateSet.SetValidity(i, false);
+                Assert.False(candidateSet.IsValidCandidate(i));
             }
         }
 
@@ -58,6 +64,9 @@ namespace Microsoft.AspNetCore.Routing.Matching
         [InlineData(4)]
         [InlineData(5)] // this is the break-point where we start to use a list.
         [InlineData(6)]
+        [InlineData(31)]
+        [InlineData(32)] // this is the break point where we use a BitArray
+        [InlineData(33)]
         public void Create_CreatesCandidateSet_TestConstructor(int count)
         {
             // Arrange
@@ -68,16 +77,19 @@ namespace Microsoft.AspNetCore.Routing.Matching
             }
 
             // Act
-            var candidateSet = new CandidateSet(endpoints, Enumerable.Range(0, count).ToArray());
+            var candidateSet = new CandidateSet(endpoints, new RouteValueDictionary[count], Enumerable.Range(0, count).ToArray());
 
             // Assert
             for (var i = 0; i < candidateSet.Count; i++)
             {
                 ref var state = ref candidateSet[i];
-                Assert.True(state.IsValidCandidate);
+                Assert.True(candidateSet.IsValidCandidate(i));
                 Assert.Same(endpoints[i], state.Endpoint);
                 Assert.Equal(i, state.Score);
                 Assert.Null(state.Values);
+
+                candidateSet.SetValidity(i, false);
+                Assert.False(candidateSet.IsValidCandidate(i));
             }
         }
 

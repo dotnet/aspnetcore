@@ -53,10 +53,10 @@ namespace Microsoft.AspNetCore.Routing.Matching
             for (var i = 0; i < candidateSet.Count; i++)
             {
                 ref var state = ref candidateSet[i];
-
-                var isValid = state.IsValidCandidate;
+                var isValid = candidateSet.IsValidCandidate(i);
                 if (isValid && foundScore == null)
                 {
+
                     // This is the first match we've seen - speculatively assign it.
                     endpoint = state.Endpoint;
                     values = state.Values;
@@ -98,10 +98,9 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var matches = new List<Endpoint>();
             for (var i = 0; i < candidates.Count; i++)
             {
-                ref var state = ref candidates[i];
-                if (state.IsValidCandidate)
+                if (candidates.IsValidCandidate(i))
                 {
-                    matches.Add(state.Endpoint);
+                    matches.Add(candidates[i].Endpoint);
                 }
             }
 

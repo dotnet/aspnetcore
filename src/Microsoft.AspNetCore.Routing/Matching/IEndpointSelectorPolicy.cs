@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         /// <para>
         /// Implementations of <see cref="IEndpointSelectorPolicy"/> should implement this method
         /// and filter the set of candidates in the <paramref name="candidates"/> by setting
-        /// <see cref="CandidateState.IsValidCandidate"/> to <c>false</c> where desired.
+        /// <see cref="CandidateSet.SetValidity(int, bool)"/> to <c>false</c> where desired.
         /// </para>
         /// <para>
         /// To signal an error condition, set <see cref="EndpointSelectorContext.Endpoint"/> to an
