@@ -1,17 +1,18 @@
 <Project>
   <PropertyGroup>
     <AspNetCoreMajorVersion>2</AspNetCoreMajorVersion>
-    <AspNetCoreMinorVersion>1</AspNetCoreMinorVersion>
-    <AspNetCorePatchVersion>5</AspNetCorePatchVersion>
+    <AspNetCoreMinorVersion>2</AspNetCoreMinorVersion>
+    <AspNetCorePatchVersion>0</AspNetCorePatchVersion>
     <VersionPrefix>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).$(AspNetCorePatchVersion)</VersionPrefix>
-    <PrereleaseVersionLabel>rtm</PrereleaseVersionLabel>
+    <PrereleaseVersionLabel>preview3</PrereleaseVersionLabel>
     <BuildNumber Condition="'$(BuildNumber)' == ''">t000</BuildNumber>
 
     <!-- The 'human friendly' version to display in installers. In pre-release builds, this might be "2.0.7 Preview 2" -->
-    <PackageBrandingVersion>$(VersionPrefix)</PackageBrandingVersion>
+    <PackageBrandingVersion>$(VersionPrefix) Preview 3</PackageBrandingVersion>
+    <PackageBrandingVersion Condition=" '$(IsFinalBuild)' != 'true' ">$(PackageBrandingVersion) Build $(BuildNumber)</PackageBrandingVersion>
 
-    <ExperimentalVersionPrefix>0.1.$(AspNetCorePatchVersion)</ExperimentalVersionPrefix>
-    <ExperimentalVersionSuffix>rtm</ExperimentalVersionSuffix>
+    <ExperimentalVersionPrefix>0.2.0</ExperimentalVersionPrefix>
+    <ExperimentalVersionSuffix>preview3</ExperimentalVersionSuffix>
 
     <PackageVersionSuffix Condition=" '$(IsFinalBuild)' != 'true' AND '$(PrereleaseVersionLabel)' != '' ">$(PrereleaseVersionLabel)</PackageVersionSuffix>
     <PackageVersionSuffix Condition=" '$(IsFinalBuild)' != 'true' AND '$(BuildNumber)' != '' ">$(PackageVersionSuffix)-$(BuildNumber)</PackageVersionSuffix>
@@ -31,7 +32,7 @@
     <ExperimentalPackageVersion Condition=" '$(IsFinalBuild)' == 'true' AND '$(ExperimentalVersionSuffix)' != 'rtm' ">$(ExperimentalVersionPrefix)-$(ExperimentalVersionSuffix)-final</ExperimentalPackageVersion>
     <ExperimentalVersionSuffix Condition=" '$(ExperimentalVersionSuffix)' != '' AND '$(BuildNumber)' != '' ">$(ExperimentalVersionSuffix)-$(BuildNumber)</ExperimentalVersionSuffix>
 
-    <SharedFxCliBlobChannel>release/2.1</SharedFxCliBlobChannel>
+    <SharedFxCliBlobChannel>release/2.2</SharedFxCliBlobChannel>
   </PropertyGroup>
 
 </Project>

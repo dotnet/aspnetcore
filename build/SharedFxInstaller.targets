@@ -23,13 +23,15 @@
   <Target Name="_DownloadInstallers">
     <!-- Download dotnet installers -->
     <MakeDir Directories="$(_InstallerSourceDir)" />
-    <KoreBuild.Tasks.DownloadFile
-      Uri="$(RuntimeArchiveLinkPrefix)-%(WindowsSharedFxRIDs.Identity).zip$(DotNetAssetRootAccessTokenSuffix)"
-      DestinationPath="$(_InstallerSourceDir)$(DotnetRuntimeFileNamePrefix)-%(WindowsSharedFxRIDs.Identity).zip"
+    <DownloadFile
+      SourceUrl="$(RuntimeArchiveLinkPrefix)-%(WindowsSharedFxRIDs.Identity).zip$(DotNetAssetRootAccessTokenSuffix)"
+      DestinationFolder="$(_InstallerSourceDir)"
+      DestinationFileName="$(DotnetRuntimeFileNamePrefix)-%(WindowsSharedFxRIDs.Identity).zip"
       Condition="!Exists('$(_InstallerSourceDir)$(DotnetRuntimeFileNamePrefix)-%(WindowsSharedFxRIDs.Identity).zip')" />
-    <KoreBuild.Tasks.DownloadFile
-      Uri="$(RuntimeArchiveLinkPrefix)-%(NonWindowsSharedFxRIDs.Identity).tar.gz$(DotNetAssetRootAccessTokenSuffix)"
-      DestinationPath="$(_InstallerSourceDir)$(DotnetRuntimeFileNamePrefix)-%(NonWindowsSharedFxRIDs.Identity).tar.gz"
+    <DownloadFile
+      SourceUrl="$(RuntimeArchiveLinkPrefix)-%(NonWindowsSharedFxRIDs.Identity).tar.gz$(DotNetAssetRootAccessTokenSuffix)"
+      DestinationFolder="$(_InstallerSourceDir)"
+      DestinationFileName="$(DotnetRuntimeFileNamePrefix)-%(NonWindowsSharedFxRIDs.Identity).tar.gz"
       Condition="!Exists('$(_InstallerSourceDir)$(DotnetRuntimeFileNamePrefix)-%(NonWindowsSharedFxRIDs.Identity).tar.gz')" />
   </Target>
 
@@ -218,7 +220,7 @@
   </Target>
 
   <Target Name="GenerateDebs" DependsOnTargets="_EnsureInstallerPrerequisites">
-  <PropertyGroup>
+    <PropertyGroup>
       <Deb_DotnetRuntimeDependencyId>dotnet-runtime-$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion)</Deb_DotnetRuntimeDependencyId>
       <Deb_DotnetRuntimeDependencyVersion>$(MicrosoftNETCoreAppPackageVersion)</Deb_DotnetRuntimeDependencyVersion>
       <!-- Needed some creativity to convert the PackageVersion M.N.P-Build to the installer version M.N.P~Build, The conditional handles stabilized builds -->

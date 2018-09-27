@@ -1,10 +1,10 @@
 <Project>
   <PropertyGroup>
     <!-- directories -->
-    <_WorkRoot>$(RepositoryRoot).w\</_WorkRoot>
+    <_WorkRoot>$(RepositoryRoot).w\$(SharedFxRID)\</_WorkRoot>
     <_WorkLayoutDir>$(_WorkRoot).l\</_WorkLayoutDir>
     <_WorkOutputDir>$(_WorkRoot).o\</_WorkOutputDir>
-    <_MetapackageSrcRoot>$(RepositoryRoot)src\</_MetapackageSrcRoot>
+    <_MetapackageSrcRoot>$(RepositoryRoot)src\Packages\</_MetapackageSrcRoot>
     <_TemplatesDir>$(MSBuildThisFileDirectory)tools\templates\</_TemplatesDir>
     <_DockerDir>$(MSBuildThisFileDirectory)tools\docker\</_DockerDir>
     <_PackagingDir>$(MSBuildThisFileDirectory)tools\packaging\</_PackagingDir>
@@ -17,12 +17,15 @@
     <!-- 3B = semicolon in ASCII -->
     <PathSeparator Condition="'$(PathSeparator)' == ''">:</PathSeparator>
     <PathSeparator Condition="$(SharedFxRID.StartsWith('win'))">%3B</PathSeparator>
+    <ArchiveExtension>.tar.gz</ArchiveExtension>
+    <ArchiveExtension Condition="$(SharedFxRID.StartsWith('win'))">.zip</ArchiveExtension>
 
     <LibPrefix Condition="$([MSBuild]::IsOSPlatform('Linux')) OR $([MSBuild]::IsOSPlatform('OSX'))">lib</LibPrefix>
     <LibExtension>.so</LibExtension>
     <LibExtension Condition="$([MSBuild]::IsOSPlatform('Windows'))">.dll</LibExtension>
     <LibExtension Condition="$([MSBuild]::IsOSPlatform('OSX'))">.dylib</LibExtension>
     <ExeExtension Condition="$([MSBuild]::IsOSPlatform('Windows'))">.exe</ExeExtension>
+    <SharedFrameworkTargetFramework>netcoreapp2.2</SharedFrameworkTargetFramework>
 
     <!-- installers -->
     <SharedFxInstallerName>aspnetcore-runtime</SharedFxInstallerName>

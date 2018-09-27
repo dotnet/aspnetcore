@@ -51,11 +51,6 @@ namespace Cli.FunctionalTests.Templates
 
         public override IEnumerable<string> ExpectedFilesAfterPublish =>
             base.ExpectedFilesAfterPublish
-            .Concat(RazorUtil.GetExpectedFilesAfterPublish(this))
-            .Concat(new[]
-            {
-                "appsettings.Development.json",
-                "appsettings.json",
-            });
+            .Concat(RazorUtil.GetExpectedFilesAfterPublish(this));
     }
 }

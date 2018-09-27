@@ -15,7 +15,7 @@
     <GeneratedRestoreSourcesPropsPath>$(IntermediateDir)sources.g.props</GeneratedRestoreSourcesPropsPath>
     <GeneratedBrandingPropsPath>$(IntermediateDir)branding.g.props</GeneratedBrandingPropsPath>
 
-    <PrepareDependsOn>PreinstallBundledPackages;SetTeamCityBuildNumberToVersion;$(PrepareDependsOn);VerifyPackageArtifactConfig;VerifyExternalDependencyConfig;PrepareOutputPaths</PrepareDependsOn>
+    <PrepareDependsOn>SetTeamCityBuildNumberToVersion;$(PrepareDependsOn);VerifyPackageArtifactConfig;VerifyExternalDependencyConfig;PrepareOutputPaths</PrepareDependsOn>
     <CleanDependsOn>$(CleanDependsOn);CleanArtifacts;CleanUniverseArtifacts</CleanDependsOn>
     <RestoreDependsOn>$(RestoreDependsOn);InstallDotNet</RestoreDependsOn>
     <CompileDependsOn>$(CompileDependsOn);BuildRepositories</CompileDependsOn>
@@ -32,6 +32,7 @@
     <!-- We need to pass the NETCoreApp package versions to msbuild so that it doesn't complain about us using a different one than it was restored against.  -->
     <PropertyGroup>
       <DesignTimeBuildProps>MicrosoftNETCoreAppPackageVersion=$(MicrosoftNETCoreAppPackageVersion);</DesignTimeBuildProps>
+      <DesignTimeBuildProps>$(DesignTimeBuildProps);MicrosoftNETCoreApp22PackageVersion=$(MicrosoftNETCoreApp22PackageVersion);</DesignTimeBuildProps>
       <DesignTimeBuildProps>$(DesignTimeBuildProps);MicrosoftNETCoreApp21PackageVersion=$(MicrosoftNETCoreApp21PackageVersion);</DesignTimeBuildProps>
       <DesignTimeBuildProps>$(DesignTimeBuildProps);MicrosoftNETCoreApp20PackageVersion=$(MicrosoftNETCoreApp20PackageVersion);</DesignTimeBuildProps>
     </PropertyGroup>
@@ -238,7 +239,6 @@
       Artifacts="@(ArtifactInfo);@(ShippedArtifactInfo)"
       Repositories="@(Repository);@(ShippedRepository)"
       Dependencies="@(ExternalDependency)"
-      StartGraphAt="$(BuildGraphOf)"
       Properties="Configuration=$(Configuration);BuildNumber=$(BuildNumber);DotNetPackageVersionPropsPath=$(GeneratedPackageVersionPropsPath);DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcesPropsPath)">
       <Output TaskParameter="RepositoryBuildOrder" ItemName="RepositoryBuildOrder" />
     </RepoTasks.AnalyzeBuildGraph>

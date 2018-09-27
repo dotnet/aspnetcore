@@ -2,19 +2,17 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
-using NuGet.Frameworks;
 using NuGet.Versioning;
-using RepoTools.BuildGraph;
 using RepoTasks.ProjectModel;
 using RepoTasks.Utilities;
+using RepoTools.BuildGraph;
 
 namespace RepoTasks
 {
@@ -39,8 +37,6 @@ namespace RepoTasks
 
         [Required]
         public string Properties { get; set; }
-
-        public string StartGraphAt { get; set; }
 
         /// <summary>
         /// The order in which to build repositories
@@ -130,17 +126,19 @@ namespace RepoTasks
             foreach (var tfm in project.Frameworks)
             foreach (var dependency in tfm.Dependencies)
             {
+                var dependencyVersion = dependency.Value.Version;
                 if (!buildPackageMap.TryGetValue(dependency.Key, out var package))
                 {
-                    var idx = -1;
                     // This dependency is not one of the packages that will be compiled by this run of Universe.
+                    // Must match an external dependency, including its Version.
+                    var idx = -1;
                     if (!dependencyMap.TryGetValue(dependency.Key, out var externalVersions)
-                        || (idx = externalVersions.FindIndex(0, externalVersions.Count, i => i.Version == dependency.Value.Version)) < 0)
+                        || (idx = externalVersions.FindIndex(0, externalVersions.Count, i => i.Version == dependencyVersion)) < 0)
                     {
                         Log.LogKoreBuildError(
                             project.FullPath,
                             KoreBuildErrors.UndefinedExternalDependency,
-                            message: $"Undefined external dependency on {dependency.Key}/{dependency.Value.Version}");
+                            message: $"Undefined external dependency on {dependency.Key}/{dependencyVersion}");
                     }
 
                     if (idx >= 0)
@@ -150,13 +148,21 @@ namespace RepoTasks
                     continue;
                 }
 
-                var refVersion = VersionRange.Parse(dependency.Value.Version);
+                // This package will be created in this Universe run.
+                var refVersion = VersionRange.Parse(dependencyVersion);
                 if (refVersion.IsFloating && refVersion.Float.Satisfies(package.PackageInfo.Version))
                 {
                     continue;
                 }
                 else if (package.PackageInfo.Version.Equals(refVersion.MinVersion))
                 {
+                    continue;
+                }
+                else if (dependencyMap.TryGetValue(dependency.Key, out var externalDependency) &&
+                    externalDependency.Any(ext => ext.Version == dependencyVersion))
+                {
+                    // Project depends on external version of this package, not the version built in Universe. That's
+                    // fine in benchmark apps for example.
                     continue;
                 }
 
@@ -262,14 +268,13 @@ namespace RepoTasks
                     return repo;
                 }).ToList();
 
-            var graph = GraphBuilder.Generate(repositories, StartGraphAt, Log);
+            var graph = GraphBuilder.Generate(repositories, Log);
             var repositoriesWithOrder = new List<(ITaskItem repository, int order)>();
             foreach (var repository in repositories)
             {
                 var graphNodeRepository = graph.FirstOrDefault(g => g.Repository.Name == repository.Name);
                 if (graphNodeRepository == null)
                 {
-                    // StartGraphAt was specified so the graph is incomplete.
                     continue;
                 }
 

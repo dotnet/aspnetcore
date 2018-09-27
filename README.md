@@ -61,6 +61,18 @@ Microsoft.AspNetCore              | [![][metapackage-myget-badge]][metapackage-m
 [redhat-x64-rpm]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/master/aspnetcore-runtime-latest-x64.rpm
 [linux-musl-x64-tar]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/master/aspnetcore-runtime-latest-linux-musl-x64.tar.gz
 
+[badge-rel-22]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.2/aspnetcore-runtime-win-x64-version-badge.svg
+[win-x64-zip-rel-22]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.2/aspnetcore-runtime-latest-win-x64.zip
+[win-x64-exe-rel-22]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.2/aspnetcore-runtime-latest-win-x64.exe
+[win-x86-zip-rel-22]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.2/aspnetcore-runtime-latest-win-x86.zip
+[win-x86-exe-rel-22]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.2/aspnetcore-runtime-latest-win-x86.exe
+[linux-x64-tar-rel-22]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.2/aspnetcore-runtime-latest-linux-x64.tar.gz
+[osx-x64-tar-rel-22]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.2/aspnetcore-runtime-latest-osx-x64.tar.gz
+[debian-x64-deb-rel-22]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.2/aspnetcore-runtime-latest-x64.deb
+[redhat-x64-rpm-rel-22]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.2/aspnetcore-runtime-latest-x64.rpm
+[linux-arm-tar-rel-22]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.2/aspnetcore-runtime-latest-linux-arm.tar.gz
+[linux-musl-x64-tar-rel-22]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.2/aspnetcore-runtime-latest-linux-musl-x64.tar.gz
+
 [badge-rel-21]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.1/aspnetcore-runtime-win-x64-version-badge.svg
 [win-x64-zip-rel-21]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.1/aspnetcore-runtime-latest-win-x64.zip
 [win-x64-exe-rel-21]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.1/aspnetcore-runtime-latest-win-x64.exe
@@ -73,16 +85,19 @@ Microsoft.AspNetCore              | [![][metapackage-myget-badge]][metapackage-m
 [linux-arm-tar-rel-21]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.1/aspnetcore-runtime-latest-linux-arm.tar.gz
 [linux-musl-x64-tar-rel-21]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.1/aspnetcore-runtime-latest-linux-musl-x64.tar.gz
 
-Platform              | Latest (dev branch) <br> ![][badge-master]                      | release/2.1 <br> ![][badge-rel-21]
-:---------------------|:----------------------------------------------------------------|:-------------------------------------------------------------------------
-Windows (x64)         | [Installer (exe)][win-x64-exe]<br>[Archive (zip)][win-x64-zip]   | [Installer (exe)][win-x64-exe-rel-21]<br>[Archive (zip)][win-x64-zip-rel-21]
-Windows (x86)         | [Installer (exe)][win-x86-exe]<br>[Archive (zip)][win-x86-zip]   | [Installer (exe)][win-x86-exe-rel-21]<br>[Archive (zip)][win-x86-zip-rel-21]
-macOS (x64)           | [Archive (tar.gz)][osx-x64-tar]                                  | [Archive (tar.gz)][osx-x64-tar-rel-21]
-Linux (x64)<br>_(for glibc based OS - most common)_ | [Archive (tar.gz)][linux-x64-tar]                                | [Archive (tar.gz)][linux-x64-tar-rel-21]
-Linux (x64 - musl)<br>_(for musl based OS, such as Alpine Linux)_ | [Archive (tar.gz)][linux-musl-x64-tar]                           | [Archive (tar.gz)][linux-musl-x64-tar-rel-21]
-Linux (arm32)         | [Archive (tar.gz)][linux-arm-tar]                                | [Archive (tar.gz)][linux-arm-tar-rel-21]
-Debian/Ubuntu (x64)   | [Installer (deb)][debian-x64-deb]                                | [Installer (deb)][debian-x64-deb-rel-21]
-RedHat/Fedora (x64)   | [Installer (rpm)][redhat-x64-rpm]                                | [Installer (rpm)][redhat-x64-rpm-rel-21]
+Platform              | Latest (dev branch) <br> ![][badge-master]                      | release/2.2 <br> ![][badge-rel-22] | release/2.1 <br> ![][badge-rel-21]
+:---------------------|:----------------------------------------------------------------|:------------------------------------------------------------------------- |:-------------------------------------------------------------------------
+Channel name<sup>1</sup> | `master` | `release/2.2` | `release/2.1`
+Windows (x64)         | [Installer (exe)][win-x64-exe]<br>[Archive (zip)][win-x64-zip]   | [Installer (exe)][win-x64-exe-rel-22]<br>[Archive (zip)][win-x64-zip-rel-22] | [Installer (exe)][win-x64-exe-rel-21]<br>[Archive (zip)][win-x64-zip-rel-21]
+Windows (x86)         | [Installer (exe)][win-x86-exe]<br>[Archive (zip)][win-x86-zip]   | [Installer (exe)][win-x86-exe-rel-22]<br>[Archive (zip)][win-x86-zip-rel-22] | [Installer (exe)][win-x86-exe-rel-21]<br>[Archive (zip)][win-x86-zip-rel-21]
+macOS (x64)           | [Archive (tar.gz)][osx-x64-tar]                                  | [Archive (tar.gz)][osx-x64-tar-rel-22] | [Archive (tar.gz)][osx-x64-tar-rel-21]
+Linux (x64)<br>_(for glibc based OS - most common)_ | [Archive (tar.gz)][linux-x64-tar]                                | [Archive (tar.gz)][linux-x64-tar-rel-22] | [Archive (tar.gz)][linux-x64-tar-rel-21]
+Linux (x64 - musl)<br>_(for musl based OS, such as Alpine Linux)_ | [Archive (tar.gz)][linux-musl-x64-tar]                           | [Archive (tar.gz)][linux-musl-x64-tar-rel-22] | [Archive (tar.gz)][linux-musl-x64-tar-rel-21]
+Linux (arm32)         | [Archive (tar.gz)][linux-arm-tar]                                | [Archive (tar.gz)][linux-arm-tar-rel-22] | [Archive (tar.gz)][linux-arm-tar-rel-21]
+Debian/Ubuntu (x64)   | [Installer (deb)][debian-x64-deb]                                | [Installer (deb)][debian-x64-deb-rel-22] | [Installer (deb)][debian-x64-deb-rel-21]
+RedHat/Fedora (x64)   | [Installer (rpm)][redhat-x64-rpm]                                | [Installer (rpm)][redhat-x64-rpm-rel-22] | [Installer (rpm)][redhat-x64-rpm-rel-21]
+
+> <sup>1</sup> For use with the `-Channel` argument in [dotnet-install.ps1/sh](https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet-install-script).
 
 ## Building from source
 

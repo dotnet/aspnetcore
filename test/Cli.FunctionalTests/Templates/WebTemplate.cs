@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Cli.FunctionalTests.Util;
 
 namespace Cli.FunctionalTests.Templates
 {
@@ -17,7 +16,7 @@ namespace Cli.FunctionalTests.Templates
 
         public override TemplateType Type => TemplateType.WebApplication;
 
-        public override IEnumerable<string> ExpectedObjFilesAfterBuild => 
+        public override IEnumerable<string> ExpectedObjFilesAfterBuild =>
             base.ExpectedObjFilesAfterBuild
             .Concat(new[]
             {
@@ -34,6 +33,9 @@ namespace Cli.FunctionalTests.Templates
                         // Publish includes all *.config and *.json files (https://github.com/aspnet/websdk/issues/334)
                         "NuGet.config",
                         "web.config",
+
+                        "appsettings.Development.json",
+                        "appsettings.json",
                     }
                 },
                 { RuntimeIdentifier.Linux_x64, () =>
@@ -66,6 +68,7 @@ namespace Cli.FunctionalTests.Templates
                         "Microsoft.AspNetCore.Diagnostics.Abstractions.dll",
                         "Microsoft.AspNetCore.Diagnostics.dll",
                         "Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.dll",
+                        "Microsoft.AspNetCore.Diagnostics.HealthChecks.dll",
                         "Microsoft.AspNetCore.dll",
                         "Microsoft.AspNetCore.HostFiltering.dll",
                         "Microsoft.AspNetCore.Hosting.Abstractions.dll",
@@ -83,7 +86,8 @@ namespace Cli.FunctionalTests.Templates
                         "Microsoft.AspNetCore.Identity.dll",
                         "Microsoft.AspNetCore.Identity.EntityFrameworkCore.dll",
                         "Microsoft.AspNetCore.Identity.UI.dll",
-                        "Microsoft.AspNetCore.Identity.UI.Views.dll",
+                        "Microsoft.AspNetCore.Identity.UI.Views.V3.dll",
+                        "Microsoft.AspNetCore.Identity.UI.Views.V4.dll",
                         "Microsoft.AspNetCore.JsonPatch.dll",
                         "Microsoft.AspNetCore.Localization.dll",
                         "Microsoft.AspNetCore.Localization.Routing.dll",
@@ -114,6 +118,7 @@ namespace Cli.FunctionalTests.Templates
                         "Microsoft.AspNetCore.Routing.Abstractions.dll",
                         "Microsoft.AspNetCore.Routing.dll",
                         "Microsoft.AspNetCore.Server.HttpSys.dll",
+                        "Microsoft.AspNetCore.Server.IIS.dll",
                         "Microsoft.AspNetCore.Server.IISIntegration.dll",
                         "Microsoft.AspNetCore.Server.Kestrel.Core.dll",
                         "Microsoft.AspNetCore.Server.Kestrel.dll",
@@ -158,6 +163,8 @@ namespace Cli.FunctionalTests.Templates
                         "Microsoft.Extensions.DependencyInjection.dll",
                         "Microsoft.Extensions.DependencyModel.dll",
                         "Microsoft.Extensions.DiagnosticAdapter.dll",
+                        "Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions.dll",
+                        "Microsoft.Extensions.Diagnostics.HealthChecks.dll",
                         "Microsoft.Extensions.FileProviders.Abstractions.dll",
                         "Microsoft.Extensions.FileProviders.Composite.dll",
                         "Microsoft.Extensions.FileProviders.Embedded.dll",
@@ -179,6 +186,7 @@ namespace Cli.FunctionalTests.Templates
                         "Microsoft.Extensions.Logging.TraceSource.dll",
                         "Microsoft.Extensions.ObjectPool.dll",
                         "Microsoft.Extensions.Options.ConfigurationExtensions.dll",
+                        "Microsoft.Extensions.Options.DataAnnotations.dll",
                         "Microsoft.Extensions.Options.dll",
                         "Microsoft.Extensions.Primitives.dll",
                         "Microsoft.Extensions.WebEncoders.dll",
@@ -215,6 +223,7 @@ namespace Cli.FunctionalTests.Templates
                     _additionalFilesAfterPublish[RuntimeIdentifier.Linux_x64]()
                     .Concat(new[]
                     {
+                        "aspnetcorev2_inprocess.dll",
                         "sni.dll",
                     })
                 },

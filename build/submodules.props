@@ -34,57 +34,54 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Repository Include="AADIntegration" />
+    <Repository Include="Antiforgery" />
+    <Repository Include="AzureIntegration" />
+    <Repository Include="BasicMiddleware" />
+    <Repository Include="BrowserLink" />
+    <Repository Include="Caching" />
+    <Repository Include="Common" />
+    <Repository Include="Configuration" />
+    <Repository Include="CORS" />
+    <Repository Include="DataProtection" />
+    <Repository Include="DependencyInjection" />
+    <Repository Include="Diagnostics" />
+    <Repository Include="DotNetTools" />
     <Repository Include="EntityFrameworkCore" />
+    <Repository Include="EventNotification" />
+    <Repository Include="FileSystem" />
+    <Repository Include="Hosting" />
+    <Repository Include="HtmlAbstractions" />
+    <Repository Include="HttpAbstractions" />
+    <Repository Include="HttpClientFactory" />
+    <Repository Include="HttpSysServer" />
+    <Repository Include="Identity" />
     <Repository Include="IISIntegration" />
+    <Repository Include="JavaScriptServices" />
+    <Repository Include="JsonPatch" />
+    <Repository Include="KestrelHttpServer" />
+    <Repository Include="Localization" />
+    <Repository Include="Logging" />
     <Repository Include="MetaPackages" PatchPolicy="CascadeVersions" />
+    <Repository Include="Microsoft.Data.Sqlite" />
     <Repository Include="Mvc" />
-    <Repository Include="SignalR" />
+    <Repository Include="MvcPrecompilation" />
+    <Repository Include="Options" />
+    <Repository Include="Proxy" />
+    <Repository Include="Razor" />
+    <Repository Include="ResponseCaching" />
+    <Repository Include="Routing" />
     <Repository Include="Scaffolding" PatchPolicy="AlwaysUpdate" />
+    <Repository Include="Security" />
+    <Repository Include="Session" />
+    <Repository Include="SignalR" />
+    <Repository Include="StaticFiles" />
     <Repository Include="Templating" PatchPolicy="AlwaysUpdateAndCascadeVersions" />
+    <Repository Include="WebSockets" />
 
     <!-- Test-only repos -->
     <Repository Include="AuthSamples" PatchPolicy="AlwaysUpdateAndCascadeVersions" />
     <Repository Include="MusicStore" PatchPolicy="AlwaysUpdateAndCascadeVersions" />
     <Repository Include="ServerTests" PatchPolicy="AlwaysUpdateAndCascadeVersions" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ShippedRepository Include="AADIntegration" />
-    <ShippedRepository Include="Antiforgery" />
-    <ShippedRepository Include="AzureIntegration" />
-    <ShippedRepository Include="BasicMiddleware" />
-    <ShippedRepository Include="BrowserLink" />
-    <ShippedRepository Include="Caching" />
-    <ShippedRepository Include="Common" />
-    <ShippedRepository Include="Configuration" />
-    <ShippedRepository Include="CORS" />
-    <ShippedRepository Include="DataProtection" />
-    <ShippedRepository Include="DependencyInjection" />
-    <ShippedRepository Include="Diagnostics" />
-    <ShippedRepository Include="DotNetTools" />
-    <ShippedRepository Include="EventNotification" />
-    <ShippedRepository Include="FileSystem" />
-    <ShippedRepository Include="Hosting" />
-    <ShippedRepository Include="HtmlAbstractions" />
-    <ShippedRepository Include="HttpAbstractions" />
-    <ShippedRepository Include="HttpClientFactory" />
-    <ShippedRepository Include="HttpSysServer" />
-    <ShippedRepository Include="Identity" />
-    <ShippedRepository Include="JavaScriptServices" />
-    <ShippedRepository Include="JsonPatch" />
-    <ShippedRepository Include="KestrelHttpServer" />
-    <ShippedRepository Include="Localization" />
-    <ShippedRepository Include="Logging" />
-    <ShippedRepository Include="Microsoft.Data.Sqlite" />
-    <ShippedRepository Include="MvcPrecompilation" />
-    <ShippedRepository Include="Options" />
-    <ShippedRepository Include="Razor" />
-    <ShippedRepository Include="ResponseCaching" />
-    <ShippedRepository Include="Routing" />
-    <ShippedRepository Include="Security" />
-    <ShippedRepository Include="Session" />
-    <ShippedRepository Include="StaticFiles" />
-    <ShippedRepository Include="Testing" />
-    <ShippedRepository Include="WebSockets" />
   </ItemGroup>
 </Project>

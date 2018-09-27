@@ -20,6 +20,7 @@
     </PublishDependsOn>
 
     <!-- Settings for pushing to the transport feed -->
+    <PushToBlobFeed_UploadTimeoutMinutes>10</PushToBlobFeed_UploadTimeoutMinutes>
     <PushToBlobFeed_Overwrite Condition="'$(PushToBlobFeed_Overwrite)' == ''">false</PushToBlobFeed_Overwrite>
     <PushToBlobFeed_MaxClients Condition="'$(PushToBlobFeed_MaxClients)' == ''">8</PushToBlobFeed_MaxClients>
     <BlobFileRelativePathBase Condition="'$(BlobFileRelativePathBase)' == ''">assets</BlobFileRelativePathBase>
@@ -34,7 +35,7 @@
     <!--
       Used by the dotnet/cli build to determine which version of Microsoft.NETCore.App is used.
     -->
-    <WriteLinesToFile File="$(BaseRuntimeVersionFile)" Lines="$(MicrosoftNETCoreApp21PackageVersion)" Overwrite="true" />
+    <WriteLinesToFile File="$(BaseRuntimeVersionFile)" Lines="$(MicrosoftNetCoreApp22PackageVersion)" Overwrite="true" />
 
     <!--
       Used by the downloader scripts when pulling from a 'channel' instead of a specific version.
@@ -60,7 +61,9 @@
     <PropertyGroup>
       <BlobBasePath>aspnetcore/Runtime/$(PackageVersion)/</BlobBasePath>
       <NpmBlobBasePath>aspnetcore/npm/</NpmBlobBasePath>
+      <JarBlobBasePath>aspnetcore/jar/</JarBlobBasePath>
       <AliasBlobBasePath>aspnetcore/Runtime/$(SharedFxCliBlobChannel)/</AliasBlobBasePath>
+      <SiteExtensionArchiveFileName>runtime-site-extension-internal-$(PackageVersion).zip</SiteExtensionArchiveFileName>
       <InstallerBaseFileName>aspnetcore-runtime-$(PackageVersion)</InstallerBaseFileName>
       <InstallerAliasBaseFileName>aspnetcore-runtime-latest</InstallerAliasBaseFileName>
       <IntermediateInstallerBaseFileName>aspnetcore-runtime-internal-$(PackageVersion)</IntermediateInstallerBaseFileName>
@@ -91,6 +94,11 @@
       </FilesToPublish>
 
       <!-- Intermediate files passed on to the dotnet-CLI. -->
+      <FilesToPublish Include="$(DependencyAssetsDir)$(SiteExtensionArchiveFileName)" Condition="@(Repository->AnyHaveMetadataValue('Identity', 'AzureIntegration'))">
+        <RelativeBlobPath>$(BlobBasePath)$(SiteExtensionArchiveFileName)</RelativeBlobPath>
+        <ManifestArtifactData>ShipInstaller=dotnetcli</ManifestArtifactData>
+      </FilesToPublish>
+
       <FilesToPublish Include="$(DependencyAssetsDir)nuGetPackagesArchive-$(PackageVersion).lzma" >
         <RelativeBlobPath>$(BlobBasePath)nuGetPackagesArchive-$(PackageVersion).lzma</RelativeBlobPath>
         <ManifestArtifactData>ShipInstaller=dotnetcli</ManifestArtifactData>
@@ -148,6 +156,15 @@
         Include="@(ArtifactInfo)"
         ArtifactPath="$(DependencyPackagesDir)%(ArtifactInfo.PackageId).%(ArtifactInfo.Version).symbols.nupkg"
         Condition="'%(ArtifactInfo.ArtifactType)' == 'NuGetSymbolsPackage'" />
+
+      <FilesToPublish Include="$(DependencyPackagesDir)%(ArtifactInfo.FileName)%(ArtifactInfo.Extension)" Condition="'%(ArtifactInfo.ArtifactType)' == 'JavaJar'">
+        <RelativeBlobPath>$(JarBlobBasePath)%(ArtifactInfo.FileName)%(ArtifactInfo.Extension)</RelativeBlobPath>
+        <ManifestArtifactData>Type=JavaJar</ManifestArtifactData>
+      </FilesToPublish>
+
+      <FilesToPublish Include="$(DependencyAssetsDir)%(ArtifactInfo.FileName)%(ArtifactInfo.Extension)" Condition="'%(ArtifactInfo.ArtifactType)' == 'MavenPOM'">
+        <RelativeBlobPath>$(JarBlobBasePath)%(ArtifactInfo.FileName)%(ArtifactInfo.Extension)</RelativeBlobPath>
+      </FilesToPublish>
 
       <NpmPackageToPublish Include="$(DependencyAssetsDir)%(ArtifactInfo.FileName)%(ArtifactInfo.Extension)" Condition="'%(ArtifactInfo.ArtifactType)' == 'NpmPackage'">
         <RelativeBlobPath>$(NpmBlobBasePath)%(ArtifactInfo.PackageId)/%(ArtifactInfo.FileName)%(ArtifactInfo.Extension)</RelativeBlobPath>
@@ -287,6 +304,7 @@
                     AccountKey="$(PublishBlobFeedKey)"
                     ItemsToPush="@(PackageToPublishToTransport)"
                     Overwrite="$(PushToBlobFeed_Overwrite)"
+                    UploadTimeoutInMinutes="$(PushToBlobFeed_UploadTimeoutMinutes)"
                     ManifestBranch="$(BuildBranch)"
                     ManifestBuildId="$(Version)"
                     ManifestBuildData="ProductVersion=$(PackageVersion);UniverseCommitHash=$(CommitHash)"
@@ -300,6 +318,7 @@
                     ItemsToPush="@(FilesToPublishToTransport)"
                     PublishFlatContainer="true"
                     Overwrite="$(PushToBlobFeed_Overwrite)"
+                    UploadTimeoutInMinutes="$(PushToBlobFeed_UploadTimeoutMinutes)"
                     ManifestBranch="$(BuildBranch)"
                     ManifestBuildId="$(Version)"
                     ManifestBuildData="ProductVersion=$(PackageVersion);UniverseCommitHash=$(CommitHash)"

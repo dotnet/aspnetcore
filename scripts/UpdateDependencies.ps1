@@ -54,23 +54,28 @@ foreach ($package in $remoteDeps.SelectNodes('//Package')) {
     }
 }
 
+if (-not $NoCommit) {
+    $currentBranch = Invoke-Block { & git rev-parse --abbrev-ref HEAD }
 
-$currentBranch = Invoke-Block { & git rev-parse --abbrev-ref HEAD }
-
-$destinationBranch = "dotnetbot/UpdateDeps"
-Invoke-Block { & git checkout -tb $destinationBranch "origin/$GithubUpstreamBranch" }
+    $destinationBranch = "dotnetbot/UpdateDeps"
+    Invoke-Block { & git checkout -tb $destinationBranch "origin/$GithubUpstreamBranch" }
+}
 
 try {
     $updatedVars = UpdateVersions $variables $dependencies $depsPath
 
-    if (-not $NoCommit) {
-        $body = CommitUpdatedVersions $updatedVars $dependencies $depsPath
+    if ($NoCommit) {
+        exit 0
+    }
 
-        if ($body) {
-            CreatePR "aspnet" $GithubUsername $GithubUpstreamBranch $destinationBranch $body $GithubToken
-        }
+    $body = CommitUpdatedVersions $updatedVars $dependencies $depsPath
+
+    if ($body) {
+        CreatePR "aspnet" $GithubUsername $GithubUpstreamBranch $destinationBranch $body $GithubToken
     }
 }
 finally {
-    Invoke-Block { & git checkout $currentBranch }
+    if (-not $NoCommit) {
+        Invoke-Block { & git checkout $currentBranch }
+    }
 }

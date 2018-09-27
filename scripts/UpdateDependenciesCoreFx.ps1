@@ -6,7 +6,6 @@ param(
     [string]$GithubUsername,
     [string]$GithubToken
 )
-# This script only works against dev/master at the moment because only master prod-con builds allow you to access their results before the entire chain is finished.
 
 $ErrorActionPreference = 'Stop'
 Import-Module -Scope Local -Force "$PSScriptRoot/common.psm1"
@@ -59,7 +58,7 @@ foreach ($line in Get-Content $localCoreSetupVersions) {
 }
 
 if (!$msNetCoreAppPackageVersion) {
-    Throw "$msNetCoreAppPackageName was not in $coreSetupVersions"
+    throw "$msNetCoreAppPackageName was not in $coreSetupVersions"
 }
 
 $coreAppDownloadLink = "https://dotnet.myget.org/F/dotnet-core/api/v2/package/$msNetCoreAppPackageName/$msNetCoreAppPackageVersion"
@@ -108,11 +107,11 @@ Write-Host "Loading deps from $depsPath"
 [xml] $dependencies = LoadXml $depsPath
 
 if (-not $NoCommit) {
-    $baseBranch = "release/2.1"
+    $baseBranch = "release/2.2"
     Invoke-Block { & git fetch origin }
 
     $currentBranch = Invoke-Block { & git rev-parse --abbrev-ref HEAD }
-    $destinationBranch = "dotnetbot/UpdateCoreFxDeps"
+    $destinationBranch = "upgrade-netcore-deps"
 
     Invoke-Block { & git checkout -tb $destinationBranch "origin/$baseBranch" }
 }
@@ -120,7 +119,7 @@ if (-not $NoCommit) {
 try {
     $updatedVars = UpdateVersions $variables $dependencies $depsPath
     if (-not $NoCommit) {
-        $body = CommitUpdatedVersions $updatedVars $dependencies $depsPath
+        $body = CommitUpdatedVersions $updatedVars $dependencies $depsPath "Upgrade to .NET Core $msNetCoreAppPackageVersion"
 
         if ($body) {
             CreatePR "aspnet" $GithubUsername $baseBranch $destinationBranch $body $GithubToken

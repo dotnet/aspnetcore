@@ -69,6 +69,7 @@ function Get-PackageVersion([string]$repoRoot) {
     }
     $packageVersion = $output | where-object { $_ -like '*PackageVersion=*' } | select-object -first 1
     $packageVersion = $packageVersion -replace 'PackageVersion=', ''
+    $packageVersion = $packageVersion -replace '-final', ''
     if ($packageVersion) { $packageVersion = $packageVersion.Trim() }
     if (-not $packageVersion) {
         throw "Could not determine final package version for $repoRoot"

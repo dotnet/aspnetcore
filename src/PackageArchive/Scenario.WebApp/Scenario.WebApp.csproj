@@ -1,9 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
-    <MaxImplicitVersion>2.1.1</MaxImplicitVersion>
-    <!-- Use pre-release versions up until 2.1.1, then don't lift higher -->
+    <!-- aspnet/BuildTools#662 Don't police what version of NetCoreApp we use -->
+    <NETCoreAppMaximumVersion>99.9</NETCoreAppMaximumVersion>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <MaxImplicitVersion>2.2.0</MaxImplicitVersion>
+    <!-- Use pre-release versions up until 2.2.0, then don't lift higher -->
     <AspNetCoreImplicitVersion Condition="$(MicrosoftAspNetCoreAppPackageVersion.StartsWith('$(MaxImplicitVersion)-'))">$(MicrosoftAspNetCoreAppPackageVersion)</AspNetCoreImplicitVersion>
     <AspNetCoreImplicitVersion>$([MSBuild]::ValueOrDefault('$(AspNetCoreImplicitVersion)','$(MaxImplicitVersion)'))</AspNetCoreImplicitVersion>
   </PropertyGroup>

@@ -1,12 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using Cli.FunctionalTests.Util;
 
 namespace Cli.FunctionalTests.Templates
 {
@@ -35,11 +33,6 @@ namespace Cli.FunctionalTests.Templates
                 Path.Combine("ClientApp", "build", "static", "css", "main.[HASH].css.map"),
                 Path.Combine("ClientApp", "build", "static", "js", "main.[HASH].js"),
                 Path.Combine("ClientApp", "build", "static", "js", "main.[HASH].js.map"),
-                Path.Combine("ClientApp", "build", "static", "media", "glyphicons-halflings-regular.[HASH].woff2"),
-                Path.Combine("ClientApp", "build", "static", "media", "glyphicons-halflings-regular.[HASH].svg"),
-                Path.Combine("ClientApp", "build", "static", "media", "glyphicons-halflings-regular.[HASH].ttf"),
-                Path.Combine("ClientApp", "build", "static", "media", "glyphicons-halflings-regular.[HASH].eot"),
-                Path.Combine("ClientApp", "build", "static", "media", "glyphicons-halflings-regular.[HASH].woff"),
-            });    
+            });
     }
 }
