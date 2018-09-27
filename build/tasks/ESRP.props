@@ -12,8 +12,6 @@
     <MicrosoftOpc>MicrosoftOpc</MicrosoftOpc>
     <!-- Legacy COPS: 400 -->
     <MicrosoftAuthentiCodeSha2>MicrosoftAuthentiCodeSha2</MicrosoftAuthentiCodeSha2>
-    <!-- Legacy COPS: 401 -->
-    <MicrosoftAuthentiCodeSha1Sha2>MicrosoftAuthentiCodeSha1Sha2</MicrosoftAuthentiCodeSha1Sha2>
     <!-- Legacy COPS: 402 -->
     <MicrosoftAuthentiCodeSha2HashSha1>MicrosoftAuthentiCodeSha2HashSha1</MicrosoftAuthentiCodeSha2HashSha1>
     <!-- Legacy COPS: 72 -->

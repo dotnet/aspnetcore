@@ -11,7 +11,6 @@ namespace Microsoft.Build.OOB.ESRP
             { "MicrosoftSN", MicrosoftSN },
             { "MicrosoftSharedLibrariesSN", MicrosoftSharedLibrariesSN },
             { "MicrosoftAuthentiCodeSha2", MicrosoftAuthentiCodeSha2 },
-            { "MicrosoftAuthentiCodeSha1Sha2", MicrosoftAuthentiCodeSha1Sha2 },
             { "MicrosoftAuthentiCodeSha2HashSha1", MicrosoftAuthentiCodeSha2HashSha1 },
             { "MicrosoftNuGet", MicrosoftNuGet },
             { "MicrosoftOpc", MicrosoftOpc },
@@ -95,46 +94,6 @@ namespace Microsoft.Build.OOB.ESRP
             {
                 KeyCode = ESRP.KeyCode.CP_230012,
                 OperationCode = OperationCode.SigntoolVerify
-            }
-        };
-
-        // Classic ID: 401
-        public static Operations[] MicrosoftAuthentiCodeSha1Sha2 => new Operations[]
-        {
-            new Operations
-            {
-                KeyCode = ESRP.KeyCode.CP_229803,
-                OperationCode = OperationCode.SigntoolSign,
-                Parameters = new JObject
-                {
-                    { "OpusName", "Microsoft" },
-                    { "OpusInfo", "http://www.microsoft.com" },
-                    { "PageHash", "/NPH" },
-                    { "TimeStamp", @"/t ""http://ts4096.gtm.microsoft.com/TSS/AuthenticodeTS""" }
-                },
-            },
-            new Operations
-            {
-                KeyCode = ESRP.KeyCode.CP_230012,
-                OperationCode = OperationCode.SigntoolSign,
-                Parameters = new JObject
-                {
-                    { "OpusName", "Microsoft" },
-                    { "OpusInfo", "http://www.microsoft.com" },
-                    { "Append", "/as" },
-                    { "FileDigest", @"/fd ""SHA256""" },
-                    { "PageHash", "/NPH" },
-                    { "TimeStamp", @"/tr ""http://rfc3161.gtm.corp.microsoft.com/TSS/HttpTspServer"" /td sha256" }
-                }
-            },
-            new Operations
-            {
-                KeyCode = ESRP.KeyCode.CP_230012,
-                OperationCode = OperationCode.SigntoolVerify,
-                Parameters = new JObject
-                {
-                    { "VerifyAll", "/all" }
-                }
             }
         };
 

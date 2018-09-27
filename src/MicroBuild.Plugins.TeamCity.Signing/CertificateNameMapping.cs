@@ -11,6 +11,11 @@ namespace MicroBuild.Plugins.TeamCity.Signing
     {
         public static Operations[] GetOperations(string friendlyName)
         {
+            if (string.Equals("Microsoft", friendlyName, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new NotSupportedException("Using the Microsoft (dual SHA1/SHA2) certificate is no longer supported. Use Microsoft400 instead. Contact the Project K Runtime Engineering Team <projectk-runtime-eng@microsoft.com> if you have questions.");
+            }
+
             if (!_mapping.TryGetValue(friendlyName, out var retVal))
             {
                 throw new KeyNotFoundException($"Certificate name '{friendlyName}' is not recognized.");
@@ -20,7 +25,6 @@ namespace MicroBuild.Plugins.TeamCity.Signing
 
         private static readonly Dictionary<string, Operations[]> _mapping = new Dictionary<string, Operations[]>(StringComparer.OrdinalIgnoreCase)
         {
-            ["Microsoft"] = OperationsJson.MicrosoftAuthentiCodeSha1Sha2,
             ["Microsoft400"] = OperationsJson.MicrosoftAuthentiCodeSha2,
             ["Microsoft402"] = OperationsJson.MicrosoftAuthentiCodeSha2HashSha1,
             ["Vsix"] = OperationsJson.MicrosoftOpc,
