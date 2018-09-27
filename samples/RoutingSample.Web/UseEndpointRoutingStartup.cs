@@ -5,11 +5,11 @@ using System;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Internal;
-using Microsoft.AspNetCore.Routing.Matching;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -134,9 +134,11 @@ namespace RoutingSample.Web
             services.TryAddEnumerable(ServiceDescriptor.Singleton<EndpointDataSource>(endpointDataSource));
         }
 
-        public void Configure(Microsoft.AspNetCore.Builder.IApplicationBuilder app)
+        public void Configure(IApplicationBuilder app)
         {
             app.UseEndpointRouting();
+
+            app.UseStaticFiles();
 
             // Imagine some more stuff here...
 
