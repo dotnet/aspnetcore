@@ -51,7 +51,10 @@ namespace Cli.FunctionalTests
             var sourceString = Environment.GetEnvironmentVariable("NUGET_PACKAGE_SOURCE") ??
                 throw new InvalidOperationException("Environment variable NUGET_PACKAGE_SOURCE is required but not set");
 
-            return string.Join(" ", sourceString.Split(',').Select(s => $"--source {s}"));
+            // Split on pipe and remove blank entries
+            var sources = sourceString.Split('|').Where(s => !string.IsNullOrWhiteSpace(s));
+
+            return string.Join(" ", sources.Select(s => $"--source {s}"));
         }
     }
 }

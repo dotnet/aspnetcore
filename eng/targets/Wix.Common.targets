@@ -2,10 +2,19 @@
 <Project>
 
   <ItemDefinitionGroup>
+    <!-- Override the MicroBuild default certs which still uses MicrosoftSHA1 and Microsoft401 -->
+    <SignCabs>
+      <Authenticode>Microsoft400</Authenticode>
+    </SignCabs>
     <SignMsi>
-      <!-- Override the MicroBuild default which still uses MicrosoftSHA1 -->
       <Authenticode>Microsoft400</Authenticode>
     </SignMsi>
+    <SignBundle>
+      <Authenticode>Microsoft400</Authenticode>
+    </SignBundle>
+    <SignBundleEngine>
+      <Authenticode>Microsoft400</Authenticode>
+    </SignBundleEngine>
   </ItemDefinitionGroup>
 
   <ItemGroup>

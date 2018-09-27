@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cli.FunctionalTests", "Cli.
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{0EC88B4E-B1F2-4183-9EBF-BF66C45D19D7}"
 	ProjectSection(SolutionItems) = preProject
-		..\..\.vsts\builds\e2e-tests.yml = ..\..\.vsts\builds\e2e-tests.yml
+		..\..\.azure\pipelines\e2e-tests.yml = ..\..\.azure\pipelines\e2e-tests.yml
 	EndProjectSection
 EndProject
 Global
