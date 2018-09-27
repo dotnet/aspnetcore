@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
     public static class Helpers
     {
         private static readonly TimeSpan RetryRequestDelay = TimeSpan.FromMilliseconds(100);
-        private static readonly int RetryRequestCount = 5;
+        private static readonly int RetryRequestCount = 10;
 
         public static string GetTestWebSitePath(string name)
         {
