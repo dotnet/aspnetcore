@@ -4,7 +4,7 @@
   <ItemDefinitionGroup>
     <SignMsi>
       <!-- Override the MicroBuild default which still uses MicrosoftSHA1 -->
-      <Authenticode>Microsoft</Authenticode>
+      <Authenticode>Microsoft400</Authenticode>
     </SignMsi>
   </ItemDefinitionGroup>
 
