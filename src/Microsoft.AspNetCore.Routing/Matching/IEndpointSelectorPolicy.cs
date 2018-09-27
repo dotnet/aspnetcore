@@ -20,8 +20,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
         /// <param name="httpContext">
         /// The <see cref="HttpContext"/> associated with the current request.
         /// </param>
-        /// <param name="feature">
-        /// The <see cref="EndpointFeature"/> associated with the current request.
+        /// <param name="context">
+        /// The <see cref="EndpointSelectorContext"/> associated with the current request.
         /// </param>
         /// <param name="candidates">The <see cref="CandidateSet"/>.</param>
         /// <remarks>
@@ -31,10 +31,10 @@ namespace Microsoft.AspNetCore.Routing.Matching
         /// <see cref="CandidateState.IsValidCandidate"/> to <c>false</c> where desired.
         /// </para>
         /// <para>
-        /// To signal an error condition, set <see cref="EndpointFeature.Endpoint"/> to an
+        /// To signal an error condition, set <see cref="EndpointSelectorContext.Endpoint"/> to an
         /// <see cref="Endpoint"/> value that will produce the desired error when executed.
         /// </para>
         /// </remarks>
-        Task ApplyAsync(HttpContext httpContext, EndpointFeature feature, CandidateSet candidates);
+        Task ApplyAsync(HttpContext httpContext, EndpointSelectorContext context, CandidateSet candidates);
     }
 }

@@ -21,14 +21,14 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var scores = new int[] { };
             var candidateSet = CreateCandidateSet(endpoints, scores);
 
-            var (httpContext, feature) = CreateContext();
+            var (httpContext, context) = CreateContext();
             var selector = CreateSelector();
 
             // Act
-            await selector.SelectAsync(httpContext, feature, candidateSet);
+            await selector.SelectAsync(httpContext, context, candidateSet);
 
             // Assert
-            Assert.Null(feature.Endpoint);
+            Assert.Null(context.Endpoint);
         }
 
         [Fact]
@@ -42,14 +42,14 @@ namespace Microsoft.AspNetCore.Routing.Matching
             candidateSet[0].Values = new RouteValueDictionary();
             candidateSet[0].IsValidCandidate = false;
 
-            var (httpContext, feature) = CreateContext();
+            var (httpContext, context) = CreateContext();
             var selector = CreateSelector();
 
             // Act
-            await selector.SelectAsync(httpContext, feature, candidateSet);
+            await selector.SelectAsync(httpContext, context, candidateSet);
 
             // Assert
-            Assert.Null(feature.Endpoint);
+            Assert.Null(context.Endpoint);
         }
 
         [Fact]
@@ -63,14 +63,14 @@ namespace Microsoft.AspNetCore.Routing.Matching
             candidateSet[0].Values = new RouteValueDictionary();
             candidateSet[0].IsValidCandidate = true;
 
-            var (httpContext, feature) = CreateContext();
+            var (httpContext, context) = CreateContext();
             var selector = CreateSelector();
 
             // Act
-            await selector.SelectAsync(httpContext, feature, candidateSet);
+            await selector.SelectAsync(httpContext, context, candidateSet);
 
             // Assert
-            Assert.Same(endpoints[0], feature.Endpoint);
+            Assert.Same(endpoints[0], context.Endpoint);
         }
 
         [Fact]
@@ -84,14 +84,14 @@ namespace Microsoft.AspNetCore.Routing.Matching
             candidateSet[0].IsValidCandidate = false;
             candidateSet[1].IsValidCandidate = true;
 
-            var (httpContext, feature) = CreateContext();
+            var (httpContext, context) = CreateContext();
             var selector = CreateSelector();
 
             // Act
-            await selector.SelectAsync(httpContext, feature, candidateSet);
+            await selector.SelectAsync(httpContext, context, candidateSet);
 
             // Assert
-            Assert.Same(endpoints[1], feature.Endpoint);
+            Assert.Same(endpoints[1], context.Endpoint);
         }
 
         [Fact]
@@ -106,14 +106,14 @@ namespace Microsoft.AspNetCore.Routing.Matching
             candidateSet[1].IsValidCandidate = true;
             candidateSet[2].IsValidCandidate = true;
 
-            var (httpContext, feature) = CreateContext();
+            var (httpContext, context) = CreateContext();
             var selector = CreateSelector();
 
             // Act
-            await selector.SelectAsync(httpContext, feature, candidateSet);
+            await selector.SelectAsync(httpContext, context, candidateSet);
 
             // Assert
-            Assert.Same(endpoints[1], feature.Endpoint);
+            Assert.Same(endpoints[1], context.Endpoint);
         }
 
         [Fact]
@@ -137,14 +137,14 @@ namespace Microsoft.AspNetCore.Routing.Matching
             candidateSet[3].IsValidCandidate = false;
             candidateSet[4].IsValidCandidate = true;
 
-            var (httpContext, feature) = CreateContext();
+            var (httpContext, context) = CreateContext();
             var selector = CreateSelector();
 
             // Act
-            await selector.SelectAsync(httpContext, feature, candidateSet);
+            await selector.SelectAsync(httpContext, context, candidateSet);
 
             // Assert
-            Assert.Same(endpoints[4], feature.Endpoint);
+            Assert.Same(endpoints[4], context.Endpoint);
         }
 
         [Fact]
@@ -159,11 +159,11 @@ namespace Microsoft.AspNetCore.Routing.Matching
             candidateSet[1].IsValidCandidate = true;
             candidateSet[2].IsValidCandidate = true;
 
-            var (httpContext, feature) = CreateContext();
+            var (httpContext, context) = CreateContext();
             var selector = CreateSelector();
 
             // Act
-            var ex = await Assert.ThrowsAsync<AmbiguousMatchException>(() => selector.SelectAsync(httpContext, feature, candidateSet));
+            var ex = await Assert.ThrowsAsync<AmbiguousMatchException>(() => selector.SelectAsync(httpContext, context, candidateSet));
 
             // Assert
             Assert.Equal(
@@ -171,7 +171,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
 test: /test2
 test: /test3", ex.Message);
-            Assert.Null(feature.Endpoint);
+            Assert.Null(context.Endpoint);
         }
 
         [Fact]
@@ -185,8 +185,8 @@ test: /test3", ex.Message);
             var policy = new Mock<MatcherPolicy>();
             policy
                 .As<IEndpointSelectorPolicy>()
-                .Setup(p => p.ApplyAsync(It.IsAny<HttpContext>(), It.IsAny<EndpointFeature>(), It.IsAny<CandidateSet>()))
-                .Returns<HttpContext, EndpointFeature, CandidateSet>((c, f, cs) =>
+                .Setup(p => p.ApplyAsync(It.IsAny<HttpContext>(), It.IsAny<EndpointSelectorContext>(), It.IsAny<CandidateSet>()))
+                .Returns<HttpContext, EndpointSelectorContext, CandidateSet>((c, f, cs) =>
                 {
                     cs[1].IsValidCandidate = false;
                     return Task.CompletedTask;
@@ -196,14 +196,14 @@ test: /test3", ex.Message);
             candidateSet[1].IsValidCandidate = true;
             candidateSet[2].IsValidCandidate = true;
 
-            var (httpContext, feature) = CreateContext();
+            var (httpContext, context) = CreateContext();
             var selector = CreateSelector(policy.Object);
 
             // Act
-            await selector.SelectAsync(httpContext, feature, candidateSet);
+            await selector.SelectAsync(httpContext, context, candidateSet);
 
             // Assert
-            Assert.Same(endpoints[2], feature.Endpoint);
+            Assert.Same(endpoints[2], context.Endpoint);
         }
 
         [Fact]
@@ -217,8 +217,8 @@ test: /test3", ex.Message);
             var policy1 = new Mock<MatcherPolicy>();
             policy1
                 .As<IEndpointSelectorPolicy>()
-                .Setup(p => p.ApplyAsync(It.IsAny<HttpContext>(), It.IsAny<EndpointFeature>(), It.IsAny<CandidateSet>()))
-                .Returns<HttpContext, EndpointFeature, CandidateSet>((c, f, cs) =>
+                .Setup(p => p.ApplyAsync(It.IsAny<HttpContext>(), It.IsAny<EndpointSelectorContext>(), It.IsAny<CandidateSet>()))
+                .Returns<HttpContext, EndpointSelectorContext, CandidateSet>((c, f, cs) =>
                 {
                     f.Endpoint = cs[0].Endpoint;
                     return Task.CompletedTask;
@@ -231,31 +231,31 @@ test: /test3", ex.Message);
                 .Returns(1000);
             policy2
                 .As<IEndpointSelectorPolicy>()
-                .Setup(p => p.ApplyAsync(It.IsAny<HttpContext>(), It.IsAny<EndpointFeature>(), It.IsAny<CandidateSet>()))
+                .Setup(p => p.ApplyAsync(It.IsAny<HttpContext>(), It.IsAny<EndpointSelectorContext>(), It.IsAny<CandidateSet>()))
                 .Throws(new InvalidOperationException());
 
             candidateSet[0].IsValidCandidate = false;
             candidateSet[1].IsValidCandidate = true;
             candidateSet[2].IsValidCandidate = true;
 
-            var (httpContext, feature) = CreateContext();
+            var (httpContext, context) = CreateContext();
             var selector = CreateSelector(policy1.Object, policy2.Object);
 
             // Act
-            await selector.SelectAsync(httpContext, feature, candidateSet);
+            await selector.SelectAsync(httpContext, context, candidateSet);
 
             // Assert
-            Assert.Same(endpoints[0], feature.Endpoint);
+            Assert.Same(endpoints[0], context.Endpoint);
         }
 
-        private static (HttpContext httpContext, EndpointFeature feature) CreateContext()
+        private static (HttpContext httpContext, EndpointSelectorContext context) CreateContext()
         {
-            var feature = new EndpointFeature();
+            var context = new EndpointSelectorContext();
             var httpContext = new DefaultHttpContext();
-            httpContext.Features.Set<IEndpointFeature>(feature);
-            httpContext.Features.Set<IRouteValuesFeature>(feature);
+            httpContext.Features.Set<IEndpointFeature>(context);
+            httpContext.Features.Set<IRouteValuesFeature>(context);
 
-            return (httpContext, feature);
+            return (httpContext, context);
         }
 
         private static RouteEndpoint CreateEndpoint(string template)

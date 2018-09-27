@@ -23,16 +23,16 @@ namespace Microsoft.AspNetCore.Routing.Matching
             _maxSegmentCount = maxSegmentCount;
         }
 
-        public sealed override Task MatchAsync(HttpContext httpContext, EndpointFeature feature)
+        public sealed override Task MatchAsync(HttpContext httpContext, EndpointSelectorContext context)
         {
             if (httpContext == null)
             {
                 throw new ArgumentNullException(nameof(httpContext));
             }
 
-            if (feature == null)
+            if (context == null)
             {
-                throw new ArgumentNullException(nameof(feature));
+                throw new ArgumentNullException(nameof(context));
             }
 
             // The sequence of actions we take is optimized to avoid doing expensive work
@@ -132,7 +132,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 state.IsValidCandidate = isMatch;
             }
 
-            return _selector.SelectAsync(httpContext, feature, candidateSet);
+            return _selector.SelectAsync(httpContext, context, candidateSet);
         }
 
         internal Candidate[] FindCandidateSet(

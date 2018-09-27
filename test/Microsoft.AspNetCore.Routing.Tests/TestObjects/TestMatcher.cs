@@ -17,12 +17,12 @@ namespace Microsoft.AspNetCore.Routing.TestObjects
             _isHandled = isHandled;
         }
 
-        public override Task MatchAsync(HttpContext httpContext, EndpointFeature feature)
+        public override Task MatchAsync(HttpContext httpContext, EndpointSelectorContext context)
         {
             if (_isHandled)
             {
-                feature.RouteValues = new RouteValueDictionary(new { controller = "Home", action = "Index" });
-                feature.Endpoint = new Endpoint(TestConstants.EmptyRequestDelegate, EndpointMetadataCollection.Empty, "Test endpoint");
+                context.RouteValues = new RouteValueDictionary(new { controller = "Home", action = "Index" });
+                context.Endpoint = new Endpoint(TestConstants.EmptyRequestDelegate, EndpointMetadataCollection.Empty, "Test endpoint");
             }
 
             return Task.CompletedTask;

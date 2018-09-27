@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         private TrivialMatcher _baseline;
         private DfaMatcher _dfa;
 
-        private EndpointFeature _feature;
+        private EndpointSelectorContext _feature;
 
         [GlobalSetup]
         public void Setup()
@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             _baseline = (TrivialMatcher)SetupMatcher(new TrivialMatcherBuilder());
             _dfa = (DfaMatcher)SetupMatcher(CreateDfaMatcherBuilder());
 
-            _feature = new EndpointFeature();
+            _feature = new EndpointSelectorContext();
         }
 
         private void SetupEndpoints()

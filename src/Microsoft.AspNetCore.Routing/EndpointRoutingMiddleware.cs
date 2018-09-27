@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Routing
 
         public async Task Invoke(HttpContext httpContext)
         {
-            var feature = new EndpointFeature();
+            var feature = new EndpointSelectorContext();
 
             // There's an inherent race condition between waiting for init and accessing the matcher
             // this is OK because once `_matcher` is initialized, it will not be set to null again.
@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Routing
             {
                 // Set the endpoint feature only on success. This means we won't overwrite any
                 // existing state for related features unless we did something.
-                SetEndpointFeature(httpContext, feature);
+                SetFeatures(httpContext, feature);
 
                 Log.MatchSuccess(_logger, feature);
             }
@@ -78,13 +78,13 @@ namespace Microsoft.AspNetCore.Routing
             await _next(httpContext);
         }
 
-        private static void SetEndpointFeature(HttpContext httpContext, EndpointFeature feature)
+        private static void SetFeatures(HttpContext httpContext, EndpointSelectorContext context)
         {
             // For back-compat EndpointRouteValuesFeature implements IEndpointFeature,
             // IRouteValuesFeature and IRoutingFeature
-            httpContext.Features.Set<IRoutingFeature>(feature);
-            httpContext.Features.Set<IRouteValuesFeature>(feature);
-            httpContext.Features.Set<IEndpointFeature>(feature);
+            httpContext.Features.Set<IRoutingFeature>(context);
+            httpContext.Features.Set<IRouteValuesFeature>(context);
+            httpContext.Features.Set<IEndpointFeature>(context);
         }
 
         // Initialization is async to avoid blocking threads while reflection and things
@@ -126,9 +126,9 @@ namespace Microsoft.AspNetCore.Routing
                 new EventId(2, "MatchFailure"),
                 "Request did not match any endpoints.");
 
-            public static void MatchSuccess(ILogger logger, EndpointFeature feature)
+            public static void MatchSuccess(ILogger logger, EndpointSelectorContext context)
             {
-                _matchSuccess(logger, feature.Endpoint.DisplayName, null);
+                _matchSuccess(logger, context.Endpoint.DisplayName, null);
             }
 
             public static void MatchFailure(ILogger logger)

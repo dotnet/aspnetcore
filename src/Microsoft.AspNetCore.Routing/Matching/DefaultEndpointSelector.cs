@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Routing.Matching
 {
@@ -26,26 +25,26 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
         public override async Task SelectAsync(
             HttpContext httpContext,
-            EndpointFeature feature,
+            EndpointSelectorContext context,
             CandidateSet candidateSet)
         {
             var selectorPolicies = _selectorPolicies;
             for (var i = 0; i < _selectorPolicies.Length; i++)
             {
-                await selectorPolicies[i].ApplyAsync(httpContext, feature, candidateSet);
-                if (feature.Endpoint != null)
+                await selectorPolicies[i].ApplyAsync(httpContext, context, candidateSet);
+                if (context.Endpoint != null)
                 {
                     // This is a short circuit, the selector chose an endpoint.
                     return;
                 }
             }
 
-            ProcessFinalCandidates(httpContext, feature, candidateSet);
+            ProcessFinalCandidates(httpContext, context, candidateSet);
         }
 
         private static void ProcessFinalCandidates(
             HttpContext httpContext,
-            EndpointFeature feature,
+            EndpointSelectorContext context,
             CandidateSet candidateSet)
         {
             Endpoint endpoint = null;
@@ -87,8 +86,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             if (endpoint != null)
             {
-                feature.Endpoint = endpoint;
-                feature.RouteValues = values;
+                context.Endpoint = endpoint;
+                context.RouteValues = values;
             }
         }
 
