@@ -607,134 +607,134 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         [Fact]
         public void TagHelperPrefixDirective_NoValueSucceeds()
         {
-            ParseBlockTest("@tagHelperPrefix \"\"");
+            ParseDocumentTest("@tagHelperPrefix \"\"");
         }
 
         [Fact]
         public void TagHelperPrefixDirective_Succeeds()
         {
-            ParseBlockTest("@tagHelperPrefix Foo");
+            ParseDocumentTest("@tagHelperPrefix Foo");
         }
 
         [Fact]
         public void TagHelperPrefixDirective_WithQuotes_Succeeds()
         {
-            ParseBlockTest("@tagHelperPrefix \"Foo\"");
+            ParseDocumentTest("@tagHelperPrefix \"Foo\"");
         }
 
         [Fact]
         public void TagHelperPrefixDirective_RequiresValue()
         {
-            ParseBlockTest("@tagHelperPrefix ");
+            ParseDocumentTest("@tagHelperPrefix ");
         }
 
         [Fact]
         public void TagHelperPrefixDirective_StartQuoteRequiresDoubleQuotesAroundValue()
         {
-            ParseBlockTest("@tagHelperPrefix \"Foo");
+            ParseDocumentTest("@tagHelperPrefix \"Foo");
         }
 
         [Fact]
         public void TagHelperPrefixDirective_EndQuoteRequiresDoubleQuotesAroundValue()
         {
-            ParseBlockTest("@tagHelperPrefix Foo   \"");
+            ParseDocumentTest("@tagHelperPrefix Foo   \"");
         }
 
         [Fact]
         public void RemoveTagHelperDirective_NoValue_Invalid()
         {
-            ParseBlockTest("@removeTagHelper \"\"");
+            ParseDocumentTest("@removeTagHelper \"\"");
         }
 
         [Fact]
         public void RemoveTagHelperDirective_InvalidLookupText_AddsError()
         {
-            ParseBlockTest("@removeTagHelper Foo");
+            ParseDocumentTest("@removeTagHelper Foo");
         }
 
         [Fact]
         public void RemoveTagHelperDirective_SingleQuotes_AddsError()
         {
-            ParseBlockTest("@removeTagHelper '*, Foo'");
+            ParseDocumentTest("@removeTagHelper '*, Foo'");
         }
 
         [Fact]
         public void RemoveTagHelperDirective_WithQuotes_InvalidLookupText_AddsError()
         {
-            ParseBlockTest("@removeTagHelper \"Foo\"");
+            ParseDocumentTest("@removeTagHelper \"Foo\"");
         }
 
         [Fact]
         public void RemoveTagHelperDirective_SupportsSpaces()
         {
-            ParseBlockTest("@removeTagHelper     Foo,   Bar    ");
+            ParseDocumentTest("@removeTagHelper     Foo,   Bar    ");
         }
 
         [Fact]
         public void RemoveTagHelperDirective_RequiresValue()
         {
-            ParseBlockTest("@removeTagHelper ");
+            ParseDocumentTest("@removeTagHelper ");
         }
 
         [Fact]
         public void RemoveTagHelperDirective_StartQuoteRequiresDoubleQuotesAroundValue()
         {
             // Arrange
-            ParseBlockTest("@removeTagHelper \"Foo");
+            ParseDocumentTest("@removeTagHelper \"Foo");
         }
 
         [Fact]
         public void RemoveTagHelperDirective_EndQuoteRequiresDoubleQuotesAroundValue()
         {
-            ParseBlockTest("@removeTagHelper Foo\"");
+            ParseDocumentTest("@removeTagHelper Foo\"");
         }
 
         [Fact]
         public void AddTagHelperDirective_NoValue_Invalid()
         {
-            ParseBlockTest("@addTagHelper \"\"");
+            ParseDocumentTest("@addTagHelper \"\"");
         }
 
         [Fact]
         public void AddTagHelperDirective_InvalidLookupText_AddsError()
         {
-            ParseBlockTest("@addTagHelper Foo");
+            ParseDocumentTest("@addTagHelper Foo");
         }
 
         [Fact]
         public void AddTagHelperDirective_WithQuotes_InvalidLookupText_AddsError()
         {
-            ParseBlockTest("@addTagHelper \"Foo\"");
+            ParseDocumentTest("@addTagHelper \"Foo\"");
         }
 
         [Fact]
         public void AddTagHelperDirective_SingleQuotes_AddsError()
         {
-            ParseBlockTest("@addTagHelper '*, Foo'");
+            ParseDocumentTest("@addTagHelper '*, Foo'");
         }
 
         [Fact]
         public void AddTagHelperDirective_SupportsSpaces()
         {
-            ParseBlockTest("@addTagHelper     Foo,   Bar    ");
+            ParseDocumentTest("@addTagHelper     Foo,   Bar    ");
         }
 
         [Fact]
         public void AddTagHelperDirective_RequiresValue()
         {
-            ParseBlockTest("@addTagHelper ");
+            ParseDocumentTest("@addTagHelper ");
         }
 
         [Fact]
         public void AddTagHelperDirective_StartQuoteRequiresDoubleQuotesAroundValue()
         {
-            ParseBlockTest("@addTagHelper \"Foo");
+            ParseDocumentTest("@addTagHelper \"Foo");
         }
 
         [Fact]
         public void AddTagHelperDirective_EndQuoteRequiresDoubleQuotesAroundValue()
         {
-            ParseBlockTest("@addTagHelper Foo\"");
+            ParseDocumentTest("@addTagHelper Foo\"");
         }
 
         [Fact]
