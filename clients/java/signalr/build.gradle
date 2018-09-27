@@ -32,10 +32,16 @@ spotless {
         importOrder 'java', 'javax', 'org', 'com', 'com.diffplug', ''	// A sequence of package names
 
         replace      'Not enough space after if', 'if(', 'if ('
+        replace      'Not enough space after else', 'else{', 'else {'
+        replace      'Not enough space before else', '}else', '} else '
+        replace      'Not enough space after try', 'try{', 'try {'
+        replace      'Not enough space before finally', '}finally', '} finally'
+        replace      'Not enough space after finally', 'finally{', 'finally {'
         replace      'Not enough space after )', '){', ') {'
         replace      'Not enough space after for', 'for(', 'for ('
         replace      'Not enough space after while', 'while (', 'while ('
         replace      'Not enough space after switch', 'switch(', 'switch ('
+        replace      'Not enough space after do', 'do{', 'do {'
         replaceRegex 'Too much space after if', 'if +\\(', 'if ('
         trimTrailingWhitespace()
         indentWithSpaces(4)
