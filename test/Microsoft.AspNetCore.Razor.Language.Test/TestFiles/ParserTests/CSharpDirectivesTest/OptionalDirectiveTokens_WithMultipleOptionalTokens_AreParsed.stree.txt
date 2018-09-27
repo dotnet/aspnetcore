@@ -1,15 +1,20 @@
-Directive block - Gen<Directive:{custom;SingleLine;Unrestricted}> - 43 - (0:0,0)
-    Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-        SyntaxKind.Transition;[@];
-    MetaCode span - Gen<None> - [custom] - SpanEditHandler;Accepts:None - (1:0,1) - Tokens:1
-        SyntaxKind.Identifier;[custom];
-    Markup span - Gen<None> - [ ] - SpanEditHandler;Accepts:Whitespace - (7:0,7) - Tokens:1
-        SyntaxKind.Whitespace;[ ];
-    Code span - Gen<DirectiveToken {;String;Opt:True}> - ["{formaction}?/{id}?"] - DirectiveTokenEditHandler;Accepts:NonWhitespace - (8:0,8) - Tokens:1
-        SyntaxKind.StringLiteral;["{formaction}?/{id}?"];
-    Code span - Gen<None> - [ ] - SpanEditHandler;Accepts:Whitespace - (29:0,29) - Tokens:1
-        SyntaxKind.Whitespace;[ ];
-    Code span - Gen<DirectiveToken {;Type;Opt:True}> - [System.String] - DirectiveTokenEditHandler;Accepts:NonWhitespace - (30:0,30) - Tokens:3
-        SyntaxKind.Identifier;[System];
-        SyntaxKind.Dot;[.];
-        SyntaxKind.Identifier;[String];
+Markup block - Gen<None> - 43 - (0:0,0)
+    Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:1
+        SyntaxKind.Unknown;[];
+    Directive block - Gen<Directive:{custom;SingleLine;Unrestricted}> - 43 - (0:0,0)
+        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
+            SyntaxKind.Transition;[@];
+        MetaCode span - Gen<None> - [custom] - SpanEditHandler;Accepts:None - (1:0,1) - Tokens:1
+            SyntaxKind.Identifier;[custom];
+        Markup span - Gen<None> - [ ] - SpanEditHandler;Accepts:Whitespace - (7:0,7) - Tokens:1
+            SyntaxKind.Whitespace;[ ];
+        Code span - Gen<DirectiveToken {;String;Opt:True}> - ["{formaction}?/{id}?"] - DirectiveTokenEditHandler;Accepts:NonWhitespace - (8:0,8) - Tokens:1
+            SyntaxKind.StringLiteral;["{formaction}?/{id}?"];
+        Code span - Gen<None> - [ ] - SpanEditHandler;Accepts:Whitespace - (29:0,29) - Tokens:1
+            SyntaxKind.Whitespace;[ ];
+        Code span - Gen<DirectiveToken {;Type;Opt:True}> - [System.String] - DirectiveTokenEditHandler;Accepts:NonWhitespace - (30:0,30) - Tokens:3
+            SyntaxKind.Identifier;[System];
+            SyntaxKind.Dot;[.];
+            SyntaxKind.Identifier;[String];
+    Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (43:0,43) - Tokens:1
+        SyntaxKind.Unknown;[];

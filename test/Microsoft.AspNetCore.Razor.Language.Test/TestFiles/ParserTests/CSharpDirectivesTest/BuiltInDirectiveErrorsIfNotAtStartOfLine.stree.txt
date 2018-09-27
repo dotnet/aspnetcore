@@ -1,18 +1,16 @@
-Statement block - Gen<None> - 28 - (0:0,0)
-    MetaCode span - Gen<None> - [{] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-        SyntaxKind.LeftBrace;[{];
-    Code span - Gen<Stmt> - [  ] - AutoCompleteEditHandler;Accepts:Any,AutoComplete:[<null>];AtEOL - (1:0,1) - Tokens:1
+Markup block - Gen<None> - 28 - (0:0,0)
+    Markup span - Gen<Markup> - [{  ] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:2
+        SyntaxKind.Text;[{];
         SyntaxKind.Whitespace;[  ];
-    Directive block - Gen<None> - 22 - (3:0,3)
+    Directive block - Gen<None> - 24 - (3:0,3)
         Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (3:0,3) - Tokens:1
             SyntaxKind.Transition;[@];
         MetaCode span - Gen<None> - [addTagHelper] - SpanEditHandler;Accepts:None - (4:0,4) - Tokens:1
             SyntaxKind.Identifier;[addTagHelper];
         Markup span - Gen<None> - [ ] - SpanEditHandler;Accepts:None - (16:0,16) - Tokens:1
             SyntaxKind.Whitespace;[ ];
-        Code span - Gen<AddTagHelper:{"*, Foo";*, Foo;*;Foo} [RZ2005(4:0,4 [12] )]> - ["*, Foo"] - SpanEditHandler;Accepts:AnyExceptNewline - (17:0,17) - Tokens:1
+        Code span - Gen<AddTagHelper:{"*, Foo";*, Foo;*;Foo} [RZ2005(4:0,4 [12] )]> - ["*, Foo"LF] - SpanEditHandler;Accepts:AnyExceptNewline - (17:0,17) - Tokens:2
             SyntaxKind.StringLiteral;["*, Foo"];
-    Code span - Gen<Stmt> - [LF] - SpanEditHandler;Accepts:Any - (25:0,25) - Tokens:1
-        SyntaxKind.NewLine;[LF];
-    MetaCode span - Gen<None> - [}] - SpanEditHandler;Accepts:None - (27:1,0) - Tokens:1
-        SyntaxKind.RightBrace;[}];
+            SyntaxKind.NewLine;[LF];
+    Markup span - Gen<Markup> - [}] - SpanEditHandler;Accepts:Any - (27:1,0) - Tokens:1
+        SyntaxKind.Text;[}];

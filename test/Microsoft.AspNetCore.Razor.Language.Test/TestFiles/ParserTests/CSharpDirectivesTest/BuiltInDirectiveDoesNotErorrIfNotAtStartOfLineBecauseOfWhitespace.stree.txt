@@ -1,12 +1,16 @@
-Directive block - Gen<None> - 26 - (0:0,0)
-    Code span - Gen<Stmt> - [LF  ] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:2
+Markup block - Gen<None> - 26 - (0:0,0)
+    Markup span - Gen<Markup> - [LF] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:1
         SyntaxKind.NewLine;[LF];
-        SyntaxKind.Whitespace;[  ];
-    Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (4:1,2) - Tokens:1
-        SyntaxKind.Transition;[@];
-    MetaCode span - Gen<None> - [addTagHelper] - SpanEditHandler;Accepts:None - (5:1,3) - Tokens:1
-        SyntaxKind.Identifier;[addTagHelper];
-    Markup span - Gen<None> - [ ] - SpanEditHandler;Accepts:None - (17:1,15) - Tokens:1
-        SyntaxKind.Whitespace;[ ];
-    Code span - Gen<AddTagHelper:{"*, Foo";*, Foo;*;Foo}> - ["*, Foo"] - SpanEditHandler;Accepts:AnyExceptNewline - (18:1,16) - Tokens:1
-        SyntaxKind.StringLiteral;["*, Foo"];
+    Directive block - Gen<None> - 24 - (2:1,0)
+        Code span - Gen<Stmt> - [  ] - SpanEditHandler;Accepts:Any - (2:1,0) - Tokens:1
+            SyntaxKind.Whitespace;[  ];
+        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (4:1,2) - Tokens:1
+            SyntaxKind.Transition;[@];
+        MetaCode span - Gen<None> - [addTagHelper] - SpanEditHandler;Accepts:None - (5:1,3) - Tokens:1
+            SyntaxKind.Identifier;[addTagHelper];
+        Markup span - Gen<None> - [ ] - SpanEditHandler;Accepts:None - (17:1,15) - Tokens:1
+            SyntaxKind.Whitespace;[ ];
+        Code span - Gen<AddTagHelper:{"*, Foo";*, Foo;*;Foo}> - ["*, Foo"] - SpanEditHandler;Accepts:AnyExceptNewline - (18:1,16) - Tokens:1
+            SyntaxKind.StringLiteral;["*, Foo"];
+    Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (26:1,24) - Tokens:1
+        SyntaxKind.Unknown;[];

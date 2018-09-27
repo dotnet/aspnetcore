@@ -121,7 +121,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 b => b.AddStringToken().AddStringToken());
 
             // Act & Assert
-            ParseCodeBlockTest(
+            ParseDocumentTest(
                 "@custom \"string1\"\"string2\"",
                 new[] { descriptor });
         }
@@ -136,7 +136,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 b => b.AddNamespaceToken());
 
             // Act & Assert
-            ParseCodeBlockTest(
+            ParseDocumentTest(
                 "@custom System.",
                 new[] { descriptor });
         }
@@ -151,7 +151,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 b => b.AddNamespaceToken());
 
             // Act & Assert
-            ParseCodeBlockTest(
+            ParseDocumentTest(
                 "@custom System<",
                 new[] { descriptor });
         }
@@ -165,7 +165,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 b => b.AddNamespaceToken());
 
             // Act & Assert
-            ParseCodeBlockTest(
+            ParseDocumentTest(
                 "@custom System." + Environment.NewLine,
                 new[] { descriptor });
         }
@@ -180,7 +180,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 b => b.AddNamespaceToken());
 
             // Act & Assert
-            ParseCodeBlockTest(
+            ParseDocumentTest(
                 "@custom System<" + Environment.NewLine,
                 new[] { descriptor });
         }
@@ -195,7 +195,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 b => b.AddTypeToken());
 
             // Act & Assert
-            ParseCodeBlockTest(Environment.NewLine + "  @custom System.Text.Encoding.ASCIIEncoding",
+            ParseDocumentTest(Environment.NewLine + "  @custom System.Text.Encoding.ASCIIEncoding",
                 new[] { descriptor });
         }
 
@@ -203,14 +203,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void BuiltInDirectiveDoesNotErorrIfNotAtStartOfLineBecauseOfWhitespace()
         {
             // Act & Assert
-            ParseCodeBlockTest(Environment.NewLine + "  @addTagHelper \"*, Foo\"");
+            ParseDocumentTest(Environment.NewLine + "  @addTagHelper \"*, Foo\"");
         }
 
         [Fact]
         public void BuiltInDirectiveErrorsIfNotAtStartOfLine()
         {
             // Act & Assert
-            ParseCodeBlockTest("{  @addTagHelper \"*, Foo\"" + Environment.NewLine + "}");
+            ParseDocumentTest("{  @addTagHelper \"*, Foo\"" + Environment.NewLine + "}");
         }
 
         [Fact]
@@ -223,7 +223,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 b => b.AddTypeToken());
 
             // Act & Assert
-            ParseCodeBlockTest(
+            ParseDocumentTest(
                 "{  @custom System.Text.Encoding.ASCIIEncoding" + Environment.NewLine + "}",
                 new[] { descriptor });
         }
@@ -238,7 +238,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 b => b.AddTypeToken());
 
             // Act & Assert
-            ParseCodeBlockTest(
+            ParseDocumentTest(
                 "@custom System.Text.Encoding.ASCIIEncoding",
                 new[] { descriptor });
         }
@@ -253,7 +253,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 b => b.AddMemberToken());
 
             // Act & Assert
-            ParseCodeBlockTest(
+            ParseDocumentTest(
                 "@custom Some_Member",
                 new[] { descriptor });
         }
@@ -268,7 +268,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 b => b.AddNamespaceToken());
 
             // Act & Assert
-            ParseCodeBlockTest(
+            ParseDocumentTest(
                 "@custom BaseNamespace",
                 new[] { descriptor });
         }
@@ -283,7 +283,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 b => b.AddNamespaceToken());
 
             // Act & Assert
-            ParseCodeBlockTest(
+            ParseDocumentTest(
                 "@custom BaseNamespace.Foo.Bar",
                 new[] { descriptor });
         }
@@ -298,7 +298,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 b => b.AddStringToken());
 
             // Act & Assert
-            ParseCodeBlockTest(
+            ParseDocumentTest(
                 "@custom \"AString\"",
                 new[] { descriptor });
         }
@@ -313,7 +313,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 b => b.AddStringToken());
 
             // Act & Assert
-            ParseCodeBlockTest(
+            ParseDocumentTest(
                 "@custom AString",
                 new[] { descriptor });
         }
@@ -328,7 +328,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 b => b.AddStringToken());
 
             // Act & Assert
-            ParseCodeBlockTest(
+            ParseDocumentTest(
                 "@custom {foo?}",
                 new[] { descriptor });
         }
@@ -343,7 +343,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 b => b.AddStringToken());
 
             // Act & Assert
-            ParseCodeBlockTest(
+            ParseDocumentTest(
                 "@custom 'AString'",
                 new[] { descriptor });
         }
@@ -358,7 +358,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 b => b.AddStringToken());
 
             // Act & Assert
-            ParseCodeBlockTest(
+            ParseDocumentTest(
                 "@custom AString\"",
                 new[] { descriptor });
         }
@@ -373,7 +373,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 b => b.AddTypeToken().AddMemberToken().AddStringToken());
 
             // Act & Assert
-            ParseCodeBlockTest(
+            ParseDocumentTest(
                 "@custom System.Text.Encoding.ASCIIEncoding Some_Member \"AString\"",
                 new[] { descriptor });
         }
@@ -388,7 +388,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 b => b.AddStringToken());
 
             // Act & Assert
-            ParseCodeBlockTest(
+            ParseDocumentTest(
                 "@custom \"Header\" { <p>F{o}o</p> }",
                 new[] { descriptor });
         }
@@ -403,7 +403,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 b => b.AddStringToken());
 
             // Act & Assert
-            ParseCodeBlockTest(
+            ParseDocumentTest(
                 "@custom \"Name\" { foo(); bar(); }",
                 new[] { descriptor });
         }
@@ -418,7 +418,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 b => b.AddTypeToken().AddMemberToken());
 
             // Act & Assert
-            ParseCodeBlockTest(
+            ParseDocumentTest(
                 "@custom    System.Text.Encoding.ASCIIEncoding       Some_Member    ",
                 new[] { descriptor });
         }
@@ -433,7 +433,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 b => b.AddMemberToken());
 
             // Act & Assert
-            ParseCodeBlockTest(
+            ParseDocumentTest(
                 "@custom -Some_Member",
                 new[] { descriptor });
         }
@@ -448,7 +448,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 b => b.AddStringToken());
 
             // Act & Assert
-            ParseCodeBlockTest(
+            ParseDocumentTest(
                 "@custom \"hello\" ;  ",
                 new[] { descriptor });
         }
@@ -488,7 +488,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
 
             // Act & Assert
-            ParseCodeBlockTest(source, new[] { descriptor });
+            ParseDocumentTest(source, new[] { descriptor });
         }
 
         [Fact]
@@ -526,7 +526,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
 
             // Act & Assert
-            ParseCodeBlockTest(source, new[] { descriptor });
+            ParseDocumentTest(source, new[] { descriptor });
         }
 
         [Fact]
@@ -539,7 +539,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 b => b.AddTypeToken());
 
             // Act & Assert
-            ParseCodeBlockTest(
+            ParseDocumentTest(
                 $"@custom (bool, int?)   ",
                 new[] { descriptor });
         }
@@ -554,7 +554,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 b => b.AddStringToken());
 
             // Act & Assert
-            ParseCodeBlockTest(
+            ParseDocumentTest(
                 "@custom \"hello\" \"world\"",
                 new[] { descriptor });
         }
@@ -569,7 +569,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 b => b.AddStringToken());
 
             // Act & Assert
-            ParseCodeBlockTest(
+            ParseDocumentTest(
                 "@custom \"Hello\" World { foo(); bar(); }",
                 new[] { descriptor });
         }
@@ -584,7 +584,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 b => b.AddStringToken());
 
             // Act & Assert
-            ParseCodeBlockTest(
+            ParseDocumentTest(
                 "@custom \"Hello\"",
                 new[] { descriptor });
         }
@@ -599,7 +599,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 b => b.AddStringToken());
 
             // Act & Assert
-            ParseCodeBlockTest(
+            ParseDocumentTest(
                 "@custom \"Hello\" {",
                 new[] { descriptor });
         }
@@ -764,7 +764,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         [Fact]
         public void Parse_FunctionsDirective()
         {
-            ParseCodeBlockTest(
+            ParseDocumentTest(
                 "@functions { foo(); bar(); }",
                 new[] { FunctionsDirective.Directive, });
         }
@@ -772,7 +772,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         [Fact]
         public void EmptyFunctionsDirective()
         {
-            ParseCodeBlockTest(
+            ParseDocumentTest(
                 "@functions { }",
                 new[] { FunctionsDirective.Directive, });
         }
@@ -780,7 +780,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         [Fact]
         public void Parse_SectionDirective()
         {
-            ParseCodeBlockTest(
+            ParseDocumentTest(
                 "@section Header { <p>F{o}o</p> }",
                 new[] { SectionDirective.Directive, });
         }
@@ -795,7 +795,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 b => b.AddOptionalStringToken());
 
             // Act & Assert
-            ParseCodeBlockTest(
+            ParseDocumentTest(
                 "@custom ",
                 new[] { descriptor });
         }
@@ -810,7 +810,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 b => b.AddOptionalStringToken());
 
             // Act & Assert
-            ParseCodeBlockTest(
+            ParseDocumentTest(
                 "@custom \"simple-value\"",
                 new[] { descriptor });
         }
@@ -825,7 +825,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 b => b.AddOptionalStringToken());
 
             // Act & Assert
-            ParseCodeBlockTest(
+            ParseDocumentTest(
                 "@custom \"{formaction}?/{id}?\"",
                 new[] { descriptor });
         }
@@ -840,7 +840,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 b => b.AddOptionalStringToken().AddOptionalTypeToken());
 
             // Act & Assert
-            ParseCodeBlockTest(
+            ParseDocumentTest(
                 "@custom \"{formaction}?/{id}?\" System.String",
                 new[] { descriptor });
         }
@@ -855,7 +855,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 b => b.AddOptionalMemberToken().AddOptionalStringToken());
 
             // Act & Assert
-            ParseCodeBlockTest(
+            ParseDocumentTest(
                 "@TestDirective ",
                 new[] { descriptor });
         }
@@ -870,7 +870,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 b => b.AddOptionalMemberToken().AddOptionalStringToken());
 
             // Act & Assert
-            ParseCodeBlockTest(
+            ParseDocumentTest(
                 "@TestDirective PropertyName",
                 new[] { descriptor });
         }
@@ -884,7 +884,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 DirectiveKind.SingleLine);
 
             // Act & Assert
-            ParseCodeBlockTest(
+            ParseDocumentTest(
                 "@class",
                 new[] { descriptor });
         }
@@ -898,25 +898,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 DirectiveKind.SingleLine);
 
             // Act & Assert
-            ParseCodeBlockTest(
+            ParseDocumentTest(
                 "@namespace",
                 new[] { descriptor });
-        }
-
-        internal virtual void ParseCodeBlockTest(string document)
-        {
-            ParseCodeBlockTest(document, Array.Empty<DirectiveDescriptor>());
-        }
-
-        internal virtual void ParseCodeBlockTest(
-            string document,
-            IEnumerable<DirectiveDescriptor> descriptors,
-            Block expected = null,
-            params RazorDiagnostic[] expectedErrors)
-        {
-            var result = ParseCodeBlock(RazorLanguageVersion.Latest, document, descriptors, designTime: false);
-
-            BaselineTest(result);
         }
     }
 }

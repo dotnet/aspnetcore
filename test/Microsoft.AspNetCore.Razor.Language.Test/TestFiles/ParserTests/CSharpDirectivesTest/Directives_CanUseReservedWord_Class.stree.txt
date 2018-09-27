@@ -1,5 +1,10 @@
-Directive block - Gen<Directive:{class;SingleLine;Unrestricted}> - 6 - (0:0,0)
-    Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-        SyntaxKind.Transition;[@];
-    MetaCode span - Gen<None> - [class] - SpanEditHandler;Accepts:None - (1:0,1) - Tokens:1
-        SyntaxKind.Keyword;[class];
+Markup block - Gen<None> - 6 - (0:0,0)
+    Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:1
+        SyntaxKind.Unknown;[];
+    Directive block - Gen<Directive:{class;SingleLine;Unrestricted}> - 6 - (0:0,0)
+        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
+            SyntaxKind.Transition;[@];
+        MetaCode span - Gen<None> - [class] - SpanEditHandler;Accepts:None - (1:0,1) - Tokens:1
+            SyntaxKind.Keyword;[class];
+    Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (6:0,6) - Tokens:1
+        SyntaxKind.Unknown;[];

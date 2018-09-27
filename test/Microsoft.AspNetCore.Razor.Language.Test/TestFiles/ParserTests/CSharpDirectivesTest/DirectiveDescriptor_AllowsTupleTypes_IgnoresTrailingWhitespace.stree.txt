@@ -1,17 +1,22 @@
-Directive block - Gen<Directive:{custom;SingleLine;Unrestricted}> - 23 - (0:0,0)
-    Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-        SyntaxKind.Transition;[@];
-    MetaCode span - Gen<None> - [custom] - SpanEditHandler;Accepts:None - (1:0,1) - Tokens:1
-        SyntaxKind.Identifier;[custom];
-    Code span - Gen<None> - [ ] - SpanEditHandler;Accepts:Whitespace - (7:0,7) - Tokens:1
-        SyntaxKind.Whitespace;[ ];
-    Code span - Gen<DirectiveToken {;Type;Opt:False}> - [(bool, int?)] - DirectiveTokenEditHandler;Accepts:NonWhitespace - (8:0,8) - Tokens:7
-        SyntaxKind.LeftParenthesis;[(];
-        SyntaxKind.Keyword;[bool];
-        SyntaxKind.Comma;[,];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Keyword;[int];
-        SyntaxKind.QuestionMark;[?];
-        SyntaxKind.RightParenthesis;[)];
-    None span - Gen<None> - [   ] - SpanEditHandler;Accepts:Whitespace - (20:0,20) - Tokens:1
-        SyntaxKind.Whitespace;[   ];
+Markup block - Gen<None> - 23 - (0:0,0)
+    Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:1
+        SyntaxKind.Unknown;[];
+    Directive block - Gen<Directive:{custom;SingleLine;Unrestricted}> - 23 - (0:0,0)
+        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
+            SyntaxKind.Transition;[@];
+        MetaCode span - Gen<None> - [custom] - SpanEditHandler;Accepts:None - (1:0,1) - Tokens:1
+            SyntaxKind.Identifier;[custom];
+        Code span - Gen<None> - [ ] - SpanEditHandler;Accepts:Whitespace - (7:0,7) - Tokens:1
+            SyntaxKind.Whitespace;[ ];
+        Code span - Gen<DirectiveToken {;Type;Opt:False}> - [(bool, int?)] - DirectiveTokenEditHandler;Accepts:NonWhitespace - (8:0,8) - Tokens:7
+            SyntaxKind.LeftParenthesis;[(];
+            SyntaxKind.Keyword;[bool];
+            SyntaxKind.Comma;[,];
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.Keyword;[int];
+            SyntaxKind.QuestionMark;[?];
+            SyntaxKind.RightParenthesis;[)];
+        None span - Gen<None> - [   ] - SpanEditHandler;Accepts:Whitespace - (20:0,20) - Tokens:1
+            SyntaxKind.Whitespace;[   ];
+    Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (23:0,23) - Tokens:1
+        SyntaxKind.Unknown;[];

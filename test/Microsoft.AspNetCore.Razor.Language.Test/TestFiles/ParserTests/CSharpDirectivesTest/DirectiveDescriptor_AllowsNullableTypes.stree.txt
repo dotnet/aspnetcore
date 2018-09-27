@@ -1,71 +1,76 @@
-Directive block - Gen<Directive:{custom;SingleLine;Unrestricted}> - 176 - (0:0,0)
-    Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-        SyntaxKind.Transition;[@];
-    MetaCode span - Gen<None> - [custom] - SpanEditHandler;Accepts:None - (1:0,1) - Tokens:1
-        SyntaxKind.Identifier;[custom];
-    Code span - Gen<None> - [ ] - SpanEditHandler;Accepts:Whitespace - (7:0,7) - Tokens:1
-        SyntaxKind.Whitespace;[ ];
-    Code span - Gen<DirectiveToken {;Type;Opt:False}> - [string?] - DirectiveTokenEditHandler;Accepts:NonWhitespace - (8:0,8) - Tokens:2
-        SyntaxKind.Keyword;[string];
-        SyntaxKind.QuestionMark;[?];
-    Code span - Gen<None> - [ ] - SpanEditHandler;Accepts:Whitespace - (15:0,15) - Tokens:1
-        SyntaxKind.Whitespace;[ ];
-    Code span - Gen<DirectiveToken {;Type;Opt:False}> - [string?[]] - DirectiveTokenEditHandler;Accepts:NonWhitespace - (16:0,16) - Tokens:4
-        SyntaxKind.Keyword;[string];
-        SyntaxKind.QuestionMark;[?];
-        SyntaxKind.LeftBracket;[[];
-        SyntaxKind.RightBracket;[]];
-    Code span - Gen<None> - [ ] - SpanEditHandler;Accepts:Whitespace - (25:0,25) - Tokens:1
-        SyntaxKind.Whitespace;[ ];
-    Code span - Gen<DirectiveToken {;Type;Opt:False}> - [global::System.Int32?] - DirectiveTokenEditHandler;Accepts:NonWhitespace - (26:0,26) - Tokens:6
-        SyntaxKind.Identifier;[global];
-        SyntaxKind.DoubleColon;[::];
-        SyntaxKind.Identifier;[System];
-        SyntaxKind.Dot;[.];
-        SyntaxKind.Identifier;[Int32];
-        SyntaxKind.QuestionMark;[?];
-    Code span - Gen<None> - [ ] - SpanEditHandler;Accepts:Whitespace - (47:0,47) - Tokens:1
-        SyntaxKind.Whitespace;[ ];
-    Code span - Gen<DirectiveToken {;Type;Opt:False}> - [KeyValuePair<string, string>?] - DirectiveTokenEditHandler;Accepts:NonWhitespace - (48:0,48) - Tokens:8
-        SyntaxKind.Identifier;[KeyValuePair];
-        SyntaxKind.LessThan;[<];
-        SyntaxKind.Keyword;[string];
-        SyntaxKind.Comma;[,];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Keyword;[string];
-        SyntaxKind.GreaterThan;[>];
-        SyntaxKind.QuestionMark;[?];
-    Code span - Gen<None> - [ ] - SpanEditHandler;Accepts:Whitespace - (77:0,77) - Tokens:1
-        SyntaxKind.Whitespace;[ ];
-    Code span - Gen<DirectiveToken {;Type;Opt:False}> - [KeyValuePair<string, string>?[]] - DirectiveTokenEditHandler;Accepts:NonWhitespace - (78:0,78) - Tokens:10
-        SyntaxKind.Identifier;[KeyValuePair];
-        SyntaxKind.LessThan;[<];
-        SyntaxKind.Keyword;[string];
-        SyntaxKind.Comma;[,];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Keyword;[string];
-        SyntaxKind.GreaterThan;[>];
-        SyntaxKind.QuestionMark;[?];
-        SyntaxKind.LeftBracket;[[];
-        SyntaxKind.RightBracket;[]];
-    Code span - Gen<None> - [ ] - SpanEditHandler;Accepts:Whitespace - (109:0,109) - Tokens:1
-        SyntaxKind.Whitespace;[ ];
-    Code span - Gen<DirectiveToken {;Type;Opt:False}> - [global::System.Collections.Generic.KeyValuePair<string, string>?[]] - DirectiveTokenEditHandler;Accepts:NonWhitespace - (110:0,110) - Tokens:18
-        SyntaxKind.Identifier;[global];
-        SyntaxKind.DoubleColon;[::];
-        SyntaxKind.Identifier;[System];
-        SyntaxKind.Dot;[.];
-        SyntaxKind.Identifier;[Collections];
-        SyntaxKind.Dot;[.];
-        SyntaxKind.Identifier;[Generic];
-        SyntaxKind.Dot;[.];
-        SyntaxKind.Identifier;[KeyValuePair];
-        SyntaxKind.LessThan;[<];
-        SyntaxKind.Keyword;[string];
-        SyntaxKind.Comma;[,];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Keyword;[string];
-        SyntaxKind.GreaterThan;[>];
-        SyntaxKind.QuestionMark;[?];
-        SyntaxKind.LeftBracket;[[];
-        SyntaxKind.RightBracket;[]];
+Markup block - Gen<None> - 176 - (0:0,0)
+    Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:1
+        SyntaxKind.Unknown;[];
+    Directive block - Gen<Directive:{custom;SingleLine;Unrestricted}> - 176 - (0:0,0)
+        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
+            SyntaxKind.Transition;[@];
+        MetaCode span - Gen<None> - [custom] - SpanEditHandler;Accepts:None - (1:0,1) - Tokens:1
+            SyntaxKind.Identifier;[custom];
+        Code span - Gen<None> - [ ] - SpanEditHandler;Accepts:Whitespace - (7:0,7) - Tokens:1
+            SyntaxKind.Whitespace;[ ];
+        Code span - Gen<DirectiveToken {;Type;Opt:False}> - [string?] - DirectiveTokenEditHandler;Accepts:NonWhitespace - (8:0,8) - Tokens:2
+            SyntaxKind.Keyword;[string];
+            SyntaxKind.QuestionMark;[?];
+        Code span - Gen<None> - [ ] - SpanEditHandler;Accepts:Whitespace - (15:0,15) - Tokens:1
+            SyntaxKind.Whitespace;[ ];
+        Code span - Gen<DirectiveToken {;Type;Opt:False}> - [string?[]] - DirectiveTokenEditHandler;Accepts:NonWhitespace - (16:0,16) - Tokens:4
+            SyntaxKind.Keyword;[string];
+            SyntaxKind.QuestionMark;[?];
+            SyntaxKind.LeftBracket;[[];
+            SyntaxKind.RightBracket;[]];
+        Code span - Gen<None> - [ ] - SpanEditHandler;Accepts:Whitespace - (25:0,25) - Tokens:1
+            SyntaxKind.Whitespace;[ ];
+        Code span - Gen<DirectiveToken {;Type;Opt:False}> - [global::System.Int32?] - DirectiveTokenEditHandler;Accepts:NonWhitespace - (26:0,26) - Tokens:6
+            SyntaxKind.Identifier;[global];
+            SyntaxKind.DoubleColon;[::];
+            SyntaxKind.Identifier;[System];
+            SyntaxKind.Dot;[.];
+            SyntaxKind.Identifier;[Int32];
+            SyntaxKind.QuestionMark;[?];
+        Code span - Gen<None> - [ ] - SpanEditHandler;Accepts:Whitespace - (47:0,47) - Tokens:1
+            SyntaxKind.Whitespace;[ ];
+        Code span - Gen<DirectiveToken {;Type;Opt:False}> - [KeyValuePair<string, string>?] - DirectiveTokenEditHandler;Accepts:NonWhitespace - (48:0,48) - Tokens:8
+            SyntaxKind.Identifier;[KeyValuePair];
+            SyntaxKind.LessThan;[<];
+            SyntaxKind.Keyword;[string];
+            SyntaxKind.Comma;[,];
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.Keyword;[string];
+            SyntaxKind.GreaterThan;[>];
+            SyntaxKind.QuestionMark;[?];
+        Code span - Gen<None> - [ ] - SpanEditHandler;Accepts:Whitespace - (77:0,77) - Tokens:1
+            SyntaxKind.Whitespace;[ ];
+        Code span - Gen<DirectiveToken {;Type;Opt:False}> - [KeyValuePair<string, string>?[]] - DirectiveTokenEditHandler;Accepts:NonWhitespace - (78:0,78) - Tokens:10
+            SyntaxKind.Identifier;[KeyValuePair];
+            SyntaxKind.LessThan;[<];
+            SyntaxKind.Keyword;[string];
+            SyntaxKind.Comma;[,];
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.Keyword;[string];
+            SyntaxKind.GreaterThan;[>];
+            SyntaxKind.QuestionMark;[?];
+            SyntaxKind.LeftBracket;[[];
+            SyntaxKind.RightBracket;[]];
+        Code span - Gen<None> - [ ] - SpanEditHandler;Accepts:Whitespace - (109:0,109) - Tokens:1
+            SyntaxKind.Whitespace;[ ];
+        Code span - Gen<DirectiveToken {;Type;Opt:False}> - [global::System.Collections.Generic.KeyValuePair<string, string>?[]] - DirectiveTokenEditHandler;Accepts:NonWhitespace - (110:0,110) - Tokens:18
+            SyntaxKind.Identifier;[global];
+            SyntaxKind.DoubleColon;[::];
+            SyntaxKind.Identifier;[System];
+            SyntaxKind.Dot;[.];
+            SyntaxKind.Identifier;[Collections];
+            SyntaxKind.Dot;[.];
+            SyntaxKind.Identifier;[Generic];
+            SyntaxKind.Dot;[.];
+            SyntaxKind.Identifier;[KeyValuePair];
+            SyntaxKind.LessThan;[<];
+            SyntaxKind.Keyword;[string];
+            SyntaxKind.Comma;[,];
+            SyntaxKind.Whitespace;[ ];
+            SyntaxKind.Keyword;[string];
+            SyntaxKind.GreaterThan;[>];
+            SyntaxKind.QuestionMark;[?];
+            SyntaxKind.LeftBracket;[[];
+            SyntaxKind.RightBracket;[]];
+    Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (176:0,176) - Tokens:1
+        SyntaxKind.Unknown;[];

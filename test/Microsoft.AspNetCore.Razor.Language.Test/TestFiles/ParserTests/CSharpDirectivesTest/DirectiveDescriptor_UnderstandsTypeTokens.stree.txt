@@ -1,15 +1,20 @@
-Directive block - Gen<Directive:{custom;SingleLine;Unrestricted}> - 42 - (0:0,0)
-    Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-        SyntaxKind.Transition;[@];
-    MetaCode span - Gen<None> - [custom] - SpanEditHandler;Accepts:None - (1:0,1) - Tokens:1
-        SyntaxKind.Identifier;[custom];
-    Code span - Gen<None> - [ ] - SpanEditHandler;Accepts:Whitespace - (7:0,7) - Tokens:1
-        SyntaxKind.Whitespace;[ ];
-    Code span - Gen<DirectiveToken {;Type;Opt:False}> - [System.Text.Encoding.ASCIIEncoding] - DirectiveTokenEditHandler;Accepts:NonWhitespace - (8:0,8) - Tokens:7
-        SyntaxKind.Identifier;[System];
-        SyntaxKind.Dot;[.];
-        SyntaxKind.Identifier;[Text];
-        SyntaxKind.Dot;[.];
-        SyntaxKind.Identifier;[Encoding];
-        SyntaxKind.Dot;[.];
-        SyntaxKind.Identifier;[ASCIIEncoding];
+Markup block - Gen<None> - 42 - (0:0,0)
+    Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:1
+        SyntaxKind.Unknown;[];
+    Directive block - Gen<Directive:{custom;SingleLine;Unrestricted}> - 42 - (0:0,0)
+        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
+            SyntaxKind.Transition;[@];
+        MetaCode span - Gen<None> - [custom] - SpanEditHandler;Accepts:None - (1:0,1) - Tokens:1
+            SyntaxKind.Identifier;[custom];
+        Code span - Gen<None> - [ ] - SpanEditHandler;Accepts:Whitespace - (7:0,7) - Tokens:1
+            SyntaxKind.Whitespace;[ ];
+        Code span - Gen<DirectiveToken {;Type;Opt:False}> - [System.Text.Encoding.ASCIIEncoding] - DirectiveTokenEditHandler;Accepts:NonWhitespace - (8:0,8) - Tokens:7
+            SyntaxKind.Identifier;[System];
+            SyntaxKind.Dot;[.];
+            SyntaxKind.Identifier;[Text];
+            SyntaxKind.Dot;[.];
+            SyntaxKind.Identifier;[Encoding];
+            SyntaxKind.Dot;[.];
+            SyntaxKind.Identifier;[ASCIIEncoding];
+    Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (42:0,42) - Tokens:1
+        SyntaxKind.Unknown;[];

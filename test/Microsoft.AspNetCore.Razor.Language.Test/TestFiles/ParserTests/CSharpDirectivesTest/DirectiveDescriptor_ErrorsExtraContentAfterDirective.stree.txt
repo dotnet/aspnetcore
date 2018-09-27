@@ -1,11 +1,18 @@
-Directive block - Gen<Directive:{custom;SingleLine;Unrestricted} [RZ1017(16:0,16 [7] )]> - 16 - (0:0,0)
-    Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-        SyntaxKind.Transition;[@];
-    MetaCode span - Gen<None> - [custom] - SpanEditHandler;Accepts:None - (1:0,1) - Tokens:1
-        SyntaxKind.Identifier;[custom];
-    Markup span - Gen<None> - [ ] - SpanEditHandler;Accepts:Whitespace - (7:0,7) - Tokens:1
-        SyntaxKind.Whitespace;[ ];
-    Code span - Gen<DirectiveToken {;String;Opt:False}> - ["hello"] - DirectiveTokenEditHandler;Accepts:NonWhitespace - (8:0,8) - Tokens:1
-        SyntaxKind.StringLiteral;["hello"];
-    None span - Gen<None> - [ ] - SpanEditHandler;Accepts:Whitespace - (15:0,15) - Tokens:1
-        SyntaxKind.Whitespace;[ ];
+Markup block - Gen<None> - 23 - (0:0,0)
+    Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:1
+        SyntaxKind.Unknown;[];
+    Directive block - Gen<Directive:{custom;SingleLine;Unrestricted} [RZ1017(16:0,16 [7] )]> - 16 - (0:0,0)
+        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
+            SyntaxKind.Transition;[@];
+        MetaCode span - Gen<None> - [custom] - SpanEditHandler;Accepts:None - (1:0,1) - Tokens:1
+            SyntaxKind.Identifier;[custom];
+        Markup span - Gen<None> - [ ] - SpanEditHandler;Accepts:Whitespace - (7:0,7) - Tokens:1
+            SyntaxKind.Whitespace;[ ];
+        Code span - Gen<DirectiveToken {;String;Opt:False}> - ["hello"] - DirectiveTokenEditHandler;Accepts:NonWhitespace - (8:0,8) - Tokens:1
+            SyntaxKind.StringLiteral;["hello"];
+        None span - Gen<None> - [ ] - SpanEditHandler;Accepts:Whitespace - (15:0,15) - Tokens:1
+            SyntaxKind.Whitespace;[ ];
+    Markup span - Gen<Markup> - ["world"] - SpanEditHandler;Accepts:Any - (16:0,16) - Tokens:3
+        SyntaxKind.DoubleQuote;["];
+        SyntaxKind.Text;[world];
+        SyntaxKind.DoubleQuote;["];
