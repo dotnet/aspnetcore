@@ -79,6 +79,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <inheritdoc />
         public override ValueProviderResult GetValue(string key)
         {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
             if (_values.TryGetValue(key, out var values) && values.Count > 0)
             {
                 return new ValueProviderResult(values, Culture);

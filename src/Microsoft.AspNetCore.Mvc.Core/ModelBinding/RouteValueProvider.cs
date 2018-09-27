@@ -85,6 +85,15 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 throw new ArgumentNullException(nameof(key));
             }
 
+            if (key.Length == 0)
+            {
+                // Top level parameters will fall back to an empty prefix when the parameter name does not
+                // appear in any value provider. This would result in the parameter binding to a route value
+                // an empty key which isn't a scenario we want to support.
+                // Return a "None" result in this event.
+                return ValueProviderResult.None;
+            }
+
             if (_values.TryGetValue(key, out var value))
             {
                 var stringValue = value as string ?? Convert.ToString(value, Culture) ?? string.Empty;
