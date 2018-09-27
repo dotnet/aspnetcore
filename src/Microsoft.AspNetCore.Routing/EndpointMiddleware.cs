@@ -57,12 +57,12 @@ namespace Microsoft.AspNetCore.Routing
             private static readonly Action<ILogger, string, Exception> _executingEndpoint = LoggerMessage.Define<string>(
                 LogLevel.Information,
                 new EventId(0, "ExecutingEndpoint"),
-                "Executing endpoint '{EndpointName}'.");
+                "Executing endpoint '{EndpointName}'");
 
             private static readonly Action<ILogger, string, Exception> _executedEndpoint = LoggerMessage.Define<string>(
                 LogLevel.Information,
                 new EventId(1, "ExecutedEndpoint"),
-                "Executed endpoint '{EndpointName}'.");
+                "Executed endpoint '{EndpointName}'");
 
             public static void ExecutingEndpoint(ILogger logger, Endpoint endpoint)
             {

@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Routing
         public async Task Invoke_LogsCorrectValues_WhenNotHandled()
         {
             // Arrange
-            var expectedMessage = "Request did not match any routes.";
+            var expectedMessage = "Request did not match any routes";
             var isHandled = false;
 
             var sink = new TestSink(

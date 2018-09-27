@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Routing
         public async Task Invoke_OnCall_WritesToConfiguredLogger()
         {
             // Arrange
-            var expectedMessage = "Request matched endpoint 'Test endpoint'.";
+            var expectedMessage = "Request matched endpoint 'Test endpoint'";
 
             var sink = new TestSink(
                 TestSink.EnableWithTypeName<EndpointRoutingMiddleware>,
