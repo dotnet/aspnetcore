@@ -29,6 +29,9 @@ The prodcon build.xml file
 
 .PARAMETER ProdConChannel
 The prodcon channel to use if a build.xml file isn't set.
+
+.PARAMETER AdditionalRestoreSources
+A pipe-separated list of extra NuGet feeds.  Required for builds which need to restore from multiple feeds.
 #>
 
 param(
@@ -40,7 +43,8 @@ param(
     $TestRuntimeIdentifier,
     $HostRid,
     $ProdConManifestUrl,
-    $ProdConChannel = 'release/2.1'
+    $ProdConChannel = 'release/2.1',
+    $AdditionalRestoreSources
 )
 
 $ErrorActionPreference = 'Stop'
@@ -117,6 +121,10 @@ try {
         $sdkVersion = $cli.Build.ProductVersion
     }
 
+    if ($AdditionalRestoreSources) {
+        $RestoreSources += "|$AdditionalRestoreSources"
+    }
+
     Write-Host "sdkVersion:      $sdkVersion"
     Write-Host "AssetRootUrl:    $AssetRootUrl"
     Write-Host "RestoreSources:  $RestoreSources"
@@ -160,7 +168,6 @@ try {
     Invoke-Block { & $dotnet test `
             --logger "console;verbosity=detailed" `
             --logger "trx;LogFileName=$repoRoot/artifacts/logs/e2etests.trx" `
-            "-p:DotNetRestoreSources=$RestoreSources" `
             "-bl:$repoRoot/artifacts/logs/e2etests.binlog" `
             @filterArgs }
 }
