@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.AspNetCore.Routing.Tree;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Routing
 {
@@ -25,7 +26,7 @@ namespace Microsoft.AspNetCore.Routing
             BuildOutboundMatches();
 
             // Register for changes in endpoints
-            Extensions.Primitives.ChangeToken.OnChange(
+            ChangeToken.OnChange(
                 _dataSource.GetChangeToken,
                 HandleChange);
         }
@@ -61,7 +62,7 @@ namespace Microsoft.AspNetCore.Routing
 
             // re-register the callback as the change token is one time use only and a new change token
             // is produced every time
-            Extensions.Primitives.ChangeToken.OnChange(
+            ChangeToken.OnChange(
                 _dataSource.GetChangeToken,
                 HandleChange);
         }

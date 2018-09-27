@@ -11,6 +11,7 @@ namespace Microsoft.AspNetCore.Internal
 {
     public static class EndpointRoutingApplicationBuilderExtensions
     {
+        // Property key is used by MVC package to check that routing is registered
         private const string EndpointRoutingRegisteredKey = "__EndpointRoutingMiddlewareRegistered";
 
         public static IApplicationBuilder UseEndpointRouting(this IApplicationBuilder builder)
