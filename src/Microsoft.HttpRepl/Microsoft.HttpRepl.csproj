@@ -21,10 +21,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <SignedPackageFile Include="tools/$(TargetFramework)/any/Microsoft.Repl.dll" Certificate="$(AssemblySigningCertName)" />
-    <SignedPackageFile Include="tools/$(TargetFramework)/any/Newtonsoft.Json.dll" Certificate="$(AssemblySigning3rdPartyCertName)" />
-    <SignedPackageFile Include="tools/$(TargetFramework)/any/Newtonsoft.Json.Bson.dll" Certificate="$(AssemblySigning3rdPartyCertName)" />
-    <SignedPackageFile Include="tools/$(TargetFramework)/any/System.Net.Http.Formatting.dll" Certificate="$(AssemblySigningCertName)" />
+    <SignedPackageFile Include="$(PublishDir)Microsoft.Repl.dll" PackagePath="tools/$(TargetFramework)/any/Microsoft.Repl.dll" Certificate="$(AssemblySigningCertName)" />
+    <SignedPackageFile Include="$(PublishDir)Newtonsoft.Json.dll" PackagePath="tools/$(TargetFramework)/any/Newtonsoft.Json.dll" Certificate="$(AssemblySigning3rdPartyCertName)" />
+    <SignedPackageFile Include="$(PublishDir)Newtonsoft.Json.Bson.dll" PackagePath="tools/$(TargetFramework)/any/Newtonsoft.Json.Bson.dll" Certificate="$(AssemblySigning3rdPartyCertName)" />
+    <SignedPackageFile Include="$(PublishDir)System.Net.Http.Formatting.dll" PackagePath="tools/$(TargetFramework)/any/System.Net.Http.Formatting.dll" Certificate="$(AssemblySigningCertName)" />
   </ItemGroup>
 
 </Project>
