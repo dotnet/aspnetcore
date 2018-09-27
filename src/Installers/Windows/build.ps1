@@ -14,10 +14,9 @@ param(
     [string]$Runtime64Zip,
     [string]$BuildNumber = 't000',
     [string]$SignType = '',
-
+    [string]$PackageVersionPropsUrl = $null,
     [string]$AccessTokenSuffix = $null,
     [string]$AssetRootUrl = $null,
-
     [switch]$clean
 )
 
@@ -66,6 +65,14 @@ try {
 
     if ($AccessTokenSuffix) {
         $msbuildArgs += "-p:DotNetAccessTokenSuffix=$AccessTokenSuffix"
+    }
+
+    if ($PackageVersionPropsUrl) {
+        $IntermediateDir = Join-Path $PSScriptRoot 'obj'
+        $PropsFilePath = Join-Path $IntermediateDir 'external-dependencies.props'
+        New-Item -ItemType Directory $IntermediateDir -ErrorAction Ignore | Out-Null
+        Get-RemoteFile "${PackageVersionPropsUrl}${AccessTokenSuffix}" $PropsFilePath
+        $msbuildArgs += "-p:DotNetPackageVersionPropsPath=$PropsFilePath"
     }
 
     $msbuildArgs += '-t:Build'

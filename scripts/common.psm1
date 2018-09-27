@@ -290,3 +290,24 @@ function Get-MSBuildPath {
     }
     return $msbuild
 }
+
+function Get-RemoteFile([string]$RemotePath, [string]$LocalPath) {
+    if ($RemotePath -notlike 'http*') {
+        Copy-Item $RemotePath $LocalPath
+        return
+    }
+
+    $retries = 10
+    while ($retries -gt 0) {
+        $retries -= 1
+        try {
+            Invoke-WebRequest -UseBasicParsing -Uri $RemotePath -OutFile $LocalPath
+            return
+        }
+        catch {
+            Write-Verbose "Request failed. $retries retries remaining"
+        }
+    }
+
+    Write-Error "Download failed: '$RemotePath'."
+}
