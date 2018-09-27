@@ -16,7 +16,9 @@
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="$(MicrosoftExtensionsConfigurationPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="$(MicrosoftExtensionsDependencyInjectionPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="$(MicrosoftExtensionsLoggingPackageVersion)" />
-    <PackageReference Include="xunit" Version="$(XunitPackageVersion)" />
+    <PackageReference Include="xunit.assert" Version="$(XunitAssertPackageVersion)" />
+    <PackageReference Include="xunit.extensibility.core" Version="$(XunitExtensibilityCorePackageVersion)" />
+    <PackageReference Include="xunit.analyzers" Version="$(XunitAnalyzersPackageVersion)" PrivateAssets="All" />
   </ItemGroup>
 
 </Project>
