@@ -12,8 +12,6 @@
       <RepositoryRoot>$(RepositoryRoot)</RepositoryRoot>
       <Category>shipoob</Category>
     </ArtifactInfo>
-    <FilesToSign Include="$(SiteExtensionOobArchive)" IsContainer="true" />
-    <FilesToSign Include="content/Microsoft.Web.Xdt.Extensions.dll" Container="$(SiteExtensionOobArchive)" Certificate="$(AssemblySigningCertName)" />
   </ItemGroup>
 
   <Target Name="PackSiteExtensionFiles"
