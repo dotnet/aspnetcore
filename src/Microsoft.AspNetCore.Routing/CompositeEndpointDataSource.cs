@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Routing
 
                     foreach (var dataSource in _dataSources)
                     {
-                        Extensions.Primitives.ChangeToken.OnChange(
+                        ChangeToken.OnChange(
                             dataSource.GetChangeToken,
                             HandleChange);
                     }
