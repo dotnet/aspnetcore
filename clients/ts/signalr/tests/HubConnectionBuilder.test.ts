@@ -66,14 +66,15 @@ describe("HubConnectionBuilder", () => {
             // Start the connection
             const closed = makeClosedPromise(connection);
 
-            // start waits for handshake before returning, we don't care in this test
-            // tslint:disable-next-line:no-floating-promises
-            connection.start();
+            const startPromise = connection.start();
 
             const pollRequest = await pollSent.promise;
             expect(pollRequest.url).toMatch(/http:\/\/example.com\?id=abc123.*/);
 
             await closed;
+            try {
+                await startPromise;
+            } catch { }
         });
     });
 
@@ -113,14 +114,15 @@ describe("HubConnectionBuilder", () => {
             // Start the connection
             const closed = makeClosedPromise(connection);
 
-            // start waits for handshake before returning, we don't care in this test
-            // tslint:disable-next-line:no-floating-promises
-            connection.start();
+            const startPromise = connection.start();
 
             const negotiateRequest = await negotiateReceived.promise;
             expect(negotiateRequest.content).toBe(`{"protocol":"${protocol.name}","version":1}\x1E`);
 
             await closed;
+            try {
+                await startPromise;
+            } catch { }
         });
     });
 
@@ -131,8 +133,19 @@ describe("HubConnectionBuilder", () => {
                 loggedMessages += 1;
             },
         };
+        const pollSent = new PromiseSource<HttpRequest>();
+        const pollCompleted = new PromiseSource<HttpResponse>();
+        const testClient = createTestClient(pollSent, pollCompleted.promise)
+            .on("POST", "http://example.com?id=abc123", (req) => {
+                // Respond from the poll with the handshake response
+                pollCompleted.resolve(new HttpResponse(204, "No Content", "{}"));
+                return new HttpResponse(202);
+            });
         const connection = createConnectionBuilder(logger)
-            .withUrl("http://example.com")
+            .withUrl("http://example.com", {
+                ...commonHttpOptions,
+                httpClient: testClient,
+            })
             .build();
 
         try {
@@ -145,9 +158,20 @@ describe("HubConnectionBuilder", () => {
     });
 
     it("uses logger for both HttpConnection and HubConnection", async () => {
+        const pollSent = new PromiseSource<HttpRequest>();
+        const pollCompleted = new PromiseSource<HttpResponse>();
+        const testClient = createTestClient(pollSent, pollCompleted.promise)
+            .on("POST", "http://example.com?id=abc123", (req) => {
+                // Respond from the poll with the handshake response
+                pollCompleted.resolve(new HttpResponse(204, "No Content", "{}"));
+                return new HttpResponse(202);
+            });
         const logger = new CaptureLogger();
         const connection = createConnectionBuilder(logger)
-            .withUrl("http://example.com")
+            .withUrl("http://example.com", {
+                ...commonHttpOptions,
+                httpClient: testClient,
+            })
             .build();
 
         try {
@@ -164,10 +188,21 @@ describe("HubConnectionBuilder", () => {
     });
 
     it("does not replace HttpConnectionOptions logger if provided", async () => {
+        const pollSent = new PromiseSource<HttpRequest>();
+        const pollCompleted = new PromiseSource<HttpResponse>();
+        const testClient = createTestClient(pollSent, pollCompleted.promise)
+            .on("POST", "http://example.com?id=abc123", (req) => {
+                // Respond from the poll with the handshake response
+                pollCompleted.resolve(new HttpResponse(204, "No Content", "{}"));
+                return new HttpResponse(202);
+            });
         const hubConnectionLogger = new CaptureLogger();
         const httpConnectionLogger = new CaptureLogger();
         const connection = createConnectionBuilder(hubConnectionLogger)
-            .withUrl("http://example.com", { logger: httpConnectionLogger })
+            .withUrl("http://example.com", {
+                httpClient: testClient,
+                logger: httpConnectionLogger,
+            })
             .build();
 
         try {

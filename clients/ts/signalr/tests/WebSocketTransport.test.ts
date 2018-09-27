@@ -132,7 +132,7 @@ describe("WebSocketTransport", () => {
 
             await expect(webSocket.send(""))
                 .rejects
-                .toThrow("WebSocket is not in the OPEN state");
+                .toBe("WebSocket is not in the OPEN state");
         });
     });
 
@@ -159,7 +159,7 @@ describe("WebSocketTransport", () => {
 
             await expect(webSocket.send(""))
                 .rejects
-                .toThrow("WebSocket is not in the OPEN state");
+                .toBe("WebSocket is not in the OPEN state");
         });
     });
 
@@ -182,7 +182,7 @@ describe("WebSocketTransport", () => {
 
             await expect(webSocket.send(""))
                 .rejects
-                .toThrow("WebSocket is not in the OPEN state");
+                .toBe("WebSocket is not in the OPEN state");
         });
     });
 

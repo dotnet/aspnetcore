@@ -470,6 +470,12 @@ export class HubConnection {
 
         this.connectionState = HubConnectionState.Disconnected;
 
+        // if handshake is in progress start will be waiting for the handshake promise, so we complete it
+        // if it has already completed this should just noop
+        if (this.handshakeRejecter) {
+            this.handshakeRejecter(error);
+        }
+
         Object.keys(callbacks)
             .forEach((key) => {
                 const callback = callbacks[key];
