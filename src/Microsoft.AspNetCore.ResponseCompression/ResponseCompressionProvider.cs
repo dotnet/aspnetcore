@@ -3,8 +3,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.ResponseCompression.Internal;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
@@ -18,6 +22,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
         private readonly HashSet<string> _mimeTypes;
         private readonly HashSet<string> _excludedMimeTypes;
         private readonly bool _enableForHttps;
+        private readonly ILogger _logger;
 
         /// <summary>
         /// If no compression providers are specified then GZip is used by default.
@@ -67,6 +72,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
             {
                 mimeTypes = ResponseCompressionDefaults.MimeTypes;
             }
+
             _mimeTypes = new HashSet<string>(mimeTypes, StringComparer.OrdinalIgnoreCase);
 
             _excludedMimeTypes = new HashSet<string>(
@@ -75,6 +81,8 @@ namespace Microsoft.AspNetCore.ResponseCompression
             );
 
             _enableForHttps = responseCompressionOptions.EnableForHttps;
+
+            _logger = services.GetRequiredService<ILogger<ResponseCompressionProvider>>();
         }
 
         /// <inheritdoc />
@@ -83,76 +91,86 @@ namespace Microsoft.AspNetCore.ResponseCompression
             // e.g. Accept-Encoding: gzip, deflate, sdch
             var accept = context.Request.Headers[HeaderNames.AcceptEncoding];
 
+            // Note this is already checked in CheckRequestAcceptsCompression which _should_ prevent any of these other methods from being called.
             if (StringValues.IsNullOrEmpty(accept))
             {
+                Debug.Assert(false, "Duplicate check failed.");
+                _logger.NoAcceptEncoding();
                 return null;
             }
 
-            if (StringWithQualityHeaderValue.TryParseList(accept, out var encodings))
+            if (!StringWithQualityHeaderValue.TryParseList(accept, out var encodings) || !encodings.Any())
             {
-                if (encodings.Count == 0)
+                _logger.NoAcceptEncoding();
+                return null;
+            }
+
+            var candidates = new HashSet<ProviderCandidate>();
+
+            foreach (var encoding in encodings)
+            {
+                var encodingName = encoding.Value;
+                var quality = encoding.Quality.GetValueOrDefault(1);
+
+                if (quality < double.Epsilon)
                 {
-                    return null;
+                    continue;
                 }
 
-                var candidates = new HashSet<ProviderCandidate>();
-
-                foreach (var encoding in encodings)
+                for (int i = 0; i < _providers.Length; i++)
                 {
-                    var encodingName = encoding.Value;
-                    var quality = encoding.Quality.GetValueOrDefault(1);
+                    var provider = _providers[i];
 
-                    if (quality < double.Epsilon)
+                    if (StringSegment.Equals(provider.EncodingName, encodingName, StringComparison.OrdinalIgnoreCase))
                     {
-                        continue;
+                        candidates.Add(new ProviderCandidate(provider.EncodingName, quality, i, provider));
                     }
+                }
 
+                // Uncommon but valid options
+                if (StringSegment.Equals("*", encodingName, StringComparison.Ordinal))
+                {
                     for (int i = 0; i < _providers.Length; i++)
                     {
                         var provider = _providers[i];
 
-                        if (StringSegment.Equals(provider.EncodingName, encodingName, StringComparison.OrdinalIgnoreCase))
-                        {
-                            candidates.Add(new ProviderCandidate(provider.EncodingName, quality, i, provider));
-                        }
+                        // Any provider is a candidate.
+                        candidates.Add(new ProviderCandidate(provider.EncodingName, quality, i, provider));
                     }
 
-                    // Uncommon but valid options
-                    if (StringSegment.Equals("*", encodingName, StringComparison.Ordinal))
-                    {
-                        for (int i = 0; i < _providers.Length; i++)
-                        {
-                            var provider = _providers[i];
-
-                            // Any provider is a candidate.
-                            candidates.Add(new ProviderCandidate(provider.EncodingName, quality, i, provider));
-                        }
-
-                        break;
-                    }
-
-                    if (StringSegment.Equals("identity", encodingName, StringComparison.OrdinalIgnoreCase))
-                    {
-                        // We add 'identity' to the list of "candidates" with a very low priority and no provider.
-                        // This will allow it to be ordered based on its quality (and priority) later in the method.
-                        candidates.Add(new ProviderCandidate(encodingName.Value, quality, priority: int.MaxValue, provider: null));
-                    }
+                    break;
                 }
 
-                if (candidates.Count <= 1)
+                if (StringSegment.Equals("identity", encodingName, StringComparison.OrdinalIgnoreCase))
                 {
-                    return candidates.ElementAtOrDefault(0).Provider;
+                    // We add 'identity' to the list of "candidates" with a very low priority and no provider.
+                    // This will allow it to be ordered based on its quality (and priority) later in the method.
+                    candidates.Add(new ProviderCandidate(encodingName.Value, quality, priority: int.MaxValue, provider: null));
                 }
-
-                var accepted = candidates
-                    .OrderByDescending(x => x.Quality)
-                    .ThenBy(x => x.Priority)
-                    .First();
-
-                return accepted.Provider;
             }
 
-            return null;
+            ICompressionProvider selectedProvider = null;
+            if (candidates.Count <= 1)
+            {
+                selectedProvider = candidates.FirstOrDefault().Provider;
+            }
+            else
+            {
+                selectedProvider = candidates
+                    .OrderByDescending(x => x.Quality)
+                    .ThenBy(x => x.Priority)
+                    .First().Provider;
+            }
+
+            if (selectedProvider == null)
+            {
+                // "identity" would match as a candidate but not have a provider implementation
+                _logger.NoCompressionProvider();
+                return null;
+            }
+
+            _logger.CompressingWith(selectedProvider.EncodingName);
+            return selectedProvider;
         }
 
         /// <inheritdoc />
@@ -160,11 +178,13 @@ namespace Microsoft.AspNetCore.ResponseCompression
         {
             if (context.Response.Headers.ContainsKey(HeaderNames.ContentRange))
             {
+                _logger.NoCompressionDueToHeader(HeaderNames.ContentRange);
                 return false;
             }
 
             if (context.Response.Headers.ContainsKey(HeaderNames.ContentEncoding))
             {
+                _logger.NoCompressionDueToHeader(HeaderNames.ContentEncoding);
                 return false;
             }
 
@@ -172,6 +192,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
 
             if (string.IsNullOrEmpty(mimeType))
             {
+                _logger.NoCompressionForContentType(mimeType);
                 return false;
             }
 
@@ -183,9 +204,18 @@ namespace Microsoft.AspNetCore.ResponseCompression
                 mimeType = mimeType.Trim();
             }
 
-            return ShouldCompressExact(mimeType) //check exact match type/subtype
+            var shouldCompress = ShouldCompressExact(mimeType) //check exact match type/subtype
                 ?? ShouldCompressPartial(mimeType) //check partial match type/*
                 ?? _mimeTypes.Contains("*/*"); //check wildcard */*
+
+            if (shouldCompress)
+            {
+                _logger.ShouldCompressResponse();  // Trace, there will be more logs
+                return true;
+            }
+
+            _logger.NoCompressionForContentType(mimeType);
+            return false;
         }
 
         /// <inheritdoc />
@@ -193,9 +223,18 @@ namespace Microsoft.AspNetCore.ResponseCompression
         {
             if (context.Request.IsHttps && !_enableForHttps)
             {
+                _logger.NoCompressionForHttps();
                 return false;
             }
-            return !string.IsNullOrEmpty(context.Request.Headers[HeaderNames.AcceptEncoding]);
+
+            if (string.IsNullOrEmpty(context.Request.Headers[HeaderNames.AcceptEncoding]))
+            {
+                _logger.NoAcceptEncoding();
+                return false;
+            }
+
+            _logger.RequestAcceptsCompression(); // Trace, there will be more logs
+            return true;
         }
 
         private bool? ShouldCompressExact(string mimeType)

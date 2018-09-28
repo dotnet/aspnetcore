@@ -15,6 +15,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 
@@ -55,28 +57,31 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
         [Fact]
         public async Task Request_NoAcceptEncoding_Uncompressed()
         {
-            var response = await InvokeMiddleware(100, requestAcceptEncodings: null, responseType: TextPlain);
+            var (response, logMessages) = await InvokeMiddleware(100, requestAcceptEncodings: null, responseType: TextPlain);
 
             CheckResponseNotCompressed(response, expectedBodyLength: 100, sendVaryHeader: false);
+            AssertLog(logMessages.Single(), LogLevel.Debug, "No response compression available, the Accept-Encoding header is missing or invalid.");
         }
 
         [Fact]
         public async Task Request_AcceptGzipDeflate_CompressedGzip()
         {
-            var response = await InvokeMiddleware(100, requestAcceptEncodings: new[] { "gzip", "deflate" }, responseType: TextPlain);
+            var (response, logMessages) = await InvokeMiddleware(100, requestAcceptEncodings: new[] { "gzip", "deflate" }, responseType: TextPlain);
 
             CheckResponseCompressed(response, expectedBodyLength: 24, expectedEncoding: "gzip");
+            AssertCompressedWithLog(logMessages, "gzip");
         }
 
         [Fact]
         public async Task Request_AcceptBrotli_CompressedBrotli()
         {
-            var response = await InvokeMiddleware(100, requestAcceptEncodings: new[] { "br" }, responseType: TextPlain);
+            var (response, logMessages) = await InvokeMiddleware(100, requestAcceptEncodings: new[] { "br" }, responseType: TextPlain);
 
 #if NET461
             CheckResponseNotCompressed(response, expectedBodyLength: 100, sendVaryHeader: true);
 #elif NETCOREAPP2_2
             CheckResponseCompressed(response, expectedBodyLength: 20, expectedEncoding: "br");
+            AssertCompressedWithLog(logMessages, "br");
 #else
 #error Target frameworks need to be updated.
 #endif
@@ -87,12 +92,14 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
         [InlineData("br", "gzip")]
         public async Task Request_AcceptMixed_CompressedBrotli(string encoding1, string encoding2)
         {
-            var response = await InvokeMiddleware(100, new[] { encoding1, encoding2 }, responseType: TextPlain);
+            var (response, logMessages) = await InvokeMiddleware(100, new[] { encoding1, encoding2 }, responseType: TextPlain);
 
 #if NET461
             CheckResponseCompressed(response, expectedBodyLength: 24, expectedEncoding: "gzip");
+            AssertCompressedWithLog(logMessages, "gzip");
 #elif NETCOREAPP2_2
             CheckResponseCompressed(response, expectedBodyLength: 20, expectedEncoding: "br");
+            AssertCompressedWithLog(logMessages, "br");
 #else
 #error Target frameworks need to be updated.
 #endif
@@ -110,9 +117,10 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
                 options.Providers.Add<BrotliCompressionProvider>();
             }
 
-            var response = await InvokeMiddleware(100, new[] { encoding1, encoding2 }, responseType: TextPlain, configure: Configure);
+            var (response, logMessages) = await InvokeMiddleware(100, new[] { encoding1, encoding2 }, responseType: TextPlain, configure: Configure);
 
             CheckResponseCompressed(response, expectedBodyLength: 24, expectedEncoding: "gzip");
+            AssertCompressedWithLog(logMessages, "gzip");
         }
 #elif NET461
 #else
@@ -122,9 +130,13 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
         [Fact]
         public async Task Request_AcceptUnknown_NotCompressed()
         {
-            var response = await InvokeMiddleware(100, requestAcceptEncodings: new[] { "unknown" }, responseType: TextPlain);
+            var (response, logMessages) = await InvokeMiddleware(100, requestAcceptEncodings: new[] { "unknown" }, responseType: TextPlain);
 
             CheckResponseNotCompressed(response, expectedBodyLength: 100, sendVaryHeader: true);
+            Assert.Equal(3, logMessages.Count);
+            AssertLog(logMessages.First(), LogLevel.Trace, "This request accepts compression.");
+            AssertLog(logMessages.Skip(1).First(), LogLevel.Trace, "Response compression is available for this Content-Type.");
+            AssertLog(logMessages.Skip(2).First(), LogLevel.Debug, "No matching response compression provider found.");
         }
 
         [Theory]
@@ -134,31 +146,10 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
         [InlineData("text/plain ; charset=ISO-8859-4")]
         public async Task ContentType_WithCharset_Compress(string contentType)
         {
-            var builder = new WebHostBuilder()
-                .ConfigureServices(services =>
-                {
-                    services.AddResponseCompression();
-                })
-                .Configure(app =>
-                {
-                    app.UseResponseCompression();
-                    app.Run(context =>
-                    {
-                        context.Response.Headers[HeaderNames.ContentMD5] = "MD5";
-                        context.Response.ContentType = contentType;
-                        return context.Response.WriteAsync(new string('a', 100));
-                    });
-                });
-
-            var server = new TestServer(builder);
-            var client = server.CreateClient();
-
-            var request = new HttpRequestMessage(HttpMethod.Get, "");
-            request.Headers.AcceptEncoding.ParseAdd("gzip");
-
-            var response = await client.SendAsync(request);
+            var (response, logMessages) = await InvokeMiddleware(uncompressedBodyLength: 100, requestAcceptEncodings: new[] { "gzip" }, contentType);
 
             CheckResponseCompressed(response, expectedBodyLength: 24, expectedEncoding: "gzip");
+            AssertCompressedWithLog(logMessages, "gzip");
         }
 
         [Fact]
@@ -197,31 +188,13 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
         [InlineData("text/plain2")]
         public async Task MimeTypes_OtherContentTypes_NoMatch(string contentType)
         {
-            var builder = new WebHostBuilder()
-                .ConfigureServices(services =>
-                {
-                    services.AddResponseCompression();
-                })
-                .Configure(app =>
-                {
-                    app.UseResponseCompression();
-                    app.Run(context =>
-                    {
-                        context.Response.Headers[HeaderNames.ContentMD5] = "MD5";
-                        context.Response.ContentType = contentType;
-                        return context.Response.WriteAsync(new string('a', 100));
-                    });
-                });
-
-            var server = new TestServer(builder);
-            var client = server.CreateClient();
-
-            var request = new HttpRequestMessage(HttpMethod.Get, "");
-            request.Headers.AcceptEncoding.ParseAdd("gzip");
-
-            var response = await client.SendAsync(request);
+            var (response, logMessages) = await InvokeMiddleware(uncompressedBodyLength: 100, requestAcceptEncodings: new[] { "gzip" }, contentType);
 
             CheckResponseNotCompressed(response, expectedBodyLength: 100, sendVaryHeader: false);
+            Assert.Equal(2, logMessages.Count);
+            AssertLog(logMessages.First(), LogLevel.Trace, "This request accepts compression.");
+            var expected = string.IsNullOrEmpty(contentType) ? "(null)" : contentType;
+            AssertLog(logMessages.Skip(1).First(), LogLevel.Debug, $"Response compression is not enabled for the Content-Type '{expected}'.");
         }
 
         [Theory]
@@ -287,88 +260,42 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
         public async Task MimeTypes_IncludedAndExcluded(
             string[] mimeTypes,
             string[] excludedMimeTypes,
-            string mimeType,
+            string contentType,
             bool compress
             )
         {
-            var builder = new WebHostBuilder()
-                .ConfigureServices(
-                    services =>
-                        services.AddResponseCompression(
-                            options =>
-                            {
-                                options.MimeTypes = mimeTypes;
-                                options.ExcludedMimeTypes = excludedMimeTypes;
-                            }
-                        )
-                )
-                .Configure(
-                    app =>
-                    {
-                        app.UseResponseCompression();
-                        app.Run(
-                            context =>
-                            {
-                                context.Response.Headers[HeaderNames.ContentMD5] = "MD5";
-                                context.Response.ContentType = mimeType;
-                                return context.Response.WriteAsync(new string('a', 100));
-                            }
-                        );
-                    }
-                );
-
-            var server = new TestServer(builder);
-            var client = server.CreateClient();
-
-            var request = new HttpRequestMessage(HttpMethod.Get, "");
-            request.Headers.AcceptEncoding.ParseAdd("gzip");
-
-            var response = await client.SendAsync(request);
+            var (response, logMessages) = await InvokeMiddleware(uncompressedBodyLength: 100, requestAcceptEncodings: new[] { "gzip" }, contentType,
+                configure: options =>
+                {
+                    options.MimeTypes = mimeTypes;
+                    options.ExcludedMimeTypes = excludedMimeTypes;
+                });
 
             if (compress)
             {
                 CheckResponseCompressed(response, expectedBodyLength: 24, expectedEncoding: "gzip");
+                AssertCompressedWithLog(logMessages, "gzip");
             }
             else
             {
                 CheckResponseNotCompressed(response, expectedBodyLength: 100, sendVaryHeader: false);
+                Assert.Equal(2, logMessages.Count);
+                AssertLog(logMessages.First(), LogLevel.Trace, "This request accepts compression.");
+                AssertLog(logMessages.Skip(1).First(), LogLevel.Debug, $"Response compression is not enabled for the Content-Type '{contentType}'.");
             }
         }
 
         [Fact]
         public async Task NoIncludedMimeTypes_UseDefaults()
         {
-            var builder = new WebHostBuilder()
-                .ConfigureServices(
-                    services =>
-                        services.AddResponseCompression(
-                            options => options.ExcludedMimeTypes = new[] { "text/*" }
-                        )
-                )
-                .Configure(
-                    app =>
-                    {
-                        app.UseResponseCompression();
-                        app.Run(
-                            context =>
-                            {
-                                context.Response.Headers[HeaderNames.ContentMD5] = "MD5";
-                                context.Response.ContentType = TextPlain;
-                                return context.Response.WriteAsync(new string('a', 100));
-                            }
-                        );
-                    }
-                );
-
-            var server = new TestServer(builder);
-            var client = server.CreateClient();
-
-            var request = new HttpRequestMessage(HttpMethod.Get, "");
-            request.Headers.AcceptEncoding.ParseAdd("gzip");
-
-            var response = await client.SendAsync(request);
+            var (response, logMessages) = await InvokeMiddleware(uncompressedBodyLength: 100, requestAcceptEncodings: new[] { "gzip" }, TextPlain,
+                configure: options =>
+                {
+                    options.ExcludedMimeTypes = new[] { "text/*" };
+                });
 
             CheckResponseCompressed(response, expectedBodyLength: 24, expectedEncoding: "gzip");
+            AssertCompressedWithLog(logMessages, "gzip");
         }
 
         [Theory]
@@ -410,12 +337,14 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
         [Fact]
         public async Task Request_AcceptStar_Compressed()
         {
-            var response = await InvokeMiddleware(100, requestAcceptEncodings: new[] { "*" }, responseType: TextPlain);
+            var (response, logMessages) = await InvokeMiddleware(100, requestAcceptEncodings: new[] { "*" }, responseType: TextPlain);
 
 #if NET461
             CheckResponseCompressed(response, expectedBodyLength: 24, expectedEncoding: "gzip");
+            AssertCompressedWithLog(logMessages, "gzip");
 #elif NETCOREAPP2_2
             CheckResponseCompressed(response, expectedBodyLength: 20, expectedEncoding: "br");
+            AssertCompressedWithLog(logMessages, "br");
 #else
 #error Target frameworks need to be updated.
 #endif
@@ -424,9 +353,13 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
         [Fact]
         public async Task Request_AcceptIdentity_NotCompressed()
         {
-            var response = await InvokeMiddleware(100, requestAcceptEncodings: new[] { "identity" }, responseType: TextPlain);
+            var (response, logMessages) = await InvokeMiddleware(100, requestAcceptEncodings: new[] { "identity" }, responseType: TextPlain);
 
             CheckResponseNotCompressed(response, expectedBodyLength: 100, sendVaryHeader: true);
+            Assert.Equal(3, logMessages.Count);
+            AssertLog(logMessages.First(), LogLevel.Trace, "This request accepts compression.");
+            AssertLog(logMessages.Skip(1).First(), LogLevel.Trace, "Response compression is available for this Content-Type.");
+            AssertLog(logMessages.Skip(2).First(), LogLevel.Debug, "No matching response compression provider found.");
         }
 
         [Theory]
@@ -435,37 +368,48 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
         [InlineData(new[] { "identity;q=0.5", "gzip" }, 24)]
         public async Task Request_AcceptWithHigherCompressionQuality_Compressed(string[] acceptEncodings, int expectedBodyLength)
         {
-            var response = await InvokeMiddleware(100, requestAcceptEncodings: acceptEncodings, responseType: TextPlain);
+            var (response, logMessages) = await InvokeMiddleware(100, requestAcceptEncodings: acceptEncodings, responseType: TextPlain);
 
             CheckResponseCompressed(response, expectedBodyLength: expectedBodyLength, expectedEncoding: "gzip");
+            AssertCompressedWithLog(logMessages, "gzip");
         }
 
         [Theory]
         [InlineData(new[] { "gzip;q=0.5", "identity;q=0.8" }, 100)]
         public async Task Request_AcceptWithhigherIdentityQuality_NotCompressed(string[] acceptEncodings, int expectedBodyLength)
         {
-            var response = await InvokeMiddleware(100, requestAcceptEncodings: acceptEncodings, responseType: TextPlain);
+            var (response, logMessages) = await InvokeMiddleware(100, requestAcceptEncodings: acceptEncodings, responseType: TextPlain);
 
             CheckResponseNotCompressed(response, expectedBodyLength: expectedBodyLength, sendVaryHeader: true);
+            Assert.Equal(3, logMessages.Count);
+            AssertLog(logMessages.First(), LogLevel.Trace, "This request accepts compression.");
+            AssertLog(logMessages.Skip(1).First(), LogLevel.Trace, "Response compression is available for this Content-Type.");
+            AssertLog(logMessages.Skip(2).First(), LogLevel.Debug, "No matching response compression provider found.");
         }
 
         [Fact]
         public async Task Response_UnknownMimeType_NotCompressed()
         {
-            var response = await InvokeMiddleware(100, requestAcceptEncodings: new[] { "gzip" }, responseType: "text/custom");
+            var (response, logMessages) = await InvokeMiddleware(100, requestAcceptEncodings: new[] { "gzip" }, responseType: "text/custom");
 
             CheckResponseNotCompressed(response, expectedBodyLength: 100, sendVaryHeader: false);
+            Assert.Equal(2, logMessages.Count);
+            AssertLog(logMessages.First(), LogLevel.Trace, "This request accepts compression.");
+            AssertLog(logMessages.Skip(1).First(), LogLevel.Debug, "Response compression is not enabled for the Content-Type 'text/custom'.");
         }
 
         [Fact]
         public async Task Response_WithContentRange_NotCompressed()
         {
-            var response = await InvokeMiddleware(50, requestAcceptEncodings: new[] { "gzip" }, responseType: TextPlain, addResponseAction: (r) =>
+            var (response, logMessages) = await InvokeMiddleware(50, requestAcceptEncodings: new[] { "gzip" }, responseType: TextPlain, addResponseAction: (r) =>
             {
                 r.Headers[HeaderNames.ContentRange] = "1-2/*";
             });
 
             CheckResponseNotCompressed(response, expectedBodyLength: 50, sendVaryHeader: false);
+            Assert.Equal(2, logMessages.Count);
+            AssertLog(logMessages.First(), LogLevel.Trace, "This request accepts compression.");
+            AssertLog(logMessages.Skip(1).First(), LogLevel.Debug, "Response compression disabled due to the Content-Range header.");
         }
 
 
@@ -474,7 +418,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
         {
             var otherContentEncoding = "something";
 
-            var response = await InvokeMiddleware(50, requestAcceptEncodings: new[] { "gzip" }, responseType: TextPlain, addResponseAction: (r) =>
+            var (response, logMessages) = await InvokeMiddleware(50, requestAcceptEncodings: new[] { "gzip" }, responseType: TextPlain, addResponseAction: (r) =>
             {
                 r.Headers[HeaderNames.ContentEncoding] = otherContentEncoding;
             });
@@ -482,6 +426,9 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
             Assert.True(response.Content.Headers.ContentEncoding.Contains(otherContentEncoding));
             Assert.False(response.Content.Headers.ContentEncoding.Contains("gzip"));
             Assert.Equal(50, response.Content.Headers.ContentLength);
+            Assert.Equal(2, logMessages.Count);
+            AssertLog(logMessages.First(), LogLevel.Trace, "This request accepts compression.");
+            AssertLog(logMessages.Skip(1).First(), LogLevel.Debug, "Response compression disabled due to the Content-Encoding header.");
         }
 
         [Theory]
@@ -489,9 +436,15 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
         [InlineData(true, 24)]
         public async Task Request_Https_CompressedIfEnabled(bool enableHttps, int expectedLength)
         {
+            var sink = new TestSink(
+                TestSink.EnableWithTypeName<ResponseCompressionProvider>,
+                TestSink.EnableWithTypeName<ResponseCompressionProvider>);
+            var loggerFactory = new TestLoggerFactory(sink, enabled: true);
+
             var builder = new WebHostBuilder()
                 .ConfigureServices(services =>
                 {
+                    services.AddSingleton<ILoggerFactory>(loggerFactory);
                     services.AddResponseCompression(options =>
                     {
                         options.EnableForHttps = enableHttps;
@@ -521,6 +474,16 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
             var response = await client.SendAsync(request);
 
             Assert.Equal(expectedLength, response.Content.ReadAsByteArrayAsync().Result.Length);
+
+            var logMessages = sink.Writes.ToList();
+            if (enableHttps)
+            {
+                AssertCompressedWithLog(logMessages, "gzip");
+            }
+            else
+            {
+                AssertLog(logMessages.Single(), LogLevel.Debug, "No response compression available for HTTPS requests. See ResponseCompressionOptions.EnableForHttps.");
+            }
         }
 
         [Theory]
@@ -985,17 +948,23 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
             Assert.False(fakeSendFile.Invoked);
         }
 
-        private Task<HttpResponseMessage> InvokeMiddleware(
+        private async Task<(HttpResponseMessage, List<WriteContext>)> InvokeMiddleware(
             int uncompressedBodyLength,
             string[] requestAcceptEncodings,
             string responseType,
             Action<HttpResponse> addResponseAction = null,
             Action<ResponseCompressionOptions> configure = null)
         {
+            var sink = new TestSink(
+                TestSink.EnableWithTypeName<ResponseCompressionProvider>,
+                TestSink.EnableWithTypeName<ResponseCompressionProvider>);
+            var loggerFactory = new TestLoggerFactory(sink, enabled: true);
+
             var builder = new WebHostBuilder()
                 .ConfigureServices(services =>
                 {
                     services.AddResponseCompression(configure ?? (_ => { }));
+                    services.AddSingleton<ILoggerFactory>(loggerFactory);
                 })
                 .Configure(app =>
                 {
@@ -1019,7 +988,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
                 request.Headers.AcceptEncoding.Add(System.Net.Http.Headers.StringWithQualityHeaderValue.Parse(requestAcceptEncodings[i]));
             }
 
-            return client.SendAsync(request);
+            return (await client.SendAsync(request), sink.Writes.ToList());
         }
 
         private void CheckResponseCompressed(HttpResponseMessage response, int expectedBodyLength, string expectedEncoding)
@@ -1061,6 +1030,20 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
             Assert.NotNull(response.Content.Headers.GetValues(HeaderNames.ContentMD5));
             Assert.Empty(response.Content.Headers.ContentEncoding);
             Assert.Equal(expectedBodyLength, response.Content.Headers.ContentLength);
+        }
+
+        private void AssertLog(WriteContext log, LogLevel level, string message)
+        {
+            Assert.Equal(level, log.LogLevel);
+            Assert.Equal(message, log.State.ToString());
+        }
+
+        private void AssertCompressedWithLog(List<WriteContext> logMessages, string provider)
+        {
+            Assert.Equal(3, logMessages.Count);
+            AssertLog(logMessages.First(), LogLevel.Trace, "This request accepts compression.");
+            AssertLog(logMessages.Skip(1).First(), LogLevel.Trace, "Response compression is available for this Content-Type.");
+            AssertLog(logMessages.Skip(2).First(), LogLevel.Debug, $"The response will be compressed with '{provider}'.");
         }
 
         private class FakeSendFileFeature : IHttpSendFileFeature
