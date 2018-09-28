@@ -22,11 +22,17 @@
     <PackageReference Update="Microsoft.NETCore.App" PrivateAssets="All" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp2.0'">
+    <SignedPackageFile Include="$(TargetPath)" PackagePath="build/netstandard2.0/netcoreapp2.0/Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.dll" Certificate="$(AssemblySigningCertName)" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net461'">
+    <SignedPackageFile Include="$(TargetDir)\$(AssemblyName)-x86.exe" PackagePath="build/netstandard2.0/net461/Microsoft.AspNetCore.Mvc.Razor.ViewCompilation-x86.exe" Certificate="$(AssemblySigningCertName)" />
+    <SignedPackageFile Include="$(TargetDir)\$(AssemblyName).exe" PackagePath="build/netstandard2.0/net461/Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.exe" Certificate="$(AssemblySigningCertName)" />
+  </ItemGroup>
+
   <ItemGroup Condition="'$(TargetFramework)' == ''">
-    <SignedPackageFile Include="build/netstandard2.0/netcoreapp2.0/Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.dll" Certificate="$(AssemblySigningCertName)" />
-    <SignedPackageFile Include="build/netstandard2.0/net461/Microsoft.AspNetCore.Mvc.Razor.ViewCompilation-x86.exe" Certificate="$(AssemblySigningCertName)" />
-    <SignedPackageFile Include="build/netstandard2.0/net461/Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.exe" Certificate="$(AssemblySigningCertName)" />
-    <SignedPackageFile Include="build/netstandard2.0/Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Tasks.dll" Certificate="$(AssemblySigningCertName)" />
+    <SignedPackageFile Include="$(TasksProjectDirectory)bin\$(Configuration)\netstandard2.0\$(AssemblyName).Tasks.dll;" PackagePath="build/netstandard2.0/Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Tasks.dll" Certificate="$(AssemblySigningCertName)" />
   </ItemGroup>
 
   <Target Name="BuildX86" AfterTargets="Build" Condition="'$(TargetFramework)'=='net461' AND '$(PlatformTarget)'!='x86'">
