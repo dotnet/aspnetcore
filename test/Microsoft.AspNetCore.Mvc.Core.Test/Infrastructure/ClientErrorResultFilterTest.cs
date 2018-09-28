@@ -68,6 +68,42 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             Assert.Same(Result, context.Result);
         }
 
+        [Theory]
+        [InlineData(400)]
+        [InlineData(409)]
+        [InlineData(503)]
+        public void OnResultExecuting_Transforms4XXStatusCodeResult(int statusCode)
+        {
+            // Arrange
+            var actionResult = new StatusCodeResult(statusCode);
+            var context = GetContext(actionResult);
+            var filter = GetFilter();
+
+            // Act
+            filter.OnResultExecuting(context);
+
+            // Assert
+            Assert.Same(Result, context.Result);
+        }
+
+        [Theory]
+        [InlineData(201)]
+        [InlineData(302)]
+        [InlineData(399)]
+        public void OnResultExecuting_DoesNotTransformStatusCodesLessThan400(int statusCode)
+        {
+            // Arrange
+            var actionResult = new StatusCodeResult(statusCode);
+            var context = GetContext(actionResult);
+            var filter = GetFilter();
+
+            // Act
+            filter.OnResultExecuting(context);
+
+            // Assert
+            Assert.Same(actionResult, context.Result);
+        }
+
         private static ClientErrorResultFilter GetFilter()
         {
             var factory = Mock.Of<IClientErrorFactory>(
