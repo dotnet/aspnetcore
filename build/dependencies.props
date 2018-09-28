@@ -69,6 +69,8 @@
     <NETStandardLibrary20PackageVersion>2.0.3</NETStandardLibrary20PackageVersion>
     <SystemComponentModelAnnotationsPackageVersion>4.6.0-preview1-26907-04</SystemComponentModelAnnotationsPackageVersion>
     <XunitAnalyzersPackageVersion>0.10.0</XunitAnalyzersPackageVersion>
+    <XunitAssertPackageVersion>2.3.1</XunitAssertPackageVersion>
+    <XunitExtensibilityCorePackageVersion>2.3.1</XunitExtensibilityCorePackageVersion>
     <XunitPackageVersion>2.3.1</XunitPackageVersion>
     <XunitRunnerVisualStudioPackageVersion>2.4.0</XunitRunnerVisualStudioPackageVersion>
   </PropertyGroup>

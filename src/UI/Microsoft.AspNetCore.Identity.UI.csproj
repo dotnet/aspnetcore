@@ -20,7 +20,7 @@
     <EmbeddedResource Remove="wwwroot/**/LICENSE*" />
     <None Remove="wwwroot/**/.bower.json" />
     <None Remove="wwwroot/**/LICENSE*" />
-    <None Include="THIRD-PARTY-NOTICES" Pack="true" PackagePath="/" />
+    <None Include="THIRD-PARTY-NOTICES.txt" Pack="true" PackagePath="/" />
 
     <Content Update="**\*.cshtml" Pack="false" />
   </ItemGroup>
