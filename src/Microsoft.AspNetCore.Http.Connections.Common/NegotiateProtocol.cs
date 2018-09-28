@@ -18,6 +18,7 @@ namespace Microsoft.AspNetCore.Http.Connections
         private const string AvailableTransportsPropertyName = "availableTransports";
         private const string TransportPropertyName = "transport";
         private const string TransferFormatsPropertyName = "transferFormats";
+        private const string ErrorPropertyName = "error";
         // Used to detect ASP.NET SignalR Server connection attempt
         private const string ProtocolVersionPropertyName = "ProtocolVersion";
 
@@ -99,6 +100,7 @@ namespace Microsoft.AspNetCore.Http.Connections
                     string url = null;
                     string accessToken = null;
                     List<AvailableTransport> availableTransports = null;
+                    string error = null;
 
                     var completed = false;
                     while (!completed && JsonUtils.CheckRead(reader))
@@ -136,6 +138,9 @@ namespace Microsoft.AspNetCore.Http.Connections
                                             }
                                         }
                                         break;
+                                    case ErrorPropertyName:
+                                        error = JsonUtils.ReadAsString(reader, ErrorPropertyName);
+                                        break;
                                     case ProtocolVersionPropertyName:
                                         throw new InvalidOperationException("Detected a connection attempt to an ASP.NET SignalR Server. This client only supports connecting to an ASP.NET Core SignalR Server. See https://aka.ms/signalr-core-differences for details.");
                                     default:
@@ -151,9 +156,9 @@ namespace Microsoft.AspNetCore.Http.Connections
                         }
                     }
 
-                    if (url == null)
+                    if (url == null && error == null)
                     {
-                        // if url isn't specified, connectionId and available transports are required
+                        // if url isn't specified or there isn't an error, connectionId and available transports are required
                         if (connectionId == null)
                         {
                             throw new InvalidDataException($"Missing required property '{ConnectionIdPropertyName}'.");
@@ -170,7 +175,8 @@ namespace Microsoft.AspNetCore.Http.Connections
                         ConnectionId = connectionId,
                         Url = url,
                         AccessToken = accessToken,
-                        AvailableTransports = availableTransports
+                        AvailableTransports = availableTransports,
+                        Error = error,
                     };
                 }
             }

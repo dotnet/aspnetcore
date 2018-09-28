@@ -18,13 +18,13 @@ Throughout this document, the term `[endpoint-base]` is used to refer to the rou
 
 ## `POST [endpoint-base]/negotiate` request
 
-The `POST [endpoint-base]/negotiate` request is used to establish a connection between the client and the server. The content type of the response is `application/json`. The response to the `POST [endpoint-base]/negotiate` request contains one of two types of responses:
+The `POST [endpoint-base]/negotiate` request is used to establish a connection between the client and the server. The content type of the response is `application/json`. The response to the `POST [endpoint-base]/negotiate` request contains one of three types of responses:
 
-1. A response that contains the `id` which will be used to identify the connection on the server and the list of the transports supported by the server.
+1. A response that contains the `connectionId` which will be used to identify the connection on the server and the list of the transports supported by the server.
 
   ```
   {
-    "id":"807809a5-31bf-470d-9e23-afaee35d8a0d",
+    "connectionId":"807809a5-31bf-470d-9e23-afaee35d8a0d",
     "availableTransports":[
       {
         "transport": "WebSockets",
@@ -44,7 +44,7 @@ The `POST [endpoint-base]/negotiate` request is used to establish a connection b
 
   The payload returned from this endpoint provides the following data:
 
-  * The `id` which is **required** by the Long Polling and Server-Sent Events transports (in order to correlate sends and receives).
+  * The `connectionId` which is **required** by the Long Polling and Server-Sent Events transports (in order to correlate sends and receives).
   * The `availableTransports` list which describes the transports the server supports. For each transport, the name of the transport (`transport`) is listed, as is a list of "transfer formats" supported by the transport (`transferFormats`)
 
 
@@ -61,6 +61,19 @@ The `POST [endpoint-base]/negotiate` request is used to establish a connection b
 
   * The `url` which is the URL the client should connect to.
   * The `accessToken` which is an optional bearer token for accessing the specified url.
+
+
+3. A response that contains an `error` which should stop the connection attempt.
+
+  ```
+  {
+    "error": "This connection is not allowed."
+  }
+  ```
+
+  The payload returned from this endpoint provides the following data:
+
+  * The `error` that gives details about why the negotiate failed.
 
 ## Transfer Formats
 

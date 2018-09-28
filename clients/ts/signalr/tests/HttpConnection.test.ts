@@ -554,6 +554,26 @@ describe("HttpConnection", () => {
         });
     });
 
+    it("throws error if negotiate response has error", async () => {
+        await VerifyLogger.run(async (logger) => {
+            const httpClient = new TestHttpClient()
+                .on("POST", /negotiate$/, () => ({ error: "Negotiate error." }));
+
+            const options: IHttpConnectionOptions = {
+                ...commonOptions,
+                httpClient,
+                logger,
+                transport: HttpTransportType.LongPolling,
+            } as IHttpConnectionOptions;
+
+            const connection = new HttpConnection("http://tempuri.org", options);
+            await expect(connection.start(TransferFormat.Text))
+                .rejects
+                .toThrow("Negotiate error.");
+        },
+        "Failed to start the connection: Error: Negotiate error.");
+    });
+
     it("authorization header removed when token factory returns null and using LongPolling", async () => {
         await VerifyLogger.run(async (logger) => {
             const availableTransport = { transport: "LongPolling", transferFormats: ["Text"] };

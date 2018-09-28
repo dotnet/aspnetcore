@@ -169,9 +169,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         /// A connection cannot be restarted after it has stopped. To restart a connection
         /// a new instance should be created using the same options.
         /// </remarks>
-        public async Task StartAsync(CancellationToken cancellationToken = default)
+        public Task StartAsync(CancellationToken cancellationToken = default)
         {
-            await StartAsync(TransferFormat.Binary, cancellationToken);
+            return StartAsync(TransferFormat.Binary, cancellationToken);
         }
 
         /// <summary>
@@ -427,6 +427,10 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                         using (var responseStream = await response.Content.ReadAsStreamAsync())
                         {
                             negotiateResponse = NegotiateProtocol.ParseResponse(responseStream);
+                        }
+                        if (!string.IsNullOrEmpty(negotiateResponse.Error))
+                        {
+                            throw new Exception(negotiateResponse.Error);
                         }
                         Log.ConnectionEstablished(_logger, negotiateResponse.ConnectionId);
                         return negotiateResponse;
