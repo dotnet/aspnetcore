@@ -43,9 +43,9 @@
             Pack="true"
             PackagePath="runtimes/win-%(InProcessComponents.Platform)/nativeassets/$(NativeAssetsTargetFramework)" />
 
-      <SignedPackageFile Include="%(InProcessComponents.NativeAsset)_%(InProcessComponents.Platform)"
+      <SignedPackageFile Include="%(InProcessComponents.DllLocation)"
                          PackagePath="runtimes/win-%(InProcessComponents.Platform)/nativeassets/$(NativeAssetsTargetFramework)/%(InProcessComponents.NativeAsset).dll"
-                         Certificate="Microsoft" />
+                         Certificate="$(AssemblySigningCertName)" />
     </ItemGroup>
   </Target>
 

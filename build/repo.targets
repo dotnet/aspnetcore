@@ -65,9 +65,6 @@
       </ArtifactInfo>
 
       <FilesToSign Include="$(AncmZipOutputPath)" IsContainer="true" />
-
-      <FilesToSign Include="@(Components->'%(BaseOutputPath)/%(Platform)/%(NativeAsset).dll')" Container="$(AncmZipOutputPath)" Certificate="$(AssemblySigningCertName)" />
-
       <FilesToExcludeFromSigning Include="$(StressTestWebSiteZipOutputPath)" />
     </ItemGroup>
   </Target>

@@ -41,9 +41,9 @@
             PackageCopyToOutput="true"
             PackagePath="contentFiles/any/any/%(ShimComponents.Platform)/%(ShimComponents.PackageSubPath)"/>
 
-      <SignedPackageFile Include="%(ShimComponents.NativeAsset)_%(ShimComponents.Platform)"
+      <SignedPackageFile Include="%(ShimComponents.DllLocation)"
                          PackagePath="contentFiles/any/any/%(ShimComponents.Platform)/%(ShimComponents.PackageSubPath)%(ShimComponents.NativeAsset).dll"
-                         Certificate="Microsoft" />
+                         Certificate="$(AssemblySigningCertName)" />
 
     </ItemGroup>
   </Target>
