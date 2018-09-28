@@ -282,6 +282,7 @@ namespace Microsoft.AspNetCore.StaticFiles
                 // it is not returned for 304, 412, and 416
                 _response.ContentLength = _length;
             }
+
             _options.OnPrepareResponse(new StaticFileResponseContext(_context, _fileInfo));
         }
 
@@ -356,8 +357,7 @@ namespace Microsoft.AspNetCore.StaticFiles
                 return;
             }
 
-            long start, length;
-            _responseHeaders.ContentRange = ComputeContentRange(_range, out start, out length);
+            _responseHeaders.ContentRange = ComputeContentRange(_range, out var start, out var length);
             _response.ContentLength = length;
             ApplyResponseHeaders(Constants.Status206PartialContent);
 

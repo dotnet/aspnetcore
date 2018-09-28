@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.StaticFiles
 
             using (var server = builder.Start(TestUrlHelper.GetTestUrl(ServerType.Kestrel)))
             {
-                using (var client = new HttpClient() { BaseAddress = new Uri(server.GetAddress()) })
+                using (var client = new HttpClient { BaseAddress = new Uri(server.GetAddress()) })
                 {
                     var response = await client.GetAsync("TestDocument.txt");
 
@@ -55,14 +55,14 @@ namespace Microsoft.AspNetCore.StaticFiles
 
             using (var server = builder.Start(TestUrlHelper.GetTestUrl(ServerType.Kestrel)))
             {
-                using (var client = new HttpClient() { BaseAddress = new Uri(server.GetAddress()) })
+                using (var client = new HttpClient { BaseAddress = new Uri(server.GetAddress()) })
                 {
                     var last = File.GetLastWriteTimeUtc(Path.Combine(AppContext.BaseDirectory, "TestDocument.txt"));
                     var response = await client.GetAsync("TestDocument.txt");
 
-                    var trimed = new DateTimeOffset(last.Year, last.Month, last.Day, last.Hour, last.Minute, last.Second, TimeSpan.Zero).ToUniversalTime();
+                    var trimmed = new DateTimeOffset(last.Year, last.Month, last.Day, last.Hour, last.Minute, last.Second, TimeSpan.Zero).ToUniversalTime();
 
-                    Assert.Equal(response.Content.Headers.LastModified.Value, trimed);
+                    Assert.Equal(response.Content.Headers.LastModified.Value, trimmed);
                 }
             }
         }
@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.StaticFiles
                 .ConfigureServices(services => services.AddSingleton(LoggerFactory))
                 .UseKestrel()
                 .UseWebRoot(Path.Combine(AppContext.BaseDirectory, baseDir))
-                .Configure(app => app.UseStaticFiles(new StaticFileOptions()
+                .Configure(app => app.UseStaticFiles(new StaticFileOptions
                 {
                     RequestPath = new PathString(baseUrl),
                 }));
@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.StaticFiles
             {
                 var hostingEnvironment = server.Services.GetService<IHostingEnvironment>();
 
-                using (var client = new HttpClient() { BaseAddress = new Uri(server.GetAddress()) })
+                using (var client = new HttpClient { BaseAddress = new Uri(server.GetAddress()) })
                 {
                     var fileInfo = hostingEnvironment.WebRootFileProvider.GetFileInfo(Path.GetFileName(requestUrl));
                     var response = await client.GetAsync(requestUrl);
@@ -130,7 +130,7 @@ namespace Microsoft.AspNetCore.StaticFiles
                 .ConfigureServices(services => services.AddSingleton(LoggerFactory))
                 .UseKestrel()
                 .UseWebRoot(Path.Combine(AppContext.BaseDirectory, baseDir))
-                .Configure(app => app.UseStaticFiles(new StaticFileOptions()
+                .Configure(app => app.UseStaticFiles(new StaticFileOptions
                 {
                     RequestPath = new PathString(baseUrl),
                 }));
@@ -139,7 +139,7 @@ namespace Microsoft.AspNetCore.StaticFiles
             {
                 var hostingEnvironment = server.Services.GetService<IHostingEnvironment>();
 
-                using (var client = new HttpClient() { BaseAddress = new Uri(server.GetAddress()) })
+                using (var client = new HttpClient { BaseAddress = new Uri(server.GetAddress()) })
                 {
                     var fileInfo = hostingEnvironment.WebRootFileProvider.GetFileInfo(Path.GetFileName(requestUrl));
                     var request = new HttpRequestMessage(HttpMethod.Head, requestUrl);
@@ -181,7 +181,7 @@ namespace Microsoft.AspNetCore.StaticFiles
         {
             var interval = TimeSpan.FromSeconds(15);
             var requestReceived = new ManualResetEvent(false);
-            var requestCacelled = new ManualResetEvent(false);
+            var requestCancelled = new ManualResetEvent(false);
             var responseComplete = new ManualResetEvent(false);
             Exception exception = null;
             var builder = new WebHostBuilder()
@@ -194,7 +194,7 @@ namespace Microsoft.AspNetCore.StaticFiles
                         try
                         {
                             requestReceived.Set();
-                            Assert.True(requestCacelled.WaitOne(interval), "not cancelled");
+                            Assert.True(requestCancelled.WaitOne(interval), "not cancelled");
                             Assert.True(context.RequestAborted.WaitHandle.WaitOne(interval), "not aborted");
                             await next();
                         }
@@ -224,7 +224,7 @@ namespace Microsoft.AspNetCore.StaticFiles
 
                 socket.LingerState = new LingerOption(true, 0);
                 socket.Dispose();
-                requestCacelled.Set();
+                requestCancelled.Set();
 
                 Assert.True(responseComplete.WaitOne(interval), "not completed");
                 Assert.Null(exception);
