@@ -22,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <SignedPackageFile Include="lib/$(TargetFramework)/$(TargetFileName)" Certificate="$(AssemblySigningCertName)" />
+    <SignedPackageFile Include="$(TargetPath)" PackagePath="lib/$(TargetFramework)/$(TargetFileName)" Certificate="$(AssemblySigningCertName)" />
   </ItemGroup>
 
   <Target Name="PopulateNuspec" BeforeTargets="GenerateNuspec" DependsOnTargets="BuiltProjectOutputGroup;DebugSymbolsProjectOutputGroup;DocumentationProjectOutputGroup">
