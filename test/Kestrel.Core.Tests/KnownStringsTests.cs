@@ -23,8 +23,8 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         static byte[] _methodOptions = Encoding.ASCII.GetBytes("OPTIONS ");
         static byte[] _methodTrace = Encoding.ASCII.GetBytes("TRACE \0\0");
 
-        const int MagicNumer = 0x0600000C;
-        static byte[] _invalidMethod1 = BitConverter.GetBytes((ulong)MagicNumer);
+        const int MagicNumber = 0x0600000C;
+        static byte[] _invalidMethod1 = BitConverter.GetBytes((ulong)MagicNumber);
         static byte[] _invalidMethod2 = { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff };
         static byte[] _invalidMethod3 = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
         static byte[] _invalidMethod4 = Encoding.ASCII.GetBytes("CONNECT_");

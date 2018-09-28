@@ -159,7 +159,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             catch (OperationCanceledException)
             {
                 // TryRead can throw OperationCanceledException https://github.com/dotnet/corefx/issues/32029
-                // beacuse of buggy logic, this works around that for now
+                // because of buggy logic, this works around that for now
             }
             catch (BadHttpRequestException ex)
             {
@@ -596,9 +596,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
 
                     suffixBuffer = suffixBuffer.Slice(0, 2);
-                    var sufixSpan = suffixBuffer.ToSpan();
+                    var suffixSpan = suffixBuffer.ToSpan();
 
-                    if (sufixSpan[1] == '\n')
+                    if (suffixSpan[1] == '\n')
                     {
                         // We consumed the \r\n at the end of the extension, so switch modes.
                         _mode = _inputLength > 0 ? Mode.Data : Mode.Trailer;

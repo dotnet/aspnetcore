@@ -36,8 +36,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
-                TryGetValueFast(key, out value);
+                TryGetValueFast(key, out var value);
                 return value;
             }
             set
@@ -66,8 +65,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             get
             {
                 // Unlike the IHeaderDictionary version, this getter will throw a KeyNotFoundException.
-                StringValues value;
-                if (!TryGetValueFast(key, out value))
+                if (!TryGetValueFast(key, out var value))
                 {
                     ThrowKeyNotFoundException();
                 }
@@ -197,9 +195,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         bool ICollection<KeyValuePair<string, StringValues>>.Contains(KeyValuePair<string, StringValues> item)
         {
-            StringValues value;
             return
-                TryGetValueFast(item.Key, out value) &&
+                TryGetValueFast(item.Key, out var value) &&
                 value.Equals(item.Value);
         }
 
@@ -229,9 +226,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         bool ICollection<KeyValuePair<string, StringValues>>.Remove(KeyValuePair<string, StringValues> item)
         {
-            StringValues value;
             return
-                TryGetValueFast(item.Key, out value) &&
+                TryGetValueFast(item.Key, out var value) &&
                 value.Equals(item.Value) &&
                 RemoveFast(item.Key);
         }

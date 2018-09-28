@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
         }
 
         [Fact]
-        public void ReadCertificatesWhenEmptyCertificatsSection_ReturnsEmptyCollection()
+        public void ReadCertificatesWhenEmptyCertificatesSection_ReturnsEmptyCollection()
         {
             var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
             {
@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
         }
 
         [Fact]
-        public void ReadCertificatsSection_ReturnsCollection()
+        public void ReadCertificatesSection_ReturnsCollection()
         {
             var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
             {

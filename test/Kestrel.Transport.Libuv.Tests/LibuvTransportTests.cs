@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             var serviceContext = new TestServiceContext();
             listenOptions.UseHttpServer(listenOptions.ConnectionAdapters, serviceContext, new DummyApplication(TestApp.EchoApp), HttpProtocols.Http1);
 
-            var transportContext = new TestLibuvTransportContext()
+            var transportContext = new TestLibuvTransportContext
             {
                 ConnectionDispatcher = new ConnectionDispatcher(serviceContext, listenOptions.Build())
             };
@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
 
             listenOptions.UseHttpServer(listenOptions.ConnectionAdapters, serviceContext, testApplication, HttpProtocols.Http1);
 
-            var transportContext = new TestLibuvTransportContext()
+            var transportContext = new TestLibuvTransportContext
             {
                 ConnectionDispatcher = new ConnectionDispatcher(serviceContext, listenOptions.Build()),
                 Options = new LibuvTransportOptions { ThreadCount = threadCount }

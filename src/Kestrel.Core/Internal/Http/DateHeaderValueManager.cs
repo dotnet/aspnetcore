@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             Buffer.BlockCopy(_datePreambleBytes, 0, dateBytes, 0, _datePreambleBytes.Length);
             Encoding.ASCII.GetBytes(dateValue, 0, dateValue.Length, dateBytes, _datePreambleBytes.Length);
 
-            var dateValues = new DateHeaderValues()
+            var dateValues = new DateHeaderValues
             {
                 Bytes = dateBytes,
                 String = dateValue

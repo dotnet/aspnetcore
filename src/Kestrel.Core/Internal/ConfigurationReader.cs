@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         private void ReadEndpointDefaults()
         {
             var configSection = _configuration.GetSection(EndpointDefaultsKey);
-            _endpointDefaults = new EndpointDefaults()
+            _endpointDefaults = new EndpointDefaults
             {
                 Protocols = ParseProtocols(configSection[ProtocolsKey])
             };
@@ -110,7 +110,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                     throw new InvalidOperationException(CoreStrings.FormatEndpointMissingUrl(endpointConfig.Key));
                 }
 
-                var endpoint = new EndpointConfig()
+                var endpoint = new EndpointConfig
                 {
                     Name = endpointConfig.Key,
                     Url = url,

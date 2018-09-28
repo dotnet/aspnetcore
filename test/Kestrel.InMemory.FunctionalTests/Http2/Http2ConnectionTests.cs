@@ -1970,7 +1970,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await SendRstStreamAsync(1);
             // Any paused writes for stream 1 should complete after an RST_STREAM
-            // even without any preceeding window updates.
+            // even without any preceding window updates.
             await _runningStreams[1].Task.DefaultTimeout();
 
             // A connection-level window update allows the non-reset stream to continue.
@@ -2771,7 +2771,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public async Task GOAWAY_Received_ContinuesAppsAwaitingStreamOutputFlowControle()
+        public async Task GOAWAY_Received_ContinuesAppsAwaitingStreamOutputFlowControl()
         {
             var writeTasks = new Task[6];
             var initialWindowSize = _helloWorldBytes.Length / 2;

@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         public static IList<Tuple<string, string>> EnumerateTestCases()
         {
             var testCases = new List<Tuple<string, string>>();
-            var processOptions = new ProcessStartInfo()
+            var processOptions = new ProcessStartInfo
             {
                 FileName = GetToolLocation(),
                 RedirectStandardOutput = true,
@@ -165,11 +165,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             description = string.Empty;
             return false;
         }
-        
+
         public static void RunTest(string testId, int port, bool https, ILogger logger)
         {
             var tempFile = Path.GetTempPath() + Guid.NewGuid() + ".xml";
-            var processOptions = new ProcessStartInfo()
+            var processOptions = new ProcessStartInfo
             {
                 FileName = GetToolLocation(),
                 RedirectStandardOutput = true,

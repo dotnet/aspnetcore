@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
                         skip = "https://github.com/aspnet/KestrelHttpServer/issues/2154";
                     }
 
-                    dataset.Add(new H2SpecTestCase()
+                    dataset.Add(new H2SpecTestCase
                     {
                         Id = testcase.Item1,
                         Description = testcase.Item2,
@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
                         Skip = skip,
                     });
 
-                    dataset.Add(new H2SpecTestCase()
+                    dataset.Add(new H2SpecTestCase
                     {
                         Id = testcase.Item1,
                         Description = testcase.Item2,

@@ -977,7 +977,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 // https://github.com/aspnet/KestrelHttpServer/issues/2051
                 if (_requestHeaderParsingState != RequestHeaderParsingState.Trailers)
                 {
-                    // Throws BadReqeust for header count limit breaches.
+                    // Throws BadRequest for header count limit breaches.
                     // Throws InvalidOperation for bad encoding.
                     _currentHeadersStream.OnHeader(name, value);
                 }

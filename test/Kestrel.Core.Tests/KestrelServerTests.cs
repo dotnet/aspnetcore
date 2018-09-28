@@ -390,7 +390,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void StartingServerInitializesHeartbeat()
         {
-            var testContext = new TestServiceContext()
+            var testContext = new TestServiceContext
             {
                 ServerOptions =
                 {
