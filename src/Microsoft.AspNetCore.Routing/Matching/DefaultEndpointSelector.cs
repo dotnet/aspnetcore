@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
     internal class DefaultEndpointSelector : EndpointSelector
     {
         private readonly IEndpointSelectorPolicy[] _selectorPolicies;
-        
+
         public DefaultEndpointSelector(IEnumerable<MatcherPolicy> matcherPolicies)
         {
             if (matcherPolicies == null)
@@ -23,13 +23,73 @@ namespace Microsoft.AspNetCore.Routing.Matching
             _selectorPolicies = matcherPolicies.OrderBy(p => p.Order).OfType<IEndpointSelectorPolicy>().ToArray();
         }
 
-        public override async Task SelectAsync(
+        public override Task SelectAsync(
+            HttpContext httpContext,
+            EndpointSelectorContext context,
+            CandidateSet candidateSet)
+        {
+            if (httpContext == null)
+            {
+                throw new ArgumentNullException(nameof(httpContext));
+            }
+
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (candidateSet == null)
+            {
+                throw new ArgumentNullException(nameof(candidateSet));
+            }
+
+            if (_selectorPolicies.Length > 0)
+            {
+                // Slow path: we need async to run policies
+                return SelectAsyncSlow(httpContext, context, candidateSet);
+            }
+
+            // Fast path: We can specialize for trivial numbers of candidates since there can
+            // be no ambiguities and we don't need to run policies.
+            switch (candidateSet.Count)
+            {
+                case 0:
+                    {
+                        // Do nothing
+                        break;
+                    }
+
+                case 1:
+                    {
+                        if (candidateSet.IsValidCandidate(0))
+                        {
+                            ref var state = ref candidateSet[0];
+                            context.Endpoint = state.Endpoint;
+                            context.RouteValues = state.Values;
+                        }
+
+                        break;
+                    }
+
+                default:
+                    {
+                        // Slow path: There's more than one candidate (to say nothing of validity) so we
+                        // have to process for ambiguities.
+                        ProcessFinalCandidates(httpContext, context, candidateSet);
+                        break;
+                    }
+            }
+
+            return Task.CompletedTask;
+        }
+
+        private async Task SelectAsyncSlow(
             HttpContext httpContext,
             EndpointSelectorContext context,
             CandidateSet candidateSet)
         {
             var selectorPolicies = _selectorPolicies;
-            for (var i = 0; i < _selectorPolicies.Length; i++)
+            for (var i = 0; i < selectorPolicies.Length; i++)
             {
                 await selectorPolicies[i].ApplyAsync(httpContext, context, candidateSet);
                 if (context.Endpoint != null)
