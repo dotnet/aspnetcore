@@ -64,7 +64,6 @@ namespace TriageBuildFailures.GitHub
 
             return issues.Where(i =>
                 i.Title.StartsWith("Flaky", StringComparison.OrdinalIgnoreCase)
-                || i.Title.StartsWith("flakey", StringComparison.OrdinalIgnoreCase)
                 || i.Title.StartsWith("Test failure:", StringComparison.OrdinalIgnoreCase)
                 || i.Labels.Any(l =>
                     l.Name.Contains("Flaky", StringComparison.OrdinalIgnoreCase)
@@ -121,7 +120,7 @@ namespace TriageBuildFailures.GitHub
                 repo = "Home";
             }
 
-            body += $"\n\nThis issue was made automatically. If there is a problem contact {Config.BuildBuddyUsername}.";
+            body = $"This issue was made automatically. If there is a problem contact {Config.BuildBuddyUsername}.\n\n{body}";
 
             if (body.Length > MaxBodyLength)
             {

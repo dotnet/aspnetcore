@@ -18,7 +18,7 @@ namespace TriageBuildFailures.GitHub
             if (!commentsAboutThisBuild.Any())
             {
                 var count = testNames.Count;
-                var newComment = $"There were {count} failures [with about the same error]({build.WebURL}) on {build.BranchName}:\n";
+                var newComment = $"There were {count} failures [with about the same error]({build.WebURL}) on {build.BranchName} at {build.StartDate.ToString("T")}:\n";
                 var testOutputLimit = 10;
                 for (var i = 0; i < testOutputLimit && i < count; ++i)
                 {
@@ -52,7 +52,7 @@ namespace TriageBuildFailures.GitHub
             var (commentsAboutThisBuild, commentsFromToday) = await gitHubClient.GatherComments(build, issue);
             if (!commentsAboutThisBuild.Any())
             {
-                var comment = $"{buildName} [failed with about the same error]({build.WebURL}) on {build.BranchName}.";
+                var comment = $"{buildName} [failed again]({build.WebURL}) on {build.BranchName} at {build.StartDate.ToString("T")}.";
                 if (commentsFromToday.Count() == 0)
                 {
                     await gitHubClient.CreateComment(issue, comment);
@@ -87,6 +87,5 @@ namespace TriageBuildFailures.GitHub
 
             return (commentsAboutThisBuild, botCommentsFromToday);
         }
-
     }
 }

@@ -97,10 +97,12 @@ namespace TriageBuildFailures.Handlers
                 {
                     var subject = $"Test failure: {shortTestName}";
                     // TODO: CC area experts
-                    var body = $@"This test [fails]({build.WebURL}) occasionally with the following error:
+                    var body = $@"This test [failed]({build.WebURL}) with the following error:
+
 ```
 {TrimTestFailureText(errors)}
 ```
+
 Other tests within that build may have failed with a similar message, but they are not listed here. Check the link above for more info.
 
 This test failed on {build.BranchName}.
@@ -121,7 +123,9 @@ CC {GetManagerMentions(repo)}";
                     {
                         testNames = new List<string>() { shortTestName };
                         testAggregates.Add(applicableIssues.First(), testNames);
-                    } else {
+                    }
+                    else
+                    {
                         testNames.Add(shortTestName);
                     }
                 }

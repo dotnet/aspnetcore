@@ -23,7 +23,6 @@ namespace TriageBuildFailures.Handlers
             "error KRB4005:",
             "Failed to publish artifacts:",
             "error :",
-            "error:",
             "The active test run was aborted. Reason:",
         };
 
