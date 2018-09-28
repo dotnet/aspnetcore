@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Http
     public interface IFormFileCollection : IReadOnlyList<IFormFile>
     {
         /// <summary>
-        /// Gets the file with the specified name.
+        /// Gets the first file with the specified name.
         /// </summary>
         /// <param name="name">The name of the file to get.</param>
         /// <returns>
@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Http
         IFormFile this[string name] { get; }
 
         /// <summary>
-        /// Gets the file with the specified name.
+        /// Gets the first file with the specified name.
         /// </summary>
         /// <param name="name">The name of the file to get.</param>
         /// <returns>
