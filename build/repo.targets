@@ -48,7 +48,7 @@
     <Message Text="Running Java client tests" Importance="high" />
     <Message Text="> gradlew $(GradleOptions) test" Importance="high" />
     <Exec Command="./gradlew $(GradleOptions) test" WorkingDirectory="$(RepositoryRoot)clients/java/signalr" IgnoreStandardErrorWarningFormat="true" />
-  </Target> 
+  </Target>
 
   <PropertyGroup>
     <GetArtifactInfoDependsOn>$(GetArtifactInfoDependsOn);GetNpmArtifactInfo;GetJavaArtifactInfo</GetArtifactInfoDependsOn>
@@ -88,7 +88,7 @@
         <Category>ship</Category>
       </ArtifactInfo>
 
-      <FilesToExcludeFromSigning Include="$(BuildDir)\%(Jars.Identity)" />
+      <FilesToSign Include="$(BuildDir)\%(Jars.Identity)" Certificate="MicrosoftJAR" />
       <FilesToExcludeFromSigning Include="$(BuildDir)\%(PomFile.Identity)" />
     </ItemGroup>
   </Target>
