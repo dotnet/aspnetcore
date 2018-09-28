@@ -16,7 +16,16 @@ namespace TriageBuildFailures.Handlers
     /// </summary>
     public class HandleBuildTimeFailures : HandleFailureBase
     {
-        private IEnumerable<string> BuildTimeErrors = new string[] { "E:	 ", "error NU1603:", "error KRB4005:", "Failed to publish artifacts:", "error :", "error:", "The active test run was aborted. Reason:" };
+        private IEnumerable<string> BuildTimeErrors = new string[]
+        {
+            "E:	 ",
+            "error NU1603:",
+            "error KRB4005:",
+            "Failed to publish artifacts:",
+            "error :",
+            "error:",
+            "The active test run was aborted. Reason:",
+        };
 
         public override bool CanHandleFailure(TeamCityBuild build)
         {
@@ -26,7 +35,7 @@ namespace TriageBuildFailures.Handlers
         }
 
         private const string _BrokenBuildLabel = "Broken Build";
-        private static readonly IEnumerable<string> _Notifiers = new string[] { "@Eilon", "@mkArtakMSFT", "@muratg" };
+        private static readonly string[] _Notifiers = new string[] { "Eilon", "mkArtakMSFT", "muratg" };
 
         public override async Task HandleFailure(TeamCityBuild build)
         {
@@ -40,24 +49,26 @@ namespace TriageBuildFailures.Handlers
 
             if (applicableIssues.Count() > 0)
             {
-                await CommentOnBuild(build, applicableIssues.First(), build.BuildName);
+                await GHClient.CommentOnBuild(build, applicableIssues.First(), build.BuildName);
             }
             else
             {
                 var body = $@"{build.BuildName} failed with the following errors:
+
 ```
 {ConstructErrorSummary(log)}
 ```
+
 {build.WebURL}
 
-CC {string.Join(", ", _Notifiers)}";
-                var tags = new List<string> { _BrokenBuildLabel, BranchLabel(build.BranchName) };
+CC {GitHubUtils.GetAtMentions(_Notifiers)}";
+                var tags = new List<string> { _BrokenBuildLabel, GitHubUtils.GetBranchLabel(build.BranchName) };
 
                 await GHClient.CreateIssue(owner, repo, subject, body, tags);
             }
         }
 
-        public IEnumerable<GithubIssue> GetApplicableIssues(IEnumerable<GithubIssue> issues, string issueTitle)
+        public IEnumerable<GitHubIssue> GetApplicableIssues(IEnumerable<GitHubIssue> issues, string issueTitle)
         {
             return issues.Where(i =>
                 i.Title.Equals(issueTitle, StringComparison.OrdinalIgnoreCase) &&

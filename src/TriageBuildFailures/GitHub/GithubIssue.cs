@@ -6,9 +6,9 @@ using Octokit;
 
 namespace TriageBuildFailures.GitHub
 {
-    public class GithubIssue : Issue
+    public class GitHubIssue : Issue
     {
-        public GithubIssue(Issue issue)
+        public GitHubIssue(Issue issue)
             : base(issue.Url, issue.HtmlUrl, issue.CommentsUrl, issue.EventsUrl, issue.Number, issue.State.Value, issue.Title,
                   issue.Body, issue.ClosedBy, issue.User, issue.Labels, issue.Assignee, issue.Assignees, issue.Milestone,
                   issue.Comments, issue.PullRequest, issue.ClosedAt, issue.CreatedAt, issue.UpdatedAt, issue.Id, issue.Locked,
@@ -34,7 +34,7 @@ namespace TriageBuildFailures.GitHub
 
         public override bool Equals(object obj)
         {
-            var issue = obj as GithubIssue;
+            var issue = obj as GitHubIssue;
             return issue != null &&
                    RepositoryName == issue.RepositoryName &&
                    RepositoryOwner == issue.RepositoryOwner &&

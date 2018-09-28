@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Common;
@@ -80,7 +79,7 @@ namespace TriageBuildFailures.Handlers
             var tests = TCClient.GetTests(build);
             var failures = tests.Where(s => s.Status == BuildStatus.FAILURE);
 
-            var testAggregates = new Dictionary<GithubIssue, List<string>>();
+            var testAggregates = new Dictionary<GitHubIssue, List<string>>();
 
             foreach (var failure in failures)
             {
@@ -106,10 +105,10 @@ Other tests within that build may have failed with a similar message, but they a
 
 This test failed on {build.BranchName}.
 
-CC @{ GetManager(repo) }";
+CC {GetManagerMentions(repo)}";
 
                     //TODO: We'd like to link the test history here but TC api doens't make it easy
-                    var tags = new List<string> { GitHubClientWrapper.TestFailureTag, BranchLabel(build.BranchName) };
+                    var tags = new List<string> { GitHubClientWrapper.TestFailureTag, GitHubUtils.GetBranchLabel(build.BranchName) };
 
                     var issue = await GHClient.CreateIssue(owner, repo, subject, body, tags);
                     await GHClient.AddIssueToProject(issue, GHClient.Config.FlakyProjectColumn);
@@ -130,22 +129,22 @@ CC @{ GetManager(repo) }";
 
             foreach (var test in testAggregates)
             {
-                await CommentOnTest(build, test.Key, test.Value);
+                await GHClient.CommentOnTest(build, test.Key, test.Value);
             }
         }
 
-        private string GetManager(string repoName)
+        private string GetManagerMentions(string repoName)
         {
             var repo = Config.GitHub.Repos.FirstOrDefault(r => r.Name.Equals(repoName, StringComparison.OrdinalIgnoreCase));
 
             if (repo == null || string.IsNullOrEmpty(repo.Manager))
             {
                 // Default to Eilon
-                return "Eilon (because the bot doesn't know who else to pick)";
+                return "@Eilon (because the bot doesn't know who else to pick)";
             }
             else
             {
-                return repo.Manager;
+                return GitHubUtils.GetAtMentions(repo.Manager);
             }
         }
 
@@ -197,7 +196,7 @@ CC @{ GetManager(repo) }";
             }
         }
 
-        private IEnumerable<GithubIssue> GetApplicableIssues(IEnumerable<GithubIssue> issues, TestOccurrence failure)
+        private IEnumerable<GitHubIssue> GetApplicableIssues(IEnumerable<GitHubIssue> issues, TestOccurrence failure)
         {
             var testError = TCClient.GetTestFailureText(failure);
             var testException = SafeGetExceptionMessage(testError); ;

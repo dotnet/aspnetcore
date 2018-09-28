@@ -13,11 +13,4 @@ namespace TriageBuildFailures.GitHub
         public string BotUsername { get; set; }
         public IEnumerable<GitHubRepoConfig> Repos { get; set; }
     }
-
-    public class GitHubRepoConfig
-    {
-        public string Name { get; set; }
-        public string Manager { get; set; }
-        public bool IssuesOnHomeRepo { get; set; } = false;
-    }
 }

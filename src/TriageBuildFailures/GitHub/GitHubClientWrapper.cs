@@ -36,7 +36,7 @@ namespace TriageBuildFailures.GitHub
         /// <param name="repo">The repo to retrieve issues for.</param>
         /// <returns>The issues which apply to the given repo.</returns>
         /// <remarks>We take care of repos which keep their issues on the home repo within this function.</remarks>
-        public async Task<IEnumerable<GithubIssue>> GetIssues(string owner, string repo)
+        public async Task<IEnumerable<GitHubIssue>> GetIssues(string owner, string repo)
         {
             var request = new RepositoryIssueRequest
             {
@@ -50,7 +50,7 @@ namespace TriageBuildFailures.GitHub
             }
 
             var issues = await Client.Issue.GetAllForRepository(owner, repo, request);
-            return issues.Select(i => new GithubIssue(i));
+            return issues.Select(i => new GitHubIssue(i));
         }
 
         /// <summary>
@@ -58,17 +58,17 @@ namespace TriageBuildFailures.GitHub
         /// </summary>
         /// <param name="repo">The repo to search.</param>
         /// <returns>The list of flaky issues.</returns>
-        public async Task<IEnumerable<GithubIssue>> GetFlakyIssues(string owner, string repo)
+        public async Task<IEnumerable<GitHubIssue>> GetFlakyIssues(string owner, string repo)
         {
             var issues = await GetIssues(owner, repo);
 
             return issues.Where(i =>
-            i.Title.StartsWith("Flaky", StringComparison.OrdinalIgnoreCase)
-            || i.Title.StartsWith("flakey", StringComparison.OrdinalIgnoreCase)
-            || i.Title.StartsWith("Test failure:", StringComparison.OrdinalIgnoreCase)
-            || i.Labels.Any(l =>
-                l.Name.Contains("Flaky", StringComparison.OrdinalIgnoreCase)
-                || l.Name.Contains(TestFailureTag, StringComparison.OrdinalIgnoreCase)));
+                i.Title.StartsWith("Flaky", StringComparison.OrdinalIgnoreCase)
+                || i.Title.StartsWith("flakey", StringComparison.OrdinalIgnoreCase)
+                || i.Title.StartsWith("Test failure:", StringComparison.OrdinalIgnoreCase)
+                || i.Labels.Any(l =>
+                    l.Name.Contains("Flaky", StringComparison.OrdinalIgnoreCase)
+                    || l.Name.Contains(TestFailureTag, StringComparison.OrdinalIgnoreCase)));
         }
 
         private bool IssuesOnHomeRepo(string repoName)
@@ -78,37 +78,37 @@ namespace TriageBuildFailures.GitHub
             return repo == null ? false : repo.IssuesOnHomeRepo;
         }
 
-        public async Task AddIssueToProject(GithubIssue issue, int columnId)
+        public async Task AddIssueToProject(GitHubIssue issue, int columnId)
         {
             var newCard = new NewProjectCard($"{issue.RepositoryOwner}/{issue.RepositoryName}#{issue.Number}");
             await Client.Repository.Project.Card.Create(columnId, newCard);
         }
 
-        public async Task AddLabel(GithubIssue issue, string label)
+        public async Task AddLabel(GitHubIssue issue, string label)
         {
             await Client.Issue.Labels.AddToIssue(issue.RepositoryOwner, issue.RepositoryName, issue.Number, new string[] { label });
         }
 
-        public async Task<IEnumerable<IssueComment>> GetIssueComments(GithubIssue issue)
+        public async Task<IEnumerable<IssueComment>> GetIssueComments(GitHubIssue issue)
         {
             return await Client.Issue.Comment.GetAllForIssue(issue.RepositoryOwner, issue.RepositoryName, issue.Number);
         }
 
-        public async Task CreateComment(GithubIssue issue, string comment)
+        public async Task CreateComment(GitHubIssue issue, string comment)
         {
             comment += $"\n\nThis comment was made automatically. If there is a problem contact {Config.BuildBuddyUsername}.";
 
             await Client.Issue.Comment.Create(issue.RepositoryOwner, issue.RepositoryName, issue.Number, comment);
         }
 
-        public async Task EditComment(GithubIssue issue, IssueComment comment, string newBody)
+        public async Task EditComment(GitHubIssue issue, IssueComment comment, string newBody)
         {
             await Client.Issue.Comment.Update(issue.RepositoryOwner, issue.RepositoryName, comment.Id, newBody);
         }
 
         public const int MaxBodyLength = 64000;
 
-        public async Task<GithubIssue> CreateIssue(string owner, string repo, string subject, string body, IList<string> labels)
+        public async Task<GitHubIssue> CreateIssue(string owner, string repo, string subject, string body, IList<string> labels)
         {
             if (IssuesOnHomeRepo(repo))
             {
@@ -138,7 +138,7 @@ namespace TriageBuildFailures.GitHub
                 newIssue.Labels.Add(label);
             }
 
-            return new GithubIssue(await Client.Issue.Create(owner, repo, newIssue));
+            return new GitHubIssue(await Client.Issue.Create(owner, repo, newIssue));
         }
     }
 }

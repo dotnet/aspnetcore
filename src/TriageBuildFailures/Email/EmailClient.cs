@@ -12,9 +12,9 @@ namespace TriageBuildFailures.Email
     public class EmailClient
     {
         private readonly IReporter _reporter;
-        private SmtpClient _smtpClient;
+        private readonly SmtpClient _smtpClient;
 
-        public EmailConfig Config { get; private set; }
+        public EmailConfig Config { get; }
 
         public EmailClient(EmailConfig config, IReporter reporter)
         {
