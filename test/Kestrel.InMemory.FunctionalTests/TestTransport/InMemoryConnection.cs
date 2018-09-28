@@ -9,31 +9,32 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
 {
     public class InMemoryConnection : StreamBackedTestConnection
     {
-        private readonly InMemoryTransportConnection _transportConnection;
 
         public InMemoryConnection(InMemoryTransportConnection transportConnection)
             : base(new RawStream(transportConnection.Output, transportConnection.Input))
         {
-            _transportConnection = transportConnection;
+            TransportConnection = transportConnection;
         }
+
+        public InMemoryTransportConnection TransportConnection { get; }
 
         public override void Reset()
         {
-            _transportConnection.Input.Complete(new ConnectionResetException(string.Empty));
-            _transportConnection.OnClosed();
+            TransportConnection.Input.Complete(new ConnectionResetException(string.Empty));
+            TransportConnection.OnClosed();
         }
 
         public override void ShutdownSend()
         {
-            _transportConnection.Input.Complete();
-            _transportConnection.OnClosed();
+            TransportConnection.Input.Complete();
+            TransportConnection.OnClosed();
         }
 
         public override void Dispose()
         {
-            _transportConnection.Input.Complete();
-            _transportConnection.Output.Complete();
-            _transportConnection.OnClosed();
+            TransportConnection.Input.Complete();
+            TransportConnection.Output.Complete();
+            TransportConnection.OnClosed();
             base.Dispose();
         }
     }

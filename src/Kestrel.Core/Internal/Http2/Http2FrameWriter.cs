@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private readonly OutputFlowControl _connectionOutputFlowControl;
         private readonly string _connectionId;
         private readonly IKestrelTrace _log;
-        private readonly StreamSafePipeFlusher _flusher;
+        private readonly TimingPipeFlusher _flusher;
 
         private bool _completed;
 
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             _connectionOutputFlowControl = connectionOutputFlowControl;
             _connectionId = connectionId;
             _log = log;
-            _flusher = new StreamSafePipeFlusher(_outputWriter, timeoutControl);
+            _flusher = new TimingPipeFlusher(_outputWriter, timeoutControl);
             _outgoingFrame = new Http2Frame();
             _headerEncodingBuffer = new byte[_maxFrameSize];
         }
@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
         }
 
-        public Task FlushAsync(IHttpOutputProducer outputProducer, CancellationToken cancellationToken)
+        public Task FlushAsync(IHttpOutputAborter outputAborter, CancellationToken cancellationToken)
         {
             lock (_writeLock)
             {
@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     return Task.CompletedTask;
                 }
 
-                return _flusher.FlushAsync(0, outputProducer, cancellationToken);
+                return _flusher.FlushAsync(outputAborter, cancellationToken);
             }
         }
 

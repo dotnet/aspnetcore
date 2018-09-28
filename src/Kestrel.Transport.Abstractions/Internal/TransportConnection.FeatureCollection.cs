@@ -21,8 +21,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
                                                ITransportSchedulerFeature,
                                                IConnectionLifetimeFeature,
                                                IConnectionHeartbeatFeature,
-                                               IConnectionLifetimeNotificationFeature,
-                                               IBytesWrittenFeature
+                                               IConnectionLifetimeNotificationFeature
     {
         // NOTE: When feature interfaces are added to or removed from this TransportConnection class implementation,
         // then the list of `features` in the generated code project MUST also be updated.
@@ -101,7 +100,5 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
         {
             OnHeartbeat(action, state);
         }
-
-        long IBytesWrittenFeature.TotalBytesWritten => TotalBytesWritten;
     }
 }

@@ -3,10 +3,8 @@
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
-    public enum TimeoutAction
+    public interface ITimeoutHandler
     {
-        StopProcessingNextRequest,
-        SendTimeoutResponse,
-        AbortConnection,
+        void OnTimeout(TimeoutReason reason);
     }
 }

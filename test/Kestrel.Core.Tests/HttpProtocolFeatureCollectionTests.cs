@@ -23,9 +23,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         private readonly IDuplexPipe _application;
         private readonly TestHttp1Connection _http1Connection;
         private readonly ServiceContext _serviceContext;
-        private readonly Http1ConnectionContext _http1ConnectionContext;
+        private readonly HttpConnectionContext _http1ConnectionContext;
         private readonly MemoryPool<byte> _memoryPool;
-        private Mock<ITimeoutControl> _timeoutControl;
 
         private readonly IFeatureCollection _collection;
 
@@ -39,13 +38,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _application = pair.Application;
 
             _serviceContext = new TestServiceContext();
-            _timeoutControl = new Mock<ITimeoutControl>();
-            _http1ConnectionContext = new Http1ConnectionContext
+            _http1ConnectionContext = new HttpConnectionContext
             {
                 ServiceContext = _serviceContext,
                 ConnectionFeatures = new FeatureCollection(),
                 MemoryPool = _memoryPool,
-                TimeoutControl = _timeoutControl.Object,
+                TimeoutControl = Mock.Of<ITimeoutControl>(),
                 Transport = pair.Transport
             };
 

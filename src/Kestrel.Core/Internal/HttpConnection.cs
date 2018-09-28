@@ -8,7 +8,6 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Pipelines;
 using System.Net;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
@@ -24,12 +23,13 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 {
-    public class HttpConnection : ITimeoutControl, IConnectionTimeoutFeature
+    public class HttpConnection : ITimeoutHandler
     {
         private static readonly ReadOnlyMemory<byte> Http2Id = new[] { (byte)'h', (byte)'2' };
 
         private readonly HttpConnectionContext _context;
         private readonly ISystemClock _systemClock;
+        private readonly TimeoutControl _timeoutControl;
 
         private IList<IAdaptedConnection> _adaptedConnections;
         private IDuplexPipe _adaptedTransport;
@@ -39,32 +39,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         private IRequestProcessor _requestProcessor;
         private Http1Connection _http1Connection;
 
-        private long _lastTimestamp;
-        private long _timeoutTimestamp = long.MaxValue;
-        private TimeoutAction _timeoutAction;
-
-        private readonly object _readTimingLock = new object();
-        private bool _readTimingEnabled;
-        private bool _readTimingPauseRequested;
-        private long _readTimingElapsedTicks;
-        private long _readTimingBytesRead;
-
-        private readonly object _writeTimingLock = new object();
-        private int _writeTimingWrites;
-        private long _writeTimingTimeoutTimestamp;
-
         public HttpConnection(HttpConnectionContext context)
         {
             _context = context;
             _systemClock = _context.ServiceContext.SystemClock;
+
+            _timeoutControl = new TimeoutControl(this);
         }
 
         // For testing
         internal HttpProtocol Http1Connection => _http1Connection;
         internal IDebugger Debugger { get; set; } = DebuggerWrapper.Singleton;
-
-        // For testing
-        internal bool RequestTimedOut { get; private set; }
 
         public string ConnectionId => _context.ConnectionId;
         public IPEndPoint LocalEndPoint => _context.LocalEndPoint;
@@ -131,9 +116,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
                 using (connectionLifetimeNotificationFeature?.ConnectionClosedRequested.Register(state => ((HttpConnection)state).StopProcessingNextRequest(), this))
                 {
-                    _lastTimestamp = _context.ServiceContext.SystemClock.UtcNow.Ticks;
+                    // Ensure TimeoutControl._lastTimestamp is intialized before anything that could set timeouts runs.
+                    _timeoutControl.Initialize(_systemClock.UtcNow);
 
-                    _context.ConnectionFeatures.Set<IConnectionTimeoutFeature>(this);
+                    _context.ConnectionFeatures.Set<IConnectionTimeoutFeature>(_timeoutControl);
 
                     if (adaptedPipeline != null)
                     {
@@ -149,18 +135,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                         // Ensure that the connection hasn't already been stopped.
                         if (_protocolSelectionState == ProtocolSelectionState.Initializing)
                         {
+                            var derivedContext = CreateDerivedContext(_adaptedTransport);
+
                             switch (SelectProtocol())
                             {
                                 case HttpProtocols.Http1:
                                     // _http1Connection must be initialized before adding the connection to the connection manager
-                                    requestProcessor = _http1Connection = CreateHttp1Connection(_adaptedTransport);
+                                    requestProcessor = _http1Connection = new Http1Connection(derivedContext);
                                     _protocolSelectionState = ProtocolSelectionState.Selected;
                                     break;
                                 case HttpProtocols.Http2:
                                     // _http2Connection must be initialized before yielding control to the transport thread,
                                     // to prevent a race condition where _http2Connection.Abort() is called just as
                                     // _http2Connection is about to be initialized.
-                                    requestProcessor = CreateHttp2Connection(_adaptedTransport);
+                                    requestProcessor = new Http2Connection(derivedContext);
                                     _protocolSelectionState = ProtocolSelectionState.Selected;
                                     break;
                                 case HttpProtocols.None:
@@ -210,39 +198,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         // For testing only
         internal void Initialize(IDuplexPipe transport)
         {
-            _requestProcessor = _http1Connection = CreateHttp1Connection(transport);
+            _requestProcessor = _http1Connection = new Http1Connection(CreateDerivedContext(transport));
             _protocolSelectionState = ProtocolSelectionState.Selected;
         }
 
-        private Http1Connection CreateHttp1Connection(IDuplexPipe transport)
+        private HttpConnectionContext CreateDerivedContext(IDuplexPipe transport)
         {
-            return new Http1Connection(new Http1ConnectionContext
+            return new HttpConnectionContext
             {
                 ConnectionId = _context.ConnectionId,
                 ConnectionFeatures = _context.ConnectionFeatures,
-                MemoryPool = MemoryPool,
-                LocalEndPoint = LocalEndPoint,
-                RemoteEndPoint = RemoteEndPoint,
+                MemoryPool = _context.MemoryPool,
+                LocalEndPoint = _context.LocalEndPoint,
+                RemoteEndPoint = _context.RemoteEndPoint,
                 ServiceContext = _context.ServiceContext,
                 ConnectionContext = _context.ConnectionContext,
-                TimeoutControl = this,
+                TimeoutControl = _timeoutControl,
                 Transport = transport
-            });
-        }
-
-        private Http2Connection CreateHttp2Connection(IDuplexPipe transport)
-        {
-            return new Http2Connection(new Http2ConnectionContext
-            {
-                ConnectionId = _context.ConnectionId,
-                ConnectionContext = _context.ConnectionContext,
-                ServiceContext = _context.ServiceContext,
-                ConnectionFeatures = _context.ConnectionFeatures,
-                MemoryPool = MemoryPool,
-                LocalEndPoint = LocalEndPoint,
-                RemoteEndPoint = RemoteEndPoint,
-                Transport = transport
-            });
+            };
         }
 
         private void StopProcessingNextRequest()
@@ -379,11 +352,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         private void Tick()
         {
-            Tick(_systemClock.UtcNow);
-        }
-
-        public void Tick(DateTimeOffset now)
-        {
             if (_protocolSelectionState == ProtocolSelectionState.Aborted)
             {
                 // It's safe to check for timeouts on a dead connection,
@@ -391,246 +359,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 return;
             }
 
-            var timestamp = now.Ticks;
-
-            CheckForTimeout(timestamp);
-
-            // HTTP/2 rate timeouts are not yet supported.
-            if (_http1Connection != null)
-            {
-                CheckForReadDataRateTimeout(timestamp);
-                CheckForWriteDataRateTimeout(timestamp);
-            }
-
-            Interlocked.Exchange(ref _lastTimestamp, timestamp);
-        }
-
-        private void CheckForTimeout(long timestamp)
-        {
-            // TODO: Use PlatformApis.VolatileRead equivalent again
-            if (timestamp > Interlocked.Read(ref _timeoutTimestamp))
-            {
-                if (!Debugger.IsAttached)
-                {
-                    CancelTimeout();
-
-                    switch (_timeoutAction)
-                    {
-                        case TimeoutAction.StopProcessingNextRequest:
-                            // Http/2 keep-alive timeouts are not yet supported.
-                            _http1Connection?.StopProcessingNextRequest();
-                            break;
-                        case TimeoutAction.SendTimeoutResponse:
-                            // HTTP/2 timeout responses are not yet supported.
-                            if (_http1Connection != null)
-                            {
-                                RequestTimedOut = true;
-                                _http1Connection.SendTimeoutResponse();
-                            }
-                            break;
-                        case TimeoutAction.AbortConnection:
-                            // This is actually supported with HTTP/2!
-                            Abort(new ConnectionAbortedException(CoreStrings.ConnectionTimedOutByServer));
-                            break;
-                    }
-                }
-            }
-        }
-
-        private void CheckForReadDataRateTimeout(long timestamp)
-        {
-            Debug.Assert(_http1Connection != null);
-
-            // The only time when both a timeout is set and the read data rate could be enforced is
-            // when draining the request body. Since there's already a (short) timeout set for draining,
-            // it's safe to not check the data rate at this point.
-            if (Interlocked.Read(ref _timeoutTimestamp) != long.MaxValue)
-            {
-                return;
-            }
-
-            lock (_readTimingLock)
-            {
-                if (_readTimingEnabled)
-                {
-                    // Reference in local var to avoid torn reads in case the min rate is changed via IHttpMinRequestBodyDataRateFeature
-                    var minRequestBodyDataRate = _http1Connection.MinRequestBodyDataRate;
-
-                    _readTimingElapsedTicks += timestamp - _lastTimestamp;
-
-                    if (minRequestBodyDataRate?.BytesPerSecond > 0 && _readTimingElapsedTicks > minRequestBodyDataRate.GracePeriod.Ticks)
-                    {
-                        var elapsedSeconds = (double)_readTimingElapsedTicks / TimeSpan.TicksPerSecond;
-                        var rate = Interlocked.Read(ref _readTimingBytesRead) / elapsedSeconds;
-
-                        if (rate < minRequestBodyDataRate.BytesPerSecond && !Debugger.IsAttached)
-                        {
-                            Log.RequestBodyMinimumDataRateNotSatisfied(_context.ConnectionId, _http1Connection.TraceIdentifier, minRequestBodyDataRate.BytesPerSecond);
-                            RequestTimedOut = true;
-                            _http1Connection.SendTimeoutResponse();
-                        }
-                    }
-
-                    // PauseTimingReads() cannot just set _timingReads to false. It needs to go through at least one tick
-                    // before pausing, otherwise _readTimingElapsed might never be updated if PauseTimingReads() is always
-                    // called before the next tick.
-                    if (_readTimingPauseRequested)
-                    {
-                        _readTimingEnabled = false;
-                        _readTimingPauseRequested = false;
-                    }
-                }
-            }
-        }
-
-        private void CheckForWriteDataRateTimeout(long timestamp)
-        {
-            Debug.Assert(_http1Connection != null);
-
-            lock (_writeTimingLock)
-            {
-                if (_writeTimingWrites > 0 && timestamp > _writeTimingTimeoutTimestamp && !Debugger.IsAttached)
-                {
-                    RequestTimedOut = true;
-                    Log.ResponseMinimumDataRateNotSatisfied(_http1Connection.ConnectionIdFeature, _http1Connection.TraceIdentifier);
-                    Abort(new ConnectionAbortedException(CoreStrings.ConnectionTimedBecauseResponseMininumDataRateNotSatisfied));
-                }
-            }
-        }
-
-        public void SetTimeout(long ticks, TimeoutAction timeoutAction)
-        {
-            Debug.Assert(_timeoutTimestamp == long.MaxValue, "Concurrent timeouts are not supported");
-
-            AssignTimeout(ticks, timeoutAction);
-        }
-
-        public void ResetTimeout(long ticks, TimeoutAction timeoutAction)
-        {
-            AssignTimeout(ticks, timeoutAction);
-        }
-
-        public void CancelTimeout()
-        {
-            Interlocked.Exchange(ref _timeoutTimestamp, long.MaxValue);
-        }
-
-        private void AssignTimeout(long ticks, TimeoutAction timeoutAction)
-        {
-            _timeoutAction = timeoutAction;
-
-            // Add Heartbeat.Interval since this can be called right before the next heartbeat.
-            Interlocked.Exchange(ref _timeoutTimestamp, _lastTimestamp + ticks + Heartbeat.Interval.Ticks);
-        }
-
-        public void StartTimingReads()
-        {
-            lock (_readTimingLock)
-            {
-                _readTimingElapsedTicks = 0;
-                _readTimingBytesRead = 0;
-                _readTimingEnabled = true;
-            }
-        }
-
-        public void StopTimingReads()
-        {
-            lock (_readTimingLock)
-            {
-                _readTimingEnabled = false;
-            }
-        }
-
-        public void PauseTimingReads()
-        {
-            lock (_readTimingLock)
-            {
-                _readTimingPauseRequested = true;
-            }
-        }
-
-        public void ResumeTimingReads()
-        {
-            lock (_readTimingLock)
-            {
-                _readTimingEnabled = true;
-
-                // In case pause and resume were both called between ticks
-                _readTimingPauseRequested = false;
-            }
-        }
-
-        public void BytesRead(long count)
-        {
-            Interlocked.Add(ref _readTimingBytesRead, count);
-        }
-
-        public void StartTimingWrite(long size)
-        {
-            Debug.Assert(_http1Connection != null);
-
-            lock (_writeTimingLock)
-            {
-                var minResponseDataRate = _http1Connection.MinResponseDataRate;
-
-                if (minResponseDataRate != null)
-                {
-                    // Add Heartbeat.Interval since this can be called right before the next heartbeat.
-                    var currentTimeUpperBound = _lastTimestamp + Heartbeat.Interval.Ticks;
-                    var ticksToCompleteWriteAtMinRate = TimeSpan.FromSeconds(size / minResponseDataRate.BytesPerSecond).Ticks;
-
-                    // If ticksToCompleteWriteAtMinRate is less than the configured grace period,
-                    // allow that write to take up to the grace period to complete. Only add the grace period
-                    // to the current time and not to any accumulated timeout.
-                    var singleWriteTimeoutTimestamp = currentTimeUpperBound + Math.Max(
-                        minResponseDataRate.GracePeriod.Ticks,
-                        ticksToCompleteWriteAtMinRate);
-
-                    // Don't penalize a connection for completing previous writes more quickly than required.
-                    // We don't want to kill a connection when flushing the chunk terminator just because the previous
-                    // chunk was large if the previous chunk was flushed quickly.
-
-                    // Don't add any grace period to this accumulated timeout because the grace period could
-                    // get accumulated repeatedly making the timeout for a bunch of consecutive small writes
-                    // far too conservative.
-                    var accumulatedWriteTimeoutTimestamp = _writeTimingTimeoutTimestamp + ticksToCompleteWriteAtMinRate;
-
-                    _writeTimingTimeoutTimestamp = Math.Max(singleWriteTimeoutTimestamp, accumulatedWriteTimeoutTimestamp);
-                    _writeTimingWrites++;
-                }
-            }
-        }
-
-        public void StopTimingWrite()
-        {
-            lock (_writeTimingLock)
-            {
-                _writeTimingWrites--;
-            }
-        }
-
-        void IConnectionTimeoutFeature.SetTimeout(TimeSpan timeSpan)
-        {
-            if (timeSpan < TimeSpan.Zero)
-            {
-                throw new ArgumentException(CoreStrings.PositiveFiniteTimeSpanRequired, nameof(timeSpan));
-            }
-            if (_timeoutTimestamp != long.MaxValue)
-            {
-                throw new InvalidOperationException(CoreStrings.ConcurrentTimeoutsNotSupported);
-            }
-
-            SetTimeout(timeSpan.Ticks, TimeoutAction.AbortConnection);
-        }
-
-        void IConnectionTimeoutFeature.ResetTimeout(TimeSpan timeSpan)
-        {
-            if (timeSpan < TimeSpan.Zero)
-            {
-                throw new ArgumentException(CoreStrings.PositiveFiniteTimeSpanRequired, nameof(timeSpan));
-            }
-
-            ResetTimeout(timeSpan.Ticks, TimeoutAction.AbortConnection);
+            _timeoutControl.Tick(_systemClock.UtcNow);
         }
 
         private void CloseUninitializedConnection(ConnectionAbortedException abortReason)
@@ -641,6 +370,36 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
             _adaptedTransport.Input.Complete();
             _adaptedTransport.Output.Complete();
+        }
+
+        public void OnTimeout(TimeoutReason reason)
+        {
+            // In the cases that don't log directly here, we expect the setter of the timeout to also be the input
+            // reader, so when the read is canceled or arborted, the reader should write the appropriate log.
+            switch (reason)
+            {
+                case TimeoutReason.KeepAlive:
+                    _http1Connection.StopProcessingNextRequest();
+                    break;
+                case TimeoutReason.RequestHeaders:
+                    _http1Connection.SendTimeoutResponse();
+                    break;
+                case TimeoutReason.ReadDataRate:
+                    Log.RequestBodyMinimumDataRateNotSatisfied(_context.ConnectionId, _http1Connection.TraceIdentifier, _http1Connection.MinRequestBodyDataRate.BytesPerSecond);
+                    _http1Connection.SendTimeoutResponse();
+                    break;
+                case TimeoutReason.WriteDataRate:
+                    Log.ResponseMinimumDataRateNotSatisfied(_http1Connection.ConnectionIdFeature, _http1Connection.TraceIdentifier);
+                    Abort(new ConnectionAbortedException(CoreStrings.ConnectionTimedBecauseResponseMininumDataRateNotSatisfied));
+                    break;
+                case TimeoutReason.RequestBodyDrain:
+                case TimeoutReason.TimeoutFeature:
+                    Abort(new ConnectionAbortedException(CoreStrings.ConnectionTimedOutByServer));
+                    break;
+                default:
+                    Debug.Assert(false, "Invalid TimeoutReason");
+                    break;
+            }
         }
 
         private enum ProtocolSelectionState

@@ -18,6 +18,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         private volatile bool _canceled;
         private Task _pumpTask;
+        private bool _timingReads;
 
         protected Http1MessageBody(Http1Connection context)
             : base(context)
@@ -175,7 +176,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             Log.RequestBodyNotEntirelyRead(_context.ConnectionIdFeature, _context.TraceIdentifier);
 
-            _context.TimeoutControl.SetTimeout(Constants.RequestBodyDrainTimeout.Ticks, TimeoutAction.AbortConnection);
+            _context.TimeoutControl.SetTimeout(Constants.RequestBodyDrainTimeout.Ticks, TimeoutReason.RequestBodyDrain);
 
             try
             {
@@ -232,13 +233,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             if (!RequestUpgrade)
             {
                 Log.RequestBodyStart(_context.ConnectionIdFeature, _context.TraceIdentifier);
-                _context.TimeoutControl.StartTimingReads();
+
+                // REVIEW: This makes it no longer effective to change the min rate after the app starts reading.
+                // Is this OK? Should we throw from the MinRequestBodyDataRate setter in this case?
+                var minRate = _context.MinRequestBodyDataRate;
+
+                if (minRate != null)
+                {
+                    _timingReads = true;
+                    _context.TimeoutControl.StartTimingReads(minRate);
+                }
             }
         }
 
         private void TryPauseTimingReads()
         {
-            if (!RequestUpgrade)
+            if (_timingReads)
             {
                 _context.TimeoutControl.PauseTimingReads();
             }
@@ -246,7 +256,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         private void TryResumeTimingReads()
         {
-            if (!RequestUpgrade)
+            if (_timingReads)
             {
                 _context.TimeoutControl.ResumeTimingReads();
             }
@@ -257,7 +267,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             if (!RequestUpgrade)
             {
                 Log.RequestBodyDone(_context.ConnectionIdFeature, _context.TraceIdentifier);
-                _context.TimeoutControl.StopTimingReads();
+
+                if (_timingReads)
+                {
+                    _context.TimeoutControl.StopTimingReads();
+                }
             }
         }
 

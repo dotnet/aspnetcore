@@ -67,11 +67,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
             try
             {
+                _http2Output.Dispose();
+
                 RequestBodyPipe.Reader.Complete();
 
                 // The app can no longer read any more of the request body, so return any bytes that weren't read to the
                 // connection's flow-control window.
                 _inputFlowControl.Abort();
+
+                Reset();
             }
             finally
             {
@@ -435,9 +439,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         private void AbortCore(Exception abortReason)
         {
-            // Call OnIOCompleted() which closes the output prior to poisoning the request body stream or pipe to
+            // Call _http2Output.Dispose() prior to poisoning the request body stream or pipe to
             // ensure that an app that completes early due to the abort doesn't result in header frames being sent.
-            OnInputOrOutputCompleted();
+            _http2Output.Dispose();
+
+            AbortRequest();
 
             // Unblock the request body.
             PoisonRequestBodyStream(abortReason);

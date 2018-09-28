@@ -100,20 +100,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             using (var server = CreateServer(testContext))
             using (var connection = server.CreateConnection())
             {
-                // When the in-memory connection is aborted, the input PipeWriter is completed behind the scenes
-                // so eventually connection.Send() throws an InvalidOperationException.
-                await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+                foreach (var ch in "POST / HTTP/1.1\r\nHost:\r\n\r\n")
                 {
-                    foreach (var ch in "POST / HTTP/1.1\r\nHost:\r\n\r\n")
-                    {
-                        await connection.Send(ch.ToString());
+                    await connection.Send(ch.ToString());
 
-                        testContext.MockSystemClock.UtcNow += ShortDelay;
-                        heartbeatManager.OnHeartbeat(testContext.SystemClock.UtcNow);
-                    }
-                });
+                    testContext.MockSystemClock.UtcNow += ShortDelay;
+                    heartbeatManager.OnHeartbeat(testContext.SystemClock.UtcNow);
+                }
 
                 await ReceiveTimeoutResponse(connection, testContext);
+
+                await connection.WaitForConnectionClose();
             }
         }
 

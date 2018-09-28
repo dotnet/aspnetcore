@@ -107,17 +107,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             serviceContext.ServerOptions.Limits.MaxResponseBufferSize = 5;
             var cts = new CancellationTokenSource();
             var appTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var writeReturnedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var writeStartedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             using (var server = new TestServer(async context =>
             {
                 try
                 {
                     await context.Response.WriteAsync("hello", cts.Token).DefaultTimeout();
-                    writeReturnedTcs.TrySetResult(null);
 
                     var task = context.Response.WriteAsync("world", cts.Token);
                     Assert.False(task.IsCompleted);
+
+                    writeStartedTcs.TrySetResult(null);
+
                     await task.DefaultTimeout();
                 }
                 catch (Exception ex)
@@ -127,7 +129,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 finally
                 {
                     appTcs.TrySetResult(null);
-                    writeReturnedTcs.TrySetCanceled();
+                    writeStartedTcs.TrySetCanceled();
                 }
             }, serviceContext))
             {
@@ -146,7 +148,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "5",
                         "hello");
 
-                    await writeReturnedTcs.Task.DefaultTimeout();
+                    await writeStartedTcs.Task.DefaultTimeout();
 
                     cts.Cancel();
 

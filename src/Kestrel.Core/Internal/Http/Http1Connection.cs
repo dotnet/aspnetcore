@@ -21,8 +21,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private const byte ByteForwardSlash = (byte)'/';
         private const string Asterisk = "*";
 
-        private readonly Http1ConnectionContext _context;
+        private readonly HttpConnectionContext _context;
         private readonly IHttpParser<Http1ParsingHandler> _parser;
+        private readonly Http1OutputProducer _http1Output;
         protected readonly long _keepAliveTicks;
         private readonly long _requestHeadersTimeoutTicks;
 
@@ -35,7 +36,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         private int _remainingRequestHeadersBytesAllowed;
 
-        public Http1Connection(Http1ConnectionContext context)
+        public Http1Connection(HttpConnectionContext context)
             : base(context)
         {
             _context = context;
@@ -44,13 +45,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _requestHeadersTimeoutTicks = ServerOptions.Limits.RequestHeadersTimeout.Ticks;
 
             RequestBodyPipe = CreateRequestBodyPipe();
-            Output = new Http1OutputProducer(
+
+            _http1Output = new Http1OutputProducer(
                 _context.Transport.Output,
                 _context.ConnectionId,
                 _context.ConnectionContext,
                 _context.ServiceContext.Log,
                 _context.TimeoutControl,
-                _context.ConnectionFeatures.Get<IBytesWrittenFeature>());
+                this);
+
+            Output = _http1Output;
         }
 
         public PipeReader Input => _context.Transport.Input;
@@ -59,6 +63,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public bool RequestTimedOut => _requestTimedOut;
 
         public override bool IsUpgradableRequest => _upgradeAvailable;
+
+        protected override void OnRequestProcessingEnded()
+        {
+            Input.Complete();
+
+            TimeoutControl.StartDrainTimeout(MinResponseDataRate, ServerOptions.Limits.MaxResponseBufferSize);
+
+            // Prevent RequestAborted from firing. Free up unneeded feature references.
+            Reset();
+
+            _http1Output.Dispose();
+        }
+
+        public void OnInputOrOutputCompleted()
+        {
+            _http1Output.Abort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedByClient));
+            AbortRequest();
+        }
 
         /// <summary>
         /// Immediately kill the connection and poison the request body stream with an error.
@@ -70,11 +92,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 return;
             }
 
-            // Abort output prior to calling OnIOCompleted() to give the transport the chance to complete the input
-            // with the correct error and message. 
-            Output.Abort(abortReason);
+            _http1Output.Abort(abortReason);
 
-            OnInputOrOutputCompleted();
+            AbortRequest();
 
             PoisonRequestBodyStream(abortReason);
         }
@@ -115,7 +135,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         break;
                     }
 
-                    TimeoutControl.ResetTimeout(_requestHeadersTimeoutTicks, TimeoutAction.SendTimeoutResponse);
+                    TimeoutControl.ResetTimeout(_requestHeadersTimeoutTicks, TimeoutReason.RequestHeaders);
 
                     _requestProcessingStatus = RequestProcessingStatus.ParsingRequestLine;
                     goto case RequestProcessingStatus.ParsingRequestLine;
@@ -411,7 +431,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected override void OnRequestProcessingEnding()
         {
-            Input.Complete();
         }
 
         protected override string CreateRequestId()
@@ -424,7 +443,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             // Reset the features and timeout.
             Reset();
-            TimeoutControl.SetTimeout(_keepAliveTicks, TimeoutAction.StopProcessingNextRequest);
+            TimeoutControl.SetTimeout(_keepAliveTicks, TimeoutReason.KeepAlive);
         }
 
         protected override bool BeginRead(out ValueTask<ReadResult> awaitable)

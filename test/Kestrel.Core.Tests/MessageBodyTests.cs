@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
@@ -422,7 +423,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 var options = new PipeOptions(pool: memoryPool, readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline, useSynchronizationContext: false);
                 var pair = DuplexPipe.CreateConnectionPair(options, options);
                 var transport = pair.Transport;
-                var http1ConnectionContext = new Http1ConnectionContext
+                var http1ConnectionContext = new HttpConnectionContext
                 {
                     ServiceContext = new TestServiceContext(),
                     ConnectionFeatures = new FeatureCollection(),
@@ -747,9 +748,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                     .Callback(() => produceContinueCalled = true);
                 input.Http1Connection.HttpResponseControl = mockHttpResponseControl.Object;
 
+                var minReadRate = input.Http1Connection.MinRequestBodyDataRate;
                 var mockTimeoutControl = new Mock<ITimeoutControl>();
                 mockTimeoutControl
-                    .Setup(timeoutControl => timeoutControl.StartTimingReads())
+                    .Setup(timeoutControl => timeoutControl.StartTimingReads(minReadRate))
                     .Callback(() => startTimingReadsCalledAfterProduceContinue = produceContinueCalled);
 
                 input.Http1ConnectionContext.TimeoutControl = mockTimeoutControl.Object;
@@ -773,6 +775,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             using (var input = new TestInput())
             {
+                var minReadRate = input.Http1Connection.MinRequestBodyDataRate;
                 var mockTimeoutControl = new Mock<ITimeoutControl>();
                 input.Http1ConnectionContext.TimeoutControl = mockTimeoutControl.Object;
 
@@ -786,7 +789,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                 Assert.Equal(0, await body.ReadAsync(new ArraySegment<byte>(new byte[1])));
 
-                mockTimeoutControl.Verify(timeoutControl => timeoutControl.StartTimingReads(), Times.Never);
+                mockTimeoutControl.Verify(timeoutControl => timeoutControl.StartTimingReads(minReadRate), Times.Never);
                 mockTimeoutControl.Verify(timeoutControl => timeoutControl.StopTimingReads(), Times.Never);
 
                 // Due to the limits set on HttpProtocol.RequestBodyPipe, backpressure should be triggered on every
