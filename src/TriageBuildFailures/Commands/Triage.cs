@@ -49,7 +49,7 @@ namespace TriageBuildFailures.Commands
             foreach (var build in builds)
             {
                 failedCount++;
-                _reporter.Output($"Triaging {build.WebURL}...");
+                _reporter.Output($"Triaging {build.WebURL} ...");
                 await HandleFailure(build);
             }
             stopWatch.Stop();
@@ -65,7 +65,7 @@ namespace TriageBuildFailures.Commands
             new HandleSnapshotDependency(),
             new HandleTestFailures(),
             new HandleBuildTimeFailures(),
-            new HandleUnhandled()
+            new HandleUnhandled(),
         };
 
         /// <summary>
@@ -85,6 +85,7 @@ namespace TriageBuildFailures.Commands
 
                 if (handler.CanHandleFailure(build))
                 {
+                    _reporter.Output($"Handling failure with '{handler.GetType().FullName}' handler");
                     await handler.HandleFailure(build);
                     MarkTriaged(build);
                     return;

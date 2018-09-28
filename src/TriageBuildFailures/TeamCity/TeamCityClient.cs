@@ -188,7 +188,7 @@ namespace TriageBuildFailures.TeamCity
                 else
                 {
                     var content = response.Content.ReadAsStringAsync().Result;
-                    _reporter.Error($"Http error: {response.StatusCode}");
+                    _reporter.Error($"HTTP error: {response.StatusCode}");
                     _reporter.Error($"Content: {content}");
                     throw new HttpRequestException(response.StatusCode.ToString());
                 }

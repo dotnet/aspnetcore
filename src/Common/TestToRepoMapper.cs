@@ -124,13 +124,13 @@ namespace Common
                     }
                 }
 
-                reporter.Error($"Don't know how to find the repo of tests like {testName}, defaulting to aspnet/Home");
+                reporter.Warn($"Don't know how to find the repo of tests like {testName}, defaulting to aspnet/Home");
 
                 return "Home";
             }
         }
 
-        public static string FindOwner(string name, IReporter reporter)
+        public static string FindOwner(string name)
         {
             if (Constants.BeQuiet)
             {

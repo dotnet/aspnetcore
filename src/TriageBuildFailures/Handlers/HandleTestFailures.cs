@@ -83,8 +83,9 @@ namespace TriageBuildFailures.Handlers
 
             foreach (var failure in failures)
             {
+                Reporter.Output($"Inspecting test failure {failure.Name}...");
                 var repo = TestToRepoMapper.FindRepo(failure.Name, Reporter);
-                var owner = TestToRepoMapper.FindOwner(failure.Name, Reporter);
+                var owner = TestToRepoMapper.FindOwner(failure.Name);
 
                 var issuesTask = GHClient.GetFlakyIssues(owner, repo);
 
@@ -112,8 +113,12 @@ CC {GetManagerMentions(repo)}";
                     //TODO: We'd like to link the test history here but TC api doens't make it easy
                     var tags = new List<string> { GitHubClientWrapper.TestFailureTag, GitHubUtils.GetBranchLabel(build.BranchName) };
 
+                    Reporter.Output($"Creating new issue for test failure...");
                     var issue = await GHClient.CreateIssue(owner, repo, subject, body, tags);
+                    Reporter.Output($"Created issue {issue.HtmlUrl}");
+                    Reporter.Output($"Adding new issue to project '{GHClient.Config.FlakyProjectColumn}'");
                     await GHClient.AddIssueToProject(issue, GHClient.Config.FlakyProjectColumn);
+                    Reporter.Output($"Adding workflow comment to issue {issue.HtmlUrl}");
                     await GHClient.CreateComment(issue, WorkFlowComment);
                 }
                 // The issue already exists, comment on it if we haven't already done so for this build.
@@ -133,6 +138,7 @@ CC {GetManagerMentions(repo)}";
 
             foreach (var test in testAggregates)
             {
+                Reporter.Output($"Adding test failure comment to issue {test.Key}");
                 await GHClient.CommentOnTest(build, test.Key, test.Value);
             }
         }
@@ -202,12 +208,14 @@ CC {GetManagerMentions(repo)}";
 
         private IEnumerable<GitHubIssue> GetApplicableIssues(IEnumerable<GitHubIssue> issues, TestOccurrence failure)
         {
+            Reporter.Output($"Finding applicable issues for failure...");
             var testError = TCClient.GetTestFailureText(failure);
-            var testException = SafeGetExceptionMessage(testError); ;
+            var testException = SafeGetExceptionMessage(testError);
             var shortTestName = GetTestName(failure);
 
             foreach (var issue in issues)
             {
+                Reporter.Output($"Considering issue {issue.HtmlUrl}...");
                 var issueException = GetExceptionFromIssue(issue);
 
                 // An issue is "applicable" if any of these are true:
@@ -217,6 +225,7 @@ CC {GetManagerMentions(repo)}";
                     || (issueException != null && issueException.Equals(testException))
                     || MessagesAreClose(issueException, testException))
                 {
+                    Reporter.Output($"\tThis issue is applicable");
                     yield return issue;
                 }
             }

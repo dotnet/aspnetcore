@@ -15,9 +15,9 @@ namespace Common
         /// <returns>The message of the error.</returns>
         public static string GetExceptionMessage(string fullErrorMsg)
         {
-            if (String.IsNullOrEmpty(fullErrorMsg))
+            if (string.IsNullOrEmpty(fullErrorMsg))
             {
-                throw new ArgumentNullException(nameof(fullErrorMsg));
+                throw new ArgumentException("String cannot be null or empty.", nameof(fullErrorMsg));
             }
 
             // Don't include the stacktrace, it's likely to be different between runs.

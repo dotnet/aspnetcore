@@ -39,7 +39,7 @@ namespace TriageBuildFailures.Handlers
         public override async Task HandleFailure(TeamCityBuild build)
         {
             var log = TCClient.GetBuildLog(build);
-            var owner = TestToRepoMapper.FindOwner(build.BuildName, Reporter);
+            var owner = TestToRepoMapper.FindOwner(build.BuildName);
             var repo = "Coherence-Signed";
             var issuesTask = GHClient.GetIssues(owner, repo);
 
