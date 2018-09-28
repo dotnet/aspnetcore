@@ -12,13 +12,12 @@ import okhttp3.Response;
 
 class Negotiate {
 
-    public static NegotiateResponse processNegotiate(String url) throws IOException {
-        return processNegotiate(url, null);
+    public static NegotiateResponse processNegotiate(String url, OkHttpClient httpClient) throws IOException {
+        return processNegotiate(url, httpClient, null);
     }
 
-    public static NegotiateResponse processNegotiate(String url, String accessTokenHeader) throws IOException {
+    public static NegotiateResponse processNegotiate(String url, OkHttpClient httpClient,String accessTokenHeader) throws IOException {
         url = resolveNegotiateUrl(url);
-        OkHttpClient client = new OkHttpClient();
         RequestBody body = RequestBody.create(null, new byte[]{});
         Request.Builder requestBuilder = new Request.Builder()
                 .url(url)
@@ -30,7 +29,7 @@ class Negotiate {
 
         Request request = requestBuilder.build();
 
-        Response response = client.newCall(request).execute();
+        Response response = httpClient.newCall(request).execute();
         String result = response.body().string();
         return new NegotiateResponse(result);
     }
