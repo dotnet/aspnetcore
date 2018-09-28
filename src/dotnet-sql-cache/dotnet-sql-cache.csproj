@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
@@ -21,16 +21,16 @@
 
   <ItemGroup>
     <!-- These files should be signed by corefx -->
-    <ExcludePackageFileFromSigning Include="tools/$(TargetFramework)/any/runtimes/win-arm64/native/sni.dll" />
-    <ExcludePackageFileFromSigning Include="tools/$(TargetFramework)/any/runtimes/win-x64/native/sni.dll" />
-    <ExcludePackageFileFromSigning Include="tools/$(TargetFramework)/any/runtimes/win-x86/native/sni.dll" />
-    <ExcludePackageFileFromSigning Include="tools/$(TargetFramework)/any/System.Data.SqlClient.dll" />
-    <ExcludePackageFileFromSigning Include="tools/$(TargetFramework)/any/System.Security.Permissions.dll" />
-    <ExcludePackageFileFromSigning Include="tools/$(TargetFramework)/any/runtimes/unix/lib/netcoreapp2.1/System.Data.SqlClient.dll" />
-    <ExcludePackageFileFromSigning Include="tools/$(TargetFramework)/any/runtimes/win/lib/netcoreapp2.1/System.Data.SqlClient.dll" />
-    <ExcludePackageFileFromSigning Include="tools/$(TargetFramework)/any/System.Runtime.CompilerServices.Unsafe.dll" />
-    <ExcludePackageFileFromSigning Include="tools/$(TargetFramework)/any/System.Text.Encoding.CodePages.dll" />
-    <ExcludePackageFileFromSigning Include="tools/$(TargetFramework)/any/runtimes/win/lib/netcoreapp2.0/System.Text.Encoding.CodePages.dll" />
+    <ExcludePackageFileFromSigning Include="$(PublishDir)runtimes/win-arm64/native/sni.dll" PackagePath="tools/$(TargetFramework)/any/runtimes/win-arm64/native/sni.dll" />
+    <ExcludePackageFileFromSigning Include="$(PublishDir)runtimes/win-x64/native/sni.dll" PackagePath="tools/$(TargetFramework)/any/runtimes/win-x64/native/sni.dll" />
+    <ExcludePackageFileFromSigning Include="$(PublishDir)runtimes/win-x86/native/sni.dll" PackagePath="tools/$(TargetFramework)/any/runtimes/win-x86/native/sni.dll" />
+    <ExcludePackageFileFromSigning Include="$(PublishDir)System.Data.SqlClient.dll" PackagePath="tools/$(TargetFramework)/any/System.Data.SqlClient.dll" />
+    <ExcludePackageFileFromSigning Include="$(PublishDir)System.Security.Permissions.dll" PackagePath="tools/$(TargetFramework)/any/System.Security.Permissions.dll" />
+    <ExcludePackageFileFromSigning Include="$(PublishDir)runtimes/unix/lib/netcoreapp2.1/System.Data.SqlClient.dll" PackagePath="tools/$(TargetFramework)/any/runtimes/unix/lib/netcoreapp2.1/System.Data.SqlClient.dll" />
+    <ExcludePackageFileFromSigning Include="$(PublishDir)runtimes/win/lib/netcoreapp2.1/System.Data.SqlClient.dll" PackagePath="tools/$(TargetFramework)/any/runtimes/win/lib/netcoreapp2.1/System.Data.SqlClient.dll" />
+    <ExcludePackageFileFromSigning Include="$(PublishDir)System.Runtime.CompilerServices.Unsafe.dll" PackagePath="tools/$(TargetFramework)/any/System.Runtime.CompilerServices.Unsafe.dll" />
+    <ExcludePackageFileFromSigning Include="$(PublishDir)System.Text.Encoding.CodePages.dll" PackagePath="tools/$(TargetFramework)/any/System.Text.Encoding.CodePages.dll" />
+    <ExcludePackageFileFromSigning Include="$(PublishDir)runtimes/win/lib/netcoreapp2.0/System.Text.Encoding.CodePages.dll" PackagePath="tools/$(TargetFramework)/any/runtimes/win/lib/netcoreapp2.0/System.Text.Encoding.CodePages.dll" />
   </ItemGroup>
 
 </Project>

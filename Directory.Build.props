@@ -14,10 +14,6 @@
     <RepositoryRoot>$(MSBuildThisFileDirectory)</RepositoryRoot>
     <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)build\Key.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
-    <PackageSigningCertName>MicrosoftNuGet</PackageSigningCertName>
-    <AssemblySigningCertName>Microsoft</AssemblySigningCertName>
-    <AssemblySigning3rdPartyCertName>Microsoft3rdPartyAppComponentDual</AssemblySigning3rdPartyCertName>
-    <PublicSign Condition="'$(OS)' != 'Windows_NT'">true</PublicSign>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 
     <!-- Binary compatiblity is not a goal for command-line tools. -->
