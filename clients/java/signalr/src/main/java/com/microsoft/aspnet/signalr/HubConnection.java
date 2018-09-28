@@ -4,15 +4,17 @@
 package com.microsoft.aspnet.signalr;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
+
+import okhttp3.Cookie;
+import okhttp3.CookieJar;
+import okhttp3.HttpUrl;
+import okhttp3.OkHttpClient;
 
 public class HubConnection {
     private String url;
@@ -31,6 +33,7 @@ public class HubConnection {
     private String accessToken;
     private Map<String, String> headers = new HashMap<>();
     private ConnectionState connectionState = null;
+    private OkHttpClient httpClient;
 
     private static ArrayList<Class<?>> emptyArray = new ArrayList<>();
     private static int MAX_NEGOTIATE_ATTEMPTS = 100;
@@ -54,6 +57,59 @@ public class HubConnection {
         }
 
         this.skipNegotiate = skipNegotiate;
+
+        this.httpClient = new OkHttpClient.Builder()
+                .cookieJar(new CookieJar() {
+                    private List<Cookie> cookieList = new ArrayList<>();
+                    private Lock cookieLock = new ReentrantLock();
+
+                    @Override
+                    public void saveFromResponse(HttpUrl url, List<Cookie> cookies) {
+                        cookieLock.lock();
+                        try {
+                            for (Cookie cookie : cookies) {
+                                boolean replacedCookie = false;
+                                for (int i = 0; i < cookieList.size(); i++) {
+                                    Cookie innerCookie = cookieList.get(i);
+                                    if (cookie.name().equals(innerCookie.name()) && innerCookie.matches(url)) {
+                                        // We have a new cookie that matches an older one so we replace the older one.
+                                        cookieList.set(i, innerCookie);
+                                        replacedCookie = true;
+                                        break;
+                                    }
+                                }
+                                if (!replacedCookie) {
+                                    cookieList.add(cookie);
+                                }
+                            }
+                        } finally {
+                            cookieLock.unlock();
+                        }
+                    }
+
+                    @Override
+                    public List<Cookie> loadForRequest(HttpUrl url) {
+                        cookieLock.lock();
+                        try {
+                            List<Cookie> matchedCookies = new ArrayList<>();
+                            List<Cookie> expiredCookies = new ArrayList<>();
+                            for (Cookie cookie : cookieList) {
+                                if (cookie.expiresAt() < System.currentTimeMillis()) {
+                                    expiredCookies.add(cookie);
+                                } else if (cookie.matches(url)) {
+                                    matchedCookies.add(cookie);
+                                }
+                            }
+
+                            cookieList.removeAll(expiredCookies);
+                            return matchedCookies;
+                        } finally {
+                            cookieLock.unlock();
+                        }
+                    }
+                })
+                .build();
+
         this.callback = (payload) -> {
 
             if (!handshakeReceived) {
@@ -120,7 +176,7 @@ public class HubConnection {
 
     private NegotiateResponse handleNegotiate() throws IOException, HubException {
         accessToken = (negotiateResponse == null) ? null : negotiateResponse.getAccessToken();
-        negotiateResponse = Negotiate.processNegotiate(url, accessToken);
+        negotiateResponse = Negotiate.processNegotiate(url, httpClient, accessToken);
 
         if (negotiateResponse.getError() != null) {
             throw new HubException(negotiateResponse.getError());
@@ -176,7 +232,7 @@ public class HubConnection {
 
         logger.log(LogLevel.Debug, "Starting HubConnection");
         if (transport == null) {
-            transport = new WebSocketTransport(url, logger, headers);
+            transport = new WebSocketTransport(url, logger, headers, httpClient);
         }
 
         transport.setOnReceive(this.callback);
