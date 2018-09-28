@@ -62,9 +62,8 @@ namespace Microsoft.AspNetCore.StaticFiles
         /// <returns></returns>
         public Task Invoke(HttpContext context)
         {
-            PathString subpath;
             if (Helpers.IsGetOrHeadMethod(context.Request.Method)
-                && Helpers.TryMatchPath(context, _matchUrl, forDirectory: true, subpath: out subpath))
+                && Helpers.TryMatchPath(context, _matchUrl, forDirectory: true, subpath: out var subpath))
             {
                 var dirContents = _fileProvider.GetDirectoryContents(subpath.Value);
                 if (dirContents.Exists)

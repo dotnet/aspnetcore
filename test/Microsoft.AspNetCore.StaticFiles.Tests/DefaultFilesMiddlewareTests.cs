@@ -169,12 +169,12 @@ namespace Microsoft.AspNetCore.StaticFiles
 
         private async Task PostDirectory_PassesThrough(string baseUrl, string baseDir, string requestUrl)
         {
-            using (var fileProvder = new PhysicalFileProvider(Path.Combine(AppContext.BaseDirectory, baseDir)))
+            using (var fileProvider = new PhysicalFileProvider(Path.Combine(AppContext.BaseDirectory, baseDir)))
             {
                 var server = StaticFilesTestServer.Create(app => app.UseDefaultFiles(new DefaultFilesOptions
                 {
                     RequestPath = new PathString(baseUrl),
-                    FileProvider = fileProvder
+                    FileProvider = fileProvider
                 }));
                 var response = await server.CreateRequest(requestUrl).GetAsync();
 
