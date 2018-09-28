@@ -33,7 +33,7 @@ namespace MonoSanityClient
 
         public static void InvokeWipedMethod()
         {
-            new HttpClientHandler();
+            new HttpClientHandler().Dispose();
         }
 
         public static string EvaluateJavaScript(string expression)
