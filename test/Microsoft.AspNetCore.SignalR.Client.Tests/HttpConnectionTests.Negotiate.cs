@@ -8,8 +8,10 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Connections;
+using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.AspNetCore.Http.Connections.Client.Internal;
 using Microsoft.AspNetCore.SignalR.Tests;
+using Microsoft.Extensions.Logging.Testing;
 using Moq;
 using Newtonsoft.Json;
 using Xunit;
@@ -378,6 +380,37 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     {
                         await connection.StartAsync(TransferFormat.Binary).OrTimeout();
                     });
+            }
+
+            [Fact]
+            public async Task NegotiateThatReturnsErrorThrowsFromStart()
+            {
+                bool ExpectedError(WriteContext writeContext)
+                {
+                    return writeContext.LoggerName == typeof(HttpConnection).FullName &&
+                        writeContext.EventId.Name == "ErrorWithNegotiation";
+                }
+
+                var testHttpHandler = new TestHttpMessageHandler(autoNegotiate: false);
+                testHttpHandler.OnNegotiate((request, cancellationToken) =>
+                {
+                    return ResponseUtils.CreateResponse(HttpStatusCode.OK,
+                            JsonConvert.SerializeObject(new
+                            {
+                                error = "Test error."
+                            }));
+                });
+
+                using (var noErrorScope = new VerifyNoErrorsScope(expectedErrorsFilter: ExpectedError))
+                {
+                    await WithConnectionAsync(
+                        CreateConnection(testHttpHandler, loggerFactory: noErrorScope.LoggerFactory),
+                        async (connection) =>
+                        {
+                            var exception = await Assert.ThrowsAsync<Exception>(() => connection.StartAsync(TransferFormat.Text).OrTimeout());
+                            Assert.Equal("Test error.", exception.Message);
+                        });
+                }
             }
 
             private async Task RunInvalidNegotiateResponseTest<TException>(string negotiatePayload, string expectedExceptionMessage) where TException : Exception

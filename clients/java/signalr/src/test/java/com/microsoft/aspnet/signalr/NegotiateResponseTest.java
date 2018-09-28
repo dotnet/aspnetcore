@@ -5,13 +5,14 @@ package com.microsoft.aspnet.signalr;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.io.IOException;
+
 import org.junit.jupiter.api.Test;
 
 
 class NegotiateResponseTest {
-
     @Test
-    public void VerifyNegotiateResponse() {
+    public void VerifyNegotiateResponse() throws IOException {
         String stringNegotiateResponse = "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\"" +
                 "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}," +
                 "{\"transport\":\"ServerSentEvents\",\"transferFormats\":[\"Text\"]}," +
@@ -26,7 +27,7 @@ class NegotiateResponseTest {
     }
 
     @Test
-    public void VerifyRedirectNegotiateResponse() {
+    public void VerifyRedirectNegotiateResponse() throws IOException {
         String stringNegotiateResponse = "{\"url\":\"www.example.com\"," +
                 "\"accessToken\":\"some_access_token\"," +
                 "\"availableTransports\":[]}";
@@ -36,5 +37,21 @@ class NegotiateResponseTest {
         assertEquals("some_access_token", negotiateResponse.getAccessToken());
         assertEquals("www.example.com", negotiateResponse.getRedirectUrl());
         assertNull(negotiateResponse.getConnectionId());
+    }
+
+    @Test
+    public void NegotiateResponseIgnoresExtraProperties() throws IOException {
+        String stringNegotiateResponse = "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\"," +
+                "\"extra\":\"something\"}";
+        NegotiateResponse negotiateResponse = new NegotiateResponse(stringNegotiateResponse);
+        assertEquals("bVOiRPG8-6YiJ6d7ZcTOVQ", negotiateResponse.getConnectionId());
+    }
+
+    @Test
+    public void NegotiateResponseIgnoresExtraComplexProperties() throws IOException {
+        String stringNegotiateResponse = "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\"," +
+                "\"extra\":[\"something\"]}";
+        NegotiateResponse negotiateResponse = new NegotiateResponse(stringNegotiateResponse);
+        assertEquals("bVOiRPG8-6YiJ6d7ZcTOVQ", negotiateResponse.getConnectionId());
     }
 }

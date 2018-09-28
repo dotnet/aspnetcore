@@ -25,6 +25,7 @@ export interface INegotiateResponse {
     availableTransports?: IAvailableTransport[];
     url?: string;
     accessToken?: string;
+    error?: string;
 }
 
 /** @private */
@@ -167,6 +168,10 @@ export class HttpConnection implements IConnection {
                     // the user tries to stop the connection when it is being started
                     if (this.connectionState === ConnectionState.Disconnected) {
                         return;
+                    }
+
+                    if (negotiateResponse.error) {
+                        throw Error(negotiateResponse.error);
                     }
 
                     if ((negotiateResponse as any).ProtocolVersion) {

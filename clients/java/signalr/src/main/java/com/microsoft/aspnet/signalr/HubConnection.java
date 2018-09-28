@@ -118,10 +118,13 @@ public class HubConnection {
         };
     }
 
-    private NegotiateResponse handleNegotiate() throws IOException {
+    private NegotiateResponse handleNegotiate() throws IOException, HubException {
         accessToken = (negotiateResponse == null) ? null : negotiateResponse.getAccessToken();
         negotiateResponse = Negotiate.processNegotiate(url, accessToken);
 
+        if (negotiateResponse.getError() != null) {
+            throw new HubException(negotiateResponse.getError());
+        }
         if (negotiateResponse.getConnectionId() != null) {
             if (url.contains("?")) {
                 url = url + "&id=" + negotiateResponse.getConnectionId();
