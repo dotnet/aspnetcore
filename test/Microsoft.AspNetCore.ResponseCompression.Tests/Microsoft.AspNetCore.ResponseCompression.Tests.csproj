@@ -14,6 +14,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Http" Version="$(MicrosoftAspNetCoreHttpPackageVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Testing" Version="$(MicrosoftExtensionsLoggingTestingPackageVersion)" />
     <PackageReference Include="Microsoft.Net.Http.Headers" Version="$(MicrosoftNetHttpHeadersPackageVersion)" />
     <PackageReference Include="Moq" Version="$(MoqPackageVersion)" />
   </ItemGroup>
