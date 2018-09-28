@@ -129,14 +129,14 @@ IN_PROCESS_APPLICATION::LoadManagedApplication()
         FALSE,    // not set
         nullptr)); // name
 
+    LOG_INFO(L"Waiting for initialization");
+
     m_workerThread = std::thread([](std::unique_ptr<IN_PROCESS_APPLICATION, IAPPLICATION_DELETER> application)
     {
         LOG_INFO(L"Starting in-process worker thread");
         application->ExecuteApplication();
         LOG_INFO(L"Stopping in-process worker thread");
     }, ::ReferenceApplication(this));
-
-    LOG_INFO(L"Waiting for initialization");
 
     const HANDLE waitHandles[2] = { m_pInitializeEvent, m_workerThread.native_handle() };
 
