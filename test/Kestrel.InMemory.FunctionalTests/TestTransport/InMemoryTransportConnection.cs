@@ -31,9 +31,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
         public override PipeScheduler InputWriterScheduler => PipeScheduler.ThreadPool;
         public override PipeScheduler OutputReaderScheduler => PipeScheduler.ThreadPool;
 
+        public ConnectionAbortedException AbortReason { get; private set; }
+
         public override void Abort(ConnectionAbortedException abortReason)
         {
             Input.Complete(abortReason);
+
+            AbortReason = abortReason;
         }
 
         public void OnClosed()

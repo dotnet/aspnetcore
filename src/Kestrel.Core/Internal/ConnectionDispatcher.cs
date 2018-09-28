@@ -6,9 +6,7 @@ using System.Buffers;
 using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.Extensions.Logging;
@@ -84,12 +82,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             }
             finally
             {
-                Log.ConnectionStop(connectionContext.ConnectionId);
-                KestrelEventSource.Log.ConnectionStop(connectionContext);
-
                 connection.Complete();
 
                 _serviceContext.ConnectionManager.RemoveConnection(id);
+
+                Log.ConnectionStop(connectionContext.ConnectionId);
+                KestrelEventSource.Log.ConnectionStop(connectionContext);
             }
         }
 

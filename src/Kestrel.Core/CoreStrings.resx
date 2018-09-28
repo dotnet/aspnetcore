@@ -584,4 +584,7 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
   <data name="HPackErrorIntegerTooBig" xml:space="preserve">
     <value>The decoded integer exceeds the maximum value of Int32.MaxValue.</value>
   </data>
+  <data name="ConnectionAbortedByClient" xml:space="preserve">
+    <value>The client closed the connection.</value>
+  </data>
 </root>

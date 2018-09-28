@@ -38,7 +38,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
         public virtual MemoryPool<byte> MemoryPool { get; }
         public virtual PipeScheduler InputWriterScheduler { get; }
         public virtual PipeScheduler OutputReaderScheduler { get; }
-        public virtual long TotalBytesWritten { get; }
 
         public override IDuplexPipe Transport { get; set; }
         public IDuplexPipe Application { get; set; }

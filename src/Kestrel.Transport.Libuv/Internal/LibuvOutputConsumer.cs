@@ -17,8 +17,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         private readonly ILibuvTrace _log;
         private readonly PipeReader _pipe;
 
-        private long _totalBytesWritten;
-
         public LibuvOutputConsumer(
             PipeReader pipe,
             LibuvThread thread,
@@ -32,8 +30,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             _connectionId = connectionId;
             _log = log;
         }
-
-        public long TotalBytesWritten => Interlocked.Read(ref _totalBytesWritten);
 
         public async Task WriteOutputAsync()
         {
@@ -65,10 +61,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                             }
 
                             var writeResult = await writeReq.WriteAsync(_socket, buffer);
-
-                            // This is not interlocked because there could be a concurrent writer.
-                            // Instead it's to prevent read tearing on 32-bit systems.
-                            Interlocked.Add(ref _totalBytesWritten, buffer.Length);
 
                             LogWriteInfo(writeResult.Status, writeResult.Error);
 

@@ -1,5 +1,5 @@
 {
-  "AssemblyIdentity": "Microsoft.AspNetCore.Server.Kestrel.Https, Version=2.0.2.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.AspNetCore.Server.Kestrel.Https, Version=2.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
     {
       "Name": "Microsoft.AspNetCore.Hosting.ListenOptionsHttpsExtensions",
@@ -10,6 +10,21 @@
       "Sealed": true,
       "ImplementedInterfaces": [],
       "Members": [
+        {
+          "Kind": "Method",
+          "Name": "UseHttps",
+          "Parameters": [
+            {
+              "Name": "listenOptions",
+              "Type": "Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
         {
           "Kind": "Method",
           "Name": "UseHttps",
@@ -61,8 +76,193 @@
               "Type": "Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions"
             },
             {
+              "Name": "fileName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "password",
+              "Type": "System.String"
+            },
+            {
+              "Name": "configureOptions",
+              "Type": "System.Action<Microsoft.AspNetCore.Server.Kestrel.Https.HttpsConnectionAdapterOptions>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "UseHttps",
+          "Parameters": [
+            {
+              "Name": "listenOptions",
+              "Type": "Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions"
+            },
+            {
+              "Name": "storeName",
+              "Type": "System.Security.Cryptography.X509Certificates.StoreName"
+            },
+            {
+              "Name": "subject",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "UseHttps",
+          "Parameters": [
+            {
+              "Name": "listenOptions",
+              "Type": "Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions"
+            },
+            {
+              "Name": "storeName",
+              "Type": "System.Security.Cryptography.X509Certificates.StoreName"
+            },
+            {
+              "Name": "subject",
+              "Type": "System.String"
+            },
+            {
+              "Name": "allowInvalid",
+              "Type": "System.Boolean"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "UseHttps",
+          "Parameters": [
+            {
+              "Name": "listenOptions",
+              "Type": "Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions"
+            },
+            {
+              "Name": "storeName",
+              "Type": "System.Security.Cryptography.X509Certificates.StoreName"
+            },
+            {
+              "Name": "subject",
+              "Type": "System.String"
+            },
+            {
+              "Name": "allowInvalid",
+              "Type": "System.Boolean"
+            },
+            {
+              "Name": "location",
+              "Type": "System.Security.Cryptography.X509Certificates.StoreLocation"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "UseHttps",
+          "Parameters": [
+            {
+              "Name": "listenOptions",
+              "Type": "Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions"
+            },
+            {
+              "Name": "storeName",
+              "Type": "System.Security.Cryptography.X509Certificates.StoreName"
+            },
+            {
+              "Name": "subject",
+              "Type": "System.String"
+            },
+            {
+              "Name": "allowInvalid",
+              "Type": "System.Boolean"
+            },
+            {
+              "Name": "location",
+              "Type": "System.Security.Cryptography.X509Certificates.StoreLocation"
+            },
+            {
+              "Name": "configureOptions",
+              "Type": "System.Action<Microsoft.AspNetCore.Server.Kestrel.Https.HttpsConnectionAdapterOptions>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "UseHttps",
+          "Parameters": [
+            {
+              "Name": "listenOptions",
+              "Type": "Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions"
+            },
+            {
               "Name": "serverCertificate",
               "Type": "System.Security.Cryptography.X509Certificates.X509Certificate2"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "UseHttps",
+          "Parameters": [
+            {
+              "Name": "listenOptions",
+              "Type": "Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions"
+            },
+            {
+              "Name": "serverCertificate",
+              "Type": "System.Security.Cryptography.X509Certificates.X509Certificate2"
+            },
+            {
+              "Name": "configureOptions",
+              "Type": "System.Action<Microsoft.AspNetCore.Server.Kestrel.Https.HttpsConnectionAdapterOptions>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "UseHttps",
+          "Parameters": [
+            {
+              "Name": "listenOptions",
+              "Type": "Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions"
+            },
+            {
+              "Name": "configureOptions",
+              "Type": "System.Action<Microsoft.AspNetCore.Server.Kestrel.Https.HttpsConnectionAdapterOptions>"
             }
           ],
           "ReturnType": "Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions",
@@ -153,6 +353,27 @@
         },
         {
           "Kind": "Method",
+          "Name": "get_ServerCertificateSelector",
+          "Parameters": [],
+          "ReturnType": "System.Func<Microsoft.AspNetCore.Connections.ConnectionContext, System.String, System.Security.Cryptography.X509Certificates.X509Certificate2>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_ServerCertificateSelector",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Func<Microsoft.AspNetCore.Connections.ConnectionContext, System.String, System.Security.Cryptography.X509Certificates.X509Certificate2>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
           "Name": "get_ClientCertificateMode",
           "Parameters": [],
           "ReturnType": "Microsoft.AspNetCore.Server.Kestrel.Https.ClientCertificateMode",
@@ -229,6 +450,27 @@
             {
               "Name": "value",
               "Type": "System.Boolean"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_HandshakeTimeout",
+          "Parameters": [],
+          "ReturnType": "System.TimeSpan",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_HandshakeTimeout",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.TimeSpan"
             }
           ],
           "ReturnType": "System.Void",

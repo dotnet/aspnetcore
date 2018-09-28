@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         private readonly IDuplexPipe _application;
         private readonly TestHttp1Connection _http1Connection;
         private readonly ServiceContext _serviceContext;
-        private readonly Http1ConnectionContext _http1ConnectionContext;
+        private readonly HttpConnectionContext _http1ConnectionContext;
         private readonly MemoryPool<byte> _pipelineFactory;
         private SequencePosition _consumed;
         private SequencePosition _examined;
@@ -52,11 +52,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             var connectionFeatures = new FeatureCollection();
             connectionFeatures.Set(Mock.Of<IConnectionLifetimeFeature>());
-            connectionFeatures.Set(Mock.Of<IBytesWrittenFeature>());
 
             _serviceContext = new TestServiceContext();
             _timeoutControl = new Mock<ITimeoutControl>();
-            _http1ConnectionContext = new Http1ConnectionContext
+            _http1ConnectionContext = new HttpConnectionContext
             {
                 ServiceContext = _serviceContext,
                 ConnectionContext = Mock.Of<ConnectionContext>(),
@@ -425,7 +424,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _transport.Input.AdvanceTo(_consumed, _examined);
 
             var expectedRequestHeadersTimeout = _serviceContext.ServerOptions.Limits.RequestHeadersTimeout.Ticks;
-            _timeoutControl.Verify(cc => cc.ResetTimeout(expectedRequestHeadersTimeout, TimeoutAction.SendTimeoutResponse));
+            _timeoutControl.Verify(cc => cc.ResetTimeout(expectedRequestHeadersTimeout, TimeoutReason.RequestHeaders));
         }
 
         [Fact]
@@ -542,7 +541,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var requestProcessingTask = _http1Connection.ProcessRequestsAsync<object>(null);
 
             var expectedKeepAliveTimeout = _serviceContext.ServerOptions.Limits.KeepAliveTimeout.Ticks;
-            _timeoutControl.Verify(cc => cc.SetTimeout(expectedKeepAliveTimeout, TimeoutAction.StopProcessingNextRequest));
+            _timeoutControl.Verify(cc => cc.SetTimeout(expectedKeepAliveTimeout, TimeoutReason.KeepAlive));
 
             _http1Connection.StopProcessingNextRequest();
             _application.Output.Complete();

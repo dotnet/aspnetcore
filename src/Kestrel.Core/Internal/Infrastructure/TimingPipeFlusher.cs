@@ -12,9 +12,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
     /// <summary>
     /// This wraps PipeWriter.FlushAsync() in a way that allows multiple awaiters making it safe to call from publicly
-    /// exposed Stream implementations.
+    /// exposed Stream implementations while also tracking response data rate.
     /// </summary>
-    public class StreamSafePipeFlusher
+    public class TimingPipeFlusher
     {
         private readonly PipeWriter _writer;
         private readonly ITimeoutControl _timeoutControl;
@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
         private Task _lastFlushTask = Task.CompletedTask;
 
-        public StreamSafePipeFlusher(
+        public TimingPipeFlusher(
             PipeWriter writer,
             ITimeoutControl timeoutControl)
         {
@@ -30,7 +30,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             _timeoutControl = timeoutControl;
         }
 
-        public Task FlushAsync(long count = 0, IHttpOutputProducer outputProducer = null, CancellationToken cancellationToken = default)
+        public Task FlushAsync()
+        {
+            return FlushAsync(outputAborter: null, cancellationToken: default);
+        }
+
+        public Task FlushAsync(IHttpOutputAborter outputAborter, CancellationToken cancellationToken)
+        {
+            return FlushAsync(minRate: null, count: 0, outputAborter: outputAborter, cancellationToken: cancellationToken);
+        }
+
+        public Task FlushAsync(MinDataRate minRate, long count, IHttpOutputAborter outputAborter, CancellationToken cancellationToken)
         {
             var flushValueTask = _writer.FlushAsync(cancellationToken);
 
@@ -51,13 +61,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                     _lastFlushTask = flushValueTask.AsTask();
                 }
 
-                return TimeFlushAsync(count, outputProducer, cancellationToken);
+                return TimeFlushAsync(minRate, count, outputAborter, cancellationToken);
             }
         }
 
-        private async Task TimeFlushAsync(long count, IHttpOutputProducer outputProducer, CancellationToken cancellationToken)
+        private async Task TimeFlushAsync(MinDataRate minRate, long count, IHttpOutputAborter outputAborter, CancellationToken cancellationToken)
         {
-            _timeoutControl.StartTimingWrite(count);
+            if (minRate != null)
+            {
+                _timeoutControl.StartTimingWrite(minRate, count);
+            }
 
             try
             {
@@ -65,14 +78,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             }
             catch (OperationCanceledException ex)
             {
-                outputProducer.Abort(new ConnectionAbortedException(CoreStrings.ConnectionOrStreamAbortedByCancellationToken, ex));
+                outputAborter.Abort(new ConnectionAbortedException(CoreStrings.ConnectionOrStreamAbortedByCancellationToken, ex));
             }
             catch
             {
                 // A canceled token is the only reason flush should ever throw.
             }
 
-            _timeoutControl.StopTimingWrite();
+            if (minRate != null)
+            {
+                _timeoutControl.StopTimingWrite();
+            }
 
             cancellationToken.ThrowIfCancellationRequested();
         }

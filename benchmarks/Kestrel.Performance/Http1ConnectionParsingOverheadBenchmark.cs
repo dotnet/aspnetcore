@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
                 HttpParser = NullParser<Http1ParsingHandler>.Instance
             };
 
-            var http1Connection = new Http1Connection(new Http1ConnectionContext
+            var http1Connection = new Http1Connection(new HttpConnectionContext
             {
                 ServiceContext = serviceContext,
                 ConnectionFeatures = new FeatureCollection(),

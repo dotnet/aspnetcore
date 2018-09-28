@@ -13,9 +13,11 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
@@ -2875,6 +2877,34 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
+        public async Task GOAWAY_Received_ConnectionClosedWhenResponseNotDrainedAtMinimumDataRate()
+        {
+            var mockSystemClock = new MockSystemClock();
+            var limits = _connectionContext.ServiceContext.ServerOptions.Limits;
+            var timeoutControl = _connectionContext.TimeoutControl;
+
+            _timeoutControl.Initialize(mockSystemClock.UtcNow);
+
+            await InitializeConnectionAsync(_noopApplication);
+
+            await SendGoAwayAsync();
+
+            await WaitForConnectionStopAsync(expectedLastStreamId: 0, ignoreNonGoAwayFrames: false);
+
+            mockSystemClock.UtcNow +=
+                Heartbeat.Interval +
+                TimeSpan.FromSeconds(limits.MaxResponseBufferSize.Value * 2 / limits.MinResponseDataRate.BytesPerSecond);
+            _timeoutControl.Tick(mockSystemClock.UtcNow);
+
+            _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
+
+            mockSystemClock.UtcNow += TimeSpan.FromTicks(1);
+            _timeoutControl.Tick(mockSystemClock.UtcNow);
+
+            _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.WriteDataRate), Times.Once);
+        }
+
+        [Fact]
         public async Task WINDOW_UPDATE_Received_StreamIdEven_ConnectionError()
         {
             await InitializeConnectionAsync(_noopApplication);
@@ -3482,20 +3512,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             _pair.Application.Output.Complete(new ConnectionResetException(string.Empty));
 
-            var result = await _pair.Application.Input.ReadAsync();
-            Assert.True(result.IsCompleted);
+            await WaitForConnectionStopAsync(expectedLastStreamId: 0, ignoreNonGoAwayFrames: false);
             Assert.DoesNotContain(TestApplicationErrorLogger.Messages, m => m.Exception is ConnectionResetException);
         }
 
         [Fact]
-        public async Task OnInputOrOutputCompletedSendsFinalGOAWAY()
+        public async Task OnInputOrOutputCompletedCompletesOutput()
         {
             await InitializeConnectionAsync(_noopApplication);
 
             _connection.OnInputOrOutputCompleted();
             await _closedStateReached.Task.DefaultTimeout();
 
-            VerifyGoAway(await ReceiveFrameAsync(), 0, Http2ErrorCode.NO_ERROR);
+            var result = await _pair.Application.Input.ReadAsync().AsTask().DefaultTimeout();
+            Assert.True(result.IsCompleted);
+            Assert.True(result.Buffer.IsEmpty);
         }
 
         [Fact]
@@ -3655,7 +3686,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await StartStreamAsync(3, _browserRequestHeaders, endStream: false);
 
-            await WaitForConnectionStopAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+            var result = await _pair.Application.Input.ReadAsync().AsTask().DefaultTimeout();
+            Assert.True(result.IsCompleted);
+            Assert.True(result.Buffer.IsEmpty);
         }
 
         [Fact]

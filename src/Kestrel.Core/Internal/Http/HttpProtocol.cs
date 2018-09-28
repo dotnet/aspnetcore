@@ -21,8 +21,6 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 
-// ReSharper disable AccessToModifiedClosure
-
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
     public abstract partial class HttpProtocol : IHttpResponseControl
@@ -60,12 +58,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         private long _responseBytesWritten;
 
-        private readonly IHttpProtocolContext _context;
+        private readonly HttpConnectionContext _context;
 
         protected string _methodText = null;
         private string _scheme = null;
 
-        public HttpProtocol(IHttpProtocolContext context)
+        public HttpProtocol(HttpConnectionContext context)
         {
             _context = context;
 
@@ -412,7 +410,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        public void OnInputOrOutputCompleted()
+        protected void AbortRequest()
         {
             if (Interlocked.Exchange(ref _ioCompleted, 1) != 0)
             {
@@ -420,8 +418,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
 
             _keepAlive = false;
-
-            Output.Dispose();
 
             // Potentially calling user code. CancelRequestAbortedToken logs any exceptions.
             ServiceContext.Scheduler.Schedule(state => ((HttpProtocol)state).CancelRequestAbortedToken(), this);
@@ -476,13 +472,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 try
                 {
-                    OnRequestProcessingEnding();
                     await TryProduceInvalidRequestResponse();
-
-                    // Prevent RequestAborted from firing.
-                    Reset();
-
-                    Output.Dispose();
                 }
                 catch (Exception ex)
                 {

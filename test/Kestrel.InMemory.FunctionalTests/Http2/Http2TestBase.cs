@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack;
@@ -55,6 +56,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         protected readonly HPackDecoder _hpackDecoder;
         private readonly byte[] _headerEncodingBuffer = new byte[Http2PeerSettings.MinAllowedMaxFrameSize];
 
+        protected readonly Mock<ITimeoutHandler> _mockTimeoutHandler = new Mock<ITimeoutHandler>();
+        protected readonly TimeoutControl _timeoutControl;
+
         protected readonly ConcurrentDictionary<int, TaskCompletionSource<object>> _runningStreams = new ConcurrentDictionary<int, TaskCompletionSource<object>>();
         protected readonly Dictionary<string, string> _receivedHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         protected readonly Dictionary<string, string> _decodedHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -77,7 +81,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         protected readonly RequestDelegate _echoHost;
         protected readonly RequestDelegate _echoPath;
 
-        protected Http2ConnectionContext _connectionContext;
+        protected HttpConnectionContext _connectionContext;
         protected Http2Connection _connection;
         protected Task _connectionTask;
 
@@ -101,6 +105,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             _pair = DuplexPipe.CreateConnectionPair(inputPipeOptions, outputPipeOptions);
             _hpackDecoder = new HPackDecoder((int)_clientSettings.HeaderTableSize, MaxRequestHeaderFieldSize);
+            _timeoutControl = new TimeoutControl(_mockTimeoutHandler.Object);
 
             _noopApplication = context => Task.CompletedTask;
 
@@ -282,13 +287,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 .Setup(m => m.Http2ConnectionClosed(It.IsAny<string>(), It.IsAny<int>()))
                 .Callback(() => _closedStateReached.SetResult(null));
 
-            _connectionContext = new Http2ConnectionContext
+            _connectionContext = new HttpConnectionContext
             {
                 ConnectionContext = Mock.Of<ConnectionContext>(),
                 ConnectionFeatures = new FeatureCollection(),
                 ServiceContext = new TestServiceContext(LoggerFactory, mockKestrelTrace.Object),
                 MemoryPool = _memoryPool,
-                Transport = _pair.Transport
+                Transport = _pair.Transport,
+                TimeoutControl = _timeoutControl
             };
 
             _connection = new Http2Connection(_connectionContext);

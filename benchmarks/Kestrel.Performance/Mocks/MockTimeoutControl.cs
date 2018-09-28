@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Performance.Mocks
@@ -11,15 +12,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance.Mocks
         {
         }
 
-        public void ResetTimeout(long ticks, TimeoutAction timeoutAction)
+        public void ResetTimeout(long ticks, TimeoutReason timeoutReason)
         {
         }
 
-        public void SetTimeout(long ticks, TimeoutAction timeoutAction)
+        public void SetTimeout(long ticks, TimeoutReason timeoutReason)
         {
         }
 
-        public void StartTimingReads()
+        public void StartTimingReads(MinDataRate minRate)
         {
         }
 
@@ -39,7 +40,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance.Mocks
         {
         }
 
-        public void StartTimingWrite(long size)
+        public void StartTimingWrite(MinDataRate rate, long size)
         {
         }
 

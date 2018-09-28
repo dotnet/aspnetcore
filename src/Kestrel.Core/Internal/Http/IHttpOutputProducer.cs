@@ -5,20 +5,16 @@ using System;
 using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Connections;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
-    public interface IHttpOutputProducer : IDisposable
+    public interface IHttpOutputProducer
     {
-        void Abort(ConnectionAbortedException abortReason);
         Task WriteAsync<T>(Func<PipeWriter, T, long> callback, T state, CancellationToken cancellationToken);
         Task FlushAsync(CancellationToken cancellationToken);
         Task Write100ContinueAsync();
         void WriteResponseHeaders(int statusCode, string ReasonPhrase, HttpResponseHeaders responseHeaders);
-        // The reason this is ReadOnlySpan and not ReadOnlyMemory is because writes are always
-        // synchronous. Flushing to get back pressure is the only time we truly go async but
-        // that's after the buffer is copied
+        // This takes ReadOnlySpan instead of ReadOnlyMemory because it always synchronously copies data before flushing.
         Task WriteDataAsync(ReadOnlySpan<byte> data, CancellationToken cancellationToken);
         Task WriteStreamSuffixAsync();
     }

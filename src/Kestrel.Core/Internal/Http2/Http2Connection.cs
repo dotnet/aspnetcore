@@ -23,7 +23,7 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
-    public class Http2Connection : ITimeoutControl, IHttp2StreamLifetimeHandler, IHttpHeadersHandler, IRequestProcessor
+    public class Http2Connection : IHttp2StreamLifetimeHandler, IHttpHeadersHandler, IRequestProcessor
     {
         private enum RequestHeaderParsingState
         {
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private static readonly byte[] _trailersBytes = Encoding.ASCII.GetBytes("trailers");
         private static readonly byte[] _connectBytes = Encoding.ASCII.GetBytes("CONNECT");
 
-        private readonly Http2ConnectionContext _context;
+        private readonly HttpConnectionContext _context;
         private readonly Http2FrameWriter _frameWriter;
         private readonly HPackDecoder _hpackDecoder;
         private readonly InputFlowControl _inputFlowControl;
@@ -84,13 +84,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         private readonly ConcurrentDictionary<int, Http2Stream> _streams = new ConcurrentDictionary<int, Http2Stream>();
 
-        public Http2Connection(Http2ConnectionContext context)
+        public Http2Connection(HttpConnectionContext context)
         {
             var httpLimits = context.ServiceContext.ServerOptions.Limits;
             var http2Limits = httpLimits.Http2;
 
             _context = context;
-            _frameWriter = new Http2FrameWriter(context.Transport.Output, context.ConnectionContext, _outputFlowControl, this, context.ConnectionId, context.ServiceContext.Log);
+            _frameWriter = new Http2FrameWriter(context.Transport.Output, context.ConnectionContext, _outputFlowControl, context.TimeoutControl, context.ConnectionId, context.ServiceContext.Log);
             _serverSettings.MaxConcurrentStreams = (uint)http2Limits.MaxStreamsPerConnection;
             _serverSettings.MaxFrameSize = (uint)http2Limits.MaxFrameSize;
             _serverSettings.HeaderTableSize = (uint)http2Limits.HeaderTableSize;
@@ -102,12 +102,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         }
 
         public string ConnectionId => _context.ConnectionId;
-
         public PipeReader Input => _context.Transport.Input;
-
         public IKestrelTrace Log => _context.ServiceContext.Log;
-
         public IFeatureCollection ConnectionFeatures => _context.ConnectionFeatures;
+        public KestrelServerOptions ServerOptions => _context.ServiceContext.ServerOptions;
 
         internal Http2PeerSettings ServerSettings => _serverSettings;
 
@@ -117,12 +115,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             {
                 if (_state != Http2ConnectionState.Closed)
                 {
-                    _frameWriter.WriteGoAwayAsync(_highestOpenedStreamId, Http2ErrorCode.NO_ERROR);
                     UpdateState(Http2ConnectionState.Closed);
                 }
             }
 
-            _frameWriter.Complete();
+            _frameWriter.Abort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedByClient));
         }
 
         public void Abort(ConnectionAbortedException ex)
@@ -299,6 +296,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     }
 
                     await _streamsCompleted.Task;
+
+                    _context.TimeoutControl.StartDrainTimeout(ServerOptions.Limits.MinResponseDataRate, ServerOptions.Limits.MaxResponseBufferSize);
 
                     _frameWriter.Complete();
                 }
@@ -556,7 +555,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     FrameWriter = _frameWriter,
                     ConnectionInputFlowControl = _inputFlowControl,
                     ConnectionOutputFlowControl = _outputFlowControl,
-                    TimeoutControl = this,
+                    TimeoutControl = _context.TimeoutControl,
                 });
 
                 _currentHeadersStream.Reset();
@@ -1136,46 +1135,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             {
                 Log.Http2ConnectionClosed(_context.ConnectionId, _highestOpenedStreamId);
             }
-        }
-
-        void ITimeoutControl.SetTimeout(long ticks, TimeoutAction timeoutAction)
-        {
-        }
-
-        void ITimeoutControl.ResetTimeout(long ticks, TimeoutAction timeoutAction)
-        {
-        }
-
-        void ITimeoutControl.CancelTimeout()
-        {
-        }
-
-        void ITimeoutControl.StartTimingReads()
-        {
-        }
-
-        void ITimeoutControl.PauseTimingReads()
-        {
-        }
-
-        void ITimeoutControl.ResumeTimingReads()
-        {
-        }
-
-        void ITimeoutControl.StopTimingReads()
-        {
-        }
-
-        void ITimeoutControl.BytesRead(long count)
-        {
-        }
-
-        void ITimeoutControl.StartTimingWrite(long size)
-        {
-        }
-
-        void ITimeoutControl.StopTimingWrite()
-        {
         }
     }
 }

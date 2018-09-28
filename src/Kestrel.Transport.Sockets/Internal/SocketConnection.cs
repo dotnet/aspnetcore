@@ -32,7 +32,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
         private readonly object _shutdownLock = new object();
         private volatile bool _socketDisposed;
         private volatile Exception _shutdownReason;
-        private long _totalBytesWritten;
 
         internal SocketConnection(Socket socket, MemoryPool<byte> memoryPool, PipeScheduler scheduler, ISocketsTrace trace)
         {
@@ -68,7 +67,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
         public override MemoryPool<byte> MemoryPool { get; }
         public override PipeScheduler InputWriterScheduler => _scheduler;
         public override PipeScheduler OutputReaderScheduler => _scheduler;
-        public override long TotalBytesWritten => Interlocked.Read(ref _totalBytesWritten);
 
         public async Task StartAsync()
         {
@@ -264,10 +262,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
                     await _sender.SendAsync(buffer);
                 }
 
-                // This is not interlocked because there could be a concurrent writer.
-                // Instead it's to prevent read tearing on 32-bit systems.
-                Interlocked.Add(ref _totalBytesWritten, buffer.Length);
-
                 Output.AdvanceTo(end);
 
                 if (isCompleted)
@@ -294,7 +288,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
                 // shutdownReason should only be null if the output was completed gracefully, so no one should ever
                 // ever observe the nondescript ConnectionAbortedException except for connection middleware attempting
                 // to half close the connection which is currently unsupported.
-                _shutdownReason = shutdownReason ?? new ConnectionAbortedException();
+                _shutdownReason = shutdownReason ?? new ConnectionAbortedException("The Socket transport's send loop completed gracefully.");
 
                 _trace.ConnectionWriteFin(ConnectionId);
 

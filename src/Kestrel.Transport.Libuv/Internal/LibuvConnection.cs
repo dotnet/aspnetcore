@@ -54,8 +54,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         public override PipeScheduler InputWriterScheduler => Thread;
         public override PipeScheduler OutputReaderScheduler => Thread;
 
-        public override long TotalBytesWritten => OutputConsumer?.TotalBytesWritten ?? 0;
-
         public async Task Start()
         {
             try
@@ -98,7 +96,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                 finally
                 {
                     // Now, complete the input so that no more reads can happen
-                    Input.Complete(inputError ?? _abortReason ?? new ConnectionAbortedException());
+                    Input.Complete(inputError ?? _abortReason ?? new ConnectionAbortedException("The libuv transport's send loop completed gracefully."));
                     Output.Complete(outputError);
 
                     // Make sure it isn't possible for a paused read to resume reading after calling uv_close
