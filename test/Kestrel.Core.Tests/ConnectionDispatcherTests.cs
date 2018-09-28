@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var tcs = new TaskCompletionSource<object>();
             var dispatcher = new ConnectionDispatcher(serviceContext, _ => tcs.Task);
 
-            var connection = new Mock<TransportConnection>() { CallBase = true }.Object;
+            var connection = new Mock<TransportConnection> { CallBase = true }.Object;
             connection.ConnectionClosed = new CancellationToken(canceled: true);
 
             dispatcher.OnConnection(connection);
@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var serviceContext = new TestServiceContext();
             var dispatcher = new ConnectionDispatcher(serviceContext, _ => Task.CompletedTask);
 
-            var mockConnection = new Mock<TransportConnection>() { CallBase = true };
+            var mockConnection = new Mock<TransportConnection> { CallBase = true };
             mockConnection.Object.ConnectionClosed = new CancellationToken(canceled: true);
             var mockPipeReader = new Mock<PipeReader>();
             var mockPipeWriter = new Mock<PipeWriter>();

@@ -407,7 +407,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             var writeCount = 0;
             var writeTcs = new TaskCompletionSource<(byte[], int, int)>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var mockDestination = new Mock<Stream>() { CallBase = true };
+            var mockDestination = new Mock<Stream> { CallBase = true };
 
             mockDestination
                 .Setup(m => m.WriteAsync(It.IsAny<byte[]>(), It.IsAny<int>(), It.IsAny<int>(), CancellationToken.None))
@@ -443,8 +443,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                 var bytes = Encoding.ASCII.GetBytes("Hello ");
                 var buffer = http1Connection.RequestBodyPipe.Writer.GetMemory(2048);
-                ArraySegment<byte> segment;
-                Assert.True(MemoryMarshal.TryGetArray(buffer, out segment));
+                Assert.True(MemoryMarshal.TryGetArray(buffer, out ArraySegment<byte> segment));
                 Buffer.BlockCopy(bytes, 0, segment.Array, segment.Offset, bytes.Length);
                 http1Connection.RequestBodyPipe.Writer.Advance(bytes.Length);
                 await http1Connection.RequestBodyPipe.Writer.FlushAsync();

@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.ExceptionServices;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
@@ -14,7 +13,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
-using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 using Xunit;
@@ -43,7 +41,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public async Task HEADERS_Received_InvlaidCustomMethod_Reset()
+        public async Task HEADERS_Received_InvalidCustomMethod_Reset()
         {
             var headers = new[]
             {
@@ -189,7 +187,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public async Task HEADERS_Received_PathAndQuery_Seperated()
+        public async Task HEADERS_Received_PathAndQuery_Separated()
         {
             await InitializeConnectionAsync(context =>
             {
@@ -1343,7 +1341,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public async Task ApplicationExeption_BeforeFirstWrite_Sends500()
+        public async Task ApplicationException_BeforeFirstWrite_Sends500()
         {
             var headers = new[]
             {
@@ -1380,7 +1378,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public async Task ApplicationExeption_AfterFirstWrite_Resets()
+        public async Task ApplicationException_AfterFirstWrite_Resets()
         {
             var headers = new[]
             {

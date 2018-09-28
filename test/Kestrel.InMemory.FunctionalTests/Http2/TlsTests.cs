@@ -55,11 +55,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.Http2
                 using (var connection = server.CreateConnection())
                 {
                     var sslStream = new SslStream(connection.Stream);
-                    await sslStream.AuthenticateAsClientAsync(new SslClientAuthenticationOptions()
+                    await sslStream.AuthenticateAsClientAsync(new SslClientAuthenticationOptions
                     {
                         TargetHost = "localhost",
                         RemoteCertificateValidationCallback = (_, __, ___, ____) => true,
-                        ApplicationProtocols = new List<SslApplicationProtocol>() { SslApplicationProtocol.Http2, SslApplicationProtocol.Http11 },
+                        ApplicationProtocols = new List<SslApplicationProtocol> { SslApplicationProtocol.Http2, SslApplicationProtocol.Http11 },
                         EnabledSslProtocols = SslProtocols.Tls11, // Intentionally less than the required 1.2
                     }, CancellationToken.None);
 

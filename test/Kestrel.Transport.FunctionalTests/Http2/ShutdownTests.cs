@@ -3,7 +3,6 @@
 
 #if NETCOREAPP2_2
 
-using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
@@ -38,7 +37,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 // We don't want the default SocketsHttpHandler, it doesn't support HTTP/2 yet.
-                Client = new HttpClient(new WinHttpHandler()
+                Client = new HttpClient(new WinHttpHandler
                 {
                     ServerCertificateValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
                 });

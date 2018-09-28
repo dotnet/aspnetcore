@@ -34,8 +34,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var block = new Span<byte>(Encoding.ASCII.GetBytes(input));
 
             // Act
-            HttpMethod knownMethod;
-            var result = block.GetKnownMethod(out knownMethod, out var length);
+            var result = block.GetKnownMethod(out var knownMethod, out var length);
 
             string toString = null;
             if (knownMethod != HttpMethod.Custom)
@@ -136,7 +135,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             get
             {
-                return new TheoryData<string>() {
+                return new TheoryData<string> {
                     "z",
                     "1",
                     "y:1",
@@ -178,7 +177,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             get
             {
                 // see https://tools.ietf.org/html/rfc7230#section-5.4
-                var data = new TheoryData<string>() {
+                var data = new TheoryData<string> {
                     "[]", // Too short
                     "[::]", // Too short
                     "[ghijkl]", // Non-hex

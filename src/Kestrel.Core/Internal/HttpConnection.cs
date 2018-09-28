@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
                 using (connectionLifetimeNotificationFeature?.ConnectionClosedRequested.Register(state => ((HttpConnection)state).StopProcessingNextRequest(), this))
                 {
-                    // Ensure TimeoutControl._lastTimestamp is intialized before anything that could set timeouts runs.
+                    // Ensure TimeoutControl._lastTimestamp is initialized before anything that could set timeouts runs.
                     _timeoutControl.Initialize(_systemClock.UtcNow);
 
                     _context.ConnectionFeatures.Set<IConnectionTimeoutFeature>(_timeoutControl);
@@ -375,7 +375,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         public void OnTimeout(TimeoutReason reason)
         {
             // In the cases that don't log directly here, we expect the setter of the timeout to also be the input
-            // reader, so when the read is canceled or arborted, the reader should write the appropriate log.
+            // reader, so when the read is canceled or aborted, the reader should write the appropriate log.
             switch (reason)
             {
                 case TimeoutReason.KeepAlive:

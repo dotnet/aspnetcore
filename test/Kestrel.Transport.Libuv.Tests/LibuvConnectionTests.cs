@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
         {
             var mockConnectionDispatcher = new MockConnectionDispatcher();
             var mockLibuv = new MockLibuv();
-            var transportContext = new TestLibuvTransportContext() { ConnectionDispatcher = mockConnectionDispatcher };
+            var transportContext = new TestLibuvTransportContext { ConnectionDispatcher = mockConnectionDispatcher };
             var transport = new LibuvTransport(mockLibuv, transportContext, null);
             var thread = new LibuvThread(transport);
             Task connectionTask = null;
@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
         {
             var mockConnectionDispatcher = new MockConnectionDispatcher();
             var mockLibuv = new MockLibuv();
-            var transportContext = new TestLibuvTransportContext() { ConnectionDispatcher = mockConnectionDispatcher };
+            var transportContext = new TestLibuvTransportContext { ConnectionDispatcher = mockConnectionDispatcher };
             var transport = new LibuvTransport(mockLibuv, transportContext, null);
             var thread = new LibuvThread(transport);
             mockConnectionDispatcher.InputOptions = pool =>
@@ -126,7 +126,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
         {
             var mockConnectionDispatcher = new MockConnectionDispatcher();
             var mockLibuv = new MockLibuv();
-            var transportContext = new TestLibuvTransportContext() { ConnectionDispatcher = mockConnectionDispatcher };
+            var transportContext = new TestLibuvTransportContext { ConnectionDispatcher = mockConnectionDispatcher };
             var transport = new LibuvTransport(mockLibuv, transportContext, null);
             var thread = new LibuvThread(transport);
             var mockScheduler = new Mock<PipeScheduler>();
@@ -211,7 +211,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
         {
             var mockConnectionDispatcher = new MockConnectionDispatcher();
             var mockLibuv = new MockLibuv();
-            var transportContext = new TestLibuvTransportContext() { ConnectionDispatcher = mockConnectionDispatcher };
+            var transportContext = new TestLibuvTransportContext { ConnectionDispatcher = mockConnectionDispatcher };
             var transport = new LibuvTransport(mockLibuv, transportContext, null);
             var thread = new LibuvThread(transport);
 

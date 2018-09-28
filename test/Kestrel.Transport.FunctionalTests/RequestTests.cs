@@ -177,17 +177,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         public async Task CanHandleMultipleConcurrentRequests()
         {
             var requestNumber = 0;
-            var ensureConcurrentReqeustTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var ensureConcurrentRequestTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             using (var server = new TestServer(async context =>
             {
                 if (Interlocked.Increment(ref requestNumber) == 1)
                 {
-                    await ensureConcurrentReqeustTcs.Task.DefaultTimeout();
+                    await ensureConcurrentRequestTcs.Task.DefaultTimeout();
                 }
                 else
                 {
-                    ensureConcurrentReqeustTcs.SetResult(null);
+                    ensureConcurrentRequestTcs.SetResult(null);
                 }
             }, new TestServiceContext(LoggerFactory)))
             {

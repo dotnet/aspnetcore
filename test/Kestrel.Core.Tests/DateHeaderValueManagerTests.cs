@@ -104,9 +104,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             var testKestrelTrace = new TestKestrelTrace();
 
-            using (var heatbeat = new Heartbeat(new IHeartbeatHandler[] { dateHeaderValueManager }, systemClock, DebuggerWrapper.Singleton, testKestrelTrace))
+            using (var heartbeat = new Heartbeat(new IHeartbeatHandler[] { dateHeaderValueManager }, systemClock, DebuggerWrapper.Singleton, testKestrelTrace))
             {
-                heatbeat.OnHeartbeat();
+                heartbeat.OnHeartbeat();
                 Assert.Equal(now.ToString(Rfc1123DateFormat), dateHeaderValueManager.GetDateHeaderValues().String);
             }
 

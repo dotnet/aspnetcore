@@ -148,7 +148,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                     };
                 }
 
-                var sslOptions = new SslServerAuthenticationOptions()
+                var sslOptions = new SslServerAuthenticationOptions
                 {
                     ServerCertificate = _serverCertificate,
                     ServerCertificateSelectionCallback = selector,

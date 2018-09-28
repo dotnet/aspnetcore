@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
             var serverOptions = new KestrelServerOptions();
             serverOptions.ApplicationServices = new ServiceCollection()
                 .AddLogging()
-                .AddSingleton<IHostingEnvironment>(new HostingEnvironment() { ApplicationName = "TestApplication" })
+                .AddSingleton<IHostingEnvironment>(new HostingEnvironment { ApplicationName = "TestApplication" })
                 .BuildServiceProvider();
             return serverOptions;
         }
@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
         }
 
         [Fact]
-        public void Configure_IsReplacable()
+        public void Configure_IsReplaceable()
         {
             var run1 = false;
             var serverOptions = CreateServerOptions();

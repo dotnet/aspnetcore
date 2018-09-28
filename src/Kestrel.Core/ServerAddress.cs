@@ -105,8 +105,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                     int portDelimiterEnd = portDelimiterStart + ":".Length;
 
                     string portString = url.Substring(portDelimiterEnd, pathDelimiterStart - portDelimiterEnd);
-                    int portNumber;
-                    if (int.TryParse(portString, NumberStyles.Integer, CultureInfo.InvariantCulture, out portNumber))
+                    if (int.TryParse(portString, NumberStyles.Integer, CultureInfo.InvariantCulture, out var portNumber))
                     {
                         hasSpecifiedPort = true;
                         serverAddress.Host = url.Substring(schemeDelimiterEnd, portDelimiterStart - schemeDelimiterEnd);

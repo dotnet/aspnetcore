@@ -3,11 +3,8 @@
 
 using System;
 using System.Runtime.CompilerServices;
-using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
-using Microsoft.AspNetCore.Testing;
 using Moq;
 using Xunit;
 

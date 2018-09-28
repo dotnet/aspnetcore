@@ -5,7 +5,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
@@ -16,8 +15,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
     {
         private static long ParseContentLength(string value)
         {
-            long parsed;
-            if (!HeaderUtilities.TryParseNonNegativeInt64(value, out parsed))
+            if (!HeaderUtilities.TryParseNonNegativeInt64(value, out var parsed))
             {
                 BadHttpRequestException.Throw(RequestRejectionReason.InvalidContentLength, value);
             }
@@ -51,8 +49,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 }
             }
 
-            StringValues existing;
-            Unknown.TryGetValue(key, out existing);
+            Unknown.TryGetValue(key, out var existing);
             Unknown[key] = AppendValue(existing, value);
         }
 
