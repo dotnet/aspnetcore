@@ -41,3 +41,4 @@ node_modules
 global.json
 BenchmarkDotNet.Artifacts/
 *.etl.zip
+*.etl
