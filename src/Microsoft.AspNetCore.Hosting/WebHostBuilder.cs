@@ -162,13 +162,6 @@ namespace Microsoft.AspNetCore.Hosting
                 }
             }
 
-            var logger = hostingServiceProvider.GetRequiredService<ILogger<WebHost>>();
-            // Warn about duplicate HostingStartupAssemblies
-            foreach (var assemblyName in _options.GetFinalHostingStartupAssemblies().GroupBy(a => a, StringComparer.OrdinalIgnoreCase).Where(g => g.Count() > 1))
-            {
-                logger.LogWarning($"The assembly {assemblyName} was specified multiple times. Hosting startup assemblies should only be specified once.");
-            }
-
             AddApplicationServices(applicationServices, hostingServiceProvider);
 
             var host = new WebHost(
@@ -180,6 +173,14 @@ namespace Microsoft.AspNetCore.Hosting
             try
             {
                 host.Initialize();
+
+                var logger = host.Services.GetRequiredService<ILogger<WebHost>>();
+
+                // Warn about duplicate HostingStartupAssemblies
+                foreach (var assemblyName in _options.GetFinalHostingStartupAssemblies().GroupBy(a => a, StringComparer.OrdinalIgnoreCase).Where(g => g.Count() > 1))
+                {
+                    logger.LogWarning($"The assembly {assemblyName} was specified multiple times. Hosting startup assemblies should only be specified once.");
+                }
 
                 return host;
             }
@@ -196,7 +197,7 @@ namespace Microsoft.AspNetCore.Hosting
                 var provider = collection.BuildServiceProvider();
                 var factory = provider.GetService<IServiceProviderFactory<IServiceCollection>>();
 
-                if (factory != null)
+                if (factory != null && !(factory is DefaultServiceProviderFactory))
                 {
                     using (provider)
                     {
