@@ -86,7 +86,7 @@
       <PreviousStableVersion>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).$([MSBuild]::Subtract($(AspNetCorePatchVersion), 1))</PreviousStableVersion>
     </PropertyGroup>
 
-    <Error Text="The ArchiveBaseline for previous release (v$(PreviousStableVersion)) could not be found. This is required to build the incremental archives. See instructions in $(MSBuildThisFileDirectory)ZipManifestGenerator\README.md"
+    <Error Text="The ArchiveBaseline for previous release (v$(PreviousStableVersion)) could not be found. This is required to build the incremental archives. See instructions in $(MSBuildThisFileDirectory)ZipManifestGenerator/README.md"
            Condition="! Exists('$(MSBuildProjectDirectory)\ArchiveBaseline.$(PreviousStableVersion).txt')" />
   </Target>
 

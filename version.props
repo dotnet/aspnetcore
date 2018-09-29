@@ -2,7 +2,7 @@
   <PropertyGroup>
     <AspNetCoreMajorVersion>2</AspNetCoreMajorVersion>
     <AspNetCoreMinorVersion>1</AspNetCoreMinorVersion>
-    <AspNetCorePatchVersion>5</AspNetCorePatchVersion>
+    <AspNetCorePatchVersion>6</AspNetCorePatchVersion>
     <VersionPrefix>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).$(AspNetCorePatchVersion)</VersionPrefix>
     <PrereleaseVersionLabel>rtm</PrereleaseVersionLabel>
     <BuildNumber Condition="'$(BuildNumber)' == ''">t000</BuildNumber>
