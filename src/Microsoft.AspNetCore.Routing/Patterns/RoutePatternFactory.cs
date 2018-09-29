@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
         }
 
         /// <summary>
-        /// Creates a new <see cref="RoutePattern"/> from a collection of segments.
+        /// Creates a new instance of <see cref="RoutePattern"/> from a collection of segments.
         /// </summary>
         /// <param name="segments">The collection of segments.</param>
         /// <returns>The <see cref="RoutePattern"/>.</returns>
@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
         }
 
         /// <summary>
-        /// Creates a new <see cref="RoutePattern"/> from a collection of segments.
+        /// Creates a new instance of <see cref="RoutePattern"/> from a collection of segments.
         /// </summary>
         /// <param name="rawText">The raw text to associate with the route pattern. May be null.</param>
         /// <param name="segments">The collection of segments.</param>
@@ -158,7 +158,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
         }
 
         /// <summary>
-        /// Creates a new <see cref="RoutePattern"/> from a collection of segments.
+        /// Creates a new instance of <see cref="RoutePattern"/> from a collection of segments.
         /// </summary>
         /// <param name="segments">The collection of segments.</param>
         /// <returns>The <see cref="RoutePattern"/>.</returns>
@@ -173,7 +173,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
         }
 
         /// <summary>
-        /// Creates a new <see cref="RoutePattern"/> from a collection of segments.
+        /// Creates a new instance of <see cref="RoutePattern"/> from a collection of segments.
         /// </summary>
         /// <param name="rawText">The raw text to associate with the route pattern. May be null.</param>
         /// <param name="segments">The collection of segments.</param>

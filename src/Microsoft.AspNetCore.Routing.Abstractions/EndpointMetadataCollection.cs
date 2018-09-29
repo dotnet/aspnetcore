@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Http
         private readonly ConcurrentDictionary<Type, object[]> _cache;
 
         /// <summary>
-        /// Creates a new <see cref="EndpointMetadataCollection"/>.
+        /// Creates a new instance of <see cref="EndpointMetadataCollection"/>.
         /// </summary>
         /// <param name="items">The metadata items.</param>
         public EndpointMetadataCollection(IEnumerable<object> items)
@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Http
         }
 
         /// <summary>
-        /// Creates a new <see cref="EndpointMetadataCollection"/>.
+        /// Creates a new instance of <see cref="EndpointMetadataCollection"/>.
         /// </summary>
         /// <param name="items">The metadata items.</param>
         public EndpointMetadataCollection(params object[] items)

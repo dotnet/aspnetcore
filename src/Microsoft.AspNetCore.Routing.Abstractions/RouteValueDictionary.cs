@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Routing
         private int _count;
 
         /// <summary>
-        /// Creates a new <see cref="RouteValueDictionary"/> from the provided array.
+        /// Creates a new instance of <see cref="RouteValueDictionary"/> from the provided array.
         /// The new instance will take ownership of the array, and may mutate it.
         /// </summary>
         /// <param name="items">The items array.</param>

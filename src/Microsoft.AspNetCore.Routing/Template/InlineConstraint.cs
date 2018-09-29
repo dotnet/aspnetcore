@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Routing.Template
     public class InlineConstraint
     {
         /// <summary>
-        /// Creates a new <see cref="InlineConstraint"/>.
+        /// Creates a new instance of <see cref="InlineConstraint"/>.
         /// </summary>
         /// <param name="constraint">The constraint text.</param>
         public InlineConstraint(string constraint)

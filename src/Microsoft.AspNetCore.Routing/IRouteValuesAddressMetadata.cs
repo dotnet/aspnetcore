@@ -5,9 +5,20 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Routing
 {
+    /// <summary>
+    /// Represents metadata used during link generation to find
+    /// the associated endpoint using route values.
+    /// </summary>
     public interface IRouteValuesAddressMetadata
     {
+        /// <summary>
+        /// Gets the route name. Can be null.
+        /// </summary>
         string RouteName { get; }
+
+        /// <summary>
+        /// Gets the required route values.
+        /// </summary>
         IReadOnlyDictionary<string, object> RequiredValues { get; }
     }
 }

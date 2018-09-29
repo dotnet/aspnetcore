@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Routing
             var d = new List<object>(metadata ?? Array.Empty<object>());
             if (requiredValues != null)
             {
-                d.Add(new RouteValuesAddressMetadata(null, new RouteValueDictionary(requiredValues)));
+                d.Add(new RouteValuesAddressMetadata(new RouteValueDictionary(requiredValues)));
             }
 
             return new RouteEndpoint(

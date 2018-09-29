@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Routing.Constraints
     public class HttpMethodRouteConstraint : IRouteConstraint
     {
         /// <summary>
-        /// Creates a new <see cref="HttpMethodRouteConstraint"/> that accepts the HTTP methods specified
+        /// Creates a new instance of <see cref="HttpMethodRouteConstraint"/> that accepts the HTTP methods specified
         /// by <paramref name="allowedMethods"/>.
         /// </summary>
         /// <param name="allowedMethods">The allowed HTTP methods.</param>
