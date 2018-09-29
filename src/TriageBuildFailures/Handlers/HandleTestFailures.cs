@@ -26,7 +26,7 @@ namespace TriageBuildFailures.Handlers
             return tests.Any(s => s.Status == BuildStatus.FAILURE);
         }
 
-        private string SafeGetExceptionMessage(string errors)
+        private static string SafeGetExceptionMessage(string errors)
         {
             return string.IsNullOrEmpty(errors) ? NoStackTraceAvailable : ErrorParsing.GetExceptionMessage(errors);
         }
@@ -202,7 +202,7 @@ CC {GetManagerMentions(repo)}";
             {
                 var insideTicks = issue.Body.StartsWith("```", StringComparison.OrdinalIgnoreCase) ? parts[0] : parts[1];
                 insideTicks = insideTicks.Trim();
-                return ErrorParsing.GetExceptionMessage(insideTicks);
+                return SafeGetExceptionMessage(insideTicks);
             }
         }
 
