@@ -2,14 +2,8 @@
   <!-- These package versions may be overridden or updated by automation. -->
   <PropertyGroup Label="Package Versions: Auto" Condition=" '$(DotNetPackageVersionPropsPath)' == '' ">
     <!-- MicrosoftNETCoreApp21PackageVersion is assigned at the bottom so it can automatically pick up MicrosoftNETCoreAppPackageVersion in an orchestrated build. -->
-    <MicrosoftNETCoreAppPackageVersion>2.1.5-servicing-26906-03</MicrosoftNETCoreAppPackageVersion>
-    <MicrosoftNETCoreDotNetAppHostPackageVersion>2.1.5-servicing-26906-03</MicrosoftNETCoreDotNetAppHostPackageVersion>
-    <SystemDiagnosticsDiagnosticSourcePackageVersion>4.5.0</SystemDiagnosticsDiagnosticSourcePackageVersion>
-    <SystemIOPipelinesPackageVersion>4.5.1</SystemIOPipelinesPackageVersion>
-    <SystemNetHttpWinHttpHandlerPackageVersion>4.5.0</SystemNetHttpWinHttpHandlerPackageVersion>
-    <SystemNetWebSocketsWebSocketProtocolPackageVersion>4.5.1</SystemNetWebSocketsWebSocketProtocolPackageVersion>
-    <SystemRuntimeCompilerServicesUnsafePackageVersion>4.5.1</SystemRuntimeCompilerServicesUnsafePackageVersion>
-    <SystemSecurityPrincipalWindowsPackageVersion>4.5.0</SystemSecurityPrincipalWindowsPackageVersion>
+    <MicrosoftNETCoreAppPackageVersion>2.1.5</MicrosoftNETCoreAppPackageVersion>
+    <MicrosoftNETCoreDotNetAppHostPackageVersion>2.1.5</MicrosoftNETCoreDotNetAppHostPackageVersion>
   </PropertyGroup>
 
   <Import Project="$(DotNetPackageVersionPropsPath)" Condition="'$(DotNetPackageVersionPropsPath)' != ''" />
@@ -112,19 +106,25 @@
     <SystemCollectionsImmutablePackageVersion>1.5.0</SystemCollectionsImmutablePackageVersion>
     <SystemComponentModelAnnotationsPackageVersion>4.5.0</SystemComponentModelAnnotationsPackageVersion>
     <SystemDataSqlClientPackageVersion>4.5.1</SystemDataSqlClientPackageVersion>
+    <SystemDiagnosticsDiagnosticSourcePackageVersion>4.5.1</SystemDiagnosticsDiagnosticSourcePackageVersion>
     <SystemDiagnosticsEventLogPackageVersion>4.5.0</SystemDiagnosticsEventLogPackageVersion>
     <SystemIdentityModelTokensJwtPackageVersion>5.2.0</SystemIdentityModelTokensJwtPackageVersion>
     <SystemInteractiveAsyncPackageVersion>3.1.1</SystemInteractiveAsyncPackageVersion>
+    <SystemIOPipelinesPackageVersion>4.5.2</SystemIOPipelinesPackageVersion>
     <SystemMemoryPackageVersion>4.5.1</SystemMemoryPackageVersion>
     <SystemNetHttpPackageVersion>4.3.2</SystemNetHttpPackageVersion>
+    <SystemNetHttpWinHttpHandlerPackageVersion>4.5.1</SystemNetHttpWinHttpHandlerPackageVersion>
+    <SystemNetWebSocketsWebSocketProtocolPackageVersion>4.5.2</SystemNetWebSocketsWebSocketProtocolPackageVersion>
     <SystemNumericsVectorsPackageVersion>4.5.0</SystemNumericsVectorsPackageVersion>
     <SystemReactiveLinqPackageVersion>3.1.1</SystemReactiveLinqPackageVersion>
     <SystemReflectionEmitPackageVersion>4.3.0</SystemReflectionEmitPackageVersion>
     <SystemReflectionMetadataPackageVersion>1.6.0</SystemReflectionMetadataPackageVersion>
+    <SystemRuntimeCompilerServicesUnsafePackageVersion>4.5.2</SystemRuntimeCompilerServicesUnsafePackageVersion>
     <SystemRuntimeInteropServicesRuntimeInformationPackageVersion>4.3.0</SystemRuntimeInteropServicesRuntimeInformationPackageVersion>
     <SystemSecurityCryptographyCngPackageVersion>4.5.0</SystemSecurityCryptographyCngPackageVersion>
     <SystemSecurityCryptographyXmlPackageVersion>4.5.0</SystemSecurityCryptographyXmlPackageVersion>
     <SystemSecurityPermissionsPackageVersion>4.5.0</SystemSecurityPermissionsPackageVersion>
+    <SystemSecurityPrincipalWindowsPackageVersion>4.5.1</SystemSecurityPrincipalWindowsPackageVersion>
     <SystemServiceProcessServiceControllerPackageVersion>4.5.0</SystemServiceProcessServiceControllerPackageVersion>
     <SystemTextEncodingsWebPackageVersion>4.5.0</SystemTextEncodingsWebPackageVersion>
     <SystemThreadingChannelsPackageVersion>4.5.0</SystemThreadingChannelsPackageVersion>
