@@ -220,7 +220,7 @@ if [ -f "$config_file" ]; then
             config_channel="$(jq -r 'select(.channel!=null) | .channel' "$config_file")"
             config_tools_source="$(jq -r 'select(.toolsSource!=null) | .toolsSource' "$config_file")"
         else
-            _error "$config_file contains invalid JSON."
+            __error "$config_file contains invalid JSON."
             exit 1
         fi
     elif __machine_has python ; then
@@ -228,7 +228,7 @@ if [ -f "$config_file" ]; then
             config_channel="$(python -c "import json,codecs;obj=json.load(codecs.open('$config_file', 'r', 'utf-8-sig'));print(obj['channel'] if 'channel' in obj else '')")"
             config_tools_source="$(python -c "import json,codecs;obj=json.load(codecs.open('$config_file', 'r', 'utf-8-sig'));print(obj['toolsSource'] if 'toolsSource' in obj else '')")"
         else
-            _error "$config_file contains invalid JSON."
+            __error "$config_file contains invalid JSON."
             exit 1
         fi
     elif __machine_has python3 ; then
@@ -236,11 +236,11 @@ if [ -f "$config_file" ]; then
             config_channel="$(python3 -c "import json,codecs;obj=json.load(codecs.open('$config_file', 'r', 'utf-8-sig'));print(obj['channel'] if 'channel' in obj else '')")"
             config_tools_source="$(python3 -c "import json,codecs;obj=json.load(codecs.open('$config_file', 'r', 'utf-8-sig'));print(obj['toolsSource'] if 'toolsSource' in obj else '')")"
         else
-            _error "$config_file contains invalid JSON."
+            __error "$config_file contains invalid JSON."
             exit 1
         fi
     else
-        _error 'Missing required command: jq or python. Could not parse the JSON file.'
+        __error 'Missing required command: jq or python. Could not parse the JSON file.'
         exit 1
     fi
 
