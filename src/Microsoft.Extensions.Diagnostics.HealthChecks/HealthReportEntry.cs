@@ -19,12 +19,14 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
         /// </summary>
         /// <param name="status">A value indicating the health status of the component that was checked.</param>
         /// <param name="description">A human-readable description of the status of the component that was checked.</param>
+        /// <param name="duration">A value indicating the health execution duration.</param>
         /// <param name="exception">An <see cref="Exception"/> representing the exception that was thrown when checking for status (if any).</param>
         /// <param name="data">Additional key-value pairs describing the health of the component.</param>
-        public HealthReportEntry(HealthStatus status, string description, Exception exception, IReadOnlyDictionary<string, object> data)
+        public HealthReportEntry(HealthStatus status, string description, TimeSpan duration, Exception exception, IReadOnlyDictionary<string, object> data)
         {
             Status = status;
             Description = description;
+            Duration = duration;
             Exception = exception;
             Data = data ?? _emptyReadOnlyDictionary;
         }
@@ -38,6 +40,11 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
         /// Gets a human-readable description of the status of the component that was checked.
         /// </summary>
         public string Description { get; }
+
+        /// <summary>
+        /// Gets the health check execution duration.
+        /// </summary>
+        public TimeSpan Duration { get; }
 
         /// <summary>
         /// Gets an <see cref="System.Exception"/> representing the exception that was thrown when checking for status (if any).
