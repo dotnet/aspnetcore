@@ -14,6 +14,7 @@
     <MicrosoftAspNetCoreHttpPackageVersion>3.0.0-alpha1-10495</MicrosoftAspNetCoreHttpPackageVersion>
     <MicrosoftAspNetCoreServerIISIntegrationPackageVersion>3.0.0-alpha1-10495</MicrosoftAspNetCoreServerIISIntegrationPackageVersion>
     <MicrosoftAspNetCoreServerKestrelPackageVersion>3.0.0-alpha1-10495</MicrosoftAspNetCoreServerKestrelPackageVersion>
+    <MicrosoftAspNetCoreStaticFilesPackageVersion>3.0.0-alpha1-10495</MicrosoftAspNetCoreStaticFilesPackageVersion>
     <MicrosoftAspNetCoreTestHostPackageVersion>3.0.0-alpha1-10495</MicrosoftAspNetCoreTestHostPackageVersion>
     <MicrosoftAspNetCoreTestingPackageVersion>3.0.0-alpha1-10495</MicrosoftAspNetCoreTestingPackageVersion>
     <MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>3.0.0-alpha1-10495</MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>

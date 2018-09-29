@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Internal;
+using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -124,7 +125,7 @@ namespace RoutingSample.Web
                     new RouteValuesAddressMetadata(routeName: "WithDoubleAsteriskCatchAll", requiredValues: new RouteValueDictionary()));
             });
 
-            // Imagine some more stuff here...
+            app.UseStaticFiles();
 
             app.UseEndpoint();
         }
