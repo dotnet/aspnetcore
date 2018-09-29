@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Routing
         private readonly Dictionary<string, List<IRouteConstraint>> _constraints;
         private readonly HashSet<string> _optionalParameters;
         /// <summary>
-        /// Creates a new <see cref="RouteConstraintBuilder"/> instance.
+        /// Creates a new instance of <see cref="RouteConstraintBuilder"/> instance.
         /// </summary>
         /// <param name="inlineConstraintResolver">The <see cref="IInlineConstraintResolver"/>.</param>
         /// <param name="displayName">The display name (for use in error messages).</param>

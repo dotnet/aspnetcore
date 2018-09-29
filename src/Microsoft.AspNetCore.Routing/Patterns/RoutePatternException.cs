@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
         }
 
         /// <summary>
-        /// Creates a new <see cref="RoutePatternException"/>.
+        /// Creates a new instance of <see cref="RoutePatternException"/>.
         /// </summary>
         /// <param name="pattern">The route pattern as raw text.</param>
         /// <param name="message">The exception message.</param>

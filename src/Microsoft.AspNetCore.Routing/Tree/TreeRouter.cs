@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Routing.Tree
         private readonly ILogger _constraintLogger;
 
         /// <summary>
-        /// Creates a new <see cref="TreeRouter"/>.
+        /// Creates a new instance of <see cref="TreeRouter"/>.
         /// </summary>
         /// <param name="trees">The list of <see cref="UrlMatchingTree"/> that contains the route entries.</param>
         /// <param name="linkGenerationEntries">The set of <see cref="OutboundRouteEntry"/>.</param>
