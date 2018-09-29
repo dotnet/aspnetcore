@@ -14,9 +14,6 @@
     <RepositoryRoot>$(MSBuildThisFileDirectory)</RepositoryRoot>
     <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)build\Key.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
-    <AssemblySigningCertName>Microsoft</AssemblySigningCertName>
-    <PackageSigningCertName>MicrosoftNuGet</PackageSigningCertName>
-    <PublicSign Condition="'$(OS)' != 'Windows_NT'">true</PublicSign>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <!-- https://github.com/aspnet/BuildTools/issues/592 -->
     <EnableApiCheck>false</EnableApiCheck>
