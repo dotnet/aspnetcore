@@ -553,6 +553,31 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         }
 
         [Fact]
+        [InitializeTestProject("AppWithP2PReference", additionalProjects: new[] { "ClassLibrary", "ClassLibraryMvc21" })]
+        public async Task Build_WithP2P_Referencing21Project_Works()
+        {
+            // Verifies building with different versions of Razor.Tasks works. Loosely modeled after the repro
+            // scenario listed in https://github.com/Microsoft/msbuild/issues/3572
+            var additionalProjectContent = @"
+<ItemGroup>
+  <ProjectReference Include=""..\ClassLibraryMvc21\ClassLibraryMvc21.csproj"" />
+</ItemGroup>
+";
+            AddProjectFileContent(additionalProjectContent);
+
+            var result = await DotnetMSBuild(target: default);
+
+            Assert.BuildPassed(result);
+
+            Assert.FileExists(result, OutputPath, "AppWithP2PReference.dll");
+            Assert.FileExists(result, OutputPath, "AppWithP2PReference.Views.dll");
+            Assert.FileExists(result, OutputPath, "ClassLibrary.dll");
+            Assert.FileExists(result, OutputPath, "ClassLibrary.Views.dll");
+            Assert.FileExists(result, OutputPath, "ClassLibraryMvc21.dll");
+            Assert.FileExists(result, OutputPath, "ClassLibraryMvc21.Views.dll");
+        }
+
+        [Fact]
         [InitializeTestProject("SimpleMvc")]
         public async Task Build_WithStartupObjectSpecified_Works()
         {

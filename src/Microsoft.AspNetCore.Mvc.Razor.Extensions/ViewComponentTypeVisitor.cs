@@ -13,13 +13,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         private readonly INamedTypeSymbol _nonViewComponentAttribute;
         private readonly List<INamedTypeSymbol> _results;
 
-        public static ViewComponentTypeVisitor Create(Compilation compilation, List<INamedTypeSymbol> results)
-        {
-            var vcAttribute = compilation.GetTypeByMetadataName(ViewComponentTypes.ViewComponentAttribute);
-            var nonVCAttribute = compilation.GetTypeByMetadataName(ViewComponentTypes.NonViewComponentAttribute);
-            return new ViewComponentTypeVisitor(vcAttribute, nonVCAttribute, results);
-        }
-
         public ViewComponentTypeVisitor(
             INamedTypeSymbol viewComponentAttribute,
             INamedTypeSymbol nonViewComponentAttribute,

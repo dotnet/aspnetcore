@@ -40,15 +40,11 @@ namespace Microsoft.CodeAnalysis.Razor
 
         internal static bool IsValidCompilation(Compilation compilation)
         {
-            var iTagHelper = compilation.GetTypeByMetadataName(TagHelperTypes.ITagHelper);
             var @string = compilation.GetSpecialType(SpecialType.System_String);
 
-            // Do some minimal tests to verify the compilation is valid. If symbols for ITagHelper or System.String 
-            // are missing or errored, the compilation may be missing references.
-            return iTagHelper != null &&
-                iTagHelper.TypeKind != TypeKind.Error &&
-                @string != null &&
-                @string.TypeKind != TypeKind.Error;
+            // Do some minimal tests to verify the compilation is valid. If symbols for System.String
+            // is missing or errored, the compilation may be missing references.
+            return @string != null && @string.TypeKind != TypeKind.Error;
         }
     }
 }

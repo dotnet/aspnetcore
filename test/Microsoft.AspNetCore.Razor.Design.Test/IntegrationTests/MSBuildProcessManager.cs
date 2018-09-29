@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             TimeSpan? timeout = null,
             MSBuildProcessKind msBuildProcessKind = MSBuildProcessKind.Dotnet)
         {
-            timeout = timeout ?? TimeSpan.FromSeconds(60);
+            timeout = timeout ?? TimeSpan.FromSeconds(120);
 
             var processStartInfo = new ProcessStartInfo()
             {
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             process.BeginErrorReadLine();
             process.BeginOutputReadLine();
 
-            var timeoutTask = Task.Delay(timeout.Value).ContinueWith((t) =>
+            var timeoutTask = Task.Delay(timeout.Value).ContinueWith<MSBuildResult>((t) =>
             {
                 // Don't timeout during debug sessions
                 while (Debugger.IsAttached)
@@ -68,16 +68,13 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                     Thread.Sleep(TimeSpan.FromSeconds(1));
                 }
 
-                if (process.HasExited)
+                if (!process.HasExited)
                 {
-                    // This will happen on success, the 'real' task has already completed so this value will
-                    // never be visible.
-                    return (MSBuildResult)null;
+                    // This is a timeout.
+                    process.Kill();
                 }
 
-                // This is a timeout.
-                process.Kill();
-                throw new TimeoutException($"command '${process.StartInfo.FileName} {process.StartInfo.Arguments}' timed out after {timeout}.");
+                throw new TimeoutException($"command '${process.StartInfo.FileName} {process.StartInfo.Arguments}' timed out after {timeout}. Output: {output.ToString()}");
             });
 
             var waitTask = Task.Run(() =>

@@ -13,7 +13,7 @@ namespace Microsoft.CodeAnalysis.Razor
     public class CompilationTagHelperFeatureTest
     {
         [Fact]
-        public void IsValidCompilation_ReturnsFalseIfITagHelperInterfaceCannotBeFound()
+        public void IsValidCompilation_ReturnsTrueIfTagHelperInterfaceCannotBeFound()
         {
             // Arrange
             var references = new[]
@@ -26,7 +26,7 @@ namespace Microsoft.CodeAnalysis.Razor
             var result = CompilationTagHelperFeature.IsValidCompilation(compilation);
 
             // Assert
-            Assert.False(result);
+            Assert.True(result);
         }
 
         [Fact]

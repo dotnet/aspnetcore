@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.CodeAnalysis.Razor
 {
@@ -147,12 +148,18 @@ namespace Microsoft.CodeAnalysis.Razor
             // Access to the timer is protected by the lock in Enqueue and in Timer_Tick
             if (_timer == null)
             {
+
                 // Timer will fire after a fixed delay, but only once.
-                _timer = new Timer(Timer_Tick, null, Delay, Timeout.InfiniteTimeSpan);
+                _timer = NonCapturingTimer.Create(state => ((BackgroundDocumentGenerator)state).Timer_Tick(), this, Delay, Timeout.InfiniteTimeSpan);
             }
         }
 
-        private async void Timer_Tick(object state) // Yeah I know.
+        private void Timer_Tick()
+        {
+            _ = TimerTick();
+        }
+
+        private async Task TimerTick()
         {
             try
             {
@@ -206,7 +213,8 @@ namespace Microsoft.CodeAnalysis.Razor
             {
                 // This is something totally unexpected, let's just send it over to the workspace.
                 await Task.Factory.StartNew(
-                    () => _projectManager.ReportError(ex),
+                    (p) => ((ProjectSnapshotManagerBase)p).ReportError(ex),
+                    _projectManager,
                     CancellationToken.None,
                     TaskCreationOptions.None,
                     _foregroundDispatcher.ForegroundScheduler);
@@ -216,7 +224,8 @@ namespace Microsoft.CodeAnalysis.Razor
         private void ReportError(DocumentSnapshot document, Exception ex)
         {
             GC.KeepAlive(Task.Factory.StartNew(
-                () => _projectManager.ReportError(ex),
+                (p) => ((ProjectSnapshotManagerBase)p).ReportError(ex), 
+                _projectManager,
                 CancellationToken.None,
                 TaskCreationOptions.None,
                 _foregroundDispatcher.ForegroundScheduler));

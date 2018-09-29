@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.Editor;
+using Microsoft.Extensions.Internal;
 using Microsoft.VisualStudio.Text;
 using static Microsoft.VisualStudio.Editor.Razor.BackgroundParser;
 using ITextBuffer = Microsoft.VisualStudio.Text.ITextBuffer;
@@ -214,7 +215,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 if (_idleTimer == null)
                 {
                     // Timer will fire after a fixed delay, but only once.
-                    _idleTimer = new Timer(Timer_Tick, null, IdleDelay, Timeout.InfiniteTimeSpan);
+                    _idleTimer = NonCapturingTimer.Create(state => ((DefaultVisualStudioRazorParser)state).Timer_Tick(), this, IdleDelay, Timeout.InfiniteTimeSpan);
                 }
             }
         }
@@ -337,7 +338,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             }
         }
 
-        private void Timer_Tick(object state)
+        private void Timer_Tick()
         {
             try
             {
