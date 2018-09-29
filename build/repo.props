@@ -2,8 +2,6 @@
   <Import Project="dependencies.props" />
 
   <PropertyGroup>
-    <AssemblySigningCertName>Microsoft</AssemblySigningCertName>
-
     <FunctionalTestsProject>$(RepositoryRoot)test\Microsoft.AspNetCore.AzureAppServices.FunctionalTests\Microsoft.AspNetCore.AzureAppServices.FunctionalTests.csproj</FunctionalTestsProject>
 
     <!-- These properties are use by the automation that updates dependencies.props -->
