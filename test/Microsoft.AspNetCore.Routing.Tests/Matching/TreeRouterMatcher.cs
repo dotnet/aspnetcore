@@ -19,25 +19,25 @@ namespace Microsoft.AspNetCore.Routing.Matching
             _inner = inner;
         }
 
-        public async override Task MatchAsync(HttpContext httpContext, EndpointFeature feature)
+        public async override Task MatchAsync(HttpContext httpContext, EndpointSelectorContext context)
         {
             if (httpContext == null)
             {
                 throw new ArgumentNullException(nameof(httpContext));
             }
 
-            if (feature == null)
+            if (context == null)
             {
-                throw new ArgumentNullException(nameof(feature));
+                throw new ArgumentNullException(nameof(context));
             }
 
-            var context = new RouteContext(httpContext);
-            await _inner.RouteAsync(context);
+            var routeContext = new RouteContext(httpContext);
+            await _inner.RouteAsync(routeContext);
 
-            if (context.Handler != null)
+            if (routeContext.Handler != null)
             {
-                feature.RouteValues = context.RouteData.Values;
-                await context.Handler(httpContext);
+                context.RouteValues = routeContext.RouteData.Values;
+                await routeContext.Handler(httpContext);
             }
         }
     }

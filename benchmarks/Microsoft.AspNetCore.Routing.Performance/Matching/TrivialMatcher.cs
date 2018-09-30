@@ -23,23 +23,23 @@ namespace Microsoft.AspNetCore.Routing.Matching
             _candidates = new Candidate[] { new Candidate(endpoint), };
         }
 
-        public sealed override Task MatchAsync(HttpContext httpContext, EndpointFeature feature)
+        public sealed override Task MatchAsync(HttpContext httpContext, EndpointSelectorContext context)
         {
             if (httpContext == null)
             {
                 throw new ArgumentNullException(nameof(httpContext));
             }
 
-            if (feature == null)
+            if (context == null)
             {
-                throw new ArgumentNullException(nameof(feature));
+                throw new ArgumentNullException(nameof(context));
             }
 
             var path = httpContext.Request.Path.Value;
             if (string.Equals(_endpoint.RoutePattern.RawText, path, StringComparison.OrdinalIgnoreCase))
             {
-                feature.Endpoint = _endpoint;
-                feature.RouteValues = new RouteValueDictionary();
+                context.Endpoint = _endpoint;
+                context.RouteValues = new RouteValueDictionary();
             }
 
             return Task.CompletedTask;

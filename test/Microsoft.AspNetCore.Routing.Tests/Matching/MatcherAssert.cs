@@ -12,22 +12,22 @@ namespace Microsoft.AspNetCore.Routing.Matching
 {
     internal static class MatcherAssert
     {
-        public static void AssertMatch(EndpointFeature feature, HttpContext context, Endpoint expected)
+        public static void AssertMatch(EndpointSelectorContext context, HttpContext httpContext, Endpoint expected)
         {
-            AssertMatch(feature, context, expected, new RouteValueDictionary());
+            AssertMatch(context, httpContext, expected, new RouteValueDictionary());
         }
 
-        public static void AssertMatch(EndpointFeature feature, HttpContext context, Endpoint expected, bool ignoreValues)
+        public static void AssertMatch(EndpointSelectorContext context, HttpContext httpContext, Endpoint expected, bool ignoreValues)
         {
-            AssertMatch(feature, context, expected, new RouteValueDictionary(), ignoreValues);
+            AssertMatch(context, httpContext, expected, new RouteValueDictionary(), ignoreValues);
         }
 
-        public static void AssertMatch(EndpointFeature feature, HttpContext context, Endpoint expected, object values)
+        public static void AssertMatch(EndpointSelectorContext context, HttpContext httpContext, Endpoint expected, object values)
         {
-            AssertMatch(feature, context, expected, new RouteValueDictionary(values));
+            AssertMatch(context, httpContext, expected, new RouteValueDictionary(values));
         }
 
-        public static void AssertMatch(EndpointFeature feature, HttpContext context, Endpoint expected, string[] keys, string[] values)
+        public static void AssertMatch(EndpointSelectorContext context, HttpContext httpContext, Endpoint expected, string[] keys, string[] values)
         {
             keys = keys ?? Array.Empty<string>();
             values = values ?? Array.Empty<string>();
@@ -38,33 +38,33 @@ namespace Microsoft.AspNetCore.Routing.Matching
             }
 
             var zipped = keys.Zip(values, (k, v) => new KeyValuePair<string, object>(k, v));
-            AssertMatch(feature, context, expected, new RouteValueDictionary(zipped));
+            AssertMatch(context, httpContext, expected, new RouteValueDictionary(zipped));
         }
 
         public static void AssertMatch(
-            EndpointFeature feature,
-            HttpContext context,
+            EndpointSelectorContext context,
+            HttpContext httpContext,
             Endpoint expected,
             RouteValueDictionary values,
             bool ignoreValues = false)
         {
-            if (feature.Endpoint == null)
+            if (context.Endpoint == null)
             {
                 throw new XunitException($"Was expected to match '{expected.DisplayName}' but did not match.");
             }
 
-            var actualValues = context.Features.Get<IRouteValuesFeature>().RouteValues;
+            var actualValues = httpContext.Features.Get<IRouteValuesFeature>().RouteValues;
 
             if (actualValues == null)
             {
                 throw new XunitException("RouteValues is null.");
             }
 
-            if (!object.ReferenceEquals(expected, feature.Endpoint))
+            if (!object.ReferenceEquals(expected, context.Endpoint))
             {
                 throw new XunitException(
                     $"Was expected to match '{expected.DisplayName}' but matched " +
-                    $"'{feature.Endpoint.DisplayName}' with values: {FormatRouteValues(actualValues)}.");
+                    $"'{context.Endpoint.DisplayName}' with values: {FormatRouteValues(actualValues)}.");
             }
 
             if (!ignoreValues)
@@ -81,13 +81,13 @@ namespace Microsoft.AspNetCore.Routing.Matching
             }
         }
 
-        public static void AssertNotMatch(EndpointFeature feature, HttpContext context)
+        public static void AssertNotMatch(EndpointSelectorContext context, HttpContext httpContext)
         {
-            if (feature.Endpoint != null)
+            if (context.Endpoint != null)
             {
                 throw new XunitException(
-                    $"Was expected not to match '{feature.Endpoint.DisplayName}' " +
-                    $"but matched with values: {FormatRouteValues(context.Features.Get<IRouteValuesFeature>().RouteValues)}.");
+                    $"Was expected not to match '{context.Endpoint.DisplayName}' " +
+                    $"but matched with values: {FormatRouteValues(httpContext.Features.Get<IRouteValuesFeature>().RouteValues)}.");
             }
         }
 

@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Routing
             var httpContext = new DefaultHttpContext();
             httpContext.RequestServices = new ServiceProvider();
 
-            httpContext.Features.Set<IEndpointFeature>(new EndpointFeature()
+            httpContext.Features.Set<IEndpointFeature>(new EndpointSelectorContext()
             {
                 Endpoint = null,
             });
@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Routing
                 return Task.CompletedTask;
             };
 
-            httpContext.Features.Set<IEndpointFeature>(new EndpointFeature()
+            httpContext.Features.Set<IEndpointFeature>(new EndpointSelectorContext()
             {
                 Endpoint = new Endpoint(endpointFunc, EndpointMetadataCollection.Empty, "Test"),
             });

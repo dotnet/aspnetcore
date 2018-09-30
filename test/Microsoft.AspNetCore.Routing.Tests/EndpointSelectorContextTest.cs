@@ -9,7 +9,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Routing
 {
-    public class EndpointFeatureTest
+    public class EndpointSelectorContextTest
     {
         [Fact]
         public void RouteData_CanIntializeDataTokens_WithMetadata()
@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Routing
             // Arrange
             var expected = new RouteValueDictionary(new { foo = 17, bar = "hello", });
 
-            var feature = new EndpointFeature()
+            var context = new EndpointSelectorContext()
             {
                 Endpoint = new RouteEndpoint(
                     TestConstants.EmptyRequestDelegate,
@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Routing
             };
 
             // Act
-            var routeData = ((IRoutingFeature)feature).RouteData;
+            var routeData = ((IRoutingFeature)context).RouteData;
 
             // Assert
             Assert.NotSame(expected, routeData.DataTokens);
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Routing
         public void RouteData_DataTokensIsEmpty_WithoutMetadata()
         {
             // Arrange
-            var feature = new EndpointFeature()
+            var context = new EndpointSelectorContext()
             {
                 Endpoint = new RouteEndpoint(
                     TestConstants.EmptyRequestDelegate,
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Routing
             };
 
             // Act
-            var routeData = ((IRoutingFeature)feature).RouteData;
+            var routeData = ((IRoutingFeature)context).RouteData;
 
             // Assert
             Assert.Empty(routeData.DataTokens);

@@ -26,12 +26,12 @@ namespace Microsoft.AspNetCore.Routing
 
             var linkGenerator = CreateLinkGenerator(endpoint1, endpoint2);
 
-            var feature = new EndpointFeature()
+            var context = new EndpointSelectorContext()
             {
                 RouteValues = new RouteValueDictionary(new { p = "5", })
             };
             var httpContext = CreateHttpContext();
-            httpContext.Features.Set<IRouteValuesFeature>(feature);
+            httpContext.Features.Set<IRouteValuesFeature>(context);
             httpContext.Request.PathBase = new PathString("/Foo/Bar?encodeme?");
 
             var values = new { query = "some?query", };

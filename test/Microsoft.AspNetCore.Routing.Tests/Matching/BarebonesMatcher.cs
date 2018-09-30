@@ -20,16 +20,16 @@ namespace Microsoft.AspNetCore.Routing.Matching
             Matchers = matchers;
         }
 
-        public override Task MatchAsync(HttpContext httpContext, EndpointFeature feature)
+        public override Task MatchAsync(HttpContext httpContext, EndpointSelectorContext context)
         {
             if (httpContext == null)
             {
                 throw new ArgumentNullException(nameof(httpContext));
             }
 
-            if (feature == null)
+            if (context == null)
             {
-                throw new ArgumentNullException(nameof(feature));
+                throw new ArgumentNullException(nameof(context));
             }
 
             var path = httpContext.Request.Path.Value;
@@ -37,8 +37,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
             {
                 if (Matchers[i].TryMatch(path))
                 {
-                    feature.Endpoint = Matchers[i].Endpoint;
-                    feature.RouteValues = new RouteValueDictionary();
+                    context.Endpoint = Matchers[i].Endpoint;
+                    context.RouteValues = new RouteValueDictionary();
                 }
             }
 
@@ -121,12 +121,12 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 return Array.Empty<Candidate>();
             }
 
-            public override Task MatchAsync(HttpContext httpContext, EndpointFeature feature)
+            public override Task MatchAsync(HttpContext httpContext, EndpointSelectorContext context)
             {
                 if (TryMatch(httpContext.Request.Path.Value))
                 {
-                    feature.Endpoint = Endpoint;
-                    feature.RouteValues = new RouteValueDictionary();
+                    context.Endpoint = Endpoint;
+                    context.RouteValues = new RouteValueDictionary();
                 }
 
                 return Task.CompletedTask;

@@ -14,21 +14,21 @@ namespace Microsoft.AspNetCore.Routing.Matching
     {
         internal abstract Matcher CreateMatcher(params RouteEndpoint[] endpoints);
 
-        internal static (HttpContext httpContext, EndpointFeature feature) CreateContext(string path)
+        internal static (HttpContext httpContext, EndpointSelectorContext context) CreateContext(string path)
         {
             var httpContext = new DefaultHttpContext();
             httpContext.Request.Method = "TEST";
             httpContext.Request.Path = path;
             httpContext.RequestServices = CreateServices();
 
-            var feature = new EndpointFeature
+            var context = new EndpointSelectorContext()
             {
                 RouteValues = new RouteValueDictionary()
             };
-            httpContext.Features.Set<IEndpointFeature>(feature);
-            httpContext.Features.Set<IRouteValuesFeature>(feature);
+            httpContext.Features.Set<IEndpointFeature>(context);
+            httpContext.Features.Set<IRouteValuesFeature>(context);
 
-            return (httpContext, feature);
+            return (httpContext, context);
         }
 
         // The older routing implementations retrieve services when they first execute.

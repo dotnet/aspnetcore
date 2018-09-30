@@ -105,11 +105,11 @@ namespace Microsoft.AspNetCore.Routing
 
         private HttpContext CreateHttpContext()
         {
-            var feature = new EndpointFeature();
+            var context = new EndpointSelectorContext();
 
             var httpContext = new DefaultHttpContext();
-            httpContext.Features.Set<IEndpointFeature>(feature);
-            httpContext.Features.Set<IRouteValuesFeature>(feature);
+            httpContext.Features.Set<IEndpointFeature>(context);
+            httpContext.Features.Set<IRouteValuesFeature>(context);
 
             httpContext.RequestServices = new TestServiceProvider();
 

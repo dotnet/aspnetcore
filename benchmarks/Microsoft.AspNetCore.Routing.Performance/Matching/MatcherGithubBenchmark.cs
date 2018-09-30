@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         private BarebonesMatcher _baseline;
         private Matcher _dfa;
 
-        private EndpointFeature _feature;
+        private EndpointSelectorContext _feature;
 
         [GlobalSetup]
         public void Setup()
@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             _baseline = (BarebonesMatcher)SetupMatcher(new BarebonesMatcherBuilder());
             _dfa = SetupMatcher(CreateDfaMatcherBuilder());
 
-            _feature = new EndpointFeature();
+            _feature = new EndpointSelectorContext();
         }
 
         [Benchmark(Baseline = true, OperationsPerInvoke = EndpointCount)]

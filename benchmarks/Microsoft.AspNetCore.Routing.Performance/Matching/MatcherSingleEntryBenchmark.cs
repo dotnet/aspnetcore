@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         private Matcher _route;
         private Matcher _tree;
 
-        private EndpointFeature _feature;
+        private EndpointSelectorContext _feature;
 
         [GlobalSetup]
         public void Setup()
@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             _route = SetupMatcher(new RouteMatcherBuilder());
             _tree = SetupMatcher(new TreeRouterMatcherBuilder());
 
-            _feature = new EndpointFeature();
+            _feature = new EndpointSelectorContext();
         }
 
         private Matcher SetupMatcher(MatcherBuilder builder)

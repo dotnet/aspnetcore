@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Routing
 {
-    public sealed class EndpointFeature : IEndpointFeature, IRouteValuesFeature, IRoutingFeature
+    public sealed class EndpointSelectorContext : IEndpointFeature, IRouteValuesFeature, IRoutingFeature
     {
         private RouteData _routeData;
         private RouteValueDictionary _routeValues;

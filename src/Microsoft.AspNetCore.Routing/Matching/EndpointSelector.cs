@@ -18,16 +18,16 @@ namespace Microsoft.AspNetCore.Routing.Matching
         /// Asynchronously selects an <see cref="Endpoint"/> from the <see cref="CandidateSet"/>.
         /// </summary>
         /// <param name="httpContext">The <see cref="HttpContext"/> associated with the current request.</param>
-        /// <param name="feature">The <see cref="IEndpointFeature"/> associated with the current request.</param>
+        /// <param name="context">The <see cref="EndpointSelectorContext"/> associated with the current request.</param>
         /// <param name="candidates">The <see cref="CandidateSet"/>.</param>
         /// <returns>A <see cref="Task"/> that completes asynchronously once endpoint selection is complete.</returns>
         /// <remarks>
-        /// An <see cref="EndpointSelector"/> should assign the <see cref="EndpointFeature.Endpoint"/>
-        /// and <see cref="EndpointFeature.RouteValues"/> properties once an endpoint is selected.
+        /// An <see cref="EndpointSelector"/> should assign the <see cref="EndpointSelectorContext.Endpoint"/>
+        /// and <see cref="EndpointSelectorContext.RouteValues"/> properties once an endpoint is selected.
         /// </remarks>
         public abstract Task SelectAsync(
             HttpContext httpContext,
-            EndpointFeature feature,
+            EndpointSelectorContext context,
             CandidateSet candidates);
     }
 }
