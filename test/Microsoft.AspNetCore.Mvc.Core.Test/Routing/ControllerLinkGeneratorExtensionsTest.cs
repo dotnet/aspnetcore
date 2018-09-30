@@ -232,7 +232,7 @@ namespace Microsoft.AspNetCore.Routing
         {
             var httpContext = new DefaultHttpContext();
 
-            var feature = new EndpointFeature
+            var feature = new EndpointSelectorContext
             {
                 RouteValues = new RouteValueDictionary(ambientValues)
             };
