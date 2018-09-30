@@ -361,7 +361,13 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 if (string.IsNullOrEmpty(currentPagePath))
                 {
                     // Disallow the use sibling page routing, a Razor page specific feature, from a non-page action.
-                    throw new InvalidOperationException(Resources.FormatUrlHelper_RelativePagePathIsNotSupported(pageName));
+                    // OR - this is a call from LinkGenerator where the HttpContext was not specified.
+                    //
+                    // We can't use a relative path in either case, because we don't know the base path.
+                    throw new InvalidOperationException(Resources.FormatUrlHelper_RelativePagePathIsNotSupported(
+                        pageName,
+                        nameof(LinkGenerator),
+                        nameof(HttpContext)));
                 }
 
                 return ViewEnginePath.CombinePath(currentPagePath, pageName);
