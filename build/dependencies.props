@@ -4,14 +4,14 @@
   </PropertyGroup>
   <PropertyGroup Label="Package Versions">
     <InternalAspNetCoreSdkPackageVersion>3.0.0-alpha1-20180919.1</InternalAspNetCoreSdkPackageVersion>
-    <MicrosoftAspNetCoreAuthenticationCorePackageVersion>3.0.0-alpha1-10495</MicrosoftAspNetCoreAuthenticationCorePackageVersion>
-    <MicrosoftAspNetCoreHostingPackageVersion>3.0.0-alpha1-10495</MicrosoftAspNetCoreHostingPackageVersion>
-    <MicrosoftAspNetCoreTestingPackageVersion>3.0.0-alpha1-10495</MicrosoftAspNetCoreTestingPackageVersion>
-    <MicrosoftExtensionsLoggingConsolePackageVersion>3.0.0-alpha1-10495</MicrosoftExtensionsLoggingConsolePackageVersion>
+    <MicrosoftAspNetCoreAuthenticationCorePackageVersion>3.0.0-alpha1-10549</MicrosoftAspNetCoreAuthenticationCorePackageVersion>
+    <MicrosoftAspNetCoreHostingPackageVersion>3.0.0-alpha1-10549</MicrosoftAspNetCoreHostingPackageVersion>
+    <MicrosoftAspNetCoreTestingPackageVersion>3.0.0-alpha1-10549</MicrosoftAspNetCoreTestingPackageVersion>
+    <MicrosoftExtensionsLoggingConsolePackageVersion>3.0.0-alpha1-10549</MicrosoftExtensionsLoggingConsolePackageVersion>
     <MicrosoftNETCoreApp20PackageVersion>2.0.9</MicrosoftNETCoreApp20PackageVersion>
     <MicrosoftNETCoreApp21PackageVersion>2.1.3</MicrosoftNETCoreApp21PackageVersion>
     <MicrosoftNETCoreApp22PackageVersion>2.2.0-preview2-26905-02</MicrosoftNETCoreApp22PackageVersion>
-    <MicrosoftNetHttpHeadersPackageVersion>3.0.0-alpha1-10495</MicrosoftNetHttpHeadersPackageVersion>
+    <MicrosoftNetHttpHeadersPackageVersion>3.0.0-alpha1-10549</MicrosoftNetHttpHeadersPackageVersion>
     <MicrosoftNETTestSdkPackageVersion>15.6.1</MicrosoftNETTestSdkPackageVersion>
     <MicrosoftWin32RegistryPackageVersion>4.6.0-preview1-26907-04</MicrosoftWin32RegistryPackageVersion>
     <NETStandardLibrary20PackageVersion>2.0.3</NETStandardLibrary20PackageVersion>
