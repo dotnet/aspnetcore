@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         // Internal for testing
         internal bool ShouldRunActionConstraints => _actionConstraintCache.CurrentCache.HasActionConstraints;
 
-        public Task ApplyAsync(HttpContext httpContext, EndpointFeature endpointFeature, CandidateSet candidateSet)
+        public Task ApplyAsync(HttpContext httpContext, EndpointSelectorContext context, CandidateSet candidateSet)
         {
             // PERF: we can skip over action constraints if there aren't any app-wide.
             //
@@ -64,14 +64,14 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             // set as valid. This is O(2n) vs O(n**2)
             for (var i = 0; i < candidateSet.Count; i++)
             {
-                candidateSet[i].IsValidCandidate = false;
+                candidateSet.SetValidity(i, false);
             }
 
             if (finalMatches != null)
             {
                 for (var i = 0; i < finalMatches.Count; i++)
                 {
-                    candidateSet[finalMatches[i].index].IsValidCandidate = true;
+                    candidateSet.SetValidity(finalMatches[i].index, true);
                 }
             }
         }
@@ -91,9 +91,9 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             // Perf: Avoid allocations
             for (var i = 0; i < candidateSet.Count; i++)
             {
-                ref var candidate = ref candidateSet[i];
-                if (candidate.IsValidCandidate)
+                if (candidateSet.IsValidCandidate(i))
                 {
+                    ref var candidate = ref candidateSet[i];
                     if (score != null && score != candidate.Score)
                     {
                         // This is the end of a group.
