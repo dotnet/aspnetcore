@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         public async Task Endpoints_InvokeReturnedEndpoint_ActionInvokerProviderCalled()
         {
             // Arrange
-            var endpointFeature = new EndpointFeature
+            var endpointFeature = new EndpointSelectorContext
             {
                 RouteValues = new RouteValueDictionary()
             };

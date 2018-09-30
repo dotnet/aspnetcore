@@ -35,11 +35,11 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             var selector = CreateSelector(actions);
 
             // Act
-            await selector.ApplyAsync(new DefaultHttpContext(), new EndpointFeature(), candidateSet);
+            await selector.ApplyAsync(new DefaultHttpContext(), new EndpointSelectorContext(), candidateSet);
 
             // Assert
-            Assert.True(candidateSet[0].IsValidCandidate);
-            Assert.True(candidateSet[1].IsValidCandidate);
+            Assert.True(candidateSet.IsValidCandidate(0));
+            Assert.True(candidateSet.IsValidCandidate(1));
         }
 
         [Fact]
@@ -68,11 +68,11 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             var httpContext = CreateHttpContext("POST");
 
             // Act
-            await selector.ApplyAsync(httpContext, new EndpointFeature(), candidateSet);
+            await selector.ApplyAsync(httpContext, new EndpointSelectorContext(), candidateSet);
 
             // Assert
-            Assert.True(candidateSet[0].IsValidCandidate);
-            Assert.False(candidateSet[1].IsValidCandidate);
+            Assert.True(candidateSet.IsValidCandidate(0));
+            Assert.False(candidateSet.IsValidCandidate(1));
         }
 
         [Fact]
@@ -103,11 +103,11 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             var httpContext = CreateHttpContext("POST");
 
             // Act
-            await selector.ApplyAsync(httpContext, new EndpointFeature(), candidateSet);
+            await selector.ApplyAsync(httpContext, new EndpointSelectorContext(), candidateSet);
 
             // Assert
-            Assert.False(candidateSet[0].IsValidCandidate);
-            Assert.False(candidateSet[1].IsValidCandidate);
+            Assert.False(candidateSet.IsValidCandidate(0));
+            Assert.False(candidateSet.IsValidCandidate(1));
         }
 
         [Fact]
@@ -139,11 +139,11 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             var httpContext = CreateHttpContext("POST");
 
             // Act
-            await selector.ApplyAsync(httpContext, new EndpointFeature(), candidateSet);
+            await selector.ApplyAsync(httpContext, new EndpointSelectorContext(), candidateSet);
 
             // Assert
-            Assert.False(candidateSet[0].IsValidCandidate);
-            Assert.False(candidateSet[1].IsValidCandidate);
+            Assert.False(candidateSet.IsValidCandidate(0));
+            Assert.False(candidateSet.IsValidCandidate(1));
         }
 
         // Due to ordering of stages, the first action will be better.
@@ -174,11 +174,11 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             var httpContext = CreateHttpContext("POST");
 
             // Act
-            await selector.ApplyAsync(httpContext, new EndpointFeature(), candidateSet);
+            await selector.ApplyAsync(httpContext, new EndpointSelectorContext(), candidateSet);
 
             // Assert
-            Assert.True(candidateSet[0].IsValidCandidate);
-            Assert.False(candidateSet[1].IsValidCandidate);
+            Assert.True(candidateSet.IsValidCandidate(0));
+            Assert.False(candidateSet.IsValidCandidate(1));
         }
 
         [Fact]
@@ -205,19 +205,19 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 
             var actions = new ActionDescriptor[] { best, another, worst };
             var candidateSet = CreateCandidateSet(actions);
-            candidateSet[0].IsValidCandidate = false;
-            candidateSet[1].IsValidCandidate = false;
+            candidateSet.SetValidity(0, false);
+            candidateSet.SetValidity(1, false);
 
             var selector = CreateSelector(actions);
             var httpContext = CreateHttpContext("POST");
 
             // Act
-            await selector.ApplyAsync(httpContext, new EndpointFeature(), candidateSet);
+            await selector.ApplyAsync(httpContext, new EndpointSelectorContext(), candidateSet);
 
             // Assert
-            Assert.False(candidateSet[0].IsValidCandidate);
-            Assert.False(candidateSet[1].IsValidCandidate);
-            Assert.True(candidateSet[2].IsValidCandidate);
+            Assert.False(candidateSet.IsValidCandidate(0));
+            Assert.False(candidateSet.IsValidCandidate(1));
+            Assert.True(candidateSet.IsValidCandidate(2));
         }
 
         [Fact]
@@ -247,12 +247,12 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             var httpContext = CreateHttpContext("POST");
 
             // Act
-            await selector.ApplyAsync(httpContext, new EndpointFeature(), candidateSet);
+            await selector.ApplyAsync(httpContext, new EndpointSelectorContext(), candidateSet);
 
             // Assert
-            Assert.False(candidateSet[0].IsValidCandidate);
-            Assert.True(candidateSet[1].IsValidCandidate);
-            Assert.False(candidateSet[2].IsValidCandidate);
+            Assert.False(candidateSet.IsValidCandidate(0));
+            Assert.True(candidateSet.IsValidCandidate(1));
+            Assert.False(candidateSet.IsValidCandidate(2));
         }
 
         // Due to ordering of stages, the first action will be better.
@@ -288,11 +288,11 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             var httpContext = CreateHttpContext("POST");
 
             // Act
-            await selector.ApplyAsync(httpContext, new EndpointFeature(), candidateSet);
+            await selector.ApplyAsync(httpContext, new EndpointSelectorContext(), candidateSet);
 
             // Assert
-            Assert.True(candidateSet[0].IsValidCandidate);
-            Assert.False(candidateSet[1].IsValidCandidate);
+            Assert.True(candidateSet.IsValidCandidate(0));
+            Assert.False(candidateSet.IsValidCandidate(1));
         }
 
         [Fact]
@@ -329,12 +329,12 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             var httpContext = CreateHttpContext("POST");
 
             // Act
-            await selector.ApplyAsync(httpContext, new EndpointFeature(), candidateSet);
+            await selector.ApplyAsync(httpContext, new EndpointSelectorContext(), candidateSet);
 
             // Assert
-            Assert.True(candidateSet[0].IsValidCandidate);
-            Assert.False(candidateSet[1].IsValidCandidate);
-            Assert.False(candidateSet[2].IsValidCandidate);
+            Assert.True(candidateSet.IsValidCandidate(0));
+            Assert.False(candidateSet.IsValidCandidate(1));
+            Assert.False(candidateSet.IsValidCandidate(2));
         }
 
         [Fact]
@@ -452,18 +452,16 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 
         private static CandidateSet CreateCandidateSet(ActionDescriptor[] actions)
         {
-            var candidateSet = new CandidateSet(
-                actions.Select(CreateEndpoint).ToArray(),
-                new int[actions.Length]);
-
+            var values = new RouteValueDictionary[actions.Length];
             for (var i = 0; i < actions.Length; i++)
             {
-                if (candidateSet[i].IsValidCandidate)
-                {
-                    candidateSet[i].Values = new RouteValueDictionary();
-                }
+                values[i] = new RouteValueDictionary();
             }
 
+            var candidateSet = new CandidateSet(
+                actions.Select(CreateEndpoint).ToArray(),
+                values,
+                new int[actions.Length]);
             return candidateSet;
         }
 

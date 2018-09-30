@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             var urlHelper = CreateUrlHelper(new[] { endpoint1, endpoint2 });
 
             // Set the endpoint feature and current context just as a normal request to MVC app would be
-            var endpointFeature = new EndpointFeature();
+            var endpointFeature = new EndpointSelectorContext();
             urlHelper.ActionContext.HttpContext.Features.Set<IEndpointFeature>(endpointFeature);
             urlHelper.ActionContext.HttpContext.Features.Set<IRouteValuesFeature>(endpointFeature);
             endpointFeature.Endpoint = endpoint1;
@@ -154,7 +154,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         protected override IUrlHelper CreateUrlHelper(ActionContext actionContext)
         {
             var httpContext = actionContext.HttpContext;
-            httpContext.Features.Set<IEndpointFeature>(new EndpointFeature()
+            httpContext.Features.Set<IEndpointFeature>(new EndpointSelectorContext()
             {
                 Endpoint = new Endpoint(
                     context => Task.CompletedTask,
