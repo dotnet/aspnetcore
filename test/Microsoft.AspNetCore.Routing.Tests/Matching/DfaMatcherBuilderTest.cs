@@ -7,6 +7,7 @@ using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.AspNetCore.Routing.Patterns;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
@@ -972,6 +973,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         {
             var dataSource = new CompositeEndpointDataSource(Array.Empty<EndpointDataSource>());
             return new DfaMatcherBuilder(
+                NullLoggerFactory.Instance,
                 new DefaultParameterPolicyFactory(Options.Create(new RouteOptions()), Mock.Of<IServiceProvider>()),
                 Mock.Of<EndpointSelector>(),
                 policies);

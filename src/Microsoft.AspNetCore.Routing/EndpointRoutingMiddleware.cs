@@ -119,12 +119,12 @@ namespace Microsoft.AspNetCore.Routing
             private static readonly Action<ILogger, string, Exception> _matchSuccess = LoggerMessage.Define<string>(
                 LogLevel.Debug,
                 new EventId(1, "MatchSuccess"),
-                "Request matched endpoint '{EndpointName}'.");
+                "Request matched endpoint '{EndpointName}'");
 
             private static readonly Action<ILogger, Exception> _matchFailure = LoggerMessage.Define(
                 LogLevel.Debug,
                 new EventId(2, "MatchFailure"),
-                "Request did not match any endpoints.");
+                "Request did not match any endpoints");
 
             public static void MatchSuccess(ILogger logger, EndpointSelectorContext context)
             {

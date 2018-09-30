@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Patterns;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Routing.Matching
 {
@@ -13,6 +14,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
     {
         private readonly List<RouteEndpoint> _endpoints = new List<RouteEndpoint>();
 
+        private readonly ILoggerFactory _loggerFactory;
         private readonly ParameterPolicyFactory _parameterPolicyFactory;
         private readonly EndpointSelector _selector;
         private readonly MatcherPolicy[] _policies;
@@ -29,10 +31,12 @@ namespace Microsoft.AspNetCore.Routing.Matching
         private int _stateIndex;
 
         public DfaMatcherBuilder(
+            ILoggerFactory loggerFactory,
             ParameterPolicyFactory parameterPolicyFactory,
             EndpointSelector selector,
             IEnumerable<MatcherPolicy> policies)
         {
+            _loggerFactory = loggerFactory;
             _parameterPolicyFactory = parameterPolicyFactory;
             _selector = selector;
             _policies = policies.OrderBy(p => p.Order).ToArray();
@@ -304,7 +308,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 JumpTableBuilder.Build(exitDestination, exitDestination, null),
                 null);
 
-            return new DfaMatcher(_selector, states, maxSegmentCount);
+            return new DfaMatcher(_loggerFactory.CreateLogger<DfaMatcher>(), _selector, states, maxSegmentCount);
         }
 
         private int AddNode(
