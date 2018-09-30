@@ -1313,7 +1313,7 @@ namespace Microsoft.AspNetCore.Mvc.Core
             => string.Format(CultureInfo.CurrentCulture, GetString("NoRoutesMatchedForPage"), p0);
 
         /// <summary>
-        /// The relative page path '{0}' can only be used while executing a Razor Page. Specify a root relative path with a leading '/' to generate a URL outside of a Razor Page.
+        /// The relative page path '{0}' can only be used while executing a Razor Page. Specify a root relative path with a leading '/' to generate a URL outside of a Razor Page. If you are using {1} then you must provide the current {2} to use relative pages.
         /// </summary>
         internal static string UrlHelper_RelativePagePathIsNotSupported
         {
@@ -1321,10 +1321,10 @@ namespace Microsoft.AspNetCore.Mvc.Core
         }
 
         /// <summary>
-        /// The relative page path '{0}' can only be used while executing a Razor Page. Specify a root relative path with a leading '/' to generate a URL outside of a Razor Page.
+        /// The relative page path '{0}' can only be used while executing a Razor Page. Specify a root relative path with a leading '/' to generate a URL outside of a Razor Page. If you are using {1} then you must provide the current {2} to use relative pages.
         /// </summary>
-        internal static string FormatUrlHelper_RelativePagePathIsNotSupported(object p0)
-            => string.Format(CultureInfo.CurrentCulture, GetString("UrlHelper_RelativePagePathIsNotSupported"), p0);
+        internal static string FormatUrlHelper_RelativePagePathIsNotSupported(object p0, object p1, object p2)
+            => string.Format(CultureInfo.CurrentCulture, GetString("UrlHelper_RelativePagePathIsNotSupported"), p0, p1, p2);
 
         /// <summary>
         /// One or more validation errors occurred.

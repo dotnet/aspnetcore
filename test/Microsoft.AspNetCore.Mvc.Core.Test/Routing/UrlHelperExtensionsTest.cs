@@ -501,8 +501,11 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test.Routing
 
             // Act & Assert
             var ex = Assert.Throws<InvalidOperationException>(() => urlHelper.Object.Page(expected));
-            Assert.Equal($"The relative page path '{expected}' can only be used while executing a Razor Page. " +
-                "Specify a root relative path with a leading '/' to generate a URL outside of a Razor Page.", ex.Message);
+            Assert.Equal(
+                $"The relative page path '{expected}' can only be used while executing a Razor Page. " +
+                "Specify a root relative path with a leading '/' to generate a URL outside of a Razor Page. " +
+                "If you are using LinkGenerator then you must provide the current HttpContext to use relative pages.",
+                ex.Message);
         }
 
         [Fact]

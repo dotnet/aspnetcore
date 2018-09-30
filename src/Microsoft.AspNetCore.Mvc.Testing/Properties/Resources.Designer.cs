@@ -11,6 +11,20 @@ namespace Microsoft.AspNetCore.Mvc.Testing
             = new ResourceManager("Microsoft.AspNetCore.Mvc.Testing.Resources", typeof(Resources).GetTypeInfo().Assembly);
 
         /// <summary>
+        /// The provided Type '{0}' does not belong to an assembly with an entry point. A common cause for this error is providing a Type from a class library.
+        /// </summary>
+        internal static string InvalidAssemblyEntryPoint
+        {
+            get => GetString("InvalidAssemblyEntryPoint");
+        }
+
+        /// <summary>
+        /// The provided Type '{0}' does not belong to an assembly with an entry point. A common cause for this error is providing a Type from a class library.
+        /// </summary>
+        internal static string FormatInvalidAssemblyEntryPoint(object p0)
+            => string.Format(CultureInfo.CurrentCulture, GetString("InvalidAssemblyEntryPoint"), p0);
+
+        /// <summary>
         /// No method 'public static {0} CreateWebHostBuilder(string[] args)' found on '{1}'. Alternatively, {2} can be extended and 'protected virtual {0} {3}()' can be overridden to provide your own {0} instance.
         /// </summary>
         internal static string MissingCreateWebHostBuilderMethod
@@ -37,20 +51,6 @@ namespace Microsoft.AspNetCore.Mvc.Testing
         /// </summary>
         internal static string FormatMissingDepsFile(object p0, object p1)
             => string.Format(CultureInfo.CurrentCulture, GetString("MissingDepsFile"), p0, p1);
-
-        /// <summary>
-        /// The provided Type '{0}' does not belong to an assembly with an entry point. A common cause for this error is providing a Type from a class library.
-        /// </summary>
-        internal static string InvalidAssemblyEntryPoint
-        {
-            get => GetString("InvalidAssemblyEntryPoint");
-        }
-
-        /// <summary>
-        /// The provided Type '{0}' does not belong to an assembly with an entry point. A common cause for this error is providing a Type from a class library.
-        /// </summary>
-        internal static string FormatInvalidAssemblyEntryPoint(string p0)
-            => string.Format(CultureInfo.CurrentCulture, GetString("InvalidAssemblyEntryPoint"), p0);
 
         private static string GetString(string name, params string[] formatterNames)
         {
