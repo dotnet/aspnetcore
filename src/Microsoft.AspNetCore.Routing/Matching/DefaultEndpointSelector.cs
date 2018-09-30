@@ -6,14 +6,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Routing.Matching
 {
     internal class DefaultEndpointSelector : EndpointSelector
     {
         private readonly IEndpointSelectorPolicy[] _selectorPolicies;
-        
+
         public DefaultEndpointSelector(IEnumerable<MatcherPolicy> matcherPolicies)
         {
             if (matcherPolicies == null)
@@ -24,28 +23,88 @@ namespace Microsoft.AspNetCore.Routing.Matching
             _selectorPolicies = matcherPolicies.OrderBy(p => p.Order).OfType<IEndpointSelectorPolicy>().ToArray();
         }
 
-        public override async Task SelectAsync(
+        public override Task SelectAsync(
             HttpContext httpContext,
-            EndpointFeature feature,
+            EndpointSelectorContext context,
+            CandidateSet candidateSet)
+        {
+            if (httpContext == null)
+            {
+                throw new ArgumentNullException(nameof(httpContext));
+            }
+
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (candidateSet == null)
+            {
+                throw new ArgumentNullException(nameof(candidateSet));
+            }
+
+            if (_selectorPolicies.Length > 0)
+            {
+                // Slow path: we need async to run policies
+                return SelectAsyncSlow(httpContext, context, candidateSet);
+            }
+
+            // Fast path: We can specialize for trivial numbers of candidates since there can
+            // be no ambiguities and we don't need to run policies.
+            switch (candidateSet.Count)
+            {
+                case 0:
+                    {
+                        // Do nothing
+                        break;
+                    }
+
+                case 1:
+                    {
+                        if (candidateSet.IsValidCandidate(0))
+                        {
+                            ref var state = ref candidateSet[0];
+                            context.Endpoint = state.Endpoint;
+                            context.RouteValues = state.Values;
+                        }
+
+                        break;
+                    }
+
+                default:
+                    {
+                        // Slow path: There's more than one candidate (to say nothing of validity) so we
+                        // have to process for ambiguities.
+                        ProcessFinalCandidates(httpContext, context, candidateSet);
+                        break;
+                    }
+            }
+
+            return Task.CompletedTask;
+        }
+
+        private async Task SelectAsyncSlow(
+            HttpContext httpContext,
+            EndpointSelectorContext context,
             CandidateSet candidateSet)
         {
             var selectorPolicies = _selectorPolicies;
-            for (var i = 0; i < _selectorPolicies.Length; i++)
+            for (var i = 0; i < selectorPolicies.Length; i++)
             {
-                await selectorPolicies[i].ApplyAsync(httpContext, feature, candidateSet);
-                if (feature.Endpoint != null)
+                await selectorPolicies[i].ApplyAsync(httpContext, context, candidateSet);
+                if (context.Endpoint != null)
                 {
                     // This is a short circuit, the selector chose an endpoint.
                     return;
                 }
             }
 
-            ProcessFinalCandidates(httpContext, feature, candidateSet);
+            ProcessFinalCandidates(httpContext, context, candidateSet);
         }
 
         private static void ProcessFinalCandidates(
             HttpContext httpContext,
-            EndpointFeature feature,
+            EndpointSelectorContext context,
             CandidateSet candidateSet)
         {
             Endpoint endpoint = null;
@@ -54,8 +113,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             for (var i = 0; i < candidateSet.Count; i++)
             {
                 ref var state = ref candidateSet[i];
-
-                var isValid = state.IsValidCandidate;
+                var isValid = candidateSet.IsValidCandidate(i);
                 if (isValid && foundScore == null)
                 {
                     // This is the first match we've seen - speculatively assign it.
@@ -87,8 +145,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             if (endpoint != null)
             {
-                feature.Endpoint = endpoint;
-                feature.RouteValues = values;
+                context.Endpoint = endpoint;
+                context.RouteValues = values;
             }
         }
 
@@ -99,10 +157,9 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var matches = new List<Endpoint>();
             for (var i = 0; i < candidates.Count; i++)
             {
-                ref var state = ref candidates[i];
-                if (state.IsValidCandidate)
+                if (candidates.IsValidCandidate(i))
                 {
-                    matches.Add(state.Endpoint);
+                    matches.Add(candidates[i].Endpoint);
                 }
             }
 

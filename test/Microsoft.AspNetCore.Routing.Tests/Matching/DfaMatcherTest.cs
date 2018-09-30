@@ -55,14 +55,14 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             var matcher = CreateDfaMatcher(endpointDataSource);
 
-            var (httpContext, endpointFeature) = CreateHttpContext();
+            var (httpContext, context) = CreateContext();
             httpContext.Request.Path = "/1";
 
             // Act
-            await matcher.MatchAsync(httpContext, endpointFeature);
+            await matcher.MatchAsync(httpContext, context);
 
             // Assert
-            Assert.NotNull(endpointFeature.Endpoint);
+            Assert.NotNull(context.Endpoint);
         }
 
         [Fact]
@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             var matcher = CreateDfaMatcher(endpointDataSource);
 
-            var (httpContext, endpointFeature) = CreateHttpContext();
+            var (httpContext, endpointFeature) = CreateContext();
             httpContext.Request.Path = "/One";
 
             // Act
@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             var matcher = CreateDfaMatcher(endpointDataSource);
 
-            var (httpContext, endpointFeature) = CreateHttpContext();
+            var (httpContext, endpointFeature) = CreateContext();
             httpContext.Request.Path = "/Teams";
 
             // Act
@@ -120,18 +120,18 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             var endpointSelector = new Mock<EndpointSelector>();
             endpointSelector
-                .Setup(s => s.SelectAsync(It.IsAny<HttpContext>(), It.IsAny<EndpointFeature>(), It.IsAny<CandidateSet>()))
+                .Setup(s => s.SelectAsync(It.IsAny<HttpContext>(), It.IsAny<EndpointSelectorContext>(), It.IsAny<CandidateSet>()))
                 .Callback<HttpContext, IEndpointFeature, CandidateSet>((c, f, cs) =>
                 {
                     Assert.Equal(2, cs.Count);
 
                     Assert.Same(endpoint1, cs[0].Endpoint);
-                    Assert.True(cs[0].IsValidCandidate);
+                    Assert.True(cs.IsValidCandidate(0));
                     Assert.Equal(0, cs[0].Score);
                     Assert.Empty(cs[0].Values);
 
                     Assert.Same(endpoint2, cs[1].Endpoint);
-                    Assert.True(cs[1].IsValidCandidate);
+                    Assert.True(cs.IsValidCandidate(1));
                     Assert.Equal(1, cs[1].Score);
                     Assert.Empty(cs[1].Values);
 
@@ -147,7 +147,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             var matcher = CreateDfaMatcher(endpointDataSource, endpointSelector.Object);
 
-            var (httpContext, endpointFeature) = CreateHttpContext();
+            var (httpContext, endpointFeature) = CreateContext();
             httpContext.Request.Path = "/Teams";
 
             // Act
@@ -157,15 +157,15 @@ namespace Microsoft.AspNetCore.Routing.Matching
             Assert.Equal(endpoint2, endpointFeature.Endpoint);
         }
 
-        private (HttpContext httpContext, EndpointFeature feature) CreateHttpContext()
+        private (HttpContext httpContext, EndpointSelectorContext context) CreateContext()
         {
-            var feature = new EndpointFeature();
+            var context = new EndpointSelectorContext();
 
             var httpContext = new DefaultHttpContext();
-            httpContext.Features.Set<IEndpointFeature>(feature);
-            httpContext.Features.Set<IRouteValuesFeature>(feature);
+            httpContext.Features.Set<IEndpointFeature>(context);
+            httpContext.Features.Set<IRouteValuesFeature>(context);
 
-            return (httpContext, feature);
+            return (httpContext, context);
         }
     }
 }

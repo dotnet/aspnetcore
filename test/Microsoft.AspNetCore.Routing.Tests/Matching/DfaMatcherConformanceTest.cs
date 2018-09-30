@@ -14,13 +14,13 @@ namespace Microsoft.AspNetCore.Routing.Matching
         {
             // Arrange
             var (matcher, endpoint) = CreateMatcher(template);
-            var (httpContext, feature) = CreateContext(path);
+            var (httpContext, context) = CreateContext(path);
 
             // Act
-            await matcher.MatchAsync(httpContext, feature);
+            await matcher.MatchAsync(httpContext, context);
 
             // Assert
-            MatcherAssert.AssertMatch(feature, httpContext, endpoint, keys, values);
+            MatcherAssert.AssertMatch(context, httpContext, endpoint, keys, values);
         }
 
         internal override Matcher CreateMatcher(params RouteEndpoint[] endpoints)

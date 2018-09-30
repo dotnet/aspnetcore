@@ -78,6 +78,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         {
             private readonly EndpointSelector _selector;
             private readonly RouteEndpoint[] _candidates;
+            private readonly RouteValueDictionary[] _values;
             private readonly int[] _scores;
 
             public SelectorRouter(EndpointSelector selector, RouteEndpoint[] candidates)
@@ -85,6 +86,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 _selector = selector;
                 _candidates = candidates;
 
+                _values = new RouteValueDictionary[_candidates.Length];
                 _scores = new int[_candidates.Length];
             }
 
@@ -93,17 +95,17 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 throw new NotImplementedException();
             }
 
-            public async Task RouteAsync(RouteContext context)
+            public async Task RouteAsync(RouteContext routeContext)
             {
-                var feature = (EndpointFeature)context.HttpContext.Features.Get<IEndpointFeature>();
+                var context = (EndpointSelectorContext)routeContext.HttpContext.Features.Get<IEndpointFeature>();
 
                 // This is needed due to a quirk of our tests - they reuse the endpoint feature.
-                feature.Endpoint = null;
+                context.Endpoint = null;
                 
-                await _selector.SelectAsync(context.HttpContext, feature, new CandidateSet(_candidates, _scores));
-                if (feature.Endpoint != null)
+                await _selector.SelectAsync(routeContext.HttpContext, context, new CandidateSet(_candidates, _values, _scores));
+                if (context.Endpoint != null)
                 {
-                    context.Handler = (_) => Task.CompletedTask;
+                    routeContext.Handler = (_) => Task.CompletedTask;
                 }
             }
         }

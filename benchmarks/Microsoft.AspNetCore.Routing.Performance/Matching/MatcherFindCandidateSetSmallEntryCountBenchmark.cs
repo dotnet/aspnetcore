@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             _baseline = (TrivialMatcher)SetupMatcher(new TrivialMatcherBuilder());
             _dfa = (DfaMatcher)SetupMatcher(CreateDfaMatcherBuilder());
 
-            _feature = new EndpointFeature();
+            _feature = new EndpointSelectorContext();
         }
 
         private void SetupEndpoints()

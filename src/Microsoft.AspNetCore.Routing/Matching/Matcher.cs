@@ -17,10 +17,10 @@ namespace Microsoft.AspNetCore.Routing.Matching
         /// Attempts to asynchronously select an <see cref="Endpoint"/> for the current request.
         /// </summary>
         /// <param name="httpContext">The <see cref="HttpContext"/> associated with the current request.</param>
-        /// <param name="feature">
+        /// <param name="context">
         /// The <see cref="IEndpointFeature"/> associated with the current request. The 
-        /// <see cref="EndpointFeature"/> will be mutated to contain the result of the operation.</param>
+        /// <see cref="EndpointSelectorContext"/> will be mutated to contain the result of the operation.</param>
         /// <returns>A <see cref="Task"/> which represents the asynchronous completion of the operation.</returns>
-        public abstract Task MatchAsync(HttpContext httpContext, EndpointFeature feature);
+        public abstract Task MatchAsync(HttpContext httpContext, EndpointSelectorContext context);
     }
 }
