@@ -18,8 +18,9 @@ namespace Microsoft.AspNetCore.Routing.Matching
     {
         private const int BitVectorSize = 32;
 
+        // Cannot be readonly because we need to modify it in place.
         private BitVector32 _validity;
-        private BitArray _largeCapactityValidity;
+        private readonly BitArray _largeCapactityValidity;
 
         // We inline storage for 4 candidates here to avoid allocations in common
         // cases. There's no real reason why 4 is important, it just seemed like 
@@ -33,7 +34,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
         /// <summary>
         /// <para>
-        /// Initializes a new instances of the candidate set structure with the provided data.
+        /// Initializes a new instances of the <see cref="CandidateSet"/> class with the provided <paramref name="endpoints"/>,
+        /// <paramref name="values"/>, and <paramref name="scores"/>.
         /// </para>
         /// <para>
         /// The constructor is provided to enable unit tests of implementations of <see cref="EndpointSelector"/>
@@ -45,6 +47,26 @@ namespace Microsoft.AspNetCore.Routing.Matching
         /// <param name="scores">The list of endpoint scores. <see cref="CandidateState.Score"/>.</param>
         public CandidateSet(Endpoint[] endpoints, RouteValueDictionary[] values, int[] scores)
         {
+            if (endpoints == null)
+            {
+                throw new ArgumentNullException(nameof(endpoints));
+            }
+
+            if (values == null)
+            {
+                throw new ArgumentNullException(nameof(values));
+            }
+
+            if (scores == null)
+            {
+                throw new ArgumentNullException(nameof(scores));
+            }
+
+            if (endpoints.Length != values.Length || endpoints.Length != scores.Length)
+            {
+                throw new ArgumentException($"The provided {nameof(endpoints)}, {nameof(values)}, and {nameof(scores)} must have the same length.");
+            }
+
             Count = endpoints.Length;
 
             switch (endpoints.Length)
@@ -53,37 +75,37 @@ namespace Microsoft.AspNetCore.Routing.Matching
                     return;
 
                 case 1:
-                    _state0 = new CandidateState(endpoints[0], score: scores[0]);
+                    _state0 = new CandidateState(endpoints[0], values[0], scores[0]);
                     break;
 
                 case 2:
-                    _state0 = new CandidateState(endpoints[0], score: scores[0]);
-                    _state1 = new CandidateState(endpoints[1], score: scores[1]);
+                    _state0 = new CandidateState(endpoints[0], values[0], scores[0]);
+                    _state1 = new CandidateState(endpoints[1], values[1], scores[1]);
                     break;
 
                 case 3:
-                    _state0 = new CandidateState(endpoints[0], score: scores[0]);
-                    _state1 = new CandidateState(endpoints[1], score: scores[1]);
-                    _state2 = new CandidateState(endpoints[2], score: scores[2]);
+                    _state0 = new CandidateState(endpoints[0], values[0], scores[0]);
+                    _state1 = new CandidateState(endpoints[1], values[1], scores[1]);
+                    _state2 = new CandidateState(endpoints[2], values[2], scores[2]);
                     break;
 
                 case 4:
-                    _state0 = new CandidateState(endpoints[0], score: scores[0]);
-                    _state1 = new CandidateState(endpoints[1], score: scores[1]);
-                    _state2 = new CandidateState(endpoints[2], score: scores[2]);
-                    _state3 = new CandidateState(endpoints[3], score: scores[3]);
+                    _state0 = new CandidateState(endpoints[0], values[0], scores[0]);
+                    _state1 = new CandidateState(endpoints[1], values[1], scores[1]);
+                    _state2 = new CandidateState(endpoints[2], values[2], scores[2]);
+                    _state3 = new CandidateState(endpoints[3], values[3], scores[3]);
                     break;
 
                 default:
-                    _state0 = new CandidateState(endpoints[0], score: scores[0]);
-                    _state1 = new CandidateState(endpoints[1], score: scores[1]);
-                    _state2 = new CandidateState(endpoints[2], score: scores[2]);
-                    _state3 = new CandidateState(endpoints[3], score: scores[3]);
+                    _state0 = new CandidateState(endpoints[0], values[0], scores[0]);
+                    _state1 = new CandidateState(endpoints[1], values[1], scores[1]);
+                    _state2 = new CandidateState(endpoints[2], values[2], scores[2]);
+                    _state3 = new CandidateState(endpoints[3], values[3], scores[3]);
 
                     _additionalCandidates = new CandidateState[endpoints.Length - 4];
                     for (var i = 4; i < endpoints.Length; i++)
                     {
-                        _additionalCandidates[i - 4] = new CandidateState(endpoints[i], score: scores[i]);
+                        _additionalCandidates[i - 4] = new CandidateState(endpoints[i], values[i], scores[i]);
                     }
                     break;
             }
@@ -161,7 +183,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         /// Gets the count of candidates in the set.
         /// </summary>
         public int Count { get; }
-        
+
         /// <summary>
         /// Gets the <see cref="CandidateState"/> associated with the candidate <see cref="Endpoint"/>
         /// at <paramref name="index"/>.
@@ -206,10 +228,14 @@ namespace Microsoft.AspNetCore.Routing.Matching
         }
 
         /// <summary>
-        /// Gets or sets a value which indicates where the <see cref="Http.Endpoint"/> is considered
-        /// a valid candiate for the current request. Set this value to <c>false</c> to exclude an
-        /// <see cref="Http.Endpoint"/> from consideration.
+        /// Gets a value which indicates where the <see cref="Http.Endpoint"/> is considered
+        /// a valid candiate for the current request.
         /// </summary>
+        /// <param name="index">The candidate index.</param>
+        /// <returns>
+        /// <c>true</c> if the candidate at position <paramref name="index"/> is considered value
+        /// for the current request, otherwise <c>false</c>.
+        /// </returns>
         public bool IsValidCandidate(int index)
         {
             // Friendliness for inlining

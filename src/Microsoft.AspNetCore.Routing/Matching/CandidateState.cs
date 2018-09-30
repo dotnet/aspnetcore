@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Http;
 namespace Microsoft.AspNetCore.Routing.Matching
 {
     /// <summary>
-    /// The mutable state associated with a candidate in a <see cref="CandidateSet"/>.
+    /// The state associated with a candidate in a <see cref="CandidateSet"/>.
     /// </summary>
     public struct CandidateState
     {
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         public int Score { get; }
 
         /// <summary>
-        /// Gets or sets the <see cref="RouteValueDictionary"/> associated with the
+        /// Gets <see cref="RouteValueDictionary"/> associated with the
         /// <see cref="Http.Endpoint"/> and the current request.
         /// </summary>
         public RouteValueDictionary Values { get; internal set; }

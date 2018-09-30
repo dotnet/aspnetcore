@@ -116,7 +116,6 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 var isValid = candidateSet.IsValidCandidate(i);
                 if (isValid && foundScore == null)
                 {
-
                     // This is the first match we've seen - speculatively assign it.
                     endpoint = state.Endpoint;
                     values = state.Values;

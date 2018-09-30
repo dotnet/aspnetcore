@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Routing
 
         private static void SetFeatures(HttpContext httpContext, EndpointSelectorContext context)
         {
-            // For back-compat EndpointRouteValuesFeature implements IEndpointFeature,
+            // For back-compat EndpointSelectorContext implements IEndpointFeature,
             // IRouteValuesFeature and IRoutingFeature
             httpContext.Features.Set<IRoutingFeature>(context);
             httpContext.Features.Set<IRouteValuesFeature>(context);

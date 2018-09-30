@@ -76,8 +76,17 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 endpoints[i] = CreateEndpoint($"/{i}");
             }
 
+            var values = new RouteValueDictionary[count];
+            for (var i = 0; i < endpoints.Length; i++)
+            {
+                values[i] = new RouteValueDictionary()
+                {
+                    { "i", i }
+                };
+            }
+
             // Act
-            var candidateSet = new CandidateSet(endpoints, new RouteValueDictionary[count], Enumerable.Range(0, count).ToArray());
+            var candidateSet = new CandidateSet(endpoints, values, Enumerable.Range(0, count).ToArray());
 
             // Assert
             for (var i = 0; i < candidateSet.Count; i++)
@@ -86,7 +95,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 Assert.True(candidateSet.IsValidCandidate(i));
                 Assert.Same(endpoints[i], state.Endpoint);
                 Assert.Equal(i, state.Score);
-                Assert.Null(state.Values);
+                Assert.NotNull(state.Values);
+                Assert.Equal(i, state.Values["i"]);
 
                 candidateSet.SetValidity(i, false);
                 Assert.False(candidateSet.IsValidCandidate(i));
