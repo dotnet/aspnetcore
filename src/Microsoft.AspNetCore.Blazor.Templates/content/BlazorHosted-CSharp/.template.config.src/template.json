@@ -21,27 +21,15 @@
       "path": "BlazorHosted-CSharp.sln"
     },
     {
-      "condition": "(OS == \"Windows_NT\" && HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
-      "path": "BlazorHosted-CSharp.Server\\BlazorHosted-CSharp.Server.csproj"
-    },
-    {
-      "condition": "(OS != \"Windows_NT\" && HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
+      "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
       "path": "BlazorHosted-CSharp.Server/BlazorHosted-CSharp.Server.csproj"
     },
     {
-      "condition": "(OS == \"Windows_NT\" && HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
-      "path": "BlazorHosted-CSharp.Client\\BlazorHosted-CSharp.Client.csproj"
-    },
-    {
-      "condition": "(OS != \"Windows_NT\" && HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
+      "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
       "path": "BlazorHosted-CSharp.Client/BlazorHosted-CSharp.Client.csproj"
     },
     {
-      "condition": "(OS == \"Windows_NT\" && HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
-      "path": "BlazorHosted-CSharp.Shared\\BlazorHosted-CSharp.Shared.csproj"
-    },
-    {
-      "condition": "(OS != \"Windows_NT\" && HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
+      "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
       "path": "BlazorHosted-CSharp.Shared/BlazorHosted-CSharp.Shared.csproj"
     }
   ],

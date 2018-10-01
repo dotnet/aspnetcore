@@ -21,19 +21,11 @@
       "path": "BlazorServerSide-CSharp.sln"
     },
     {
-      "condition": "(OS == \"Windows_NT\" && HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
-      "path": "BlazorServerSide-CSharp.Server\\BlazorServerSide-CSharp.Server.csproj"
-    },
-    {
-      "condition": "(OS != \"Windows_NT\" && HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
+      "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
       "path": "BlazorServerSide-CSharp.Server/BlazorServerSide-CSharp.Server.csproj"
     },
     {
-      "condition": "(OS == \"Windows_NT\" && HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
-      "path": "BlazorServerSide-CSharp.App\\BlazorServerSide-CSharp.App.csproj"
-    },
-    {
-      "condition": "(OS != \"Windows_NT\" && HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
+      "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
       "path": "BlazorServerSide-CSharp.App/BlazorServerSide-CSharp.App.csproj"
     }
   ],
