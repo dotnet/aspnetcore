@@ -8,9 +8,9 @@ using Microsoft.Extensions.DependencyInjection;
 namespace HealthChecksSample
 {
     // Pass in `--scenario db` at the command line to run this sample.
-    public class DBHealthStartup
+    public class DbHealthStartup
     {
-        public DBHealthStartup(IConfiguration configuration)
+        public DbHealthStartup(IConfiguration configuration)
         {
             Configuration = configuration;
         }

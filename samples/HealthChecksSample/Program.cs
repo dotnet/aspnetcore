@@ -15,12 +15,13 @@ namespace HealthChecksSample
         {
             _scenarios = new Dictionary<string, Type>(StringComparer.OrdinalIgnoreCase)
             {
-                { "", typeof(CustomWriterStartup) },
+                { "", typeof(BasicStartup) },
                 { "basic", typeof(BasicStartup) },
                 { "writer", typeof(CustomWriterStartup) },
                 { "liveness", typeof(LivenessProbeStartup) },
                 { "port", typeof(ManagementPortStartup) },
-                { "db", typeof(DBHealthStartup) },
+                { "db", typeof(DbHealthStartup) },
+                { "dbcontext", typeof(DbContextHealthStartup) },
             };
         }
 
