@@ -8,6 +8,7 @@ public class HubConnectionBuilder {
     private Transport transport;
     private Logger logger;
     private boolean skipNegotiate;
+    private HttpClient client;
 
     public HubConnectionBuilder withUrl(String url) {
         if (url == null || url.isEmpty()) {
@@ -49,10 +50,16 @@ public class HubConnectionBuilder {
         return this;
     }
 
+    // For testing purposes only
+    HubConnectionBuilder configureHttpClient(HttpClient client) {
+        this.client = client;
+        return this;
+    }
+
     public HubConnection build() {
         if (this.url == null) {
             throw new RuntimeException("The 'HubConnectionBuilder.withUrl' method must be called before building the connection.");
         }
-        return new HubConnection(url, transport, logger, skipNegotiate);
+        return new HubConnection(url, transport, logger, skipNegotiate, client);
     }
 }

@@ -3,37 +3,7 @@
 
 package com.microsoft.aspnet.signalr;
 
-import java.io.IOException;
-
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
-
 class Negotiate {
-
-    public static NegotiateResponse processNegotiate(String url, OkHttpClient httpClient) throws IOException {
-        return processNegotiate(url, httpClient, null);
-    }
-
-    public static NegotiateResponse processNegotiate(String url, OkHttpClient httpClient,String accessTokenHeader) throws IOException {
-        url = resolveNegotiateUrl(url);
-        RequestBody body = RequestBody.create(null, new byte[]{});
-        Request.Builder requestBuilder = new Request.Builder()
-                .url(url)
-                .post(body);
-
-        if (accessTokenHeader != null) {
-            requestBuilder.addHeader("Authorization", "Bearer " + accessTokenHeader);
-        }
-
-        Request request = requestBuilder.build();
-
-        Response response = httpClient.newCall(request).execute();
-        String result = response.body().string();
-        return new NegotiateResponse(result);
-    }
-
     public static String resolveNegotiateUrl(String url) {
         String negotiateUrl = "";
 

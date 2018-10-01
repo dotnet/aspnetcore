@@ -6,7 +6,7 @@ package com.microsoft.aspnet.signalr;
 import com.google.gson.Gson;
 
 class HandshakeProtocol {
-    public static Gson gson = new Gson();
+    private static Gson gson = new Gson();
     private static final String RECORD_SEPARATOR = "\u001e";
 
     public static String createHandshakeRequestMessage(HandshakeRequestMessage message) {

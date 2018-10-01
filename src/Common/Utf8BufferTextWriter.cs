@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Internal
                 writer = new Utf8BufferTextWriter();
             }
 
-            // Taken off the the thread static
+            // Taken off the thread static
             _cachedInstance = null;
 #if DEBUG
             if (writer._inUse)
