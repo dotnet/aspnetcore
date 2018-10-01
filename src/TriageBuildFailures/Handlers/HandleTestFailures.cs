@@ -113,7 +113,7 @@ CC {GetManagerMentions(repo)}";
                     //TODO: We'd like to link the test history here but TC api doens't make it easy
                     var tags = new List<string> { GitHubClientWrapper.TestFailureTag, GitHubUtils.GetBranchLabel(build.BranchName) };
 
-                    Reporter.Output($"Creating new issue for test failure...");
+                    Reporter.Output($"Creating new issue for test failure {failure.Name}...");
                     var issue = await GHClient.CreateIssue(owner, repo, subject, body, tags);
                     Reporter.Output($"Created issue {issue.HtmlUrl}");
                     Reporter.Output($"Adding new issue to project '{GHClient.Config.FlakyProjectColumn}'");
@@ -208,7 +208,7 @@ CC {GetManagerMentions(repo)}";
 
         private IEnumerable<GitHubIssue> GetApplicableIssues(IEnumerable<GitHubIssue> issues, TestOccurrence failure)
         {
-            Reporter.Output($"Finding applicable issues for failure...");
+            Reporter.Output($"Finding applicable issues for failure '{failure.Name}'...");
             var testError = TCClient.GetTestFailureText(failure);
             var testException = SafeGetExceptionMessage(testError);
             var shortTestName = GetTestName(failure);
@@ -225,7 +225,7 @@ CC {GetManagerMentions(repo)}";
                     || (issueException != null && issueException.Equals(testException))
                     || MessagesAreClose(issueException, testException))
                 {
-                    Reporter.Output($"\tThis issue is applicable");
+                    Reporter.Output($"\t^^^ This issue is applicable");
                     yield return issue;
                 }
             }

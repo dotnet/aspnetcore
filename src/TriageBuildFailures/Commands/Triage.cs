@@ -43,18 +43,21 @@ namespace TriageBuildFailures.Commands
         {
             var stopWatch = new Stopwatch();
             stopWatch.Start();
-            var builds = GetUnTriagedFailures();
-            _reporter.Output($"Let's triage!");
-            var failedCount = 0;
-            foreach (var build in builds)
+            var untriagedBuildFailures = GetUntriagedBuildFailures().ToList();
+            _reporter.Output($"We found {untriagedBuildFailures.Count} failed builds since {CutoffDate}. Let's triage!");
+
+            // Write out some stats for TeamCity
+            // More info here: https://confluence.jetbrains.com/display/TCD10/Build+Script+Interaction+with+TeamCity#BuildScriptInteractionwithTeamCity-ReportingBuildStatistics
+            _reporter.Output($"##teamcity[buildStatisticValue key='RAAS:UntriagedBuildFailures' value='{untriagedBuildFailures.Count}'");
+
+            foreach (var build in untriagedBuildFailures)
             {
-                failedCount++;
                 _reporter.Output($"Triaging {build.WebURL} ...");
                 await HandleFailure(build);
             }
             stopWatch.Stop();
 
-            _reporter.Output($"There were {failedCount} untriaged failures since {CutoffDate} and we handled them in {stopWatch.Elapsed.TotalMinutes} minutes. Let's get some coffee!");
+            _reporter.Output($"Done! Finished in {stopWatch.Elapsed.TotalMinutes} minutes. Let's get some coffee!");
         }
 
         private static readonly IEnumerable<HandleFailureBase> Handlers = new List<HandleFailureBase>
@@ -97,7 +100,7 @@ namespace TriageBuildFailures.Commands
         /// Gets the list of CI failures which have not been previously triaged since the CutoffDate
         /// </summary>
         /// <returns>The list of CI failures which have not been previously triaged.</returns>
-        private IEnumerable<TeamCityBuild> GetUnTriagedFailures()
+        private IEnumerable<TeamCityBuild> GetUntriagedBuildFailures()
         {
             var failedBuilds = _tcClient.GetFailedBuilds(CutoffDate);
 
