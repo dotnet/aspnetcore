@@ -1,7 +1,7 @@
 {
   "sign": [
     {
-      "certificate": "Microsoft",
+      "certificate": "Microsoft400",
       "values": [
         "bin/Microsoft.AspNetCore.Blazor.Analyzers/netstandard1.3/Microsoft.AspNetCore.Blazor.Analyzers.dll",
         "bin/Microsoft.AspNetCore.Blazor.Browser.JS/netcoreapp2.1/Microsoft.AspNetCore.Blazor.Browser.JS.dll",
@@ -20,14 +20,14 @@
       ]
     },
     {
-      "certificate": "3PartyDual",
+      "certificate": "3PartySHA2",
       "values": [
         "bin/Microsoft.AspNetCore.Blazor.Build/netcoreapp2.1/AngleSharp.dll",
         "bin/Microsoft.VisualStudio.BlazorExtension/AngleSharp.dll"
       ]
     },
     {
-      "certificate": "Vsix",
+      "certificate": "VsixSHA2",
       "values": [
         "bin/Microsoft.VisualStudio.BlazorExtension/Microsoft.VisualStudio.BlazorExtension.vsix"
       ]
