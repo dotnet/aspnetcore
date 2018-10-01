@@ -48,7 +48,7 @@ namespace TriageBuildFailures.Commands
 
             // Write out some stats for TeamCity
             // More info here: https://confluence.jetbrains.com/display/TCD10/Build+Script+Interaction+with+TeamCity#BuildScriptInteractionwithTeamCity-ReportingBuildStatistics
-            _reporter.Output($"##teamcity[buildStatisticValue key='RAAS:UntriagedBuildFailures' value='{untriagedBuildFailures.Count}'");
+            _reporter.Output($"##teamcity[buildStatisticValue key='RAAS:UntriagedBuildFailures' value='{untriagedBuildFailures.Count}']");
 
             foreach (var build in untriagedBuildFailures)
             {
