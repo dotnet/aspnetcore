@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
     /// <summary>
     /// Wrapper class for <see cref="ValidationProblemDetails"/> to enable it to be serialized by the xml formatters.
     /// </summary>
-    [XmlRoot(nameof(ValidationProblemDetails))]
+    [XmlRoot("problem", Namespace = "urn:ietf:rfc:7807")]
     public class ValidationProblemDetailsWrapper : ProblemDetailsWrapper, IUnwrappable
     {
         private static readonly string ErrorKey = "MVC-Errors";

@@ -12,9 +12,11 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
     /// <summary>
     /// Wrapper class for <see cref="Mvc.ProblemDetails"/> to enable it to be serialized by the xml formatters.
     /// </summary>
-    [XmlRoot(nameof(ProblemDetails))]
+    [XmlRoot("problem", Namespace = Namespace)]
     public class ProblemDetailsWrapper : IXmlSerializable, IUnwrappable
     {
+        internal const string Namespace = "urn:ietf:rfc:7807";
+
         /// <summary>
         /// Key used to represent dictionary elements with empty keys
         /// </summary>
@@ -83,25 +85,25 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
 
             switch (name)
             {
-                case nameof(ProblemDetails.Detail):
+                case "detail":
                     ProblemDetails.Detail = value;
                     break;
 
-                case nameof(ProblemDetails.Instance):
+                case "instance":
                     ProblemDetails.Instance = value;
                     break;
 
-                case nameof(ProblemDetails.Status):
+                case "status":
                     ProblemDetails.Status = string.IsNullOrEmpty(value) ?
                         (int?)null :
                         int.Parse(value, CultureInfo.InvariantCulture);
                     break;
 
-                case nameof(ProblemDetails.Title):
+                case "title":
                     ProblemDetails.Title = value;
                     break;
 
-                case nameof(ProblemDetails.Type):
+                case "type":
                     ProblemDetails.Type = value;
                     break;
 
@@ -122,20 +124,20 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
             if (!string.IsNullOrEmpty(ProblemDetails.Detail))
             {
                 writer.WriteElementString(
-                    XmlConvert.EncodeLocalName(nameof(ProblemDetails.Detail)),
+                    XmlConvert.EncodeLocalName("detail"),
                     ProblemDetails.Detail);
             }
 
             if (!string.IsNullOrEmpty(ProblemDetails.Instance))
             {
                 writer.WriteElementString(
-                    XmlConvert.EncodeLocalName(nameof(ProblemDetails.Instance)),
+                    XmlConvert.EncodeLocalName("instance"),
                     ProblemDetails.Instance);
             }
 
             if (ProblemDetails.Status.HasValue)
             {
-                writer.WriteStartElement(XmlConvert.EncodeLocalName(nameof(ProblemDetails.Status)));
+                writer.WriteStartElement(XmlConvert.EncodeLocalName("status"));
                 writer.WriteValue(ProblemDetails.Status.Value);
                 writer.WriteEndElement();
             }
@@ -143,14 +145,14 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
             if (!string.IsNullOrEmpty(ProblemDetails.Title))
             {
                 writer.WriteElementString(
-                    XmlConvert.EncodeLocalName(nameof(ProblemDetails.Title)),
+                    XmlConvert.EncodeLocalName("title"),
                     ProblemDetails.Title);
             }
 
             if (!string.IsNullOrEmpty(ProblemDetails.Type))
             {
                 writer.WriteElementString(
-                    XmlConvert.EncodeLocalName(nameof(ProblemDetails.Type)),
+                    XmlConvert.EncodeLocalName("type"),
                     ProblemDetails.Type);
             }
 

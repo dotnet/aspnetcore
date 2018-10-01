@@ -191,12 +191,12 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             // Arrange
             using (new ActivityReplacer())
             {
-                var expected = "<ProblemDetails>" +
-                    "<Status>404</Status>" +
-                    "<Title>Not Found</Title>" +
-                    "<Type>https://tools.ietf.org/html/rfc7231#section-6.5.4</Type>" +
+                var expected = "<problem xmlns=\"urn:ietf:rfc:7807\">" +
+                    "<status>404</status>" +
+                    "<title>Not Found</title>" +
+                    "<type>https://tools.ietf.org/html/rfc7231#section-6.5.4</type>" +
                     $"<traceId>{Activity.Current.Id}</traceId>" +
-                    "</ProblemDetails>";
+                    "</problem>";
 
                 // Act
                 var response = await Client.GetAsync("/api/XmlSerializerApi/ActionReturningClientErrorStatusCodeResult");
@@ -212,8 +212,13 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public async Task ProblemDetails_WithExtensionMembers_IsSerialized()
         {
             // Arrange
-            var expected = @"<ProblemDetails><Instance>instance</Instance><Status>404</Status><Title>title</Title>
-<Correlation>correlation</Correlation><Accounts>Account1 Account2</Accounts></ProblemDetails>";
+            var expected = "<problem xmlns=\"urn:ietf:rfc:7807\">" +
+                "<instance>instance</instance>" +
+                "<status>404</status>" +
+                "<title>title</title>" +
+                "<Correlation>correlation</Correlation>" +
+                "<Accounts>Account1 Account2</Accounts>" +
+                "</problem>";
 
             // Act
             var response = await Client.GetAsync("/api/XmlSerializerApi/ActionReturningProblemDetails");
@@ -230,14 +235,14 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             // Arrange
             using (new ActivityReplacer())
             {
-                var expected = "<ValidationProblemDetails>" +
-               "<Status>400</Status>" +
-               "<Title>One or more validation errors occurred.</Title>" +
+                var expected = "<problem xmlns=\"urn:ietf:rfc:7807\">" +
+               "<status>400</status>" +
+               "<title>One or more validation errors occurred.</title>" +
                $"<traceId>{Activity.Current.Id}</traceId>" +
                "<MVC-Errors>" +
                "<State>The State field is required.</State>" +
                "</MVC-Errors>" +
-               "</ValidationProblemDetails>";
+               "</problem>";
 
                 // Act
                 var response = await Client.GetAsync("/api/XmlSerializerApi/ActionReturningValidationProblem");
@@ -253,8 +258,16 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public async Task ValidationProblemDetails_WithExtensionMembers_IsSerialized()
         {
             // Arrange
-            var expected = @"<ValidationProblemDetails><Detail>some detail</Detail><Status>400</Status><Title>One or more validation errors occurred.</Title>
-<Type>some type</Type><CorrelationId>correlation</CorrelationId><MVC-Errors><Error1>ErrorValue</Error1></MVC-Errors></ValidationProblemDetails>";
+            var expected = "<problem xmlns=\"urn:ietf:rfc:7807\">" +
+                "<detail>some detail</detail>" +
+                "<status>400</status>" +
+                "<title>One or more validation errors occurred.</title>" +
+                "<type>some type</type>" +
+                "<CorrelationId>correlation</CorrelationId>" +
+                "<MVC-Errors>" +
+                "<Error1>ErrorValue</Error1>" +
+                "</MVC-Errors>" +
+                "</problem>";
 
             // Act
             var response = await Client.GetAsync("/api/XmlSerializerApi/ActionReturningValidationDetailsWithMetadata");
