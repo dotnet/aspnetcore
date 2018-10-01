@@ -14,6 +14,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         PoolEnvironmentVariables = 4,
         ShutdownToken = 8,
         DynamicCompression = 16,
-        ApplicationInitialization = 32
+        ApplicationInitialization = 32,
+        TracingModule = 64
     }
 }
