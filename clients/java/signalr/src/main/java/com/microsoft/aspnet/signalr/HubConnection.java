@@ -4,17 +4,17 @@
 package com.microsoft.aspnet.signalr;
 
 import java.io.IOException;
-import java.util.*;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
-
-import okhttp3.Cookie;
-import okhttp3.CookieJar;
-import okhttp3.HttpUrl;
-import okhttp3.OkHttpClient;
 
 public class HubConnection {
     private String url;
@@ -29,16 +29,15 @@ public class HubConnection {
     private Logger logger;
     private List<Consumer<Exception>> onClosedCallbackList;
     private boolean skipNegotiate = false;
-    private NegotiateResponse negotiateResponse;
     private String accessToken;
     private Map<String, String> headers = new HashMap<>();
     private ConnectionState connectionState = null;
-    private OkHttpClient httpClient;
+    private HttpClient httpClient;
 
     private static ArrayList<Class<?>> emptyArray = new ArrayList<>();
     private static int MAX_NEGOTIATE_ATTEMPTS = 100;
 
-    public HubConnection(String url, Transport transport, Logger logger, boolean skipNegotiate) {
+    public HubConnection(String url, Transport transport, Logger logger, boolean skipNegotiate, HttpClient client) {
         if (url == null || url.isEmpty()) {
             throw new IllegalArgumentException("A valid url is required.");
         }
@@ -52,63 +51,17 @@ public class HubConnection {
             this.logger = new NullLogger();
         }
 
+        if (client != null) {
+            this.httpClient = client;
+        } else {
+            this.httpClient = new DefaultHttpClient(this.logger);
+        }
+
         if (transport != null) {
             this.transport = transport;
         }
 
         this.skipNegotiate = skipNegotiate;
-
-        this.httpClient = new OkHttpClient.Builder()
-                .cookieJar(new CookieJar() {
-                    private List<Cookie> cookieList = new ArrayList<>();
-                    private Lock cookieLock = new ReentrantLock();
-
-                    @Override
-                    public void saveFromResponse(HttpUrl url, List<Cookie> cookies) {
-                        cookieLock.lock();
-                        try {
-                            for (Cookie cookie : cookies) {
-                                boolean replacedCookie = false;
-                                for (int i = 0; i < cookieList.size(); i++) {
-                                    Cookie innerCookie = cookieList.get(i);
-                                    if (cookie.name().equals(innerCookie.name()) && innerCookie.matches(url)) {
-                                        // We have a new cookie that matches an older one so we replace the older one.
-                                        cookieList.set(i, innerCookie);
-                                        replacedCookie = true;
-                                        break;
-                                    }
-                                }
-                                if (!replacedCookie) {
-                                    cookieList.add(cookie);
-                                }
-                            }
-                        } finally {
-                            cookieLock.unlock();
-                        }
-                    }
-
-                    @Override
-                    public List<Cookie> loadForRequest(HttpUrl url) {
-                        cookieLock.lock();
-                        try {
-                            List<Cookie> matchedCookies = new ArrayList<>();
-                            List<Cookie> expiredCookies = new ArrayList<>();
-                            for (Cookie cookie : cookieList) {
-                                if (cookie.expiresAt() < System.currentTimeMillis()) {
-                                    expiredCookies.add(cookie);
-                                } else if (cookie.matches(url)) {
-                                    matchedCookies.add(cookie);
-                                }
-                            }
-
-                            cookieList.removeAll(expiredCookies);
-                            return matchedCookies;
-                        } finally {
-                            cookieLock.unlock();
-                        }
-                    }
-                })
-                .build();
 
         this.callback = (payload) -> {
 
@@ -174,30 +127,40 @@ public class HubConnection {
         };
     }
 
-    private NegotiateResponse handleNegotiate() throws IOException, HubException {
-        accessToken = (negotiateResponse == null) ? null : negotiateResponse.getAccessToken();
-        negotiateResponse = Negotiate.processNegotiate(url, httpClient, accessToken);
+    private CompletableFuture<NegotiateResponse> handleNegotiate() throws IOException, InterruptedException, ExecutionException {
+        HttpRequest request = new HttpRequest();
+        request.setHeaders(this.headers);
 
-        if (negotiateResponse.getError() != null) {
-            throw new HubException(negotiateResponse.getError());
-        }
-        if (negotiateResponse.getConnectionId() != null) {
-            if (url.contains("?")) {
-                url = url + "&id=" + negotiateResponse.getConnectionId();
-            } else {
-                url = url + "?id=" + negotiateResponse.getConnectionId();
+        return httpClient.post(Negotiate.resolveNegotiateUrl(url), request).thenCompose((response) -> {
+            NegotiateResponse negotiateResponse;
+            try {
+                negotiateResponse = new NegotiateResponse(response.getContent());
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
-        }
 
-        if (negotiateResponse.getAccessToken() != null) {
-            this.headers.put("Authorization", "Bearer " + negotiateResponse.getAccessToken());
-        }
+            if (negotiateResponse.getError() != null) {
+                throw new RuntimeException(negotiateResponse.getError());
+            }
 
-        if (negotiateResponse.getRedirectUrl() != null) {
-            this.url = this.negotiateResponse.getRedirectUrl();
-        }
+            if (negotiateResponse.getConnectionId() != null) {
+                if (url.contains("?")) {
+                    url = url + "&id=" + negotiateResponse.getConnectionId();
+                } else {
+                    url = url + "?id=" + negotiateResponse.getConnectionId();
+                }
+            }
 
-        return negotiateResponse;
+            if (negotiateResponse.getAccessToken() != null) {
+                this.headers.put("Authorization", "Bearer " + negotiateResponse.getAccessToken());
+            }
+
+            if (negotiateResponse.getRedirectUrl() != null) {
+                this.url = negotiateResponse.getRedirectUrl();
+            }
+
+            return CompletableFuture.completedFuture(negotiateResponse);
+        });
     }
 
     /**
@@ -214,53 +177,96 @@ public class HubConnection {
      *
      * @throws Exception An error occurred while connecting.
      */
-    public CompletableFuture start() throws Exception {
+    public CompletableFuture<Void> start() throws Exception {
         if (hubConnectionState != HubConnectionState.DISCONNECTED) {
             return CompletableFuture.completedFuture(null);
         }
+
+        CompletableFuture<NegotiateResponse> negotiate = null;
         if (!skipNegotiate) {
-            int negotiateAttempts = 0;
-            do {
-                accessToken = (negotiateResponse == null) ? null : negotiateResponse.getAccessToken();
-                negotiateResponse = handleNegotiate();
-                negotiateAttempts++;
-            } while (negotiateResponse.getRedirectUrl() != null && negotiateAttempts < MAX_NEGOTIATE_ATTEMPTS);
-            if (!negotiateResponse.getAvailableTransports().contains("WebSockets")) {
-                throw new HubException("There were no compatible transports on the server.");
+            negotiate = startNegotiate(0);
+        } else {
+            negotiate = CompletableFuture.completedFuture(null);
+        }
+
+        return negotiate.thenCompose((response) -> {
+            // If we didn't skip negotiate and got a null response then exit start because we
+            // are probably disconnected
+            if (response == null && !skipNegotiate) {
+                return CompletableFuture.completedFuture(null);
             }
-        }
 
-        logger.log(LogLevel.Debug, "Starting HubConnection");
-        if (transport == null) {
-            transport = new WebSocketTransport(url, logger, headers, httpClient);
-        }
-
-        transport.setOnReceive(this.callback);
-        return transport.start().thenCompose((future) -> {
-            String handshake = HandshakeProtocol.createHandshakeRequestMessage(new HandshakeRequestMessage(protocol.getName(), protocol.getVersion()));
-            return transport.send(handshake).thenRun(() -> {
-                hubConnectionStateLock.lock();
+            logger.log(LogLevel.Debug, "Starting HubConnection");
+            if (transport == null) {
                 try {
-                    hubConnectionState = HubConnectionState.CONNECTED;
-                    connectionState = new ConnectionState(this);
-                    logger.log(LogLevel.Information, "HubConnected started.");
-                } finally {
-                    hubConnectionStateLock.unlock();
+                    transport = new WebSocketTransport(url, headers, httpClient, logger);
+                } catch (URISyntaxException e) {
+                    throw new RuntimeException(e);
                 }
-            });
-        });
+            }
 
+            transport.setOnReceive(this.callback);
+
+            try {
+                return transport.start().thenCompose((future) -> {
+                    String handshake = HandshakeProtocol.createHandshakeRequestMessage(
+                            new HandshakeRequestMessage(protocol.getName(), protocol.getVersion()));
+                    return transport.send(handshake).thenRun(() -> {
+                        hubConnectionStateLock.lock();
+                        try {
+                            hubConnectionState = HubConnectionState.CONNECTED;
+                            connectionState = new ConnectionState(this);
+                            logger.log(LogLevel.Information, "HubConnection started.");
+                        } finally {
+                            hubConnectionStateLock.unlock();
+                        }
+                    });
+                });
+            } catch (RuntimeException e) {
+                throw e;
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
+    private CompletableFuture<NegotiateResponse> startNegotiate(int negotiateAttempts) throws IOException, InterruptedException, ExecutionException {
+        if (hubConnectionState != HubConnectionState.DISCONNECTED) {
+            return CompletableFuture.completedFuture(null);
+        }
+
+        return handleNegotiate().thenCompose((response) -> {
+            if (response.getRedirectUrl() != null && negotiateAttempts >= MAX_NEGOTIATE_ATTEMPTS) {
+                throw new RuntimeException("Negotiate redirection limit exceeded.");
+            }
+
+            if (response.getRedirectUrl() == null) {
+                if (!response.getAvailableTransports().contains("WebSockets")) {
+                    try {
+                        throw new HubException("There were no compatible transports on the server.");
+                    } catch (HubException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+                return CompletableFuture.completedFuture(response);
+            }
+
+            try {
+                return startNegotiate(negotiateAttempts + 1);
+            } catch (IOException | InterruptedException | ExecutionException e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
     /**
      * Stops a connection to the server.
      */
-    private void stop(String errorMessage) {
-        HubException hubException = null;
+    private CompletableFuture<Void> stop(String errorMessage) {
         hubConnectionStateLock.lock();
         try {
             if (hubConnectionState == HubConnectionState.DISCONNECTED) {
-                return;
+                return CompletableFuture.completedFuture(null);
             }
 
             if (errorMessage != null) {
@@ -268,32 +274,42 @@ public class HubConnection {
             } else {
                 logger.log(LogLevel.Debug, "Stopping HubConnection.");
             }
-
-            transport.stop();
-            hubConnectionState = HubConnectionState.DISCONNECTED;
-
-            if (errorMessage != null) {
-                hubException = new HubException(errorMessage);
-            }
-            connectionState.cancelOutstandingInvocations(hubException);
-            connectionState = null;
-            logger.log(LogLevel.Information, "HubConnection stopped.");
         } finally {
             hubConnectionStateLock.unlock();
         }
 
-        if (onClosedCallbackList != null) {
-            for (Consumer<Exception> callback : onClosedCallbackList) {
-                callback.accept(hubException);
+        return transport.stop().whenComplete((i, t) -> {
+            HubException hubException = null;
+            hubConnectionStateLock.lock();
+            try {
+                hubConnectionState = HubConnectionState.DISCONNECTED;
+
+                if (errorMessage != null) {
+                    hubException = new HubException(errorMessage);
+                } else if (t != null) {
+                    hubException = new HubException(t.getMessage());
+                }
+                connectionState.cancelOutstandingInvocations(hubException);
+                connectionState = null;
+                logger.log(LogLevel.Information, "HubConnection stopped.");
+            } finally {
+                hubConnectionStateLock.unlock();
             }
-        }
+
+            // Do not run these callbacks inside the hubConnectionStateLock
+            if (onClosedCallbackList != null) {
+                for (Consumer<Exception> callback : onClosedCallbackList) {
+                    callback.accept(hubException);
+                }
+            }
+        });
     }
 
     /**
      * Stops a connection to the server.
      */
-    public void stop() {
-        stop(null);
+    public CompletableFuture<Void> stop() {
+        return stop(null);
     }
 
     /**

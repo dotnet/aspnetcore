@@ -6,9 +6,9 @@ package com.microsoft.aspnet.signalr;
 import java.util.concurrent.CompletableFuture;
 
 interface Transport {
-    CompletableFuture start() throws Exception;
-    CompletableFuture send(String message);
+    CompletableFuture<Void> start() throws Exception;
+    CompletableFuture<Void> send(String message);
     void setOnReceive(OnReceiveCallBack callback);
     void onReceive(String message) throws Exception;
-    CompletableFuture stop();
+    CompletableFuture<Void> stop();
 }
