@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 reader = new Utf8BufferTextReader();
             }
 
-            // Taken off the the thread static
+            // Taken off the thread static
             _cachedInstance = null;
 #if DEBUG
             if (reader._inUse)

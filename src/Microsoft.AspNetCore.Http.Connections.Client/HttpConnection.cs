@@ -529,7 +529,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                 httpMessageHandler = new AccessTokenHttpMessageHandler(httpMessageHandler, this);
             }
 
-            // Wrap message handler after HttpMessageHandlerFactory to ensure not overriden
+            // Wrap message handler after HttpMessageHandlerFactory to ensure not overridden
             httpMessageHandler = new LoggingHttpMessageHandler(httpMessageHandler, _loggerFactory);
 
             var httpClient = new HttpClient(httpMessageHandler);

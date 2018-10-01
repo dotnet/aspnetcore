@@ -299,7 +299,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                         // If the status code is a 204 it means the connection is done
                         if (context.Response.StatusCode == StatusCodes.Status204NoContent)
                         {
-                            // Cancel current request to release any waiting poll and let dispose aquire the lock
+                            // Cancel current request to release any waiting poll and let dispose acquire the lock
                             currentRequestTcs.TrySetCanceled();
 
                             // We should be able to safely dispose because there's no more data being written
@@ -312,7 +312,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                     }
                     else if (resultTask.IsFaulted)
                     {
-                        // Cancel current request to release any waiting poll and let dispose aquire the lock
+                        // Cancel current request to release any waiting poll and let dispose acquire the lock
                         currentRequestTcs.TrySetCanceled();
 
                         // transport task was faulted, we should remove the connection

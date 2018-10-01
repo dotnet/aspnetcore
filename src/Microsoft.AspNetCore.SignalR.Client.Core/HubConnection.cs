@@ -714,7 +714,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
                                 {
                                     // Adjust consumed and examined to point to the end of the handshake
                                     // response, this handles the case where invocations are sent in the same payload
-                                    // as the the negotiate response.
+                                    // as the negotiate response.
                                     consumed = buffer.Start;
                                     examined = consumed;
 

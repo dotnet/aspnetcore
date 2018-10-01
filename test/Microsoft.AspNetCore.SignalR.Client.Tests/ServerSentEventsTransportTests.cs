@@ -327,7 +327,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                 await sseTransport.Output.WriteAsync(new byte[] { 0x42 });
 
-                // For for send request to be in progress
+                // For send request to be in progress
                 await sendSyncPoint.WaitForSyncPoint();
 
                 var stopTask = sseTransport.StopAsync();
