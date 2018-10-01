@@ -138,7 +138,7 @@ CC {GetManagerMentions(repo)}";
 
             foreach (var test in testAggregates)
             {
-                Reporter.Output($"Adding test failure comment to issue {test.Key}");
+                Reporter.Output($"Adding test failure comment to issue {test.Key.HtmlUrl}");
                 await GHClient.CommentOnTest(build, test.Key, test.Value);
             }
         }

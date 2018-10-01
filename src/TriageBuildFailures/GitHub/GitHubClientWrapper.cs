@@ -95,7 +95,7 @@ namespace TriageBuildFailures.GitHub
 
         public async Task CreateComment(GitHubIssue issue, string comment)
         {
-            comment += $"\n\nThis comment was made automatically. If there is a problem contact {Config.BuildBuddyUsername}.";
+            comment = $"This comment was made automatically. If there is a problem contact {Config.BuildBuddyUsername}.\n\n{comment}";
 
             await Client.Issue.Comment.Create(issue.RepositoryOwner, issue.RepositoryName, issue.Number, comment);
         }
