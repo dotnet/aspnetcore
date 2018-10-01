@@ -248,17 +248,20 @@ if [ -f "$config_file" ]; then
             config_channel="$(jq -r 'select(.channel!=null) | .channel' "$config_file")"
             config_tools_source="$(jq -r 'select(.toolsSource!=null) | .toolsSource' "$config_file")"
         else
-            __warn "$config_file is invalid JSON. Its settings will be ignored."
+            __error "$config_file is invalid JSON. Its settings will be ignored."
+            exit 1
         fi
     elif __machine_has python ; then
         if python -c "import json,codecs;obj=json.load(codecs.open('$config_file', 'r', 'utf-8-sig'))" >/dev/null ; then
             config_channel="$(python -c "import json,codecs;obj=json.load(codecs.open('$config_file', 'r', 'utf-8-sig'));print(obj['channel'] if 'channel' in obj else '')")"
             config_tools_source="$(python -c "import json,codecs;obj=json.load(codecs.open('$config_file', 'r', 'utf-8-sig'));print(obj['toolsSource'] if 'toolsSource' in obj else '')")"
         else
-            __warn "$config_file is invalid JSON. Its settings will be ignored."
+            __error "$config_file is invalid JSON. Its settings will be ignored."
+            exit 1
         fi
     else
-        __warn 'Missing required command: jq or pyton. Could not parse the JSON file. Its settings will be ignored.'
+        __error 'Missing required command: jq or pyton. Could not parse the JSON file. Its settings will be ignored.'
+        exit 1
     fi
 
     [ ! -z "${config_channel:-}" ] && channel="$config_channel"
