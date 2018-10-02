@@ -15,12 +15,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             bool MethodMatches()
             {
                 var methodNameMatchBehavior = GetNameMatchBehavior(conventionMethod);
-                if (!IsNameMatch(methodInfo.Name, conventionMethod.Name, methodNameMatchBehavior))
-                {
-                    return false;
-                }
-
-                return true;
+                return IsNameMatch(methodInfo.Name, conventionMethod.Name, methodNameMatchBehavior);
             }
 
             bool ParametersMatch()
