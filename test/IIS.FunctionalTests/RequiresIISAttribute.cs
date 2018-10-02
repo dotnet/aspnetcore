@@ -23,6 +23,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         private static readonly bool _poolEnvironmentVariablesAvailable;
         private static readonly bool _dynamicCompressionAvailable;
         private static readonly bool _applicationInitializationModule;
+        private static readonly bool _tracingModuleAvailable;
 
         static RequiresIISAttribute()
         {
@@ -86,6 +87,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             _dynamicCompressionAvailable = File.Exists(Path.Combine(Environment.SystemDirectory, "inetsrv", "compdyn.dll"));
 
             _applicationInitializationModule = File.Exists(Path.Combine(Environment.SystemDirectory, "inetsrv", "warmup.dll"));
+
+            _tracingModuleAvailable = File.Exists(Path.Combine(Environment.SystemDirectory, "inetsrv", "iisetw.dll"));
 
             var iisRegistryKey = Registry.LocalMachine.OpenSubKey(@"Software\Microsoft\InetStp", writable: false);
             if (iisRegistryKey == null)
@@ -155,6 +158,15 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 if (!_applicationInitializationModule)
                 {
                     SkipReason += "The machine does not have IIS ApplicationInitialization installed.";
+                }
+            }
+
+            if (capabilities.HasFlag(IISCapability.TracingModule))
+            {
+                IsMet &= _tracingModuleAvailable;
+                if (!_tracingModuleAvailable)
+                {
+                    SkipReason += "The machine does not have IIS TracingModule installed.";
                 }
             }
         }

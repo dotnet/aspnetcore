@@ -5,7 +5,7 @@
 /*
  * AspNetCore module trace events layout
  * Uncomment the following class to run mof2trace to generate header file
- * comment it back before checking it in */
+ * comment it back before checking it in 
 [Dynamic,
   Description("IIS: WWW Server"),
   Guid("{3a2a4e84-4c21-4981-ae10-3fda0d9b0f83}"),
