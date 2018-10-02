@@ -6,6 +6,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Http.Internal
@@ -17,6 +18,7 @@ namespace Microsoft.AspNetCore.Http.Internal
         private readonly static Func<IFeatureCollection, IQueryFeature> _newQueryFeature = f => new QueryFeature(f);
         private readonly static Func<HttpRequest, IFormFeature> _newFormFeature = r => new FormFeature(r);
         private readonly static Func<IFeatureCollection, IRequestCookiesFeature> _newRequestCookiesFeature = f => new RequestCookiesFeature(f);
+        private readonly static Func<IFeatureCollection, IRouteValuesFeature> _newRouteValuesFeature = f => new RouteValuesFeature();
 
         private HttpContext _context;
         private FeatureReferences<FeatureInterfaces> _features;
@@ -51,6 +53,9 @@ namespace Microsoft.AspNetCore.Http.Internal
 
         private IRequestCookiesFeature RequestCookiesFeature =>
             _features.Fetch(ref _features.Cache.Cookies, _newRequestCookiesFeature);
+
+        private IRouteValuesFeature RouteValuesFeature =>
+            _features.Fetch(ref _features.Cache.RouteValues, _newRouteValuesFeature);
 
         public override PathString PathBase
         {
@@ -151,12 +156,19 @@ namespace Microsoft.AspNetCore.Http.Internal
             return FormFeature.ReadFormAsync(cancellationToken);
         }
 
+        public override RouteValueDictionary RouteValues
+        {
+            get { return RouteValuesFeature.RouteValues; }
+            set { RouteValuesFeature.RouteValues = value; }
+        }
+
         struct FeatureInterfaces
         {
             public IHttpRequestFeature Request;
             public IQueryFeature Query;
             public IFormFeature Form;
             public IRequestCookiesFeature Cookies;
+            public IRouteValuesFeature RouteValues;
         }
     }
 }

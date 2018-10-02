@@ -4,6 +4,7 @@
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Routing;
 
 namespace Microsoft.AspNetCore.Http
 {
@@ -117,5 +118,11 @@ namespace Microsoft.AspNetCore.Http
         /// </summary>
         /// <returns></returns>
         public abstract Task<IFormCollection> ReadFormAsync(CancellationToken cancellationToken = new CancellationToken());
+
+        /// <summary>
+        /// Gets the collection of route values for this request.
+        /// </summary>
+        /// <returns>The collection of route values for this request.</returns>
+        public virtual RouteValueDictionary RouteValues { get; set; }
     }
 }
