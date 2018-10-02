@@ -39,9 +39,6 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
 
             var pid2 = await _app.GetProcessId();
             Assert.NotEqual(pid, pid2);
-
-            // first app should have shut down
-            Assert.Throws<ArgumentException>(() => Process.GetProcessById(pid));
         }
 
         [Fact]

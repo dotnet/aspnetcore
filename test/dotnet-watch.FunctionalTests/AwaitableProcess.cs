@@ -4,9 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
-using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.CommandLineUtils;
 using Xunit.Abstractions;
@@ -80,25 +80,30 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         public async Task<string> GetOutputLineAsync(string message, TimeSpan timeout)
         {
             _logger.WriteLine($"Waiting for output line [msg == '{message}']. Will wait for {timeout.TotalSeconds} sec.");
-            return await GetOutputLineAsync(m => string.Equals(m, message, StringComparison.Ordinal)).TimeoutAfter(timeout);
+            var cts = new CancellationTokenSource();
+            cts.CancelAfter(timeout);
+            return await GetOutputLineAsync($"[msg == '{message}']", m => string.Equals(m, message, StringComparison.Ordinal), cts.Token);
         }
 
         public async Task<string> GetOutputLineStartsWithAsync(string message, TimeSpan timeout)
         {
             _logger.WriteLine($"Waiting for output line [msg.StartsWith('{message}')]. Will wait for {timeout.TotalSeconds} sec.");
-            return await GetOutputLineAsync(m => m != null && m.StartsWith(message, StringComparison.Ordinal)).TimeoutAfter(timeout);
+            var cts = new CancellationTokenSource();
+            cts.CancelAfter(timeout);
+            return await GetOutputLineAsync($"[msg.StartsWith('{message}')]", m => m != null && m.StartsWith(message, StringComparison.Ordinal), cts.Token);
         }
 
-        private async Task<string> GetOutputLineAsync(Predicate<string> predicate)
+        private async Task<string> GetOutputLineAsync(string predicateName, Predicate<string> predicate, CancellationToken cancellationToken)
         {
             while (!_source.Completion.IsCompleted)
             {
-                while (await _source.OutputAvailableAsync())
+                while (await _source.OutputAvailableAsync(cancellationToken))
                 {
-                    var next = await _source.ReceiveAsync();
+                    var next = await _source.ReceiveAsync(cancellationToken);
                     _lines.Add(next);
-                    _logger.WriteLine($"{DateTime.Now}: recv: '{next}'");
-                    if (predicate(next))
+                    var match = predicate(next);
+                    _logger.WriteLine($"{DateTime.Now}: recv: '{next}'. {(match ? "Matches" : "Does not match")} condition '{predicateName}'.");
+                    if (match)
                     {
                         return next;
                     }
@@ -108,14 +113,14 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             return null;
         }
 
-        public async Task<IList<string>> GetAllOutputLines()
+        public async Task<IList<string>> GetAllOutputLinesAsync(CancellationToken cancellationToken)
         {
             var lines = new List<string>();
             while (!_source.Completion.IsCompleted)
             {
-                while (await _source.OutputAvailableAsync())
+                while (await _source.OutputAvailableAsync(cancellationToken))
                 {
-                    var next = await _source.ReceiveAsync();
+                    var next = await _source.ReceiveAsync(cancellationToken);
                     _logger.WriteLine($"{DateTime.Now}: recv: '{next}'");
                     lines.Add(next);
                 }

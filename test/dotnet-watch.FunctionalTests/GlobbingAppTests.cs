@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.DotNet.Watcher.Tools.Tests;
 using Xunit;
@@ -101,7 +102,9 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         {
             await _app.PrepareAsync();
             _app.Start(new [] { "--list" });
-            var lines = await _app.Process.GetAllOutputLines();
+            var cts = new CancellationTokenSource();
+            cts.CancelAfter(TimeSpan.FromSeconds(30));
+            var lines = await _app.Process.GetAllOutputLinesAsync(cts.Token);
             var files = lines.Where(l => !l.StartsWith("watch :"));
 
             AssertEx.EqualFileList(

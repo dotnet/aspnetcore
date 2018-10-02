@@ -13,10 +13,12 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
 {
     public class DotNetWatcherTests : IDisposable
     {
+        private readonly ITestOutputHelper _logger;
         private readonly KitchenSinkApp _app;
 
         public DotNetWatcherTests(ITestOutputHelper logger)
         {
+            _logger = logger;
             _app = new KitchenSinkApp(logger);
         }
 
@@ -52,8 +54,10 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                     File.SetLastWriteTime(source, DateTime.Now);
                     await _app.HasRestarted();
                 }
-                catch
+                catch (Exception ex)
                 {
+                    _logger.WriteLine("Retrying. First attempt to restart app failed: " + ex.Message);
+
                     // retry
                     File.SetLastWriteTime(source, DateTime.Now);
                     await _app.HasRestarted();
