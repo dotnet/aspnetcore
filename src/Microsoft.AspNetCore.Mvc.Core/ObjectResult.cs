@@ -11,11 +11,13 @@ namespace Microsoft.AspNetCore.Mvc
 {
     public class ObjectResult : ActionResult, IStatusCodeActionResult
     {
+        private MediaTypeCollection _contentTypes;
+
         public ObjectResult(object value)
         {
             Value = value;
             Formatters = new FormatterCollection<IOutputFormatter>();
-            ContentTypes = new MediaTypeCollection();
+            _contentTypes = new MediaTypeCollection();
         }
 
         [ActionResultObjectValue]
@@ -23,7 +25,11 @@ namespace Microsoft.AspNetCore.Mvc
 
         public FormatterCollection<IOutputFormatter> Formatters { get; set; }
 
-        public MediaTypeCollection ContentTypes { get; set; }
+        public MediaTypeCollection ContentTypes
+        {
+            get => _contentTypes;
+            set => _contentTypes = value ?? throw new ArgumentNullException(nameof(value));
+        }
 
         public Type DeclaredType { get; set; }
 
