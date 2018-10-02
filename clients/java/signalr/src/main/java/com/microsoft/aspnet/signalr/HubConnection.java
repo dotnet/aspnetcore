@@ -4,7 +4,6 @@
 package com.microsoft.aspnet.signalr;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -198,11 +197,7 @@ public class HubConnection {
 
             logger.log(LogLevel.Debug, "Starting HubConnection");
             if (transport == null) {
-                try {
-                    transport = new WebSocketTransport(url, headers, httpClient, logger);
-                } catch (URISyntaxException e) {
-                    throw new RuntimeException(e);
-                }
+                transport = new WebSocketTransport(url, headers, httpClient, logger);
             }
 
             transport.setOnReceive(this.callback);
