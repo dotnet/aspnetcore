@@ -10,6 +10,8 @@ namespace Microsoft.DotNet.Watcher.Internal
 {
     internal class DotnetFileWatcher : IFileSystemWatcher
     {
+        private volatile bool _disposed;
+
         private readonly Func<string, FileSystemWatcher> _watcherFactory;
 
         private FileSystemWatcher _fileSystemWatcher;
@@ -46,6 +48,11 @@ namespace Microsoft.DotNet.Watcher.Internal
 
         private void WatcherErrorHandler(object sender, ErrorEventArgs e)
         {
+            if (_disposed)
+            {
+                return;
+            }
+
             var exception = e.GetException();
 
             // Win32Exception may be triggered when setting EnableRaisingEvents on a file system type
@@ -62,6 +69,11 @@ namespace Microsoft.DotNet.Watcher.Internal
 
         private void WatcherRenameHandler(object sender, RenamedEventArgs e)
         {
+            if (_disposed)
+            {
+                return;
+            }
+
             NotifyChange(e.OldFullPath);
             NotifyChange(e.FullPath);
 
@@ -79,6 +91,11 @@ namespace Microsoft.DotNet.Watcher.Internal
 
         private void WatcherChangeHandler(object sender, FileSystemEventArgs e)
         {
+            if (_disposed)
+            {
+                return;
+            }
+
             NotifyChange(e.FullPath);
         }
 
@@ -98,15 +115,7 @@ namespace Microsoft.DotNet.Watcher.Internal
                 {
                     enableEvents = _fileSystemWatcher.EnableRaisingEvents;
 
-                    _fileSystemWatcher.EnableRaisingEvents = false;
-
-                    _fileSystemWatcher.Created -= WatcherChangeHandler;
-                    _fileSystemWatcher.Deleted -= WatcherChangeHandler;
-                    _fileSystemWatcher.Changed -= WatcherChangeHandler;
-                    _fileSystemWatcher.Renamed -= WatcherRenameHandler;
-                    _fileSystemWatcher.Error -= WatcherErrorHandler;
-
-                    _fileSystemWatcher.Dispose();
+                    DisposeInnerWatcher();
                 }
 
                 _fileSystemWatcher = _watcherFactory(BasePath);
@@ -122,6 +131,19 @@ namespace Microsoft.DotNet.Watcher.Internal
             }
         }
 
+        private void DisposeInnerWatcher()
+        {
+            _fileSystemWatcher.EnableRaisingEvents = false;
+
+            _fileSystemWatcher.Created -= WatcherChangeHandler;
+            _fileSystemWatcher.Deleted -= WatcherChangeHandler;
+            _fileSystemWatcher.Changed -= WatcherChangeHandler;
+            _fileSystemWatcher.Renamed -= WatcherRenameHandler;
+            _fileSystemWatcher.Error -= WatcherErrorHandler;
+
+            _fileSystemWatcher.Dispose();
+        }
+
         public bool EnableRaisingEvents
         {
             get => _fileSystemWatcher.EnableRaisingEvents;
@@ -130,7 +152,8 @@ namespace Microsoft.DotNet.Watcher.Internal
 
         public void Dispose()
         {
-            _fileSystemWatcher.Dispose();
+            _disposed = true;
+            DisposeInnerWatcher();
         }
     }
 }
