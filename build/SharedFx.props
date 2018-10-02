@@ -8,7 +8,6 @@
     <_TemplatesDir>$(MSBuildThisFileDirectory)tools\templates\</_TemplatesDir>
     <_DockerDir>$(MSBuildThisFileDirectory)tools\docker\</_DockerDir>
     <_PackagingDir>$(MSBuildThisFileDirectory)tools\packaging\</_PackagingDir>
-    <_DebToolDir>$(MSBuildThisFileDirectory)tools\dotnet-deb-tool-consumer\</_DebToolDir>
     <_SharedFxSourceDir>$(RepositoryRoot).deps\Signed\SharedFx\</_SharedFxSourceDir>
     <_InstallerSourceDir>$(RepositoryRoot).deps\Installers\</_InstallerSourceDir>
     <_SymbolsSourceDir>$(RepositoryRoot).deps\symbols\</_SymbolsSourceDir>

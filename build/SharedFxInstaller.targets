@@ -165,13 +165,12 @@
   </Target>
 
   <Target Name="RunDebTool">
-    <!-- Install dotnet-deb tool -->
-    <MSBuild Projects="$(_DebToolDir)dotnet-deb-tool-consumer.csproj" Targets="Restore" />
+    <PropertyGroup>
+      <BuildDebInstallerScript>$(RepositoryRoot)src/Installers/Debian/build.sh</BuildDebInstallerScript>
+    </PropertyGroup>
 
     <!-- Build deb package -->
-    <Exec
-      Command="dotnet deb-tool -i $(_WorkLayoutDir) -o $(_WorkOutputDir) -n $(INSTALLER_NAME) -v $(INSTALLER_VERSION)"
-      WorkingDirectory="$(_DebToolDir)" />
+    <Exec Command="$(BuildDebInstallerScript) -i $(_WorkLayoutDir) -o $(_WorkOutputDir) -n $(INSTALLER_NAME) -v $(INSTALLER_VERSION)" />
   </Target>
 
   <Target Name="_GenerateDeb">
