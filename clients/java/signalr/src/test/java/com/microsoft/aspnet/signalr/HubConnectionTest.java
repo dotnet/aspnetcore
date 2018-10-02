@@ -948,8 +948,7 @@ class HubConnectionTest {
     }
 
     @Test
-    public void negotiateRedirectIsFollowed()
-            throws InterruptedException, ExecutionException, TimeoutException, Exception {
+    public void negotiateRedirectIsFollowed() throws Exception {
         TestHttpClient client = new TestHttpClient().on("POST", "http://example.com/negotiate",
                 (req) -> CompletableFuture.completedFuture(new HttpResponse(200, "", "{\"url\":\"http://testexample.com/\"}")))
                 .on("POST", "http://testexample.com/negotiate",
@@ -965,5 +964,41 @@ class HubConnectionTest {
         hubConnection.start().get(1000, TimeUnit.MILLISECONDS);
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
         hubConnection.stop();
+    }
+
+    @Test
+    public void hubConnectionCanBeStartedAfterBeingStopped() throws Exception {
+        MockTransport mockTransport = new MockTransport();
+        HubConnection hubConnection = new HubConnection("http://example.com", mockTransport, new NullLogger(), true, new TestHttpClient());
+
+        hubConnection.start().get(1000, TimeUnit.MILLISECONDS);
+        assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
+        hubConnection.stop().get(1000, TimeUnit.MILLISECONDS);
+        assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
+        hubConnection.start().get(1000, TimeUnit.MILLISECONDS);
+        assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
+        hubConnection.stop().get(1000, TimeUnit.MILLISECONDS);
+        assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
+    }
+
+    @Test
+    public void hubConnectionCanBeStartedAfterBeingStoppedAndRedirected() throws Exception {
+        MockTransport mockTransport = new MockTransport();
+        TestHttpClient client = new TestHttpClient()
+                .on("POST", "http://example.com/negotiate", (req) -> CompletableFuture
+                    .completedFuture(new HttpResponse(200, "", "{\"url\":\"http://testexample.com/\"}")))
+                .on("POST", "http://testexample.com/negotiate", (req) -> CompletableFuture
+                    .completedFuture(new HttpResponse(200, "", "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                        + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}")));
+        HubConnection hubConnection = new HubConnection("http://example.com", mockTransport, new NullLogger(), false, client);
+
+        hubConnection.start().get(1000, TimeUnit.MILLISECONDS);
+        assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
+        hubConnection.stop().get(1000, TimeUnit.MILLISECONDS);
+        assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
+        hubConnection.start().get(1000, TimeUnit.MILLISECONDS);
+        assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
+        hubConnection.stop().get(1000, TimeUnit.MILLISECONDS);
+        assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
     }
 }

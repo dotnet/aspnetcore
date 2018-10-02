@@ -16,7 +16,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 
 public class HubConnection {
-    private String url;
+    private String baseUrl;
     private Transport transport;
     private OnReceiveCallBack callback;
     private CallbackMap handlers = new CallbackMap();
@@ -41,7 +41,7 @@ public class HubConnection {
             throw new IllegalArgumentException("A valid url is required.");
         }
 
-        this.url = url;
+        this.baseUrl = url;
         this.protocol = new JsonHubProtocol();
 
         if (logger != null) {
@@ -126,7 +126,7 @@ public class HubConnection {
         };
     }
 
-    private CompletableFuture<NegotiateResponse> handleNegotiate() throws IOException, InterruptedException, ExecutionException {
+    private CompletableFuture<NegotiateResponse> handleNegotiate(String url) throws IOException, InterruptedException, ExecutionException {
         HttpRequest request = new HttpRequest();
         request.setHeaders(this.headers);
 
@@ -142,20 +142,8 @@ public class HubConnection {
                 throw new RuntimeException(negotiateResponse.getError());
             }
 
-            if (negotiateResponse.getConnectionId() != null) {
-                if (url.contains("?")) {
-                    url = url + "&id=" + negotiateResponse.getConnectionId();
-                } else {
-                    url = url + "?id=" + negotiateResponse.getConnectionId();
-                }
-            }
-
             if (negotiateResponse.getAccessToken() != null) {
                 this.headers.put("Authorization", "Bearer " + negotiateResponse.getAccessToken());
-            }
-
-            if (negotiateResponse.getRedirectUrl() != null) {
-                this.url = negotiateResponse.getRedirectUrl();
             }
 
             return CompletableFuture.completedFuture(negotiateResponse);
@@ -181,20 +169,14 @@ public class HubConnection {
             return CompletableFuture.completedFuture(null);
         }
 
-        CompletableFuture<NegotiateResponse> negotiate = null;
+        CompletableFuture<String> negotiate = null;
         if (!skipNegotiate) {
-            negotiate = startNegotiate(0);
+            negotiate = startNegotiate(baseUrl, 0);
         } else {
-            negotiate = CompletableFuture.completedFuture(null);
+            negotiate = CompletableFuture.completedFuture(baseUrl);
         }
 
-        return negotiate.thenCompose((response) -> {
-            // If we didn't skip negotiate and got a null response then exit start because we
-            // are probably disconnected
-            if (response == null && !skipNegotiate) {
-                return CompletableFuture.completedFuture(null);
-            }
-
+        return negotiate.thenCompose((url) -> {
             logger.log(LogLevel.Debug, "Starting HubConnection");
             if (transport == null) {
                 transport = new WebSocketTransport(url, headers, httpClient, logger);
@@ -225,12 +207,12 @@ public class HubConnection {
         });
     }
 
-    private CompletableFuture<NegotiateResponse> startNegotiate(int negotiateAttempts) throws IOException, InterruptedException, ExecutionException {
+    private CompletableFuture<String> startNegotiate(String url, int negotiateAttempts) throws IOException, InterruptedException, ExecutionException {
         if (hubConnectionState != HubConnectionState.DISCONNECTED) {
             return CompletableFuture.completedFuture(null);
         }
 
-        return handleNegotiate().thenCompose((response) -> {
+        return handleNegotiate(url).thenCompose((response) -> {
             if (response.getRedirectUrl() != null && negotiateAttempts >= MAX_NEGOTIATE_ATTEMPTS) {
                 throw new RuntimeException("Negotiate redirection limit exceeded.");
             }
@@ -243,11 +225,21 @@ public class HubConnection {
                         throw new RuntimeException(e);
                     }
                 }
-                return CompletableFuture.completedFuture(response);
+
+                String finalUrl = url;
+                if (response.getConnectionId() != null) {
+                    if (url.contains("?")) {
+                        finalUrl = url + "&id=" + response.getConnectionId();
+                    } else {
+                        finalUrl = url + "?id=" + response.getConnectionId();
+                    }
+                }
+
+                return CompletableFuture.completedFuture(finalUrl);
             }
 
             try {
-                return startNegotiate(negotiateAttempts + 1);
+                return startNegotiate(response.getRedirectUrl(), negotiateAttempts + 1);
             } catch (IOException | InterruptedException | ExecutionException e) {
                 throw new RuntimeException(e);
             }
