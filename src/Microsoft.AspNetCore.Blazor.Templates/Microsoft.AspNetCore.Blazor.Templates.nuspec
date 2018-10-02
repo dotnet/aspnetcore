@@ -9,7 +9,7 @@
     <language>en-US</language>
     <projectUrl>https://github.com/aspnet/blazor</projectUrl>
     <licenseUrl>https://www.microsoft.com/web/webpi/eula/net_library_eula_enu.htm</licenseUrl>
-    <copyright>Copyright © Microsoft Corporation</copyright>
+    <copyright>© Microsoft Corporation. All rights reserved.</copyright>
     <requireLicenseAcceptance>true</requireLicenseAcceptance>
     <tags>aspnet templates blazor spa</tags>
     <packageTypes>
