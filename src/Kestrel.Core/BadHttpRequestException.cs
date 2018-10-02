@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             }
         }
 
-        internal int StatusCode { get; }
+        public int StatusCode { get; }
 
         internal StringValues AllowedHeader { get; }
 

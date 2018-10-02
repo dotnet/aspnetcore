@@ -11,6 +11,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.Extensions.Configuration;
@@ -24,8 +26,24 @@ namespace SampleApp
         {
             var logger = loggerFactory.CreateLogger("Default");
 
+            // Add an exception handler that prevents throwing due to large request body size
+            app.Use(async (context, next) =>
+            {
+                // Limit the request body to 1kb
+                context.Features.Get<IHttpMaxRequestBodySizeFeature>().MaxRequestBodySize = 1024;
+
+                try
+                {
+                    await next.Invoke();
+                }
+                catch (BadHttpRequestException ex) when (ex.StatusCode == StatusCodes.Status413RequestEntityTooLarge) { }
+            });
+
             app.Run(async context =>
             {
+                // Drain the request body
+                await context.Request.Body.CopyToAsync(Stream.Null);
+
                 var connectionFeature = context.Connection;
                 logger.LogDebug($"Peer: {connectionFeature.RemoteIpAddress?.ToString()}:{connectionFeature.RemotePort}"
                     + $"{Environment.NewLine}"
@@ -152,7 +170,7 @@ namespace SampleApp
                      // options.ThreadCount = 4;
                  });
             }
-                
+
             return hostBuilder.Build().RunAsync();
         }
 
