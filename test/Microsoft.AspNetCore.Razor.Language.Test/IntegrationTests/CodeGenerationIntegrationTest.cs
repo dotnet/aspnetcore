@@ -10,6 +10,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 {
     public class CodeGenerationIntegrationTest : IntegrationTestBase
     {
+
         #region Runtime
         [Fact]
         public void IncompleteDirectives_Runtime()
@@ -19,12 +20,6 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 
         [Fact]
         public void CSharp7_Runtime()
-        {
-            RunTimeTest();
-        }
-
-        [Fact]
-        public void BasicImports_Runtime()
         {
             RunTimeTest();
         }
@@ -461,12 +456,6 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
         }
 
         [Fact]
-        public void BasicImports_DesignTime()
-        {
-            DesignTimeTest();
-        }
-
-        [Fact]
         public void UnfinishedExpressionInCode_DesignTime()
         {
             DesignTimeTest();
@@ -896,7 +885,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                 SectionDirective.Register(builder);
             });
 
-            var projectItem = CreateProjectItem();
+            var projectItem = CreateProjectItemFromFile();
 
             // Act
             var codeDocument = projectEngine.ProcessDesignTime(projectItem);
@@ -922,7 +911,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                 SectionDirective.Register(builder);
             });
 
-            var projectItem = CreateProjectItem();
+            var projectItem = CreateProjectItemFromFile();
 
             // Act
             var codeDocument = projectEngine.Process(projectItem);
@@ -947,7 +936,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                 SectionDirective.Register(builder);
             });
 
-            var projectItem = CreateProjectItem();
+            var projectItem = CreateProjectItemFromFile();
             var imports = GetImports(projectEngine, projectItem);
 
             // Act
@@ -973,7 +962,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                 SectionDirective.Register(builder);
             });
 
-            var projectItem = CreateProjectItem();
+            var projectItem = CreateProjectItemFromFile();
             var imports = GetImports(projectEngine, projectItem);
 
             // Act
