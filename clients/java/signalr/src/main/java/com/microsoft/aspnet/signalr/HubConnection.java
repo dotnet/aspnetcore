@@ -14,6 +14,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public class HubConnection {
     private String baseUrl;
@@ -28,7 +29,7 @@ public class HubConnection {
     private Logger logger;
     private List<Consumer<Exception>> onClosedCallbackList;
     private boolean skipNegotiate = false;
-    private String accessToken;
+    private Supplier<CompletableFuture<String>> accessTokenProvider;
     private Map<String, String> headers = new HashMap<>();
     private ConnectionState connectionState = null;
     private HttpClient httpClient;
@@ -36,7 +37,7 @@ public class HubConnection {
     private static ArrayList<Class<?>> emptyArray = new ArrayList<>();
     private static int MAX_NEGOTIATE_ATTEMPTS = 100;
 
-    public HubConnection(String url, Transport transport, Logger logger, boolean skipNegotiate, HttpClient client) {
+    public HubConnection(String url, HttpConnectionOptions options) {
         if (url == null || url.isEmpty()) {
             throw new IllegalArgumentException("A valid url is required.");
         }
@@ -44,26 +45,31 @@ public class HubConnection {
         this.baseUrl = url;
         this.protocol = new JsonHubProtocol();
 
-        if (logger != null) {
-            this.logger = logger;
+        if (options.getAccessTokenProvider() != null) {
+            this.accessTokenProvider = options.getAccessTokenProvider();
+        } else {
+            this.accessTokenProvider = () -> CompletableFuture.completedFuture(null);
+        }
+
+        if (options.getLogger() != null) {
+            this.logger = options.getLogger();
         } else {
             this.logger = new NullLogger();
         }
 
-        if (client != null) {
-            this.httpClient = client;
+        if (options.getHttpClient() != null) {
+            this.httpClient = options.getHttpClient();
         } else {
             this.httpClient = new DefaultHttpClient(this.logger);
         }
 
-        if (transport != null) {
-            this.transport = transport;
+        if (options.getTransport() != null) {
+            this.transport = options.getTransport();
         }
 
-        this.skipNegotiate = skipNegotiate;
+        this.skipNegotiate = options.getSkipNegotiate();
 
         this.callback = (payload) -> {
-
             if (!handshakeReceived) {
                 int handshakeLength = payload.indexOf(RECORD_SEPARATOR) + 1;
                 String handshakeResponseString = payload.substring(0, handshakeLength - 1);
@@ -126,11 +132,14 @@ public class HubConnection {
         };
     }
 
-    private CompletableFuture<NegotiateResponse> handleNegotiate(String url) throws IOException, InterruptedException, ExecutionException {
+    private CompletableFuture<NegotiateResponse> handleNegotiate(String url) {
         HttpRequest request = new HttpRequest();
         request.setHeaders(this.headers);
 
         return httpClient.post(Negotiate.resolveNegotiateUrl(url), request).thenCompose((response) -> {
+            if (response.getStatusCode() != 200) {
+                throw new RuntimeException(String.format("Unexpected status code returned from negotiate: %d %s.", response.getStatusCode(), response.getStatusText()));
+            }
             NegotiateResponse negotiateResponse;
             try {
                 negotiateResponse = new NegotiateResponse(response.getContent());
@@ -143,7 +152,15 @@ public class HubConnection {
             }
 
             if (negotiateResponse.getAccessToken() != null) {
-                this.headers.put("Authorization", "Bearer " + negotiateResponse.getAccessToken());
+                this.accessTokenProvider = () -> CompletableFuture.completedFuture(negotiateResponse.getAccessToken());
+                String token = "";
+                try {
+                    // We know the future is already completed in this case
+                    // It's fine to call get() on it.
+                    token = this.accessTokenProvider.get().get();
+                } catch (InterruptedException | ExecutionException e) {
+                }
+                this.headers.put("Authorization", "Bearer " + token);
             }
 
             return CompletableFuture.completedFuture(negotiateResponse);
@@ -169,11 +186,18 @@ public class HubConnection {
             return CompletableFuture.completedFuture(null);
         }
 
+        CompletableFuture<Void> tokenFuture = accessTokenProvider.get()
+                .thenAccept((token) -> {
+                    if (token != null) {
+                        this.headers.put("Authorization", "Bearer " + token);
+                    }
+                });
+
         CompletableFuture<String> negotiate = null;
         if (!skipNegotiate) {
-            negotiate = startNegotiate(baseUrl, 0);
+            negotiate = tokenFuture.thenCompose((v) -> startNegotiate(baseUrl, 0));
         } else {
-            negotiate = CompletableFuture.completedFuture(baseUrl);
+            negotiate = tokenFuture.thenCompose((v) -> CompletableFuture.completedFuture(baseUrl));
         }
 
         return negotiate.thenCompose((url) -> {
@@ -207,7 +231,7 @@ public class HubConnection {
         });
     }
 
-    private CompletableFuture<String> startNegotiate(String url, int negotiateAttempts) throws IOException, InterruptedException, ExecutionException {
+    private CompletableFuture<String> startNegotiate(String url, int negotiateAttempts) {
         if (hubConnectionState != HubConnectionState.DISCONNECTED) {
             return CompletableFuture.completedFuture(null);
         }
@@ -238,11 +262,7 @@ public class HubConnection {
                 return CompletableFuture.completedFuture(finalUrl);
             }
 
-            try {
-                return startNegotiate(response.getRedirectUrl(), negotiateAttempts + 1);
-            } catch (IOException | InterruptedException | ExecutionException e) {
-                throw new RuntimeException(e);
-            }
+            return startNegotiate(response.getRedirectUrl(), negotiateAttempts + 1);
         });
     }
 

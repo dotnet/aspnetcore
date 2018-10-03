@@ -13,8 +13,7 @@ class HttpConnectionOptionsTest {
     @Test
     public void CheckHttpConnectionOptionsFields() {
         Transport mockTransport = new MockTransport();
-        HttpConnectionOptions options = new HttpConnectionOptions("http://example.com", mockTransport, LogLevel.Information, true);
-        assertEquals("http://example.com",options.getUrl());
+        HttpConnectionOptions options = new HttpConnectionOptions(mockTransport, LogLevel.Information, true);
         assertEquals(LogLevel.Information, options.getLoglevel());
         assertTrue(options.getSkipNegotiate());
         assertNotNull(options.getTransport());
