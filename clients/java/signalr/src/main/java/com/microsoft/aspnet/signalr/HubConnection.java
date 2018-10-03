@@ -95,7 +95,7 @@ public class HubConnection {
                                 handler.getAction().invoke(invocationMessage.getArguments());
                             }
                         } else {
-                            logger.log(LogLevel.Warning, "Failed to find handler for %s method.", invocationMessage.getMessageType());
+                            logger.log(LogLevel.Warning, "Failed to find handler for '%s' method.", invocationMessage.getTarget());
                         }
                         break;
                     case CLOSE:
@@ -177,7 +177,7 @@ public class HubConnection {
         }
 
         return negotiate.thenCompose((url) -> {
-            logger.log(LogLevel.Debug, "Starting HubConnection");
+            logger.log(LogLevel.Debug, "Starting HubConnection.");
             if (transport == null) {
                 transport = new WebSocketTransport(url, headers, httpClient, logger);
             }
@@ -257,7 +257,7 @@ public class HubConnection {
             }
 
             if (errorMessage != null) {
-                logger.log(LogLevel.Error, "HubConnection disconnected with an error %s.", errorMessage);
+                logger.log(LogLevel.Error, "HubConnection disconnected with an error: %s.", errorMessage);
             } else {
                 logger.log(LogLevel.Debug, "Stopping HubConnection.");
             }
@@ -364,7 +364,7 @@ public class HubConnection {
      */
     public void remove(String name) {
         handlers.remove(name);
-        logger.log(LogLevel.Trace, "Removing handlers for client method %s", name);
+        logger.log(LogLevel.Trace, "Removing handlers for client method: %s.", name);
     }
 
     public void onClosed(Consumer<Exception> callback) {
@@ -385,7 +385,7 @@ public class HubConnection {
     public Subscription on(String target, Action callback) {
         ActionBase action = args -> callback.invoke();
         InvocationHandler handler = handlers.put(target, action, emptyArray);
-        logger.log(LogLevel.Trace, "Registering handler for client method: %s", target);
+        logger.log(LogLevel.Trace, "Registering handler for client method: %s.", target);
         return new Subscription(handlers, handler, target);
     }
 
@@ -403,7 +403,7 @@ public class HubConnection {
         ArrayList<Class<?>> classes = new ArrayList<>(1);
         classes.add(param1);
         InvocationHandler handler = handlers.put(target, action, classes);
-        logger.log(LogLevel.Trace, "Registering handler for client method: %s", target);
+        logger.log(LogLevel.Trace, "Registering handler for client method: %s.", target);
         return new Subscription(handlers, handler, target);
     }
 
@@ -426,7 +426,7 @@ public class HubConnection {
         classes.add(param1);
         classes.add(param2);
         InvocationHandler handler = handlers.put(target, action, classes);
-        logger.log(LogLevel.Trace, "Registering handler for client method: %s", target);
+        logger.log(LogLevel.Trace, "Registering handler for client method: %s.", target);
         return new Subscription(handlers, handler, target);
     }
 
@@ -453,7 +453,7 @@ public class HubConnection {
         classes.add(param2);
         classes.add(param3);
         InvocationHandler handler = handlers.put(target, action, classes);
-        logger.log(LogLevel.Trace, "Registering handler for client method: %s", target);
+        logger.log(LogLevel.Trace, "Registering handler for client method: %s.", target);
         return new Subscription(handlers, handler, target);
     }
 
@@ -483,7 +483,7 @@ public class HubConnection {
         classes.add(param3);
         classes.add(param4);
         InvocationHandler handler = handlers.put(target, action, classes);
-        logger.log(LogLevel.Trace, "Registering handler for client method: %s", target);
+        logger.log(LogLevel.Trace, "Registering handler for client method: %s.", target);
         return new Subscription(handlers, handler, target);
     }
 
@@ -517,7 +517,7 @@ public class HubConnection {
         classes.add(param4);
         classes.add(param5);
         InvocationHandler handler = handlers.put(target, action, classes);
-        logger.log(LogLevel.Trace, "Registering handler for client method: %s", target);
+        logger.log(LogLevel.Trace, "Registering handler for client method: %s.", target);
         return new Subscription(handlers, handler, target);
     }
 
@@ -554,7 +554,7 @@ public class HubConnection {
         classes.add(param5);
         classes.add(param6);
         InvocationHandler handler = handlers.put(target, action, classes);
-        logger.log(LogLevel.Trace, "Registering handler for client method: %s", target);
+        logger.log(LogLevel.Trace, "Registering handler for client method: %s.", target);
         return new Subscription(handlers, handler, target);
     }
 
@@ -594,7 +594,7 @@ public class HubConnection {
         classes.add(param6);
         classes.add(param7);
         InvocationHandler handler = handlers.put(target, action, classes);
-        logger.log(LogLevel.Trace, "Registering handler for client method: %s", target);
+        logger.log(LogLevel.Trace, "Registering handler for client method: %s.", target);
         return new Subscription(handlers, handler, target);
     }
 
@@ -637,7 +637,7 @@ public class HubConnection {
         classes.add(param7);
         classes.add(param8);
         InvocationHandler handler = handlers.put(target, action, classes);
-        logger.log(LogLevel.Trace, "Registering handler for client method: %s", target);
+        logger.log(LogLevel.Trace, "Registering handler for client method: %s.", target);
         return new Subscription(handlers, handler, target);
     }
 

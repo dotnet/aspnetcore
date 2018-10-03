@@ -57,7 +57,7 @@ class WebSocketTransport implements Transport {
     @Override
     public void setOnReceive(OnReceiveCallBack callback) {
         this.onReceiveCallBack = callback;
-        logger.log(LogLevel.Debug, "OnReceived callback has been set");
+        logger.log(LogLevel.Debug, "OnReceived callback has been set.");
     }
 
     @Override
