@@ -147,6 +147,7 @@
       "Lite_KestrelStressTest",
       "Lite_Entropy",
       // Main Build
+      "AspNetCore_master_WindowsInstallers",
       "Coherence_UpdateRepos",
       "UniverseCoherence",
       "Coherence_SharedFxLinuxMusl",
