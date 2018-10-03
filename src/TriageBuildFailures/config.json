@@ -141,6 +141,8 @@
   "TeamCity": {
     "Server": "aspnetci",
     "BuildIdAllowList": [
+      // MISC
+      "Lite_Public_Performance",
       "Lite_Infrastructure_AspNetCoreModuleSetup",
       "Coherence_SiteExtension",
       "Lite_UniverseTest",
