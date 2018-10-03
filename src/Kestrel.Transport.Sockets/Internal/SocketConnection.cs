@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
         public override void Abort(ConnectionAbortedException abortReason)
         {
-            _trace.ConnectionAborted(ConnectionId);
+            _trace.ConnectionAborted(ConnectionId, abortReason?.Message);
 
             // Try to gracefully close the socket to match libuv behavior.
             Shutdown(abortReason);
