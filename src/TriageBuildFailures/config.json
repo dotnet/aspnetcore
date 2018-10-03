@@ -212,10 +212,14 @@
       "Releases_22xPublic_SharedFxLinuxMusl",
       "Releases_22xPublic_SiteExtension",
       "Releases_22xPublic_CoherencePackageCacheLinux",
+      "Releases_22xPublic_CoherencePackageCacheWin",
+      "Releases_22xPublic_CoherencePackageCacheOsx",
+      "Releases_22xPublic_CoherencePackageCacheWin86",
       "Releases_22xPublic_Publish",
       "Releases_22xPublic_PbTestWindowsServer2012",
       "Releases_22xPublic_RuntimeStoreInstallers",
       "Releases_22xPublic_WindowsInstallers",
+      "Releases_22xPublic_Finale",
       // Maintenance builds
       "Maintenance_Backup"
     ]
