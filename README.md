@@ -16,10 +16,10 @@ All published ASP.NET Core packages can be found on <https://www.nuget.org/profi
 Commonly referenced packages:
 
 [app-metapackage-nuget]:  https://nuget.org/packages/Microsoft.AspNetCore.App
-[app-metapackage-nuget-badge]: http://img.shields.io/nuget/v/Microsoft.AspNetCore.App.svg?style=flat-square&label=nuget
+[app-metapackage-nuget-badge]: https://img.shields.io/nuget/v/Microsoft.AspNetCore.App.svg?style=flat-square&label=nuget
 
 [metapackage-nuget]:  https://nuget.org/packages/Microsoft.AspNetCore
-[metapackage-nuget-badge]: http://img.shields.io/nuget/v/Microsoft.AspNetCore.svg?style=flat-square&label=nuget
+[metapackage-nuget-badge]: https://img.shields.io/nuget/v/Microsoft.AspNetCore.svg?style=flat-square&label=nuget
 
 Package                           | NuGet.org
 :---------------------------------|:---------------------------------------------------------
@@ -37,10 +37,10 @@ packages that will not be supported in a officially released build.
 Commonly referenced packages:
 
 [app-metapackage-myget]:  https://dotnet.myget.org/feed/dotnet-core/package/nuget/Microsoft.AspNetCore.App
-[app-metapackage-myget-badge]: http://img.shields.io/dotnet.myget/dotnet-core/v/Microsoft.AspNetCore.App.svg?style=flat-square&label=myget
+[app-metapackage-myget-badge]: https://img.shields.io/dotnet.myget/dotnet-core/v/Microsoft.AspNetCore.App.svg?style=flat-square&label=myget
 
 [metapackage-myget]:  https://dotnet.myget.org/feed/dotnet-core/package/nuget/Microsoft.AspNetCore
-[metapackage-myget-badge]: http://img.shields.io/dotnet.myget/dotnet-core/v/Microsoft.AspNetCore.svg?style=flat-square&label=myget
+[metapackage-myget-badge]: https://img.shields.io/dotnet.myget/dotnet-core/v/Microsoft.AspNetCore.svg?style=flat-square&label=myget
 
 Package                           | MyGet
 :---------------------------------|:---------------------------------------------------------
