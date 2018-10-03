@@ -21,11 +21,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp20PackageVersion)" />
     <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp21PackageVersion)" />
     <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp22PackageVersion)" />
     <!-- These are for functional test projects that are only runable on windows -->
-    <DotNetCoreRuntime Condition="'$(OS)' == 'Windows_NT'" Include="$(MicrosoftNETCoreApp20PackageVersion)" Arch="x86" />
     <DotNetCoreRuntime Condition="'$(OS)' == 'Windows_NT'" Include="$(MicrosoftNETCoreApp21PackageVersion)" Arch="x86" />
   </ItemGroup>
 </Project>
