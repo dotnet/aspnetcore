@@ -1075,8 +1075,8 @@ class HubConnectionTest {
         MockTransport transport = new MockTransport();
         HttpConnectionOptions options = new HttpConnectionOptions();
         options.setTransport(transport);
-        HubConnection hubConnection = new HubConnectionBuilder().withUrl("http://example.com", options)
-                .configureHttpClient(client).build();
+        options.setHttpClient(client);
+        HubConnection hubConnection = new HubConnectionBuilder().withUrl("http://example.com", options).build();
 
         ExecutionException exception = assertThrows(ExecutionException.class, () -> hubConnection.start().get(1000, TimeUnit.MILLISECONDS));
         assertEquals("Unexpected status code returned from negotiate: 500 Internal server error.", exception.getCause().getMessage());
