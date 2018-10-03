@@ -3,6 +3,7 @@
 
 package com.microsoft.aspnet.signalr;
 
+@FunctionalInterface
 public interface Action1<T1> {
     void invoke(T1 param1);
 }
