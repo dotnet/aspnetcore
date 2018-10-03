@@ -95,8 +95,8 @@ class OkHttpWebSocketWrapper extends WebSocketWrapper {
 
         @Override
         public void onFailure(WebSocket webSocket, Throwable t, Response response) {
-            logger.log(LogLevel.Error, "Error: %s.", t.getMessage());
-            closeFuture.completeExceptionally(new RuntimeException());
+            logger.log(LogLevel.Error, "Websocket closed from an error: %s.", t.getMessage());
+            closeFuture.completeExceptionally(new RuntimeException(t));
             checkStartFailure();
         }
 
