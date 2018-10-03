@@ -137,6 +137,9 @@ public class HubConnection {
         request.setHeaders(this.headers);
 
         return httpClient.post(Negotiate.resolveNegotiateUrl(url), request).thenCompose((response) -> {
+            if (response.getStatusCode() != 200) {
+                throw new RuntimeException(String.format("Unexpected status code returned from negotiate: %d %s.", response.getStatusCode(), response.getStatusText()));
+            }
             NegotiateResponse negotiateResponse;
             try {
                 negotiateResponse = new NegotiateResponse(response.getContent());
