@@ -7,8 +7,7 @@ public class HubConnectionBuilder {
     private String url;
     private Transport transport;
     private Logger logger;
-    private boolean skipNegotiate;
-    private HttpClient client;
+    private HttpConnectionOptions options = null;
 
     public HubConnectionBuilder withUrl(String url) {
         if (url == null || url.isEmpty()) {
@@ -30,13 +29,7 @@ public class HubConnectionBuilder {
 
     public HubConnectionBuilder withUrl(String url, HttpConnectionOptions options) {
         this.url = url;
-        this.transport = options.getTransport();
-        if (options.getLogger() != null) {
-            this.logger = options.getLogger();
-        } else if (options.getLoglevel() != null) {
-            this.logger = new ConsoleLogger(options.getLoglevel());
-        }
-        this.skipNegotiate = options.getSkipNegotiate();
+        this.options = options;
         return this;
     }
 
@@ -50,16 +43,23 @@ public class HubConnectionBuilder {
         return this;
     }
 
-    // For testing purposes only
-    HubConnectionBuilder configureHttpClient(HttpClient client) {
-        this.client = client;
-        return this;
-    }
-
     public HubConnection build() {
         if (this.url == null) {
             throw new RuntimeException("The 'HubConnectionBuilder.withUrl' method must be called before building the connection.");
         }
-        return new HubConnection(url, transport, logger, skipNegotiate, client);
+        if (options == null) {
+            options = new HttpConnectionOptions();
+        }
+        if (options.getTransport() == null && this.transport != null) {
+            options.setTransport(this.transport);
+        }
+        if (options.getLogger() == null && options.getLoglevel() != null) {
+            options.setLogger(new ConsoleLogger(options.getLoglevel()));
+        }
+        if (options.getLogger() == null && this.logger != null) {
+            options.setLogger(this.logger);
+        }
+
+        return new HubConnection(url, options);
     }
 }
