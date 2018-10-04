@@ -159,6 +159,18 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
+        public async Task GetPathByPage_CanGeneratePathToPage_PathTransformed()
+        {
+            // Act
+            var response = await Client.GetAsync("LG1/LinkToPageWithTransformedPath?id=HelloWorld");
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("/page-route-transformer/test-page/ExtraPath/HelloWorld", responseContent);
+        }
+
+        [Fact]
         public async Task GetPathByPage_CanGeneratePathToPageInArea()
         {
             // Act

@@ -116,6 +116,38 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
+        public async Task Page_PageRouteTransformer()
+        {
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/page-route-transformer/index");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Page_PageRouteTransformer_WithoutIndex()
+        {
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/page-route-transformer");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Page_PageRouteTransformer_RouteParameter()
+        {
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/page-route-transformer/test-page/ExtraPath/World");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var body = await response.Content.ReadAsStringAsync();
+            Assert.Equal("Hello from World", body);
+        }
+
+        [Fact]
         public virtual async Task ConventionalRoutedController_ActionIsReachable()
         {
             // Arrange & Act

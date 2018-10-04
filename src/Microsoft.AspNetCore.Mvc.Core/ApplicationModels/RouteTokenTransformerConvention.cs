@@ -8,7 +8,8 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 {
     /// <summary>
     /// An <see cref="IActionModelConvention"/> that sets attribute routing token replacement
-    /// to use the specified <see cref="IOutboundParameterTransformer"/> on <see cref="ActionModel"/> selectors.
+    /// to use the specified <see cref="IOutboundParameterTransformer"/> on <see cref="ActionModel"/>.
+    /// This convention does not effect Razor page routes.
     /// </summary>
     public class RouteTokenTransformerConvention : IActionModelConvention
     {

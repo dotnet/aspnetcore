@@ -9,20 +9,16 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Test.ApplicationModels
 {
-    public class RouteTokenTransformerConventionTest
+    public class PageRouteTransformerConventionTest
     {
         [Fact]
-        public void Apply_HasAttributeRouteModel_SetRouteTokenTransformer()
+        public void Apply_SetTransformer()
         {
             // Arrange
             var transformer = new TestParameterTransformer();
-            var convention = new RouteTokenTransformerConvention(transformer);
+            var convention = new PageRouteTransformerConvention(transformer);
 
-            var model = new ActionModel(GetMethodInfo(), Array.Empty<object>());
-            model.Selectors.Add(new SelectorModel()
-            {
-                AttributeRouteModel = new AttributeRouteModel()
-            });
+            var model = new PageRouteModel(string.Empty, string.Empty);
 
             // Act
             convention.Apply(model);
@@ -37,24 +33,15 @@ namespace Microsoft.AspNetCore.Mvc.Test.ApplicationModels
         {
             // Arrange
             var transformer = new TestParameterTransformer();
-            var convention = new CustomRouteTokenTransformerConvention(transformer);
+            var convention = new CustomPageRouteTransformerConvention(transformer);
 
-            var model = new ActionModel(GetMethodInfo(), Array.Empty<object>());
-            model.Selectors.Add(new SelectorModel()
-            {
-                AttributeRouteModel = new AttributeRouteModel()
-            });
+            var model = new PageRouteModel(string.Empty, string.Empty);
 
             // Act
             convention.Apply(model);
 
             // Assert
             Assert.False(model.Properties.TryGetValue(typeof(IOutboundParameterTransformer), out _));
-        }
-
-        private MethodInfo GetMethodInfo()
-        {
-            return typeof(RouteTokenTransformerConventionTest).GetMethod(nameof(GetMethodInfo), BindingFlags.NonPublic | BindingFlags.Instance);
         }
 
         private class TestParameterTransformer : IOutboundParameterTransformer
@@ -65,13 +52,13 @@ namespace Microsoft.AspNetCore.Mvc.Test.ApplicationModels
             }
         }
 
-        private class CustomRouteTokenTransformerConvention : RouteTokenTransformerConvention
+        private class CustomPageRouteTransformerConvention : PageRouteTransformerConvention
         {
-            public CustomRouteTokenTransformerConvention(IOutboundParameterTransformer parameterTransformer) : base(parameterTransformer)
+            public CustomPageRouteTransformerConvention(IOutboundParameterTransformer parameterTransformer) : base(parameterTransformer)
             {
             }
 
-            protected override bool ShouldApply(ActionModel action)
+            protected override bool ShouldApply(PageRouteModel action)
             {
                 return false;
             }

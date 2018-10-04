@@ -59,6 +59,14 @@ namespace RoutingWebSite
                 values: QueryToRouteValues(HttpContext.Request.Query));
         }
 
+        public string LinkToPageWithTransformedPath()
+        {
+            return _linkGenerator.GetPathByPage(
+                HttpContext,
+                page: "/PageRouteTransformer/TestPage",
+                values: QueryToRouteValues(HttpContext.Request.Query));
+        }
+
         public string LinkToPageInArea()
         {
             var values = QueryToRouteValues(HttpContext.Request.Query);
