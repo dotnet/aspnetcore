@@ -19,6 +19,7 @@
     <ExternalDependency Include="FSharp.Core" Version="$(FSharpCorePackageVersion)" />
     <ExternalDependency Include="Google.Protobuf" Version="$(GoogleProtobufPackageVersion)" />
     <ExternalDependency Include="Internal.AspNetCore.Sdk" Version="$(InternalAspNetCoreSdkPackageVersion)" />
+    <ExternalDependency Include="Microsoft.AspNetCore.BuildTools.ApiCheck" Version="$(MicrosoftAspNetCoreBuildToolsApiCheckPackageVersion)" />
     <ExternalDependency Include="Internal.AspNetCore.SiteExtension.Sdk" Version="$(InternalAspNetCoreSiteExtensionSdkPackageVersion)" />
     <ExternalDependency Include="Libuv" Version="$(LibuvPackageVersion)" />
     <ExternalDependency Include="Microsoft.ApplicationInsights.AspNetCore" Version="$(MicrosoftApplicationInsightsAspNetCorePackageVersion)" />
