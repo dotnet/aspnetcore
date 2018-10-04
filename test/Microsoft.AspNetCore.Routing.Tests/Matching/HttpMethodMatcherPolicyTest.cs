@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var policy = CreatePolicy();
 
             // Act
-            var result = policy.AppliesToNode(endpoints);
+            var result = policy.AppliesToEndpoints(endpoints);
 
             // Assert
             Assert.False(result);
@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var policy = CreatePolicy();
 
             // Act
-            var result = policy.AppliesToNode(endpoints);
+            var result = policy.AppliesToEndpoints(endpoints);
 
             // Assert
             Assert.False(result);
@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var policy = CreatePolicy();
 
             // Act
-            var result = policy.AppliesToNode(endpoints);
+            var result = policy.AppliesToEndpoints(endpoints);
 
             // Assert
             Assert.True(result);

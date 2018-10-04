@@ -1013,7 +1013,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             public IComparer<Endpoint> Comparer => EndpointMetadataComparer<TestMetadata1>.Default;
 
-            public bool AppliesToNode(IReadOnlyList<Endpoint> endpoints)
+            public bool AppliesToEndpoints(IReadOnlyList<Endpoint> endpoints)
             {
                 return endpoints.Any(e => e.Metadata.GetMetadata<TestMetadata1>() != null);
             }
@@ -1052,7 +1052,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             public IComparer<Endpoint> Comparer => EndpointMetadataComparer<TestMetadata2>.Default;
 
-            public bool AppliesToNode(IReadOnlyList<Endpoint> endpoints)
+            public bool AppliesToEndpoints(IReadOnlyList<Endpoint> endpoints)
             {
                 return endpoints.Any(e => e.Metadata.GetMetadata<TestMetadata2>() != null);
             }
@@ -1077,7 +1077,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             public IComparer<Endpoint> Comparer => EndpointMetadataComparer<TestMetadata1>.Default;
 
-            public bool AppliesToNode(IReadOnlyList<Endpoint> endpoints)
+            public bool AppliesToEndpoints(IReadOnlyList<Endpoint> endpoints)
             {
                 return endpoints.Any(e => e.Metadata.GetMetadata<TestMetadata1>() != null);
             }

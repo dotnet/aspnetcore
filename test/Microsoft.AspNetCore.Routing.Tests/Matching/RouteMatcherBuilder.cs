@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
         public override Matcher Build()
         {
-            var selector = new DefaultEndpointSelector(Array.Empty<MatcherPolicy>());
+            var selector = new DefaultEndpointSelector();
 
             var groups = _endpoints
                 .GroupBy(e => (e.Order, e.RoutePattern.InboundPrecedence, e.RoutePattern.RawText))
