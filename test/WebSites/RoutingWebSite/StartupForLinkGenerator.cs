@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -13,8 +14,17 @@ namespace RoutingWebSite
     {
         public void ConfigureServices(IServiceCollection services)
         {
+            var pageRouteTransformerConvention = new PageRouteTransformerConvention(new SlugifyParameterTransformer());
+
             services
                 .AddMvc()
+                .AddRazorPagesOptions(options =>
+                {
+                    options.Conventions.AddFolderRouteModelConvention("/PageRouteTransformer", model =>
+                    {
+                        pageRouteTransformerConvention.Apply(model);
+                    });
+                })
                 .SetCompatibilityVersion(CompatibilityVersion.Latest);
             services
                 .AddRouting(options =>

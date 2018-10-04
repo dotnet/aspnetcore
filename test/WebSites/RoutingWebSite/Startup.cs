@@ -4,6 +4,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,6 +16,8 @@ namespace RoutingWebSite
         // Set up application services
         public void ConfigureServices(IServiceCollection services)
         {
+            var pageRouteTransformerConvention = new PageRouteTransformerConvention(new SlugifyParameterTransformer());
+
             services
                 .AddMvc(options =>
                 {
@@ -22,6 +25,13 @@ namespace RoutingWebSite
                     options.Conventions.Add(new ControllerRouteTokenTransformerConvention(
                         typeof(ParameterTransformerController),
                         new SlugifyParameterTransformer()));
+                })
+                .AddRazorPagesOptions(options =>
+                {
+                    options.Conventions.AddFolderRouteModelConvention("/PageRouteTransformer", model =>
+                    {
+                        pageRouteTransformerConvention.Apply(model);
+                    });
                 })
                 .SetCompatibilityVersion(CompatibilityVersion.Latest);
             services
