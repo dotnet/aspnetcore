@@ -6,15 +6,16 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Razor;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
+using Microsoft.AspNetCore.Mvc.RazorPages.Internal;
 using Microsoft.Extensions.Options;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
+namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 {
     public class DefaultPageApplicationModelProviderTest
     {
@@ -887,7 +888,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             // Arrange
             var provider = new DefaultPageApplicationModelProvider(
                 TestModelMetadataProvider.CreateDefaultProvider(),
-                Options.Create(new MvcOptions { AllowValidatingTopLevelNodes = false }));
+                Options.Create(new MvcOptions { AllowValidatingTopLevelNodes = false }),
+                Options.Create(new RazorPagesOptions()));
             var typeInfo = typeof(PageWithHandlerParameters).GetTypeInfo();
             var expected = typeInfo.GetMethod(nameof(PageWithHandlerParameters.OnPost));
             var pageModel = new PageApplicationModel(new PageActionDescriptor(), typeInfo, new object[0]);
@@ -921,11 +923,11 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             public void OnPost(string name, [ModelBinder(Name = "personId")] int id) { }
         }
 
-        // We're using PropertyHelper from Common to find the properties here, which implements 
+        // We're using PropertyHelper from Common to find the properties here, which implements
         // out standard set of semantics for properties that the framework interacts with.
-        // 
-        // One of the desirable consequences of that is we only find 'visible' properties. We're not 
-        // retesting all of the details of PropertyHelper here, just the visibility part as a quick check 
+        //
+        // One of the desirable consequences of that is we only find 'visible' properties. We're not
+        // retesting all of the details of PropertyHelper here, just the visibility part as a quick check
         // that we're using PropertyHelper as expected.
         [Fact]
         public void PopulateHandlerProperties_UsesPropertyHelpers_ToFindProperties()
@@ -1072,6 +1074,41 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         }
 
         [Fact]
+        public void PopulateFilters_With21CompatBehavior_DoesNotAddDisallowOptionsRequestsPageFilter()
+        {
+            // Arrange
+            var provider = new DefaultPageApplicationModelProvider(
+                TestModelMetadataProvider.CreateDefaultProvider(),
+                Options.Create(new MvcOptions()),
+                Options.Create(new RazorPagesOptions()));
+            var typeInfo = typeof(object).GetTypeInfo();
+            var pageModel = new PageApplicationModel(new PageActionDescriptor(), typeInfo, typeInfo.GetCustomAttributes(inherit: true));
+
+            // Act
+            provider.PopulateFilters(pageModel);
+
+            // Assert
+            Assert.Empty(pageModel.Filters);
+        }
+
+        [Fact]
+        public void PopulateFilters_AddsDisallowOptionsRequestsPageFilter()
+        {
+            // Arrange
+            var provider = CreateProvider();
+            var typeInfo = typeof(object).GetTypeInfo();
+            var pageModel = new PageApplicationModel(new PageActionDescriptor(), typeInfo, typeInfo.GetCustomAttributes(inherit: true));
+
+            // Act
+            provider.PopulateFilters(pageModel);
+
+            // Assert
+            Assert.Collection(
+                pageModel.Filters,
+                filter => Assert.IsType<HandleOptionsRequestsPageFilter>(filter));
+        }
+
+        [Fact]
         public void PopulateFilters_AddsIFilterMetadataAttributesToModel()
         {
             // Arrange
@@ -1085,7 +1122,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             // Assert
             Assert.Collection(
                 pageModel.Filters,
-                filter => Assert.IsType<TypeFilterAttribute>(filter));
+                filter => Assert.IsType<TypeFilterAttribute>(filter),
+                filter => Assert.IsType<HandleOptionsRequestsPageFilter>(filter));
         }
 
         [PageModel]
@@ -1109,7 +1147,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             // Assert
             Assert.Collection(
                 pageModel.Filters,
-                filter => Assert.IsType<PageHandlerPageFilter>(filter));
+                filter => Assert.IsType<PageHandlerPageFilter>(filter),
+                filter => Assert.IsType<HandleOptionsRequestsPageFilter>(filter));
         }
 
         private class ModelImplementingAsyncPageFilter : IAsyncPageFilter
@@ -1139,7 +1178,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             // Assert
             Assert.Collection(
                 pageModel.Filters,
-                filter => Assert.IsType<PageHandlerPageFilter>(filter));
+                filter => Assert.IsType<PageHandlerPageFilter>(filter),
+                filter => Assert.IsType<HandleOptionsRequestsPageFilter>(filter));
         }
 
         private class ModelImplementingPageFilter : IPageFilter
@@ -1175,7 +1215,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             Assert.Collection(
                 pageModel.Filters,
                 filter => Assert.IsType<ServiceFilterAttribute>(filter),
-                filter => Assert.IsType<PageHandlerPageFilter>(filter));
+                filter => Assert.IsType<PageHandlerPageFilter>(filter),
+                filter => Assert.IsType<HandleOptionsRequestsPageFilter>(filter));
         }
 
         [ServiceFilter(typeof(IServiceProvider))]
@@ -1185,7 +1226,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         {
             return new DefaultPageApplicationModelProvider(
                 TestModelMetadataProvider.CreateDefaultProvider(),
-                Options.Create(new MvcOptions { AllowValidatingTopLevelNodes = true }));
+                Options.Create(new MvcOptions { AllowValidatingTopLevelNodes = true }),
+                Options.Create(new RazorPagesOptions {  AllowDefaultHandlingForOptionsRequests = true }));
         }
     }
 }

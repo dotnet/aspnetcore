@@ -1431,6 +1431,54 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary`1[AspNetCore.InjectedPa
             Assert.Equal("ViewData: Bar", content);
         }
 
+        [Fact]
+        public async Task OptionsRequest_WithoutHandler_Returns200_WithoutExecutingPage()
+        {
+            // Arrange
+            var request = new HttpRequestMessage(HttpMethod.Options, "http://localhost/HelloWorld");
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            var content = await response.Content.ReadAsStringAsync();
+            Assert.Empty(content.Trim());
+        }
+
+        [Fact]
+        public async Task PageWithOptionsHandler_ExecutesGetRequest()
+        {
+            // Arrange
+            var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/HelloWorldWithOptionsHandler");
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            var content = await response.Content.ReadAsStringAsync();
+            Assert.Equal("Hello from OnGet!", content.Trim());
+        }
+
+        [Fact]
+        public async Task PageWithOptionsHandler_ExecutesOptionsRequest()
+        {
+            // Arrange
+            var request = new HttpRequestMessage(HttpMethod.Options, "http://localhost/HelloWorldWithOptionsHandler");
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            var content = await response.Content.ReadAsStringAsync();
+            Assert.Equal("Hello from OnOptions!", content.Trim());
+        }
+
         private async Task AddAntiforgeryHeaders(HttpRequestMessage request)
         {
             var getResponse = await Client.GetAsync(request.RequestUri);
