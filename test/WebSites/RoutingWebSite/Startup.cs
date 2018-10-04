@@ -59,6 +59,12 @@ namespace RoutingWebSite
                     constraints: new { area = "Travel" });
 
                 routes.MapRoute(
+                    "PageRoute",
+                    "{controller}/{action}/{page}",
+                    defaults: null,
+                    constraints: new { controller = "PageRoute" });
+
+                routes.MapRoute(
                     "ActionAsMethod",
                     "{controller}/{action}",
                     defaults: new { controller = "Home", action = "Index" });

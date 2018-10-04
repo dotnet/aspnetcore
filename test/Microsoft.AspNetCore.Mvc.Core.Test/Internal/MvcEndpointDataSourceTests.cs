@@ -252,6 +252,42 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
+        public void Endpoints_SingleAction_ConventionalRoute_ContainsParameterWithNullRequiredRouteValue()
+        {
+            // Arrange
+            var actionDescriptorCollection = GetActionDescriptorCollection(
+                new { controller = "TestController", action = "TestAction", page = (string)null });
+            var dataSource = CreateMvcEndpointDataSource(actionDescriptorCollection);
+            dataSource.ConventionalEndpointInfos.Add(CreateEndpointInfo(
+                string.Empty,
+                "{controller}/{action}/{page}",
+                new RouteValueDictionary(new { action = "TestAction" })));
+
+            // Act
+            var endpoints = dataSource.Endpoints;
+
+            // Assert
+            Assert.Empty(endpoints);
+        }
+
+        [Fact]
+        public void Endpoints_SingleAction_AttributeRoute_ContainsParameterWithNullRequiredRouteValue()
+        {
+            // Arrange
+            var actionDescriptorCollection = GetActionDescriptorCollection(
+                "{controller}/{action}/{page}",
+                new { controller = "TestController", action = "TestAction", page = (string)null });
+            var dataSource = CreateMvcEndpointDataSource(actionDescriptorCollection);
+
+            // Act
+            var endpoints = dataSource.Endpoints;
+
+            // Assert
+            Assert.Collection(endpoints,
+                (e) => Assert.Equal("TestController/TestAction/{page}", Assert.IsType<RouteEndpoint>(e).RoutePattern.RawText));
+        }
+
+        [Fact]
         public void Endpoints_SingleAction_WithActionDefault()
         {
             // Arrange

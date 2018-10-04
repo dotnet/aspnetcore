@@ -3,11 +3,9 @@
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace BasicWebSite.Controllers
+namespace RoutingWebSite
 {
-    // Verifies that we can use the "page" token in routing in a controller only (no Razor Pages) application
-    // without affecting view lookups.
-    public class PageRouteController : Controller
+    public class PageRouteController
     {
         private readonly TestResponseGenerator _generator;
 
@@ -25,19 +23,6 @@ namespace BasicWebSite.Controllers
         public IActionResult AttributeRoute(string page)
         {
             return _generator.Generate("/PageRoute/Attribute/" + page);
-        }
-
-        public IActionResult ConventionalRouteView(string page)
-        {
-            ViewData["page"] = page;
-            return View();
-        }
-
-        [HttpGet("/PageRoute/AttributeView/{page}")]
-        public IActionResult AttributeRouteView(string page)
-        {
-            ViewData["page"] = page;
-            return View();
         }
     }
 }

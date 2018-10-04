@@ -10,11 +10,11 @@ namespace RoutingWebSite
 {
     public class RemoveControllerActionDescriptorProvider : IActionDescriptorProvider
     {
-        private readonly Type _controllerType;
+        private readonly ControllerToRemove[] _controllerTypes;
 
-        public RemoveControllerActionDescriptorProvider(Type controllerType)
+        public RemoveControllerActionDescriptorProvider(params ControllerToRemove[] controllerTypes)
         {
-            _controllerType = controllerType;
+            _controllerTypes = controllerTypes;
         }
 
         public int Order => int.MaxValue;
@@ -29,12 +29,22 @@ namespace RoutingWebSite
             {
                 if (item is ControllerActionDescriptor controllerActionDescriptor)
                 {
-                    if (controllerActionDescriptor.ControllerTypeInfo == _controllerType)
+                    var controllerToRemove = _controllerTypes.SingleOrDefault(c => c.ControllerType == controllerActionDescriptor.ControllerTypeInfo);
+                    if (controllerToRemove != null)
                     {
-                        context.Results.Remove(item);
+                        if (controllerToRemove.Actions == null || controllerToRemove.Actions.Contains(controllerActionDescriptor.ActionName))
+                        {
+                            context.Results.Remove(item);
+                        }
                     }
                 }
             }
         }
+    }
+
+    public class ControllerToRemove
+    {
+        public Type ControllerType { get; set; }
+        public string[] Actions { get; set; }
     }
 }
