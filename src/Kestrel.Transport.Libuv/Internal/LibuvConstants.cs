@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsConnectionReset(int errno)
         {
-            return errno == ECONNRESET || errno == EPIPE || errno == ENOTCONN | errno == EINVAL;
+            return errno == ECONNRESET || errno == EPIPE || errno == ENOTCONN || errno == EINVAL;
         }
 
         private static int? GetECONNRESET()

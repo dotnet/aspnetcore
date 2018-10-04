@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
+using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport
 {
@@ -66,7 +67,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
             _transportFactory = new InMemoryTransportFactory();
             HttpClientSlim = new InMemoryHttpClientSlim(this);
 
-
             var hostBuilder = new WebHostBuilder()
                 .ConfigureServices(services =>
                 {
@@ -79,6 +79,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
                     {
                         context.ServerOptions.ApplicationServices = sp;
                         configureKestrel(context.ServerOptions);
+
+                        // Prevent ListenOptions reuse. This is easily done accidentally when trying to debug a test by running it
+                        // in a loop, but will cause problems because only the app func from the first loop will ever be invoked.
+                        Assert.All(context.ServerOptions.ListenOptions, lo =>
+                            Assert.Equal(context.ExpectedConnectionMiddlewareCount, lo._middleware.Count));
+
                         return new KestrelServer(_transportFactory, context);
                     });
                 });
@@ -96,7 +102,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
 
         public InMemoryConnection CreateConnection()
         {
-            var transportConnection = new InMemoryTransportConnection(_memoryPool);
+            var transportConnection = new InMemoryTransportConnection(_memoryPool, Context.Log);
             _ = HandleConnection(transportConnection);
             return new InMemoryConnection(transportConnection);
         }

@@ -77,6 +77,8 @@ namespace Microsoft.AspNetCore.Testing
 
         public Func<MemoryPool<byte>> MemoryPoolFactory { get; set; } = KestrelMemoryPool.Create;
 
+        public int ExpectedConnectionMiddlewareCount { get; set; }
+
         public string DateHeaderValue => DateHeaderValueManager.GetDateHeaderValues().String;
     }
 }

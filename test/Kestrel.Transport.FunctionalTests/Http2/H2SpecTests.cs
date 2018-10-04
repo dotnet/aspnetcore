@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
             get
             {
                 var dataset = new TheoryData<H2SpecTestCase>();
-                var toSkip = new[] { "http2/5.1/8" };
+                var toSkip = new string[] { /*"http2/5.1/8"*/ };
 
                 foreach (var testcase in H2SpecCommands.EnumerateTestCases())
                 {

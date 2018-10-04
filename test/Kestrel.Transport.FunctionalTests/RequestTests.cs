@@ -679,6 +679,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         readTcs.SetException(ex);
                         throw;
                     }
+                    finally
+                    {
+                        await registrationTcs.Task.DefaultTimeout();
+                    }
 
                     readTcs.SetException(new Exception("This shouldn't be reached."));
                 }
@@ -711,7 +715,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 }
             }
 
-            await Assert.ThrowsAsync<TaskCanceledException>(async () => await readTcs.Task);
+            await Assert.ThrowsAsync<TaskCanceledException>(async () => await readTcs.Task).DefaultTimeout();
 
             // The cancellation token for only the last request should be triggered.
             var abortedRequestId = await registrationTcs.Task.DefaultTimeout();

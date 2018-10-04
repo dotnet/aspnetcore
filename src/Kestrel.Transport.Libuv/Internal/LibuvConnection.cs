@@ -119,7 +119,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
         public override void Abort(ConnectionAbortedException abortReason)
         {
+            Log.ConnectionAborted(ConnectionId, abortReason?.Message);
+
             _abortReason = abortReason;
+            
+            // Cancel WriteOutputAsync loop after setting _abortReason.
             Output.CancelPendingRead();
 
             // This cancels any pending I/O.

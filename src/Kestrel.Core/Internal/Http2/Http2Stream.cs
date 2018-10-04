@@ -53,6 +53,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         public bool RequestBodyStarted { get; private set; }
         public bool EndStreamReceived => (_completionState & StreamCompletionFlags.EndStreamReceived) == StreamCompletionFlags.EndStreamReceived;
         private bool IsAborted => (_completionState & StreamCompletionFlags.Aborted) == StreamCompletionFlags.Aborted;
+        internal bool DoNotDrainRequest => (_completionState & StreamCompletionFlags.DoNotDrainRequest) == StreamCompletionFlags.DoNotDrainRequest;
 
         public override bool IsUpgradableRequest => false;
 
@@ -381,6 +382,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             return _context.FrameWriter.TryUpdateStreamWindow(_outputFlowControl, bytes);
         }
 
+        public void DisallowAdditionalRequestFrames()
+        {
+            ApplyCompletionFlag(StreamCompletionFlags.DoNotDrainRequest);
+        }
+
         public void Abort(IOException abortReason)
         {
             var states = ApplyCompletionFlag(StreamCompletionFlags.Aborted);
@@ -415,6 +421,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         private void ResetAndAbort(ConnectionAbortedException abortReason, Http2ErrorCode error)
         {
+            // Future incoming frames will drain for a default grace period to avoid destabilizing the connection.
             var states = ApplyCompletionFlag(StreamCompletionFlags.Aborted);
 
             if (states.OldState == states.NewState)
@@ -507,6 +514,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             RequestProcessingEnded = 1,
             EndStreamReceived = 2,
             Aborted = 4,
+            DoNotDrainRequest = 8,
         }
     }
 }

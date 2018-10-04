@@ -22,9 +22,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         private static readonly Action<ILogger, string, Exception> _connectionWriteFin =
             LoggerMessage.Define<string>(LogLevel.Debug, new EventId(7, nameof(ConnectionWriteFin)), @"Connection id ""{ConnectionId}"" sending FIN.");
 
-        private static readonly Action<ILogger, string, int, Exception> _connectionWroteFin =
-            LoggerMessage.Define<string, int>(LogLevel.Debug, new EventId(8, nameof(ConnectionWroteFin)), @"Connection id ""{ConnectionId}"" sent FIN with status ""{Status}"".");
-
         // ConnectionWrite: Reserved: 11
 
         // ConnectionWriteCallback: Reserved: 12
@@ -35,8 +32,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         private static readonly Action<ILogger, string, Exception> _connectionReset =
             LoggerMessage.Define<string>(LogLevel.Debug, new EventId(19, nameof(ConnectionReset)), @"Connection id ""{ConnectionId}"" reset.");
 
-        private static readonly Action<ILogger, string, Exception> _connectionAborted =
-            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(20, nameof(ConnectionAborted)), @"Connection id ""{ConnectionId}"" aborted.");
+        private static readonly Action<ILogger, string, string, Exception> _connectionAborted =
+            LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(20, nameof(ConnectionAborted)), @"Connection id ""{ConnectionId}"" closing because: ""{Message}""");
 
         private readonly ILogger _logger;
 
@@ -59,11 +56,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         public void ConnectionWriteFin(string connectionId)
         {
             _connectionWriteFin(_logger, connectionId, null);
-        }
-
-        public void ConnectionWroteFin(string connectionId, int status)
-        {
-            _connectionWroteFin(_logger, connectionId, status, null);
         }
 
         public void ConnectionWrite(string connectionId, int count)
@@ -98,9 +90,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             _connectionResume(_logger, connectionId, null);
         }
 
-        public void ConnectionAborted(string connectionId)
+        public void ConnectionAborted(string connectionId, string message)
         {
-            _connectionAborted(_logger, connectionId, null);
+            _connectionAborted(_logger, connectionId, message, null);
         }
 
         public IDisposable BeginScope<TState>(TState state) => _logger.BeginScope(state);

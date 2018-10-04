@@ -2198,6 +2198,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         internal static string FormatConnectionAbortedByClient()
             => GetString("ConnectionAbortedByClient");
 
+        /// <summary>
+        /// A frame of type {frameType} was received after stream {streamId} was reset or aborted.
+        /// </summary>
+        internal static string Http2ErrorStreamAborted
+        {
+            get => GetString("Http2ErrorStreamAborted");
+        }
+
+        /// <summary>
+        /// A frame of type {frameType} was received after stream {streamId} was reset or aborted.
+        /// </summary>
+        internal static string FormatHttp2ErrorStreamAborted(object frameType, object streamId)
+            => string.Format(CultureInfo.CurrentCulture, GetString("Http2ErrorStreamAborted", "frameType", "streamId"), frameType, streamId);
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

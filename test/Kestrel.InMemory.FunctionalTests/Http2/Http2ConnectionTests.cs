@@ -2195,6 +2195,101 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedErrorMessage: CoreStrings.FormatHttp2ErrorHeadersInterleaved(Http2FrameType.RST_STREAM, streamId: 1, headersStreamId: 1));
         }
 
+        // Compare to h2spec http2/5.1/8
+        [Fact]
+        public async Task RST_STREAM_IncompleteRequest_AdditionalDataFrames_ConnectionAborted()
+        {
+            var tcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+            };
+            await InitializeConnectionAsync(context => tcs.Task);
+
+            await StartStreamAsync(1, headers, endStream: false);
+            await SendDataAsync(1, new byte[1], endStream: false);
+            await SendDataAsync(1, new byte[2], endStream: false);
+            await SendRstStreamAsync(1);
+            await SendDataAsync(1, new byte[10], endStream: false);
+            tcs.TrySetResult(0);
+
+            await WaitForConnectionErrorAsync<Http2ConnectionErrorException>(ignoreNonGoAwayFrames: false, expectedLastStreamId: 1,
+                Http2ErrorCode.STREAM_CLOSED, CoreStrings.FormatHttp2ErrorStreamAborted(Http2FrameType.DATA, 1));
+        }
+
+        [Fact]
+        public async Task RST_STREAM_IncompleteRequest_AdditionalTrailerFrames_ConnectionAborted()
+        {
+            var tcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+            };
+            await InitializeConnectionAsync(context => tcs.Task);
+
+            await StartStreamAsync(1, headers, endStream: false);
+            await SendDataAsync(1, new byte[1], endStream: false);
+            await SendDataAsync(1, new byte[2], endStream: false);
+            await SendRstStreamAsync(1);
+            await SendHeadersAsync(1, Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM, _requestTrailers);
+            tcs.TrySetResult(0);
+
+            await WaitForConnectionErrorAsync<Http2ConnectionErrorException>(ignoreNonGoAwayFrames: false, expectedLastStreamId: 1,
+                Http2ErrorCode.STREAM_CLOSED, CoreStrings.FormatHttp2ErrorStreamAborted(Http2FrameType.HEADERS, 1));
+        }
+
+        [Fact]
+        public async Task RST_STREAM_IncompleteRequest_AdditionalResetFrame_ConnectionAborted()
+        {
+            var tcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+            };
+            await InitializeConnectionAsync(context => tcs.Task);
+
+            await StartStreamAsync(1, headers, endStream: false);
+            await SendDataAsync(1, new byte[1], endStream: false);
+            await SendRstStreamAsync(1);
+            await SendRstStreamAsync(1);
+            tcs.TrySetResult(0);
+
+            await WaitForConnectionErrorAsync<Http2ConnectionErrorException>(ignoreNonGoAwayFrames: false, expectedLastStreamId: 1,
+                Http2ErrorCode.STREAM_CLOSED, CoreStrings.FormatHttp2ErrorStreamAborted(Http2FrameType.RST_STREAM, 1));
+        }
+
+        [Fact]
+        public async Task RST_STREAM_IncompleteRequest_AdditionalWindowUpdateFrame_ConnectionAborted()
+        {
+            var tcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+            };
+            await InitializeConnectionAsync(context => tcs.Task);
+
+            await StartStreamAsync(1, headers, endStream: false);
+            await SendDataAsync(1, new byte[1], endStream: false);
+            await SendRstStreamAsync(1);
+            await SendWindowUpdateAsync(1, 1024);
+            tcs.TrySetResult(0);
+
+            await WaitForConnectionErrorAsync<Http2ConnectionErrorException>(ignoreNonGoAwayFrames: false, expectedLastStreamId: 1,
+                Http2ErrorCode.STREAM_CLOSED, CoreStrings.FormatHttp2ErrorStreamAborted(Http2FrameType.WINDOW_UPDATE, 1));
+        }
+
         [Fact]
         public async Task SETTINGS_KestrelDefaults_Sent()
         {
