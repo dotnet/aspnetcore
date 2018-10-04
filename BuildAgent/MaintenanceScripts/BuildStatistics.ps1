@@ -5,6 +5,9 @@ param(
     [Parameter(Mandatory = $true)][string]$ciPassword
 )
 
+Set-StrictMode -Version 2
+$ErrorActionPreference = 'Stop'
+
 & ./run.ps1 install-tools
 
 Push-Location $PSScriptRoot/TeamCityApi.Console

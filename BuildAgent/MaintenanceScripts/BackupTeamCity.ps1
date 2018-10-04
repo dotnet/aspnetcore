@@ -8,6 +8,9 @@ param(
     [Parameter(Mandatory = $true)][string]$azureShare
 )
 
+Set-StrictMode -Version 2
+$ErrorActionPreference = 'Stop'
+
 function Save-TeamCityBackup() {
     param(
         [string] $server,
@@ -42,6 +45,7 @@ function Save-TeamCityBackup() {
         catch {
             if ($retrycount -ge $retries) {
                 Write-Host "Backup download failed the max of $retries times"
+                Write-Error $_.Exception.Message
                 throw
             }
             else {
