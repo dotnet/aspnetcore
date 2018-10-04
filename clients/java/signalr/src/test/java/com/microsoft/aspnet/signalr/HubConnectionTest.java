@@ -1019,6 +1019,7 @@ class HubConnectionTest {
 
         hubConnection.start().get(1000, TimeUnit.MILLISECONDS);
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
+        assertEquals("http://testexample.com/?id=bVOiRPG8-6YiJ6d7ZcTOVQ", transport.getUrl());
         hubConnection.stop();
         assertEquals("Bearer newToken", token.get());
     }

@@ -19,8 +19,7 @@ class WebSocketTransport implements Transport {
     private static final String WS = "ws";
     private static final String WSS = "wss";
 
-    public WebSocketTransport(String url, Map<String, String> headers, HttpClient client, Logger logger) {
-        this.url = formatUrl(url);
+    public WebSocketTransport(Map<String, String> headers, HttpClient client, Logger logger) {
         this.logger = logger;
         this.client = client;
         this.headers = headers;
@@ -41,7 +40,8 @@ class WebSocketTransport implements Transport {
     }
 
     @Override
-    public CompletableFuture<Void> start() {
+    public CompletableFuture<Void> start(String url) {
+        this.url = formatUrl(url);
         logger.log(LogLevel.Debug, "Starting Websocket connection.");
         this.webSocketClient = client.createWebSocket(this.url, this.headers);
         this.webSocketClient.setOnReceive((message) -> onReceive(message));

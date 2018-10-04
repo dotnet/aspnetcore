@@ -246,6 +246,16 @@ class JsonHubProtocolTest {
         assertEquals("Invocation provides 1 argument(s) but target expects 2.", exception.getMessage());
     }
 
+    @Test
+    public void errorWhileParsingIncompleteMessage() throws Exception {
+        String stringifiedMessage = "{\"type\":1,\"target\":\"test\",\"arguments\":";
+        TestBinder binder = new TestBinder(new InvocationMessage(null, "test", new Object[] { 42, 24 }));
+
+        RuntimeException exception = assertThrows(RuntimeException.class,
+                () -> jsonHubProtocol.parseMessages(stringifiedMessage, binder));
+        assertEquals("Message is incomplete.", exception.getMessage());
+    }
+
     private class TestBinder implements InvocationBinder {
         private Class<?>[] paramTypes = null;
         private Class<?> returnType = null;

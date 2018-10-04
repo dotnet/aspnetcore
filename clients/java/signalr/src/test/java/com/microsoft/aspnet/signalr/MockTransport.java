@@ -9,9 +9,11 @@ import java.util.concurrent.CompletableFuture;
 class MockTransport implements Transport {
     private OnReceiveCallBack onReceiveCallBack;
     private ArrayList<String> sentMessages = new ArrayList<>();
+    private String url;
 
     @Override
-    public CompletableFuture start() {
+    public CompletableFuture start(String url) {
+        this.url = url;
         return CompletableFuture.completedFuture(null);
     }
 
@@ -42,5 +44,9 @@ class MockTransport implements Transport {
 
     public String[] getSentMessages() {
         return sentMessages.toArray(new String[sentMessages.size()]);
+    }
+
+    public String getUrl() {
+        return this.url;
     }
 }

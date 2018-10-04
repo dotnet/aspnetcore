@@ -37,6 +37,10 @@ class JsonHubProtocol implements HubProtocol {
 
     @Override
     public HubMessage[] parseMessages(String payload, InvocationBinder binder) throws Exception {
+        if (payload != null && !payload.substring(payload.length() - 1).equals(RECORD_SEPARATOR)) {
+            throw new RuntimeException("Message is incomplete.");
+        }
+
         String[] messages = payload.split(RECORD_SEPARATOR);
         List<HubMessage> hubMessages = new ArrayList<>();
         for (String str : messages) {
@@ -48,7 +52,6 @@ class JsonHubProtocol implements HubProtocol {
             JsonArray argumentsToken = null;
             Object result = null;
             JsonElement resultToken = null;
-
             JsonReader reader = new JsonReader(new StringReader(str));
             reader.beginObject();
 
