@@ -82,12 +82,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             }
             finally
             {
+                Log.ConnectionStop(connectionContext.ConnectionId);
+                KestrelEventSource.Log.ConnectionStop(connectionContext);
+
                 connection.Complete();
 
                 _serviceContext.ConnectionManager.RemoveConnection(id);
-
-                Log.ConnectionStop(connectionContext.ConnectionId);
-                KestrelEventSource.Log.ConnectionStop(connectionContext);
             }
         }
 

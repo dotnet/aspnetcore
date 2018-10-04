@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 {
@@ -48,6 +49,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             : this(app, context, options => options.ListenOptions.Add(listenOptions), configureServices)
         {
         }
+
         public TestServer(RequestDelegate app, TestServiceContext context, Action<KestrelServerOptions> configureKestrel)
             : this(app, context, configureKestrel, _ => { })
         {
@@ -77,6 +79,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         {
                             c.Configure(context.ServerOptions);
                         }
+
+                        // Prevent ListenOptions reuse. This is easily done accidentally when trying to debug a test by running it
+                        // in a loop, but will cause problems because only the app func from the first loop will ever be invoked.
+                        Assert.All(context.ServerOptions.ListenOptions, lo =>
+                            Assert.Equal(context.ExpectedConnectionMiddlewareCount, lo._middleware.Count));
+
                         return new KestrelServer(sp.GetRequiredService<ITransportFactory>(), context);
                     });
                     configureServices(services);

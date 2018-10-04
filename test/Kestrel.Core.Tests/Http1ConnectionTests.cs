@@ -640,17 +640,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             _http1Connection.ResponseHeaders["Content-Length"] = "12";
 
-            // Need to compare WaitHandle ref since CancellationToken is struct
-            var original = _http1Connection.RequestAborted.WaitHandle;
+            var original = _http1Connection.RequestAborted;
 
             foreach (var ch in "hello, worl")
             {
                 await _http1Connection.WriteAsync(new ArraySegment<byte>(new[] { (byte)ch }));
-                Assert.Same(original, _http1Connection.RequestAborted.WaitHandle);
+                Assert.Equal(original, _http1Connection.RequestAborted);
             }
 
             await _http1Connection.WriteAsync(new ArraySegment<byte>(new[] { (byte)'d' }));
-            Assert.NotSame(original, _http1Connection.RequestAborted.WaitHandle);
+            Assert.NotEqual(original, _http1Connection.RequestAborted);
+
+            _http1Connection.Abort(new ConnectionAbortedException());
+
+            Assert.False(original.IsCancellationRequested);
+            Assert.False(_http1Connection.RequestAborted.IsCancellationRequested);
         }
 
         [Fact]
@@ -658,17 +662,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             _http1Connection.ResponseHeaders["Content-Length"] = "12";
 
-            // Need to compare WaitHandle ref since CancellationToken is struct
-            var original = _http1Connection.RequestAborted.WaitHandle;
+            var original = _http1Connection.RequestAborted;
 
             foreach (var ch in "hello, worl")
             {
                 await _http1Connection.WriteAsync(new ArraySegment<byte>(new[] { (byte)ch }), default(CancellationToken));
-                Assert.Same(original, _http1Connection.RequestAborted.WaitHandle);
+                Assert.Equal(original, _http1Connection.RequestAborted);
             }
 
             await _http1Connection.WriteAsync(new ArraySegment<byte>(new[] { (byte)'d' }), default(CancellationToken));
-            Assert.NotSame(original, _http1Connection.RequestAborted.WaitHandle);
+            Assert.NotEqual(original, _http1Connection.RequestAborted);
+
+            _http1Connection.Abort(new ConnectionAbortedException());
+
+            Assert.False(original.IsCancellationRequested);
+            Assert.False(_http1Connection.RequestAborted.IsCancellationRequested);
         }
 
         [Fact]
@@ -676,36 +684,44 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             _http1Connection.ResponseHeaders["Content-Length"] = "12";
 
-            // Need to compare WaitHandle ref since CancellationToken is struct
-            var original = _http1Connection.RequestAborted.WaitHandle;
+            var original = _http1Connection.RequestAborted;
 
             // Only first write can be WriteAsyncAwaited
             var startingTask = _http1Connection.InitializeResponseAwaited(Task.CompletedTask, 1);
             await _http1Connection.WriteAsyncAwaited(startingTask, new ArraySegment<byte>(new[] { (byte)'h' }), default(CancellationToken));
-            Assert.Same(original, _http1Connection.RequestAborted.WaitHandle);
+            Assert.Equal(original, _http1Connection.RequestAborted);
 
             foreach (var ch in "ello, worl")
             {
                 await _http1Connection.WriteAsync(new ArraySegment<byte>(new[] { (byte)ch }), default(CancellationToken));
-                Assert.Same(original, _http1Connection.RequestAborted.WaitHandle);
+                Assert.Equal(original, _http1Connection.RequestAborted);
             }
 
             await _http1Connection.WriteAsync(new ArraySegment<byte>(new[] { (byte)'d' }), default(CancellationToken));
-            Assert.NotSame(original, _http1Connection.RequestAborted.WaitHandle);
+            Assert.NotEqual(original, _http1Connection.RequestAborted);
+
+            _http1Connection.Abort(new ConnectionAbortedException());
+
+            Assert.False(original.IsCancellationRequested);
+            Assert.False(_http1Connection.RequestAborted.IsCancellationRequested);
         }
 
         [Fact]
         public async Task RequestAbortedTokenIsResetBeforeLastWriteWithChunkedEncoding()
         {
-            // Need to compare WaitHandle ref since CancellationToken is struct
-            var original = _http1Connection.RequestAborted.WaitHandle;
+            var original = _http1Connection.RequestAborted;
 
             _http1Connection.HttpVersion = "HTTP/1.1";
             await _http1Connection.WriteAsync(new ArraySegment<byte>(Encoding.ASCII.GetBytes("hello, world")), default(CancellationToken));
-            Assert.Same(original, _http1Connection.RequestAborted.WaitHandle);
+            Assert.Equal(original, _http1Connection.RequestAborted);
 
             await _http1Connection.ProduceEndAsync();
-            Assert.NotSame(original, _http1Connection.RequestAborted.WaitHandle);
+            Assert.NotEqual(original, _http1Connection.RequestAborted);
+
+            _http1Connection.Abort(new ConnectionAbortedException());
+
+            Assert.False(original.IsCancellationRequested);
+            Assert.False(_http1Connection.RequestAborted.IsCancellationRequested);
         }
 
         [Fact]

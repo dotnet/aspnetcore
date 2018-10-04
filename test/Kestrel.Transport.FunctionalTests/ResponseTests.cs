@@ -211,6 +211,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     writeTcs.SetException(ex);
                     throw;
                 }
+                finally
+                {
+                    await requestAbortedWh.Task.DefaultTimeout();
+                }
 
                 writeTcs.SetException(new Exception("This shouldn't be reached."));
             }, new TestServiceContext(LoggerFactory), listenOptions))
@@ -243,7 +247,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             const int connectionPausedEventId = 4;
             const int maxRequestBufferSize = 4096;
 
-            var requestAborted = false;
+            var requestAborted = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             var readCallbackUnwired = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             var clientClosedConnection = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             var writeTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -291,10 +295,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             using (var server = new TestServer(async context =>
             {
-                context.RequestAborted.Register(() =>
-                {
-                    requestAborted = true;
-                });
+                context.RequestAborted.Register(() => requestAborted.SetResult(null));
 
                 await clientClosedConnection.Task;
 
@@ -310,6 +311,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     writeTcs.SetException(ex);
                     throw;
+                }
+                finally
+                {
+                    await requestAborted.Task.DefaultTimeout();
                 }
 
                 writeTcs.SetException(new Exception("This shouldn't be reached."));
@@ -336,7 +341,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
 
             mockKestrelTrace.Verify(t => t.ConnectionStop(It.IsAny<string>()), Times.Once());
-            Assert.True(requestAborted);
+            Assert.True(requestAborted.Task.IsCompleted);
         }
 
         [Theory]
@@ -345,22 +350,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         {
             const int connectionResetEventId = 19;
             const int connectionFinEventId = 6;
-            //const int connectionStopEventId = 2;
+            const int connectionStopEventId = 2;
 
             const int responseBodySegmentSize = 65536;
             const int responseBodySegmentCount = 100;
 
+            var requestAborted = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             var appCompletedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var requestAborted = false;
 
             var scratchBuffer = new byte[responseBodySegmentSize];
 
             using (var server = new TestServer(async context =>
             {
-                context.RequestAborted.Register(() =>
-                {
-                    requestAborted = true;
-                });
+                context.RequestAborted.Register(() => requestAborted.SetResult(null));
 
                 for (var i = 0; i < responseBodySegmentCount; i++)
                 {
@@ -368,6 +370,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     await Task.Delay(10);
                 }
 
+                await requestAborted.Task.DefaultTimeout();
                 appCompletedTcs.SetResult(null);
             }, new TestServiceContext(LoggerFactory), listenOptions))
             {
@@ -386,9 +389,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     connection.Reset();
                 }
 
-                await appCompletedTcs.Task.DefaultTimeout();
+                await requestAborted.Task.DefaultTimeout();
 
-                // After the app is done with the write loop, the connection reset should be logged.
+                // After the RequestAborted token is tripped, the connection reset should be logged.
                 // On Linux and macOS, the connection close is still sometimes observed as a FIN despite the LingerState.
                 var presShutdownTransportLogs = TestSink.Writes.Where(
                     w => w.LoggerName == "Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" ||
@@ -398,14 +401,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                          (!TestPlatformHelper.IsWindows && w.EventId == connectionFinEventId));
 
                 Assert.NotEmpty(connectionResetLogs);
+
+                // On macOS, the default 5 shutdown timeout is insufficient for the write loop to complete, so give it extra time.
+                await appCompletedTcs.Task.DefaultTimeout();
             }
 
-            // TODO: Figure out what the following assertion is flaky. The server shouldn't shutdown before all
-            // the connections are closed, yet sometimes the connection stop log isn't observed here.
-            //var coreLogs = TestSink.Writes.Where(w => w.LoggerName == "Microsoft.AspNetCore.Server.Kestrel");
-            //Assert.Single(coreLogs.Where(w => w.EventId == connectionStopEventId));
-
-            Assert.True(requestAborted, "RequestAborted token didn't fire.");
+            var coreLogs = TestSink.Writes.Where(w => w.LoggerName == "Microsoft.AspNetCore.Server.Kestrel");
+            Assert.Single(coreLogs.Where(w => w.EventId == connectionStopEventId));
 
             var transportLogs = TestSink.Writes.Where(w => w.LoggerName == "Microsoft.AspNetCore.Server.Kestrel" ||
                                                            w.LoggerName == "Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" ||
@@ -512,6 +514,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         appFuncCompleted.SetResult(null);
                         throw;
                     }
+                    finally
+                    {
+                        await requestAborted.Task.DefaultTimeout();
+                    }
                 }
 
                 using (var server = new TestServer(App, testContext, listenOptions))
@@ -607,6 +613,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     appFuncCompleted.SetResult(null);
                     throw;
                 }
+                finally
+                {
+                    await aborted.Task.DefaultTimeout();
+                }
             }, testContext, listenOptions))
             {
                 using (var connection = server.CreateConnection())
@@ -681,6 +691,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     copyToAsyncCts.SetException(ex);
                     throw;
+                }
+                finally
+                {
+                    await requestAborted.Task.DefaultTimeout();
                 }
 
                 copyToAsyncCts.SetException(new Exception("This shouldn't be reached."));
@@ -777,12 +791,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     var targetBytesPerSecond = chunkSize / 4;
                     await AssertStreamCompleted(connection.Stream, minTotalOutputSize, targetBytesPerSecond);
                     await appFuncCompleted.Task.DefaultTimeout();
-
-                    mockKestrelTrace.Verify(t => t.ResponseMinimumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>()), Times.Never());
-                    mockKestrelTrace.Verify(t => t.ConnectionStop(It.IsAny<string>()), Times.Once());
-                    Assert.False(requestAborted);
                 }
             }
+
+            mockKestrelTrace.Verify(t => t.ResponseMinimumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>()), Times.Never());
+            mockKestrelTrace.Verify(t => t.ConnectionStop(It.IsAny<string>()), Times.Once());
+            Assert.False(requestAborted);
         }
 
         [Fact]
@@ -852,12 +866,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     // Make sure consuming a single set of response headers exceeds the 2 second timeout.
                     var targetBytesPerSecond = responseSize / 4;
                     await AssertStreamCompleted(connection.Stream, minTotalOutputSize, targetBytesPerSecond);
-
-                    mockKestrelTrace.Verify(t => t.ResponseMinimumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>()), Times.Never());
-                    mockKestrelTrace.Verify(t => t.ConnectionStop(It.IsAny<string>()), Times.Once());
-                    Assert.False(requestAborted);
                 }
             }
+
+            mockKestrelTrace.Verify(t => t.ResponseMinimumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>()), Times.Never());
+            mockKestrelTrace.Verify(t => t.ConnectionStop(It.IsAny<string>()), Times.Once());
+            Assert.False(requestAborted);
         }
 
         private async Task AssertStreamAborted(Stream stream, int totalBytes)
