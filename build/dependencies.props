@@ -39,6 +39,7 @@
     <MicrosoftNETCoreApp30PackageVersion Condition="'$(MicrosoftNETCoreAppPackageVersion)' != ''">$(MicrosoftNETCoreAppPackageVersion)</MicrosoftNETCoreApp30PackageVersion>
 
     <!-- Determined by build tools -->
+    <MicrosoftAspNetCoreBuildToolsApiCheckPackageVersion>$(KoreBuildVersion)</MicrosoftAspNetCoreBuildToolsApiCheckPackageVersion>
     <InternalAspNetCoreSdkPackageVersion>$(KoreBuildVersion)</InternalAspNetCoreSdkPackageVersion>
     <InternalAspNetCoreSiteExtensionSdkPackageVersion>$(KoreBuildVersion)</InternalAspNetCoreSiteExtensionSdkPackageVersion>
   </PropertyGroup>

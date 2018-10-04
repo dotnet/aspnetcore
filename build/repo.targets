@@ -80,6 +80,8 @@
       <PackageArtifact Remove="@(PackageArtifact)" />
     </ItemGroup>
 
+    <Move SourceFiles="%(SubmoduleGlobalJsonFiles.BackupPath)" DestinationFiles="%(SubmoduleGlobalJsonFiles.Identity)" Condition="Exists(%(SubmoduleGlobalJsonFiles.BackupPath))" />
+
     <!-- Join required because shipping category is stored in universe (PackageArtifact), but information about package ID and version comes from repos (ArtifactInfo). -->
     <RepoTasks.JoinItems
       Left="@(_Temp)"
@@ -209,7 +211,12 @@
     <ItemGroup>
       <Repository Update="%(Identity)" RootPath="$(SubmoduleRoot)%(Identity)\" />
       <ShippedRepository Update="%(Identity)" RootPath="$(SubmoduleRoot)%(Identity)\" Condition="'%(Identity)' != ''" />
+
+      <SubmoduleGlobalJsonFiles Include="%(Repository.RootPath)global.json" BackupPath="$(IntermediateDir)%(Repository.Identity)-global.json" Condition="'%(Repository.Identity)' != ''"/>
+      <SubmoduleGlobalJsonFiles Include="%(ShippedRepository.RootPath)global.json" BackupPath="$(IntermediateDir)%(ShippedRepository.Identity)-global.json" Condition="'%(ShippedRepository.Identity)' != ''"/>
     </ItemGroup>
+
+    <Move SourceFiles="%(SubmoduleGlobalJsonFiles.Identity)" DestinationFiles="%(SubmoduleGlobalJsonFiles.BackupPath)" Condition="Exists(%(SubmoduleGlobalJsonFiles.Identity))" />
   </Target>
 
   <Target Name="BuildRepositories"

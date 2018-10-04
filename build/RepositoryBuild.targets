@@ -85,6 +85,8 @@
       <SourceLockFile>$(RepositoryRoot)korebuild-lock.txt</SourceLockFile>
       <RepoLockFile>$(BuildRepositoryRoot)korebuild-lock.txt</RepoLockFile>
       <BackupRepoLockFile>$(IntermediateDir)$(RepositoryToBuild)-korebuild-lock.txt</BackupRepoLockFile>
+      <RepoGlobalJsonFile>$(BuildRepositoryRoot)global.json</RepoGlobalJsonFile>
+      <BackupRepoGlobalJsonFile>$(IntermediateDir)$(RepositoryToBuild)-global.json</BackupRepoGlobalJsonFile>
     </PropertyGroup>
   </Target>
 
@@ -92,6 +94,7 @@
     <!-- Copy Korebuild lock file to individual repos to align version if the repo doesn't already have one -->
     <Message Text="Copying KoreBuild lockfile from Universe to repository $(BuildRepositoryRoot)"/>
     <Move SourceFiles="$(RepoLockFile)" DestinationFiles="$(BackupRepoLockFile)" Condition="Exists($(RepoLockFile))" />
+    <Move SourceFiles="$(RepoGlobalJsonFile)" DestinationFiles="$(BackupRepoGlobalJsonFile)" Condition="Exists($(RepoGlobalJsonFile))" />
     <Copy SourceFiles="$(SourceLockFile)" DestinationFiles="$(RepoLockFile)" />
   </Target>
 
@@ -99,6 +102,7 @@
     <!-- Restore original Korebuild lock file -->
     <Delete Files="$(RepoLockFile)" ContinueOnError="true" />
     <Move SourceFiles="$(BackupRepoLockFile)" DestinationFiles="$(RepoLockFile)" Condition="Exists($(BackupRepoLockFile))"  />
+    <Move SourceFiles="$(BackupRepoGlobalJsonFile)" DestinationFiles="$(RepoGlobalJsonFile)" Condition="Exists($(BackupRepoGlobalJsonFile))"  />
   </Target>
 
   <Target Name="_BuildRepository" DependsOnTargets="GetRepoBuildProps;_UpdateRepoLockFile">
