@@ -268,24 +268,33 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                             allParameterPolicies = MvcEndpointInfo.BuildParameterPolicies(routePattern.Parameters, _parameterPolicyFactory);
                         }
 
+                        // Replace parameter with literal value
                         var parameterRouteValue = action.RouteValues[parameterPart.Name];
 
-                        // Replace parameter with literal value
-                        if (allParameterPolicies.TryGetValue(parameterPart.Name, out var parameterPolicies))
+                        // Route value could be null if it is a "known" route value.
+                        // Do not use the null value to de-normalize the route pattern,
+                        // instead leave the parameter unchanged.
+                        // e.g.
+                        //     RouteValues will contain a null "page" value if there are Razor pages
+                        //     Skip replacing the {page} parameter
+                        if (parameterRouteValue != null)
                         {
-                            // Check if the parameter has a transformer policy
-                            // Use the first transformer policy
-                            for (var k = 0; k < parameterPolicies.Count; k++)
+                            if (allParameterPolicies.TryGetValue(parameterPart.Name, out var parameterPolicies))
                             {
-                                if (parameterPolicies[k] is IOutboundParameterTransformer parameterTransformer)
+                                // Check if the parameter has a transformer policy
+                                // Use the first transformer policy
+                                for (var k = 0; k < parameterPolicies.Count; k++)
                                 {
-                                    parameterRouteValue = parameterTransformer.TransformOutbound(parameterRouteValue);
-                                    break;
+                                    if (parameterPolicies[k] is IOutboundParameterTransformer parameterTransformer)
+                                    {
+                                        parameterRouteValue = parameterTransformer.TransformOutbound(parameterRouteValue);
+                                        break;
+                                    }
                                 }
                             }
-                        }
 
-                        segmentParts[j] = RoutePatternFactory.LiteralPart(parameterRouteValue);
+                            segmentParts[j] = RoutePatternFactory.LiteralPart(parameterRouteValue);
+                        }
                     }
                 }
 

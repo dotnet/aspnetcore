@@ -28,7 +28,17 @@ namespace RoutingWebSite
 
             // EndpointRoutingController is not compatible with old routing
             // Remove its action to avoid errors
-            var actionDescriptorProvider = new RemoveControllerActionDescriptorProvider(typeof(EndpointRoutingController));
+            var actionDescriptorProvider = new RemoveControllerActionDescriptorProvider(
+                new ControllerToRemove
+                {
+                    ControllerType = typeof(EndpointRoutingController),
+                    Actions = null, // remove all
+                },
+                new ControllerToRemove
+                {
+                    ControllerType = typeof(PageRouteController),
+                    Actions = new [] { nameof(PageRouteController.AttributeRoute) }
+                });
             services.TryAddEnumerable(ServiceDescriptor.Singleton<IActionDescriptorProvider>(actionDescriptorProvider));
         }
 

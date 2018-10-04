@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace BasicWebSite
@@ -42,6 +43,8 @@ namespace BasicWebSite
             services.AddSingleton<ContactsRepository>();
             services.AddScoped<RequestIdService>();
             services.AddTransient<ServiceActionFilter>();
+            services.AddScoped<TestResponseGenerator>();
+            services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
         }
 
         public void Configure(IApplicationBuilder app)

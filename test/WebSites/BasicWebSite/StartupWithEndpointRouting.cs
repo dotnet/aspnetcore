@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace BasicWebSite
@@ -22,6 +23,8 @@ namespace BasicWebSite
 
             services.AddHttpContextAccessor();
             services.AddScoped<RequestIdService>();
+            services.AddScoped<TestResponseGenerator>();
+            services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
         }
 
         public void Configure(IApplicationBuilder app)
@@ -35,6 +38,8 @@ namespace BasicWebSite
                     "ActionAsMethod",
                     "{controller}/{action}",
                     defaults: new { controller = "Home", action = "Index" });
+
+                routes.MapRoute("PageRoute", "{controller}/{action}/{page}");
             });
         }
     }

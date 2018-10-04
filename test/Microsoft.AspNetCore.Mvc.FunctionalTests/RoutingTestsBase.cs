@@ -28,6 +28,25 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public HttpClient Client { get; }
 
         [Fact]
+        public async Task ConventionalRoutedAction_RouteContainsPage_RouteNotMatched()
+        {
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/PageRoute/ConventionalRoute/pagevalue");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            var body = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<RoutingResult>(body);
+
+            Assert.Equal("PageRoute", result.Controller);
+            Assert.Equal("ConventionalRoute", result.Action);
+
+            // pagevalue is not used in "page" route value because it is a required value
+            Assert.False(result.RouteValues.ContainsKey("page"));
+        }
+
+        [Fact]
         public abstract Task HasEndpointMatch();
 
         [Fact]
@@ -1299,62 +1318,6 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         protected static LinkBuilder LinkFrom(string url)
         {
             return new LinkBuilder(url);
-        }
-
-        // See TestResponseGenerator in RoutingWebSite for the code that generates this data.
-        protected class RoutingResult
-        {
-            public string[] ExpectedUrls { get; set; }
-
-            public string ActualUrl { get; set; }
-
-            public Dictionary<string, object> RouteValues { get; set; }
-
-            public string RouteName { get; set; }
-
-            public string Action { get; set; }
-
-            public string Controller { get; set; }
-
-            public string Link { get; set; }
-        }
-
-        protected class LinkBuilder
-        {
-            public LinkBuilder(string url)
-            {
-                Url = url;
-
-                Values = new Dictionary<string, object>
-                {
-                    { "link", string.Empty }
-                };
-            }
-
-            public string Url { get; set; }
-
-            public Dictionary<string, object> Values { get; set; }
-
-            public LinkBuilder To(object values)
-            {
-                var dictionary = new RouteValueDictionary(values);
-                foreach (var kvp in dictionary)
-                {
-                    Values.Add("link_" + kvp.Key, kvp.Value);
-                }
-
-                return this;
-            }
-
-            public override string ToString()
-            {
-                return Url + "?" + string.Join("&", Values.Select(kvp => kvp.Key + "=" + kvp.Value));
-            }
-
-            public static implicit operator string(LinkBuilder builder)
-            {
-                return builder.ToString();
-            }
         }
     }
 }
