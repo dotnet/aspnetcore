@@ -1,9 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using System;
+using System.Collections.Generic;
 
-namespace Microsoft.AspNetCore.Mvc.Internal
+namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
 {
     /// <summary>
     /// A default <see cref="IModelValidatorProvider"/>.
@@ -12,7 +13,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
     /// The <see cref="DefaultModelValidatorProvider"/> provides validators from <see cref="IModelValidator"/>
     /// instances in <see cref="ModelBinding.ModelMetadata.ValidatorMetadata"/>.
     /// </remarks>
-    public class DefaultModelValidatorProvider : IModelValidatorProvider
+    internal sealed class DefaultModelValidatorProvider : IMetadataBasedModelValidatorProvider
     {
         /// <inheritdoc />
         public void CreateValidators(ModelValidatorProviderContext context)
@@ -28,13 +29,25 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     continue;
                 }
 
-                var validator = validatorItem.ValidatorMetadata as IModelValidator;
-                if (validator != null)
+                if (validatorItem.ValidatorMetadata is IModelValidator validator)
                 {
                     validatorItem.Validator = validator;
                     validatorItem.IsReusable = true;
                 }
             }
+        }
+
+        public bool HasValidators(Type modelType, IList<object> validatorMetadata)
+        {
+            for (var i = 0; i < validatorMetadata.Count; i++)
+            {
+                if (validatorMetadata[i] is IModelValidator)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }

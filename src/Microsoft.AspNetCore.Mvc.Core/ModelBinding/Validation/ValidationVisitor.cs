@@ -265,6 +265,24 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
                 CurrentPath.Pop(model);
                 return true;
             }
+            // If the metadata indicates that no validators exist AND the aggregate state for the key says that the model graph
+            // is not invalid (i.e. is one of Unvalidated, Valid, or Skipped) we can safely mark the graph as valid.
+            else if (metadata.HasValidators == false &&
+                ModelState.GetFieldValidationState(key) != ModelValidationState.Invalid)
+            {
+                // No validators will be created for this graph of objects. Mark it as valid if it wasn't previously validated.
+                var entries = ModelState.FindKeysWithPrefix(key);
+                foreach (var item in entries)
+                {
+                    if (item.Value.ValidationState == ModelValidationState.Unvalidated)
+                    {
+                        item.Value.ValidationState = ModelValidationState.Valid;
+                    }
+                }
+
+                CurrentPath.Pop(model);
+                return true;
+            }
 
             using (StateManager.Recurse(this, key ?? string.Empty, metadata, model, strategy))
             {

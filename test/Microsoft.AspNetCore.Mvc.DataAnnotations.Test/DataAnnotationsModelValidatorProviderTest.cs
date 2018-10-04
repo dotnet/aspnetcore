@@ -1,16 +1,18 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using Microsoft.AspNetCore.Mvc.DataAnnotations.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
+namespace Microsoft.AspNetCore.Mvc.DataAnnotations
 {
     public class DataAnnotationsModelValidatorProviderTest
     {
@@ -108,6 +110,56 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
 
             // Assert
             Assert.Single(providerContext.Results);
+        }
+
+        [Fact]
+        public void HasValidators_ReturnsTrue_IfModelIsIValidatableObject()
+        {
+            // Arrange
+            var provider = GetProvider();
+            var mockValidatable = Mock.Of<IValidatableObject>();
+
+            // Act
+            var result = provider.HasValidators(mockValidatable.GetType(), Array.Empty<object>());
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void HasValidators_ReturnsTrue_IfMetadataContainsValidationAttribute()
+        {
+            // Arrange
+            var provider = GetProvider();
+            var attributes = new object[] { new BindNeverAttribute(), new DummyValidationAttribute() };
+
+            // Act
+            var result = provider.HasValidators(typeof(object), attributes);
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void HasValidators_ReturnsFalse_IfNoDataAnnotationsValidationIsAvailable()
+        {
+            // Arrange
+            var provider = GetProvider();
+            var attributes = new object[] { new BindNeverAttribute(), };
+
+            // Act
+            var result = provider.HasValidators(typeof(object), attributes);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        private static DataAnnotationsModelValidatorProvider GetProvider()
+        {
+            return new DataAnnotationsModelValidatorProvider(
+                new ValidationAttributeAdapterProvider(),
+                Options.Create(new MvcDataAnnotationsLocalizationOptions()),
+                stringLocalizerFactory: null);
         }
 
         private IList<ValidatorItem> GetValidatorItems(ModelMetadata metadata)

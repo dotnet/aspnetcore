@@ -248,6 +248,7 @@ namespace Microsoft.AspNetCore.Mvc
                         new Type[]
                         {
                             typeof(MvcOptionsConfigureCompatibilityOptions),
+                            typeof(MvcCoreMvcOptionsSetup),
                         }
                     },
                     {

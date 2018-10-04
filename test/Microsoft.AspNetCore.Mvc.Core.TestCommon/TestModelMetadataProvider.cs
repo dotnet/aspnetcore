@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.DataAnnotations.Internal;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 using Xunit;
@@ -37,6 +38,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             MvcCoreMvcOptionsSetup.ConfigureAdditionalModelMetadataDetailsProviders(detailsProviders);
 
+            var validationProviders = TestModelValidatorProvider.CreateDefaultProvider();
+            detailsProviders.Add(new HasValidatorsValidationMetadataProvider(validationProviders.ValidatorProviders));
+
             var compositeDetailsProvider = new DefaultCompositeMetadataDetailsProvider(detailsProviders);
             return new DefaultModelMetadataProvider(compositeDetailsProvider, Options.Create(new MvcOptions()));
         }
@@ -56,6 +60,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             MvcCoreMvcOptionsSetup.ConfigureAdditionalModelMetadataDetailsProviders(detailsProviders);
 
             detailsProviders.AddRange(providers);
+
+            var validationProviders = TestModelValidatorProvider.CreateDefaultProvider();
+            detailsProviders.Add(new HasValidatorsValidationMetadataProvider(validationProviders.ValidatorProviders));
 
             var compositeDetailsProvider = new DefaultCompositeMetadataDetailsProvider(detailsProviders);
             return new DefaultModelMetadataProvider(compositeDetailsProvider, Options.Create(new MvcOptions()));

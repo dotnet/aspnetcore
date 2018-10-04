@@ -326,6 +326,15 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public abstract bool ValidateChildren { get; }
 
         /// <summary>
+        /// Gets a value that indicates if the model, or one of it's properties, or elements has associatated validators.
+        /// </summary>
+        /// <remarks>
+        /// When <see langword="false"/>, validation can be assume that the model is valid (<see cref="ModelValidationState.Valid"/>) without
+        /// inspecting the object graph.
+        /// </remarks>
+        public virtual bool? HasValidators { get; }
+
+        /// <summary>
         /// Gets a collection of metadata items for validators.
         /// </summary>
         public abstract IReadOnlyList<object> ValidatorMetadata { get; }

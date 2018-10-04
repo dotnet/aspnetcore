@@ -262,5 +262,95 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => Client.SendAsync(requestMessage));
             Assert.Equal(expected, ex.Message);
         }
+
+        [Fact]
+        public async Task ErrorsDeserializingMalformedJson_AreReportedForModelsWithoutAnyValidationAttributes()
+        {
+            // This test verifies that for a model with ModelMetadata.HasValidators = false, we continue to get an invalid ModelState + validation
+            // errors from json serialization errors
+            // Arrange
+            var input = "{Id = \"This string is incomplete";
+            var requestMessage = new HttpRequestMessage(HttpMethod.Post, "TestApi/PostBookWithNoValidation")
+            {
+                Content = new StringContent(input, Encoding.UTF8, "application/json"),
+            };
+
+            // Act
+            var response = await Client.SendAsync(requestMessage);
+
+            // Assert
+            await response.AssertStatusCodeAsync(HttpStatusCode.BadRequest);
+            var responseContent = await response.Content.ReadAsStringAsync();
+            var validationProblemDetails = JsonConvert.DeserializeObject<ValidationProblemDetails>(responseContent);
+
+            Assert.Collection(
+                validationProblemDetails.Errors,
+                error =>
+                {
+                    Assert.Empty(error.Key);
+                    Assert.Equal(new[] { "Invalid character after parsing property name. Expected ':' but got: =. Path '', line 1, position 4." }, error.Value);
+                });
+        }
+
+        [Fact]
+        public async Task JsonValidationErrors_AreReportedForModelsWithoutAnyValidationAttributes()
+        {
+            // This test verifies that for a model with ModelMetadata.HasValidators = false, we continue to get an invalid ModelState + validation
+            // errors from json serialization errors
+            // Arrange
+            var input = "{Id: \"0c92bb85-cfaf-4344-8a9d-f92e88716861\"}";
+            var requestMessage = new HttpRequestMessage(HttpMethod.Post, "TestApi/PostBookWithNoValidation")
+            {
+                Content = new StringContent(input, Encoding.UTF8, "application/json"),
+            };
+
+            // Act
+            var response = await Client.SendAsync(requestMessage);
+
+            // Assert
+            await response.AssertStatusCodeAsync(HttpStatusCode.BadRequest);
+            var responseContent = await response.Content.ReadAsStringAsync();
+            var validationProblemDetails = JsonConvert.DeserializeObject<ValidationProblemDetails>(responseContent);
+
+            Assert.Collection(
+                validationProblemDetails.Errors,
+                error =>
+                {
+                    Assert.Empty(error.Key);
+                    Assert.Equal(new[] { "Required property 'isbn' not found in JSON. Path '', line 1, position 44." }, error.Value);
+                });
+        }
+
+        [Fact]
+        public async Task ErrorsDeserializingMalformedXml_AreReportedForModelsWithoutAnyValidationAttributes()
+        {
+            // This test verifies that for a model with ModelMetadata.HasValidators = false, we continue to get an invalid ModelState + validation
+            // errors from json serialization errors
+            // Arrange
+            var input = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+                "<BookModelWithNoValidation xmlns=\"http://schemas.datacontract.org/2004/07/FormatterWebSite.Models\">" +
+                "<Id>Incomplete element" +
+                "</BookModelWithNoValidation>";
+            var requestMessage = new HttpRequestMessage(HttpMethod.Post, "TestApi/PostBookWithNoValidation")
+            {
+                Content = new StringContent(input, Encoding.UTF8, "application/xml"),
+            };
+
+            // Act
+            var response = await Client.SendAsync(requestMessage);
+
+            // Assert
+            await response.AssertStatusCodeAsync(HttpStatusCode.BadRequest);
+            var responseContent = await response.Content.ReadAsStringAsync();
+            var validationProblemDetails = JsonConvert.DeserializeObject<ValidationProblemDetails>(responseContent);
+
+            Assert.Collection(
+                validationProblemDetails.Errors,
+                error =>
+                {
+                    Assert.Empty(error.Key);
+                    Assert.Equal(new[] { "An error occurred while deserializing input data." }, error.Value);
+                });
+        }
     }
 }
