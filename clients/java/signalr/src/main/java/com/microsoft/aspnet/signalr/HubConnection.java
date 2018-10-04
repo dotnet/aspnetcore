@@ -186,6 +186,7 @@ public class HubConnection {
             return CompletableFuture.completedFuture(null);
         }
 
+        handshakeReceived = false;
         CompletableFuture<Void> tokenFuture = accessTokenProvider.get()
                 .thenAccept((token) -> {
                     if (token != null) {
@@ -203,13 +204,13 @@ public class HubConnection {
         return negotiate.thenCompose((url) -> {
             logger.log(LogLevel.Debug, "Starting HubConnection.");
             if (transport == null) {
-                transport = new WebSocketTransport(url, headers, httpClient, logger);
+                transport = new WebSocketTransport(headers, httpClient, logger);
             }
 
             transport.setOnReceive(this.callback);
 
             try {
-                return transport.start().thenCompose((future) -> {
+                return transport.start(url).thenCompose((future) -> {
                     String handshake = HandshakeProtocol.createHandshakeRequestMessage(
                             new HandshakeRequestMessage(protocol.getName(), protocol.getVersion()));
                     return transport.send(handshake).thenRun(() -> {
@@ -289,8 +290,6 @@ public class HubConnection {
             HubException hubException = null;
             hubConnectionStateLock.lock();
             try {
-                hubConnectionState = HubConnectionState.DISCONNECTED;
-
                 if (errorMessage != null) {
                     hubException = new HubException(errorMessage);
                 } else if (t != null) {
@@ -299,6 +298,7 @@ public class HubConnection {
                 connectionState.cancelOutstandingInvocations(hubException);
                 connectionState = null;
                 logger.log(LogLevel.Information, "HubConnection stopped.");
+                hubConnectionState = HubConnectionState.DISCONNECTED;
             } finally {
                 hubConnectionStateLock.unlock();
             }

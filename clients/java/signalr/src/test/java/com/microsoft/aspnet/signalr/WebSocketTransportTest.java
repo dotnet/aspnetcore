@@ -14,8 +14,8 @@ import org.junit.jupiter.api.Test;
 class WebSocketTransportTest {
     @Test
     public void WebsocketThrowsIfItCantConnect() throws Exception {
-        Transport transport = new WebSocketTransport("http://www.notarealurl12345.fake", new HashMap<>(), new DefaultHttpClient(new NullLogger()), new NullLogger());
-        ExecutionException exception = assertThrows(ExecutionException.class, () -> transport.start().get(1, TimeUnit.SECONDS));
+        Transport transport = new WebSocketTransport(new HashMap<>(), new DefaultHttpClient(new NullLogger()), new NullLogger());
+        ExecutionException exception = assertThrows(ExecutionException.class, () -> transport.start("http://www.example.com").get(1, TimeUnit.SECONDS));
         assertEquals("There was an error starting the Websockets transport.", exception.getCause().getMessage());
     }
 }
