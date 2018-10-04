@@ -1317,6 +1317,24 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
+        public async Task RazorPage_WithLinks_GeneratesLinksCorrectly()
+        {
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/PageWithLinks");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            var document = await response.GetHtmlDocumentAsync();
+
+            var editLink = document.RequiredQuerySelector("#editlink");
+            Assert.Equal("/Edit/10", editLink.GetAttribute("href"));
+
+            var contactLink = document.RequiredQuerySelector("#contactlink");
+            Assert.Equal("/Home/Contact", contactLink.GetAttribute("href"));
+        }
+
+        [Fact]
         public async Task CanRunMiddlewareAfterRouting()
         {
             // Act
