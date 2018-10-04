@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -31,7 +32,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             // Assert
             Assert.Collection(
                 context.PageApplicationModel.Filters,
-                f => Assert.IsType<PageHandlerPageFilter>(f));
+                f => Assert.IsType<PageHandlerPageFilter>(f),
+                f => Assert.IsType<HandleOptionsRequestsPageFilter>(f));
         }
 
         private class PageWithoutResponseCache : Page
@@ -66,6 +68,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 context.PageApplicationModel.Filters,
                 f => { },
                 f => Assert.IsType<PageHandlerPageFilter>(f),
+                f => Assert.IsType<HandleOptionsRequestsPageFilter>(f),
                 f =>
                 {
                     var filter = Assert.IsType<ResponseCacheFilter>(f);
@@ -112,6 +115,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 context.PageApplicationModel.Filters,
                 f => { },
                 f => Assert.IsType<PageHandlerPageFilter>(f),
+                f => Assert.IsType<HandleOptionsRequestsPageFilter>(f),
                 f =>
                 {
                     var filter = Assert.IsType<ResponseCacheFilter>(f);
@@ -139,7 +143,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         {
             var defaultProvider = new DefaultPageApplicationModelProvider(
                 TestModelMetadataProvider.CreateDefaultProvider(),
-                Options.Create(new MvcOptions()));
+                Options.Create(new MvcOptions()),
+                Options.Create(new RazorPagesOptions { AllowDefaultHandlingForOptionsRequests = true }));
             var context = new PageApplicationModelProviderContext(new PageActionDescriptor(), typeInfo);
             defaultProvider.OnProvidersExecuting(context);
             return context;

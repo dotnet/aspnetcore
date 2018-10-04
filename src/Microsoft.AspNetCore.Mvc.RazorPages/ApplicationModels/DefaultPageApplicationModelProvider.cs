@@ -3,36 +3,43 @@
 
 using System;
 using System.Reflection;
-using Microsoft.AspNetCore.Mvc.ApplicationModels;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Razor;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
+using Microsoft.AspNetCore.Mvc.RazorPages.Internal;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Options;
+using Resources = Microsoft.AspNetCore.Mvc.RazorPages.Resources;
 
-namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
+namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 {
-    public class DefaultPageApplicationModelProvider : IPageApplicationModelProvider
+    internal class DefaultPageApplicationModelProvider : IPageApplicationModelProvider
     {
         private const string ModelPropertyName = "Model";
         private readonly PageHandlerPageFilter _pageHandlerPageFilter = new PageHandlerPageFilter();
         private readonly PageHandlerResultFilter _pageHandlerResultFilter = new PageHandlerResultFilter();
         private readonly IModelMetadataProvider _modelMetadataProvider;
-        private readonly MvcOptions _options;
+        private readonly MvcOptions _mvcOptions;
+        private readonly RazorPagesOptions _razorPagesOptions;
         private readonly Func<ActionContext, bool> _supportsAllRequests;
         private readonly Func<ActionContext, bool> _supportsNonGetRequests;
-
+        private readonly HandleOptionsRequestsPageFilter _handleOptionsRequestsFilter;
 
         public DefaultPageApplicationModelProvider(
             IModelMetadataProvider modelMetadataProvider,
-            IOptions<MvcOptions> options)
+            IOptions<MvcOptions> options,
+            IOptions<RazorPagesOptions> razorPagesOptions)
         {
             _modelMetadataProvider = modelMetadataProvider;
-            _options = options.Value;
+            _mvcOptions = options.Value;
+            _razorPagesOptions = razorPagesOptions.Value;
 
             _supportsAllRequests = _ => true;
-            _supportsNonGetRequests = context => !string.Equals(context.HttpContext.Request.Method, "GET", StringComparison.OrdinalIgnoreCase);
+            _supportsNonGetRequests = context => !HttpMethods.IsGet(context.HttpContext.Request.Method);
+            _handleOptionsRequestsFilter = new HandleOptionsRequestsPageFilter();
         }
 
         /// <inheritdoc />
@@ -175,6 +182,11 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             {
                 pageModel.Filters.Add(_pageHandlerResultFilter);
             }
+
+            if (_razorPagesOptions.AllowDefaultHandlingForOptionsRequests)
+            {
+                pageModel.Filters.Add(_handleOptionsRequestsFilter);
+            }
         }
 
         /// <summary>
@@ -237,7 +249,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             var attributes = parameter.GetCustomAttributes(inherit: true);
 
             BindingInfo bindingInfo;
-            if (_options.AllowValidatingTopLevelNodes && _modelMetadataProvider is ModelMetadataProvider modelMetadataProviderBase)
+            if (_mvcOptions.AllowValidatingTopLevelNodes && _modelMetadataProvider is ModelMetadataProvider modelMetadataProviderBase)
             {
                 var modelMetadata = modelMetadataProviderBase.GetMetadataForParameter(parameter);
                 bindingInfo = BindingInfo.GetBindingInfo(attributes, modelMetadata);

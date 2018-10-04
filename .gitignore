@@ -37,7 +37,6 @@ node_modules
 *launchSettings.json
 *.orig
 .vscode/
-global.json
 BenchmarkDotNet.Artifacts/
 .idea/
 msbuild.binlog

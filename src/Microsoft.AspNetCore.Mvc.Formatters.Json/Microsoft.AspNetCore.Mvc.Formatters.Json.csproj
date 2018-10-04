@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Internal.AspNetCore.Sdk">
 
   <PropertyGroup>
     <Description>ASP.NET Core MVC formatters for JSON input and output and for JSON PATCH input using Json.NET.</Description>

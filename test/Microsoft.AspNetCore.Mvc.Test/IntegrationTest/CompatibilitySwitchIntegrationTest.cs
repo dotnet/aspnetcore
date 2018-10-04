@@ -49,6 +49,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTest
             Assert.True(apiBehaviorOptions.SuppressUseValidationProblemDetailsForInvalidModelStateResponses);
             Assert.True(apiBehaviorOptions.SuppressMapClientErrors);
             Assert.True(razorViewEngineOptions.AllowRecompilingViewsOnFileChange);
+            Assert.False(razorPagesOptions.AllowDefaultHandlingForOptionsRequests);
         }
 
         [Fact]
@@ -80,6 +81,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTest
             Assert.True(apiBehaviorOptions.SuppressUseValidationProblemDetailsForInvalidModelStateResponses);
             Assert.True(apiBehaviorOptions.SuppressMapClientErrors);
             Assert.True(razorViewEngineOptions.AllowRecompilingViewsOnFileChange);
+            Assert.False(razorPagesOptions.AllowDefaultHandlingForOptionsRequests);
         }
 
         [Fact]
@@ -111,6 +113,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTest
             Assert.False(apiBehaviorOptions.SuppressUseValidationProblemDetailsForInvalidModelStateResponses);
             Assert.False(apiBehaviorOptions.SuppressMapClientErrors);
             Assert.False(razorViewEngineOptions.AllowRecompilingViewsOnFileChange);
+            Assert.True(razorPagesOptions.AllowDefaultHandlingForOptionsRequests);
         }
 
         [Fact]
@@ -142,6 +145,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTest
             Assert.False(apiBehaviorOptions.SuppressUseValidationProblemDetailsForInvalidModelStateResponses);
             Assert.False(apiBehaviorOptions.SuppressMapClientErrors);
             Assert.False(razorViewEngineOptions.AllowRecompilingViewsOnFileChange);
+            Assert.True(razorPagesOptions.AllowDefaultHandlingForOptionsRequests);
         }
 
         // This just does the minimum needed to be able to resolve these options.

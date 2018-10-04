@@ -17,7 +17,6 @@
     <BenchmarksOnlyNpgsqlEntityFrameworkCorePostgreSQLPackageVersion>2.1.1.1</BenchmarksOnlyNpgsqlEntityFrameworkCorePostgreSQLPackageVersion>
     <BenchmarksOnlyPomeloEntityFrameworkCoreMySqlPackageVersion>2.1.1</BenchmarksOnlyPomeloEntityFrameworkCoreMySqlPackageVersion>
     <InternalAspNetCoreAnalyzersPackageVersion>3.0.0-alpha1-10549</InternalAspNetCoreAnalyzersPackageVersion>
-    <InternalAspNetCoreSdkPackageVersion>3.0.0-alpha1-20180919.1</InternalAspNetCoreSdkPackageVersion>
     <MicrosoftAspNetCoreAllPackageVersion>3.0.0-alpha1-10549</MicrosoftAspNetCoreAllPackageVersion>
     <MicrosoftAspNetCoreAnalyzerTestingPackageVersion>3.0.0-alpha1-10549</MicrosoftAspNetCoreAnalyzerTestingPackageVersion>
     <MicrosoftAspNetCoreAntiforgeryPackageVersion>3.0.0-alpha1-10549</MicrosoftAspNetCoreAntiforgeryPackageVersion>
