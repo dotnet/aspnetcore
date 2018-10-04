@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Internal.AspNetCore.Sdk">
   <PropertyGroup>
     <AssemblyName>GetDocument.Insider</AssemblyName>
     <Description>GetDocument Command-line Tool inside man</Description>

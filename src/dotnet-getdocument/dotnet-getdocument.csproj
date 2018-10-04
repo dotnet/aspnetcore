@@ -1,7 +1,4 @@
-﻿<Project>
-  <Sdk Name="Microsoft.NET.Sdk" />
-  <!-- Sdk Name="Microsoft.DotNet.GlobalTools.Sdk" / -->
-
+<Project Sdk="Internal.AspNetCore.Sdk">
   <PropertyGroup>
     <!-- Execute PopulateNuspec fairly late. -->
     <GenerateNuspecDependsOn>$(GenerateNuspecDependsOn);PopulateNuspec</GenerateNuspecDependsOn>
