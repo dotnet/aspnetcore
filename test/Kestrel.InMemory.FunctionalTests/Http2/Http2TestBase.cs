@@ -82,6 +82,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         protected readonly RequestDelegate _echoMethod;
         protected readonly RequestDelegate _echoHost;
         protected readonly RequestDelegate _echoPath;
+        protected readonly RequestDelegate _appAbort;
 
         protected HttpConnectionContext _connectionContext;
         protected Http2Connection _connection;
@@ -275,6 +276,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 context.Response.Headers["path"] = context.Request.Path.ToString();
                 context.Response.Headers["rawtarget"] = context.Features.Get<IHttpRequestFeature>().RawTarget;
 
+                return Task.CompletedTask;
+            };
+
+            _appAbort = context =>
+            {
+                context.Abort();
                 return Task.CompletedTask;
             };
         }
@@ -714,6 +721,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             Http2FrameWriter.WriteHeader(frame, outputWriter);
             await SendAsync(payload);
+        }
+
+        protected async Task<bool> SendContinuationAsync(int streamId, Http2ContinuationFrameFlags flags, IEnumerable<KeyValuePair<string, string>> headers)
+        {
+            var outputWriter = _pair.Application.Output;
+            var frame = new Http2Frame();
+
+            frame.PrepareContinuation(flags, streamId);
+            var buffer = _headerEncodingBuffer.AsMemory();
+            var done = _hpackEncoder.BeginEncode(headers, buffer.Span, out var length);
+            frame.PayloadLength = length;
+
+            Http2FrameWriter.WriteHeader(frame, outputWriter);
+            await SendAsync(buffer.Span.Slice(0, length));
+
+            return done;
         }
 
         protected Task SendEmptyContinuationFrameAsync(int streamId, Http2ContinuationFrameFlags flags)

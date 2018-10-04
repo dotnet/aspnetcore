@@ -356,7 +356,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 return;
             }
 
-            _timeoutControl.Tick(_systemClock.UtcNow);
+            var now = _systemClock.UtcNow;
+            _timeoutControl.Tick(now);
+            _requestProcessor?.Tick(now);
         }
 
         private void CloseUninitializedConnection(ConnectionAbortedException abortReason)

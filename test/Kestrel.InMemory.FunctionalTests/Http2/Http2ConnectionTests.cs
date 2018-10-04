@@ -10,9 +10,12 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
@@ -553,10 +556,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await StartStreamAsync(1, _browserRequestHeaders, endStream: false);
             await StartStreamAsync(3, _browserRequestHeaders, endStream: false);
 
-            await SendDataAsync(1, _helloBytes, endStream: false);
+            await SendDataAsync(1, _helloBytes, endStream: true);
             Assert.True(stream1Read.WaitOne(TimeSpan.FromSeconds(10)));
 
-            await SendDataAsync(3, _helloBytes, endStream: false);
+            await SendDataAsync(3, _helloBytes, endStream: true);
             Assert.True(stream3Read.WaitOne(TimeSpan.FromSeconds(10)));
 
             stream3ReadFinished.Set();
@@ -715,6 +718,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 withLength: 0,
                 withFlags: (byte)Http2DataFrameFlags.END_STREAM,
                 withStreamId: 1);
+
+            await WaitForStreamErrorAsync(expectedStreamId: 1, Http2ErrorCode.NO_ERROR, null);
+            // Logged without an exception.
+            Assert.Contains(TestApplicationErrorLogger.Messages, m => m.Message.Contains("the application completed without reading the entire request body."));
 
             // Writing over half the initial window size induces a connection-level window update.
             // But no stream window update since this is the last frame.
@@ -3784,6 +3791,269 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal(LogLevel.Warning, logMessage.LogLevel);
             Assert.Equal(CoreStrings.RequestProcessingEndError, logMessage.Message);
             Assert.Same(exception, logMessage.Exception);
+        }
+
+        [Theory]
+        [InlineData(Http2FrameType.DATA)]
+        [InlineData(Http2FrameType.WINDOW_UPDATE)]
+        [InlineData(Http2FrameType.HEADERS)]
+        [InlineData(Http2FrameType.CONTINUATION)]
+        public async Task AppDoesNotReadRequestBody_ResetsAndDrainsRequest(Http2FrameType finalFrameType)
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+            };
+            await InitializeConnectionAsync(_noopApplication);
+
+            await StartStreamAsync(1, headers, endStream: false);
+
+            await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 55,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1);
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 0,
+                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withStreamId: 1);
+
+            await WaitForStreamErrorAsync(1, Http2ErrorCode.NO_ERROR, null);
+            // Logged without an exception.
+            Assert.Contains(TestApplicationErrorLogger.Messages, m => m.Message.Contains("the application completed without reading the entire request body."));
+
+            // There's a race when the appfunc is exiting about how soon it unregisters the stream.
+            for (var i = 0; i < 10; i++)
+            {
+                await SendDataAsync(1, new byte[100], endStream: false);
+            }
+
+            // These would be refused if the cool-down period had expired
+            switch (finalFrameType)
+            {
+                case Http2FrameType.DATA:
+                    await SendDataAsync(1, new byte[100], endStream: true);
+                    break;
+                case Http2FrameType.WINDOW_UPDATE:
+                    await SendWindowUpdateAsync(1, 1024);
+                    break;
+                case Http2FrameType.HEADERS:
+                    await SendHeadersAsync(1, Http2HeadersFrameFlags.END_STREAM | Http2HeadersFrameFlags.END_HEADERS, _requestTrailers);
+                    break;
+                case Http2FrameType.CONTINUATION:
+                    await SendHeadersAsync(1, Http2HeadersFrameFlags.END_STREAM, _requestTrailers);
+                    await SendContinuationAsync(1, Http2ContinuationFrameFlags.END_HEADERS, _requestTrailers);
+                    break;
+                default:
+                    throw new NotImplementedException(finalFrameType.ToString());
+            }
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+        }
+
+        [Theory]
+        [InlineData(Http2FrameType.DATA)]
+        [InlineData(Http2FrameType.WINDOW_UPDATE)]
+        [InlineData(Http2FrameType.HEADERS)]
+        [InlineData(Http2FrameType.CONTINUATION)]
+        public async Task AbortedStream_ResetsAndDrainsRequest(Http2FrameType finalFrameType)
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+            };
+            await InitializeConnectionAsync(_appAbort);
+
+            await StartStreamAsync(1, headers, endStream: false);
+
+            await WaitForStreamErrorAsync(1, Http2ErrorCode.INTERNAL_ERROR, "The connection was aborted by the application.");
+
+            // There's a race when the appfunc is exiting about how soon it unregisters the stream.
+            for (var i = 0; i < 10; i++)
+            {
+                await SendDataAsync(1, new byte[100], endStream: false);
+            }
+
+            // These would be refused if the cool-down period had expired
+            switch (finalFrameType)
+            {
+                case Http2FrameType.DATA:
+                    await SendDataAsync(1, new byte[100], endStream: true);
+                    break;
+                case Http2FrameType.WINDOW_UPDATE:
+                    await SendWindowUpdateAsync(1, 1024);
+                    break;
+                case Http2FrameType.HEADERS:
+                    await SendHeadersAsync(1, Http2HeadersFrameFlags.END_STREAM | Http2HeadersFrameFlags.END_HEADERS, _requestTrailers);
+                    break;
+                case Http2FrameType.CONTINUATION:
+                    await SendHeadersAsync(1, Http2HeadersFrameFlags.END_STREAM, _requestTrailers);
+                    await SendContinuationAsync(1, Http2ContinuationFrameFlags.END_HEADERS, _requestTrailers);
+                    break;
+                default:
+                    throw new NotImplementedException(finalFrameType.ToString());
+            }
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+        }
+
+        [Theory]
+        [InlineData(Http2FrameType.DATA)]
+        [InlineData(Http2FrameType.HEADERS)]
+        [InlineData(Http2FrameType.CONTINUATION)]
+        public async Task AbortedStream_ResetsAndDrainsRequest_RefusesFramesAfterEndOfStream(Http2FrameType finalFrameType)
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+            };
+            await InitializeConnectionAsync(_appAbort);
+
+            await StartStreamAsync(1, headers, endStream: false);
+
+            await WaitForStreamErrorAsync(1, Http2ErrorCode.INTERNAL_ERROR, "The connection was aborted by the application.");
+
+            // There's a race when the appfunc is exiting about how soon it unregisters the stream.
+            for (var i = 0; i < 10; i++)
+            {
+                await SendDataAsync(1, new byte[100], endStream: false);
+            }
+
+            switch (finalFrameType)
+            {
+                case Http2FrameType.DATA:
+                    await SendDataAsync(1, new byte[100], endStream: true);
+                    // An extra one to break it
+                    await SendDataAsync(1, new byte[100], endStream: true);
+
+                    await WaitForConnectionErrorAsync<Http2ConnectionErrorException>(ignoreNonGoAwayFrames: false, expectedLastStreamId: 1, Http2ErrorCode.STREAM_CLOSED,
+                        CoreStrings.FormatHttp2ErrorStreamClosed(Http2FrameType.DATA, 1));
+                    break;
+
+                case Http2FrameType.HEADERS:
+                    await SendHeadersAsync(1, Http2HeadersFrameFlags.END_STREAM | Http2HeadersFrameFlags.END_HEADERS, _requestTrailers);
+                    // An extra one to break it
+                    await SendHeadersAsync(1, Http2HeadersFrameFlags.END_STREAM | Http2HeadersFrameFlags.END_HEADERS, _requestTrailers);
+
+                    await WaitForConnectionErrorAsync<Http2ConnectionErrorException>(ignoreNonGoAwayFrames: false, expectedLastStreamId: 1, Http2ErrorCode.STREAM_CLOSED,
+                        CoreStrings.FormatHttp2ErrorStreamClosed(Http2FrameType.HEADERS, 1));
+                    break;
+
+                case Http2FrameType.CONTINUATION:
+                    await SendHeadersAsync(1, Http2HeadersFrameFlags.END_STREAM, _requestTrailers);
+                    await SendContinuationAsync(1, Http2ContinuationFrameFlags.END_HEADERS, _requestTrailers);
+                    // An extra one to break it. It's not a Continuation because that would fail with an error that no headers were in progress.
+                    await SendHeadersAsync(1, Http2HeadersFrameFlags.END_STREAM, _requestTrailers);
+                    await WaitForConnectionErrorAsync<Http2ConnectionErrorException>(ignoreNonGoAwayFrames: false, expectedLastStreamId: 1, Http2ErrorCode.STREAM_CLOSED,
+                        CoreStrings.FormatHttp2ErrorStreamClosed(Http2FrameType.HEADERS, 1));
+                    break;
+                default:
+                    throw new NotImplementedException(finalFrameType.ToString());
+            }
+        }
+
+        [Theory]
+        [InlineData(Http2FrameType.DATA)]
+        [InlineData(Http2FrameType.HEADERS)]
+        public async Task AbortedStream_ResetsAndDrainsRequest_RefusesFramesAfterClientReset(Http2FrameType finalFrameType)
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+            };
+            await InitializeConnectionAsync(_appAbort);
+
+            await StartStreamAsync(1, headers, endStream: false);
+
+            await WaitForStreamErrorAsync(1, Http2ErrorCode.INTERNAL_ERROR, "The connection was aborted by the application.");
+
+            // There's a race when the appfunc is exiting about how soon it unregisters the stream.
+            for (var i = 0; i < 10; i++)
+            {
+                await SendDataAsync(1, new byte[100], endStream: false);
+            }
+            await SendRstStreamAsync(1);
+
+            // Send an extra frame to make it fail
+            switch (finalFrameType)
+            {
+                case Http2FrameType.DATA:
+                    await SendDataAsync(1, new byte[100], endStream: true);
+                    break;
+
+                case Http2FrameType.HEADERS:
+                    await SendHeadersAsync(1, Http2HeadersFrameFlags.END_STREAM | Http2HeadersFrameFlags.END_HEADERS, _requestTrailers);
+                    break;
+
+                default:
+                    throw new NotImplementedException(finalFrameType.ToString());
+            }
+
+            await WaitForConnectionErrorAsync<Http2ConnectionErrorException>(ignoreNonGoAwayFrames: false, expectedLastStreamId: 1, Http2ErrorCode.STREAM_CLOSED,
+                CoreStrings.FormatHttp2ErrorStreamClosed(finalFrameType, 1));
+        }
+
+        [Theory]
+        [InlineData(Http2FrameType.DATA)]
+        [InlineData(Http2FrameType.HEADERS)]
+        public async Task AbortedStream_ResetsAndDrainsRequest_RefusesFramesAfterCooldownExpires(Http2FrameType finalFrameType)
+        {
+            var mockSystemClock = new MockSystemClock();
+            _connectionContext.ServiceContext.SystemClock = mockSystemClock;
+
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+            };
+            await InitializeConnectionAsync(_appAbort);
+
+            await StartStreamAsync(1, headers, endStream: false);
+
+            await WaitForStreamErrorAsync(1, Http2ErrorCode.INTERNAL_ERROR, "The connection was aborted by the application.");
+
+            // There's a race when the appfunc is exiting about how soon it unregisters the stream.
+            for (var i = 0; i < 10; i++)
+            {
+                await SendDataAsync(1, new byte[100], endStream: false);
+            }
+
+            // Just short of the timeout
+            mockSystemClock.UtcNow += Constants.RequestBodyDrainTimeout - TimeSpan.FromTicks(1);
+            (_connection as IRequestProcessor).Tick(mockSystemClock.UtcNow);
+
+            // Still fine
+            await SendDataAsync(1, new byte[100], endStream: false);
+
+            // Just past the timeout
+            mockSystemClock.UtcNow += TimeSpan.FromTicks(2);
+            (_connection as IRequestProcessor).Tick(mockSystemClock.UtcNow);
+
+            // Send an extra frame to make it fail
+            switch (finalFrameType)
+            {
+                case Http2FrameType.DATA:
+                    await SendDataAsync(1, new byte[100], endStream: true);
+                    break;
+
+                case Http2FrameType.HEADERS:
+                    await SendHeadersAsync(1, Http2HeadersFrameFlags.END_STREAM | Http2HeadersFrameFlags.END_HEADERS, _requestTrailers);
+                    break;
+
+                default:
+                    throw new NotImplementedException(finalFrameType.ToString());
+            }
+
+            await WaitForConnectionErrorAsync<Http2ConnectionErrorException>(ignoreNonGoAwayFrames: false, expectedLastStreamId: 1, Http2ErrorCode.STREAM_CLOSED,
+                CoreStrings.FormatHttp2ErrorStreamClosed(finalFrameType, 1));
         }
 
         public static TheoryData<byte[]> UpperCaseHeaderNameData

@@ -606,6 +606,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 var buffer = new byte[100];
                 var read = await context.Request.Body.ReadAsync(buffer, 0, buffer.Length);
                 Assert.Equal(12, read);
+                read = await context.Request.Body.ReadAsync(buffer, 0, buffer.Length);
+                Assert.Equal(0, read);
             });
 
             await StartStreamAsync(1, headers, endStream: false);
@@ -638,6 +640,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 var buffer = new byte[100];
                 var read = await context.Request.Body.ReadAsync(buffer, 0, buffer.Length);
                 Assert.Equal(12, read);
+                read = await context.Request.Body.ReadAsync(buffer, 0, buffer.Length);
+                Assert.Equal(0, read);
             });
 
             var headers = new[]
@@ -833,7 +837,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.IsType<Http2StreamErrorException>(thrownEx.InnerException);
         }
 
-        [Fact(Skip = "Flaky test #2799, #2832")]
+        [Fact]
         public async Task ContentLength_Received_MultipleDataFramesOverSize_Reset()
         {
             IOException thrownEx = null;
@@ -858,8 +862,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await SendDataAsync(1, new byte[1], endStream: false);
             await SendDataAsync(1, new byte[2], endStream: false);
             await SendDataAsync(1, new byte[10], endStream: false);
-            await SendDataAsync(1, new byte[2], endStream: true);
-
             await WaitForStreamErrorAsync(1, Http2ErrorCode.PROTOCOL_ERROR, CoreStrings.Http2StreamErrorMoreDataThanLength);
 
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
@@ -1076,6 +1078,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 var buffer = new byte[100];
                 var read = await context.Request.Body.ReadAsync(buffer, 0, buffer.Length);
                 Assert.Equal(12, read);
+                read = await context.Request.Body.ReadAsync(buffer, 0, buffer.Length);
+                Assert.Equal(0, read);
             });
 
             await StartStreamAsync(1, headers, endStream: false);
@@ -1133,6 +1137,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 withFlags: (byte)Http2DataFrameFlags.END_STREAM,
                 withStreamId: 1);
 
+            await WaitForStreamErrorAsync(expectedStreamId: 1, Http2ErrorCode.NO_ERROR, null);
+            // Logged without an exception.
+            Assert.Contains(TestApplicationErrorLogger.Messages, m => m.Message.Contains("the application completed without reading the entire request body."));
+
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
             _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: false, handler: this);
@@ -1160,6 +1168,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 var buffer = new byte[100];
                 var read = await context.Request.Body.ReadAsync(buffer, 0, buffer.Length);
                 Assert.Equal(12, read);
+                read = await context.Request.Body.ReadAsync(buffer, 0, buffer.Length);
+                Assert.Equal(0, read);
             });
 
             await StartStreamAsync(1, headers, endStream: false);
@@ -1317,6 +1327,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 var read = await context.Request.Body.ReadAsync(buffer, 0, buffer.Length);
                 Assert.Equal(12, read);
                 Assert.True(context.Features.Get<IHttpMaxRequestBodySizeFeature>().IsReadOnly);
+                read = await context.Request.Body.ReadAsync(buffer, 0, buffer.Length);
+                Assert.Equal(0, read);
             });
 
             await StartStreamAsync(1, headers, endStream: false);
