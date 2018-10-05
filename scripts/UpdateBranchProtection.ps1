@@ -36,6 +36,8 @@ $headers = @{
     Authorization = "bearer $ApiToken"
 }
 
+[string[]] $errors = @()
+
 foreach ($repo in $repos) {
     foreach ($branch in $branches) {
         
@@ -59,10 +61,20 @@ foreach ($repo in $repos) {
         $url = "https://api.github.com/repos/aspnet/$repo/branches/$branch/protection"
 
         if ($PSCmdlet.ShouldProcess($url)) {
-            Invoke-RestMethod -Headers $headers -Method put `
-            -Body (ConvertTo-Json $policy) `
-            $url `
-            -Verbose:$VerbosePreference
+            try {
+
+                Invoke-RestMethod -Headers $headers -Method put `
+                -Body (ConvertTo-Json $policy) `
+                $url `
+                -Verbose:$VerbosePreference
+            } catch {
+                $errors += "$repo / $branch"
+            }
         }
     }
+}
+
+if ($errors) {
+    Write-Error "Failed to update:`n$($errors -join "`n")"
+    exit 1
 }
