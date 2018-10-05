@@ -1,3 +1,7 @@
+# AspNetCore-Internal
+
+This repo contains internal-only tooling and infrastructure.
+
 ## Prerequisites
 
 To run this repo, you need the following:
