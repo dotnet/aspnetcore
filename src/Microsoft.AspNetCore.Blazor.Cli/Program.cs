@@ -4,6 +4,8 @@
 using Microsoft.AspNetCore.Hosting;
 using System;
 using System.Linq;
+using Microsoft.Extensions.CommandLineUtils;
+using Microsoft.AspNetCore.Blazor.Cli.Commands;
 
 namespace Microsoft.AspNetCore.Blazor.Cli
 {
@@ -11,22 +13,22 @@ namespace Microsoft.AspNetCore.Blazor.Cli
     {
         static int Main(string[] args)
         {
-            if (args.Length == 0)
+            var app = new CommandLineApplication
             {
-                Console.WriteLine("Usage: dotnet blazor <command>");
-                return 1;
+                Name = "blazor-cli"
+            };
+            app.HelpOption("-?|-h|--help");
+
+            app.Command("serve", ServeCommand.Command);
+
+            if (args.Length > 0)
+            {
+                return app.Execute(args);
             }
-
-            var command = args[0];
-            var remainingArgs = args.Skip(1).ToArray();
-
-            switch (command.ToLowerInvariant())
+            else
             {
-                case "serve":
-                    Server.Program.BuildWebHost(remainingArgs).Run();
-                    return 0;
-                default:
-                    throw new InvalidOperationException($"Unknown command: {command}");
+                app.ShowHelp();
+                return 0;
             }
         }
     }
