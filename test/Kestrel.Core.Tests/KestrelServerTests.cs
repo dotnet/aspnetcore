@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                 var exception = Assert.Throws<FormatException>(() => StartDummyApplication(server));
 
-                Assert.Contains("Invalid URL", exception.Message);
+                Assert.Contains("Invalid url", exception.Message);
                 Assert.Equal(1, testLogger.CriticalErrorsLogged);
             }
         }

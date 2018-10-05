@@ -19,6 +19,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Certificates.Generation.Sources" PrivateAssets="All" Version="$(MicrosoftAspNetCoreCertificatesGenerationSourcesPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="$(MicrosoftAspNetCoreHostingAbstractionsPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="$(MicrosoftAspNetCoreWebUtilitiesPackageVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Http" Version="$(MicrosoftAspNetCoreHttpPackageVersion)" />
     <PackageReference Include="Microsoft.Net.Http.Headers" Version="$(MicrosoftNetHttpHeadersPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="$(MicrosoftExtensionsConfigurationBinderPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="$(MicrosoftExtensionsLoggingAbstractionsPackageVersion)" />
