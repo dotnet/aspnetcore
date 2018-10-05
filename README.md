@@ -19,6 +19,8 @@ ASP.NET Core 1.1 is now available! See the [release notes](https://github.com/as
 
 ASP.NET Core 2.0 is now available! See the [release notes](https://github.com/aspnet/Home/releases/tag/2.0.0) for further details and check our [releases](https://github.com/aspnet/home/releases) for the latest patch release.
 
+ASP.NET Core 2.1 is now available! See the [release notes](https://github.com/aspnet/Home/releases/tag/2.1.0) for further details and check our [releases](https://github.com/aspnet/Home/releases/) for the latest patch release.
+
 ## Get Started
 
 Follow the [Getting Started](https://docs.microsoft.com/en-us/aspnet/core/getting-started) instructions in the [ASP.NET Core docs](https://docs.microsoft.com/en-us/aspnet/index).
