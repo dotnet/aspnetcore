@@ -9,7 +9,7 @@ namespace Microsoft.Extensions.Hosting
     public interface IHostLifetime
     {
         /// <summary>
-        /// Called at the start of <see cref="IHost.StartAsync(CancellationToken)"/> which will wait until it's compete before
+        /// Called at the start of <see cref="IHost.StartAsync(CancellationToken)"/> which will wait until it's complete before
         /// continuing. This can be used to delay startup until signaled by an external event.
         /// </summary>
         Task WaitForStartAsync(CancellationToken cancellationToken);
