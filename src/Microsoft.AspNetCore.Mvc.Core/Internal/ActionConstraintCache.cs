@@ -150,10 +150,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             {
                 return null;
             }
-            
+
             var actionConstraints = new IActionConstraint[count];
             var actionConstraintIndex = 0;
-            for (int i = 0; i < items.Count; i++)
+            for (var i = 0; i < items.Count; i++)
             {
                 var actionConstraint = items[i].Constraint;
                 if (actionConstraint != null)
@@ -168,7 +168,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         internal class InnerCache
         {
             private readonly ActionDescriptorCollection _actions;
-            private bool? _hasActionConstraints;
 
             public InnerCache(ActionDescriptorCollection actions)
             {
@@ -179,61 +178,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 new ConcurrentDictionary<ActionDescriptor, CacheEntry>();
 
             public int Version => _actions.Version;
-
-            public bool HasActionConstraints
-            {
-                get
-                {
-                    // This is a safe race-condition, since it always transitions from null to non-null.
-                    // All writers will always get the same result.
-                    if (_hasActionConstraints == null)
-                    {
-                        var found = false;
-                        for (var i = 0; i < _actions.Items.Count; i++)
-                        {
-                            var action = _actions.Items[i];
-                            if (action.ActionConstraints?.Count > 0 && HasSignificantActionConstraint(action))
-                            {
-                                // We need to check for some specific action constraint implementations.
-                                // We've implemented consumes, and HTTP method support inside endpoint routing, so 
-                                // we don't need to run an 'action constraint phase' if those are the only constraints.
-                                found = true;
-                                break;
-                            }
-                        }
-
-                        _hasActionConstraints = found;
-
-                        bool HasSignificantActionConstraint(ActionDescriptor action)
-                        {
-                            for (var i = 0; i < action.ActionConstraints.Count; i++)
-                            {
-                                var actionConstraint = action.ActionConstraints[i];
-                                if (actionConstraint.GetType() == typeof(HttpMethodActionConstraint))
-                                {
-                                    // This one is OK, we implement this in endpoint routing.
-                                }
-                                else if (actionConstraint.GetType().FullName == "Microsoft.AspNetCore.Mvc.Cors.Internal.CorsHttpMethodActionConstraint")
-                                {
-                                    // This one is OK, we implement this in endpoint routing.
-                                }
-                                else if (actionConstraint.GetType() == typeof(ConsumesAttribute))
-                                {
-                                    // This one is OK, we implement this in endpoint routing.
-                                }
-                                else
-                                {
-                                    return true;
-                                }
-                            }
-
-                            return false;
-                        }
-                    }
-
-                    return _hasActionConstraints.Value;
-                }
-            }
         }
 
         internal readonly struct CacheEntry
