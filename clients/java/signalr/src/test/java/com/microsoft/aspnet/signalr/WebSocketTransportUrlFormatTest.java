@@ -5,7 +5,6 @@ package com.microsoft.aspnet.signalr;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.stream.Stream;
 

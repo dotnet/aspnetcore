@@ -5,10 +5,12 @@ package com.microsoft.aspnet.signalr;
 
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 
 class WebSocketTransport implements Transport {
     private WebSocketWrapper webSocketClient;
     private OnReceiveCallBack onReceiveCallBack;
+    private Consumer<String> onClose;
     private String url;
     private Logger logger;
     private HttpClient client;
@@ -45,7 +47,12 @@ class WebSocketTransport implements Transport {
         logger.log(LogLevel.Debug, "Starting Websocket connection.");
         this.webSocketClient = client.createWebSocket(this.url, this.headers);
         this.webSocketClient.setOnReceive((message) -> onReceive(message));
-        this.webSocketClient.setOnClose((code, reason) -> onClose(code, reason));
+        this.webSocketClient.setOnClose((code, reason) -> {
+            if (onClose != null) {
+                onClose(code, reason);
+            }
+        });
+
         return webSocketClient.start().thenRun(() -> logger.log(LogLevel.Information, "WebSocket transport connected to: %s.", this.url));
     }
 
@@ -66,6 +73,11 @@ class WebSocketTransport implements Transport {
     }
 
     @Override
+    public void setOnClose(Consumer<String> onCloseCallback) {
+        this.onClose = onCloseCallback;
+    }
+
+    @Override
     public CompletableFuture<Void> stop() {
         return webSocketClient.stop().whenComplete((i, j) -> logger.log(LogLevel.Information, "WebSocket connection stopped."));
     }
@@ -73,5 +85,11 @@ class WebSocketTransport implements Transport {
     void onClose(int code, String reason) {
         logger.log(LogLevel.Information, "WebSocket connection stopping with " +
                 "code %d and reason '%s'.", code, reason);
+        if (code != 1000) {
+            onClose.accept(reason);
+        }
+        else {
+            onClose.accept(null);
+        }
     }
 }

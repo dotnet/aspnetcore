@@ -5,11 +5,13 @@ package com.microsoft.aspnet.signalr;
 
 import java.util.ArrayList;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 
 class MockTransport implements Transport {
     private OnReceiveCallBack onReceiveCallBack;
     private ArrayList<String> sentMessages = new ArrayList<>();
     private String url;
+    private Consumer<String> onClose;
 
     @Override
     public CompletableFuture start(String url) {
@@ -34,8 +36,18 @@ class MockTransport implements Transport {
     }
 
     @Override
+    public void setOnClose(Consumer<String> onCloseCallback) {
+        this.onClose = onCloseCallback;
+    }
+
+    @Override
     public CompletableFuture stop() {
+        onClose.accept(null);
         return CompletableFuture.completedFuture(null);
+    }
+
+    public void stopWithError(String errorMessage) {
+        onClose.accept(errorMessage);
     }
 
     public void receiveMessage(String message) throws Exception {
