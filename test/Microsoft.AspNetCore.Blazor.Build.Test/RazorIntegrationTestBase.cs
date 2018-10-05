@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -368,7 +368,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             public RenderTreeFrame[] LatestBatchReferenceFrames { get; private set; }
 
             public void AttachComponent(IComponent component)
-                => AssignComponentId(component);
+                => AssignRootComponentId(component);
 
             protected override void UpdateDisplay(in RenderBatch renderBatch)
             {

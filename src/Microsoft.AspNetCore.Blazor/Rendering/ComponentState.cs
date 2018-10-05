@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -15,6 +15,7 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
     internal class ComponentState
     {
         private readonly int _componentId; // TODO: Change the type to 'long' when the Mono runtime has more complete support for passing longs in .NET->JS calls
+        private readonly ComponentState _parentComponentState;
         private readonly IComponent _component;
         private readonly Renderer _renderer;
         private RenderTreeBuilder _renderTreeBuilderCurrent;
@@ -27,9 +28,11 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
         /// <param name="renderer">The <see cref="Renderer"/> with which the new instance should be associated.</param>
         /// <param name="componentId">The externally visible identifier for the <see cref="IComponent"/>. The identifier must be unique in the context of the <see cref="Renderer"/>.</param>
         /// <param name="component">The <see cref="IComponent"/> whose state is being tracked.</param>
-        public ComponentState(Renderer renderer, int componentId, IComponent component)
+        /// <param name="parentComponentState">The <see cref="ComponentState"/> for the parent component, or null if this is a root component.</param>
+        public ComponentState(Renderer renderer, int componentId, IComponent component, ComponentState parentComponentState)
         {
             _componentId = componentId;
+            _parentComponentState = parentComponentState;
             _component = component ?? throw new ArgumentNullException(nameof(component));
             _renderer = renderer ?? throw new ArgumentNullException(nameof(renderer));
             _renderTreeBuilderCurrent = new RenderTreeBuilder(renderer);
@@ -89,5 +92,10 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
 
         public void NotifyRenderCompleted()
             => (_component as IHandleAfterRender)?.OnAfterRender();
+
+        // TODO: Remove this once we can remove TemporaryGetParentComponentIdForTest
+        // from Renderer.cs and corresponding unit test.
+        public int? TemporaryParentComponentIdForTests
+            => _parentComponentState?._componentId;
     }
 }

@@ -48,10 +48,14 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
         /// </summary>
         /// <param name="component">The component.</param>
         /// <returns>The component's assigned identifier.</returns>
-        protected int AssignComponentId(IComponent component)
+        protected int AssignRootComponentId(IComponent component)
+            => AssignComponentId(component, -1);
+
+        private int AssignComponentId(IComponent component, int parentComponentId)
         {
             var componentId = _nextComponentId++;
-            var componentState = new ComponentState(this, componentId, component);
+            var parentComponentState = GetOptionalComponentState(parentComponentId);
+            var componentState = new ComponentState(this, componentId, component, parentComponentState);
             _componentStateById.Add(componentId, componentState);
             component.Init(new RenderHandle(this, componentId));
             return componentId;
@@ -92,7 +96,7 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
             }
         }
 
-        internal void InstantiateChildComponentOnFrame(ref RenderTreeFrame frame)
+        internal void InstantiateChildComponentOnFrame(ref RenderTreeFrame frame, int parentComponentId)
         {
             if (frame.FrameType != RenderTreeFrameType.Component)
             {
@@ -105,7 +109,7 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
             }
 
             var newComponent = InstantiateComponent(frame.ComponentType);
-            var newComponentId = AssignComponentId(newComponent);
+            var newComponentId = AssignComponentId(newComponent, parentComponentId);
             frame = frame.WithComponentInstance(newComponentId, newComponent);
         }
 
@@ -139,6 +143,15 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
                 ProcessRenderQueue();
             }
         }
+
+        /// <summary>
+        /// This only needs to exist until there's some other unit-testable functionality
+        /// that makes use of walking the ancestor hierarchy.
+        /// </summary>
+        /// <param name="componentId">The component ID.</param>
+        /// <returns>The parent component's ID, or null if the component was at the root.</returns>
+        internal int? TemporaryGetParentComponentIdForTest(int componentId)
+            => GetRequiredComponentState(componentId).TemporaryParentComponentIdForTests;
 
         private ComponentState GetRequiredComponentState(int componentId)
             => _componentStateById.TryGetValue(componentId, out var componentState)

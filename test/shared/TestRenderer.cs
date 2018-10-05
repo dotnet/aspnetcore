@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -24,8 +24,8 @@ namespace Microsoft.AspNetCore.Blazor.Test.Helpers
         public List<CapturedBatch> Batches { get; }
             = new List<CapturedBatch>();
 
-        public new int AssignComponentId(IComponent component)
-            => base.AssignComponentId(component);
+        public new int AssignRootComponentId(IComponent component)
+            => base.AssignRootComponentId(component);
 
         public new void DispatchEvent(int componentId, int eventHandlerId, UIEventArgs args)
             => base.DispatchEvent(componentId, eventHandlerId, args);

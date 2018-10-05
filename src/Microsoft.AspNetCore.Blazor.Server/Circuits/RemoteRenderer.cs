@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Rendering
         public void AddComponent(Type componentType, string domElementSelector)
         {
             var component = InstantiateComponent(componentType);
-            var componentId = AssignComponentId(component);
+            var componentId = AssignRootComponentId(component);
 
             var attachComponentTask = _jsRuntime.InvokeAsync<object>(
                 "Blazor._internal.attachRootComponentToElement",

@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Rendering
         public void AddComponent(Type componentType, string domElementSelector)
         {
             var component = InstantiateComponent(componentType);
-            var componentId = AssignComponentId(component);
+            var componentId = AssignRootComponentId(component);
 
             // The only reason we're calling this synchronously is so that, if it throws,
             // we get the exception back *before* attempting the first UpdateDisplay
