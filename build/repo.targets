@@ -158,7 +158,7 @@
     <AspNetCoreMajorVersion>$(AspNetCoreMajorVersion)</AspNetCoreMajorVersion>
     <AspNetCoreMinorVersion>$(AspNetCoreMinorVersion)</AspNetCoreMinorVersion>
     <AspNetCorePatchVersion>$(AspNetCorePatchVersion)</AspNetCorePatchVersion>
-    <AspNetCorePrereleaseVersionLabel>$(PrereleaseVersionLabel)</AspNetCorePrereleaseVersionLabel>
+    <AspNetCorePreReleaseVersionLabel>$(PreReleaseLabel)</AspNetCorePreReleaseVersionLabel>
     <AspNetCoreBuildNumber>$(BuildNumber)</AspNetCoreBuildNumber>
     <AspNetCoreBrandingVersion>$(PackageBrandingVersion)</AspNetCoreBrandingVersion>
   </PropertyGroup>

@@ -3,35 +3,43 @@
     <AspNetCoreMajorVersion>2</AspNetCoreMajorVersion>
     <AspNetCoreMinorVersion>1</AspNetCoreMinorVersion>
     <AspNetCorePatchVersion>6</AspNetCorePatchVersion>
-    <VersionPrefix>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).$(AspNetCorePatchVersion)</VersionPrefix>
-    <PrereleaseVersionLabel>rtm</PrereleaseVersionLabel>
+    <PreReleaseLabel>servicing</PreReleaseLabel>
+    <PreReleaseBrandingLabel>Servicing</PreReleaseBrandingLabel>
     <BuildNumber Condition="'$(BuildNumber)' == ''">t000</BuildNumber>
-
-    <!-- The 'human friendly' version to display in installers. In pre-release builds, this might be "2.0.7 Preview 2" -->
-    <PackageBrandingVersion>$(VersionPrefix)</PackageBrandingVersion>
-
+    <VersionPrefix>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).$(AspNetCorePatchVersion)</VersionPrefix>
     <ExperimentalVersionPrefix>0.1.$(AspNetCorePatchVersion)</ExperimentalVersionPrefix>
-    <ExperimentalVersionSuffix>rtm</ExperimentalVersionSuffix>
+    <VersionSuffix>$(PreReleaseLabel)-$(BuildNumber)</VersionSuffix>
+    <BrandingVersionSuffix>$(PreReleaseBrandingLabel) Build $(BuildNumber)</BrandingVersionSuffix>
 
-    <PackageVersionSuffix Condition=" '$(IsFinalBuild)' != 'true' AND '$(PrereleaseVersionLabel)' != '' ">$(PrereleaseVersionLabel)</PackageVersionSuffix>
-    <PackageVersionSuffix Condition=" '$(IsFinalBuild)' != 'true' AND '$(BuildNumber)' != '' ">$(PackageVersionSuffix)-$(BuildNumber)</PackageVersionSuffix>
-    <PackageVersionSuffix Condition=" '$(IsFinalBuild)' == 'true' AND '$(PrereleaseVersionLabel)' != 'rtm' ">$(PrereleaseVersionLabel)-final</PackageVersionSuffix>
-    <!-- NB: VersionSuffix is empty if '$(IsFinalBuild)' == 'true' AND '$(PrereleaseVersionLabel)' == 'rtm' -->
+    <!-- Run the build with /p:IsFinalBuild=true to produce the product with 'final' branding and versioning -->
+    <IsFinalBuild Condition=" '$(IsFinalBuild)' == '' ">false</IsFinalBuild>
+    <IncludePreReleaseLabelInPackageVersion>true</IncludePreReleaseLabelInPackageVersion>
+    <IncludePreReleaseLabelInPackageVersion Condition=" '$(IsFinalBuild)' == 'true' AND ('$(PreReleaseLabel)' == 'servicing' OR '$(PreReleaseLabel)' == 'rtm')">false</IncludePreReleaseLabelInPackageVersion>
 
+    <!-- The 'human friendly' version to display in installers. In pre-release builds, this might be "2.0.7 Preview 2 Build 12356". In final builds, it should be "2.0.7" -->
+    <PackageBrandingVersion>$(VersionPrefix)</PackageBrandingVersion>
+    <PackageBrandingVersion Condition=" '$(IncludePreReleaseLabelInPackageVersion)' == 'true' ">$(PackageBrandingVersion) $(BrandingVersionSuffix)</PackageBrandingVersion>
+
+    <!-- The version in files -->
     <PackageVersion>$(VersionPrefix)</PackageVersion>
-    <PackageVersion Condition=" '$(PackageVersionSuffix)' != '' ">$(VersionPrefix)-$(PackageVersionSuffix)</PackageVersion>
+    <PackageVersion Condition=" '$(IncludePreReleaseLabelInPackageVersion)' == 'true' ">$(VersionPrefix)-$(VersionSuffix)</PackageVersion>
 
-    <!-- Add metadata to the suffix last so it does not appear in package versions. -->
+    <!-- Experimental packages which are not truly supported yet. -->
+    <ExperimentalPackageVersion>$(ExperimentalVersionPrefix)</ExperimentalPackageVersion>
+    <ExperimentalPackageVersion  Condition=" '$(IncludePreReleaseLabelInPackageVersion)' == 'true' ">$(ExperimentalVersionPrefix)-$(VersionSuffix)</ExperimentalPackageVersion>
+
     <VersionMetadata Condition=" '$(DotNetProductBuildId)' != '' ">pb-$(DotNetProductBuildId)</VersionMetadata>
-    <VersionSuffix>$(PrereleaseVersionLabel)</VersionSuffix>
-    <VersionSuffix Condition=" '$(VersionSuffix)' != '' AND '$(BuildNumber)' != '' ">$(VersionSuffix)-$(BuildNumber)</VersionSuffix>
-    <VersionSuffix Condition=" '$(VersionSuffix)' != '' AND '$(VersionMetadata)' != '' ">$(VersionSuffix)+$(VersionMetadata)</VersionSuffix>
+    <VersionSuffix Condition=" '$(VersionMetadata)' != '' ">$(VersionSuffix)+$(VersionMetadata)</VersionSuffix>
 
-    <ExperimentalPackageVersion Condition=" '$(IsFinalBuild)' == 'true' AND '$(ExperimentalVersionSuffix)' == 'rtm' ">$(ExperimentalVersionPrefix)</ExperimentalPackageVersion>
-    <ExperimentalPackageVersion Condition=" '$(IsFinalBuild)' == 'true' AND '$(ExperimentalVersionSuffix)' != 'rtm' ">$(ExperimentalVersionPrefix)-$(ExperimentalVersionSuffix)-final</ExperimentalPackageVersion>
-    <ExperimentalVersionSuffix Condition=" '$(ExperimentalVersionSuffix)' != '' AND '$(BuildNumber)' != '' ">$(ExperimentalVersionSuffix)-$(BuildNumber)</ExperimentalVersionSuffix>
-
-    <SharedFxCliBlobChannel>release/2.1</SharedFxCliBlobChannel>
+    <SharedFxCliBlobChannel>release/$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion)</SharedFxCliBlobChannel>
   </PropertyGroup>
+
+  <!-- Run 'dotnet msbuild version.props' to test changes to this file. -->
+  <Target Name="InspectVersionNumbers">
+    <Message Importance="High" Text="PackageVersion                = '$(PackageVersion)'" />
+    <Message Importance="High" Text="PackageBrandingVersion        = '$(PackageBrandingVersion)'" />
+    <Message Importance="High" Text="ExperimentalPackageVersion    = '$(ExperimentalPackageVersion)'" />
+    <Message Importance="High" Text="SharedFxCliBlobChannel        = '$(SharedFxCliBlobChannel)'" />
+  </Target>
 
 </Project>
