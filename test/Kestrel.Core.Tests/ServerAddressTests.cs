@@ -14,7 +14,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [InlineData("//noscheme")]
         public void FromUriThrowsForUrlsWithoutSchemeDelimiter(string url)
         {
+            #pragma warning disable CS0618 // Type or member is obsolete
             Assert.Throws<FormatException>(() => ServerAddress.FromUrl(url));
+            #pragma warning restore CS0618 // Type or member is obsolete
         }
 
         [Theory]
@@ -28,7 +30,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [InlineData("http:////:5000")]
         public void FromUriThrowsForUrlsWithoutHost(string url)
         {
+            #pragma warning disable CS0618 // Type or member is obsolete
             Assert.Throws<FormatException>(() => ServerAddress.FromUrl(url));
+            #pragma warning restore CS0618 // Type or member is obsolete
         }
 
         [Theory]
@@ -56,7 +60,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [InlineData("http://unix:/tmp/kestrel-test.sock:5000/doesn't/matter", "http", "unix:/tmp/kestrel-test.sock", 0, "5000/doesn't/matter", "http://unix:/tmp/kestrel-test.sock")]
         public void UrlsAreParsedCorrectly(string url, string scheme, string host, int port, string pathBase, string toString)
         {
+            #pragma warning disable CS0618 // Type or member is obsolete
             var serverAddress = ServerAddress.FromUrl(url);
+            #pragma warning restore CS0618 // Type or member is obsolete
 
             Assert.Equal(scheme, serverAddress.Scheme);
             Assert.Equal(host, serverAddress.Host);

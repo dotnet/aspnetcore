@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core
 {
+    [Obsolete("This is obsolete and will be removed in a future version. See https://github.com/aspnet/KestrelHttpServer/issues/2230")]
     public class ServerAddress
     {
         public string Host { get; private set; }
