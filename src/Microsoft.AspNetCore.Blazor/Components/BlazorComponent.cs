@@ -189,7 +189,7 @@ namespace Microsoft.AspNetCore.Blazor.Components
             }
         }
 
-        private void HandleException(Exception ex)
+        private static void HandleException(Exception ex)
         {
             if (ex is AggregateException && ex.InnerException != null)
             {
