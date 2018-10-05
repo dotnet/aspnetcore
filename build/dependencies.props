@@ -142,7 +142,7 @@
     <SeleniumWebDriverMicrosoftDriverPackageVersion>17.17134.0</SeleniumWebDriverMicrosoftDriverPackageVersion>
     <SeleniumWebDriverPackageVersion>3.12.1</SeleniumWebDriverPackageVersion>
     <SerilogExtensionsLoggingPackageVersion>1.4.0</SerilogExtensionsLoggingPackageVersion>
-    <SerilogSinksFilePackageVersion>3.2.0</SerilogSinksFilePackageVersion>
+    <SerilogSinksFilePackageVersion>4.0.0</SerilogSinksFilePackageVersion>
     <SQLitePCLRawBundleGreenPackageVersion>1.1.11</SQLitePCLRawBundleGreenPackageVersion>
     <SQLitePCLRawBundleSqlcipherPackageVersion>1.1.11</SQLitePCLRawBundleSqlcipherPackageVersion>
     <SQLitePCLRawCorePackageVersion>1.1.11</SQLitePCLRawCorePackageVersion>
