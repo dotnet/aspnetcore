@@ -87,12 +87,12 @@ $repos = @(
     @{
         Name   = 'Razor.LiveShare'
         Checks = @('Razor.LiveShare-ci')
-        Branches = @('master', 'release/2.2')
+        Branches = @('master')
     },
     @{
         Name   = 'Razor.VSCode'
-        Checks = @('Razor.VSCode-ci')
-        Branches = @('master', 'release/2.2')
+        Checks = @('Razor.VSCode-CI-Official')
+        Branches = @('master')
     },
     @{
         Name   = 'Razor'
@@ -102,7 +102,7 @@ $repos = @(
     @{
         Name   = 'RazorTooling'
         Checks = @('RazorTooling-ci')
-        Branches = @('master', 'release/2.2')
+        Branches = @('master')
     },
     @{
         Name   = 'Routing'
