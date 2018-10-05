@@ -30,6 +30,7 @@ namespace CodeGenerator
             {
                 "IHttpUpgradeFeature",
                 "IHttp2StreamIdFeature",
+                "IHttpResponseTrailersFeature",
                 "IResponseCookiesFeature",
                 "IItemsFeature",
                 "ITlsConnectionFeature",

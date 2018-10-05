@@ -97,7 +97,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             throw new ArgumentException(CoreStrings.KeyAlreadyExists);
         }
 
-        int ICollection<KeyValuePair<string, StringValues>>.Count => GetCountFast();
+        public int Count => GetCountFast();
 
         bool ICollection<KeyValuePair<string, StringValues>>.IsReadOnly => _isReadOnly;
 

@@ -269,6 +269,21 @@ namespace CodeGenerator
                 PrimaryHeader = responsePrimaryHeaders.Contains("Content-Length")
             }})
             .ToArray();
+
+            var responseTrailers = new[]
+            {
+                "ETag",
+            }
+            .Select((header, index) => new KnownHeader
+            {
+                Name = header,
+                Index = index,
+                EnhancedSetter = enhancedHeaders.Contains(header),
+                ExistenceCheck = responseHeadersExistence.Contains(header),
+                PrimaryHeader = responsePrimaryHeaders.Contains(header)
+            })
+            .ToArray();
+
             // 63 for responseHeaders as it steals one bit for Content-Length in CopyTo(ref MemoryPoolIterator output)
             Debug.Assert(responseHeaders.Length <= 63);
             Debug.Assert(responseHeaders.Max(x => x.Index) <= 62);
@@ -288,6 +303,13 @@ namespace CodeGenerator
                     HeadersByLength = responseHeaders.GroupBy(x => x.Name.Length),
                     ClassName = "HttpResponseHeaders",
                     Bytes = responseHeaders.SelectMany(header => header.Bytes).ToArray()
+                },
+                new
+                {
+                    Headers = responseTrailers,
+                    HeadersByLength = responseTrailers.GroupBy(x => x.Name.Length),
+                    ClassName = "HttpResponseTrailers",
+                    Bytes = responseTrailers.SelectMany(header => header.Bytes).ToArray()
                 }
             };
             foreach (var loop in loops.Where(l => l.Bytes != null))
@@ -402,7 +424,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         }}
 
         protected override void SetValueFast(string key, in StringValues value)
-        {{{(loop.ClassName == "HttpResponseHeaders" ? @"
+        {{{(loop.ClassName != "HttpRequestHeaders" ? @"
             ValidateHeaderValueCharacters(value);" : "")}
             switch (key.Length)
             {{{Each(loop.HeadersByLength, byLength => $@"
@@ -424,7 +446,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         }}
 
         protected override bool AddValueFast(string key, in StringValues value)
-        {{{(loop.ClassName == "HttpResponseHeaders" ? @"
+        {{{(loop.ClassName != "HttpRequestHeaders" ? @"
             ValidateHeaderValueCharacters(value);" : "")}
             switch (key.Length)
             {{{Each(loop.HeadersByLength, byLength => $@"

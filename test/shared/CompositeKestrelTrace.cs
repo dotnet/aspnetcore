@@ -189,6 +189,12 @@ namespace Microsoft.AspNetCore.Testing
             _trace2.HPackDecodingError(connectionId, streamId, ex);
         }
 
+        public void HPackEncodingError(string connectionId, int streamId, HPackEncodingException ex)
+        {
+            _trace1.HPackEncodingError(connectionId, streamId, ex);
+            _trace2.HPackEncodingError(connectionId, streamId, ex);
+        }
+
         public void Http2StreamResetAbort(string traceIdentifier, Http2ErrorCode error, ConnectionAbortedException abortReason)
         {
             _trace1.Http2StreamResetAbort(traceIdentifier, error, abortReason);

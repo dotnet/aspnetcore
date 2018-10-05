@@ -67,6 +67,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
         void HPackDecodingError(string connectionId, int streamId, HPackDecodingException ex);
 
+        void HPackEncodingError(string connectionId, int streamId, HPackEncodingException ex);
+
         void Http2FrameReceived(string connectionId, Http2Frame frame);
 
         void Http2FrameSending(string connectionId, Http2Frame frame);

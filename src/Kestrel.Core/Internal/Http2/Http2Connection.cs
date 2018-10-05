@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             var http2Limits = httpLimits.Http2;
 
             _context = context;
-            _frameWriter = new Http2FrameWriter(context.Transport.Output, context.ConnectionContext, _outputFlowControl, context.TimeoutControl, context.ConnectionId, context.ServiceContext.Log);
+            _frameWriter = new Http2FrameWriter(context.Transport.Output, context.ConnectionContext, this, _outputFlowControl, context.TimeoutControl, context.ConnectionId, context.ServiceContext.Log);
             _serverSettings.MaxConcurrentStreams = (uint)http2Limits.MaxStreamsPerConnection;
             _serverSettings.MaxFrameSize = (uint)http2Limits.MaxFrameSize;
             _serverSettings.HeaderTableSize = (uint)http2Limits.HeaderTableSize;

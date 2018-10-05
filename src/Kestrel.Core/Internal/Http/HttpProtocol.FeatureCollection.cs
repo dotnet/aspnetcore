@@ -209,9 +209,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _currentIHttpUpgradeFeature = this;
         }
 
-        protected void ResetIHttp2StreamIdFeature()
+        protected void ResetHttp2Features()
         {
             _currentIHttp2StreamIdFeature = this;
+            _currentIHttpResponseTrailersFeature = this;
         }
 
         void IHttpResponseFeature.OnStarting(Func<object, Task> callback, object state)
