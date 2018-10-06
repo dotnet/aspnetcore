@@ -95,23 +95,51 @@ namespace Microsoft.AspNetCore.Routing
         // blocking operation if you have a low core count and enough work to do.
         private Task<Matcher> InitializeAsync()
         {
-            if (_initializationTask != null)
+            var initializationTask = _initializationTask;
+            if (initializationTask != null)
             {
-                return _initializationTask;
+                return initializationTask;
             }
 
-            var initializationTask = new TaskCompletionSource<Matcher>();
-            if (Interlocked.CompareExchange<Task<Matcher>>(
-                ref _initializationTask,
-                initializationTask.Task,
-                null) == null)
+            return InitializeCoreAsync();
+        }
+
+        private Task<Matcher> InitializeCoreAsync()
+        {
+            var initialization = new TaskCompletionSource<Matcher>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var initializationTask = Interlocked.CompareExchange(ref _initializationTask, initialization.Task, null);
+            if (initializationTask != null)
             {
-                // This thread won the race, do the initialization.
+                // This thread lost the race, join the existing task.
+                return initializationTask;
+            }
+
+            // This thread won the race, do the initialization.
+            try
+            {
                 var matcher = _matcherFactory.CreateMatcher(_endpointDataSource);
-                initializationTask.SetResult(matcher);
-            }
 
-            return _initializationTask;
+                // Now replace the initialization task with one created with the default execution context.
+                // This is important because capturing the execution context will leak memory in ASP.NET Core.
+                using (ExecutionContext.SuppressFlow())
+                {
+                    _initializationTask = Task.FromResult(matcher);
+                }
+
+                // Complete the task, this will unblock any requests that came in while initializing.
+                initialization.SetResult(matcher);
+                return initialization.Task;
+            }
+            catch (Exception ex)
+            {
+                // Allow initialization to occur again. Since DataSources can change, it's possible
+                // for the developer to correct the data causing the failure.
+                _initializationTask = null;
+
+                // Complete the task, this will throw for any requests that came in while initializing.
+                initialization.SetException(ex);
+                return initialization.Task;
+            }
         }
 
         private static class Log
