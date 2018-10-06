@@ -338,7 +338,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         }
 
         [Fact]
-        public void ShouldRunActionConstraints_IgnoresIgnorableConstraints()
+        public void AppliesToEndpoints_IgnoresIgnorableConstraints()
         {
             // Arrange
             var actions = new ActionDescriptor[]
@@ -369,11 +369,12 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                     },
                 },
             };
+            var endpoints = actions.Select(CreateEndpoint).ToArray();
 
             var selector = CreateSelector(actions);
 
             // Act
-            var result = selector.ShouldRunActionConstraints;
+            var result = selector.AppliesToEndpoints(endpoints);
 
             // Assert
             Assert.False(result);
@@ -397,11 +398,12 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                     },
                 },
             };
+            var endpoints = actions.Select(CreateEndpoint).ToArray();
 
             var selector = CreateSelector(actions);
 
             // Act
-            var result = selector.ShouldRunActionConstraints;
+            var result = selector.AppliesToEndpoints(endpoints);
 
             // Assert
             Assert.True(result);

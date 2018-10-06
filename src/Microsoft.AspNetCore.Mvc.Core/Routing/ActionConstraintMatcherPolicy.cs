@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Matching;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc.Routing
 {
@@ -24,7 +23,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         // We need to be able to run IActionConstraints on Endpoints that aren't associated
         // with an action. This is a sentinel value we use when the endpoint isn't from MVC.
         internal static readonly ActionDescriptor NonAction = new ActionDescriptor();
-        
+
         private readonly ActionConstraintCache _actionConstraintCache;
 
         public ActionConstraintMatcherPolicy(ActionConstraintCache actionConstraintCache)
@@ -35,27 +34,59 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         // Run really late.
         public override int Order => 100000;
 
-        // Internal for testing
-        internal bool ShouldRunActionConstraints => _actionConstraintCache.CurrentCache.HasActionConstraints;
-
-        public Task ApplyAsync(HttpContext httpContext, EndpointSelectorContext context, CandidateSet candidateSet)
+        public bool AppliesToEndpoints(IReadOnlyList<Endpoint> endpoints)
         {
-            // PERF: we can skip over action constraints if there aren't any app-wide.
-            //
-            // Running action constraints (or just checking for them) in a candidate set
-            // is somewhat expensive compared to other routing operations. This should only
-            // happen if user-code adds action constraints.
-            if (ShouldRunActionConstraints)
+            if (endpoints == null)
             {
-                ApplyActionConstraints(httpContext, candidateSet);
+                throw new ArgumentNullException(nameof(endpoints));
             }
 
-            return Task.CompletedTask;
+            // We can skip over action constraints when they aren't any for this set
+            // of endpoints. This happens once on startup so it removes this component
+            // from the code path in most scenarios.
+            for (var i = 0; i < endpoints.Count; i++)
+            {
+                var endpoint = endpoints[i];
+                var action = endpoint.Metadata.GetMetadata<ActionDescriptor>();
+                if (action?.ActionConstraints?.Count > 0 && HasSignificantActionConstraint(action))
+                {
+                    // We need to check for some specific action constraint implementations.
+                    // We've implemented consumes, and HTTP method support inside endpoint routing, so 
+                    // we don't need to run an 'action constraint phase' if those are the only constraints.
+                    return true;
+                }
+            }
+
+            return false;
+
+            bool HasSignificantActionConstraint(ActionDescriptor a)
+            {
+                for (var i = 0; i < a.ActionConstraints.Count; i++)
+                {
+                    var actionConstraint = a.ActionConstraints[i];
+                    if (actionConstraint.GetType() == typeof(HttpMethodActionConstraint))
+                    {
+                        // This one is OK, we implement this in endpoint routing.
+                    }
+                    else if (actionConstraint.GetType().FullName == "Microsoft.AspNetCore.Mvc.Cors.Internal.CorsHttpMethodActionConstraint")
+                    {
+                        // This one is OK, we implement this in endpoint routing.
+                    }
+                    else if (actionConstraint.GetType() == typeof(ConsumesAttribute))
+                    {
+                        // This one is OK, we implement this in endpoint routing.
+                    }
+                    else
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
         }
-        
-        private void ApplyActionConstraints(
-            HttpContext httpContext,
-            CandidateSet candidateSet)
+
+        public Task ApplyAsync(HttpContext httpContext, EndpointSelectorContext context, CandidateSet candidateSet)
         {
             var finalMatches = EvaluateActionConstraints(httpContext, candidateSet);
 
@@ -74,6 +105,8 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                     candidateSet.SetValidity(finalMatches[i].index, true);
                 }
             }
+
+            return Task.CompletedTask;
         }
 
         // This is almost the same as the code in ActionSelector, but we can't really share the logic
@@ -171,8 +204,10 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             var endpointsWithConstraint = new List<(int index, ActionSelectorCandidate candidate)>();
             var endpointsWithoutConstraint = new List<(int index, ActionSelectorCandidate candidate)>();
 
-            var constraintContext = new ActionConstraintContext();
-            constraintContext.Candidates = items.Select(i => i.candidate).ToArray();
+            var constraintContext = new ActionConstraintContext
+            {
+                Candidates = items.Select(i => i.candidate).ToArray()
+            };
 
             // Perf: Avoid allocations
             for (var i = 0; i < items.Count; i++)

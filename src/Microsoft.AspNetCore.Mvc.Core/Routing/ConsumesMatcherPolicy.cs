@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 
         public IComparer<Endpoint> Comparer { get; } = new ConsumesMetadataEndpointComparer();
 
-        public bool AppliesToNode(IReadOnlyList<Endpoint> endpoints)
+        public bool AppliesToEndpoints(IReadOnlyList<Endpoint> endpoints)
         {
             if (endpoints == null)
             {
@@ -173,7 +173,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             return new ConsumesPolicyJumpTable(exitDestination, ordered);
         }
 
-        private int GetScore(MediaType mediaType)
+        private int GetScore(in MediaType mediaType)
         {
             // Higher score == lower priority - see comments on MediaType.
             if (mediaType.MatchesAllTypes)
