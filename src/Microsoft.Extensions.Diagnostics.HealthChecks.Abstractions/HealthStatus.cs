@@ -12,6 +12,10 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
     /// and the corresponding value of <see cref="HealthCheckRegistration.FailureStatus"/>.
     /// </para>
     /// <para>
+    /// A status of <see cref="Unhealthy"/> should be considered the default value for a failing health check. Application
+    /// developers may configure a health check to report a different status as desired.
+    /// </para>
+    /// <para>
     /// The values of this enum or ordered from least healthy to most healthy. So <see cref="HealthStatus.Degraded"/> is
     /// greater than <see cref="HealthStatus.Unhealthy"/> but less than <see cref="HealthStatus.Healthy"/>.
     /// </para>
