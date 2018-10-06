@@ -63,7 +63,7 @@ namespace RoutingSample.Web
                 .ConfigureLogging(b =>
                 {
                     b.AddConsole();
-                    b.SetMinimumLevel(LogLevel.Debug);
+                    b.SetMinimumLevel(LogLevel.Critical);
                 })
                 .UseContentRoot(Environment.CurrentDirectory)
                 .UseStartup(startupType);

@@ -11,18 +11,6 @@ namespace Microsoft.AspNetCore.Routing.Matching
 {
     internal class DefaultEndpointSelector : EndpointSelector
     {
-        private readonly IEndpointSelectorPolicy[] _selectorPolicies;
-
-        public DefaultEndpointSelector(IEnumerable<MatcherPolicy> matcherPolicies)
-        {
-            if (matcherPolicies == null)
-            {
-                throw new ArgumentNullException(nameof(matcherPolicies));
-            }
-
-            _selectorPolicies = matcherPolicies.OrderBy(p => p.Order).OfType<IEndpointSelectorPolicy>().ToArray();
-        }
-
         public override Task SelectAsync(
             HttpContext httpContext,
             EndpointSelectorContext context,
@@ -43,14 +31,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 throw new ArgumentNullException(nameof(candidateSet));
             }
 
-            if (_selectorPolicies.Length > 0)
-            {
-                // Slow path: we need async to run policies
-                return SelectAsyncSlow(httpContext, context, candidateSet);
-            }
-
             // Fast path: We can specialize for trivial numbers of candidates since there can
-            // be no ambiguities and we don't need to run policies.
+            // be no ambiguities
             switch (candidateSet.Count)
             {
                 case 0:
@@ -81,25 +63,6 @@ namespace Microsoft.AspNetCore.Routing.Matching
             }
 
             return Task.CompletedTask;
-        }
-
-        private async Task SelectAsyncSlow(
-            HttpContext httpContext,
-            EndpointSelectorContext context,
-            CandidateSet candidateSet)
-        {
-            var selectorPolicies = _selectorPolicies;
-            for (var i = 0; i < selectorPolicies.Length; i++)
-            {
-                await selectorPolicies[i].ApplyAsync(httpContext, context, candidateSet);
-                if (context.Endpoint != null)
-                {
-                    // This is a short circuit, the selector chose an endpoint.
-                    return;
-                }
-            }
-
-            ProcessFinalCandidates(httpContext, context, candidateSet);
         }
 
         private static void ProcessFinalCandidates(
