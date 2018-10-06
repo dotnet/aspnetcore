@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
     public class ConsumesMatcherPolicyTest
     {
         [Fact]
-        public void AppliesToNode_EndpointWithoutMetadata_ReturnsFalse()
+        public void AppliesToEndpoints_EndpointWithoutMetadata_ReturnsFalse()
         {
             // Arrange
             var endpoints = new[] { CreateEndpoint("/", null), };
@@ -24,14 +24,14 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             var policy = CreatePolicy();
 
             // Act
-            var result = policy.AppliesToNode(endpoints);
+            var result = policy.AppliesToEndpoints(endpoints);
 
             // Assert
             Assert.False(result);
         }
 
         [Fact]
-        public void AppliesToNode_EndpointWithoutContentTypes_ReturnsFalse()
+        public void AppliesToEndpoints_EndpointWithoutContentTypes_ReturnsFalse()
         {
             // Arrange
             var endpoints = new[]
@@ -42,14 +42,14 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             var policy = CreatePolicy();
 
             // Act
-            var result = policy.AppliesToNode(endpoints);
+            var result = policy.AppliesToEndpoints(endpoints);
 
             // Assert
             Assert.False(result);
         }
 
         [Fact]
-        public void AppliesToNode_EndpointHasContentTypes_ReturnsTrue()
+        public void AppliesToEndpoints_EndpointHasContentTypes_ReturnsTrue()
         {
             // Arrange
             var endpoints = new[]
@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             var policy = CreatePolicy();
 
             // Act
-            var result = policy.AppliesToNode(endpoints);
+            var result = policy.AppliesToEndpoints(endpoints);
 
             // Assert
             Assert.True(result);
