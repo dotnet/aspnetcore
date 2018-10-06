@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         private readonly EndpointSelector _selector;
         private readonly DfaState[] _states;
         private readonly int _maxSegmentCount;
-        
+
         public DfaMatcher(ILogger<DfaMatcher> logger, EndpointSelector selector, DfaState[] states, int maxSegmentCount)
         {
             _logger = logger;
@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             // FindCandidateSet will process the DFA and return a candidate set. This does
             // some preliminary matching of the URL (mostly the literal segments).
-            var candidates = FindCandidateSet(httpContext, path, segments);
+            var (candidates, policies) = FindCandidateSet(httpContext, path, segments);
             if (candidates.Length == 0)
             {
                 if (log)
@@ -165,10 +165,16 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 }
             }
 
-            return _selector.SelectAsync(httpContext, context, candidateSet);
+            if (policies.Length == 0)
+            {
+                // Perf: avoid a state machine if there are no polices
+                return _selector.SelectAsync(httpContext, context, candidateSet);
+            }
+
+            return SelectEndpointWithPoliciesAsync(httpContext, context, policies, candidateSet);
         }
 
-        internal Candidate[] FindCandidateSet(
+        internal (Candidate[] candidates, IEndpointSelectorPolicy[] policies) FindCandidateSet(
             HttpContext httpContext,
             string path,
             ReadOnlySpan<PathSegment> segments)
@@ -190,7 +196,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 policyTransitions = states[destination].PolicyTransitions;
             }
 
-            return states[destination].Candidates;
+            return (states[destination].Candidates, states[destination].Policies);
         }
 
         private void ProcessCaptures(
@@ -239,7 +245,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         {
             for (var i = 0; i < complexSegments.Length; i++)
             {
-                (var complexSegment, var segmentIndex) = complexSegments[i]; 
+                (var complexSegment, var segmentIndex) = complexSegments[i];
                 var segment = segments[segmentIndex];
                 var text = path.Substring(segment.Start, segment.Length);
                 if (!RoutePatternMatcher.MatchComplexSegment(complexSegment, text, values))
@@ -263,12 +269,32 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 var constraint = constraints[i];
                 if (!constraint.Value.Match(httpContext, NullRouter.Instance, constraint.Key, values, RouteDirection.IncomingRequest))
                 {
-                    Logger.CandidateRejectedByConstraint(_logger, httpContext.Request.Path, endpoint, constraint.Key, constraint.Value, values[constraint.Key]); 
+                    Logger.CandidateRejectedByConstraint(_logger, httpContext.Request.Path, endpoint, constraint.Key, constraint.Value, values[constraint.Key]);
                     return false;
                 }
             }
 
             return true;
+        }
+
+        private async Task SelectEndpointWithPoliciesAsync(
+            HttpContext httpContext,
+            EndpointSelectorContext context,
+            IEndpointSelectorPolicy[] policies,
+            CandidateSet candidateSet)
+        {
+            for (var i = 0; i < policies.Length; i++)
+            {
+                var policy = policies[i];
+                await policy.ApplyAsync(httpContext, context, candidateSet);
+                if (context.Endpoint != null)
+                {
+                    // This is a short circuit, the selector chose an endpoint.
+                    return;
+                }
+            }
+
+            await _selector.SelectAsync(httpContext, context, candidateSet);
         }
 
         internal static class EventIds

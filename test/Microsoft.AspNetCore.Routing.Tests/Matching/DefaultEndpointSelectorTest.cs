@@ -174,80 +174,6 @@ test: /test3", ex.Message);
             Assert.Null(context.Endpoint);
         }
 
-        [Fact]
-        public async Task SelectAsync_RunsEndpointSelectorPolicies()
-        {
-            // Arrange
-            var endpoints = new RouteEndpoint[] { CreateEndpoint("/test1"), CreateEndpoint("/test2"), CreateEndpoint("/test3"), };
-            var scores = new int[] { 0, 0, 1 };
-            var candidateSet = CreateCandidateSet(endpoints, scores);
-
-            var policy = new Mock<MatcherPolicy>();
-            policy
-                .As<IEndpointSelectorPolicy>()
-                .Setup(p => p.ApplyAsync(It.IsAny<HttpContext>(), It.IsAny<EndpointSelectorContext>(), It.IsAny<CandidateSet>()))
-                .Returns<HttpContext, EndpointSelectorContext, CandidateSet>((c, f, cs) =>
-                {
-                    cs.SetValidity(1, false);
-                    return Task.CompletedTask;
-                });
-
-            candidateSet.SetValidity(0, false);
-            candidateSet.SetValidity(1, true);
-            candidateSet.SetValidity(2, true);
-
-            var (httpContext, context) = CreateContext();
-            var selector = CreateSelector(policy.Object);
-
-            // Act
-            await selector.SelectAsync(httpContext, context, candidateSet);
-
-            // Assert
-            Assert.Same(endpoints[2], context.Endpoint);
-        }
-
-        [Fact]
-        public async Task SelectAsync_RunsEndpointSelectorPolicies_CanShortCircuit()
-        {
-            // Arrange
-            var endpoints = new RouteEndpoint[] { CreateEndpoint("/test1"), CreateEndpoint("/test2"), CreateEndpoint("/test3"), };
-            var scores = new int[] { 0, 0, 1 };
-            var candidateSet = CreateCandidateSet(endpoints, scores);
-
-            var policy1 = new Mock<MatcherPolicy>();
-            policy1
-                .As<IEndpointSelectorPolicy>()
-                .Setup(p => p.ApplyAsync(It.IsAny<HttpContext>(), It.IsAny<EndpointSelectorContext>(), It.IsAny<CandidateSet>()))
-                .Returns<HttpContext, EndpointSelectorContext, CandidateSet>((c, f, cs) =>
-                {
-                    f.Endpoint = cs[0].Endpoint;
-                    return Task.CompletedTask;
-                });
-
-            // This should never run, it's after policy1 which short circuits
-            var policy2 = new Mock<MatcherPolicy>();
-            policy2
-                .SetupGet(p => p.Order)
-                .Returns(1000);
-            policy2
-                .As<IEndpointSelectorPolicy>()
-                .Setup(p => p.ApplyAsync(It.IsAny<HttpContext>(), It.IsAny<EndpointSelectorContext>(), It.IsAny<CandidateSet>()))
-                .Throws(new InvalidOperationException());
-
-            candidateSet.SetValidity(0, false);
-            candidateSet.SetValidity(1, true);
-            candidateSet.SetValidity(2, true);
-
-            var (httpContext, context) = CreateContext();
-            var selector = CreateSelector(policy1.Object, policy2.Object);
-
-            // Act
-            await selector.SelectAsync(httpContext, context, candidateSet);
-
-            // Assert
-            Assert.Same(endpoints[0], context.Endpoint);
-        }
-
         private static (HttpContext httpContext, EndpointSelectorContext context) CreateContext()
         {
             var context = new EndpointSelectorContext();
@@ -273,9 +199,9 @@ test: /test3", ex.Message);
             return new CandidateSet(endpoints, new RouteValueDictionary[endpoints.Length], scores);
         }
 
-        private static DefaultEndpointSelector CreateSelector(params MatcherPolicy[] policies)
+        private static DefaultEndpointSelector CreateSelector()
         {
-            return new DefaultEndpointSelector(policies);
+            return new DefaultEndpointSelector();
         }
     }
 }

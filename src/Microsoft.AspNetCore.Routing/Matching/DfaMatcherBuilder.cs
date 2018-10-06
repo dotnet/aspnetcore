@@ -303,8 +303,10 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var exitDestination = stateCount - 1;
             AddNode(root, states, exitDestination);
 
+            // The root state only has a jump table.
             states[exitDestination] = new DfaState(
                 Array.Empty<Candidate>(),
+                Array.Empty<IEndpointSelectorPolicy>(),
                 JumpTableBuilder.Build(exitDestination, exitDestination, null),
                 null);
 
@@ -375,8 +377,30 @@ namespace Microsoft.AspNetCore.Routing.Matching
             }
 
             var candidates = CreateCandidates(node.Matches);
+
+            // Perf: most of the time there aren't any endpoint selector policies, create
+            // this lazily.
+            List<IEndpointSelectorPolicy> endpointSelectorPolicies = null;
+            if (node.Matches?.Count > 0)
+            {
+                for (var i = 0; i < _policies.Length; i++)
+                {
+                    if (_policies[i] is IEndpointSelectorPolicy endpointSelectorPolicy &&
+                        endpointSelectorPolicy.AppliesToEndpoints(node.Matches))
+                    {
+                        if (endpointSelectorPolicies == null)
+                        {
+                            endpointSelectorPolicies = new List<IEndpointSelectorPolicy>();
+                        }
+
+                        endpointSelectorPolicies.Add(endpointSelectorPolicy);
+                    }
+                }
+            }
+
             states[currentStateIndex] = new DfaState(
                 candidates,
+                endpointSelectorPolicies?.ToArray() ?? Array.Empty<IEndpointSelectorPolicy>(),
                 JumpTableBuilder.Build(currentDefaultDestination, currentExitDestination, pathEntries),
                 BuildPolicy(currentExitDestination, node.NodeBuilder, policyEntries));
 
@@ -617,7 +641,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 for (var j = 0; j < work.Count; j++)
                 {
                     var parent = work[j];
-                    if (!nodeBuilder.AppliesToNode(parent.Matches ?? (IReadOnlyList<Endpoint>)Array.Empty<Endpoint>()))
+                    if (!nodeBuilder.AppliesToEndpoints(parent.Matches ?? (IReadOnlyList<Endpoint>)Array.Empty<Endpoint>()))
                     {
                         // This node-builder doesn't care about this node, so add it to the list
                         // to be processed by the next node-builder.

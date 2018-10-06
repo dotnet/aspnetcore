@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -28,12 +29,24 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 template);
         }
 
-        private Matcher CreateDfaMatcher(EndpointDataSource dataSource, EndpointSelector endpointSelector = null, ILoggerFactory loggerFactory = null)
+        private Matcher CreateDfaMatcher(
+            EndpointDataSource dataSource,
+            MatcherPolicy[] policies = null,
+            EndpointSelector endpointSelector = null,
+            ILoggerFactory loggerFactory = null)
         {
             var serviceCollection = new ServiceCollection()
                 .AddLogging()
                 .AddOptions()
                 .AddRouting();
+
+            if (policies != null)
+            {
+                for (var i = 0; i < policies.Length; i++)
+                {
+                    serviceCollection.AddSingleton<MatcherPolicy>(policies[i]);
+                }
+            }
 
             if (endpointSelector != null)
             {
@@ -152,7 +165,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 endpoint2
             });
 
-            var matcher = CreateDfaMatcher(endpointDataSource, endpointSelector.Object);
+            var matcher = CreateDfaMatcher(endpointDataSource, endpointSelector: endpointSelector.Object);
 
             var (httpContext, context) = CreateContext();
             httpContext.Request.Path = "/Teams";
@@ -329,6 +342,126 @@ namespace Microsoft.AspNetCore.Routing.Matching
                     Assert.Equal(DfaMatcher.EventIds.CandidateNotValid, log.EventId);
                     Assert.Equal("Endpoint '/x-{id}-y' with route pattern '/x-{id}-y' is not valid for the request path '/One'", log.Message);
                 });
+        }
+
+        [Fact]
+        public async Task MatchAsync_RunsApplicableEndpointSelectorPolicies()
+        {
+            // Arrange
+            var dataSource = new DefaultEndpointDataSource(new List<Endpoint>
+            {
+                CreateEndpoint("/test/{id:alpha}", 0),
+                CreateEndpoint("/test/{id:int}", 0),
+                CreateEndpoint("/test/{id}", 0),
+            });
+
+            var policy = new Mock<MatcherPolicy>();
+            policy
+                .As<IEndpointSelectorPolicy>()
+                .Setup(p => p.AppliesToEndpoints(It.IsAny<IReadOnlyList<Endpoint>>())).Returns(true);
+            policy
+                .As<IEndpointSelectorPolicy>()
+                .Setup(p => p.ApplyAsync(It.IsAny<HttpContext>(), It.IsAny<EndpointSelectorContext>(), It.IsAny<CandidateSet>()))
+                .Returns<HttpContext, EndpointSelectorContext, CandidateSet>((c, f, cs) =>
+                {
+                    cs.SetValidity(1, false);
+                    return Task.CompletedTask;
+                });
+
+            var matcher = CreateDfaMatcher(dataSource, policies: new[] { policy.Object, });
+
+            var (httpContext, context) = CreateContext();
+            httpContext.Request.Path = "/test/17";
+            
+            // Act
+            await matcher.MatchAsync(httpContext, context);
+
+            // Assert
+            Assert.Same(dataSource.Endpoints[2], context.Endpoint);
+        }
+
+        [Fact]
+        public async Task MatchAsync_SkipsNonApplicableEndpointSelectorPolicies()
+        {
+            // Arrange
+            var dataSource = new DefaultEndpointDataSource(new List<Endpoint>
+            {
+                CreateEndpoint("/test/{id:alpha}", 0),
+                CreateEndpoint("/test/{id:int}", 0),
+                CreateEndpoint("/test/{id}", 0),
+            });
+
+            var policy = new Mock<MatcherPolicy>();
+            policy
+                .As<IEndpointSelectorPolicy>()
+                .Setup(p => p.AppliesToEndpoints(It.IsAny<IReadOnlyList<Endpoint>>())).Returns(false);
+            policy
+                .As<IEndpointSelectorPolicy>()
+                .Setup(p => p.ApplyAsync(It.IsAny<HttpContext>(), It.IsAny<EndpointSelectorContext>(), It.IsAny<CandidateSet>()))
+                .Returns<HttpContext, EndpointSelectorContext, CandidateSet>((c, f, cs) =>
+                {
+                    throw null; // Won't be called.
+                });
+
+            var matcher = CreateDfaMatcher(dataSource, policies: new[] { policy.Object, });
+
+            var (httpContext, context) = CreateContext();
+            httpContext.Request.Path = "/test/17";
+
+            // Act
+            await matcher.MatchAsync(httpContext, context);
+
+            // Assert
+            Assert.Same(dataSource.Endpoints[1], context.Endpoint);
+        }
+
+        [Fact]
+        public async Task MatchAsync_RunsEndpointSelectorPolicies_CanShortCircuit()
+        {
+            // Arrange
+            var dataSource = new DefaultEndpointDataSource(new List<Endpoint>
+            {
+                CreateEndpoint("/test/{id:alpha}", 0),
+                CreateEndpoint("/test/{id:int}", 0),
+                CreateEndpoint("/test/{id}", 0),
+            });
+
+            var policy1 = new Mock<MatcherPolicy>();
+            policy1
+                .As<IEndpointSelectorPolicy>()
+                .Setup(p => p.AppliesToEndpoints(It.IsAny<IReadOnlyList<Endpoint>>())).Returns(true);
+            policy1
+                .As<IEndpointSelectorPolicy>()
+                .Setup(p => p.ApplyAsync(It.IsAny<HttpContext>(), It.IsAny<EndpointSelectorContext>(), It.IsAny<CandidateSet>()))
+                .Returns<HttpContext, EndpointSelectorContext, CandidateSet>((c, f, cs) =>
+                {
+                    f.Endpoint = cs[0].Endpoint;
+                    return Task.CompletedTask;
+                });
+
+            // This should never run, it's after policy1 which short circuits
+            var policy2 = new Mock<MatcherPolicy>();
+            policy2
+                .SetupGet(p => p.Order)
+                .Returns(1000);
+            policy2
+                .As<IEndpointSelectorPolicy>()
+                .Setup(p => p.AppliesToEndpoints(It.IsAny<IReadOnlyList<Endpoint>>())).Returns(true);
+            policy2
+                .As<IEndpointSelectorPolicy>()
+                .Setup(p => p.ApplyAsync(It.IsAny<HttpContext>(), It.IsAny<EndpointSelectorContext>(), It.IsAny<CandidateSet>()))
+                .Throws(new InvalidOperationException());
+
+            var matcher = CreateDfaMatcher(dataSource, policies: new[] { policy1.Object, policy2.Object, });
+
+            var (httpContext, context) = CreateContext();
+            httpContext.Request.Path = "/test/17";
+
+            // Act
+            await matcher.MatchAsync(httpContext, context);
+
+            // Assert
+            Assert.Same(dataSource.Endpoints[0], context.Endpoint);
         }
 
         private (HttpContext httpContext, EndpointSelectorContext context) CreateContext()

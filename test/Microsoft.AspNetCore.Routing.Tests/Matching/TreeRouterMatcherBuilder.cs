@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 new DefaultObjectPool<UriBuildingContext>(new UriBuilderContextPooledObjectPolicy()),
                 new DefaultInlineConstraintResolver(Options.Create(new RouteOptions()), new TestServiceProvider()));
 
-            var selector = new DefaultEndpointSelector(Array.Empty<MatcherPolicy>());
+            var selector = new DefaultEndpointSelector();
 
             var groups = _endpoints
                 .GroupBy(e => (e.Order, e.RoutePattern.InboundPrecedence, e.RoutePattern.RawText))

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Http;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Routing.Matching
@@ -14,6 +15,16 @@ namespace Microsoft.AspNetCore.Routing.Matching
     /// </summary>
     public interface IEndpointSelectorPolicy
     {
+        /// <summary>
+        /// Returns a value that indicates whether the <see cref="IEndpointSelectorPolicy"/> applies
+        /// to any endpoint in <paramref name="endpoints"/>.
+        /// </summary>
+        /// <param name="endpoints">The set of candidate <see cref="Endpoint"/> values.</param>
+        /// <returns>
+        /// <c>true</c> if the policy applies to any endpoint in <paramref name="endpoints"/>, otherwise <c>false</c>.
+        /// </returns>
+        bool AppliesToEndpoints(IReadOnlyList<Endpoint> endpoints);
+
         /// <summary>
         /// Applies the policy to the <see cref="CandidateSet"/>.
         /// </summary>

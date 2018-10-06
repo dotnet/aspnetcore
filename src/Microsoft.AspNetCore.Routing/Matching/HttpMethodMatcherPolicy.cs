@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         /// </summary>
         /// <param name="endpoints"></param>
         /// <returns></returns>
-        public bool AppliesToNode(IReadOnlyList<Endpoint> endpoints)
+        public bool AppliesToEndpoints(IReadOnlyList<Endpoint> endpoints)
         {
             if (endpoints == null)
             {

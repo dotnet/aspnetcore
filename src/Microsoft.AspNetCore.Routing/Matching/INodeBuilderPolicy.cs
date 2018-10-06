@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
 {
     public interface INodeBuilderPolicy
     {
-        bool AppliesToNode(IReadOnlyList<Endpoint> endpoints);
+        bool AppliesToEndpoints(IReadOnlyList<Endpoint> endpoints);
 
         IReadOnlyList<PolicyNodeEdge> GetEdges(IReadOnlyList<Endpoint> endpoints);
 
