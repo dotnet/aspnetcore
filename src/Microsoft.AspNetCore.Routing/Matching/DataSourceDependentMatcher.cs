@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 // By design we only look at RouteEndpoint here. It's possible to
                 // register other endpoint types, which are non-routable, and it's
                 // ok that we won't route to them.
-                if (endpoints[i] is RouteEndpoint endpoint && endpoint.Metadata.GetMetadata<ISuppressMatchingMetadata>() == null)
+                if (endpoints[i] is RouteEndpoint endpoint && endpoint.Metadata.GetMetadata<ISuppressMatchingMetadata>()?.SuppressMatching != true)
                 {
                     builder.AddEndpoint(endpoint);
                 }

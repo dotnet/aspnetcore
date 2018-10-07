@@ -9,11 +9,11 @@ using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Routing
 {
-    internal class EndpointNameEndpointFinder : IEndpointFinder<string>
+    internal class EndpointNameAddressScheme : IEndpointAddressScheme<string>
     {
         private readonly DataSourceDependentCache<Dictionary<string, Endpoint[]>> _cache;
 
-        public EndpointNameEndpointFinder(CompositeEndpointDataSource dataSource)
+        public EndpointNameAddressScheme(CompositeEndpointDataSource dataSource)
         {
             _cache = new DataSourceDependentCache<Dictionary<string, Endpoint[]>>(dataSource, Initialize);
         }
@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Routing
 
             string GetEndpointName(Endpoint endpoint)
             {
-                if (endpoint.Metadata.GetMetadata<ISuppressLinkGenerationMetadata>() != null)
+                if (endpoint.Metadata.GetMetadata<ISuppressLinkGenerationMetadata>()?.SuppressLinkGeneration == true)
                 {
                     // Skip anything that's suppressed for linking.
                     return null;

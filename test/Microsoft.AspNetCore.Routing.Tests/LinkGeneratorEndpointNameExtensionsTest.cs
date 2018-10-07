@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Routing
     // Does not cover template processing in detail, those scenarios are validated by TemplateBinderTests
     // and DefaultLinkGeneratorProcessTemplateTest
     //
-    // Does not cover the EndpointNameEndpointFinder in detail. see EndpointNameEndpointFinderTest
+    // Does not cover the EndpointNameAddressScheme in detail. see EndpointNameAddressSchemeTest
     public class LinkGeneratorEndpointNameExtensionsTest : LinkGeneratorTestBase
     {
         [Fact]

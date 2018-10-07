@@ -12,13 +12,13 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Routing
 {
-    internal class RouteValuesBasedEndpointFinder : IEndpointFinder<RouteValuesAddress>
+    internal class RouteValuesAddressScheme : IEndpointAddressScheme<RouteValuesAddress>
     {
         private readonly CompositeEndpointDataSource _dataSource;
         private LinkGenerationDecisionTree _allMatchesLinkGenerationTree;
         private IDictionary<string, List<OutboundMatchResult>> _namedMatchResults;
 
-        public RouteValuesBasedEndpointFinder(CompositeEndpointDataSource dataSource)
+        public RouteValuesAddressScheme(CompositeEndpointDataSource dataSource)
         {
             _dataSource = dataSource;
 
@@ -102,9 +102,7 @@ namespace Microsoft.AspNetCore.Routing
             var endpoints = _dataSource.Endpoints.OfType<RouteEndpoint>();
             foreach (var endpoint in endpoints)
             {
-                // Do not consider an endpoint for link generation if the following marker metadata is on it
-                var suppressLinkGeneration = endpoint.Metadata.GetMetadata<ISuppressLinkGenerationMetadata>();
-                if (suppressLinkGeneration != null)
+                if (endpoint.Metadata.GetMetadata<ISuppressLinkGenerationMetadata>()?.SuppressLinkGeneration == true)
                 {
                     continue;
                 }

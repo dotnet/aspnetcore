@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.AspNetCore.Routing.TestObjects;
 using Xunit;
@@ -90,6 +89,27 @@ namespace Microsoft.AspNetCore.Routing.Matching
         }
 
         [Fact]
+        public void Matcher_UnsuppressedEndpoint_IsUsed()
+        {
+            // Arrange
+            var dataSource = new DynamicEndpointDataSource();
+            var endpoint = new RouteEndpoint(
+                TestConstants.EmptyRequestDelegate,
+                RoutePatternFactory.Parse("/"),
+                0,
+                new EndpointMetadataCollection(new SuppressMatchingMetadata(), new EncourageMatchingMetadata()),
+                "test");
+            dataSource.AddEndpoint(endpoint);
+
+            // Act
+            var matcher = new DataSourceDependentMatcher(dataSource, TestMatcherBuilder.Create);
+
+            // Assert
+            var inner = Assert.IsType<TestMatcher>(matcher.CurrentMatcher);
+            Assert.Same(endpoint, Assert.Single(inner.Endpoints));
+        }
+
+        [Fact]
         public void Cache_Reinitializes_WhenDataSourceChanges()
         {
             // Arrange
@@ -138,6 +158,11 @@ namespace Microsoft.AspNetCore.Routing.Matching
             {
                 throw new NotImplementedException();
             }
+        }
+
+        private class EncourageMatchingMetadata : ISuppressMatchingMetadata
+        {
+            public bool SuppressMatching => false;
         }
     }
 }

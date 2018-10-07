@@ -9,10 +9,10 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Routing
 {
-    public class EndpointNameEndpointFinderTest
+    public class EndpointNameAddressSchemeTest
     {
         [Fact]
-        public void EndpointFinder_Match_ReturnsMatchingEndpoint()
+        public void AddressScheme_Match_ReturnsMatchingEndpoint()
         {
             // Arrange
             var endpoint1 = EndpointFactory.CreateRouteEndpoint(
@@ -23,10 +23,10 @@ namespace Microsoft.AspNetCore.Routing
                 "/b",
                 metadata: new object[] { new EndpointNameMetadata("name2"), });
 
-            var finder = CreateEndpointFinder(endpoint1, endpoint2);
+            var addressScheme = CreateAddressScheme(endpoint1, endpoint2);
 
             // Act
-            var endpoints = finder.FindEndpoints("name2");
+            var endpoints = addressScheme.FindEndpoints("name2");
 
             // Assert
             Assert.Collection(
@@ -35,41 +35,41 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         [Fact]
-        public void EndpointFinder_NoMatch_ReturnsEmptyCollection()
+        public void AddressScheme_NoMatch_ReturnsEmptyCollection()
         {
             // Arrange
             var endpoint = EndpointFactory.CreateRouteEndpoint(
                 "/a",
                 metadata: new object[] { new EndpointNameMetadata("name1"), new SuppressLinkGenerationMetadata(), });
 
-            var finder = CreateEndpointFinder(endpoint);
+            var addressScheme = CreateAddressScheme(endpoint);
 
             // Act
-            var endpoints = finder.FindEndpoints("name2");
+            var endpoints = addressScheme.FindEndpoints("name2");
 
             // Assert
             Assert.Empty(endpoints);
         }
 
         [Fact]
-        public void EndpointFinder_NoMatch_CaseSensitive()
+        public void AddressScheme_NoMatch_CaseSensitive()
         {
             // Arrange
             var endpoint = EndpointFactory.CreateRouteEndpoint(
                 "/a",
                 metadata: new object[] { new EndpointNameMetadata("name1"), new SuppressLinkGenerationMetadata(), });
 
-            var finder = CreateEndpointFinder(endpoint);
+            var addressScheme = CreateAddressScheme(endpoint);
 
             // Act
-            var endpoints = finder.FindEndpoints("NAME1");
+            var endpoints = addressScheme.FindEndpoints("NAME1");
 
             // Assert
             Assert.Empty(endpoints);
         }
 
         [Fact]
-        public void EndpointFinder_UpdatesWhenDataSourceChanges()
+        public void AddressScheme_UpdatesWhenDataSourceChanges()
         {
             var endpoint1 = EndpointFactory.CreateRouteEndpoint(
                 "/a",
@@ -77,10 +77,10 @@ namespace Microsoft.AspNetCore.Routing
             var dynamicDataSource = new DynamicEndpointDataSource(new[] { endpoint1 });
 
             // Act 1
-            var finder = CreateEndpointFinder(dynamicDataSource);
+            var addressScheme = CreateAddressScheme(dynamicDataSource);
 
             // Assert 1
-            var match = Assert.Single(finder.Entries);
+            var match = Assert.Single(addressScheme.Entries);
             Assert.Same(endpoint1, match.Value.Single());
 
             // Arrange 2
@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Routing
 
             // Assert 2
             Assert.Collection(
-                finder.Entries.OrderBy(kvp => kvp.Key),
+                addressScheme.Entries.OrderBy(kvp => kvp.Key),
                 (m) =>
                 {
                     Assert.Same(endpoint1, m.Value.Single());
@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         [Fact]
-        public void EndpointFinder_IgnoresEndpointsWithSuppressLinkGeneration()
+        public void AddressScheme_IgnoresEndpointsWithSuppressLinkGeneration()
         {
             // Arrange
             var endpoint = EndpointFactory.CreateRouteEndpoint(
@@ -114,14 +114,29 @@ namespace Microsoft.AspNetCore.Routing
                 metadata: new object[] { new EndpointNameMetadata("name1"), new SuppressLinkGenerationMetadata(), });
 
             // Act
-            var finder = CreateEndpointFinder(endpoint);
+            var addressScheme = CreateAddressScheme(endpoint);
 
             // Assert
-            Assert.Empty(finder.Entries);
+            Assert.Empty(addressScheme.Entries);
         }
 
         [Fact]
-        public void EndpointFinder_IgnoresEndpointsWithoutEndpointName()
+        public void AddressScheme_UnsuppressedEndpoint_IsUsed()
+        {
+            // Arrange
+            var endpoint = EndpointFactory.CreateRouteEndpoint(
+                "/a",
+                metadata: new object[] { new EndpointNameMetadata("name1"), new SuppressLinkGenerationMetadata(), new EncourageLinkGenerationMetadata(), });
+
+            // Act
+            var addressScheme = CreateAddressScheme(endpoint);
+
+            // Assert
+            Assert.Same(endpoint, Assert.Single(Assert.Single(addressScheme.Entries).Value));
+        }
+
+        [Fact]
+        public void AddressScheme_IgnoresEndpointsWithoutEndpointName()
         {
             // Arrange
             var endpoint = EndpointFactory.CreateRouteEndpoint(
@@ -129,14 +144,14 @@ namespace Microsoft.AspNetCore.Routing
                 metadata: new object[] { });
 
             // Act
-            var finder = CreateEndpointFinder(endpoint);
+            var addressScheme = CreateAddressScheme(endpoint);
 
             // Assert
-            Assert.Empty(finder.Entries);
+            Assert.Empty(addressScheme.Entries);
         }
 
         [Fact]
-        public void EndpointFinder_ThrowsExceptionForDuplicateEndpoints()
+        public void AddressScheme_ThrowsExceptionForDuplicateEndpoints()
         {
             // Arrange
             var endpoints = new Endpoint[]
@@ -152,10 +167,10 @@ namespace Microsoft.AspNetCore.Routing
                 EndpointFactory.CreateRouteEndpoint("/f", displayName: "f", metadata: new object[] { new EndpointNameMetadata("name2"), }),
             };
 
-            var finder = CreateEndpointFinder(endpoints);
+            var addressScheme = CreateAddressScheme(endpoints);
 
             // Act
-            var ex = Assert.Throws<InvalidOperationException>(() => finder.FindEndpoints("any name"));
+            var ex = Assert.Throws<InvalidOperationException>(() => addressScheme.FindEndpoints("any name"));
 
             // Assert
             Assert.Equal(@"The following endpoints with a duplicate endpoint name were found.
@@ -171,14 +186,19 @@ f
 ", ex.Message);
         }
 
-        private EndpointNameEndpointFinder CreateEndpointFinder(params Endpoint[] endpoints)
+        private EndpointNameAddressScheme CreateAddressScheme(params Endpoint[] endpoints)
         {
-            return CreateEndpointFinder(new DefaultEndpointDataSource(endpoints));
+            return CreateAddressScheme(new DefaultEndpointDataSource(endpoints));
         }
 
-        private EndpointNameEndpointFinder CreateEndpointFinder(params EndpointDataSource[] dataSources)
+        private EndpointNameAddressScheme CreateAddressScheme(params EndpointDataSource[] dataSources)
         {
-            return new EndpointNameEndpointFinder(new CompositeEndpointDataSource(dataSources));
+            return new EndpointNameAddressScheme(new CompositeEndpointDataSource(dataSources));
+        }
+
+        private class EncourageLinkGenerationMetadata : ISuppressLinkGenerationMetadata
+        {
+            public bool SuppressLinkGeneration => false;
         }
     }
 }
