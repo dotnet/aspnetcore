@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 
-namespace Microsoft.Extensions.ApiDescription.Client
+namespace Microsoft.Extensions.ApiDescription.Tool
 {
     internal static class Exe
     {

@@ -4,9 +4,9 @@
 using System;
 using System.Text;
 using Microsoft.DotNet.Cli.CommandLine;
-using Microsoft.Extensions.ApiDescription.Client.Commands;
+using Microsoft.Extensions.ApiDescription.Tool.Commands;
 
-namespace Microsoft.Extensions.ApiDescription.Client
+namespace Microsoft.Extensions.ApiDescription.Tool
 {
     internal static class Program
     {

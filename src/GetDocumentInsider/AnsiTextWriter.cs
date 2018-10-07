@@ -6,7 +6,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Text.RegularExpressions;
 
-namespace Microsoft.Extensions.ApiDescription.Client
+namespace Microsoft.Extensions.ApiDescription.Tool
 {
     internal class AnsiTextWriter
     {

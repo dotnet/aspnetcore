@@ -14,7 +14,7 @@ using Microsoft.Build.Utilities;
 using Task = System.Threading.Tasks.Task;
 using Utilities = Microsoft.Build.Utilities;
 
-namespace Microsoft.Extensions.ApiDescription.Client
+namespace Microsoft.Extensions.ApiDescription.Tasks
 {
     /// <summary>
     /// Downloads a file.

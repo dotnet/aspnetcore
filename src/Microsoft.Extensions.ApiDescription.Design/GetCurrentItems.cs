@@ -4,7 +4,7 @@
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
-namespace Microsoft.Extensions.ApiDescription.Client
+namespace Microsoft.Extensions.ApiDescription.Tasks
 {
     /// <summary>
     /// Restore <see cref="ITaskItem"/>s from given property value.

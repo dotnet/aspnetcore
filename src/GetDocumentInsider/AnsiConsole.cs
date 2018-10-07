@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.Extensions.ApiDescription.Client
+namespace Microsoft.Extensions.ApiDescription.Tool
 {
     internal class AnsiConsole
     {

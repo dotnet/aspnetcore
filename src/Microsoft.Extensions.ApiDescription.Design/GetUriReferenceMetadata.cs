@@ -7,7 +7,7 @@ using System.IO;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
-namespace Microsoft.Extensions.ApiDescription.Client
+namespace Microsoft.Extensions.ApiDescription.Tasks
 {
     /// <summary>
     /// Adds or corrects DocumentPath metadata in ServiceUriReference items.

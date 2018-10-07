@@ -10,7 +10,7 @@ using System.Runtime.Loader;
 #endif
 using Microsoft.DotNet.Cli.CommandLine;
 
-namespace Microsoft.Extensions.ApiDescription.Client.Commands
+namespace Microsoft.Extensions.ApiDescription.Tool.Commands
 {
     internal class GetDocumentCommand : ProjectCommandBase
     {

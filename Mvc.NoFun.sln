@@ -121,7 +121,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-getdocument", "src\d
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GetDocumentInsider", "src\GetDocumentInsider\GetDocumentInsider.csproj", "{2F683CF8-B055-46AE-BF83-9D1307F8D45F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.ApiDescription.Client", "src\Microsoft.Extensions.ApiDescription.Client\Microsoft.Extensions.ApiDescription.Client.csproj", "{34E3C302-B767-40C8-B538-3EE2BD4000C4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.ApiDescription.Design", "src\Microsoft.Extensions.ApiDescription.Design\Microsoft.Extensions.ApiDescription.Design.csproj", "{34E3C302-B767-40C8-B538-3EE2BD4000C4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

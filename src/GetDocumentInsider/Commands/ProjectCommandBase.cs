@@ -3,7 +3,7 @@
 
 using Microsoft.DotNet.Cli.CommandLine;
 
-namespace Microsoft.Extensions.ApiDescription.Client.Commands
+namespace Microsoft.Extensions.ApiDescription.Tool.Commands
 {
     internal abstract class ProjectCommandBase : HelpCommandBase
     {

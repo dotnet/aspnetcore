@@ -7,7 +7,7 @@ using System.Reflection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.Extensions.ApiDescription.Client.Commands
+namespace Microsoft.Extensions.ApiDescription.Tool.Commands
 {
     internal class GetDocumentCommandWorker
     {

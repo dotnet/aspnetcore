@@ -5,7 +5,7 @@
     <EnableApiCheck>false</EnableApiCheck>
     <IsPackable>false</IsPackable>
     <OutputType>Exe</OutputType>
-    <RootNamespace>Microsoft.Extensions.ApiDescription.Client</RootNamespace>
+    <RootNamespace>Microsoft.Extensions.ApiDescription.Tool</RootNamespace>
     <TargetFramework>netcoreapp2.1</TargetFramework>
   </PropertyGroup>
 

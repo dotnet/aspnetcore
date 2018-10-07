@@ -4,7 +4,7 @@
     <Description>GetDocument Command-line Tool inside man</Description>
     <IsPackable>false</IsPackable>
     <OutputType>Exe</OutputType>
-    <RootNamespace>Microsoft.Extensions.ApiDescription.Client</RootNamespace>
+    <RootNamespace>Microsoft.Extensions.ApiDescription.Tool</RootNamespace>
     <TargetFrameworks>netcoreapp2.0;net461</TargetFrameworks>
   </PropertyGroup>
 

@@ -3,7 +3,7 @@
 
 using System.Reflection;
 
-namespace Microsoft.Extensions.ApiDescription.Client
+namespace Microsoft.Extensions.ApiDescription.Tool
 {
     internal static class ProductInfo
     {

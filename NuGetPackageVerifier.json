@@ -4,7 +4,7 @@
         "DefaultCompositeRule"
     ],
     "packages": {
-      "Microsoft.Extensions.ApiDescription.Client": {
+      "Microsoft.Extensions.ApiDescription.Design": {
         "Exclusions": {
           "BUILD_ITEMS_FRAMEWORK": {
             "*": "Package includes tool with different target frameworks."

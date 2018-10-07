@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.Extensions.ApiDescription.Client.Commands
+namespace Microsoft.Extensions.ApiDescription.Tool.Commands
 {
     [Serializable]
     public class GetDocumentCommandContext

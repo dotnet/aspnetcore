@@ -3,27 +3,29 @@
 
 using Microsoft.DotNet.Cli.CommandLine;
 
-namespace Microsoft.Extensions.ApiDescription.Client
+namespace Microsoft.Extensions.ApiDescription.Tool
 {
     internal class ProjectOptions
     {
+        public CommandOption Configuration { get; private set; }
+
         public CommandOption Project { get; private set; }
 
-        public CommandOption Framework { get; private set; }
-
-        public CommandOption Configuration { get; private set; }
+        public CommandOption ProjectExtensionsPath { get; private set; }
 
         public CommandOption Runtime { get; private set; }
 
-        public CommandOption MSBuildProjectExtensionsPath { get; private set; }
+        public CommandOption TargetFramework { get; private set; }
 
         public void Configure(CommandLineApplication command)
         {
-            Project = command.Option("-p|--project <PROJECT>", Resources.ProjectDescription);
-            Framework = command.Option("--framework <FRAMEWORK>", Resources.FrameworkDescription);
             Configuration = command.Option("--configuration <CONFIGURATION>", Resources.ConfigurationDescription);
+            Project = command.Option("-p|--project <PROJECT>", Resources.ProjectDescription);
+            ProjectExtensionsPath = command.Option(
+                "--projectExtensionsPath <PATH>",
+                Resources.ProjectExtensionsPathDescription);
             Runtime = command.Option("--runtime <RUNTIME_IDENTIFIER>", Resources.RuntimeDescription);
-            MSBuildProjectExtensionsPath = command.Option("--msbuildprojectextensionspath <PATH>", Resources.ProjectExtensionsDescription);
+            TargetFramework = command.Option("--framework <FRAMEWORK>", Resources.TargetFrameworkDescription);
         }
     }
 }

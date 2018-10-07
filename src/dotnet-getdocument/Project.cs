@@ -8,12 +8,12 @@ using System.IO;
 using System.Linq;
 using IODirectory = System.IO.Directory;
 
-namespace Microsoft.Extensions.ApiDescription.Client
+namespace Microsoft.Extensions.ApiDescription.Tool
 {
     internal class Project
     {
         private const string ResourceFilename = "ServiceProjectReferenceMetadata.targets";
-        private const string MSBuildResourceName = "Microsoft.Extensions.ApiDescription.Client." + ResourceFilename;
+        private const string MSBuildResourceName = "Microsoft.Extensions.ApiDescription.Tool." + ResourceFilename;
 
         private Project()
         {
@@ -21,13 +21,9 @@ namespace Microsoft.Extensions.ApiDescription.Client
 
         public string AssemblyName { get; private set; }
 
-        public string AssemblyPath { get; private set; }
-
-        public string AssetsPath { get; private set; }
+        public string ConfigPath { get; private set; }
 
         public string Configuration { get; private set; }
-
-        public string ConfigPath { get; private set; }
 
         public string DefaultDocumentName { get; private set; }
 
@@ -35,21 +31,23 @@ namespace Microsoft.Extensions.ApiDescription.Client
 
         public string DefaultService { get; private set; }
 
-        public string DepsPath { get; private set; }
-
-        public string Directory { get; private set; }
-
-        public string ExtensionsPath { get; private set; }
-
-        public string Name { get; private set; }
-
         public string OutputPath { get; private set; }
 
         public string Platform { get; private set; }
 
         public string PlatformTarget { get; private set; }
 
-        public string RuntimeConfigPath { get; private set; }
+        public string ProjectAssetsFile { get; private set; }
+
+        public string ProjectDepsFilePath { get; private set; }
+
+        public string ProjectDirectory { get; private set; }
+
+        public string ProjectExtensionsPath { get; private set; }
+
+        public string ProjectName { get; private set; }
+
+        public string ProjectRuntimeConfigFilePath { get; private set; }
 
         public string RuntimeFrameworkVersion { get; private set; }
 
@@ -58,6 +56,8 @@ namespace Microsoft.Extensions.ApiDescription.Client
         public string TargetFramework { get; private set; }
 
         public string TargetFrameworkMoniker { get; private set; }
+
+        public string TargetPath { get; private set; }
 
         public static Project FromFile(
             string projectFile,
@@ -127,7 +127,9 @@ namespace Microsoft.Extensions.ApiDescription.Client
                     throw new CommandException(Resources.GetMetadataFailed);
                 }
 
-                metadata = File.ReadLines(metadataPath).Select(l => l.Split(new[] { ':' }, 2))
+                metadata = File
+                    .ReadLines(metadataPath)
+                    .Select(l => l.Split(new[] { ':' }, 2))
                     .ToDictionary(s => s[0], s => s[1].TrimStart());
             }
             finally
@@ -143,79 +145,88 @@ namespace Microsoft.Extensions.ApiDescription.Client
                 DefaultService = metadata[nameof(DefaultService)],
 
                 AssemblyName = metadata[nameof(AssemblyName)],
-                AssemblyPath = metadata[nameof(AssemblyPath)],
-                AssetsPath = metadata[nameof(AssetsPath)],
                 Configuration = metadata[nameof(Configuration)],
-                DepsPath = metadata[nameof(DepsPath)],
-                Directory = metadata[nameof(Directory)],
-                ExtensionsPath = metadata[nameof(ExtensionsPath)],
-                Name = metadata[nameof(Name)],
                 OutputPath = metadata[nameof(OutputPath)],
                 Platform = metadata[nameof(Platform)],
                 PlatformTarget = metadata[nameof(PlatformTarget)] ?? metadata[nameof(Platform)],
-                RuntimeConfigPath = metadata[nameof(RuntimeConfigPath)],
+                ProjectAssetsFile = metadata[nameof(ProjectAssetsFile)],
+                ProjectDepsFilePath = metadata[nameof(ProjectDepsFilePath)],
+                ProjectDirectory = metadata[nameof(ProjectDirectory)],
+                ProjectExtensionsPath = metadata[nameof(ProjectExtensionsPath)],
+                ProjectName = metadata[nameof(ProjectName)],
+                ProjectRuntimeConfigFilePath = metadata[nameof(ProjectRuntimeConfigFilePath)],
                 RuntimeFrameworkVersion = metadata[nameof(RuntimeFrameworkVersion)],
                 RuntimeIdentifier = metadata[nameof(RuntimeIdentifier)],
                 TargetFramework = metadata[nameof(TargetFramework)],
                 TargetFrameworkMoniker = metadata[nameof(TargetFrameworkMoniker)],
+                TargetPath = metadata[nameof(TargetPath)],
             };
-
-            if (string.IsNullOrEmpty(project.AssemblyPath))
-            {
-                throw new CommandException(Resources.FormatGetMetadataValueFailed(nameof(AssemblyPath), "TargetPath"));
-            }
-
-            if (string.IsNullOrEmpty(project.Directory))
-            {
-                throw new CommandException(Resources.FormatGetMetadataValueFailed(nameof(Directory), "ProjectDir"));
-            }
 
             if (string.IsNullOrEmpty(project.OutputPath))
             {
-                throw new CommandException(Resources.FormatGetMetadataValueFailed(nameof(OutputPath), "OutDir"));
+                throw new CommandException(
+                    Resources.FormatGetMetadataValueFailed(nameof(OutputPath), nameof(OutputPath)));
             }
 
-            if (!Path.IsPathRooted(project.Directory))
+            if (string.IsNullOrEmpty(project.ProjectDirectory))
             {
-                project.Directory = Path.GetFullPath(Path.Combine(IODirectory.GetCurrentDirectory(), project.Directory));
+                throw new CommandException(
+                    Resources.FormatGetMetadataValueFailed(nameof(ProjectDirectory), "MSBuildProjectDirectory"));
             }
 
-            if (!Path.IsPathRooted(project.AssemblyPath))
+            if (string.IsNullOrEmpty(project.TargetPath))
             {
-                project.AssemblyPath = Path.GetFullPath(Path.Combine(project.Directory, project.AssemblyPath));
+                throw new CommandException(
+                    Resources.FormatGetMetadataValueFailed(nameof(TargetPath), nameof(TargetPath)));
             }
 
-            if (!Path.IsPathRooted(project.ExtensionsPath))
+            if (!Path.IsPathRooted(project.ProjectDirectory))
             {
-                project.ExtensionsPath = Path.GetFullPath(Path.Combine(project.Directory, project.ExtensionsPath));
+                project.OutputPath = Path.GetFullPath(
+                    Path.Combine(IODirectory.GetCurrentDirectory(), project.ProjectDirectory));
             }
 
             if (!Path.IsPathRooted(project.OutputPath))
             {
-                project.OutputPath = Path.GetFullPath(Path.Combine(project.Directory, project.OutputPath));
+                project.OutputPath = Path.GetFullPath(Path.Combine(project.ProjectDirectory, project.OutputPath));
             }
 
-            // Some document generation tools support non-ASP.NET Core projects.
-            // Thus any of the remaining properties may be empty.
-            if (!(string.IsNullOrEmpty(project.AssetsPath) || Path.IsPathRooted(project.AssetsPath)))
+            if (!Path.IsPathRooted(project.ProjectExtensionsPath))
             {
-                project.AssetsPath = Path.GetFullPath(Path.Combine(project.Directory, project.AssetsPath));
+                project.ProjectExtensionsPath = Path.GetFullPath(
+                    Path.Combine(project.ProjectDirectory, project.ProjectExtensionsPath));
             }
 
-            var configPath = $"{project.AssemblyPath}.config";
+            if (!Path.IsPathRooted(project.TargetPath))
+            {
+                project.TargetPath = Path.GetFullPath(Path.Combine(project.OutputPath, project.TargetPath));
+            }
+
+            // Some document generation tools support non-ASP.NET Core projects. Any of the remaining properties may
+            // thus be null empty.
+            var configPath = $"{project.TargetPath}.config";
             if (File.Exists(configPath))
             {
                 project.ConfigPath = configPath;
             }
 
-            if (!(string.IsNullOrEmpty(project.DepsPath) || Path.IsPathRooted(project.DepsPath)))
+            if (!(string.IsNullOrEmpty(project.ProjectAssetsFile) || Path.IsPathRooted(project.ProjectAssetsFile)))
             {
-                project.DepsPath = Path.GetFullPath(Path.Combine(project.Directory, project.DepsPath));
+                project.ProjectAssetsFile = Path.GetFullPath(
+                    Path.Combine(project.ProjectDirectory, project.ProjectAssetsFile));
             }
 
-            if (!(string.IsNullOrEmpty(project.RuntimeConfigPath) || Path.IsPathRooted(project.RuntimeConfigPath)))
+            if (!(string.IsNullOrEmpty(project.ProjectDepsFilePath) || Path.IsPathRooted(project.ProjectDepsFilePath)))
             {
-                project.RuntimeConfigPath = Path.GetFullPath(Path.Combine(project.Directory, project.RuntimeConfigPath));
+                project.ProjectDepsFilePath = Path.GetFullPath(
+                    Path.Combine(project.ProjectDirectory, project.ProjectDepsFilePath));
+            }
+
+            if (!(string.IsNullOrEmpty(project.ProjectRuntimeConfigFilePath) ||
+                Path.IsPathRooted(project.ProjectRuntimeConfigFilePath)))
+            {
+                project.ProjectRuntimeConfigFilePath = Path.GetFullPath(
+                    Path.Combine(project.OutputPath, project.ProjectRuntimeConfigFilePath));
             }
 
             return project;

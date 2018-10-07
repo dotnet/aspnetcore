@@ -11,21 +11,21 @@
       <ServiceProjectReferenceMetadata Include="DefaultService: $(DefaultServiceProjectService)" />
 
       <ServiceProjectReferenceMetadata Include="AssemblyName: $(AssemblyName)" />
-      <ServiceProjectReferenceMetadata Include="AssemblyPath: $(TargetPath)" />
-      <ServiceProjectReferenceMetadata Include="AssetsPath: $(ProjectAssetsFile)" />
       <ServiceProjectReferenceMetadata Include="Configuration: $(Configuration)" />
-      <ServiceProjectReferenceMetadata Include="DepsPath: $(ProjectDepsFilePath)" />
-      <ServiceProjectReferenceMetadata Include="Directory: $(ProjectDir)" />
-      <ServiceProjectReferenceMetadata Include="ExtensionsPath: $(MSBuildProjectExtensionsPath)" />
-      <ServiceProjectReferenceMetadata Include="Name: $(MSBuildProjectName)" />
-      <ServiceProjectReferenceMetadata Include="OutputPath: $(OutDir)" />
+      <ServiceProjectReferenceMetadata Include="OutputPath: $(OutputPath)" />
       <ServiceProjectReferenceMetadata Include="Platform: $(Platform)" />
       <ServiceProjectReferenceMetadata Include="PlatformTarget: $(PlatformTarget)" />
-      <ServiceProjectReferenceMetadata Include="RuntimeConfigPath: $(ProjectRuntimeConfigFilePath)" />
+      <ServiceProjectReferenceMetadata Include="ProjectAssetsFile: $(ProjectAssetsFile)" />
+      <ServiceProjectReferenceMetadata Include="ProjectDepsFilePath: $(ProjectDepsFilePath)" />
+      <ServiceProjectReferenceMetadata Include="ProjectDirectory: $(MSBuildProjectDirectory)" />
+      <ServiceProjectReferenceMetadata Include="ProjectExtensionsPath: $(MSBuildProjectExtensionsPath)" />
+      <ServiceProjectReferenceMetadata Include="ProjectName: $(MSBuildProjectName)" />
+      <ServiceProjectReferenceMetadata Include="ProjectRuntimeConfigFilePath: $(ProjectRuntimeConfigFilePath)" />
       <ServiceProjectReferenceMetadata Include="RuntimeFrameworkVersion: $(RuntimeFrameworkVersion)" />
       <ServiceProjectReferenceMetadata Include="RuntimeIdentifier: $(RuntimeIdentifier)" />
       <ServiceProjectReferenceMetadata Include="TargetFramework: $(TargetFramework)" />
       <ServiceProjectReferenceMetadata Include="TargetFrameworkMoniker: $(TargetFrameworkMoniker)" />
+      <ServiceProjectReferenceMetadata Include="TargetPath: $(TargetPath)" />
     </ItemGroup>
   </Target>
 

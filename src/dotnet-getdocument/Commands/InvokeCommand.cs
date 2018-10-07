@@ -10,30 +10,30 @@ using Microsoft.DotNet.Cli.CommandLine;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Microsoft.Extensions.ApiDescription.Client.Commands
+namespace Microsoft.Extensions.ApiDescription.Tool.Commands
 {
     internal class InvokeCommand : HelpCommandBase
     {
         private const string InsideManName = "GetDocument.Insider";
 
+        private IList<string> _args;
         private CommandOption _configuration;
-        private CommandOption _framework;
-        private CommandOption _msbuildprojectextensionspath;
         private CommandOption _output;
         private CommandOption _project;
+        private CommandOption _projectExtensionsPath;
         private CommandOption _runtime;
-        private IList<string> _args;
+        private CommandOption _targetFramework;
 
         public override void Configure(CommandLineApplication command)
         {
             var options = new ProjectOptions();
             options.Configure(command);
 
-            _project = options.Project;
-            _framework = options.Framework;
             _configuration = options.Configuration;
+            _project = options.Project;
+            _projectExtensionsPath = options.ProjectExtensionsPath;
             _runtime = options.Runtime;
-            _msbuildprojectextensionspath = options.MSBuildProjectExtensionsPath;
+            _targetFramework = options.TargetFramework;
 
             _output = command.Option("--output <Path>", Resources.OutputDescription);
             command.VersionOption("--version", ProductInfo.GetVersion);
@@ -52,11 +52,11 @@ namespace Microsoft.Extensions.ApiDescription.Client.Commands
 
             var project = Project.FromFile(
                 projectFile,
-                _msbuildprojectextensionspath.Value(),
-                _framework.Value(),
+                _projectExtensionsPath.Value(),
+                _targetFramework.Value(),
                 _configuration.Value(),
                 _runtime.Value());
-            if (!File.Exists(project.AssemblyPath))
+            if (!File.Exists(project.TargetPath))
             {
                 throw new CommandException(Resources.MustBuild);
             }
@@ -95,16 +95,16 @@ namespace Microsoft.Extensions.ApiDescription.Client.Commands
                         if (targetFramework.Version < new Version(2, 0))
                         {
                             throw new CommandException(
-                                Resources.FormatNETCoreApp1Project(project.Name, targetFramework.Version));
+                                Resources.FormatNETCoreApp1Project(project.ProjectName, targetFramework.Version));
                         }
 
                         args.Add("exec");
                         args.Add("--depsFile");
-                        args.Add(project.DepsPath);
+                        args.Add(project.ProjectDepsFilePath);
 
-                        if (!string.IsNullOrEmpty(project.AssetsPath))
+                        if (!string.IsNullOrEmpty(project.ProjectAssetsFile))
                         {
-                            using (var reader = new JsonTextReader(File.OpenText(project.AssetsPath)))
+                            using (var reader = new JsonTextReader(File.OpenText(project.ProjectAssetsFile)))
                             {
                                 var projectAssets = JToken.ReadFrom(reader);
                                 var packageFolders = projectAssets["packageFolders"]
@@ -119,10 +119,10 @@ namespace Microsoft.Extensions.ApiDescription.Client.Commands
                             }
                         }
 
-                        if (File.Exists(project.RuntimeConfigPath))
+                        if (File.Exists(project.ProjectRuntimeConfigFilePath))
                         {
                             args.Add("--runtimeConfig");
-                            args.Add(project.RuntimeConfigPath);
+                            args.Add(project.ProjectRuntimeConfigFilePath);
                         }
                         else if (!string.IsNullOrEmpty(project.RuntimeFrameworkVersion))
                         {
@@ -134,16 +134,16 @@ namespace Microsoft.Extensions.ApiDescription.Client.Commands
                         break;
 
                     case ".NETStandard":
-                        throw new CommandException(Resources.FormatNETStandardProject(project.Name));
+                        throw new CommandException(Resources.FormatNETStandardProject(project.ProjectName));
 
                     default:
                         throw new CommandException(
-                            Resources.FormatUnsupportedFramework(project.Name, targetFramework.Identifier));
+                            Resources.FormatUnsupportedFramework(project.ProjectName, targetFramework.Identifier));
                 }
 
                 args.AddRange(_args);
                 args.Add("--assembly");
-                args.Add(project.AssemblyPath);
+                args.Add(project.TargetPath);
                 args.Add("--tools-directory");
                 args.Add(toolsDirectory);
 
@@ -180,7 +180,7 @@ namespace Microsoft.Extensions.ApiDescription.Client.Commands
                     args.Add("--prefix-output");
                 }
 
-                return Exe.Run(executable, args, project.Directory);
+                return Exe.Run(executable, args, project.ProjectDirectory);
             }
             finally
             {

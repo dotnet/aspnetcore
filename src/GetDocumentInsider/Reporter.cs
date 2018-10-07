@@ -3,9 +3,9 @@
 
 using System;
 using System.Linq;
-using static Microsoft.Extensions.ApiDescription.Client.AnsiConstants;
+using static Microsoft.Extensions.ApiDescription.Tool.AnsiConstants;
 
-namespace Microsoft.Extensions.ApiDescription.Client
+namespace Microsoft.Extensions.ApiDescription.Tool
 {
     internal static class Reporter
     {

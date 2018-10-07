@@ -20,8 +20,8 @@
   <files>
     <file src="build\*" target="build" />
     <file src="buildMultiTargeting\*" target="buildMultiTargeting" />
-    <file src="bin\$configuration$\net461\Microsoft.Extensions.ApiDescription.Client.*" target="tasks\net461" />
-    <file src="bin\$configuration$\netstandard2.0\Microsoft.Extensions.ApiDescription.Client.*" target="tasks\netstandard2.0" />
+    <file src="bin\$configuration$\net461\Microsoft.Extensions.ApiDescription.Tasks.*" target="tasks\net461" />
+    <file src="bin\$configuration$\netstandard2.0\Microsoft.Extensions.ApiDescription.Tasks.*" target="tasks\netstandard2.0" />
     <file src="..\dotnet-getdocument\bin\$configuration$\netcoreapp2.1\dotnet-getdocument.*" target="tools" />
     <file src="..\GetDocumentInsider\bin\$configuration$\net461\GetDocument.Insider.*" target="tools\net461" />
     <file src="..\GetDocumentInsider\bin\x86\$configuration$\net461\GetDocument.Insider.*" target="tools\net461-x86" />
