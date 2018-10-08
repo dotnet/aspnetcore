@@ -190,6 +190,7 @@ namespace Microsoft.AspNetCore
                     logging.AddConfiguration(hostingContext.Configuration.GetSection("Logging"));
                     logging.AddConsole();
                     logging.AddDebug();
+                    logging.AddEventSourceLogger();
                 })
                 .ConfigureServices((hostingContext, services) =>
                 {
