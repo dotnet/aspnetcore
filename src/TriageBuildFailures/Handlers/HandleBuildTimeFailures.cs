@@ -40,7 +40,7 @@ namespace TriageBuildFailures.Handlers
         {
             var log = TCClient.GetBuildLog(build);
             var owner = TestToRepoMapper.FindOwner(build.BuildName);
-            var repo = "Coherence-Signed";
+            var repo = "AspNetCore-Internal";
             var issuesTask = GHClient.GetIssues(owner, repo);
 
             var subject = $"{build.BuildName} failed";
