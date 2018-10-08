@@ -56,7 +56,7 @@ $repos = @(
     },
     @{
         Name   = 'jquery-validation-unobtrusive'
-        Checks = @('jquery-validation-unobtrusive-ci')
+        Checks = @('continuous-integration/appveyor/pr')
         Branches = @('master', 'release/2.2')
     },
     @{
