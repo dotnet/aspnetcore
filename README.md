@@ -48,7 +48,7 @@ npm install @aspnet/signalr --registry https://dotnet.myget.org/f/aspnetcore-dev
 We also have a MsgPack protocol library which is installed via:
 
 ```bash
- npm install @aspnet/signalr-protocol-msgpack
+npm install @aspnet/signalr-protocol-msgpack
 ```
 
 ## Deploying

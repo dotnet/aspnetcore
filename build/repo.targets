@@ -44,7 +44,7 @@
     <Exec Command="npm run test:inner -- --no-color --configuration $(Configuration)" WorkingDirectory="$(RepositoryRoot)clients/ts/FunctionalTests" IgnoreStandardErrorWarningFormat="true" />
   </Target>
 
-  <Target Name="RunJavaTests" Condition="'$(HaveJava)' == 'true' AND '$(SkipJavaClient)' != 'true' ">
+  <Target Name="RunJavaTests" Condition="'$(HasJava)' == 'true' AND '$(SkipJavaClient)' != 'true' ">
     <Message Text="Running Java client tests" Importance="high" />
     <Message Text="> gradlew $(GradleOptions) test" Importance="high" />
     <Exec Command="./gradlew $(GradleOptions) test" WorkingDirectory="$(RepositoryRoot)clients/java/signalr" IgnoreStandardErrorWarningFormat="true" />
@@ -76,7 +76,7 @@
   </Target>
 
   <Target Name="GetJavaArtifactInfo">
-    <ItemGroup Condition="'$(SkipJavaClient)' != 'true'">
+    <ItemGroup Condition="'$(HasJava)' == 'true' AND '$(SkipJavaClient)' != 'true'">
       <ArtifactInfo Include="$(BuildDir)\%(Jars.Identity)">
         <ArtifactType>JavaJar</ArtifactType>
         <Version>$(JavaClientVersion)</Version>
@@ -107,7 +107,7 @@
     <!-- The build could still fail if the JDK isn't installed, but we can't reliably detect that without a bunch more code -->
 
     <PropertyGroup Condition="'$(JavaDetectExitCode)' == '0'">
-      <HaveJava>true</HaveJava>
+      <HasJava>true</HasJava>
     </PropertyGroup>
   </Target>
 
@@ -121,7 +121,7 @@
     <Exec Command="npm run build" WorkingDirectory="$(RepositoryRoot)clients/ts/FunctionalTests" IgnoreStandardErrorWarningFormat="true" />
   </Target>
 
-  <Target Name="BuildJavaClient" Condition="'$(HaveJava)' == 'true' AND '$(SkipJavaClient)' != 'true' " DependsOnTargets="GetJavaArtifactInfo">
+  <Target Name="BuildJavaClient" Condition="'$(HasJava)' == 'true' AND '$(SkipJavaClient)' != 'true' " DependsOnTargets="GetJavaArtifactInfo">
     <Message Text="Building Java client" Importance="high" />
     <Message Text="> gradlew $(GradleOptions) compileJava" Importance="high" />
     <Exec Command="./gradlew $(GradleOptions) compileJava" WorkingDirectory="$(RepositoryRoot)clients/java/signalr" />
@@ -146,7 +146,7 @@
     <JavaBuildFiles Include="@(Jars);@(PomFile)"/>
   </ItemGroup>
 
-  <Target Name="PackJavaClient" Condition="'$(HaveJava)' == 'true' AND '$(SkipJavaClient)' != 'true' ">
+  <Target Name="PackJavaClient" Condition="'$(HasJava)' == 'true' AND '$(SkipJavaClient)' != 'true' ">
     <Message Text="Packing Java client" Importance="high" />
     <Message Text="> gradlew $(GradleOptions) createPackage" Importance="high" />
     <Exec Command="./gradlew $(GradleOptions) createPackage" WorkingDirectory="$(RepositoryRoot)clients/java/signalr" />

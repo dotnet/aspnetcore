@@ -22,7 +22,7 @@ The `POST [endpoint-base]/negotiate` request is used to establish a connection b
 
 1. A response that contains the `connectionId` which will be used to identify the connection on the server and the list of the transports supported by the server.
 
-  ```
+  ```json
   {
     "connectionId":"807809a5-31bf-470d-9e23-afaee35d8a0d",
     "availableTransports":[
@@ -50,7 +50,7 @@ The `POST [endpoint-base]/negotiate` request is used to establish a connection b
 
 2. A redirect response which tells the client which URL and optionally access token to use as a result.
 
-  ```
+  ```json
   {
     "url": "https://myapp.com/chat",
     "accessToken": "accessToken"
@@ -65,7 +65,7 @@ The `POST [endpoint-base]/negotiate` request is used to establish a connection b
 
 3. A response that contains an `error` which should stop the connection attempt.
 
-  ```
+  ```json
   {
     "error": "This connection is not allowed."
   }
