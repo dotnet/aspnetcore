@@ -20,13 +20,13 @@ class HandshakeProtocolTest {
     public void VerifyParseEmptyHandshakeResponseMessage() {
         String emptyHandshakeResponse = "{}";
         HandshakeResponseMessage hsr = HandshakeProtocol.parseHandshakeResponse(emptyHandshakeResponse);
-        assertNull(hsr.error);
+        assertNull(hsr.getHandshakeError());
     }
 
     @Test
     public void VerifyParseHandshakeResponseMessage() {
         String handshakeResponseWithError = "{\"error\": \"Requested protocol \'messagepack\' is not available.\"}";
         HandshakeResponseMessage hsr = HandshakeProtocol.parseHandshakeResponse(handshakeResponseWithError);
-        assertEquals(hsr.error, "Requested protocol 'messagepack' is not available.");
+        assertEquals(hsr.getHandshakeError(), "Requested protocol 'messagepack' is not available.");
     }
 }

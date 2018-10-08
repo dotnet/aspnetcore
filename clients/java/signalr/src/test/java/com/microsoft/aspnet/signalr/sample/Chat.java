@@ -18,8 +18,7 @@ public class Chat {
         System.out.print("Enter your name:");
         String enteredName = reader.nextLine();
 
-        HubConnection hubConnection = new HubConnectionBuilder()
-                .withUrl(input)
+        HubConnection hubConnection = HubConnectionBuilder.create(input)
                 .configureLogging(LogLevel.Information).build();
 
         hubConnection.on("Send", (name, message) -> {

@@ -18,7 +18,7 @@ class TestUtils {
         options.setLogger(logger);
         options.setSkipNegotiate(skipNegotiate);
         options.setHttpClient(client);
-        HubConnectionBuilder builder = new HubConnectionBuilder();
-        return builder.withUrl(url, options).build();
+        HubConnectionBuilder builder = HubConnectionBuilder.create(url);
+        return builder.withOptions(options).build();
     }
 }

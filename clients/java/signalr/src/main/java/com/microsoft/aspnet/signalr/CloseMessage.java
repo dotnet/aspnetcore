@@ -3,8 +3,8 @@
 
 package com.microsoft.aspnet.signalr;
 
-class CloseMessage extends HubMessage {
-    private String error;
+final class CloseMessage extends HubMessage {
+    private final String error;
 
     @Override
     public HubMessageType getMessageType() {
@@ -12,6 +12,7 @@ class CloseMessage extends HubMessage {
     }
 
     public CloseMessage() {
+        this(null);
     }
 
     public CloseMessage(String error) {

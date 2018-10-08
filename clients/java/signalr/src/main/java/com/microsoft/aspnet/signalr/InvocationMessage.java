@@ -4,10 +4,10 @@
 package com.microsoft.aspnet.signalr;
 
 class InvocationMessage extends HubMessage {
-    int type = HubMessageType.INVOCATION.value;
-    protected String invocationId;
-    private String target;
-    private Object[] arguments;
+    private final int type = HubMessageType.INVOCATION.value;
+    private final String invocationId;
+    private final String target;
+    private final Object[] arguments;
 
     public InvocationMessage(String invocationId, String target, Object[] args) {
         this.invocationId = invocationId;
@@ -23,16 +23,8 @@ class InvocationMessage extends HubMessage {
         return target;
     }
 
-    public void setTarget(String target) {
-        this.target = target;
-    }
-
     public Object[] getArguments() {
         return arguments;
-    }
-
-    public void setArguments(Object[] arguments) {
-        this.arguments = arguments;
     }
 
     @Override
