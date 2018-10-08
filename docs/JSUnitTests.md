@@ -66,7 +66,7 @@ Just make sure you remove `.only` when you finish running that test!
 
 You can also use the `-t` parameter to jest. That parameter takes a substring pattern to match against all tests to see if they should run. To improve the speed of the run, you should pair this up with the argument that takes a file path to filter on. For example, given these tests
 
-```
+```typescript
 describe("AbortSignal", () => {
     describe("aborted", () => {
         it("is false on initialization", () => {
