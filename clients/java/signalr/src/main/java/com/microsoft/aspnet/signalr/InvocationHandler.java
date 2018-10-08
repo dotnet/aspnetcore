@@ -3,15 +3,16 @@
 
 package com.microsoft.aspnet.signalr;
 
+import java.util.Arrays;
 import java.util.List;
 
 class InvocationHandler {
     private List<Class<?>> classes;
     private ActionBase action;
 
-    InvocationHandler(ActionBase action, List<Class<?>> classes) {
+    InvocationHandler(ActionBase action, Class<?>... classes) {
         this.action = action;
-        this.classes = classes;
+        this.classes = Arrays.asList(classes);
     }
 
     public List<Class<?>> getClasses() {

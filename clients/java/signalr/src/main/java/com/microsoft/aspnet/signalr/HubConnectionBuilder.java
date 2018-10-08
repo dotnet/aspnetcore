@@ -9,26 +9,23 @@ public class HubConnectionBuilder {
     private Logger logger;
     private HttpConnectionOptions options = null;
 
-    public HubConnectionBuilder withUrl(String url) {
-        if (url == null || url.isEmpty()) {
-            throw new IllegalArgumentException("A valid url is required.");
-        }
-
+    private HubConnectionBuilder(String url) {
         this.url = url;
-        return this;
     }
 
-    public HubConnectionBuilder withUrl(String url, Transport transport) {
+    public static HubConnectionBuilder create(String url) {
         if (url == null || url.isEmpty()) {
             throw new IllegalArgumentException("A valid url is required.");
         }
-        this.url = url;
+        return new HubConnectionBuilder(url);
+    }
+
+    public HubConnectionBuilder withTransport(Transport transport) {
         this.transport = transport;
         return this;
     }
 
-    public HubConnectionBuilder withUrl(String url, HttpConnectionOptions options) {
-        this.url = url;
+    public HubConnectionBuilder withOptions(HttpConnectionOptions options) {
         this.options = options;
         return this;
     }
@@ -44,9 +41,6 @@ public class HubConnectionBuilder {
     }
 
     public HubConnection build() {
-        if (this.url == null) {
-            throw new RuntimeException("The 'HubConnectionBuilder.withUrl' method must be called before building the connection.");
-        }
         if (options == null) {
             options = new HttpConnectionOptions();
         }

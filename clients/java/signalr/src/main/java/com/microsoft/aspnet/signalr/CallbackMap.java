@@ -3,28 +3,22 @@
 
 package com.microsoft.aspnet.signalr;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 class CallbackMap {
-    private ConcurrentHashMap<String, List<InvocationHandler>> handlers = new ConcurrentHashMap<>();
+    private Map<String, List<InvocationHandler>> handlers = new ConcurrentHashMap<>();
 
-    public InvocationHandler put(String target, ActionBase action, ArrayList<Class<?>> classes) {
-        InvocationHandler handler = new InvocationHandler(action, Collections.unmodifiableList(classes));
-
-        handlers.computeIfPresent(target, (methodName, handlerList) -> {
-            handlerList.add(handler);
-            return handlerList;
+    public InvocationHandler put(String target, ActionBase action, Class<?>... classes) {
+        InvocationHandler handler = new InvocationHandler(action, classes);
+        handlers.compute(target, (key, value) -> {
+            if (value == null) {
+                value = new ArrayList<>();
+            }
+            value.add(handler);
+            return value;
         });
-        handlers.computeIfAbsent(target, (ac) -> new ArrayList<>(Arrays.asList(handler)));
         return handler;
-    }
-
-    public Boolean containsKey(String key) {
-        return handlers.containsKey(key);
     }
 
     public List<InvocationHandler> get(String key) {

@@ -10,7 +10,7 @@ import java.util.concurrent.CompletableFuture;
 class HttpRequest {
     private String method;
     private String url;
-    private Map<String, String> headers = new HashMap<>();
+    private final Map<String, String> headers = new HashMap<>();
 
     public void setMethod(String method) {
         this.method = method;
@@ -20,14 +20,12 @@ class HttpRequest {
         this.url = url;
     }
 
-    public void setHeader(String key, String value) {
+    public void addHeader(String key, String value) {
         this.headers.put(key, value);
     }
 
-    public void setHeaders(Map<String, String> headers) {
-        headers.forEach((key, value) -> {
-            this.headers.put(key, value);
-        });
+    public void addHeaders(Map<String, String> headers) {
+        this.headers.putAll(headers);
     }
 
     public String getMethod() {
@@ -44,17 +42,16 @@ class HttpRequest {
 }
 
 class HttpResponse {
-    private int statusCode;
-    private String statusText;
-    private String content = null;
+    private final int statusCode;
+    private final String statusText;
+    private final String content;
 
     public HttpResponse(int statusCode) {
-        this.statusCode = statusCode;
+        this(statusCode, "");
     }
 
     public HttpResponse(int statusCode, String statusText) {
-        this.statusCode = statusCode;
-        this.statusText = statusText;
+        this(statusCode, statusText, "");
     }
 
     public HttpResponse(int statusCode, String statusText, String content) {

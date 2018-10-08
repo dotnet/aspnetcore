@@ -10,23 +10,14 @@ import org.junit.jupiter.api.Test;
 
 public class HubConnectionBuilderTest {
     @Test
-    public void callingBuildWithoutCallingWithUrlThrows() {
-        HubConnectionBuilder builder = new HubConnectionBuilder();
-        Throwable exception = assertThrows(RuntimeException.class, () -> builder.build());
-        assertEquals("The \'HubConnectionBuilder.withUrl\' method must be called before building the connection.", exception.getMessage());
-    }
-
-    @Test
     public void passingInNullToWithUrlThrows() {
-        HubConnectionBuilder builder = new HubConnectionBuilder();
-        Throwable exception = assertThrows(IllegalArgumentException.class, () -> builder.withUrl(null));
+        Throwable exception = assertThrows(IllegalArgumentException.class, () -> HubConnectionBuilder.create(null));
         assertEquals("A valid url is required.", exception.getMessage());
     }
 
     @Test
     public void passingInEmptyStringToWihtUrlThrows() {
-        HubConnectionBuilder builder = new HubConnectionBuilder();
-        Throwable exception = assertThrows(IllegalArgumentException.class, () -> builder.withUrl(""));
+        Throwable exception = assertThrows(IllegalArgumentException.class, () -> HubConnectionBuilder.create(""));
         assertEquals("A valid url is required.", exception.getMessage());
     }
 }

@@ -3,8 +3,8 @@
 
 package com.microsoft.aspnet.signalr;
 
-class HandshakeResponseMessage {
-    public String error;
+final class HandshakeResponseMessage {
+    private final String error;
 
     public HandshakeResponseMessage() {
         this(null);
@@ -12,5 +12,9 @@ class HandshakeResponseMessage {
 
     public HandshakeResponseMessage(String error) {
         this.error = error;
+    }
+
+    public String getHandshakeError() {
+        return error;
     }
 }

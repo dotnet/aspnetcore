@@ -63,9 +63,9 @@ class HubConnectionTest {
         Transport mockTransport = new MockTransport();
         HttpConnectionOptions options = new HttpConnectionOptions();
         options.setTransport(mockTransport);
-        options.setLoglevel(LogLevel.Information);
         options.setSkipNegotiate(true);
-        HubConnection hubConnection = new HubConnectionBuilder().withUrl("http://www.example.com", options).build();
+        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
+
         hubConnection.start();
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
 
@@ -89,12 +89,12 @@ class HubConnectionTest {
     }
 
     @Test
-    public void hubConnectionReceiveHandshakeResponseWithError() throws Exception {
+    public void hubConnectionReceiveHandshakeResponseWithError() {
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
 
         hubConnection.start();
-        Throwable exception = assertThrows(HubException.class, () -> mockTransport.receiveMessage("{\"error\":\"Requested protocol 'messagepack' is not available.\"}" + RECORD_SEPARATOR));
+        Throwable exception = assertThrows(RuntimeException.class, () -> mockTransport.receiveMessage("{\"error\":\"Requested protocol 'messagepack' is not available.\"}" + RECORD_SEPARATOR));
         assertEquals("Error in handshake Requested protocol 'messagepack' is not available.", exception.getMessage());
     }
 
@@ -912,9 +912,10 @@ class HubConnectionTest {
 
         HttpConnectionOptions options = new HttpConnectionOptions();
         options.setHttpClient(client);
-        HubConnection hubConnection = new HubConnectionBuilder()
-            .withUrl("http://example.com", options)
-            .build();
+        HubConnection hubConnection = HubConnectionBuilder
+                .create("http://example.com")
+                .withOptions(options)
+                .build();
 
         try {
             hubConnection.start().get(1000, TimeUnit.MILLISECONDS);
@@ -932,8 +933,9 @@ class HubConnectionTest {
 
         HttpConnectionOptions options = new HttpConnectionOptions();
         options.setHttpClient(client);
-        HubConnection hubConnection = new HubConnectionBuilder()
-            .withUrl("http://example.com", options)
+        HubConnection hubConnection = HubConnectionBuilder
+            .create("http://example.com")
+            .withOptions(options)
             .build();
 
         ExecutionException exception = assertThrows(ExecutionException.class, () -> hubConnection.start().get(1000, TimeUnit.MILLISECONDS));
@@ -951,9 +953,10 @@ class HubConnectionTest {
         HttpConnectionOptions options = new HttpConnectionOptions();
         options.setTransport(transport);
         options.setHttpClient(client);
-        HubConnection hubConnection = new HubConnectionBuilder()
-            .withUrl("http://example.com", options)
-            .build();
+        HubConnection hubConnection = HubConnectionBuilder
+                .create("http://example.com")
+                .withOptions(options)
+                .build();
 
         hubConnection.start().get(1000, TimeUnit.MILLISECONDS);
 
@@ -971,9 +974,10 @@ class HubConnectionTest {
         HttpConnectionOptions options = new HttpConnectionOptions();
         options.setTransport(transport);
         options.setHttpClient(client);
-        HubConnection hubConnection = new HubConnectionBuilder()
-            .withUrl("http://example.com", options)
-            .build();
+        HubConnection hubConnection = HubConnectionBuilder
+                .create("http://example.com")
+                .withOptions(options)
+                .build();
 
         ExecutionException exception = assertThrows(ExecutionException.class, () -> hubConnection.start().get(1000, TimeUnit.MILLISECONDS));
         assertEquals("Test error.", exception.getCause().getMessage());
@@ -991,9 +995,10 @@ class HubConnectionTest {
         HttpConnectionOptions options = new HttpConnectionOptions();
         options.setTransport(transport);
         options.setHttpClient(client);
-        HubConnection hubConnection = new HubConnectionBuilder()
-            .withUrl("http://example.com", options)
-            .build();
+        HubConnection hubConnection = HubConnectionBuilder
+                .create("http://example.com")
+                .withOptions(options)
+                .build();
 
         hubConnection.start().get(1000, TimeUnit.MILLISECONDS);
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
@@ -1018,7 +1023,10 @@ class HubConnectionTest {
         options.setTransport(transport);
         options.setHttpClient(client);
         options.setAccessTokenProvider(() -> CompletableFuture.completedFuture("secretToken"));
-        HubConnection hubConnection = new HubConnectionBuilder().withUrl("http://example.com", options).build();
+        HubConnection hubConnection = HubConnectionBuilder
+                .create("http://example.com")
+                .withOptions(options)
+                .build();
 
         hubConnection.start().get(1000, TimeUnit.MILLISECONDS);
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
@@ -1044,7 +1052,10 @@ class HubConnectionTest {
         options.setTransport(transport);
         options.setHttpClient(client);
         options.setAccessTokenProvider(() -> CompletableFuture.completedFuture("secretToken"));
-        HubConnection hubConnection = new HubConnectionBuilder().withUrl("http://example.com", options).build();
+        HubConnection hubConnection = HubConnectionBuilder
+                .create("http://example.com")
+                .withOptions(options)
+                .build();
 
         hubConnection.start().get(1000, TimeUnit.MILLISECONDS);
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
@@ -1059,7 +1070,10 @@ class HubConnectionTest {
         HttpConnectionOptions options = new HttpConnectionOptions();
         options.setTransport(transport);
         options.setSkipNegotiate(true);
-        HubConnection hubConnection = new HubConnectionBuilder().withUrl("http://example.com", options).build();
+        HubConnection hubConnection = HubConnectionBuilder
+                .create("http://example.com")
+                .withOptions(options)
+                .build();
 
         hubConnection.start().get(1000, TimeUnit.MILLISECONDS);
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
@@ -1083,7 +1097,10 @@ class HubConnectionTest {
         HttpConnectionOptions options = new HttpConnectionOptions();
         options.setTransport(mockTransport);
         options.setHttpClient(client);
-        HubConnection hubConnection = new HubConnectionBuilder().withUrl("http://example.com", options).build();
+        HubConnection hubConnection = HubConnectionBuilder
+                .create("http://example.com")
+                .withOptions(options)
+                .build();
 
         hubConnection.start().get(1000, TimeUnit.MILLISECONDS);
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
@@ -1106,7 +1123,10 @@ class HubConnectionTest {
         HttpConnectionOptions options = new HttpConnectionOptions();
         options.setTransport(transport);
         options.setHttpClient(client);
-        HubConnection hubConnection = new HubConnectionBuilder().withUrl("http://example.com", options).build();
+        HubConnection hubConnection = HubConnectionBuilder
+                .create("http://example.com")
+                .withOptions(options)
+                .build();
 
         ExecutionException exception = assertThrows(ExecutionException.class, () -> hubConnection.start().get(1000, TimeUnit.MILLISECONDS));
         assertEquals("Unexpected status code returned from negotiate: 500 Internal server error.", exception.getCause().getMessage());

@@ -3,9 +3,9 @@
 
 package com.microsoft.aspnet.signalr;
 
-class HandshakeRequestMessage {
-    String protocol;
-    int version;
+final class HandshakeRequestMessage {
+    private final String protocol;
+    private final int version;
 
     public HandshakeRequestMessage(String protocol, int version) {
         this.protocol = protocol;

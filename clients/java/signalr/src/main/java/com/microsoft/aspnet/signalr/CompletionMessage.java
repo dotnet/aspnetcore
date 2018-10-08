@@ -3,15 +3,14 @@
 
 package com.microsoft.aspnet.signalr;
 
-class CompletionMessage extends HubMessage {
-    private int type = HubMessageType.COMPLETION.value;
-    private String invocationId;
-    private Object result;
-    private String error;
+final class CompletionMessage extends HubMessage {
+    private final int type = HubMessageType.COMPLETION.value;
+    private final String invocationId;
+    private final Object result;
+    private final String error;
 
     public CompletionMessage(String invocationId, Object result, String error) {
-        if (error != null && result != null)
-        {
+        if (error != null && result != null) {
             throw new IllegalArgumentException("Expected either 'error' or 'result' to be provided, but not both");
         }
         this.invocationId = invocationId;
