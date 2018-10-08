@@ -96,7 +96,7 @@ $repos = @(
     },
     @{
         Name   = 'Razor.VSCode'
-        Checks = @('Razor.VSCode-CI-Official')
+        Checks = @()
         Branches = @('master')
     },
     @{
