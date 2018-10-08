@@ -1,3 +1,8 @@
+#
+# README!
+# Edits to this script do not automatically change GitHub. You need to get a member of @aspnet/aspnet-org-admins to run this script with their API token (aka personal access token)
+#
+
 [CmdletBinding(SupportsShouldProcess = $true)]
 param(
     $ApiToken
