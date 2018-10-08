@@ -17,6 +17,7 @@ namespace TriageBuildFailures.Handlers
     public class HandleLowValueBuilds : HandleFailureBase
     {
         private IEnumerable<string> LowValueBuilds = new string[] {
+            "Releases_21Public_SiteExtensionReproNuGetIssue",
             "Lite_Infrastructure_AspNetCoreModuleSetup",
             // PB test
             "Releases_22xPublic_PbTestUbuntu",
