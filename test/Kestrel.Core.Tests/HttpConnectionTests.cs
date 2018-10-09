@@ -5,6 +5,7 @@ using System.IO.Pipelines;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
 using Moq;
@@ -29,10 +30,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var httpConnection = new HttpConnection(httpConnectionContext);
 
             var aborted = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var http1Connection = new Http1Connection(httpConnectionContext);
 
-            httpConnection.Initialize(httpConnectionContext.Transport);
-            httpConnection.Http1Connection.Reset();
-            httpConnection.Http1Connection.RequestAborted.Register(() =>
+            httpConnection.Initialize(http1Connection);
+            http1Connection.Reset();
+            http1Connection.RequestAborted.Register(() =>
             {
                 aborted.SetResult(null);
             });

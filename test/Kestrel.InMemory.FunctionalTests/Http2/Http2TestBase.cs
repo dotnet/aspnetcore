@@ -56,8 +56,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         protected readonly HPackDecoder _hpackDecoder;
         private readonly byte[] _headerEncodingBuffer = new byte[Http2PeerSettings.MinAllowedMaxFrameSize];
 
-        protected readonly Mock<ITimeoutHandler> _mockTimeoutHandler = new Mock<ITimeoutHandler>();
         protected readonly TimeoutControl _timeoutControl;
+        protected readonly Mock<ConnectionContext> _mockConnectionContext = new Mock<ConnectionContext>();
+        protected readonly Mock<ITimeoutHandler> _mockTimeoutHandler = new Mock<ITimeoutHandler>();
+        protected readonly Mock<MockTimeoutControlBase> _mockTimeoutControl;
 
         protected readonly ConcurrentDictionary<int, TaskCompletionSource<object>> _runningStreams = new ConcurrentDictionary<int, TaskCompletionSource<object>>();
         protected readonly Dictionary<string, string> _receivedHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -105,7 +107,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             _pair = DuplexPipe.CreateConnectionPair(inputPipeOptions, outputPipeOptions);
             _hpackDecoder = new HPackDecoder((int)_clientSettings.HeaderTableSize, MaxRequestHeaderFieldSize);
+
             _timeoutControl = new TimeoutControl(_mockTimeoutHandler.Object);
+            _mockTimeoutControl = new Mock<MockTimeoutControlBase>(_timeoutControl) { CallBase = true };
 
             _noopApplication = context => Task.CompletedTask;
 
@@ -289,15 +293,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             _connectionContext = new HttpConnectionContext
             {
-                ConnectionContext = Mock.Of<ConnectionContext>(),
+                ConnectionContext = _mockConnectionContext.Object,
                 ConnectionFeatures = new FeatureCollection(),
                 ServiceContext = new TestServiceContext(LoggerFactory, mockKestrelTrace.Object),
                 MemoryPool = _memoryPool,
                 Transport = _pair.Transport,
-                TimeoutControl = _timeoutControl
+                TimeoutControl = _mockTimeoutControl.Object
             };
 
             _connection = new Http2Connection(_connectionContext);
+
+            var httpConnection = new HttpConnection(_connectionContext);
+            httpConnection.Initialize(_connection);
+            _mockTimeoutHandler.Setup(h => h.OnTimeout(It.IsAny<TimeoutReason>()))
+                               .Callback<TimeoutReason>(r => httpConnection.OnTimeout(r));
         }
 
         public override void Dispose()
@@ -1064,6 +1073,70 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             public Memory<byte> Payload { get; set; }
 
             public ReadOnlySequence<byte> PayloadSequence => new ReadOnlySequence<byte>(Payload);
+        }
+
+        public class MockTimeoutControlBase : ITimeoutControl
+        {
+            private readonly ITimeoutControl _realTimeoutControl;
+
+            public MockTimeoutControlBase(ITimeoutControl realTimeoutControl)
+            {
+                _realTimeoutControl = realTimeoutControl;
+            }
+
+            public virtual TimeoutReason TimerReason => _realTimeoutControl.TimerReason;
+
+            public virtual void SetTimeout(long ticks, TimeoutReason timeoutReason)
+            {
+                _realTimeoutControl.SetTimeout(ticks, timeoutReason);
+            }
+
+            public virtual void ResetTimeout(long ticks, TimeoutReason timeoutReason)
+            {
+                _realTimeoutControl.ResetTimeout(ticks, timeoutReason);
+            }
+
+            public virtual void CancelTimeout()
+            {
+                _realTimeoutControl.CancelTimeout();
+            }
+
+
+            public virtual void StartTimingReads(MinDataRate minRate)
+            {
+                _realTimeoutControl.StartTimingReads(minRate);
+            }
+
+            public virtual void PauseTimingReads()
+            {
+                _realTimeoutControl.PauseTimingReads();
+            }
+
+            public virtual void ResumeTimingReads()
+            {
+                _realTimeoutControl.ResumeTimingReads();
+            }
+
+            public virtual void StopTimingReads()
+            {
+                _realTimeoutControl.StopTimingReads();
+            }
+
+            public virtual void BytesRead(long count)
+            {
+                _realTimeoutControl.BytesRead(count);
+            }
+
+
+            public virtual void StartTimingWrite(MinDataRate minRate, long size)
+            {
+                _realTimeoutControl.StartTimingWrite(minRate, size);
+            }
+
+            public virtual void StopTimingWrite()
+            {
+                _realTimeoutControl.StopTimingWrite();
+            }
         }
     }
 }
