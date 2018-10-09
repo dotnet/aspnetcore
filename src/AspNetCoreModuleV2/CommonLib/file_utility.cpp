@@ -167,23 +167,3 @@ Finished:
     return hr;
 }
 
-std::string
-FILE_UTILITY::GetHtml(HMODULE module, int page)
-{
-    HRESULT hr = S_OK;
-    HRSRC rc = nullptr;
-    HGLOBAL rcData = nullptr;
-    const char* data = nullptr;
-    DWORD size = 0;
-
-    FINISHED_LAST_ERROR_IF_NULL(rc = FindResource(module, MAKEINTRESOURCE(page), RT_HTML));
-    FINISHED_LAST_ERROR_IF_NULL(rcData = LoadResource(module, rc));
-    size = SizeofResource(module, rc);
-    FINISHED_LAST_ERROR_IF(size == 0);
-    FINISHED_LAST_ERROR_IF_NULL(data = static_cast<const char*>(LockResource(rcData)));
-
-    return data;
-Finished:
-
-    return "";
-}

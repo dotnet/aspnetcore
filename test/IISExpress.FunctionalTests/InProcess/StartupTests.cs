@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             EventLogHelpers.VerifyEventLogEvent(deploymentResult, $@"Application '{Regex.Escape(deploymentResult.ContentRoot)}\\' wasn't able to start. {subError}");
 
-            Assert.Contains("HTTP Error 500.0 - ANCM InProcess Startup Failure", await response.Content.ReadAsStringAsync());
+            Assert.Contains("HTTP Error 500.0 - ANCM In-Process Handler Load Failure", await response.Content.ReadAsStringAsync());
         }
 
         [ConditionalFact]
@@ -456,7 +456,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         {
             var response = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
             Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
-            Assert.Contains("HTTP Error 500.0 - ANCM InProcess Startup Failure", await response.Content.ReadAsStringAsync());
+            Assert.Contains("HTTP Error 500.0 - ANCM In-Process Handler Load Failure", await response.Content.ReadAsStringAsync());
             StopServer();
         }
     }

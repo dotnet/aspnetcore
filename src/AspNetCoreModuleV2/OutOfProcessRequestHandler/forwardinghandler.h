@@ -1,6 +1,7 @@
 #pragma once
 
 extern DWORD            g_OptionalWinHttpFlags;
+extern HINSTANCE        g_hOutOfProcessRHModule;
 extern HINSTANCE        g_hWinHttpModule;
 extern HINSTANCE        g_hAspNetCoreModule;
 

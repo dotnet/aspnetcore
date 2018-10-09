@@ -25,10 +25,9 @@ public:
 
     ~StartupExceptionApplication() = default;
 
-    HRESULT
-        CreateHandler(IHttpContext *pHttpContext, IREQUEST_HANDLER ** pRequestHandler)
+    HRESULT CreateHandler(IHttpContext *pHttpContext, IREQUEST_HANDLER ** pRequestHandler)
     {
-        *pRequestHandler = new ServerErrorHandler(*pHttpContext, m_HR,m_moduleInstance, m_disableLogs, IN_PROCESS_RH_STATIC_HTML);
+        *pRequestHandler = new ServerErrorHandler(*pHttpContext, 500, 30, "Internal Server Error", m_HR, m_moduleInstance, m_disableLogs, IN_PROCESS_RH_STATIC_HTML);
         return S_OK;
     }
 
