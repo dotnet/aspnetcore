@@ -178,7 +178,3 @@
 	path = modules/WebSockets
 	url = https://github.com/aspnet/WebSockets.git
 	branch = master
-[submodule "modules/WebHooks"]
-	path = modules/WebHooks
-	url = https://github.com/aspnet/WebHooks.git
-	branch = master

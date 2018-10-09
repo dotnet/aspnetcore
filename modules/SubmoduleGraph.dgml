@@ -45,7 +45,6 @@
     <Node Id="Session" Label="Session" />
     <Node Id="SignalR" Label="SignalR" />
     <Node Id="StaticFiles" Label="StaticFiles" />
-    <Node Id="WebHooks" Label="WebHooks" />
     <Node Id="WebSockets" Label="WebSockets" />
   </Nodes>
   <Links>
@@ -370,12 +369,6 @@
     <Link Source="StaticFiles" Target="IISIntegration" />
     <Link Source="StaticFiles" Target="KestrelHttpServer" />
     <Link Source="StaticFiles" Target="Logging" />
-    <Link Source="WebHooks" Target="Common" />
-    <Link Source="WebHooks" Target="Configuration" />
-    <Link Source="WebHooks" Target="Logging" />
-    <Link Source="WebHooks" Target="MetaPackages" />
-    <Link Source="WebHooks" Target="Mvc" />
-    <Link Source="WebHooks" Target="StaticFiles" />
     <Link Source="WebSockets" Target="Common" />
     <Link Source="WebSockets" Target="Configuration" />
     <Link Source="WebSockets" Target="Diagnostics" />

@@ -172,22 +172,6 @@
     <PackageArtifact Include="Microsoft.AspNetCore.StaticFiles" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.TestHost" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Testing" Category="noship" />
-    <!-- WebHooks packages are not currently shipping, alone or in a meta-package. -->
-    <PackageArtifact Include="Microsoft.AspNetCore.WebHooks.Receivers" Category="noship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.WebHooks.Receivers.AzureAlert" Category="noship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.WebHooks.Receivers.AzureContainerRegistry" Category="noship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.WebHooks.Receivers.BitBucket" Category="noship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.WebHooks.Receivers.Dropbox" Category="noship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.WebHooks.Receivers.DynamicsCRM" Category="noship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.WebHooks.Receivers.GitHub" Category="noship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.WebHooks.Receivers.Kudu" Category="noship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.WebHooks.Receivers.MailChimp" Category="noship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.WebHooks.Receivers.Pusher" Category="noship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.WebHooks.Receivers.Salesforce" Category="noship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.WebHooks.Receivers.Slack" Category="noship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.WebHooks.Receivers.Stripe" Category="noship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.WebHooks.Receivers.Trello" Category="noship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.WebHooks.Receivers.WordPress" Category="noship" />
 
     <PackageArtifact Include="Microsoft.AspNetCore.WebSockets" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.WebUtilities" Category="ship" AppMetapackage="true" AllMetapackage="true"/>

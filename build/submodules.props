@@ -74,7 +74,6 @@
     <Repository Include="Session" />
     <Repository Include="SignalR" />
     <Repository Include="StaticFiles" />
-    <Repository Include="WebHooks" />
     <Repository Include="Templating" PatchPolicy="AlwaysUpdateAndCascadeVersions" />
     <Repository Include="WebSockets" />
 
