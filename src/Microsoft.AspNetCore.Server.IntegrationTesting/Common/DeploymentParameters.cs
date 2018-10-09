@@ -148,11 +148,6 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
         public string AdditionalPublishParameters { get; set; }
 
         /// <summary>
-        /// Publish restores by default, this property opts out by default.
-        /// </summary>
-        public bool RestoreOnPublish { get; set; }
-
-        /// <summary>
         /// To publish the application before deployment.
         /// </summary>
         public bool PublishApplicationBeforeDeployment { get; set; }

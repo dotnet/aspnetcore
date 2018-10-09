@@ -35,9 +35,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                                  + $" --output \"{publishDirectory.FullName}\""
                                  + $" --framework {deploymentParameters.TargetFramework}"
                                  + $" --configuration {deploymentParameters.Configuration}"
-                                 + (deploymentParameters.RestoreOnPublish
-                                     ? string.Empty
-                                     : " --no-restore -p:VerifyMatchingImplicitPackageVersion=false");
+                                 + " --no-restore -p:VerifyMatchingImplicitPackageVersion=false";
                 // Set VerifyMatchingImplicitPackageVersion to disable errors when Microsoft.NETCore.App's version is overridden externally
                 // This verification doesn't matter if we are skipping restore during tests.
 
