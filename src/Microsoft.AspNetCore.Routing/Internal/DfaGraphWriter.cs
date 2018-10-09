@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             var endpoints = dataSource.Endpoints;
             for (var i = 0; i < endpoints.Count; i++)
             {
-                if (endpoints[i] is RouteEndpoint endpoint && endpoint.Metadata.GetMetadata<ISuppressMatchingMetadata>() == null)
+                if (endpoints[i] is RouteEndpoint endpoint && endpoint.Metadata.GetMetadata<ISuppressMatchingMetadata>()?.SuppressMatching == true)
                 {
                     builder.AddEndpoint(endpoint);
                 }

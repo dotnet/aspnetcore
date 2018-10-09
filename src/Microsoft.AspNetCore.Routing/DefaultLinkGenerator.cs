@@ -202,7 +202,7 @@ namespace Microsoft.AspNetCore.Routing
 
         private List<RouteEndpoint> GetEndpoints<TAddress>(TAddress address)
         {
-            var addressingScheme = _serviceProvider.GetRequiredService<IEndpointFinder<TAddress>>();
+            var addressingScheme = _serviceProvider.GetRequiredService<IEndpointAddressScheme<TAddress>>();
             var endpoints = addressingScheme.FindEndpoints(address).OfType<RouteEndpoint>().ToList();
 
             if (endpoints.Count == 0)

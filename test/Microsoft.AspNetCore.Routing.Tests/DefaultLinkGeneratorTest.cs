@@ -599,14 +599,14 @@ namespace Microsoft.AspNetCore.Routing
 
         protected override void AddAdditionalServices(IServiceCollection services)
         {
-            services.AddSingleton<IEndpointFinder<int>, IntEndpointFinder>();
+            services.AddSingleton<IEndpointAddressScheme<int>, IntAddressScheme>();
         }
 
-        private class IntEndpointFinder : IEndpointFinder<int>
+        private class IntAddressScheme : IEndpointAddressScheme<int>
         {
             private readonly CompositeEndpointDataSource _dataSource;
 
-            public IntEndpointFinder(CompositeEndpointDataSource dataSource)
+            public IntAddressScheme(CompositeEndpointDataSource dataSource)
             {
                 _dataSource = dataSource;
             }

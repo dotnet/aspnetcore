@@ -12,7 +12,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Routing
 {
-    public class RouteValueBasedEndpointFinderTest
+    public class RouteValuesAddressSchemeTest
     {
         [Fact]
         public void GetOutboundMatches_GetsNamedMatchesFor_EndpointsHaving_IRouteNameMetadata()
@@ -22,13 +22,13 @@ namespace Microsoft.AspNetCore.Routing
             var endpoint2 = CreateEndpoint("/a", routeName: "named");
 
             // Act
-            var finder = CreateEndpointFinder(endpoint1, endpoint2);
+            var addressScheme = CreateAddressScheme(endpoint1, endpoint2);
 
             // Assert
-            Assert.NotNull(finder.AllMatches);
-            Assert.Equal(2, finder.AllMatches.Count());
-            Assert.NotNull(finder.NamedMatches);
-            Assert.True(finder.NamedMatches.TryGetValue("named", out var namedMatches));
+            Assert.NotNull(addressScheme.AllMatches);
+            Assert.Equal(2, addressScheme.AllMatches.Count());
+            Assert.NotNull(addressScheme.NamedMatches);
+            Assert.True(addressScheme.NamedMatches.TryGetValue("named", out var namedMatches));
             var namedMatch = Assert.Single(namedMatches);
             var actual = Assert.IsType<RouteEndpoint>(namedMatch.Match.Entry.Data);
             Assert.Same(endpoint2, actual);
@@ -43,13 +43,13 @@ namespace Microsoft.AspNetCore.Routing
             var endpoint3 = CreateEndpoint("/b", routeName: "named");
 
             // Act
-            var finder = CreateEndpointFinder(endpoint1, endpoint2, endpoint3);
+            var addressScheme = CreateAddressScheme(endpoint1, endpoint2, endpoint3);
 
             // Assert
-            Assert.NotNull(finder.AllMatches);
-            Assert.Equal(3, finder.AllMatches.Count());
-            Assert.NotNull(finder.NamedMatches);
-            Assert.True(finder.NamedMatches.TryGetValue("named", out var namedMatches));
+            Assert.NotNull(addressScheme.AllMatches);
+            Assert.Equal(3, addressScheme.AllMatches.Count());
+            Assert.NotNull(addressScheme.NamedMatches);
+            Assert.True(addressScheme.NamedMatches.TryGetValue("named", out var namedMatches));
             Assert.Equal(2, namedMatches.Count);
             Assert.Same(endpoint2, Assert.IsType<RouteEndpoint>(namedMatches[0].Match.Entry.Data));
             Assert.Same(endpoint3, Assert.IsType<RouteEndpoint>(namedMatches[1].Match.Entry.Data));
@@ -64,13 +64,13 @@ namespace Microsoft.AspNetCore.Routing
             var endpoint3 = CreateEndpoint("/b", routeName: "NaMed");
 
             // Act
-            var finder = CreateEndpointFinder(endpoint1, endpoint2, endpoint3);
+            var addressScheme = CreateAddressScheme(endpoint1, endpoint2, endpoint3);
 
             // Assert
-            Assert.NotNull(finder.AllMatches);
-            Assert.Equal(3, finder.AllMatches.Count());
-            Assert.NotNull(finder.NamedMatches);
-            Assert.True(finder.NamedMatches.TryGetValue("named", out var namedMatches));
+            Assert.NotNull(addressScheme.AllMatches);
+            Assert.Equal(3, addressScheme.AllMatches.Count());
+            Assert.NotNull(addressScheme.NamedMatches);
+            Assert.True(addressScheme.NamedMatches.TryGetValue("named", out var namedMatches));
             Assert.Equal(2, namedMatches.Count);
             Assert.Same(endpoint2, Assert.IsType<RouteEndpoint>(namedMatches[0].Match.Entry.Data));
             Assert.Same(endpoint3, Assert.IsType<RouteEndpoint>(namedMatches[1].Match.Entry.Data));
@@ -84,11 +84,11 @@ namespace Microsoft.AspNetCore.Routing
             var dynamicDataSource = new DynamicEndpointDataSource(new[] { endpoint1 });
 
             // Act 1
-            var finder = new CustomRouteValuesBasedEndpointFinder(new CompositeEndpointDataSource(new[] { dynamicDataSource }));
+            var addressScheme = new CustomRouteValuesBasedAddressScheme(new CompositeEndpointDataSource(new[] { dynamicDataSource }));
 
             // Assert 1
-            Assert.NotNull(finder.AllMatches);
-            var match = Assert.Single(finder.AllMatches);
+            Assert.NotNull(addressScheme.AllMatches);
+            var match = Assert.Single(addressScheme.AllMatches);
             var actual = Assert.IsType<RouteEndpoint>(match.Entry.Data);
             Assert.Same(endpoint1, actual);
 
@@ -114,9 +114,9 @@ namespace Microsoft.AspNetCore.Routing
             dynamicDataSource.AddEndpoint(endpoint4);
 
             // Assert 3
-            Assert.NotNull(finder.AllMatches);
+            Assert.NotNull(addressScheme.AllMatches);
             Assert.Collection(
-                finder.AllMatches,
+                addressScheme.AllMatches,
                 (m) =>
                 {
                     actual = Assert.IsType<RouteEndpoint>(m.Entry.Data);
@@ -148,10 +148,10 @@ namespace Microsoft.AspNetCore.Routing
                 defaults: new { controller = "Orders", action = "GetById" },
                 requiredValues: new { controller = "Orders", action = "GetById" },
                 routeName: "OrdersApi");
-            var finder = CreateEndpointFinder(expected);
+            var addressScheme = CreateAddressScheme(expected);
 
             // Act
-            var foundEndpoints = finder.FindEndpoints(
+            var foundEndpoints = addressScheme.FindEndpoints(
                 new RouteValuesAddress
                 {
                     ExplicitValues = new RouteValueDictionary(new { id = 10 }),
@@ -167,7 +167,7 @@ namespace Microsoft.AspNetCore.Routing
         [Fact]
         public void FindEndpoints_AlwaysReturnsEndpointsByRouteName_IgnoringMissingRequiredParameterValues()
         {
-            // Here 'id' is the required value. The endpoint finder would always return an endpoint by looking up
+            // Here 'id' is the required value. The endpoint addressScheme would always return an endpoint by looking up
             // name only. Its the link generator which uses these endpoints finally to generate a link or not
             // based on the required parameter values being present or not.
 
@@ -177,10 +177,10 @@ namespace Microsoft.AspNetCore.Routing
                 defaults: new { controller = "Orders", action = "GetById" },
                 requiredValues: new { controller = "Orders", action = "GetById" },
                 routeName: "OrdersApi");
-            var finder = CreateEndpointFinder(expected);
+            var addressScheme = CreateAddressScheme(expected);
 
             // Act
-            var foundEndpoints = finder.FindEndpoints(
+            var foundEndpoints = addressScheme.FindEndpoints(
                 new RouteValuesAddress
                 {
                     ExplicitValues = new RouteValueDictionary(),
@@ -202,20 +202,35 @@ namespace Microsoft.AspNetCore.Routing
                 metadataCollection: new EndpointMetadataCollection(new[] { new SuppressLinkGenerationMetadata() }));
 
             // Act
-            var finder = CreateEndpointFinder(endpoint);
+            var addressScheme = CreateAddressScheme(endpoint);
 
             // Assert
-            Assert.Empty(finder.AllMatches);
+            Assert.Empty(addressScheme.AllMatches);
         }
 
-        private CustomRouteValuesBasedEndpointFinder CreateEndpointFinder(params Endpoint[] endpoints)
+        [Fact]
+        public void AddressScheme_UnsuppressedEndpoint_IsUsed()
         {
-            return CreateEndpointFinder(new DefaultEndpointDataSource(endpoints));
+            // Arrange
+            var endpoint = EndpointFactory.CreateRouteEndpoint(
+                "/a",
+                metadata: new object[] { new SuppressLinkGenerationMetadata(), new EncourageLinkGenerationMetadata(), });
+
+            // Act
+            var addressScheme = CreateAddressScheme(endpoint);
+
+            // Assert
+            Assert.Same(endpoint, Assert.Single(addressScheme.AllMatches).Entry.Data);
         }
 
-        private CustomRouteValuesBasedEndpointFinder CreateEndpointFinder(params EndpointDataSource[] dataSources)
+        private CustomRouteValuesBasedAddressScheme CreateAddressScheme(params Endpoint[] endpoints)
         {
-            return new CustomRouteValuesBasedEndpointFinder(new CompositeEndpointDataSource(dataSources));
+            return CreateAddressScheme(new DefaultEndpointDataSource(endpoints));
+        }
+
+        private CustomRouteValuesBasedAddressScheme CreateAddressScheme(params EndpointDataSource[] dataSources)
+        {
+            return new CustomRouteValuesBasedAddressScheme(new CompositeEndpointDataSource(dataSources));
         }
 
         private RouteEndpoint CreateEndpoint(
@@ -244,9 +259,9 @@ namespace Microsoft.AspNetCore.Routing
                 null);
         }
 
-        private class CustomRouteValuesBasedEndpointFinder : RouteValuesBasedEndpointFinder
+        private class CustomRouteValuesBasedAddressScheme : RouteValuesAddressScheme
         {
-            public CustomRouteValuesBasedEndpointFinder(CompositeEndpointDataSource dataSource)
+            public CustomRouteValuesBasedAddressScheme(CompositeEndpointDataSource dataSource)
                 : base(dataSource)
             {
             }
@@ -262,6 +277,11 @@ namespace Microsoft.AspNetCore.Routing
                 NamedMatches = matches.Item2;
                 return matches;
             }
+        }
+
+        private class EncourageLinkGenerationMetadata : ISuppressLinkGenerationMetadata
+        {
+            public bool SuppressLinkGeneration => false;
         }
     }
 }
