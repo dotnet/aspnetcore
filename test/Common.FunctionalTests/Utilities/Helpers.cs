@@ -63,6 +63,18 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             await Task.WhenAll(tasks);
         }
 
+        public static string GetFrebFolder(string folder, IISDeploymentResult result)
+        {
+            if (result.DeploymentParameters.ServerType == ServerType.IISExpress)
+            {
+                return Path.Combine(folder, result.DeploymentParameters.SiteName);
+            }
+            else
+            {
+                return Path.Combine(folder, "W3SVC1");
+            }
+        }
+
         public static void CopyFiles(DirectoryInfo source, DirectoryInfo target, ILogger logger)
         {
             foreach (DirectoryInfo directoryInfo in source.GetDirectories())
@@ -111,6 +123,27 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             }
 
             return response;
+        }
+
+        public static async Task Retry(Func<Task> func, int attempts, int msDelay)
+        {
+            var exceptions = new List<Exception>();
+
+            for (var attempt = 0; attempt < attempts; attempt++)
+            {
+                try
+                {
+                    await func();
+                    return;
+                }
+                catch (Exception e)
+                {
+                    exceptions.Add(e);
+                }
+                await Task.Delay(msDelay);
+            }
+
+            throw new AggregateException(exceptions);
         }
 
         public static void AssertWorkerProcessStop(this IISDeploymentResult deploymentResult, int? timeout = null)

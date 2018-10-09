@@ -24,6 +24,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         private static readonly bool _dynamicCompressionAvailable;
         private static readonly bool _applicationInitializationModule;
         private static readonly bool _tracingModuleAvailable;
+        private static readonly bool _frebTracingModuleAvailable;
 
         static RequiresIISAttribute()
         {
@@ -89,6 +90,9 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             _applicationInitializationModule = File.Exists(Path.Combine(Environment.SystemDirectory, "inetsrv", "warmup.dll"));
 
             _tracingModuleAvailable = File.Exists(Path.Combine(Environment.SystemDirectory, "inetsrv", "iisetw.dll"));
+
+            _frebTracingModuleAvailable = File.Exists(Path.Combine(Environment.SystemDirectory, "inetsrv", "iisfreb.dll"));
+
 
             var iisRegistryKey = Registry.LocalMachine.OpenSubKey(@"Software\Microsoft\InetStp", writable: false);
             if (iisRegistryKey == null)
@@ -161,12 +165,22 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 }
             }
 
+
             if (capabilities.HasFlag(IISCapability.TracingModule))
             {
                 IsMet &= _tracingModuleAvailable;
                 if (!_tracingModuleAvailable)
                 {
-                    SkipReason += "The machine does not have IIS TracingModule installed.";
+                    SkipReason += "The machine does not have IIS Failed Request Tracing Module installed.";
+                }
+            }
+
+            if (capabilities.HasFlag(IISCapability.FailedRequestTracingModule))
+            {
+                IsMet &= _frebTracingModuleAvailable;
+                if (!_frebTracingModuleAvailable)
+                {
+                    SkipReason += "The machine does not have IIS Failed Request Tracing Module installed.";
                 }
             }
         }

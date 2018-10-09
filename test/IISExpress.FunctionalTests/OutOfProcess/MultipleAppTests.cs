@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             // ANCM v2 does retry on port collisions, so no retries should be required.
             var attempts = (ancmVersion == AncmVersion.AspNetCoreModule) ? 2 : 1;
 
-            return Retry(async () =>
+            return Helpers.Retry(async () =>
             {
                 const int numApps = 10;
 
@@ -75,27 +75,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                     }
                 }
             },
-            attempts: attempts);
-        }
-
-        private async Task Retry(Func<Task> func, int attempts)
-        {
-            var exceptions = new List<Exception>();
-
-            for (var attempt = 0; attempt < attempts; attempt++)
-            {
-                try
-                {
-                    await func();
-                    return;
-                }
-                catch (Exception e)
-                {
-                    exceptions.Add(e);
-                }
-            }
-
-            throw new AggregateException(exceptions);
+            attempts: attempts, msDelay: 0);
         }
     }
 }

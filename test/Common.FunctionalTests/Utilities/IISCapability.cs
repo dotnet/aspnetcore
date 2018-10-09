@@ -15,6 +15,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         ShutdownToken = 8,
         DynamicCompression = 16,
         ApplicationInitialization = 32,
-        TracingModule = 64
+        TracingModule = 64,
+        FailedRequestTracingModule = 128
     }
 }
