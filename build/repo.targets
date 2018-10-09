@@ -126,7 +126,7 @@
     <MSBuild
       Projects="$(StressAppBasePath)\StressTestWebSite.csproj"
       Targets="Publish"
-      Properties="TargetFramework=netcoreapp2.2;Configuration=$(Configuration);RuntimeIdentifier=win7-%(Platforms.Identity);PublishDir=$(StressAppPublishPath)\%(Identity)" />
+      Properties="TargetFramework=netcoreapp2.2;Configuration=$(Configuration);RuntimeIdentifier=win7-%(Platforms.Identity);PublishDir=$(StressAppPublishPath)\%(Identity);BuildProjectReferences=false" />
 
     <ItemGroup>
       <StressAppFiles Include="$(StressAppPublishPath)\**\*" />

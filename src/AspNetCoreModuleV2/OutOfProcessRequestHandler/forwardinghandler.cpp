@@ -4,6 +4,8 @@
 #include "forwardinghandler.h"
 #include "url_utility.h"
 #include "exceptions.h"
+#include "ServerErrorHandler.h"
+#include "resource.h"
 
 // Just to be aware of the FORWARDING_HANDLER object size.
 C_ASSERT(sizeof(FORWARDING_HANDLER) <= 632);
@@ -16,7 +18,6 @@ C_ASSERT(sizeof(FORWARDING_HANDLER) <= 632);
 #define FORWARDING_HANDLER_SIGNATURE        ((DWORD)'FHLR')
 #define FORWARDING_HANDLER_SIGNATURE_FREE   ((DWORD)'fhlr')
 
-STRA                        FORWARDING_HANDLER::sm_pStra502ErrorMsg;
 ALLOC_CACHE_HANDLER *       FORWARDING_HANDLER::sm_pAlloc = NULL;
 TRACE_LOG *                 FORWARDING_HANDLER::sm_pTraceLog = NULL;
 PROTOCOL_CONFIG             FORWARDING_HANDLER::sm_ProtocolConfig;
@@ -318,18 +319,8 @@ Failure:
     }
     else if (fFailedToStartKestrel && !m_pApplication->QueryConfig()->QueryDisableStartUpErrorPage())
     {
-        HTTP_DATA_CHUNK   DataChunk;
-        pResponse->SetStatus(502, "Bad Gateway", 5, hr, NULL, TRUE);
-        pResponse->SetHeader("Content-Type",
-            "text/html",
-            (USHORT)strlen("text/html"),
-            FALSE
-        );
-
-        DataChunk.DataChunkType = HttpDataChunkFromMemory;
-        DataChunk.FromMemory.pBuffer = (PVOID)sm_pStra502ErrorMsg.QueryStr();
-        DataChunk.FromMemory.BufferLength = sm_pStra502ErrorMsg.QueryCB();
-        pResponse->WriteEntityChunkByReference(&DataChunk);
+        ServerErrorHandler handler(*m_pW3Context, 502, 5, "Bad Gateway", hr, g_hOutOfProcessRHModule, m_pApplication->QueryConfig()->QueryDisableStartUpErrorPage(), OUT_OF_PROCESS_RH_STATIC_HTML);
+        handler.OnExecuteRequestHandler();
     }
     else
     {
@@ -728,31 +719,6 @@ HRESULT
         sm_pTraceLog = CreateRefTraceLog(10000, 0);
     }
 
-    sm_pStra502ErrorMsg.Copy(
-        "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\"> \
-        <html xmlns=\"http://www.w3.org/1999/xhtml\"> \
-        <head> \
-        <meta http-equiv=\"Content-Type\" content=\"text/html; charset=iso-8859-1\" /> \
-        <title> IIS 502.5 Error </title><style type=\"text/css\"></style></head> \
-        <body> <div id = \"content\"> \
-          <div class = \"content-container\"><h3> HTTP Error 502.5 - Process Failure </h3></div>  \
-          <div class = \"content-container\"> \
-           <fieldset> <h4> Common causes of this issue: </h4> \
-            <ul><li> The application process failed to start </li> \
-             <li> The application process started but then stopped </li> \
-             <li> The application process started but failed to listen on the configured port </li></ul></fieldset> \
-          </div> \
-          <div class = \"content-container\"> \
-            <fieldset><h4> Troubleshooting steps: </h4> \
-             <ul><li> Check the system event log for error messages </li> \
-             <li> Enable logging the application process' stdout messages </li> \
-             <li> Attach a debugger to the application process and inspect </li></ul></fieldset> \
-             <fieldset><h4> For more information visit: \
-             <a href=\"https://go.microsoft.com/fwlink/?linkid=808681\"> <cite> https://go.microsoft.com/fwlink/?LinkID=808681 </cite></a></h4> \
-             </fieldset> \
-          </div> \
-       </div></body></html>");
-
 Finished:
     if (FAILED_LOG(hr))
     {
@@ -765,8 +731,6 @@ Finished:
 VOID
 FORWARDING_HANDLER::StaticTerminate()
 {
-    sm_pStra502ErrorMsg.Reset();
-
     if (sm_pResponseHeaderHash != NULL)
     {
         sm_pResponseHeaderHash->Clear();

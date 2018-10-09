@@ -20,6 +20,7 @@ SRWLOCK             g_srwLockRH;
 HINTERNET           g_hWinhttpSession = NULL;
 IHttpServer *       g_pHttpServer = NULL;
 HINSTANCE           g_hWinHttpModule;
+HINSTANCE           g_hOutOfProcessRHModule;
 HINSTANCE           g_hAspNetCoreModule;
 HANDLE              g_hEventLog = NULL;
 
@@ -223,6 +224,7 @@ BOOL APIENTRY DllMain(HMODULE hModule,
     switch (ul_reason_for_call)
     {
     case DLL_PROCESS_ATTACH:
+        g_hOutOfProcessRHModule = hModule;
         DisableThreadLibraryCalls(hModule);
         InitializeSRWLock(&g_srwLockRH);
         DebugInitialize(hModule);

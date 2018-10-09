@@ -3,10 +3,10 @@
 
 #include "inprocesshandler.h"
 #include "inprocessapplication.h"
-#include "aspnetcore_event.h"
 #include "IOutputManager.h"
 #include "ShuttingDownApplication.h"
 #include "ntassert.h"
+#include "ModuleTracer.h"
 
 ALLOC_CACHE_HANDLER * IN_PROCESS_HANDLER::sm_pAlloc = NULL;
 
@@ -25,7 +25,8 @@ IN_PROCESS_HANDLER::IN_PROCESS_HANDLER(
    m_pRequestHandler(pRequestHandler),
    m_pRequestHandlerContext(pRequestHandlerContext),
    m_pAsyncCompletionHandler(pAsyncCompletion),
-   m_pDisconnectHandler(pDisconnectHandler)
+   m_pDisconnectHandler(pDisconnectHandler),
+   m_moduleTracer(pW3Context->GetTraceContext())
 {
 }
 
@@ -34,32 +35,11 @@ REQUEST_NOTIFICATION_STATUS
 IN_PROCESS_HANDLER::OnExecuteRequestHandler()
 {
     // FREB log
-
-    if (ANCMEvents::ANCM_START_APPLICATION_SUCCESS::IsEnabled(m_pW3Context->GetTraceContext()))
-    {
-        ANCMEvents::ANCM_START_APPLICATION_SUCCESS::RaiseEvent(
-            m_pW3Context->GetTraceContext(),
-            NULL,
-            L"InProcess Application");
-    }
+    m_moduleTracer.ExecuteRequestStart();
 
     if (m_pRequestHandler == NULL)
     {
-        //
-        // return error as the application did not register callback
-        //
-        if (ANCMEvents::ANCM_EXECUTE_REQUEST_FAIL::IsEnabled(m_pW3Context->GetTraceContext()))
-        {
-            ANCMEvents::ANCM_EXECUTE_REQUEST_FAIL::RaiseEvent(m_pW3Context->GetTraceContext(),
-                                                              NULL,
-                                                              (ULONG)E_APPLICATION_ACTIVATION_EXEC_FAILURE);
-        }
-
-        m_pW3Context->GetResponse()->SetStatus(500,
-                                               "Internal Server Error",
-                                               0,
-                                               (ULONG)E_APPLICATION_ACTIVATION_EXEC_FAILURE);
-
+        m_moduleTracer.ExecuteRequestEnd(RQ_NOTIFICATION_FINISH_REQUEST);
         return RQ_NOTIFICATION_FINISH_REQUEST;
     }
     else if (m_pApplication->QueryBlockCallbacksIntoManaged())
@@ -67,7 +47,9 @@ IN_PROCESS_HANDLER::OnExecuteRequestHandler()
         return ServerShutdownMessage();
     }
 
-    return m_pRequestHandler(this, m_pRequestHandlerContext);
+    auto status = m_pRequestHandler(this, m_pRequestHandlerContext);
+    m_moduleTracer.ExecuteRequestEnd(status);
+    return status;
 }
 
 __override
@@ -77,10 +59,13 @@ IN_PROCESS_HANDLER::OnAsyncCompletion(
     HRESULT     hrCompletionStatus
 )
 {
+    m_moduleTracer.AsyncCompletionStart();
+
     if (m_fManagedRequestComplete)
     {
         // means PostCompletion has been called and this is the associated callback.
-        return m_requestNotificationStatus;
+        m_moduleTracer.AsyncCompletionEnd(m_requestNotificationStatus);
+        return m_requestNotificationStatus; 
     }
     if (m_pApplication->QueryBlockCallbacksIntoManaged())
     {
@@ -92,11 +77,15 @@ IN_PROCESS_HANDLER::OnAsyncCompletion(
 
     assert(m_pManagedHttpContext != nullptr);
     // Call the managed handler for async completion.
-    return m_pAsyncCompletionHandler(m_pManagedHttpContext, hrCompletionStatus, cbCompletion);
+
+    auto status = m_pAsyncCompletionHandler(m_pManagedHttpContext, hrCompletionStatus, cbCompletion);
+    m_moduleTracer.AsyncCompletionEnd(status);
+    return status;
 }
 
-REQUEST_NOTIFICATION_STATUS IN_PROCESS_HANDLER::ServerShutdownMessage() const
+REQUEST_NOTIFICATION_STATUS IN_PROCESS_HANDLER::ServerShutdownMessage()
 {
+    m_moduleTracer.RequestShutdown();
     return ShuttingDownHandler::ServerShutdownMessage(m_pW3Context);
 }
 
@@ -109,6 +98,8 @@ IN_PROCESS_HANDLER::NotifyDisconnect()
         return;
     }
 
+    m_moduleTracer.RequestDisconnect();
+
     assert(m_pManagedHttpContext != nullptr);
     m_pDisconnectHandler(m_pManagedHttpContext);
 }
@@ -120,6 +111,7 @@ IN_PROCESS_HANDLER::IndicateManagedRequestComplete(
 {
     m_fManagedRequestComplete = TRUE;
     m_pManagedHttpContext = nullptr;
+    m_moduleTracer.ManagedCompletion();
 }
 
 VOID

@@ -2,7 +2,7 @@
 <html lang="en-US" xmlns="http://www.w3.org/1999/xhtml">
     <head>
         <meta charset="utf-8" />
-        <title> HTTP Error 500.0 - ANCM Out-Of-Process Handler Load Failure </title>
+        <title> HTTP Error 502.5 - ANCM Out-Of-Process Startup Failure </title>
         <style>
             body {
                 font-family: 'Segoe UI', Tahoma, Arial, Helvetica, sans-serif;
@@ -58,15 +58,18 @@
         </style>
     </head>
     <body>
-        <h1> HTTP Error 500.0 - ANCM Out-Of-Process Handler Load Failure </h1>
+        <h1> HTTP Error 502.5 - ANCM Out-Of-Process Startup Failure </h1>
 
-        <h2> Common causes of this issue: </h2>
+        <h1> Common causes of this issue: </h1>
+
         <ul>
-            <li>The out of process request handler, aspnetcorev2_outofprocess.dll, could not be found next to the aspnetcorev2.dll.</li>
-            <li> Could not read configuration correctly. Check the application's associated web.config.</li>
+            <li> The application process failed to start </li>
+            <li> The application process started but then stopped </li>
+            <li> The application process started but failed to listen on the configured port </li>
         </ul>
 
-        <h2> Troubleshooting steps: </h2>
+        <h4> Troubleshooting steps: </h4>
+
         <ul>
             <li> Check the system event log for error messages </li>
             <li> Enable logging the application process' stdout messages </li>
@@ -75,7 +78,8 @@
 
         <h2>
             For more information visit:
-            %s <a href="https://go.microsoft.com/fwlink/?LinkID=2028526"> <cite> https://go.microsoft.com/fwlink/?LinkID=2028526 </cite> </a>
+            %s <a href="https://go.microsoft.com/fwlink/?linkid=808681"> <cite> https://go.microsoft.com/fwlink/?LinkID=808681 </cite></a>
         </h2>
+
     </body>
 </html>

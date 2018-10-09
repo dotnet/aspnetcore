@@ -71,10 +71,7 @@ ASPNET_CORE_PROXY_MODULE::ASPNET_CORE_PROXY_MODULE(HTTP_MODULE_ID moduleId, std:
 
 ASPNET_CORE_PROXY_MODULE::~ASPNET_CORE_PROXY_MODULE()
 {
-    if (m_pDisconnectHandler != nullptr)
-    {
-        m_pDisconnectHandler->SetHandler(nullptr);
-    }
+    RemoveDisconnectHandler();
 }
 
 __override
@@ -94,31 +91,14 @@ ASPNET_CORE_PROXY_MODULE::OnExecuteRequestHandler(
             FINISHED(HRESULT_FROM_WIN32(ERROR_SERVER_SHUTDOWN_IN_PROGRESS));
         }
 
-        auto moduleContainer = pHttpContext
-            ->GetConnection()
-            ->GetModuleContextContainer();
-
-        #pragma warning( push )
-        #pragma warning ( disable : 26466 ) // Disable "Don't use static_cast downcasts". We build without RTTI support so dynamic_cast is not available
-        m_pDisconnectHandler = static_cast<DisconnectHandler*>(moduleContainer->GetConnectionModuleContext(m_moduleId));
-        #pragma warning( push )
-
-        if (m_pDisconnectHandler == nullptr)
-        {
-            auto disconnectHandler = std::make_unique<DisconnectHandler>();
-            m_pDisconnectHandler = disconnectHandler.get();
-            // ModuleContextContainer takes ownership of disconnectHandler
-            // we are trusting that it would not release it before deleting the context
-            FINISHED_IF_FAILED(moduleContainer->SetConnectionModuleContext(static_cast<IHttpConnectionStoredContext*>(disconnectHandler.release()), m_moduleId));
-        }
-
-        m_pDisconnectHandler->SetHandler(this);
 
         FINISHED_IF_FAILED(m_pApplicationManager->GetOrCreateApplicationInfo(
             *pHttpContext,
             m_pApplicationInfo));
 
         FINISHED_IF_FAILED(m_pApplicationInfo->CreateHandler(*pHttpContext, m_pHandler));
+
+        SetupDisconnectHandler(pHttpContext);
 
         retVal = m_pHandler->OnExecuteRequestHandler();
     }
@@ -141,7 +121,7 @@ Finished:
         }
     }
 
-    return retVal;
+    return HandleNotificationStatus(retVal);
 }
 
 __override
@@ -156,18 +136,62 @@ ASPNET_CORE_PROXY_MODULE::OnAsyncCompletion(
 {
     try
     {
-        return m_pHandler->OnAsyncCompletion(
+        return HandleNotificationStatus(m_pHandler->OnAsyncCompletion(
             pCompletionInfo->GetCompletionBytes(),
-            pCompletionInfo->GetCompletionStatus());
+            pCompletionInfo->GetCompletionStatus()));
     }
     catch (...)
     {
         OBSERVE_CAUGHT_EXCEPTION();
-        return RQ_NOTIFICATION_FINISH_REQUEST;
+        return HandleNotificationStatus(RQ_NOTIFICATION_FINISH_REQUEST);
     }
 }
 
-void ASPNET_CORE_PROXY_MODULE::NotifyDisconnect() const
+REQUEST_NOTIFICATION_STATUS ASPNET_CORE_PROXY_MODULE::HandleNotificationStatus(REQUEST_NOTIFICATION_STATUS status) noexcept
 {
-    m_pHandler->NotifyDisconnect();
+    if (status != RQ_NOTIFICATION_PENDING)
+    {
+        RemoveDisconnectHandler();
+    }
+
+    return status;
+}
+
+void ASPNET_CORE_PROXY_MODULE::SetupDisconnectHandler(IHttpContext * pHttpContext)
+{
+    auto moduleContainer = pHttpContext
+        ->GetConnection()
+        ->GetModuleContextContainer();
+
+    #pragma warning( push )
+    #pragma warning ( disable : 26466 ) // Disable "Don't use static_cast downcasts". We build without RTTI support so dynamic_cast is not available
+    auto pDisconnectHandler = static_cast<DisconnectHandler*>(moduleContainer->GetConnectionModuleContext(m_moduleId));
+    #pragma warning( push )
+
+    if (pDisconnectHandler == nullptr)
+    {
+        auto newHandler = std::make_unique<DisconnectHandler>();
+        pDisconnectHandler = newHandler.get();
+        // ModuleContextContainer takes ownership of disconnectHandler
+        // we are trusting that it would not release it before deleting the context
+        LOG_IF_FAILED(moduleContainer->SetConnectionModuleContext(static_cast<IHttpConnectionStoredContext*>(newHandler.release()), m_moduleId));
+    }
+
+    // make code analysis happy
+    if (pDisconnectHandler != nullptr)
+    {
+        pDisconnectHandler->SetHandler(::ReferenceRequestHandler(m_pHandler.get()));
+        m_pDisconnectHandler = pDisconnectHandler;
+    }
+}
+
+void ASPNET_CORE_PROXY_MODULE::RemoveDisconnectHandler() noexcept
+{
+    auto handler = m_pDisconnectHandler;
+    m_pDisconnectHandler = nullptr;
+
+    if (handler != nullptr)
+    {
+        handler->SetHandler(nullptr);
+    }
 }

@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             var response = await deploymentResult.HttpClient.GetAsync(_helloWorldRequest);
             Assert.False(response.IsSuccessStatusCode);
             var responseString = await response.Content.ReadAsStringAsync();
-            Assert.Contains("HTTP Error 500.0 - ANCM OutOfProcess Startup Failure", responseString);
+            Assert.Contains("HTTP Error 500.0 - ANCM Out-Of-Process Handler Load Failure", responseString);
         }
 
         [ConditionalTheory]

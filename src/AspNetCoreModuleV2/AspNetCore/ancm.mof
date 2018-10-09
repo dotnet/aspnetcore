@@ -186,12 +186,28 @@ class ANCMWinHttpCallBack:ANCM_Events
 };
 
 [Dynamic,
- Description("Inprocess executing request failure") : amended,
- EventType(7),
- EventLevel(2),
- EventTypeName("ANCM_EXECUTE_REQUEST_FAIL") : amended
+ Description("Starting inprocess execute request") : amended,
+ EventType(8),
+ EventLevel(4),
+ EventTypeName("ANCM_INPROC_EXECUTE_REQUEST_START") : amended
 ]
-class ANCMExecuteFailed:ANCM_Events
+class ANCMExecuteStart:ANCM_Events
+{
+    [WmiDataId(1),
+     Description("Context ID") : amended,
+     extension("Guid"),
+     ActivityID,
+     read]
+     object  ContextId;
+};
+
+[Dynamic,
+ Description("Ending inprocess execute request") : amended,
+ EventType(10),
+ EventLevel(5),
+ EventTypeName("ANCM_INPROC_EXECUTE_REQUEST_COMPLETION") : amended
+]
+class ANCMExecuteEnd:ANCM_Events
 {
     [WmiDataId(1),
      Description("Context ID") : amended,
@@ -200,9 +216,93 @@ class ANCMExecuteFailed:ANCM_Events
      read]
      object  ContextId;
     [WmiDataId(2),
-     Description("InternetStatus") : amended,
-     format("x"),
+     Description("Notification status") : amended,
+     format("d"),
      read]
-     uint32  ErrorCode;
+     uint32  requestStatus;
 };
 
+[Dynamic,
+ Description("Starting inprocess async completion") : amended,
+ EventType(8),
+ EventLevel(5),
+ EventTypeName("ANCM_INPROC_ASYNC_COMPLETION_START") : amended
+]
+class ANCMAsyncStart:ANCM_Events
+{
+    [WmiDataId(1),
+     Description("Context ID") : amended,
+     extension("Guid"),
+     ActivityID,
+     read]
+     object  ContextId;
+};
+
+[Dynamic,
+ Description("Ending inprocess async completion") : amended,
+ EventType(10),
+ EventLevel(5),
+ EventTypeName("ANCM_INPROC_ASYNC_COMPLETION_COMPLETION") : amended
+]
+class ANCMAsyncEnd:ANCM_Events
+{
+    [WmiDataId(1),
+     Description("Context ID") : amended,
+     extension("Guid"),
+     ActivityID,
+     read]
+     object  ContextId;
+    [WmiDataId(2),
+     Description("Notification status") : amended,
+     format("d"),
+     read]
+     uint32  requestStatus;
+};
+
+[Dynamic,
+ Description("Inprocess app shutdown") : amended,
+ EventType(11),
+ EventLevel(4),
+ EventTypeName("ANCM_INPROC_REQUEST_SHUTDOWN") : amended
+]
+class ANCMRequestShutdown:ANCM_Events
+{
+    [WmiDataId(1),
+     Description("Context ID") : amended,
+     extension("Guid"),
+     ActivityID,
+     read]
+     object  ContextId;
+};
+
+[Dynamic,
+ Description("Inprocess request disconnect") : amended,
+ EventType(12),
+ EventLevel(4),
+ EventTypeName("ANCM_INPROC_REQUEST_DISCONNECT") : amended
+]
+class ANCMRequestDisconnect:ANCM_Events
+{
+    [WmiDataId(1),
+     Description("Context ID") : amended,
+     extension("Guid"),
+     ActivityID,
+     read]
+     object  ContextId;
+};
+
+[Dynamic,
+ Description("Indicate managed request complete") : amended,
+ EventType(12),
+ EventLevel(4),
+ EventTypeName("ANCM_INPROC_MANAGED_REQUEST_COMPLETION") : amended
+]
+class ANCMManagedRequestCompletion:ANCM_Events
+{
+    [WmiDataId(1),
+     Description("Context ID") : amended,
+     extension("Guid"),
+     ActivityID,
+     read]
+     object  ContextId;
+};

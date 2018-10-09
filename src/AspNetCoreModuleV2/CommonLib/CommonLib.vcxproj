@@ -219,7 +219,8 @@
     <ClInclude Include="IOutputManager.h" />
     <ClInclude Include="irequesthandler.h" />
     <ClInclude Include="LoggingHelpers.h" />
-    <ClInclude Include="ModuleHelpers.h" />
+    <ClInclude Include="ModuleHelpers.h" />    
+    <ClInclude Include="ModuleTracer.h" />
     <ClInclude Include="NonCopyable.h" />
     <ClInclude Include="NullOutputManager.h" />
     <ClInclude Include="PipeOutputManager.h" />

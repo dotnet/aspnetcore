@@ -62,6 +62,8 @@ if (!(Test-Path $cdb))
 
 if ($Mode -eq "Setup")
 {
+    Move-Item $env:windir\System32\vsjitdebugger.exe $env:windir\System32\_vsjitdebugger.exe;
+
     Setup-appverif w3wp.exe
     Setup-appverif iisexpress.exe
 
@@ -69,6 +71,8 @@ if ($Mode -eq "Setup")
     {
         New-Item -Path $werHive -Name LocalDumps
     }
+
+    New-ItemProperty $werHive -Name "DontShowUI" -Value 1 -PropertyType "DWORD" -Force;
 
     New-ItemProperty $ldHive -Name "DumpFolder" -Value $DumpFolder -PropertyType "ExpandString" -Force;
     New-ItemProperty $ldHive -Name "DumpCount" -Value 15 -PropertyType "DWORD" -Force;
@@ -79,7 +83,11 @@ if ($Mode -eq "Setup")
 
 if ($Mode -eq "Shutdown")
 {
+    Move-Item $env:windir\System32\_vsjitdebugger.exe $env:windir\System32\vsjitdebugger.exe;
+
     Remove-Item $ldHive -Recurse -Force
+
+    New-ItemProperty $werHive -Name "DontShowUI" -Value 0 -PropertyType "DWORD" -Force;
 
     Shutdown-appverif w3wp.exe
     Shutdown-appverif iisexpress.exe

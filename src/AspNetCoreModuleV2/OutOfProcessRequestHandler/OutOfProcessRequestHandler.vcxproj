@@ -228,6 +228,7 @@
     <ClInclude Include="forwarderconnection.h" />
     <ClInclude Include="processmanager.h" />
     <ClInclude Include="protocolconfig.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="responseheaderhash.h" />
     <ClInclude Include="serverprocess.h" />
     <ClInclude Include="stdafx.h" />
@@ -268,9 +269,13 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ResourceCompile Include="HtmlResponses.rc" />
     <ResourceCompile Include="outofprocessrequesthandler.rc" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="OutOfProcessRhStaticHtml.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
     <None Include="Source.def" />
   </ItemGroup>
   <Import Project="..\..\..\build\native.targets" />

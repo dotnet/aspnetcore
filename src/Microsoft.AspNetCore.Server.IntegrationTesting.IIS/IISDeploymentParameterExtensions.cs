@@ -61,6 +61,77 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                 WebConfigHelpers.AddOrModifyAspNetCoreSection("stdoutLogFile", Path.Combine(path, "std")));
         }
 
+        public static void EnableFreb(this IISDeploymentParameters deploymentParameters, string verbosity, string folderPath)
+        {
+            if (!deploymentParameters.PublishApplicationBeforeDeployment)
+            {
+                throw new InvalidOperationException("Testing freb requires site to be published.");
+            }
+
+            deploymentParameters.EnableModule("FailedRequestsTracingModule", "%IIS_BIN%\\iisfreb.dll");
+
+            // Set the TraceFailedRequestsSection to listend to ANCM events
+            deploymentParameters.ServerConfigActionList.Add(
+                (element, _) =>
+                {
+                    var webServerElement = element
+                            .RequiredElement("system.webServer");
+
+                    var addElement = webServerElement
+                        .GetOrAdd("tracing")
+                        .GetOrAdd("traceFailedRequests")
+                        .GetOrAdd("add");
+
+                    addElement.SetAttributeValue("path", "*");
+
+                    addElement.GetOrAdd("failureDefinitions")
+                        .SetAttributeValue("statusCodes", "200-999");
+
+                    var traceAreasElement = addElement
+                        .GetOrAdd("traceAreas");
+                    var innerAddElement = traceAreasElement.GetOrAdd("add", "provider", "WWW Server");
+
+                    innerAddElement.SetAttributeValue("areas", "ANCM");
+                    innerAddElement.SetAttributeValue("verbosity", verbosity);
+                });
+
+            // Set the ANCM traceProviderDefinition to 65536
+            deploymentParameters.ServerConfigActionList.Add(
+                (element, _) =>
+                {
+                    var webServerElement = element
+                            .RequiredElement("system.webServer");
+
+                    var traceProviderDefinitionsElement = webServerElement
+                        .GetOrAdd("tracing")
+                        .GetOrAdd("traceProviderDefinitions");
+
+                    var innerAddElement = traceProviderDefinitionsElement.GetOrAdd("add", "name", "WWW Server");
+
+                    innerAddElement.SetAttributeValue("name", "WWW Server");
+                    innerAddElement.SetAttributeValue("guid", "{3a2a4e84-4c21-4981-ae10-3fda0d9b0f83}");
+
+                    var areasElement = innerAddElement.GetOrAdd("areas");
+                    var iae = areasElement.GetOrAdd("add", "name", "ANCM");
+
+                    iae.SetAttributeValue("value", "65536");
+                });
+
+            // Set the freb directory to the published app directory.
+            deploymentParameters.ServerConfigActionList.Add(
+                (element, contentRoot) =>
+                {
+                    var traceFailedRequestsElement = element
+                        .RequiredElement("system.applicationHost")
+                        .Element("sites")
+                        .Element("siteDefaults")
+                        .Element("traceFailedRequestsLogging");
+                    traceFailedRequestsElement.SetAttributeValue("directory", folderPath);
+                    traceFailedRequestsElement.SetAttributeValue("enabled", "true");
+                    traceFailedRequestsElement.SetAttributeValue("maxLogFileSizeKB", "1024");
+                });
+        }
+
         public static void TransformPath(this IISDeploymentParameters parameters, Func<string, string, string> transformation)
         {
             parameters.WebConfigActionList.Add(
@@ -89,7 +160,8 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
             }
 
             parameters.ServerConfigActionList.Add(
-                (element, _) => {
+                (element, _) =>
+                {
                     var webServerElement = element
                         .RequiredElement("system.webServer");
 

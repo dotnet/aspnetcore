@@ -46,32 +46,6 @@ public:
     {
     }
 
-protected:
-
-    static
-    void WriteStaticResponse(IHttpContext& pContext, std::string &s_html500Page, HRESULT hr, bool disableStartupErrorPage)
-    {
-        if (disableStartupErrorPage)
-        {
-            pContext.GetResponse()->SetStatus(500, "Internal Server Error", 30, E_FAIL);
-            return;
-        }
-
-        HTTP_DATA_CHUNK dataChunk = {};
-        IHttpResponse* pResponse = pContext.GetResponse();
-        pResponse->SetStatus(500, "Internal Server Error", 0, hr, nullptr, true);
-        pResponse->SetHeader("Content-Type",
-            "text/html",
-            (USHORT)strlen("text/html"),
-            FALSE
-        );
-        dataChunk.DataChunkType = HttpDataChunkFromMemory;
-
-        dataChunk.FromMemory.pBuffer = s_html500Page.data();
-        dataChunk.FromMemory.BufferLength = static_cast<ULONG>(s_html500Page.size());
-        pResponse->WriteEntityChunkByReference(&dataChunk);
-    }
-
 private:
     mutable LONG                    m_cRefs = 1;
 };
