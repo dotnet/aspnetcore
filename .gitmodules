@@ -138,10 +138,6 @@
 	path = modules/Options
 	url = https://github.com/aspnet/Options.git
 	branch = release/2.2
-[submodule "modules/Proxy"]
-	path = modules/Proxy
-	url = https://github.com/aspnet/Proxy.git
-	branch = release/2.2
 [submodule "modules/Razor"]
 	path = modules/Razor
 	url = https://github.com/aspnet/Razor.git

@@ -67,7 +67,6 @@
     <Repository Include="Mvc" />
     <Repository Include="MvcPrecompilation" />
     <Repository Include="Options" />
-    <Repository Include="Proxy" />
     <Repository Include="Razor" />
     <Repository Include="ResponseCaching" />
     <Repository Include="Routing" />
