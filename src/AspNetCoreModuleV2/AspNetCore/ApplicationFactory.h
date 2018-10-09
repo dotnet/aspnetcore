@@ -31,13 +31,17 @@ public:
 
     HRESULT Execute(
         _In_  IHttpServer           *pServer,
-        _In_  const IHttpApplication *pHttpApplication,
-        _Outptr_ IAPPLICATION       **pApplication) const noexcept
+        _In_  IHttpContext          *pHttpContext,
+        _Outptr_ IAPPLICATION       **pApplication) const
     {
-        std::array<APPLICATION_PARAMETER, 1> parameters {
-            {"InProcessExeLocation", m_location.data()}
+        std::array<APPLICATION_PARAMETER, 2> parameters {
+            {
+                {"InProcessExeLocation", m_location.data()},
+                {"TraceContext", pHttpContext->GetTraceContext()}
+            }
         };
-        return m_pfnAspNetCoreCreateApplication(pServer, pHttpApplication, parameters.data(), static_cast<DWORD>(parameters.size()), pApplication);
+
+        return m_pfnAspNetCoreCreateApplication(pServer, pHttpContext->GetApplication(), parameters.data(), static_cast<DWORD>(parameters.size()), pApplication);
     }
 
 private:

@@ -43,7 +43,7 @@ APPLICATION_INFO::CreateHandler(
         // check if other thread created application
         RETURN_IF_FAILED(hr = TryCreateHandler(pHttpContext, pHandler));
 
-        // In some cases (adding and removing app_offline quickly) application might start and stop immediately 
+        // In some cases (adding and removing app_offline quickly) application might start and stop immediately
         // so retry until we get valid handler or error
         while (hr != S_OK)
         {
@@ -59,7 +59,7 @@ APPLICATION_INFO::CreateHandler(
                 m_pApplicationFactory = nullptr;
             }
 
-            RETURN_IF_FAILED(CreateApplication(*pHttpContext.GetApplication()));
+            RETURN_IF_FAILED(CreateApplication(pHttpContext));
 
             RETURN_IF_FAILED(hr = TryCreateHandler(pHttpContext, pHandler));
         }
@@ -69,8 +69,9 @@ APPLICATION_INFO::CreateHandler(
 }
 
 HRESULT
-APPLICATION_INFO::CreateApplication(const IHttpApplication& pHttpApplication)
+APPLICATION_INFO::CreateApplication(IHttpContext& pHttpContext)
 {
+    auto& pHttpApplication = *pHttpContext.GetApplication();
     if (AppOfflineApplication::ShouldBeStarted(pHttpApplication))
     {
         LOG_INFO(L"Detected app_offline file, creating polling application");
@@ -85,7 +86,7 @@ APPLICATION_INFO::CreateApplication(const IHttpApplication& pHttpApplication)
             const WebConfigConfigurationSource configurationSource(m_pServer.GetAdminManager(), pHttpApplication);
             ShimOptions options(configurationSource);
 
-            const auto hr = TryCreateApplication(pHttpApplication, options);
+            const auto hr = TryCreateApplication(pHttpContext, options);
 
             if (FAILED_LOG(hr))
             {
@@ -130,15 +131,15 @@ APPLICATION_INFO::CreateApplication(const IHttpApplication& pHttpApplication)
 }
 
 HRESULT
-APPLICATION_INFO::TryCreateApplication(const IHttpApplication& pHttpApplication, const ShimOptions& options)
+APPLICATION_INFO::TryCreateApplication(IHttpContext& pHttpContext, const ShimOptions& options)
 {
-    RETURN_IF_FAILED(m_handlerResolver.GetApplicationFactory(pHttpApplication, m_pApplicationFactory, options));
+    RETURN_IF_FAILED(m_handlerResolver.GetApplicationFactory(*pHttpContext.GetApplication(), m_pApplicationFactory, options));
     LOG_INFO(L"Creating handler application");
 
     IAPPLICATION * newApplication;
     RETURN_IF_FAILED(m_pApplicationFactory->Execute(
         &m_pServer,
-        &pHttpApplication,
+        &pHttpContext,
         &newApplication));
 
     m_pApplication.reset(newApplication);

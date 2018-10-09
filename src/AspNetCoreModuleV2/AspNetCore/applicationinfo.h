@@ -50,7 +50,7 @@ public:
     CreateHandler(
         IHttpContext& pHttpContext,
         std::unique_ptr<IREQUEST_HANDLER, IREQUEST_HANDLER_DELETER>& pHandler);
-    
+
     bool ConfigurationPathApplies(const std::wstring& path)
     {
         // We need to check that the last character of the config path
@@ -67,17 +67,17 @@ public:
     }
 
 private:
-    
+
     HRESULT
     TryCreateHandler(
         IHttpContext& pHttpContext,
         std::unique_ptr<IREQUEST_HANDLER, IREQUEST_HANDLER_DELETER>& pHandler);
 
     HRESULT
-    CreateApplication(const IHttpApplication& pHttpApplication);
+    CreateApplication(IHttpContext& pHttpContext);
 
     HRESULT
-    TryCreateApplication(const IHttpApplication& pHttpApplication, const ShimOptions& options);
+    TryCreateApplication(IHttpContext& pHttpContext, const ShimOptions& options);
 
     IHttpServer            &m_pServer;
     HandlerResolver        &m_handlerResolver;
