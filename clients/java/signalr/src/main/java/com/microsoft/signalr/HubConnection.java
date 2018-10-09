@@ -38,7 +38,7 @@ public class HubConnection {
     private HttpClient httpClient;
     private String stopError;
 
-    HubConnection(String url, HttpConnectionOptions options) {
+    HubConnection(String url, Transport transport, boolean skipNegotiate, Logger logger, HttpClient httpClient, Supplier<CompletableFuture<String>> accessTokenProvider) {
         if (url == null || url.isEmpty()) {
             throw new IllegalArgumentException("A valid url is required.");
         }
@@ -46,29 +46,29 @@ public class HubConnection {
         this.baseUrl = url;
         this.protocol = new JsonHubProtocol();
 
-        if (options.getAccessTokenProvider() != null) {
-            this.accessTokenProvider = options.getAccessTokenProvider();
+        if (accessTokenProvider != null) {
+            this.accessTokenProvider = accessTokenProvider;
         } else {
             this.accessTokenProvider = () -> CompletableFuture.completedFuture(null);
         }
 
-        if (options.getLogger() != null) {
-            this.logger = options.getLogger();
-        } else {
-            this.logger = new NullLogger();
-        }
-
-        if (options.getHttpClient() != null) {
-            this.httpClient = options.getHttpClient();
+        if (httpClient != null) {
+            this.httpClient = httpClient;
         } else {
             this.httpClient = new DefaultHttpClient(this.logger);
         }
 
-        if (options.getTransport() != null) {
-            this.transport = options.getTransport();
+        if (logger != null) {
+            this.logger = logger;
+        } else {
+            this.logger = new NullLogger();
         }
 
-        this.skipNegotiate = options.getSkipNegotiate();
+        if (transport != null) {
+            this.transport = transport;
+        }
+
+        this.skipNegotiate = skipNegotiate;
 
         this.callback = (payload) -> {
             if (!handshakeReceived) {
