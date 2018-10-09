@@ -31,6 +31,7 @@ param(
     [switch]$NoPush,
     [string]$GitAuthorName = $null,
     [string]$GitAuthorEmail = $null,
+    [string]$GithubToken = $null,
     [switch]$Force,
     [string[]]$GitCommitArgs = @()
 )
@@ -43,14 +44,7 @@ Import-Module "$PSScriptRoot/common.psm1" -Scope Local -Force
 $RepoRoot = Resolve-Path "$PSScriptRoot\.."
 $ModuleDirectory = Join-Path $RepoRoot "modules"
 
-$gitConfigArgs = @()
-if ($GitAuthorName) {
-    $gitConfigArgs += '-c', "user.name=$GitAuthorName"
-}
-
-if ($GitAuthorEmail) {
-    $gitConfigArgs += '-c', "user.email=$GitAuthorEmail"
-}
+Set-GitHubInfo $GithubToken $GitAuthorName $GitAuthorEmail
 
 Push-Location $ModuleDirectory
 try {
@@ -79,12 +73,13 @@ try {
             Write-Verbose "About to update dependencies.props for $($submodule.module)"
             & .\run.ps1 upgrade deps --source $Source --id $LineupID --version $LineupVersion --deps-file $depsFile
 
-            Invoke-Block { & git @gitConfigArgs add $depsFile $koreBuildLock }
+            Invoke-Block { & git add $depsFile $koreBuildLock }
 
             # If there were any changes test and push.
             & git diff --cached --quiet ./
+            $msgBody = "Update dependencies.props`n`n[auto-updated: dependencies]"
             if ($LASTEXITCODE -ne 0) {
-                Invoke-Block { & git @gitConfigArgs commit --quiet -m "Update dependencies.props`n`n[auto-updated: dependencies]" @GitCommitArgs }
+                Invoke-Block { & git commit --quiet -m $msgBody @GitCommitArgs }
 
                 # Prepare this submodule for push
                 $sshUrl = "git@github.com:aspnet/$($submodule.module)"
@@ -105,8 +100,10 @@ try {
 
                 # Push the changes
                 if (-not $NoPush -and ($Force -or ($PSCmdlet.ShouldContinue("Pushing updates to repos.", 'Push the changes to these repos?')))) {
+                    $baseBranch = $submodule.branch
+                    $upgradeBranch = "$baseBranch/upgrade-deps"
                     try {
-                        Invoke-Block { & git @gitConfigArgs push origin HEAD:$($submodule.branch)}
+                        CreatePR "aspnet" $GithubUsername $baseBranch $upgradeBranch $msgBody $GithubToken
                     }
                     catch {
                         Write-Warning "Error in pushing $($submodule.module): $_"

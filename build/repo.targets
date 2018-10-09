@@ -5,10 +5,7 @@
   <Import Project="SharedFx.targets" />
   <Import Project="SharedFxInstaller.targets" />
   <Import Project="Publish.targets" />
-  <Import Project="GenerateCode.targets" />
-
-  <!-- Workaround for #1014 -->
-  <Import Project="buildorder.props" Condition="$([MSBuild]::IsOSUnixLike())" />
+  <Import Project="buildorder.props" />
 
   <PropertyGroup>
     <GeneratedPackageVersionPropsPath>$(IntermediateDir)dependencies.g.props</GeneratedPackageVersionPropsPath>
@@ -227,12 +224,6 @@
   </Target>
 
   <Target Name="ComputeGraph" DependsOnTargets="ResolveRepoInfo;GeneratePropsFiles">
-    <RepoTasks.CheckRepoGraph Condition=" ! $([MSBuild]::IsOSUnixLike())"
-      Solutions="@(Solution)"
-      Artifacts="@(ArtifactInfo);@(ShippedArtifactInfo)"
-      Repositories="@(Repository);@(ShippedRepository)"
-      Properties="Configuration=$(Configuration);BuildNumber=$(BuildNumber);DotNetPackageVersionPropsPath=$(GeneratedPackageVersionPropsPath);DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcesPropsPath)" />
-
     <ItemGroup>
       <_UndeclaredPackageArtifact Include="%(ArtifactInfo.PackageId)" Condition="'%(ArtifactInfo.ArtifactType)' == 'NuGetPackage'" />
       <_UndeclaredPackageArtifact Remove="@(PackageArtifact)" />
@@ -240,16 +231,6 @@
 
     <Error Text="Undeclared package artifacts. Add these to artifacts.props:%0A  - @(_UndeclaredPackageArtifact, '%0A  - ')"
       Condition=" @(_UndeclaredPackageArtifact->Count()) != 0 " />
-
-    <!-- Skipped to workaround #1014. The order is hardcoded in buildorder.props -->
-    <RepoTasks.AnalyzeBuildGraph Condition=" ! $([MSBuild]::IsOSUnixLike())"
-      Solutions="@(Solution)"
-      Artifacts="@(ArtifactInfo);@(ShippedArtifactInfo)"
-      Repositories="@(Repository);@(ShippedRepository)"
-      Dependencies="@(ExternalDependency)"
-      Properties="Configuration=$(Configuration);BuildNumber=$(BuildNumber);DotNetPackageVersionPropsPath=$(GeneratedPackageVersionPropsPath);DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcesPropsPath)">
-      <Output TaskParameter="RepositoryBuildOrder" ItemName="RepositoryBuildOrder" />
-    </RepoTasks.AnalyzeBuildGraph>
 
     <Message Text="Repository build order:" Importance="high" />
     <Message Text="%(RepositoryBuildOrder.Order). @(RepositoryBuildOrder, ', ')" Importance="high" />
