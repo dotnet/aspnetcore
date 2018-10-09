@@ -16,7 +16,7 @@ plugins {
 
 apply plugin: "com.diffplug.gradle.spotless"
 
-group 'com.microsoft.aspnet'
+group 'com.microsoft.signalr'
 
 // If we're run from outside MSBuild, just assign a bogus dev version.
 version project.findProperty('packageVersion') ?: "99.99.99-dev"
