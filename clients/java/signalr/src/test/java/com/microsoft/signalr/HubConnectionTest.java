@@ -61,9 +61,6 @@ class HubConnectionTest {
     @Test
     public void constructHubConnectionWithHttpConnectionOptions() throws Exception {
         Transport mockTransport = new MockTransport();
-        HttpConnectionOptions options = new HttpConnectionOptions();
-        options.setTransport(mockTransport);
-        options.setSkipNegotiate(true);
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
 
         hubConnection.start();
@@ -910,11 +907,9 @@ class HubConnectionTest {
         TestHttpClient client = new TestHttpClient()
         .on("POST", (req) -> CompletableFuture.completedFuture(new HttpResponse(404, "", "")));
 
-        HttpConnectionOptions options = new HttpConnectionOptions();
-        options.setHttpClient(client);
         HubConnection hubConnection = HubConnectionBuilder
                 .create("http://example.com")
-                .withOptions(options)
+                .withHttpClient(client)
                 .build();
 
         try {
@@ -931,11 +926,9 @@ class HubConnectionTest {
         TestHttpClient client = new TestHttpClient().on("POST", "http://example.com/negotiate",
                 (req) -> CompletableFuture.completedFuture(new HttpResponse(200, "", "{\"url\":\"http://example.com\"}")));
 
-        HttpConnectionOptions options = new HttpConnectionOptions();
-        options.setHttpClient(client);
         HubConnection hubConnection = HubConnectionBuilder
             .create("http://example.com")
-            .withOptions(options)
+            .withHttpClient(client)
             .build();
 
         ExecutionException exception = assertThrows(ExecutionException.class, () -> hubConnection.start().get(1000, TimeUnit.MILLISECONDS));
@@ -950,12 +943,10 @@ class HubConnectionTest {
                                 + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}")));
 
         MockTransport transport = new MockTransport();
-        HttpConnectionOptions options = new HttpConnectionOptions();
-        options.setTransport(transport);
-        options.setHttpClient(client);
         HubConnection hubConnection = HubConnectionBuilder
                 .create("http://example.com")
-                .withOptions(options)
+                .withTransport(transport)
+                .withHttpClient(client)
                 .build();
 
         hubConnection.start().get(1000, TimeUnit.MILLISECONDS);
@@ -971,12 +962,10 @@ class HubConnectionTest {
                 (req) -> CompletableFuture.completedFuture(new HttpResponse(200, "", "{\"error\":\"Test error.\"}")));
 
         MockTransport transport = new MockTransport();
-        HttpConnectionOptions options = new HttpConnectionOptions();
-        options.setTransport(transport);
-        options.setHttpClient(client);
         HubConnection hubConnection = HubConnectionBuilder
                 .create("http://example.com")
-                .withOptions(options)
+                .withHttpClient(client)
+                .withTransport(transport)
                 .build();
 
         ExecutionException exception = assertThrows(ExecutionException.class, () -> hubConnection.start().get(1000, TimeUnit.MILLISECONDS));
@@ -992,12 +981,10 @@ class HubConnectionTest {
                 + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}")));
 
         MockTransport transport = new MockTransport();
-        HttpConnectionOptions options = new HttpConnectionOptions();
-        options.setTransport(transport);
-        options.setHttpClient(client);
         HubConnection hubConnection = HubConnectionBuilder
                 .create("http://example.com")
-                .withOptions(options)
+                .withTransport(transport)
+                .withHttpClient(client)
                 .build();
 
         hubConnection.start().get(1000, TimeUnit.MILLISECONDS);
@@ -1019,13 +1006,11 @@ class HubConnectionTest {
                         });
 
         MockTransport transport = new MockTransport();
-        HttpConnectionOptions options = new HttpConnectionOptions();
-        options.setTransport(transport);
-        options.setHttpClient(client);
-        options.setAccessTokenProvider(() -> CompletableFuture.completedFuture("secretToken"));
         HubConnection hubConnection = HubConnectionBuilder
                 .create("http://example.com")
-                .withOptions(options)
+                .withTransport(transport)
+                .withHttpClient(client)
+                .withAccessTokenProvider(() -> CompletableFuture.completedFuture("secretToken"))
                 .build();
 
         hubConnection.start().get(1000, TimeUnit.MILLISECONDS);
@@ -1035,8 +1020,7 @@ class HubConnectionTest {
     }
 
     @Test
-    public void accessTokenProviderIsOverriddenFromRedirectNegotiate()
-            throws InterruptedException, ExecutionException, TimeoutException, Exception {
+    public void accessTokenProviderIsOverriddenFromRedirectNegotiate() throws Exception {
         AtomicReference<String> token = new AtomicReference<>();
         TestHttpClient client = new TestHttpClient()
             .on("POST", "http://example.com/negotiate", (req) -> CompletableFuture.completedFuture(new HttpResponse(200, "", "{\"url\":\"http://testexample.com/\",\"accessToken\":\"newToken\"}")))
@@ -1048,13 +1032,11 @@ class HubConnectionTest {
             });
 
         MockTransport transport = new MockTransport();
-        HttpConnectionOptions options = new HttpConnectionOptions();
-        options.setTransport(transport);
-        options.setHttpClient(client);
-        options.setAccessTokenProvider(() -> CompletableFuture.completedFuture("secretToken"));
         HubConnection hubConnection = HubConnectionBuilder
                 .create("http://example.com")
-                .withOptions(options)
+                .withTransport(transport)
+                .withHttpClient(client)
+                .withAccessTokenProvider(() -> CompletableFuture.completedFuture("secretToken"))
                 .build();
 
         hubConnection.start().get(1000, TimeUnit.MILLISECONDS);
@@ -1067,12 +1049,10 @@ class HubConnectionTest {
     @Test
     public void hubConnectionCanBeStartedAfterBeingStopped() throws Exception {
         MockTransport transport = new MockTransport();
-        HttpConnectionOptions options = new HttpConnectionOptions();
-        options.setTransport(transport);
-        options.setSkipNegotiate(true);
         HubConnection hubConnection = HubConnectionBuilder
                 .create("http://example.com")
-                .withOptions(options)
+                .withTransport(transport)
+                .shouldSkipNegotiate(true)
                 .build();
 
         hubConnection.start().get(1000, TimeUnit.MILLISECONDS);
@@ -1094,12 +1074,11 @@ class HubConnectionTest {
                 .on("POST", "http://testexample.com/negotiate", (req) -> CompletableFuture
                     .completedFuture(new HttpResponse(200, "", "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
                         + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}")));
-        HttpConnectionOptions options = new HttpConnectionOptions();
-        options.setTransport(mockTransport);
-        options.setHttpClient(client);
+
         HubConnection hubConnection = HubConnectionBuilder
                 .create("http://example.com")
-                .withOptions(options)
+                .withTransport(mockTransport)
+                .withHttpClient(client)
                 .build();
 
         hubConnection.start().get(1000, TimeUnit.MILLISECONDS);
@@ -1120,12 +1099,10 @@ class HubConnectionTest {
                                 .completedFuture(new HttpResponse(500, "Internal server error", "")));
 
         MockTransport transport = new MockTransport();
-        HttpConnectionOptions options = new HttpConnectionOptions();
-        options.setTransport(transport);
-        options.setHttpClient(client);
         HubConnection hubConnection = HubConnectionBuilder
                 .create("http://example.com")
-                .withOptions(options)
+                .withTransport(transport)
+                .withHttpClient(client)
                 .build();
 
         ExecutionException exception = assertThrows(ExecutionException.class, () -> hubConnection.start().get(1000, TimeUnit.MILLISECONDS));

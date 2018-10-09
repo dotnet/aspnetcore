@@ -13,12 +13,12 @@ class TestUtils {
     }
 
     static HubConnection createHubConnection(String url, Transport transport, Logger logger, boolean skipNegotiate, HttpClient client) {
-        HttpConnectionOptions options = new HttpConnectionOptions();
-        options.setTransport(transport);
-        options.setLogger(logger);
-        options.setSkipNegotiate(skipNegotiate);
-        options.setHttpClient(client);
-        HubConnectionBuilder builder = HubConnectionBuilder.create(url);
-        return builder.withOptions(options).build();
+        HttpHubConnectionBuilder builder = HubConnectionBuilder.create(url)
+                .withTransport(transport)
+                .withHttpClient(client)
+                .shouldSkipNegotiate(skipNegotiate)
+                .withLogger(logger);
+
+        return builder.build();
     }
 }
