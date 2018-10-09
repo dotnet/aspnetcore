@@ -66,7 +66,6 @@
     <Repository Include="Microsoft.Data.Sqlite" />
     <Repository Include="Mvc" />
     <Repository Include="Options" />
-    <Repository Include="Proxy" />
     <Repository Include="Razor" />
     <Repository Include="ResponseCaching" />
     <Repository Include="Routing" />

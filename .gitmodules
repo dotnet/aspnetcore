@@ -134,10 +134,6 @@
 	path = modules/Options
 	url = https://github.com/aspnet/Options.git
 	branch = master
-[submodule "modules/Proxy"]
-	path = modules/Proxy
-	url = https://github.com/aspnet/Proxy.git
-	branch = master
 [submodule "modules/Razor"]
 	path = modules/Razor
 	url = https://github.com/aspnet/Razor.git
