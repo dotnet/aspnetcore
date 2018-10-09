@@ -13,11 +13,9 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
-using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
@@ -2969,34 +2967,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedLastStreamId: 1,
                 expectedErrorCode: Http2ErrorCode.PROTOCOL_ERROR,
                 expectedErrorMessage: CoreStrings.FormatHttp2ErrorHeadersInterleaved(Http2FrameType.GOAWAY, streamId: 0, headersStreamId: 1));
-        }
-
-        [Fact]
-        public async Task GOAWAY_Received_ConnectionClosedWhenResponseNotDrainedAtMinimumDataRate()
-        {
-            var mockSystemClock = new MockSystemClock();
-            var limits = _connectionContext.ServiceContext.ServerOptions.Limits;
-            var timeoutControl = _connectionContext.TimeoutControl;
-
-            _timeoutControl.Initialize(mockSystemClock.UtcNow);
-
-            await InitializeConnectionAsync(_noopApplication);
-
-            await SendGoAwayAsync();
-
-            await WaitForConnectionStopAsync(expectedLastStreamId: 0, ignoreNonGoAwayFrames: false);
-
-            mockSystemClock.UtcNow +=
-                Heartbeat.Interval +
-                TimeSpan.FromSeconds(limits.MaxResponseBufferSize.Value * 2 / limits.MinResponseDataRate.BytesPerSecond);
-            _timeoutControl.Tick(mockSystemClock.UtcNow);
-
-            _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
-
-            mockSystemClock.UtcNow += TimeSpan.FromTicks(1);
-            _timeoutControl.Tick(mockSystemClock.UtcNow);
-
-            _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.WriteDataRate), Times.Once);
         }
 
         [Fact]

@@ -95,8 +95,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                 }
                 finally
                 {
+                    inputError = inputError ?? _abortReason ?? new ConnectionAbortedException("The libuv transport's send loop completed gracefully.");
+
                     // Now, complete the input so that no more reads can happen
-                    Input.Complete(inputError ?? _abortReason ?? new ConnectionAbortedException("The libuv transport's send loop completed gracefully."));
+                    Input.Complete(inputError);
                     Output.Complete(outputError);
 
                     // Make sure it isn't possible for a paused read to resume reading after calling uv_close
@@ -104,7 +106,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                     Input.CancelPendingFlush();
 
                     // Send a FIN
-                    Log.ConnectionWriteFin(ConnectionId);
+                    Log.ConnectionWriteFin(ConnectionId, inputError.Message);
 
                     // We're done with the socket now
                     _socket.Dispose();
@@ -119,8 +121,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
         public override void Abort(ConnectionAbortedException abortReason)
         {
-            Log.ConnectionAborted(ConnectionId, abortReason?.Message);
-
             _abortReason = abortReason;
             
             // Cancel WriteOutputAsync loop after setting _abortReason.

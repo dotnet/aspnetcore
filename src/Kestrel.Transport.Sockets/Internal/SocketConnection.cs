@@ -92,8 +92,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
         public override void Abort(ConnectionAbortedException abortReason)
         {
-            _trace.ConnectionAborted(ConnectionId, abortReason?.Message);
-
             // Try to gracefully close the socket to match libuv behavior.
             Shutdown(abortReason);
 
@@ -290,7 +288,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
                 // to half close the connection which is currently unsupported.
                 _shutdownReason = shutdownReason ?? new ConnectionAbortedException("The Socket transport's send loop completed gracefully.");
 
-                _trace.ConnectionWriteFin(ConnectionId);
+                _trace.ConnectionWriteFin(ConnectionId, _shutdownReason.Message);
 
                 try
                 {

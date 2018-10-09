@@ -14,7 +14,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
         private long _lastTimestamp;
         private long _timeoutTimestamp = long.MaxValue;
-        private TimeoutReason _timeoutReason;
 
         private readonly object _readTimingLock = new object();
         private MinDataRate _minReadRate;
@@ -31,6 +30,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         {
             _timeoutHandler = timeoutHandler;
         }
+
+        public TimeoutReason TimerReason { get; private set; }
 
         internal IDebugger Debugger { get; set; } = DebuggerWrapper.Singleton;
 
@@ -56,9 +57,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             {
                 if (timestamp > Interlocked.Read(ref _timeoutTimestamp))
                 {
+                    var timeoutReason = TimerReason;
+
                     CancelTimeout();
 
-                    _timeoutHandler.OnTimeout(_timeoutReason);
+                    _timeoutHandler.OnTimeout(timeoutReason);
                 }
             }
         }
@@ -117,7 +120,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
         public void SetTimeout(long ticks, TimeoutReason timeoutReason)
         {
-            Debug.Assert(_timeoutTimestamp == long.MaxValue, "Concurrent timeouts are not supported");
+            Debug.Assert(_timeoutTimestamp == long.MaxValue, "Concurrent timeouts are not supported.");
 
             AssignTimeout(ticks, timeoutReason);
         }
@@ -130,11 +133,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         public void CancelTimeout()
         {
             Interlocked.Exchange(ref _timeoutTimestamp, long.MaxValue);
+
+            TimerReason = TimeoutReason.None;
         }
 
         private void AssignTimeout(long ticks, TimeoutReason timeoutReason)
         {
-            _timeoutReason = timeoutReason;
+            TimerReason = timeoutReason;
 
             // Add Heartbeat.Interval since this can be called right before the next heartbeat.
             Interlocked.Exchange(ref _timeoutTimestamp, _lastTimestamp + ticks + Heartbeat.Interval.Ticks);

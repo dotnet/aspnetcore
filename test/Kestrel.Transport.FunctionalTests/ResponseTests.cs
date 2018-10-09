@@ -456,95 +456,98 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [Fact]
         public async Task ConnectionClosedWhenResponseDoesNotSatisfyMinimumDataRate()
         {
-            using (StartLog(out var loggerFactory, "ConnClosedWhenRespDoesNotSatisfyMin"))
+            var logger = LoggerFactory.CreateLogger($"{ typeof(ResponseTests).FullName}.{ nameof(ConnectionClosedWhenResponseDoesNotSatisfyMinimumDataRate)}");
+            const int chunkSize = 1024;
+            const int chunks = 256 * 1024;
+            var responseSize = chunks * chunkSize;
+            var chunkData = new byte[chunkSize];
+
+            var responseRateTimeoutMessageLogged = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var connectionStopMessageLogged = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var requestAborted = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var appFuncCompleted = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            var mockKestrelTrace = new Mock<IKestrelTrace>();
+            mockKestrelTrace
+                .Setup(trace => trace.ResponseMinimumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>()))
+                .Callback(() => responseRateTimeoutMessageLogged.SetResult(null));
+            mockKestrelTrace
+                .Setup(trace => trace.ConnectionStop(It.IsAny<string>()))
+                .Callback(() => connectionStopMessageLogged.SetResult(null));
+
+            var testContext = new TestServiceContext(LoggerFactory, mockKestrelTrace.Object)
             {
-                var logger = loggerFactory.CreateLogger($"{ typeof(ResponseTests).FullName}.{ nameof(ConnectionClosedWhenResponseDoesNotSatisfyMinimumDataRate)}");
-                const int chunkSize = 1024;
-                const int chunks = 256 * 1024;
-                var responseSize = chunks * chunkSize;
-                var chunkData = new byte[chunkSize];
-
-                var responseRateTimeoutMessageLogged = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-                var connectionStopMessageLogged = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-                var requestAborted = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-                var appFuncCompleted = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-
-                var mockKestrelTrace = new Mock<IKestrelTrace>();
-                mockKestrelTrace
-                    .Setup(trace => trace.ResponseMinimumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>()))
-                    .Callback(() => responseRateTimeoutMessageLogged.SetResult(null));
-                mockKestrelTrace
-                    .Setup(trace => trace.ConnectionStop(It.IsAny<string>()))
-                    .Callback(() => connectionStopMessageLogged.SetResult(null));
-
-                var testContext = new TestServiceContext(loggerFactory, mockKestrelTrace.Object)
+                ServerOptions =
                 {
-                    ServerOptions =
+                    Limits =
                     {
-                        Limits =
-                        {
-                            MinResponseDataRate = new MinDataRate(bytesPerSecond: 1024 * 1024, gracePeriod: TimeSpan.FromSeconds(2))
-                        }
-                    }
-                };
-
-                testContext.InitializeHeartbeat();
-
-                var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
-                listenOptions.ConnectionAdapters.Add(new LoggingConnectionAdapter(loggerFactory.CreateLogger<LoggingConnectionAdapter>()));
-
-                var appLogger = loggerFactory.CreateLogger("App");
-                async Task App(HttpContext context)
-                {
-                    appLogger.LogInformation("Request received");
-                    context.RequestAborted.Register(() => requestAborted.SetResult(null));
-
-                    context.Response.ContentLength = responseSize;
-
-                    try
-                    {
-                        for (var i = 0; i < chunks; i++)
-                        {
-                            await context.Response.Body.WriteAsync(chunkData, 0, chunkData.Length, context.RequestAborted);
-                            appLogger.LogInformation("Wrote chunk of {chunkSize} bytes", chunkSize);
-                        }
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        appFuncCompleted.SetResult(null);
-                        throw;
-                    }
-                    finally
-                    {
-                        await requestAborted.Task.DefaultTimeout();
+                        MinResponseDataRate = new MinDataRate(bytesPerSecond: 1024 * 1024, gracePeriod: TimeSpan.FromSeconds(2))
                     }
                 }
+            };
 
-                using (var server = new TestServer(App, testContext, listenOptions))
+            testContext.InitializeHeartbeat();
+
+            var appLogger = LoggerFactory.CreateLogger("App");
+            async Task App(HttpContext context)
+            {
+                appLogger.LogInformation("Request received");
+                context.RequestAborted.Register(() => requestAborted.SetResult(null));
+
+                context.Response.ContentLength = responseSize;
+
+                var i = 0;
+
+                try
                 {
-                    using (var connection = server.CreateConnection())
+                    for (; i < chunks; i++)
                     {
-                        logger.LogInformation("Sending request");
-                        await connection.Send(
-                            "GET / HTTP/1.1",
-                            "Host:",
-                            "",
-                            "");
-
-                        logger.LogInformation("Sent request");
-
-                        var sw = Stopwatch.StartNew();
-                        logger.LogInformation("Waiting for connection to abort.");
-
-                        await requestAborted.Task.DefaultTimeout();
-                        await responseRateTimeoutMessageLogged.Task.DefaultTimeout();
-                        await connectionStopMessageLogged.Task.DefaultTimeout();
-                        await appFuncCompleted.Task.DefaultTimeout();
-                        await AssertStreamAborted(connection.Stream, chunkSize * chunks);
-
-                        sw.Stop();
-                        logger.LogInformation("Connection was aborted after {totalMilliseconds}ms.", sw.ElapsedMilliseconds);
+                        await context.Response.Body.WriteAsync(chunkData, 0, chunkData.Length, context.RequestAborted);
+                        await Task.Yield();
                     }
+
+                    appFuncCompleted.SetException(new Exception("This shouldn't be reached."));
+                }
+                catch (OperationCanceledException)
+                {
+                    appFuncCompleted.SetResult(null);
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    appFuncCompleted.SetException(ex);
+                }
+                finally
+                {
+                    appLogger.LogInformation("Wrote {total} bytes", chunkSize * i);
+                    await requestAborted.Task.DefaultTimeout();
+                }
+            }
+
+            using (var server = new TestServer(App, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    logger.LogInformation("Sending request");
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "",
+                        "");
+
+                    logger.LogInformation("Sent request");
+
+                    var sw = Stopwatch.StartNew();
+                    logger.LogInformation("Waiting for connection to abort.");
+
+                    await requestAborted.Task.DefaultTimeout();
+                    await responseRateTimeoutMessageLogged.Task.DefaultTimeout();
+                    await connectionStopMessageLogged.Task.DefaultTimeout();
+                    await appFuncCompleted.Task.DefaultTimeout();
+                    await AssertStreamAborted(connection.Stream, chunkSize * chunks);
+
+                    sw.Stop();
+                    logger.LogInformation("Connection was aborted after {totalMilliseconds}ms.", sw.ElapsedMilliseconds);
                 }
             }
         }

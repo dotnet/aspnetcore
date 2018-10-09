@@ -5,6 +5,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
     public enum TimeoutReason
     {
+        None,
         KeepAlive,
         RequestHeaders,
         ReadDataRate,

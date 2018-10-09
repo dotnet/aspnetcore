@@ -5,6 +5,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
     public interface ITimeoutControl
     {
+        TimeoutReason TimerReason { get; }
+
         void SetTimeout(long ticks, TimeoutReason timeoutReason);
         void ResetTimeout(long ticks, TimeoutReason timeoutReason);
         void CancelTimeout();
