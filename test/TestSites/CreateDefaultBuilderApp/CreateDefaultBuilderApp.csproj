@@ -6,12 +6,6 @@
     <UserSecretsId>aspnetcore-CreateDefaultBuilder-20170424224131</UserSecretsId>
   </PropertyGroup>
 
-  <!-- Temporary until https://github.com/aspnet/IISIntegration/issues/1099 is fixed -->
-  <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
-    <PackageReference Include="Microsoft.AspNetCore.AspNetCoreModule" Version="$(MicrosoftAspNetCoreAspNetCoreModulePackageVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.AspNetCoreModuleV2" Version="$(MicrosoftAspNetCoreAspNetCoreModuleV2PackageVersion)" />
-  </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\Microsoft.AspNetCore\Microsoft.AspNetCore.csproj" />
   </ItemGroup>
