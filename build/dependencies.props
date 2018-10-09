@@ -27,6 +27,8 @@
     <MicrosoftExtensionsLoggingConsolePackageVersion>2.2.0-preview3-35359</MicrosoftExtensionsLoggingConsolePackageVersion>
     <MicrosoftExtensionsLoggingPackageVersion>2.2.0-preview3-35359</MicrosoftExtensionsLoggingPackageVersion>
     <MicrosoftExtensionsLoggingTestingPackageVersion>2.2.0-preview3-35359</MicrosoftExtensionsLoggingTestingPackageVersion>
+    <MicrosoftExtensionsHostingAbstractionsPackageVersion>2.2.0-preview3-35359</MicrosoftExtensionsHostingAbstractionsPackageVersion>
+    <MicrosoftExtensionsNonCapturingTimerSourcesPackageVersion>2.2.0-preview3-35359</MicrosoftExtensionsNonCapturingTimerSourcesPackageVersion>
     <MicrosoftExtensionsOptionsPackageVersion>2.2.0-preview3-35359</MicrosoftExtensionsOptionsPackageVersion>
     <MicrosoftExtensionsRazorViewsSourcesPackageVersion>2.2.0-preview3-35359</MicrosoftExtensionsRazorViewsSourcesPackageVersion>
     <MicrosoftExtensionsStackTraceSourcesPackageVersion>2.2.0-preview3-35359</MicrosoftExtensionsStackTraceSourcesPackageVersion>
