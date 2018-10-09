@@ -325,7 +325,5 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 EndpointMetadataCollection.Empty,
                 null);
         }
-
-        private class SuppressLinkGenerationMetadata : ISuppressLinkGenerationMetadata { }
     }
 }
