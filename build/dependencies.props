@@ -105,6 +105,7 @@
     <NETStandardLibrary20PackageVersion>2.0.3</NETStandardLibrary20PackageVersion>
     <NetTopologySuiteCorePackageVersion>1.15.1</NetTopologySuiteCorePackageVersion>
     <NetTopologySuiteIOSpatiaLitePackageVersion>1.15.0</NetTopologySuiteIOSpatiaLitePackageVersion>
+    <NetTopologySuiteIOSqlServerBytesPackageVersion>1.15.0-pre001</NetTopologySuiteIOSqlServerBytesPackageVersion>
     <NewtonsoftJsonBsonPackageVersion>1.0.1</NewtonsoftJsonBsonPackageVersion>
     <NewtonsoftJsonPackageVersion>11.0.2</NewtonsoftJsonPackageVersion>
     <NuGetFrameworksPackageVersion>4.7.0</NuGetFrameworksPackageVersion>

@@ -118,6 +118,7 @@
 
     <ExternalDependency Include="NetTopologySuite.Core" Version="$(NetTopologySuiteCorePackageVersion)" />
     <ExternalDependency Include="NetTopologySuite.IO.SpatiaLite" Version="$(NetTopologySuiteIOSpatiaLitePackageVersion)" />
+    <ExternalDependency Include="NetTopologySuite.IO.SqlServerBytes" Version="$(NetTopologySuiteIOSqlServerBytesPackageVersion)" />
 
     <!-- This version should be used by runtime packages -->
     <ExternalDependency Include="Newtonsoft.Json" Version="$(NewtonsoftJsonPackageVersion)" />
