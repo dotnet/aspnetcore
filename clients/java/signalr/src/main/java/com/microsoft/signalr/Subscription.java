@@ -6,9 +6,9 @@ package com.microsoft.signalr;
 import java.util.List;
 
 public class Subscription {
-    private CallbackMap handlers;
-    private InvocationHandler handler;
-    private String target;
+    private final CallbackMap handlers;
+    private final InvocationHandler handler;
+    private final String target;
 
     public Subscription(CallbackMap handlers, InvocationHandler handler, String target) {
         this.handlers = handlers;

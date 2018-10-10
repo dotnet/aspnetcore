@@ -13,8 +13,8 @@ class WebSocketTransport implements Transport {
     private Consumer<String> onClose;
     private String url;
     private Logger logger;
-    private HttpClient client;
-    private Map<String, String> headers;
+    private final HttpClient client;
+    private final Map<String, String> headers;
 
     private static final String HTTP = "http";
     private static final String HTTPS = "https";

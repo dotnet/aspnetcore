@@ -24,28 +24,28 @@ import io.reactivex.Single;
 
 public class HubConnection {
     private static final String RECORD_SEPARATOR = "\u001e";
-    private static List<Class<?>> emptyArray = new ArrayList<>();
-    private static int MAX_NEGOTIATE_ATTEMPTS = 100;
+    private static final List<Class<?>> emptyArray = new ArrayList<>();
+    private static final int MAX_NEGOTIATE_ATTEMPTS = 100;
 
-    private String baseUrl;
+    private final String baseUrl;
     private Transport transport;
     private OnReceiveCallBack callback;
-    private CallbackMap handlers = new CallbackMap();
+    private final CallbackMap handlers = new CallbackMap();
     private HubProtocol protocol;
     private Boolean handshakeReceived = false;
     private HubConnectionState hubConnectionState = HubConnectionState.DISCONNECTED;
-    private Lock hubConnectionStateLock = new ReentrantLock();
+    private final Lock hubConnectionStateLock = new ReentrantLock();
     private Logger logger;
     private List<Consumer<Exception>> onClosedCallbackList;
-    private boolean skipNegotiate;
+    private final boolean skipNegotiate;
     private Single<String> accessTokenProvider;
-    private Map<String, String> headers = new HashMap<>();
+    private final Map<String, String> headers = new HashMap<>();
     private ConnectionState connectionState = null;
-    private HttpClient httpClient;
+    private final HttpClient httpClient;
     private String stopError;
     private Timer pingTimer = null;
-    private AtomicLong nextServerTimeout = new AtomicLong();
-    private AtomicLong nextPingActivation = new AtomicLong();
+    private final AtomicLong nextServerTimeout = new AtomicLong();
+    private final AtomicLong nextPingActivation = new AtomicLong();
     private Duration keepAliveInterval = Duration.ofSeconds(15);
     private Duration serverTimeout = Duration.ofSeconds(30);
     private Duration tickRate = Duration.ofSeconds(1);

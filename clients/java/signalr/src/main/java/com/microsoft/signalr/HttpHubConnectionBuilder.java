@@ -8,7 +8,7 @@ import java.time.Duration;
 import io.reactivex.Single;
 
 public class HttpHubConnectionBuilder {
-    private String url;
+    private final String url;
     private Transport transport;
     private Logger logger;
     private HttpClient httpClient;
@@ -56,7 +56,7 @@ public class HttpHubConnectionBuilder {
         return this;
     }
 
-    HttpHubConnectionBuilder withHandshakeResponseTimeout(Duration timeout) {
+    public HttpHubConnectionBuilder withHandshakeResponseTimeout(Duration timeout) {
         this.handshakeResponseTimeout = timeout;
         return this;
     }

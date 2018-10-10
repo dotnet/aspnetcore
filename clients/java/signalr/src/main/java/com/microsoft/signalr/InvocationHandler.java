@@ -7,8 +7,8 @@ import java.util.Arrays;
 import java.util.List;
 
 class InvocationHandler {
-    private List<Class<?>> classes;
-    private ActionBase action;
+    private final List<Class<?>> classes;
+    private final ActionBase action;
 
     InvocationHandler(ActionBase action, Class<?>... classes) {
         this.action = action;
