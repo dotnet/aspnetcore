@@ -11,10 +11,13 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.Test;
 
+import io.reactivex.Completable;
+import io.reactivex.Single;
 
 class HubConnectionTest {
     private static final String RECORD_SEPARATOR = "\u001e";
@@ -22,7 +25,7 @@ class HubConnectionTest {
     @Test
     public void checkHubConnectionState() throws Exception {
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com");
-        hubConnection.start();
+        hubConnection.start().blockingAwait(1000, TimeUnit.MILLISECONDS);
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
 
         hubConnection.stop();
@@ -33,7 +36,7 @@ class HubConnectionTest {
     public void transportCloseTriggersStopInHubConnection() throws Exception {
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
-        hubConnection.start().get(1000, TimeUnit.MILLISECONDS);
+        hubConnection.start().blockingAwait(1000, TimeUnit.MILLISECONDS);
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
         mockTransport.stop();
 
@@ -51,7 +54,7 @@ class HubConnectionTest {
             message.set(error.getMessage());
         });
 
-        hubConnection.start().get(1000, TimeUnit.MILLISECONDS);
+        hubConnection.start().blockingAwait(1000, TimeUnit.MILLISECONDS);
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
         mockTransport.stopWithError(errorMessage);
         assertEquals(errorMessage, message.get());
@@ -355,13 +358,15 @@ class HubConnectionTest {
         hubConnection.start();
         mockTransport.receiveMessage("{}" + RECORD_SEPARATOR);
 
-        CompletableFuture<Integer> result = hubConnection.invoke(Integer.class, "echo", "message");
+        AtomicBoolean done = new AtomicBoolean();
+        Single<Integer> result = hubConnection.invoke(Integer.class, "echo", "message");
+        result.doOnSuccess(value -> done.set(true));
         assertEquals("{\"type\":1,\"invocationId\":\"1\",\"target\":\"echo\",\"arguments\":[\"message\"]}" + RECORD_SEPARATOR, mockTransport.getSentMessages()[1]);
-        assertFalse(result.isDone());
+        assertFalse(done.get());
 
         mockTransport.receiveMessage("{\"type\":3,\"invocationId\":\"1\",\"result\":42}" + RECORD_SEPARATOR);
 
-        assertEquals(Integer.valueOf(42), result.get(1000L, TimeUnit.MILLISECONDS));
+        assertEquals(Integer.valueOf(42), result.timeout(1000, TimeUnit.MILLISECONDS).blockingGet());
     }
 
     @Test
@@ -372,19 +377,23 @@ class HubConnectionTest {
         hubConnection.start();
         mockTransport.receiveMessage("{}" + RECORD_SEPARATOR);
 
-        CompletableFuture<Integer> result = hubConnection.invoke(Integer.class, "echo", "message");
-        CompletableFuture<String> result2 = hubConnection.invoke(String.class, "echo", "message");
+        AtomicBoolean doneFirst = new AtomicBoolean();
+        AtomicBoolean doneSecond = new AtomicBoolean();
+        Single<Integer> result = hubConnection.invoke(Integer.class, "echo", "message");
+        Single<String> result2 = hubConnection.invoke(String.class, "echo", "message");
+        result.doOnSuccess(value -> doneFirst.set(true));
+        result2.doOnSuccess(value -> doneSecond.set(true));
         assertEquals("{\"type\":1,\"invocationId\":\"1\",\"target\":\"echo\",\"arguments\":[\"message\"]}" + RECORD_SEPARATOR, mockTransport.getSentMessages()[1]);
         assertEquals("{\"type\":1,\"invocationId\":\"2\",\"target\":\"echo\",\"arguments\":[\"message\"]}" + RECORD_SEPARATOR, mockTransport.getSentMessages()[2]);
-        assertFalse(result.isDone());
-        assertFalse(result2.isDone());
+        assertFalse(doneFirst.get());
+        assertFalse(doneSecond.get());
 
         mockTransport.receiveMessage("{\"type\":3,\"invocationId\":\"2\",\"result\":\"message\"}" + RECORD_SEPARATOR);
-        assertEquals("message", result2.get(1000L, TimeUnit.MILLISECONDS));
-        assertFalse(result.isDone());
+        assertEquals("message", result2.timeout(1000, TimeUnit.MILLISECONDS).blockingGet());
+        assertFalse(doneFirst.get());
 
         mockTransport.receiveMessage("{\"type\":3,\"invocationId\":\"1\",\"result\":42}" + RECORD_SEPARATOR);
-        assertEquals(Integer.valueOf(42), result.get(1000L, TimeUnit.MILLISECONDS));
+        assertEquals(Integer.valueOf(42), result.timeout(1000, TimeUnit.MILLISECONDS).blockingGet());
     }
 
     @Test
@@ -395,14 +404,16 @@ class HubConnectionTest {
         hubConnection.start();
         mockTransport.receiveMessage("{}" + RECORD_SEPARATOR);
 
+        AtomicBoolean done = new AtomicBoolean();
         // int.class is a primitive type and since we use Class.cast to cast an Object to the expected return type
         // which does not work for primitives we have to write special logic for that case.
-        CompletableFuture<Integer> result = hubConnection.invoke(int.class, "echo", "message");
-        assertFalse(result.isDone());
+        Single<Integer> result = hubConnection.invoke(int.class, "echo", "message");
+        result.doOnSuccess(value -> done.set(true));
+        assertFalse(done.get());
 
         mockTransport.receiveMessage("{\"type\":3,\"invocationId\":\"1\",\"result\":42}" + RECORD_SEPARATOR);
 
-        assertEquals(Integer.valueOf(42), result.get(1000L, TimeUnit.MILLISECONDS));
+        assertEquals(Integer.valueOf(42), result.timeout(1000, TimeUnit.MILLISECONDS).blockingGet());
     }
 
     @Test
@@ -413,17 +424,19 @@ class HubConnectionTest {
         hubConnection.start();
         mockTransport.receiveMessage("{}" + RECORD_SEPARATOR);
 
-        CompletableFuture<Integer> result = hubConnection.invoke(int.class, "echo", "message");
-        assertFalse(result.isDone());
+        AtomicBoolean done = new AtomicBoolean();
+        Single<Integer> result = hubConnection.invoke(int.class, "echo", "message");
+        result.doOnSuccess(value -> done.set(true));
+        assertFalse(done.get());
 
         mockTransport.receiveMessage("{\"type\":3,\"invocationId\":\"1\",\"error\":\"There was an error\"}" + RECORD_SEPARATOR);
 
         String exceptionMessage = null;
         try {
-            result.get(1000L, TimeUnit.MILLISECONDS);
+            result.timeout(1000, TimeUnit.MILLISECONDS).blockingGet();
             assertFalse(true);
         } catch (Exception ex) {
-            exceptionMessage = ex.getMessage();
+            exceptionMessage = ex.getCause().getMessage();
         }
 
         assertEquals("com.microsoft.signalr.HubException: There was an error", exceptionMessage);
@@ -437,14 +450,16 @@ class HubConnectionTest {
         hubConnection.start();
         mockTransport.receiveMessage("{}" + RECORD_SEPARATOR);
 
-        CompletableFuture<Integer> result = hubConnection.invoke(int.class, "echo", "message");
-        assertFalse(result.isDone());
+        AtomicBoolean done = new AtomicBoolean();
+        Single<Integer> result = hubConnection.invoke(int.class, "echo", "message");
+        result.doOnSuccess(value -> done.set(true));
+        assertFalse(done.get());
 
         hubConnection.stop();
 
         boolean hasException = false;
         try {
-            result.get(1000L, TimeUnit.MILLISECONDS);
+            result.timeout(1000, TimeUnit.MILLISECONDS).blockingGet();
             assertFalse(true);
         } catch (CancellationException ex) {
             hasException = true;
@@ -894,10 +909,10 @@ class HubConnectionTest {
             assertTrue(false);
         }, String.class);
 
-        CompletableFuture<Void> startFuture = hubConnection.start();
+        Completable startFuture = hubConnection.start();
         mockTransport.receiveMessage("{}" + RECORD_SEPARATOR);
 
-        startFuture.get(1000, TimeUnit.MILLISECONDS);
+        startFuture.blockingAwait(1000, TimeUnit.MILLISECONDS);
         RuntimeException exception = assertThrows(RuntimeException.class, () -> mockTransport.receiveMessage("{\"type\":1,\"target\":\"Send\",\"arguments\":[]}" + RECORD_SEPARATOR));
         assertEquals("Invocation provides 0 argument(s) but target expects 1.", exception.getMessage());
     }
@@ -913,7 +928,7 @@ class HubConnectionTest {
                 .build();
 
         try {
-            hubConnection.start().get(1000, TimeUnit.MILLISECONDS);
+            hubConnection.start().blockingAwait(1000, TimeUnit.MILLISECONDS);
         } catch(Exception ex) {}
 
         List<HttpRequest> sentRequests = client.getSentRequests();
@@ -931,8 +946,9 @@ class HubConnectionTest {
             .withHttpClient(client)
             .build();
 
-        ExecutionException exception = assertThrows(ExecutionException.class, () -> hubConnection.start().get(1000, TimeUnit.MILLISECONDS));
-        assertEquals("Negotiate redirection limit exceeded.", exception.getCause().getMessage());
+        RuntimeException exception = assertThrows(RuntimeException.class,
+            () -> hubConnection.start().blockingAwait(1000, TimeUnit.MILLISECONDS));
+        assertEquals("Negotiate redirection limit exceeded.", exception.getCause().getCause().getMessage());
     }
 
     @Test
@@ -949,7 +965,7 @@ class HubConnectionTest {
                 .withHttpClient(client)
                 .build();
 
-        hubConnection.start().get(1000, TimeUnit.MILLISECONDS);
+        hubConnection.start().blockingAwait(1000, TimeUnit.MILLISECONDS);
 
         String[] sentMessages = transport.getSentMessages();
         assertEquals(1, sentMessages.length);
@@ -968,8 +984,9 @@ class HubConnectionTest {
                 .withTransport(transport)
                 .build();
 
-        ExecutionException exception = assertThrows(ExecutionException.class, () -> hubConnection.start().get(1000, TimeUnit.MILLISECONDS));
-        assertEquals("Test error.", exception.getCause().getMessage());
+        RuntimeException exception = assertThrows(RuntimeException.class,
+            () -> hubConnection.start().blockingAwait(1000, TimeUnit.MILLISECONDS));
+        assertEquals("Test error.", exception.getCause().getCause().getMessage());
     }
 
     @Test
@@ -987,7 +1004,7 @@ class HubConnectionTest {
                 .withHttpClient(client)
                 .build();
 
-        hubConnection.start().get(1000, TimeUnit.MILLISECONDS);
+        hubConnection.start().blockingAwait(1000, TimeUnit.MILLISECONDS);
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
         hubConnection.stop();
     }
@@ -1010,10 +1027,10 @@ class HubConnectionTest {
                 .create("http://example.com")
                 .withTransport(transport)
                 .withHttpClient(client)
-                .withAccessTokenProvider(() -> CompletableFuture.completedFuture("secretToken"))
+                .withAccessTokenProvider(Single.just("secretToken"))
                 .build();
 
-        hubConnection.start().get(1000, TimeUnit.MILLISECONDS);
+        hubConnection.start().blockingAwait(1000, TimeUnit.MILLISECONDS);
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
         hubConnection.stop();
         assertEquals("Bearer secretToken", token.get());
@@ -1036,10 +1053,10 @@ class HubConnectionTest {
                 .create("http://example.com")
                 .withTransport(transport)
                 .withHttpClient(client)
-                .withAccessTokenProvider(() -> CompletableFuture.completedFuture("secretToken"))
+                .withAccessTokenProvider(Single.just("secretToken"))
                 .build();
 
-        hubConnection.start().get(1000, TimeUnit.MILLISECONDS);
+        hubConnection.start().blockingAwait(1000, TimeUnit.MILLISECONDS);
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
         assertEquals("http://testexample.com/?id=bVOiRPG8-6YiJ6d7ZcTOVQ", transport.getUrl());
         hubConnection.stop();
@@ -1055,13 +1072,13 @@ class HubConnectionTest {
                 .shouldSkipNegotiate(true)
                 .build();
 
-        hubConnection.start().get(1000, TimeUnit.MILLISECONDS);
+        hubConnection.start().blockingAwait(1000, TimeUnit.MILLISECONDS);
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
-        hubConnection.stop().get(1000, TimeUnit.MILLISECONDS);
+        hubConnection.stop().blockingAwait(1000, TimeUnit.MILLISECONDS);
         assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
-        hubConnection.start().get(1000, TimeUnit.MILLISECONDS);
+        hubConnection.start().blockingAwait(1000, TimeUnit.MILLISECONDS);
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
-        hubConnection.stop().get(1000, TimeUnit.MILLISECONDS);
+        hubConnection.stop().blockingAwait(1000, TimeUnit.MILLISECONDS);
         assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
     }
 
@@ -1081,13 +1098,13 @@ class HubConnectionTest {
                 .withHttpClient(client)
                 .build();
 
-        hubConnection.start().get(1000, TimeUnit.MILLISECONDS);
+        hubConnection.start().blockingAwait(1000, TimeUnit.MILLISECONDS);
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
-        hubConnection.stop().get(1000, TimeUnit.MILLISECONDS);
+        hubConnection.stop().blockingAwait(1000, TimeUnit.MILLISECONDS);
         assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
-        hubConnection.start().get(1000, TimeUnit.MILLISECONDS);
+        hubConnection.start().blockingAwait(1000, TimeUnit.MILLISECONDS);
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
-        hubConnection.stop().get(1000, TimeUnit.MILLISECONDS);
+        hubConnection.stop().blockingAwait(1000, TimeUnit.MILLISECONDS);
         assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
     }
 
@@ -1105,7 +1122,8 @@ class HubConnectionTest {
                 .withHttpClient(client)
                 .build();
 
-        ExecutionException exception = assertThrows(ExecutionException.class, () -> hubConnection.start().get(1000, TimeUnit.MILLISECONDS));
-        assertEquals("Unexpected status code returned from negotiate: 500 Internal server error.", exception.getCause().getMessage());
+        RuntimeException exception = assertThrows(RuntimeException.class,
+            () -> hubConnection.start().blockingAwait(1000, TimeUnit.MILLISECONDS));
+        assertEquals("Unexpected status code returned from negotiate: 500 Internal server error.", exception.getCause().getCause().getMessage());
     }
 }

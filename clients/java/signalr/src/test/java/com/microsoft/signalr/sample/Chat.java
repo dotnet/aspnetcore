@@ -32,7 +32,7 @@ public class Chat {
         });
 
         //This is a blocking call
-        hubConnection.start().get();
+        hubConnection.start().blockingAwait();
 
         String message = "";
         while (!message.equals("leave")) {
