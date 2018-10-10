@@ -16,7 +16,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.DataProtection.Abstractions\Microsoft.AspNetCore.DataProtection.Abstractions.csproj" />
-    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.DataProtection.Redis\Microsoft.AspNetCore.DataProtection.Redis.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.DataProtection.StackExchangeRedis\Microsoft.AspNetCore.DataProtection.StackExchangeRedis.csproj" />
   </ItemGroup>
 
   <ItemGroup>

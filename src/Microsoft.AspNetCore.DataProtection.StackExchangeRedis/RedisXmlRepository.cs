@@ -8,12 +8,12 @@ using System.Xml.Linq;
 using StackExchange.Redis;
 using Microsoft.AspNetCore.DataProtection.Repositories;
 
-namespace Microsoft.AspNetCore.DataProtection
+namespace Microsoft.AspNetCore.DataProtection.StackExchangeRedis
 {
     /// <summary>
     /// An XML repository backed by a Redis list entry.
     /// </summary>
-    public class RedisXmlRepository: IXmlRepository
+    public class RedisXmlRepository : IXmlRepository
     {
         private readonly Func<IDatabase> _databaseFactory;
         private readonly RedisKey _key;

@@ -53,13 +53,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.DataPr
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.DataProtection.Extensions", "src\Microsoft.AspNetCore.DataProtection.Extensions\Microsoft.AspNetCore.DataProtection.Extensions.csproj", "{BF8681DB-C28B-441F-BD92-0DCFE9537A9F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.DataProtection.Redis", "src\Microsoft.AspNetCore.DataProtection.Redis\Microsoft.AspNetCore.DataProtection.Redis.csproj", "{0508ADB0-9D2E-4506-9AA3-C15D7BEAE7C9}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.DataProtection.AzureStorage", "src\Microsoft.AspNetCore.DataProtection.AzureStorage\Microsoft.AspNetCore.DataProtection.AzureStorage.csproj", "{CC799B57-81E2-4F45-8A32-0D5F49753C3F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureBlob", "samples\AzureBlob\AzureBlob.csproj", "{B07435B3-CD81-4E3B-88A5-6384821E1C01}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.DataProtection.Redis.Test", "test\Microsoft.AspNetCore.DataProtection.Redis.Test\Microsoft.AspNetCore.DataProtection.Redis.Test.csproj", "{ABCF00E5-5B2F-469C-90DC-908C5A04C08D}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.DataProtection.AzureStorage.Test", "test\Microsoft.AspNetCore.DataProtection.AzureStorage.Test\Microsoft.AspNetCore.DataProtection.AzureStorage.Test.csproj", "{8C41240E-48F8-402F-9388-74CFE27F4D76}"
 EndProject
@@ -82,6 +78,10 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.DataProtection.EntityFrameworkCore", "src\Microsoft.AspNetCore.DataProtection.EntityFrameworkCore\Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.csproj", "{3E4CA7FE-741B-4C78-A775-220E0E3C1B03}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EntityFrameworkCoreSample", "samples\EntityFrameworkCoreSample\EntityFrameworkCoreSample.csproj", "{22BA4EAB-641E-42B2-BB37-9C3BCFD99F76}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.DataProtection.StackExchangeRedis", "src\Microsoft.AspNetCore.DataProtection.StackExchangeRedis\Microsoft.AspNetCore.DataProtection.StackExchangeRedis.csproj", "{57713B23-CCAB-44DB-A08D-55F9D236D05B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.DataProtection.StackExchangeRedis.Test", "test\Microsoft.AspNetCore.DataProtection.StackExchangeRedis.Test\Microsoft.AspNetCore.DataProtection.StackExchangeRedis.Test.csproj", "{33BB1B86-64BF-45BB-A334-3E1A4802253C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -175,14 +175,6 @@ Global
 		{BF8681DB-C28B-441F-BD92-0DCFE9537A9F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{BF8681DB-C28B-441F-BD92-0DCFE9537A9F}.Release|x86.ActiveCfg = Release|Any CPU
 		{BF8681DB-C28B-441F-BD92-0DCFE9537A9F}.Release|x86.Build.0 = Release|Any CPU
-		{0508ADB0-9D2E-4506-9AA3-C15D7BEAE7C9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0508ADB0-9D2E-4506-9AA3-C15D7BEAE7C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0508ADB0-9D2E-4506-9AA3-C15D7BEAE7C9}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{0508ADB0-9D2E-4506-9AA3-C15D7BEAE7C9}.Debug|x86.Build.0 = Debug|Any CPU
-		{0508ADB0-9D2E-4506-9AA3-C15D7BEAE7C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0508ADB0-9D2E-4506-9AA3-C15D7BEAE7C9}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0508ADB0-9D2E-4506-9AA3-C15D7BEAE7C9}.Release|x86.ActiveCfg = Release|Any CPU
-		{0508ADB0-9D2E-4506-9AA3-C15D7BEAE7C9}.Release|x86.Build.0 = Release|Any CPU
 		{CC799B57-81E2-4F45-8A32-0D5F49753C3F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{CC799B57-81E2-4F45-8A32-0D5F49753C3F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CC799B57-81E2-4F45-8A32-0D5F49753C3F}.Debug|x86.ActiveCfg = Debug|Any CPU
@@ -199,14 +191,6 @@ Global
 		{B07435B3-CD81-4E3B-88A5-6384821E1C01}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B07435B3-CD81-4E3B-88A5-6384821E1C01}.Release|x86.ActiveCfg = Release|Any CPU
 		{B07435B3-CD81-4E3B-88A5-6384821E1C01}.Release|x86.Build.0 = Release|Any CPU
-		{ABCF00E5-5B2F-469C-90DC-908C5A04C08D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{ABCF00E5-5B2F-469C-90DC-908C5A04C08D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{ABCF00E5-5B2F-469C-90DC-908C5A04C08D}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{ABCF00E5-5B2F-469C-90DC-908C5A04C08D}.Debug|x86.Build.0 = Debug|Any CPU
-		{ABCF00E5-5B2F-469C-90DC-908C5A04C08D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{ABCF00E5-5B2F-469C-90DC-908C5A04C08D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{ABCF00E5-5B2F-469C-90DC-908C5A04C08D}.Release|x86.ActiveCfg = Release|Any CPU
-		{ABCF00E5-5B2F-469C-90DC-908C5A04C08D}.Release|x86.Build.0 = Release|Any CPU
 		{8C41240E-48F8-402F-9388-74CFE27F4D76}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{8C41240E-48F8-402F-9388-74CFE27F4D76}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8C41240E-48F8-402F-9388-74CFE27F4D76}.Debug|x86.ActiveCfg = Debug|Any CPU
@@ -295,6 +279,22 @@ Global
 		{22BA4EAB-641E-42B2-BB37-9C3BCFD99F76}.Release|Any CPU.Build.0 = Release|Any CPU
 		{22BA4EAB-641E-42B2-BB37-9C3BCFD99F76}.Release|x86.ActiveCfg = Release|Any CPU
 		{22BA4EAB-641E-42B2-BB37-9C3BCFD99F76}.Release|x86.Build.0 = Release|Any CPU
+		{57713B23-CCAB-44DB-A08D-55F9D236D05B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{57713B23-CCAB-44DB-A08D-55F9D236D05B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{57713B23-CCAB-44DB-A08D-55F9D236D05B}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{57713B23-CCAB-44DB-A08D-55F9D236D05B}.Debug|x86.Build.0 = Debug|Any CPU
+		{57713B23-CCAB-44DB-A08D-55F9D236D05B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{57713B23-CCAB-44DB-A08D-55F9D236D05B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{57713B23-CCAB-44DB-A08D-55F9D236D05B}.Release|x86.ActiveCfg = Release|Any CPU
+		{57713B23-CCAB-44DB-A08D-55F9D236D05B}.Release|x86.Build.0 = Release|Any CPU
+		{33BB1B86-64BF-45BB-A334-3E1A4802253C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{33BB1B86-64BF-45BB-A334-3E1A4802253C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{33BB1B86-64BF-45BB-A334-3E1A4802253C}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{33BB1B86-64BF-45BB-A334-3E1A4802253C}.Debug|x86.Build.0 = Debug|Any CPU
+		{33BB1B86-64BF-45BB-A334-3E1A4802253C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{33BB1B86-64BF-45BB-A334-3E1A4802253C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{33BB1B86-64BF-45BB-A334-3E1A4802253C}.Release|x86.ActiveCfg = Release|Any CPU
+		{33BB1B86-64BF-45BB-A334-3E1A4802253C}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -311,10 +311,8 @@ Global
 		{E3552DEB-4173-43AE-BF69-3C10DFF3BAB6} = {5FCB2DA3-5395-47F5-BCEE-E0EA319448EA}
 		{04AA8E60-A053-4D50-89FE-E76C3DF45200} = {60336AB3-948D-4D15-A5FB-F32A2B91E814}
 		{BF8681DB-C28B-441F-BD92-0DCFE9537A9F} = {5FCB2DA3-5395-47F5-BCEE-E0EA319448EA}
-		{0508ADB0-9D2E-4506-9AA3-C15D7BEAE7C9} = {5FCB2DA3-5395-47F5-BCEE-E0EA319448EA}
 		{CC799B57-81E2-4F45-8A32-0D5F49753C3F} = {5FCB2DA3-5395-47F5-BCEE-E0EA319448EA}
 		{B07435B3-CD81-4E3B-88A5-6384821E1C01} = {5A3A5DE3-49AD-431C-971D-B01B62D94AE2}
-		{ABCF00E5-5B2F-469C-90DC-908C5A04C08D} = {60336AB3-948D-4D15-A5FB-F32A2B91E814}
 		{8C41240E-48F8-402F-9388-74CFE27F4D76} = {60336AB3-948D-4D15-A5FB-F32A2B91E814}
 		{24AAEC96-DF46-4F61-B2FF-3D5E056685D9} = {5A3A5DE3-49AD-431C-971D-B01B62D94AE2}
 		{32CF970B-E2F1-4CD9-8DB3-F5715475373A} = {5A3A5DE3-49AD-431C-971D-B01B62D94AE2}
@@ -326,6 +324,8 @@ Global
 		{06728BF2-C5EB-44C7-9F30-14FAA5649E14} = {60336AB3-948D-4D15-A5FB-F32A2B91E814}
 		{3E4CA7FE-741B-4C78-A775-220E0E3C1B03} = {5FCB2DA3-5395-47F5-BCEE-E0EA319448EA}
 		{22BA4EAB-641E-42B2-BB37-9C3BCFD99F76} = {5A3A5DE3-49AD-431C-971D-B01B62D94AE2}
+		{57713B23-CCAB-44DB-A08D-55F9D236D05B} = {5FCB2DA3-5395-47F5-BCEE-E0EA319448EA}
+		{33BB1B86-64BF-45BB-A334-3E1A4802253C} = {60336AB3-948D-4D15-A5FB-F32A2B91E814}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {DD305D75-BD1B-43AE-BF04-869DA6A0858F}
