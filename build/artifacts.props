@@ -69,7 +69,7 @@
     <PackageArtifact Include="Microsoft.AspNetCore.DataProtection.AzureStorage" Category="ship" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.DataProtection.Extensions" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
-    <PackageArtifact Include="Microsoft.AspNetCore.DataProtection.Redis" Category="ship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.DataProtection.StackExchangeRedis" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.DataProtection.SystemWeb" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.DataProtection" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.DeveloperCertificates.XPlat" Category="shipoob" />
@@ -166,6 +166,7 @@
     <PackageArtifact Include="Microsoft.AspNetCore.SignalR.Protocols.Json" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.SignalR.Redis" Category="ship" AllMetapackage="true" />
+    <PackageArtifact Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.SignalR.Specification.Tests" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.SignalR" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.SpaServices.Extensions" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
@@ -208,6 +209,7 @@
     <PackageArtifact Include="Microsoft.Extensions.Caching.Abstractions" Category="ship" AppMetapackage="true" AllMetapackage="true" />
     <PackageArtifact Include="Microsoft.Extensions.Caching.Memory" Category="ship" AppMetapackage="true" AllMetapackage="true" />
     <PackageArtifact Include="Microsoft.Extensions.Caching.Redis" Category="ship" AllMetapackage="true" />
+    <PackageArtifact Include="Microsoft.Extensions.Caching.StackExchangeRedis" Category="ship" />
     <PackageArtifact Include="Microsoft.Extensions.Caching.SqlServer" Category="ship" AppMetapackage="true" AllMetapackage="true" />
     <PackageArtifact Include="Microsoft.Extensions.ClosedGenericMatcher.Sources" Category="noship" />
     <PackageArtifact Include="Microsoft.Extensions.CommandLineUtils.Sources" Category="noship" />
