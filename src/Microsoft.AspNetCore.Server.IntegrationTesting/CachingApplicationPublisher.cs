@@ -35,11 +35,6 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 throw new InvalidOperationException("DeploymentParameters.PublishedApplicationRootPath not supported");
             }
 
-            if (deploymentParameters.RestoreOnPublish)
-            {
-                throw new InvalidOperationException("DeploymentParameters.RestoreOnPublish not supported");
-            }
-
             var dotnetPublishParameters = new DotnetPublishParameters
             {
                 TargetFramework = deploymentParameters.TargetFramework,
