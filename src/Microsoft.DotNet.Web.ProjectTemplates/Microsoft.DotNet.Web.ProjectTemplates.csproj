@@ -5,7 +5,9 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <PackageId>Microsoft.DotNet.Web.ProjectTemplates.2.2</PackageId>
-    <Description>ASP.NET Core Web Template Pack for Microsoft Template Engine</Description>
+    <Description>ASP.NET Core Web Template Pack for Microsoft Template Engine
+
+    To install the templates in this package, run 'dotnet new --install $(PackageId)::$(PackageVersion)'.</Description>
   </PropertyGroup>
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />

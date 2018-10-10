@@ -183,7 +183,14 @@ $@"<Project>
         {
 
         }";
-            Assert.Contains(emptyMigration, contents);
+            
+            // This comparison can break depending on how GIT checked out newlines on different files.
+            Assert.Contains(RemoveNewLines(emptyMigration), RemoveNewLines(contents));
+        }
+
+        private static string RemoveNewLines(string str)
+        {
+            return str.Replace("\n", string.Empty).Replace("\r", string.Empty);
         }
 
         protected void AssertFileExists(string path, bool shouldExist)

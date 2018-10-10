@@ -4,7 +4,9 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
-    <Description>Single Page Application templates for ASP.NET Core</Description>
+    <Description>Single Page Application templates for ASP.NET Core
+
+    To install the templates in this package, run 'dotnet new --install $(PackageId)::$(PackageVersion)'.</Description>
     <PackageTags>$(PackageTags);spa</PackageTags>
   </PropertyGroup>
 

@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using AngleSharp;
+using AngleSharp.Dom;
 using AngleSharp.Dom.Html;
 using AngleSharp.Parser.Html;
 using System;
@@ -23,6 +25,7 @@ namespace Templates.Test
         private static readonly string _solutionDir;
         private static readonly string _artifactsDir;
         private static List<ScriptTag> _scriptTags;
+        private static List<LinkTag> _linkTags;
 
         static CdnScriptTagTests()
         {
@@ -31,9 +34,12 @@ namespace Templates.Test
             var packages = Directory.GetFiles(_artifactsDir, "*.nupkg");
 
             _scriptTags = new List<ScriptTag>();
+            _linkTags = new List<LinkTag>();
             foreach (var packagePath in packages)
             {
-                _scriptTags.AddRange(GetScriptTags(packagePath));
+                var tags = GetTags(packagePath);
+                _scriptTags.AddRange(tags.scripts);
+                _linkTags.AddRange(tags.links);
             }
         }
 
@@ -43,21 +49,33 @@ namespace Templates.Test
             _httpClient = new HttpClient();
         }
 
-        public static IEnumerable<object[]> SubresourceIntegrityCheckData
+        public static IEnumerable<object[]> SubresourceIntegrityCheckScriptData
         {
             get
             {
                 var scriptTags = _scriptTags
-                    .Where(st => st.Integrity != null)
+                    .Where(st => st.FallbackSrc != null)
                     .Select(st => new object[] { st });
                 Assert.NotEmpty(scriptTags);
                 return scriptTags;
             }
         }
 
+        public static IEnumerable<object[]> SubresourceIntegrityCheckLinkData
+        {
+            get
+            {
+                var linkTags = _linkTags
+                    .Where(st => st.FallbackHRef != null)
+                    .Select(st => new object[] { st });
+                Assert.NotEmpty(linkTags);
+                return linkTags;
+            }
+        }
+
         [Theory]
-        [MemberData(nameof(SubresourceIntegrityCheckData))]
-        public async Task CheckSubresourceIntegrity(ScriptTag scriptTag)
+        [MemberData(nameof(SubresourceIntegrityCheckScriptData))]
+        public async Task CheckScriptSubresourceIntegrity(ScriptTag scriptTag)
         {
             string expectedIntegrity;
             using (var responseStream = await _httpClient.GetStreamAsync(scriptTag.Src))
@@ -67,7 +85,28 @@ namespace Templates.Test
                 expectedIntegrity = "sha256-" + Convert.ToBase64String(hash);
             }
 
-            Assert.Equal(expectedIntegrity, scriptTag.Integrity);
+            if (!expectedIntegrity.Equals(scriptTag.Integrity, StringComparison.OrdinalIgnoreCase))
+            {
+                Assert.False(true, $"Expected {scriptTag.Src} to have Integrity '{expectedIntegrity}' but it had '{scriptTag.Integrity}'.");
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(SubresourceIntegrityCheckLinkData))]
+        public async Task CheckLinkSubresourceIntegrity(LinkTag linkTag)
+        {
+            string expectedIntegrity;
+            using (var responseStream = await _httpClient.GetStreamAsync(linkTag.HRef))
+            using (var alg = SHA256.Create())
+            {
+                var hash = alg.ComputeHash(responseStream);
+                expectedIntegrity = "sha256-" + Convert.ToBase64String(hash);
+            }
+
+            if (!expectedIntegrity.Equals(linkTag.Integrity, StringComparison.OrdinalIgnoreCase))
+            {
+                Assert.False(true, $"Expected {linkTag.HRef} to have Integrity '{expectedIntegrity}' but it had '{linkTag.Integrity}'.");
+            }
         }
 
         public static IEnumerable<object[]> FallbackSrcCheckData
@@ -94,6 +133,19 @@ namespace Templates.Test
             var fallbackSrcContent = GetFileContentFromArchive(scriptTag, fallbackSrc);
 
             Assert.Equal(RemoveLineEndings(cdnContent), RemoveLineEndings(fallbackSrcContent));
+        }
+
+        public struct LinkTag
+        {
+            public string Rel;
+            public string HRef;
+            public string FallbackHRef;
+            public string Integrity;
+
+            public override string ToString()
+            {
+                return $"{HRef}, {Integrity}";
+            }
         }
 
         public struct ScriptTag
@@ -130,9 +182,10 @@ namespace Templates.Test
             return null;
         }
 
-        private static List<ScriptTag> GetScriptTags(string zipFile)
+        private static (List<ScriptTag> scripts, List<LinkTag> links) GetTags(string zipFile)
         {
             var scriptTags = new List<ScriptTag>();
+            var linkTags = new List<LinkTag>();
             using (var zip = new ZipArchive(File.OpenRead(zipFile), ZipArchiveMode.Read, leaveOpen: false))
             {
                 foreach (var entry in zip.Entries)
@@ -143,10 +196,26 @@ namespace Templates.Test
                     }
 
                     IHtmlDocument htmlDocument;
-                    var htmlParser = new HtmlParser();
+                    var options = new HtmlParserOptions
+                    {
+                        IsStrictMode = false,
+                        IsEmbedded = false,
+                    };
+                    var config = Configuration.Default;
+                    var htmlParser = new HtmlParser(options, config);
                     using (var reader = new StreamReader(entry.Open()))
                     {
                         htmlDocument = htmlParser.Parse(entry.Open());
+                    }
+
+                    foreach (IElement link in htmlDocument.Body.GetElementsByTagName("link"))
+                    {
+                        linkTags.Add(new LinkTag
+                        {
+                            HRef = link.GetAttribute("href"),
+                            Integrity = link.GetAttribute("integrity"),
+                            FallbackHRef = link.GetAttribute("asp-fallback-href"),
+                        });
                     }
 
                     foreach (var scriptElement in htmlDocument.Scripts)
@@ -163,9 +232,10 @@ namespace Templates.Test
                             Entry = entry.FullName
                         });
                     }
+
                 }
             }
-            return scriptTags;
+            return (scriptTags, linkTags);
         }
 
         private static string GetSolutionDir()
