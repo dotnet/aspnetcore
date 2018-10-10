@@ -162,8 +162,18 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <_UnsignedJars Include="$(UnsignedPackagesDir)**\*.jar" />
+      <_InputJar Include="$(UnsignedPackagesDir)**\*.jar" />
     </ItemGroup>
+    
+    <!-- Filter already signed .jar -->
+    <FilterSignedPackagesFiles Files="@(_InputJar)">
+      <Output TaskParameter="Signed" ItemName="AlreadySignedJar" />
+      <Output TaskParameter="Unsigned" ItemName="_UnsignedJars" />
+    </FilterSignedPackagesFiles>
+
+    <StupidCopy Condition="'@(AlreadySignedJar)' != ''"
+      SourceFiles="@(AlreadySignedJar)"
+      DestinationFolder="$(PackagesOutputPath)" />
 
     <Microsoft.Build.OOB.ESRP.CreateSignManifests Condition="'@(_UnsignedJars)'!=''"
        ApplicationId="$(ESRPApplicationId)"
@@ -373,7 +383,8 @@
     <ZipArchive
       File="$(OutputFile)"
       SourceFiles="@(Files)"
-      WorkingDirectory="$(ZipRoot)" />
+      WorkingDirectory="$(ZipRoot)"
+      Overwrite="true" />
   </Target>
 
   <Target Name="SignCheck" >
