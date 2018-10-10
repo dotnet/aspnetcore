@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             KnownMethod = VerbId;
             StatusCode = 200;
 
-            var originalPath = RequestUriBuilder.DecodeAndUnescapePath(GetRawUrlInBytes());
+            var originalPath = GetOriginalPath();
 
             if (KnownMethod == HttpApiTypes.HTTP_VERB.HttpVerbOPTIONS && string.Equals(RawTarget, "*", StringComparison.Ordinal))
             {
@@ -170,6 +170,22 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                     resumeWriterThreshold: ResumeWriterTheshold,
                     minimumSegmentSize: MinAllocBufferSize));
             _bodyOutput = new OutputProducer(pipe);
+        }
+
+        private string GetOriginalPath()
+        {
+            // applicationInitialization request might have trailing \0 character included in the length
+            // check and skip it
+            var rawUrlInBytes = GetRawUrlInBytes();
+            if (rawUrlInBytes.Length > 0 && rawUrlInBytes[rawUrlInBytes.Length - 1] == 0)
+            {
+                var newRawUrlInBytes = new byte[rawUrlInBytes.Length - 1];
+                Array.Copy(rawUrlInBytes, newRawUrlInBytes, newRawUrlInBytes.Length);
+                rawUrlInBytes = newRawUrlInBytes;
+            }
+
+            var originalPath = RequestUriBuilder.DecodeAndUnescapePath(rawUrlInBytes);
+            return originalPath;
         }
 
         public int StatusCode

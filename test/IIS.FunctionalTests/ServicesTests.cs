@@ -1,7 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.IO;
 using System.ServiceProcess;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests;
@@ -27,24 +30,44 @@ namespace IIS.FunctionalTests
         [RequiresIIS(IISCapability.ApplicationInitialization)]
         [InlineData(HostingModel.InProcess)]
         [InlineData(HostingModel.OutOfProcess)]
-        public async Task ApplicationInitializationInitializedInProc(HostingModel hostingModel)
+        public async Task ApplicationPreloadStartsApp(HostingModel hostingModel)
         {
-            var baseDeploymentParameters = _fixture.GetBaseDeploymentParameters(hostingModel);
-            EnableAppInitialization(baseDeploymentParameters);
+            var baseDeploymentParameters = _fixture.GetBaseDeploymentParameters(hostingModel, publish: true);
+            baseDeploymentParameters.TransformArguments((args, contentRoot)=> $"{args} CreateFile \"{Path.Combine(contentRoot, "Started.txt")}\"");
+            EnablePreload(baseDeploymentParameters);
 
             var result = await DeployAsync(baseDeploymentParameters);
 
-            // Allow IIS a bit of time to complete starting before we start checking
-            await Task.Delay(100);
-            // There is always a race between which Init request arrives first
-            // retry couple times to see if we ever get the one comming from ApplicationInitialization module
-            await result.HttpClient.RetryRequestAsync("/ApplicationInitialization", async message => await message.Content.ReadAsStringAsync() == "True");
-
+            await Helpers.Retry(async () => await File.ReadAllTextAsync(Path.Combine(result.ContentRoot, "Started.txt")), 10, 200);
             StopServer();
             EventLogHelpers.VerifyEventLogEvent(result, EventLogHelpers.Started(result));
         }
 
-        private static void EnableAppInitialization(IISDeploymentParameters baseDeploymentParameters)
+        [ConditionalTheory]
+        [RequiresIIS(IISCapability.ApplicationInitialization)]
+        [InlineData(HostingModel.InProcess)]
+        [InlineData(HostingModel.OutOfProcess)]
+        public async Task ApplicationInitializationPageIsRequested(HostingModel hostingModel)
+        {
+            var baseDeploymentParameters = _fixture.GetBaseDeploymentParameters(hostingModel, publish: true);
+            EnablePreload(baseDeploymentParameters);
+
+            baseDeploymentParameters.ServerConfigActionList.Add(
+                (config, _) => {
+                    config
+                        .RequiredElement("system.webServer")
+                        .GetOrAdd("applicationInitialization")
+                        .GetOrAdd("add", "initializationPage", "/CreateFile");
+                });
+
+            var result = await DeployAsync(baseDeploymentParameters);
+
+            await Helpers.Retry(async () => await File.ReadAllTextAsync(Path.Combine(result.ContentRoot, "Started.txt")), 10, 200);
+            StopServer();
+            EventLogHelpers.VerifyEventLogEvent(result, EventLogHelpers.Started(result));
+        }
+
+        private static void EnablePreload(IISDeploymentParameters baseDeploymentParameters)
         {
             baseDeploymentParameters.ServerConfigActionList.Add(
                 (config, _) => {
@@ -60,11 +83,6 @@ namespace IIS.FunctionalTests
                         .RequiredElement("site")
                         .RequiredElement("application")
                         .SetAttributeValue("preloadEnabled", true);
-
-                    config
-                        .RequiredElement("system.webServer")
-                        .GetOrAdd("applicationInitialization")
-                        .GetOrAdd("add", "initializationPage", "/ApplicationInitialization?IISInit=true");
                 });
 
             baseDeploymentParameters.EnableModule("ApplicationInitializationModule", "%IIS_BIN%\\warmup.dll");

@@ -159,9 +159,16 @@ REQUEST_NOTIFICATION_STATUS ASPNET_CORE_PROXY_MODULE::HandleNotificationStatus(R
 
 void ASPNET_CORE_PROXY_MODULE::SetupDisconnectHandler(IHttpContext * pHttpContext)
 {
-    auto moduleContainer = pHttpContext
-        ->GetConnection()
-        ->GetModuleContextContainer();
+    auto connection = pHttpContext
+        ->GetConnection();
+
+    // connection might be null in when applicationInitialization is running
+    if (connection == nullptr)
+    {
+        return;
+    }
+
+    auto moduleContainer = connection->GetModuleContextContainer();
 
     #pragma warning( push )
     #pragma warning ( disable : 26466 ) // Disable "Don't use static_cast downcasts". We build without RTTI support so dynamic_cast is not available

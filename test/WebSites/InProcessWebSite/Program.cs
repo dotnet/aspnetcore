@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -21,7 +22,9 @@ namespace TestSite
             var mode = args.FirstOrDefault();
             switch (mode)
             {
-                // Semicolons are appended to env variables; removing them.
+                case "CreateFile":
+                    File.WriteAllText(args[1], "");
+                    return StartServer();
                 case "CheckLargeStdOutWrites":
                     Console.WriteLine(new string('a', 30000));
                     break;
