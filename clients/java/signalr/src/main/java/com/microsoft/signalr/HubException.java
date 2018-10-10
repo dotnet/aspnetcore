@@ -3,7 +3,7 @@
 
 package com.microsoft.signalr;
 
-public class HubException extends Exception {
+public class HubException extends RuntimeException {
     private static final long serialVersionUID = -572019264269821519L;
 
     public HubException() {

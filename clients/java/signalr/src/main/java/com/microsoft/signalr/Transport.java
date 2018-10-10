@@ -10,7 +10,7 @@ interface Transport {
     CompletableFuture<Void> start(String url);
     CompletableFuture<Void> send(String message);
     void setOnReceive(OnReceiveCallBack callback);
-    void onReceive(String message) throws Exception;
+    void onReceive(String message);
     void setOnClose(Consumer<String> onCloseCallback);
     CompletableFuture<Void> stop();
 }

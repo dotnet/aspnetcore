@@ -24,7 +24,7 @@ class HubConnectionTest {
     private static final String RECORD_SEPARATOR = "\u001e";
 
     @Test
-    public void checkHubConnectionState() throws Exception {
+    public void checkHubConnectionState() {
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com");
         hubConnection.start().blockingAwait(1000, TimeUnit.MILLISECONDS);
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
@@ -34,7 +34,7 @@ class HubConnectionTest {
     }
 
     @Test
-    public void transportCloseTriggersStopInHubConnection() throws Exception {
+    public void transportCloseTriggersStopInHubConnection() {
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
         hubConnection.start().blockingAwait(1000, TimeUnit.MILLISECONDS);
@@ -45,7 +45,7 @@ class HubConnectionTest {
     }
 
     @Test
-    public void transportCloseWithErrorTriggersStopInHubConnection() throws Exception {
+    public void transportCloseWithErrorTriggersStopInHubConnection() {
         MockTransport mockTransport = new MockTransport();
         AtomicReference<String> message = new AtomicReference<>();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
@@ -90,7 +90,7 @@ class HubConnectionTest {
     }
 
     @Test
-    public void hubConnectionClosesAfterCloseMessage() throws Exception {
+    public void hubConnectionClosesAfterCloseMessage() {
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
 
@@ -104,7 +104,7 @@ class HubConnectionTest {
     }
 
     @Test
-    public void invalidHandShakeResponse() throws Exception {
+    public void invalidHandShakeResponse() {
         MockTransport mockTransport = new MockTransport(false);
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
 
@@ -126,7 +126,7 @@ class HubConnectionTest {
     }
 
     @Test
-    public void registeringMultipleHandlersAndBothGetTriggered() throws Exception {
+    public void registeringMultipleHandlersAndBothGetTriggered() {
         AtomicReference<Double> value = new AtomicReference<>(0.0);
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
@@ -151,7 +151,7 @@ class HubConnectionTest {
     }
 
     @Test
-    public void removeHandlerByName() throws Exception {
+    public void removeHandlerByName() {
         AtomicReference<Double> value = new AtomicReference<>(0.0);
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
@@ -177,7 +177,7 @@ class HubConnectionTest {
     }
 
     @Test
-    public void addAndRemoveHandlerImmediately() throws Exception {
+    public void addAndRemoveHandlerImmediately() {
         AtomicReference<Double> value = new AtomicReference<>(0.0);
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
@@ -201,7 +201,7 @@ class HubConnectionTest {
     }
 
     @Test
-    public void removingMultipleHandlersWithOneCallToRemove() throws Exception {
+    public void removingMultipleHandlersWithOneCallToRemove() {
         AtomicReference<Double> value = new AtomicReference<>(0.0);
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
@@ -232,7 +232,7 @@ class HubConnectionTest {
     }
 
     @Test
-    public void removeHandlerWithUnsubscribe() throws Exception {
+    public void removeHandlerWithUnsubscribe() {
         AtomicReference<Double> value = new AtomicReference<>(0.0);
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
@@ -264,7 +264,7 @@ class HubConnectionTest {
     }
 
     @Test
-    public void unsubscribeTwice() throws Exception {
+    public void unsubscribeTwice() {
         AtomicReference<Double> value = new AtomicReference<>(0.0);
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
@@ -297,7 +297,7 @@ class HubConnectionTest {
     }
 
     @Test
-    public void removeSingleHandlerWithUnsubscribe() throws Exception {
+    public void removeSingleHandlerWithUnsubscribe() {
         AtomicReference<Double> value = new AtomicReference<>(0.0);
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
@@ -326,7 +326,7 @@ class HubConnectionTest {
     }
 
     @Test
-    public void addAndRemoveHandlerImmediatelyWithSubscribe() throws Exception {
+    public void addAndRemoveHandlerImmediatelyWithSubscribe() {
         AtomicReference<Double> value = new AtomicReference<>(0.0);
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
@@ -350,7 +350,7 @@ class HubConnectionTest {
     }
 
     @Test
-    public void registeringMultipleHandlersThatTakeParamsAndBothGetTriggered() throws Exception {
+    public void registeringMultipleHandlersThatTakeParamsAndBothGetTriggered() {
         AtomicReference<Double> value = new AtomicReference<>(0.0);
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
@@ -369,7 +369,7 @@ class HubConnectionTest {
     }
 
     @Test
-    public void invokeWaitsForCompletionMessage() throws Exception {
+    public void invokeWaitsForCompletionMessage() {
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
 
@@ -387,7 +387,7 @@ class HubConnectionTest {
     }
 
     @Test
-    public void multipleInvokesWaitForOwnCompletionMessage() throws Exception {
+    public void multipleInvokesWaitForOwnCompletionMessage() {
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
 
@@ -413,7 +413,7 @@ class HubConnectionTest {
     }
 
     @Test
-    public void invokeWorksForPrimitiveTypes() throws Exception {
+    public void invokeWorksForPrimitiveTypes() {
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
 
@@ -432,7 +432,7 @@ class HubConnectionTest {
     }
 
     @Test
-    public void completionMessageCanHaveError() throws Exception {
+    public void completionMessageCanHaveError() {
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
 
@@ -457,7 +457,7 @@ class HubConnectionTest {
     }
 
     @Test
-    public void stopCancelsActiveInvokes() throws Exception {
+    public void stopCancelsActiveInvokes() {
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
 
@@ -482,7 +482,7 @@ class HubConnectionTest {
     }
 
     @Test
-    public void sendWithNoParamsTriggersOnHandler() throws Exception {
+    public void sendWithNoParamsTriggersOnHandler() {
         AtomicReference<Integer> value = new AtomicReference<>(0);
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
@@ -500,7 +500,7 @@ class HubConnectionTest {
     }
 
     @Test
-    public void sendWithParamTriggersOnHandler() throws Exception {
+    public void sendWithParamTriggersOnHandler() {
         AtomicReference<String> value = new AtomicReference<>();
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
@@ -519,7 +519,7 @@ class HubConnectionTest {
     }
 
     @Test
-    public void sendWithTwoParamsTriggersOnHandler() throws Exception {
+    public void sendWithTwoParamsTriggersOnHandler() {
         AtomicReference<String> value1 = new AtomicReference<>();
         AtomicReference<Double> value2 = new AtomicReference<>();
 
@@ -544,7 +544,7 @@ class HubConnectionTest {
     }
 
     @Test
-    public void sendWithThreeParamsTriggersOnHandler() throws Exception {
+    public void sendWithThreeParamsTriggersOnHandler() {
         AtomicReference<String> value1 = new AtomicReference<>();
         AtomicReference<String> value2 = new AtomicReference<>();
         AtomicReference<String> value3 = new AtomicReference<>();
@@ -573,7 +573,7 @@ class HubConnectionTest {
     }
 
     @Test
-    public void sendWithFourParamsTriggersOnHandler() throws Exception {
+    public void sendWithFourParamsTriggersOnHandler() {
         AtomicReference<String> value1 = new AtomicReference<>();
         AtomicReference<String> value2 = new AtomicReference<>();
         AtomicReference<String> value3 = new AtomicReference<>();
@@ -605,7 +605,7 @@ class HubConnectionTest {
     }
 
     @Test
-    public void sendWithFiveParamsTriggersOnHandler() throws Exception {
+    public void sendWithFiveParamsTriggersOnHandler()  {
         AtomicReference<String> value1 = new AtomicReference<>();
         AtomicReference<String> value2 = new AtomicReference<>();
         AtomicReference<String> value3 = new AtomicReference<>();
@@ -641,7 +641,7 @@ class HubConnectionTest {
     }
 
     @Test
-    public void sendWithSixParamsTriggersOnHandler() throws Exception {
+    public void sendWithSixParamsTriggersOnHandler()  {
         AtomicReference<String> value1 = new AtomicReference<>();
         AtomicReference<String> value2 = new AtomicReference<>();
         AtomicReference<String> value3 = new AtomicReference<>();
@@ -681,7 +681,7 @@ class HubConnectionTest {
     }
 
     @Test
-    public void sendWithSevenParamsTriggersOnHandler() throws Exception {
+    public void sendWithSevenParamsTriggersOnHandler()  {
         AtomicReference<String> value1 = new AtomicReference<>();
         AtomicReference<String> value2 = new AtomicReference<>();
         AtomicReference<String> value3 = new AtomicReference<>();
@@ -725,7 +725,7 @@ class HubConnectionTest {
     }
 
     @Test
-    public void sendWithEightParamsTriggersOnHandler() throws Exception {
+    public void sendWithEightParamsTriggersOnHandler()  {
         AtomicReference<String> value1 = new AtomicReference<>();
         AtomicReference<String> value2 = new AtomicReference<>();
         AtomicReference<String> value3 = new AtomicReference<>();
@@ -778,7 +778,7 @@ class HubConnectionTest {
     }
 
     @Test
-    public void sendWithCustomObjectTriggersOnHandler() throws Exception {
+    public void sendWithCustomObjectTriggersOnHandler()  {
         AtomicReference<Custom> value1 = new AtomicReference<>();
 
         MockTransport mockTransport = new MockTransport();
@@ -803,7 +803,7 @@ class HubConnectionTest {
     }
 
     @Test
-    public void receiveHandshakeResponseAndMessage() throws Exception {
+    public void receiveHandshakeResponseAndMessage()  {
         AtomicReference<Double> value = new AtomicReference<Double>(0.0);
         MockTransport mockTransport = new MockTransport(false);
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
@@ -825,7 +825,7 @@ class HubConnectionTest {
     }
 
     @Test
-    public void onClosedCallbackRunsWhenStopIsCalled() throws Exception {
+    public void onClosedCallbackRunsWhenStopIsCalled()  {
         AtomicReference<String> value1 = new AtomicReference<>();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com");
         hubConnection.start();
@@ -840,7 +840,7 @@ class HubConnectionTest {
     }
 
     @Test
-    public void multipleOnClosedCallbacksRunWhenStopIsCalled() throws Exception {
+    public void multipleOnClosedCallbacksRunWhenStopIsCalled()  {
         AtomicReference<String> value1 = new AtomicReference<>();
         AtomicReference<String> value2 = new AtomicReference<>();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com");
@@ -866,7 +866,7 @@ class HubConnectionTest {
     }
 
     @Test
-    public void hubConnectionClosesAndRunsOnClosedCallbackAfterCloseMessageWithError() throws Exception {
+    public void hubConnectionClosesAndRunsOnClosedCallbackAfterCloseMessageWithError()  {
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
         hubConnection.onClosed((ex) -> {
@@ -882,7 +882,7 @@ class HubConnectionTest {
     }
 
     @Test
-    public void callingStartOnStartedHubConnectionNoOps() throws Exception {
+    public void callingStartOnStartedHubConnectionNoOps()  {
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com");
         hubConnection.start();
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
@@ -895,16 +895,16 @@ class HubConnectionTest {
     }
 
     @Test
-    public void cannotSendBeforeStart() throws Exception {
+    public void cannotSendBeforeStart()  {
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com");
         assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
 
-        Throwable exception = assertThrows(HubException.class, () -> hubConnection.send("inc"));
+        Throwable exception = assertThrows(RuntimeException.class, () -> hubConnection.send("inc"));
         assertEquals("The 'send' method cannot be called if the connection is not active", exception.getMessage());
     }
 
     @Test
-    public void errorWhenReceivingInvokeWithIncorrectArgumentLength() throws Exception {
+    public void errorWhenReceivingInvokeWithIncorrectArgumentLength()  {
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
         hubConnection.on("Send", (s) -> {
@@ -938,7 +938,7 @@ class HubConnectionTest {
     }
 
     @Test
-    public void negotiateThatRedirectsForeverFailsAfter100Tries() throws InterruptedException, TimeoutException, Exception {
+    public void negotiateThatRedirectsForeverFailsAfter100Tries() {
         TestHttpClient client = new TestHttpClient().on("POST", "http://example.com/negotiate",
                 (req) -> CompletableFuture.completedFuture(new HttpResponse(200, "", "{\"url\":\"http://example.com\"}")));
 
@@ -953,7 +953,7 @@ class HubConnectionTest {
     }
 
     @Test
-    public void afterSuccessfulNegotiateConnectsWithTransport() throws InterruptedException, TimeoutException, Exception {
+    public void afterSuccessfulNegotiateConnectsWithTransport() {
         TestHttpClient client = new TestHttpClient().on("POST", "http://example.com/negotiate",
                 (req) -> CompletableFuture.completedFuture(new HttpResponse(200, "",
                         "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
@@ -991,7 +991,7 @@ class HubConnectionTest {
     }
 
     @Test
-    public void negotiateRedirectIsFollowed() throws Exception {
+    public void negotiateRedirectIsFollowed()  {
         TestHttpClient client = new TestHttpClient().on("POST", "http://example.com/negotiate",
                 (req) -> CompletableFuture.completedFuture(new HttpResponse(200, "", "{\"url\":\"http://testexample.com/\"}")))
                 .on("POST", "http://testexample.com/negotiate",
@@ -1011,8 +1011,7 @@ class HubConnectionTest {
     }
 
     @Test
-    public void accessTokenProviderIsUsedForNegotiate()
-            throws InterruptedException, ExecutionException, TimeoutException, Exception {
+    public void accessTokenProviderIsUsedForNegotiate() {
         AtomicReference<String> token = new AtomicReference<>();
         TestHttpClient client = new TestHttpClient()
                 .on("POST", "http://example.com/negotiate",
@@ -1038,7 +1037,7 @@ class HubConnectionTest {
     }
 
     @Test
-    public void accessTokenProviderIsOverriddenFromRedirectNegotiate() throws Exception {
+    public void accessTokenProviderIsOverriddenFromRedirectNegotiate()  {
         AtomicReference<String> token = new AtomicReference<>();
         TestHttpClient client = new TestHttpClient()
             .on("POST", "http://example.com/negotiate", (req) -> CompletableFuture.completedFuture(new HttpResponse(200, "", "{\"url\":\"http://testexample.com/\",\"accessToken\":\"newToken\"}")))
@@ -1065,7 +1064,7 @@ class HubConnectionTest {
     }
 
     @Test
-    public void connectionTimesOutIfServerDoesNotSendMessage() throws Exception {
+    public void connectionTimesOutIfServerDoesNotSendMessage() throws InterruptedException, ExecutionException, TimeoutException {
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com");
         hubConnection.setServerTimeout(Duration.ofMillis(1));
         hubConnection.setTickRate(Duration.ofMillis(1));
@@ -1080,7 +1079,7 @@ class HubConnectionTest {
     }
 
     @Test
-    public void connectionSendsPingsRegularly() throws InterruptedException, ExecutionException, TimeoutException, Exception {
+    public void connectionSendsPingsRegularly() throws InterruptedException {
         MockTransport mockTransport = new MockTransport(true, false);
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
         hubConnection.setKeepAliveInterval(Duration.ofMillis(1));
@@ -1099,7 +1098,7 @@ class HubConnectionTest {
     }
 
     @Test
-    public void hubConnectionCanBeStartedAfterBeingStopped() throws Exception {
+    public void hubConnectionCanBeStartedAfterBeingStopped()  {
         MockTransport transport = new MockTransport();
         HubConnection hubConnection = HubConnectionBuilder
                 .create("http://example.com")
@@ -1118,7 +1117,7 @@ class HubConnectionTest {
     }
 
     @Test
-    public void hubConnectionCanBeStartedAfterBeingStoppedAndRedirected() throws Exception {
+    public void hubConnectionCanBeStartedAfterBeingStoppedAndRedirected()  {
         MockTransport mockTransport = new MockTransport();
         TestHttpClient client = new TestHttpClient()
                 .on("POST", "http://example.com/negotiate", (req) -> CompletableFuture

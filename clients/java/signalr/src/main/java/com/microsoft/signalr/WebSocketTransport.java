@@ -68,7 +68,7 @@ class WebSocketTransport implements Transport {
     }
 
     @Override
-    public void onReceive(String message) throws Exception {
+    public void onReceive(String message) {
         this.onReceiveCallBack.invoke(message);
     }
 

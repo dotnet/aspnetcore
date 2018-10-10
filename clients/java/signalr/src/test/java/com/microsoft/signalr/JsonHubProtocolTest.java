@@ -39,7 +39,7 @@ class JsonHubProtocolTest {
     }
 
     @Test
-    public void parsePingMessage() throws Exception {
+    public void parsePingMessage() {
         String stringifiedMessage = "{\"type\":6}\u001E";
         TestBinder binder = new TestBinder(PingMessage.getInstance());
 
@@ -51,7 +51,7 @@ class JsonHubProtocolTest {
     }
 
     @Test
-    public void parseCloseMessage() throws Exception {
+    public void parseCloseMessage() {
         String stringifiedMessage = "{\"type\":7}\u001E";
         TestBinder binder = new TestBinder(new CloseMessage());
 
@@ -69,7 +69,7 @@ class JsonHubProtocolTest {
     }
 
     @Test
-    public void parseCloseMessageWithError() throws Exception {
+    public void parseCloseMessageWithError() {
         String stringifiedMessage = "{\"type\":7,\"error\": \"There was an error\"}\u001E";
         TestBinder binder = new TestBinder(new CloseMessage("There was an error"));
 
@@ -87,7 +87,7 @@ class JsonHubProtocolTest {
     }
 
     @Test
-    public void parseSingleMessage() throws Exception {
+    public void parseSingleMessage() {
         String stringifiedMessage = "{\"type\":1,\"target\":\"test\",\"arguments\":[42]}\u001E";
         TestBinder binder = new TestBinder(new InvocationMessage("1", "test", new Object[] { 42 }));
 
@@ -109,7 +109,7 @@ class JsonHubProtocolTest {
     }
 
     @Test
-    public void parseSingleUnsupportedStreamItemMessage() throws Exception {
+    public void parseSingleUnsupportedStreamItemMessage() {
         String stringifiedMessage = "{\"type\":2,\"Id\":1,\"Item\":42}\u001E";
         TestBinder binder = new TestBinder(null);
 
@@ -118,7 +118,7 @@ class JsonHubProtocolTest {
     }
 
     @Test
-    public void parseSingleUnsupportedStreamInvocationMessage() throws Exception {
+    public void parseSingleUnsupportedStreamInvocationMessage() {
         String stringifiedMessage = "{\"type\":4,\"Id\":1,\"target\":\"test\",\"arguments\":[42]}\u001E";
         TestBinder binder = new TestBinder(new StreamInvocationMessage("1", "test", new Object[] { 42 }));
 
@@ -127,7 +127,7 @@ class JsonHubProtocolTest {
     }
 
     @Test
-    public void parseSingleUnsupportedCancelInvocationMessage() throws Exception {
+    public void parseSingleUnsupportedCancelInvocationMessage() {
         String stringifiedMessage = "{\"type\":5,\"invocationId\":123}\u001E";
         TestBinder binder = new TestBinder(null);
 
@@ -136,7 +136,7 @@ class JsonHubProtocolTest {
     }
 
     @Test
-    public void parseTwoMessages() throws Exception {
+    public void parseTwoMessages() {
         String twoMessages = "{\"type\":1,\"target\":\"one\",\"arguments\":[42]}\u001E{\"type\":1,\"target\":\"two\",\"arguments\":[43]}\u001E";
         TestBinder binder = new TestBinder(new InvocationMessage("1", "one", new Object[] { 42 }));
 
@@ -167,7 +167,7 @@ class JsonHubProtocolTest {
     }
 
     @Test
-    public void parseSingleMessageMutipleArgs() throws Exception {
+    public void parseSingleMessageMutipleArgs() {
         String stringifiedMessage = "{\"type\":1,\"target\":\"test\",\"arguments\":[42, 24]}\u001E";
         TestBinder binder = new TestBinder(new InvocationMessage("1", "test", new Object[] { 42, 24 }));
 
@@ -186,7 +186,7 @@ class JsonHubProtocolTest {
     }
 
     @Test
-    public void parseMessageWithOutOfOrderProperties() throws Exception {
+    public void parseMessageWithOutOfOrderProperties() {
         String stringifiedMessage = "{\"arguments\":[42, 24],\"type\":1,\"target\":\"test\"}\u001E";
         TestBinder binder = new TestBinder(new InvocationMessage("1", "test", new Object[] { 42, 24 }));
 
@@ -205,7 +205,7 @@ class JsonHubProtocolTest {
     }
 
     @Test
-    public void parseCompletionMessageWithOutOfOrderProperties() throws Exception {
+    public void parseCompletionMessageWithOutOfOrderProperties() {
         String stringifiedMessage = "{\"type\":3,\"result\":42,\"invocationId\":\"1\"}\u001E";
         TestBinder binder = new TestBinder(new CompletionMessage("1", 42, null));
 
@@ -220,7 +220,7 @@ class JsonHubProtocolTest {
     }
 
     @Test
-    public void errorWhileParsingTooManyArgumentsWithOutOfOrderProperties() throws Exception {
+    public void errorWhileParsingTooManyArgumentsWithOutOfOrderProperties() {
         String stringifiedMessage = "{\"arguments\":[42, 24],\"type\":1,\"target\":\"test\"}\u001E";
         TestBinder binder = new TestBinder(new InvocationMessage(null, "test", new Object[] { 42 }));
 
@@ -229,7 +229,7 @@ class JsonHubProtocolTest {
     }
 
     @Test
-    public void errorWhileParsingTooManyArguments() throws Exception {
+    public void errorWhileParsingTooManyArguments() {
         String stringifiedMessage = "{\"type\":1,\"target\":\"test\",\"arguments\":[42, 24]}\u001E";
         TestBinder binder = new TestBinder(new InvocationMessage(null, "test", new Object[] { 42 }));
 
@@ -238,7 +238,7 @@ class JsonHubProtocolTest {
     }
 
     @Test
-    public void errorWhileParsingTooFewArguments() throws Exception {
+    public void errorWhileParsingTooFewArguments() {
         String stringifiedMessage = "{\"type\":1,\"target\":\"test\",\"arguments\":[42]}\u001E";
         TestBinder binder = new TestBinder(new InvocationMessage(null, "test", new Object[] { 42, 24 }));
 
@@ -247,7 +247,7 @@ class JsonHubProtocolTest {
     }
 
     @Test
-    public void errorWhileParsingIncompleteMessage() throws Exception {
+    public void errorWhileParsingIncompleteMessage() {
         String stringifiedMessage = "{\"type\":1,\"target\":\"test\",\"arguments\":";
         TestBinder binder = new TestBinder(new InvocationMessage(null, "test", new Object[] { 42, 24 }));
 

@@ -3,7 +3,6 @@
 
 package com.microsoft.signalr;
 
-import java.io.IOException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Date;
@@ -197,12 +196,7 @@ public class HubConnection {
             if (response.getStatusCode() != 200) {
                 throw new RuntimeException(String.format("Unexpected status code returned from negotiate: %d %s.", response.getStatusCode(), response.getStatusText()));
             }
-            NegotiateResponse negotiateResponse;
-            try {
-                negotiateResponse = new NegotiateResponse(response.getContent());
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+            NegotiateResponse negotiateResponse = new NegotiateResponse(response.getContent());
 
             if (negotiateResponse.getError() != null) {
                 throw new RuntimeException(negotiateResponse.getError());
@@ -409,18 +403,18 @@ public class HubConnection {
      *
      * @param method The name of the server method to invoke.
      * @param args   The arguments to be passed to the method.
-     * @throws Exception If there was an error while sending.
      */
-    public void send(String method, Object... args) throws Exception {
+    public void send(String method, Object... args) {
         if (hubConnectionState != HubConnectionState.CONNECTED) {
-            throw new HubException("The 'send' method cannot be called if the connection is not active");
+            throw new RuntimeException("The 'send' method cannot be called if the connection is not active");
         }
 
         InvocationMessage invocationMessage = new InvocationMessage(null, method, args);
         sendHubMessage(invocationMessage);
     }
 
-    public <T> Single<T> invoke(Class<T> returnType, String method, Object... args) throws Exception {
+    @SuppressWarnings("unchecked")
+    public <T> Single<T> invoke(Class<T> returnType, String method, Object... args) {
         String id = connectionState.getNextInvocationId();
         InvocationMessage invocationMessage = new InvocationMessage(id, method, args);
 
@@ -451,7 +445,7 @@ public class HubConnection {
         return Single.fromFuture(future);
     }
 
-    private void sendHubMessage(HubMessage message) throws Exception {
+    private void sendHubMessage(HubMessage message) {
         String serializedMessage = protocol.writeMessage(message);
         if (message.getMessageType() == HubMessageType.INVOCATION) {
             logger.log(LogLevel.Debug, "Sending %s message '%s'.", message.getMessageType().name(), ((InvocationMessage)message).getInvocationId());
@@ -777,7 +771,7 @@ public class HubConnection {
         }
 
         @Override
-        public List<Class<?>> getParameterTypes(String methodName) throws Exception {
+        public List<Class<?>> getParameterTypes(String methodName) {
             List<InvocationHandler> handlers = connection.handlers.get(methodName);
             if (handlers == null) {
                 logger.log(LogLevel.Warning, "Failed to find handler for '%s' method.", methodName);
@@ -785,7 +779,7 @@ public class HubConnection {
             }
 
             if (handlers.isEmpty()) {
-                throw new Exception(String.format("There are no callbacks registered for the method '%s'.", methodName));
+                throw new RuntimeException(String.format("There are no callbacks registered for the method '%s'.", methodName));
             }
 
             return handlers.get(0).getClasses();

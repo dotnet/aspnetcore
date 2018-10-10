@@ -31,7 +31,7 @@ class MockTransport implements Transport {
     }
 
     @Override
-    public CompletableFuture start(String url) {
+    public CompletableFuture<Void> start(String url) {
         this.url = url;
         if (autoHandshake) {
             try {
@@ -44,7 +44,7 @@ class MockTransport implements Transport {
     }
 
     @Override
-    public CompletableFuture send(String message) {
+    public CompletableFuture<Void> send(String message) {
         if (!(ignorePings && message.equals("{\"type\":6}" + RECORD_SEPARATOR))) {
             sentMessages.add(message);
         }
@@ -57,7 +57,7 @@ class MockTransport implements Transport {
     }
 
     @Override
-    public void onReceive(String message) throws Exception {
+    public void onReceive(String message) {
         this.onReceiveCallBack.invoke(message);
     }
 
@@ -67,7 +67,7 @@ class MockTransport implements Transport {
     }
 
     @Override
-    public CompletableFuture stop() {
+    public CompletableFuture<Void> stop() {
         onClose.accept(null);
         return CompletableFuture.completedFuture(null);
     }
@@ -76,7 +76,7 @@ class MockTransport implements Transport {
         onClose.accept(errorMessage);
     }
 
-    public void receiveMessage(String message) throws Exception {
+    public void receiveMessage(String message) {
         this.onReceive(message);
     }
 

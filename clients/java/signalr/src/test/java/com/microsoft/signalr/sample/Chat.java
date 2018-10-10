@@ -10,7 +10,7 @@ import com.microsoft.signalr.HubConnectionBuilder;
 import com.microsoft.signalr.LogLevel;
 
 public class Chat {
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         System.out.println("Enter the URL of the SignalR Chat you want to join");
         Scanner reader = new Scanner(System.in);  // Reading from System.in
         String input = reader.nextLine();
