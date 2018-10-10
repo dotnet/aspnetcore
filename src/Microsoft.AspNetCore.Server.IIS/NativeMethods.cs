@@ -13,6 +13,7 @@ namespace Microsoft.AspNetCore.Server.IIS
         internal const int HR_OK = 0;
         internal const int ERROR_NOT_FOUND = unchecked((int)0x80070490);
         internal const int ERROR_OPERATION_ABORTED = unchecked((int)0x800703E3);
+        internal const int ERROR_INVALID_PARAMETER = unchecked((int)0x80070057);
         internal const int COR_E_IO = unchecked((int)0x80131620);
 
         private const string KERNEL32 = "kernel32.dll";
@@ -262,9 +263,10 @@ namespace Microsoft.AspNetCore.Server.IIS
         public static bool HttpTryCancelIO(IntPtr pInProcessHandler)
         {
             var hr = http_cancel_io(pInProcessHandler);
-            // Async operation finished
+            // ERROR_NOT_FOUND is expected if async operation finished
             // https://msdn.microsoft.com/en-us/library/windows/desktop/aa363792(v=vs.85).aspx
-            if (hr == ERROR_NOT_FOUND)
+            // ERROR_INVALID_PARAMETER is expected for "fake" requests like applicationInitialization ones
+            if (hr == ERROR_NOT_FOUND || hr ==  ERROR_INVALID_PARAMETER)
             {
                 return false;
             }

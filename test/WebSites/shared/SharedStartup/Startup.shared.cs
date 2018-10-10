@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -72,15 +73,11 @@ namespace TestSite
             await context.Response.WriteAsync(_waitingRequestCount.ToString());
         }
 
-        private static bool _applicationInitializationCalled;
-
-        public async Task ApplicationInitialization(HttpContext context)
+        public Task CreateFile(HttpContext context)
         {
-            if (context.Request.Query["IISInit"] == "true")
-            {
-                _applicationInitializationCalled = true;
-            }
-            await context.Response.WriteAsync(_applicationInitializationCalled.ToString());
+            var hostingEnv = context.RequestServices.GetService<IHostingEnvironment>();
+            File.WriteAllText(System.IO.Path.Combine(hostingEnv.ContentRootPath, "Started.txt"), "");
+            return Task.CompletedTask;
         }
 
         public Task OverrideServer(HttpContext context)

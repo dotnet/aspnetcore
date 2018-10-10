@@ -60,6 +60,7 @@ class ASPNET_CORE_PROXY_MODULE : NonCopyable, public CHttpModule
     std::unique_ptr<IREQUEST_HANDLER, IREQUEST_HANDLER_DELETER> m_pHandler;
     HTTP_MODULE_ID m_moduleId;
     DisconnectHandler * m_pDisconnectHandler;
+    SRWLOCK m_requestLock {};
 };
 
 class ASPNET_CORE_PROXY_MODULE_FACTORY : NonCopyable, public IHttpModuleFactory
