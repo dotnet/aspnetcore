@@ -110,7 +110,7 @@ try {
                         Invoke-Block { & git @gitConfigArgs push origin HEAD:$newBranch}
                     }
                     catch {
-                        Write-Warning "Error in pushing $newBranch: $_"
+                        Write-Warning "Error in pushing $($newBranch): $_"
                         $build_errors += @{
                             Repo    = $submodule.module
                             Message = $_
