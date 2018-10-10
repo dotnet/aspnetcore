@@ -127,7 +127,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             Assert.Equal("The client has disconnected", exception.Message);
         }
 
-        [ConditionalFact(Skip = "See: https://github.com/aspnet/IISIntegration/issues/1075")]
+        [ConditionalFact]
         public async Task WriterThrowsCancelledException()
         {
             var requestStartedCompletionSource = CreateTaskCompletionSource();
@@ -136,7 +136,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             Exception exception = null;
             var cancellationTokenSource = new CancellationTokenSource();
 
-            var data = new byte[1024];
+            var data = new byte[1];
             using (var testServer = await TestServer.Create(async ctx =>
             {
                 requestStartedCompletionSource.SetResult(true);
@@ -167,7 +167,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 Assert.IsType<OperationCanceledException>(exception);
             }
         }
-        [ConditionalFact(Skip = "See: https://github.com/aspnet/IISIntegration/issues/1075")]
+
+        [ConditionalFact]
         public async Task ReaderThrowsCancelledException()
         {
             var requestStartedCompletionSource = CreateTaskCompletionSource();
