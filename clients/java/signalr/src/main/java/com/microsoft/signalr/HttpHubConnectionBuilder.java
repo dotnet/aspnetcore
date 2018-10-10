@@ -6,13 +6,15 @@ package com.microsoft.signalr;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 
+import io.reactivex.Single;
+
 public class HttpHubConnectionBuilder {
     private String url;
     private Transport transport;
     private Logger logger;
     private HttpClient httpClient;
     private boolean skipNegotiate;
-    private Supplier<CompletableFuture<String>> accessTokenProvider;
+    private Single<String> accessTokenProvider;
 
     HttpHubConnectionBuilder(String url) {
         this.url = url;
@@ -39,7 +41,7 @@ public class HttpHubConnectionBuilder {
         return this;
     }
 
-    public HttpHubConnectionBuilder withAccessTokenProvider(Supplier<CompletableFuture<String>> accessTokenProvider) {
+    public HttpHubConnectionBuilder withAccessTokenProvider(Single<String> accessTokenProvider) {
         this.accessTokenProvider = accessTokenProvider;
         return this;
     }

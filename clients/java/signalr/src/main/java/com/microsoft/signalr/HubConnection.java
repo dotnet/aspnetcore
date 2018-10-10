@@ -9,12 +9,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
+
+import io.reactivex.Completable;
+import io.reactivex.Single;
 
 public class HubConnection {
     private static final String RECORD_SEPARATOR = "\u001e";
@@ -32,13 +33,13 @@ public class HubConnection {
     private Logger logger;
     private List<Consumer<Exception>> onClosedCallbackList;
     private boolean skipNegotiate;
-    private Supplier<CompletableFuture<String>> accessTokenProvider;
+    private Single<String> accessTokenProvider;
     private Map<String, String> headers = new HashMap<>();
     private ConnectionState connectionState = null;
     private HttpClient httpClient;
     private String stopError;
 
-    HubConnection(String url, Transport transport, boolean skipNegotiate, Logger logger, HttpClient httpClient, Supplier<CompletableFuture<String>> accessTokenProvider) {
+    HubConnection(String url, Transport transport, boolean skipNegotiate, Logger logger, HttpClient httpClient, Single<String> accessTokenProvider) {
         if (url == null || url.isEmpty()) {
             throw new IllegalArgumentException("A valid url is required.");
         }
@@ -49,7 +50,7 @@ public class HubConnection {
         if (accessTokenProvider != null) {
             this.accessTokenProvider = accessTokenProvider;
         } else {
-            this.accessTokenProvider = () -> CompletableFuture.completedFuture(null);
+            this.accessTokenProvider = Single.just("");
         }
 
         if (httpClient != null) {
@@ -153,14 +154,11 @@ public class HubConnection {
             }
 
             if (negotiateResponse.getAccessToken() != null) {
-                this.accessTokenProvider = () -> CompletableFuture.completedFuture(negotiateResponse.getAccessToken());
+                this.accessTokenProvider = Single.just(negotiateResponse.getAccessToken());
                 String token = "";
-                try {
-                    // We know the future is already completed in this case
-                    // It's fine to call get() on it.
-                    token = this.accessTokenProvider.get().get();
-                } catch (InterruptedException | ExecutionException e) {
-                }
+                // We know the Single is non blocking in this case
+                // It's fine to call blockingGet() on it.
+                token = this.accessTokenProvider.blockingGet();
                 this.headers.put("Authorization", "Bearer " + token);
             }
 
@@ -179,20 +177,21 @@ public class HubConnection {
 
     /**
      * Starts a connection to the server.
-     * @return A completable future that completes when the connection has been established.
+     * @return A Completable that completes when the connection has been established.
      */
-    public CompletableFuture<Void> start() {
+    public Completable start() {
         if (hubConnectionState != HubConnectionState.DISCONNECTED) {
-            return CompletableFuture.completedFuture(null);
+            return Completable.complete();
         }
 
         handshakeReceived = false;
-        CompletableFuture<Void> tokenFuture = accessTokenProvider.get()
-                .thenAccept((token) -> {
-                    if (token != null) {
-                        this.headers.put("Authorization", "Bearer " + token);
-                    }
-                });
+        CompletableFuture<Void> tokenFuture = new CompletableFuture<>(); 
+        accessTokenProvider.subscribe(token -> {
+            if (token != null && !token.isEmpty()) {
+                this.headers.put("Authorization", "Bearer " + token);
+            }
+            tokenFuture.complete(null);
+        });
 
         stopError = null;
         CompletableFuture<String> negotiate = null;
@@ -202,7 +201,7 @@ public class HubConnection {
             negotiate = tokenFuture.thenCompose((v) -> CompletableFuture.completedFuture(baseUrl));
         }
 
-        return negotiate.thenCompose((url) -> {
+        return Completable.fromFuture(negotiate.thenCompose(url -> {
             logger.log(LogLevel.Debug, "Starting HubConnection.");
             if (transport == null) {
                 transport = new WebSocketTransport(headers, httpClient, logger);
@@ -211,27 +210,21 @@ public class HubConnection {
             transport.setOnReceive(this.callback);
             transport.setOnClose((message) -> stopConnection(message));
 
-            try {
-                return transport.start(url).thenCompose((future) -> {
-                    String handshake = HandshakeProtocol.createHandshakeRequestMessage(
-                            new HandshakeRequestMessage(protocol.getName(), protocol.getVersion()));
-                    return transport.send(handshake).thenRun(() -> {
-                        hubConnectionStateLock.lock();
-                        try {
-                            hubConnectionState = HubConnectionState.CONNECTED;
-                            connectionState = new ConnectionState(this);
-                            logger.log(LogLevel.Information, "HubConnection started.");
-                        } finally {
-                            hubConnectionStateLock.unlock();
-                        }
-                    });
+            return transport.start(url).thenCompose((future) -> {
+                String handshake = HandshakeProtocol.createHandshakeRequestMessage(
+                        new HandshakeRequestMessage(protocol.getName(), protocol.getVersion()));
+                return transport.send(handshake).thenRun(() -> {
+                    hubConnectionStateLock.lock();
+                    try {
+                        hubConnectionState = HubConnectionState.CONNECTED;
+                        connectionState = new ConnectionState(this);
+                        logger.log(LogLevel.Information, "HubConnection started.");
+                    } finally {
+                        hubConnectionStateLock.unlock();
+                    }
                 });
-            } catch (RuntimeException e) {
-                throw e;
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        });
+            });
+        }));
     }
 
     private CompletableFuture<String> startNegotiate(String url, int negotiateAttempts) {
@@ -268,7 +261,7 @@ public class HubConnection {
     /**
      * Stops a connection to the server.
      * @param errorMessage An error message if the connected needs to be stopped because of an error.
-     * @return A completable future that completes when the connection has been stopped.
+     * @return A Completable that completes when the connection has been stopped.
      */
     private CompletableFuture<Void> stop(String errorMessage) {
         hubConnectionStateLock.lock();
@@ -292,10 +285,10 @@ public class HubConnection {
 
     /**
      * Stops a connection to the server.
-     * @return A completable future that completes when the connection has been stopped.
+     * @return A Completable that completes when the connection has been stopped.
      */
-    public CompletableFuture<Void> stop() {
-        return stop(null);
+    public Completable stop() {
+        return Completable.fromFuture(stop(null));
     }
 
     private void stopConnection(String errorMessage) {
@@ -344,7 +337,7 @@ public class HubConnection {
         sendHubMessage(invocationMessage);
     }
 
-    public <T> CompletableFuture<T> invoke(Class<T> returnType, String method, Object... args) throws Exception {
+    public <T> Single<T> invoke(Class<T> returnType, String method, Object... args) throws Exception {
         String id = connectionState.getNextInvocationId();
         InvocationMessage invocationMessage = new InvocationMessage(id, method, args);
 
@@ -372,7 +365,7 @@ public class HubConnection {
         // where the map doesn't have the future yet when the response is returned
         sendHubMessage(invocationMessage);
 
-        return future;
+        return Single.fromFuture(future);
     }
 
     private void sendHubMessage(HubMessage message) throws Exception {
