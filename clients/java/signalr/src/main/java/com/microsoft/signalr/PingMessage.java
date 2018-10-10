@@ -5,6 +5,8 @@ package com.microsoft.signalr;
 
 class PingMessage extends HubMessage
 {
+    int type = HubMessageType.PING.value;
+
     private static PingMessage instance = new PingMessage();
 
     private PingMessage()

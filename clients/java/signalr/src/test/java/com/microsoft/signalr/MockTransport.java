@@ -12,15 +12,22 @@ class MockTransport implements Transport {
     private ArrayList<String> sentMessages = new ArrayList<>();
     private String url;
     private Consumer<String> onClose;
-    private boolean autoHandshake;
+    final private boolean ignorePings;
+    final private boolean autoHandshake;
 
     private static final String RECORD_SEPARATOR = "\u001e";
 
     public MockTransport() {
+        this(true, true);
     }
 
     public MockTransport(boolean autoHandshake) {
+        this(autoHandshake, true);
+    }
+
+    public MockTransport(boolean autoHandshake, boolean ignorePings) {
         this.autoHandshake = autoHandshake;
+        this.ignorePings = ignorePings;
     }
 
     @Override
@@ -38,7 +45,9 @@ class MockTransport implements Transport {
 
     @Override
     public CompletableFuture send(String message) {
-        sentMessages.add(message);
+        if (!(ignorePings && message.equals("{\"type\":6}" + RECORD_SEPARATOR))) {
+            sentMessages.add(message);
+        }
         return CompletableFuture.completedFuture(null);
     }
 

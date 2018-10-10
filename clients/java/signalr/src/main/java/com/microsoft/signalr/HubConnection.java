@@ -6,11 +6,15 @@ package com.microsoft.signalr;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
@@ -39,8 +43,35 @@ public class HubConnection {
     private ConnectionState connectionState = null;
     private HttpClient httpClient;
     private String stopError;
+    private Timer pingTimer = null;
+    private AtomicLong nextServerTimeout = new AtomicLong();
+    private AtomicLong nextPingActivation = new AtomicLong();
+    private Duration keepAliveInterval = Duration.ofSeconds(15);
+    private Duration serverTimeout = Duration.ofSeconds(30);
+    private Duration tickRate = Duration.ofSeconds(1);
     private CompletableFuture<Void> handshakeResponseFuture;
     private Duration handshakeResponseTimeout = Duration.ofSeconds(15);
+
+    public void setServerTimeout(Duration serverTimeout) {
+        this.serverTimeout = serverTimeout;
+    }
+
+    public Duration getServerTimeout() {
+        return this.serverTimeout;
+    }
+
+    public void setKeepAliveInterval(Duration keepAliveInterval) {
+        this.keepAliveInterval = keepAliveInterval;
+    }
+
+    public Duration getKeepAliveInterval() {
+        return this.keepAliveInterval;
+    }
+
+    // For testing purposes
+    void setTickRate(Duration tickRate) {
+        this.tickRate = tickRate;
+    }
 
     HubConnection(String url, Transport transport, boolean skipNegotiate, Logger logger, HttpClient httpClient, Single<String> accessTokenProvider, Duration handshakeResponseTimeout) {
         if (url == null || url.isEmpty()) {
@@ -79,6 +110,7 @@ public class HubConnection {
         this.skipNegotiate = skipNegotiate;
 
         this.callback = (payload) -> {
+            resetServerTimeout();
             if (!handshakeReceived) {
                 int handshakeLength = payload.indexOf(RECORD_SEPARATOR) + 1;
                 String handshakeResponseString = payload.substring(0, handshakeLength - 1);
@@ -245,6 +277,29 @@ public class HubConnection {
                             hubConnectionState = HubConnectionState.CONNECTED;
                             connectionState = new ConnectionState(this);
                             logger.log(LogLevel.Information, "HubConnection started.");
+
+                            resetServerTimeout();
+                            this.pingTimer = new Timer();
+                            this.pingTimer.schedule(new TimerTask() {
+                                @Override
+                                public void run() {
+                                    try {
+                                        if (System.currentTimeMillis() > nextServerTimeout.get()) {
+                                            stop("Server timeout elapsed without receiving a message from the server.");
+                                            return;
+                                        }
+
+                                        if (System.currentTimeMillis() > nextPingActivation.get()) {
+                                            sendHubMessage(PingMessage.getInstance());
+                                        }
+                                    } catch (Exception e) {
+                                        logger.log(LogLevel.Warning, String.format("Error sending ping: %s", e.getMessage()));
+                                        // The connection is probably in a bad or closed state now, cleanup the timer so
+                                        // it stops triggering
+                                        pingTimer.cancel();
+                                    }
+                                }
+                            }, new Date(0), tickRate.toMillis());
                         } finally {
                             hubConnectionStateLock.unlock();
                         }
@@ -399,11 +454,21 @@ public class HubConnection {
     private void sendHubMessage(HubMessage message) throws Exception {
         String serializedMessage = protocol.writeMessage(message);
         if (message.getMessageType() == HubMessageType.INVOCATION) {
-            logger.log(LogLevel.Debug, "Sending %d message '%s'.", message.getMessageType().value, ((InvocationMessage)message).getInvocationId());
+            logger.log(LogLevel.Debug, "Sending %s message '%s'.", message.getMessageType().name(), ((InvocationMessage)message).getInvocationId());
         } else {
-            logger.log(LogLevel.Debug, "Sending %d message.", message.getMessageType().value);
+            logger.log(LogLevel.Debug, "Sending %s message.", message.getMessageType().name());
         }
         transport.send(serializedMessage);
+
+        resetKeepAlive();
+    }
+
+    private void resetServerTimeout() {
+        this.nextServerTimeout.set(System.currentTimeMillis() + serverTimeout.toMillis());
+    }
+
+    private void resetKeepAlive() {
+        this.nextPingActivation.set(System.currentTimeMillis() + keepAliveInterval.toMillis());
     }
 
     /**
