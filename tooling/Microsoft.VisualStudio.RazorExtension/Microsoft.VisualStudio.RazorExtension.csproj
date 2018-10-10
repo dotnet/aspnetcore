@@ -235,9 +235,9 @@
       Versions must be written here instead of being set as MSBuild variable.
       See https://github.com/dotnet/project-system/issues/2129.
     -->
-    <PackageReference Include="Microsoft.VisualStudio.ComponentModelHost" Version="15.0.26606" />
-    <PackageReference Include="Microsoft.VisualStudio.Shell.15.0" Version="15.0.26606" />
-    <PackageReference Include="Microsoft.VSSDK.BuildTools" Version="15.7.109" />
+    <PackageReference Include="Microsoft.VisualStudio.ComponentModelHost" Version="15.8.525" />
+    <PackageReference Include="Microsoft.VisualStudio.Shell.15.0" Version="15.8.28010" />
+    <PackageReference Include="Microsoft.VSSDK.BuildTools" Version="15.8.3252" />
   </ItemGroup>
   <ItemDefinitionGroup>
     <SuppressFromVsix>
