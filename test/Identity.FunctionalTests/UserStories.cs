@@ -36,6 +36,15 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
             return await login.LoginValidUserAsync(userName, password);
         }
 
+        internal static async Task LoginFailsWithWrongPasswordAsync(HttpClient client, string userName, string password)
+        {
+            var index = await Index.CreateAsync(client);
+
+            var login = await index.ClickLoginLinkAsync();
+
+            await login.LoginWrongPasswordAsync(userName, password);
+        }
+
         internal static async Task<DefaultUIPage> LockoutExistingUserAsync(HttpClient client, string userName, string password)
         {
             var index = await Index.CreateAsync(client);
