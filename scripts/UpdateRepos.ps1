@@ -107,7 +107,7 @@ try {
                 if (-not $NoPush -and ($Force -or ($PSCmdlet.ShouldContinue("Pushing updates to repos.", 'Push the changes to these repos?')))) {
                     try {
                         $newBranch = "maestro/$($submodule.branch)"
-                        Invoke-Block { & git @gitConfigArgs push origin HEAD:$newBranch}
+                        Invoke-Block { & git @gitConfigArgs push origin HEAD:refs/heads/$newBranch}
                     }
                     catch {
                         Write-Warning "Error in pushing $($newBranch): $_"
