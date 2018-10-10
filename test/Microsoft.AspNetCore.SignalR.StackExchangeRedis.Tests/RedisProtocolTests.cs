@@ -8,11 +8,11 @@ using System.Linq;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
-using Microsoft.AspNetCore.SignalR.Redis.Internal;
+using Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal;
 using Microsoft.AspNetCore.SignalR.Tests;
 using Xunit;
 
-namespace Microsoft.AspNetCore.SignalR.Redis.Tests
+namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests
 {
     public class RedisProtocolTests
     {

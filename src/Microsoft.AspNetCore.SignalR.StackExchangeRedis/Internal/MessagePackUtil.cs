@@ -6,7 +6,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using MessagePack;
 
-namespace Microsoft.AspNetCore.SignalR.Redis.Internal
+namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal
 {
     internal static class MessagePackUtil
     {
