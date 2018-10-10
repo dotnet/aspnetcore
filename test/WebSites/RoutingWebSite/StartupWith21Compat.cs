@@ -26,6 +26,7 @@ namespace RoutingWebSite
                 .AddMvc()
                 .AddRazorPagesOptions(options =>
                 {
+                    options.Conventions.AddPageRoute("/PageRouteTransformer/PageWithConfiguredRoute", "/PageRouteTransformer/NewConventionRoute/{id?}");
                     options.Conventions.AddFolderRouteModelConvention("/PageRouteTransformer", model =>
                     {
                         pageRouteTransformerConvention.Apply(model);

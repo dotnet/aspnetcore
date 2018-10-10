@@ -129,8 +129,10 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             var pageRouteMetadata = selectorModel.EndpointMetadata.OfType<PageRouteMetadata>().SingleOrDefault();
             if (pageRouteMetadata == null)
             {
-                // Selector does not have expected metadata. Should never reach here
-                throw new InvalidOperationException("Page selector did not have page route metadata.");
+                // Selector does not have expected metadata
+                // This selector was likely configured by AddPageRouteModelConvention
+                // Use the existing explicitly configured template
+                return selectorModel.AttributeRouteModel.Template;
             }
 
             var segments = pageRouteMetadata.PageRoute.Split('/');
