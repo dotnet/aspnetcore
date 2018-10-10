@@ -12,10 +12,27 @@ class MockTransport implements Transport {
     private ArrayList<String> sentMessages = new ArrayList<>();
     private String url;
     private Consumer<String> onClose;
+    private boolean autoHandshake;
+
+    private static final String RECORD_SEPARATOR = "\u001e";
+
+    public MockTransport() {
+    }
+
+    public MockTransport(boolean autoHandshake) {
+        this.autoHandshake = autoHandshake;
+    }
 
     @Override
     public CompletableFuture start(String url) {
         this.url = url;
+        if (autoHandshake) {
+            try {
+                onReceiveCallBack.invoke("{}" + RECORD_SEPARATOR);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
         return CompletableFuture.completedFuture(null);
     }
 

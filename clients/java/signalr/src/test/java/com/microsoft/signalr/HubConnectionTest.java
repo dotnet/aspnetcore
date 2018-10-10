@@ -5,6 +5,7 @@ package com.microsoft.signalr;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
@@ -34,7 +35,7 @@ class HubConnectionTest {
 
     @Test
     public void transportCloseTriggersStopInHubConnection() throws Exception {
-        MockTransport mockTransport = new MockTransport();
+        MockTransport mockTransport = new MockTransport(true);
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
         hubConnection.start().blockingAwait(1000, TimeUnit.MILLISECONDS);
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
@@ -45,7 +46,7 @@ class HubConnectionTest {
 
     @Test
     public void transportCloseWithErrorTriggersStopInHubConnection() throws Exception {
-        MockTransport mockTransport = new MockTransport();
+        MockTransport mockTransport = new MockTransport(true);
         AtomicReference<String> message = new AtomicReference<>();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
         String errorMessage = "Example transport error.";
@@ -58,12 +59,27 @@ class HubConnectionTest {
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
         mockTransport.stopWithError(errorMessage);
         assertEquals(errorMessage, message.get());
+    }
+
+    @Test
+    public void checkHubConnectionStateNoHandShakeResponse() {
+        MockTransport mockTransport = new MockTransport();
+        HubConnection hubConnection = HubConnectionBuilder.create("http://example.com")
+                .withTransport(mockTransport)
+                .withHttpClient(new TestHttpClient())
+                .shouldSkipNegotiate(true)
+                .withHandshakeResponseTimeout(Duration.ofMillis(100))
+                .build();
+        Throwable exception = assertThrows(RuntimeException.class, () -> hubConnection.start().blockingAwait(1000, TimeUnit.MILLISECONDS));
+        assertEquals(ExecutionException.class, exception.getCause().getClass());
+        assertEquals(TimeoutException.class, exception.getCause().getCause().getClass());
+        assertEquals(exception.getCause().getCause().getMessage(), "Timed out waiting for the server to respond to the handshake message.");
         assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
     }
 
     @Test
-    public void constructHubConnectionWithHttpConnectionOptions() throws Exception {
-        Transport mockTransport = new MockTransport();
+    public void constructHubConnectionWithHttpConnectionOptions() {
+        Transport mockTransport = new MockTransport(true);
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
 
         hubConnection.start();
@@ -85,6 +101,18 @@ class HubConnectionTest {
 
         mockTransport.receiveMessage("{\"type\":7,\"error\": \"There was an error\"}" + RECORD_SEPARATOR);
 
+        assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
+    }
+
+    @Test
+    public void invalidHandShakeResponse() throws Exception {
+        MockTransport mockTransport = new MockTransport();
+        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
+
+        hubConnection.start();
+
+        Throwable exception = assertThrows(RuntimeException.class, () -> mockTransport.receiveMessage("{" + RECORD_SEPARATOR));
+        assertEquals("An invalid handshake response was received from the server.", exception.getMessage());
         assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
     }
 
@@ -958,7 +986,7 @@ class HubConnectionTest {
                         "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
                                 + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}")));
 
-        MockTransport transport = new MockTransport();
+        MockTransport transport = new MockTransport(true);
         HubConnection hubConnection = HubConnectionBuilder
                 .create("http://example.com")
                 .withTransport(transport)
@@ -977,7 +1005,7 @@ class HubConnectionTest {
         TestHttpClient client = new TestHttpClient().on("POST", "http://example.com/negotiate",
                 (req) -> CompletableFuture.completedFuture(new HttpResponse(200, "", "{\"error\":\"Test error.\"}")));
 
-        MockTransport transport = new MockTransport();
+        MockTransport transport = new MockTransport(true);
         HubConnection hubConnection = HubConnectionBuilder
                 .create("http://example.com")
                 .withHttpClient(client)
@@ -997,7 +1025,7 @@ class HubConnectionTest {
                 (req) -> CompletableFuture.completedFuture(new HttpResponse(200, "", "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
                 + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}")));
 
-        MockTransport transport = new MockTransport();
+        MockTransport transport = new MockTransport(true);
         HubConnection hubConnection = HubConnectionBuilder
                 .create("http://example.com")
                 .withTransport(transport)
@@ -1022,7 +1050,7 @@ class HubConnectionTest {
                                 + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"));
                         });
 
-        MockTransport transport = new MockTransport();
+        MockTransport transport = new MockTransport(true);
         HubConnection hubConnection = HubConnectionBuilder
                 .create("http://example.com")
                 .withTransport(transport)
@@ -1048,7 +1076,7 @@ class HubConnectionTest {
                 + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"));
             });
 
-        MockTransport transport = new MockTransport();
+        MockTransport transport = new MockTransport(true);
         HubConnection hubConnection = HubConnectionBuilder
                 .create("http://example.com")
                 .withTransport(transport)
@@ -1065,7 +1093,7 @@ class HubConnectionTest {
 
     @Test
     public void hubConnectionCanBeStartedAfterBeingStopped() throws Exception {
-        MockTransport transport = new MockTransport();
+        MockTransport transport = new MockTransport(true);
         HubConnection hubConnection = HubConnectionBuilder
                 .create("http://example.com")
                 .withTransport(transport)
@@ -1084,7 +1112,7 @@ class HubConnectionTest {
 
     @Test
     public void hubConnectionCanBeStartedAfterBeingStoppedAndRedirected() throws Exception {
-        MockTransport mockTransport = new MockTransport();
+        MockTransport mockTransport = new MockTransport(true);
         TestHttpClient client = new TestHttpClient()
                 .on("POST", "http://example.com/negotiate", (req) -> CompletableFuture
                     .completedFuture(new HttpResponse(200, "", "{\"url\":\"http://testexample.com/\"}")))

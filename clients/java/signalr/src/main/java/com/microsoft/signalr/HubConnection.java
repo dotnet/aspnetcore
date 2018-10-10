@@ -4,11 +4,12 @@
 package com.microsoft.signalr;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -38,8 +39,10 @@ public class HubConnection {
     private ConnectionState connectionState = null;
     private HttpClient httpClient;
     private String stopError;
+    private CompletableFuture<Void> handshakeResponseFuture;
+    private Duration handshakeResponseTimeout = Duration.ofSeconds(15);
 
-    HubConnection(String url, Transport transport, boolean skipNegotiate, Logger logger, HttpClient httpClient, Single<String> accessTokenProvider) {
+    HubConnection(String url, Transport transport, boolean skipNegotiate, Logger logger, HttpClient httpClient, Single<String> accessTokenProvider, Duration handshakeResponseTimeout) {
         if (url == null || url.isEmpty()) {
             throw new IllegalArgumentException("A valid url is required.");
         }
@@ -69,19 +72,33 @@ public class HubConnection {
             this.transport = transport;
         }
 
+        if (handshakeResponseTimeout != null) {
+            this.handshakeResponseTimeout = handshakeResponseTimeout;
+        }
+
         this.skipNegotiate = skipNegotiate;
 
         this.callback = (payload) -> {
             if (!handshakeReceived) {
                 int handshakeLength = payload.indexOf(RECORD_SEPARATOR) + 1;
                 String handshakeResponseString = payload.substring(0, handshakeLength - 1);
-                HandshakeResponseMessage handshakeResponse = HandshakeProtocol.parseHandshakeResponse(handshakeResponseString);
+                HandshakeResponseMessage handshakeResponse;
+                try {
+                    handshakeResponse = HandshakeProtocol.parseHandshakeResponse(handshakeResponseString);
+                } catch (RuntimeException ex) {
+                    RuntimeException exception = new RuntimeException("An invalid handshake response was received from the server.", ex);
+                    handshakeResponseFuture.completeExceptionally(exception);
+                    throw exception;
+                }
                 if (handshakeResponse.getHandshakeError() != null) {
                     String errorMessage = "Error in handshake " + handshakeResponse.getHandshakeError();
                     logger.log(LogLevel.Error, errorMessage);
-                    throw new RuntimeException(errorMessage);
+                    RuntimeException exception = new RuntimeException(errorMessage);
+                    handshakeResponseFuture.completeExceptionally(exception);
+                    throw exception;
                 }
                 handshakeReceived = true;
+                handshakeResponseFuture.complete(null);
 
                 payload = payload.substring(handshakeLength);
                 // The payload only contained the handshake response so we can return.
@@ -134,6 +151,12 @@ public class HubConnection {
         };
     }
 
+    private void timeoutHandshakeResponse(long timeout, TimeUnit unit) {
+        ScheduledExecutorService scheduledThreadPool = Executors.newSingleThreadScheduledExecutor();
+        scheduledThreadPool.schedule(() -> handshakeResponseFuture.completeExceptionally(
+                new TimeoutException("Timed out waiting for the server to respond to the handshake message.")), timeout, unit);
+    }
+
     private CompletableFuture<NegotiateResponse> handleNegotiate(String url) {
         HttpRequest request = new HttpRequest();
         request.addHeaders(this.headers);
@@ -184,8 +207,9 @@ public class HubConnection {
             return Completable.complete();
         }
 
+        handshakeResponseFuture = new CompletableFuture<>();
         handshakeReceived = false;
-        CompletableFuture<Void> tokenFuture = new CompletableFuture<>(); 
+        CompletableFuture<Void> tokenFuture = new CompletableFuture<>();
         accessTokenProvider.subscribe(token -> {
             if (token != null && !token.isEmpty()) {
                 this.headers.put("Authorization", "Bearer " + token);
@@ -213,15 +237,18 @@ public class HubConnection {
             return transport.start(url).thenCompose((future) -> {
                 String handshake = HandshakeProtocol.createHandshakeRequestMessage(
                         new HandshakeRequestMessage(protocol.getName(), protocol.getVersion()));
-                return transport.send(handshake).thenRun(() -> {
-                    hubConnectionStateLock.lock();
-                    try {
-                        hubConnectionState = HubConnectionState.CONNECTED;
-                        connectionState = new ConnectionState(this);
-                        logger.log(LogLevel.Information, "HubConnection started.");
-                    } finally {
-                        hubConnectionStateLock.unlock();
-                    }
+                return transport.send(handshake).thenCompose((innerFuture) -> {
+                    timeoutHandshakeResponse(handshakeResponseTimeout.toMillis(), TimeUnit.MILLISECONDS);
+                    return handshakeResponseFuture.thenRun(() -> {
+                        hubConnectionStateLock.lock();
+                        try {
+                            hubConnectionState = HubConnectionState.CONNECTED;
+                            connectionState = new ConnectionState(this);
+                            logger.log(LogLevel.Information, "HubConnection started.");
+                        } finally {
+                            hubConnectionStateLock.unlock();
+                        }
+                    });
                 });
             });
         }));
@@ -308,6 +335,7 @@ public class HubConnection {
             connectionState = null;
             logger.log(LogLevel.Information, "HubConnection stopped.");
             hubConnectionState = HubConnectionState.DISCONNECTED;
+            handshakeResponseFuture.complete(null);
         } finally {
             hubConnectionStateLock.unlock();
         }
