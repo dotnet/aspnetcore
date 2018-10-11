@@ -71,6 +71,8 @@
       <SkipTestsDueToMissingSharedFx Condition="'$(InstallSharedRuntimeFromPreviousBuild)' != 'true' And '$(TestsRequiredTheSharedRuntime)' == 'true' ">true</SkipTestsDueToMissingSharedFx>
 
       <RepositoryBuildArguments Condition="'$(CI)'== 'true'">$(RepositoryBuildArguments) -ci</RepositoryBuildArguments>
+      <RepositoryBuildArguments Condition="'$(CI)'== 'true' AND '$(OS)' != 'Windows_NT'">$(RepositoryBuildArguments) --dotnet-home '$(DOTNET_HOME)'</RepositoryBuildArguments>
+      <RepositoryBuildArguments Condition="'$(CI)'== 'true' AND '$(OS)' == 'Windows_NT'">$(RepositoryBuildArguments) -DotNetHome '$(DOTNET_HOME)'</RepositoryBuildArguments>
       <!-- Should reduce allowable package feeds to only nuget.org. -->
       <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:AspNetUniverseBuildOffline=true</RepositoryBuildArguments>
       <!-- If there are duplicate properties, the properties which are defined later in the order would override the earlier ones -->
