@@ -7,6 +7,9 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import okhttp3.Headers;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -19,17 +22,17 @@ class OkHttpWebSocketWrapper extends WebSocketWrapper {
     private String url;
     private Map<String, String> headers;
     private OkHttpClient client;
-    private Logger logger;
     private OnReceiveCallBack onReceive;
     private BiConsumer<Integer, String> onClose;
     private CompletableFuture<Void> startFuture = new CompletableFuture<>();
     private CompletableFuture<Void> closeFuture = new CompletableFuture<>();
 
-    public OkHttpWebSocketWrapper(String url, Map<String, String> headers, OkHttpClient client, Logger logger) {
+    private final Logger logger = LoggerFactory.getLogger(OkHttpWebSocketWrapper.class);
+
+    public OkHttpWebSocketWrapper(String url, Map<String, String> headers, OkHttpClient client) {
         this.url = url;
         this.headers = headers;
         this.client = client;
-        this.logger = logger;
     }
 
     @Override
@@ -95,7 +98,7 @@ class OkHttpWebSocketWrapper extends WebSocketWrapper {
 
         @Override
         public void onFailure(WebSocket webSocket, Throwable t, Response response) {
-            logger.log(LogLevel.Error, "Websocket closed from an error: %s.", t.getMessage());
+            logger.error("Websocket closed from an error: %s.", t.getMessage());
             closeFuture.completeExceptionally(new RuntimeException(t));
             onClose.accept(null, t.getMessage());
             checkStartFailure();
@@ -106,7 +109,7 @@ class OkHttpWebSocketWrapper extends WebSocketWrapper {
             // exceptionally.
             if (!startFuture.isDone()) {
                 String errorMessage = "There was an error starting the Websockets transport.";
-                logger.log(LogLevel.Debug, errorMessage);
+                logger.error("Websocket closed from an error: %s.", errorMessage);
                 startFuture.completeExceptionally(new RuntimeException(errorMessage));
             }
         }

@@ -24,7 +24,7 @@ class WebSocketTransportUrlFormatTest {
     @ParameterizedTest
     @MethodSource("protocols")
     public void checkWebsocketUrlProtocol(String url, String expectedUrl) {
-        WebSocketTransport webSocketTransport = new WebSocketTransport(new HashMap<>(), new TestHttpClient(), new NullLogger());
+        WebSocketTransport webSocketTransport = new WebSocketTransport(new HashMap<>(), new TestHttpClient());
         try {
             webSocketTransport.start(url);
         } catch (Exception e) {}

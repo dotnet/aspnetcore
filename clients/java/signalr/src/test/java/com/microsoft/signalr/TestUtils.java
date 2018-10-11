@@ -5,19 +5,18 @@ package com.microsoft.signalr;
 
 class TestUtils {
     static HubConnection createHubConnection(String url) {
-        return createHubConnection(url, new MockTransport(true), new NullLogger(), true, new TestHttpClient());
+        return createHubConnection(url, new MockTransport(true), true, new TestHttpClient());
     }
 
     static HubConnection createHubConnection(String url, Transport transport) {
-        return createHubConnection(url, transport, new NullLogger(), true, new TestHttpClient());
+        return createHubConnection(url, transport, true, new TestHttpClient());
     }
 
-    static HubConnection createHubConnection(String url, Transport transport, Logger logger, boolean skipNegotiate, HttpClient client) {
+    static HubConnection createHubConnection(String url, Transport transport, boolean skipNegotiate, HttpClient client) {
         HttpHubConnectionBuilder builder = HubConnectionBuilder.create(url)
                 .withTransport(transport)
                 .withHttpClient(client)
-                .shouldSkipNegotiate(skipNegotiate)
-                .withLogger(logger);
+                .shouldSkipNegotiate(skipNegotiate);
 
         return builder.build();
     }

@@ -7,7 +7,6 @@ import java.util.Scanner;
 
 import com.microsoft.signalr.HubConnection;
 import com.microsoft.signalr.HubConnectionBuilder;
-import com.microsoft.signalr.LogLevel;
 
 public class Chat {
     public static void main(String[] args) {
@@ -18,8 +17,7 @@ public class Chat {
         System.out.print("Enter your name:");
         String enteredName = reader.nextLine();
 
-        HubConnection hubConnection = HubConnectionBuilder.create(input)
-                .configureLogging(LogLevel.Information).build();
+        HubConnection hubConnection = HubConnectionBuilder.create(input).build();
 
         hubConnection.on("Send", (name, message) -> {
             System.out.println(name + ": " + message);
