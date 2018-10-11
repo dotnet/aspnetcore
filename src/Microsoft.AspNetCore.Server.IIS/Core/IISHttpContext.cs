@@ -109,8 +109,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         {
             _thisHandle = GCHandle.Alloc(this);
 
-            NativeMethods.HttpSetManagedContext(_pInProcessHandler, (IntPtr)_thisHandle);
-
             Method = GetVerb();
 
             RawTarget = GetRawUrl();
@@ -170,6 +168,8 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                     resumeWriterThreshold: ResumeWriterTheshold,
                     minimumSegmentSize: MinAllocBufferSize));
             _bodyOutput = new OutputProducer(pipe);
+
+            NativeMethods.HttpSetManagedContext(_pInProcessHandler, (IntPtr)_thisHandle);
         }
 
         private string GetOriginalPath()

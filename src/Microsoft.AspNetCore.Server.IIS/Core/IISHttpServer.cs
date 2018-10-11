@@ -213,7 +213,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             {
                 context?.Server._logger.LogError(0, ex, $"Unexpected exception in {nameof(IISHttpServer)}.{nameof(OnDisconnect)}.");
             }
-
         }
 
         private static NativeMethods.REQUEST_NOTIFICATION_STATUS OnAsyncCompletion(IntPtr pvManagedHttpContext, int hr, int bytes)
