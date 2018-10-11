@@ -92,9 +92,14 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
 
             var origin = context.Request.Headers[CorsConstants.Origin];
             var requestHeaders = context.Request.Headers;
-            var isPreflightRequest =
-                string.Equals(context.Request.Method, CorsConstants.PreflightHttpMethod, StringComparison.OrdinalIgnoreCase) &&
-                requestHeaders.ContainsKey(CorsConstants.AccessControlRequestMethod);
+
+            var isOptionsRequest = string.Equals(context.Request.Method, CorsConstants.PreflightHttpMethod, StringComparison.OrdinalIgnoreCase);
+            var isPreflightRequest = isOptionsRequest && requestHeaders.ContainsKey(CorsConstants.AccessControlRequestMethod);
+
+            if (isOptionsRequest && !isPreflightRequest)
+            {
+                _logger.IsNotPreflightRequest();
+            }
 
             var corsResult = new CorsResult
             {
