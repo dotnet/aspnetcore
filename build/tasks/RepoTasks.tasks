@@ -7,6 +7,7 @@
 
   <UsingTask TaskName="RepoTasks.GetFileHash" AssemblyFile="$(_RepoTaskAssembly)" />
   <UsingTask TaskName="RepoTasks.FilterAuthenticodeSignedFiles" AssemblyFile="$(_RepoTaskAssembly)" />
+  <UsingTask TaskName="RepoTasks.FilterSignedPackagesFiles" AssemblyFile="$(_RepoTaskAssembly)" />
   <UsingTask TaskName="RepoTasks.StupidCopy" AssemblyFile="$(_RepoTaskAssembly)" />
   <UsingTask TaskName="RepoTasks.VerifyPoliCheckResults" AssemblyFile="$(_RepoTaskAssembly)" />
   <UsingTask TaskName="Microsoft.Build.OOB.ESRP.CreateSignManifests" AssemblyFile="$(_RepoTaskAssembly)" />

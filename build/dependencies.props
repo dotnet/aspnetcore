@@ -1,4 +1,4 @@
-﻿<Project>
+<Project>
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
@@ -7,7 +7,7 @@
     <MicrosoftBuildFrameworkPackageVersion>15.6.85</MicrosoftBuildFrameworkPackageVersion>
     <MicrosoftBuildUtilitiesCorePackageVersion>15.6.85</MicrosoftBuildUtilitiesCorePackageVersion>
     <NewtonsoftJsonPackageVersion>9.0.1</NewtonsoftJsonPackageVersion>
-    <SignCheckVersion>1.0.110</SignCheckVersion>
+    <SignCheckVersion>1.0.117</SignCheckVersion>
   </PropertyGroup>
   <Import Project="$(DotNetPackageVersionPropsPath)" Condition=" '$(DotNetPackageVersionPropsPath)' != '' " />
 </Project>
