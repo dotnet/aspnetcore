@@ -24,10 +24,8 @@ import okhttp3.ResponseBody;
 
 final class DefaultHttpClient extends HttpClient {
     private final OkHttpClient client;
-    private Logger logger;
 
-    public DefaultHttpClient(Logger logger) {
-        this.logger = logger;
+    public DefaultHttpClient() {
         this.client = new OkHttpClient.Builder().cookieJar(new CookieJar() {
             private List<Cookie> cookieList = new ArrayList<>();
             private Lock cookieLock = new ReentrantLock();
@@ -124,6 +122,6 @@ final class DefaultHttpClient extends HttpClient {
 
     @Override
     public WebSocketWrapper createWebSocket(String url, Map<String, String> headers) {
-        return new OkHttpWebSocketWrapper(url, headers, client, logger);
+        return new OkHttpWebSocketWrapper(url, headers, client);
     }
 }

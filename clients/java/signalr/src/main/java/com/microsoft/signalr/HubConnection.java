@@ -18,6 +18,9 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.reactivex.Completable;
 import io.reactivex.Single;
 
@@ -34,7 +37,6 @@ public class HubConnection {
     private Boolean handshakeReceived = false;
     private HubConnectionState hubConnectionState = HubConnectionState.DISCONNECTED;
     private final Lock hubConnectionStateLock = new ReentrantLock();
-    private Logger logger;
     private List<Consumer<Exception>> onClosedCallbackList;
     private final boolean skipNegotiate;
     private Single<String> accessTokenProvider;
@@ -50,6 +52,8 @@ public class HubConnection {
     private Duration tickRate = Duration.ofSeconds(1);
     private CompletableFuture<Void> handshakeResponseFuture;
     private Duration handshakeResponseTimeout = Duration.ofSeconds(15);
+    private final Logger logger = LoggerFactory.getLogger(HubConnection.class);
+
 
     public void setServerTimeout(Duration serverTimeout) {
         this.serverTimeout = serverTimeout;
@@ -72,7 +76,7 @@ public class HubConnection {
         this.tickRate = tickRate;
     }
 
-    HubConnection(String url, Transport transport, boolean skipNegotiate, Logger logger, HttpClient httpClient,
+    HubConnection(String url, Transport transport, boolean skipNegotiate, HttpClient httpClient,
                   Single<String> accessTokenProvider, Duration handshakeResponseTimeout, Map<String, String> headers) {
         if (url == null || url.isEmpty()) {
             throw new IllegalArgumentException("A valid url is required.");
@@ -90,13 +94,7 @@ public class HubConnection {
         if (httpClient != null) {
             this.httpClient = httpClient;
         } else {
-            this.httpClient = new DefaultHttpClient(this.logger);
-        }
-
-        if (logger != null) {
-            this.logger = logger;
-        } else {
-            this.logger = new NullLogger();
+            this.httpClient = new DefaultHttpClient();
         }
 
         if (transport != null) {
@@ -128,7 +126,7 @@ public class HubConnection {
                 }
                 if (handshakeResponse.getHandshakeError() != null) {
                     String errorMessage = "Error in handshake " + handshakeResponse.getHandshakeError();
-                    logger.log(LogLevel.Error, errorMessage);
+                    logger.error(errorMessage);
                     RuntimeException exception = new RuntimeException(errorMessage);
                     handshakeResponseFuture.completeExceptionally(exception);
                     throw exception;
@@ -146,7 +144,7 @@ public class HubConnection {
             HubMessage[] messages = protocol.parseMessages(payload, connectionState);
 
             for (HubMessage message : messages) {
-                logger.log(LogLevel.Debug, "Received message of type %s.", message.getMessageType());
+                logger.debug("Received message of type %s.", message.getMessageType());
                 switch (message.getMessageType()) {
                     case INVOCATION:
                         InvocationMessage invocationMessage = (InvocationMessage) message;
@@ -156,11 +154,11 @@ public class HubConnection {
                                 handler.getAction().invoke(invocationMessage.getArguments());
                             }
                         } else {
-                            logger.log(LogLevel.Warning, "Failed to find handler for '%s' method.", invocationMessage.getTarget());
+                            logger.warn("Failed to find handler for '%s' method.", invocationMessage.getTarget());
                         }
                         break;
                     case CLOSE:
-                        logger.log(LogLevel.Information, "Close message received from server.");
+                        logger.info("Close message received from server.");
                         CloseMessage closeMessage = (CloseMessage) message;
                         stop(closeMessage.getError());
                         break;
@@ -171,7 +169,7 @@ public class HubConnection {
                         CompletionMessage completionMessage = (CompletionMessage)message;
                         InvocationRequest irq = connectionState.tryRemoveInvocation(completionMessage.getInvocationId());
                         if (irq == null) {
-                            logger.log(LogLevel.Warning, "Dropped unsolicited Completion message for invocation '%s'.", completionMessage.getInvocationId());
+                            logger.warn("Dropped unsolicited Completion message for invocation '%s'.", completionMessage.getInvocationId());
                             continue;
                         }
                         irq.complete(completionMessage);
@@ -179,7 +177,7 @@ public class HubConnection {
                     case STREAM_INVOCATION:
                     case STREAM_ITEM:
                     case CANCEL_INVOCATION:
-                        logger.log(LogLevel.Error, "This client does not support %s messages.", message.getMessageType());
+                        logger.error("This client does not support %s messages.", message.getMessageType());
 
                         throw new UnsupportedOperationException(String.format("The message type %s is not supported yet.", message.getMessageType()));
                 }
@@ -257,9 +255,9 @@ public class HubConnection {
         }
 
         return Completable.fromFuture(negotiate.thenCompose(url -> {
-            logger.log(LogLevel.Debug, "Starting HubConnection.");
+            logger.debug("Starting HubConnection.");
             if (transport == null) {
-                transport = new WebSocketTransport(headers, httpClient, logger);
+                transport = new WebSocketTransport(headers, httpClient);
             }
 
             transport.setOnReceive(this.callback);
@@ -275,7 +273,7 @@ public class HubConnection {
                         try {
                             hubConnectionState = HubConnectionState.CONNECTED;
                             connectionState = new ConnectionState(this);
-                            logger.log(LogLevel.Information, "HubConnection started.");
+                            logger.info("HubConnection started.");
 
                             resetServerTimeout();
                             this.pingTimer = new Timer();
@@ -292,7 +290,7 @@ public class HubConnection {
                                             sendHubMessage(PingMessage.getInstance());
                                         }
                                     } catch (Exception e) {
-                                        logger.log(LogLevel.Warning, String.format("Error sending ping: %s", e.getMessage()));
+                                        logger.warn(String.format("Error sending ping: %s", e.getMessage()));
                                         // The connection is probably in a bad or closed state now, cleanup the timer so
                                         // it stops triggering
                                         pingTimer.cancel();
@@ -353,9 +351,9 @@ public class HubConnection {
 
             if (errorMessage != null) {
                 stopError = errorMessage;
-                logger.log(LogLevel.Error, "HubConnection disconnected with an error: %s.", errorMessage);
+                logger.error("HubConnection disconnected with an error: %s.", errorMessage);
             } else {
-                logger.log(LogLevel.Debug, "Stopping HubConnection.");
+                logger.debug("Stopping HubConnection.");
             }
         } finally {
             hubConnectionStateLock.unlock();
@@ -383,11 +381,11 @@ public class HubConnection {
             }
             if (errorMessage != null) {
                 exception = new RuntimeException(errorMessage);
-                logger.log(LogLevel.Error, "HubConnection disconnected with an error %s.", errorMessage);
+                logger.error("HubConnection disconnected with an error %s.", errorMessage);
             }
             connectionState.cancelOutstandingInvocations(exception);
             connectionState = null;
-            logger.log(LogLevel.Information, "HubConnection stopped.");
+            logger.info("HubConnection stopped.");
             hubConnectionState = HubConnectionState.DISCONNECTED;
             handshakeResponseFuture.complete(null);
         } finally {
@@ -453,9 +451,9 @@ public class HubConnection {
     private void sendHubMessage(HubMessage message) {
         String serializedMessage = protocol.writeMessage(message);
         if (message.getMessageType() == HubMessageType.INVOCATION) {
-            logger.log(LogLevel.Debug, "Sending %s message '%s'.", message.getMessageType().name(), ((InvocationMessage)message).getInvocationId());
+            logger.debug("Sending %s message '%s'.", message.getMessageType().name(), ((InvocationMessage)message).getInvocationId());
         } else {
-            logger.log(LogLevel.Debug, "Sending %s message.", message.getMessageType().name());
+            logger.debug("Sending %s message.", message.getMessageType().name());
         }
         transport.send(serializedMessage);
 
@@ -477,7 +475,7 @@ public class HubConnection {
      */
     public void remove(String name) {
         handlers.remove(name);
-        logger.log(LogLevel.Trace, "Removing handlers for client method: %s.", name);
+        logger.trace("Removing handlers for client method: %s.", name);
     }
 
     public void onClosed(Consumer<Exception> callback) {
@@ -695,7 +693,7 @@ public class HubConnection {
 
     private Subscription registerHandler(String target, ActionBase action, Class<?>... types) {
         InvocationHandler handler = handlers.put(target, action, types);
-        logger.log(LogLevel.Debug, "Registering handler for client method: '%s'.", target);
+        logger.debug("Registering handler for client method: '%s'.", target);
         return new Subscription(handlers, handler, target);
     }
 
@@ -779,7 +777,7 @@ public class HubConnection {
         public List<Class<?>> getParameterTypes(String methodName) {
             List<InvocationHandler> handlers = connection.handlers.get(methodName);
             if (handlers == null) {
-                logger.log(LogLevel.Warning, "Failed to find handler for '%s' method.", methodName);
+                logger.warn("Failed to find handler for '%s' method.", methodName);
                 return emptyArray;
             }
 

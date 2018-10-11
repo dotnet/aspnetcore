@@ -12,7 +12,6 @@ import io.reactivex.Single;
 public class HttpHubConnectionBuilder {
     private final String url;
     private Transport transport;
-    private Logger logger;
     private HttpClient httpClient;
     private boolean skipNegotiate;
     private Single<String> accessTokenProvider;
@@ -28,14 +27,8 @@ public class HttpHubConnectionBuilder {
         return this;
     }
 
-
     public HttpHubConnectionBuilder withHttpClient(HttpClient httpClient) {
         this.httpClient = httpClient;
-        return this;
-    }
-
-    public HttpHubConnectionBuilder configureLogging(LogLevel logLevel) {
-        this.logger = new ConsoleLogger(logLevel);
         return this;
     }
 
@@ -46,16 +39,6 @@ public class HttpHubConnectionBuilder {
 
     public HttpHubConnectionBuilder withAccessTokenProvider(Single<String> accessTokenProvider) {
         this.accessTokenProvider = accessTokenProvider;
-        return this;
-    }
-
-    public HttpHubConnectionBuilder configureLogging(Logger logger) {
-        this.logger = logger;
-        return this;
-    }
-
-    public HttpHubConnectionBuilder withLogger(Logger logger) {
-        this.logger = logger;
         return this;
     }
 
@@ -78,6 +61,6 @@ public class HttpHubConnectionBuilder {
     }
 
     public HubConnection build() {
-        return new HubConnection(url, transport, skipNegotiate, logger, httpClient, accessTokenProvider, handshakeResponseTimeout, headers);
+        return new HubConnection(url, transport, skipNegotiate, httpClient, accessTokenProvider, handshakeResponseTimeout, headers);
     }
 }

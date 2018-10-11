@@ -41,6 +41,7 @@ dependencies {
     implementation 'com.google.code.gson:gson'
     implementation 'com.squareup.okhttp3:okhttp'
     implementation 'io.reactivex.rxjava2:rxjava'
+    implementation 'org.slf4j:slf4j-api'
 }
 
 spotless {

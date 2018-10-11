@@ -7,22 +7,26 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 class WebSocketTransport implements Transport {
     private WebSocketWrapper webSocketClient;
     private OnReceiveCallBack onReceiveCallBack;
     private Consumer<String> onClose;
     private String url;
-    private Logger logger;
     private final HttpClient client;
     private final Map<String, String> headers;
+
+    private final Logger logger = LoggerFactory.getLogger(WebSocketTransport.class);
 
     private static final String HTTP = "http";
     private static final String HTTPS = "https";
     private static final String WS = "ws";
     private static final String WSS = "wss";
 
-    public WebSocketTransport(Map<String, String> headers, HttpClient client, Logger logger) {
-        this.logger = logger;
+
+    public WebSocketTransport(Map<String, String> headers, HttpClient client) {
         this.client = client;
         this.headers = headers;
     }
@@ -44,7 +48,7 @@ class WebSocketTransport implements Transport {
     @Override
     public CompletableFuture<Void> start(String url) {
         this.url = formatUrl(url);
-        logger.log(LogLevel.Debug, "Starting Websocket connection.");
+        logger.debug("Starting Websocket connection.");
         this.webSocketClient = client.createWebSocket(this.url, this.headers);
         this.webSocketClient.setOnReceive((message) -> onReceive(message));
         this.webSocketClient.setOnClose((code, reason) -> {
@@ -53,7 +57,7 @@ class WebSocketTransport implements Transport {
             }
         });
 
-        return webSocketClient.start().thenRun(() -> logger.log(LogLevel.Information, "WebSocket transport connected to: %s.", this.url));
+        return webSocketClient.start().thenRun(() -> logger.info("WebSocket transport connected to: %s.", this.url));
     }
 
     @Override
@@ -64,7 +68,7 @@ class WebSocketTransport implements Transport {
     @Override
     public void setOnReceive(OnReceiveCallBack callback) {
         this.onReceiveCallBack = callback;
-        logger.log(LogLevel.Debug, "OnReceived callback has been set.");
+        logger.debug("OnReceived callback has been set.");
     }
 
     @Override
@@ -79,11 +83,11 @@ class WebSocketTransport implements Transport {
 
     @Override
     public CompletableFuture<Void> stop() {
-        return webSocketClient.stop().whenComplete((i, j) -> logger.log(LogLevel.Information, "WebSocket connection stopped."));
+        return webSocketClient.stop().whenComplete((i, j) -> logger.info("WebSocket connection stopped."));
     }
 
     void onClose(int code, String reason) {
-        logger.log(LogLevel.Information, "WebSocket connection stopping with " +
+        logger.info("WebSocket connection stopping with " +
                 "code %d and reason '%s'.", code, reason);
         if (code != 1000) {
             onClose.accept(reason);
