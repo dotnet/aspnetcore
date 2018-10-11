@@ -5,6 +5,7 @@ using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -12,16 +13,32 @@ namespace SessionSample
 {
     public class Startup
     {
+        public Startup(IHostingEnvironment env)
+        {
+            var builder = new ConfigurationBuilder()
+                .SetBasePath(env.ContentRootPath)
+                .AddJsonFile("appsettings.json");
+
+            if (env.IsDevelopment())
+            {
+                builder.AddUserSecrets<Startup>();
+            }
+
+            Configuration = builder.Build();
+        }
+
+        public IConfigurationRoot Configuration { get; set; }
+
         public void ConfigureServices(IServiceCollection services)
         {
-            // Adds a default in-memory implementation of IDistributedCache
+            // Uncomment the following line to use the in-memory implementation of IDistributedCache
             services.AddDistributedMemoryCache();
-
+            
             // Uncomment the following line to use the Microsoft SQL Server implementation of IDistributedCache.
             // Note that this would require setting up the session state database.
-            //services.AddSqlServerCache(o =>
+            //services.AddDistributedSqlServerCache(o =>
             //{
-            //    o.ConnectionString = "Server=.;Database=ASPNET5SessionState;Trusted_Connection=True;";
+            //    o.ConnectionString = Configuration["AppSettings:ConnectionString"];
             //    o.SchemaName = "dbo";
             //    o.TableName = "Sessions";
             //});
