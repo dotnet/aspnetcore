@@ -4,8 +4,8 @@
 using System;
 using System.IO;
 using System.Reflection;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Extensions.ApiDescription.Tool.Commands
 {
@@ -56,41 +56,91 @@ namespace Microsoft.Extensions.ApiDescription.Tool.Commands
 
             try
             {
-                var serviceType = Type.GetType(serviceName, throwOnError: true);
-                var method = serviceType.GetMethod(methodName, new[] { typeof(TextWriter), typeof(string) });
-                var service = services.GetRequiredService(serviceType);
-
-                var success = true;
-                using (var writer = File.CreateText(context.Output))
+                Type serviceType = null;
+                foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
                 {
-                    if (method.ReturnType == typeof(bool))
+                    serviceType = assembly.GetType(serviceName, throwOnError: false);
+                    if (serviceType != null)
                     {
-                        success = (bool)method.Invoke(service, new object[] { writer, documentName });
-                    }
-                    else
-                    {
-                        method.Invoke(service, new object[] { writer, documentName });
+                        break;
                     }
                 }
 
-                if (!success)
+                // As part of the aspnet/Mvc#8425 fix, make all warnings in this method errors unless the file already
+                // exists.
+                if (serviceType == null)
                 {
-                    // As part of the aspnet/Mvc#8425 fix, make this an error unless the file already exists.
-                    var message = Resources.FormatMethodInvocationFailed(methodName, serviceName, documentName);
-                    Reporter.WriteWarning(message);
+                    Reporter.WriteWarning(Resources.FormatServiceTypeNotFound(serviceName));
+                    return false;
                 }
 
-                return success;
+                var method = serviceType.GetMethod(methodName, new[] { typeof(string), typeof(TextWriter) });
+                if (method == null)
+                {
+                    Reporter.WriteWarning(Resources.FormatMethodNotFound(methodName, serviceName));
+                    return false;
+                }
+                else if (!typeof(Task).IsAssignableFrom(method.ReturnType))
+                {
+                    Reporter.WriteWarning(Resources.FormatMethodReturnTypeUnsupported(
+                        methodName,
+                        serviceName,
+                        method.ReturnType,
+                        typeof(Task)));
+                    return false;
+                }
+
+                var service = services.GetService(serviceType);
+                if (service == null)
+                {
+                    Reporter.WriteWarning(Resources.FormatServiceNotFound(serviceName));
+                    return false;
+                }
+
+                // Create the output FileStream last to avoid corrupting an existing file or writing partial data.
+                var stream = new MemoryStream();
+                using (var writer = new StreamWriter(stream))
+                {
+                    var resultTask = (Task)method.Invoke(service, new object[] { documentName, writer });
+                    if (resultTask == null)
+                    {
+                        Reporter.WriteWarning(
+                            Resources.FormatMethodReturnedNull(methodName, serviceName, nameof(Task)));
+                        return false;
+                    }
+
+                    var finished = Task.WhenAny(resultTask, Task.Delay(TimeSpan.FromMinutes(1)));
+                    if (!ReferenceEquals(resultTask, finished))
+                    {
+                        Reporter.WriteWarning(Resources.FormatMethodTimedOut(methodName, serviceName, 1));
+                        return false;
+                    }
+
+                    writer.Flush();
+                    stream.Position = 0L;
+                    using (var outStream = File.Create(context.OutputPath))
+                    {
+                        stream.CopyTo(outStream);
+                    }
+                }
+
+                return true;
+            }
+            catch (AggregateException ex) when (ex.InnerException != null)
+            {
+                foreach (var innerException in ex.Flatten().InnerExceptions)
+                {
+                    Reporter.WriteWarning(FormatException(innerException));
+                }
             }
             catch (Exception ex)
             {
-                var message = FormatException(ex);
-
-                // As part of the aspnet/Mvc#8425 fix, make this an error unless the file already exists.
-                Reporter.WriteWarning(message);
-
-                return false;
+                Reporter.WriteWarning(FormatException(ex));
             }
+
+            File.Delete(context.OutputPath);
+
+            return false;
         }
 
         // TODO: Use Microsoft.AspNetCore.Hosting.WebHostBuilderFactory.Sources once we have dev feed available.

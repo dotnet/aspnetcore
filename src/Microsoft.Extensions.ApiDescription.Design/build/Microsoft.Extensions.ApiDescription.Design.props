@@ -97,7 +97,7 @@
       <DocumentPath />
       <!--
         Method Default document generator should invoke on the %(Service) to generate document.
-        Default is set in server project, falling back to "Generate".
+        Default is set in server project, falling back to "GenerateAsync".
       -->
       <Method />
       <!--

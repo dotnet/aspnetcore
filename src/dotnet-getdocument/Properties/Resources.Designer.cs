@@ -305,7 +305,7 @@ namespace Microsoft.Extensions.ApiDescription.Tool
             => GetString("OutputDescription");
 
         /// <summary>
-        /// Unable to retrieve '{0}' project metadata. Ensure '{1}' is set.
+        /// Unable to retrieve '{0}' project metadata. Ensure '$({1})' is set.
         /// </summary>
         internal static string GetMetadataValueFailed
         {
@@ -313,7 +313,7 @@ namespace Microsoft.Extensions.ApiDescription.Tool
         }
 
         /// <summary>
-        /// Unable to retrieve '{0}' project metadata. Ensure '{1}' is set.
+        /// Unable to retrieve '{0}' project metadata. Ensure '$({1})' is set.
         /// </summary>
         internal static string FormatGetMetadataValueFailed(object p0, object p1)
             => string.Format(CultureInfo.CurrentCulture, GetString("GetMetadataValueFailed"), p0, p1);

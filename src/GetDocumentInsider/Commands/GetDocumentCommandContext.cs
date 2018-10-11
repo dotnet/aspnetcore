@@ -18,7 +18,7 @@ namespace Microsoft.Extensions.ApiDescription.Tool.Commands
 
         public string Method { get; set; }
 
-        public string Output { get; set; }
+        public string OutputPath { get; set; }
 
         public string Service { get; set; }
     }

@@ -15,7 +15,7 @@ namespace Microsoft.Extensions.ApiDescription.Tool.Commands
     internal class GetDocumentCommand : ProjectCommandBase
     {
         internal const string FallbackDocumentName = "v1";
-        internal const string FallbackMethod = "Generate";
+        internal const string FallbackMethod = "GenerateAsync";
         internal const string FallbackService = "Microsoft.Extensions.ApiDescription.IDocumentProvider";
 
         private CommandOption _documentName;
@@ -139,7 +139,7 @@ namespace Microsoft.Extensions.ApiDescription.Tool.Commands
                     AssemblyName = Path.GetFileNameWithoutExtension(assemblyPath),
                     DocumentName = _documentName.Value(),
                     Method = _method.Value(),
-                    Output = _output.Value(),
+                    OutputPath = _output.Value(),
                     Service = _service.Value(),
                 };
 
