@@ -10,15 +10,16 @@ void DisconnectHandler::NotifyDisconnect()
 {
     try
     {
-        std::unique_ptr<IREQUEST_HANDLER, IREQUEST_HANDLER_DELETER> module;
+        std::unique_ptr<IREQUEST_HANDLER, IREQUEST_HANDLER_DELETER> pHandler;
         {
             SRWExclusiveLock lock(m_handlerLock);
-            m_pHandler.swap(module);
+            m_pHandler.swap(pHandler);
+            m_disconnectFired = true;
         }
 
-        if (module != nullptr)
+        if (pHandler != nullptr)
         {
-            module->NotifyDisconnect();
+            pHandler->NotifyDisconnect();
         }
     }
     catch (...)
@@ -29,12 +30,28 @@ void DisconnectHandler::NotifyDisconnect()
 
 void DisconnectHandler::CleanupStoredContext() noexcept
 {
-    SetHandler(nullptr);
     delete this;
 }
 
-void DisconnectHandler::SetHandler(std::unique_ptr<IREQUEST_HANDLER, IREQUEST_HANDLER_DELETER> handler) noexcept
+void DisconnectHandler::SetHandler(std::unique_ptr<IREQUEST_HANDLER, IREQUEST_HANDLER_DELETER> handler)
 {
-    SRWExclusiveLock lock(m_handlerLock);
-    handler.swap(m_pHandler);
+    IREQUEST_HANDLER* pHandler = nullptr;
+    {
+        SRWExclusiveLock lock(m_handlerLock);
+
+        handler.swap(m_pHandler);
+        pHandler = m_pHandler.get();
+    }
+
+    assert(pHandler != nullptr);
+
+    if (pHandler != nullptr && (m_disconnectFired || m_pHttpConnection != nullptr && !m_pHttpConnection->IsConnected()))
+    {
+        pHandler->NotifyDisconnect();
+    }
+}
+
+void DisconnectHandler::RemoveHandler() noexcept
+{
+    m_pHandler = nullptr;
 }

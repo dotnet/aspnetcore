@@ -85,4 +85,6 @@ private:
     PFN_DISCONNECT_HANDLER       m_pDisconnectHandler;
     static ALLOC_CACHE_HANDLER *   sm_pAlloc;
     ModuleTracer m_moduleTracer;
+    bool m_disconnectFired;
+    SRWLOCK m_srwDisconnectLock;
 };

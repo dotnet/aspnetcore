@@ -26,8 +26,10 @@ IN_PROCESS_HANDLER::IN_PROCESS_HANDLER(
    m_pRequestHandlerContext(pRequestHandlerContext),
    m_pAsyncCompletionHandler(pAsyncCompletion),
    m_pDisconnectHandler(pDisconnectHandler),
-   m_moduleTracer(pW3Context->GetTraceContext())
+   m_moduleTracer(pW3Context->GetTraceContext()),
+   m_disconnectFired(false)
 {
+    InitializeSRWLock(&m_srwDisconnectLock);
 }
 
 __override
@@ -92,16 +94,29 @@ REQUEST_NOTIFICATION_STATUS IN_PROCESS_HANDLER::ServerShutdownMessage()
 VOID
 IN_PROCESS_HANDLER::NotifyDisconnect()
 {
+    m_moduleTracer.RequestDisconnect();
+
     if (m_pApplication->QueryBlockCallbacksIntoManaged() ||
         m_fManagedRequestComplete)
     {
         return;
     }
 
-    m_moduleTracer.RequestDisconnect();
+    // NotifyDisconnect can be called before the m_pManagedHttpContext is set,
+    // so save that in a bool.
+    // Don't lock when calling m_pDisconnect to avoid the potential deadlock between this
+    // and SetManagedHttpContext
+    void* pManagedHttpContext = nullptr;
+    {
+        SRWExclusiveLock lock(m_srwDisconnectLock);
+        pManagedHttpContext = m_pManagedHttpContext;
+        m_disconnectFired = true;
+    }
 
-    assert(m_pManagedHttpContext != nullptr);
-    m_pDisconnectHandler(m_pManagedHttpContext);
+    if (pManagedHttpContext != nullptr)
+    {
+        m_pDisconnectHandler(m_pManagedHttpContext);
+    }
 }
 
 VOID
@@ -127,7 +142,15 @@ IN_PROCESS_HANDLER::SetManagedHttpContext(
     PVOID pManagedHttpContext
 )
 {
-    m_pManagedHttpContext = pManagedHttpContext;
+    {
+        SRWExclusiveLock lock(m_srwDisconnectLock);
+        m_pManagedHttpContext = pManagedHttpContext;
+    }
+
+    if (m_disconnectFired && m_pManagedHttpContext != nullptr)
+    {
+        m_pDisconnectHandler(m_pManagedHttpContext);
+    }
 }
 
 // static

@@ -190,13 +190,20 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
             _bodyOutput.Dispose();
 
-            try
+            var cts = _abortedCts;
+            if (cts != null)
             {
-                _abortedCts?.Cancel();
-            }
-            catch (Exception)
-            {
-                // ignore
+                ThreadPool.QueueUserWorkItem(t =>
+                {
+                    try
+                    {
+                        cts.Cancel();
+                    }
+                    catch (Exception)
+                    {
+                        // ignore
+                    }
+                });
             }
         }
 

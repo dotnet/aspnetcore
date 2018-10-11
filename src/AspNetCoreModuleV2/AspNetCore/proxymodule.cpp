@@ -96,7 +96,6 @@ ASPNET_CORE_PROXY_MODULE::OnExecuteRequestHandler(
             FINISHED(HRESULT_FROM_WIN32(ERROR_SERVER_SHUTDOWN_IN_PROGRESS));
         }
 
-
         FINISHED_IF_FAILED(m_pApplicationManager->GetOrCreateApplicationInfo(
             *pHttpContext,
             m_pApplicationInfo));
@@ -185,7 +184,7 @@ void ASPNET_CORE_PROXY_MODULE::SetupDisconnectHandler(IHttpContext * pHttpContex
 
     if (pDisconnectHandler == nullptr)
     {
-        auto newHandler = std::make_unique<DisconnectHandler>();
+        auto newHandler = std::make_unique<DisconnectHandler>(pHttpContext->GetConnection());
         pDisconnectHandler = newHandler.get();
         // ModuleContextContainer takes ownership of disconnectHandler
         // we are trusting that it would not release it before deleting the context
@@ -207,6 +206,6 @@ void ASPNET_CORE_PROXY_MODULE::RemoveDisconnectHandler() noexcept
 
     if (handler != nullptr)
     {
-        handler->SetHandler(nullptr);
+        handler->RemoveHandler();
     }
 }
