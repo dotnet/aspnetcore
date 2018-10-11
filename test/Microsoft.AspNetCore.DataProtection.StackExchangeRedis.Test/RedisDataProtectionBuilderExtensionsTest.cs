@@ -8,7 +8,7 @@ using Moq;
 using StackExchange.Redis;
 using Xunit;
 
-namespace Microsoft.AspNetCore.DataProtection.Redis
+namespace Microsoft.AspNetCore.DataProtection.StackExchangeRedis
 {
     public class RedisDataProtectionBuilderExtensionsTest
     {
@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.DataProtection.Redis
             var builder = serviceCollection.AddDataProtection();
 
             // Act
-            builder.PersistKeysToRedis(connection);
+            builder.PersistKeysToStackExchangeRedis(connection);
             var services = serviceCollection.BuildServiceProvider();
 
             // Assert

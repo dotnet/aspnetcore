@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.DataProtection.StackExchangeRedis;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using StackExchange.Redis;
@@ -20,7 +21,7 @@ namespace RedisSample
             using (var services = new ServiceCollection()
                 .AddLogging(o => o.AddConsole().SetMinimumLevel(LogLevel.Debug))
                 .AddDataProtection()
-                .PersistKeysToRedis(redis, "DataProtection-Keys")
+                .PersistKeysToStackExchangeRedis(redis, "DataProtection-Keys")
                 .Services
                 .BuildServiceProvider())
             {

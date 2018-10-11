@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="StackExchange.Redis.StrongName" Version="$(StackExchangeRedisStrongNamePackageVersion)" />
+    <PackageReference Include="StackExchange.Redis" Version="$(StackExchangeRedisPackageVersion)" />
   </ItemGroup>
 
 </Project>

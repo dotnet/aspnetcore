@@ -27,6 +27,7 @@
     <MoqPackageVersion>4.9.0</MoqPackageVersion>
     <NETStandardLibrary20PackageVersion>2.0.3</NETStandardLibrary20PackageVersion>
     <StackExchangeRedisStrongNamePackageVersion>1.2.6</StackExchangeRedisStrongNamePackageVersion>
+    <StackExchangeRedisPackageVersion>2.0.513</StackExchangeRedisPackageVersion>
     <SystemSecurityCryptographyXmlPackageVersion>4.6.0-preview1-26907-04</SystemSecurityCryptographyXmlPackageVersion>
     <SystemSecurityPrincipalWindowsPackageVersion>4.6.0-preview1-26907-04</SystemSecurityPrincipalWindowsPackageVersion>
     <WindowsAzureStoragePackageVersion>8.1.4</WindowsAzureStoragePackageVersion>

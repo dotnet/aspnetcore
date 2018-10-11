@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>net461;netcoreapp3.0</TargetFrameworks>
@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.DataProtection.Redis\Microsoft.AspNetCore.DataProtection.Redis.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.DataProtection.StackExchangeRedis\Microsoft.AspNetCore.DataProtection.StackExchangeRedis.csproj" />
   </ItemGroup>
 
   <ItemGroup>

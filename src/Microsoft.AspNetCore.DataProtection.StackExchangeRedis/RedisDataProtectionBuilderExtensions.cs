@@ -5,13 +5,14 @@ using System;
 using StackExchange.Redis;
 using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.DataProtection.StackExchangeRedis;
 
 namespace Microsoft.AspNetCore.DataProtection
 {
     /// <summary>
     /// Contains Redis-specific extension methods for modifying a <see cref="IDataProtectionBuilder"/>.
     /// </summary>
-    public static class RedisDataProtectionBuilderExtensions
+    public static class StackExchangeRedisDataProtectionBuilderExtensions
     {
         private const string DataProtectionKeysName = "DataProtection-Keys";
 
@@ -22,7 +23,7 @@ namespace Microsoft.AspNetCore.DataProtection
         /// <param name="databaseFactory">The delegate used to create <see cref="IDatabase"/> instances.</param>
         /// <param name="key">The <see cref="RedisKey"/> used to store key list.</param>
         /// <returns>A reference to the <see cref="IDataProtectionBuilder" /> after this operation has completed.</returns>
-        public static IDataProtectionBuilder PersistKeysToRedis(this IDataProtectionBuilder builder, Func<IDatabase> databaseFactory, RedisKey key)
+        public static IDataProtectionBuilder PersistKeysToStackExchangeRedis(this IDataProtectionBuilder builder, Func<IDatabase> databaseFactory, RedisKey key)
         {
             if (builder == null)
             {
@@ -32,7 +33,7 @@ namespace Microsoft.AspNetCore.DataProtection
             {
                 throw new ArgumentNullException(nameof(databaseFactory));
             }
-            return PersistKeysToRedisInternal(builder, databaseFactory, key);
+            return PersistKeysToStackExchangeRedisInternal(builder, databaseFactory, key);
         }
 
         /// <summary>
@@ -41,9 +42,9 @@ namespace Microsoft.AspNetCore.DataProtection
         /// <param name="builder">The builder instance to modify.</param>
         /// <param name="connectionMultiplexer">The <see cref="IConnectionMultiplexer"/> for database access.</param>
         /// <returns>A reference to the <see cref="IDataProtectionBuilder" /> after this operation has completed.</returns>
-        public static IDataProtectionBuilder PersistKeysToRedis(this IDataProtectionBuilder builder, IConnectionMultiplexer connectionMultiplexer)
+        public static IDataProtectionBuilder PersistKeysToStackExchangeRedis(this IDataProtectionBuilder builder, IConnectionMultiplexer connectionMultiplexer)
         {
-            return PersistKeysToRedis(builder, connectionMultiplexer, DataProtectionKeysName);
+            return PersistKeysToStackExchangeRedis(builder, connectionMultiplexer, DataProtectionKeysName);
         }
 
         /// <summary>
@@ -53,7 +54,7 @@ namespace Microsoft.AspNetCore.DataProtection
         /// <param name="connectionMultiplexer">The <see cref="IConnectionMultiplexer"/> for database access.</param>
         /// <param name="key">The <see cref="RedisKey"/> used to store key list.</param>
         /// <returns>A reference to the <see cref="IDataProtectionBuilder" /> after this operation has completed.</returns>
-        public static IDataProtectionBuilder PersistKeysToRedis(this IDataProtectionBuilder builder, IConnectionMultiplexer connectionMultiplexer, RedisKey key)
+        public static IDataProtectionBuilder PersistKeysToStackExchangeRedis(this IDataProtectionBuilder builder, IConnectionMultiplexer connectionMultiplexer, RedisKey key)
         {
             if (builder == null)
             {
@@ -63,10 +64,10 @@ namespace Microsoft.AspNetCore.DataProtection
             {
                 throw new ArgumentNullException(nameof(connectionMultiplexer));
             }
-            return PersistKeysToRedisInternal(builder, () => connectionMultiplexer.GetDatabase(), key);
+            return PersistKeysToStackExchangeRedisInternal(builder, () => connectionMultiplexer.GetDatabase(), key);
         }
 
-        private static IDataProtectionBuilder PersistKeysToRedisInternal(IDataProtectionBuilder builder, Func<IDatabase> databaseFactory, RedisKey key)
+        private static IDataProtectionBuilder PersistKeysToStackExchangeRedisInternal(IDataProtectionBuilder builder, Func<IDatabase> databaseFactory, RedisKey key)
         {
             builder.Services.Configure<KeyManagementOptions>(options =>
             {
