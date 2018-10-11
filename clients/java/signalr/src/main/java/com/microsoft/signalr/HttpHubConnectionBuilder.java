@@ -4,6 +4,8 @@
 package com.microsoft.signalr;
 
 import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
 
 import io.reactivex.Single;
 
@@ -15,6 +17,7 @@ public class HttpHubConnectionBuilder {
     private boolean skipNegotiate;
     private Single<String> accessTokenProvider;
     private Duration handshakeResponseTimeout;
+    private Map<String, String> headers;
 
     HttpHubConnectionBuilder(String url) {
         this.url = url;
@@ -61,7 +64,20 @@ public class HttpHubConnectionBuilder {
         return this;
     }
 
+    public HttpHubConnectionBuilder withHeaders(Map<String, String> headers) {
+        this.headers = headers;
+        return this;
+    }
+
+    public HttpHubConnectionBuilder withHeader(String name, String value) {
+        if (headers == null) {
+            this.headers = new HashMap<>();
+        }
+        this.headers.put(name, value);
+        return this;
+    }
+
     public HubConnection build() {
-        return new HubConnection(url, transport, skipNegotiate, logger, httpClient, accessTokenProvider, handshakeResponseTimeout);
+        return new HubConnection(url, transport, skipNegotiate, logger, httpClient, accessTokenProvider, handshakeResponseTimeout, headers);
     }
 }

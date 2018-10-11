@@ -72,7 +72,8 @@ public class HubConnection {
         this.tickRate = tickRate;
     }
 
-    HubConnection(String url, Transport transport, boolean skipNegotiate, Logger logger, HttpClient httpClient, Single<String> accessTokenProvider, Duration handshakeResponseTimeout) {
+    HubConnection(String url, Transport transport, boolean skipNegotiate, Logger logger, HttpClient httpClient,
+                  Single<String> accessTokenProvider, Duration handshakeResponseTimeout, Map<String, String> headers) {
         if (url == null || url.isEmpty()) {
             throw new IllegalArgumentException("A valid url is required.");
         }
@@ -104,6 +105,10 @@ public class HubConnection {
 
         if (handshakeResponseTimeout != null) {
             this.handshakeResponseTimeout = handshakeResponseTimeout;
+        }
+
+        if (headers != null) {
+            this.headers.putAll(headers);
         }
 
         this.skipNegotiate = skipNegotiate;

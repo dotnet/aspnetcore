@@ -1037,7 +1037,7 @@ class HubConnectionTest {
     }
 
     @Test
-    public void accessTokenProviderIsOverriddenFromRedirectNegotiate()  {
+    public void accessTokenProviderIsOverriddenFromRedirectNegotiate() {
         AtomicReference<String> token = new AtomicReference<>();
         TestHttpClient client = new TestHttpClient()
             .on("POST", "http://example.com/negotiate", (req) -> CompletableFuture.completedFuture(new HttpResponse(200, "", "{\"url\":\"http://testexample.com/\",\"accessToken\":\"newToken\"}")))
@@ -1098,7 +1098,60 @@ class HubConnectionTest {
     }
 
     @Test
-    public void hubConnectionCanBeStartedAfterBeingStopped()  {
+    public void headersAreSetAndSentThroughBuilder() {
+        AtomicReference<String> header = new AtomicReference<>();
+        TestHttpClient client = new TestHttpClient()
+                .on("POST", "http://example.com/negotiate",
+                        (req) -> {
+                            header.set(req.getHeaders().get("ExampleHeader"));
+                            return CompletableFuture
+                                    .completedFuture(new HttpResponse(200, "", "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                                            + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"));
+                        });
+
+
+        MockTransport transport = new MockTransport();
+        HubConnection hubConnection = HubConnectionBuilder.create("http://example.com")
+                .withTransport(transport)
+                .withHttpClient(client)
+                .withHeader("ExampleHeader", "ExampleValue")
+                .build();
+
+        hubConnection.start().blockingAwait(1000, TimeUnit.MILLISECONDS);
+        assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
+        hubConnection.stop();
+        assertEquals("ExampleValue", header.get());
+    }
+
+    @Test
+    public void sameHeaderSetTwiceGetsOverwritten() {
+        AtomicReference<String> header = new AtomicReference<>();
+        TestHttpClient client = new TestHttpClient()
+                .on("POST", "http://example.com/negotiate",
+                        (req) -> {
+                            header.set(req.getHeaders().get("ExampleHeader"));
+                            return CompletableFuture
+                                    .completedFuture(new HttpResponse(200, "", "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                                            + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"));
+                        });
+
+
+        MockTransport transport = new MockTransport();
+        HubConnection hubConnection = HubConnectionBuilder.create("http://example.com")
+                .withTransport(transport)
+                .withHttpClient(client)
+                .withHeader("ExampleHeader", "ExampleValue")
+                .withHeader("ExampleHeader", "New Value")
+                .build();
+
+        hubConnection.start().blockingAwait(1000, TimeUnit.MILLISECONDS);
+        assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
+        hubConnection.stop();
+        assertEquals("New Value", header.get());
+    }
+
+    @Test
+    public void hubConnectionCanBeStartedAfterBeingStopped() throws Exception {
         MockTransport transport = new MockTransport();
         HubConnection hubConnection = HubConnectionBuilder
                 .create("http://example.com")
