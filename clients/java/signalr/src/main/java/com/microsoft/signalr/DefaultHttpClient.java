@@ -22,8 +22,8 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 
-class DefaultHttpClient extends HttpClient {
-    private OkHttpClient client;
+final class DefaultHttpClient extends HttpClient {
+    private final OkHttpClient client;
     private Logger logger;
 
     public DefaultHttpClient(Logger logger) {

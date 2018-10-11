@@ -7,7 +7,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 class CallbackMap {
-    private Map<String, List<InvocationHandler>> handlers = new ConcurrentHashMap<>();
+    private final Map<String, List<InvocationHandler>> handlers = new ConcurrentHashMap<>();
 
     public InvocationHandler put(String target, ActionBase action, Class<?>... classes) {
         InvocationHandler handler = new InvocationHandler(action, classes);

@@ -3,13 +3,17 @@
 
 package com.microsoft.signalr;
 
-import java.io.IOException;
+import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
@@ -19,27 +23,56 @@ import io.reactivex.Single;
 
 public class HubConnection {
     private static final String RECORD_SEPARATOR = "\u001e";
-    private static List<Class<?>> emptyArray = new ArrayList<>();
-    private static int MAX_NEGOTIATE_ATTEMPTS = 100;
+    private static final List<Class<?>> emptyArray = new ArrayList<>();
+    private static final int MAX_NEGOTIATE_ATTEMPTS = 100;
 
-    private String baseUrl;
+    private final String baseUrl;
     private Transport transport;
     private OnReceiveCallBack callback;
-    private CallbackMap handlers = new CallbackMap();
+    private final CallbackMap handlers = new CallbackMap();
     private HubProtocol protocol;
     private Boolean handshakeReceived = false;
     private HubConnectionState hubConnectionState = HubConnectionState.DISCONNECTED;
-    private Lock hubConnectionStateLock = new ReentrantLock();
+    private final Lock hubConnectionStateLock = new ReentrantLock();
     private Logger logger;
     private List<Consumer<Exception>> onClosedCallbackList;
-    private boolean skipNegotiate;
+    private final boolean skipNegotiate;
     private Single<String> accessTokenProvider;
-    private Map<String, String> headers = new HashMap<>();
+    private final Map<String, String> headers = new HashMap<>();
     private ConnectionState connectionState = null;
-    private HttpClient httpClient;
+    private final HttpClient httpClient;
     private String stopError;
+    private Timer pingTimer = null;
+    private final AtomicLong nextServerTimeout = new AtomicLong();
+    private final AtomicLong nextPingActivation = new AtomicLong();
+    private Duration keepAliveInterval = Duration.ofSeconds(15);
+    private Duration serverTimeout = Duration.ofSeconds(30);
+    private Duration tickRate = Duration.ofSeconds(1);
+    private CompletableFuture<Void> handshakeResponseFuture;
+    private Duration handshakeResponseTimeout = Duration.ofSeconds(15);
 
-    HubConnection(String url, Transport transport, boolean skipNegotiate, Logger logger, HttpClient httpClient, Single<String> accessTokenProvider) {
+    public void setServerTimeout(Duration serverTimeout) {
+        this.serverTimeout = serverTimeout;
+    }
+
+    public Duration getServerTimeout() {
+        return this.serverTimeout;
+    }
+
+    public void setKeepAliveInterval(Duration keepAliveInterval) {
+        this.keepAliveInterval = keepAliveInterval;
+    }
+
+    public Duration getKeepAliveInterval() {
+        return this.keepAliveInterval;
+    }
+
+    // For testing purposes
+    void setTickRate(Duration tickRate) {
+        this.tickRate = tickRate;
+    }
+
+    HubConnection(String url, Transport transport, boolean skipNegotiate, Logger logger, HttpClient httpClient, Single<String> accessTokenProvider, Duration handshakeResponseTimeout) {
         if (url == null || url.isEmpty()) {
             throw new IllegalArgumentException("A valid url is required.");
         }
@@ -69,19 +102,34 @@ public class HubConnection {
             this.transport = transport;
         }
 
+        if (handshakeResponseTimeout != null) {
+            this.handshakeResponseTimeout = handshakeResponseTimeout;
+        }
+
         this.skipNegotiate = skipNegotiate;
 
         this.callback = (payload) -> {
+            resetServerTimeout();
             if (!handshakeReceived) {
                 int handshakeLength = payload.indexOf(RECORD_SEPARATOR) + 1;
                 String handshakeResponseString = payload.substring(0, handshakeLength - 1);
-                HandshakeResponseMessage handshakeResponse = HandshakeProtocol.parseHandshakeResponse(handshakeResponseString);
+                HandshakeResponseMessage handshakeResponse;
+                try {
+                    handshakeResponse = HandshakeProtocol.parseHandshakeResponse(handshakeResponseString);
+                } catch (RuntimeException ex) {
+                    RuntimeException exception = new RuntimeException("An invalid handshake response was received from the server.", ex);
+                    handshakeResponseFuture.completeExceptionally(exception);
+                    throw exception;
+                }
                 if (handshakeResponse.getHandshakeError() != null) {
                     String errorMessage = "Error in handshake " + handshakeResponse.getHandshakeError();
                     logger.log(LogLevel.Error, errorMessage);
-                    throw new RuntimeException(errorMessage);
+                    RuntimeException exception = new RuntimeException(errorMessage);
+                    handshakeResponseFuture.completeExceptionally(exception);
+                    throw exception;
                 }
                 handshakeReceived = true;
+                handshakeResponseFuture.complete(null);
 
                 payload = payload.substring(handshakeLength);
                 // The payload only contained the handshake response so we can return.
@@ -134,6 +182,12 @@ public class HubConnection {
         };
     }
 
+    private void timeoutHandshakeResponse(long timeout, TimeUnit unit) {
+        ScheduledExecutorService scheduledThreadPool = Executors.newSingleThreadScheduledExecutor();
+        scheduledThreadPool.schedule(() -> handshakeResponseFuture.completeExceptionally(
+                new TimeoutException("Timed out waiting for the server to respond to the handshake message.")), timeout, unit);
+    }
+
     private CompletableFuture<NegotiateResponse> handleNegotiate(String url) {
         HttpRequest request = new HttpRequest();
         request.addHeaders(this.headers);
@@ -142,12 +196,7 @@ public class HubConnection {
             if (response.getStatusCode() != 200) {
                 throw new RuntimeException(String.format("Unexpected status code returned from negotiate: %d %s.", response.getStatusCode(), response.getStatusText()));
             }
-            NegotiateResponse negotiateResponse;
-            try {
-                negotiateResponse = new NegotiateResponse(response.getContent());
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+            NegotiateResponse negotiateResponse = new NegotiateResponse(response.getContent());
 
             if (negotiateResponse.getError() != null) {
                 throw new RuntimeException(negotiateResponse.getError());
@@ -184,8 +233,9 @@ public class HubConnection {
             return Completable.complete();
         }
 
+        handshakeResponseFuture = new CompletableFuture<>();
         handshakeReceived = false;
-        CompletableFuture<Void> tokenFuture = new CompletableFuture<>(); 
+        CompletableFuture<Void> tokenFuture = new CompletableFuture<>();
         accessTokenProvider.subscribe(token -> {
             if (token != null && !token.isEmpty()) {
                 this.headers.put("Authorization", "Bearer " + token);
@@ -213,15 +263,41 @@ public class HubConnection {
             return transport.start(url).thenCompose((future) -> {
                 String handshake = HandshakeProtocol.createHandshakeRequestMessage(
                         new HandshakeRequestMessage(protocol.getName(), protocol.getVersion()));
-                return transport.send(handshake).thenRun(() -> {
-                    hubConnectionStateLock.lock();
-                    try {
-                        hubConnectionState = HubConnectionState.CONNECTED;
-                        connectionState = new ConnectionState(this);
-                        logger.log(LogLevel.Information, "HubConnection started.");
-                    } finally {
-                        hubConnectionStateLock.unlock();
-                    }
+                return transport.send(handshake).thenCompose((innerFuture) -> {
+                    timeoutHandshakeResponse(handshakeResponseTimeout.toMillis(), TimeUnit.MILLISECONDS);
+                    return handshakeResponseFuture.thenRun(() -> {
+                        hubConnectionStateLock.lock();
+                        try {
+                            hubConnectionState = HubConnectionState.CONNECTED;
+                            connectionState = new ConnectionState(this);
+                            logger.log(LogLevel.Information, "HubConnection started.");
+
+                            resetServerTimeout();
+                            this.pingTimer = new Timer();
+                            this.pingTimer.schedule(new TimerTask() {
+                                @Override
+                                public void run() {
+                                    try {
+                                        if (System.currentTimeMillis() > nextServerTimeout.get()) {
+                                            stop("Server timeout elapsed without receiving a message from the server.");
+                                            return;
+                                        }
+
+                                        if (System.currentTimeMillis() > nextPingActivation.get()) {
+                                            sendHubMessage(PingMessage.getInstance());
+                                        }
+                                    } catch (Exception e) {
+                                        logger.log(LogLevel.Warning, String.format("Error sending ping: %s", e.getMessage()));
+                                        // The connection is probably in a bad or closed state now, cleanup the timer so
+                                        // it stops triggering
+                                        pingTimer.cancel();
+                                    }
+                                }
+                            }, new Date(0), tickRate.toMillis());
+                        } finally {
+                            hubConnectionStateLock.unlock();
+                        }
+                    });
                 });
             });
         }));
@@ -308,6 +384,7 @@ public class HubConnection {
             connectionState = null;
             logger.log(LogLevel.Information, "HubConnection stopped.");
             hubConnectionState = HubConnectionState.DISCONNECTED;
+            handshakeResponseFuture.complete(null);
         } finally {
             hubConnectionStateLock.unlock();
         }
@@ -326,18 +403,18 @@ public class HubConnection {
      *
      * @param method The name of the server method to invoke.
      * @param args   The arguments to be passed to the method.
-     * @throws Exception If there was an error while sending.
      */
-    public void send(String method, Object... args) throws Exception {
+    public void send(String method, Object... args) {
         if (hubConnectionState != HubConnectionState.CONNECTED) {
-            throw new HubException("The 'send' method cannot be called if the connection is not active");
+            throw new RuntimeException("The 'send' method cannot be called if the connection is not active");
         }
 
         InvocationMessage invocationMessage = new InvocationMessage(null, method, args);
         sendHubMessage(invocationMessage);
     }
 
-    public <T> Single<T> invoke(Class<T> returnType, String method, Object... args) throws Exception {
+    @SuppressWarnings("unchecked")
+    public <T> Single<T> invoke(Class<T> returnType, String method, Object... args) {
         String id = connectionState.getNextInvocationId();
         InvocationMessage invocationMessage = new InvocationMessage(id, method, args);
 
@@ -368,14 +445,24 @@ public class HubConnection {
         return Single.fromFuture(future);
     }
 
-    private void sendHubMessage(HubMessage message) throws Exception {
+    private void sendHubMessage(HubMessage message) {
         String serializedMessage = protocol.writeMessage(message);
         if (message.getMessageType() == HubMessageType.INVOCATION) {
-            logger.log(LogLevel.Debug, "Sending %d message '%s'.", message.getMessageType().value, ((InvocationMessage)message).getInvocationId());
+            logger.log(LogLevel.Debug, "Sending %s message '%s'.", message.getMessageType().name(), ((InvocationMessage)message).getInvocationId());
         } else {
-            logger.log(LogLevel.Debug, "Sending %d message.", message.getMessageType().value);
+            logger.log(LogLevel.Debug, "Sending %s message.", message.getMessageType().name());
         }
         transport.send(serializedMessage);
+
+        resetKeepAlive();
+    }
+
+    private void resetServerTimeout() {
+        this.nextServerTimeout.set(System.currentTimeMillis() + serverTimeout.toMillis());
+    }
+
+    private void resetKeepAlive() {
+        this.nextPingActivation.set(System.currentTimeMillis() + keepAliveInterval.toMillis());
     }
 
     /**
@@ -684,7 +771,7 @@ public class HubConnection {
         }
 
         @Override
-        public List<Class<?>> getParameterTypes(String methodName) throws Exception {
+        public List<Class<?>> getParameterTypes(String methodName) {
             List<InvocationHandler> handlers = connection.handlers.get(methodName);
             if (handlers == null) {
                 logger.log(LogLevel.Warning, "Failed to find handler for '%s' method.", methodName);
@@ -692,7 +779,7 @@ public class HubConnection {
             }
 
             if (handlers.isEmpty()) {
-                throw new Exception(String.format("There are no callbacks registered for the method '%s'.", methodName));
+                throw new RuntimeException(String.format("There are no callbacks registered for the method '%s'.", methodName));
             }
 
             return handlers.get(0).getClasses();

@@ -5,7 +5,7 @@ package com.microsoft.signalr;
 
 class TestUtils {
     static HubConnection createHubConnection(String url) {
-        return createHubConnection(url, new MockTransport(), new NullLogger(), true, new TestHttpClient());
+        return createHubConnection(url, new MockTransport(true), new NullLogger(), true, new TestHttpClient());
     }
 
     static HubConnection createHubConnection(String url, Transport transport) {

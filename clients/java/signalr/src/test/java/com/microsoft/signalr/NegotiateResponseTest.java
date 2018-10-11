@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 
 class NegotiateResponseTest {
     @Test
-    public void VerifyNegotiateResponse() throws IOException {
+    public void VerifyNegotiateResponse() {
         String stringNegotiateResponse = "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\"" +
                 "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}," +
                 "{\"transport\":\"ServerSentEvents\",\"transferFormats\":[\"Text\"]}," +
@@ -27,7 +27,7 @@ class NegotiateResponseTest {
     }
 
     @Test
-    public void VerifyRedirectNegotiateResponse() throws IOException {
+    public void VerifyRedirectNegotiateResponse() {
         String stringNegotiateResponse = "{\"url\":\"www.example.com\"," +
                 "\"accessToken\":\"some_access_token\"," +
                 "\"availableTransports\":[]}";
@@ -40,7 +40,7 @@ class NegotiateResponseTest {
     }
 
     @Test
-    public void NegotiateResponseIgnoresExtraProperties() throws IOException {
+    public void NegotiateResponseIgnoresExtraProperties() {
         String stringNegotiateResponse = "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\"," +
                 "\"extra\":\"something\"}";
         NegotiateResponse negotiateResponse = new NegotiateResponse(stringNegotiateResponse);
@@ -48,7 +48,7 @@ class NegotiateResponseTest {
     }
 
     @Test
-    public void NegotiateResponseIgnoresExtraComplexProperties() throws IOException {
+    public void NegotiateResponseIgnoresExtraComplexProperties() {
         String stringNegotiateResponse = "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\"," +
                 "\"extra\":[\"something\"]}";
         NegotiateResponse negotiateResponse = new NegotiateResponse(stringNegotiateResponse);

@@ -12,16 +12,42 @@ class MockTransport implements Transport {
     private ArrayList<String> sentMessages = new ArrayList<>();
     private String url;
     private Consumer<String> onClose;
+    final private boolean ignorePings;
+    final private boolean autoHandshake;
+
+    private static final String RECORD_SEPARATOR = "\u001e";
+
+    public MockTransport() {
+        this(true, true);
+    }
+
+    public MockTransport(boolean autoHandshake) {
+        this(autoHandshake, true);
+    }
+
+    public MockTransport(boolean autoHandshake, boolean ignorePings) {
+        this.autoHandshake = autoHandshake;
+        this.ignorePings = ignorePings;
+    }
 
     @Override
-    public CompletableFuture start(String url) {
+    public CompletableFuture<Void> start(String url) {
         this.url = url;
+        if (autoHandshake) {
+            try {
+                onReceiveCallBack.invoke("{}" + RECORD_SEPARATOR);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
         return CompletableFuture.completedFuture(null);
     }
 
     @Override
-    public CompletableFuture send(String message) {
-        sentMessages.add(message);
+    public CompletableFuture<Void> send(String message) {
+        if (!(ignorePings && message.equals("{\"type\":6}" + RECORD_SEPARATOR))) {
+            sentMessages.add(message);
+        }
         return CompletableFuture.completedFuture(null);
     }
 
@@ -31,7 +57,7 @@ class MockTransport implements Transport {
     }
 
     @Override
-    public void onReceive(String message) throws Exception {
+    public void onReceive(String message) {
         this.onReceiveCallBack.invoke(message);
     }
 
@@ -41,7 +67,7 @@ class MockTransport implements Transport {
     }
 
     @Override
-    public CompletableFuture stop() {
+    public CompletableFuture<Void> stop() {
         onClose.accept(null);
         return CompletableFuture.completedFuture(null);
     }
@@ -50,7 +76,7 @@ class MockTransport implements Transport {
         onClose.accept(errorMessage);
     }
 
-    public void receiveMessage(String message) throws Exception {
+    public void receiveMessage(String message) {
         this.onReceive(message);
     }
 

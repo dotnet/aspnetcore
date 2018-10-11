@@ -29,4 +29,10 @@ class HandshakeProtocolTest {
         HandshakeResponseMessage hsr = HandshakeProtocol.parseHandshakeResponse(handshakeResponseWithError);
         assertEquals(hsr.getHandshakeError(), "Requested protocol 'messagepack' is not available.");
     }
+
+    @Test
+    public void InvalidHandshakeResponse() {
+        String handshakeResponseWithError = "{\"error\": \"Requested proto";
+        Throwable exception = assertThrows(RuntimeException.class, ()-> HandshakeProtocol.parseHandshakeResponse(handshakeResponseWithError));
+    }
 }

@@ -17,8 +17,9 @@
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.SignalR.Common\Microsoft.AspNetCore.SignalR.Common.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.SignalR.Client.Core\Microsoft.AspNetCore.SignalR.Client.Core.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.SignalR.Protocols.MessagePack\Microsoft.AspNetCore.SignalR.Protocols.MessagePack.csproj" />
-    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.SignalR.Redis\Microsoft.AspNetCore.SignalR.Redis.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.SignalR.StackExchangeRedis\Microsoft.AspNetCore.SignalR.StackExchangeRedis.csproj" />
     <ProjectReference Include="..\..\test\Microsoft.AspNetCore.SignalR.Tests.Utils\Microsoft.AspNetCore.SignalR.Tests.Utils.csproj" />
+    <ProjectReference Include="..\..\test\Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests\Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests.csproj" />
   </ItemGroup>
 
   <ItemGroup>

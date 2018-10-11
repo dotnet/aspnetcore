@@ -4,12 +4,11 @@
 package com.microsoft.signalr;
 
 public abstract class HubConnectionBuilder {
-
     public static HttpHubConnectionBuilder create(String url) {
         if (url == null || url.isEmpty()) {
             throw new IllegalArgumentException("A valid url is required.");
         }
-     return new HttpHubConnectionBuilder(url);
+        return new HttpHubConnectionBuilder(url);
     }
 
     public abstract HubConnection build();

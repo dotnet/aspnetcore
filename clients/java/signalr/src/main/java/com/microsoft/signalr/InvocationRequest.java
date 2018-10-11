@@ -6,9 +6,9 @@ package com.microsoft.signalr;
 import java.util.concurrent.CompletableFuture;
 
 class InvocationRequest {
-    private Class<?> returnType;
-    private CompletableFuture<Object> pendingCall = new CompletableFuture<>();
-    private String invocationId;
+    private final Class<?> returnType;
+    private final CompletableFuture<Object> pendingCall = new CompletableFuture<>();
+    private final String invocationId;
 
     InvocationRequest(Class<?> returnType, String invocationId) {
         this.returnType = returnType;

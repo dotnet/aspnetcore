@@ -3,18 +3,18 @@
 
 package com.microsoft.signalr;
 
-import java.util.concurrent.CompletableFuture;
-import java.util.function.Supplier;
+import java.time.Duration;
 
 import io.reactivex.Single;
 
 public class HttpHubConnectionBuilder {
-    private String url;
+    private final String url;
     private Transport transport;
     private Logger logger;
     private HttpClient httpClient;
     private boolean skipNegotiate;
     private Single<String> accessTokenProvider;
+    private Duration handshakeResponseTimeout;
 
     HttpHubConnectionBuilder(String url) {
         this.url = url;
@@ -56,7 +56,12 @@ public class HttpHubConnectionBuilder {
         return this;
     }
 
+    public HttpHubConnectionBuilder withHandshakeResponseTimeout(Duration timeout) {
+        this.handshakeResponseTimeout = timeout;
+        return this;
+    }
+
     public HubConnection build() {
-        return new HubConnection(url, transport, skipNegotiate, logger, httpClient, accessTokenProvider);
+        return new HubConnection(url, transport, skipNegotiate, logger, httpClient, accessTokenProvider, handshakeResponseTimeout);
     }
 }

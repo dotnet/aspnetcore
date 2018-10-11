@@ -62,6 +62,7 @@
     <NETStandardLibrary20PackageVersion>2.0.3</NETStandardLibrary20PackageVersion>
     <NewtonsoftJsonPackageVersion>11.0.2</NewtonsoftJsonPackageVersion>
     <StackExchangeRedisStrongNamePackageVersion>1.2.6</StackExchangeRedisStrongNamePackageVersion>
+    <StackExchangeRedisPackageVersion>2.0.513</StackExchangeRedisPackageVersion>
     <SystemBuffersPackageVersion>4.6.0-preview1-26907-04</SystemBuffersPackageVersion>
     <SystemIOPipelinesPackageVersion>4.6.0-preview1-26907-04</SystemIOPipelinesPackageVersion>
     <SystemMemoryPackageVersion>4.6.0-preview1-26717-04</SystemMemoryPackageVersion>

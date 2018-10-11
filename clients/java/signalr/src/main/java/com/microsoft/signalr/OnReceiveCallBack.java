@@ -4,5 +4,5 @@
 package com.microsoft.signalr;
 
 interface OnReceiveCallBack {
-    void invoke(String message) throws Exception;
+    void invoke(String message);
 }

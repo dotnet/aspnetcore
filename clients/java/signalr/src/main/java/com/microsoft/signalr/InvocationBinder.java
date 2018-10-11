@@ -7,5 +7,5 @@ import java.util.List;
 
 interface InvocationBinder {
     Class<?> getReturnType(String invocationId);
-    List<Class<?>> getParameterTypes(String methodName) throws Exception;
+    List<Class<?>> getParameterTypes(String methodName);
 }
