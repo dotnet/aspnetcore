@@ -2,9 +2,6 @@
   <PropertyGroup>
     <!-- This repo does not have solutions to build -->
     <DisableDefaultTargets>true</DisableDefaultTargets>
-    <GenerateSignRequest>false</GenerateSignRequest>
-
-    <SignType Condition=" '$(SignType)' == '' ">public</SignType>
 
     <SkipTests>false</SkipTests>
     <SkipTests Condition="'$(CompileOnly)' == 'true'">true</SkipTests>
