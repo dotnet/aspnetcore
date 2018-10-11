@@ -162,9 +162,8 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 
             // Perf: In most of the common cases, GenerateUrl is called with a null protocol, host and fragment.
             // In such cases, we might not need to build any URL as the url generated is mostly same as the virtual path available in pathData.
-            // For such common cases, this FastGenerateUrl method saves a string allocation per GenerateUrl call.
-            string url;
-            if (TryFastGenerateUrl(protocol, host, virtualPath, fragment, out url))
+            // For such common cases, this FastGenerateUrl method saves a string allocation per GenerateUrl call.            
+            if (TryFastGenerateUrl(protocol, host, virtualPath, fragment, out string url))
             {
                 return url;
             }
