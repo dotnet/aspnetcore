@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -24,15 +25,15 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             _fixture = fixture;
         }
 
-        public static ISet<string[]> FrebChecks()
+        public static IList<FrebLogItem> FrebChecks()
         {
-            var set = new HashSet<string[]>();
-            set.Add(new string[] { "ANCM_INPROC_EXECUTE_REQUEST_START" });
-            set.Add(new string[] { "ANCM_INPROC_EXECUTE_REQUEST_COMPLETION", "1" });
-            set.Add(new string[] { "ANCM_INPROC_ASYNC_COMPLETION_START" });
-            set.Add(new string[] { "ANCM_INPROC_ASYNC_COMPLETION_COMPLETION", "0" });
-            set.Add(new string[] { "ANCM_INPROC_MANAGED_REQUEST_COMPLETION" });
-            return set;
+            var list = new List<FrebLogItem>();
+            list.Add(new FrebLogItem("ANCM_INPROC_EXECUTE_REQUEST_START"));
+            list.Add(new FrebLogItem("ANCM_INPROC_EXECUTE_REQUEST_COMPLETION", "1"));
+            list.Add(new FrebLogItem("ANCM_INPROC_ASYNC_COMPLETION_START"));
+            list.Add(new FrebLogItem("ANCM_INPROC_ASYNC_COMPLETION_COMPLETION", "0"));
+            list.Add(new FrebLogItem("ANCM_INPROC_MANAGED_REQUEST_COMPLETION"));
+            return list;
         }
 
         [ConditionalFact]
@@ -45,10 +46,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             StopServer();
 
-            foreach (var data in FrebChecks())
-            {
-                AssertFrebLogs(result, data);
-            }
+            AssertFrebLogs(result, FrebChecks());
         }
 
         [ConditionalFact]
@@ -61,7 +59,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             StopServer();
 
-            AssertFrebLogs(result, "ANCM_INPROC_ASYNC_COMPLETION_COMPLETION", "2");
+            AssertFrebLogs(result, new FrebLogItem("ANCM_INPROC_ASYNC_COMPLETION_COMPLETION", "2"));
         }
 
         [ConditionalFact]
@@ -83,7 +81,9 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             StopServer();
 
-            AssertFrebLogs(result, "ANCM_INPROC_REQUEST_DISCONNECT");
+            // The order of freb logs is based on when the requests are complete.
+            // This is non-deterministic here, so we need to check both freb files for a request that was disconnected.
+            AssertFrebLogs(result, new FrebLogItem("ANCM_INPROC_REQUEST_DISCONNECT"), new FrebLogItem("ANCM_INPROC_MANAGED_REQUEST_COMPLETION"));
         }
 
         private async Task<IISDeploymentResult> SetupFrebApp()
@@ -96,22 +96,69 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             return result;
         }
 
-        private void AssertFrebLogs(IISDeploymentResult result, params string[] data)
+        private void AssertFrebLogs(IISDeploymentResult result, params FrebLogItem[] expectedFrebEvents)
+        {
+            AssertFrebLogs(result, (IEnumerable<FrebLogItem>)expectedFrebEvents);
+        }
+
+        private void AssertFrebLogs(IISDeploymentResult result, IEnumerable<FrebLogItem> expectedFrebEvents)
+        {
+            var frebEvent = GetFrebLogItems(result);
+            foreach (var expectedEvent in expectedFrebEvents)
+            {
+                Assert.Contains(expectedEvent, frebEvent);
+            }
+        }
+
+        private IEnumerable<FrebLogItem> GetFrebLogItems(IISDeploymentResult result)
         {
             var folderPath = Helpers.GetFrebFolder(_logFolderPath, result);
-            var fileString = Directory.GetFiles(folderPath).Where(f => f.EndsWith("xml")).OrderBy(x => x).Last();
+            var xmlFiles = Directory.GetFiles(folderPath).Where(f => f.EndsWith("xml"));
+            var frebEvents = new List<FrebLogItem>();
 
-            var xDocument = XDocument.Load(fileString).Root;
-            var nameSpace = (XNamespace)"http://schemas.microsoft.com/win/2004/08/events/event";
-            var elements = xDocument.Descendants(nameSpace + "Event");
-            var element = elements.Where(el => el.Descendants(nameSpace + "RenderingInfo").Single().Descendants(nameSpace + "Opcode").Single().Value == data[0]);
-
-            Assert.Single(element);
-
-            if (data.Length > 1)
+            foreach (var xmlFile in xmlFiles)
             {
-                var requestStatus = element.Single().Element(nameSpace + "EventData").Descendants().Where(el => el.Attribute("Name").Value == "requestStatus").Single();
-                Assert.Equal(data[1], requestStatus.Value);
+                var xDocument = XDocument.Load(xmlFile).Root;
+                var nameSpace = (XNamespace)"http://schemas.microsoft.com/win/2004/08/events/event";
+                var eventElements = xDocument.Descendants(nameSpace + "Event");
+                foreach (var eventElement in eventElements)
+                {
+                    var eventElementWithOpCode = eventElement.Descendants(nameSpace + "RenderingInfo").Single().Descendants(nameSpace + "Opcode").Single();
+                    var requestStatus = eventElement.Element(nameSpace + "EventData").Descendants().Where(el => el.Attribute("Name").Value == "requestStatus").SingleOrDefault();
+                    frebEvents.Add(new FrebLogItem(eventElementWithOpCode.Value, requestStatus?.Value));
+                }
+            }
+
+            return frebEvents;
+        }
+
+        public class FrebLogItem
+        {
+            private string _opCode;
+            private string _requestStatus;
+
+            public FrebLogItem(string opCode)
+            {
+                _opCode = opCode;
+            }
+
+            public FrebLogItem(string opCode, string requestStatus)
+            {
+                _opCode = opCode;
+                _requestStatus = requestStatus;
+            }
+
+            public override bool Equals(object obj)
+            {
+                var item = obj as FrebLogItem;
+                return item != null &&
+                       _opCode == item._opCode &&
+                       _requestStatus == item._requestStatus;
+            }
+
+            public override int GetHashCode()
+            {
+                return HashCode.Combine(_opCode, _requestStatus);
             }
         }
     }
