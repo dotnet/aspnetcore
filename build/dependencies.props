@@ -20,6 +20,7 @@
     <MicrosoftAspNetCoreIdentityUIPackageVersion>3.0.0-alpha1-10549</MicrosoftAspNetCoreIdentityUIPackageVersion>
     <MicrosoftAspNetCoreMvcPackageVersion>3.0.0-alpha1-10549</MicrosoftAspNetCoreMvcPackageVersion>
     <MicrosoftAspNetCorePackageVersion>3.0.0-alpha1-10549</MicrosoftAspNetCorePackageVersion>
+    <MicrosoftAspNetCoreRazorDesignPackageVersion>3.0.0-alpha1-10549</MicrosoftAspNetCoreRazorDesignPackageVersion>
     <MicrosoftAspNetCoreSpaServicesExtensionsPackageVersion>3.0.0-alpha1-10549</MicrosoftAspNetCoreSpaServicesExtensionsPackageVersion>
     <MicrosoftAspNetCoreSpaServicesPackageVersion>3.0.0-alpha1-10549</MicrosoftAspNetCoreSpaServicesPackageVersion>
     <MicrosoftAspNetCoreStaticFilesPackageVersion>3.0.0-alpha1-10549</MicrosoftAspNetCoreStaticFilesPackageVersion>
