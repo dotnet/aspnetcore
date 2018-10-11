@@ -46,6 +46,10 @@ namespace Common
                     {
                         return "HttpAbstractions";
                     }
+                    else if (name.StartsWith("Microsoft.AspNetCore.Authentication"))
+                    {
+                        return "Security";
+                    }
                     else if (name.StartsWith("Microsoft.AspNetCore.", StringComparison.OrdinalIgnoreCase))
                     {
                         var parts = name.Split('.');
