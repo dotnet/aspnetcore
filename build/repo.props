@@ -2,9 +2,6 @@
   <PropertyGroup>
     <!-- This repo does not have solutions to build -->
     <DisableDefaultTargets>true</DisableDefaultTargets>
-    <GenerateSignRequest>false</GenerateSignRequest>
-
-    <SignType Condition=" '$(SignType)' == '' ">public</SignType>
 
     <SkipTests>false</SkipTests>
     <SkipTests Condition="'$(CompileOnly)' == 'true'">true</SkipTests>
@@ -52,7 +49,7 @@
       Arch="x86"
       Feed="$(DotNetAssetRootUrl)"
       FeedCredential="$(DotNetAssetRootAccessTokenSuffix)" />
-    
+
       <!--
         The build doesn't support compiling the shared runtime on one machine along with running tests,
         so this is enables installing the shared runtime from a previous build.
