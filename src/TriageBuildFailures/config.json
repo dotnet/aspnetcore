@@ -189,6 +189,7 @@
       // Release 21 Public
       "Releases_21Public_UniverseCoherence",
       "Releases_21Public_RuntimeStoreInstallers",
+      "Releases_21Public_CoherencePackageCacheLinux",
       "Releases_21Public_CoherencePackageCacheWin",
       "Releases_21Public_CoherencePackageCacheWin86",
       "Releases_21Public_UbuntuUniverse",
