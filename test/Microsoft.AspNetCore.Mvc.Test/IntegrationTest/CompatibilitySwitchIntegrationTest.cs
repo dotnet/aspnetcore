@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Formatters;
+using Microsoft.AspNetCore.Mvc.Formatters.Xml;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.DependencyInjection;
@@ -26,7 +27,10 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTest
             // Arrange
             var serviceCollection = new ServiceCollection();
             AddHostingServices(serviceCollection);
-            serviceCollection.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_0);
+            serviceCollection
+                .AddMvc()
+                .AddXmlDataContractSerializerFormatters()
+                .SetCompatibilityVersion(CompatibilityVersion.Version_2_0);
 
             var services = serviceCollection.BuildServiceProvider();
 
@@ -36,6 +40,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTest
             var razorPagesOptions = services.GetRequiredService<IOptions<RazorPagesOptions>>().Value;
             var apiBehaviorOptions = services.GetRequiredService<IOptions<ApiBehaviorOptions>>().Value;
             var razorViewEngineOptions = services.GetRequiredService<IOptions<RazorViewEngineOptions>>().Value;
+            var xmlOptions = services.GetRequiredService<IOptions<MvcXmlOptions>>().Value;
 
             // Assert
             Assert.False(mvcOptions.AllowCombiningAuthorizeFilters);
@@ -50,6 +55,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTest
             Assert.True(apiBehaviorOptions.SuppressMapClientErrors);
             Assert.True(razorViewEngineOptions.AllowRecompilingViewsOnFileChange);
             Assert.False(razorPagesOptions.AllowDefaultHandlingForOptionsRequests);
+            Assert.False(xmlOptions.AllowRfc7807CompliantProblemDetailsFormat);
         }
 
         [Fact]
@@ -58,7 +64,10 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTest
             // Arrange
             var serviceCollection = new ServiceCollection();
             AddHostingServices(serviceCollection);
-            serviceCollection.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+            serviceCollection
+                .AddMvc()
+                .AddXmlDataContractSerializerFormatters()
+                .SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
             var services = serviceCollection.BuildServiceProvider();
 
@@ -68,6 +77,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTest
             var razorPagesOptions = services.GetRequiredService<IOptions<RazorPagesOptions>>().Value;
             var apiBehaviorOptions = services.GetRequiredService<IOptions<ApiBehaviorOptions>>().Value;
             var razorViewEngineOptions = services.GetRequiredService<IOptions<RazorViewEngineOptions>>().Value;
+            var xmlOptions = services.GetRequiredService<IOptions<MvcXmlOptions>>().Value;
 
             // Assert
             Assert.True(mvcOptions.AllowCombiningAuthorizeFilters);
@@ -82,6 +92,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTest
             Assert.True(apiBehaviorOptions.SuppressMapClientErrors);
             Assert.True(razorViewEngineOptions.AllowRecompilingViewsOnFileChange);
             Assert.False(razorPagesOptions.AllowDefaultHandlingForOptionsRequests);
+            Assert.False(xmlOptions.AllowRfc7807CompliantProblemDetailsFormat);
         }
 
         [Fact]
@@ -90,7 +101,10 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTest
             // Arrange
             var serviceCollection = new ServiceCollection();
             AddHostingServices(serviceCollection);
-            serviceCollection.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+            serviceCollection
+                .AddMvc()
+                .AddXmlDataContractSerializerFormatters()
+                .SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
             var services = serviceCollection.BuildServiceProvider();
 
@@ -100,6 +114,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTest
             var razorPagesOptions = services.GetRequiredService<IOptions<RazorPagesOptions>>().Value;
             var apiBehaviorOptions = services.GetRequiredService<IOptions<ApiBehaviorOptions>>().Value;
             var razorViewEngineOptions = services.GetRequiredService<IOptions<RazorViewEngineOptions>>().Value;
+            var xmlOptions = services.GetRequiredService<IOptions<MvcXmlOptions>>().Value;
 
             // Assert
             Assert.True(mvcOptions.AllowCombiningAuthorizeFilters);
@@ -114,6 +129,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTest
             Assert.False(apiBehaviorOptions.SuppressMapClientErrors);
             Assert.False(razorViewEngineOptions.AllowRecompilingViewsOnFileChange);
             Assert.True(razorPagesOptions.AllowDefaultHandlingForOptionsRequests);
+            Assert.True(xmlOptions.AllowRfc7807CompliantProblemDetailsFormat);
         }
 
         [Fact]
@@ -122,7 +138,10 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTest
             // Arrange
             var serviceCollection = new ServiceCollection();
             AddHostingServices(serviceCollection);
-            serviceCollection.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Latest);
+            serviceCollection
+                .AddMvc()
+                .AddXmlDataContractSerializerFormatters()
+                .SetCompatibilityVersion(CompatibilityVersion.Latest);
 
             var services = serviceCollection.BuildServiceProvider();
 
@@ -132,6 +151,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTest
             var razorPagesOptions = services.GetRequiredService<IOptions<RazorPagesOptions>>().Value;
             var apiBehaviorOptions = services.GetRequiredService<IOptions<ApiBehaviorOptions>>().Value;
             var razorViewEngineOptions = services.GetRequiredService<IOptions<RazorViewEngineOptions>>().Value;
+            var xmlOptions = services.GetRequiredService<IOptions<MvcXmlOptions>>().Value;
 
             // Assert
             Assert.True(mvcOptions.AllowCombiningAuthorizeFilters);
@@ -146,6 +166,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTest
             Assert.False(apiBehaviorOptions.SuppressMapClientErrors);
             Assert.False(razorViewEngineOptions.AllowRecompilingViewsOnFileChange);
             Assert.True(razorPagesOptions.AllowDefaultHandlingForOptionsRequests);
+            Assert.True(xmlOptions.AllowRfc7807CompliantProblemDetailsFormat);
         }
 
         // This just does the minimum needed to be able to resolve these options.

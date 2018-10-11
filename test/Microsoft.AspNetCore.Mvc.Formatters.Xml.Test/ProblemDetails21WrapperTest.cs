@@ -10,29 +10,30 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
 {
-    public class ProblemDetailsWrapperTest
+#pragma warning disable CS0618 // Type or member is obsolete
+    public class ProblemDetails21WrapperTest
     {
         [Fact]
         public void ReadXml_ReadsProblemDetailsXml()
         {
             // Arrange
             var xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>" +
-                "<problem xmlns=\"urn:ietf:rfc:7807\">" +
-                "<title>Some title</title>" +
-                "<status>403</status>" +
-                "<instance>Some instance</instance>" +
+                "<ProblemDetails>" +
+                "<Title>Some title</Title>" +
+                "<Status>403</Status>" +
+                "<Instance>Some instance</Instance>" +
                 "<key1>Test Value 1</key1>" +
                 "<_x005B_key2_x005D_>Test Value 2</_x005B_key2_x005D_>" +
                 "<MVC-Empty>Test Value 3</MVC-Empty>" +
-                "</problem>";
-            var serializer = new DataContractSerializer(typeof(ProblemDetailsWrapper));
+                "</ProblemDetails>";
+            var serializer = new DataContractSerializer(typeof(ProblemDetails21Wrapper));
 
             // Act
             var value = serializer.ReadObject(
                 new MemoryStream(Encoding.UTF8.GetBytes(xml)));
 
             // Assert
-            var problemDetails = Assert.IsType<ProblemDetailsWrapper>(value).ProblemDetails;
+            var problemDetails = Assert.IsType<ProblemDetails21Wrapper>(value).ProblemDetails;
             Assert.Equal("Some title", problemDetails.Title);
             Assert.Equal("Some instance", problemDetails.Instance);
             Assert.Equal(403, problemDetails.Status);
@@ -72,16 +73,16 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
                 },
             };
 
-            var wrapper = new ProblemDetailsWrapper(problemDetails);
+            var wrapper = new ProblemDetails21Wrapper(problemDetails);
             var outputStream = new MemoryStream();
             var expectedContent = "<?xml version=\"1.0\" encoding=\"utf-8\"?>" +
-                "<problem xmlns=\"urn:ietf:rfc:7807\">" +
-                "<detail>Some detail</detail>" +
-                "<title>Some title</title>" +
+                "<ProblemDetails>" +
+                "<Detail>Some detail</Detail>" +
+                "<Title>Some title</Title>" +
                 "<key1>Test Value 1</key1>" +
                 "<_x005B_Key2_x005D_>Test Value 2</_x005B_Key2_x005D_>" +
                 "<MVC-Empty>Test Value 3</MVC-Empty>" +
-                "</problem>";
+                "</ProblemDetails>";
 
             // Act
             using (var xmlWriter = XmlWriter.Create(outputStream))
@@ -96,4 +97,6 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
             Assert.Equal(expectedContent, res);
         }
     }
+#pragma warning restore CS0618 // Type or member is obsolete
+
 }

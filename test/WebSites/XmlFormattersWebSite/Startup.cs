@@ -13,47 +13,85 @@ namespace XmlFormattersWebSite
 {
     public class Startup
     {
+        public virtual CompatibilityVersion CompatibilityVersion => CompatibilityVersion.Latest;
+
         // Set up application services
         public void ConfigureServices(IServiceCollection services)
         {
             // Add MVC services to the services container
             services.AddMvc()
-                .SetCompatibilityVersion(CompatibilityVersion.Latest);
+                .AddXmlDataContractSerializerFormatters()
+                .AddXmlSerializerFormatters()
+                .SetCompatibilityVersion(CompatibilityVersion);
 
             services.Configure<MvcOptions>(options =>
             {
-                options.InputFormatters.Clear();
-                options.OutputFormatters.Clear();
-
                 // Since both XmlSerializer and DataContractSerializer based formatters
                 // have supported media types of 'application/xml' and 'text/xml',  it 
                 // would be difficult for a test to choose a particular formatter based on
-                // request information (Ex: Accept header).
-                // So here we instead clear out the default supported media types and create new
-                // ones which are distinguishable between formatters.
-                var xmlSerializerInputFormatter = new XmlSerializerInputFormatter(new MvcOptions());
+                // request information (Ex: Accept header). 
+                // We'll configure the ones on MvcOptions to use a distinct set of content types.
+
+                XmlSerializerInputFormatter xmlSerializerInputFormatter = null;
+                XmlSerializerOutputFormatter xmlSerializerOutputFormatter = null;
+                XmlDataContractSerializerInputFormatter dcsInputFormatter = null;
+                XmlDataContractSerializerOutputFormatter dcsOutputFormatter = null;
+
+                for (var i = options.InputFormatters.Count - 1; i >= 0; i--)
+                {
+                    switch (options.InputFormatters[i])
+                    {
+                        case XmlSerializerInputFormatter formatter:
+                            xmlSerializerInputFormatter = formatter;
+                            break;
+
+                        case XmlDataContractSerializerInputFormatter formatter:
+                            dcsInputFormatter = formatter;
+                            break;
+
+                        default:
+                            options.InputFormatters.RemoveAt(i);
+                            break;
+                    }
+                }
+
+                for (var i = options.OutputFormatters.Count - 1; i >= 0; i--)
+                {
+                    switch (options.OutputFormatters[i])
+                    {
+                        case XmlSerializerOutputFormatter formatter:
+                            xmlSerializerOutputFormatter = formatter;
+                            break;
+
+                        case XmlDataContractSerializerOutputFormatter formatter:
+                            dcsOutputFormatter = formatter;
+                            break;
+
+                        default:
+                            options.OutputFormatters.RemoveAt(i);
+                            break;
+                    }
+                }
+
                 xmlSerializerInputFormatter.SupportedMediaTypes.Clear();
-                xmlSerializerInputFormatter.SupportedMediaTypes.Add(
-                    new MediaTypeHeaderValue("application/xml-xmlser"));
-                xmlSerializerInputFormatter.SupportedMediaTypes.Add(
-                    new MediaTypeHeaderValue("text/xml-xmlser"));
+                xmlSerializerInputFormatter.SupportedMediaTypes.Add(new MediaTypeHeaderValue("application/xml-xmlser"));
+                xmlSerializerInputFormatter.SupportedMediaTypes.Add(new MediaTypeHeaderValue("text/xml-xmlser"));
+                xmlSerializerInputFormatter.SupportedMediaTypes.Add(new MediaTypeHeaderValue("application/problem+xml"));
 
-                var xmlSerializerOutputFormatter = new XmlSerializerOutputFormatter();
                 xmlSerializerOutputFormatter.SupportedMediaTypes.Clear();
-                xmlSerializerOutputFormatter.SupportedMediaTypes.Add(
-                    new MediaTypeHeaderValue("application/xml-xmlser"));
-                xmlSerializerOutputFormatter.SupportedMediaTypes.Add(
-                    new MediaTypeHeaderValue("text/xml-xmlser"));
+                xmlSerializerOutputFormatter.SupportedMediaTypes.Add(new MediaTypeHeaderValue("application/xml-xmlser"));
+                xmlSerializerOutputFormatter.SupportedMediaTypes.Add(new MediaTypeHeaderValue("text/xml-xmlser"));
+                xmlSerializerOutputFormatter.SupportedMediaTypes.Add(new MediaTypeHeaderValue("application/problem+xml"));
 
-                var dcsInputFormatter = new XmlDataContractSerializerInputFormatter(new MvcOptions());
                 dcsInputFormatter.SupportedMediaTypes.Clear();
                 dcsInputFormatter.SupportedMediaTypes.Add(new MediaTypeHeaderValue("application/xml-dcs"));
                 dcsInputFormatter.SupportedMediaTypes.Add(new MediaTypeHeaderValue("text/xml-dcs"));
+                dcsInputFormatter.SupportedMediaTypes.Add(new MediaTypeHeaderValue("application/problem+xml"));
 
-                var dcsOutputFormatter = new XmlDataContractSerializerOutputFormatter();
                 dcsOutputFormatter.SupportedMediaTypes.Clear();
                 dcsOutputFormatter.SupportedMediaTypes.Add(new MediaTypeHeaderValue("application/xml-dcs"));
                 dcsOutputFormatter.SupportedMediaTypes.Add(new MediaTypeHeaderValue("text/xml-dcs"));
+                dcsOutputFormatter.SupportedMediaTypes.Add(new MediaTypeHeaderValue("application/problem+xml"));
 
                 options.InputFormatters.Add(dcsInputFormatter);
                 options.InputFormatters.Add(xmlSerializerInputFormatter);

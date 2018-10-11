@@ -2,34 +2,36 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Xml;
+using System.Xml.Linq;
+using Microsoft.AspNetCore.Mvc.Formatters.Xml.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNetCore.Mvc.Formatters.Xml.Internal
+namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
 {
     /// <summary>
     /// A <see cref="IConfigureOptions{TOptions}"/> implementation which will add the
     /// data contract serializer formatters to <see cref="MvcOptions"/>.
     /// </summary>
-    public class MvcXmlDataContractSerializerMvcOptionsSetup : IConfigureOptions<MvcOptions>
+    internal sealed class XmlDataContractSerializerMvcOptionsSetup : IConfigureOptions<MvcOptions>
     {
+        private readonly MvcXmlOptions _xmlOptions;
         private readonly ILoggerFactory _loggerFactory;
 
         /// <summary>
-        /// Initializes a new instance of <see cref="MvcXmlDataContractSerializerMvcOptionsSetup"/>.
+        /// Initializes a new instance of <see cref="XmlDataContractSerializerMvcOptionsSetup"/>.
         /// </summary>
+        /// <param name="xmlOptions"><see cref="MvcXmlOptions"/>.</param>
         /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
-        public MvcXmlDataContractSerializerMvcOptionsSetup(ILoggerFactory loggerFactory)
+        public XmlDataContractSerializerMvcOptionsSetup(
+            IOptions<MvcXmlOptions> xmlOptions,
+            ILoggerFactory loggerFactory)
         {
-            if (loggerFactory == null)
-            {
-                throw new ArgumentNullException(nameof(loggerFactory));
-            }
-
-            _loggerFactory = loggerFactory;
+            _xmlOptions = xmlOptions?.Value ?? throw new ArgumentNullException(nameof(xmlOptions));
+            _loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
         }
 
         /// <summary>
@@ -40,8 +42,13 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml.Internal
         {
             options.ModelMetadataDetailsProviders.Add(new DataMemberRequiredBindingMetadataProvider());
 
-            options.OutputFormatters.Add(new XmlDataContractSerializerOutputFormatter(_loggerFactory));
-            options.InputFormatters.Add(new XmlDataContractSerializerInputFormatter(options));
+            var inputFormatter = new XmlDataContractSerializerInputFormatter(options);
+            inputFormatter.WrapperProviderFactories.Add(new ProblemDetailsWrapperProviderFactory(_xmlOptions));
+            options.InputFormatters.Add(inputFormatter);
+
+            var outputFormatter = new XmlDataContractSerializerOutputFormatter(_loggerFactory);
+            outputFormatter.WrapperProviderFactories.Add(new ProblemDetailsWrapperProviderFactory(_xmlOptions));
+            options.OutputFormatters.Add(outputFormatter);
 
             // Do not override any user mapping
             var key = "xml";
