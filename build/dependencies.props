@@ -5,36 +5,36 @@
   <!-- This files is typically managed by automation. Execute 'run.ps1 upgrade deps' to update these variables to the last-known-good versions. -->
   <PropertyGroup Label="Package Versions">
     <BenchmarkDotNetPackageVersion>0.10.13</BenchmarkDotNetPackageVersion>
-    <InternalAspNetCoreAnalyzersPackageVersion>3.0.0-alpha1-10584</InternalAspNetCoreAnalyzersPackageVersion>
-    <InternalAspNetCoreSdkPackageVersion>3.0.0-alpha1-20181004.7</InternalAspNetCoreSdkPackageVersion>
+    <InternalAspNetCoreAnalyzersPackageVersion>3.0.0-alpha1-10605</InternalAspNetCoreAnalyzersPackageVersion>
+    <InternalAspNetCoreSdkPackageVersion>3.0.0-alpha1-20181011.3</InternalAspNetCoreSdkPackageVersion>
     <LibuvPackageVersion>1.10.0</LibuvPackageVersion>
-    <MicrosoftAspNetCoreAllPackageVersion>3.0.0-alpha1-10584</MicrosoftAspNetCoreAllPackageVersion>
-    <MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>3.0.0-alpha1-10584</MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>
-    <MicrosoftAspNetCoreCertificatesGenerationSourcesPackageVersion>3.0.0-alpha1-10584</MicrosoftAspNetCoreCertificatesGenerationSourcesPackageVersion>
-    <MicrosoftAspNetCoreHostingAbstractionsPackageVersion>3.0.0-alpha1-10584</MicrosoftAspNetCoreHostingAbstractionsPackageVersion>
-    <MicrosoftAspNetCoreHostingPackageVersion>3.0.0-alpha1-10584</MicrosoftAspNetCoreHostingPackageVersion>
-    <MicrosoftAspNetCoreHttpAbstractionsPackageVersion>3.0.0-alpha1-10584</MicrosoftAspNetCoreHttpAbstractionsPackageVersion>
-    <MicrosoftAspNetCoreHttpFeaturesPackageVersion>3.0.0-alpha1-10584</MicrosoftAspNetCoreHttpFeaturesPackageVersion>
-    <MicrosoftAspNetCoreHttpPackageVersion>3.0.0-alpha1-10584</MicrosoftAspNetCoreHttpPackageVersion>
-    <MicrosoftAspNetCoreTestingPackageVersion>3.0.0-alpha1-10584</MicrosoftAspNetCoreTestingPackageVersion>
-    <MicrosoftAspNetCoreWebUtilitiesPackageVersion>3.0.0-alpha1-10584</MicrosoftAspNetCoreWebUtilitiesPackageVersion>
-    <MicrosoftExtensionsActivatorUtilitiesSourcesPackageVersion>3.0.0-alpha1-10584</MicrosoftExtensionsActivatorUtilitiesSourcesPackageVersion>
-    <MicrosoftExtensionsConfigurationBinderPackageVersion>3.0.0-alpha1-10584</MicrosoftExtensionsConfigurationBinderPackageVersion>
-    <MicrosoftExtensionsConfigurationCommandLinePackageVersion>3.0.0-alpha1-10584</MicrosoftExtensionsConfigurationCommandLinePackageVersion>
-    <MicrosoftExtensionsConfigurationJsonPackageVersion>3.0.0-alpha1-10584</MicrosoftExtensionsConfigurationJsonPackageVersion>
-    <MicrosoftExtensionsDependencyInjectionPackageVersion>3.0.0-alpha1-10584</MicrosoftExtensionsDependencyInjectionPackageVersion>
-    <MicrosoftExtensionsLoggingAbstractionsPackageVersion>3.0.0-alpha1-10584</MicrosoftExtensionsLoggingAbstractionsPackageVersion>
-    <MicrosoftExtensionsLoggingConsolePackageVersion>3.0.0-alpha1-10584</MicrosoftExtensionsLoggingConsolePackageVersion>
-    <MicrosoftExtensionsLoggingPackageVersion>3.0.0-alpha1-10584</MicrosoftExtensionsLoggingPackageVersion>
-    <MicrosoftExtensionsLoggingTestingPackageVersion>3.0.0-alpha1-10584</MicrosoftExtensionsLoggingTestingPackageVersion>
-    <MicrosoftExtensionsOptionsPackageVersion>3.0.0-alpha1-10584</MicrosoftExtensionsOptionsPackageVersion>
+    <MicrosoftAspNetCoreAllPackageVersion>3.0.0-alpha1-10605</MicrosoftAspNetCoreAllPackageVersion>
+    <MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>3.0.0-alpha1-10605</MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>
+    <MicrosoftAspNetCoreCertificatesGenerationSourcesPackageVersion>3.0.0-alpha1-10605</MicrosoftAspNetCoreCertificatesGenerationSourcesPackageVersion>
+    <MicrosoftAspNetCoreHostingAbstractionsPackageVersion>3.0.0-alpha1-10605</MicrosoftAspNetCoreHostingAbstractionsPackageVersion>
+    <MicrosoftAspNetCoreHostingPackageVersion>3.0.0-alpha1-10605</MicrosoftAspNetCoreHostingPackageVersion>
+    <MicrosoftAspNetCoreHttpAbstractionsPackageVersion>3.0.0-alpha1-10605</MicrosoftAspNetCoreHttpAbstractionsPackageVersion>
+    <MicrosoftAspNetCoreHttpFeaturesPackageVersion>3.0.0-alpha1-10605</MicrosoftAspNetCoreHttpFeaturesPackageVersion>
+    <MicrosoftAspNetCoreHttpPackageVersion>3.0.0-alpha1-10605</MicrosoftAspNetCoreHttpPackageVersion>
+    <MicrosoftAspNetCoreTestingPackageVersion>3.0.0-alpha1-10605</MicrosoftAspNetCoreTestingPackageVersion>
+    <MicrosoftAspNetCoreWebUtilitiesPackageVersion>3.0.0-alpha1-10605</MicrosoftAspNetCoreWebUtilitiesPackageVersion>
+    <MicrosoftExtensionsActivatorUtilitiesSourcesPackageVersion>3.0.0-alpha1-10605</MicrosoftExtensionsActivatorUtilitiesSourcesPackageVersion>
+    <MicrosoftExtensionsConfigurationBinderPackageVersion>3.0.0-alpha1-10605</MicrosoftExtensionsConfigurationBinderPackageVersion>
+    <MicrosoftExtensionsConfigurationCommandLinePackageVersion>3.0.0-alpha1-10605</MicrosoftExtensionsConfigurationCommandLinePackageVersion>
+    <MicrosoftExtensionsConfigurationJsonPackageVersion>3.0.0-alpha1-10605</MicrosoftExtensionsConfigurationJsonPackageVersion>
+    <MicrosoftExtensionsDependencyInjectionPackageVersion>3.0.0-alpha1-10605</MicrosoftExtensionsDependencyInjectionPackageVersion>
+    <MicrosoftExtensionsLoggingAbstractionsPackageVersion>3.0.0-alpha1-10605</MicrosoftExtensionsLoggingAbstractionsPackageVersion>
+    <MicrosoftExtensionsLoggingConsolePackageVersion>3.0.0-alpha1-10605</MicrosoftExtensionsLoggingConsolePackageVersion>
+    <MicrosoftExtensionsLoggingPackageVersion>3.0.0-alpha1-10605</MicrosoftExtensionsLoggingPackageVersion>
+    <MicrosoftExtensionsLoggingTestingPackageVersion>3.0.0-alpha1-10605</MicrosoftExtensionsLoggingTestingPackageVersion>
+    <MicrosoftExtensionsOptionsPackageVersion>3.0.0-alpha1-10605</MicrosoftExtensionsOptionsPackageVersion>
     <MicrosoftInternalAspNetCoreH2SpecAllPackageVersion>2.1.1</MicrosoftInternalAspNetCoreH2SpecAllPackageVersion>
     <MicrosoftNETCoreApp20PackageVersion>2.0.9</MicrosoftNETCoreApp20PackageVersion>
     <MicrosoftNETCoreApp21PackageVersion>2.1.3</MicrosoftNETCoreApp21PackageVersion>
     <MicrosoftNETCoreApp22PackageVersion>2.2.0-preview2-26905-02</MicrosoftNETCoreApp22PackageVersion>
-    <MicrosoftNetHttpHeadersPackageVersion>3.0.0-alpha1-10584</MicrosoftNetHttpHeadersPackageVersion>
+    <MicrosoftNetHttpHeadersPackageVersion>3.0.0-alpha1-10605</MicrosoftNetHttpHeadersPackageVersion>
     <MicrosoftNETTestSdkPackageVersion>15.6.1</MicrosoftNETTestSdkPackageVersion>
-    <MoqPackageVersion>4.9.0</MoqPackageVersion>
+    <MoqPackageVersion>4.10.0</MoqPackageVersion>
     <NETStandardLibrary20PackageVersion>2.0.3</NETStandardLibrary20PackageVersion>
     <NewtonsoftJsonPackageVersion>11.0.2</NewtonsoftJsonPackageVersion>
     <SystemBuffersPackageVersion>4.6.0-preview1-26907-04</SystemBuffersPackageVersion>
