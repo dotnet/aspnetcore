@@ -17,10 +17,10 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
         {
             // Arrange
             var xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>" +
-                "<ValidationProblemDetails>" +
-                "<Title>Some title</Title>" +
-                "<Status>400</Status>" +
-                "<Instance>Some instance</Instance>" +
+                "<problem xmlns=\"urn:ietf:rfc:7807\">" +
+                "<title>Some title</title>" +
+                "<status>400</status>" +
+                "<instance>Some instance</instance>" +
                 "<key1>Test Value 1</key1>" +
                 "<_x005B_key2_x005D_>Test Value 2</_x005B_key2_x005D_>" +
                 "<MVC-Errors>" +
@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
                 "<_x005B_error2_x005D_>Test error 3</_x005B_error2_x005D_>" +
                 "<MVC-Empty>Test error 4</MVC-Empty>" +
                 "</MVC-Errors>" +
-                "</ValidationProblemDetails>";
+                "</problem>";
             var serializer = new DataContractSerializer(typeof(ValidationProblemDetailsWrapper));
 
             // Act
@@ -78,13 +78,13 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
         {
             // Arrange
             var xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>" +
-                "<ValidationProblemDetails>" +
-                "<Title>Some title</Title>" +
-                "<Status>400</Status>" +
-                "<Instance>Some instance</Instance>" +
+                "<problem xmlns=\"urn:ietf:rfc:7807\">" +
+                "<title>Some title</title>" +
+                "<status>400</status>" +
+                "<instance>Some instance</instance>" +
                 "<key1>Test Value 1</key1>" +
                 "<_x005B_key2_x005D_>Test Value 2</_x005B_key2_x005D_>" +
-                "</ValidationProblemDetails>";
+                "</problem>";
             var serializer = new DataContractSerializer(typeof(ValidationProblemDetailsWrapper));
 
             // Act
@@ -118,11 +118,11 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
         {
             // Arrange
             var xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>" +
-                "<ValidationProblemDetails>" +
-                "<Title>Some title</Title>" +
-                "<Status>400</Status>" +
+                "<problem xmlns=\"urn:ietf:rfc:7807\">" +
+                "<title>Some title</title>" +
+                "<status>400</status>" +
                 "<MVC-Errors />" +
-                "</ValidationProblemDetails>";
+                "</problem>";
             var serializer = new DataContractSerializer(typeof(ValidationProblemDetailsWrapper));
 
             // Act
@@ -160,9 +160,9 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
             var wrapper = new ValidationProblemDetailsWrapper(problemDetails);
             var outputStream = new MemoryStream();
             var expectedContent = "<?xml version=\"1.0\" encoding=\"utf-8\"?>" +
-                "<ValidationProblemDetails>" +
-                "<Detail>Some detail</Detail>" +
-                "<Title>Some title</Title>" +
+                "<problem xmlns=\"urn:ietf:rfc:7807\">" +
+                "<detail>Some detail</detail>" +
+                "<title>Some title</title>" +
                 "<key1>Test Value 1</key1>" +
                 "<_x005B_Key2_x005D_>Test Value 2</_x005B_Key2_x005D_>" +
                 "<MVC-Errors>" +
@@ -170,7 +170,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
                 "<_x005B_error2_x005D_>Test error 3</_x005B_error2_x005D_>" +
                 "<MVC-Empty>Test error 4</MVC-Empty>" +
                 "</MVC-Errors>" +
-                "</ValidationProblemDetails>";
+                "</problem>";
 
             // Act
             using (var xmlWriter = XmlWriter.Create(outputStream))
@@ -203,12 +203,12 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
             var wrapper = new ValidationProblemDetailsWrapper(problemDetails);
             var outputStream = new MemoryStream();
             var expectedContent = "<?xml version=\"1.0\" encoding=\"utf-8\"?>" +
-                "<ValidationProblemDetails>" +
-                "<Detail>Some detail</Detail>" +
-                "<Title>Some title</Title>" +
+                "<problem xmlns=\"urn:ietf:rfc:7807\">" +
+                "<detail>Some detail</detail>" +
+                "<title>Some title</title>" +
                 "<key1>Test Value 1</key1>" +
                 "<_x005B_Key2_x005D_>Test Value 2</_x005B_Key2_x005D_>" +
-                "</ValidationProblemDetails>";
+                "</problem>";
 
             // Act
             using (var xmlWriter = XmlWriter.Create(outputStream))

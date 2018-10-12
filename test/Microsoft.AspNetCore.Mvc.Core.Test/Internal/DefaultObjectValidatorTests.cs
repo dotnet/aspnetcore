@@ -1170,11 +1170,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var modelState = actionContext.ModelState;
             var validationState = new ValidationStateDictionary();
 
-            var validator = CreateValidator(typeof(List<string>));
+            var validator = CreateValidator(typeof(List<ValidatedModel>));
 
-            var model = new List<string>()
+            var model = new List<ValidatedModel>()
             {
-                "15",
+                new ValidatedModel { Value = "15" },
             };
 
             modelState.SetModelValue("userIds[0]", "15", "15");
@@ -1190,6 +1190,12 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var entry = modelState["userIds[0]"];
             Assert.Equal(ModelValidationState.Skipped, entry.ValidationState);
             Assert.Empty(entry.Errors);
+        }
+
+        private class ValidatedModel
+        {
+            [Required]
+            public string Value { get; set; }
         }
 
         [Fact]
@@ -1317,12 +1323,107 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 { model, new ValidationStateEntry() }
             };
             var method = GetType().GetMethod(nameof(Validate_Throws_ForTopLevelMetadataData), BindingFlags.NonPublic | BindingFlags.Instance);
-            var metadata = MetadataProvider.GetMetadataForParameter(method.GetParameters()[0]);
 
             // Act & Assert
             var ex = Assert.Throws<InvalidOperationException>(() => validator.Validate(actionContext, validationState, prefix: string.Empty, model));
             Assert.Equal(expected, ex.Message);
             Assert.NotNull(ex.HelpLink);
+        }
+
+        [Fact]
+        public void Validate_TypeWithoutValidators()
+        {
+            var actionContext = new ActionContext();
+            var validator = CreateValidator();
+            var model = new ModelWithoutValidation();
+            var validationState = new ValidationStateDictionary
+            {
+                { model, new ValidationStateEntry() }
+            };
+
+            actionContext.ModelState.SetModelValue("Property1", new ValueProviderResult("value1"));
+            actionContext.ModelState.SetModelValue("Property2", new ValueProviderResult("value2"));
+
+            // Act
+            validator.Validate(actionContext, validationState, string.Empty, model);
+
+            // Assert
+            var modelState = actionContext.ModelState;
+            Assert.Equal(ModelValidationState.Valid, modelState.ValidationState);
+            Assert.True(modelState.IsValid);
+
+            var entry = modelState["Property1"];
+            Assert.Equal(ModelValidationState.Valid, entry.ValidationState);
+
+            entry = modelState["Property2"];
+            Assert.Equal(ModelValidationState.Valid, entry.ValidationState);
+        }
+
+        [Fact]
+        public void Validate_TypeWithoutValidators_DoesNotUpdateValidationState()
+        {
+            var actionContext = new ActionContext();
+            var validator = CreateValidator();
+            var model = new ModelWithoutValidation();
+            var validationState = new ValidationStateDictionary
+            {
+                { model, new ValidationStateEntry() }
+            };
+
+            var modelState = actionContext.ModelState;
+            modelState.SetModelValue("Property1", new ValueProviderResult("value1"));
+            modelState.SetModelValue("Property2", new ValueProviderResult("value2"));
+            modelState["Property2"].ValidationState = ModelValidationState.Skipped;
+
+            // Act
+            validator.Validate(actionContext, validationState, string.Empty, model);
+
+            // Assert
+            Assert.Equal(ModelValidationState.Valid, modelState.ValidationState);
+            Assert.True(modelState.IsValid);
+
+            var entry = modelState["Property1"];
+            Assert.Equal(ModelValidationState.Valid, entry.ValidationState);
+
+            entry = modelState["Property2"];
+            Assert.Equal(ModelValidationState.Skipped, entry.ValidationState);
+        }
+
+        [Fact]
+        public void Validate_TypeWithoutValidators_DoesNotResetInvalidState()
+        {
+            var actionContext = new ActionContext();
+            var validator = CreateValidator();
+            var model = new ModelWithoutValidation();
+            var validationState = new ValidationStateDictionary
+            {
+                { model, new ValidationStateEntry() }
+            };
+
+            var modelState = actionContext.ModelState;
+            modelState.SetModelValue("Property1", new ValueProviderResult("value1"));
+            modelState.SetModelValue("Property2", new ValueProviderResult("value2"));
+            modelState["Property2"].ValidationState = ModelValidationState.Invalid;
+
+            // Act
+            validator.Validate(actionContext, validationState, string.Empty, model);
+
+            // Assert
+            Assert.Equal(ModelValidationState.Invalid, modelState.ValidationState);
+            Assert.False(modelState.IsValid);
+
+            var entry = modelState["Property1"];
+            Assert.Equal(ModelValidationState.Valid, entry.ValidationState);
+
+            entry = modelState["Property2"];
+            Assert.Equal(ModelValidationState.Invalid, entry.ValidationState);
+        }
+
+        private class ModelWithoutValidation
+        {
+            public string Property1 { get; set; }
+
+            public string Property2 { get; set; }
         }
 
         private static DefaultObjectValidator CreateValidator(Type excludedType)
@@ -1352,6 +1453,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         private class ThrowingProperty
         {
+            [Required]
             public string WatchOut
             {
                 get
@@ -1520,6 +1622,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 Depth = depth;
             }
 
+            [Range(-10, 400)]
             public int Depth { get; }
             public int MaxAllowedDepth { get; }
 

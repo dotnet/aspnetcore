@@ -43,7 +43,10 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             SupportedMediaTypes.Add(MediaTypeHeaderValues.TextXml);
             SupportedMediaTypes.Add(MediaTypeHeaderValues.ApplicationAnyXmlSyntax);
 
-            WrapperProviderFactories = WrapperProviderFactoriesExtensions.GetDefaultProviderFactories();
+            WrapperProviderFactories = new List<IWrapperProviderFactory>
+            {
+                new SerializableErrorWrapperProviderFactory(),
+            };
         }
 
         /// <summary>

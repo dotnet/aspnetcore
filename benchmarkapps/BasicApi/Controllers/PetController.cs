@@ -133,6 +133,13 @@ namespace BasicApi.Controllers
         }
 
         [Authorize("pet-store-writer")]
+        [HttpPost("add-pet")]
+        public ActionResult<Pet> AddPetWithoutDb(Pet pet)
+        {
+            return pet;
+        }
+
+        [Authorize("pet-store-writer")]
         [HttpPut]
         public IActionResult EditPet(Pet pet)
         {

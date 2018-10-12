@@ -8,24 +8,25 @@ using System.Threading;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNetCore.Mvc.Internal
+namespace Microsoft.AspNetCore.Mvc
 {
     /// <summary>
     /// Sets up default options for <see cref="MvcOptions"/>.
     /// </summary>
-    public class MvcCoreMvcOptionsSetup : IConfigureOptions<MvcOptions>
+    internal class MvcCoreMvcOptionsSetup : IConfigureOptions<MvcOptions>, IPostConfigureOptions<MvcOptions>
     {
         private readonly IHttpRequestStreamReaderFactory _readerFactory;
         private readonly ILoggerFactory _loggerFactory;
 
-        // Used in tests
         public MvcCoreMvcOptionsSetup(IHttpRequestStreamReaderFactory readerFactory)
             : this(readerFactory, NullLoggerFactory.Instance)
         {
@@ -81,6 +82,15 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             // Set up validators
             options.ModelValidatorProviders.Add(new DefaultModelValidatorProvider());
+        }
+
+        public void PostConfigure(string name, MvcOptions options)
+        {
+            // HasValidatorsValidationMetadataProvider uses the results of other ValidationMetadataProvider to determine if a model requires
+            // validation. It is imperative that this executes later than all other metadata provider. We'll register it as part of PostConfigure.
+            // This should ensure it appears later than all of the details provider registered by MVC and user configured details provider registered
+            // as part of ConfigureOptions.
+            options.ModelMetadataDetailsProviders.Add(new HasValidatorsValidationMetadataProvider(options.ModelValidatorProviders));
         }
 
         internal static void ConfigureAdditionalModelMetadataDetailsProviders(IList<IMetadataDetailsProvider> modelMetadataDetailsProviders)

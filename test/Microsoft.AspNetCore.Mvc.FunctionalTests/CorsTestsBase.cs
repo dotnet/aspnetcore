@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         [InlineData("HEAD")]
         [InlineData("POST")]
         [InlineData("PUT")]
-        public async Task PolicyFailed_Disallows_PreFlightRequest(string method)
+        public async Task OriginMatched_ReturnsHeaders(string method)
         {
             // Arrange
             var request = new HttpRequestMessage(
@@ -120,7 +120,18 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             // Assert
             // MVC applied the policy and since that did not pass, there were no access control headers.
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.Empty(response.Headers);
+            Assert.Collection(
+                response.Headers.OrderBy(h => h.Key),
+                h =>
+                {
+                    Assert.Equal(CorsConstants.AccessControlAllowMethods, h.Key);
+                    Assert.Equal(new[] { "GET,POST,HEAD" }, h.Value);
+                },
+                h =>
+                {
+                    Assert.Equal(CorsConstants.AccessControlAllowOrigin, h.Key);
+                    Assert.Equal(new[] { "*" }, h.Value);
+                });
 
             // It should short circuit and hence no result.
             var content = await response.Content.ReadAsStringAsync();
@@ -146,7 +157,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var responseHeaders = response.Headers;
             Assert.Equal(
-                new[] { "http://example.com" },
+                new[] { "*" },
                 responseHeaders.GetValues(CorsConstants.AccessControlAllowOrigin).ToArray());
             Assert.Equal(
                new[] { "true" },
@@ -179,16 +190,16 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var responseHeaders = response.Headers;
             Assert.Equal(
-                new[] { "http://example.com" },
+                new[] { "*" },
                 responseHeaders.GetValues(CorsConstants.AccessControlAllowOrigin).ToArray());
             Assert.Equal(
                new[] { "true" },
                responseHeaders.GetValues(CorsConstants.AccessControlAllowCredentials).ToArray());
             Assert.Equal(
-               new[] { "header1,header2" },
+               new[] { "*" },
                responseHeaders.GetValues(CorsConstants.AccessControlAllowHeaders).ToArray());
             Assert.Equal(
-               new[] { "PUT" },
+               new[] { "PUT,POST" },
                responseHeaders.GetValues(CorsConstants.AccessControlAllowMethods).ToArray());
 
             var content = await response.Content.ReadAsStringAsync();
@@ -270,12 +281,43 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Empty(content);
         }
 
-        [Theory]
-        [InlineData("http://localhost/api/store/actionusingcontrollercorssettings")]
-        [InlineData("http://localhost/api/store/actionwithcorssettings")]
-        public async Task CorsFilter_RunsBeforeOtherAuthorizationFilters(string url)
+        [Fact]
+        public async Task CorsFilter_RunsBeforeOtherAuthorizationFilters_UsesPolicySpecifiedOnController()
         {
             // Arrange
+            var url = "http://localhost/api/store/actionusingcontrollercorssettings";
+            var request = new HttpRequestMessage(new HttpMethod(CorsConstants.PreflightHttpMethod), url);
+
+            // Adding a custom header makes it a non-simple request.
+            request.Headers.Add(CorsConstants.Origin, "http://example.com");
+            request.Headers.Add(CorsConstants.AccessControlRequestMethod, "GET");
+            request.Headers.Add(CorsConstants.AccessControlRequestHeaders, "Custom");
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var responseHeaders = response.Headers;
+            Assert.Equal(
+                new[] { "*" },
+                responseHeaders.GetValues(CorsConstants.AccessControlAllowOrigin).ToArray());
+            Assert.Equal(
+               new[] { "true" },
+               responseHeaders.GetValues(CorsConstants.AccessControlAllowCredentials).ToArray());
+            Assert.Equal(
+               new[] { "*" },
+               responseHeaders.GetValues(CorsConstants.AccessControlAllowHeaders).ToArray());
+
+            var content = await response.Content.ReadAsStringAsync();
+            Assert.Empty(content);
+        }
+
+        [Fact]
+        public async Task CorsFilter_RunsBeforeOtherAuthorizationFilters_UsesPolicySpecifiedOnAction()
+        {
+            // Arrange
+            var url = "http://localhost/api/store/actionwithcorssettings";
             var request = new HttpRequestMessage(new HttpMethod(CorsConstants.PreflightHttpMethod), url);
 
             // Adding a custom header makes it a non-simple request.
@@ -296,7 +338,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                new[] { "true" },
                responseHeaders.GetValues(CorsConstants.AccessControlAllowCredentials).ToArray());
             Assert.Equal(
-               new[] { "Custom" },
+               new[] { "*" },
                responseHeaders.GetValues(CorsConstants.AccessControlAllowHeaders).ToArray());
 
             var content = await response.Content.ReadAsStringAsync();

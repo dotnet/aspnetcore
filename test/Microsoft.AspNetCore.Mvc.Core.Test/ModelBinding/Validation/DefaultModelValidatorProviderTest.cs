@@ -6,11 +6,9 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.DataAnnotations.Internal;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.Internal
+namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
 {
     // Integration tests for the default configuration of ModelMetadata and Validation providers
     public class DefaultModelValidatorProviderTest
@@ -143,6 +141,34 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             Assert.Equal(2, validatorItems.Count);
             Assert.Single(validatorItems, v => ((DataAnnotationsModelValidator)v.Validator).Attribute is RegularExpressionAttribute);
             Assert.Single(validatorItems, v => ((DataAnnotationsModelValidator)v.Validator).Attribute is StringLengthAttribute);
+        }
+
+        [Fact]
+        public void HasValidators_ReturnsTrue_IfMetadataIsIModelValidator()
+        {
+            // Arrange
+            var validatorProvider = new DefaultModelValidatorProvider();
+            var attributes = new object[] { new RequiredAttribute(), new CustomModelValidatorAttribute(), new BindRequiredAttribute(), };
+
+            // Act
+            var result = validatorProvider.HasValidators(typeof(object), attributes);
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void HasValidators_ReturnsFalse_IfNoMetadataIsIModelValidator()
+        {
+            // Arrange
+            var validatorProvider = new DefaultModelValidatorProvider();
+            var attributes = new object[] { new RequiredAttribute(), new BindRequiredAttribute(), };
+
+            // Act
+            var result = validatorProvider.HasValidators(typeof(object), attributes);
+
+            // Assert
+            Assert.False(result);
         }
 
         private static IList<ValidatorItem> GetValidatorItems(ModelMetadata metadata)

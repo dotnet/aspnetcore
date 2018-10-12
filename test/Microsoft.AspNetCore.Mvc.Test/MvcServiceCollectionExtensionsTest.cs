@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Mvc.DataAnnotations.Internal;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Formatters.Json;
 using Microsoft.AspNetCore.Mvc.Formatters.Json.Internal;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
@@ -381,14 +382,15 @@ namespace Microsoft.AspNetCore.Mvc
                         typeof(IPostConfigureOptions<MvcOptions>),
                         new[]
                         {
-                            typeof(MvcOptions).Assembly.GetType("Microsoft.AspNetCore.Mvc.Infrastructure.MvcOptionsConfigureCompatibilityOptions", throwOnError: true),
+                            typeof(MvcOptionsConfigureCompatibilityOptions),
+                            typeof(MvcCoreMvcOptionsSetup),
                         }
                     },
                     {
                         typeof(IPostConfigureOptions<RazorPagesOptions>),
                         new[]
                         {
-                            typeof(RazorPagesOptions).Assembly.GetType("Microsoft.AspNetCore.Mvc.RazorPages.RazorPagesOptionsConfigureCompatibilityOptions", throwOnError: true),
+                            typeof(RazorPagesOptionsConfigureCompatibilityOptions),
                         }
                     },
                     {

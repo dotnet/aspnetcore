@@ -44,24 +44,5 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
 
             return null;
         }
-
-        internal static IList<IWrapperProviderFactory> GetDefaultProviderFactories()
-        {
-            var wrapperProviderFactories = new List<IWrapperProviderFactory>();
-
-            wrapperProviderFactories.Add(new SerializableErrorWrapperProviderFactory());
-
-            wrapperProviderFactories.Add(new WrapperProviderFactory(
-                typeof(ProblemDetails),
-                typeof(ProblemDetailsWrapper),
-                value => new ProblemDetailsWrapper((ProblemDetails)value)));
-
-            wrapperProviderFactories.Add(new WrapperProviderFactory(
-                typeof(ValidationProblemDetails),
-                typeof(ValidationProblemDetailsWrapper),
-                value => new ValidationProblemDetailsWrapper((ValidationProblemDetails)value)));
-
-            return wrapperProviderFactories;
-        }
     }
 }

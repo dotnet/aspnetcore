@@ -2,32 +2,32 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNetCore.Mvc.Formatters.Xml.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNetCore.Mvc.Formatters.Xml.Internal
+namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
 {
     /// <summary>
     /// A <see cref="IConfigureOptions{TOptions}"/> implementation which will add the
     /// XML serializer formatters to <see cref="MvcOptions"/>.
     /// </summary>
-    public class MvcXmlSerializerMvcOptionsSetup : IConfigureOptions<MvcOptions>
+    internal sealed class XmlSerializerMvcOptionsSetup : IConfigureOptions<MvcOptions>
     {
+        private readonly MvcXmlOptions _xmlOptions;
         private readonly ILoggerFactory _loggerFactory;
 
         /// <summary>
-        /// Initializes a new instance of <see cref="MvcXmlSerializerMvcOptionsSetup"/>.
+        /// Initializes a new instance of <see cref="XmlSerializerMvcOptionsSetup"/>.
         /// </summary>
+        /// <param name="xmlOptions"><see cref="MvcXmlOptions"/>.</param>
         /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
-        public MvcXmlSerializerMvcOptionsSetup(ILoggerFactory loggerFactory)
+        public XmlSerializerMvcOptionsSetup(
+            IOptions<MvcXmlOptions> xmlOptions,
+            ILoggerFactory loggerFactory)
         {
-            if (loggerFactory == null)
-            {
-                throw new ArgumentNullException(nameof(loggerFactory));
-            }
-
-            _loggerFactory = loggerFactory;
+            _xmlOptions = xmlOptions?.Value ?? throw new ArgumentNullException(nameof(xmlOptions));
+            _loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
         }
 
         /// <summary>
@@ -46,8 +46,14 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml.Internal
                     MediaTypeHeaderValues.ApplicationXml);
             }
 
-            options.OutputFormatters.Add(new XmlSerializerOutputFormatter(_loggerFactory));
-            options.InputFormatters.Add(new XmlSerializerInputFormatter(options));
+            var inputFormatter = new XmlSerializerInputFormatter(options);
+            inputFormatter.WrapperProviderFactories.Add(new ProblemDetailsWrapperProviderFactory(_xmlOptions));
+            options.InputFormatters.Add(inputFormatter);
+
+            var outputFormatter = new XmlSerializerOutputFormatter(_loggerFactory);
+            outputFormatter.WrapperProviderFactories.Add(new ProblemDetailsWrapperProviderFactory(_xmlOptions));
+            options.OutputFormatters.Add(outputFormatter);
+
         }
     }
 }

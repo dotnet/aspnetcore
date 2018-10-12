@@ -158,7 +158,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Equal(2, modelStateErrors.Count);
             AssertErrorEquals("Property", modelStateErrors["Message"]);
             AssertErrorEquals("Model", modelStateErrors[""]);
-
         }
 
         [Fact]
@@ -183,7 +182,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelStateErrors = GetModelStateErrors(modelState);
             Assert.Single(modelStateErrors); // single error from the required attribute
             AssertErrorEquals("Property", modelStateErrors.Single().Value);
-
         }
 
         [ModelLevelError]

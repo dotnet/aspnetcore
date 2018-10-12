@@ -73,7 +73,10 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             WriterSettings = writerSettings;
 
-            WrapperProviderFactories = WrapperProviderFactoriesExtensions.GetDefaultProviderFactories();
+            WrapperProviderFactories = new List<IWrapperProviderFactory>
+            {
+                new SerializableErrorWrapperProviderFactory(),
+            };
             WrapperProviderFactories.Add(new EnumerableWrapperProviderFactory(WrapperProviderFactories));
 
             _logger = loggerFactory?.CreateLogger(GetType());
