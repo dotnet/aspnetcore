@@ -203,6 +203,7 @@
     <PackageArtifact Include="Microsoft.EntityFrameworkCore.Tools" Category="ship" AppMetapackage="true" AllMetapackage="true" />
     <PackageArtifact Include="Microsoft.EntityFrameworkCore" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.Extensions.ActivatorUtilities.Sources" Category="noship" />
+    <PackageArtifact Include="Microsoft.Extensions.ApiDescription.Design" Category="ship" />
     <PackageArtifact Include="Microsoft.Extensions.ApplicationModelDetection" Category="noship" />
     <PackageArtifact Include="Microsoft.Extensions.Buffers.MemoryPool.Sources" Category="noship" />
     <PackageArtifact Include="Microsoft.Extensions.Buffers.Testing.Sources" Category="noship" />
