@@ -12,7 +12,7 @@
 
   <UsingTask AssemblyFile="$(OutputPath)..\InstallerTasks\InstallerTasks.dll" TaskName="RepoTasks.GenerateGuid" />
 
-  <Target Name="GenerateGUIDs" BeforeTargets="BeforeBuild" DependsOnTargets="_GeneratePackageGuids;_GenerateBundleGuids" />
+  <Target Name="GenerateGUIDs" BeforeTargets="BeforeBuild" DependsOnTargets="_GeneratePackageGuids;_GenerateBundleGuids" Condition=" '$(DisableGuidGeneration)' != 'true' " />
 
   <Target Name="_GeneratePackageGuids" Condition="'$(OutputType)' == 'package'">
     <GenerateGuid NamespaceGuid="$(NamespaceGuid)" Values="$(ProductNameShort);$(GuidInputs)">
@@ -39,4 +39,5 @@
       <DefineConstants>$(DefineConstants);BundleProviderKey=$(BundleProviderKey);BundleUpgradeCode=$(BundleUpgradeCode)</DefineConstants>
     </PropertyGroup>
   </Target>
+
 </Project>

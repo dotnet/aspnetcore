@@ -1,0 +1,18 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <ItemGroup Condition="'@(BuildOutputFiles)' == ''">
+    <BuildOutputFiles Include="$(OutDir)\$(TargetName)$(TargetExt)"/>
+  </ItemGroup>
+
+  <PropertyGroup>
+    <BuildOutputCopyPath Condition="$(BuildOutputCopyPath) == ''">$(Configuration)\$(PlatformShortname)\</BuildOutputCopyPath>
+  </PropertyGroup>
+
+  <Target Name="CopyOutputsToRoot" AfterTargets="Build">
+    <Copy  
+      SourceFiles="@(BuildOutputFiles)"  
+      DestinationFolder="$(SolutionDir)bin\$(BuildOutputCopyPath)"
+    />
+  </Target>  
+  
+</Project>

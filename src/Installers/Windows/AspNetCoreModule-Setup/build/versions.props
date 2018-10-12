@@ -1,0 +1,38 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!-- Allow versions as msbuild arguments -->
+
+  <PropertyGroup>
+    <PRODUCT_MAJOR Condition="$(PRODUCT_MAJOR) == ''">7</PRODUCT_MAJOR>
+    <PRODUCT_MINOR Condition="$(PRODUCT_MINOR) == ''">1</PRODUCT_MINOR>
+    <!-- Auto bump the build version based on current date -->
+    <!-- format:MMMDD, MMM indicates the total number of months since Dep 2016),  DD indicates the number of days in current month-->
+    <VersionDateMonths>$([MSBuild]::Multiply(12,$([MSBuild]::Subtract($([System.DateTime]::Now.Year), 2016))))</VersionDateMonths>
+    <VersionDateTotalMonths>$([MSBuild]::Add( $([MSBuild]::Subtract($([System.DateTime]::Now.Month), 10)), $(VersionDateMonths))) </VersionDateTotalMonths>
+    <VersionDateDays>$([System.DateTime]::Now.ToString("dd"))</VersionDateDays>
+    <VersionBuildMajor>$([System.String]::Concat($([System.Int32]::Parse('$(VersionDateTotalMonths)').ToString("D3")), $(VersionDateDays)))</VersionBuildMajor>
+    <BUILD_MAJOR Condition="$(BUILD_MAJOR) == ''">$(VersionBuildMajor)</BUILD_MAJOR>
+    <BUILD_MINOR Condition="$(BUILD_MINOR) == ''">$([System.DateTime]::Now.ToString("HHmm"))</BUILD_MINOR>
+  </PropertyGroup>
+
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalOptions>/DPRODUCT_MAJOR=$(PRODUCT_MAJOR) %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile>
+      <AdditionalOptions>/DPRODUCT_MINOR=$(PRODUCT_MINOR) %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile>
+      <AdditionalOptions>/DBUILD_MAJOR=$(BUILD_MAJOR) %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile>
+      <AdditionalOptions>/DBUILD_MINOR=$(BUILD_MINOR) %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+
+  <PropertyGroup>
+    <ResourceCompilePreprocessorDefinitions Condition="$(PRODUCT_MAJOR) != ''">PRODUCT_MAJOR=$(PRODUCT_MAJOR);$(ResourceCompilePreprocessorDefinitions)</ResourceCompilePreprocessorDefinitions>
+    <ResourceCompilePreprocessorDefinitions Condition="$(PRODUCT_MINOR) != ''">PRODUCT_MINOR=$(PRODUCT_MINOR);$(ResourceCompilePreprocessorDefinitions)</ResourceCompilePreprocessorDefinitions>
+    <ResourceCompilePreprocessorDefinitions Condition="$(BUILD_MAJOR) != ''">BUILD_MAJOR=$(BUILD_MAJOR);$(ResourceCompilePreprocessorDefinitions)</ResourceCompilePreprocessorDefinitions>
+    <ResourceCompilePreprocessorDefinitions Condition="$(BUILD_MINOR) != ''">BUILD_MINOR=$(BUILD_MINOR);$(ResourceCompilePreprocessorDefinitions)</ResourceCompilePreprocessorDefinitions>
+  </PropertyGroup>
+</Project>

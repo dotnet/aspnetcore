@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(ProjectDir)..\build\submodule.props" Condition="Exists('$(ProjectDir)..\build\submodule.props')" />
+  <Import Project="$(ProjectDir)..\build\versions.props" Condition="Exists('$(ProjectDir)..\build\versions.props')" />
+  <Import Project="$(ProjectDir)..\build\settings.props" Condition="Exists('$(ProjectDir)..\build\settings.props')" />
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\irtldbg.cpp" />
+    <ClCompile Include="src\isplat.cxx" />
+    <ClCompile Include="src\memorylog.cxx" />
+    <ClCompile Include="src\pudebug.cxx" />
+    <ClCompile Include="src\reftrace.c" />
+    <ClCompile Include="src\tracelog.c" />
+    <ClCompile Include="src\win32obj.cxx" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\dbgutil2.h" />
+    <ClInclude Include="include\irtldbg.h" />
+    <ClInclude Include="include\irtlmisc.h" />
+    <ClInclude Include="include\memorylog.hxx" />
+    <ClInclude Include="include\precomp.hxx" />
+    <ClInclude Include="include\pudebug.h" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>15.0</VCProjectVersion>
+    <ProjectGuid>{A2599642-CBE5-4230-8511-3DC2D81874BE}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>reftrace</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v141</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <PropertyGroup>
+    <IncludePath>$(ProjectDir)include;$(IIS-Common)Include;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <SDLCheck>true</SDLCheck>
+      <PrecompiledHeaderFile>precomp.hxx</PrecompiledHeaderFile>
+      <PreprocessorDefinitions>_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <Target Name="EnsureImportsExist" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project is trying to import a missing file: {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('$(ProjectDir)..\build\submodule.props')" Text="$([System.String]::Format('$(ErrorText)', '$(ProjectDir)..\build\submodule.props'))" />
+    <Error Condition="!Exists('$(ProjectDir)..\build\versions.props')" Text="$([System.String]::Format('$(ErrorText)', '$(ProjectDir)..\build\versions.props'))" />
+    <Error Condition="!Exists('$(ProjectDir)..\build\settings.props')" Text="$([System.String]::Format('$(ErrorText)', '$(ProjectDir)..\build\settings.props'))" />
+  </Target>
+</Project>
