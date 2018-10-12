@@ -4,11 +4,10 @@
     <_WorkRoot>$(RepositoryRoot).w\</_WorkRoot>
     <_WorkLayoutDir>$(_WorkRoot).l\</_WorkLayoutDir>
     <_WorkOutputDir>$(_WorkRoot).o\</_WorkOutputDir>
-    <_MetapackageSrcRoot>$(RepositoryRoot)src\</_MetapackageSrcRoot>
+    <_MetapackageSrcRoot>$(RepositoryRoot)src\Packages\</_MetapackageSrcRoot>
     <_TemplatesDir>$(MSBuildThisFileDirectory)tools\templates\</_TemplatesDir>
     <_DockerDir>$(MSBuildThisFileDirectory)tools\docker\</_DockerDir>
     <_PackagingDir>$(MSBuildThisFileDirectory)tools\packaging\</_PackagingDir>
-    <_DebToolDir>$(MSBuildThisFileDirectory)tools\dotnet-deb-tool-consumer\</_DebToolDir>
     <_SharedFxSourceDir>$(RepositoryRoot).deps\Signed\SharedFx\</_SharedFxSourceDir>
     <_InstallerSourceDir>$(RepositoryRoot).deps\Installers\</_InstallerSourceDir>
     <_SymbolsSourceDir>$(RepositoryRoot).deps\symbols\</_SymbolsSourceDir>
@@ -17,6 +16,8 @@
     <!-- 3B = semicolon in ASCII -->
     <PathSeparator Condition="'$(PathSeparator)' == ''">:</PathSeparator>
     <PathSeparator Condition="$(SharedFxRID.StartsWith('win'))">%3B</PathSeparator>
+    <ArchiveExtension>.tar.gz</ArchiveExtension>
+    <ArchiveExtension Condition="$(SharedFxRID.StartsWith('win'))">.zip</ArchiveExtension>
 
     <LibPrefix Condition="$([MSBuild]::IsOSPlatform('Linux')) OR $([MSBuild]::IsOSPlatform('OSX'))">lib</LibPrefix>
     <LibExtension>.so</LibExtension>

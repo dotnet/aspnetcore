@@ -205,8 +205,8 @@
       Condition="'$(KOREBUILD_REPOSITORY_INCLUDE)' != '' AND '$(KOREBUILD_REPOSITORY_EXCLUDE)' != ''" />
 
     <ItemGroup>
-      <Repository Update="%(Identity)" RootPath="$(SubmoduleRoot)%(Identity)\" />
-      <ShippedRepository Update="%(Identity)" RootPath="$(SubmoduleRoot)%(Identity)\" Condition="'%(Identity)' != ''" />
+      <Repository Update="%(Identity)" RootPath="$(SubmoduleRoot)%(Identity)\" Condition="'%(Identity)' != '' AND '%(RootPath)' == ''"  />
+      <ShippedRepository Update="%(Identity)" RootPath="$(SubmoduleRoot)%(Identity)\" Condition="'%(Identity)' != '' AND '%(RootPath)' == ''" />
     </ItemGroup>
   </Target>
 

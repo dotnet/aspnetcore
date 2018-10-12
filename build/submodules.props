@@ -22,10 +22,12 @@
 
        -->
       <PatchPolicy>ProductChangesOnly</PatchPolicy>
+      <RootPath></RootPath>
     </Repository>
     <ShippedRepository>
       <Build>false</Build>
       <PatchPolicy>ProductChangesOnly</PatchPolicy>
+      <RootPath></RootPath>
     </ShippedRepository>
   </ItemDefinitionGroup>
 

@@ -1,5 +1,4 @@
 <Project>
-  <Import Project="common.props" />
   <Import Project="SharedFx.props" />
 
   <PropertyGroup>
@@ -8,9 +7,9 @@
 
   <Target Name="GetMetapackageArtifactInfo">
     <ItemGroup>
-      <_MetapackageProject Include="$(RepositoryRoot)src\Microsoft.AspNetCore.All\Microsoft.AspNetCore.All.csproj" />
-      <_MetapackageProject Include="$(RepositoryRoot)src\Microsoft.AspNetCore.App\Microsoft.AspNetCore.App.csproj" />
-      <_MetapackageProject Include="$(RepositoryRoot)src\Microsoft.AspNetCore.Analyzers\Microsoft.AspNetCore.Analyzers.csproj" />
+      <_MetapackageProject Include="$(RepositoryRoot)src\Packages\Microsoft.AspNetCore.All\Microsoft.AspNetCore.All.csproj" />
+      <_MetapackageProject Include="$(RepositoryRoot)src\Packages\Microsoft.AspNetCore.App\Microsoft.AspNetCore.App.csproj" />
+      <_MetapackageProject Include="$(RepositoryRoot)src\Packages\Microsoft.AspNetCore.Analyzers\Microsoft.AspNetCore.Analyzers.csproj" />
     </ItemGroup>
 
     <MSBuild Projects="@(_MetapackageProject)"
@@ -37,7 +36,7 @@
   <Target Name="_BuildMetapackage" DependsOnTargets="ResolveRepoInfo">
     <PropertyGroup>
       <MetapackageSource>$(_MetapackageSrcRoot)$(MetapackageName)\</MetapackageSource>
-      <MetapackageWorkDirectory>$(_WorkRoot)$(MetapackageName)\</MetapackageWorkDirectory>
+      <MetapackageWorkDirectory>$(_WorkRoot)pkg\$(MetapackageName)\</MetapackageWorkDirectory>
       <CommonProps />
       <CommonProps>$(CommonProps);Configuration=$(Configuration)</CommonProps>
       <CommonProps>$(CommonProps);DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcesPropsPath)</CommonProps>
@@ -48,7 +47,7 @@
     </PropertyGroup>
 
     <Error
-      Message="Source directory $(MetapackageSource) for $(MetapackageName) does not exist."
+      Text="Source directory $(MetapackageSource) for $(MetapackageName) does not exist."
       Condition="!Exists('$(MetapackageSource)')" />
 
     <ItemGroup>
@@ -109,7 +108,7 @@
       BuildInParallel="false" />
   </Target>
 
-  <Target Name="DefineSharedFxPrerequisites">
+  <Target Name="DefineSharedFxPrerequisites" DependsOnTargets="ResolveCommitHash">
     <PropertyGroup>
       <RIDIsAcceptable Condition="'%(AllSharedFxRIDs.Identity)' == '$(SharedFxRID)'">true</RIDIsAcceptable>
       <CrossGenSharedFx>false</CrossGenSharedFx>
@@ -165,12 +164,12 @@
       Properties="$(RestoreProps);_Target=Restore;RestoreForce=true" />
   </Target>
 
-  <Target Name="PrepareForSharedFx" DependsOnTargets="DefineSharedFxPrerequisites">
+  <Target Name="PrepareForSharedFx" DependsOnTargets="DefineSharedFxPrerequisites;ResolveCommitHash">
     <PropertyGroup>
-      <AppSharedFxProps>SharedFxWorkDirectory=$(AppSharedFxWorkDirectory)</AppSharedFxProps>
+      <AppSharedFxProps>RepositoryCommit=$(RepositoryCommit);SharedFxWorkDirectory=$(AppSharedFxWorkDirectory)</AppSharedFxProps>
       <AppSharedFxProps>$(AppSharedFxProps);RuntimeFrameworkVersion=$(MicrosoftNETCoreApp21PackageVersion)</AppSharedFxProps>
       <AppSharedFxProps>$(AppSharedFxProps);SharedFxPackage=Microsoft.AspNetCore.App</AppSharedFxProps>
-      <AllSharedFxProps>SharedFxWorkDirectory=$(AllSharedFxWorkDirectory)</AllSharedFxProps>
+      <AllSharedFxProps>RepositoryCommit=$(RepositoryCommit);SharedFxWorkDirectory=$(AllSharedFxWorkDirectory)</AllSharedFxProps>
       <AllSharedFxProps>$(AllSharedFxProps);RuntimeFrameworkVersion=$(MicrosoftNETCoreApp21PackageVersion)</AllSharedFxProps>
       <AllSharedFxProps>$(AllSharedFxProps);SharedFxPackage=Microsoft.AspNetCore.All</AllSharedFxProps>
       <AllSharedFxProps>$(AllSharedFxProps);SharedFxDep=Microsoft.AspNetCore.App</AllSharedFxProps>
@@ -178,7 +177,7 @@
     </PropertyGroup>
 
     <!-- Clear working directory -->
-    <RemoveDir Directories="$(_WorkRoot)" />
+    <!-- <RemoveDir Directories="$(_WorkRoot)" /> -->
 
     <Copy SourceFiles="$(_MetapackageSrcRoot)Directory.Build.props" DestinationFolder="$(_WorkRoot)" />
 
@@ -186,9 +185,9 @@
     <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_PrepareForSharedFx" Properties="$(AllSharedFxProps)" />
   </Target>
 
-  <Target Name="_ResolveSharedFxFiles" DependsOnTargets="DefineSharedFxPrerequisites;ResolveCommitHash">
+  <Target Name="_ResolveSharedFxFiles" DependsOnTargets="DefineSharedFxPrerequisites">
     <ItemGroup>
-      <VersionLines Include="$(CommitHash)" />
+      <VersionLines Include="$(RepositoryCommit)" />
       <VersionLines Include="$(PackageVersion)" />
     </ItemGroup>
 
@@ -515,8 +514,10 @@
       <OutputZipFiles Include="$(SharedFxIntermediateOutputPath)**\*" />
     </ItemGroup>
 
-    <!-- Create archive -->
-    <ZipArchive
+    <!-- Create internal archive file -->
+    <Exec Condition="'$(ArchiveExtension)' == '.tar.gz'"
+      Command="tar -czf $(SharedFxOutputPath)$(SharedFxIntermediateArchiveBaseName)-$(PackageVersion)-$(SharedFxRID)$(ArchiveExtension) -C $(SharedFxIntermediateOutputPath) ." />
+    <ZipArchive Condition="'$(ArchiveExtension)' == '.zip'"
       File="$(SharedFxOutputPath)$(SharedFxIntermediateArchiveBaseName)-$(PackageVersion)-$(SharedFxRID).zip"
       SourceFiles="@(OutputZipFiles)"
       WorkingDirectory="$(SharedFxIntermediateOutputPath)"

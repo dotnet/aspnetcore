@@ -1,0 +1,21 @@
+<Project>
+
+  <ItemGroup>
+    <InstallerProject Include="SharedFrameworkBundle/SharedFrameworkBundle.wixproj" AdditionalProperties="Platform=x64" />
+    <InstallerProject Include="SharedFrameworkBundle/SharedFrameworkBundle.wixproj" AdditionalProperties="Platform=x86" />
+    <InstallerProject Include="*/*.wixproj" Exclude="@(InstallerProject);ancm/**/*" />
+  </ItemGroup>
+
+  <Target Name="Build">
+    <MSBuild Projects="@(InstallerProject)" Targets="Build" />
+  </Target>
+
+  <Target Name="Clean">
+    <MSBuild Projects="@(InstallerProject)" Targets="Clean" />
+  </Target>
+
+  <Target Name="Restore">
+    <MSBuild Projects="@(InstallerProject)" Targets="Restore" />
+  </Target>
+
+</Project>
