@@ -518,6 +518,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
+        void IRequestProcessor.Tick(DateTimeOffset now) { }
+
         private Pipe CreateRequestBodyPipe()
             => new Pipe(new PipeOptions
             (

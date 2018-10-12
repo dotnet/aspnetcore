@@ -35,6 +35,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private readonly OutputFlowControl _connectionOutputFlowControl;
         private readonly string _connectionId;
         private readonly IKestrelTrace _log;
+        private readonly ITimeoutControl _timeoutControl;
         private readonly TimingPipeFlusher _flusher;
 
         private bool _completed;
@@ -54,6 +55,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             _connectionOutputFlowControl = connectionOutputFlowControl;
             _connectionId = connectionId;
             _log = log;
+            _timeoutControl = timeoutControl;
             _flusher = new TimingPipeFlusher(_outputWriter, timeoutControl);
             _outgoingFrame = new Http2Frame();
             _headerEncodingBuffer = new byte[_maxFrameSize];
@@ -226,7 +228,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
         }
 
-        public Task WriteDataAsync(int streamId, StreamOutputFlowControl flowControl, ReadOnlySequence<byte> data, bool endStream)
+        public Task WriteDataAsync(int streamId, StreamOutputFlowControl flowControl, MinDataRate minRate, ReadOnlySequence<byte> data, bool endStream)
         {
             // The Length property of a ReadOnlySequence can be expensive, so we cache the value.
             var dataLength = data.Length;
@@ -242,12 +244,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 // https://httpwg.org/specs/rfc7540.html#rfc.section.6.9.1
                 if (dataLength != 0 && dataLength > flowControl.Available)
                 {
-                    return WriteDataAsyncAwaited(streamId, flowControl, data, dataLength, endStream);
+                    return WriteDataAsyncAwaited(streamId, minRate, flowControl, data, dataLength, endStream);
                 }
 
                 // This cast is safe since if dataLength would overflow an int, it's guaranteed to be greater than the available flow control window.
                 flowControl.Advance((int)dataLength);
-                return WriteDataUnsynchronizedAsync(streamId, data, endStream);
+                return WriteDataUnsynchronizedAsync(streamId, minRate, data, dataLength, endStream);
             }
         }
 
@@ -260,7 +262,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             |                           Padding (*)                       ...
             +---------------------------------------------------------------+
         */
-        private Task WriteDataUnsynchronizedAsync(int streamId, ReadOnlySequence<byte> data, bool endStream)
+        private Task WriteDataUnsynchronizedAsync(int streamId, MinDataRate minRate, ReadOnlySequence<byte> data, long dataLength, bool endStream)
         {
             // Note padding is not implemented
             _outgoingFrame.PrepareData(streamId);
@@ -300,15 +302,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
             // Plus padding
 
-            return _flusher.FlushAsync();
+            return _flusher.FlushAsync(minRate, dataLength);
         }
 
-        private async Task WriteDataAsyncAwaited(int streamId, StreamOutputFlowControl flowControl, ReadOnlySequence<byte> data, long dataLength, bool endStream)
+        private async Task WriteDataAsyncAwaited(int streamId, MinDataRate minRate, StreamOutputFlowControl flowControl, ReadOnlySequence<byte> data, long dataLength, bool endStream)
         {
             while (dataLength > 0)
             {
                 OutputFlowControlAwaitable availabilityAwaitable;
                 var writeTask = Task.CompletedTask;
+                int actual;
 
                 lock (_writeLock)
                 {
@@ -317,22 +320,35 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                         break;
                     }
 
-                    var actual = flowControl.AdvanceUpToAndWait(dataLength, out availabilityAwaitable);
+                    actual = flowControl.AdvanceUpToAndWait(dataLength, out availabilityAwaitable);
 
                     if (actual > 0)
                     {
+                        // Don't pass minRate through to the inner WriteData calls.
+                        // We measure this ourselves below so we account for flow control in addition to socket backpressure.
                         if (actual < dataLength)
                         {
-                            writeTask = WriteDataUnsynchronizedAsync(streamId, data.Slice(0, actual), endStream: false);
+                            writeTask = WriteDataUnsynchronizedAsync(streamId, null, data.Slice(0, actual), actual, endStream: false);
                             data = data.Slice(actual);
                             dataLength -= actual;
                         }
                         else
                         {
-                            writeTask = WriteDataUnsynchronizedAsync(streamId, data, endStream);
+                            writeTask = WriteDataUnsynchronizedAsync(streamId, null, data, actual, endStream);
                             dataLength = 0;
                         }
                     }
+                }
+
+                // Avoid timing writes that are already complete. This is likely to happen during the last iteration.
+                if (availabilityAwaitable == null && writeTask.IsCompleted)
+                {
+                    continue;
+                }
+
+                if (minRate != null)
+                {
+                    _timeoutControl.StartTimingWrite(minRate, actual);
                 }
 
                 // This awaitable releases continuations in FIFO order when the window updates.
@@ -343,6 +359,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 }
 
                 await writeTask;
+
+                if (minRate != null)
+                {
+                    _timeoutControl.StopTimingWrite();
+                }
             }
 
             // Ensure that the application continuation isn't executed inline by ProcessWindowUpdateFrameAsync.

@@ -40,6 +40,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             return FlushAsync(minRate: null, count: 0, outputAborter: outputAborter, cancellationToken: cancellationToken);
         }
 
+        public Task FlushAsync(MinDataRate minRate, long count)
+        {
+            return FlushAsync(minRate, count, outputAborter: null, cancellationToken: default);
+        }
+
         public Task FlushAsync(MinDataRate minRate, long count, IHttpOutputAborter outputAborter, CancellationToken cancellationToken)
         {
             var flushValueTask = _writer.FlushAsync(cancellationToken);

@@ -143,7 +143,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             var bufferSize = serviceContext.ServerOptions.Limits.MaxResponseBufferSize;
             if (bufferSize == 0)
             {
-                // 0 = no buffering so we need to configure the pipe so the the writer waits on the reader directly
+                // 0 = no buffering so we need to configure the pipe so the writer waits on the reader directly
                 return 1;
             }
 

@@ -10,6 +10,7 @@ using System.IO;
 using System.IO.Pipelines;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
@@ -48,8 +49,63 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             new KeyValuePair<string, string>("upgrade-insecure-requests", "1"),
         };
 
+        protected static readonly IEnumerable<KeyValuePair<string, string>> _postRequestHeaders = new[]
+        {
+            new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
+            new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
+        };
+
+        protected static readonly IEnumerable<KeyValuePair<string, string>> _expectContinueRequestHeaders = new[]
+        {
+            new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
+            new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(HeaderNames.Authority, "127.0.0.1"),
+            new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>("expect", "100-continue"),
+        };
+
+        protected static readonly IEnumerable<KeyValuePair<string, string>> _requestTrailers = new[]
+        {
+            new KeyValuePair<string, string>("trailer-one", "1"),
+            new KeyValuePair<string, string>("trailer-two", "2"),
+        };
+
+        protected static readonly IEnumerable<KeyValuePair<string, string>> _oneContinuationRequestHeaders = new[]
+        {
+            new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+            new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
+            new KeyValuePair<string, string>("a", _4kHeaderValue),
+            new KeyValuePair<string, string>("b", _4kHeaderValue),
+            new KeyValuePair<string, string>("c", _4kHeaderValue),
+            new KeyValuePair<string, string>("d", _4kHeaderValue)
+        };
+
+        protected static readonly IEnumerable<KeyValuePair<string, string>> _twoContinuationsRequestHeaders = new[]
+        {
+            new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+            new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
+            new KeyValuePair<string, string>("a", _4kHeaderValue),
+            new KeyValuePair<string, string>("b", _4kHeaderValue),
+            new KeyValuePair<string, string>("c", _4kHeaderValue),
+            new KeyValuePair<string, string>("d", _4kHeaderValue),
+            new KeyValuePair<string, string>("e", _4kHeaderValue),
+            new KeyValuePair<string, string>("f", _4kHeaderValue),
+            new KeyValuePair<string, string>("g", _4kHeaderValue),
+        };
+
+        protected static readonly byte[] _helloBytes = Encoding.ASCII.GetBytes("hello");
+        protected static readonly byte[] _worldBytes = Encoding.ASCII.GetBytes("world");
+        protected static readonly byte[] _helloWorldBytes = Encoding.ASCII.GetBytes("hello, world");
+        protected static readonly byte[] _noData = new byte[0];
+        protected static readonly byte[] _maxData = Encoding.ASCII.GetBytes(new string('a', Http2PeerSettings.MinAllowedMaxFrameSize));
+
         private readonly MemoryPool<byte> _memoryPool = KestrelMemoryPool.Create();
-        internal readonly DuplexPipe.DuplexPipePair _pair;
 
         protected readonly Http2PeerSettings _clientSettings = new Http2PeerSettings();
         protected readonly HPackEncoder _hpackEncoder = new HPackEncoder();
@@ -57,6 +113,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         private readonly byte[] _headerEncodingBuffer = new byte[Http2PeerSettings.MinAllowedMaxFrameSize];
 
         protected readonly TimeoutControl _timeoutControl;
+        protected readonly Mock<IKestrelTrace> _mockKestrelTrace = new Mock<IKestrelTrace>();
         protected readonly Mock<ConnectionContext> _mockConnectionContext = new Mock<ConnectionContext>();
         protected readonly Mock<ITimeoutHandler> _mockTimeoutHandler = new Mock<ITimeoutHandler>();
         protected readonly Mock<MockTimeoutControlBase> _mockTimeoutControl;
@@ -82,34 +139,34 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         protected readonly RequestDelegate _echoMethod;
         protected readonly RequestDelegate _echoHost;
         protected readonly RequestDelegate _echoPath;
+        protected readonly RequestDelegate _appAbort;
 
-        protected HttpConnectionContext _connectionContext;
+        protected TestServiceContext _serviceContext;
+
+        internal DuplexPipe.DuplexPipePair _pair;
         protected Http2Connection _connection;
         protected Task _connectionTask;
 
         public Http2TestBase()
         {
-            // Always dispatch test code back to the ThreadPool. This prevents deadlocks caused by continuing
-            // Http2Connection.ProcessRequestsAsync() loop with writer locks acquired. Run product code inline to make
-            // it easier to verify request frames are processed correctly immediately after sending the them.
-            var inputPipeOptions = new PipeOptions(
-                pool: _memoryPool,
-                readerScheduler: PipeScheduler.Inline,
-                writerScheduler: PipeScheduler.ThreadPool,
-                useSynchronizationContext: false
-            );
-            var outputPipeOptions = new PipeOptions(
-                pool: _memoryPool,
-                readerScheduler: PipeScheduler.ThreadPool,
-                writerScheduler: PipeScheduler.Inline,
-                useSynchronizationContext: false
-            );
-
-            _pair = DuplexPipe.CreateConnectionPair(inputPipeOptions, outputPipeOptions);
             _hpackDecoder = new HPackDecoder((int)_clientSettings.HeaderTableSize, MaxRequestHeaderFieldSize);
 
             _timeoutControl = new TimeoutControl(_mockTimeoutHandler.Object);
             _mockTimeoutControl = new Mock<MockTimeoutControlBase>(_timeoutControl) { CallBase = true };
+            _timeoutControl.Debugger = Mock.Of<IDebugger>();
+
+            _mockKestrelTrace
+                .Setup(m => m.Http2ConnectionClosing(It.IsAny<string>()))
+                .Callback(() => _closingStateReached.SetResult(null));
+            _mockKestrelTrace
+                .Setup(m => m.Http2ConnectionClosed(It.IsAny<string>(), It.IsAny<int>()))
+                .Callback(() => _closedStateReached.SetResult(null));
+
+            _mockConnectionContext.Setup(c => c.Abort(It.IsAny<ConnectionAbortedException>())).Callback<ConnectionAbortedException>(ex =>
+            {
+                // Emulate transport abort so the _connectionTask completes.
+                _pair.Application.Output.Complete(ex);
+            });
 
             _noopApplication = context => Task.CompletedTask;
 
@@ -277,44 +334,30 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                 return Task.CompletedTask;
             };
+
+            _appAbort = context =>
+            {
+                context.Abort();
+                return Task.CompletedTask;
+            };
         }
 
         public override void Initialize(MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
         {
             base.Initialize(methodInfo, testMethodArguments, testOutputHelper);
 
-            var mockKestrelTrace = new Mock<IKestrelTrace>();
-            mockKestrelTrace
-                .Setup(m => m.Http2ConnectionClosing(It.IsAny<string>()))
-                .Callback(() => _closingStateReached.SetResult(null));
-            mockKestrelTrace
-                .Setup(m => m.Http2ConnectionClosed(It.IsAny<string>(), It.IsAny<int>()))
-                .Callback(() => _closedStateReached.SetResult(null));
-
-            _connectionContext = new HttpConnectionContext
+            _serviceContext = new TestServiceContext(LoggerFactory, _mockKestrelTrace.Object)
             {
-                ConnectionContext = _mockConnectionContext.Object,
-                ConnectionFeatures = new FeatureCollection(),
-                ServiceContext = new TestServiceContext(LoggerFactory, mockKestrelTrace.Object),
-                MemoryPool = _memoryPool,
-                Transport = _pair.Transport,
-                TimeoutControl = _mockTimeoutControl.Object
+                Scheduler = PipeScheduler.Inline
             };
-
-            _connection = new Http2Connection(_connectionContext);
-
-            var httpConnection = new HttpConnection(_connectionContext);
-            httpConnection.Initialize(_connection);
-            _mockTimeoutHandler.Setup(h => h.OnTimeout(It.IsAny<TimeoutReason>()))
-                               .Callback<TimeoutReason>(r => httpConnection.OnTimeout(r));
         }
 
         public override void Dispose()
         {
-            _pair.Application.Input.Complete();
-            _pair.Application.Output.Complete();
-            _pair.Transport.Input.Complete();
-            _pair.Transport.Output.Complete();
+            _pair.Application?.Input.Complete();
+            _pair.Application?.Output.Complete();
+            _pair.Transport?.Input.Complete();
+            _pair.Transport?.Output.Complete();
             _memoryPool.Dispose();
 
             base.Dispose();
@@ -325,8 +368,43 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _decodedHeaders[name.GetAsciiStringNonNullCharacters()] = value.GetAsciiOrUTF8StringNonNullCharacters();
         }
 
+        protected void CreateConnection()
+        {
+            var limits = _serviceContext.ServerOptions.Limits;
+
+            // Always dispatch test code back to the ThreadPool. This prevents deadlocks caused by continuing
+            // Http2Connection.ProcessRequestsAsync() loop with writer locks acquired. Run product code inline to make
+            // it easier to verify request frames are processed correctly immediately after sending the them.
+            var inputPipeOptions = ConnectionDispatcher.GetInputPipeOptions(_serviceContext, _memoryPool, PipeScheduler.ThreadPool);
+            var outputPipeOptions = ConnectionDispatcher.GetOutputPipeOptions(_serviceContext, _memoryPool, PipeScheduler.ThreadPool);
+
+            _pair = DuplexPipe.CreateConnectionPair(inputPipeOptions, outputPipeOptions);
+
+            var httpConnectionContext = new HttpConnectionContext
+            {
+                ConnectionContext = _mockConnectionContext.Object,
+                ConnectionFeatures = new FeatureCollection(),
+                ServiceContext = _serviceContext,
+                MemoryPool = _memoryPool,
+                Transport = _pair.Transport,
+                TimeoutControl = _mockTimeoutControl.Object
+            };
+
+            _connection = new Http2Connection(httpConnectionContext);
+
+            var httpConnection = new HttpConnection(httpConnectionContext);
+            httpConnection.Initialize(_connection);
+            _mockTimeoutHandler.Setup(h => h.OnTimeout(It.IsAny<TimeoutReason>()))
+                               .Callback<TimeoutReason>(r => httpConnection.OnTimeout(r));
+        }
+
         protected async Task InitializeConnectionAsync(RequestDelegate application, int expectedSettingsCount = 3)
         {
+            if (_connection == null)
+            {
+                CreateConnection();
+            }
+
             _connectionTask = _connection.ProcessRequestsAsync(new DummyApplication(application));
 
             await SendPreambleAsync().ConfigureAwait(false);
@@ -714,6 +792,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             Http2FrameWriter.WriteHeader(frame, outputWriter);
             await SendAsync(payload);
+        }
+
+        protected async Task<bool> SendContinuationAsync(int streamId, Http2ContinuationFrameFlags flags, IEnumerable<KeyValuePair<string, string>> headers)
+        {
+            var outputWriter = _pair.Application.Output;
+            var frame = new Http2Frame();
+
+            frame.PrepareContinuation(flags, streamId);
+            var buffer = _headerEncodingBuffer.AsMemory();
+            var done = _hpackEncoder.BeginEncode(headers, buffer.Span, out var length);
+            frame.PayloadLength = length;
+
+            Http2FrameWriter.WriteHeader(frame, outputWriter);
+            await SendAsync(buffer.Span.Slice(0, length));
+
+            return done;
         }
 
         protected Task SendEmptyContinuationFrameAsync(int streamId, Http2ContinuationFrameFlags flags)

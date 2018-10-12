@@ -84,6 +84,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private readonly TaskCompletionSource<object> _streamsCompleted = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
         private readonly ConcurrentDictionary<int, Http2Stream> _streams = new ConcurrentDictionary<int, Http2Stream>();
+        private readonly ConcurrentDictionary<int, Http2Stream> _drainingStreams = new ConcurrentDictionary<int, Http2Stream>();
+        private int _activeStreamCount = 0;
 
         public Http2Connection(HttpConnectionContext context)
         {
@@ -153,7 +155,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             {
                 if (_state == Http2ConnectionState.Open)
                 {
-                    if (_streams.IsEmpty)
+                    if (_activeStreamCount == 0)
                     {
                         _frameWriter.WriteGoAwayAsync(_highestOpenedStreamId, Http2ErrorCode.NO_ERROR);
                         UpdateState(Http2ConnectionState.Closed);
@@ -246,7 +248,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             catch (ConnectionResetException ex)
             {
                 // Don't log ECONNRESET errors when there are no active streams on the connection. Browsers like IE will reset connections regularly.
-                if (_streams.Count > 0)
+                if (_activeStreamCount > 0)
                 {
                     Log.RequestProcessingError(ConnectionId, ex);
                 }
@@ -291,7 +293,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                             UpdateState(Http2ConnectionState.Closed);
                         }
 
-                        if (_streams.IsEmpty)
+                        if (_activeStreamCount == 0)
                         {
                             _streamsCompleted.TrySetResult(null);
                         }
@@ -458,11 +460,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
             if (_streams.TryGetValue(_incomingFrame.StreamId, out var stream))
             {
-                if (stream.DoNotDrainRequest)
+                if (stream.RstStreamReceived)
                 {
                     // Hard abort, do not allow any more frames on this stream.
                     throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorStreamAborted(_incomingFrame.Type, stream.StreamId), Http2ErrorCode.STREAM_CLOSED);
                 }
+
                 if (stream.EndStreamReceived)
                 {
                     // http://httpwg.org/specs/rfc7540.html#rfc.section.5.1
@@ -473,6 +476,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     //
                     // (The allowed frame types for this situation are WINDOW_UPDATE, RST_STREAM and PRIORITY)
                     throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorStreamHalfClosedRemote(_incomingFrame.Type, stream.StreamId), Http2ErrorCode.STREAM_CLOSED);
+                }
+
+                if (_incomingFrame.DataEndStream && stream.IsDraining)
+                {
+                    // No more frames expected.
+                    RemoveDrainingStream(_incomingFrame.StreamId);
                 }
 
                 return stream.OnDataAsync(_incomingFrame, payload);
@@ -516,7 +525,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
             if (_streams.TryGetValue(_incomingFrame.StreamId, out var stream))
             {
-                if (stream.DoNotDrainRequest)
+                if (stream.RstStreamReceived)
                 {
                     // Hard abort, do not allow any more frames on this stream.
                     throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorStreamAborted(_incomingFrame.Type, stream.StreamId), Http2ErrorCode.STREAM_CLOSED);
@@ -650,15 +659,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             if (_streams.TryGetValue(_incomingFrame.StreamId, out var stream))
             {
                 // Second reset
-                if (stream.DoNotDrainRequest)
+                if (stream.RstStreamReceived)
                 {
                     // Hard abort, do not allow any more frames on this stream.
                     throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorStreamAborted(_incomingFrame.Type, stream.StreamId), Http2ErrorCode.STREAM_CLOSED);
                 }
 
-                // No additional inbound header or data frames are allowed for this stream after receiving a reset.
-                stream.DisallowAdditionalRequestFrames();
-                stream.Abort(new IOException(CoreStrings.Http2StreamResetByClient));
+                if (stream.IsDraining)
+                {
+                    // This stream was aborted by the server earlier and now the client is aborting it as well. No more frames are expected.
+                    RemoveDrainingStream(_incomingFrame.StreamId);
+                }
+                else
+                {
+                    // No additional inbound header or data frames are allowed for this stream after receiving a reset.
+                    stream.AbortRstStreamReceived();
+                }
             }
 
             return Task.CompletedTask;
@@ -821,7 +837,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
             else if (_streams.TryGetValue(_incomingFrame.StreamId, out var stream))
             {
-                if (stream.DoNotDrainRequest)
+                if (stream.RstStreamReceived)
                 {
                     // Hard abort, do not allow any more frames on this stream.
                     throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorStreamAborted(_incomingFrame.Type, stream.StreamId), Http2ErrorCode.STREAM_CLOSED);
@@ -917,7 +933,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
             if (endHeaders)
             {
-                _currentHeadersStream.OnEndStreamReceived();
+                if (_currentHeadersStream.IsDraining)
+                {
+                    // This stream is aborted and abandon, no action required
+                    RemoveDrainingStream(_currentHeadersStream.StreamId);
+                }
+                else
+                {
+                    _currentHeadersStream.OnEndStreamReceived();
+                }
+
                 ResetRequestHeaderParsingState();
             }
 
@@ -934,7 +959,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 throw new Http2StreamErrorException(_currentHeadersStream.StreamId, CoreStrings.Http2ErrorMissingMandatoryPseudoHeaderFields, Http2ErrorCode.PROTOCOL_ERROR);
             }
 
-            if (_streams.Count >= _serverSettings.MaxConcurrentStreams)
+            if (_activeStreamCount >= _serverSettings.MaxConcurrentStreams)
             {
                 throw new Http2StreamErrorException(_currentHeadersStream.StreamId, CoreStrings.Http2ErrorMaxStreams, Http2ErrorCode.REFUSED_STREAM);
             }
@@ -948,6 +973,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 _currentHeadersStream.OnEndStreamReceived();
             }
 
+            _activeStreamCount++;
             _streams[_incomingFrame.StreamId] = _currentHeadersStream;
             // Must not allow app code to block the connection handling loop.
             ThreadPool.UnsafeQueueUserWorkItem(state =>
@@ -999,9 +1025,29 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         {
             lock (_stateLock)
             {
-                _streams.TryRemove(streamId, out _);
+                // Get, Add, Remove so the steam is always registered in at least one collection at a time.
+                if (_streams.TryGetValue(streamId, out var stream))
+                {
+                    _activeStreamCount--;
 
-                if (_streams.IsEmpty)
+                    if (stream.IsDraining)
+                    {
+                        stream.DrainExpiration =
+                            _context.ServiceContext.SystemClock.UtcNow + Constants.RequestBodyDrainTimeout;
+
+                        _drainingStreams.TryAdd(streamId, stream);
+                    }
+                    else
+                    {
+                        _streams.TryRemove(streamId, out _);
+                    }
+                }
+                else
+                {
+                    Debug.Assert(false, "Missing stream");
+                }
+
+                if (_activeStreamCount == 0)
                 {
                     if (_state == Http2ConnectionState.Closing)
                     {
@@ -1026,6 +1072,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                         // Complete the task waiting on all streams to finish
                         _streamsCompleted.TrySetResult(null);
                     }
+                }
+            }
+        }
+
+        void IRequestProcessor.Tick(DateTimeOffset now)
+        {
+            foreach (var stream in _drainingStreams)
+            {
+                if (now > stream.Value.DrainExpiration)
+                {
+                    RemoveDrainingStream(stream.Key);
                 }
             }
         }
@@ -1210,6 +1267,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 TimeoutControl.CancelTimeout();
                 Log.Http2ConnectionClosed(_context.ConnectionId, _highestOpenedStreamId);
             }
+        }
+
+        // Note this may be called concurrently based on incoming frames and Ticks.
+        private void RemoveDrainingStream(int key)
+        {
+            _streams.TryRemove(key, out _);
+            // It's possible to be marked as draining and have RemoveDrainingStream called
+            // before being added to the draining collection. In that case the next Tick would
+            // remove it anyways.
+            _drainingStreams.TryRemove(key, out _);
         }
     }
 }
