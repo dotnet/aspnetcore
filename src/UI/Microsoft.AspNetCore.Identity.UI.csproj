@@ -16,9 +16,7 @@
 
   <ItemGroup>
     <EmbeddedResource Include="wwwroot/**/*" />
-    <EmbeddedResource Remove="wwwroot/**/.bower.json" />
     <EmbeddedResource Remove="wwwroot/**/LICENSE*" />
-    <None Remove="wwwroot/**/.bower.json" />
     <None Remove="wwwroot/**/LICENSE*" />
     <None Include="THIRD-PARTY-NOTICES.txt" Pack="true" PackagePath="/" />
 
