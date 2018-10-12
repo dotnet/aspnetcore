@@ -2,7 +2,7 @@
   <Import Project="SharedFx.props" />
 
   <PropertyGroup>
-    <SharedFxOutputPath>$([MSBuild]::NormalizeDirectory($(ArtifactsDir)))assets\Runtime\$(PackageVersion)\</SharedFxOutputPath>
+    <SharedFxOutputPath>$([MSBuild]::NormalizeDirectory($(ArtifactsDir)))runtime\</SharedFxOutputPath>
   </PropertyGroup>
 
   <Target Name="GetMetapackageArtifactInfo">
@@ -450,41 +450,41 @@
       Condition="Exists('$(_SymbolsSourceDir)%(AllPortablePDBsToPublish.SymbolsPackageFilename)')" />
     <Copy
       SourceFiles="$(_WorkRoot)SymbolsPackages\%(AppPortablePDBsToPublish.SymbolsPackageFilename)%(AppPortablePDBsToPublish.SymbolsRecursivePath)"
-      DestinationFolder="$(AppSharedFxSymbolsDirectory)runtimes\$(SharedFxRID)\lib\netcoreapp2.1"
+      DestinationFolder="$(AppSharedFxSymbolsDirectory)runtimes\$(SharedFxRID)\lib\$(SharedFrameworkTargetFramework)"
       OverwriteReadOnlyFiles="True"
       Condition="Exists('$(_WorkRoot)SymbolsPackages\%(AppPortablePDBsToPublish.SymbolsPackageFilename)\%(AppPortablePDBsToPublish.SymbolsRecursivePath)')" />
     <Copy
       SourceFiles="$(_WorkRoot)SymbolsPackages\%(AllPortablePDBsToPublish.SymbolsPackageFilename)%(AllPortablePDBsToPublish.SymbolsRecursivePath)"
-      DestinationFolder="$(AllSharedFxSymbolsDirectory)runtimes\$(SharedFxRID)\lib\netcoreapp2.1"
+      DestinationFolder="$(AllSharedFxSymbolsDirectory)runtimes\$(SharedFxRID)\lib\$(SharedFrameworkTargetFramework)"
       OverwriteReadOnlyFiles="True"
       Condition="Exists('$(_WorkRoot)SymbolsPackages\%(AllPortablePDBsToPublish.SymbolsPackageFilename)\%(AllPortablePDBsToPublish.SymbolsRecursivePath)')" />
 
     <!-- Copy over DLLs and PDBs -->
     <Copy
       SourceFiles="%(AppPortablePDBsToPublish.PortablePDB)"
-      DestinationFolder="$(AppSharedFxSymbolsDirectory)runtimes\$(SharedFxRID)\lib\netcoreapp2.1"
+      DestinationFolder="$(AppSharedFxSymbolsDirectory)runtimes\$(SharedFxRID)\lib\$(SharedFrameworkTargetFramework)"
       OverwriteReadOnlyFiles="True"
       Condition="Exists('%(AppPortablePDBsToPublish.PortablePDB)')" />
     <Copy
       SourceFiles="%(AllPortablePDBsToPublish.PortablePDB)"
-      DestinationFolder="$(AllSharedFxSymbolsDirectory)runtimes\$(SharedFxRID)\lib\netcoreapp2.1"
+      DestinationFolder="$(AllSharedFxSymbolsDirectory)runtimes\$(SharedFxRID)\lib\$(SharedFrameworkTargetFramework)"
       OverwriteReadOnlyFiles="True"
       Condition="Exists('%(AllPortablePDBsToPublish.PortablePDB)')" />
     <Copy
       SourceFiles="@(AppCrossGenSymbols)"
-      DestinationFolder="$(AppSharedFxSymbolsDirectory)runtimes\$(SharedFxRID)\lib\netcoreapp2.1"
+      DestinationFolder="$(AppSharedFxSymbolsDirectory)runtimes\$(SharedFxRID)\lib\$(SharedFrameworkTargetFramework)"
       OverwriteReadOnlyFiles="True" />
     <Copy
       SourceFiles="@(AllCrossGenSymbols)"
-      DestinationFolder="$(AllSharedFxSymbolsDirectory)runtimes\$(SharedFxRID)\lib\netcoreapp2.1"
+      DestinationFolder="$(AllSharedFxSymbolsDirectory)runtimes\$(SharedFxRID)\lib\$(SharedFrameworkTargetFramework)"
       OverwriteReadOnlyFiles="True" />
     <Copy
       SourceFiles="$(AppSharedFxCrossgenDirectory)%(AppCrossGenOutput.RecursiveDir)%(AppCrossGenOutput.FileName)%(AppCrossGenOutput.Extension)"
-      DestinationFolder="$(AppSharedFxSymbolsDirectory)runtimes\$(SharedFxRID)\lib\netcoreapp2.1"
+      DestinationFolder="$(AppSharedFxSymbolsDirectory)runtimes\$(SharedFxRID)\lib\$(SharedFrameworkTargetFramework)"
       OverwriteReadOnlyFiles="True" />
     <Copy
       SourceFiles="$(AllSharedFxCrossgenDirectory)%(AllCrossGenOutput.RecursiveDir)%(AllCrossGenOutput.FileName)%(AllCrossGenOutput.Extension)"
-      DestinationFolder="$(AllSharedFxSymbolsDirectory)runtimes\$(SharedFxRID)\lib\netcoreapp2.1"
+      DestinationFolder="$(AllSharedFxSymbolsDirectory)runtimes\$(SharedFxRID)\lib\$(SharedFrameworkTargetFramework)"
       OverwriteReadOnlyFiles="True" />
 
     <!-- Create symbols nupkg -->
@@ -542,6 +542,7 @@
         DotNetPackageVersionPropsPath=$(GeneratedPackageVersionPropsPath);
         SharedFxOutputPath=$(SharedFxIntermediateOutputPath);
         RepositoryCommit=$(RepositoryCommit);
+        VSTestLogger=$([MSBuild]::Escape('trx;LogFileName=$(UnitTestFxTrxLogFile)'));
         SharedFxRuntimeIdentifier=$(SharedFXRid)
       </UnitTestFxTestProps>
     </PropertyGroup>

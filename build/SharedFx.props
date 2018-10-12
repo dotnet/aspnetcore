@@ -1,7 +1,7 @@
 <Project>
   <PropertyGroup>
     <!-- directories -->
-    <_WorkRoot>$(RepositoryRoot).w\</_WorkRoot>
+    <_WorkRoot>$(RepositoryRoot).w\$(SharedFxRID)\</_WorkRoot>
     <_WorkLayoutDir>$(_WorkRoot).l\</_WorkLayoutDir>
     <_WorkOutputDir>$(_WorkRoot).o\</_WorkOutputDir>
     <_MetapackageSrcRoot>$(RepositoryRoot)src\Packages\</_MetapackageSrcRoot>
@@ -24,6 +24,7 @@
     <LibExtension Condition="$([MSBuild]::IsOSPlatform('Windows'))">.dll</LibExtension>
     <LibExtension Condition="$([MSBuild]::IsOSPlatform('OSX'))">.dylib</LibExtension>
     <ExeExtension Condition="$([MSBuild]::IsOSPlatform('Windows'))">.exe</ExeExtension>
+    <SharedFrameworkTargetFramework>netcoreapp2.1</SharedFrameworkTargetFramework>
 
     <!-- installers -->
     <SharedFxInstallerName>aspnetcore-runtime</SharedFxInstallerName>

@@ -217,7 +217,7 @@
   </Target>
 
   <Target Name="GenerateDebs" DependsOnTargets="_EnsureInstallerPrerequisites">
-  <PropertyGroup>
+    <PropertyGroup>
       <Deb_DotnetRuntimeDependencyId>dotnet-runtime-$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion)</Deb_DotnetRuntimeDependencyId>
       <Deb_DotnetRuntimeDependencyVersion>$(MicrosoftNETCoreAppPackageVersion)</Deb_DotnetRuntimeDependencyVersion>
       <!-- Needed some creativity to convert the PackageVersion M.N.P-Build to the installer version M.N.P~Build, The conditional handles stabilized builds -->

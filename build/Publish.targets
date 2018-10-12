@@ -20,6 +20,7 @@
     </PublishDependsOn>
 
     <!-- Settings for pushing to the transport feed -->
+    <PushToBlobFeed_UploadTimeoutMinutes>10</PushToBlobFeed_UploadTimeoutMinutes>
     <PushToBlobFeed_Overwrite Condition="'$(PushToBlobFeed_Overwrite)' == ''">false</PushToBlobFeed_Overwrite>
     <PushToBlobFeed_MaxClients Condition="'$(PushToBlobFeed_MaxClients)' == ''">8</PushToBlobFeed_MaxClients>
     <BlobFileRelativePathBase Condition="'$(BlobFileRelativePathBase)' == ''">assets</BlobFileRelativePathBase>
@@ -287,6 +288,7 @@
                     AccountKey="$(PublishBlobFeedKey)"
                     ItemsToPush="@(PackageToPublishToTransport)"
                     Overwrite="$(PushToBlobFeed_Overwrite)"
+                    UploadTimeoutInMinutes="$(PushToBlobFeed_UploadTimeoutMinutes)"
                     ManifestBranch="$(BuildBranch)"
                     ManifestBuildId="$(Version)"
                     ManifestBuildData="ProductVersion=$(PackageVersion);UniverseCommitHash=$(CommitHash)"
@@ -300,6 +302,7 @@
                     ItemsToPush="@(FilesToPublishToTransport)"
                     PublishFlatContainer="true"
                     Overwrite="$(PushToBlobFeed_Overwrite)"
+                    UploadTimeoutInMinutes="$(PushToBlobFeed_UploadTimeoutMinutes)"
                     ManifestBranch="$(BuildBranch)"
                     ManifestBuildId="$(Version)"
                     ManifestBuildData="ProductVersion=$(PackageVersion);UniverseCommitHash=$(CommitHash)"

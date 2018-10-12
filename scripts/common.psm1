@@ -177,13 +177,12 @@ function Set-GithubInfo(
 function CommitUpdatedVersions(
     [hashtable]$updatedVars,
     [xml]$dependencies,
-    [string]$depsPath)
+    [string]$depsPath,
+    [string]$subject = 'Updating external dependencies')
 {
     $count = $updatedVars.Count
     if ($count -gt 0) {
         & git add build\dependencies.props
-
-        $subject = "Updating external dependencies"
 
         $gitConfigArgs = @()
         if ($env:GITHUB_USER) {
