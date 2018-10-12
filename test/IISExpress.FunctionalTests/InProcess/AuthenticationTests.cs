@@ -22,10 +22,11 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
 
         [ConditionalFact]
+        [RequiresIIS(IISCapability.WindowsAuthentication)]
         public async Task Authentication_InProcess()
         {
             var deploymentParameters = _fixture.GetBaseDeploymentParameters(publish: true);
-            deploymentParameters.AddWindowsAuthToServerConfig();
+            deploymentParameters.SetWindowsAuth();
 
             var deploymentResult = await DeployAsync(deploymentParameters);
 

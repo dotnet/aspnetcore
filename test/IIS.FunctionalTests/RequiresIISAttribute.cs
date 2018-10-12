@@ -15,16 +15,21 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
     [AttributeUsage(AttributeTargets.Assembly | AttributeTargets.Class | AttributeTargets.Method)]
     public sealed class RequiresIISAttribute : Attribute, ITestCondition
     {
+        private static readonly (IISCapability Capability, string DllName)[] Modules =
+        {
+            (IISCapability.Websockets, "iiswsock.dll"),
+            (IISCapability.WindowsAuthentication, "authsspi.dll"),
+            (IISCapability.DynamicCompression, "compdyn.dll"),
+            (IISCapability.ApplicationInitialization, "warmup.dll"),
+            (IISCapability.TracingModule, "iisetw.dll"),
+            (IISCapability.FailedRequestTracingModule, "iisfreb.dll"),
+            (IISCapability.BasicAuthentication, "authbas.dll"),
+        };
+
         private static readonly bool _isMetStatic;
         private static readonly string _skipReasonStatic;
-
-        private static readonly bool _websocketsAvailable;
-        private static readonly bool _windowsAuthAvailable;
         private static readonly bool _poolEnvironmentVariablesAvailable;
-        private static readonly bool _dynamicCompressionAvailable;
-        private static readonly bool _applicationInitializationModule;
-        private static readonly bool _tracingModuleAvailable;
-        private static readonly bool _frebTracingModuleAvailable;
+        private static readonly IISCapability _modulesAvailable;
 
         static RequiresIISAttribute()
         {
@@ -81,18 +86,13 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             _skipReasonStatic = _isMetStatic ? null : "IIS schema needs to be upgraded to support ANCM.";
 
-            _websocketsAvailable = File.Exists(Path.Combine(Environment.SystemDirectory, "inetsrv", "iiswsock.dll"));
-
-            _windowsAuthAvailable = File.Exists(Path.Combine(Environment.SystemDirectory, "inetsrv", "authsspi.dll"));
-
-            _dynamicCompressionAvailable = File.Exists(Path.Combine(Environment.SystemDirectory, "inetsrv", "compdyn.dll"));
-
-            _applicationInitializationModule = File.Exists(Path.Combine(Environment.SystemDirectory, "inetsrv", "warmup.dll"));
-
-            _tracingModuleAvailable = File.Exists(Path.Combine(Environment.SystemDirectory, "inetsrv", "iisetw.dll"));
-
-            _frebTracingModuleAvailable = File.Exists(Path.Combine(Environment.SystemDirectory, "inetsrv", "iisfreb.dll"));
-
+            foreach (var module in Modules)
+            {
+                if (File.Exists(Path.Combine(Environment.SystemDirectory, "inetsrv", module.DllName)))
+                {
+                    _modulesAvailable |= module.Capability;
+                }
+            }
 
             var iisRegistryKey = Registry.LocalMachine.OpenSubKey(@"Software\Microsoft\InetStp", writable: false);
             if (iisRegistryKey == null)
@@ -115,23 +115,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         {
             IsMet = _isMetStatic;
             SkipReason = _skipReasonStatic;
-            if (capabilities.HasFlag(IISCapability.Websockets))
-            {
-                IsMet &= _websocketsAvailable;
-                if (!_websocketsAvailable)
-                {
-                    SkipReason += "The machine does not have IIS websockets installed.";
-                }
-            }
-            if (capabilities.HasFlag(IISCapability.WindowsAuthentication))
-            {
-                IsMet &= _windowsAuthAvailable;
-
-                if (!_windowsAuthAvailable)
-                {
-                    SkipReason += "The machine does not have IIS windows authentication installed.";
-                }
-            }
             if (capabilities.HasFlag(IISCapability.PoolEnvironmentVariables))
             {
                 IsMet &= _poolEnvironmentVariablesAvailable;
@@ -147,40 +130,16 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 SkipReason += "https://github.com/aspnet/IISIntegration/issues/1074";
             }
 
-            if (capabilities.HasFlag(IISCapability.DynamicCompression))
+            foreach (var module in Modules)
             {
-                IsMet &= _dynamicCompressionAvailable;
-                if (!_dynamicCompressionAvailable)
+                if (capabilities.HasFlag(module.Capability))
                 {
-                    SkipReason += "The machine does not have IIS dynamic compression installed.";
-                }
-            }
-
-            if (capabilities.HasFlag(IISCapability.ApplicationInitialization))
-            {
-                IsMet &= _applicationInitializationModule;
-                if (!_applicationInitializationModule)
-                {
-                    SkipReason += "The machine does not have IIS ApplicationInitialization installed.";
-                }
-            }
-
-
-            if (capabilities.HasFlag(IISCapability.TracingModule))
-            {
-                IsMet &= _tracingModuleAvailable;
-                if (!_tracingModuleAvailable)
-                {
-                    SkipReason += "The machine does not have IIS Failed Request Tracing Module installed.";
-                }
-            }
-
-            if (capabilities.HasFlag(IISCapability.FailedRequestTracingModule))
-            {
-                IsMet &= _frebTracingModuleAvailable;
-                if (!_frebTracingModuleAvailable)
-                {
-                    SkipReason += "The machine does not have IIS Failed Request Tracing Module installed.";
+                    var available = _modulesAvailable.HasFlag(module.Capability);
+                    IsMet &= available;
+                    if (!available)
+                    {
+                        SkipReason += $"The machine does have {module.Capability} available.";
+                    }
                 }
             }
         }

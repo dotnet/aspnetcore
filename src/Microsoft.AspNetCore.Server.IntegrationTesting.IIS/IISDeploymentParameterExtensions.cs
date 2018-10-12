@@ -41,14 +41,40 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                 });
         }
 
-        public static void AddWindowsAuthToServerConfig(this IISDeploymentParameters parameters)
+        public static void SetWindowsAuth(this IISDeploymentParameters parameters, bool enabled = true)
         {
+            parameters.EnableModule("WindowsAuthenticationModule", "%IIS_BIN%\\authsspi.dll");
+
             parameters.AddServerConfigAction(
                 element =>
                 {
                     element.Descendants("windowsAuthentication")
                         .Single()
-                        .SetAttributeValue("enabled", "true");
+                        .SetAttributeValue("enabled", enabled);
+                });
+        }
+
+        public static void SetAnonymousAuth(this IISDeploymentParameters parameters, bool enabled = true)
+        {
+            parameters.AddServerConfigAction(
+                element =>
+                {
+                    element.Descendants("anonymousAuthentication")
+                        .Single()
+                        .SetAttributeValue("enabled", enabled);
+                });
+        }
+
+        public static void SetBasicAuth(this IISDeploymentParameters parameters, bool enabled = true)
+        {
+            parameters.EnableModule("BasicAuthenticationModule", "%IIS_BIN%\\authbas.dll");
+
+            parameters.AddServerConfigAction(
+                element =>
+                {
+                    element.Descendants("basicAuthentication")
+                        .Single()
+                        .SetAttributeValue("enabled", enabled);
                 });
         }
 

@@ -44,6 +44,10 @@ namespace TestSite
             var authScheme = (await authProvider.GetAllSchemesAsync()).SingleOrDefault();
 
             await ctx.Response.WriteAsync(authScheme?.Name ?? "null");
+            if (ctx.User.Identity.Name != null)
+            {
+                await ctx.Response.WriteAsync(":" + ctx.User.Identity.Name);
+            }
         }
 
         public async Task GetClientCert(HttpContext context)

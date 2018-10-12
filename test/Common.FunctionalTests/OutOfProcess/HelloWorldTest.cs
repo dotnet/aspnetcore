@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             response = await deploymentResult.HttpClient.GetAsync("/Auth");
             responseText = await response.Content.ReadAsStringAsync();
 
-            Assert.True("null".Equals(responseText), "Auth");
+            Assert.Equal("null", responseText);
 
             Assert.Equal(
                 $"ContentRootPath {deploymentResult.ContentRoot}" + Environment.NewLine +
