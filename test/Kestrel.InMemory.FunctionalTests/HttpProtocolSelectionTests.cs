@@ -35,35 +35,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
-        public async Task Server_Http2Only_Cleartext_Success()
+        public Task Server_Http2Only_Cleartext_Success()
         {
-            // Expect a SETTINGS frame (type 0x4) with default settings
+            // Expect a SETTINGS frame with default settings then a connection-level WINDOW_UPDATE frame.
             var expected = new byte[]
             {
                 0x00, 0x00, 0x12, // Payload Length (6 * settings count)
                 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, // SETTINGS frame (type 0x04)
-                0x00, 0x03, 0x00, 0x00, 0x00, 0x64, // Connection limit
-                0x00, 0x04, 0x00, 0x01, 0x80, 0x00, // Initial window size
-                0x00, 0x06, 0x00, 0x00, 0x80, 0x00 // Header size limit
-            };
-            var testContext = new TestServiceContext(LoggerFactory);
-            var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
-            {
-                Protocols = HttpProtocols.Http2
+                0x00, 0x03, 0x00, 0x00, 0x00, 0x64, // Connection limit (100)
+                0x00, 0x04, 0x00, 0x01, 0x80, 0x00, // Initial stream window size (96 KiB)
+                0x00, 0x06, 0x00, 0x00, 0x80, 0x00, // Header size limit (32 KiB)
+                0x00, 0x00, 0x04, // Payload Length (4)
+                0x08, 0x00, 0x00, 0x00, 0x00, 0x00, // WINDOW_UPDATE frame (type 0x08)
+                0x00, 0x01, 0x00, 0x01, // Diff between configured and protocol default (128 KiB - 0XFFFF)
             };
 
-            using (var server = new TestServer(context => Task.CompletedTask, testContext, listenOptions))
-            {
-                using (var connection = server.CreateConnection())
-                {
-                    await connection.Send(Encoding.ASCII.GetString(Http2Connection.ClientPreface));
-                    // Can't use Receive when expecting binary data
-                    var actual = new byte[expected.Length];
-                    var read = await connection.Stream.ReadAsync(actual, 0, actual.Length);
-                    Assert.Equal(expected.Length, read);
-                    Assert.Equal(expected, actual);
-                }
-            }
+            return TestSuccess(HttpProtocols.Http2,
+                Encoding.ASCII.GetString(Http2Connection.ClientPreface),
+                Encoding.ASCII.GetString(expected));
         }
 
         private async Task TestSuccess(HttpProtocols serverProtocols, string request, string expectedResponse)

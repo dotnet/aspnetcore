@@ -1065,7 +1065,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task MaxRequestBodySize_ContentLengthUnder_200()
         {
-            _connectionContext.ServiceContext.ServerOptions.Limits.MaxRequestBodySize = 15;
+            _serviceContext.ServerOptions.Limits.MaxRequestBodySize = 15;
             var headers = new[]
             {
                 new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
@@ -1108,7 +1108,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         public async Task MaxRequestBodySize_ContentLengthOver_413()
         {
             BadHttpRequestException exception = null;
-            _connectionContext.ServiceContext.ServerOptions.Limits.MaxRequestBodySize = 10;
+            _serviceContext.ServerOptions.Limits.MaxRequestBodySize = 10;
             var headers = new[]
             {
                 new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
@@ -1156,7 +1156,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task MaxRequestBodySize_NoContentLength_Under_200()
         {
-            _connectionContext.ServiceContext.ServerOptions.Limits.MaxRequestBodySize = 15;
+            _serviceContext.ServerOptions.Limits.MaxRequestBodySize = 15;
             var headers = new[]
             {
                 new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
@@ -1198,7 +1198,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         public async Task MaxRequestBodySize_NoContentLength_Over_413()
         {
             BadHttpRequestException exception = null;
-            _connectionContext.ServiceContext.ServerOptions.Limits.MaxRequestBodySize = 10;
+            _serviceContext.ServerOptions.Limits.MaxRequestBodySize = 10;
             var headers = new[]
             {
                 new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
@@ -1247,7 +1247,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         public async Task MaxRequestBodySize_AppCanLowerLimit(bool includeContentLength)
         {
             BadHttpRequestException exception = null;
-            _connectionContext.ServiceContext.ServerOptions.Limits.MaxRequestBodySize = 20;
+            _serviceContext.ServerOptions.Limits.MaxRequestBodySize = 20;
             var headers = new[]
             {
                 new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
@@ -1305,7 +1305,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [InlineData(false)]
         public async Task MaxRequestBodySize_AppCanRaiseLimit(bool includeContentLength)
         {
-            _connectionContext.ServiceContext.ServerOptions.Limits.MaxRequestBodySize = 10;
+            _serviceContext.ServerOptions.Limits.MaxRequestBodySize = 10;
             var headers = new[]
             {
                 new KeyValuePair<string, string>(HeaderNames.Method, "POST"),

@@ -74,7 +74,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
         }
 
-        public void Abort(ConnectionAbortedException abortReason)
+        // Review: This is called when a CancellationToken fires mid-write. In HTTP/1.x, this aborts the entire connection.
+        // Should we do that here?
+        void IHttpOutputAborter.Abort(ConnectionAbortedException abortReason)
         {
             Dispose();
         }
@@ -206,14 +208,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     {
                         if (readResult.Buffer.Length > 0)
                         {
-                            await _frameWriter.WriteDataAsync(_streamId, _flowControl, readResult.Buffer, endStream: false);
+                            await _frameWriter.WriteDataAsync(_streamId, _flowControl, _stream.MinResponseDataRate, readResult.Buffer, endStream: false);
                         }
 
                         await _frameWriter.WriteResponseTrailers(_streamId, _stream.Trailers);
                     }
                     else
                     {
-                        await _frameWriter.WriteDataAsync(_streamId, _flowControl, readResult.Buffer, endStream: readResult.IsCompleted);
+                        await _frameWriter.WriteDataAsync(_streamId, _flowControl, _stream.MinResponseDataRate, readResult.Buffer, endStream: readResult.IsCompleted);
                     }
 
                     _dataPipe.Reader.AdvanceTo(readResult.Buffer.End);

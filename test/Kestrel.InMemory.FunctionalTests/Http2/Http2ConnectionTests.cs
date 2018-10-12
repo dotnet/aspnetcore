@@ -10,77 +10,19 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 {
     public class Http2ConnectionTests : Http2TestBase
     {
-        private static readonly IEnumerable<KeyValuePair<string, string>> _postRequestHeaders = new[]
-        {
-            new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
-            new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-            new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
-            new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
-        };
-
-        private static readonly IEnumerable<KeyValuePair<string, string>> _expectContinueRequestHeaders = new[]
-        {
-            new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
-            new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-            new KeyValuePair<string, string>(HeaderNames.Authority, "127.0.0.1"),
-            new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
-            new KeyValuePair<string, string>("expect", "100-continue"),
-        };
-
-        private static readonly IEnumerable<KeyValuePair<string, string>> _requestTrailers = new[]
-        {
-            new KeyValuePair<string, string>("trailer-one", "1"),
-            new KeyValuePair<string, string>("trailer-two", "2"),
-        };
-
-        private static readonly IEnumerable<KeyValuePair<string, string>> _oneContinuationRequestHeaders = new[]
-        {
-            new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-            new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-            new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
-            new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
-            new KeyValuePair<string, string>("a", _4kHeaderValue),
-            new KeyValuePair<string, string>("b", _4kHeaderValue),
-            new KeyValuePair<string, string>("c", _4kHeaderValue),
-            new KeyValuePair<string, string>("d", _4kHeaderValue)
-        };
-
-        private static readonly IEnumerable<KeyValuePair<string, string>> _twoContinuationsRequestHeaders = new[]
-        {
-            new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-            new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-            new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
-            new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
-            new KeyValuePair<string, string>("a", _4kHeaderValue),
-            new KeyValuePair<string, string>("b", _4kHeaderValue),
-            new KeyValuePair<string, string>("c", _4kHeaderValue),
-            new KeyValuePair<string, string>("d", _4kHeaderValue),
-            new KeyValuePair<string, string>("e", _4kHeaderValue),
-            new KeyValuePair<string, string>("f", _4kHeaderValue),
-            new KeyValuePair<string, string>("g", _4kHeaderValue),
-        };
-
-        private static readonly byte[] _helloBytes = Encoding.ASCII.GetBytes("hello");
-        private static readonly byte[] _worldBytes = Encoding.ASCII.GetBytes("world");
-        private static readonly byte[] _helloWorldBytes = Encoding.ASCII.GetBytes("hello, world");
-        private static readonly byte[] _noData = new byte[0];
-        private static readonly byte[] _maxData = Encoding.ASCII.GetBytes(new string('a', Http2PeerSettings.MinAllowedMaxFrameSize));
-
         [Fact]
         public async Task Frame_Received_OverMaxSize_FrameError()
         {
@@ -102,8 +44,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         public async Task ServerSettings_ChangesRequestMaxFrameSize()
         {
             var length = Http2PeerSettings.MinAllowedMaxFrameSize + 10;
-            _connectionContext.ServiceContext.ServerOptions.Limits.Http2.MaxFrameSize = length;
-            _connection = new Http2Connection(_connectionContext);
+            _serviceContext.ServerOptions.Limits.Http2.MaxFrameSize = length;
 
             await InitializeConnectionAsync(_echoApplication, expectedSettingsCount: 4);
 
@@ -187,9 +128,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task DATA_Received_GreaterThanInitialWindowSize_ReadByStream()
         {
-            var initialStreamWindowSize = _connectionContext.ServiceContext.ServerOptions.Limits.Http2.InitialStreamWindowSize;
+            var initialStreamWindowSize = _serviceContext.ServerOptions.Limits.Http2.InitialStreamWindowSize;
             var framesInStreamWindow = initialStreamWindowSize / Http2PeerSettings.DefaultMaxFrameSize;
-            var initialConnectionWindowSize = _connectionContext.ServiceContext.ServerOptions.Limits.Http2.InitialConnectionWindowSize;
+            var initialConnectionWindowSize = _serviceContext.ServerOptions.Limits.Http2.InitialConnectionWindowSize;
             var framesInConnectionWindow = initialConnectionWindowSize / Http2PeerSettings.DefaultMaxFrameSize;
 
             // Grow the client stream windows so no stream WINDOW_UPDATEs need to be sent.
@@ -288,9 +229,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task DATA_Received_RightAtWindowLimit_DoesNotPausePipe()
         {
-            var initialStreamWindowSize = _connectionContext.ServiceContext.ServerOptions.Limits.Http2.InitialStreamWindowSize;
+            var initialStreamWindowSize = _serviceContext.ServerOptions.Limits.Http2.InitialStreamWindowSize;
             var framesInStreamWindow = initialStreamWindowSize / Http2PeerSettings.DefaultMaxFrameSize;
-            var initialConnectionWindowSize = _connectionContext.ServiceContext.ServerOptions.Limits.Http2.InitialConnectionWindowSize;
+            var initialConnectionWindowSize = _serviceContext.ServerOptions.Limits.Http2.InitialConnectionWindowSize;
             var framesInConnectionWindow = initialConnectionWindowSize / Http2PeerSettings.DefaultMaxFrameSize;
 
             await InitializeConnectionAsync(_waitForAbortApplication);
@@ -416,8 +357,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task DATA_Received_Multiplexed_GreaterThanInitialWindowSize_ReadByStream()
         {
-            var initialStreamWindowSize = _connectionContext.ServiceContext.ServerOptions.Limits.Http2.InitialStreamWindowSize;
-            var initialConnectionWindowSize = _connectionContext.ServiceContext.ServerOptions.Limits.Http2.InitialConnectionWindowSize;
+            var initialStreamWindowSize = _serviceContext.ServerOptions.Limits.Http2.InitialStreamWindowSize;
+            var initialConnectionWindowSize = _serviceContext.ServerOptions.Limits.Http2.InitialConnectionWindowSize;
             var framesInStreamWindow = initialStreamWindowSize / Http2PeerSettings.DefaultMaxFrameSize;
             var framesInConnectionWindow = initialConnectionWindowSize / Http2PeerSettings.DefaultMaxFrameSize;
 
@@ -630,7 +571,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [InlineData(255)]
         public async Task DATA_Received_WithPadding_CountsTowardsInputFlowControl(byte padLength)
         {
-            var initialWindowSize = _connectionContext.ServiceContext.ServerOptions.Limits.Http2.InitialStreamWindowSize;
+            var initialWindowSize = _serviceContext.ServerOptions.Limits.Http2.InitialStreamWindowSize;
             var framesInWindow = initialWindowSize / Http2PeerSettings.DefaultMaxFrameSize;
             var maxDataMinusPadding = _maxData.AsMemory(0, _maxData.Length - padLength - 1);
 
@@ -699,7 +640,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task DATA_Received_ButNotConsumedByApp_CountsTowardsInputFlowControl()
         {
-            var initialConnectionWindowSize = _connectionContext.ServiceContext.ServerOptions.Limits.Http2.InitialConnectionWindowSize;
+            var initialConnectionWindowSize = _serviceContext.ServerOptions.Limits.Http2.InitialConnectionWindowSize;
             var framesConnectionInWindow = initialConnectionWindowSize / Http2PeerSettings.DefaultMaxFrameSize;
 
             await InitializeConnectionAsync(_noopApplication);
@@ -925,7 +866,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task DATA_Received_NoStreamWindowSpace_ConnectionError()
         {
-            var initialWindowSize = _connectionContext.ServiceContext.ServerOptions.Limits.Http2.InitialStreamWindowSize;
+            var initialWindowSize = _serviceContext.ServerOptions.Limits.Http2.InitialStreamWindowSize;
             var framesInWindow = (initialWindowSize / Http2PeerSettings.DefaultMaxFrameSize) + 1; // Round up to overflow the window
 
             await InitializeConnectionAsync(_waitForAbortApplication);
@@ -947,7 +888,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task DATA_Received_NoConnectionWindowSpace_ConnectionError()
         {
-            var initialWindowSize = _connectionContext.ServiceContext.ServerOptions.Limits.Http2.InitialConnectionWindowSize;
+            var initialWindowSize = _serviceContext.ServerOptions.Limits.Http2.InitialConnectionWindowSize;
             var framesInWindow = initialWindowSize / Http2PeerSettings.DefaultMaxFrameSize;
 
             await InitializeConnectionAsync(_waitForAbortApplication);
@@ -1314,6 +1255,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task HEADERS_OverMaxStreamLimit_Refused()
         {
+            CreateConnection();
+
             _connection.ServerSettings.MaxConcurrentStreams = 1;
 
             var requestBlocker = new TaskCompletionSource<object>();
@@ -2093,7 +2036,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task RST_STREAM_Received_ReturnsSpaceToConnectionInputFlowControlWindow()
         {
-            var initialConnectionWindowSize = _connectionContext.ServiceContext.ServerOptions.Limits.Http2.InitialConnectionWindowSize;
+            var initialConnectionWindowSize = _serviceContext.ServerOptions.Limits.Http2.InitialConnectionWindowSize;
             var framesInConnectionWindow = initialConnectionWindowSize / Http2PeerSettings.DefaultMaxFrameSize;
 
             await InitializeConnectionAsync(_waitForAbortApplication);
@@ -2298,6 +2241,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task SETTINGS_KestrelDefaults_Sent()
         {
+            CreateConnection();
+
             _connectionTask = _connection.ProcessRequestsAsync(new DummyApplication(_noopApplication));
 
             await SendPreambleAsync().ConfigureAwait(false);
@@ -2342,6 +2287,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task SETTINGS_Custom_Sent()
         {
+            CreateConnection();
+
             _connection.ServerSettings.MaxConcurrentStreams = 1;
             _connection.ServerSettings.MaxHeaderListSize = 4 * 1024;
             _connection.ServerSettings.InitialWindowSize = 1024 * 1024 * 10;
@@ -2522,6 +2469,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task SETTINGS_Received_ChangesAllowedResponseMaxFrameSize()
         {
+            CreateConnection();
+
             _connection.ServerSettings.MaxFrameSize = Http2PeerSettings.MaxAllowedMaxFrameSize;
             // This includes the default response headers such as :status, etc
             var defaultResponseHeaderLength = 37;
@@ -2578,6 +2527,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         public async Task SETTINGS_Received_ClientMaxFrameSizeCannotExceedServerMaxFrameSize()
         {
             var serverMaxFrame = Http2PeerSettings.MinAllowedMaxFrameSize + 1024;
+
+            CreateConnection();
+
             _connection.ServerSettings.MaxFrameSize = Http2PeerSettings.MinAllowedMaxFrameSize + 1024;
             var clientMaxFrame = serverMaxFrame + 1024 * 5;
             _clientSettings.MaxFrameSize = (uint)clientMaxFrame;
@@ -3749,6 +3701,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task IgnoreNewStreamsDuringClosedConnection()
         {
+            // Remove callback that completes _pair.Application.Output on abort.
+            _mockConnectionContext.Reset();
+
             await InitializeConnectionAsync(_echoApplication);
 
             await StartStreamAsync(1, _browserRequestHeaders, endStream: false);
@@ -3766,6 +3721,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void IOExceptionDuringFrameProcessingLoggedAsInfo()
         {
+            CreateConnection();
+
             var ioException = new IOException();
             _pair.Application.Output.Complete(ioException);
 
@@ -3781,6 +3738,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void UnexpectedExceptionDuringFrameProcessingLoggedAWarning()
         {
+            CreateConnection();
+
             var exception = new Exception();
             _pair.Application.Output.Complete(exception);
 
@@ -3980,62 +3939,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 await SendDataAsync(1, new byte[100], endStream: false);
             }
             await SendRstStreamAsync(1);
-
-            // Send an extra frame to make it fail
-            switch (finalFrameType)
-            {
-                case Http2FrameType.DATA:
-                    await SendDataAsync(1, new byte[100], endStream: true);
-                    break;
-
-                case Http2FrameType.HEADERS:
-                    await SendHeadersAsync(1, Http2HeadersFrameFlags.END_STREAM | Http2HeadersFrameFlags.END_HEADERS, _requestTrailers);
-                    break;
-
-                default:
-                    throw new NotImplementedException(finalFrameType.ToString());
-            }
-
-            await WaitForConnectionErrorAsync<Http2ConnectionErrorException>(ignoreNonGoAwayFrames: false, expectedLastStreamId: 1, Http2ErrorCode.STREAM_CLOSED,
-                CoreStrings.FormatHttp2ErrorStreamClosed(finalFrameType, 1));
-        }
-
-        [Theory]
-        [InlineData(Http2FrameType.DATA)]
-        [InlineData(Http2FrameType.HEADERS)]
-        public async Task AbortedStream_ResetsAndDrainsRequest_RefusesFramesAfterCooldownExpires(Http2FrameType finalFrameType)
-        {
-            var mockSystemClock = new MockSystemClock();
-            _connectionContext.ServiceContext.SystemClock = mockSystemClock;
-
-            var headers = new[]
-            {
-                new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
-            };
-            await InitializeConnectionAsync(_appAbort);
-
-            await StartStreamAsync(1, headers, endStream: false);
-
-            await WaitForStreamErrorAsync(1, Http2ErrorCode.INTERNAL_ERROR, "The connection was aborted by the application.");
-
-            // There's a race when the appfunc is exiting about how soon it unregisters the stream.
-            for (var i = 0; i < 10; i++)
-            {
-                await SendDataAsync(1, new byte[100], endStream: false);
-            }
-
-            // Just short of the timeout
-            mockSystemClock.UtcNow += Constants.RequestBodyDrainTimeout - TimeSpan.FromTicks(1);
-            (_connection as IRequestProcessor).Tick(mockSystemClock.UtcNow);
-
-            // Still fine
-            await SendDataAsync(1, new byte[100], endStream: false);
-
-            // Just past the timeout
-            mockSystemClock.UtcNow += TimeSpan.FromTicks(2);
-            (_connection as IRequestProcessor).Tick(mockSystemClock.UtcNow);
 
             // Send an extra frame to make it fail
             switch (finalFrameType)
