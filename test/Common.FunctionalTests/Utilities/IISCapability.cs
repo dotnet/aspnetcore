@@ -16,6 +16,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         DynamicCompression = 16,
         ApplicationInitialization = 32,
         TracingModule = 64,
-        FailedRequestTracingModule = 128
+        FailedRequestTracingModule = 128,
+        BasicAuthentication = 256
     }
 }

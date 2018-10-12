@@ -34,13 +34,14 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 .WithAllAncmVersions();
 
         [ConditionalTheory]
+        [RequiresIIS(IISCapability.WindowsAuthentication)]
         [MemberData(nameof(TestVariants))]
         public async Task NtlmAuthentication(TestVariant variant)
         {
             var deploymentParameters = _fixture.GetBaseDeploymentParameters(variant);
             deploymentParameters.ApplicationBaseUriHint = $"https://localhost:0/";
 
-            deploymentParameters.AddWindowsAuthToServerConfig();
+            deploymentParameters.SetWindowsAuth(enabled: true);
 
             var result = await DeployAsync(deploymentParameters);
             var response = await result.HttpClient.GetAsync("/HelloWorld");

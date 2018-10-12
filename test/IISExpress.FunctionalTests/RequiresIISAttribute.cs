@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         public RequiresIISAttribute(IISCapability capabilities)
         {
-            // IISCapabilities aren't pretinent to IISExpress
+            // IISCapabilities aren't pertinent to IISExpress
         }
     }
 }
