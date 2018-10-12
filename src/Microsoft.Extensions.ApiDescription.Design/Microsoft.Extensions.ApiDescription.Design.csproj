@@ -60,7 +60,7 @@
 
     <SignedPackageFile Include="../dotnet-getdocument/bin/$(Configuration)/netcoreapp2.1/publish/Newtonsoft.Json.dll">
       <PackagePath>tools/Newtonsoft.Json.dll"</PackagePath>
-      <Certificate>$(AssemblySigning3rdPartyCertName)"</Certificate>
+      <Certificate>$(AssemblySigning3rdPartyCertName)</Certificate>
     </SignedPackageFile>
   </ItemGroup>
 
