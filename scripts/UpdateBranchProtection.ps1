@@ -145,9 +145,7 @@ foreach ($repo in $repos) {
                 contexts = $contexts
             }
             enforce_admins                = $true
-            required_pull_request_reviews = @{
-                require_code_owner_reviews = $true
-            }
+            required_pull_request_reviews = $null
             restrictions                  = $null
         }
 
