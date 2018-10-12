@@ -1,0 +1,35 @@
+<Project>
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
+  <Import Project="$(RepositoryRoot)\.deps\dependencies.g.props" />
+
+  <PropertyGroup>
+    <AspNetCoreSetupRoot>$(RepositoryRoot)src\Installers\Windows\AspNetCoreModule-Setup\</AspNetCoreSetupRoot>
+    <IIS-Setup>$(AspNetCoreSetupRoot)IIS-Setup\</IIS-Setup>
+    <IIS-Common>$(IIS-Setup)IIS-Common\</IIS-Common>
+
+    <CustomActionVariable>CustomAction=$(AspNetCoreSetupRoot)CustomAction\bin\$(Configuration)\$(Platform)\aspnetcoreca.dll</CustomActionVariable>
+
+    <PreBuiltANCMSchema>$(RepositoryRoot).deps\ANCM\Microsoft.AspNetCore.AspNetCoreModule\$(MicrosoftAspNetCoreAspNetCoreModulePackageVersion)\</PreBuiltANCMSchema>
+    <PreBuiltANCMV2Schema>$(RepositoryRoot).deps\ANCM\Microsoft.AspNetCore.AspNetCoreModuleV2\$(MicrosoftAspNetCoreAspNetCoreModuleV2PackageVersion)\</PreBuiltANCMV2Schema>
+
+    <PreBuiltANCMRoot>$(PreBuiltANCMSchema)contentFiles\any\any\</PreBuiltANCMRoot>
+    <PreBuiltANCMV2Root>$(PreBuiltANCMV2Schema)contentFiles\any\any\</PreBuiltANCMV2Root>
+
+    <ANCMOutOfProcessHandlerVersion>2.0.0</ANCMOutOfProcessHandlerVersion>
+    <DefineConstants>ANCMOutOfProcessHandlerVersion=$(ANCMOutOfProcessHandlerVersion);$(DefineConstants)</DefineConstants>
+    <DefineConstants>PreBuiltANCMRoot=$(PreBuiltANCMRoot);PreBuiltANCMV2Root=$(PreBuiltANCMV2Root);$(DefineConstants)</DefineConstants>
+    <DefineConstants>$(CustomActionVariable);PreBuiltANCMSchema=$(PreBuiltANCMSchema);PreBuiltANCMV2Schema=$(PreBuiltANCMV2Schema);$(DefineConstants)</DefineConstants>
+
+    <_TwoDigitYear>$([MSBuild]::Subtract($([System.DateTime]::UtcNow.Year), 2000))</_TwoDigitYear>
+    <_ThreeDigitDayOfYear>$([System.DateTime]::UtcNow.DayOfYear.ToString().PadLeft(3, '0'))</_ThreeDigitDayOfYear>
+
+
+    <BUILD_MAJOR>$(_TwoDigitYear)$(_ThreeDigitDayOfYear)</BUILD_MAJOR>
+    <BLDVERMAJOR>$(PRODUCT_MAJOR)</BLDVERMAJOR>
+    <BLDVERMINOR>$(PRODUCT_MINOR)</BLDVERMINOR>
+    <BLDNUMMAJOR>$(BUILD_MAJOR)</BLDNUMMAJOR>
+    <BLDNUMMINOR>$(BUILD_MINOR)</BLDNUMMINOR>
+    <DefineConstants>BLDVERMAJOR=$(BLDVERMAJOR);BLDVERMINOR=$(BLDVERMINOR);BLDNUMMAJOR=$(BLDNUMMAJOR);BLDNUMMINOR=$(BLDNUMMINOR);$(DefineConstants)</DefineConstants>
+  </PropertyGroup>
+
+</Project>

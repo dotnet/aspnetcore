@@ -1,0 +1,9 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!-- Provide exports to submodule hosts -->
+
+  <PropertyGroup>
+    <IIS-Common Condition="$(IIS-Common) == ''">$(MSBuildThisFileDirectory)..\</IIS-Common>
+  </PropertyGroup>
+
+</Project>
