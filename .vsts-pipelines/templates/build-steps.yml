@@ -16,13 +16,6 @@ phases:
           artifactName: logs
           artifactType: Container
           pathtoPublish: artifacts/logs
-      - task: PublishBuildArtifacts@1
-        displayName: Upload dumps
-        condition: eq(variables['system.pullrequest.isfork'], false)
-        inputs:
-          artifactName: dumps
-          artifactType: Container
-          pathtoPublish: artifacts/dumps
 
 - template: .vsts-pipelines/templates/phases/default-build.yml@buildtools
   parameters:

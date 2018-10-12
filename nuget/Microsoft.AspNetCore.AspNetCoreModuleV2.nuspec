@@ -37,6 +37,7 @@
     <file src="src\AspNetCoreModuleV2\InProcessRequestHandler\bin\$Configuration$\x64\aspnetcorev2_inprocess.pdb" target="contentFiles\any\any\x64" />
 
     <file src="src\AspNetCoreModuleV2\AspNetCore\aspnetcore_schema_v2.xml"/>
+    <file src="src\AspNetCoreModuleV2\AspNetCore\ancm.mof" />
     <file src="tools\installancm.ps1"/>
     <file src="LICENSE.txt"/>
     <file src="$AspNetCoreModuleV2Props$" target="build\" />

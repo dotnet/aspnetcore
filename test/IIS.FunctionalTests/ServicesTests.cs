@@ -32,15 +32,20 @@ namespace IIS.FunctionalTests
         [InlineData(HostingModel.OutOfProcess)]
         public async Task ApplicationPreloadStartsApp(HostingModel hostingModel)
         {
-            var baseDeploymentParameters = _fixture.GetBaseDeploymentParameters(hostingModel, publish: true);
-            baseDeploymentParameters.TransformArguments((args, contentRoot)=> $"{args} CreateFile \"{Path.Combine(contentRoot, "Started.txt")}\"");
-            EnablePreload(baseDeploymentParameters);
+            // This test often hits a memory leak in warmup.dll module, it has been reported to IIS team
+            using (AppVerifier.Disable(DeployerSelector.ServerType, 0x900))
+            {
+                var baseDeploymentParameters = _fixture.GetBaseDeploymentParameters(hostingModel, publish: true);
+                baseDeploymentParameters.TransformArguments(
+                    (args, contentRoot) => $"{args} CreateFile \"{Path.Combine(contentRoot, "Started.txt")}\"");
+                EnablePreload(baseDeploymentParameters);
 
-            var result = await DeployAsync(baseDeploymentParameters);
+                var result = await DeployAsync(baseDeploymentParameters);
 
-            await Helpers.Retry(async () => await File.ReadAllTextAsync(Path.Combine(result.ContentRoot, "Started.txt")), 10, 200);
-            StopServer();
-            EventLogHelpers.VerifyEventLogEvent(result, EventLogHelpers.Started(result));
+                await Helpers.Retry(async () => await File.ReadAllTextAsync(Path.Combine(result.ContentRoot, "Started.txt")), 10, 200);
+                StopServer();
+                EventLogHelpers.VerifyEventLogEvent(result, EventLogHelpers.Started(result));
+            }
         }
 
         [ConditionalTheory]
@@ -49,22 +54,26 @@ namespace IIS.FunctionalTests
         [InlineData(HostingModel.OutOfProcess)]
         public async Task ApplicationInitializationPageIsRequested(HostingModel hostingModel)
         {
-            var baseDeploymentParameters = _fixture.GetBaseDeploymentParameters(hostingModel, publish: true);
-            EnablePreload(baseDeploymentParameters);
+            // This test often hits a memory leak in warmup.dll module, it has been reported to IIS team
+            using (AppVerifier.Disable(DeployerSelector.ServerType, 0x900))
+            {
+                var baseDeploymentParameters = _fixture.GetBaseDeploymentParameters(hostingModel, publish: true);
+                EnablePreload(baseDeploymentParameters);
 
-            baseDeploymentParameters.ServerConfigActionList.Add(
-                (config, _) => {
-                    config
-                        .RequiredElement("system.webServer")
-                        .GetOrAdd("applicationInitialization")
-                        .GetOrAdd("add", "initializationPage", "/CreateFile");
-                });
+                baseDeploymentParameters.ServerConfigActionList.Add(
+                    (config, _) => {
+                        config
+                            .RequiredElement("system.webServer")
+                            .GetOrAdd("applicationInitialization")
+                            .GetOrAdd("add", "initializationPage", "/CreateFile");
+                    });
 
-            var result = await DeployAsync(baseDeploymentParameters);
+                var result = await DeployAsync(baseDeploymentParameters);
 
-            await Helpers.Retry(async () => await File.ReadAllTextAsync(Path.Combine(result.ContentRoot, "Started.txt")), 10, 200);
-            StopServer();
-            EventLogHelpers.VerifyEventLogEvent(result, EventLogHelpers.Started(result));
+                await Helpers.Retry(async () => await File.ReadAllTextAsync(Path.Combine(result.ContentRoot, "Started.txt")), 10, 200);
+                StopServer();
+                EventLogHelpers.VerifyEventLogEvent(result, EventLogHelpers.Started(result));
+            }
         }
 
         private static void EnablePreload(IISDeploymentParameters baseDeploymentParameters)
