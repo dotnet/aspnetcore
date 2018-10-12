@@ -262,7 +262,7 @@ if [ -f "$config_file" ]; then
             exit 1
         fi
     else
-        __error 'Missing required command: jq or pyton. Could not parse the JSON file. Its settings will be ignored.'
+        __error 'Missing required command: jq or python. Could not parse the JSON file. Its settings will be ignored.'
         exit 1
     fi
 

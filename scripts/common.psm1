@@ -243,6 +243,7 @@ function UpdateVersions([hashtable]$variables, [xml]$dependencies, [string]$deps
 
     return $updatedVars
 }
+
 function Get-MSBuildPath {
     param(
         [switch]$Prerelease,

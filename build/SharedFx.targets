@@ -1,5 +1,4 @@
 <Project>
-  <Import Project="common.props" />
   <Import Project="SharedFx.props" />
 
   <PropertyGroup>
