@@ -12,6 +12,13 @@
             "SigningVerificationCompositeRule"
         ],
         "packages": {
+            "Microsoft.Extensions.ApiDescription.Design": {
+                "Exclusions": {
+                    "ASSEMBLY_COMMIT_HASH": {
+                        "tools/Newtonsoft.Json.dll": "Assembly is built by another project but bundled in our shared framework."
+                    }
+                }
+            },
             "runtime.win-x64.Microsoft.AspNetCore.All.symbols": {
                 "Exclusions": {
                     "ASSEMBLY_COMMIT_HASH": {
