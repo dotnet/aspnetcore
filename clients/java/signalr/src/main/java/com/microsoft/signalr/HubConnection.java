@@ -144,7 +144,7 @@ public class HubConnection {
             HubMessage[] messages = protocol.parseMessages(payload, connectionState);
 
             for (HubMessage message : messages) {
-                logger.debug("Received message of type %s.", message.getMessageType());
+                logger.debug("Received message of type {}.", message.getMessageType());
                 switch (message.getMessageType()) {
                     case INVOCATION:
                         InvocationMessage invocationMessage = (InvocationMessage) message;
@@ -154,7 +154,7 @@ public class HubConnection {
                                 handler.getAction().invoke(invocationMessage.getArguments());
                             }
                         } else {
-                            logger.warn("Failed to find handler for '%s' method.", invocationMessage.getTarget());
+                            logger.warn("Failed to find handler for '{}' method.", invocationMessage.getTarget());
                         }
                         break;
                     case CLOSE:
@@ -169,7 +169,7 @@ public class HubConnection {
                         CompletionMessage completionMessage = (CompletionMessage)message;
                         InvocationRequest irq = connectionState.tryRemoveInvocation(completionMessage.getInvocationId());
                         if (irq == null) {
-                            logger.warn("Dropped unsolicited Completion message for invocation '%s'.", completionMessage.getInvocationId());
+                            logger.warn("Dropped unsolicited Completion message for invocation '{}'.", completionMessage.getInvocationId());
                             continue;
                         }
                         irq.complete(completionMessage);
@@ -177,7 +177,7 @@ public class HubConnection {
                     case STREAM_INVOCATION:
                     case STREAM_ITEM:
                     case CANCEL_INVOCATION:
-                        logger.error("This client does not support %s messages.", message.getMessageType());
+                        logger.error("This client does not support {} messages.", message.getMessageType());
 
                         throw new UnsupportedOperationException(String.format("The message type %s is not supported yet.", message.getMessageType()));
                 }
@@ -290,7 +290,7 @@ public class HubConnection {
                                             sendHubMessage(PingMessage.getInstance());
                                         }
                                     } catch (Exception e) {
-                                        logger.warn(String.format("Error sending ping: %s", e.getMessage()));
+                                        logger.warn(String.format("Error sending ping: {}", e.getMessage()));
                                         // The connection is probably in a bad or closed state now, cleanup the timer so
                                         // it stops triggering
                                         pingTimer.cancel();
@@ -351,7 +351,7 @@ public class HubConnection {
 
             if (errorMessage != null) {
                 stopError = errorMessage;
-                logger.error("HubConnection disconnected with an error: %s.", errorMessage);
+                logger.error("HubConnection disconnected with an error: {}.", errorMessage);
             } else {
                 logger.debug("Stopping HubConnection.");
             }
@@ -381,7 +381,7 @@ public class HubConnection {
             }
             if (errorMessage != null) {
                 exception = new RuntimeException(errorMessage);
-                logger.error("HubConnection disconnected with an error %s.", errorMessage);
+                logger.error("HubConnection disconnected with an error {}.", errorMessage);
             }
             connectionState.cancelOutstandingInvocations(exception);
             connectionState = null;
@@ -451,9 +451,9 @@ public class HubConnection {
     private void sendHubMessage(HubMessage message) {
         String serializedMessage = protocol.writeMessage(message);
         if (message.getMessageType() == HubMessageType.INVOCATION) {
-            logger.debug("Sending %s message '%s'.", message.getMessageType().name(), ((InvocationMessage)message).getInvocationId());
+            logger.debug("Sending {} message '{}'.", message.getMessageType().name(), ((InvocationMessage)message).getInvocationId());
         } else {
-            logger.debug("Sending %s message.", message.getMessageType().name());
+            logger.debug("Sending {} message.", message.getMessageType().name());
         }
         transport.send(serializedMessage);
 
@@ -475,7 +475,7 @@ public class HubConnection {
      */
     public void remove(String name) {
         handlers.remove(name);
-        logger.trace("Removing handlers for client method: %s.", name);
+        logger.trace("Removing handlers for client method: {}.", name);
     }
 
     public void onClosed(Consumer<Exception> callback) {
@@ -693,7 +693,7 @@ public class HubConnection {
 
     private Subscription registerHandler(String target, ActionBase action, Class<?>... types) {
         InvocationHandler handler = handlers.put(target, action, types);
-        logger.debug("Registering handler for client method: '%s'.", target);
+        logger.debug("Registering handler for client method: '{}'.", target);
         return new Subscription(handlers, handler, target);
     }
 
@@ -777,7 +777,7 @@ public class HubConnection {
         public List<Class<?>> getParameterTypes(String methodName) {
             List<InvocationHandler> handlers = connection.handlers.get(methodName);
             if (handlers == null) {
-                logger.warn("Failed to find handler for '%s' method.", methodName);
+                logger.warn("Failed to find handler for '{}' method.", methodName);
                 return emptyArray;
             }
 

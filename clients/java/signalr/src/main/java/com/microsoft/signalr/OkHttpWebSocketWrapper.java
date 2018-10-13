@@ -98,7 +98,7 @@ class OkHttpWebSocketWrapper extends WebSocketWrapper {
 
         @Override
         public void onFailure(WebSocket webSocket, Throwable t, Response response) {
-            logger.error("Websocket closed from an error: %s.", t.getMessage());
+            logger.error("Websocket closed from an error: {}.", t.getMessage());
             closeFuture.completeExceptionally(new RuntimeException(t));
             onClose.accept(null, t.getMessage());
             checkStartFailure();
@@ -109,7 +109,7 @@ class OkHttpWebSocketWrapper extends WebSocketWrapper {
             // exceptionally.
             if (!startFuture.isDone()) {
                 String errorMessage = "There was an error starting the Websockets transport.";
-                logger.error("Websocket closed from an error: %s.", errorMessage);
+                logger.error("Websocket closed from an error: {}.", errorMessage);
                 startFuture.completeExceptionally(new RuntimeException(errorMessage));
             }
         }
