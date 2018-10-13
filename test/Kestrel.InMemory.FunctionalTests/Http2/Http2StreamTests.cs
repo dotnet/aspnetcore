@@ -1218,7 +1218,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await StartStreamAsync(1, headers, endStream: false);
             await SendDataAsync(1, new byte[6], endStream: false);
             await SendDataAsync(1, new byte[6], endStream: false);
-            await SendDataAsync(1, new byte[6], endStream: true);
 
             var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
                 withLength: 59,
@@ -1228,6 +1227,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 withLength: 0,
                 withFlags: (byte)Http2DataFrameFlags.END_STREAM,
                 withStreamId: 1);
+
+            await WaitForStreamErrorAsync(1, Http2ErrorCode.NO_ERROR, null);
+            // Logged without an exception.
+            Assert.Contains(TestApplicationErrorLogger.Messages, m => m.Message.Contains("the application completed without reading the entire request body."));
 
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
@@ -1277,7 +1280,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await StartStreamAsync(1, headers, endStream: false);
             await SendDataAsync(1, new byte[6], endStream: false);
             await SendDataAsync(1, new byte[6], endStream: false);
-            await SendDataAsync(1, new byte[6], endStream: true);
+            await SendDataAsync(1, new byte[6], endStream: false);
 
             var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
                 withLength: 59,
@@ -1287,6 +1290,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 withLength: 0,
                 withFlags: (byte)Http2DataFrameFlags.END_STREAM,
                 withStreamId: 1);
+            await WaitForStreamErrorAsync(1, Http2ErrorCode.NO_ERROR, null);
+            // Logged without an exception.
+            Assert.Contains(TestApplicationErrorLogger.Messages, m => m.Message.Contains("the application completed without reading the entire request body."));
 
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 

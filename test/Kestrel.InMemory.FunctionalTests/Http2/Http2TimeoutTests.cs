@@ -66,9 +66,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             });
 
             // Send continuation frame to verify intermediate request header timeout doesn't interfere with keep-alive timeout.
-            await SendHeadersAsync(1, Http2HeadersFrameFlags.NONE, _browserRequestHeaders);
+            await SendHeadersAsync(1, Http2HeadersFrameFlags.END_STREAM, _browserRequestHeaders);
             await SendEmptyContinuationFrameAsync(1, Http2ContinuationFrameFlags.END_HEADERS);
-            await SendDataAsync(1, new Memory<byte>(), endStream: true);
 
             _mockTimeoutControl.Verify(c => c.SetTimeout(It.IsAny<long>(), TimeoutReason.RequestHeaders), Times.Once);
 
@@ -106,7 +105,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await InitializeConnectionAsync(_noopApplication);
 
-            await SendHeadersAsync(1, Http2HeadersFrameFlags.NONE, _browserRequestHeaders);
+            await SendHeadersAsync(1, Http2HeadersFrameFlags.END_STREAM, _browserRequestHeaders);
 
             await SendEmptyContinuationFrameAsync(1, Http2ContinuationFrameFlags.NONE);
 
