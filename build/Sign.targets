@@ -164,7 +164,7 @@
     <ItemGroup>
       <_InputJar Include="$(UnsignedPackagesDir)**\*.jar" />
     </ItemGroup>
-    
+
     <!-- Filter already signed .jar -->
     <FilterSignedPackagesFiles Files="@(_InputJar)">
       <Output TaskParameter="Signed" ItemName="AlreadySignedJar" />
