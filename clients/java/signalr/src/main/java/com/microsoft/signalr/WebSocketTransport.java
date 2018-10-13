@@ -57,7 +57,7 @@ class WebSocketTransport implements Transport {
             }
         });
 
-        return webSocketClient.start().thenRun(() -> logger.info("WebSocket transport connected to: %s.", this.url));
+        return webSocketClient.start().thenRun(() -> logger.info("WebSocket transport connected to: {}.", this.url));
     }
 
     @Override
@@ -88,7 +88,7 @@ class WebSocketTransport implements Transport {
 
     void onClose(int code, String reason) {
         logger.info("WebSocket connection stopping with " +
-                "code %d and reason '%s'.", code, reason);
+                "code {} and reason '{}'.", code, reason);
         if (code != 1000) {
             onClose.accept(reason);
         }
