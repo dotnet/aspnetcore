@@ -21,6 +21,7 @@ namespace Microsoft.AspNetCore.SignalR
 {
     public class HubConnectionContext
     {
+        private static readonly Action<object> _cancelReader = state => ((PipeReader)state).CancelPendingRead();
         private static readonly WaitCallback _abortedCallback = AbortConnection;
 
         private readonly ConnectionContext _connectionContext;
@@ -344,7 +345,10 @@ namespace Microsoft.AspNetCore.SignalR
         {
             try
             {
+                var input = Input;
+
                 using (var cts = new CancellationTokenSource())
+                using (var registration = cts.Token.Register(_cancelReader, input))
                 {
                     if (!Debugger.IsAttached)
                     {
@@ -353,7 +357,8 @@ namespace Microsoft.AspNetCore.SignalR
 
                     while (true)
                     {
-                        var result = await _connectionContext.Transport.Input.ReadAsync(cts.Token);
+                        var result = await input.ReadAsync();
+
                         var buffer = result.Buffer;
                         var consumed = buffer.Start;
                         var examined = buffer.End;
@@ -363,6 +368,7 @@ namespace Microsoft.AspNetCore.SignalR
                             if (result.IsCanceled)
                             {
                                 Log.HandshakeCanceled(_logger);
+                                await WriteHandshakeResponseAsync(new HandshakeResponseMessage("Handshake was canceled."));
                                 return false;
                             }
 
@@ -434,7 +440,7 @@ namespace Microsoft.AspNetCore.SignalR
                         }
                         finally
                         {
-                            _connectionContext.Transport.Input.AdvanceTo(consumed, examined);
+                            input.AdvanceTo(consumed, examined);
                         }
                     }
                 }
