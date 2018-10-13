@@ -32,7 +32,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 .WithAllAncmVersions()
                 .WithAllHostingModels();
 
-        [ConditionalTheory(Skip = "This test is manual. To run it set ASPNETCORE_MODULE_TEST_USER and ASPNETCORE_MODULE_TEST_PASSWORD environment variables to existing user")]
+        [ConditionalTheory]
+        [RequiresEnvironmentVariable("ASPNETCORE_MODULE_TEST_USER")]
         [RequiresIIS(IISCapability.BasicAuthentication)]
         [MemberData(nameof(TestVariants))]
         public async Task BasicAuthTest(TestVariant variant)
@@ -63,7 +64,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             else
             {
                 // We expect out-of-proc not allowing basic auth
-                Assert.Equal("Windows:", responseText);
+                Assert.Equal("Windows", responseText);
             }
         }
     }

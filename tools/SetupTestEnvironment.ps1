@@ -57,8 +57,8 @@ function Setup-appverif($application)
 
 function Shutdown-appverif($application)
 {
-    setx APPVERIFIER_ENABLED_CODES "`"`"";
-    setx APPVERIFIER_LEVEL "`"`"";
+    setx APPVERIFIER_ENABLED_CODES "NONE";
+    setx APPVERIFIER_LEVEL "NONE";
 
     appverif.exe -disable * -for $application
 }

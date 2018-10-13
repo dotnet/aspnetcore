@@ -43,14 +43,22 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
 
         public static void SetWindowsAuth(this IISDeploymentParameters parameters, bool enabled = true)
         {
+            parameters.EnsureSection("windowsAuthentication", "system.webServer", "security", "windowsAuthentication");
             parameters.EnableModule("WindowsAuthenticationModule", "%IIS_BIN%\\authsspi.dll");
 
             parameters.AddServerConfigAction(
                 element =>
                 {
-                    element.Descendants("windowsAuthentication")
-                        .Single()
-                        .SetAttributeValue("enabled", enabled);
+                    var windowsAuthentication = element
+                        .RequiredElement("system.webServer")
+                        .RequiredElement("security")
+                        .RequiredElement("authentication")
+                        .GetOrAdd("windowsAuthentication");
+
+                    windowsAuthentication.SetAttributeValue("enabled", enabled);
+                    var providers = windowsAuthentication.GetOrAdd("providers");
+                    providers.GetOrAdd("add", "value", "Negotiate");
+                    providers.GetOrAdd("add", "value", "NTLM");
                 });
         }
 
@@ -59,8 +67,11 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
             parameters.AddServerConfigAction(
                 element =>
                 {
-                    element.Descendants("anonymousAuthentication")
-                        .Single()
+                    element
+                        .RequiredElement("system.webServer")
+                        .RequiredElement("security")
+                        .RequiredElement("authentication")
+                        .GetOrAdd("anonymousAuthentication")
                         .SetAttributeValue("enabled", enabled);
                 });
         }
@@ -72,9 +83,30 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
             parameters.AddServerConfigAction(
                 element =>
                 {
-                    element.Descendants("basicAuthentication")
-                        .Single()
+                    element
+                        .RequiredElement("system.webServer")
+                        .RequiredElement("security")
+                        .RequiredElement("authentication")
+                        .GetOrAdd("basicAuthentication")
                         .SetAttributeValue("enabled", enabled);
+                });
+        }
+
+        public static void EnsureSection(this IISDeploymentParameters parameters, string name, params string[] path)
+        {
+            parameters.ServerConfigActionList.Add(
+                (config, _) => {
+
+                    var element = config
+                        .RequiredElement("configSections");
+
+                    foreach (var s in path)
+                    {
+                        element = element.GetOrAdd("sectionGroup", "name", s);
+                    }
+
+                    element.GetOrAdd("section", "name", "applicationInitialization")
+                       .SetAttributeValue("overrideModeDefault", "Allow");
                 });
         }
 

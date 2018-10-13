@@ -78,13 +78,9 @@ namespace IIS.FunctionalTests
 
         private static void EnablePreload(IISDeploymentParameters baseDeploymentParameters)
         {
+            baseDeploymentParameters.EnsureSection("applicationInitialization", "system.webServer");
             baseDeploymentParameters.ServerConfigActionList.Add(
                 (config, _) => {
-                    config
-                        .RequiredElement("configSections")
-                        .GetOrAdd("sectionGroup", "name", "system.webServer")
-                        .GetOrAdd("section", "name", "applicationInitialization")
-                        .SetAttributeValue("overrideModeDefault", "Allow");
 
                     config
                         .RequiredElement("system.applicationHost")
