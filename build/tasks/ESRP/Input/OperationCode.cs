@@ -14,6 +14,8 @@ namespace Microsoft.Build.OOB.ESRP
         SigntoolSign,
         SigntoolVerify,
         StrongNameSign,
-        StrongNameVerify
+        StrongNameVerify,
+        JavaSign,
+        JavaVerify,
     }
 }

@@ -1,19 +1,23 @@
 <Project>
   <Import Project="dependencies.props" />
+
   <PropertyGroup>
+    <DisableDefaultTargets>true</DisableDefaultTargets>
     <DepsDirectory>$(RepositoryRoot).deps\</DepsDirectory>
     <UnsignedPackagesDir>$(DepsDirectory)build\</UnsignedPackagesDir>
     <ToolsPath>$(RepositoryRoot)tools\</ToolsPath>
     <ZipExePath>$(ToolsPath)7Za.exe</ZipExePath>
     <CodeSignProjectDirectory>$(RepositoryRoot)src\CodeSign\</CodeSignProjectDirectory>
+    <SignCheckExclusionFile>$(MSBuildThisFileDirectory)signcheck.exclusions.txt</SignCheckExclusionFile>
     <GenerateSignRequest>false</GenerateSignRequest>
 
     <!-- Output -->
-    <PackagesOutputPath>$(ArtifactsDir)Signed\Packages\</PackagesOutputPath>
-    <SharedFxOutputPath>$(ArtifactsDir)Signed\SharedFx\</SharedFxOutputPath>
-    <SignedVSIXPath>$(ArtifactsDir)Signed\VSIX\</SignedVSIXPath>
-    <SignedMPacksOutputPath>$(ArtifactsDir)Signed\MPacks\</SignedMPacksOutputPath>
-    <SignedOobArchivePath>$(ArtifactsDir)Signed\OobArchives\</SignedOobArchivePath>
+    <SignedOutputPath>$(ArtifactsDir)Signed\</SignedOutputPath>
+    <PackagesOutputPath>$(SignedOutputPath)Packages\</PackagesOutputPath>
+    <SharedFxOutputPath>$(SignedOutputPath)SharedFx\</SharedFxOutputPath>
+    <SignedVSIXPath>$(SignedOutputPath)VSIX\</SignedVSIXPath>
+    <SignedMPacksOutputPath>$(SignedOutputPath)MPacks\</SignedMPacksOutputPath>
+    <SignedOobArchivePath>$(SignedOutputPath)OobArchives\</SignedOobArchivePath>
 
     <!-- Working directories -->
     <PoliCheckPath>$(IntermediateDir)policheck\</PoliCheckPath>
@@ -27,24 +31,10 @@
     <UnsignedMPacksPath>$(IntermediateDir)UnsignedMPacks\</UnsignedMPacksPath>
   </PropertyGroup>
 
-  <!-- Properties for code sign -->
-  <PropertyGroup>
-    <CodeSignApprovers>elipton;joeloff</CodeSignApprovers>
-    <BinaryCodeSignCertificate>400</BinaryCodeSignCertificate>
-    <VSIXCodeSignCertificate>100040160</VSIXCodeSignCertificate>
-    <ThirdParthCodeSignCertificate>135020002</ThirdParthCodeSignCertificate>
-    <CodeSignDisplayName>Microsoft ASP.NET Core</CodeSignDisplayName>
-    <CodeSignUrl>https://www.asp.net/</CodeSignUrl>
-    <VerifySignatures Condition="'$(VerifySignatures)' == ''">true</VerifySignatures>
-    <CodeSignCreateTestJob Condition="'$(CodeSignCreateTestJob)' == ''">false</CodeSignCreateTestJob>
-    <SkipArtifactVerification>true</SkipArtifactVerification>
-    <SkipBillOfMaterials>true</SkipBillOfMaterials>
-  </PropertyGroup>
-
   <!-- Properties for ESRP signing -->
   <PropertyGroup>
-    <ESRPClientExe>\\aspnetci\share\esrpclient.1.0.27\tools\EsrpClient.exe</ESRPClientExe>
     <ESRPApplicationId>f616b396-be72-40d2-98fd-d7c2e4041560</ESRPApplicationId>
+    <ESRPClientConfigFile>$(MSBuildThisFileDirectory)esrpconfig.json</ESRPClientConfigFile>
   </PropertyGroup>
 
 </Project>

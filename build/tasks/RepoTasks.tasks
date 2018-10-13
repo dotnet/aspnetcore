@@ -5,8 +5,21 @@
     <_RepoTaskAssembly>$(MSBuildThisFileDirectory)bin\publish\RepoTasks.dll</_RepoTaskAssembly>
   </PropertyGroup>
 
-  <UsingTask TaskName="RepoTasks.VerifySignedSharedFxBinaries" AssemblyFile="$(_RepoTaskAssembly)" />
+  <UsingTask TaskName="RepoTasks.GetFileHash" AssemblyFile="$(_RepoTaskAssembly)" />
+  <UsingTask TaskName="RepoTasks.FilterAuthenticodeSignedFiles" AssemblyFile="$(_RepoTaskAssembly)" />
+  <UsingTask TaskName="RepoTasks.FilterSignedPackagesFiles" AssemblyFile="$(_RepoTaskAssembly)" />
+  <UsingTask TaskName="RepoTasks.StupidCopy" AssemblyFile="$(_RepoTaskAssembly)" />
   <UsingTask TaskName="RepoTasks.VerifyPoliCheckResults" AssemblyFile="$(_RepoTaskAssembly)" />
   <UsingTask TaskName="Microsoft.Build.OOB.ESRP.CreateSignManifests" AssemblyFile="$(_RepoTaskAssembly)" />
+
+  <PropertyGroup>
+    <NuGetPackagesPath>$(NUGET_PACKAGES)</NuGetPackagesPath>
+    <NuGetPackagesPath Condition=" '$(NuGetPackagesPath)' == '' AND '$(USERPROFILE)' != '' ">$(USERPROFILE)\.nuget\packages\</NuGetPackagesPath>
+    <NuGetPackagesPath Condition=" '$(NuGetPackagesPath)' == '' AND '$(HOME)' != '' ">$(HOME)\.nuget\packages\</NuGetPackagesPath>
+    <NuGetPackagesPath>$([MSBuild]::NormalizeDirectory($(NuGetPackagesPath)))</NuGetPackagesPath>
+
+    <ESRPClientToolPath>$(NuGetPackagesPath)esrpclient\$(ESRPClientVersion)\tools\EsrpClient.exe</ESRPClientToolPath>
+    <SignCheckToolPath>$(NuGetPackagesPath)signcheck\$(SignCheckVersion)\tools\SignCheck.exe</SignCheckToolPath>
+  </PropertyGroup>
 
 </Project>

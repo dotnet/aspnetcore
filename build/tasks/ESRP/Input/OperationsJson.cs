@@ -236,7 +236,7 @@ namespace Microsoft.Build.OOB.ESRP
             };
 
             // Classic ID: 135020001
-            var _microsoft3rdPatyAppComponentDual = new Operations[]
+            var _microsoft3rdPartyAppComponentDual = new Operations[]
             {
                 new Operations
                 {
@@ -276,6 +276,25 @@ namespace Microsoft.Build.OOB.ESRP
                 }
             };
 
+            var _microsoftJava = new Operations[]
+            {
+                new Operations
+                {
+                    KeyCode = ESRP.KeyCode.CP_232612_Java,
+                    OperationCode = OperationCode.JavaSign,
+                    Parameters = new JObject
+                    {
+                        { "SigAlg", "SHA256withRSA" },
+                        { "Timestamp", "-tsa http://sha256timestamp.ws.symantec.com/sha256/timestamp" },
+                    }
+                },
+                new Operations
+                {
+                    KeyCode = ESRP.KeyCode.CP_232612_Java,
+                    OperationCode = OperationCode.JavaVerify,
+                }
+            };
+
             _operationsJson = new Dictionary<string, Operations[]> {
                 { "MicrosoftSN", _microsoftSN },
                 { "MicrosoftSharedLibrariesSN", _microsoftSharedLibrariesSN },
@@ -286,7 +305,8 @@ namespace Microsoft.Build.OOB.ESRP
                 { "MicrosoftOpc", _microsoftOpc },
                 { "MicrosoftOpc2", _microsoftOpc2 },
                 { "Microsoft3rdPartyAppComponent", _microsoft3rdPartyAppComponent },
-                { "Microsoft3rdPartyAppComponentDual", _microsoft3rdPatyAppComponentDual }
+                { "Microsoft3rdPartyAppComponentDual", _microsoft3rdPartyAppComponentDual },
+                { "MicrosoftJava", _microsoftJava },
             };
         }
     }

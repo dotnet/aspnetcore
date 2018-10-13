@@ -6,9 +6,11 @@
       RebuildOobArchives;
       RebuildPackages;
       SignNupkgs;
+      SignJars;
       RebuildVSIXes;
       RebuildSharedFxs;
       RepackMPacks;
+      SignCheck;
     </SignDependsOn>
   </PropertyGroup>
 
@@ -16,6 +18,12 @@
 
   <Target Name="PrepareFilesForSigning">
     <ItemGroup>
+      <!--
+        apphost.exe is intentionally excluded because customers are expected to codesign this file themselves
+        after the SDK tweaks the binary with the entrypoint name.
+       -->
+      <SignExclusions Include="$(UnsignedPackagesPath)**\AppHostTemplate\apphost.exe" />
+
       <ThirdPartyBinaries Include="
         $(UnsignedPackagesPath)**\MsgPack.dll;
         $(UnsignedPackagesPath)**\MessagePack.dll;
@@ -24,7 +32,8 @@
         $(UnsignedPackagesPath)**\sqlitepclraw*.dll;
         $(UnsignedPackagesPath)**\e_sqlite3.dll;
         $(UnsignedPackagesPath)**\stackexchange*.dll;
-        $(UnsignedPackagesPath)**\System.Interactive.Async.dll" />
+        $(UnsignedPackagesPath)**\System.Interactive.Async.dll"
+        Exclude="@(SignExclusions)" />
 
       <PackageBinaries Include="
         $(UnsignedPackagesPath)**\*.dll;
@@ -32,11 +41,13 @@
         $(UnsignedPackagesPath)**\*.psd1;
         $(UnsignedPackagesPath)**\*.psm1;
         $(UnsignedPackagesPath)**\*.ps1;"
-        Exclude="@(ThirdPartyBinaries)" />
+        Exclude="@(ThirdPartyBinaries);@(SignExclusions)" />
 
-      <VSIXBinaries Include="$(UnsignedVSIXPath)**\*.dll" />
+      <VSIXBinaries Include="$(UnsignedVSIXPath)**\*.dll"
+        Exclude="@(SignExclusions)" />
 
-      <OobArchiveBinaries Include="$(UnsignedOobArchivePath)**\*.dll" />
+      <OobArchiveBinaries Include="$(UnsignedOobArchivePath)**\*.dll"
+        Exclude="@(SignExclusions)" />
 
       <ThirdPartyBinaries Include="
         $(UnsignedSharedFxPath)**\MsgPack.dll;
@@ -46,7 +57,8 @@
         $(UnsignedSharedFxPath)**\sqlitepclraw*.dll;
         $(UnsignedSharedFxPath)**\e_sqlite3.dll;
         $(UnsignedSharedFxPath)**\stackexchange*.dll;
-        $(UnsignedSharedFxPath)**\System.Interactive.Async.dll" />
+        $(UnsignedSharedFxPath)**\System.Interactive.Async.dll"
+        Exclude="@(SignExclusions)" />
 
       <SharedFxBinaries Include="
         $(UnsignedSharedFxPath)**\microsoft.*.dll;
@@ -54,11 +66,12 @@
         $(UnsignedSharedFxPath)**\libuv.dll;
         $(UnsignedSharedFxPath)**\aspnetcorerh.dll;
         $(UnsignedSharedFxPath)**\sni.dll"
-        Exclude="@(ThirdPartyBinaries)"/>
+        Exclude="@(ThirdPartyBinaries);@(SignExclusions)"/>
 
       <UnaccountedSharedFxBinaries Include="$(UnsignedSharedFxPath)**\*.dll" Exclude="@(SharedFxBinaries);@(ThirdPartyBinaries)"/>
 
-      <MPackBinaries Include="$(UnsignedMPacksPath)**\*.dll" />
+      <MPackBinaries Include="$(UnsignedMPacksPath)**\*.dll"
+        Exclude="@(SignExclusions)" />
     </ItemGroup>
 
 
@@ -73,30 +86,30 @@
         @(OobArchiveBinaries);
         @(MPackBinaries);
         @(SharedFxBinaries);" />
+    </ItemGroup>
 
+    <ItemGroup>
+      <_SignProject Remove="@(_SignProject)" />
       <_SignProject Include="$(MSBuildProjectFullPath)" Condition ="'@(AspNetCoreBinaries)' != ''">
         <AdditionalProperties>
           LocalBuild=$(LocalBuild);
-          Certificate=$(BinaryCodeSignCertificate);
+          Certificate=$(MicrosoftAuthentiCodeSha2);
           JobName=AspNetCoreBinaries;
-          Description=Signing AspNetCore binaries;
           Files=@(AspNetCoreBinaries)
         </AdditionalProperties>
       </_SignProject>
 
-
       <_SignProject Include="$(MSBuildProjectFullPath)" Condition="'@(ThirdPartyBinaries)'!=''" >
         <AdditionalProperties>
           LocalBuild=$(LocalBuild);
-          Certificate=$(ThirdParthCodeSignCertificate);
+          Certificate=$(Microsoft3rdPartyAppComponentDual);
           JobName=ThirdPartyBinaries;
-          Description=Signing third party binaries;
           Files=@(ThirdPartyBinaries)
         </AdditionalProperties>
       </_SignProject>
     </ItemGroup>
 
-    <MSBuild Projects="@(_SignProject)" Targets="SubmitCodeSign" BuildInParallel="$(BuildInParallel)" />
+    <MSBuild Projects="@(_SignProject)" Targets="SubmitCodeSign" BuildInParallel="true" Condition="'@(_SignProject)' != '' AND '$(SignType)'=='real' " />
   </Target>
 
   <Target Name="RebuildPackages">
@@ -115,7 +128,7 @@
 
   <Target Name="SignNupkgs">
     <PropertyGroup>
-      <_ManifestOutputPath>$(IntermediateDir)esrp-package-sign.json</_ManifestOutputPath>
+      <_ManifestOutputPath>$(IntermediateDir)nupkg\</_ManifestOutputPath>
     </PropertyGroup>
 
     <ItemGroup>
@@ -135,13 +148,52 @@
     </Microsoft.Build.OOB.ESRP.CreateSignManifests>
 
     <Exec
-      Command="$(ESRPClientExe) sign -a $(AuthJson) -p $(PolicyJson) -i $(InputJson) -o $(OutputJson) -l progress"
+      Command="$(ESRPClientToolPath) sign -c $(ESRPClientConfigFile) -a $(AuthJson) -p $(PolicyJson) -i $(InputJson) -o $(OutputJson) -l progress -f $(LogOutputDir)sign-packages.log"
       Condition="'$(SignType)'=='real' AND '$(LocalBuild)'!='true'" />
 
-    <Copy
-      Files="@(_UnsignedNupkgs)"
-      DestinationFolder="$(PackagesOutputPath)"
-      Condition="'$(SignType)'!='real' OR '$(LocalBuild)'=='true'" />
+    <StupidCopy Condition="'$(SignType)'!='real' OR '$(LocalBuild)'=='true'"
+      SourceFiles="@(_UnsignedNupkgs)"
+      DestinationFolder="$(PackagesOutputPath)" />
+  </Target>
+
+  <Target Name="SignJars">
+    <PropertyGroup>
+      <_ManifestOutputPath>$(IntermediateDir)jar\</_ManifestOutputPath>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <_InputJar Include="$(UnsignedPackagesDir)**\*.jar" />
+    </ItemGroup>
+
+    <!-- Filter already signed .jar -->
+    <FilterSignedPackagesFiles Files="@(_InputJar)">
+      <Output TaskParameter="Signed" ItemName="AlreadySignedJar" />
+      <Output TaskParameter="Unsigned" ItemName="_UnsignedJars" />
+    </FilterSignedPackagesFiles>
+
+    <StupidCopy Condition="'@(AlreadySignedJar)' != ''"
+      SourceFiles="@(AlreadySignedJar)"
+      DestinationFolder="$(PackagesOutputPath)" />
+
+    <Microsoft.Build.OOB.ESRP.CreateSignManifests Condition="'@(_UnsignedJars)'!=''"
+       ApplicationId="$(ESRPApplicationId)"
+       DestinationRootDirectory="$(PackagesOutputPath)"
+       Files="@(_UnsignedJars)"
+       ManifestOutputPath="$(_ManifestOutputPath)"
+       KeyCodes="$(MicrosoftJava)">
+      <Output TaskParameter="AuthJson" PropertyName="AuthJson" />
+      <Output TaskParameter="PolicyJson" PropertyName="PolicyJson" />
+      <Output TaskParameter="InputJson" PropertyName="InputJson" />
+      <Output TaskParameter="OutputJson" PropertyName="OutputJson" />
+    </Microsoft.Build.OOB.ESRP.CreateSignManifests>
+
+    <Exec
+      Command="$(ESRPClientToolPath) sign -c $(ESRPClientConfigFile) -a $(AuthJson) -p $(PolicyJson) -i $(InputJson) -o $(OutputJson) -l progress -f $(LogOutputDir)sign-java.log"
+      Condition="'$(SignType)'=='real' AND '$(LocalBuild)'!='true'" />
+
+    <StupidCopy Condition="'$(SignType)'!='real' OR '$(LocalBuild)'=='true'"
+      SourceFiles="@(_UnsignedJars)"
+      DestinationFolder="$(PackagesOutputPath)" />
   </Target>
 
   <!-- Repacks MPacks with their signed binaries -->
@@ -202,55 +254,78 @@
     <ItemGroup>
       <VSIXToSign Include="$(UnsignedVSIXWithSignedBinariesPath)**\*.vsix" />
 
-      <_SignProject Project="$(MSBuildProjectFullPath)" Condition="'@(VSIXToSign)' != ''">
+      <_SignProject Remove="@(_SignProject)" />
+      <_SignProject Include="$(MSBuildProjectFullPath)" Condition="'@(VSIXToSign)' != ''">
         <AdditionalProperties>
-          Certificate=$(VSIXCodeSignCertificate);
+          Certificate=$(MicrosoftOpc2);
           JobName=AspNetCoreVSIX;
           LocalBuild=$(LocalBuild);
-          Description=Signing AspNetCore VSIX;
           Files=@(VSIXToSign)
         </AdditionalProperties>
       </_SignProject>
     </ItemGroup>
 
-    <MSBuild Projects="@(_SignProject)" Targets="SubmitCodeSign" Condition="'@(_SignProject)' != ''" />
+    <MSBuild Projects="@(_SignProject)" Targets="SubmitCodeSign" Condition="'@(_SignProject)' != '' AND '$(SignType)'=='real' " />
 
     <MakeDir Directories="$(SignedVSIXPath)%(VSIXToSign.FileName)\" />
 
-    <Copy Condition="'@(VSIXToSign)' != ''"
+    <StupidCopy Condition="'@(VSIXToSign)' != ''"
       SourceFiles="%(VSIXToSign.FullPath);$(DepsDirectory)build\%(VSIXToSign.FileName).json"
       DestinationFolder="$(SignedVSIXPath)%(VSIXToSign.FileName)\" />
   </Target>
 
   <Target Name="SubmitCodeSign">
-    <ItemGroup>
-      <_Approvers Include="$(CodeSignApprovers)" />
-      <_Files Include="$(Files)" />
-
-      <_ResponseFileLines Include="--approver=%(_Approvers.Identity)" />
-      <_ResponseFileLines Include="--cert=$(Certificate)" />
-      <_ResponseFileLines Include="--local-build" Condition="'$(SignType)'!='real' OR '$(LocalBuild)'=='true'" />
-      <_ResponseFileLines Include="--description=$(Description)" />
-      <_ResponseFileLines Include="--display-name=$(CodeSignDisplayName)" />
-      <_ResponseFileLines Include="--display-url=$(CodeSignUrl)" />
-      <_ResponseFileLines Include="--job-name=$(Jobname)" />
-      <_ResponseFileLines Include="--log-dir=$(LogOutputDir)" />
-      <_ResponseFileLines Include="-f=%(_Files.Identity)" />
-    </ItemGroup>
-
+    <Message Text="Executing code sign job $(JobName)" Importance="High" />
     <PropertyGroup>
-      <ResponseFilePath>$(IntermediateDir)$(JobName).rsp</ResponseFilePath>
-      <CodeSignExeOutputPath>$(RepositoryRoot)src\CodeSign\bin\$(Configuration)\net462\CodeSign.exe</CodeSignExeOutputPath>
+      <SigningStagingDir>$(IntermediateDir)u\$(JobName)\</SigningStagingDir>
+      <SignOutputDir>$(IntermediateDir)s\$(JobName)\</SignOutputDir>
+      <_ManifestOutputPath>$(IntermediateDir)esrpconfig\$(JobName)\</_ManifestOutputPath>
     </PropertyGroup>
 
-    <Message Text="Executing code sign job $(JobName)..." Importance="High" />
+    <ItemGroup>
+      <_FilesPath Include="$(Files)" />
+    </ItemGroup>
 
-    <WriteLinesToFile
-      File="$(ResponseFilePath)"
-      Lines="@(_ResponseFileLines)"
-      Overwrite="true" />
+    <RepoTasks.GetFileHash Files="@(_FilesPath)">
+      <Output TaskParameter="Items" ItemName="_FilesWithHash"/>
+    </RepoTasks.GetFileHash>
 
-    <Exec Command="&quot;$(CodeSignExeOutputPath)&quot; @$(ResponseFilePath)" />
+    <RepoTasks.FilterAuthenticodeSignedFiles Files="@(_FilesWithHash)">
+      <Output TaskParameter="Unsigned" ItemName="_UnsignedFilesWithHash"/>
+    </RepoTasks.FilterAuthenticodeSignedFiles>
+
+    <ItemGroup>
+      <_FilesToSign Include="$(SigningStagingDir)%(_UnsignedFilesWithHash.FileHash)%(_UnsignedFilesWithHash.Extension)" Condition=" '%(_UnsignedFilesWithHash.Identity)' != '' ">
+        <OriginalFilePath>%(_UnsignedFilesWithHash.Identity)</OriginalFilePath>
+      </_FilesToSign>
+    </ItemGroup>
+
+    <Message Text="Submitting @(_FilesToSign->Distinct()->Count()) unique files for signing" Importance="High" />
+    <Message Text="Go grab a coffee. This is going to take a while..." Importance="High" Condition="@(_FilesToSign->Distinct()->Count()) > 300" />
+
+    <StupidCopy SourceFiles="@(_FilesToSign->Distinct()->'%(OriginalFilePath)')" DestinationFiles="%(_FilesToSign.Identity)" />
+
+    <Microsoft.Build.OOB.ESRP.CreateSignManifests Condition="@(_FilesToSign->Count()) != 0"
+       ApplicationId="$(ESRPApplicationId)"
+       DestinationRootDirectory="$(SignOutputDir)"
+       Files="@(_FilesToSign->Distinct())"
+       ManifestOutputPath="$(_ManifestOutputPath)"
+       KeyCodes="$(Certificate)">
+      <Output TaskParameter="AuthJson" PropertyName="AuthJson" />
+      <Output TaskParameter="PolicyJson" PropertyName="PolicyJson" />
+      <Output TaskParameter="InputJson" PropertyName="InputJson" />
+      <Output TaskParameter="OutputJson" PropertyName="OutputJson" />
+    </Microsoft.Build.OOB.ESRP.CreateSignManifests>
+
+    <Exec
+      Command="$(ESRPClientToolPath) sign -c $(ESRPClientConfigFile) -a $(AuthJson) -p $(PolicyJson) -i $(InputJson) -o $(OutputJson) -l progress -f $(LogOutputDir)sign-$(JobName).log"
+      Condition="'$(SignType)'=='real' AND '$(LocalBuild)'!='true' AND @(_FilesToSign->Count()) != 0 " />
+
+    <Message Text="Finished code sign job $(JobName)" Importance="High" />
+
+    <StupidCopy SourceFiles="@(_FilesToSign)" DestinationFolder="$(SignOutputDir)" Condition="'$(LocalBuild)'=='true'" />
+
+    <StupidCopy SourceFiles="$(SignOutputDir)%(_FilesToSign.FileName)%(Extension)" DestinationFiles="%(OriginalFilePath)" Condition=" '%(_FilesToSign.Identity)' != '' " />
   </Target>
 
   <!-- Repacks aspnetcore shared framework -->
@@ -271,11 +346,7 @@
     <PropertyGroup>
       <WorkingDir>$(SharedFxFile)</WorkingDir>
       <SharedFxName>$([System.IO.Path]::GetFileName($(SharedFxFile)))</SharedFxName>
-      <CreateTarGzip Condition="$(SharedFxName.Contains('osx')) OR $(SharedFxName.Contains('linux')) OR $(SharedFxName.Contains('alpine'))">true</CreateTarGzip>
-      <OutputFile>$(OutDir)$(SharedFxName)</OutputFile>
-
-      <OutputFile Condition="'$(CreateTarGzip)'=='true'">$(OutputFile).tar.gz</OutputFile>
-      <OutputFile Condition="'$(CreateTarGzip)'!='true'">$(OutputFile).zip</OutputFile>
+      <OutputFile>$(OutDir)$(SharedFxName).zip</OutputFile>
     </PropertyGroup>
     <Error Condition="'$(OutDir)'==''" Text="Output dir not specified" />
 
@@ -283,12 +354,7 @@
 
     <!-- see https://sevenzip.osdn.jp/chm/cmdline/ -->
     <Exec Command="&quot;$(ZipExePath)&quot; a -tzip -mx9 -r -y &quot;$(OutputFile)&quot; * > nul"
-      WorkingDirectory="$(WorkingDir)"
-      Condition="'$(CreateTarGzip)' != 'true'" />
-
-    <Exec Command="&quot;$(ZipExePath)&quot; a -ttar -r -y -so tmp.tar * | &quot;$(ZipExePath)&quot; a -y -si &quot;$(OutputFile)&quot;"
-       WorkingDirectory="$(WorkingDir)"
-       Condition="'$(CreateTarGzip)' == 'true'" />
+      WorkingDirectory="$(WorkingDir)" />
   </Target>
 
   <Target Name="RebuildOobArchives">
@@ -317,7 +383,17 @@
     <ZipArchive
       File="$(OutputFile)"
       SourceFiles="@(Files)"
-      WorkingDirectory="$(ZipRoot)" />
+      WorkingDirectory="$(ZipRoot)"
+      Overwrite="true" />
+  </Target>
+
+  <Target Name="SignCheck" >
+    <Message Text="Running signcheck on output" Importance="high" />
+    <Warning Condition="'$(SignType)' != 'real'"
+      Text="Skipping sign check because SignType != real" />
+    <Exec Condition="'$(SignType)' == 'real'"
+      Command="$(SignCheckToolPath) --verify-jar -x $(SignCheckExclusionFile) --error-log-file $(LogOutputDir)signcheck.error.log --recursive --generate-exclusions-file $(LogOutputDir)signcheck.exclusions.g.txt -v Detailed -i $(SignedOutputPath)"
+      StandardOutputImportance="Normal" />
   </Target>
 
 </Project>

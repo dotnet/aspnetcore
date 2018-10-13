@@ -1,53 +1,4 @@
 <Project>
-  <!-- SDL verification tool -->
-  <Target Name="BinScope">
-    <PropertyGroup>
-      <BinScope70InstallDir>$(MSBuildProgramFiles32)\Microsoft\BinScope for SDL 7.0\</BinScope70InstallDir>
-      <BinScopeEXE>$(BinScope70InstallDir)BinScope.EXE</BinScopeEXE>
-
-      <BinScopeOutDir Condition="'$(BinScopeOutDir)' == ''">$(ArtifactsDir)BinScope\</BinScopeOutDir>
-      <BinScopeLogFile Condition="'$(BinScopeLogFile)' == ''">$(BinScopeOutDir)BinScopeResults.xml</BinScopeLogFile>
-      <BinScopeTargetDir Condition="'$(BinScopeTarget)' == ''">$(IntermediateDir)BinScope\</BinScopeTargetDir>
-    </PropertyGroup>
-
-    <ItemGroup>
-      <!--
-        Skipping native binaries and crossgened assemblies. BinScope only works on managed assemblies.
-      -->
-      <BinScopeTargetFiles
-        Include="$(UnsignedPackagesPath)**\*.dll"
-        Exclude="
-          $(UnsignedPackagesPath)runtime.*.symbols\**\*.dll;
-          $(UnsignedPackagesPath)dotnet-sql-cache.*\**\native\sni.dll;
-          $(UnsignedPackagesPath)Microsoft.AspNetCore.Server.IIS*\runtimes\**\aspnetcorerh.dll;
-          $(UnsignedPackagesPath)Microsoft.AspNetCore.AspNetCoreModule*\**\aspnetcore.dll;
-          $(UnsignedPackagesPath)Microsoft.AspNetCore.AspNetCoreModule*\**\aspnetcorerh.dll;
-          " />
-    </ItemGroup>
-
-    <RemoveDir Directories="$(BinScopeTargetDir)" />
-    <MakeDir Directories="$(BinScopeTargetDir)" />
-
-    <Copy SourceFiles="@(BinScopeTargetFiles)" DestinationFiles="@(BinScopeTargetFiles->'$(BinScopeTargetDir)%(RecursiveDir)\%(Filename)%(Extension)')" />
-
-    <WriteLinesToFile
-      File="$(IntermediateDir)BinScope.rsp"
-      Overwrite="true"
-      Lines="@(BinScopeTargetFiles->'/target $(BinScopeTargetDir)%(RecursiveDir)%(Filename)%(Extension) $(BinScopeSymbolOption)')" />
-
-    <Error
-      Text="BinScope could not be found at $(BinScope70InstallDir)"
-      Condition="!Exists('$(BinScopeEXE)') AND '$(LocalBuild)'!='true'" />
-
-    <Warning
-      Text="BinScope could not be found at $(BinScope70InstallDir). Skipping BinScope"
-      Condition="!Exists('$(BinScopeEXE)') AND '$(LocalBuild)'=='true'" />
-
-    <Exec
-      Command="&quot;$(BinScopeEXE)&quot; @$(IntermediateDir)BinScope.rsp /logfile $(BinScopeLogFile) /Xslt"
-      Condition="Exists('$(BinScopeEXE)')" />
-  </Target>
-
   <!-- Runs NuGetPackageVerifier on signed packages -->
   <Target Name="VerifySignedPackages">
     <ItemGroup>
@@ -59,14 +10,6 @@
       ArtifactDirectory="$(PackagesOutputPath)"
       RuleFile="$(RepositoryRoot)NuGetPackageVerifier-Signed.json"
       ExcludedRules="@(ExcludedRules)" />
-  </Target>
-
-  <!-- Ensures binaries in the aspnetcore shared framework are correctly authenticode signed -->
-  <Target Name="VerifySignedSharedFxBinaries" Condition="'$(SignType)' == 'real'">
-    <ItemGroup>
-      <SignedSharedFxBinaries Include="$(UnsignedSharedFxPath)**\*.dll" Exclude="$(UnsignedSharedFxPath)*.*"/>
-    </ItemGroup>
-    <RepoTasks.VerifySignedSharedFxBinaries Binaries="@(SignedSharedFxBinaries)" />
   </Target>
 
 </Project>

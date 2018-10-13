@@ -8,7 +8,7 @@
   <PropertyGroup>
     <PrepareDependsOn>$(PrepareDependsOn);PrepareArtifactDirectories;VerifyUnsignedPackages;ExtractInputs;Policheck</PrepareDependsOn>
     <PackageDependsOn>$(PackageDependsOn);Sign</PackageDependsOn>
-    <VerifyDependsOn>$(VerifyDependsOn);BinScope;VerifySignedPackages;VerifySignedSharedFxBinaries</VerifyDependsOn>
+    <VerifyDependsOn>$(VerifyDependsOn);VerifySignedPackages</VerifyDependsOn>
   </PropertyGroup>
 
   <Target Name="LocalBuild" DependsOnTargets="SetupLocalBuild;Package" />
