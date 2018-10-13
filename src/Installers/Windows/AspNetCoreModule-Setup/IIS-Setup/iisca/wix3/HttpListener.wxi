@@ -1,0 +1,44 @@
+<?xml version='1.0' encoding='utf-8' ?>
+
+<!--
+    Copyright (c) Microsoft Corporation. All rights reserved.
+    Licensed under the MIT license.
+-->
+
+<Include xmlns='http://schemas.microsoft.com/wix/2006/wi'>
+
+<!-- This is the old fragment:
+
+  <Fragment Id="Fragment.IIS.OOB.Common.HttpListener">
+
+To add this to your wxs file, add:
+
+    <?include $(var.PROJECT_ROOT)\setup\iisca\wix3\filename.wxi ?>
+
+-->
+
+
+    <!-- Immediate custom actions which will package and schedule deferred actions for httpsys -->
+    <CustomAction Id="ScheduleInstallHttpListener" BinaryKey="IISCustomActionDll" DllEntry="ScheduleInstallHttpListenerCA" Execute="immediate" Return="check" />
+    <CustomAction Id="ScheduleUnInstallHttpListener" BinaryKey="IISCustomActionDll" DllEntry="ScheduleUnInstallHttpListenerCA" Execute="immediate" Return="check"  />
+    
+    <!-- Deferred custom actions scheduled by the immediate actions above -->
+    <CustomAction Id="ExecuteInstallHttpListener" BinaryKey="IISCustomActionDll" DllEntry="ExecuteInstallHttpListenerCA" Execute="deferred" Return="check" Impersonate="no" />
+    <CustomAction Id="ExecuteUnInstallHttpListener" BinaryKey="IISCustomActionDll" DllEntry="ExecuteUnInstallHttpListenerCA" Execute="deferred" Return="check" Impersonate="no" />
+    
+    <!-- Setup Custom Action Parameters -->
+    
+    <!-- Define a table to hold registration parameters -->
+    <CustomTable Id='IISHttpListener'>
+      <Column Id='Name' Type='string' PrimaryKey='yes' />
+      <Column Id='Component_' Type='string' KeyTable='Component' KeyColumn='1' Category='Identifier' Width='72'/>
+      <Column Id='Account' Type='string' />
+      <Column Id='Prefix' Type='string' />
+    </CustomTable>
+    
+    <InstallExecuteSequence>
+      <Custom Action='ScheduleInstallHttpListener' After='InstallFiles'>NOT SKIPINSTALLHTTPLISTENER</Custom>
+      <Custom Action='ScheduleUnInstallHttpListener' Before='RemoveFiles'>NOT SKIPUNINSTALLHTTPLISTENER</Custom>
+    </InstallExecuteSequence>
+</Include>  
+

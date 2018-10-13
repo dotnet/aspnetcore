@@ -206,8 +206,8 @@
       Condition="'$(KOREBUILD_REPOSITORY_INCLUDE)' != '' AND '$(KOREBUILD_REPOSITORY_EXCLUDE)' != ''" />
 
     <ItemGroup>
-      <Repository Update="%(Identity)" RootPath="$(SubmoduleRoot)%(Identity)\" />
-      <ShippedRepository Update="%(Identity)" RootPath="$(SubmoduleRoot)%(Identity)\" Condition="'%(Identity)' != ''" />
+      <Repository Update="%(Identity)" RootPath="$(SubmoduleRoot)%(Identity)\" Condition="'%(Identity)' != '' AND '%(RootPath)' == ''"  />
+      <ShippedRepository Update="%(Identity)" RootPath="$(SubmoduleRoot)%(Identity)\" Condition="'%(Identity)' != '' AND '%(RootPath)' == ''" />
 
       <SubmoduleGlobalJsonFiles Include="%(Repository.RootPath)global.json" BackupPath="$(IntermediateDir)%(Repository.Identity)-global.json" Condition="'%(Repository.Identity)' != ''"/>
       <SubmoduleGlobalJsonFiles Include="%(ShippedRepository.RootPath)global.json" BackupPath="$(IntermediateDir)%(ShippedRepository.Identity)-global.json" Condition="'%(ShippedRepository.Identity)' != ''"/>

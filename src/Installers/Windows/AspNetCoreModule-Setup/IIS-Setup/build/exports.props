@@ -1,0 +1,23 @@
+<Project InitialTargets="EnsureCommonExists" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!-- Provide exports to submodule hosts -->
+
+  <PropertyGroup>
+    <IIS-Setup Condition="$(IIS-Setup) == ''">$(MSBuildThisFileDirectory)..\</IIS-Setup>
+  </PropertyGroup>
+
+  <!-- Imports for when this solution is a submodule host -->
+
+  <PropertyGroup>
+    <_IIS-CommonExportsPath>$(IIS-Setup)\IIS-Common\build\exports.props</_IIS-CommonExportsPath>
+  </PropertyGroup>
+
+  <Import Condition="$(IIS-Common) == '' AND Exists('$(_IIS-CommonExportsPath)')" Project="$(_IIS-CommonExportsPath)" />
+
+  <!-- Build error if submodule dependencies could not be found. -->
+
+  <Target Name="EnsureCommonExists">
+    <Error Condition="!Exists($(IIS-Common))" Text="The IIS-Common submodule could not be found. Use 'git submodule update --init --recursive' to pull down the IIS-Common repository." />
+  </Target>
+
+</Project>

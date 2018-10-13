@@ -1,7 +1,11 @@
 <Project>
 
   <PropertyGroup>
-    <Version>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).$(AspNetCorePatchVersion).0</Version>
+    <!-- This needs to include the build version for ANCM. I'd assume this is fine to include with other bundles. -->
+    <_TwoDigitYear>$([MSBuild]::Subtract($([System.DateTime]::UtcNow.Year), 2000))</_TwoDigitYear>
+    <_ThreeDigitDayOfYear>$([System.DateTime]::UtcNow.DayOfYear.ToString().PadLeft(3, '0'))</_ThreeDigitDayOfYear>
+    <BUILD_MAJOR>$(_TwoDigitYear)$(_ThreeDigitDayOfYear)</BUILD_MAJOR>
+    <Version>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).$(AspNetCorePatchVersion).$(BUILD_MAJOR)</Version>
 
     <Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
     <Platform Condition="'$(Platform)' == ''">x64</Platform>
