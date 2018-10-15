@@ -57,7 +57,7 @@
     <ShippedRepository Include="Caching" />
     <ShippedRepository Include="Configuration" />
     <ShippedRepository Include="CORS" />
-    <ShippedRepository Include="DataProtection" />
+    <ShippedRepository Include="DataProtection" RootPath="$(RepositoryRoot)src\DataProtection\" />
     <ShippedRepository Include="DependencyInjection" />
     <ShippedRepository Include="Diagnostics" />
     <ShippedRepository Include="DotNetTools" />

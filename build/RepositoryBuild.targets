@@ -11,6 +11,9 @@
 
   <Target Name="GetRepoBatches" DependsOnTargets="GeneratePropsFiles;ComputeGraph">
     <ItemGroup>
+      <RepositoryBuildOrder Condition="'%(RootPath)' == ''">
+        <RootPath>$(SubmoduleRoot)%(Identity)\</RootPath>
+      </RepositoryBuildOrder>
       <BatchedRepository Include="$(MSBuildProjectFullPath)">
         <BuildGroup>%(RepositoryBuildOrder.Order)</BuildGroup>
         <Repository>%(RepositoryBuildOrder.Identity)</Repository>

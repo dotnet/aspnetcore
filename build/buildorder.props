@@ -1,4 +1,11 @@
 <Project>
+  <ItemDefinitionGroup>
+    <RepositoryBuildOrder>
+      <Order></Order>
+      <RootPath></RootPath>
+    </RepositoryBuildOrder>
+  </ItemDefinitionGroup>
+
   <ItemGroup>
     <RepositoryBuildOrder Include="Common" Order="1" />
     <RepositoryBuildOrder Include="Microsoft.Data.Sqlite" Order="1" />
@@ -17,7 +24,7 @@
     <RepositoryBuildOrder Include="HttpAbstractions" Order="6" />
     <RepositoryBuildOrder Include="HttpClientFactory" Order="6" />
     <RepositoryBuildOrder Include="Hosting" Order="7" />
-    <RepositoryBuildOrder Include="DataProtection" Order="8" />
+    <RepositoryBuildOrder Include="DataProtection" Order="8" RootPath="$(RepositoryRoot)src\DataProtection\" />
     <RepositoryBuildOrder Include="KestrelHttpServer" Order="8" />
     <RepositoryBuildOrder Include="EntityFrameworkCore" Order="8" />
     <RepositoryBuildOrder Include="HttpSysServer" Order="8" />
@@ -47,7 +54,5 @@
     <RepositoryBuildOrder Include="SignalR" Order="16" />
     <RepositoryBuildOrder Include="AuthSamples" Order="16" />
     <RepositoryBuildOrder Include="Templating" Order="17" />
-
-    <RepositoryBuildOrder Update="@(RepositoryBuildOrder)" RootPath="$(SubmoduleRoot)%(Identity)" />
   </ItemGroup>
 </Project>
