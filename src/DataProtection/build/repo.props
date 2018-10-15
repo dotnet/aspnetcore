@@ -1,0 +1,6 @@
+<Project>
+  <PropertyGroup>
+    <!-- TODO: temporary while we reorganize source code and refactor dependency management -->
+    <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
+  </PropertyGroup>
+</Project>

@@ -45,7 +45,7 @@
     <Repository Include="Common" />
     <Repository Include="Configuration" />
     <Repository Include="CORS" />
-    <Repository Include="DataProtection" />
+    <Repository Include="DataProtection" RootPath="$(RepositoryRoot)src\DataProtection\" />
     <Repository Include="DependencyInjection" />
     <Repository Include="Diagnostics" />
     <Repository Include="DotNetTools" />
