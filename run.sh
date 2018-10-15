@@ -15,6 +15,7 @@ verbose=false
 update=false
 reinstall=false
 repo_path="$DIR"
+lockfile_path=''
 channel=''
 tools_source=''
 ci=false
@@ -41,6 +42,7 @@ __usage() {
     echo "    --config-file <FILE>                      The path to the configuration file that stores values. Defaults to korebuild.json."
     echo "    -d|--dotnet-home <DIR>                    The directory where .NET Core tools will be stored. Defaults to '\$DOTNET_HOME' or '\$HOME/.dotnet."
     echo "    --path <PATH>                             The directory to build. Defaults to the directory containing the script."
+    echo "    --lockfile <PATH>                         The path to the korebuild-lock.txt file. Defaults to \$repo_path/korebuild-lock.txt"
     echo "    -s|--tools-source|-ToolsSource <URL>      The base url where build tools can be downloaded. Overrides the value from the config file."
     echo "    --package-version-props-url <URL>         The url of the package versions props path containing dependency versions."
     echo "    --access-token <Token>                    The query string to append to any blob store access for PackageVersionPropsUrl, if any."
@@ -61,13 +63,12 @@ __usage() {
 
 get_korebuild() {
     local version
-    local lock_file="$repo_path/korebuild-lock.txt"
-    if [ ! -f "$lock_file" ] || [ "$update" = true ]; then
-        __get_remote_file "$tools_source/korebuild/channels/$channel/latest.txt" "$lock_file"
+    if [ ! -f "$lockfile_path" ] || [ "$update" = true ]; then
+        __get_remote_file "$tools_source/korebuild/channels/$channel/latest.txt" "$lockfile_path"
     fi
-    version="$(grep 'version:*' -m 1 "$lock_file")"
+    version="$(grep 'version:*' -m 1 "$lockfile_path")"
     if [[ "$version" == '' ]]; then
-        __error "Failed to parse version from $lock_file. Expected a line that begins with 'version:'"
+        __error "Failed to parse version from $lockfile_path. Expected a line that begins with 'version:'"
         return 1
     fi
     version="$(echo "${version#version:}" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
@@ -175,6 +176,11 @@ while [[ $# -gt 0 ]]; do
             shift
             repo_path="${1:-}"
             [ -z "$repo_path" ] && __error "Missing value for parameter --path" && __usage
+            ;;
+        --[Ll]ock[Ff]ile)
+            shift
+            lockfile_path="${1:-}"
+            [ -z "$lockfile_path" ] && __error "Missing value for parameter --lockfile" && __usage
             ;;
         -s|--tools-source|-ToolsSource)
             shift
@@ -296,6 +302,7 @@ if [ ! -z "$product_build_id" ]; then
     msbuild_args[${#msbuild_args[*]}]="-p:DotNetProductBuildId=$product_build_id"
 fi
 
+[ -z "$lockfile_path" ] && lockfile_path="$repo_path/korebuild-lock.txt"
 [ -z "$channel" ] && channel='master'
 [ -z "$tools_source" ] && tools_source='https://aspnetcore.blob.core.windows.net/buildtools'
 
