@@ -1,12 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Blazor.Reflection;
-using Microsoft.AspNetCore.Blazor.RenderTree;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 
 namespace Microsoft.AspNetCore.Blazor.Components
@@ -18,7 +16,7 @@ namespace Microsoft.AspNetCore.Blazor.Components
     {
         private const BindingFlags _bindablePropertyFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.IgnoreCase;
 
-        private delegate void WriteParameterAction(ref RenderTreeFrame frame, object target);
+        private delegate void WriteParameterAction(object target, object parameterValue);
 
         private readonly static IDictionary<Type, IDictionary<string, WriteParameterAction>> _cachedParameterWriters
             = new ConcurrentDictionary<Type, IDictionary<string, WriteParameterAction>>();
@@ -55,7 +53,7 @@ namespace Microsoft.AspNetCore.Blazor.Components
 
                 try
                 {
-                    parameterWriter(ref parameter.Frame, target);
+                    parameterWriter(target, parameter.Value);
                 }
                 catch (Exception ex)
                 {
@@ -66,12 +64,22 @@ namespace Microsoft.AspNetCore.Blazor.Components
             }
         }
 
+        internal static IEnumerable<PropertyInfo> GetCandidateBindableProperties(Type targetType)
+            => MemberAssignment.GetPropertiesIncludingInherited(targetType, _bindablePropertyFlags);
+
         private static IDictionary<string, WriteParameterAction> CreateParameterWriters(Type targetType)
         {
             var result = new Dictionary<string, WriteParameterAction>(StringComparer.OrdinalIgnoreCase);
 
-            foreach (var propertyInfo in GetBindableProperties(targetType))
+            foreach (var propertyInfo in GetCandidateBindableProperties(targetType))
             {
+                var shouldCreateWriter = propertyInfo.IsDefined(typeof(ParameterAttribute))
+                    || propertyInfo.IsDefined(typeof(CascadingParameterAttribute));
+                if (!shouldCreateWriter)
+                {
+                    continue;
+                }
+
                 var propertySetter = MemberAssignment.CreatePropertySetter(targetType, propertyInfo);
 
                 var propertyName = propertyInfo.Name;
@@ -82,18 +90,14 @@ namespace Microsoft.AspNetCore.Blazor.Components
                         $"name '{propertyName.ToLowerInvariant()}'. Parameter names are case-insensitive and must be unique.");
                 }
 
-                result.Add(propertyName, (ref RenderTreeFrame frame, object target) =>
+                result.Add(propertyName, (object target, object parameterValue) =>
                 {
-                    propertySetter.SetValue(target, frame.AttributeValue);
+                    propertySetter.SetValue(target, parameterValue);
                 });
             }
 
             return result;
         }
-
-        private static IEnumerable<PropertyInfo> GetBindableProperties(Type targetType)
-            => MemberAssignment.GetPropertiesIncludingInherited(targetType, _bindablePropertyFlags)
-                .Where(property => property.IsDefined(typeof(ParameterAttribute)));
 
         private static void ThrowForUnknownIncomingParameterName(Type targetType, string parameterName)
         {
@@ -102,11 +106,11 @@ namespace Microsoft.AspNetCore.Blazor.Components
             var propertyInfo = targetType.GetProperty(parameterName, _bindablePropertyFlags);
             if (propertyInfo != null)
             {
-                if (!propertyInfo.IsDefined(typeof(ParameterAttribute)))
+                if (!propertyInfo.IsDefined(typeof(ParameterAttribute)) && !propertyInfo.IsDefined(typeof(CascadingParameterAttribute)))
                 {
                     throw new InvalidOperationException(
                         $"Object of type '{targetType.FullName}' has a property matching the name '{parameterName}', " +
-                        $"but it does not have [{nameof(ParameterAttribute)}] applied.");
+                        $"but it does not have [{nameof(ParameterAttribute)}] or [{nameof(CascadingParameterAttribute)}] applied.");
                 }
                 else
                 {

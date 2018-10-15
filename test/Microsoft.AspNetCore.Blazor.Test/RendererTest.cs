@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Blazor.Components;
 using Microsoft.AspNetCore.Blazor.Rendering;
 using Microsoft.AspNetCore.Blazor.RenderTree;
@@ -81,39 +80,6 @@ namespace Microsoft.AspNetCore.Blazor.Test
                         batch.ReferenceFrames[edit.ReferenceFrameIndex],
                         "Nested component output");
                 });
-        }
-
-        [Fact]
-        public void CanWalkTheAncestorHierarchy()
-        {
-            // TODO: Instead of testing this directly, once there's some other functionaly
-            // that relies on the ancestor hierarchy (e.g., deep params), test that instead
-            // and remove the otherwise unnecessary TemporaryGetParentComponentIdForTest API.
-
-            // Arrange
-            var renderer = new TestRenderer();
-            var rootComponent = new TestComponent(builder =>
-            {
-                builder.AddContent(0, "Hello");
-                builder.OpenComponent<AncestryComponent>(0);
-                builder.AddAttribute(1, nameof(AncestryComponent.NumDescendants), 2);
-                builder.CloseComponent();
-            });
-
-            // Act
-            var componentId = renderer.AssignRootComponentId(rootComponent);
-            rootComponent.TriggerRender();
-
-            // Assert
-            var batch = renderer.Batches.Single();
-            var componentIds = batch.ReferenceFrames
-                .Where(frame => frame.FrameType == RenderTreeFrameType.Component)
-                .Select(f => f.ComponentId);
-            Assert.Equal(new[] { 1, 2, 3 }, componentIds);
-            Assert.Equal(2, renderer.TemporaryGetParentComponentIdForTest(3));
-            Assert.Equal(1, renderer.TemporaryGetParentComponentIdForTest(2));
-            Assert.Equal(0, renderer.TemporaryGetParentComponentIdForTest(1));
-            Assert.Null(renderer.TemporaryGetParentComponentIdForTest(0));
         }
 
         [Fact]
@@ -1361,26 +1327,6 @@ namespace Microsoft.AspNetCore.Blazor.Test
 
             protected override void BuildRenderTree(RenderTreeBuilder builder)
             {
-            }
-        }
-
-        private class AncestryComponent : AutoRenderComponent
-        {
-            [Parameter] public int NumDescendants { get; private set; }
-
-            protected override void BuildRenderTree(RenderTreeBuilder builder)
-            {
-                // Recursively renders more of the same until NumDescendants == 0
-                if (NumDescendants > 0)
-                {
-                    builder.OpenComponent<AncestryComponent>(0);
-                    builder.AddAttribute(1, nameof(NumDescendants), NumDescendants - 1);
-                    builder.CloseComponent();
-                }
-                else
-                {
-                    builder.AddContent(1, "I'm the final descendant");
-                }
             }
         }
     }

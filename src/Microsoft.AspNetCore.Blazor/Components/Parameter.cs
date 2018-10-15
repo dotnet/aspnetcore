@@ -1,7 +1,5 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-
-using Microsoft.AspNetCore.Blazor.RenderTree;
 
 namespace Microsoft.AspNetCore.Blazor.Components
 {
@@ -11,31 +9,20 @@ namespace Microsoft.AspNetCore.Blazor.Components
     /// </summary>
     public readonly struct Parameter
     {
-        private readonly RenderTreeFrame[] _frames;
-        private readonly int _frameIndex;
-
-        internal Parameter(RenderTreeFrame[] frames, int currentIndex)
-        {
-            _frames = frames;
-            _frameIndex = currentIndex;
-        }
-
         /// <summary>
         /// Gets the name of the parameter.
         /// </summary>
-        public string Name
-            => _frames[_frameIndex].AttributeName;
+        public string Name { get; }
 
         /// <summary>
-        /// Gets the value of the parameter.
+        /// Gets the value being supplied for the parameter.
         /// </summary>
-        public object Value
-            => _frames[_frameIndex].AttributeValue;
+        public object Value { get; }
 
-        /// <summary>
-        /// Gets the <see cref="RenderTreeFrame" /> that holds the parameter name and value.
-        /// </summary>
-        internal ref RenderTreeFrame Frame
-            => ref _frames[_frameIndex];
+        internal Parameter(string name, object value)
+        {
+            Name = name;
+            Value = value;
+        }
     }
 }

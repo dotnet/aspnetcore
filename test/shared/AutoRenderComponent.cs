@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Blazor.Components;
@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Blazor.Test.Helpers
             _renderHandle = renderHandle;
         }
 
-        public void SetParameters(ParameterCollection parameters)
+        public virtual void SetParameters(ParameterCollection parameters)
         {
             parameters.AssignToProperties(this);
             TriggerRender();

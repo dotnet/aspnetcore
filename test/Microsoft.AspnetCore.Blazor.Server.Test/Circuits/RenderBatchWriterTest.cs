@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Blazor.Components;
 using Microsoft.AspNetCore.Blazor.Rendering;
 using Microsoft.AspNetCore.Blazor.RenderTree;
 using Microsoft.AspNetCore.Blazor.Server.Circuits;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -188,6 +189,7 @@ namespace Microsoft.AspNetCore.Blazor.Server
         public void CanIncludeReferenceFrames()
         {
             // Arrange/Act
+            var renderer = new FakeRenderer();
             var bytes = Serialize(new RenderBatch(
                 default,
                 new ArrayRange<RenderTreeFrame>(new[] {
@@ -197,7 +199,7 @@ namespace Microsoft.AspNetCore.Blazor.Server
                         .WithAttributeEventHandlerId(789),
                     RenderTreeFrame.ChildComponent(126, typeof(object))
                         .WithComponentSubtreeLength(5678)
-                        .WithComponentInstance(2000, new FakeComponent()),
+                        .WithComponent(new ComponentState(renderer, 2000, new FakeComponent(), null)),
                     RenderTreeFrame.ComponentReferenceCapture(127, value => { }, 1001),
                     RenderTreeFrame.Element(128, "Some element")
                         .WithElementSubtreeLength(1234),
@@ -364,6 +366,17 @@ namespace Microsoft.AspNetCore.Blazor.Server
                 => throw new NotImplementedException();
 
             public void SetParameters(ParameterCollection parameters)
+                => throw new NotImplementedException();
+        }
+
+        class FakeRenderer : Renderer
+        {
+            public FakeRenderer()
+                : base(new ServiceCollection().BuildServiceProvider())
+            {
+            }
+
+            protected override void UpdateDisplay(in RenderBatch renderBatch)
                 => throw new NotImplementedException();
         }
     }

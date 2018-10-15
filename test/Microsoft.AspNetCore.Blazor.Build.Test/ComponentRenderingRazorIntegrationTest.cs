@@ -116,7 +116,7 @@ namespace Test
             // Assert
             Assert.Equal(
                 "Object of type 'Test.MyComponent' has a property matching the name 'IntProperty', " +
-                    "but it does not have [ParameterAttribute] applied.",
+                    "but it does not have [ParameterAttribute] or [CascadingParameterAttribute] applied.",
                 ex.Message);
         }
 

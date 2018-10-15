@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Blazor.Components;
 using Microsoft.AspNetCore.Blazor.RenderTree;
 
@@ -18,9 +19,15 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
         private readonly ComponentState _parentComponentState;
         private readonly IComponent _component;
         private readonly Renderer _renderer;
+        private readonly IReadOnlyList<CascadingParameterState> _cascadingParameters;
         private RenderTreeBuilder _renderTreeBuilderCurrent;
         private RenderTreeBuilder _renderTreeBuilderPrevious;
+        private ArrayBuilder<RenderTreeFrame> _latestDirectParametersSnapshot; // Lazily instantiated
         private bool _componentWasDisposed;
+
+        public int ComponentId => _componentId;
+        public IComponent Component => _component;
+        public ComponentState ParentComponentState => _parentComponentState;
 
         /// <summary>
         /// Constructs an instance of <see cref="ComponentState"/>.
@@ -35,8 +42,14 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
             _parentComponentState = parentComponentState;
             _component = component ?? throw new ArgumentNullException(nameof(component));
             _renderer = renderer ?? throw new ArgumentNullException(nameof(renderer));
+            _cascadingParameters = CascadingParameterState.FindCascadingParameters(this);
             _renderTreeBuilderCurrent = new RenderTreeBuilder(renderer);
             _renderTreeBuilderPrevious = new RenderTreeBuilder(renderer);
+
+            if (_cascadingParameters != null)
+            {
+                AddCascadingParameterSubscriptions();
+            }
         }
 
         public void RenderIntoBatch(RenderBatchBuilder batchBuilder, RenderFragment renderFragment)
@@ -74,6 +87,11 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
             }
 
             RenderTreeDiffBuilder.DisposeFrames(batchBuilder, _renderTreeBuilderCurrent.GetFrames());
+
+            if (_cascadingParameters != null)
+            {
+                RemoveCascadingParameterSubscriptions();
+            }
         }
 
         public void DispatchEvent(EventHandlerInvoker binding, UIEventArgs eventArgs)
@@ -93,9 +111,61 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
         public void NotifyRenderCompleted()
             => (_component as IHandleAfterRender)?.OnAfterRender();
 
-        // TODO: Remove this once we can remove TemporaryGetParentComponentIdForTest
-        // from Renderer.cs and corresponding unit test.
-        public int? TemporaryParentComponentIdForTests
-            => _parentComponentState?._componentId;
+        public void SetDirectParameters(ParameterCollection parameters)
+        {
+            // Note: We should be careful to ensure that the framework never calls
+            // IComponent.SetParameters directly elsewhere. We should only call it
+            // via ComponentState.SetParameters (or NotifyCascadingValueChanged below).
+            // If we bypass this, the component won't receive the cascading parameters nor
+            // will it update its snapshot of direct parameters.
+
+            // TODO: Consider adding a "static" mode for tree params in which we don't
+            // subscribe for updates, and hence don't have to do any of the parameter
+            // snapshotting. This would be useful for things like FormContext that aren't
+            // going to change.
+
+            if (_cascadingParameters != null)
+            {
+                // We may need to replay these direct parameters later (in NotifyCascadingValueChanged),
+                // but we can't guarantee that the original underlying data won't have mutated in the
+                // meantime, since it's just an index into the parent's RenderTreeFrames buffer.
+                if (_latestDirectParametersSnapshot == null)
+                {
+                    _latestDirectParametersSnapshot = new ArrayBuilder<RenderTreeFrame>();
+                }
+                parameters.CaptureSnapshot(_latestDirectParametersSnapshot);
+
+                parameters = parameters.WithCascadingParameters(_cascadingParameters);
+            }
+
+            Component.SetParameters(parameters);
+        }
+
+        public void NotifyCascadingValueChanged()
+        {
+            var directParams = _latestDirectParametersSnapshot != null
+                ? new ParameterCollection(_latestDirectParametersSnapshot.Buffer, 0)
+                : ParameterCollection.Empty;
+            var allParams = directParams.WithCascadingParameters(_cascadingParameters);
+            Component.SetParameters(allParams);
+        }
+
+        private void AddCascadingParameterSubscriptions()
+        {
+            var numCascadingParameters = _cascadingParameters.Count;
+            for (var i = 0; i < numCascadingParameters; i++)
+            {
+                _cascadingParameters[i].ValueSupplier.Subscribe(this);
+            }
+        }
+
+        private void RemoveCascadingParameterSubscriptions()
+        {
+            var numCascadingParameters = _cascadingParameters.Count;
+            for (var i = 0; i < numCascadingParameters; i++)
+            {
+                _cascadingParameters[i].ValueSupplier.Unsubscribe(this);
+            }
+        }
     }
 }

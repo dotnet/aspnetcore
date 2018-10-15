@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Rendering
                 componentId);
             CaptureAsyncExceptions(attachComponentTask);
 
-            component.SetParameters(ParameterCollection.Empty);
+            RenderRootComponent(componentId);
         }
 
         /// <summary>

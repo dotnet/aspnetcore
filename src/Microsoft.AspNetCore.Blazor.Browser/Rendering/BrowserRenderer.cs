@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Rendering
                 domElementSelector,
                 componentId);
 
-            component.SetParameters(ParameterCollection.Empty);
+            RenderRootComponent(componentId);
         }
 
         /// <summary>

@@ -49,16 +49,28 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
         /// <param name="component">The component.</param>
         /// <returns>The component's assigned identifier.</returns>
         protected int AssignRootComponentId(IComponent component)
-            => AssignComponentId(component, -1);
+            => AttachAndInitComponent(component, -1).ComponentId;
 
-        private int AssignComponentId(IComponent component, int parentComponentId)
+        /// <summary>
+        /// Performs the first render for a root component. After this, the root component
+        /// makes its own decisions about when to re-render, so there is no need to call
+        /// this more than once.
+        /// </summary>
+        /// <param name="componentId">The ID returned by <see cref="AssignRootComponentId(IComponent)"/>.</param>
+        protected void RenderRootComponent(int componentId)
+        {
+            GetRequiredComponentState(componentId)
+                .SetDirectParameters(ParameterCollection.Empty);
+        }
+
+        private ComponentState AttachAndInitComponent(IComponent component, int parentComponentId)
         {
             var componentId = _nextComponentId++;
             var parentComponentState = GetOptionalComponentState(parentComponentId);
             var componentState = new ComponentState(this, componentId, component, parentComponentState);
             _componentStateById.Add(componentId, componentState);
             component.Init(new RenderHandle(this, componentId));
-            return componentId;
+            return componentState;
         }
 
         /// <summary>
@@ -103,14 +115,14 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
                 throw new ArgumentException($"The frame's {nameof(RenderTreeFrame.FrameType)} property must equal {RenderTreeFrameType.Component}", nameof(frame));
             }
 
-            if (frame.Component != null)
+            if (frame.ComponentState != null)
             {
                 throw new ArgumentException($"The frame already has a non-null component instance", nameof(frame));
             }
 
             var newComponent = InstantiateComponent(frame.ComponentType);
-            var newComponentId = AssignComponentId(newComponent, parentComponentId);
-            frame = frame.WithComponentInstance(newComponentId, newComponent);
+            var newComponentState = AttachAndInitComponent(newComponent, parentComponentId);
+            frame = frame.WithComponent(newComponentState);
         }
 
         internal void AssignEventHandlerId(ref RenderTreeFrame frame)
@@ -143,15 +155,6 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
                 ProcessRenderQueue();
             }
         }
-
-        /// <summary>
-        /// This only needs to exist until there's some other unit-testable functionality
-        /// that makes use of walking the ancestor hierarchy.
-        /// </summary>
-        /// <param name="componentId">The component ID.</param>
-        /// <returns>The parent component's ID, or null if the component was at the root.</returns>
-        internal int? TemporaryGetParentComponentIdForTest(int componentId)
-            => GetRequiredComponentState(componentId).TemporaryParentComponentIdForTests;
 
         private ComponentState GetRequiredComponentState(int componentId)
             => _componentStateById.TryGetValue(componentId, out var componentState)

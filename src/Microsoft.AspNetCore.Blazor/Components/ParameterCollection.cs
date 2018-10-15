@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -19,15 +19,22 @@ namespace Microsoft.AspNetCore.Blazor.Components
         };
 
         private static readonly ParameterCollection _emptyCollection
-            = new ParameterCollection(_emptyCollectionFrames, 0);
+            = new ParameterCollection(_emptyCollectionFrames, 0, null);
 
         private readonly RenderTreeFrame[] _frames;
         private readonly int _ownerIndex;
+        private readonly IReadOnlyList<CascadingParameterState> _cascadingParametersOrNull;
 
         internal ParameterCollection(RenderTreeFrame[] frames, int ownerIndex)
+            : this(frames, ownerIndex, null)
+        {
+        }
+
+        private ParameterCollection(RenderTreeFrame[] frames, int ownerIndex, IReadOnlyList<CascadingParameterState> cascadingParametersOrNull)
         {
             _frames = frames;
             _ownerIndex = ownerIndex;
+            _cascadingParametersOrNull = cascadingParametersOrNull;
         }
 
         /// <summary>
@@ -40,7 +47,7 @@ namespace Microsoft.AspNetCore.Blazor.Components
         /// </summary>
         /// <returns>The enumerator.</returns>
         public ParameterEnumerator GetEnumerator()
-            => new ParameterEnumerator(_frames, _ownerIndex);
+            => new ParameterEnumerator(_frames, _ownerIndex, _cascadingParametersOrNull);
 
         /// <summary>
         /// Gets the value of the parameter with the specified name.
@@ -99,6 +106,9 @@ namespace Microsoft.AspNetCore.Blazor.Components
             return result;
         }
 
+        internal ParameterCollection WithCascadingParameters(IReadOnlyList<CascadingParameterState> cascadingParameters)
+            => new ParameterCollection(_frames, _ownerIndex, cascadingParameters);
+
         // It's internal because there isn't a known use case for user code comparing
         // ParameterCollection instances, and even if there was, it's unlikely it should
         // use these equality rules which are designed for their effect on rendering.
@@ -156,40 +166,35 @@ namespace Microsoft.AspNetCore.Blazor.Components
 
                         var oldValue = oldFrame.AttributeValue;
                         var newValue = newFrame.AttributeValue;
-                        var oldIsNotNull = oldValue != null;
-                        var newIsNotNull = newValue != null;
-                        if (oldIsNotNull != newIsNotNull)
+                        if (ChangeDetection.MayHaveChanged(oldValue, newValue))
                         {
-                            return false; // One's null and the other isn't, so different
-                        }
-                        else if (oldIsNotNull) // i.e., both are not null (considering previous check)
-                        {
-                            var oldValueType = oldValue.GetType();
-                            var newValueType = newValue.GetType();
-                            if (oldValueType != newValueType            // Definitely different
-                                || !IsKnownImmutableType(oldValueType)  // Maybe different
-                                || !oldValue.Equals(newValue))          // Somebody says they are different
-                            {
-                                return false;
-                            }
-                        }
-                        else
-                        {
-                            // Both null, hence equal, so continue
+                            return false;
                         }
                     }
                 }
             }
         }
 
-        // The contents of this list need to trade off false negatives against computation
-        // time. So we don't want a huge list of types to check (or would have to move to
-        // a hashtable lookup, which is differently expensive). It's better not to include
-        // uncommon types here even if they are known to be immutable.
-        private bool IsKnownImmutableType(Type type)
-            => type.IsPrimitive
-            || type == typeof(string)
-            || type == typeof(DateTime)
-            || type == typeof(decimal);
+        internal void CaptureSnapshot(ArrayBuilder<RenderTreeFrame> builder)
+        {
+            builder.Clear();
+
+            var numEntries = 0;
+            foreach (var entry in this)
+            {
+                numEntries++;
+            }
+
+            // We need to prefix the captured frames with an "owner" frame that
+            // describes the length of the buffer so that ParameterCollection
+            // knows how far to iterate through it.
+            var owner = RenderTreeFrame.PlaceholderChildComponentWithSubtreeLength(1 + numEntries);
+            builder.Append(owner);
+
+            if (numEntries > 0)
+            {
+                builder.Append(_frames, _ownerIndex + 1, numEntries);
+            }
+        }
     }
 }
