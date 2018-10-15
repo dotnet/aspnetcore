@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
@@ -23,8 +24,6 @@ namespace H2Spec.FunctionalTests
         SkipReason = "Missing Windows ALPN support: https://en.wikipedia.org/wiki/Application-Layer_Protocol_Negotiation#Support")]
     public class H2SpecTests : LoggedTest
     {
-        private static readonly string _testCertPath = Path.Combine(Directory.GetCurrentDirectory(), "shared", "TestCertificates", "testCert.pfx");
-
         [ConditionalTheory]
         [MemberData(nameof(H2SpecTestCases))]
         public async Task RunIndividualTestCase(H2SpecTestCase testCase)
@@ -37,7 +36,7 @@ namespace H2Spec.FunctionalTests
                         listenOptions.Protocols = HttpProtocols.Http2;
                         if (testCase.Https)
                         {
-                            listenOptions.UseHttps(_testCertPath, "testPassword");
+                            listenOptions.UseHttps(TestResources.GetTestCertificate());
                         }
                     });
                 })

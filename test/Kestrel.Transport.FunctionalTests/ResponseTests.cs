@@ -560,7 +560,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             const int chunks = 256 * 1024;
             var chunkData = new byte[chunkSize];
 
-            var certificate = new X509Certificate2(TestResources.TestCertificatePath, "testPassword");
+            var certificate = TestResources.GetTestCertificate();
 
             var responseRateTimeoutMessageLogged = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             var connectionStopMessageLogged = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);

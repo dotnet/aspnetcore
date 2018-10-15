@@ -2,26 +2,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27130.2010
 MinimumVisualStudioVersion = 15.0.26730.03
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{7972A5D6-3385-4127-9277-428506DD44FF}"
-	ProjectSection(SolutionItems) = preProject
-		.appveyor.yml = .appveyor.yml
-		.gitattributes = .gitattributes
-		.gitignore = .gitignore
-		.travis.yml = .travis.yml
-		build.cmd = build.cmd
-		build.ps1 = build.ps1
-		build.sh = build.sh
-		CONTRIBUTING.md = CONTRIBUTING.md
-		Directory.Build.props = Directory.Build.props
-		Directory.Build.targets = Directory.Build.targets
-		LICENSE.txt = LICENSE.txt
-		NuGet.Config = NuGet.Config
-		NuGetPackageVerifier.json = NuGetPackageVerifier.json
-		README.md = README.md
-		ToProjectReferences.ps1 = ToProjectReferences.ps1
-		version.xml = version.xml
-	EndProjectSection
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{2D5D5227-4DBD-499A-96B1-76A36B03B750}"
 	ProjectSection(SolutionItems) = preProject
 		src\Directory.Build.props = src\Directory.Build.props
@@ -135,6 +115,28 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kestrel.Transport.Libuv.BindTests", "test\Kestrel.Transport.Libuv.BindTests\Kestrel.Transport.Libuv.BindTests.csproj", "{FB9C6B61-0A7B-4FFA-B772-A754316B262E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kestrel.H2Spec.FunctionalTests", "test\Kestrel.H2Spec.FunctionalTests\Kestrel.H2Spec.FunctionalTests.csproj", "{C4123E55-5760-4557-B89B-39E1258FD7F9}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionItems", "SolutionItems", "{B19F67B8-7635-42C3-B5BF-00D1CC47FA64}"
+	ProjectSection(SolutionItems) = preProject
+		.gitattributes = .gitattributes
+		.gitignore = .gitignore
+		build.cmd = build.cmd
+		build.sh = build.sh
+		CONTRIBUTING.md = CONTRIBUTING.md
+		Directory.Build.props = Directory.Build.props
+		Directory.Build.targets = Directory.Build.targets
+		korebuild-lock.txt = korebuild-lock.txt
+		korebuild.json = korebuild.json
+		LICENSE.txt = LICENSE.txt
+		NuGet.config = NuGet.config
+		NuGetPackageVerifier.json = NuGetPackageVerifier.json
+		README.md = README.md
+		run.cmd = run.cmd
+		run.ps1 = run.ps1
+		run.sh = run.sh
+		ToProjectReferences.ps1 = ToProjectReferences.ps1
+		version.props = version.props
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -289,7 +289,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     {
                         if (testUrl.StartsWith("https"))
                         {
-                            listenOptions.UseHttps(TestResources.TestCertificatePath, "testPassword");
+                            listenOptions.UseHttps(TestResources.GetTestCertificate());
                         }
                     });
                 })
@@ -461,7 +461,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     if (mockHttps)
                     {
-                        options.DefaultCertificate = new X509Certificate2(TestResources.TestCertificatePath, "testPassword");
+                        options.DefaultCertificate = TestResources.GetTestCertificate();
                     }
                 })
                 .Configure(ConfigureEchoAddress);
@@ -545,7 +545,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     options.Listen(new IPEndPoint(IPAddress.Loopback, 0), listenOptions =>
                     {
-                        listenOptions.UseHttps(TestResources.TestCertificatePath, "testPassword");
+                        listenOptions.UseHttps(TestResources.GetTestCertificate());
                     });
                 })
                .UseUrls(useUrlsAddress)
@@ -622,7 +622,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     options.Listen(new IPEndPoint(IPAddress.Loopback, 0), listenOptions =>
                     {
-                        listenOptions.UseHttps(TestResources.TestCertificatePath, "testPassword");
+                        listenOptions.UseHttps(TestResources.GetTestCertificate());
                     });
                 })
                 .PreferHostingUrls(true)
