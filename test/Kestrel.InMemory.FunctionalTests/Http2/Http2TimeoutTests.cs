@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit;
@@ -16,6 +17,31 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 {
     public class Http2TimeoutTests : Http2TestBase
     {
+        [Fact]
+        public async Task Preamble_NotReceivedInitially_WithinKeepAliveTimeout_ClosesConnection()
+        {
+            var mockSystemClock = _serviceContext.MockSystemClock;
+            var limits = _serviceContext.ServerOptions.Limits;
+
+            _timeoutControl.Initialize(mockSystemClock.UtcNow);
+
+            CreateConnection();
+
+            _connectionTask = _connection.ProcessRequestsAsync(new DummyApplication(_noopApplication));
+
+            mockSystemClock.UtcNow += limits.KeepAliveTimeout + Heartbeat.Interval;
+            _timeoutControl.Tick(mockSystemClock.UtcNow);
+
+            _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
+
+            mockSystemClock.UtcNow += TimeSpan.FromTicks(1);
+            _timeoutControl.Tick(mockSystemClock.UtcNow);
+
+            _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.KeepAlive), Times.Once);
+
+            await WaitForConnectionStopAsync(expectedLastStreamId: 0, ignoreNonGoAwayFrames: false);
+        }
+
         [Fact]
         public async Task HEADERS_NotReceivedInitially_WithinKeepAliveTimeout_ClosesConnection()
         {
