@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -50,6 +51,35 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             var response = await deploymentResult.HttpClient.GetAsync(_helloWorldRequest);
             var responseText = await response.Content.ReadAsStringAsync();
             Assert.Equal(_helloWorldResponse, responseText);
+        }
+
+        [ConditionalFact]
+        [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
+        public async Task GlobalVersion_EnvironmentVariableWorks()
+        {
+            var temporaryFile = Path.GetTempFileName();
+            try
+            {
+                var deploymentParameters = GetGlobalVersionBaseDeploymentParameters();
+                CopyShimToOutput(deploymentParameters);
+                deploymentParameters.PublishApplicationBeforeDeployment = true;
+                deploymentParameters.EnvironmentVariables["ASPNETCORE_MODULE_OUTOFPROCESS_HANDLER"] = temporaryFile;
+
+                var deploymentResult = await DeployAsync(deploymentParameters);
+                var requestHandlerPath = Path.Combine(GetANCMRequestHandlerPath(deploymentResult, _handlerVersion20), "aspnetcorev2_outofprocess.dll");
+
+                File.Delete(temporaryFile);
+                File.Move(requestHandlerPath, temporaryFile);
+
+                var response = await deploymentResult.HttpClient.GetAsync(_helloWorldRequest);
+                var responseText = await response.Content.ReadAsStringAsync();
+                Assert.Equal(_helloWorldResponse, responseText);
+                StopServer();
+            }
+            finally
+            {
+                File.Delete(temporaryFile);
+            }
         }
 
         [ConditionalTheory]

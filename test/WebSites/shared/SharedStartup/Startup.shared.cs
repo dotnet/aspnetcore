@@ -68,8 +68,14 @@ namespace TestSite
             }
             finally
             {
-                 Interlocked.Decrement(ref _waitingRequestCount);
+                Interlocked.Decrement(ref _waitingRequestCount);
             }
+        }
+
+        public Task Abort(HttpContext context)
+        {
+            context.Abort();
+            return Task.CompletedTask;
         }
 
         public async Task WaitingRequestCount(HttpContext context)

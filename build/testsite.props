@@ -36,8 +36,6 @@
     <IISExpressArguments>/config:"$(IISExpressAppHostConfig)" /systray:false</IISExpressArguments>
     <IISArguments>-h "$(IISAppHostConfig)"</IISArguments>
 
-    <AncmPath>$(AspNetCoreModuleV1ShimDll)</AncmPath>
-    <AncmV2Path>$(AspNetCoreModuleV2ShimDll)</AncmV2Path>
     <AncmInProcessRHPath>aspnetcorev2_inprocess.dll</AncmInProcessRHPath>
     <DotNetPath>$(userprofile)\.dotnet\$(NativePlatform)\dotnet.exe</DotNetPath>
   </PropertyGroup>

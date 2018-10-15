@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         {
             _fixture = fixture;
         }
-        
+
         public override void Initialize(MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
         {
             base.Initialize(methodInfo, testMethodArguments, testOutputHelper);

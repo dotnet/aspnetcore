@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
-using System.Threading;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Microsoft.Extensions.Logging;
@@ -12,6 +11,33 @@ using Microsoft.Extensions.Logging.Testing;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 {
+    public class OutOfProcessTestSiteFixture : IISTestSiteFixture
+    {
+        public OutOfProcessTestSiteFixture() : base(Configure)
+        {
+        }
+
+        private static void Configure(IISDeploymentParameters deploymentParameters)
+        {
+            deploymentParameters.ApplicationPath = Helpers.GetOutOfProcessTestSitesPath();
+            deploymentParameters.HostingModel = HostingModel.OutOfProcess;
+        }
+    }
+
+    public class OutOfProcessV1TestSiteFixture : IISTestSiteFixture
+    {
+        public OutOfProcessV1TestSiteFixture() : base(Configure)
+        {
+        }
+
+        private static void Configure(IISDeploymentParameters deploymentParameters)
+        {
+            deploymentParameters.ApplicationPath = Helpers.GetOutOfProcessTestSitesPath();
+            deploymentParameters.HostingModel = HostingModel.OutOfProcess;
+            deploymentParameters.AncmVersion = AncmVersion.AspNetCoreModule;
+        }
+    }
+
     public class IISTestSiteFixture : IDisposable
     {
         private ApplicationDeployer _deployer;
