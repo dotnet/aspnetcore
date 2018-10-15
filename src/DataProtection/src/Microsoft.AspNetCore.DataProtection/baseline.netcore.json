@@ -1,0 +1,3071 @@
+{
+  "AssemblyIdentity": "Microsoft.AspNetCore.DataProtection, Version=2.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "Types": [
+    {
+      "Name": "Microsoft.Extensions.DependencyInjection.DataProtectionServiceCollectionExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "AddDataProtection",
+          "Parameters": [
+            {
+              "Name": "services",
+              "Type": "Microsoft.Extensions.DependencyInjection.IServiceCollection"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddDataProtection",
+          "Parameters": [
+            {
+              "Name": "services",
+              "Type": "Microsoft.Extensions.DependencyInjection.IServiceCollection"
+            },
+            {
+              "Name": "setupAction",
+              "Type": "System.Action<Microsoft.AspNetCore.DataProtection.DataProtectionOptions>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.DataProtection.DataProtectionBuilderExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "SetApplicationName",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder"
+            },
+            {
+              "Name": "applicationName",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddKeyEscrowSink",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder"
+            },
+            {
+              "Name": "sink",
+              "Type": "Microsoft.AspNetCore.DataProtection.KeyManagement.IKeyEscrowSink"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddKeyEscrowSink<T0>",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TImplementation",
+              "ParameterPosition": 0,
+              "Class": true,
+              "BaseTypeOrInterfaces": [
+                "Microsoft.AspNetCore.DataProtection.KeyManagement.IKeyEscrowSink"
+              ]
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddKeyEscrowSink",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder"
+            },
+            {
+              "Name": "factory",
+              "Type": "System.Func<System.IServiceProvider, Microsoft.AspNetCore.DataProtection.KeyManagement.IKeyEscrowSink>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddKeyManagementOptions",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder"
+            },
+            {
+              "Name": "setupAction",
+              "Type": "System.Action<Microsoft.AspNetCore.DataProtection.KeyManagement.KeyManagementOptions>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "DisableAutomaticKeyGeneration",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "PersistKeysToFileSystem",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder"
+            },
+            {
+              "Name": "directory",
+              "Type": "System.IO.DirectoryInfo"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "PersistKeysToRegistry",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder"
+            },
+            {
+              "Name": "registryKey",
+              "Type": "Microsoft.Win32.RegistryKey"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ProtectKeysWithCertificate",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder"
+            },
+            {
+              "Name": "certificate",
+              "Type": "System.Security.Cryptography.X509Certificates.X509Certificate2"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ProtectKeysWithCertificate",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder"
+            },
+            {
+              "Name": "thumbprint",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "UnprotectKeysWithAnyCertificate",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder"
+            },
+            {
+              "Name": "certificates",
+              "Type": "System.Security.Cryptography.X509Certificates.X509Certificate2[]",
+              "IsParams": true
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ProtectKeysWithDpapi",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ProtectKeysWithDpapi",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder"
+            },
+            {
+              "Name": "protectToLocalMachine",
+              "Type": "System.Boolean"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ProtectKeysWithDpapiNG",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ProtectKeysWithDpapiNG",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder"
+            },
+            {
+              "Name": "protectionDescriptorRule",
+              "Type": "System.String"
+            },
+            {
+              "Name": "flags",
+              "Type": "Microsoft.AspNetCore.DataProtection.XmlEncryption.DpapiNGProtectionDescriptorFlags"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SetDefaultKeyLifetime",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder"
+            },
+            {
+              "Name": "lifetime",
+              "Type": "System.TimeSpan"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "UseCryptographicAlgorithms",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder"
+            },
+            {
+              "Name": "configuration",
+              "Type": "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.AuthenticatedEncryptorConfiguration"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "UseCustomCryptographicAlgorithms",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder"
+            },
+            {
+              "Name": "configuration",
+              "Type": "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.CngCbcAuthenticatedEncryptorConfiguration"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "UseCustomCryptographicAlgorithms",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder"
+            },
+            {
+              "Name": "configuration",
+              "Type": "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.CngGcmAuthenticatedEncryptorConfiguration"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "UseCustomCryptographicAlgorithms",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder"
+            },
+            {
+              "Name": "configuration",
+              "Type": "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.ManagedAuthenticatedEncryptorConfiguration"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "UseEphemeralDataProtectionProvider",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.DataProtection.DataProtectionOptions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_ApplicationDiscriminator",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_ApplicationDiscriminator",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.DataProtection.DataProtectionUtilityExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "GetApplicationUniqueIdentifier",
+          "Parameters": [
+            {
+              "Name": "services",
+              "Type": "System.IServiceProvider"
+            }
+          ],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.DataProtection.EphemeralDataProtectionProvider",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Sealed": true,
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.DataProtection.IDataProtectionProvider"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "CreateProtector",
+          "Parameters": [
+            {
+              "Name": "purpose",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.DataProtection.IDataProtector",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.DataProtection.IDataProtectionProvider",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "loggerFactory",
+              "Type": "Microsoft.Extensions.Logging.ILoggerFactory"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Services",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.DependencyInjection.IServiceCollection",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.DataProtection.IPersistedDataProtector",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.DataProtection.IDataProtector"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "DangerousUnprotect",
+          "Parameters": [
+            {
+              "Name": "protectedData",
+              "Type": "System.Byte[]"
+            },
+            {
+              "Name": "ignoreRevocationErrors",
+              "Type": "System.Boolean"
+            },
+            {
+              "Name": "requiresMigration",
+              "Type": "System.Boolean",
+              "Direction": "Out"
+            },
+            {
+              "Name": "wasRevoked",
+              "Type": "System.Boolean",
+              "Direction": "Out"
+            }
+          ],
+          "ReturnType": "System.Byte[]",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.DataProtection.ISecret",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [
+        "System.IDisposable"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Length",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "WriteSecretIntoBuffer",
+          "Parameters": [
+            {
+              "Name": "buffer",
+              "Type": "System.ArraySegment<System.Byte>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.DataProtection.Secret",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Sealed": true,
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.DataProtection.ISecret"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Dispose",
+          "Parameters": [],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.IDisposable",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Length",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.DataProtection.ISecret",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Random",
+          "Parameters": [
+            {
+              "Name": "numBytes",
+              "Type": "System.Int32"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.DataProtection.Secret",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "WriteSecretIntoBuffer",
+          "Parameters": [
+            {
+              "Name": "buffer",
+              "Type": "System.ArraySegment<System.Byte>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.DataProtection.ISecret",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "WriteSecretIntoBuffer",
+          "Parameters": [
+            {
+              "Name": "buffer",
+              "Type": "System.Byte*"
+            },
+            {
+              "Name": "bufferLength",
+              "Type": "System.Int32"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.ArraySegment<System.Byte>"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Byte[]"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "secret",
+              "Type": "System.Byte*"
+            },
+            {
+              "Name": "secretLength",
+              "Type": "System.Int32"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "secret",
+              "Type": "Microsoft.AspNetCore.DataProtection.ISecret"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.DataProtection.XmlEncryption.CertificateResolver",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.DataProtection.XmlEncryption.ICertificateResolver"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "ResolveCertificate",
+          "Parameters": [
+            {
+              "Name": "thumbprint",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Security.Cryptography.X509Certificates.X509Certificate2",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.DataProtection.XmlEncryption.ICertificateResolver",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.DataProtection.XmlEncryption.CertificateXmlEncryptor",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Sealed": true,
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.DataProtection.XmlEncryption.IInternalCertificateXmlEncryptor",
+        "Microsoft.AspNetCore.DataProtection.XmlEncryption.IXmlEncryptor"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Encrypt",
+          "Parameters": [
+            {
+              "Name": "plaintextElement",
+              "Type": "System.Xml.Linq.XElement"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.DataProtection.XmlEncryption.EncryptedXmlInfo",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.DataProtection.XmlEncryption.IXmlEncryptor",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "thumbprint",
+              "Type": "System.String"
+            },
+            {
+              "Name": "certificateResolver",
+              "Type": "Microsoft.AspNetCore.DataProtection.XmlEncryption.ICertificateResolver"
+            },
+            {
+              "Name": "loggerFactory",
+              "Type": "Microsoft.Extensions.Logging.ILoggerFactory"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "certificate",
+              "Type": "System.Security.Cryptography.X509Certificates.X509Certificate2"
+            },
+            {
+              "Name": "loggerFactory",
+              "Type": "Microsoft.Extensions.Logging.ILoggerFactory"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.DataProtection.XmlEncryption.DpapiNGProtectionDescriptorFlags",
+      "Visibility": "Public",
+      "Kind": "Enumeration",
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Field",
+          "Name": "None",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "0"
+        },
+        {
+          "Kind": "Field",
+          "Name": "NamedDescriptor",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "1"
+        },
+        {
+          "Kind": "Field",
+          "Name": "MachineKey",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "32"
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.DataProtection.XmlEncryption.DpapiNGXmlDecryptor",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Sealed": true,
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.DataProtection.XmlEncryption.IXmlDecryptor"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Decrypt",
+          "Parameters": [
+            {
+              "Name": "encryptedElement",
+              "Type": "System.Xml.Linq.XElement"
+            }
+          ],
+          "ReturnType": "System.Xml.Linq.XElement",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.DataProtection.XmlEncryption.IXmlDecryptor",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "services",
+              "Type": "System.IServiceProvider"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.DataProtection.XmlEncryption.DpapiNGXmlEncryptor",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Sealed": true,
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.DataProtection.XmlEncryption.IXmlEncryptor"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Encrypt",
+          "Parameters": [
+            {
+              "Name": "plaintextElement",
+              "Type": "System.Xml.Linq.XElement"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.DataProtection.XmlEncryption.EncryptedXmlInfo",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.DataProtection.XmlEncryption.IXmlEncryptor",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "protectionDescriptorRule",
+              "Type": "System.String"
+            },
+            {
+              "Name": "flags",
+              "Type": "Microsoft.AspNetCore.DataProtection.XmlEncryption.DpapiNGProtectionDescriptorFlags"
+            },
+            {
+              "Name": "loggerFactory",
+              "Type": "Microsoft.Extensions.Logging.ILoggerFactory"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.DataProtection.XmlEncryption.DpapiXmlDecryptor",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Sealed": true,
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.DataProtection.XmlEncryption.IXmlDecryptor"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Decrypt",
+          "Parameters": [
+            {
+              "Name": "encryptedElement",
+              "Type": "System.Xml.Linq.XElement"
+            }
+          ],
+          "ReturnType": "System.Xml.Linq.XElement",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.DataProtection.XmlEncryption.IXmlDecryptor",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "services",
+              "Type": "System.IServiceProvider"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.DataProtection.XmlEncryption.DpapiXmlEncryptor",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Sealed": true,
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.DataProtection.XmlEncryption.IXmlEncryptor"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Encrypt",
+          "Parameters": [
+            {
+              "Name": "plaintextElement",
+              "Type": "System.Xml.Linq.XElement"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.DataProtection.XmlEncryption.EncryptedXmlInfo",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.DataProtection.XmlEncryption.IXmlEncryptor",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "protectToLocalMachine",
+              "Type": "System.Boolean"
+            },
+            {
+              "Name": "loggerFactory",
+              "Type": "Microsoft.Extensions.Logging.ILoggerFactory"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.DataProtection.XmlEncryption.EncryptedXmlDecryptor",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Sealed": true,
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.DataProtection.XmlEncryption.IInternalEncryptedXmlDecryptor",
+        "Microsoft.AspNetCore.DataProtection.XmlEncryption.IXmlDecryptor"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Decrypt",
+          "Parameters": [
+            {
+              "Name": "encryptedElement",
+              "Type": "System.Xml.Linq.XElement"
+            }
+          ],
+          "ReturnType": "System.Xml.Linq.XElement",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.DataProtection.XmlEncryption.IXmlDecryptor",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "services",
+              "Type": "System.IServiceProvider"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.DataProtection.XmlEncryption.EncryptedXmlInfo",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_DecryptorType",
+          "Parameters": [],
+          "ReturnType": "System.Type",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_EncryptedElement",
+          "Parameters": [],
+          "ReturnType": "System.Xml.Linq.XElement",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "encryptedElement",
+              "Type": "System.Xml.Linq.XElement"
+            },
+            {
+              "Name": "decryptorType",
+              "Type": "System.Type"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.DataProtection.XmlEncryption.ICertificateResolver",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "ResolveCertificate",
+          "Parameters": [
+            {
+              "Name": "thumbprint",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Security.Cryptography.X509Certificates.X509Certificate2",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.DataProtection.XmlEncryption.IXmlDecryptor",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Decrypt",
+          "Parameters": [
+            {
+              "Name": "encryptedElement",
+              "Type": "System.Xml.Linq.XElement"
+            }
+          ],
+          "ReturnType": "System.Xml.Linq.XElement",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.DataProtection.XmlEncryption.IXmlEncryptor",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Encrypt",
+          "Parameters": [
+            {
+              "Name": "plaintextElement",
+              "Type": "System.Xml.Linq.XElement"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.DataProtection.XmlEncryption.EncryptedXmlInfo",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.DataProtection.XmlEncryption.NullXmlDecryptor",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Sealed": true,
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.DataProtection.XmlEncryption.IXmlDecryptor"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Decrypt",
+          "Parameters": [
+            {
+              "Name": "encryptedElement",
+              "Type": "System.Xml.Linq.XElement"
+            }
+          ],
+          "ReturnType": "System.Xml.Linq.XElement",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.DataProtection.XmlEncryption.IXmlDecryptor",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.DataProtection.XmlEncryption.NullXmlEncryptor",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Sealed": true,
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.DataProtection.XmlEncryption.IXmlEncryptor"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Encrypt",
+          "Parameters": [
+            {
+              "Name": "plaintextElement",
+              "Type": "System.Xml.Linq.XElement"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.DataProtection.XmlEncryption.EncryptedXmlInfo",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.DataProtection.XmlEncryption.IXmlEncryptor",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "services",
+              "Type": "System.IServiceProvider"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.DataProtection.Repositories.FileSystemXmlRepository",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.DataProtection.Repositories.IXmlRepository"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_DefaultKeyStorageDirectory",
+          "Parameters": [],
+          "ReturnType": "System.IO.DirectoryInfo",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Directory",
+          "Parameters": [],
+          "ReturnType": "System.IO.DirectoryInfo",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetAllElements",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IReadOnlyCollection<System.Xml.Linq.XElement>",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.DataProtection.Repositories.IXmlRepository",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "StoreElement",
+          "Parameters": [
+            {
+              "Name": "element",
+              "Type": "System.Xml.Linq.XElement"
+            },
+            {
+              "Name": "friendlyName",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.DataProtection.Repositories.IXmlRepository",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "directory",
+              "Type": "System.IO.DirectoryInfo"
+            },
+            {
+              "Name": "loggerFactory",
+              "Type": "Microsoft.Extensions.Logging.ILoggerFactory"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.DataProtection.Repositories.IXmlRepository",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "GetAllElements",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IReadOnlyCollection<System.Xml.Linq.XElement>",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "StoreElement",
+          "Parameters": [
+            {
+              "Name": "element",
+              "Type": "System.Xml.Linq.XElement"
+            },
+            {
+              "Name": "friendlyName",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.DataProtection.Repositories.RegistryXmlRepository",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.DataProtection.Repositories.IXmlRepository"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_DefaultRegistryKey",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Win32.RegistryKey",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_RegistryKey",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Win32.RegistryKey",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetAllElements",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IReadOnlyCollection<System.Xml.Linq.XElement>",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.DataProtection.Repositories.IXmlRepository",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "StoreElement",
+          "Parameters": [
+            {
+              "Name": "element",
+              "Type": "System.Xml.Linq.XElement"
+            },
+            {
+              "Name": "friendlyName",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.DataProtection.Repositories.IXmlRepository",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "registryKey",
+              "Type": "Microsoft.Win32.RegistryKey"
+            },
+            {
+              "Name": "loggerFactory",
+              "Type": "Microsoft.Extensions.Logging.ILoggerFactory"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.DataProtection.KeyManagement.IKey",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_ActivationDate",
+          "Parameters": [],
+          "ReturnType": "System.DateTimeOffset",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_CreationDate",
+          "Parameters": [],
+          "ReturnType": "System.DateTimeOffset",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ExpirationDate",
+          "Parameters": [],
+          "ReturnType": "System.DateTimeOffset",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_IsRevoked",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_KeyId",
+          "Parameters": [],
+          "ReturnType": "System.Guid",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Descriptor",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.IAuthenticatedEncryptorDescriptor",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "CreateEncryptor",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.IAuthenticatedEncryptor",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.DataProtection.KeyManagement.IKeyEscrowSink",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Store",
+          "Parameters": [
+            {
+              "Name": "keyId",
+              "Type": "System.Guid"
+            },
+            {
+              "Name": "element",
+              "Type": "System.Xml.Linq.XElement"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.DataProtection.KeyManagement.IKeyManager",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "CreateNewKey",
+          "Parameters": [
+            {
+              "Name": "activationDate",
+              "Type": "System.DateTimeOffset"
+            },
+            {
+              "Name": "expirationDate",
+              "Type": "System.DateTimeOffset"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.DataProtection.KeyManagement.IKey",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetAllKeys",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IReadOnlyCollection<Microsoft.AspNetCore.DataProtection.KeyManagement.IKey>",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetCacheExpirationToken",
+          "Parameters": [],
+          "ReturnType": "System.Threading.CancellationToken",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "RevokeKey",
+          "Parameters": [
+            {
+              "Name": "keyId",
+              "Type": "System.Guid"
+            },
+            {
+              "Name": "reason",
+              "Type": "System.String",
+              "DefaultValue": "null"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "RevokeAllKeys",
+          "Parameters": [
+            {
+              "Name": "revocationDate",
+              "Type": "System.DateTimeOffset"
+            },
+            {
+              "Name": "reason",
+              "Type": "System.String",
+              "DefaultValue": "null"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.DataProtection.KeyManagement.KeyManagementOptions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_AutoGenerateKeys",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_AutoGenerateKeys",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Boolean"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_NewKeyLifetime",
+          "Parameters": [],
+          "ReturnType": "System.TimeSpan",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_NewKeyLifetime",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.TimeSpan"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_AuthenticatedEncryptorConfiguration",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.AlgorithmConfiguration",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_AuthenticatedEncryptorConfiguration",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.AlgorithmConfiguration"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_KeyEscrowSinks",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IList<Microsoft.AspNetCore.DataProtection.KeyManagement.IKeyEscrowSink>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_XmlRepository",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.DataProtection.Repositories.IXmlRepository",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_XmlRepository",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.AspNetCore.DataProtection.Repositories.IXmlRepository"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_XmlEncryptor",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.DataProtection.XmlEncryption.IXmlEncryptor",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_XmlEncryptor",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.AspNetCore.DataProtection.XmlEncryption.IXmlEncryptor"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_AuthenticatedEncryptorFactories",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IList<Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.IAuthenticatedEncryptorFactory>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.DataProtection.KeyManagement.XmlKeyManager",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Sealed": true,
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.DataProtection.KeyManagement.IKeyManager",
+        "Microsoft.AspNetCore.DataProtection.KeyManagement.Internal.IInternalXmlKeyManager"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "CreateNewKey",
+          "Parameters": [
+            {
+              "Name": "activationDate",
+              "Type": "System.DateTimeOffset"
+            },
+            {
+              "Name": "expirationDate",
+              "Type": "System.DateTimeOffset"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.DataProtection.KeyManagement.IKey",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.DataProtection.KeyManagement.IKeyManager",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetAllKeys",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IReadOnlyCollection<Microsoft.AspNetCore.DataProtection.KeyManagement.IKey>",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.DataProtection.KeyManagement.IKeyManager",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetCacheExpirationToken",
+          "Parameters": [],
+          "ReturnType": "System.Threading.CancellationToken",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.DataProtection.KeyManagement.IKeyManager",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "RevokeAllKeys",
+          "Parameters": [
+            {
+              "Name": "revocationDate",
+              "Type": "System.DateTimeOffset"
+            },
+            {
+              "Name": "reason",
+              "Type": "System.String",
+              "DefaultValue": "null"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.DataProtection.KeyManagement.IKeyManager",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "RevokeKey",
+          "Parameters": [
+            {
+              "Name": "keyId",
+              "Type": "System.Guid"
+            },
+            {
+              "Name": "reason",
+              "Type": "System.String",
+              "DefaultValue": "null"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.DataProtection.KeyManagement.IKeyManager",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "keyManagementOptions",
+              "Type": "Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.DataProtection.KeyManagement.KeyManagementOptions>"
+            },
+            {
+              "Name": "activator",
+              "Type": "Microsoft.AspNetCore.DataProtection.Internal.IActivator"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "keyManagementOptions",
+              "Type": "Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.DataProtection.KeyManagement.KeyManagementOptions>"
+            },
+            {
+              "Name": "activator",
+              "Type": "Microsoft.AspNetCore.DataProtection.Internal.IActivator"
+            },
+            {
+              "Name": "loggerFactory",
+              "Type": "Microsoft.Extensions.Logging.ILoggerFactory"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.AuthenticatedEncryptorFactory",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Sealed": true,
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.IAuthenticatedEncryptorFactory"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "CreateEncryptorInstance",
+          "Parameters": [
+            {
+              "Name": "key",
+              "Type": "Microsoft.AspNetCore.DataProtection.KeyManagement.IKey"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.IAuthenticatedEncryptor",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.IAuthenticatedEncryptorFactory",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "loggerFactory",
+              "Type": "Microsoft.Extensions.Logging.ILoggerFactory"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.CngCbcAuthenticatedEncryptorFactory",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Sealed": true,
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.IAuthenticatedEncryptorFactory"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "CreateEncryptorInstance",
+          "Parameters": [
+            {
+              "Name": "key",
+              "Type": "Microsoft.AspNetCore.DataProtection.KeyManagement.IKey"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.IAuthenticatedEncryptor",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.IAuthenticatedEncryptorFactory",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "loggerFactory",
+              "Type": "Microsoft.Extensions.Logging.ILoggerFactory"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.CngGcmAuthenticatedEncryptorFactory",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Sealed": true,
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.IAuthenticatedEncryptorFactory"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "CreateEncryptorInstance",
+          "Parameters": [
+            {
+              "Name": "key",
+              "Type": "Microsoft.AspNetCore.DataProtection.KeyManagement.IKey"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.IAuthenticatedEncryptor",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.IAuthenticatedEncryptorFactory",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "loggerFactory",
+              "Type": "Microsoft.Extensions.Logging.ILoggerFactory"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.EncryptionAlgorithm",
+      "Visibility": "Public",
+      "Kind": "Enumeration",
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Field",
+          "Name": "AES_128_CBC",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "0"
+        },
+        {
+          "Kind": "Field",
+          "Name": "AES_192_CBC",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "1"
+        },
+        {
+          "Kind": "Field",
+          "Name": "AES_256_CBC",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "2"
+        },
+        {
+          "Kind": "Field",
+          "Name": "AES_128_GCM",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "3"
+        },
+        {
+          "Kind": "Field",
+          "Name": "AES_192_GCM",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "4"
+        },
+        {
+          "Kind": "Field",
+          "Name": "AES_256_GCM",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "5"
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.IAuthenticatedEncryptor",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Decrypt",
+          "Parameters": [
+            {
+              "Name": "ciphertext",
+              "Type": "System.ArraySegment<System.Byte>"
+            },
+            {
+              "Name": "additionalAuthenticatedData",
+              "Type": "System.ArraySegment<System.Byte>"
+            }
+          ],
+          "ReturnType": "System.Byte[]",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Encrypt",
+          "Parameters": [
+            {
+              "Name": "plaintext",
+              "Type": "System.ArraySegment<System.Byte>"
+            },
+            {
+              "Name": "additionalAuthenticatedData",
+              "Type": "System.ArraySegment<System.Byte>"
+            }
+          ],
+          "ReturnType": "System.Byte[]",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.IAuthenticatedEncryptorFactory",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "CreateEncryptorInstance",
+          "Parameters": [
+            {
+              "Name": "key",
+              "Type": "Microsoft.AspNetCore.DataProtection.KeyManagement.IKey"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.IAuthenticatedEncryptor",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ManagedAuthenticatedEncryptorFactory",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Sealed": true,
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.IAuthenticatedEncryptorFactory"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "CreateEncryptorInstance",
+          "Parameters": [
+            {
+              "Name": "key",
+              "Type": "Microsoft.AspNetCore.DataProtection.KeyManagement.IKey"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.IAuthenticatedEncryptor",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.IAuthenticatedEncryptorFactory",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "loggerFactory",
+              "Type": "Microsoft.Extensions.Logging.ILoggerFactory"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ValidationAlgorithm",
+      "Visibility": "Public",
+      "Kind": "Enumeration",
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Field",
+          "Name": "HMACSHA256",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "0"
+        },
+        {
+          "Kind": "Field",
+          "Name": "HMACSHA512",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "1"
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.AlgorithmConfiguration",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "CreateNewDescriptor",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.IAuthenticatedEncryptorDescriptor",
+          "Virtual": true,
+          "Abstract": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Protected",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.AuthenticatedEncryptorConfiguration",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Sealed": true,
+      "BaseType": "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.AlgorithmConfiguration",
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.IInternalAlgorithmConfiguration"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_EncryptionAlgorithm",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.EncryptionAlgorithm",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_EncryptionAlgorithm",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.EncryptionAlgorithm"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ValidationAlgorithm",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ValidationAlgorithm",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_ValidationAlgorithm",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ValidationAlgorithm"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "CreateNewDescriptor",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.IAuthenticatedEncryptorDescriptor",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.AuthenticatedEncryptorDescriptor",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Sealed": true,
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.IAuthenticatedEncryptorDescriptor"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "ExportToXml",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.XmlSerializedDescriptorInfo",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.IAuthenticatedEncryptorDescriptor",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "configuration",
+              "Type": "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.AuthenticatedEncryptorConfiguration"
+            },
+            {
+              "Name": "masterKey",
+              "Type": "Microsoft.AspNetCore.DataProtection.ISecret"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.AuthenticatedEncryptorDescriptorDeserializer",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Sealed": true,
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.IAuthenticatedEncryptorDescriptorDeserializer"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "ImportFromXml",
+          "Parameters": [
+            {
+              "Name": "element",
+              "Type": "System.Xml.Linq.XElement"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.IAuthenticatedEncryptorDescriptor",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.IAuthenticatedEncryptorDescriptorDeserializer",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.CngCbcAuthenticatedEncryptorConfiguration",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Sealed": true,
+      "BaseType": "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.AlgorithmConfiguration",
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.IInternalAlgorithmConfiguration"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_EncryptionAlgorithm",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_EncryptionAlgorithm",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_EncryptionAlgorithmProvider",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_EncryptionAlgorithmProvider",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_EncryptionAlgorithmKeySize",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_EncryptionAlgorithmKeySize",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Int32"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_HashAlgorithm",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_HashAlgorithm",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_HashAlgorithmProvider",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_HashAlgorithmProvider",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "CreateNewDescriptor",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.IAuthenticatedEncryptorDescriptor",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.CngCbcAuthenticatedEncryptorDescriptor",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Sealed": true,
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.IAuthenticatedEncryptorDescriptor"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "ExportToXml",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.XmlSerializedDescriptorInfo",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.IAuthenticatedEncryptorDescriptor",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "configuration",
+              "Type": "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.CngCbcAuthenticatedEncryptorConfiguration"
+            },
+            {
+              "Name": "masterKey",
+              "Type": "Microsoft.AspNetCore.DataProtection.ISecret"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.CngCbcAuthenticatedEncryptorDescriptorDeserializer",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Sealed": true,
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.IAuthenticatedEncryptorDescriptorDeserializer"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "ImportFromXml",
+          "Parameters": [
+            {
+              "Name": "element",
+              "Type": "System.Xml.Linq.XElement"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.IAuthenticatedEncryptorDescriptor",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.IAuthenticatedEncryptorDescriptorDeserializer",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.CngGcmAuthenticatedEncryptorConfiguration",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Sealed": true,
+      "BaseType": "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.AlgorithmConfiguration",
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.IInternalAlgorithmConfiguration"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_EncryptionAlgorithm",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_EncryptionAlgorithm",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_EncryptionAlgorithmProvider",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_EncryptionAlgorithmProvider",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_EncryptionAlgorithmKeySize",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_EncryptionAlgorithmKeySize",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Int32"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "CreateNewDescriptor",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.IAuthenticatedEncryptorDescriptor",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.CngGcmAuthenticatedEncryptorDescriptor",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Sealed": true,
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.IAuthenticatedEncryptorDescriptor"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "ExportToXml",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.XmlSerializedDescriptorInfo",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.IAuthenticatedEncryptorDescriptor",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "configuration",
+              "Type": "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.CngGcmAuthenticatedEncryptorConfiguration"
+            },
+            {
+              "Name": "masterKey",
+              "Type": "Microsoft.AspNetCore.DataProtection.ISecret"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.CngGcmAuthenticatedEncryptorDescriptorDeserializer",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Sealed": true,
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.IAuthenticatedEncryptorDescriptorDeserializer"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "ImportFromXml",
+          "Parameters": [
+            {
+              "Name": "element",
+              "Type": "System.Xml.Linq.XElement"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.IAuthenticatedEncryptorDescriptor",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.IAuthenticatedEncryptorDescriptorDeserializer",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.IAuthenticatedEncryptorDescriptor",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "ExportToXml",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.XmlSerializedDescriptorInfo",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.IAuthenticatedEncryptorDescriptorDeserializer",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "ImportFromXml",
+          "Parameters": [
+            {
+              "Name": "element",
+              "Type": "System.Xml.Linq.XElement"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.IAuthenticatedEncryptorDescriptor",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.ManagedAuthenticatedEncryptorConfiguration",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Sealed": true,
+      "BaseType": "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.AlgorithmConfiguration",
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.IInternalAlgorithmConfiguration"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_EncryptionAlgorithmType",
+          "Parameters": [],
+          "ReturnType": "System.Type",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_EncryptionAlgorithmType",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Type"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_EncryptionAlgorithmKeySize",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_EncryptionAlgorithmKeySize",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Int32"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ValidationAlgorithmType",
+          "Parameters": [],
+          "ReturnType": "System.Type",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_ValidationAlgorithmType",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Type"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "CreateNewDescriptor",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.IAuthenticatedEncryptorDescriptor",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.ManagedAuthenticatedEncryptorDescriptor",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Sealed": true,
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.IAuthenticatedEncryptorDescriptor"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "ExportToXml",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.XmlSerializedDescriptorInfo",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.IAuthenticatedEncryptorDescriptor",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "configuration",
+              "Type": "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.ManagedAuthenticatedEncryptorConfiguration"
+            },
+            {
+              "Name": "masterKey",
+              "Type": "Microsoft.AspNetCore.DataProtection.ISecret"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.ManagedAuthenticatedEncryptorDescriptorDeserializer",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Sealed": true,
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.IAuthenticatedEncryptorDescriptorDeserializer"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "ImportFromXml",
+          "Parameters": [
+            {
+              "Name": "element",
+              "Type": "System.Xml.Linq.XElement"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.IAuthenticatedEncryptorDescriptor",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.IAuthenticatedEncryptorDescriptorDeserializer",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.XmlExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "MarkAsRequiresEncryption",
+          "Parameters": [
+            {
+              "Name": "element",
+              "Type": "System.Xml.Linq.XElement"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.XmlSerializedDescriptorInfo",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_DeserializerType",
+          "Parameters": [],
+          "ReturnType": "System.Type",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_SerializedDescriptorElement",
+          "Parameters": [],
+          "ReturnType": "System.Xml.Linq.XElement",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "serializedDescriptorElement",
+              "Type": "System.Xml.Linq.XElement"
+            },
+            {
+              "Name": "deserializerType",
+              "Type": "System.Type"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    }
+  ]
+}

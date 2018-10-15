@@ -1,0 +1,78 @@
+{
+  "AssemblyIdentity": "Microsoft.AspNetCore.Cryptography.KeyDerivation, Version=2.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "Types": [
+    {
+      "Name": "Microsoft.AspNetCore.Cryptography.KeyDerivation.KeyDerivation",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Pbkdf2",
+          "Parameters": [
+            {
+              "Name": "password",
+              "Type": "System.String"
+            },
+            {
+              "Name": "salt",
+              "Type": "System.Byte[]"
+            },
+            {
+              "Name": "prf",
+              "Type": "Microsoft.AspNetCore.Cryptography.KeyDerivation.KeyDerivationPrf"
+            },
+            {
+              "Name": "iterationCount",
+              "Type": "System.Int32"
+            },
+            {
+              "Name": "numBytesRequested",
+              "Type": "System.Int32"
+            }
+          ],
+          "ReturnType": "System.Byte[]",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Cryptography.KeyDerivation.KeyDerivationPrf",
+      "Visibility": "Public",
+      "Kind": "Enumeration",
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Field",
+          "Name": "HMACSHA1",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "0"
+        },
+        {
+          "Kind": "Field",
+          "Name": "HMACSHA256",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "1"
+        },
+        {
+          "Kind": "Field",
+          "Name": "HMACSHA512",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "2"
+        }
+      ],
+      "GenericParameters": []
+    }
+  ]
+}
