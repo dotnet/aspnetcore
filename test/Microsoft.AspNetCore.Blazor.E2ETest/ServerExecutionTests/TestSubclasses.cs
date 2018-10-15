@@ -56,4 +56,12 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.ServerExecutionTests
         {
         }
     }
+
+    public class ServerCascadingValueTest : CascadingValueTest
+    {
+        public ServerCascadingValueTest(BrowserFixture browserFixture, ToggleExecutionModeServerFixture<Program> serverFixture, ITestOutputHelper output)
+            : base(browserFixture, serverFixture.WithServerExecution(), output)
+        {
+        }
+    }
 }
