@@ -42,7 +42,7 @@ namespace Http2SampleApp
                     options.Listen(IPAddress.Any, basePort + 1, listenOptions =>
                     {
                         listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
-                        listenOptions.UseHttps("testCert.pfx", "testPassword");
+                        listenOptions.UseHttps();
                         listenOptions.ConnectionAdapters.Add(new TlsFilterAdapter());
                     });
 
