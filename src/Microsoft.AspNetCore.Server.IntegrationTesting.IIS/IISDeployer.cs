@@ -119,12 +119,18 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                 key: "hostingModel",
                 value: DeploymentParameters.HostingModel.ToString());
 
-            if (DeploymentParameters.ApplicationType == ApplicationType.Portable)
-            {
-                yield return WebConfigHelpers.AddOrModifyAspNetCoreSection(
-                    "processPath",
-                    DotNetCommands.GetDotNetExecutable(DeploymentParameters.RuntimeArchitecture));
-            }
+            yield return (element, _) => {
+                var aspNetCore = element
+                    .Descendants("system.webServer")
+                    .Single()
+                    .GetOrAdd("aspNetCore");
+
+                // Expand path to dotnet because IIS process would not inherit PATH variable
+                if (aspNetCore.Attribute("processPath")?.Value.StartsWith("dotnet") == true)
+                {
+                    aspNetCore.SetAttributeValue("processPath", DotNetCommands.GetDotNetExecutable(DeploymentParameters.RuntimeArchitecture));
+                }
+            };
 
             yield return WebConfigHelpers.AddOrModifyHandlerSection(
                 key: "modules",
@@ -399,8 +405,10 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                     redirectionSection.Attributes["enabled"].Value = false;
 
                     serverManager.CommitChanges();
-
-                    Directory.Delete(_configPath, true);
+                    if (Directory.Exists(_configPath))
+                    {
+                        Directory.Delete(_configPath, true);
+                    }
                 });
             }
         }

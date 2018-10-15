@@ -146,7 +146,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         public static string InProcessFailedToStop(IISDeploymentResult deploymentResult, string reason)
         {
-            return "Failed to gracefully shutdown application 'MACHINE/WEBROOT/APPHOST/HTTPTESTSITE'.";
+            return "Failed to gracefully shutdown application 'MACHINE/WEBROOT/APPHOST/.*?'.";
         }
 
         public static string InProcessThreadException(IISDeploymentResult deploymentResult, string reason)

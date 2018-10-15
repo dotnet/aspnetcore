@@ -120,9 +120,13 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
 
         [ConditionalFact]
+        [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
         public async Task StartsWithPortableAndBootstraperExe()
         {
             var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.InProcessTestSite, publish: true);
+            // We need the right dotnet on the path in IIS
+            deploymentParameters.EnvironmentVariables["PATH"] = Path.GetDirectoryName(DotNetCommands.GetDotNetExecutable(deploymentParameters.RuntimeArchitecture));
+
             // rest publisher as it doesn't support additional parameters
             deploymentParameters.ApplicationPublisher = null;
             // ReferenceTestTasks is workaround for https://github.com/dotnet/sdk/issues/2482
@@ -301,6 +305,9 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             var deploymentResult = await DeployAsync(iisDeploymentParameters);
             var result = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
             Assert.Equal(HttpStatusCode.InternalServerError, result.StatusCode);
+
+            // Config load errors might not allow us to initialize log file
+            deploymentResult.AllowNoLogs();
 
             StopServer();
 

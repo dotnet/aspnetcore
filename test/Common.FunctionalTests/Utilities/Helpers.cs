@@ -13,7 +13,6 @@ using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
@@ -202,6 +201,13 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             depsFileContent["runtimeOptions"]["framework"]["version"] = "2.9.9";
             var output = JsonConvert.SerializeObject(depsFileContent);
             File.WriteAllText(path, output);
+        }
+
+        public static void AllowNoLogs(this IISDeploymentResult deploymentResult)
+        {
+            File.AppendAllText(
+                Path.Combine(deploymentResult.DeploymentParameters.PublishedApplicationRootPath, "aspnetcore-debug.log"),
+                "Running test allowed log file to be empty." + Environment.NewLine);
         }
     }
 }
