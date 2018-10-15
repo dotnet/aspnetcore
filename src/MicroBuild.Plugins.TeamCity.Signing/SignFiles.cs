@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading;
 using Microsoft.Build.Framework;
 using Microsoft.Build.OOB.ESRP;
 using Microsoft.Build.Utilities;
@@ -74,9 +73,9 @@ namespace MicroBuild.Plugins.TeamCity.Signing
                 return true;
             }
 
-            JobName = string.IsNullOrEmpty(this.JobName)
-                ? Guid.NewGuid().ToString()
-                : this.JobName;
+            JobName = string.IsNullOrEmpty(JobName)
+                ? Guid.NewGuid().ToString().Replace("-", "").Substring(0, 12)
+                : JobName;
 
             Log.LogMessage(MessageImportance.High, "Starting code sign job {0}", JobName);
 
@@ -89,7 +88,6 @@ namespace MicroBuild.Plugins.TeamCity.Signing
                 : Path.Combine(LogOutputDir, $"signjob-{JobName}.txt");
 
             Directory.CreateDirectory(BinariesDirectory);
-            Directory.CreateDirectory(IntermediatesDirectory);
             Directory.CreateDirectory(_manifestOutputPath);
             Directory.CreateDirectory(Path.GetDirectoryName(_logFile));
 

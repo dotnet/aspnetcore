@@ -26,10 +26,6 @@
           DependsOnTargets="@(SignFilesDependsOn)"
           AfterTargets="AfterBuild">
 
-    <PropertyGroup>
-      <CodeSignJobName Condition="'$(CodeSignJobName)' == ''">$(MSBuildProjectName)/$(TargetFramework)</CodeSignJobName>
-    </PropertyGroup>
-
     <!-- Apply the @(FilesToSign) condition check to the task and not the target so that @(SignFilesDependsOn) targets
          can add to @(FilesToSign) and have that cause this target to run. -->
     <SignFiles Files="@(FilesToSign)" 
