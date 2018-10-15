@@ -6,6 +6,22 @@
   <PropertyGroup>
     <!-- Fallback when not building from command line. -->
     <InternalAspNetCoreSdkPackageVersion Condition="'$(InternalAspNetCoreSdkPackageVersion)' == ''">2.2.0-preview2-20181004.6</InternalAspNetCoreSdkPackageVersion>
+    <LastGoodAspBuildVersion>2.2.0-preview3-35497</LastGoodAspBuildVersion>
+    <MicrosoftAspNetCoreHostingAbstractionsPackageVersion Condition=" '$(MicrosoftAspNetCoreHostingAbstractionsPackageVersion)' == '' ">$(LastGoodAspBuildVersion)</MicrosoftAspNetCoreHostingAbstractionsPackageVersion>
+    <MicrosoftAspNetCoreHostingPackageVersion Condition=" '$(MicrosoftAspNetCoreHostingPackageVersion)' == '' ">$(LastGoodAspBuildVersion)</MicrosoftAspNetCoreHostingPackageVersion>
+    <MicrosoftAspNetCoreTestingPackageVersion Condition=" '$(MicrosoftAspNetCoreTestingPackageVersion)' == '' ">$(LastGoodAspBuildVersion)</MicrosoftAspNetCoreTestingPackageVersion>
+    <MicrosoftEntityFrameworkCoreInMemoryPackageVersion Condition=" '$(MicrosoftEntityFrameworkCoreInMemoryPackageVersion)' == '' ">$(LastGoodAspBuildVersion)</MicrosoftEntityFrameworkCoreInMemoryPackageVersion>
+    <MicrosoftEntityFrameworkCorePackageVersion Condition=" '$(MicrosoftEntityFrameworkCorePackageVersion)' == '' ">$(LastGoodAspBuildVersion)</MicrosoftEntityFrameworkCorePackageVersion>
+    <MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion Condition=" '$(MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion)' == '' ">$(LastGoodAspBuildVersion)</MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion>
+    <MicrosoftExtensionsConfigurationJsonPackageVersion Condition=" '$(MicrosoftExtensionsConfigurationJsonPackageVersion)' == '' ">$(LastGoodAspBuildVersion)</MicrosoftExtensionsConfigurationJsonPackageVersion>
+    <MicrosoftExtensionsConfigurationPackageVersion Condition=" '$(MicrosoftExtensionsConfigurationPackageVersion)' == '' ">$(LastGoodAspBuildVersion)</MicrosoftExtensionsConfigurationPackageVersion>
+    <MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion Condition=" '$(MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion)' == '' ">$(LastGoodAspBuildVersion)</MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>
+    <MicrosoftExtensionsDependencyInjectionPackageVersion Condition=" '$(MicrosoftExtensionsDependencyInjectionPackageVersion)' == '' ">$(LastGoodAspBuildVersion)</MicrosoftExtensionsDependencyInjectionPackageVersion>
+    <MicrosoftExtensionsLoggingAbstractionsPackageVersion Condition=" '$(MicrosoftExtensionsLoggingAbstractionsPackageVersion)' == '' ">$(LastGoodAspBuildVersion)</MicrosoftExtensionsLoggingAbstractionsPackageVersion>
+    <MicrosoftExtensionsLoggingConsolePackageVersion Condition=" '$(MicrosoftExtensionsLoggingConsolePackageVersion)' == '' ">$(LastGoodAspBuildVersion)</MicrosoftExtensionsLoggingConsolePackageVersion>
+    <MicrosoftExtensionsLoggingPackageVersion Condition=" '$(MicrosoftExtensionsLoggingPackageVersion)' == '' ">$(LastGoodAspBuildVersion)</MicrosoftExtensionsLoggingPackageVersion>
+    <MicrosoftExtensionsOptionsPackageVersion Condition=" '$(MicrosoftExtensionsOptionsPackageVersion)' == '' ">$(LastGoodAspBuildVersion)</MicrosoftExtensionsOptionsPackageVersion>
+    <MicrosoftExtensionsWebEncodersSourcesPackageVersion Condition=" '$(MicrosoftExtensionsWebEncodersSourcesPackageVersion)' == '' ">$(LastGoodAspBuildVersion)</MicrosoftExtensionsWebEncodersSourcesPackageVersion>
   </PropertyGroup>
 
   <!--

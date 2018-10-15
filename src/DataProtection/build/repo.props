@@ -1,6 +1,10 @@
 <Project>
+  <Import Project="..\..\..\build\dependencies.props" />
   <PropertyGroup>
     <!-- TODO: temporary while we reorganize source code and refactor dependency management -->
     <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
   </PropertyGroup>
+  <ItemGroup>
+    <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp22PackageVersion)" />
+  </ItemGroup>
 </Project>
