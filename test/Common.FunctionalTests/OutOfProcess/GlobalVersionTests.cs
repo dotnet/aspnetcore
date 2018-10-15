@@ -33,18 +33,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         public async Task GlobalVersion_DefaultWorks()
         {
             var deploymentParameters = GetGlobalVersionBaseDeploymentParameters();
-            deploymentParameters.PublishApplicationBeforeDeployment = false;
 
-            deploymentParameters.AddServerConfigAction(
-                element =>
-                {
-                    var handlerVersionElement = new XElement("handlerSetting");
-                    handlerVersionElement.SetAttributeValue("name", "handlerVersion");
-                    handlerVersionElement.SetAttributeValue("value", _handlerVersion20);
-
-                    element.Descendants("aspNetCore").Single()
-                        .Add(new XElement("handlerSettings", handlerVersionElement));
-                });
+            deploymentParameters.HandlerSettings["handlerVersion"] = _handlerVersion20;
 
             var deploymentResult = await DeployAsync(deploymentParameters);
 
