@@ -5,9 +5,14 @@ VisualStudioVersion = 15.0.26124.0
 MinimumVisualStudioVersion = 15.0.26124.0
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{10EEF5E0-C52A-4ACE-AFDC-651D0F6C49CD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MicroBuild.Plugins.TeamCity.Signing", "src\MicroBuild.Plugins.TeamCity.Signing\MicroBuild.Plugins.TeamCity.Signing.csproj", "{E28D1AAA-DF7D-4E57-AD34-D0BA57AC0849}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MicroBuild.Plugins.TeamCity.Signing", "src\MicroBuild.Plugins.TeamCity.Signing\MicroBuild.Plugins.TeamCity.Signing.csproj", "{E28D1AAA-DF7D-4E57-AD34-D0BA57AC0849}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MicroBuild.Core.Sentinel", "src\MicroBuild.Core.Sentinel\MicroBuild.Core.Sentinel.csproj", "{E427C9F3-3C4B-4200-BE04-D4D508A9ECE0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MicroBuild.Core.Sentinel", "src\MicroBuild.Core.Sentinel\MicroBuild.Core.Sentinel.csproj", "{E427C9F3-3C4B-4200-BE04-D4D508A9ECE0}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{D1C38CD5-AA68-451C-8637-40A8DB54D43F}"
+	ProjectSection(SolutionItems) = preProject
+		build\dependencies.props = build\dependencies.props
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,9 +22,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 		Release|x64 = Release|x64
 		Release|x86 = Release|x86
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{E28D1AAA-DF7D-4E57-AD34-D0BA57AC0849}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -47,8 +49,14 @@ Global
 		{E427C9F3-3C4B-4200-BE04-D4D508A9ECE0}.Release|x86.ActiveCfg = Release|Any CPU
 		{E427C9F3-3C4B-4200-BE04-D4D508A9ECE0}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{E28D1AAA-DF7D-4E57-AD34-D0BA57AC0849} = {10EEF5E0-C52A-4ACE-AFDC-651D0F6C49CD}
 		{E427C9F3-3C4B-4200-BE04-D4D508A9ECE0} = {10EEF5E0-C52A-4ACE-AFDC-651D0F6C49CD}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {4CD5E82F-39BF-4F14-B981-23EE55BD3E89}
 	EndGlobalSection
 EndGlobal

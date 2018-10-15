@@ -94,6 +94,7 @@ namespace MicroBuild.Plugins.TeamCity.Signing
             Directory.CreateDirectory(Path.GetDirectoryName(_logFile));
 
             GenerateManifests();
+            Log.LogMessage(MessageImportance.High, "Code signing log files for job '{0}' will be created in '{1}'", JobName, _logFile);
             Log.LogMessage("Generated manifests in {0}", _manifestOutputPath);
 
             var retVal = base.Execute();
