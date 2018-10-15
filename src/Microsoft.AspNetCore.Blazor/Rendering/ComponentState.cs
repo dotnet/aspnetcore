@@ -20,6 +20,7 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
         private readonly IComponent _component;
         private readonly Renderer _renderer;
         private readonly IReadOnlyList<CascadingParameterState> _cascadingParameters;
+        private readonly bool _hasAnyCascadingParameterSubscriptions;
         private RenderTreeBuilder _renderTreeBuilderCurrent;
         private RenderTreeBuilder _renderTreeBuilderPrevious;
         private ArrayBuilder<RenderTreeFrame> _latestDirectParametersSnapshot; // Lazily instantiated
@@ -48,7 +49,7 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
 
             if (_cascadingParameters != null)
             {
-                AddCascadingParameterSubscriptions();
+                _hasAnyCascadingParameterSubscriptions = AddCascadingParameterSubscriptions();
             }
         }
 
@@ -88,7 +89,7 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
 
             RenderTreeDiffBuilder.DisposeFrames(batchBuilder, _renderTreeBuilderCurrent.GetFrames());
 
-            if (_cascadingParameters != null)
+            if (_hasAnyCascadingParameterSubscriptions)
             {
                 RemoveCascadingParameterSubscriptions();
             }
@@ -119,12 +120,7 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
             // If we bypass this, the component won't receive the cascading parameters nor
             // will it update its snapshot of direct parameters.
 
-            // TODO: Consider adding a "static" mode for tree params in which we don't
-            // subscribe for updates, and hence don't have to do any of the parameter
-            // snapshotting. This would be useful for things like FormContext that aren't
-            // going to change.
-
-            if (_cascadingParameters != null)
+            if (_hasAnyCascadingParameterSubscriptions)
             {
                 // We may need to replay these direct parameters later (in NotifyCascadingValueChanged),
                 // but we can't guarantee that the original underlying data won't have mutated in the
@@ -133,8 +129,12 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
                 {
                     _latestDirectParametersSnapshot = new ArrayBuilder<RenderTreeFrame>();
                 }
-                parameters.CaptureSnapshot(_latestDirectParametersSnapshot);
 
+                parameters.CaptureSnapshot(_latestDirectParametersSnapshot);
+            }
+
+            if (_cascadingParameters != null)
+            {
                 parameters = parameters.WithCascadingParameters(_cascadingParameters);
             }
 
@@ -150,13 +150,22 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
             Component.SetParameters(allParams);
         }
 
-        private void AddCascadingParameterSubscriptions()
+        private bool AddCascadingParameterSubscriptions()
         {
+            var hasSubscription = false;
             var numCascadingParameters = _cascadingParameters.Count;
+
             for (var i = 0; i < numCascadingParameters; i++)
             {
-                _cascadingParameters[i].ValueSupplier.Subscribe(this);
+                var valueSupplier = _cascadingParameters[i].ValueSupplier;
+                if (!valueSupplier.CurrentValueIsFixed)
+                {
+                    valueSupplier.Subscribe(this);
+                    hasSubscription = true;
+                }
             }
+            
+            return hasSubscription;
         }
 
         private void RemoveCascadingParameterSubscriptions()

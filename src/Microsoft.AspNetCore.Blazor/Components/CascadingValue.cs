@@ -15,6 +15,7 @@ namespace Microsoft.AspNetCore.Blazor.Components
     {
         private RenderHandle _renderHandle;
         private HashSet<ComponentState> _subscribers; // Lazily instantiated
+        private bool _hasSetParametersPreviously;
 
         /// <summary>
         /// The content to which the value should be provided.
@@ -35,7 +36,17 @@ namespace Microsoft.AspNetCore.Blazor.Components
         /// </summary>
         [Parameter] private string Name { get; set; }
 
+        /// <summary>
+        /// If true, indicates that <see cref="Value"/> will not change. This is a
+        /// performance optimization that allows the framework to skip setting up
+        /// change notifications. Set this flag only if you will not change
+        /// <see cref="Value"/> during the component's lifetime.
+        /// </summary>
+        [Parameter] private bool Fixed { get; set; }
+
         object ICascadingValueComponent.CurrentValue => Value;
+
+        bool ICascadingValueComponent.CurrentValueIsFixed => Fixed;
 
         /// <inheritdoc />
         public void Init(RenderHandle renderHandle)
@@ -52,9 +63,11 @@ namespace Microsoft.AspNetCore.Blazor.Components
 
             var hasSuppliedValue = false;
             var previousValue = Value;
+            var previousFixed = Fixed;
             Value = default;
             ChildContent = null;
             Name = null;
+            Fixed = false;
 
             foreach (var parameter in parameters)
             {
@@ -75,11 +88,22 @@ namespace Microsoft.AspNetCore.Blazor.Components
                         throw new ArgumentException($"The parameter '{nameof(Name)}' for component '{nameof(CascadingValue<T>)}' does not allow null or empty values.");
                     }
                 }
+                else if (parameter.Name.Equals(nameof(Fixed), StringComparison.OrdinalIgnoreCase))
+                {
+                    Fixed = (bool)parameter.Value;
+                }
                 else
                 {
                     throw new ArgumentException($"The component '{nameof(CascadingValue<T>)}' does not accept a parameter with the name '{parameter.Name}'.");
                 }
             }
+
+            if (_hasSetParametersPreviously && Fixed != previousFixed)
+            {
+                throw new InvalidOperationException($"The value of {nameof(Fixed)} cannot be changed dynamically.");
+            }
+
+            _hasSetParametersPreviously = true;
 
             // It's OK for the value to be null, but some "Value" param must be suppled
             // because it serves no useful purpose to have a <CascadingValue> otherwise.
@@ -120,6 +144,15 @@ namespace Microsoft.AspNetCore.Blazor.Components
 
         void ICascadingValueComponent.Subscribe(ComponentState subscriber)
         {
+#if DEBUG
+            if (Fixed)
+            {
+                // Should not be possible. User code cannot trigger this.
+                // Checking only to catch possible future framework bugs.
+                throw new InvalidOperationException($"Cannot subscribe to a {typeof(CascadingValue<>).Name} when {nameof(Fixed)} is true.");
+            }
+#endif
+
             if (_subscribers == null)
             {
                  _subscribers = new HashSet<ComponentState>();

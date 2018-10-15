@@ -4,6 +4,7 @@
 using Microsoft.AspNetCore.Blazor.Components;
 using Microsoft.AspNetCore.Blazor.RenderTree;
 using Microsoft.AspNetCore.Blazor.Test.Helpers;
+using System;
 using System.Linq;
 using Xunit;
 
@@ -234,6 +235,113 @@ namespace Microsoft.AspNetCore.Blazor.Test
             providedValue = "Updated value 2";
             component.TriggerRender();
             Assert.Equal(2, nestedComponent.NumSetParametersCalls);
+        }
+
+        [Fact]
+        public void DoesNotNotifyDescendantsOfUpdatedCascadingParameterValuesWhenFixed()
+        {
+            // Arrange
+            var providedValue = "Initial value";
+            var shouldIncludeChild = true;
+            var renderer = new TestRenderer();
+            var component = new TestComponent(builder =>
+            {
+                builder.OpenComponent<CascadingValue<string>>(0);
+                builder.AddAttribute(1, "Value", providedValue);
+                builder.AddAttribute(2, "Fixed", true);
+                builder.AddAttribute(3, RenderTreeBuilder.ChildContent, new RenderFragment(childBuilder =>
+                {
+                    if (shouldIncludeChild)
+                    {
+                        childBuilder.OpenComponent<CascadingParameterConsumerComponent<string>>(0);
+                        childBuilder.AddAttribute(1, "RegularParameter", "Goodbye");
+                        childBuilder.CloseComponent();
+                    }
+                }));
+                builder.CloseComponent();
+            });
+
+            // Act 1: Initial render; capture nested component ID
+            var componentId = renderer.AssignRootComponentId(component);
+            component.TriggerRender();
+            var firstBatch = renderer.Batches.Single();
+            var nestedComponent = FindComponent<CascadingParameterConsumerComponent<string>>(firstBatch, out var nestedComponentId);
+            Assert.Equal(1, nestedComponent.NumRenders);
+
+            // Assert: Initial value is supplied to descendant
+            var nestedComponentDiff = firstBatch.DiffsByComponentId[nestedComponentId].Single();
+            Assert.Collection(nestedComponentDiff.Edits, edit =>
+            {
+                Assert.Equal(RenderTreeEditType.PrependFrame, edit.Type);
+                AssertFrame.Text(
+                    firstBatch.ReferenceFrames[edit.ReferenceFrameIndex],
+                    "CascadingParameter=Initial value; RegularParameter=Goodbye");
+            });
+
+            // Act 2: Re-render CascadingValue with new value
+            providedValue = "Updated value";
+            component.TriggerRender();
+
+            // Assert: We did not re-render the descendant
+            Assert.Equal(2, renderer.Batches.Count);
+            var secondBatch = renderer.Batches[1];
+            Assert.Equal(2, secondBatch.DiffsByComponentId.Count); // Root + CascadingValue, but not nested one
+            Assert.Equal(1, nestedComponent.NumSetParametersCalls);
+            Assert.Equal(1, nestedComponent.NumRenders);
+
+            // Act 3: Dispose
+            shouldIncludeChild = false;
+            component.TriggerRender();
+
+            // Assert: Absence of an exception here implies we didn't cause a problem by
+            // trying to remove a non-existent subscription
+        }
+
+        [Fact]
+        public void CascadingValueThrowsIfFixedFlagChangesToTrue()
+        {
+            // Arrange
+            var renderer = new TestRenderer();
+            var isFixed = false;
+            var component = new TestComponent(builder =>
+            {
+                builder.OpenComponent<CascadingValue<object>>(0);
+                builder.AddAttribute(1, "Fixed", isFixed);
+                builder.AddAttribute(2, "Value", new object());
+                builder.CloseComponent();
+            });
+            renderer.AssignRootComponentId(component);
+            component.TriggerRender();
+
+            // Act/Assert
+            isFixed = true;
+            var ex = Assert.Throws<InvalidOperationException>(() => component.TriggerRender());
+            Assert.Equal("The value of Fixed cannot be changed dynamically.", ex.Message);
+        }
+
+        [Fact]
+        public void CascadingValueThrowsIfFixedFlagChangesToFalse()
+        {
+            // Arrange
+            var renderer = new TestRenderer();
+            var isFixed = true;
+            var component = new TestComponent(builder =>
+            {
+                builder.OpenComponent<CascadingValue<object>>(0);
+                if (isFixed) // Showing also that "unset" is treated as "false"
+                {
+                    builder.AddAttribute(1, "Fixed", true);
+                }
+                builder.AddAttribute(2, "Value", new object());
+                builder.CloseComponent();
+            });
+            renderer.AssignRootComponentId(component);
+            component.TriggerRender();
+
+            // Act/Assert
+            isFixed = false;
+            var ex = Assert.Throws<InvalidOperationException>(() => component.TriggerRender());
+            Assert.Equal("The value of Fixed cannot be changed dynamically.", ex.Message);
         }
 
         private static T FindComponent<T>(CapturedBatch batch, out int componentId)

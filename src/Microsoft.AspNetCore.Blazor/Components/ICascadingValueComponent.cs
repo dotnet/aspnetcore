@@ -15,6 +15,8 @@ namespace Microsoft.AspNetCore.Blazor.Components
 
         object CurrentValue { get; }
 
+        bool CurrentValueIsFixed { get; }
+
         void Subscribe(ComponentState subscriber);
 
         void Unsubscribe(ComponentState subscriber);
