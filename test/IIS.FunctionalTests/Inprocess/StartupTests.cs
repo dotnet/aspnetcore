@@ -31,6 +31,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         private readonly string _dotnetLocation = DotNetCommands.GetDotNetExecutable(RuntimeArchitecture.x64);
 
         [ConditionalFact]
+        [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
         public async Task ExpandEnvironmentVariableInWebConfig()
         {
             // Point to dotnet installed in user profile.
@@ -90,6 +91,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [ConditionalTheory]
         [InlineData("dotnet")]
         [InlineData("dotnet.EXE")]
+        [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
         public async Task StartsWithDotnetOnThePath(string path)
         {
             var deploymentParameters = _fixture.GetBaseDeploymentParameters(publish: true);
