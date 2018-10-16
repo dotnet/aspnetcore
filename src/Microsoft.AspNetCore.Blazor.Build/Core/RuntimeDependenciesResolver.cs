@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Blazor.Build
 
             internal void ResolveAssemblies()
             {
-                var visitedAssemblies = new Dictionary<string, AssemblyEntry>();
+                var visitedAssemblies = new HashSet<string>();
                 var pendingAssemblies = new Stack<AssemblyNameReference>();
                 pendingAssemblies.Push(Assembly.Definition.Name);
                 ResolveAssembliesCore();
@@ -85,15 +85,24 @@ namespace Microsoft.AspNetCore.Blazor.Build
                 {
                     while (pendingAssemblies.TryPop(out var current))
                     {
-                        if (!visitedAssemblies.ContainsKey(current.Name))
+                        if (!visitedAssemblies.Contains(current.Name))
                         {
+                            visitedAssemblies.Add(current.Name);
+
+                            // Not all references will be resolvable within the Mono BCL, particularly
+                            // when building for server-side Blazor as you will be running on CoreCLR
+                            // and therefore may depend on System.* BCL assemblies that aren't present
+                            // in Mono WebAssembly. Skipping unresolved assemblies here is equivalent
+                            // to passing "--skip-unresolved true" to the Mono linker.
                             var resolved = Resolve(current);
-                            visitedAssemblies[current.Name] = resolved;
-                            Results.Add(resolved);
-                            var references = GetAssemblyReferences(resolved);
-                            foreach (var reference in references)
+                            if (resolved != null)
                             {
-                                pendingAssemblies.Push(reference);
+                                Results.Add(resolved);
+                                var references = GetAssemblyReferences(resolved);
+                                foreach (var reference in references)
+                                {
+                                    pendingAssemblies.Push(reference);
+                                }
                             }
                         }
                     }
