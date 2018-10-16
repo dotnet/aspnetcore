@@ -10,18 +10,36 @@ const debug = process.env.npm_config_debug || false;
 jest.setTimeout(debug ? 60000 : 30000);
 
 let browser;
+let error;
 
 beforeAll(async () => {
     const options = debug ?
         { headless: false, slowMo: 100 } :
         { args: ['--no-sandbox'] };
-    browser = await puppeteer.launch(options);
-    expect(browser).toBeDefined();
+
+        try {
+            browser = await puppeteer.launch(options);
+        } catch (ex) {
+            error = ex;
+        }
 });
 
 afterAll(async () => {
-    await browser.close();
+    if (browser) {
+        await browser.close();
+    }
 });
+
+describe('Browser is initialized', () => {
+    // Workaround for https://github.com/jasmine/jasmine/issues/1533.
+    // Jasmine will not report errors from beforeAll and instead fail all the tests that
+    // expect the browser to be available. This test allows us to ensure the setup was successful
+    // and if unsuccessful report the error
+    test('no errors on launch', () => {
+        expect(error).toBeUndefined();
+        expect(browser).toBeDefined();
+    })
+})
 
 describe('CORS allowed origin tests ', () => {
     const testPagePath = `http://${hostname}:9001/`;
