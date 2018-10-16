@@ -9,8 +9,7 @@
         <environmentVariables xdt:Transform="InsertIfMissing">
           <add name="PATH" value="%XDT_EXTENSIONPATH%;%USERPROFILE%\.dotnet\tools;%PATH%" xdt:Locator="Match(name)" xdt:Transform="InsertIfMissing"  />
           <add name="DOTNET_SKIP_FIRST_TIME_EXPERIENCE" value="1" xdt:Locator="Match(name)" xdt:Transform="InsertIfMissing"  />
-          <add name="ASPNETCORE_MODULE_DEBUG" value="3" xdt:Locator="Match(name)" xdt:Transform="InsertIfMissing" />
-          <add name="ASPNETCORE_MODULE_DEBUG_FILE" value="%HOME%\LogFiles\Application\amcm.log" xdt:Locator="Match(name)" xdt:Transform="InsertIfMissing" />
+          <add name="DOTNET_ROOT" value="%XDT_EXTENSIONPATH%" xdt:Locator="Match(name)" xdt:Transform="InsertIfMissing"  />
         </environmentVariables>
       </runtime>
 
