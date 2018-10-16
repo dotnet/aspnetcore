@@ -38,10 +38,6 @@
 	path = modules/CORS
 	url = https://github.com/aspnet/CORS.git
 	branch = master
-[submodule "modules/DataProtection"]
-	path = modules/DataProtection
-	url = https://github.com/aspnet/DataProtection.git
-	branch = master
 [submodule "modules/DependencyInjection"]
 	path = modules/DependencyInjection
 	url = https://github.com/aspnet/DependencyInjection.git

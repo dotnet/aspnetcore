@@ -18,7 +18,7 @@
 
     <!-- The 'human friendly' version to display in installers. In pre-release builds, this might be "2.0.7 Preview 2 Build 12356". In final builds, it should be "2.0.7" -->
     <PackageBrandingVersion>$(VersionPrefix)</PackageBrandingVersion>
-    <PackageBrandingVersion Condition=" '$(IncludePreReleaseLabelInPackageVersion)' == 'true' ">$(PackageBrandingVersion) $(BrandingVersionSuffix)</PackageBrandingVersion>
+    <PackageBrandingVersion Condition=" '$(IncludePreReleaseLabelInPackageVersion)' == 'true' ">$(PackageBrandingVersion) $(BrandingVersionSuffix.Trim())</PackageBrandingVersion>
 
     <!-- The version in files -->
     <PackageVersion>$(VersionPrefix)</PackageVersion>
