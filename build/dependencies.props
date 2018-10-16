@@ -2,9 +2,9 @@
   <!-- These package versions may be overridden or updated by automation. -->
   <PropertyGroup Label="Package Versions: Auto" Condition=" '$(DotNetPackageVersionPropsPath)' == '' ">
     <!-- MicrosoftNETCoreApp22PackageVersion is assigned at the bottom so it can automatically pick up MicrosoftNETCoreAppPackageVersion in an orchestrated build. -->
-    <MicrosoftNETCoreAppPackageVersion>2.2.0-preview3-27008-03</MicrosoftNETCoreAppPackageVersion>
-    <MicrosoftNETCoreDotNetAppHostPackageVersion>2.2.0-preview3-27008-03</MicrosoftNETCoreDotNetAppHostPackageVersion>
-    <SystemDataSqlClientPackageVersion>4.6.0-preview3-27008-03</SystemDataSqlClientPackageVersion>
+    <MicrosoftNETCoreAppPackageVersion>2.2.0-preview3-27014-02</MicrosoftNETCoreAppPackageVersion>
+    <MicrosoftNETCoreDotNetAppHostPackageVersion>2.2.0-preview3-27014-02</MicrosoftNETCoreDotNetAppHostPackageVersion>
+    <SystemDataSqlClientPackageVersion>4.6.0-preview3-27014-02</SystemDataSqlClientPackageVersion>
   </PropertyGroup>
 
   <Import Project="$(DotNetPackageVersionPropsPath)" Condition="'$(DotNetPackageVersionPropsPath)' != ''" />
