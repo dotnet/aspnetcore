@@ -17,7 +17,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
     [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, "https://github.com/aspnet/IISIntegration/issues/866")]
     public class ClientDisconnectTests : StrictTestServerTests
     {
-
         [ConditionalFact]
         public async Task WritesSucceedAfterClientDisconnect()
         {
@@ -48,6 +47,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
                 await requestCompletedCompletionSource.Task.DefaultTimeout();
             }
+
+            AssertConnectionDisconnectLog();
         }
 
         [ConditionalFact]
@@ -88,6 +89,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
                 Assert.IsType<OperationCanceledException>(exception);
             }
+
+            AssertConnectionDisconnectLog();
         }
 
         [ConditionalFact]
@@ -125,6 +128,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             Assert.IsType<ConnectionResetException>(exception);
             Assert.Equal("The client has disconnected", exception.Message);
+
+            AssertConnectionDisconnectLog();
         }
 
         [ConditionalFact]
@@ -202,6 +207,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 }
                 Assert.IsType<OperationCanceledException>(exception);
             }
+
+            AssertConnectionDisconnectLog();
         }
 
         [ConditionalFact]
@@ -253,6 +260,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             Assert.IsType<ConnectionResetException>(exception);
             Assert.Equal("The client has disconnected", exception.Message);
+            AssertConnectionDisconnectLog();
         }
 
         [ConditionalFact]
@@ -275,7 +283,15 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 }
                 await requestAborted.Task;
             }
+
+            AssertConnectionDisconnectLog();
         }
+
+        private void AssertConnectionDisconnectLog()
+        {
+            Assert.Contains(TestSink.Writes, w => w.EventId.Name == "ConnectionDisconnect");
+        }
+
         private static async Task SendContentLength1Post(TestConnection connection)
         {
             await connection.Send(
