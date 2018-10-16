@@ -16,6 +16,7 @@
 #include "WebConfigConfigurationSource.h"
 #include "ModuleHelpers.h"
 #include "BaseOutputManager.h"
+#include "Environment.h"
 
 const PCWSTR HandlerResolver::s_pwzAspnetcoreInProcessRequestHandlerName = L"aspnetcorev2_inprocess.dll";
 const PCWSTR HandlerResolver::s_pwzAspnetcoreOutOfProcessRequestHandlerName = L"aspnetcorev2_outofprocess.dll";
@@ -103,12 +104,12 @@ HandlerResolver::LoadRequestHandlerAssembly(const IHttpApplication &pApplication
         LOG_INFOF(L"Loading request handler:  '%ls'", handlerDllPath.c_str());
 
         hRequestHandlerDll = LoadLibrary(handlerDllPath.c_str());
+        RETURN_LAST_ERROR_IF_NULL(hRequestHandlerDll);
         if (preventUnload)
         {
             // Pin module in memory
-            GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_PIN, pstrHandlerDllName, &hRequestHandlerDll);
+            GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_PIN, handlerDllPath.c_str(), &hRequestHandlerDll);
         }
-        RETURN_LAST_ERROR_IF_NULL(hRequestHandlerDll);
     }
 
     auto pfnAspNetCoreCreateApplication = ModuleHelpers::GetKnownProcAddress<PFN_ASPNETCORE_CREATE_APPLICATION>(hRequestHandlerDll, "CreateApplication");
@@ -150,7 +151,7 @@ HandlerResolver::GetApplicationFactory(const IHttpApplication &pApplication, std
     m_loadedApplicationHostingModel = options.QueryHostingModel();
     m_loadedApplicationId = pApplication.GetApplicationId();
     RETURN_IF_FAILED(LoadRequestHandlerAssembly(pApplication, options, pApplicationFactory));
-  
+
     return S_OK;
 }
 
@@ -171,6 +172,13 @@ HandlerResolver::FindNativeAssemblyFromGlobalLocation(
 {
     try
     {
+        auto handlerPath = Environment::GetEnvironmentVariableValue(L"ASPNETCORE_MODULE_OUTOFPROCESS_HANDLER");
+        if (handlerPath.has_value() && std::filesystem::is_regular_file(handlerPath.value()))
+        {
+            handlerDllPath = handlerPath.value();
+            return S_OK;
+        }
+
         std::wstring modulePath = GlobalVersionUtility::GetModuleName(m_hModule);
 
         modulePath = GlobalVersionUtility::RemoveFileNameFromFolderPath(modulePath);

@@ -31,6 +31,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         private readonly string _dotnetLocation = DotNetCommands.GetDotNetExecutable(RuntimeArchitecture.x64);
 
         [ConditionalFact]
+        [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
         public async Task ExpandEnvironmentVariableInWebConfig()
         {
             // Point to dotnet installed in user profile.
@@ -90,6 +91,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [ConditionalTheory]
         [InlineData("dotnet")]
         [InlineData("dotnet.EXE")]
+        [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
         public async Task StartsWithDotnetOnThePath(string path)
         {
             var deploymentParameters = _fixture.GetBaseDeploymentParameters(publish: true);
@@ -120,9 +122,13 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
 
         [ConditionalFact]
+        [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
         public async Task StartsWithPortableAndBootstraperExe()
         {
             var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.InProcessTestSite, publish: true);
+            // We need the right dotnet on the path in IIS
+            deploymentParameters.EnvironmentVariables["PATH"] = Path.GetDirectoryName(DotNetCommands.GetDotNetExecutable(deploymentParameters.RuntimeArchitecture));
+
             // rest publisher as it doesn't support additional parameters
             deploymentParameters.ApplicationPublisher = null;
             // ReferenceTestTasks is workaround for https://github.com/dotnet/sdk/issues/2482
@@ -301,6 +307,9 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             var deploymentResult = await DeployAsync(iisDeploymentParameters);
             var result = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
             Assert.Equal(HttpStatusCode.InternalServerError, result.StatusCode);
+
+            // Config load errors might not allow us to initialize log file
+            deploymentResult.AllowNoLogs();
 
             StopServer();
 

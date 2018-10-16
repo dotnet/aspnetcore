@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
 
             if (process.ExitCode != 0)
             {
-                throw new InvalidOperationException($"Exit code {process.ExitCode} when running {fileName} {arguments}. Stdout: {process.StandardOutput.ReadToEnd()}");
+                throw new InvalidOperationException($"Exit code {process.ExitCode} when running {fileName} {arguments}. Stdout: {process.StandardOutput.ReadToEnd()} Stderr: {process.StandardError.ReadToEnd()}");
             }
         }
 

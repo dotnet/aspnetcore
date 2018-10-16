@@ -13,4 +13,17 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
     {
         public const string Name = nameof(IISTestSiteCollection);
     }
+
+    [CollectionDefinition(Name)]
+    public class OutOfProcessTestSiteCollection : ICollectionFixture<OutOfProcessTestSiteFixture>
+    {
+        public const string Name = nameof(OutOfProcessTestSiteCollection);
+    }
+
+    [CollectionDefinition(Name)]
+    public class OutOfProcessV1TestSiteCollection : ICollectionFixture<OutOfProcessV1TestSiteFixture>
+    {
+        public const string Name = nameof(OutOfProcessV1TestSiteCollection);
+    }
+
 }

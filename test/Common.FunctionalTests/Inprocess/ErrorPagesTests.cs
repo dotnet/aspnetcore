@@ -23,6 +23,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
 
         [ConditionalFact]
+        [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
         public async Task IncludesAdditionalErrorPageTextInProcessHandlerLoadFailure()
         {
             var deploymentParameters = _fixture.GetBaseDeploymentParameters(publish: true);
@@ -37,6 +38,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
 
         [ConditionalFact]
+        [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
         public async Task IncludesAdditionalErrorPageTextOutOfProcessStartupFailure()
         {
             var deploymentParameters = _fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess, publish: true);
@@ -51,6 +53,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
 
         [ConditionalFact]
+        [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
         public async Task IncludesAdditionalErrorPageTextOutOfProcessHandlerLoadFailure()
         {
             var deploymentParameters = _fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess, publish: true);
@@ -69,6 +72,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
 
         [ConditionalFact]
+        [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
         public async Task IncludesAdditionalErrorPageTextInProcessStartupFailure()
         {
             var deploymentParameters = _fixture.GetBaseDeploymentParameters(publish: true);
