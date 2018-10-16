@@ -64,8 +64,9 @@
         <Category>noship</Category>
       </ArtifactInfo>
 
-      <FilesToSign Include="$(AncmZipOutputPath)" IsContainer="true" />
+      <FilesToSign Include="$(AncmZipOutputPath)" Certificate="None" IsContainer="true" />
       <FilesToExcludeFromSigning Include="$(StressTestWebSiteZipOutputPath)" />
+      <FilesToExcludeFromSigning Include="AspNetCore\ancm.mof" Container="$(BuildDir)Microsoft.AspNetCore.AspNetCoreModuleV2.$(PackageVersion).nupkg" />
     </ItemGroup>
   </Target>
 
