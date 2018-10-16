@@ -11,7 +11,7 @@ namespace FunctionalTests
 {
     internal static class ProcessManager
     {
-        private static readonly TimeSpan Timeout = TimeSpan.FromSeconds(60);
+        private static readonly TimeSpan Timeout = TimeSpan.FromMinutes(3);
 
         public static Task<ProcessResult> RunProcessAsync(ProcessStartInfo processStartInfo)
         {
