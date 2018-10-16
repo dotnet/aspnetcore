@@ -61,8 +61,7 @@ namespace TriageBuildFailures.VSTS
         public async Task SetTag(ICIBuild build, string tag)
         {
             var vstsBuild = (VSTSBuild)build;
-            var tags= await MakeVSTSRequest<VSTSArray<string>>(HttpMethod.Put, $"{vstsBuild.Project}/_apis/build/builds/{build.Id}/tags/{tag}",apiVersion: ApiVersion.V5_0_Preview2);
-            Console.WriteLine(tags.Value);
+            await MakeVSTSRequest<VSTSArray<string>>(HttpMethod.Put, $"{vstsBuild.Project}/_apis/build/builds/{build.Id}/tags/{tag}", apiVersion: ApiVersion.V5_0_Preview2);
         }
 
         public async Task<string> GetBuildLog(ICIBuild build)
@@ -87,7 +86,7 @@ namespace TriageBuildFailures.VSTS
             var runs = await GetTestRuns(build);
 
             var result = new List<ICITestOccurrence>();
-            foreach(var run in runs)
+            foreach (var run in runs)
             {
                 var results = await GetTestResults(run, buildStatus);
                 result.AddRange(results.Select(r => new VSTSTestOccurrence(r)));
@@ -107,8 +106,8 @@ namespace TriageBuildFailures.VSTS
         {
             var queryItems = new Dictionary<string, string>();
 
-            if(buildResult != null)
-            {                
+            if (buildResult != null)
+            {
                 queryItems.Add("outcomes", GetStatusString(buildResult.Value));
             }
 
