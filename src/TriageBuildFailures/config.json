@@ -187,6 +187,7 @@
       "XPlat_Windows_Win10Universe",
       "XPlat_Windows_Win2008r2_Universe",
       // Release 21 Public
+      "Releases_21Public_UpdateUniverse",
       "Releases_21Public_UniverseCoherence",
       "Releases_21Public_RuntimeStoreInstallers",
       "Releases_21Public_CoherencePackageCacheOsx",
