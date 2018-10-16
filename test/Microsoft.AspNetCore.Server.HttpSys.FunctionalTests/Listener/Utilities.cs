@@ -28,14 +28,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             IsWin8orLater = (Environment.OSVersion.Version >= win8Version);
         }
 
-        internal static HttpSysListener CreateHttpAuthServer(AuthenticationSchemes authScheme, bool allowAnonymos, out string baseAddress)
-        {
-            var listener = CreateHttpServer(out baseAddress);
-            listener.Options.Authentication.Schemes = authScheme;
-            listener.Options.Authentication.AllowAnonymous = allowAnonymos;
-            return listener;
-        }
-
         internal static HttpSysListener CreateHttpServer(out string baseAddress)
         {
             string root;
