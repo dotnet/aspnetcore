@@ -7,10 +7,10 @@ using System.Xml.Serialization;
 
 namespace TriageBuildFailures.TeamCity
 {
-    [XmlRoot("testOccurrences")]
-    public class TestOccurrences
+    [XmlRoot("builds")]
+    public class TeamCityBuilds
     {
-        [XmlElement("testOccurrence")]
-        public List<TestOccurrence> TestList;
+        [XmlElement("build")]
+        public List<TeamCityBuild> BuildList;
     }
 }

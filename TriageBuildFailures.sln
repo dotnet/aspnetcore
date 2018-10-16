@@ -3,14 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27428.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TriageBuildFailures", "TriageBuildFailures.csproj", "{84FF418A-2AF0-4C0A-961B-8728D53D4CB1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TriageBuildFailures", "src\TriageBuildFailures\TriageBuildFailures.csproj", "{84FF418A-2AF0-4C0A-961B-8728D53D4CB1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Common", "..\Common\Common.csproj", "{C343E93C-D676-460D-86D5-F089C035A77A}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{FD2AB7A8-573D-4FC5-AC9E-03C10DB4D9B2}"
-	ProjectSection(SolutionItems) = preProject
-		..\..\Directory.Build.props = ..\..\Directory.Build.props
-	EndProjectSection
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Common", "src\Common\Common.csproj", "{C343E93C-D676-460D-86D5-F089C035A77A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

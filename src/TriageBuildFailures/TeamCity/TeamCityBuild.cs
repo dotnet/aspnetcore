@@ -3,33 +3,43 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Serialization;
+using TriageBuildFailures.Abstractions;
 
 namespace TriageBuildFailures.TeamCity
 {
-    public class TeamCityBuild
+    public class TeamCityBuild : ICIBuild
     {
-        public static IDictionary<string, string> BuildNames { get; set; }
+        public static Task<IDictionary<string, string>> BuildNames { get; set; }
 
+        public CIConfigBase GetCIConfig(Config config)
+        {
+            return config.TeamCity;
+        }
+
+        public Type CIType => typeof(TeamCityClientWrapper);
         [XmlAttribute("id")]
-        public int Id { get; set; }
+        public string Id { get; set; }
 
         public string BuildName
         {
             get
             {
-                return BuildNames[BuildTypeID];
+                return BuildNames.Result[BuildTypeID];
             }
         }
 
         [XmlAttribute("buildTypeId")]
         public string BuildTypeID { get; set; }
 
-        public BuildType BuildType {
+        public BuildType BuildType
+        {
             get
             {
-                return new BuildType {
+                return new BuildType
+                {
                     Id = BuildTypeID,
                     Name = BuildName
                 };
@@ -45,7 +55,7 @@ namespace TriageBuildFailures.TeamCity
         public BuildStatus Status { get; set; }
 
         [XmlAttribute("branchName")]
-        public string BranchName { get; set; }
+        public string Branch { get; set; }
 
         [XmlAttribute("webUrl")]
         public string UrlString { get; set; }
@@ -62,7 +72,7 @@ namespace TriageBuildFailures.TeamCity
         {
             get
             {
-                return $"{BuildTypeID};{BranchName}";
+                return $"{BuildTypeID};{Branch}";
             }
         }
     }

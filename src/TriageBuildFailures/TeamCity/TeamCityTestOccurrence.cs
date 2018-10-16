@@ -3,24 +3,29 @@
 
 using System.Xml;
 using System.Xml.Serialization;
+using TriageBuildFailures.Abstractions;
 
 namespace TriageBuildFailures.TeamCity
 {
-    public class TestOccurrence
+    public class TeamCityTestOccurrence : ICITestOccurrence
     {
         [XmlAttribute("id")]
         public string _Id { get; set; }
 
-        public int TestId {
-            get {
-                return int.Parse(_Id?.Split(',')[0].Split(':')[1]);
+        public string TestId
+        {
+            get
+            {
+                return _Id?.Split(',')[0].Split(':')[1];
             }
         }
 
-        public int BuildId {
-            get {
+        public string BuildId
+        {
+            get
+            {
                 var buildDescriptor = _Id?.Split(',')[1];
-                return int.Parse(buildDescriptor.Split(':')[2].TrimEnd(')'));
+                return buildDescriptor.Split(':')[2].TrimEnd(')');
             }
         }
 
@@ -39,6 +44,6 @@ namespace TriageBuildFailures.TeamCity
         public bool Ignored { get; set; } = false;
 
         [XmlElement("test")]
-        public Test Test { get; set; }
+        public TeamCityTest Test { get; set; }
     }
 }

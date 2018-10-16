@@ -23,114 +23,163 @@ namespace Common
             }
             else
             {
-                if (testName.StartsWith(Constants.VSTestPrefix, StringComparison.OrdinalIgnoreCase))
+                var name = testName.Replace(Constants.VSTestPrefix, string.Empty);
+
+                if (name.StartsWith("Microsoft.AspNetCore.Server", StringComparison.OrdinalIgnoreCase))
                 {
-                    var name = testName.Replace(Constants.VSTestPrefix, string.Empty);
-
-                    if (name.StartsWith("Microsoft.AspNetCore.Server", StringComparison.OrdinalIgnoreCase))
+                    var parts = name.Split('.');
+                    switch (parts[3])
                     {
-                        var parts = name.Split('.');
-                        switch (parts[3])
-                        {
-                            case "Kestrel":
-                                return "KestrelHttpServer";
-                            case "HttpSys":
-                                return "HttpSysServer";
-                            case "IIS":
-                                return "IISIntegration";
-                            default:
-                                return parts[3];
-                        }
-                    }
-                    else if (name.StartsWith("Microsoft.AspNetCore.Http"))
-                    {
-                        return "HttpAbstractions";
-                    }
-                    else if (name.StartsWith("Microsoft.AspNetCore.Authentication"))
-                    {
-                        return "Security";
-                    }
-                    else if (name.StartsWith("Microsoft.AspNetCore.", StringComparison.OrdinalIgnoreCase))
-                    {
-                        var parts = name.Split('.');
-
-                        switch (parts[2])
-                        {
-                            default:
-                                return parts[2];
-                        }
-                    }
-                    else if (name.StartsWith("AuthSamples", StringComparison.OrdinalIgnoreCase))
-                    {
-                        return name.Split('.')[0];
-                    }
-                    else if (name.StartsWith("Microsoft.Extensions.Configuration", StringComparison.OrdinalIgnoreCase))
-                    {
-                        return "Configuration";
-                    }
-                    else if (name.StartsWith("ServerComparison", StringComparison.OrdinalIgnoreCase))
-                    {
-                        return "ServerTests";
-                    }
-                    else if (name.StartsWith("E2ETests", StringComparison.OrdinalIgnoreCase))
-                    {
-                        return "MusicStore";
-                    }
-                    else if (name.StartsWith("Microsoft.DotNet.Watcher", StringComparison.OrdinalIgnoreCase))
-                    {
-                        return "DotNetTools";
-                    }
-                    else if (name.StartsWith("Microsoft.EntityFrameworkCore", StringComparison.OrdinalIgnoreCase))
-                    {
-                        return "EntityFrameworkCore";
-                    }
-                    else if (name.StartsWith("FunctionalTests", StringComparison.OrdinalIgnoreCase))
-                    {
-                        return "MvcPrecompilation";
-                    }
-                    else if (name.StartsWith("Templates", StringComparison.OrdinalIgnoreCase))
-                    {
-                        return "Templating";
-                    }
-                    else if (name.StartsWith("MvcBenchmarks", StringComparison.OrdinalIgnoreCase))
-                    {
-                        return "Performance";
-                    }
-                    else if (name.StartsWith("Microsoft.VisualStudio.Web.CodeGeneration", StringComparison.OrdinalIgnoreCase))
-                    {
-                        return "Scaffolding";
-                    }
-                    else if (name.StartsWith("Microsoft.Data.Sqlite"))
-                    {
-                        return "Microsoft.Data.Sqlite";
-                    }
-                    else if (name.StartsWith("IIS.FunctionalTests"))
-                    {
-                        return "IISIntegration";
-                    }
-                    else if (name.StartsWith("Microsoft.Extensions.Primitives"))
-                    {
-                        return "Common";
-                    }
-                    else if (name.StartsWith("Microsoft.Extensions.Options"))
-                    {
-                        return "Options";
-                    }
-                    else if (name.StartsWith("Microsoft.Extensions.Http"))
-                    {
-                        return "HttpClientFactory";
-                    }
-                    else if (name.StartsWith("System.Buffers.Tests", StringComparison.OrdinalIgnoreCase) ||
-                             name.StartsWith("System.IO.Pipelines.Tests", StringComparison.OrdinalIgnoreCase) ||
-                             name.StartsWith("Microsoft.Extensions.Internal.Test", StringComparison.OrdinalIgnoreCase))
-                    {
-                        return "Home";
+                        case "Kestrel":
+                            return "KestrelHttpServer";
+                        case "HttpSys":
+                            return "HttpSysServer";
+                        case "IIS":
+                            return "IISIntegration";
+                        default:
+                            return parts[3];
                     }
                 }
+                else if (name.StartsWith("Microsoft.AspNetCore.Http"))
+                {
+                    return "HttpAbstractions";
+                }
+                else if (name.StartsWith("Microsoft.AspNetCore.Authentication"))
+                {
+                    return "Security";
+                }
+                else if (name.StartsWith("Microsoft.AspNetCore.", StringComparison.OrdinalIgnoreCase))
+                {
+                    var parts = name.Split('.');
 
-                reporter.Warn($"Don't know how to find the repo of tests like {testName}, defaulting to aspnet/Home");
+                    switch (parts[2])
+                    {
+                        default:
+                            return parts[2];
+                    }
+                }
+                else if (name.StartsWith("AuthSamples", StringComparison.OrdinalIgnoreCase))
+                {
+                    return name.Split('.')[0];
+                }
+                else if (name.StartsWith("Microsoft.Extensions.Configuration", StringComparison.OrdinalIgnoreCase))
+                {
+                    return "Configuration";
+                }
+                else if (name.StartsWith("ServerComparison", StringComparison.OrdinalIgnoreCase))
+                {
+                    return "ServerTests";
+                }
+                else if (name.StartsWith("E2ETests", StringComparison.OrdinalIgnoreCase))
+                {
+                    return "MusicStore";
+                }
+                else if (name.StartsWith("Microsoft.DotNet.Watcher", StringComparison.OrdinalIgnoreCase))
+                {
+                    return "DotNetTools";
+                }
+                else if (name.StartsWith("Microsoft.EntityFrameworkCore", StringComparison.OrdinalIgnoreCase))
+                {
+                    return "EntityFrameworkCore";
+                }
+                else if (name.StartsWith("FunctionalTests", StringComparison.OrdinalIgnoreCase))
+                {
+                    return "MvcPrecompilation";
+                }
+                else if (name.StartsWith("Templates", StringComparison.OrdinalIgnoreCase))
+                {
+                    return "Templating";
+                }
+                else if (name.StartsWith("MvcBenchmarks", StringComparison.OrdinalIgnoreCase))
+                {
+                    return "Performance";
+                }
+                else if (name.StartsWith("Microsoft.VisualStudio.Web.CodeGeneration", StringComparison.OrdinalIgnoreCase))
+                {
+                    return "Scaffolding";
+                }
+                else if (name.StartsWith("Microsoft.Data.Sqlite"))
+                {
+                    return "Microsoft.Data.Sqlite";
+                }
+                else if (name.StartsWith("IIS.FunctionalTests"))
+                {
+                    return "IISIntegration";
+                }
+                else if (name.StartsWith("Microsoft.Extensions.Primitives"))
+                {
+                    return "Common";
+                }
+                else if (name.StartsWith("Microsoft.Extensions.Options"))
+                {
+                    return "Options";
+                }
+                else if (name.StartsWith("Microsoft.Extensions.Configuration", StringComparison.OrdinalIgnoreCase))
+                {
+                    return "Configuration";
+                }
+                else if (name.StartsWith("ServerComparison", StringComparison.OrdinalIgnoreCase))
+                {
+                    return "ServerTests";
+                }
+                else if (name.StartsWith("E2ETests", StringComparison.OrdinalIgnoreCase))
+                {
+                    return "MusicStore";
+                }
+                else if (name.StartsWith("Microsoft.DotNet.Watcher", StringComparison.OrdinalIgnoreCase))
+                {
+                    return "DotNetTools";
+                }
+                else if (name.StartsWith("Microsoft.EntityFrameworkCore", StringComparison.OrdinalIgnoreCase))
+                {
+                    return "EntityFrameworkCore";
+                }
+                else if (name.StartsWith("FunctionalTests", StringComparison.OrdinalIgnoreCase))
+                {
+                    return "MvcPrecompilation";
+                }
+                else if (name.StartsWith("Templates", StringComparison.OrdinalIgnoreCase))
+                {
+                    return "Templating";
+                }
+                else if (name.StartsWith("MvcBenchmarks", StringComparison.OrdinalIgnoreCase))
+                {
+                    return "Performance";
+                }
+                else if (name.StartsWith("Microsoft.VisualStudio.Web.CodeGeneration", StringComparison.OrdinalIgnoreCase))
+                {
+                    return "Scaffolding";
+                }
+                else if (name.StartsWith("Microsoft.Data.Sqlite"))
+                {
+                    return "Microsoft.Data.Sqlite";
+                }
+                else if (name.StartsWith("IIS.FunctionalTests"))
+                {
+                    return "IISIntegration";
+                }
+                else if (name.StartsWith("Microsoft.Extensions.Options"))
+                {
+                    return "Options";
+                }
+                else if (name.StartsWith("Microsoft.Extensions.Caching"))
+                {
+                    return "Caching";
+                }
+                else if (name.StartsWith("Microsoft.Extensions.Http"))
+                {
+                    return "HttpClientFactory";
+                }
+                else if (name.StartsWith("System.Buffers.Tests", StringComparison.OrdinalIgnoreCase) ||
+                            name.StartsWith("System.IO.Pipelines.Tests", StringComparison.OrdinalIgnoreCase) ||
+                            name.StartsWith("Microsoft.Extensions.Internal.Test", StringComparison.OrdinalIgnoreCase))
+                {
+                    return "AspNetCore";
+                }
 
-                return "Home";
+                reporter.Warn($"Don't know how to find the repo of tests like {testName}, defaulting to aspnet/AspNetCore");
+
+                return "AspNetCore";
             }
         }
 

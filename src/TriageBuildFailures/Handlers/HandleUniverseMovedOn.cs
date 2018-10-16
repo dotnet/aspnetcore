@@ -4,7 +4,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using TriageBuildFailures.TeamCity;
+using TriageBuildFailures.Abstractions;
 
 namespace TriageBuildFailures.Handlers
 {
@@ -16,12 +16,13 @@ namespace TriageBuildFailures.Handlers
         private IEnumerable<string> UpdateUniverseBuilds = new string[] { "Coherence_UpdateUniverse", "Releases_21Public_UpdateUniverse", "Releases_22xPublic_UpdateUniverse" };
         private const string UniverseMovedOn = "error: failed to push some refs to 'git@github.com:aspnet/Universe.git'";
 
-        public override bool CanHandleFailure(TeamCityBuild build)
+        public override async Task<bool> CanHandleFailure(ICIBuild build)
         {
-            return UpdateUniverseBuilds.Contains(build.BuildTypeID) && TCClient.GetBuildLog(build).Contains(UniverseMovedOn);
+            var buildLog = await GetClient(build).GetBuildLog(build);
+            return UpdateUniverseBuilds.Contains(build.BuildTypeID) && buildLog.Contains(UniverseMovedOn);
         }
 
-        public override Task HandleFailure(TeamCityBuild build)
+        public override Task HandleFailure(ICIBuild build)
         {
             // There's nothing to be done, ignore it.
             return Task.CompletedTask;

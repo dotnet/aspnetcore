@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
-using TriageBuildFailures.TeamCity;
+using TriageBuildFailures.Abstractions;
 
 namespace TriageBuildFailures.Handlers
 {
@@ -11,14 +11,14 @@ namespace TriageBuildFailures.Handlers
     /// </summary>
     public class HandleUnhandled : HandleFailureBase
     {
-        public override bool CanHandleFailure(TeamCityBuild build)
+        public override Task<bool> CanHandleFailure(ICIBuild build)
         {
-            return true;
+            return Task.FromResult(true);
         }
 
-        public override async Task HandleFailure(TeamCityBuild build)
+        public override async Task HandleFailure(ICIBuild build)
         {
-            var subject = $"{build.BuildType.Name} failed in an unhandled way";
+            var subject = $"{build.BuildName} failed in an unhandled way";
 
             var message = $"The build {build.WebURL} failed and RAAS doesn't know what to do about it. Plz hlp";
 

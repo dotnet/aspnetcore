@@ -7,10 +7,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using TriageBuildFailures.Abstractions;
 using TriageBuildFailures.Email;
 using TriageBuildFailures.GitHub;
 using TriageBuildFailures.Handlers;
 using TriageBuildFailures.TeamCity;
+using TriageBuildFailures.VSTS;
 
 namespace TriageBuildFailures.Commands
 {
@@ -18,7 +20,7 @@ namespace TriageBuildFailures.Commands
     {
         public static readonly string TriagedTag = "Triaged";
 
-        private readonly TeamCityClientWrapper _tcClient;
+        private readonly IDictionary<Type, ICIClient> _ciClients = new Dictionary<Type, ICIClient>();
         private readonly GitHubClientWrapper _ghClient;
         private readonly EmailClient _emailClient;
         private IReporter _reporter;
@@ -28,7 +30,8 @@ namespace TriageBuildFailures.Commands
         {
             _config = config;
             _reporter = reporter;
-            _tcClient = GetTeamCityClient(_config);
+            _ciClients[typeof(TeamCityClientWrapper)] = GetTeamCityClient(_config);
+            _ciClients[typeof(VSTSClient)] = GetVSTSClient(_config);
             _ghClient = GetGitHubClient(_config);
             _emailClient = GetEmailClient(_config);
         }
@@ -43,7 +46,7 @@ namespace TriageBuildFailures.Commands
         {
             var stopWatch = new Stopwatch();
             stopWatch.Start();
-            var untriagedBuildFailures = GetUntriagedBuildFailures().ToList();
+            var untriagedBuildFailures = (await GetUntriagedBuildFailures()).ToList();
             _reporter.Output($"We found {untriagedBuildFailures.Count} failed builds since {CutoffDate}. Let's triage!");
 
             // Write out some stats for TeamCity
@@ -76,19 +79,18 @@ namespace TriageBuildFailures.Commands
         /// </summary>
         /// <param name="build">The CI failure which we should handle.</param>
         /// <returns></returns>
-        private async Task HandleFailure(TeamCityBuild build)
+        private async Task HandleFailure(ICIBuild build)
         {
             foreach (var handler in Handlers)
             {
-                handler.TCClient = _tcClient;
+                handler.CIClients = _ciClients;
                 handler.GHClient = _ghClient;
                 handler.EmailClient = _emailClient;
                 handler.Reporter = _reporter;
                 handler.Config = _config;
 
-                if (handler.CanHandleFailure(build))
+                if (await handler.CanHandleFailure(build))
                 {
-                    _reporter.Output($"Handling failure with '{handler.GetType().FullName}' handler");
                     await handler.HandleFailure(build);
                     MarkTriaged(build);
                     return;
@@ -100,23 +102,31 @@ namespace TriageBuildFailures.Commands
         /// Gets the list of CI failures which have not been previously triaged since the CutoffDate
         /// </summary>
         /// <returns>The list of CI failures which have not been previously triaged.</returns>
-        private IEnumerable<TeamCityBuild> GetUntriagedBuildFailures()
-        {
-            var failedBuilds = _tcClient.GetFailedBuilds(CutoffDate);
 
-            foreach (var failedBuild in failedBuilds)
+        private async Task<IEnumerable<ICIBuild>> GetUntriagedBuildFailures()
+        {
+            var result = new List<ICIBuild>();
+            foreach (var ciClientKvp in _ciClients)
             {
-                var tags = _tcClient.GetTags(failedBuild);
-                if (!tags.Contains(TriagedTag))
+                var ciClient = ciClientKvp.Value;
+                var failedBuilds = await ciClient.GetFailedBuilds(CutoffDate);
+
+                foreach (var failedBuild in failedBuilds)
                 {
-                    yield return failedBuild;
+                    var tags = await ciClient.GetTags(failedBuild);
+                    if (!tags.Contains(TriagedTag))
+                    {
+                        result.Add(failedBuild);
+                    }
                 }
             }
+
+            return result;
         }
 
-        private void MarkTriaged(TeamCityBuild build)
+        private void MarkTriaged(ICIBuild build)
         {
-            _tcClient.SetTag(build, TriagedTag);
+            _ciClients[build.CIType].SetTag(build, TriagedTag);
         }
 
         private GitHubClientWrapper GetGitHubClient(Config config)
@@ -132,6 +142,11 @@ namespace TriageBuildFailures.Commands
         private TeamCityClientWrapper GetTeamCityClient(Config config)
         {
             return new TeamCityClientWrapper(config.TeamCity, _reporter);
+        }
+
+        private VSTSClient GetVSTSClient(Config config)
+        {
+            return new VSTSClient(config.VSTS, _reporter);
         }
     }
 }

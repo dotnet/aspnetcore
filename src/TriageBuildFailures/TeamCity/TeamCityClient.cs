@@ -1,21 +1,24 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using McMaster.Extensions.CommandLineUtils;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Threading.Tasks;
 using System.Web;
 using System.Xml.Serialization;
-using McMaster.Extensions.CommandLineUtils;
+using TriageBuildFailures.Abstractions;
 
 namespace TriageBuildFailures.TeamCity
 {
-    public class TeamCityClientWrapper
+    public class TeamCityClientWrapper : ICIClient
     {
         private readonly IReporter _reporter;
 
@@ -34,10 +37,10 @@ namespace TriageBuildFailures.TeamCity
             }
         }
         
-        public string GetTestFailureText(TestOccurrence test)
+        public async Task<string> GetTestFailureText(ICITestOccurrence test)
         {
             var url = $"failedTestText.html?buildId={test.BuildId}&testId={test.TestId}";
-            using (var stream = MakeTeamCityRequest(HttpMethod.Get, url, timeout: TimeSpan.FromMinutes(1)))
+            using (var stream = await MakeTeamCityRequest(HttpMethod.Get, url, timeout: TimeSpan.FromMinutes(1)))
             using (var reader = new StreamReader(stream))
             {
                 var error = reader.ReadToEnd().Trim();
@@ -71,62 +74,64 @@ namespace TriageBuildFailures.TeamCity
             }
         }
 
-        public IEnumerable<TestOccurrence> GetTests(TeamCityBuild build)
+        public async Task<IEnumerable<ICITestOccurrence>> GetTests(ICIBuild build, BuildStatus? buildStatus = null)
         {
             var locator = $"build:(id:{build.Id})";
+            if(buildStatus != null)
+            {
+                locator += $",status:{Enum.GetName(typeof(BuildStatus), buildStatus)}";
+            }
             var fields = "testOccurrence(test:id,id,name,status,duration)";
 
             var url = $"httpAuth/app/rest/testOccurrences?locator={locator},count:{_defaultCount}&fields={fields}";
-            using (var stream = MakeTeamCityRequest(HttpMethod.Get, url, timeout: TimeSpan.FromMinutes(5)))
+            using (var stream = await MakeTeamCityRequest(HttpMethod.Get, url, timeout: TimeSpan.FromMinutes(5)))
             {
-                var serializer = new XmlSerializer(typeof(TestOccurrences));
-                var tests = serializer.Deserialize(stream) as TestOccurrences;
+                var serializer = new XmlSerializer(typeof(TeamCityTestOccurrences));
+                var tests = serializer.Deserialize(stream) as TeamCityTestOccurrences;
 
-                var results = new List<TestOccurrence>();
+                var results = new List<TeamCityTestOccurrence>();
 
                 foreach (var test in tests.TestList)
                 {
                     test.BuildTypeId = build.BuildTypeID;
-                    yield return test;
                 }
+
+                return tests.TestList;
             }
         }
 
-        public IEnumerable<string> GetTags(TeamCityBuild build)
+        public async Task<IEnumerable<string>> GetTags(ICIBuild build)
         {
             var url = $"httpAuth/app/rest/builds/{build.Id}/tags";
-            using (var stream = MakeTeamCityRequest(HttpMethod.Get, url, timeout: TimeSpan.FromMinutes(1)))
+            using (var stream = await MakeTeamCityRequest(HttpMethod.Get, url, timeout: TimeSpan.FromMinutes(1)))
             {
-                var serializer = new XmlSerializer(typeof(Tags));
-                var tags = serializer.Deserialize(stream) as Tags;
+                var serializer = new XmlSerializer(typeof(TeamCityTags));
+                var tags = serializer.Deserialize(stream) as TeamCityTags;
 
-                foreach(var tag in tags.TagList)
-                {
-                    yield return tag.Name;
-                }
+                return tags.TagList.Select(t => t.Name);
             }
         }
 
-        public void SetTag(TeamCityBuild build, string tag)
+        public async Task SetTag(ICIBuild build, string tag)
         {
             var url = $"app/rest/builds/{build.Id}/tags/";
-            MakeTeamCityRequest(HttpMethod.Post, url, tag).Dispose();
+            (await MakeTeamCityRequest(HttpMethod.Post, url, tag)).Dispose();
         }
 
-        public IList<TeamCityBuild> GetFailedBuilds(DateTime startDate)
+        public async Task<IEnumerable<ICIBuild>> GetFailedBuilds(DateTime startDate)
         {
-            return GetBuilds($"sinceDate:{TCDateTime(startDate)},status:FAILURE");
+            return await GetBuilds($"sinceDate:{TCDateTime(startDate)},status:FAILURE");
         }
 
-        public IDictionary<string, string> GetBuildTypes()
+        public async Task<IDictionary<string, string>> GetBuildTypes()
         {
             var fields = "buildType(id,name)";
 
             var url = $"httpAuth/app/rest/buildTypes?fields={fields}";
-            using (var stream = MakeTeamCityRequest(HttpMethod.Get, url))
+            using (var stream = await MakeTeamCityRequest(HttpMethod.Get, url))
             {
-                var serializer = new XmlSerializer(typeof(BuildTypes));
-                var buildTypes = serializer.Deserialize(stream) as BuildTypes;
+                var serializer = new XmlSerializer(typeof(TeamCityBuildTypes));
+                var buildTypes = serializer.Deserialize(stream) as TeamCityBuildTypes;
 
                 var result = new Dictionary<string, string>();
                 foreach (var buildType in buildTypes.BuildTypeList)
@@ -138,26 +143,26 @@ namespace TriageBuildFailures.TeamCity
             }
         }
 
-        public IList<TeamCityBuild> GetBuilds(DateTime startDate)
+        public Task<IEnumerable<ICIBuild>> GetBuilds(DateTime startDate)
         {
             return GetBuilds($"sinceDate:{TCDateTime(startDate)}");
         }
 
-        public IList<TeamCityBuild> GetBuilds(string locator)
+        public async Task<IEnumerable<ICIBuild>> GetBuilds(string locator)
         {
             var fields = "build(id,startDate,buildTypeId,status,branchName,webUrl)";
 
             var url = $"httpAuth/app/rest/builds?locator={locator},count:{_defaultCount}&fields={fields}";
-            using (var stream = MakeTeamCityRequest(HttpMethod.Get, url))
+            using (var stream = await MakeTeamCityRequest(HttpMethod.Get, url))
             {
-                var serializer = new XmlSerializer(typeof(Builds));
-                var builds = serializer.Deserialize(stream) as Builds;
+                var serializer = new XmlSerializer(typeof(TeamCityBuilds));
+                var builds = serializer.Deserialize(stream) as TeamCityBuilds;
 
                 return builds.BuildList;
             }
         }
 
-        private Stream MakeTeamCityRequest(HttpMethod method, string url, string body = null, TimeSpan? timeout = null)
+        private Task<Stream> MakeTeamCityRequest(HttpMethod method, string url, string body = null, TimeSpan? timeout = null)
         {
             var requestUri = $"http://{Config.Server}/{url}";
 
@@ -183,7 +188,7 @@ namespace TriageBuildFailures.TeamCity
 
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
-                    return response.Content.ReadAsStreamAsync().Result;
+                    return response.Content.ReadAsStreamAsync();
                 }
                 else
                 {
@@ -209,7 +214,7 @@ namespace TriageBuildFailures.TeamCity
             return date.ToString("yyyyMMddTHHmmss") + "-0800";
         }
 
-        public string GetBuildLog(TeamCityBuild build)
+        public async Task<string> GetBuildLog(ICIBuild build)
         {
             var buildLogDir = Path.Combine("temp", "BuildLogs");
             var buildLogFile = Path.Combine(buildLogDir, $"{build.Id}.txt");
@@ -218,7 +223,7 @@ namespace TriageBuildFailures.TeamCity
             if (!File.Exists(buildLogFile))
             {
                 using (var fileStream = File.Create(buildLogFile))
-                using (var stream = MakeTeamCityRequest(HttpMethod.Get, $"httpAuth/downloadBuildLog.html?buildId={build.Id}"))
+                using (var stream = await MakeTeamCityRequest(HttpMethod.Get, $"httpAuth/downloadBuildLog.html?buildId={build.Id}"))
                 {
                     stream.CopyTo(fileStream);
                 }

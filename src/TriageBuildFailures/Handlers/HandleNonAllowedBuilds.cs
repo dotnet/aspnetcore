@@ -3,22 +3,22 @@
 
 using System.Linq;
 using System.Threading.Tasks;
-using TriageBuildFailures.TeamCity;
+using TriageBuildFailures.Abstractions;
 
 namespace TriageBuildFailures.Handlers
 {
-
     /// <summary>
     /// Never ever post anything about any config we don't explicitly allow. Notify the build buddy, who will likely forward to the engineering alias.
     /// </summary>
     public class HandleNonAllowedBuilds : HandleFailureBase
     {
-        public override bool CanHandleFailure(TeamCityBuild build)
+        public override Task<bool> CanHandleFailure(ICIBuild build)
         {
-            return !Config.TeamCity.BuildIdAllowList.Contains(build.BuildTypeID);
+            var config = build.GetCIConfig(Config);
+            return Task.FromResult(!config.BuildIdAllowList.Contains(build.BuildTypeID));
         }
 
-        public override async Task HandleFailure(TeamCityBuild build)
+        public override async Task HandleFailure(ICIBuild build)
         {
             var subject = $"Failure of unknown build '{build.BuildTypeID}'";
             var body = $"{build.WebURL} failed, we don't want to do anything automatic to it because it's not on the allow-list.";

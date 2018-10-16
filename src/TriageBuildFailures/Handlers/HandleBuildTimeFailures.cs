@@ -6,8 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using TriageBuildFailures.Abstractions;
 using TriageBuildFailures.GitHub;
-using TriageBuildFailures.TeamCity;
 
 namespace TriageBuildFailures.Handlers
 {
@@ -24,11 +24,15 @@ namespace TriageBuildFailures.Handlers
             "Failed to publish artifacts:",
             "error :",
             "The active test run was aborted. Reason:",
+            "Attempting to cancel the build...",
+            "Build FAILED.",
+            "npm ERR!",
         };
 
-        public override bool CanHandleFailure(TeamCityBuild build)
+        public override async Task<bool> CanHandleFailure(ICIBuild build)
         {
-            var log = TCClient.GetBuildLog(build);
+            var client = GetClient(build);
+            var log = await client.GetBuildLog(build);
             var errors = GetErrorsFromLog(log);
             return errors != null && errors.Count() > 0;
         }
@@ -36,11 +40,11 @@ namespace TriageBuildFailures.Handlers
         private const string _BrokenBuildLabel = "Broken Build";
         private static readonly string[] _Notifiers = new string[] { "Eilon", "mkArtakMSFT", "muratg" };
 
-        public override async Task HandleFailure(TeamCityBuild build)
+        public override async Task HandleFailure(ICIBuild build)
         {
-            var log = TCClient.GetBuildLog(build);
+            var log = GetClient(build).GetBuildLog(build);
             var owner = TestToRepoMapper.FindOwner(build.BuildName);
-            var repo = "AspNetCore-Internal";
+            var repo = GitHubUtils.PrivateRepo;
             var issuesTask = GHClient.GetIssues(owner, repo);
 
             var subject = $"{build.BuildName} failed";
@@ -55,15 +59,15 @@ namespace TriageBuildFailures.Handlers
                 var body = $@"{build.BuildName} failed with the following errors:
 
 ```
-{ConstructErrorSummary(log)}
+{ConstructErrorSummary(await log)}
 ```
 
 {build.WebURL}
 
 CC {GitHubUtils.GetAtMentions(_Notifiers)}";
-                var tags = new List<string> { _BrokenBuildLabel, GitHubUtils.GetBranchLabel(build.BranchName) };
+                var tags = new List<string> { _BrokenBuildLabel, GitHubUtils.GetBranchLabel(build.Branch) };
 
-                await GHClient.CreateIssue(owner, repo, subject, body, tags);
+                await GHClient.CreateIssue(owner, repo, subject, body, tags, assignees: null);
             }
         }
 

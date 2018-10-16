@@ -16,6 +16,7 @@ namespace TriageBuildFailures.Commands
         private CommandOption _teamCityPassword;
         private CommandOption _smtpLogin;
         private CommandOption _smtpPassword;
+        private CommandOption _vstsPAT;
 
         private IReporter _reporter;
 
@@ -26,6 +27,7 @@ namespace TriageBuildFailures.Commands
             _teamCityPassword = application.Option("-tcpw|--team-city-password <TCPASSWORD>", "", CommandOptionType.SingleValue);
             _smtpLogin = application.Option("-sl|--smtp-login <SMTPLOGIN>", "", CommandOptionType.SingleValue);
             _smtpPassword = application.Option("-sp|--smtp-password <SMTPPASSWORD>", "", CommandOptionType.SingleValue);
+            _vstsPAT = application.Option("-vp|--vsts-pat <VSTSPAT>", "", CommandOptionType.SingleValue);
             _reporter = GetReporter();
         }
 
@@ -57,6 +59,7 @@ namespace TriageBuildFailures.Commands
             config.Email.SmtpConfig.Password = _smtpPassword.Value();
             config.TeamCity.User = _teamCityUserName.Value();
             config.TeamCity.Password = _teamCityPassword.Value();
+            config.VSTS.PersonalAccessToken = _vstsPAT.Value();
 
             if (string.IsNullOrEmpty(config.GitHub.AccessToken))
             {
@@ -81,6 +84,16 @@ namespace TriageBuildFailures.Commands
             if (string.IsNullOrEmpty(config.TeamCity.Password))
             {
                 _reporter.Error("Must provide the TeamCity Password");
+            }
+
+            if (string.IsNullOrEmpty(config.VSTS.PersonalAccessToken))
+            {
+                _reporter.Error("Must provide the VSTS PAT");
+            }
+
+            if (string.IsNullOrEmpty(config.VSTS.Account))
+            {
+                _reporter.Error("Must provide the VSTS Account");
             }
 
             return config;

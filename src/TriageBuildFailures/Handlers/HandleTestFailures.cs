@@ -8,8 +8,8 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Common;
 using Octokit;
+using TriageBuildFailures.Abstractions;
 using TriageBuildFailures.GitHub;
-using TriageBuildFailures.TeamCity;
 
 namespace TriageBuildFailures.Handlers
 {
@@ -20,9 +20,9 @@ namespace TriageBuildFailures.Handlers
     {
         private const string NoStackTraceAvailable = "No stacktrace available";
 
-        public override bool CanHandleFailure(TeamCityBuild build)
+        public async override Task<bool> CanHandleFailure(ICIBuild build)
         {
-            var tests = TCClient.GetTests(build);
+            var tests = await GetClient(build).GetTests(build, BuildStatus.FAILURE);
             return tests.Any(s => s.Status == BuildStatus.FAILURE);
         }
 
@@ -74,14 +74,18 @@ namespace TriageBuildFailures.Handlers
         * No?
             * [ ] Delete the test because flaky tests are not useful (TODO: Link to PR/commit)";
 
-        public override async Task HandleFailure(TeamCityBuild build)
+        public override async Task HandleFailure(ICIBuild build)
         {
-            var tests = TCClient.GetTests(build);
-            var failures = tests.Where(s => s.Status == BuildStatus.FAILURE);
+            var client = GetClient(build);
+            var tests = await client.GetTests(build, BuildStatus.FAILURE);
+            if (tests.Any(s => s.Status != BuildStatus.FAILURE))
+            {
+                throw new Exception("Tests which didn't fail got through somehow.");
+            }
 
             var testAggregates = new Dictionary<GitHubIssue, List<string>>();
 
-            foreach (var failure in failures)
+            foreach (var failure in tests)
             {
                 Reporter.Output($"Inspecting test failure {failure.Name}...");
                 var repo = TestToRepoMapper.FindRepo(failure.Name, Reporter);
@@ -89,9 +93,9 @@ namespace TriageBuildFailures.Handlers
 
                 var issuesTask = GHClient.GetFlakyIssues(owner, repo);
 
-                var errors = TCClient.GetTestFailureText(failure);
+                var errors = client.GetTestFailureText(failure);
 
-                var applicableIssues = GetApplicableIssues(await issuesTask, failure);
+                var applicableIssues = await GetApplicableIssues(client, await issuesTask, failure);
 
                 var shortTestName = GetTestName(failure);
                 if (applicableIssues.Count() == 0)
@@ -101,20 +105,22 @@ namespace TriageBuildFailures.Handlers
                     var body = $@"This test [failed]({build.WebURL}) with the following error:
 
 ```
-{TrimTestFailureText(errors)}
+{TrimTestFailureText(await errors)}
 ```
 
 Other tests within that build may have failed with a similar message, but they are not listed here. Check the link above for more info.
 
-This test failed on {build.BranchName}.
+This test failed on {build.Branch}.
 
 CC {GetManagerMentions(repo)}";
 
                     //TODO: We'd like to link the test history here but TC api doens't make it easy
-                    var tags = new List<string> { GitHubClientWrapper.TestFailureTag, GitHubUtils.GetBranchLabel(build.BranchName) };
+                    var tags = new List<string> { GitHubClientWrapper.TestFailureTag, GitHubUtils.GetBranchLabel(build.Branch) };
+
+                    var assignees = new string[] { GetManagerMentions(repo) };
 
                     Reporter.Output($"Creating new issue for test failure {failure.Name}...");
-                    var issue = await GHClient.CreateIssue(owner, repo, subject, body, tags);
+                    var issue = await GHClient.CreateIssue(owner, repo, subject, body, tags, assignees);
                     Reporter.Output($"Created issue {issue.HtmlUrl}");
                     Reporter.Output($"Adding new issue to project '{GHClient.Config.FlakyProjectColumn}'");
                     await GHClient.AddIssueToProject(issue, GHClient.Config.FlakyProjectColumn);
@@ -150,15 +156,15 @@ CC {GetManagerMentions(repo)}";
             if (repo == null || string.IsNullOrEmpty(repo.Manager))
             {
                 // Default to Eilon
-                return "@Eilon (because the bot doesn't know who else to pick)";
+                return "Eilon";
             }
             else
             {
-                return GitHubUtils.GetAtMentions(repo.Manager);
+                return repo.Manager;
             }
         }
 
-        private static string GetTestName(TestOccurrence testOccurrence)
+        private static string GetTestName(ICITestOccurrence testOccurrence)
         {
             var shortTestName = testOccurrence.Name.Replace(Constants.VSTestPrefix, string.Empty);
             shortTestName = shortTestName.Split('(').First();
@@ -206,13 +212,13 @@ CC {GetManagerMentions(repo)}";
             }
         }
 
-        private IEnumerable<GitHubIssue> GetApplicableIssues(IEnumerable<GitHubIssue> issues, TestOccurrence failure)
+        private async Task<IEnumerable<GitHubIssue>> GetApplicableIssues(ICIClient client, IEnumerable<GitHubIssue> issues, ICITestOccurrence failure)
         {
-            Reporter.Output($"Finding applicable issues for failure '{failure.Name}'...");
-            var testError = TCClient.GetTestFailureText(failure);
-            var testException = SafeGetExceptionMessage(testError);
+            var testError = await client.GetTestFailureText(failure);
+            var testException = SafeGetExceptionMessage(testError); ;
             var shortTestName = GetTestName(failure);
 
+            var result = new List<GitHubIssue>();
             foreach (var issue in issues)
             {
                 Reporter.Output($"Considering issue {issue.HtmlUrl}...");
@@ -226,9 +232,11 @@ CC {GetManagerMentions(repo)}";
                     || MessagesAreClose(issueException, testException))
                 {
                     Reporter.Output($"\t^^^ This issue is applicable");
-                    yield return issue;
+                    result.Add(issue);
                 }
             }
+
+            return result;
         }
     }
 }

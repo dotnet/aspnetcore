@@ -2,9 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Linq;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace TriageBuildFailures.GitHub
 {
@@ -19,5 +16,8 @@ namespace TriageBuildFailures.GitHub
         {
             return $"Branch:{branchName}";
         }
+
+        public const string HomeRepo = "AspNetCore";
+        public const string PrivateRepo = "AspNetCore-Internal";
     }
 }

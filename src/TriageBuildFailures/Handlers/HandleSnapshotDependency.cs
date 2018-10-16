@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
+using TriageBuildFailures.Abstractions;
 using TriageBuildFailures.TeamCity;
 
 namespace TriageBuildFailures.Handlers
@@ -10,12 +11,20 @@ namespace TriageBuildFailures.Handlers
     {
         private const string SnapshotMessage = "The status of the build has been changed to failing because some of the builds it depends on have failed";
 
-        public override bool CanHandleFailure(TeamCityBuild build)
+        public override async Task<bool> CanHandleFailure(ICIBuild build)
         {
-            return TCClient.GetBuildLog(build).Contains(SnapshotMessage);
+            if (build is TeamCityBuild tcBuild)
+            {
+                var buildLog = await GetClient(build).GetBuildLog(build);
+                return buildLog.Contains(SnapshotMessage);
+            }
+            else
+            {
+                return false;
+            }
         }
 
-        public override Task HandleFailure(TeamCityBuild build)
+        public override Task HandleFailure(ICIBuild build)
         {
             // There's nothing to do about this, ignore it.
             return Task.CompletedTask;

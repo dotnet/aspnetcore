@@ -23,6 +23,10 @@
         "Manager": "mkArtakMSFT"
       },
       {
+        "Name": "Caching",
+        "Manager": "mgirgin"
+      },
+      {
         "Name": "Common",
         "IssuesOnHomeRepo": true
       },
@@ -230,6 +234,37 @@
       "Releases_22xPublic_Finale",
       // Maintenance builds
       "Maintenance_Backup"
+    ],
+    "BuildIdIgnoreList": [
+      "Releases_21Public_SiteExtensionReproNuGetIssue",
+      "Lite_Infrastructure_AspNetCoreModuleSetup",
+      // PB test
+      "Releases_22xPublic_PbTestUbuntu",
+      "Releases_22xPublic_PbTestWindowsServer2012",
+      "Releases_22xPublic_PbTestMacOSSierra",
+      "Releases_22xPublic_PbTestMacOSHighSierra",
+      "Benchmarks",
+      // ANCM
+      "Setup_Ancm_IISIntegration",
+      "Setup_Ancm_SignBinaries"
     ]
+  },
+  "VSTS": {
+    "Account": "dnceng",
+    "BuildPath": "\\aspnet",
+    "BuildIdAllowList": [
+      // Projects
+      "26", //SignalR-ci
+      "39", //Caching-ci
+      "40", //Razor-ci
+      "46", //Routing-ci
+      "51", //EntityFrameworkCore-ci
+      "135", //aspnet-Blazor-ci-official
+      "66", //KestrelHttpServer-ci
+      // Universe
+      "21", //aspnet-Universe-ci-official
+      "134" //aspnet-Universe-e2e-tests
+    ],
+    "BuildIdIgnoreList": []
   }
 }

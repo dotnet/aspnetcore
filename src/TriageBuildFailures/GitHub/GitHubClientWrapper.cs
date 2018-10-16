@@ -17,6 +17,11 @@ namespace TriageBuildFailures.GitHub
         public GitHubClient Client { get; private set; }
 
         private readonly IReporter _reporter;
+        private static readonly Random _random = new Random();
+        private const string _tempFolder = "temp";
+
+        public const int MaxBodyLength = 64000;
+
         private static readonly ProductHeaderValue ProductHeader = new ProductHeaderValue("rybrandeRAAS");
 
         public GitHubClientWrapper(GitHubConfig config, IReporter reporter)
@@ -46,7 +51,7 @@ namespace TriageBuildFailures.GitHub
             if (IssuesOnHomeRepo(repo))
             {
                 request.Labels.Add($"repo:{repo}");
-                repo = "Home";
+                repo = GitHubUtils.HomeRepo;
             }
 
             var issues = await Client.Issue.GetAllForRepository(owner, repo, request);
@@ -68,13 +73,6 @@ namespace TriageBuildFailures.GitHub
                 || i.Labels.Any(l =>
                     l.Name.Contains("Flaky", StringComparison.OrdinalIgnoreCase)
                     || l.Name.Contains(TestFailureTag, StringComparison.OrdinalIgnoreCase)));
-        }
-
-        private bool IssuesOnHomeRepo(string repoName)
-        {
-            var repo = Config.Repos.FirstOrDefault(r => r.Name.Equals(repoName, StringComparison.OrdinalIgnoreCase));
-
-            return repo == null ? false : repo.IssuesOnHomeRepo;
         }
 
         public async Task AddIssueToProject(GitHubIssue issue, int columnId)
@@ -105,9 +103,7 @@ namespace TriageBuildFailures.GitHub
             await Client.Issue.Comment.Update(issue.RepositoryOwner, issue.RepositoryName, comment.Id, newBody);
         }
 
-        public const int MaxBodyLength = 64000;
-
-        public async Task<GitHubIssue> CreateIssue(string owner, string repo, string subject, string body, IList<string> labels)
+        public async Task<GitHubIssue> CreateIssue(string owner, string repo, string subject, string body, IList<string> labels, IEnumerable<string> assignees)
         {
             if (IssuesOnHomeRepo(repo))
             {
@@ -117,7 +113,7 @@ namespace TriageBuildFailures.GitHub
                 }
 
                 labels.Add($"repo:{repo}");
-                repo = "Home";
+                repo = GitHubUtils.HomeRepo;
             }
 
             body = $"This issue was made automatically. If there is a problem contact {Config.BuildBuddyUsername}.\n\n{body}";
@@ -129,15 +125,33 @@ namespace TriageBuildFailures.GitHub
 
             var newIssue = new NewIssue(subject)
             {
-                Body = body,
+                Body = body
             };
 
-            foreach (var label in labels)
+            if (assignees != null)
             {
-                newIssue.Labels.Add(label);
+                foreach (var assignee in assignees)
+                {
+                    newIssue.Assignees.Add(assignee);
+                }
+            }
+
+            if (labels != null)
+            {
+                foreach (var label in labels)
+                {
+                    newIssue.Labels.Add(label);
+                }
             }
 
             return new GitHubIssue(await Client.Issue.Create(owner, repo, newIssue));
+        }
+
+        private bool IssuesOnHomeRepo(string repoName)
+        {
+            var repo = Config.Repos.FirstOrDefault(r => r.Name.Equals(repoName, StringComparison.OrdinalIgnoreCase));
+
+            return repo == null ? false : repo.IssuesOnHomeRepo;
         }
     }
 }

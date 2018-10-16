@@ -8,9 +8,9 @@ using System.Xml.Serialization;
 namespace TriageBuildFailures.TeamCity
 {
     [XmlRoot("tags")]
-    public class Tags
+    public class TeamCityTags
     {
         [XmlElement("tag")]
-        public List<Tag> TagList { get; set; }
+        public List<TeamCityTag> TagList { get; set; }
     }
 }
