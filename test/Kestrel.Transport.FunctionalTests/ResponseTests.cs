@@ -809,7 +809,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [Fact]
         [RetryTest(nameof(ConnectionNotClosedWhenClientSatisfiesMinimumDataRateGivenLargeResponseHeadersRetryPredicate),
             "Active investigation into potential corefx sockets bug: https://github.com/dotnet/corefx/issues/30691",
-            OperatingSystems.Windows)]
+            OperatingSystems.Windows,
+            5)]
         public async Task ConnectionNotClosedWhenClientSatisfiesMinimumDataRateGivenLargeResponseHeaders()
         {
             var headerSize = 1024 * 1024; // 1 MB for each header value

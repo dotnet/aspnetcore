@@ -107,7 +107,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [Theory]
         [RetryTest(nameof(LargeUploadRetryPredicate),
             "Active investigation into potential corefx sockets bug: https://github.com/dotnet/corefx/issues/30691",
-            OperatingSystems.Windows)]
+            OperatingSystems.Windows,
+            5)]
         [MemberData(nameof(LargeUploadData))]
         public async Task LargeUpload(long? maxRequestBufferSize, bool connectionAdapter, bool expectPause)
         {
