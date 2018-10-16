@@ -266,9 +266,10 @@
       "135", //aspnet-Blazor-ci-official
       "66", //KestrelHttpServer-ci
       // Universe
-      "21", //aspnet-Universe-ci-official
       "134" //aspnet-Universe-e2e-tests
     ],
-    "BuildIdIgnoreList": []
+    "BuildIdIgnoreList": [
+      "21" //aspnet-Universe-ci-official Due to https://github.com/aspnet/AspNetCore-Internal/issues/878
+    ]
   }
 }
