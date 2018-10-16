@@ -253,7 +253,11 @@
     "Account": "dnceng",
     "BuildPath": "\\aspnet",
     "BuildIdAllowList": [
+      // OOB Builds
+      "1", //BuildTools-ci
+      "8", //BuildTools-ci-official
       // Projects
+      "23", //Extensions-ci
       "26", //SignalR-ci
       "39", //Caching-ci
       "40", //Razor-ci
