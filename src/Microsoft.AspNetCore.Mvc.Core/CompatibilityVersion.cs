@@ -51,10 +51,13 @@ namespace Microsoft.AspNetCore.Mvc
         /// <remarks>
         /// ASP.NET Core MVC 2.1 introduces compatibility switches for the following:
         /// <list type="bullet">
+        ///     <item><description><see cref="MvcOptions.AllowBindingHeaderValuesToNonStringModelTypes"/></description></item>
+        ///     <item><description><see cref="MvcOptions.InputFormatterExceptionPolicy"/></description></item>
         ///     <item><description><see cref="MvcOptions.InputFormatterExceptionPolicy"/></description></item>
         ///     <item><description><see cref="MvcOptions.SuppressBindingUndefinedValueToEnumType"/></description></item>
         ///     <item><description><c>MvcJsonOptions.AllowInputFormatterExceptionMessages</c></description></item>
         ///     <item><description><c>RazorPagesOptions.AllowAreas</c></description></item>
+        ///     <item><description><c>RazorPagesOptions.AllowMappingHeadRequestsToGetHandler</c></description></item>
         /// </list>
         /// </remarks>
         Version_2_1,
@@ -66,7 +69,15 @@ namespace Microsoft.AspNetCore.Mvc
         /// <remarks>
         /// ASP.NET Core MVC 2.2 introduces compatibility switches for the following:
         /// <list type="bullet">
+        ///     <item><description><c>ApiBehaviorOptions.SuppressMapClientErrors</c></description></item>
+        ///     <item><description><c>ApiBehaviorOptions.SuppressUseValidationProblemDetailsForInvalidModelStateResponses</c></description></item>
         ///     <item><description><c>MvcDataAnnotationsLocalizationOptions.AllowDataAnnotationsLocalizationForEnumDisplayAttributes</c></description></item>
+        ///     <item><description><see cref="MvcOptions.EnableEndpointRouting" /></description></item>
+        ///     <item><description><see cref="MvcOptions.MaxValidationDepth" /></description></item>
+        ///     <item><description><c>RazorPagesOptions.AllowDefaultHandlingForOptionsRequests</c></description></item>
+        ///     <item><description><c>RazorViewEngineOptions.AllowRecompilingViewsOnFileChange</c></description></item>
+        ///     <item><description><c>MvcViewOptions.AllowRenderingMaxLengthAttribute</c></description></item>
+        ///     <item><description><c>MvcXmlOptions.AllowRfc7807CompliantProblemDetailsFormat</c></description></item>
         /// </list>
         /// </remarks>
         Version_2_2,
