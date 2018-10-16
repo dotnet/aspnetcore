@@ -2,7 +2,7 @@
   <PropertyGroup>
     <VersionPrefix>2.2.0</VersionPrefix>
     <VsixVersion>15.6</VsixVersion>
-    <VersionSuffix>preview3</VersionSuffix>
+    <VersionSuffix>rtm</VersionSuffix>
     <PackageVersion Condition="'$(IsFinalBuild)' == 'true' AND '$(VersionSuffix)' == 'rtm' ">$(VersionPrefix)</PackageVersion>
     <PackageVersion Condition="'$(IsFinalBuild)' == 'true' AND '$(VersionSuffix)' != 'rtm' ">$(VersionPrefix)-$(VersionSuffix)-final</PackageVersion>
     <VsixVersion Condition="'$(BuildNumber)' != ''">$(VsixVersion).$(BuildNumber)</VsixVersion>
